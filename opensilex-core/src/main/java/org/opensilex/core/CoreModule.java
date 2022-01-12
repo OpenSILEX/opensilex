@@ -54,11 +54,6 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
     private static final Logger LOGGER = LoggerFactory.getLogger(CoreModule.class);
     private static final String ONTOLOGIES_DIRECTORY = "ontologies";
 
-    /**
-     * {@link OntologyCache} instance to use inside the module.
-     */
-    private static OntologyCache ontologyCache;
-
     @Override
     public Class<?> getConfigClass() {
         return CoreConfig.class;
@@ -135,9 +130,6 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
     public void install(boolean reset) throws Exception {
         insertDefaultProvenance();
 
-        invalidateCache();
-        populateOntologyCache();
-        
         insertDefaultVariablesGroup();
         insertDefaultMethod();
         insertDefaultInterestEntities();
@@ -146,8 +138,7 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
 
     @Override
     public void startup() throws Exception {
-        invalidateCache();
-        populateOntologyCache();
+
     }
 
 
@@ -169,64 +160,6 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
            db.getCollection(ProvenanceDAO.PROVENANCE_COLLECTION_NAME, ProvenanceModel.class).insertOne(provenance); 
         } catch (Exception e) {
            LOGGER.warn("Couldn't create default provenance : " + e.getMessage());
-        }
-    }
-
-    /**
-     * Init the {@link #ontologyCache} by reading the {@link CoreConfig} associated with the given {@link OpenSilex} instance
-     * @param opensilex the {@link OpenSilex} instance, used to read {@link CoreConfig}
-     */
-    private static void initOntologyCache(OpenSilex opensilex) throws OntologyCacheException {
-
-        if (ontologyCache != null) {
-            return;
-        }
-
-        SPARQLServiceFactory factory = opensilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
-        SPARQLService sparql = factory.provide();
-        CoreConfig coreConfig;
-        try {
-            coreConfig = opensilex.getModuleConfig(CoreModule.class, CoreConfig.class);
-        } catch (OpenSilexModuleNotFoundException e) {
-            LOGGER.error(e.getMessage());
-            throw new RuntimeException(e);
-        }
-
-        /* #TODO : sparql should not be null , but when building module with maven, the sparql is null while it's not when launching StartServer  */
-
-        if (sparql != null) {
-            ontologyCache = coreConfig.enableOntologyCaching() ?
-                    CaffeineOntologyCache.getInstance(sparql) :
-                    NoOntologyCacheImpl.getInstance(sparql);
-        }
-    }
-
-    public static OntologyCache getOntologyCacheInstance() {
-        return ontologyCache;
-    }
-
-    protected void invalidateCache() throws OntologyCacheException {
-        CoreModule.initOntologyCache(getOpenSilex());
-
-        if (ontologyCache != null) {
-            LOGGER.info("Invalidate ontology cache");
-            ontologyCache.invalidate();
-            LOGGER.info("Ontology cache invalidated with success");
-        }
-    }
-
-    private static final String ONTOLOGY_CACHE_SUCCESS_MSG = "Ontology cache loaded with success. Duration: %d ms";
-
-    protected void populateOntologyCache() throws OntologyCacheException {
-        CoreModule.initOntologyCache(getOpenSilex());
-
-        if (ontologyCache != null) {
-            LOGGER.info("Populating ontology cache");
-            Instant begin = Instant.now();
-            ontologyCache.populate(AbstractOntologyCache.getRootModelsToLoad());
-
-            String successMsg = String.format(ONTOLOGY_CACHE_SUCCESS_MSG, Duration.between(begin, Instant.now()).toMillis());
-            LOGGER.info(successMsg);
         }
     }
 

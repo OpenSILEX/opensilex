@@ -8,7 +8,6 @@
 
 package org.opensilex.sparql.ontology.store;
 
-import org.eclipse.rdf4j.query.algebra.Str;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.ontology.dal.*;
@@ -22,6 +21,8 @@ public interface OntologyStore {
     void clear();
 
     AbstractPropertyModel<?> getProperty(URI property, URI type, URI domain, String lang) throws SPARQLException;
+
+    boolean classExist(URI rdfClass, URI parentClass) throws SPARQLException;
 
     ClassModel getClassModel(URI rdfClass, URI parentClass, String lang) throws SPARQLException;
 

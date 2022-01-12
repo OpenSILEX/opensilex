@@ -9,6 +9,8 @@ import io.swagger.annotations.*;
 import org.opensilex.core.CoreModule;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
+import org.opensilex.sparql.SPARQLModule;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.core.organisation.api.InfrastructureAPI;
 import org.opensilex.core.organisation.dal.InfrastructureDAO;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
@@ -85,7 +87,7 @@ public class FacilityAPI {
 
             if (dto.getRelations() != null) {
                 OntologyDAO ontoDAO = new OntologyDAO(sparql);
-                ClassModel model = CoreModule.getOntologyCacheInstance().getClassModel(facility.getType(),
+                ClassModel model = SPARQLModule.getOntologyStoreInstance().getClassModel(facility.getType(),
                         new URI(Oeso.Facility.getURI()), currentUser.getLanguage());
                 URI graph = sparql.getDefaultGraphURI(InfrastructureFacilityModel.class);
                 for (RDFObjectRelationDTO relation : dto.getRelations()) {

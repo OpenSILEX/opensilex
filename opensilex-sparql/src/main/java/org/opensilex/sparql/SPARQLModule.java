@@ -7,15 +7,20 @@ package org.opensilex.sparql;
 
 import org.opensilex.OpenSilex;
 import org.opensilex.OpenSilexModuleNotFoundException;
-import org.opensilex.server.ServerModule;
 import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.ontology.store.DefaultOntologyStore;
+import org.opensilex.sparql.ontology.store.NoOntologyStore;
 import org.opensilex.sparql.ontology.store.OntologyStore;
 import org.opensilex.sparql.service.SPARQLService;
+
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+
 import org.apache.commons.lang3.StringUtils;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.sparql.deserializer.URIDeserializer;
@@ -29,7 +34,6 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.core.UriBuilder;
 
 /**
- *
  * @author vince
  */
 public class SPARQLModule extends OpenSilexModule {
@@ -85,13 +89,13 @@ public class SPARQLModule extends OpenSilexModule {
 
         generationPrefixURI = baseURI;
 
-        if(sparqlConfig != null){
+        if (sparqlConfig != null) {
             // if some generation URI is provided then use it
-            if(! StringUtils.isEmpty(sparqlConfig.generationBaseURI())){
+            if (!StringUtils.isEmpty(sparqlConfig.generationBaseURI())) {
                 generationPrefixURI = new URI(sparqlConfig.generationBaseURI());
             }
             // else generate URI with the provided uri generation alias
-            else  if(!StringUtils.isEmpty(sparqlConfig.generationBaseURIAlias())){
+            else if (!StringUtils.isEmpty(sparqlConfig.generationBaseURIAlias())) {
                 // use UriBuilder in order to properly create URI
                 generationPrefixURI = UriBuilder.fromUri(baseURI).path(sparqlConfig.generationBaseURIAlias()).build();
             }
@@ -149,12 +153,10 @@ public class SPARQLModule extends OpenSilexModule {
             } else {
                 sparqlService.disableSHACL();
             }
-        }
-        catch (SPARQLValidationException ex){
+        } catch (SPARQLValidationException ex) {
             LOGGER.warn("Error while enable SHACL validation:");
             LOGGER.warn(ex.getMessage());
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             LOGGER.error("Error while initializing SHACL", ex);
         } finally {
             sparql.dispose(sparqlService);
@@ -173,16 +175,32 @@ public class SPARQLModule extends OpenSilexModule {
         factory.dispose(sparql);
     }
 
+    private static final String ONTOLOGY_STORE_LOAD_SUCCESS_MSG = "Ontology store loaded with success. Duration: {} ms";
+
+
     private static void initOntologyStore(OpenSilex openSilex, SPARQLService sparql) throws SPARQLException, OpenSilexModuleNotFoundException {
 
-        if(sparql == null){
+        if (sparql == null) {
             return;
         }
-        ontologyStore = new DefaultOntologyStore(sparql,openSilex);
-        ontologyStore.load();
+
+        SPARQLConfig sparqlConfig = openSilex.getModuleConfig(SPARQLModule.class, SPARQLConfig.class);
+
+        if (sparqlConfig.enableOntologyStore()) {
+            Instant begin = Instant.now();
+
+            ontologyStore = new DefaultOntologyStore(sparql, openSilex);
+            ontologyStore.load();
+
+            long durationMs = Duration.between(begin, Instant.now()).toMillis();
+            LOGGER.info(ONTOLOGY_STORE_LOAD_SUCCESS_MSG, durationMs);
+        } else {
+            ontologyStore = new NoOntologyStore(new OntologyDAO(sparql));
+        }
+
     }
 
-    public static OntologyStore getOntologyStoreInstance(){
+    public static OntologyStore getOntologyStoreInstance() {
         return ontologyStore;
     }
 
@@ -196,7 +214,7 @@ public class SPARQLModule extends OpenSilexModule {
         }
 
         SPARQLService sparql = factory.provide();
-        SPARQLModule.initOntologyStore(getOpenSilex(),sparql);
+        SPARQLModule.initOntologyStore(getOpenSilex(), sparql);
     }
 
 }

@@ -8,6 +8,7 @@ package org.opensilex.front.vueOwlExtension.types.data;
 import java.net.URI;
 import java.util.List;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
+import org.eclipse.rdf4j.model.vocabulary.TIME;
 import org.opensilex.front.vueOwlExtension.types.VueOntologyDataType;
 
 /**

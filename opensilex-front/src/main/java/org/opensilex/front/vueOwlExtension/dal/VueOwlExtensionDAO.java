@@ -43,7 +43,7 @@ public class VueOwlExtensionDAO {
             sparql.create(instanceExtension);
 
             ClassModel insertedInstance = sparql.getByURI(ClassModel.class,instance.getUri(),OpenSilex.DEFAULT_LANGUAGE);
-            CoreModule.getOntologyCacheInstance().addClass(insertedInstance);
+//            CoreModule.getOntologyCacheInstance().addClass(insertedInstance);
 
             sparql.commitTransaction();
         } catch (Exception ex) {
@@ -58,7 +58,7 @@ public class VueOwlExtensionDAO {
             sparql.update(instanceExtension);
 
             ClassModel updatedInstance = sparql.getByURI(ClassModel.class,instance.getUri(),OpenSilex.DEFAULT_LANGUAGE);
-            CoreModule.getOntologyCacheInstance().updateClass(updatedInstance);
+            // CoreModule.getOntologyCacheInstance().updateClass(updatedInstance);
 
             sparql.commitTransaction();
         } catch (Exception ex) {
@@ -71,7 +71,7 @@ public class VueOwlExtensionDAO {
             sparql.startTransaction();
             sparql.delete(ClassModel.class, classURI);
             sparql.delete(VueClassExtensionModel.class, classURI);
-            CoreModule.getOntologyCacheInstance().removeClass(classURI);
+            // CoreModule.getOntologyCacheInstance().removeClass(classURI);
             sparql.commitTransaction();
         } catch (Exception ex) {
             sparql.rollbackTransaction(ex);
@@ -92,12 +92,14 @@ public class VueOwlExtensionDAO {
         objectTypes = new ArrayList<>();
         typesByURI = new HashMap<>();
 
-        ServiceLoader.load(VueOntologyType.class, OpenSilex.getClassLoader())
-                .forEach((type -> {
-                    if (!type.isDisabled()) {
-                        typesByURI.put(SPARQLDeserializers.getExpandedURI(type.getTypeUri()), type);
-                    }
-                }));
+        ServiceLoader<VueOntologyType> loader = ServiceLoader.load(VueOntologyType.class, OpenSilex.getClassLoader());
+        loader.reload();
+
+        loader.forEach(type -> {
+            if (!type.isDisabled()) {
+                typesByURI.put(SPARQLDeserializers.getExpandedURI(type.getTypeUri()), type);
+            }
+        });
 
         for (VueOntologyType ontologyType : typesByURI.values()) {
             if (ontologyType instanceof VueOntologyDataType) {

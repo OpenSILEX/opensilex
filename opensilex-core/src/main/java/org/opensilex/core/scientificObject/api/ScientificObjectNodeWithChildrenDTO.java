@@ -6,12 +6,15 @@
 package org.opensilex.core.scientificObject.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 
 /**
  *
  * @author vmigot
  */
+
+@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "child_count", "creation_date", "destruction_date", "geometry"})
 public class ScientificObjectNodeWithChildrenDTO extends ScientificObjectNodeDTO {
 
     @JsonProperty("child_count")

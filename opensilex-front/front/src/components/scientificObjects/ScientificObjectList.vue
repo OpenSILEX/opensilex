@@ -288,9 +288,9 @@ export default class ScientificObjectList extends Vue {
       "opensilex.ScientificObjectsService"
     );
     return scientificObjectsService.searchScientificObjects(
+      this.filter.name,
       this.filter.experiment,
       this.filter.types,
-      this.filter.name,
       undefined,
       this.filter.germplasm,
       this.filter.factorLevels,

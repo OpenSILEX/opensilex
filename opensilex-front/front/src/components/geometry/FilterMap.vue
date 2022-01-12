@@ -147,9 +147,9 @@ export default class FilterMap extends Vue {
       this.$opensilex
           .getService("opensilex.ScientificObjectsService")
           .searchScientificObjects(
+              "", // pattern?: string,
               this.experiment, // experiment uri?: string,
               [], // rdfTypes?: Array<string>,
-              "", // pattern?: string,
               undefined, // parentURI?: string,
               germplasm || undefined,
               factorLevels, // factorLevels?: Array<string>,
@@ -310,7 +310,7 @@ export default class FilterMap extends Vue {
 
     this.$opensilex
         .getService(scientificObjectsService)
-        .searchScientificObjectsWithGeometryListByUris(this.experiment)
+        .searchScientificObjectsWithGeometryListByUris(this.experiment, undefined, undefined)
         .then((http: HttpResponse<OpenSilexResponse<Array<ScientificObjectNodeDTO>>>) => {
               const res = http.response.result as any;
               res.forEach(element => {

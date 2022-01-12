@@ -281,7 +281,7 @@ public class OntologyAPI {
 
         OntologyStore ontologyStore = SPARQLModule.getOntologyStoreInstance();
         AbstractPropertyModel<?> model = ontologyStore.getProperty(propertyURI, propertyType, domainType, currentUser.getLanguage());
-        return new SingleObjectResponse<>(new RDFPropertyDTO(model)).getResponse();
+        return new SingleObjectResponse<>(new RDFPropertyDTO(model,currentUser.getLanguage())).getResponse();
     }
 
     @DELETE

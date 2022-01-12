@@ -1,6 +1,7 @@
 package org.opensilex.sparql.csv;
 
 import com.univocity.parsers.csv.CsvParser;
+import org.apache.commons.collections4.trie.PatriciaTrie;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -53,7 +54,7 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
         this.objectConstructor = objectConstructor;
 
         this.ontologyStore = SPARQLModule.getOntologyStoreInstance();
-        this.batchSize = 1024;
+        this.batchSize = 4096;
 
         try {
             this.classURI = URIDeserializer.formatURI(sparql.getMapperIndex().getForClass(objectClass).getRDFType().getURI());
@@ -110,6 +111,9 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
             int totalRowIdx = 0;
             Node graphNode = graph != null ? NodeFactory.createURI(graph.toString()) : null;
 
+            Map<String, Integer> filledUrisToIndexesInChunk = new PatriciaTrie<>();
+            Map<String, Integer> generatedUrisToIndexesInChunk = new PatriciaTrie<>();
+
             while (rowIterator.hasNext()) {
 
                 // read csv file by batch : perform validation and insertion by batch (by using transaction)
@@ -118,11 +122,15 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
 
                 while (chunkRowIdx++ < batchSize && rowIterator.hasNext()) {
                     String[] row = rowIterator.next();
-                    modelChunk.add(getModel(totalRowIdx, row, columns, restrictionValidator));
+                    T model = getModel(totalRowIdx, row, columns, restrictionValidator);
+                    modelChunk.add(model);
+
+                    generateURI(model, totalRowIdx, restrictionValidator.getValidationModel(), filledUrisToIndexesInChunk, generatedUrisToIndexesInChunk);
                     totalRowIdx++;
                 }
 
                 // #TODO check URI uniqueness
+                checkUrisUniqueness(filledUrisToIndexesInChunk,generatedUrisToIndexesInChunk, restrictionValidator.getValidationModel());
 
 
                 if (restrictionValidator.validateValuesByType() && !validOnly) {
@@ -145,9 +153,34 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
 
     }
 
-    private void validateUriUniqueness(List<T> models, Set<URI> locallyGeneratedUri)
+    private void checkUrisUniqueness(Map<String, Integer> filledUrisToIndexesInChunk, Map<String, Integer> generatedUrisToIndexesInChunk, CSVValidationModel validationModel) {
 
-    private void readUriAndType(int rowIdx, String[] row, T model, CSVValidationModel csvValidationModel) throws SPARQLException {
+        //#TODO performs SPARQL query for filledUrisToIndexesInChunk, error if some URI already exist
+        // first way (Uri<->Integer mapping) map existing uris from SPARQL results with map
+        // second way : (array of int) return a boolean array (true/false) and apply "mask" on array */
+
+        // #TODO performs SPARQL query for generatedUrisToIndexesInChunk, for each already existing URIS, regenerate and retry until no duplicate (with a bound)
+
+    }
+
+    private void generateURI(T model, int rowIdx, CSVValidationModel validation, Map<String, Integer> filledUrisToIndexesInChunk, Map<String, Integer> generatedUrisToIndexesInChunk) {
+
+        // generate URI after relations building
+        if (model.getUri() == null) {
+            try {
+                URI generated = model.generateURI(generationPrefix, model, 0);
+                model.setUri(generated);
+                generatedUrisToIndexesInChunk.put(generated.toString(), rowIdx);
+            } catch (URISyntaxException e) {
+                validation.addInvalidURIError(new CSVCell(rowIdx, CSV_URI_INDEX, e.getMessage(), CSV_URI_KEY));
+            }
+        } else {
+            filledUrisToIndexesInChunk.put(model.getUri().toString(), rowIdx);
+        }
+    }
+
+
+    private void readUriAndType(int rowIdx, String[] row, T model, CSVValidationModel csvValidationModel) {
 
         String uriStr = row[CSV_URI_INDEX];
         try {
@@ -201,16 +234,6 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
         T model = objectConstructor.get();
         readUriAndType(rowIdx, row, model, validation);
         readRelations(rowIdx, row, columns, model, restrictionValidator);
-
-        // generate URI after relations building
-        if(model.getUri() == null){
-            try {
-                URI generated = model.generateURI(generationPrefix,model,0);
-                model.setUri(generated);
-            }catch (URISyntaxException e){
-                validation.addInvalidURIError(new CSVCell(rowIdx, CSV_URI_INDEX, e.getMessage(), CSV_URI_KEY));
-            }
-        }
 
         return model;
     }

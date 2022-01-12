@@ -20,11 +20,9 @@
                 <opensilex-Icon icon="ik#ik-target" class="icon-title"/>
             </template>
 
-            <!--      <template v-slot:help>-->
-            <!--        <opensilex-EventHelpTableView>-->
-            <!--            -->
-            <!--        </opensilex-EventHelpTableView>-->
-            <!--      </template>-->
+          <template v-slot:help>
+            <opensilex-DeviceImportHelp></opensilex-DeviceImportHelp>
+          </template>
 
             <template v-slot:generator>
                 <b-col cols="2">

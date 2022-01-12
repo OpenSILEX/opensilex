@@ -83,7 +83,7 @@ public class OntologyAPI {
             @ApiResponse(code = 200, message = "Return sub-classes tree", response = ResourceTreeDTO.class, responseContainer = "List")
     })
     public Response getSubClassesOf(
-            @ApiParam(value = "Parent RDF class URI") @QueryParam("parent_type") @ValidURI URI parentClass,
+            @ApiParam(value = "Parent RDF class URI") @QueryParam("parent_type") @ValidURI @NotNull URI parentClass,
             @ApiParam(value = "Flag to determine if only sub-classes must be include in result") @DefaultValue("false") @QueryParam("ignoreRootClasses") boolean ignoreRootClasses
     ) throws Exception {
         return this.searchSubClassesOf(parentClass, null, ignoreRootClasses);
@@ -167,11 +167,11 @@ public class OntologyAPI {
             }
             model.setRange(parentModel.getRange());
         } else {
-            parentModel = CoreModule.getOntologyCacheInstance().getTopDatatypePropertyModel();
+//            parentModel = SPARQLModule.getOntologyStoreInstance().getTopDatatypePropertyModel();
             model.setRange(dto.getRange());
         }
         dto.toModel(model);
-        model.setParent(parentModel);
+//        model.setParent(parentModel);
 
         return model;
     }
@@ -187,12 +187,12 @@ public class OntologyAPI {
             }
             rangeModel = parentModel.getRange();
         } else {
-            parentModel = CoreModule.getOntologyCacheInstance().getTopObjectPropertyModel();
+//            parentModel = CoreModule.getOntologyCacheInstance().getTopObjectPropertyModel();
             rangeModel = new ClassModel();
             rangeModel.setUri(dto.getRange());
         }
         dto.toModel(model);
-        model.setParent(parentModel);
+//        model.setParent(parentModel);
         model.setRange(rangeModel);
         return model;
     }

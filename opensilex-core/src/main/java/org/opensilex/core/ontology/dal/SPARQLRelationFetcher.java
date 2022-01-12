@@ -13,9 +13,8 @@ import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.sparql.syntax.ElementOptional;
 import org.apache.jena.sparql.syntax.ElementTriplesBlock;
 import org.opensilex.OpenSilex;
-import org.opensilex.core.CoreModule;
-import org.opensilex.core.ontology.dal.cache.OntologyCache;
 import org.opensilex.core.ontology.dal.cache.OntologyCacheException;
+import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
@@ -24,7 +23,7 @@ import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.ontology.dal.AbstractPropertyModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
-import org.opensilex.sparql.ontology.dal.PropertyModel;
+import org.opensilex.sparql.ontology.store.OntologyStore;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
@@ -70,7 +69,7 @@ public class SPARQLRelationFetcher<T extends SPARQLResourceModel> {
 
         this.sparql = sparql;
         SPARQLClassObjectMapper<T> mapper = sparql.getMapperIndex().getForClass(objectClass);
-        OntologyCache ontologyCache = CoreModule.getOntologyCacheInstance();
+        OntologyStore ontologyStore = SPARQLModule.getOntologyStoreInstance();
 
         this.graph = graph;
         this.graphUri = graph != null ? new URI(graph.getURI()) : null;
@@ -95,7 +94,7 @@ public class SPARQLRelationFetcher<T extends SPARQLResourceModel> {
         for (URI type : types) {
 
             // get class from OntologyCache and compute stream of data/object property
-            ClassModel classModel = ontologyCache.getClassModel(type, OpenSilex.DEFAULT_LANGUAGE);
+            ClassModel classModel = ontologyStore.getClassModel(type, null, OpenSilex.DEFAULT_LANGUAGE);
             Stream<AbstractPropertyModel<?>> propertyStream = Stream.concat(
                     classModel.getDatatypeProperties().values().stream(),
                     classModel.getObjectProperties().values().stream()

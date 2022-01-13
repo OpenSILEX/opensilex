@@ -180,7 +180,7 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
     }
 
 
-    private void readUriAndType(int rowIdx, String[] row, T model, CSVValidationModel csvValidationModel) {
+    private void readUriAndType(int rowIdx, String[] row, T model, CSVValidationModel csvValidationModel) throws SPARQLException {
 
         String uriStr = row[CSV_URI_INDEX];
         try {

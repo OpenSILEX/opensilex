@@ -106,18 +106,36 @@
       helpMessage="DocumentForm.deprecated-help"
     ></opensilex-CheckboxForm>
 
+    <!-- switch -->
+    <b-form-radio-group
+        label="#Document content"
+        v-model="documentContentType"
+        v-if="!editMode"
+    >
+      <b-form-radio :value="DOCUMENT_CONTENT_TYPE_FILE">#Upload a file</b-form-radio>
+      <b-form-radio :value="DOCUMENT_CONTENT_TYPE_EXTERNAL_SOURCE">#Link an external source</b-form-radio>
+    </b-form-radio-group>
+
     <!-- File -->
     <opensilex-FileInputForm
-      v-if="!editMode"
+      v-if="!editMode && documentContentType === DOCUMENT_CONTENT_TYPE_FILE"
       :file.sync="form.file"
       label="DocumentForm.file"
       type="file"
       helpMessage="DocumentForm.file-help"
       browse-text="DocumentForm.browse"
       rules="size:100000"
-      :required="true"
     ></opensilex-FileInputForm>
 
+    <!-- Source -->
+    <opensilex-InputForm
+      v-if="!editMode && documentContentType === DOCUMENT_CONTENT_TYPE_EXTERNAL_SOURCE"
+      label="#External source"
+      type="text"
+      rules="url"
+      :value.sync="form.description.source"
+    >
+    </opensilex-InputForm>
   </b-form>
 </template>
 
@@ -128,6 +146,10 @@ import Vue from "vue";
 import { DocumentsService } from "opensilex-core/index"; 
 import { OpenSilexResponse } from "../../lib/HttpResponse";
 
+type DocumentContentTypeFile = 'file';
+type DocumentContentTypeExternalSource = 'external-source';
+type DocumentContentType = DocumentContentTypeFile | DocumentContentTypeExternalSource;
+
 @Component
 export default class DocumentForm extends Vue {
   $opensilex: any;
@@ -136,6 +158,10 @@ export default class DocumentForm extends Vue {
   $t: any;
   file;
   uriGenerated = true;
+
+  DOCUMENT_CONTENT_TYPE_FILE: DocumentContentTypeFile = 'file';
+  DOCUMENT_CONTENT_TYPE_EXTERNAL_SOURCE: DocumentContentTypeExternalSource = 'external-source';
+  documentContentType: DocumentContentType = this.DOCUMENT_CONTENT_TYPE_FILE;
 
   get user() {
     return this.$store.state.user;
@@ -158,7 +184,8 @@ export default class DocumentForm extends Vue {
           authors: undefined,
           language: undefined,
           deprecated: undefined,
-          keywords: undefined
+          keywords: undefined,
+          source: undefined
         },
         file: undefined
       };

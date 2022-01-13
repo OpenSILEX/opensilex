@@ -104,6 +104,13 @@ public class DocumentModel extends SPARQLResourceModel implements ClassURIGenera
     String identifier;
     public static final String IDENTIFIER_FIELD = "identifier";
 
+    @SPARQLProperty(
+        ontology = DCTerms.class,
+        property = "source"
+    )
+    URI source;
+    public static final String SOURCE_FIELD = "source";
+
     public List<URI> getTargets() {
         return targets;
     }
@@ -182,6 +189,14 @@ public class DocumentModel extends SPARQLResourceModel implements ClassURIGenera
 
     public void setIdentifier(String identifier) {
         this.identifier = identifier;
+    }
+
+    public URI getSource() {
+        return source;
+    }
+
+    public void setSource(URI source) {
+        this.source = source;
     }
 
     @Override

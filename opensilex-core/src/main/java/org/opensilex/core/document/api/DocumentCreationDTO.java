@@ -6,17 +6,10 @@
 //******************************************************************************
 package org.opensilex.core.document.api;
 
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
 import org.opensilex.core.document.dal.DocumentModel;
-import org.opensilex.security.group.dal.GroupModel;
-import org.opensilex.security.user.dal.UserModel;
+
 import java.io.IOException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import javax.validation.constraints.NotNull;
-import org.opensilex.server.rest.validation.Required;
-import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 
 /**
@@ -39,6 +32,7 @@ public class DocumentCreationDTO extends DocumentDTO {
         model.setDescription(getDescription());
         model.setSubject(getSubject());
         model.setDeprecated(Boolean.toString(getDeprecated()));
+        model.setSource(getSource());
         return model;
     }
 

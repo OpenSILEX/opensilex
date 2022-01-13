@@ -287,7 +287,7 @@ public class ScientificObjectAPI {
     @GET
     @Path("children")
     @ApiOperation(
-            value = "Get list of a scientific object children",
+            value = "Get list of a scientific object children in an experiment",
             notes = "If the parent field is empty, the service return all root elements \n\n" +
                     "The scientific objects in response have a field with the count of their children \n\n"
     )

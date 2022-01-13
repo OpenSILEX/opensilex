@@ -28,6 +28,7 @@ import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OwlRestrictionModel;
 import org.opensilex.sparql.ontology.store.OntologyStore;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
+import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
 
@@ -45,7 +46,7 @@ public abstract class OwlRestrictionValidator<T extends ValidationContext> {
     protected final OntologyStore ontologyStore;
 
     protected boolean isValid;
-//    protected Map<String, List<String>> valuesByTypeToCheck;
+    //    protected Map<String, List<String>> valuesByTypeToCheck;
     protected Map<String, Map<String, List<T>>> validationByTypesAndValues;
 
     protected OwlRestrictionValidator(SPARQLService sparql, OntologyStore ontologyStore) {
@@ -159,8 +160,8 @@ public abstract class OwlRestrictionValidator<T extends ValidationContext> {
             if (isValid) {
                 model.addRelation(graph, property, deserializer.getClassType(), value);
 
-                if(SPARQLDeserializers.compareURIs(property.toString(), RDFS.label.getURI())){
-                    if(SPARQLNamedResourceModel.class.isAssignableFrom(model.getClass())){
+                if (SPARQLDeserializers.compareURIs(property.toString(), RDFS.label.getURI())) {
+                    if (SPARQLNamedResourceModel.class.isAssignableFrom(model.getClass())) {
                         ((SPARQLNamedResourceModel<?>) model).setName(value);
                     }
                 }
@@ -215,7 +216,7 @@ public abstract class OwlRestrictionValidator<T extends ValidationContext> {
             Map<String, List<T>> validationByValue = entry.getValue();
 
             // build SPARQL query for validating values according type
-            SelectBuilder checkQuery = getCheckUriListExistQuery(type, validationByValue.keySet());
+            SelectBuilder checkQuery = sparql.getCheckUriListExistQuery(type, validationByValue.keySet());
 
             // Use iterator to lookup over SPARQL results by keeping match with map values
             Iterator<Map.Entry<String, List<T>>> validationsByValue = validationByValue.entrySet().iterator();
@@ -224,7 +225,7 @@ public abstract class OwlRestrictionValidator<T extends ValidationContext> {
             returned by the repository in the same order as incoming URI from VALUES clause
             e.g. : VALUES ?uri (:uri_1 :uri_2) -> [ (:uri_1,true/false),(:uri_2,true/false) ]
             */
-            sparql.executeSelectQueryAsStream(checkQuery).forEach(result -> {
+            sparql.executeSelectQueryAsStream(checkQuery).forEach((SPARQLResult result) -> {
 
                 boolean uriExists = Boolean.parseBoolean(result.getStringValue(SPARQLService.EXISTING_VAR));
                 if (!uriExists) {
@@ -241,40 +242,5 @@ public abstract class OwlRestrictionValidator<T extends ValidationContext> {
         return valid.get();
     }
 
-    /**
-     * @param type the rdf:type
-     * @param uris the {@link Set} of URI to check in {@link String} representation
-     * @return a {@link SelectBuilder} which when executed, indicate for each element of uris, if the element is an instance of type
-     * @apiNote The produced SPARQL query look likes
-     * <code>
-     * PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-     * SELECT  (EXISTS {
-     * ?rdfType rdfs:subClassOf* :some_rdf_type.
-     * ?uri  a  ?rdfType
-     * } AS ?existing)
-     * WHERE{
-     * VALUES ?uri { :uri_1 :uri_2 :uri_n }
-     * }
-     * </code>
-     */
-    private SelectBuilder getCheckUriListExistQuery(String type, Set<String> uris) {
-
-        Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
-        Var typeVar = makeVar(SPARQLResourceModel.TYPE_FIELD);
-        Var existing = makeVar(SPARQLService.EXISTING_VAR);
-
-        WhereBuilder where = new WhereBuilder()
-                .addWhere(typeVar, Ontology.subClassAny, NodeFactory.createURI(URIDeserializer.getExpandedURI(type)) )
-                .addWhere(uriVar, RDF.type, typeVar);
-
-        // add EXIST {} expression as var of SELECT
-        SelectBuilder select = new SelectBuilder()
-                .addVar(SPARQLQueryHelper.getExprFactory().exists(where), existing);
-
-        // append VALUES ?uri  :uri_1 ... :uri_n
-        SPARQLQueryHelper.addWhereUriStringValues(select, uriVar.getVarName(), uris.stream(), true, uris.size());
-
-        return select;
-    }
 
 }

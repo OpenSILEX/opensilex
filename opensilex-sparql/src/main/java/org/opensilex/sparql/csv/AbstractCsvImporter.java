@@ -3,6 +3,7 @@ package org.opensilex.sparql.csv;
 import com.univocity.parsers.csv.CsvParser;
 import org.apache.commons.collections4.trie.PatriciaTrie;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.opensilex.sparql.SPARQLModule;
@@ -15,6 +16,7 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OwlRestrictionModel;
 import org.opensilex.sparql.ontology.store.OntologyStore;
+import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.uri.generation.ClassURIGenerator;
 import org.opensilex.utils.ClassUtils;
@@ -130,7 +132,7 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
                 }
 
                 // #TODO check URI uniqueness
-                checkUrisUniqueness(filledUrisToIndexesInChunk,generatedUrisToIndexesInChunk, restrictionValidator.getValidationModel());
+                checkUrisUniqueness(filledUrisToIndexesInChunk, generatedUrisToIndexesInChunk, restrictionValidator.getValidationModel());
 
 
                 if (restrictionValidator.validateValuesByType() && !validOnly) {
@@ -153,11 +155,24 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
 
     }
 
-    private void checkUrisUniqueness(Map<String, Integer> filledUrisToIndexesInChunk, Map<String, Integer> generatedUrisToIndexesInChunk, CSVValidationModel validationModel) {
+    private void checkUrisUniqueness(Map<String, Integer> filledUrisToIndexesInChunk, Map<String, Integer> generatedUrisToIndexesInChunk, CSVValidationModel validationModel) throws SPARQLException {
 
-        //#TODO performs SPARQL query for filledUrisToIndexesInChunk, error if some URI already exist
         // first way (Uri<->Integer mapping) map existing uris from SPARQL results with map
         // second way : (array of int) return a boolean array (true/false) and apply "mask" on array */
+
+        Iterator<Map.Entry<String, Integer>> entryIterator = filledUrisToIndexesInChunk.entrySet().iterator();
+
+        SelectBuilder checkUrisQuery = sparql.getCheckUriListExistQuery(classURI.toString(), filledUrisToIndexesInChunk.keySet());
+        sparql.executeSelectQueryAsStream(checkUrisQuery).forEach((SPARQLResult result) -> {
+
+            boolean uriExists = Boolean.parseBoolean(result.getStringValue(SPARQLService.EXISTING_VAR));
+            if (uriExists) {
+                Map.Entry<String, Integer> entry = entryIterator.next();
+                validationModel.addAlreadyExistingURIError(new CSVCell(entry.getValue(), CSV_URI_INDEX, entry.getKey(), CSV_URI_KEY));
+            } else {
+                entryIterator.next();
+            }
+        });
 
         // #TODO performs SPARQL query for generatedUrisToIndexesInChunk, for each already existing URIS, regenerate and retry until no duplicate (with a bound)
 
@@ -254,7 +269,7 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
 
             if (columns.length > 0) {
                 readBody(rowIterator, columns, restrictionValidator, validOnly);
-            }else{
+            } else {
                 csvValidationModel.addEmptyHeader(0);
             }
 

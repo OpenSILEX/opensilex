@@ -8,6 +8,7 @@ package org.opensilex.nosql.mongodb;
 
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
+import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.ClientSession;
 import com.mongodb.client.DistinctIterable;
 import com.mongodb.client.FindIterable;
@@ -357,6 +358,22 @@ public class MongoDBService extends BaseService {
         DistinctIterable<T> queryResult = collection.distinct(field, filter, resultClass);
 
         for (T res : queryResult) {
+            results.add(res);
+        }
+
+        return results;
+    }
+    
+    public <Document> Set<Document> aggregate( 
+            String collectionName,
+             List aggregationArgs) {
+        LOGGER.debug("MONGO SEARCH - Collection : " + collectionName + " - Aggregation pipeline : " + aggregationArgs.toString());
+        Set<Document> results = new HashSet<>();
+        MongoCollection collection = db.getCollection(collectionName);
+
+        AggregateIterable<Document> aggregate = collection.aggregate(aggregationArgs);
+
+        for (Document res : aggregate) {
             results.add(res);
         }
 

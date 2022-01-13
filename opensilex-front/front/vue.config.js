@@ -21,9 +21,9 @@ module.exports = {
             extensions: ['.md'],
             alias: {
                 'vue$': path.resolve('../../node_modules/vue/dist/vue.esm.js'),
-                "opensilex-security": path.resolve("../../opensilex-security/front/src"),
-                "opensilex-core": path.resolve("../../opensilex-core/front/src"),
-                "opensilex-phis": path.resolve("../../opensilex-phis/front/src")
+                "opensilex-security": path.resolve(__dirname, "../../opensilex-security/front/src"),
+                "opensilex-core": path.resolve(__dirname,"../../opensilex-core/front/src"),
+                "opensilex-phis": path.resolve(__dirname,"../../opensilex-phis/front/src")
             }
         },
         performance: {

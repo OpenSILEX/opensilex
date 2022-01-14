@@ -222,11 +222,11 @@ export default class InfrastructureView extends Vue {
 en:
   InfrastructureView:
     description: Manage and configure organizations
-    organizations: Organizations
+    organizations: Organizations and sites
     facilities: Facilities
 fr:
   InfrastructureView:
     description: Gérer et configurer les organisations
-    organizations: Organisations
+    organizations: Organisations et sites
     facilities: Installations techniques
 </i18n>

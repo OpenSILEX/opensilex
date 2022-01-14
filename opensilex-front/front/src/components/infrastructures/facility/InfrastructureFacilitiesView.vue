@@ -274,5 +274,5 @@ fr:
     add: Ajouter une installation technique
     facilities: Installations techniques
     infrastructure-facility-help: "Les installations techniques correspondent aux différentes installations fixes d'une organisation.
-                                  Il peux s'agir de serres, parcelles cadastrales, chambres de culture, ..."
+                                  Il peut s'agir de serres, parcelles cadastrales, chambres de culture, ..."
 </i18n>

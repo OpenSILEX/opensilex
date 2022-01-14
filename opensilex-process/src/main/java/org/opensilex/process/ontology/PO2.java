@@ -12,12 +12,12 @@ import org.opensilex.sparql.utils.Ontology;
  * @author Emilie Fernandez
  */
 public class PO2 {
-    public static final String DOMAIN = "http://opendata.inrae.fr/po2";
-    public static final String PREFIX = "po2";
+    public static final String DOMAIN = "http://opendata.inra.fr/PO2";
+    public static final String PREFIX = "PO2";
     /**
      * The namespace of the vocabulary as a string
      */
-    public static final String NS = DOMAIN + "#";
+    public static final String NS = DOMAIN + "/";
     /**
      * The namespace of the vocabulary as a string
      *
@@ -34,11 +34,13 @@ public class PO2 {
     public static final Property longString = Ontology.property(NS, "longString");
 
     // ---- PROCESS ----
-    public static final Resource Transformation_Process = Ontology.resource(NS, "Process");
+    public static final Resource Transformation_Process = Ontology.resource(NS, "Transformation_Process");
 
     // ---- Step ----
-    public static final Resource Step = Ontology.resource(NS, "Step");
+    public static final Resource step = Ontology.resource(NS, "step");
     public static final Property hasForStep = Ontology.property(NS, "hasForStep");
     public static final Property hasInput = Ontology.property(NS, "hasInput");
     public static final Property hasOutput = Ontology.property(NS, "hasOutput");
+    public static final Property isComposedOf = Ontology.property(NS, "isComposedOf");
+
 }

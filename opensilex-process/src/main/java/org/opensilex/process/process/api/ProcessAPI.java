@@ -45,6 +45,8 @@ import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import java.io.*; 
+import org.opensilex.server.rest.validation.date.ValidOffsetDateTime;
+import java.time.OffsetDateTime;
 
 /**
  * @author Fernandez Emilie
@@ -210,9 +212,9 @@ public class ProcessAPI {
         @ApiResponse(code = 200, message = "Return processes list", response = ProcessGetDTO.class, responseContainer = "List")
     })
     public Response searchProcesses(
-            @ApiParam(value = "Regex pattern for filtering list by name", example = "procédé 23") @QueryParam("name") String name,
-            @ApiParam(value = "Regex pattern for filtering list by creation date", example = "2020") @QueryParam("creationDate") String creationDate,
-            @ApiParam(value = "Regex pattern for filtering list by destruction date", example = "2020") @QueryParam("destructionDate") String destructionDate,
+            @ApiParam(value = "Regex pattern for filtering list by name", example = "methanization") @QueryParam("name") String name,
+            @ApiParam(value = "Regex pattern for filtering list by start date", example = "2022-01-08T12:00:00+01:00") @QueryParam("start") @ValidOffsetDateTime String start,
+            @ApiParam(value = "Regex pattern for filtering list by end date", example = "2022-01-08T12:00:00+01:00") @QueryParam("end") @ValidOffsetDateTime String end,
             @ApiParam(value = "Search by step", example = "lbe:id/step/mixing") @QueryParam("step") List<URI> step,
             @ApiParam(value = "List of fields to sort as an array of fieldTitle=asc|desc", example = "date=asc") @DefaultValue("date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
@@ -222,8 +224,8 @@ public class ProcessAPI {
         ListWithPagination<ProcessModel> resultList = processDAO.searchProcess(
                 currentUser,
                 name,
-                creationDate,
-                destructionDate,
+                start != null ? OffsetDateTime.parse(start) : null,
+                end != null ? OffsetDateTime.parse(end) : null,
                 step,
                 orderByList,
                 page,

@@ -22,6 +22,8 @@ import org.opensilex.uri.generation.ClassURIGenerator;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.sparql.model.time.Time;
+import org.opensilex.sparql.model.time.InstantModel;
 
 
 /**
@@ -29,27 +31,41 @@ import org.opensilex.core.ontology.Oeso;
  */
 @SPARQLResource(
         ontology = PO2.class,
-        resource = "Step",
+        resource = "step",
         graph = ProcessModel.GRAPH,
         prefix = "step"
 )
 public class StepModel extends SPARQLNamedResourceModel<StepModel> implements ClassURIGenerator<StepModel> {
 
-    public static final String GRAPH = "step";
+    public static final String GRAPH = "process";
 
     @SPARQLProperty(
-            ontology = Oeso.class,
-            property = "startDate"
+            ontology = Time.class,
+            property = "hasBeginning"
     )
-    LocalDate startDate;
-    public static final String START_DATE_FIELD = "startDate";
+    private InstantModel start;
+    public static final String START_FIELD = "start";
 
     @SPARQLProperty(
-            ontology = Oeso.class,
-            property = "endDate"
+            ontology = Time.class,
+            property = "hasEnd"
     )
-    LocalDate endDate;
-    public static final String END_DATE_FIELD = "endDate";
+    private InstantModel end;
+    public static final String END_FIELD = "end";
+
+    @SPARQLProperty(
+        ontology = Time.class,
+        property = "after"
+    )
+    URI after;
+    public static final String AFTER_FIELD = "after";
+
+    @SPARQLProperty(
+            ontology = Time.class,
+            property = "before"
+    )
+    URI before;
+    public static final String BEFORE_FIELD = "before";
 
     @SPARQLProperty(
             ontology = RDFS.class,
@@ -70,29 +86,38 @@ public class StepModel extends SPARQLNamedResourceModel<StepModel> implements Cl
         property = "hasOutput"
     )
     List<ScientificObjectModel> output;
-    public static final String OUTPUT_FIELD = "output";
+    public static final String OUTPUT_FIELD = "output";   
 
-    @SPARQLProperty(
-            ontology = Oeso.class,
-            property = "usesFacility"
-    )
-    List<InfrastructureFacilityModel> facilities;
-    public static final String FACILITY_FIELD = "facilities";       
-
-    public LocalDate getStartDate() {
-        return startDate;
+    public InstantModel getStart() {
+        return start;
     }
 
-    public void setStartDate(LocalDate startDate) {
-        this.startDate = startDate;
+    public void setStart(InstantModel start) {
+        this.start = start;
     }
 
-    public LocalDate getEndDate() {
-        return endDate;
+    public InstantModel getEnd() {
+        return end;
     }
 
-    public void setEndDate(LocalDate endDate) {
-        this.endDate = endDate;
+    public void setEnd(InstantModel end) {
+        this.end = end;
+    }
+
+    public URI getAfter() {
+        return after;
+    }
+
+    public void setAfter(URI after) {
+        this.after = after;
+    }
+
+    public URI getBefore() {
+        return before;
+    }
+
+    public void setBefore(URI before) {
+        this.before = before;
     }
 
     public String getDescription() {
@@ -117,13 +142,5 @@ public class StepModel extends SPARQLNamedResourceModel<StepModel> implements Cl
 
     public void setOutput(List<ScientificObjectModel> output) {
         this.output = output;
-    }
-
-    public List<InfrastructureFacilityModel> getFacilities() {
-        return facilities;
-    }
-
-    public void setFacilities(List<InfrastructureFacilityModel> facilities) {
-        this.facilities = facilities;
     }
 }

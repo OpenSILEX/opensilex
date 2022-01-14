@@ -9,9 +9,11 @@ package org.opensilex.process.process.api;
 import org.opensilex.process.process.dal.ProcessModel;
 import org.opensilex.process.process.dal.StepModel;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
-import org.opensilex.core.organisation.dal.InfrastructureModel;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.sparql.model.time.InstantModel;
+import java.time.OffsetDateTime;
+import org.apache.commons.lang3.StringUtils;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,19 +28,33 @@ public class ProcessCreationDTO extends ProcessDTO {
         model.setUri(getUri());
         model.setName(getName());
 
-        ExperimentModel expe = new ExperimentModel();
-        model.setExperiment(expe);
-        model.setCreationDate(getCreationDate());
-        model.setDestructionDate(getDestructionDate());
+        List<ExperimentModel> xpList = new ArrayList<>(experiment.size());
+        experiment.forEach((xpUri) -> {
+            ExperimentModel xpModel = new ExperimentModel();
+            xpModel.setUri(xpUri);
+            xpList.add(xpModel);
+        });
+        model.setExperiment(xpList);
+
+        if (!StringUtils.isEmpty(start)) {
+            InstantModel instant = new InstantModel();
+            instant.setDateTimeStamp(OffsetDateTime.parse(start));
+            model.setStart(instant);
+        }
+        if (!StringUtils.isEmpty(end)) {
+            InstantModel endInstant = new InstantModel();
+            endInstant.setDateTimeStamp(OffsetDateTime.parse(end));
+            model.setEnd(endInstant);
+        }
         model.setDescription(getDescription());
 
-        List<InfrastructureModel> infrastructuresList = new ArrayList<>(infrastructures.size());
-        infrastructures.forEach((URI u) -> {
-            InfrastructureModel infrastructure = new InfrastructureModel();
-            infrastructure.setUri(u);
-            infrastructuresList.add(infrastructure);
+        List<InfrastructureFacilityModel> facilityList = new ArrayList<>(facilities.size());
+        facilities.forEach((facilityUri) -> {
+            InfrastructureFacilityModel facilityModel = new InfrastructureFacilityModel();
+            facilityModel.setUri(facilityUri);
+            facilityList.add(facilityModel);
         });
-        model.setInfrastructures(infrastructuresList);
+        model.setFacilities(facilityList);
 
         List<UserModel> scientificList = new ArrayList<>(scientificSupervisors.size());
         scientificSupervisors.forEach((URI u) -> {

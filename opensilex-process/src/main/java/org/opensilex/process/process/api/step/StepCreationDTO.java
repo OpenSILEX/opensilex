@@ -7,8 +7,10 @@
 package org.opensilex.process.process.step.api;
 
 import org.opensilex.process.process.dal.StepModel;
-import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
+import org.opensilex.sparql.model.time.InstantModel;
+import java.time.OffsetDateTime;
+import org.apache.commons.lang3.StringUtils;
 import java.util.ArrayList;
 import java.net.URI;
 import java.util.List;
@@ -23,8 +25,18 @@ public class StepCreationDTO extends StepDTO {
         StepModel model = new StepModel();
         model.setUri(getUri());
         model.setName(getName());
-        model.setStartDate(getStartDate());
-        model.setEndDate(getEndDate());
+        if (!StringUtils.isEmpty(start)) {
+            InstantModel instant = new InstantModel();
+            instant.setDateTimeStamp(OffsetDateTime.parse(start));
+            model.setStart(instant);
+        }
+        if (!StringUtils.isEmpty(end)) {
+            InstantModel endInstant = new InstantModel();
+            endInstant.setDateTimeStamp(OffsetDateTime.parse(end));
+            model.setEnd(endInstant);
+        }
+        model.setAfter(getAfter());
+        model.setBefore(getBefore());
         model.setDescription(getDescription());
 
         List<ScientificObjectModel> inputList = new ArrayList<>(input.size());
@@ -42,14 +54,6 @@ public class StepCreationDTO extends StepDTO {
             outputList.add(soOutputModel);
         });
         model.setOutput(outputList);
-
-        List<InfrastructureFacilityModel> facilityList = new ArrayList<>(facilities.size());
-        facilities.forEach((facilityUri) -> {
-            InfrastructureFacilityModel facilityModel = new InfrastructureFacilityModel();
-            facilityModel.setUri(facilityUri);
-            facilityList.add(facilityModel);
-        });
-        model.setFacilities(facilityList);
 
         return model;
     }

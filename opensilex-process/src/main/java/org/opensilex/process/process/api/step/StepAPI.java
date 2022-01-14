@@ -45,6 +45,9 @@ import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import java.io.*; 
 import org.opensilex.security.authentication.NotFoundURIException;
+import org.opensilex.server.rest.validation.date.ValidOffsetDateTime;
+import java.time.OffsetDateTime;
+
 
 /**
  * @author Fernandez Emilie
@@ -179,9 +182,9 @@ public class StepAPI {
         @ApiResponse(code = 200, message = "Return steps list", response = StepGetDTO.class, responseContainer = "List")
     })
     public Response searchSteps(
-            @ApiParam(value = "Regex pattern for filtering list by name", example = "procédé 23") @QueryParam("name") String name,
-            @ApiParam(value = "Regex pattern for filtering list by start date", example = "2020") @QueryParam("startDate") String startDate,
-            @ApiParam(value = "Regex pattern for filtering list by end date", example = "2020") @QueryParam("endDate") String endDate,
+            @ApiParam(value = "Regex pattern for filtering list by name", example = "methanization") @QueryParam("name") String name,
+            @ApiParam(value = "Regex pattern for filtering list by start date", example = "2022-01-08T12:00:00+01:00") @QueryParam("start") @ValidOffsetDateTime String start,
+            @ApiParam(value = "Regex pattern for filtering list by end date", example = "2022-01-08T12:00:00+01:00") @QueryParam("end") @ValidOffsetDateTime String end,
             @ApiParam(value = "Search by input", example = "lbe:id/scientific-object/test/so-input_1") @QueryParam("input") List<URI> input,
             @ApiParam(value = "Search by output", example = "lbe:id/scientific-object/test/so-output_1") @QueryParam("output") List<URI> output,
             @ApiParam(value = "List of fields to sort as an array of fieldTitle=asc|desc", example = "date=asc") @DefaultValue("date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
@@ -192,8 +195,8 @@ public class StepAPI {
         ListWithPagination<StepModel> resultList = processDAO.searchStep(
                 currentUser,
                 name,
-                startDate,
-                endDate,
+                start != null ? OffsetDateTime.parse(start) : null,
+                end != null ? OffsetDateTime.parse(end) : null,
                 input,
                 output,
                 orderByList,

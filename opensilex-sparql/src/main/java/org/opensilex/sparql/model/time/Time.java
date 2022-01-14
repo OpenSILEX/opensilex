@@ -61,4 +61,10 @@ public class Time {
      * OWL Property which associate a xsd:dateTimeStamp datatype to an time:Instant
      */
     public static final Property inXSDDateTimeStamp = Ontology.property(NS,"inXSDDateTimeStamp");
+
+    public static final Resource TemporalEntity = Ontology.resource(NS,"TemporalEntity");
+    public static final Property after = Ontology.property(NS,"after");
+    public static final Property before = Ontology.property(NS,"before");
+
+
 }

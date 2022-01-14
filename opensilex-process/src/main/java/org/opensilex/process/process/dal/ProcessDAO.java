@@ -29,6 +29,9 @@ import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.core.Var;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 import org.opensilex.sparql.exceptions.SPARQLException;
+import java.time.OffsetDateTime;
+import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
+import org.apache.jena.sparql.syntax.ElementFilter;
 
 
 /**
@@ -38,6 +41,10 @@ import org.opensilex.sparql.exceptions.SPARQLException;
 public class ProcessDAO {
 
     protected final SPARQLService sparql;
+    public static final Var startVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getTimeStampVarName(ProcessModel.START_FIELD));
+    public static final Var endVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getTimeStampVarName(ProcessModel.END_FIELD));
+    public static final Var startStepVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getTimeStampVarName(StepModel.START_FIELD));
+    public static final Var endStepVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getTimeStampVarName(StepModel.END_FIELD));
 
     public ProcessDAO(SPARQLService sparql) {
         this.sparql = sparql;
@@ -64,7 +71,7 @@ public class ProcessDAO {
     public ProcessModel getProcessByURI(URI instanceURI) throws Exception {
         return sparql.getByURI(ProcessModel.class, instanceURI, null);
     }
-    public ListWithPagination<ProcessModel> searchProcess(UserModel user, String name, String creationDate, String destructionDate, List<URI> step, List<OrderBy> orderByList, int page, int pageSize) throws Exception {
+    public ListWithPagination<ProcessModel> searchProcess(UserModel user, String name, OffsetDateTime start, OffsetDateTime end, List<URI> step, List<OrderBy> orderByList, int page, int pageSize) throws Exception {
         
         return sparql.searchWithPagination(
             ProcessModel.class,
@@ -75,8 +82,7 @@ public class ProcessDAO {
                 ElementGroup multipleGraphGroupElem =  SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(rootElementGroup, processGraph);
                
                 appendNameProcessFilter(select, name);
-                appendCreationDateProcessFilter(select, creationDate);
-                appendDestructionDateProcessFilter(select, destructionDate);
+                appendTimeFilter(select, multipleGraphGroupElem, start, end);
                 appendStepProcessFilter(select, step);
             },
             orderByList,
@@ -91,16 +97,20 @@ public class ProcessDAO {
         }
     }
 
-    private void appendCreationDateProcessFilter(SelectBuilder select, String creationDate) throws Exception {
-        if (!StringUtils.isEmpty(creationDate)) {
-            select.addFilter(SPARQLQueryHelper.regexFilter(ProcessModel.CREATION_DATE_FIELD, creationDate));
-        }
-    }
+    protected void appendTimeFilter(SelectBuilder select, ElementGroup processGraphGroupElem, OffsetDateTime start, OffsetDateTime end
+    ) throws Exception {
+        select.getVars().removeIf(var ->
+                var.getVarName().equals(ProcessModel.START_FIELD) || var.getVarName().equals(ProcessModel.END_FIELD)
+        );
+        select.addVar(startVar);
+        select.addVar(endVar);
 
-    private void appendDestructionDateProcessFilter(SelectBuilder select, String destructionDate) throws Exception {
-        if (!StringUtils.isEmpty(destructionDate)) {
-            select.addFilter(SPARQLQueryHelper.regexFilter(ProcessModel.DESTRUCTION_DATE_FIELD, destructionDate));
+        if (start == null && end == null) {
+            return;
         }
+
+        Expr dateRange = SPARQLQueryHelper.eventsIntervalDateRange(startVar.getVarName(), start, endVar.getVarName(), end);
+        processGraphGroupElem.addElementFilter(new ElementFilter(dateRange));
     }
 
     private void appendStepProcessFilter(SelectBuilder select, List<URI> step) throws Exception {
@@ -130,7 +140,7 @@ public class ProcessDAO {
         return sparql.getByURI(StepModel.class, instanceURI, null);
     }
 
-    public ListWithPagination<StepModel> searchStep(UserModel user, String name, String startDate, String endDate, List<URI> input, List<URI> output, List<OrderBy> orderByList, int page, int pageSize) throws Exception {
+    public ListWithPagination<StepModel> searchStep(UserModel user, String name, OffsetDateTime start, OffsetDateTime end, List<URI> input, List<URI> output, List<OrderBy> orderByList, int page, int pageSize) throws Exception {
         
         return sparql.searchWithPagination(
             StepModel.class,
@@ -141,8 +151,7 @@ public class ProcessDAO {
                 ElementGroup multipleGraphGroupElem =  SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(rootElementGroup, stepGraph);
                
                 appendNameStepFilter(select, name);
-                appendStartDateStepFilter(select, startDate);
-                appendEndDateStepFilter(select, endDate);
+                appendTimeStepFilter(select, multipleGraphGroupElem, start, end);
                 appendInputStepFilter(select, input);
                 appendOutputStepFilter(select, output);
             },
@@ -158,16 +167,20 @@ public class ProcessDAO {
         }
     }
 
-    private void appendStartDateStepFilter(SelectBuilder select, String startDate) throws Exception {
-        if (!StringUtils.isEmpty(startDate)) {
-            select.addFilter(SPARQLQueryHelper.regexFilter(StepModel.START_DATE_FIELD, startDate));
-        }
-    }
+    protected void appendTimeStepFilter(SelectBuilder select, ElementGroup stepGraphGroupElem, OffsetDateTime start, OffsetDateTime end
+    ) throws Exception {
+        select.getVars().removeIf(var ->
+                var.getVarName().equals(StepModel.START_FIELD) || var.getVarName().equals(StepModel.END_FIELD)
+        );
+        select.addVar(startStepVar);
+        select.addVar(endStepVar);
 
-    private void appendEndDateStepFilter(SelectBuilder select, String endDate) throws Exception {
-        if (!StringUtils.isEmpty(endDate)) {
-            select.addFilter(SPARQLQueryHelper.regexFilter(StepModel.END_DATE_FIELD, endDate));
+        if (start == null && end == null) {
+            return;
         }
+
+        Expr dateRange = SPARQLQueryHelper.eventsIntervalDateRange(startStepVar.getVarName(), start, endStepVar.getVarName(), end);
+        stepGraphGroupElem.addElementFilter(new ElementFilter(dateRange));
     }
 
     private void appendInputStepFilter(SelectBuilder select, List<URI> input) throws Exception {

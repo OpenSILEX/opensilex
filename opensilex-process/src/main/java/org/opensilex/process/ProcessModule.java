@@ -25,7 +25,7 @@ public class ProcessModule extends OpenSilexModule implements SPARQLExtension {
     public List<OntologyFileDefinition> getOntologiesFiles() throws Exception {
         List<OntologyFileDefinition> list = SPARQLExtension.super.getOntologiesFiles();
         list.add(new OntologyFileDefinition(
-                "http://opendata.inrae.fr/po2#",
+                "http://opendata.inra.fr/PO2#",
                 "ontologies/PO2.owl",
                 Lang.RDFXML,
                 "PO2"

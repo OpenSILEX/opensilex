@@ -33,13 +33,18 @@ public class StepGetDTO extends StepDTO {
         StepGetDTO dto = new StepGetDTO();
         dto.setUri(model.getUri())
                 .setName(model.getName())
-                .setStartDate(model.getStartDate())
-                .setEndDate(model.getEndDate())
+                .setAfter(model.getAfter())
+                .setBefore(model.getBefore())
                 .setDescription(model.getDescription())
                 .setInput(getUriList(model.getInput()))
-                .setOutput(getUriList(model.getOutput()))
-                .setFacilities(getUriList(model.getFacilities()));
-
+                .setOutput(getUriList(model.getOutput()));
+        if(model.getStart() != null){
+            dto.setStart(model.getStart().getDateTimeStamp().toString());
+        }
+        if(model.getEnd() != null){
+            dto.setEnd(model.getEnd().getDateTimeStamp().toString());
+        }
+        
         return dto;
     }
 }

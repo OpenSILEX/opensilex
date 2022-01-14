@@ -8,12 +8,12 @@ package org.opensilex.process.process.step.api;
 
 import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import javax.validation.constraints.NotNull;
 import org.opensilex.server.rest.validation.Required;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.opensilex.server.rest.validation.date.ValidOffsetDateTime;
 
 /**
  * @author Fernandez Emilie 
@@ -27,11 +27,17 @@ public abstract class StepDTO {
     @JsonProperty("name")
     protected String name;
     
-    @JsonProperty("start_date")
-    protected LocalDate startDate;
+    @JsonProperty("start")
+    protected String start;
     
-    @JsonProperty("end_date")
-    protected LocalDate endDate;
+    @JsonProperty("end")
+    protected String end;
+
+    @JsonProperty("after")
+    protected URI after;
+    
+    @JsonProperty("before")
+    protected URI before;
 
     @JsonProperty("description")
     protected String description;
@@ -41,9 +47,6 @@ public abstract class StepDTO {
 
     @JsonProperty("output")
     protected List<URI> output = new ArrayList<>();
-
-    @JsonProperty("facilities")
-    protected List<URI> facilities = new ArrayList<>(); 
     
     @ApiModelProperty(example = "http://opensilex.dev/set/process#Process3456")
     public URI getUri() {
@@ -65,23 +68,45 @@ public abstract class StepDTO {
         return this;
     }
 
-    @ApiModelProperty(example = "2020-06-01")
-    public LocalDate getStartDate() {
-        return startDate;
+    @ValidOffsetDateTime
+    @ApiModelProperty(example = "2022-01-08T12:00:00+01:00")
+    public String getStart() {
+        return start;
     }
 
-    public StepDTO setStartDate(LocalDate startDate) {
-        this.startDate = startDate;
+    public StepDTO setStart(String start) {
+        this.start = start;
         return this;
     }
 
-    @ApiModelProperty(example = "2020-06-01")
-    public LocalDate getEndDate() {
-        return endDate;
+    @ValidOffsetDateTime
+    @ApiModelProperty(example = "2022-01-08T12:00:00+01:00")
+    public String getEnd() {
+        return end;
     }
 
-    public StepDTO setEndDate(LocalDate endDate) {
-        this.endDate = endDate;
+    public StepDTO setEnd(String end) {
+        this.end = end;
+        return this;
+    }
+
+    @ApiModelProperty(example = "http://example.com")
+    public URI getAfter() {
+        return after;
+    }
+
+    public StepDTO setAfter(URI after) {
+        this.after = after;
+        return this;
+    }
+
+    @ApiModelProperty(example = "http://example.com")
+    public URI getBefore() {
+        return before;
+    }
+
+    public StepDTO setBefore(URI before) {
+        this.before = before;
         return this;
     }
 
@@ -112,15 +137,6 @@ public abstract class StepDTO {
 
     public StepDTO setOutput(List<URI> output) {
         this.output = output;
-        return this;
-    }
-
-    public List<URI> getFacilities() {
-        return facilities;
-    }
-
-    public StepDTO setFacilities(List<URI> facilities) {
-        this.facilities = facilities;
         return this;
     }
 

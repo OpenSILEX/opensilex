@@ -23,10 +23,10 @@ import org.opensilex.uri.generation.ClassURIGenerator;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.organisation.dal.InfrastructureModel;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
 import java.util.stream.Collectors;
-
+import org.opensilex.sparql.model.time.Time;
+import org.opensilex.sparql.model.time.InstantModel;
 
 /**
  * @author Emilie Fernandez
@@ -42,21 +42,21 @@ public class ProcessModel extends SPARQLNamedResourceModel<ProcessModel> impleme
     public static final String GRAPH = "process";
 
     @SPARQLIgnore
-    protected ExperimentModel experiment;
+    protected List<ExperimentModel> experiment;
 
     @SPARQLProperty(
-            ontology = Oeso.class,
-            property = "hasCreationDate"
+            ontology = Time.class,
+            property = "hasBeginning"
     )
-    protected LocalDate creationDate;
-    public static String CREATION_DATE_FIELD = "creationDate";
+    private InstantModel start;
+    public static final String START_FIELD = "start";
 
     @SPARQLProperty(
-            ontology = Oeso.class,
-            property = "hasDestructionDate"
+            ontology = Time.class,
+            property = "hasEnd"
     )
-    protected LocalDate destructionDate;
-    public static String DESTRUCTION_DATE_FIELD = "destructionDate";
+    private InstantModel end;
+    public static final String END_FIELD = "end";
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -86,35 +86,36 @@ public class ProcessModel extends SPARQLNamedResourceModel<ProcessModel> impleme
     List<StepModel> step;
     public static final String STEP_FIELD = "step";
 
-    @SPARQLProperty(
-        ontology = Oeso.class,
-        property = "usesOrganization"
-    )
-    List<InfrastructureModel> infrastructures;
-    public static final String INFRASTRUCTURE_FIELD = "infrastructure";
 
-    public ExperimentModel getExperiment() {
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "usesFacility"
+    )
+    List<InfrastructureFacilityModel> facilities;
+    public static final String FACILITY_FIELD = "facilities";    
+
+    public List<ExperimentModel> getExperiment() {
         return experiment;
     }
 
-    public void setExperiment(ExperimentModel experiment) {
+    public void setExperiment(List<ExperimentModel> experiment) {
         this.experiment = experiment;
-    }        
+    }    
 
-    public LocalDate getCreationDate() {
-        return creationDate;
+    public InstantModel getStart() {
+        return start;
     }
 
-    public void setCreationDate(LocalDate creationDate) {
-        this.creationDate = creationDate;
+    public void setStart(InstantModel start) {
+        this.start = start;
     }
 
-    public LocalDate getDestructionDate() {
-        return destructionDate;
+    public InstantModel getEnd() {
+        return end;
     }
 
-    public void setDestructionDate(LocalDate destructionDate) {
-        this.destructionDate = destructionDate;
+    public void setEnd(InstantModel end) {
+        this.end = end;
     }
 
     public List<UserModel> getScientificSupervisors() {
@@ -156,11 +157,11 @@ public class ProcessModel extends SPARQLNamedResourceModel<ProcessModel> impleme
                 .collect(Collectors.toList());
     }
 
-    public List<InfrastructureModel> getInfrastructures() {
-        return infrastructures;
+    public List<InfrastructureFacilityModel> getFacilities() {
+        return facilities;
     }
 
-    public void setInfrastructures(List<InfrastructureModel> infrastructures) {
-        this.infrastructures = infrastructures;
+    public void setFacilities(List<InfrastructureFacilityModel> facilities) {
+        this.facilities = facilities;
     }
 }

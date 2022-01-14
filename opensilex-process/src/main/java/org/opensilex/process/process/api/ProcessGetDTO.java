@@ -37,14 +37,18 @@ public class ProcessGetDTO extends ProcessDTO {
         ProcessGetDTO dto = new ProcessGetDTO();
         dto.setUri(model.getUri())
                 .setName(model.getName())
-                // .setExperiment(model.getExperiment().getUri())
-                .setCreationDate(model.getCreationDate())
-                .setDestructionDate(model.getDestructionDate())
+                .setExperiment(getUriList(model.getExperiment()))
                 .setDescription(model.getDescription())
-                .setInfrastructures(getUriList(model.getInfrastructures()))
+                .setFacilities(getUriList(model.getFacilities()))
                 .setScientificSupervisors(getUriList(model.getScientificSupervisors()))
                 .setTechnicalSupervisors(getUriList(model.getTechnicalSupervisors()))
                 .setStep(getUriList(model.getStep()));
+        if(model.getStart() != null){
+            dto.setStart(model.getStart().getDateTimeStamp().toString());
+        }
+        if(model.getEnd() != null){
+            dto.setEnd(model.getEnd().getDateTimeStamp().toString());
+        }
     
         return dto;
     }

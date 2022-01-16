@@ -7,13 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.0.0-rc+2] - 2021-12-09
+## [1.0.0-rc+2] - 2022-01-14
 
 ### Added
 
+- Concept of "Site" with an address : use W3C vcard specification.
 - OpenSILEX migration modules.
 - Filter on variables with filter in entity, entity of interest, characteristic, method, unit, group of variables
-- append FOAF.rdf ontology
+- Append FOAF.rdf ontology
+- Web service in Ontology API to rename a URI.
+- Variable and device association on data dreation
+
+
 
 
 ###  Fixed or improvement
@@ -24,10 +29,13 @@ See [Versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensi
 - Protect Device from removing when data exists
 - Add a Variable filter on the Search Device service, for provenance's agent.
 - Test and manage ambiguity for variable / device association on Data Creation
-- Imporve API message if the json has 2 duplicated attributes ,or any kind of errors
+- Improve API message if the json has 2 duplicated attributes ,or any kind of errors
+- Remove experiment name using into URI generation
+- scientificObject tree filter.
 - Bugs fixed :
   - germplasm uri redirecting
   - all device type are linked to its root device type
+
 
 
 ## [1.0.0-rc+1] - 2021-11-02

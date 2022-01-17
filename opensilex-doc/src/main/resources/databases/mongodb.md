@@ -12,7 +12,7 @@ exit
 ```
 Then restart mongodb instance with the replica set name parameter :
 
-* Set replica set, in the mongodb config file (default path : ``/etc/mongod.conf``) :
+* Set replica set, in the mongodb config file (default path : ``/etc/mongodb.conf``) :
 ```yaml
 replication:
    replSetName: "opensilex"
@@ -22,6 +22,6 @@ net:
 
 * or by command line at the start of the mongodb instance :
 ```shell
-mongod --replSet opensilex --bind_ip localhost 
+mongodb --replSet opensilex --bind_ip localhost 
 ```
 For more information see, [replica set procedure](https://docs.mongodb.com/manual/tutorial/deploy-replica-set/#procedure).

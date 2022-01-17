@@ -1,0 +1,24 @@
+{
+    "component": {
+        "process": {
+            "title" : "Procédé",
+            "description" : "Gérer et configurer des procédés",
+            "process-help": "Un processus de transformation est le projet principal, qui contient différents sous-processus appelés étapes",
+            "add": "Ajouter un procédé",
+            "edit": "Éditer un procédé",
+            "delete": "Supprimer un procédé",
+            "showDetail": "Détails du procédé",
+            "name-filter-placeholder": "Entrer un nom",
+            
+            "step": {
+                "title" : "Étape",
+                "description" : "Gestion des étapes d'un procédé",
+                "step-help": "Les étapes sont des sous-processus du processus principal, ou une représentation des unités d'opération",
+                "add": "Ajouter une étape",
+                "edit": "Éditer une étape",
+                "delete": "Supprimer une étape"
+            }
+        }
+
+    }
+}

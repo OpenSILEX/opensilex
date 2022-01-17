@@ -1,0 +1,24 @@
+{
+    "component": {
+        "process": {
+            "title" : "Process",
+            "description" : "Manage and configure process",
+            "process-help": "A transformation process is the main project, which contains different sub-processes called steps",
+            "add": "Add process",
+            "edit": "Edit process",
+            "delete": "Delete process",
+            "showDetail": "Process details",
+            "name-filter-placeholder": "Enter name",
+
+            "step": {
+                "title" : "Step",
+                "description" : "Manage steps of a process",
+                "step-help": "Steps are sub-processes of the main process, or a representation of the operation units",
+                "add": "Add step",
+                "edit": "Edit step",
+                "delete": "Delete step"
+            }
+        }
+
+    }
+}

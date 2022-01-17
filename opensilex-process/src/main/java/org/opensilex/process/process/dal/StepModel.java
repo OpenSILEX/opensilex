@@ -41,14 +41,16 @@ public class StepModel extends SPARQLNamedResourceModel<StepModel> implements Cl
 
     @SPARQLProperty(
             ontology = Time.class,
-            property = "hasBeginning"
+            property = "hasBeginning",
+            useDefaultGraph = false
     )
     private InstantModel start;
     public static final String START_FIELD = "start";
 
     @SPARQLProperty(
             ontology = Time.class,
-            property = "hasEnd"
+            property = "hasEnd",
+            useDefaultGraph = false
     )
     private InstantModel end;
     public static final String END_FIELD = "end";

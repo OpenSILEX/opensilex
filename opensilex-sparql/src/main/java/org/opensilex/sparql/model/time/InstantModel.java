@@ -22,7 +22,7 @@ import java.util.UUID;
 @SPARQLResource(
         ontology = Time.class,
         resource = "Instant",
-        graph = "event"
+        graph = "Time"
 )
 public class InstantModel extends SPARQLResourceModel implements ClassURIGenerator<InstantModel> {
 
@@ -41,7 +41,7 @@ public class InstantModel extends SPARQLResourceModel implements ClassURIGenerat
 
     @Override
     public URI generateURI(String prefix, InstantModel instance, int retryCount) throws URISyntaxException {
-        String instantPrefix = prefix.replace("event","instant");
+        String instantPrefix = prefix.replace("time","instant");
         return ClassURIGenerator.super.generateURI(instantPrefix, instance, retryCount);
     }
 

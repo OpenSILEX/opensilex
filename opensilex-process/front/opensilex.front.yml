@@ -1,0 +1,20 @@
+menu:
+  - id: process
+    label: component.process.menu
+    route:
+      path: /process
+      component: opensilex-process-processView
+
+routes:
+  - path: /process/create
+    component: opensilex-process-processCreate
+  - path: /process/details/:uri
+    component: opensilex-process-processDetails
+  - path: /process/annotations/:uri
+    component: opensilex-process-processDetails
+  - path: /process/documents/:uri
+    component: opensilex-process-processDetails
+  - path: /step/create
+  component: opensilex-process-stepCreate
+  - path: /step/details/:uri
+  component: opensilex-process-stepDetails

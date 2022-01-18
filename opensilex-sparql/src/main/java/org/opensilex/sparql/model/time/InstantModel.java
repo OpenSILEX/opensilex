@@ -22,7 +22,7 @@ import java.util.UUID;
 @SPARQLResource(
         ontology = Time.class,
         resource = "Instant",
-        graph = "Time"
+        graph = "instant"
 )
 public class InstantModel extends SPARQLResourceModel implements ClassURIGenerator<InstantModel> {
 

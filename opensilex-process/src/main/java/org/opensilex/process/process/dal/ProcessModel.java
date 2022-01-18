@@ -47,7 +47,7 @@ public class ProcessModel extends SPARQLNamedResourceModel<ProcessModel> impleme
     @SPARQLProperty(
             ontology = Time.class,
             property = "hasBeginning",
-            useDefaultGraph = false
+            useDefaultGraph = false  // InstantModel stored in GRAPH
     )
     private InstantModel start;
     public static final String START_FIELD = "start";
@@ -55,7 +55,7 @@ public class ProcessModel extends SPARQLNamedResourceModel<ProcessModel> impleme
     @SPARQLProperty(
             ontology = Time.class,
             property = "hasEnd",
-            useDefaultGraph = false
+            useDefaultGraph = false // InstantModel stored in GRAPH
     )
     private InstantModel end;
     public static final String END_FIELD = "end";

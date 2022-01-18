@@ -70,10 +70,9 @@
 import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import {ProcessGetDTO, ProcessService} from "opensilex-process/index";
-import {StepGetDTO} from "opensilex-core/model/StepGetDTO";
+import {StepGetDTO} from "opensilex-process/index";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
 import {NamedResourceDTOStepModel} from "opensilex-process/model/namedResourceDTOStepModel";
-import PO2 from "../../ontologies/PO2";
 
 @Component
 export default class ProcessView extends Vue {

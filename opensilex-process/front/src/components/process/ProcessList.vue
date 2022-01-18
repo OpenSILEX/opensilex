@@ -97,22 +97,19 @@ import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
 import {ProcessGetDTO, ProcessService} from "opensilex-process/index";
-import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
-import ModalForm from "../common/forms/ModalForm.vue";
 
 @Component
 export default class ProcessList extends Vue {
-  $opensilex: OpenSilexVuePlugin;
+  $opensilex: any;
   $store: any;
   $route: any;
   service: ProcessService;
-  parentURI: string;
 
   private langUnwatcher;
 
   private selectedProcess: ProcessGetDTO;
 
-  @Ref("processForm") readonly processForm!: ModalForm;
+  @Ref("processForm") readonly processForm!: any;
   @Ref("tableRef") readonly tableRef!: any;
 
   get user() {

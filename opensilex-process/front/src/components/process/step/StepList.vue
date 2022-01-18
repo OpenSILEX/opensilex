@@ -86,11 +86,8 @@
 import {Component, Prop, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
 import {ProcessService} from "opensilex-process/api/process.service";
-import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
 import {StepGetDTO} from "opensilex-process/model/StepGetDTO";
 import {NamedResourceDTOStepModel} from "opensilex-process/model/NamedResourceDTOStepModel";
-import {StepCreationDTO} from "opensilex-process/model/StepCreationDTO";
-import {NamedResourceDTOProcessModel} from "opensilex-process/model/NamedResourceDTOProcessModel";
 
 @Component
 export default class StepList extends Vue {
@@ -100,9 +97,6 @@ export default class StepList extends Vue {
 
   @Ref("stepForm") readonly stepForm!: any;
   @Ref("stepTable") readonly stepTable: any;
-
-  @Prop()
-  process: NamedResourceDTOProcessModel;
 
   @Prop()
   steps: Array<NamedResourceDTOStepModel>;
@@ -133,7 +127,6 @@ export default class StepList extends Vue {
       return this.steps;
     }
     return this.fetchedSteps;
-;
   }
 
   get fields() {

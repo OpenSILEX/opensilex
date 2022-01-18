@@ -56,20 +56,3 @@ export default class StepView extends Vue {
 
 <style scoped lang="scss">
 </style>
-
-<i18n>
-en:
-  StepView:
-    title: Document
-    description: Manage Document
-    add: Add document
-    update: Update Document
-    delete: Delete DOcument
-fr:
-  StepView:
-    title: Document
-    description: Gestion des documents
-    add: Ajouter un document
-    update: Editer un document
-    delete: Supprimer un document
-</i18n>

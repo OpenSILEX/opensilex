@@ -10,6 +10,7 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.jena.arq.querybuilder.*;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Query;
 import org.apache.jena.rdf.model.Property;
@@ -1013,8 +1014,15 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
         validate(instance, parent);
 
-        for (SPARQLResourceModel subInstance : mapper.getAllDependentResourcesToCreate(instance)) {
-            create(getDefaultGraph(subInstance.getClass()), subInstance, instance, subInstanceUpdateBuilder, checkUriExist, blankNode, null);
+        Map<URI,List<SPARQLResourceModel>> nestedResources = mapper.getNestedResourcesByGraph(instance);
+        for(Map.Entry<URI,List<SPARQLResourceModel>> entry : nestedResources.entrySet()){
+
+            URI subGraph = entry.getKey();
+            Node subGraphNode = subGraph != null ? SPARQLDeserializers.nodeURI(subGraph) : null;
+
+            for (SPARQLResourceModel subInstance :  entry.getValue()) {
+                create(subGraphNode, subInstance, instance, subInstanceUpdateBuilder, checkUriExist, blankNode, null);
+            }
         }
     }
 

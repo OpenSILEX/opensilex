@@ -10,15 +10,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.jena.vocabulary.VCARD4;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLTreeModel;
 
-import java.net.URI;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @SPARQLResource(
         ontology = Oeso.class,

@@ -260,6 +260,17 @@ public class GermplasmDAO {
             return new ListWithPagination<>(Collections.emptyList());
         }
 
+        // Filter by experiment if it has any species. Otherwise, don't apply any filter on experiments (because it
+        // doesn't make sens).
+        final URI finalExperiment;
+        if (experiment != null) {
+            AskBuilder askExperimentHasSpecies = sparql.getUriExistsQuery(ExperimentModel.class, experiment)
+                    .addWhere(SPARQLDeserializers.nodeURI(experiment), Oeso.hasSpecies, makeVar(ExperimentModel.SPECIES_FIELD));
+            finalExperiment = sparql.executeAskQuery(askExperimentHasSpecies) ? experiment : null;
+        } else {
+            finalExperiment = null;
+        }
+
         return sparql.searchWithPagination(
                 GermplasmModel.class,
                 user.getLanguage(),
@@ -278,7 +289,7 @@ public class GermplasmDAO {
                     appendURIsFilter(select, filteredUris);
 
                     ElementGroup germplasmGraphElem = SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(rootElementGroup, defaultGraph);
-                    appendExperimentFilter(select, experiment, germplasmGraphElem);
+                    appendExperimentFilter(select, finalExperiment, germplasmGraphElem);
                 },
                 orderByList,
                 page,

@@ -8,9 +8,12 @@ package org.opensilex.core.scientificObject.dal;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.trie.PatriciaTrie;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.jena.arq.querybuilder.AbstractQueryBuilder;
+import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
+import org.apache.jena.arq.querybuilder.clauses.WhereClause;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -30,26 +33,29 @@ import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.exception.DuplicateNameListException;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
+import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
-import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.core.ontology.dal.SPARQLRelationFetcher;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
 import org.opensilex.core.scientificObject.api.ScientificObjectNodeDTO;
 import org.opensilex.core.scientificObject.api.ScientificObjectNodeWithChildrenDTO;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.sparql.deserializer.DateDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.exceptions.SPARQLInvalidModelException;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapperIndex;
 import org.opensilex.sparql.mapping.SPARQLListFetcher;
 import org.opensilex.sparql.model.*;
 import org.opensilex.sparql.model.time.InstantModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
@@ -684,6 +690,15 @@ public class ScientificObjectDAO {
 
         ScientificObjectModel object = initObject(contextURI, experiment, soType, name, relations, currentUser);
 
+        // Check that the germplasm of the OS matches the species of its experiment
+        if (experiment != null) {
+            try {
+                checkGermplasmExperimentSpecies(object, experiment.getUri());
+            } catch (SPARQLInvalidModelException e) {
+                throw new BadRequestException(e.getMessage());
+            }
+        }
+
         try {
             sparql.startTransaction();
             nosql.startTransaction();
@@ -704,6 +719,39 @@ public class ScientificObjectDAO {
         }
 
         return objectURI;
+    }
+
+    private boolean checkExperimentHasAnySpecies(URI experimentUri) throws SPARQLException {
+        AskBuilder askExperimentHasSpecies = sparql.getUriExistsQuery(ExperimentModel.class, experimentUri)
+                .addWhere(SPARQLDeserializers.nodeURI(experimentUri), Oeso.hasSpecies, makeVar(ExperimentModel.SPECIES_FIELD));
+        return sparql.executeAskQuery(askExperimentHasSpecies);
+    }
+
+    /**
+     * Checks that the germplasm of the OS (if specified) matches the experiment it belongs to (if there is one).
+     * Otherwise, throws a SPARQLInvalidModelException.
+     *
+     * @param object The scientific object
+     * @param experimentUri The experiment URI
+     * @throws Exception
+     */
+    private void checkGermplasmExperimentSpecies(ScientificObjectModel object, URI experimentUri) throws Exception {
+        SPARQLModelRelation germplasmRelation = object.getRelation(Oeso.hasGermplasm);
+        if (germplasmRelation != null && checkExperimentHasAnySpecies(experimentUri)) {
+            URI germplasmUri = new URI(germplasmRelation.getValue());
+            AskBuilder ask = sparql.getUriExistsQuery(GermplasmModel.class, germplasmUri);
+            appendGermplasmExperimentFilter(ask, germplasmUri, experimentUri);
+            if (!sparql.executeAskQuery(ask)) {
+                throw new SPARQLInvalidModelException("Incompatible types : " + germplasmUri + " is not a valid species for " + experimentUri);
+            }
+        }
+    }
+
+    private <T extends AbstractQueryBuilder<T>> void appendGermplasmExperimentFilter(WhereClause<T> where, URI germplasmUri, URI experimentUri) throws SPARQLException {
+        Var speciesVar = makeVar(ExperimentModel.SPECIES_FIELD);
+        where.addGraph(sparql.getDefaultGraph(ExperimentModel.class),
+                SPARQLDeserializers.nodeURI(experimentUri), Oeso.hasSpecies, speciesVar);
+        where.addWhere(SPARQLDeserializers.nodeURI(germplasmUri), Oeso.fromSpecies, speciesVar);
     }
 
     public static boolean fillFacilityMoveEvent(MoveModel facilityMoveEvent, SPARQLResourceModel object) throws Exception {

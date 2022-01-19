@@ -1062,10 +1062,12 @@ public class ScientificObjectAPI {
                 }
             });
 
+            List<SpeciesModel> experimentSpecies = xp.getSpecies();
+            boolean hasExperimentSpecies = !experimentSpecies.isEmpty();
             List<String> germplasmStringURIs = new ArrayList<>();
             List<URI> germplasmURIs = new ArrayList<>();
 
-            for (SpeciesModel germplasm : xp.getSpecies()) {
+            for (SpeciesModel germplasm : experimentSpecies) {
                 germplasmStringURIs.add(SPARQLDeserializers.getExpandedURI(germplasm.getUri()));
                 germplasmURIs.add(germplasm.getUri());
             }
@@ -1078,11 +1080,13 @@ public class ScientificObjectAPI {
                 }
             }
 
+            // Validator for experiments : if the experiment has species, all the specified germplasm must belong to one
+            // of the species in the experiment.
             customValidators.put(Oeso.hasGermplasm.toString(), (cell, csvErrors) -> {
                 try {
                     if (!cell.getValue().isEmpty()) {
                         String germplasmURI = SPARQLDeserializers.getExpandedURI(new URI(cell.getValue()));
-                        if (!germplasmStringURIs.contains(germplasmURI)) {
+                        if (hasExperimentSpecies && !germplasmStringURIs.contains(germplasmURI)) {
                             csvErrors.addInvalidValueError(cell);
                         }
                     }

@@ -8,10 +8,10 @@
 
     <opensilex-PageContent>
       <template v-slot>
-        <opensilex-StepList
+        <opensilex-process-StepList
           ref="stepList"
           :redirectAfterCreation="true"
-        ></opensilex-StepList>
+        ></opensilex-process-StepList>
       </template>
     </opensilex-PageContent>
 

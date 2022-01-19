@@ -41,8 +41,8 @@ public class ProcessDAO {
     protected final SPARQLService sparql;
     public static final Var startTimeStampVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getTimeStampVarName(ProcessModel.START_FIELD));
     public static final Var endTimeStampVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getTimeStampVarName(ProcessModel.END_FIELD));
-    public static final Var startStepVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getTimeStampVarName(StepModel.START_FIELD));
-    public static final Var endStepVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getTimeStampVarName(StepModel.END_FIELD));
+    public static final Var startTimeStampStepVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getTimeStampVarName(StepModel.START_FIELD));
+    public static final Var endTimeStampStepVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getTimeStampVarName(StepModel.END_FIELD));
 
     public ProcessDAO(SPARQLService sparql) {
         this.sparql = sparql;
@@ -103,7 +103,6 @@ public class ProcessDAO {
         }
 
         // startTimeStampVar and endTimeStampVar auto-added (in SELECT and WHERE) by the SPARQLClassQueryBuilder
-
         Expr dateRange = SPARQLQueryHelper.eventsIntervalDateRange(startTimeStampVar.getVarName(), start, endTimeStampVar.getVarName(), end);
         processGraphGroupElem.addElementFilter(new ElementFilter(dateRange));
     }
@@ -146,7 +145,7 @@ public class ProcessDAO {
                 ElementGroup multipleGraphGroupElem =  SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(rootElementGroup, stepGraph);
                
                 appendNameStepFilter(select, name);
-                appendTimeStepFilter(select, multipleGraphGroupElem, start, end);
+                appendTimeStepFilter(multipleGraphGroupElem, start, end);
                 appendInputStepFilter(select, input);
                 appendOutputStepFilter(select, output);
             },
@@ -162,20 +161,16 @@ public class ProcessDAO {
         }
     }
 
-    protected void appendTimeStepFilter(SelectBuilder select, ElementGroup stepGraphGroupElem, OffsetDateTime start, OffsetDateTime end
+    protected void appendTimeStepFilter(ElementGroup processGraphGroupElem, OffsetDateTime start, OffsetDateTime end
     ) throws Exception {
-        select.getVars().removeIf(var ->
-                var.getVarName().equals(StepModel.START_FIELD) || var.getVarName().equals(StepModel.END_FIELD)
-        );
-        select.addVar(startStepVar);
-        select.addVar(endStepVar);
 
         if (start == null && end == null) {
             return;
         }
 
-        Expr dateRange = SPARQLQueryHelper.eventsIntervalDateRange(startStepVar.getVarName(), start, endStepVar.getVarName(), end);
-        stepGraphGroupElem.addElementFilter(new ElementFilter(dateRange));
+        // startTimeStampVar and endTimeStampVar auto-added (in SELECT and WHERE) by the SPARQLClassQueryBuilder
+        Expr dateRange = SPARQLQueryHelper.eventsIntervalDateRange(startTimeStampStepVar.getVarName(), start, endTimeStampStepVar.getVarName(), end);
+        processGraphGroupElem.addElementFilter(new ElementFilter(dateRange));
     }
 
     private void appendInputStepFilter(SelectBuilder select, List<URI> input) throws Exception {

@@ -73,20 +73,21 @@
 
     <!-- TO DO : CREDENTIAL
             v-if="user.hasCredential(credentials.CREDENTIAL_PROCESS_MODIFICATION_ID)" -->
-    <opensilex-StepForm
+    <opensilex-process-StepForm
       ref="stepForm"
       v-if="withActions"
       @onCreate="onCreate"
       @onUpdate="onUpdate"
-    ></opensilex-StepForm>
+    ></opensilex-process-StepForm>
   </b-card>
 </template>
 
 <script lang="ts">
 import {Component, Prop, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
-import {ProcessService} from "opensilex-process/api/process.service";
-import {StepGetDTO} from "opensilex-process/model/StepGetDTO";
+// @ts-ignore
+import {StepGetDTO, ProcessService} from "./index";
+// @ts-ignore
 import {NamedResourceDTOStepModel} from "opensilex-process/model/NamedResourceDTOStepModel";
 
 @Component

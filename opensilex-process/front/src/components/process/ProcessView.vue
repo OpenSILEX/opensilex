@@ -16,19 +16,19 @@
     <div class="row" v-if="processTab">
       <div class="col-md-6">
         <!-- Process list -->
-        <opensilex-ProcessList
+        <opensilex-process-ProcessList
           ref="processList"
           @onSelect="onSelectedProcess"
-        ></opensilex-ProcessList>
+        ></opensilex-process-ProcessList>
       </div>
       <div class="col-md-6">
         <!-- Process detail -->
-        <opensilex-ProcessDetail
+        <opensilex-process-ProcessDetail
             :selected="selectedProcess"
             @onUpdate="refresh"
-        ></opensilex-ProcessDetail>
+        ></opensilex-process-ProcessDetail>
         <!-- Steps -->
-        <opensilex-StepView
+        <opensilex-process-StepView
             v-if="selectedStep"
             :withActions="stepActions"
             @onUpdate="refresh"
@@ -39,13 +39,13 @@
             :isSelectable="false"
             ref="processStepsView"
             @stepSelected="updateSelectedStep"
-        ></opensilex-StepView>
+        ></opensilex-process-StepView>
       </div>
     </div>
     <div class="row" v-if="stepTab">
       <div class="col-md-6">
         <!-- Steps -->
-        <opensilex-StepView
+        <opensilex-process-StepView
             :withActions="true"
             @onUpdate="refresh"
             @onCreate="refresh"
@@ -53,14 +53,14 @@
             :isSelectable="true"
             ref="stepView"
             @stepSelected="updateSelectedStep"
-        ></opensilex-StepView>
+        ></opensilex-process-StepView>
       </div>
       <div class="col-md-6">
         <!-- Steps detail -->
-        <opensilex-StepDetail
+        <opensilex-process-StepDetail
             :selected="selectedStep"
         >
-        </opensilex-StepDetail>
+        </opensilex-process-StepDetail>
       </div>
     </div>
   </div>
@@ -69,9 +69,10 @@
 <script lang="ts">
 import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import {ProcessGetDTO, ProcessService} from "opensilex-process/index";
-import {StepGetDTO} from "opensilex-process/index";
+// @ts-ignore
+import {ProcessGetDTO, ProcessService, StepGetDTO} from "opensilex-process/index";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
+// @ts-ignore
 import {NamedResourceDTOStepModel} from "opensilex-process/model/namedResourceDTOStepModel";
 
 @Component

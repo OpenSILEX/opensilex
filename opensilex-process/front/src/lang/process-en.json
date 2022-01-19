@@ -9,7 +9,6 @@
             "delete": "Delete process",
             "showDetail": "Process details",
             "name-filter-placeholder": "Enter name",
-
             "step": {
                 "title" : "Step",
                 "description" : "Manage steps of a process",

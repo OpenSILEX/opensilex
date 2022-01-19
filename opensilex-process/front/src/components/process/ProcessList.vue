@@ -82,7 +82,7 @@
         v-if="user.hasCredential(credentials.CREDENTIAL_PROCESS_MODIFICATION_ID)" -->
     <opensilex-ModalForm
       ref="processForm"
-      component="opensilex-ProcessForm"
+      component="opensilex-process-ProcessForm"
       createTitle="component.process.add"
       editTitle="component.process.edit"
       icon="ik#ik-monitor"
@@ -96,13 +96,15 @@
 import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
-import {ProcessGetDTO, ProcessService} from "opensilex-process/index";
+// @ts-ignore
+import {ProcessGetDTO, ProcessService} from "./index";
 
 @Component
 export default class ProcessList extends Vue {
   $opensilex: any;
   $store: any;
   $route: any;
+  $router: any;
   service: ProcessService;
 
   private langUnwatcher;

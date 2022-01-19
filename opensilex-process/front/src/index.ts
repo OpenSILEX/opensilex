@@ -2,12 +2,12 @@
 /// <reference path="../../../opensilex-core/front/types/opensilex-core.d.ts" />
 
 import { ApiServiceBinder } from './lib';
-import ProcessView from './components/process/ProcessView.vue';
-import ProcessForm from './components/process/ProcessForm.vue';
-import ProcessList from './components/process/ProcessList.vue';
-import StepView from './components/process/StepView.vue';
-import StepForm from './components/process/StepForm.vue';
-import StepList from './components/process/StepList.vue';
+import ProcessView from "./components/process/ProcessView.vue";
+import ProcessForm from "./components/process/ProcessForm.vue";
+import ProcessList from "./components/process/ProcessList.vue";
+import StepView from "./components/process/step/StepView.vue";
+import StepForm from "./components/process/step/StepForm.vue";
+import StepList from "./components/process/step/StepList.vue";
 
 export default {
     install(Vue, options) {

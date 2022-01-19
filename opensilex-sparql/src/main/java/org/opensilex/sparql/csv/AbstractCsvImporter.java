@@ -113,13 +113,15 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
             int totalRowIdx = 0;
             Node graphNode = graph != null ? NodeFactory.createURI(graph.toString()) : null;
 
-            Map<String, Integer> filledUrisToIndexesInChunk = new PatriciaTrie<>();
-            Map<String, Integer> generatedUrisToIndexesInChunk = new PatriciaTrie<>();
+
 
             while (rowIterator.hasNext()) {
 
                 // read csv file by batch : perform validation and insertion by batch (by using transaction)
                 List<T> modelChunk = new ArrayList<>(batchSize);
+                Map<String, Integer> filledUrisToIndexesInChunk = new PatriciaTrie<>();
+                Map<String, Integer> generatedUrisToIndexesInChunk = new PatriciaTrie<>();
+
                 int chunkRowIdx = 0;
 
                 while (chunkRowIdx++ < batchSize && rowIterator.hasNext()) {
@@ -133,7 +135,6 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
 
                 // #TODO check URI uniqueness
                 checkUrisUniqueness(filledUrisToIndexesInChunk, generatedUrisToIndexesInChunk, restrictionValidator.getValidationModel());
-
 
                 if (restrictionValidator.validateValuesByType() && !validOnly) {
                     sparql.create(graphNode, modelChunk, batchSize, false);

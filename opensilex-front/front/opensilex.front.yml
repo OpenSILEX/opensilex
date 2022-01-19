@@ -334,6 +334,9 @@ routes:
   - path: /provenances/documents/:uri
     component: opensilex-ProvenanceDetailsPage
 
+  - path: /headertest
+    component: opensilex-ScientificObjectHeaderComponent
+
   # Route item example:
   #  - path: /users/create
   #    component: opensilex-UserCreate

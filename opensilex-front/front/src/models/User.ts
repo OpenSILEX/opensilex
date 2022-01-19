@@ -14,6 +14,7 @@ export class User {
     private token: string = "";
     private tokenData: any = {};
     public loggedIn: boolean = false;
+    public addMessage : string ="Add object";
 
     public static fromToken(token: string): User {
         try {
@@ -177,5 +178,9 @@ export class User {
     public getTokenData(key: string) {
         console.debug("Get token data", key, this.tokenData[key], this.tokenData);
         return this.tokenData[key];
+    }
+
+    public getAddMessage() {
+        return this.addMessage;
     }
 }

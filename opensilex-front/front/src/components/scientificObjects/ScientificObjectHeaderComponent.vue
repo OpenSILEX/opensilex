@@ -1,5 +1,5 @@
 <template>
-  <div class="header-top" header-theme="light">
+  <div class="header-top" header-theme="dark">
     <div class="app-logo">
       <div class="header-brand" to="/">
         <div class="logo-img">
@@ -10,39 +10,61 @@
           />
         </div>
         <span class="text">
-          PHIS
+          TEST
         </span>
       </div>
     </div>
 
     <div class="container-fluid boxed-layout">
 
-      <!-- <opensilex-PageHeader
+      <opensilex-PageHeader
       icon="ik#ik-target"
       title="component.menu.scientificObjects"
       description="ScientificObjectList.description"
-    ></opensilex-PageHeader> -->
+    ></opensilex-PageHeader>
 
       <div class="d-flex justify-content-end">
         <div class="top-menu d-flex align-items-center">
-
           <opensilex-HelpButton
-            class="topbarBtnHelp"
             @click="$opensilex.getGuideFile()"
             label="component.header.user-guide"
           ></opensilex-HelpButton>
 
           <b-dropdown
-            id="langDropdown" 
-            :title="`language - ${this.language}`"
+            id="AddDropdown"
+            :title="user.getAddMessage()"
+            variant="link"
+            right
+          >
+            <template v-slot:button-content>
+              <i class="icon ik ik-plus"></i>
+            </template>
+
+            <b-dropdown-item href="#">
+              <i class="ik ik-share dropdown-icon"></i>
+              {{ $t("component.header.user.addObject") }}
+            </b-dropdown-item>
+            <b-dropdown-item href="#" @click.prevent="logout">
+              <i class="ik ik-download dropdown-icon"></i>
+              {{ $t("component.header.user.csvImport") }}
+            </b-dropdown-item>
+          </b-dropdown>
+
+
+
+          
+
+          <b-dropdown
+            id="langDropdown"
+            :title="user.getEmail()"
             variant="link"
             right
           >
             <template v-slot:button-content>
               <i class="icon ik ik-globe"></i>
-              <!-- <span class="hidden-phone">{{ $t("component.header.language." + language) }}</span>
+              <span class="hidden-phone">{{ $t("component.header.language." + language) }}</span>
               <span class="show-phone">{{ $t("component.header.language." + language).substring(0,2) }}</span>
-              <i class="ik ik-chevron-down"></i> -->
+              <i class="ik ik-chevron-down"></i>
             </template>
 
             <b-dropdown-item
@@ -50,18 +72,20 @@
               :key="`language-${item}`"
               href="#"
               @click.prevent="setLanguage(item)"
-              >{{ $t("component.header.language." + item) }}
-            </b-dropdown-item>
+              >{{ $t("component.header.language." + item) }}</b-dropdown-item
+            >
           </b-dropdown>
 
           <b-dropdown
+          class="TopbarBtnUser"
             v-if="user.isLoggedIn()"
             id="userDropdown"
             :title="user.getEmail()"
             variant="link"
             right
           >
-            <template v-slot:button-content class="userIcon">
+            <template v-slot:button-content
+            class="test">
               <i class="icon ik ik-user"></i>
               <!-- <span class="hidden-phone">
               {{ user.getFirstName() }} {{ user.getLastName() }}
@@ -88,7 +112,7 @@ import Vue from "vue";
 import { User } from "../../models/User";
 
 @Component
-export default class DefaultHeaderComponent extends Vue {
+export default class ScientificObjectHeaderComponent extends Vue {
   $i18n: any;
   $store: any;
   $opensilex: any;
@@ -161,7 +185,6 @@ export default class DefaultHeaderComponent extends Vue {
 </script>
 
 <style scoped lang="scss">
-
 .app-logo {
   text-align: left;
   position: absolute;
@@ -193,26 +216,27 @@ export default class DefaultHeaderComponent extends Vue {
 }
 
 .container-fluid {
-  margin-left: 260px;
-  width: 80%;
+  margin-left: 280px;
+  width: 50%;
 }
 
-.top-menu {
-  position: absolute;
-  float: right;
-  // margin-right: 36px;
-  margin-right: 20px;
-  top: 10px;
+.TopbarBtnUser {
+  background-color: rgb(0, 163, 141);
+  border-radius: 50%;
+  border:none;
 }
 
-@media (min-width: 200px) and (max-width: 1150px) {
-  .topbarBtnHelp { 
-      height: 25px;
-      width: 25px;
-      font-size: 85%;
-      line-height: 9px;
-    padding: 5px;
-  }
+.ik-user{
+  color: #fff;
+}
+
+.test {
+  border: none
+}
+
+* {
+    color: #fff;
+    font-weight: 600;
 }
 
 

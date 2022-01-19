@@ -156,7 +156,9 @@
             },
             "user": {
                 "admin": "Admin",
-                "logout": "Logout"
+                "logout": "Logout",
+                "addObject": "Add object",
+                "csvImport": "CSV import"
             },
             "user-guide":"User Guide",
             "download-user-guide": "Download User Guide"

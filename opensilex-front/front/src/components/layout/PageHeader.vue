@@ -8,7 +8,7 @@
               <opensilex-Icon :icon="icon" class="title-icon" />
               <slot name="title">&nbsp;{{ $t(title) }}</slot>
             </h5>
-            <span><slot name="description">{{ $t(description) }}</slot></span>
+            <span class="title-description"><slot name="description" >{{ $t(description) }}</slot></span>
 
             <span v-if="isExperimentalFeature">
                 <span style="padding-left:1%"></span>
@@ -21,7 +21,7 @@
           </div>
         </div>
       </div>
-      <div class="col-lg-4">
+      <!-- <div class="col-lg-4">
         <nav class="breadcrumb-container" aria-label="breadcrumb">
           <ol class="breadcrumb">
             <li class="breadcrumb-item">
@@ -37,7 +37,7 @@
             </li>
           </ol>
         </nav>
-      </div>
+      </div> -->
     </div>
   </div>
 </template>
@@ -88,5 +88,25 @@ h5 {
 
 .navbar-title {
   white-space: pre;
+}
+
+@media (min-width: 200px) and (max-width: 1150px) {
+  h5 {
+    font-size: 1.2em;
+    transition: 2s;
+  }
+  .title-description{
+    font-size: 0.9em;
+    transition: 2s;
+  }
+
+  .title-icon {
+    width: 30px;
+    height: 30px;
+    font-size: 16px;
+    margin-right: 16px;
+    transition: 2s
+  }
+
 }
 </style>

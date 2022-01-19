@@ -67,7 +67,7 @@ let defaultConfig: FrontConfigDTO = {
   pathPrefix: "/",
   homeComponent: "opensilex-front-ToDoComponent",
   notFoundComponent: "opensilex-front-ToDoComponent",
-  headerComponent: "opensilex-front-ToDoComponent",
+  headerComponent: "opensilex-DefaultHeaderComponent",
   loginComponent: "opensilex-front-ToDoComponent",
   menuComponent: "opensilex-front-ToDoComponent",
   footerComponent: "opensilex-front-ToDoComponent",

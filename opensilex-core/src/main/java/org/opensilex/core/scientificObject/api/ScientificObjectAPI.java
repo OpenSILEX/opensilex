@@ -288,55 +288,6 @@ public class ScientificObjectAPI {
         return new PaginatedListResponse<>(dtoList).getResponse();
     }
 
-    @GET
-    @Path("children")
-    @ApiOperation(
-            value = "Get list of a scientific object children in an experiment",
-            notes = "If the parent field is empty, the service return all root elements \n\n" +
-                    "The scientific objects in response have a field with the count of their children \n\n"
-    )
-    @ApiProtected
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return list of scientific objects children from a scientific object in the context of an experiment", response = ScientificObjectNodeWithChildrenDTO.class, responseContainer = "List")
-    })
-    public Response getScientificObjectsChildren(
-            @ApiParam(value = ExperimentAPI.EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI, required = true) @QueryParam("experiment") @NotNull URI experimentURI,
-            @ApiParam(value = "Parent object URI", example = SCIENTIFIC_OBJECT_EXAMPLE_URI) @QueryParam("parent") URI parentURI,
-            @ApiParam(value = "Regex pattern for filtering by name", example = ".*") @DefaultValue(".*") @QueryParam("name") String pattern,
-            @ApiParam(value = "RDF type filter", example = "vocabulary:Plant") @QueryParam("rdf_types") @ValidURI List<URI> rdfTypes,
-            @ApiParam(value = "Factor levels URI", example = "vocabulary:IrrigationStress") @QueryParam("factor_levels") @ValidURI List<URI> factorLevels,
-            @ApiParam(value = "Facility", example = "diaphen:serre-2") @QueryParam("facility") @ValidURI URI facility,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
-    ) throws Exception {
-
-        validateContextAccess(experimentURI);
-
-        ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
-        if (experimentURI == null) {
-            experimentURI = sparql.getDefaultGraphURI(ScientificObjectModel.class);
-        }
-
-        ScientificObjectSearchFilter searchFilter = new ScientificObjectSearchFilter()
-                .setExperiment(experimentURI)
-                .setPattern(pattern)
-                .setRdfTypes(rdfTypes)
-                .setParentURI(parentURI)
-                .setFactorLevels(factorLevels)
-                .setFacility(facility);
-
-        searchFilter.setPage(page)
-                .setPageSize(pageSize)
-                .setOrderByList(orderByList)
-                .setLang(currentUser.getLanguage());
-
-        ListWithPagination<ScientificObjectNodeWithChildrenDTO> dtoList = dao.searchChildren(searchFilter);
-
-        return new PaginatedListResponse<ScientificObjectNodeWithChildrenDTO>(dtoList).getResponse();
-    }
 
     @GET
     @ApiOperation("Search list of scientific objects")

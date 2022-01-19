@@ -259,7 +259,7 @@
 import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
-import { ScientificObjectsService } from "opensilex-core/index";
+import { ScientificObjectsService, ExperimentsService } from "opensilex-core/index";
 import ScientificObjectDetail from "../../scientificObjects/ScientificObjectDetail.vue";
 import EventCsvForm from "../../events/form/csv/EventCsvForm.vue";
 import TreeViewAsync from "../../common/views/TreeViewAsync.vue";
@@ -271,6 +271,7 @@ export default class ExperimentScientificObjects extends Vue {
   $store: any;
   $t: any;
   soService: ScientificObjectsService;
+  experimentService: ExperimentsService;
   uri: string;
   showDataVisuView = false;
   numberOfSelectedRows = 0;
@@ -339,6 +340,9 @@ export default class ExperimentScientificObjects extends Vue {
 
     this.soService = this.$opensilex.getService(
       "opensilex.ScientificObjectsService"
+    );
+    this.experimentService = this.$opensilex.getService(
+      "opensilex.ExperimentsService"
     );
 
     this.refresh();
@@ -447,7 +451,7 @@ export default class ExperimentScientificObjects extends Vue {
   }
 
   loadAllChildren(nodeURI,page,pageSize) {
-    return this.soService.getScientificObjectsChildren(
+    return this.experimentService.getScientificObjectsChildren(
         this.uri,
         nodeURI,
         undefined,
@@ -501,7 +505,7 @@ export default class ExperimentScientificObjects extends Vue {
 
     } else {
 
-        return this.soService.getScientificObjectsChildren(
+        return this.experimentService.getScientificObjectsChildren(
         this.uri,
         nodeURI,
         undefined,

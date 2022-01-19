@@ -21,7 +21,7 @@
                             :required="false"
                             :baseType="this.$opensilex.Oeso.DEVICE_TYPE_URI"
                             :ignoreRoot="false"
-                            placeholder="Event.type-placeholder"
+                            placeholder="DeviceList.filter.rdfTypes-placeholder"
                         ></opensilex-TypeForm>
                     </b-col>
                     <b-col>
@@ -78,7 +78,9 @@ export default class DeviceCsvTemplateGenerator extends Vue {
     private getCustomPropertyDescription(property: VueRDFTypePropertyDTO, isDataProperty: boolean) {
 
         let parts = Array.of(
-            this.$t("component.common.name"),
+
+            // property name
+            this.$t("DeviceCsvTemplateGenerator.property-name"),
             " : ",
             property.name,
 
@@ -88,9 +90,9 @@ export default class DeviceCsvTemplateGenerator extends Vue {
             " : ",
             this.getDataTypeLabel(property.target_property, isDataProperty),
 
-            // description
+            // property description
             "\n",
-            this.$t("component.common.description"),
+            this.$t("DeviceCsvTemplateGenerator.property-description"),
             " : ",
             property.comment,
 
@@ -117,7 +119,10 @@ export default class DeviceCsvTemplateGenerator extends Vue {
             " : ",
             (required) ? this.$t("component.common.yes") : this.$t("component.common.no"),
             ". ",
-            (example && example.length > 0) ? "Ex : " + this.$t(example) : ""
+            "\n",
+            (example && example.length > 0) ?
+                (this.$t("DeviceCsvTemplateGenerator.example") + " : " + this.$t(example))
+                : ""
         )
 
         return parts.join('');
@@ -159,8 +164,8 @@ export default class DeviceCsvTemplateGenerator extends Vue {
 
         let headers = ["uri", "type"];
         let headersDescription = [
-            this.getPropertyDescription("Event.uri-help", false, "Event.uri-example"),
-            this.getPropertyDescription("Event.type-help", false, "Event.type-example"),
+            this.getPropertyDescription("DeviceImportHelp.uri-help", false, "DeviceCsvTemplateGenerator.uri-example"),
+            this.getPropertyDescription("DeviceImportHelp.type-help", false, "DeviceCsvTemplateGenerator.type-example"),
         ];
 
         let visitedProperties = new Set<string>();
@@ -236,7 +241,7 @@ export default class DeviceCsvTemplateGenerator extends Vue {
             }
         } else {
             let type: VueObjectTypeDTO = this.$opensilex.getObjectType(dataTypeUri);
-            if (type) {
+            if (type && type.name && type.name.length > 0) {
                 label = type.name + " (URI)"
             }
         }
@@ -249,3 +254,23 @@ export default class DeviceCsvTemplateGenerator extends Vue {
     }
 }
 </script>
+
+<i18n>
+en :
+  DeviceCsvTemplateGenerator:
+    property-name: Property name
+    property-description: Property description
+    uri-example: http://opensilex.org/id/device/rasperry_pi_4B
+    type-example: vocabulary:SensingDevice
+    example: Example
+fr :
+  DeviceCsvTemplateGenerator:
+    property-name: Nom de la propriété
+    property-description: Description de la propriété
+    uri-example: http://opensilex.org/id/device/rasperry_pi_4B
+    type-example: vocabulary:SensingDevice
+    example: Exemple
+</i18n>
+
+
+

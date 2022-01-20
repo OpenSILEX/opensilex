@@ -7,25 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.0.0-rc+2] - 2022-01-14
+## [1.0.0-rc+2] - 2022-01-20
 
 ### Added
-
 - Concept of "Site" with an address : use W3C vcard specification.
-- OpenSILEX migration modules.
+- OpenSILEX migration modules with command.
+- Add command org.opensilex.migration.GraphAndCollectionMigration for SPARQL graph and MongoDB collection renaming after URI generation update
 - Filter on variables with filter in entity, entity of interest, characteristic, method, unit, group of variables
 - Append FOAF.rdf ontology
 - Web service in Ontology API to rename a URI.
-- Variable and device association on data dreation
-
-
-
+- Variable and device association on data creation
+- Species become optional in an experiment
+- Search in germplasm's attributs in Webapp
 
 ###  Fixed or improvement
-
 - Control access in the Web interface, in progess.
 - Update model graph from sets/<model_name> to set/<model_name>. Update URI generation by using "id" instead of "set" : this improvement need an action. see
-See [Versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc.2.md) when upgrading.
+See [Versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc+2.md) when upgrading.
 - Protect Device from removing when data exists
 - Add a Variable filter on the Search Device service, for provenance's agent.
 - Test and manage ambiguity for variable / device association on Data Creation
@@ -36,6 +34,10 @@ See [Versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensi
   - germplasm uri redirecting
   - all device type are linked to its root device type
 
+### Known Issue
+- Problem of authentification when migrate. It's due to FOAF import. You need to remove `<http://xmlns.com/foaf/0.1/Agent> rdfs:label "Agent"`
+- When installing other version, PHIS ontology is imported. You need to remove <http://www.opensilex.org/vocabulary/oeso-ext> context
+- Some installation have problem with geospatial visualisation.
 
 
 ## [1.0.0-rc+1] - 2021-11-02

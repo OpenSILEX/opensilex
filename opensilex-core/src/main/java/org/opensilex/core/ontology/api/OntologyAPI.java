@@ -220,10 +220,12 @@ public class OntologyAPI {
             if (isDataProperty) {
                 DatatypePropertyModel model = getDataTypePropertyModel(dao, dto);
                 dao.createDataProperty(propertyGraph, model);
+                SPARQLModule.getOntologyStoreInstance().reload();
                 return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
             } else {
                 ObjectPropertyModel model = getObjectPropertyModel(dao, dto);
                 dao.createObjectProperty(propertyGraph, model);
+                SPARQLModule.getOntologyStoreInstance().reload();
                 return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
             }
 
@@ -255,10 +257,12 @@ public class OntologyAPI {
         if (isDataProperty) {
             DatatypePropertyModel model = getDataTypePropertyModel(dao, dto);
             dao.updateDataProperty(propertyGraph, model);
+            SPARQLModule.getOntologyStoreInstance().reload();
             return new ObjectUriResponse(Response.Status.OK, model.getUri()).getResponse();
         } else {
             ObjectPropertyModel objModel = getObjectPropertyModel(dao, dto);
             dao.updateObjectProperty(propertyGraph, objModel);
+            SPARQLModule.getOntologyStoreInstance().reload();
             return new ObjectUriResponse(Response.Status.OK, objModel.getUri()).getResponse();
         }
 
@@ -303,8 +307,10 @@ public class OntologyAPI {
 
         if (RDFPropertyDTO.isDataProperty(propertyType)) {
             dao.deleteDataProperty(propertyGraph, propertyURI);
+            SPARQLModule.getOntologyStoreInstance().reload();
         } else {
             dao.deleteObjectProperty(propertyGraph, propertyURI);
+            SPARQLModule.getOntologyStoreInstance().reload();
         }
 
         return new ObjectUriResponse(Response.Status.OK, propertyURI).getResponse();
@@ -395,6 +401,7 @@ public class OntologyAPI {
         if (!dao.addClassPropertyRestriction(propertyGraph, dto.getClassURI(), restriction, currentUser.getLanguage())) {
             return new ErrorResponse(Response.Status.CONFLICT, "Property restriction already exists for class", "Class URI: " + dto.getClassURI().toString() + " - Property URI: " + dto.getProperty().toString()).getResponse();
         }
+        SPARQLModule.getOntologyStoreInstance().reload();
 
         return new ObjectUriResponse(new URI("about:blank")).getResponse();
     }
@@ -416,6 +423,7 @@ public class OntologyAPI {
 
         OntologyDAO dao = new OntologyDAO(sparql);
         dao.deleteClassPropertyRestriction(propertyGraph, classURI, propertyURI, currentUser.getLanguage());
+        SPARQLModule.getOntologyStoreInstance().reload();
 
         return new ObjectUriResponse(Response.Status.OK, propertyURI).getResponse();
     }
@@ -436,6 +444,7 @@ public class OntologyAPI {
 
         OwlRestrictionModel restriction = this.restrictionDtoToModel(dao, dto);
         dao.updateClassPropertyRestriction(getPropertyGraph(), dto.getClassURI(), restriction, currentUser.getLanguage());
+        SPARQLModule.getOntologyStoreInstance().reload();
 
         return new ObjectUriResponse(new URI("about:blank")).getResponse();
     }

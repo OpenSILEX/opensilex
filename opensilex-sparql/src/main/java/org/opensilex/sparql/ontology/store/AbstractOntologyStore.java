@@ -154,8 +154,11 @@ public abstract class AbstractOntologyStore implements OntologyStore {
 
     public void clear() {
         modelsByUris.clear();
-        Set<String> vertexesCopy = new HashSet<>(modelsGraph.vertexSet());
-        modelsGraph.removeAllVertices(vertexesCopy);
+
+        if(! modelsGraph.vertexSet().isEmpty()){
+            Set<String> vertexesCopy = new HashSet<>(modelsGraph.vertexSet());
+            modelsGraph.removeAllVertices(vertexesCopy);
+        }
     }
 
     private String formatURI(URI uri) {
@@ -236,16 +239,18 @@ public abstract class AbstractOntologyStore implements OntologyStore {
             // replace partial domain ClassModel by full ClassModel
             ClassModel domain = property.getDomain();
             if (domain == null || domain.getUri() == null) {
-                LOGGER.warn("NULL domain for property {}", property.getUri());
-            }else{
+                LOGGER.warn("{} NULL rdfs:domain for property {} {}", ANSI_RED, property.getUri(), ANSI_RESET);
+            } else {
+
                 ClassModel existingDomain = getClassModel(domain.getUri());
                 property.setDomain(existingDomain);
 
-                if (property instanceof DatatypePropertyModel) {
+                // update ClassModel data/object properties
+                if(property instanceof DatatypePropertyModel){
                     existingDomain.getDatatypeProperties().put(property.getUri(), (DatatypePropertyModel) property);
-                } else if (property instanceof ObjectPropertyModel) {
-                    ObjectPropertyModel objectProperty = (ObjectPropertyModel) property;
-                    existingDomain.getObjectProperties().put(property.getUri(), objectProperty);
+
+                }else if(property instanceof ObjectPropertyModel){
+                    existingDomain.getObjectProperties().put(property.getUri(), (ObjectPropertyModel) property);
                 }
             }
 
@@ -258,6 +263,28 @@ public abstract class AbstractOntologyStore implements OntologyStore {
                 ClassModel existingRange = getClassModel(rangeURI);
                 ((ObjectPropertyModel) property).setRange(existingRange);
             }
+        }
+    }
+
+    private void linkDataProperty(OwlRestrictionModel restriction, ClassModel restrictedClass, DatatypePropertyModel property) {
+
+        if (restriction.getOnDataRange() == null) {
+            LOGGER.warn("{} NULL owl:onDataRange for restriction {} on property {} {}", ANSI_RED, restriction.getUri(), property.getUri(), ANSI_RESET);
+        }else{
+            //            restrictedClass.getDatatypeProperties().put(property.getUri(), property);
+            restrictedClass.getRestrictionsByProperties().put(restriction.getOnProperty(), restriction);
+        }
+    }
+
+    private void linkObjectProperty(OwlRestrictionModel restriction, ClassModel restrictedClass, ObjectPropertyModel property) throws SPARQLInvalidURIException {
+        if (restriction.getOnClass() == null) {
+            LOGGER.warn("{} NULL owl:onClass for restriction {} on property {} {}", ANSI_RED, restriction.getUri(), property.getUri(), ANSI_RESET);
+        }else{
+            // update onClass with complete ClassModel from store
+
+            restriction.setOnClass(getClassModel(restriction.getOnClass().getUri()));
+            //            restrictedClass.getObjectProperties().put(property.getUri(), property);
+            restrictedClass.getRestrictionsByProperties().put(restriction.getOnProperty(), restriction);
         }
     }
 
@@ -279,20 +306,12 @@ public abstract class AbstractOntologyStore implements OntologyStore {
                 throw new IllegalArgumentException("Null property URI for restriction : " + restriction.getUri());
             }
 
-            // check that property exist
-            AbstractPropertyModel<?> propertyModel = getProperty(property, null, null);
-
-            if (restriction.getDomain() == null) {
-                restriction.setDomain(propertyModel.getDomain().getUri());
+            AbstractPropertyModel<?> propertyModel = getProperty(restriction.getOnProperty(), null, null);
+            if (propertyModel instanceof DatatypePropertyModel) {
+                linkDataProperty(restriction, restrictedClass, (DatatypePropertyModel) propertyModel);
+            } else if (propertyModel instanceof ObjectPropertyModel) {
+                linkObjectProperty(restriction, restrictedClass, (ObjectPropertyModel) propertyModel);
             }
-            if (restriction.getOnDataRange() == null) {
-                if (propertyModel instanceof DatatypePropertyModel) {
-                    restriction.setOnDataRange(((DatatypePropertyModel) propertyModel).getRange());
-                } else if (propertyModel instanceof ObjectPropertyModel) {
-                    restriction.setOnClass(((ObjectPropertyModel) propertyModel).getRange());
-                }
-            }
-            restrictedClass.getRestrictionsByProperties().put(restriction.getOnProperty(), restriction);
         }
 
     }

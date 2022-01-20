@@ -92,6 +92,7 @@ public class VueOwlExtensionAPI {
             ClassModel classModel = dto.getClassModel(currentUser.getLanguage());
             VueClassExtensionModel classExtModel = dto.getExtClassModel();
             dao.createExtendedClass(classModel, classExtModel);
+            SPARQLModule.getOntologyStoreInstance().reload();
 
             return new ObjectUriResponse(Response.Status.CREATED, classModel.getUri()).getResponse();
 
@@ -118,6 +119,7 @@ public class VueOwlExtensionAPI {
         ClassModel classModel = dto.getClassModel(currentUser.getLanguage());
         VueClassExtensionModel classExtModel = dto.getExtClassModel();
         dao.updateExtendedClass(classModel, classExtModel);
+        SPARQLModule.getOntologyStoreInstance().reload();
 
         return new ObjectUriResponse(Response.Status.CREATED, classModel.getUri()).getResponse();
     }
@@ -155,6 +157,7 @@ public class VueOwlExtensionAPI {
     ) throws Exception {
         VueOwlExtensionDAO dao = new VueOwlExtensionDAO(sparql);
         dao.deleteExtendedClass(classURI);
+        SPARQLModule.getOntologyStoreInstance().reload();
         return new ObjectUriResponse(Response.Status.OK, classURI).getResponse();
     }
 

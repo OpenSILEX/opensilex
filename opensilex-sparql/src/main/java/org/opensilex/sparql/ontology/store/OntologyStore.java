@@ -21,6 +21,11 @@ public interface OntologyStore {
 
     void clear();
 
+    default void reload() throws SPARQLException {
+        clear();
+        load();
+    }
+
     AbstractPropertyModel<?> getProperty(URI property, URI type, URI domain, String lang) throws SPARQLException;
 
     ClassModel getClassModel(URI rdfClass, URI parentClass, String lang) throws SPARQLException;

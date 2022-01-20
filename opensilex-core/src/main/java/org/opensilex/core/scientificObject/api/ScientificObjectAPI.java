@@ -24,8 +24,10 @@ import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.locationtech.jts.io.ParseException;
 import org.opensilex.core.csv.dal.AbstractCsvDao;
+import org.opensilex.core.csv.dal.CSVCell;
 import org.opensilex.core.csv.dal.CsvDao;
 import org.opensilex.core.csv.dal.DefaultCsvDao;
+import org.opensilex.core.csv.dal.error.CSVValidationModel;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveModel;
@@ -38,19 +40,15 @@ import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.experiment.factor.dal.FactorModel;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
-import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.CSVValidationDTO;
-import org.opensilex.core.csv.dal.CSVCell;
-import org.opensilex.core.csv.dal.error.CSVValidationModel;
-import org.opensilex.sparql.model.SPARQLModelRelation;
-import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectSearchFilter;
+import org.opensilex.core.species.dal.SpeciesDAO;
 import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -68,6 +66,7 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
@@ -490,7 +489,6 @@ public class ScientificObjectAPI {
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
         ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
-        GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
 
         URI contextURI = descriptionDto.getExperiment();
         ExperimentModel experiment = null;
@@ -515,7 +513,9 @@ public class ScientificObjectAPI {
             ScientificObjectModel so = dao.create(contextURI, experiment, soType, descriptionDto.getUri(), descriptionDto.getName(), descriptionDto.getRelations(), currentUser);
             URI soURI = so.getUri();
 
-            updateExperimentSpeciesList(experiment, so, experimentDAO, germplasmDAO);
+            if (experiment != null) {
+                updateExperimentSpeciesFromScientificObjects(experiment, experimentDAO);
+            }
 
             Node graphNode = SPARQLDeserializers.nodeURI(globalScientificObjectGraph);
             if (globalCopy && !sparql.uriExists(graphNode, soURI)) {
@@ -562,32 +562,6 @@ public class ScientificObjectAPI {
         }
     }
 
-    /**
-     * Update the experiment species list, if the germplasm of the scientific object doesn't belong to it yet.
-     *
-     * @param experiment
-     * @param scientificObject
-     * @param experimentDAO
-     * @param germplasmDAO
-     * @throws Exception
-     */
-    private void updateExperimentSpeciesList(ExperimentModel experiment, ScientificObjectModel scientificObject, ExperimentDAO experimentDAO, GermplasmDAO germplasmDAO) throws Exception {
-        if (experiment != null) {
-            SPARQLModelRelation germplasmRelation = scientificObject.getRelation(Oeso.hasGermplasm);
-            if (germplasmRelation != null) {
-                URI germplasmUri = new URI(germplasmRelation.getValue());
-                URI speciesUri = germplasmDAO.getSpecies(germplasmUri, currentUser).getUri();
-                if (experiment.getSpecies().stream()
-                        .noneMatch(speciesModel -> speciesModel.getUri() == speciesUri)) {
-                    SpeciesModel speciesModel = new SpeciesModel();
-                    speciesModel.setUri(speciesUri);
-                    experiment.getSpecies().add(speciesModel);
-                    experimentDAO.update(experiment, currentUser);
-                }
-            }
-        }
-    }
-
     @PUT
     @ApiOperation("Update a scientific object for the given experiment")
     @ApiProtected
@@ -608,6 +582,7 @@ public class ScientificObjectAPI {
 
         URI contextURI = descriptionDto.getExperiment();
         validateContextAccess(contextURI);
+        boolean hasExperiment = contextURI != null;
         if (contextURI == null) {
             contextURI = sparql.getDefaultGraphURI(ScientificObjectModel.class);
         }
@@ -621,6 +596,10 @@ public class ScientificObjectAPI {
         try {
 
             URI soURI = dao.update(contextURI, soType, descriptionDto.getUri(), descriptionDto.getName(), descriptionDto.getRelations(), currentUser);
+
+            if (hasExperiment) {
+                updateExperimentSpeciesFromScientificObjects(contextURI);
+            }
 
             if (descriptionDto.getGeometry() != null) {
                 GeospatialModel geospatialModel = new GeospatialModel();
@@ -690,6 +669,9 @@ public class ScientificObjectAPI {
                 sparql.deleteByURI(sparql.getDefaultGraph(ScientificObjectModel.class), objectURI);
             } else {
                 dao.delete(contextURI, objectURI);
+
+                //update Exp species
+                updateExperimentSpeciesFromScientificObjects(contextURI);
             }
             geoDAO.delete(objectURI, contextURI);
 
@@ -780,7 +762,6 @@ public class ScientificObjectAPI {
                         sparql.deletePrimitives(SPARQLDeserializers.nodeURI(graphURI), object.getUri(), Oeso.isHosted);
                     }
 
-                    List<URI> germplasmUriList = new ArrayList<>();
                     if (globalCopy) {
                         UpdateBuilder update = new UpdateBuilder();
                         boolean hasUpdateItem = false;
@@ -791,11 +772,6 @@ public class ScientificObjectAPI {
                                 update.addInsert(graphNode, soNode, RDF.type, SPARQLDeserializers.nodeURI(object.getType()));
                                 update.addInsert(graphNode, soNode, RDFS.label, object.getName());
                                 hasUpdateItem = true;
-
-                                SPARQLModelRelation germplasmRelation = object.getRelation(Oeso.hasGermplasm);
-                                if (germplasmRelation != null) {
-                                    germplasmUriList.add(new URI(germplasmRelation.getValue()));
-                                }
                             }
 
                         }
@@ -806,19 +782,8 @@ public class ScientificObjectAPI {
                     }
 
                     //Update experiment
-                    if (insertIntoSomeXp && CollectionUtils.isNotEmpty(germplasmUriList)) {
-                        GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
-                        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
-                        List<URI> speciesURIList = germplasmDAO.getSpeciesURIList(germplasmUriList);
-                        ExperimentModel experiment = experimentDAO.get(contextURI, currentUser);
-                        Set<SpeciesModel> experimentSpeciesSet = new HashSet<>(experiment.getSpecies());
-                        experimentSpeciesSet.addAll(speciesURIList.stream().map(uri -> {
-                            SpeciesModel speciesModel = new SpeciesModel();
-                            speciesModel.setUri(uri);
-                            return speciesModel;
-                        }).collect(Collectors.toSet()));
-                        experiment.setSpecies(new ArrayList<>(experimentSpeciesSet));
-                        experimentDAO.update(experiment, currentUser);
+                    if (insertIntoSomeXp) {
+                        updateExperimentSpeciesFromScientificObjects(contextURI);
                     }
 
                     List<GeospatialModel> geospatialModels = new ArrayList<>();
@@ -850,27 +815,9 @@ public class ScientificObjectAPI {
                 List<SPARQLNamedResourceModel> objects = errors.getObjects();
                 sparql.create(SPARQLDeserializers.nodeURI(graphURI), objects);
 
-                List<URI> germplasmUriList = new ArrayList<>();
-                for (SPARQLNamedResourceModel<?> object : objects) {
-                    SPARQLModelRelation germplasmRelation = object.getRelation(Oeso.hasGermplasm);
-                    if (germplasmRelation != null) {
-                        germplasmUriList.add(new URI(germplasmRelation.getValue()));
-                    }
-                }
                 //Update experiment
-                if (insertIntoSomeXp && CollectionUtils.isNotEmpty(germplasmUriList)) {
-                    GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
-                    ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
-                    List<URI> speciesURIList = germplasmDAO.getSpeciesURIList(germplasmUriList);
-                    ExperimentModel experiment = experimentDAO.get(contextURI, currentUser);
-                    Set<SpeciesModel> experimentSpeciesSet = new HashSet<>(experiment.getSpecies());
-                    experimentSpeciesSet.addAll(speciesURIList.stream().map(uri -> {
-                        SpeciesModel speciesModel = new SpeciesModel();
-                        speciesModel.setUri(uri);
-                        return speciesModel;
-                    }).collect(Collectors.toSet()));
-                    experiment.setSpecies(new ArrayList<>(experimentSpeciesSet));
-                    experimentDAO.update(experiment, currentUser);
+                if (insertIntoSomeXp) {
+                    updateExperimentSpeciesFromScientificObjects(contextURI);
                 }
 
                 MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
@@ -899,6 +846,36 @@ public class ScientificObjectAPI {
         }
 
         return new SingleObjectResponse<>(csvValidation).getResponse();
+    }
+
+    /**
+     * Update the list of the species of an experiment based on the scientific objects associated with it.
+     *
+     * @param experimentUri
+     * @throws Exception
+     */
+    private void updateExperimentSpeciesFromScientificObjects(URI experimentUri) throws Exception {
+        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
+        ExperimentModel experiment = experimentDAO.get(experimentUri, currentUser);
+
+        updateExperimentSpeciesFromScientificObjects(experiment, experimentDAO);
+    }
+
+
+    /**
+     * Update the list of the species of an experiment based on the scientific objects associated with it.
+     *
+     * @param experiment
+     * @param experimentDAO
+     * @throws Exception
+     */
+    private void updateExperimentSpeciesFromScientificObjects(ExperimentModel experiment, ExperimentDAO experimentDAO) throws Exception {
+        SpeciesDAO speciesDAO = new SpeciesDAO(sparql);
+
+        List<SpeciesModel> speciesList = speciesDAO.getFromExperimentScientificObjects(experiment.getUri());
+
+        experiment.setSpecies(speciesList);
+        experimentDAO.update(experiment, currentUser);
     }
 
     private void addDuplicateNameErrors(List<SPARQLNamedResourceModel> objects, CSVValidationModel validationModel, Map<String,URI> existingUriByName){

@@ -20,8 +20,6 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.core.Var;
-import org.apache.jena.sparql.expr.ExprVar;
-import org.apache.jena.sparql.path.*;
 import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
@@ -30,7 +28,6 @@ import org.bson.Document;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.germplasm.api.GermplasmCreationDTO;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.user.dal.UserModel;
@@ -216,79 +213,6 @@ public class GermplasmDAO {
         }
         return germplasm;
 
-    }
-
-    /**
-     * Returns the species associated with the given germplasm. If the germplasm is of type Species, then it is returned.
-     *
-     * @param uri
-     * @param userModel
-     * @return
-     * @throws Exception
-     */
-    public GermplasmModel getSpecies(URI uri, UserModel userModel) throws Exception {
-        GermplasmModel germplasm = sparql.getByURI(GermplasmModel.class, uri, userModel.getLanguage());
-        if (sparql.uriExists(SpeciesModel.class, germplasm.getUri())) {
-            return germplasm;
-        }
-        return germplasm.getSpecies();
-    }
-
-    /**
-     * Returns the species associated with the given germplasms. If the germplasm is a species, then it is itself added
-     * to the result list.
-     *
-     * @param germplasmUriList
-     * @return
-     * @throws Exception
-     */
-    public List<URI> getSpeciesURIList(List<URI> germplasmUriList) throws Exception {
-        // In order to do this with a single call to the triple store, the following query is used :
-        // select ?species {
-        //    ?uri a/rdfs:subClassOf* vocabulary:Germplasm.
-        //    {
-        //        ?uri a/subClassOf* vocabulary:Species.
-        //        bind(?uri as ?species)
-        //    } union {
-        //        ?uri vocabulary:fromSpecies ?species.
-        //    }
-        //    values (?uri) { __germplasmUriList__ }
-        // }
-        Path aSubClass = PathFactory.pathSeq(
-                new P_Link(RDF.type.asNode()),
-                new P_ZeroOrMore1(new P_Link(RDFS.subClassOf.asNode()))
-        );
-
-        SelectBuilder selectSpeciesUri = new SelectBuilder();
-        Var uriVar = makeVar("uri");
-        Var speciesVar = makeVar("species");
-
-        selectSpeciesUri.addVar(speciesVar);
-        selectSpeciesUri.addWhere(uriVar, aSubClass, Oeso.Germplasm.asNode());
-
-        WhereBuilder whereIsSpecies = new WhereBuilder();
-        WhereBuilder whereFromSpecies = new WhereBuilder();
-
-        // First case : the germplasm is a species
-        whereIsSpecies.addWhere(uriVar, aSubClass, Oeso.Species.asNode());
-        whereIsSpecies.addBind(new ExprVar(uriVar), speciesVar);
-
-        // Second case : the germplasm has a "fromSpecies" property
-        whereFromSpecies.addWhere(uriVar, Oeso.fromSpecies.asNode(), speciesVar);
-
-        selectSpeciesUri.addWhere(
-                whereIsSpecies.addUnion(whereFromSpecies)
-        );
-
-        SPARQLQueryHelper.addWhereUriValues(selectSpeciesUri, uriVar.getVarName(), germplasmUriList);
-
-        List<SPARQLResult> results = sparql.executeSelectQuery(selectSpeciesUri);
-
-        List<URI> speciesUri = new ArrayList<>();
-        for (SPARQLResult result : results) {
-            speciesUri.add(new URI(result.getStringValue(speciesVar.getVarName())));
-        }
-        return speciesUri;
     }
 
     public List<GermplasmModel> getList(List<URI> uris, String lang, Boolean withMetadata) throws Exception {

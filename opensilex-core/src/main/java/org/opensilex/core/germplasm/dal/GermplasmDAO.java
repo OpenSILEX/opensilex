@@ -9,18 +9,8 @@ package org.opensilex.core.germplasm.dal;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.mongodb.client.MongoCollection;
-import static com.mongodb.client.model.Aggregates.project;
-import static com.mongodb.client.model.Aggregates.unwind;
-import static com.mongodb.client.model.Aggregates.group;
-import static com.mongodb.client.model.Filters.eq;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
-import static com.mongodb.client.model.Projections.computed;
-import java.net.URI;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Pattern;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
@@ -30,15 +20,17 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.expr.ExprVar;
+import org.apache.jena.sparql.path.*;
 import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.SKOS;
 import org.bson.Document;
-import static org.opensilex.core.experiment.dal.ExperimentDAO.appendUserExperimentsFilter;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.germplasm.api.GermplasmCreationDTO;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.user.dal.UserModel;
@@ -46,12 +38,22 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
-import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
-import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
+import org.opensilex.utils.OrderBy;
+
+import java.net.URI;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
+
+import static com.mongodb.client.model.Aggregates.*;
+import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Projections.computed;
+import static org.opensilex.core.experiment.dal.ExperimentDAO.appendUserExperimentsFilter;
+import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
 /**
  * Germplasm DAO
@@ -214,6 +216,79 @@ public class GermplasmDAO {
         }
         return germplasm;
 
+    }
+
+    /**
+     * Returns the species associated with the given germplasm. If the germplasm is of type Species, then it is returned.
+     *
+     * @param uri
+     * @param userModel
+     * @return
+     * @throws Exception
+     */
+    public GermplasmModel getSpecies(URI uri, UserModel userModel) throws Exception {
+        GermplasmModel germplasm = sparql.getByURI(GermplasmModel.class, uri, userModel.getLanguage());
+        if (sparql.uriExists(SpeciesModel.class, germplasm.getUri())) {
+            return germplasm;
+        }
+        return germplasm.getSpecies();
+    }
+
+    /**
+     * Returns the species associated with the given germplasms. If the germplasm is a species, then it is itself added
+     * to the result list.
+     *
+     * @param germplasmUriList
+     * @return
+     * @throws Exception
+     */
+    public List<URI> getSpeciesURIList(List<URI> germplasmUriList) throws Exception {
+        // In order to do this with a single call to the triple store, the following query is used :
+        // select ?species {
+        //    ?uri a/rdfs:subClassOf* vocabulary:Germplasm.
+        //    {
+        //        ?uri a/subClassOf* vocabulary:Species.
+        //        bind(?uri as ?species)
+        //    } union {
+        //        ?uri vocabulary:fromSpecies ?species.
+        //    }
+        //    values (?uri) { __germplasmUriList__ }
+        // }
+        Path aSubClass = PathFactory.pathSeq(
+                new P_Link(RDF.type.asNode()),
+                new P_ZeroOrMore1(new P_Link(RDFS.subClassOf.asNode()))
+        );
+
+        SelectBuilder selectSpeciesUri = new SelectBuilder();
+        Var uriVar = makeVar("uri");
+        Var speciesVar = makeVar("species");
+
+        selectSpeciesUri.addVar(speciesVar);
+        selectSpeciesUri.addWhere(uriVar, aSubClass, Oeso.Germplasm.asNode());
+
+        WhereBuilder whereIsSpecies = new WhereBuilder();
+        WhereBuilder whereFromSpecies = new WhereBuilder();
+
+        // First case : the germplasm is a species
+        whereIsSpecies.addWhere(uriVar, aSubClass, Oeso.Species.asNode());
+        whereIsSpecies.addBind(new ExprVar(uriVar), speciesVar);
+
+        // Second case : the germplasm has a "fromSpecies" property
+        whereFromSpecies.addWhere(uriVar, Oeso.fromSpecies.asNode(), speciesVar);
+
+        selectSpeciesUri.addWhere(
+                whereIsSpecies.addUnion(whereFromSpecies)
+        );
+
+        SPARQLQueryHelper.addWhereUriValues(selectSpeciesUri, uriVar.getVarName(), germplasmUriList);
+
+        List<SPARQLResult> results = sparql.executeSelectQuery(selectSpeciesUri);
+
+        List<URI> speciesUri = new ArrayList<>();
+        for (SPARQLResult result : results) {
+            speciesUri.add(new URI(result.getStringValue(speciesVar.getVarName())));
+        }
+        return speciesUri;
     }
 
     public List<GermplasmModel> getList(List<URI> uris, String lang, Boolean withMetadata) throws Exception {

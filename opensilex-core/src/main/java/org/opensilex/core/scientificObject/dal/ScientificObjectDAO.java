@@ -682,7 +682,7 @@ public class ScientificObjectDAO {
      * @return the URI of the created object
      * @throws DuplicateNameException if some object with the same name exist into the given graph
      */
-    public URI create(URI contextURI, ExperimentModel experiment, URI soType, URI objectURI, String name, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws DuplicateNameException, Exception {
+    public ScientificObjectModel create(URI contextURI, ExperimentModel experiment, URI soType, URI objectURI, String name, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws DuplicateNameException, Exception {
 
         checkUniqueNameByGraph(contextURI,name,null,true);
 
@@ -690,20 +690,10 @@ public class ScientificObjectDAO {
 
         ScientificObjectModel object = initObject(contextURI, experiment, soType, name, relations, currentUser);
 
-        // Check that the germplasm of the OS matches the species of its experiment
-        if (experiment != null) {
-            try {
-                checkGermplasmExperimentSpecies(object, experiment.getUri());
-            } catch (SPARQLInvalidModelException e) {
-                throw new BadRequestException(e.getMessage());
-            }
-        }
-
         try {
             sparql.startTransaction();
             nosql.startTransaction();
             sparql.create(graphNode, object);
-            objectURI = object.getUri();
 
             MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
             MoveModel facilityMoveEvent = new MoveModel();
@@ -718,40 +708,7 @@ public class ScientificObjectDAO {
             sparql.rollbackTransaction(ex);
         }
 
-        return objectURI;
-    }
-
-    private boolean checkExperimentHasAnySpecies(URI experimentUri) throws SPARQLException {
-        AskBuilder askExperimentHasSpecies = sparql.getUriExistsQuery(ExperimentModel.class, experimentUri)
-                .addWhere(SPARQLDeserializers.nodeURI(experimentUri), Oeso.hasSpecies, makeVar(ExperimentModel.SPECIES_FIELD));
-        return sparql.executeAskQuery(askExperimentHasSpecies);
-    }
-
-    /**
-     * Checks that the germplasm of the OS (if specified) matches the experiment it belongs to (if there is one).
-     * Otherwise, throws a SPARQLInvalidModelException.
-     *
-     * @param object The scientific object
-     * @param experimentUri The experiment URI
-     * @throws Exception
-     */
-    private void checkGermplasmExperimentSpecies(ScientificObjectModel object, URI experimentUri) throws Exception {
-        SPARQLModelRelation germplasmRelation = object.getRelation(Oeso.hasGermplasm);
-        if (germplasmRelation != null && checkExperimentHasAnySpecies(experimentUri)) {
-            URI germplasmUri = new URI(germplasmRelation.getValue());
-            AskBuilder ask = sparql.getUriExistsQuery(GermplasmModel.class, germplasmUri);
-            appendGermplasmExperimentFilter(ask, germplasmUri, experimentUri);
-            if (!sparql.executeAskQuery(ask)) {
-                throw new SPARQLInvalidModelException("Incompatible types : " + germplasmUri + " is not a valid species for " + experimentUri);
-            }
-        }
-    }
-
-    private <T extends AbstractQueryBuilder<T>> void appendGermplasmExperimentFilter(WhereClause<T> where, URI germplasmUri, URI experimentUri) throws SPARQLException {
-        Var speciesVar = makeVar(ExperimentModel.SPECIES_FIELD);
-        where.addGraph(sparql.getDefaultGraph(ExperimentModel.class),
-                SPARQLDeserializers.nodeURI(experimentUri), Oeso.hasSpecies, speciesVar);
-        where.addWhere(SPARQLDeserializers.nodeURI(germplasmUri), Oeso.fromSpecies, speciesVar);
+        return object;
     }
 
     public static boolean fillFacilityMoveEvent(MoveModel facilityMoveEvent, SPARQLResourceModel object) throws Exception {

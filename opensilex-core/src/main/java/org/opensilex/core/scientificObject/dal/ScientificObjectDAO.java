@@ -857,7 +857,8 @@ public class ScientificObjectDAO {
 
         if (relations != null) {
             for (RDFObjectRelationDTO relation : relations) {
-                if (!ontologyDAO.validateObjectValue(contextURI, model, relation.getProperty(), relation.getValue(), object)) {
+                URI propertyShortURI = new URI(SPARQLDeserializers.getShortURI(relation.getProperty()));
+                if (!ontologyDAO.validateObjectValue(contextURI, model, propertyShortURI, relation.getValue(), object)) {
                     throw new InvalidValueException("Invalid relation value for " + relation.getProperty().toString() + " => " + relation.getValue());
                 }
             }

@@ -1437,6 +1437,12 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
                 <owl:onDataRange rdf:resource="http://www.opensilex.org/vocabulary/oeso#longString"/>
             </owl:Restriction>
         </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasGermplasm"/>
+                <owl:someValuesFrom rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
     </owl:Class>
     
 

@@ -303,18 +303,10 @@ public class EventDAO<T extends EventModel> {
     }
 
 
-    protected void appendTimeFilter(SelectBuilder select,
-                                    ElementGroup eventGraphGroupElem,
+    protected void appendTimeFilter(ElementGroup eventGraphGroupElem,
                                     OffsetDateTime start,
                                     OffsetDateTime end
     ) throws Exception {
-
-        // remove ?start and ?end vars and replace then by start/end timestamp vars
-        select.getVars().removeIf(var ->
-                var.getVarName().equals(EventModel.START_FIELD) || var.getVarName().equals(EventModel.END_FIELD)
-        );
-        select.addVar(startInstantTimeStampVar);
-        select.addVar(endInstantTimeStampVar);
 
         if (start == null && end == null) {
             return;
@@ -337,17 +329,21 @@ public class EventDAO<T extends EventModel> {
         model.setIsInstant(Boolean.parseBoolean(result.getStringValue(EventModel.IS_INSTANT_FIELD)));
         model.setDescription(result.getStringValue(EventModel.DESCRIPTION_FIELD));
 
-        String startStr = result.getStringValue(startInstantTimeStampVar.getVarName());
-        if (!StringUtils.isEmpty(startStr)) {
+        String startTimeStamp = result.getStringValue(startInstantTimeStampVar.getVarName());
+        if (!StringUtils.isEmpty(startTimeStamp)) {
+
             InstantModel instant = new InstantModel();
-            instant.setDateTimeStamp(timeDeserializer.fromString(startStr));
+            instant.setUri(URI.create(result.getStringValue(startInstantVar.getVarName())));
+            instant.setDateTimeStamp(timeDeserializer.fromString(startTimeStamp));
             model.setStart(instant);
         }
 
-        String endStr = result.getStringValue(endInstantTimeStampVar.getVarName());
-        if (!StringUtils.isEmpty(endStr)) {
+        String endTimeStamp = result.getStringValue(endInstantTimeStampVar.getVarName());
+        if (!StringUtils.isEmpty(endTimeStamp)) {
+
             InstantModel instant = new InstantModel();
-            instant.setDateTimeStamp(timeDeserializer.fromString(endStr));
+            instant.setUri(URI.create(result.getStringValue(endInstantVar.getVarName())));
+            instant.setDateTimeStamp(timeDeserializer.fromString(endTimeStamp));
             model.setEnd(instant);
         }
 
@@ -405,7 +401,7 @@ public class EventDAO<T extends EventModel> {
 
                     // for each optional field, the filtering must be applied outside the OPTIONAL
                     appendDescriptionFilter(eventGraphGroupElem, descriptionPattern);
-                    appendTimeFilter(select, eventGraphGroupElem, start, end);
+                    appendTimeFilter(eventGraphGroupElem, start, end);
 
                     initialSelect.set(select);
                 }),
@@ -463,7 +459,7 @@ public class EventDAO<T extends EventModel> {
                     // for each optional field, the filtering must be applied outside of the OPTIONAL
                     appendDescriptionFilter(eventGraphGroupElem, descriptionPattern);
                     appendInTargetsValues(select, targets.stream(), targets.size());
-                    appendTimeFilter(select, eventGraphGroupElem, start, end);
+                    appendTimeFilter(eventGraphGroupElem, start, end);
                     initialSelect.set(select);
                 }),
                 customHandlerByFields,

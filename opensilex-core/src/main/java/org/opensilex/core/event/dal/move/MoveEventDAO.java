@@ -268,7 +268,7 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
                     appendDescriptionFilter(eventGraphGroupElem, descriptionPattern);
 
                     appendTargetEqFilter(eventGraphGroupElem, target.toString(), orderByList);
-                    appendTimeFilter(select,eventGraphGroupElem, start, end);
+                    appendTimeFilter(eventGraphGroupElem, start, end);
 
                     if (CollectionUtils.isEmpty(orderByList)) {
                         select.addOrderBy(endInstantTimeStampVar, Order.DESCENDING);

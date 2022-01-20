@@ -18,13 +18,19 @@ import java.util.UUID;
 
 /**
  * @author Renaud COLIN
+ *
+ * Model describing an Instant by using the {@link Time#Instant} concept
+ * @see Time#Instant
  */
+
 @SPARQLResource(
         ontology = Time.class,
         resource = "Instant",
-        graph = "event"
+        graph = InstantModel.GRAPH
 )
 public class InstantModel extends SPARQLResourceModel implements ClassURIGenerator<InstantModel> {
+
+    public static final String GRAPH = "instant";
 
     @SPARQLProperty(
         ontology = Time.class,

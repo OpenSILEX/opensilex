@@ -19,7 +19,9 @@ import org.apache.jena.sparql.expr.E_StrLowerCase;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.ExprVar;
 import org.apache.jena.vocabulary.RDFS;
+import org.opensilex.sparql.deserializer.DateTimeDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
+import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidUriListException;
@@ -27,6 +29,8 @@ import org.opensilex.sparql.exceptions.SPARQLUnknownFieldException;
 import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.model.time.InstantModel;
+import org.opensilex.sparql.model.time.Time;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.uri.generation.URIGenerator;
@@ -40,6 +44,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URI;
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.function.BiConsumer;
 
@@ -63,6 +68,8 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     protected SPARQLClassQueryBuilder classQueryBuilder;
     protected SPARQLClassAnalyzer classAnalizer;
 
+    private final DateTimeDeserializer timeDeserializer;
+
     /**
      * Default keyword used for each {@link org.opensilex.sparql.model.SPARQLResourceModel} associated graph
      */
@@ -74,6 +81,12 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         this.mapperIndex = mapperIndex;
         this.baseGraphURI = baseGraphURI;
         this.generationPrefixURI = generationPrefixURI;
+
+        try {
+            timeDeserializer = (DateTimeDeserializer) SPARQLDeserializers.getForClass(OffsetDateTime.class);
+        } catch (SPARQLDeserializerNotFoundException e) {
+           throw new RuntimeException(e);
+        }
     }
 
     protected void init() throws SPARQLInvalidClassDefinitionException {
@@ -97,8 +110,8 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
                     generationPrefixURI = classGraph;
                     baseGraphURI = classGraph;
                 }else{
-                    generationPrefixURI = new URI(generationPrefixURI+"/"+classGraph);
-                    baseGraphURI = new URI(baseGraphURI+DEFAULT_GRAPH_KEYWORD+"/"+ classGraph);
+                    generationPrefixURI = new URI(generationPrefixURI + URIGenerator.URI_SEPARATOR + classGraph);
+                    baseGraphURI = new URI(baseGraphURI+DEFAULT_GRAPH_KEYWORD+ URIGenerator.URI_SEPARATOR + classGraph);
                 }
             }else{
                 baseGraphURI = null;
@@ -152,8 +165,8 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     public T createInstance(Node graph, SPARQLResult result, String lang, SPARQLService service) throws Exception {
 
         SPARQLDeserializer<URI> uriDeserializer = SPARQLDeserializers.getForClass(URI.class);
-        URI uri = uriDeserializer.fromString((result.getStringValue(classAnalizer.getURIFieldName())));
 
+        URI uri = uriDeserializer.fromString((result.getStringValue(classAnalizer.getURIFieldName())));
         T instance = createInstance(uri);
 
         URI realType = new URI(result.getStringValue(getTypeFieldName()));
@@ -196,8 +209,10 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
                     propertyGraph = mapperIndex.getForClass(fieldType).getDefaultGraph();
                 }
 
-                SPARQLProxyResource<?> proxy;
+                SPARQLProxyResource<?> proxy = null;
                 boolean useDefaultGraph = classAnalizer.useDefaultGraph(field);
+
+                // SPARQLNamedResourceModel optimization : get object name from SPARQL results without proxy-delegation
                 if (SPARQLNamedResourceModel.class.isAssignableFrom(fieldType)) {
                     String fieldNameVar = SPARQLClassQueryBuilder.getObjectNameVarName(field.getName());
                     String name = result.getStringValue(fieldNameVar);
@@ -215,10 +230,16 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
                             proxy = new SPARQLProxyResource<>(mapperIndex, propertyGraph, objURI, fieldType, lang, useDefaultGraph, service);
                         }
                     }
-                } else {
+                // InstantModel optimization : build InstantModel with result without proxy (no additional SPARQL query for  InstantModel#getDateTimeStamp() retrieval)
+                } else if(InstantModel.class.isAssignableFrom(fieldType)) {
+                    buildInstantModelWithoutProxy(instance, field, result, objURI, setter);
+                }else {
                     proxy = new SPARQLProxyResource<>(mapperIndex, propertyGraph, objURI, fieldType, lang, useDefaultGraph, service);
                 }
-                setter.invoke(instance, proxy.getInstance());
+
+                if(proxy != null){
+                    setter.invoke(instance, proxy.getInstance());
+                }
             }
         }
 
@@ -257,6 +278,32 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         Set<Property> properties = classAnalizer.getManagedProperties();
         instance.setRelations(new SPARQLProxyRelationList(mapperIndex, graph, uri, properties, lang, service).getInstance());
         return instance;
+    }
+
+    /**
+     * Set an {@link InstantModel} (by using result) as field of the given instance instead of Using {@link SPARQLProxy}
+     * @param instance the {@link SPARQLResourceModel} to update
+     * @param field the instance {@link Class} field, which is a sub-type of {@link InstantModel}
+     * @param result the {@link SPARQLResult} which contains value associated to {@link InstantModel#getUri()} and {@link InstantModel#getDateTimeStamp()}
+     * @param objURI URI of the {@link InstantModel}
+     * @param setter setter from instance {@link Class}, used to set value for field
+     * @throws Exception
+     */
+    private void buildInstantModelWithoutProxy(T instance, Field field, SPARQLResult result, URI objURI, Method setter) throws Exception {
+
+        String timeStampVarName = getTimeStampVarName(field.getName());
+        String timestamp = result.getStringValue(timeStampVarName);
+
+        if (!StringUtils.isEmpty(timestamp)) {
+
+            InstantModel instant = new InstantModel();
+            instant.setUri(objURI);
+            instant.setDateTimeStamp(timeDeserializer.fromString(timestamp));
+            instant.setType(Time.InstantURI);
+
+            // invoke setter with created InstantModel instead of using proxy
+            setter.invoke(instance,instant);
+        }
     }
 
     public T createInstance(URI uri) throws Exception {
@@ -505,17 +552,20 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
         return classAnalizer.getAutoUpdateListFields();
     }
 
-    public List<SPARQLResourceModel> getAllDependentResourcesToCreate(T instance) {
-        List<SPARQLResourceModel> dependentResourcesToCreate = new ArrayList<>();
+    /**
+     *
+     * @param subjectGraph graph used to store instance (could be null, the default graph or a given graph)
+     * @param instance the instance for which we want to create all nested instance
+     * @return association between sub-instance and theirs graph (key/graph is nullable)
+     */
+    public Map<URI,List<SPARQLResourceModel>> getNestedInstancesByGraph(URI subjectGraph, T instance) {
+
+        Map<URI,List<SPARQLResourceModel>> nestedInstanceByGraph = new HashMap<>();
 
         classAnalizer.forEachObjectProperty(ThrowingBiConsumer.wrap((field, property) -> {
             SPARQLResourceModel value = (SPARQLResourceModel) classAnalizer.getFieldValue(field, instance);
             if (value != null) {
-                SPARQLClassObjectMapper<SPARQLResourceModel> modelMapper = mapperIndex.getForClass(value.getClass());
-                URI uri = modelMapper.getURI(value);
-                if (uri == null) {
-                    dependentResourcesToCreate.add(value);
-                }
+                addNestedResource(nestedInstanceByGraph, field, value, subjectGraph);
             }
         }, Field.class, Property.class, Exception.class));
 
@@ -523,27 +573,50 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
             List<? extends SPARQLResourceModel> values = (List<? extends SPARQLResourceModel>) classAnalizer.getFieldValue(field, instance);
             if (values != null && !values.isEmpty()) {
                 for (SPARQLResourceModel value : values) {
-                    SPARQLClassObjectMapper<SPARQLResourceModel> modelMapper = mapperIndex.getForClass(value.getClass());
-                    URI uri = modelMapper.getURI(value);
-                    if (uri == null) {
-                        dependentResourcesToCreate.add(value);
-                    }
+                    addNestedResource(nestedInstanceByGraph, field, value, subjectGraph);
                 }
             }
         }, Field.class, Property.class, Exception.class));
 
-        return dependentResourcesToCreate;
+        return nestedInstanceByGraph;
+    }
+
+    /**
+     *
+     * @param nestedResourcesByGraph association between sub-instance and theirs graph (key/graph is nullable)
+     * @param field object field
+     * @param value object value
+     * @param subjectGraph graph used to store instance (could be null, the default graph or a given graph)
+     */
+    private void addNestedResource(Map<URI, List<SPARQLResourceModel>> nestedResourcesByGraph, Field field, SPARQLResourceModel value, URI subjectGraph) throws org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException, SPARQLInvalidClassDefinitionException {
+
+        SPARQLClassObjectMapper<SPARQLResourceModel> modelMapper = mapperIndex.getForClass(value.getClass());
+        
+        URI uri = modelMapper.getURI(value);
+        if (uri == null) {
+            URI graph;
+
+            // build graph according SPARQLProperty.useDefaultGraph value
+            if(modelMapper.getClassAnalizer().useDefaultGraph(field)){
+                graph = modelMapper.getDefaultGraphURI();  // use object default graph
+            } else {
+                graph = subjectGraph;  // use graph used to store subjects (can be the default graph or a custom graph)
+            }
+            // map values to graph
+            List<SPARQLResourceModel> nestedResources =  nestedResourcesByGraph.computeIfAbsent(graph, graphKey -> new ArrayList<>());
+            nestedResources.add(value);
+        }
     }
 
     public boolean isReverseRelation(Field relationField) {
         return classAnalizer.isReverseRelation(relationField);
     }
 
-    public <T extends SPARQLResourceModel> Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> getRelationsUrisByMapper(T instance) throws Exception {
+    public Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> getRelationsUrisByMapper(T instance) throws Exception {
         return getRelationsUrisByMapper(instance, new HashMap<>());
     }
 
-    public <T extends SPARQLResourceModel> Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> getRelationsUrisByMapper(T instance, Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> existingMap) throws Exception {
+    public Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> getRelationsUrisByMapper(T instance, Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> existingMap) throws Exception {
         return getRelationsUrisByMapper(instance, existingMap, false);
     }
 
@@ -552,11 +625,11 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
 
     }
 
-    public <T extends SPARQLResourceModel> Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> getReverseRelationsUrisByMapper(T instance, Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> existingMap) throws Exception {
+    public  Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> getReverseRelationsUrisByMapper(T instance, Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> existingMap) throws Exception {
         return getRelationsUrisByMapper(instance, existingMap, true);
     }
 
-    private <T extends SPARQLResourceModel> Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> getRelationsUrisByMapper(T instance, Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> existingMap, boolean reverse) {
+    private  Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> getRelationsUrisByMapper(T instance, Map<SPARQLClassObjectMapper<SPARQLResourceModel>, Set<URI>> existingMap, boolean reverse) {
         classAnalizer.forEachObjectProperty(ThrowingBiConsumer.wrap((field, property) -> {
                     if ((reverse && classAnalizer.isReverseRelation(field))
                             || (!reverse && !classAnalizer.isReverseRelation(field))) {

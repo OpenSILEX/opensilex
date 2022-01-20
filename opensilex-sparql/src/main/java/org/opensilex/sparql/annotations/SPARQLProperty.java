@@ -23,20 +23,25 @@ import java.lang.annotation.Target;
 @Documented
 @Inherited
 public @interface SPARQLProperty {
-    
+
     Class<?> ontology();
-    
+
     String property();
-    
+
     boolean required() default false;
-    
+
     boolean inverse() default false;
-    
+
     boolean ignoreUpdateIfNull() default false;
-    
+
     boolean cascadeDelete() default false;
-    
+
     boolean autoUpdate() default false;
-    
+
+    /**
+     * @return true if the object is stored inside his default graph,
+     * if false, then the object is stored inside the subject graph
+     */
     boolean useDefaultGraph() default true;
+
 }

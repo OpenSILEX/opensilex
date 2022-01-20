@@ -1013,8 +1013,17 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
         validate(instance, parent);
 
-        for (SPARQLResourceModel subInstance : mapper.getAllDependentResourcesToCreate(instance)) {
-            create(getDefaultGraph(subInstance.getClass()), subInstance, instance, subInstanceUpdateBuilder, checkUriExist, blankNode, null);
+        URI subjectGraph = graph != null ? URI.create(graph.toString()) : null;
+
+        Map<URI, List<SPARQLResourceModel>> nestedResources = mapper.getNestedInstancesByGraph(subjectGraph, instance);
+        for(Map.Entry<URI,List<SPARQLResourceModel>> entry : nestedResources.entrySet()){
+
+            URI subGraph = entry.getKey();
+            Node subGraphNode = subGraph != null ? SPARQLDeserializers.nodeURI(subGraph) : null;
+
+            for (SPARQLResourceModel subInstance :  entry.getValue()) {
+                create(subGraphNode, subInstance, instance, subInstanceUpdateBuilder, checkUriExist, blankNode, null);
+            }
         }
     }
 

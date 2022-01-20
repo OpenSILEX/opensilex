@@ -14,14 +14,15 @@
                         @onCreate="refresh()"
                         @onUpdate="refresh()"
                         modalSize="lg"
+                        successMessage="OntologyPropertyView.the-property"
                         :icon="icon"
                     ></opensilex-ModalForm>
                 </div>
 
                 <opensilex-StringFilter
-                    :filter.sync="filter"
+                    :filter.sync="nameFilter"
                     @update="updateFilter()"
-                    placeholder="OntologyClassView.search"
+                    placeholder="OntologyPropertyView.search"
                 ></opensilex-StringFilter>
 
                 <opensilex-OntologyPropertyTreeView
@@ -53,10 +54,12 @@ import {Store} from "vuex";
 @Component
 export default class OntologyPropertyView extends Vue {
 
-    $opensilex: OpenSilexVuePlugin;
-    $store: Store<any>;
+  $opensilex: OpenSilexVuePlugin;
+  $store: Store<any>;
 
-    /**
+  private nameFilter: string = "";
+
+  /**
      * Return the current connected user
      */
     get user() {
@@ -153,10 +156,12 @@ en:
     OntologyPropertyView:
         add: Create property
         update: Update property
-
+        the-property: The property
+        search: Search and select a property
 fr:
     OntologyPropertyView:
         add: Créer une propriété
         update: Mettre à jour la propriété
-
+        the-property: La propriété
+        search: Rechercher et sélectioner une propriété
 </i18n>

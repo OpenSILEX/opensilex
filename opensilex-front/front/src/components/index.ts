@@ -480,6 +480,10 @@ import VariableSelector from './variables/views/VariableSelector.vue';
 components["opensilex-VariableSelector"] = VariableSelector;
 import UsedVariableSelector from './variables/views/UsedVariableSelector.vue';
 components["opensilex-UsedVariableSelector"] = UsedVariableSelector;
+import VariablePropertySelector from './variables/views/VariablePropertySelector.vue';
+components["opensilex-VariablePropertySelector"] = VariablePropertySelector;
+
+
 // import VariableSelectorWithFilter from './variables/views/VariableSelectorWithFilter.vue';
 // components["opensilex-VariableSelectorWithFilter"] = VariableSelectorWithFilter;
 // import UsedVariableSelectorWithFilter from './variables/views/UsedVariableSelectorWithFilter.vue';

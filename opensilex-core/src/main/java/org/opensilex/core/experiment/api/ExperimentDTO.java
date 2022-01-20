@@ -39,9 +39,6 @@ public abstract class ExperimentDTO {
     
     @JsonProperty("objective")
     protected String objective;
-    
-    @JsonProperty("species")
-    protected List<URI> species = new ArrayList<>();
 
     @JsonProperty("organisations") 
     protected List<URI> infrastructures = new ArrayList<>();
@@ -163,16 +160,6 @@ public abstract class ExperimentDTO {
 
     public ExperimentDTO setGroups(List<URI> groups) {
         this.groups = groups;
-        return this;
-    }
-
-    
-    public List<URI> getSpecies() {
-        return species;
-    }
-
-    public ExperimentDTO setSpecies(List<URI> species) {
-        this.species = species;
         return this;
     }
 

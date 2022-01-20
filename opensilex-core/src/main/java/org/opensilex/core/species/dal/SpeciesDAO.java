@@ -91,9 +91,9 @@ public class SpeciesDAO {
         // select distinct ?species {
         //    graph <__experimentUri__> {
         //        ?scientificObject a ?rdfType.
+        //        ?scientificObject vocabulary:hasGermplasm ?germplasm.
         //    }
         //    ?rdfType rdfs:subClassOf* vocabulary:ScientificObject.
-        //    ?scientificObject vocabulary:hasGermplasm ?germplasm.
         //    {
         //        ?germplasm a/rdfs:subClassOf* vocabulary:Species.
         //        bind(?germplasm as ?species)
@@ -121,11 +121,12 @@ public class SpeciesDAO {
         select.addVar(speciesVar);
 
         // selection of the scientific object and its germplasm
-        select.addGraph(SPARQLDeserializers.nodeURI(experimentUri),
-                scientificObjectVar, RDF.type.asNode(), rdfTypeVar);
+        WhereBuilder whereInExperiment = new WhereBuilder();
+        whereInExperiment.addWhere(scientificObjectVar, RDF.type.asNode(), rdfTypeVar);
+        whereInExperiment.addWhere(scientificObjectVar, Oeso.hasGermplasm.asNode(), germplasmVar);
+        select.addGraph(SPARQLDeserializers.nodeURI(experimentUri), whereInExperiment);
         select.addWhere(
                 rdfTypeVar, subClassOf, Oeso.ScientificObject.asNode());
-        select.addWhere(scientificObjectVar, Oeso.hasGermplasm.asNode(), germplasmVar);
 
         // The two cases for the species
         WhereBuilder whereIsSpecies = new WhereBuilder();

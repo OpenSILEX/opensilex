@@ -163,8 +163,11 @@ public abstract class AbstractOntologyStore implements OntologyStore {
 
     public void clear() {
         modelsByUris.clear();
-        Set<String> vertexesCopy = new HashSet<>(modelsGraph.vertexSet());
-        modelsGraph.removeAllVertices(vertexesCopy);
+
+        if(! modelsGraph.vertexSet().isEmpty()){
+            Set<String> vertexesCopy = new HashSet<>(modelsGraph.vertexSet());
+            modelsGraph.removeAllVertices(vertexesCopy);
+        }
     }
 
     private String formatURI(URI uri) {
@@ -250,8 +253,17 @@ public abstract class AbstractOntologyStore implements OntologyStore {
             if (domain == null || domain.getUri() == null) {
                 LOGGER.warn("{} NULL rdfs:domain for property {} {}", ANSI_RED, property.getUri(), ANSI_RESET);
             } else {
+
                 ClassModel existingDomain = getClassModel(domain.getUri());
                 property.setDomain(existingDomain);
+
+                // update ClassModel data/object properties
+                if(property instanceof DatatypePropertyModel){
+                    existingDomain.getDatatypeProperties().put(property.getUri(), (DatatypePropertyModel) property);
+
+                }else if(property instanceof ObjectPropertyModel){
+                    existingDomain.getObjectProperties().put(property.getUri(), (ObjectPropertyModel) property);
+                }
             }
 
             URI rangeURI = property.getRangeURI();
@@ -270,16 +282,8 @@ public abstract class AbstractOntologyStore implements OntologyStore {
 
         if (restriction.getOnDataRange() == null) {
             LOGGER.warn("{} NULL owl:onDataRange for restriction {} on property {} {}", ANSI_RED, restriction.getUri(), property.getUri(), ANSI_RESET);
-
-            if (property.getRange() == null) {
-                LOGGER.warn("{} NULL rdfs:range for property {}. The associated restriction {} will not be registered {}", ANSI_RED, property.getUri(), restriction.getUri(), ANSI_RESET);
-            } else {
-                restriction.setOnDataRange(property.getRange());
-            }
-        }
-
-        if (restriction.getOnDataRange() != null) {
-            restrictedClass.getDatatypeProperties().put(property.getUri(), property);
+        }else{
+            //            restrictedClass.getDatatypeProperties().put(property.getUri(), property);
             restrictedClass.getRestrictionsByProperties().put(restriction.getOnProperty(), restriction);
         }
     }
@@ -287,18 +291,11 @@ public abstract class AbstractOntologyStore implements OntologyStore {
     private void linkObjectProperty(OwlRestrictionModel restriction, ClassModel restrictedClass, ObjectPropertyModel property) throws SPARQLInvalidURIException {
         if (restriction.getOnClass() == null) {
             LOGGER.warn("{} NULL owl:onClass for restriction {} on property {} {}", ANSI_RED, restriction.getUri(), property.getUri(), ANSI_RESET);
+        }else{
+            // update onClass with complete ClassModel from store
 
-            if (property.getRange() == null) {
-                LOGGER.warn("{} NULL rdfs:range for property {}. The associated restriction {} will not be registered {}", ANSI_RED, property.getUri(), restriction.getUri(), ANSI_RESET);
-            } else {
-                restriction.setOnClass(property.getRange());
-            }
-        }
-        // update onClass with complete ClassModel from store
-        if (restriction.getOnClass() != null && restriction.getOnClass().getUri() != null) {
             restriction.setOnClass(getClassModel(restriction.getOnClass().getUri()));
-
-            restrictedClass.getObjectProperties().put(property.getUri(), property);
+            //            restrictedClass.getObjectProperties().put(property.getUri(), property);
             restrictedClass.getRestrictionsByProperties().put(restriction.getOnProperty(), restriction);
         }
     }
@@ -317,8 +314,8 @@ public abstract class AbstractOntologyStore implements OntologyStore {
             if (restriction.getOnProperty() == null) {
                 throw new IllegalArgumentException("Null property URI for restriction : " + restriction.getUri());
             }
-            AbstractPropertyModel<?> propertyModel = getProperty(restriction.getOnProperty(), null, null);
 
+            AbstractPropertyModel<?> propertyModel = getProperty(restriction.getOnProperty(), null, null);
             if (propertyModel instanceof DatatypePropertyModel) {
                 linkDataProperty(restriction, restrictedClass, (DatatypePropertyModel) propertyModel);
             } else if (propertyModel instanceof ObjectPropertyModel) {

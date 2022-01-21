@@ -501,6 +501,10 @@ export default class InfrastructureTree extends Vue {
   overflow-y: auto;
 }
 
+::v-deep .sl-vue-tree-nodes-list {
+  overflow: visible;
+}
+
 .leaf-spacer {
   display: inline-block;
   width: 23px;

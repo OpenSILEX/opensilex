@@ -2333,7 +2333,6 @@ Used in OpenSILEX for group things</rdfs:comment>
         <rdfs:label xml:lang="en">Organization</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://xmlns.com/foaf/0.1/Organization">
-        <rdfs:label xml:lang="fr">Organisation</rdfs:label>
         <rdfs:comment xml:lang="en">The Organization class represents a kind of Agent corresponding to social instititutions such as companies, societies etc.</rdfs:comment>
     </rdf:Description>
 </rdf:RDF>

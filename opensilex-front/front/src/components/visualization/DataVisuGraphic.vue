@@ -197,6 +197,11 @@ export default class DataVisuGraphic extends Vue {
   @Prop({
     default: true
   })
+  activateContextMenuShow;
+
+  @Prop({
+    default: true
+  })
   isAddEvents;
 
   data: any = null;
@@ -494,7 +499,8 @@ export default class DataVisuGraphic extends Vue {
                   },
                   contextmenu: function(e) {
                     e.preventDefault();
-                    that.pointRightClick(e, this);
+                    that.activateContextMenuShow ?
+                    that.pointRightClick(e, this) : '';
                   }
                 }
               }

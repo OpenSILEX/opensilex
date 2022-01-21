@@ -463,6 +463,12 @@ import VariableDetails from './variables/VariableDetails.vue';
 components["opensilex-VariableDetails"] = VariableDetails;
 import VariableView from './variables/views/VariableView.vue';
 components["opensilex-VariableView"] = VariableView;
+import VariableVisualizationTab from './variables/views/VariableVisualizationTab.vue';
+components["opensilex-VariableVisualizationTab"] = VariableVisualizationTab;
+import VariableVisualizationForm from './variables/form/VariableVisualizationForm.vue';
+components["opensilex-VariableVisualizationForm"] = VariableVisualizationForm;
+import VariableDevicesSelector from './variables/form/VariableDevicesSelector.vue';
+components["opensilex-VariableDevicesSelector"] = VariableDevicesSelector;
 import VariableHelp from './variables/views/VariableHelp.vue';
 components["opensilex-VariableHelp"] = VariableHelp;
 

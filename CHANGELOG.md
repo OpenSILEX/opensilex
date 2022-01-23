@@ -7,34 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [1.0.0-rc+2] - 2022-01-20
+## [1.0.0-rc+2] - 2022-01-23
+
+Be carful, updating to this new version need to execute some actions. See [Versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc+2.md).
+New installations don't need updating action.
 
 ### Added
 - Concept of "Site" with an address : use W3C vcard specification.
-- OpenSILEX migration modules with command.
-- Add command org.opensilex.migration.GraphAndCollectionMigration for SPARQL graph and MongoDB collection renaming after URI generation update
 - Filter on variables with filter in entity, entity of interest, characteristic, method, unit, group of variables
-- Append FOAF.rdf ontology
-- Web service in Ontology API to rename a URI.
-- Variable and device association on data creation
-- Species become optional in an experiment
 - Search in germplasm's attributs in Webapp
+- Service in Ontology API to rename an URI.
+- New filter on variable in Search Device service, for provenance's agent.
+- Append FOAF.rdf ontology
+- OpenSILEX migration modules with command.
+- Command org.opensilex.migration.GraphAndCollectionMigration for SPARQL graph and MongoDB collection renaming after URI generation update
+
+### Added in pre-production
+- Visualisation og device value by variable. See. Variable / visualisation
+- Species become optional in an experiment
 
 ###  Fixed or improvement
-- Control access in the Web interface, in progess.
-- Update model graph from sets/<model_name> to set/<model_name>. Update URI generation by using "id" instead of "set" : this improvement need an action. see
-See [Versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc+2.md) when upgrading.
+- **WARNING:** Update model graph from sets/<model_name> to set/<model_name>. Update URI generation by using "id" instead of "set" : **this improvement need an action**. See [Versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc+2.md) if updating.
+- **WARNING:** Organization and Facilities ontologies. See [Versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc+2.md) if updating
+- Control access in the Web interface, in progress
+- Variable and device association on data creation
 - Protect Device from removing when data exists
-- Add a Variable filter on the Search Device service, for provenance's agent.
-- Test and manage ambiguity for variable / device association on Data Creation
-- Improve API message if the json has 2 duplicated attributes ,or any kind of errors
+- Manage ambiguity of variable / device association at data creation
+- API JSON message for duplicated attributes, or any kind of errors
 - Remove experiment name using into URI generation
-- scientificObject tree filter.
+- Scientific Object tree filter, in progress
 - Bugs fixed :
   - germplasm uri redirecting
   - all device type are linked to its root device type
+  - others bugs
 
-### Known Issue
+### Some Known Issues
 - Problem of authentification when migrate. It's due to FOAF import. You need to remove `<http://xmlns.com/foaf/0.1/Agent> rdfs:label "Agent"`
 - When installing other version, PHIS ontology is imported. You need to remove <http://www.opensilex.org/vocabulary/oeso-ext> context
 - Some installation have problem with geospatial visualisation.
@@ -173,7 +180,7 @@ Pre-release of OpenSILEX. New features and improvement. Device, Event, Move, Imp
 - Geospatial visualisation improvement
 - Structural Area managment
 - Graphic Visualization of a Scientific Object or Device Data
-- Organisation (beta version)
+- Organization (beta version)
 - Web Services have been homogenised: semantic, fields order, paths, etc.
 
 ********************************************************************************

@@ -416,4 +416,9 @@ public abstract class OpenSilexModule implements OpenSilexExtension {
     public void shutdown() throws Exception {
         OpenSilexModule.LOGGER.debug("Nothing to shutdown for module class: " + getClass().getCanonicalName());
     }
+
+    @Override
+    public String toString() {
+        return getClass().getSimpleName();
+    }
 }

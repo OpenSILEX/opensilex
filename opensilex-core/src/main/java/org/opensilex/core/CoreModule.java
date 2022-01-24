@@ -96,16 +96,16 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
                 "oa"
         ));
         list.add(new OntologyFileDefinition(
-                "http://www.opensilex.org/vocabulary/oeso#",
+                Oeso.NS,
                 ONTOLOGIES_DIRECTORY+"/oeso-core.owl",
                 Lang.RDFXML,
-                "vocabulary"
+                Oeso.PREFIX
         ));
         list.add(new OntologyFileDefinition(
-                "http://www.opensilex.org/vocabulary/oeev#",
+                Oeev.NS,
                 ONTOLOGIES_DIRECTORY+"/oeev.owl",
                 Lang.RDFXML,
-                "oeev"
+                Oeev.PREFIX
         ));
         list.add(new OntologyFileDefinition(
                 OWL.NAMESPACE,
@@ -124,14 +124,11 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
 
     @Override
     public void setup() throws Exception {
-        SPARQLService.addPrefix(Oeso.PREFIX, Oeso.NS);
-        SPARQLService.addPrefix(Oeev.PREFIX, Oeev.NS);
-        SPARQLService.addPrefix(Time.PREFIX,Time.NS);
+        SPARQLService.addPrefix(Time.PREFIX, Time.NS, this);
         URIDeserializer.setPrefixes(SPARQLService.getPrefixMapping(), true);
         SPARQLDeserializers.registerDatatypeClass(Oeso.longString, String.class);
     }
 
-    @Override
     public void install(boolean reset) throws Exception {
         insertDefaultProvenance();
 

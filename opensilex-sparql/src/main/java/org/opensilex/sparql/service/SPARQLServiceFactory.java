@@ -86,30 +86,38 @@ public abstract class SPARQLServiceFactory extends ServiceFactory<SPARQLService>
         mapperIndex = new SPARQLClassObjectMapperIndex(baseURI, generationPrefixURI, initClasses);
 
         SPARQLConfig sparqlConfig = sparqlModule.getConfig(SPARQLConfig.class);
+
+        // read prefixes from config and add them into prefixes index
         if (sparqlConfig.usePrefixes()) {
+
+            // read prefixes from managed models
             mapperIndex.forEach((Resource resource, SPARQLClassObjectMapper<?> mapper) -> {
                 String resourceNamespace = mapper.getResourceGraphNamespace();
                 String resourcePrefix = mapper.getResourceGraphPrefix();
                 if (resourceNamespace != null && resourcePrefix != null && !resourcePrefix.isEmpty()) {
-                    SPARQLService.addPrefix(sparqlModule.getBaseURIAlias() + mapper.getResourceGraphPrefix(), resourceNamespace + "#");
+                    SPARQLService.addPrefix(sparqlModule.getBaseURIAlias() + mapper.getResourceGraphPrefix(), resourceNamespace + "#",sparqlModule);
                 }
             });
 
-            SPARQLService.addPrefix(sparqlConfig.baseURIAlias(), sparqlConfig.baseURI());
+            // add global base URI
+            SPARQLService.addPrefix(sparqlConfig.baseURIAlias(), sparqlConfig.baseURI(),sparqlModule);
 
+            // add global generation prefix
             if (!StringUtils.isBlank(sparqlConfig.generationBaseURI())
                     && !sparqlModule.getGenerationPrefixURI().equals(sparqlModule.getBaseURI())
                     && !sparqlConfig.baseURIAlias().equals(sparqlConfig.generationBaseURIAlias())) {
 
-                SPARQLService.addPrefix(sparqlConfig.generationBaseURIAlias(), sparqlConfig.generationBaseURI());
+                SPARQLService.addPrefix(sparqlConfig.generationBaseURIAlias(), sparqlConfig.generationBaseURI(),sparqlModule);
             }
+            // add custom prefixes
             sparqlModule.getCustomPrefixes().forEach((prefix, uri) ->
-                SPARQLService.addPrefix(prefix, uri.toString())
+                SPARQLService.addPrefix(prefix, uri.toString(),sparqlModule)
             );
 
+            // add prefixes from modules ontologies
             for (SPARQLExtension module : getOpenSilex().getModulesImplementingInterface(SPARQLExtension.class)) {
                 for (OntologyFileDefinition ontologyDef : module.getOntologiesFiles()) {
-                    SPARQLService.addPrefix(ontologyDef.getPrefix(), ontologyDef.getPrefixUri().toString());
+                    SPARQLService.addPrefix(ontologyDef.getPrefix(), ontologyDef.getPrefixUri().toString(), module);
                 }
             }
 

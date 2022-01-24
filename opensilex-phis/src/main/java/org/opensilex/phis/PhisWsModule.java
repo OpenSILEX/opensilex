@@ -11,12 +11,14 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.apache.jena.riot.Lang;
 
 import org.opensilex.OpenSilex;
+import org.opensilex.phis.ontology.OesoExt;
 import org.opensilex.sparql.rdf4j.RDF4JConfig;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.OpenSilexModuleNotFoundException;
@@ -40,17 +42,16 @@ import org.slf4j.LoggerFactory;
  */
 public class PhisWsModule extends OpenSilexModule implements APIExtension, SPARQLExtension {
     
-    private final static Logger LOGGER = LoggerFactory.getLogger(PhisWsModule.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(PhisWsModule.class);
 
     @Override
     public List<OntologyFileDefinition> getOntologiesFiles() throws Exception {
-        SPARQLConfig sparqlConfig = getOpenSilex().getModuleConfig(SPARQLModule.class, SPARQLConfig.class);
-        List<OntologyFileDefinition> list = SPARQLExtension.super.getOntologiesFiles();
+        List<OntologyFileDefinition> list = new LinkedList<>();
         list.add(new OntologyFileDefinition(
-                "http://www.opensilex.org/vocabulary/oeso-ext#",
-                "ontologies/oeso-ext.owl",
+                OesoExt.NS,
+                SPARQLModule.ONTOLOGIES_DIRECTORY+"/oeso-ext.owl",
                 Lang.RDFXML,
-                "oeso"
+                OesoExt.PREFIX
         ));
         return list;
     }
@@ -71,7 +72,7 @@ public class PhisWsModule extends OpenSilexModule implements APIExtension, SPARQ
             String graph = sparql.getDefaultGraphURI(GermplasmModel.class).toString();
             OntologyFileDefinition ontologyDef = new OntologyFileDefinition(
                     graph,
-                    "ontologies/species.ttl",
+                    SPARQLModule.ONTOLOGIES_DIRECTORY+"/species.ttl",
                     Lang.TTL,
                     null
             );

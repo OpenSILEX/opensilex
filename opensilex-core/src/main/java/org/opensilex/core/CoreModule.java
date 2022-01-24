@@ -15,6 +15,7 @@ import org.opensilex.OpenSilexModule;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.jena.riot.Lang;
@@ -46,13 +47,14 @@ import org.opensilex.sparql.service.SPARQLServiceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.opensilex.sparql.SPARQLModule.ONTOLOGIES_DIRECTORY;
+
 /**
  * Core OpenSILEX module implementation
  */
 public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLExtension, JCSApiCacheExtension {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CoreModule.class);
-    private static final String ONTOLOGIES_DIRECTORY = "ontologies";
 
     /**
      * {@link OntologyCache} instance to use inside the module.
@@ -82,7 +84,7 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
 
     @Override
     public List<OntologyFileDefinition> getOntologiesFiles() throws Exception {
-        List<OntologyFileDefinition> list = SPARQLExtension.super.getOntologiesFiles();
+        List<OntologyFileDefinition> list = new ArrayList<>();
         list.add(new OntologyFileDefinition(
                 "http://aims.fao.org/aos/agrovoc/factors",
                 ONTOLOGIES_DIRECTORY+"/agrovoc-factors.rdf",
@@ -107,25 +109,12 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
                 Lang.RDFXML,
                 Oeev.PREFIX
         ));
-        list.add(new OntologyFileDefinition(
-                OWL.NAMESPACE,
-                ONTOLOGIES_DIRECTORY+"/owl2.ttl",
-                Lang.TURTLE,
-                OWL.PREFIX
-        ));
-        list.add(new OntologyFileDefinition(
-                Time.NS,
-                ONTOLOGIES_DIRECTORY+"/time.ttl",
-                Lang.TURTLE,
-                Time.PREFIX
-        ));
+
         return list;
     }
 
     @Override
     public void setup() throws Exception {
-        SPARQLService.addPrefix(Time.PREFIX, Time.NS, this);
-        URIDeserializer.setPrefixes(SPARQLService.getPrefixMapping(), true);
         SPARQLDeserializers.registerDatatypeClass(Oeso.longString, String.class);
     }
 

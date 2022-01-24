@@ -5,11 +5,15 @@
  */
 package org.opensilex.sparql;
 
+import org.apache.jena.riot.Lang;
+import org.eclipse.rdf4j.model.vocabulary.OWL;
+import org.opensilex.sparql.extensions.OntologyFileDefinition;
+import org.opensilex.sparql.model.time.Time;
 import org.opensilex.sparql.service.SPARQLService;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
+
 import org.apache.commons.lang3.StringUtils;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.sparql.deserializer.URIDeserializer;
@@ -26,13 +30,14 @@ import javax.ws.rs.core.UriBuilder;
  *
  * @author vince
  */
-public class SPARQLModule extends OpenSilexModule {
+public class SPARQLModule extends OpenSilexModule implements SPARQLExtension{
 
     private static final String DEFAULT_BASE_URI = "http://default.opensilex.org/";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SPARQLModule.class);
 
     public static final String ONTOLOGY_BASE_DOMAIN = "http://www.opensilex.org/";
+    public static final String ONTOLOGIES_DIRECTORY = "ontologies";
 
     @Override
     public Class<?> getConfigClass() {
@@ -114,13 +119,39 @@ public class SPARQLModule extends OpenSilexModule {
         return customPrefixes;
     }
 
+    @Override
+    public List<OntologyFileDefinition> getOntologiesFiles() throws Exception {
+        List<OntologyFileDefinition> list = new LinkedList<>();
+        list.add(new OntologyFileDefinition(
+                OWL.NAMESPACE,
+                ONTOLOGIES_DIRECTORY+"/owl2.ttl",
+                Lang.TURTLE,
+                OWL.PREFIX
+        ));
+        list.add(new OntologyFileDefinition(
+                Time.NS,
+                ONTOLOGIES_DIRECTORY+"/time.ttl",
+                Lang.TURTLE,
+                Time.PREFIX
+        ));
+        return list;
+    }
+
+    @Override
     public void installOntologies(SPARQLService sparql, boolean reset) throws Exception {
         // #TODO clean cache
         sparql.disableSHACL();
         // Allow any module implementing SPARQLExtension to add custom ontologies
         for (SPARQLExtension module : getOpenSilex().getModulesImplementingInterface(SPARQLExtension.class)) {
-            module.installOntologies(sparql, reset);
+
+            // don't call method on SPARQLModule in order to avoid infinite recursion
+            if(! module.getClass().equals(SPARQLModule.class)){
+                module.installOntologies(sparql, reset);
+            }
         }
+
+        // use SPARQLExtension default behavior
+        ((SPARQLExtension) this).installOntologies(sparql,reset);
     }
 
     @Override
@@ -162,8 +193,16 @@ public class SPARQLModule extends OpenSilexModule {
         SPARQLServiceFactory factory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
         SPARQLService sparql = factory.provide();
         for (SPARQLExtension module : getOpenSilex().getModulesImplementingInterface(SPARQLExtension.class)) {
-            module.checkOntologies(sparql);
+
+            // don't call method on SPARQLModule in order to avoid infinite recursion
+            if(! module.getClass().equals(SPARQLModule.class)){
+                module.checkOntologies(sparql);
+            }
         }
+
+        // use SPARQLExtension default behavior
+        checkOntologies(sparql);
+
         factory.dispose(sparql);
     }
 
@@ -172,7 +211,11 @@ public class SPARQLModule extends OpenSilexModule {
         SPARQLServiceFactory factory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
         if (factory instanceof RDF4JInMemoryServiceFactory) {
             for (SPARQLExtension module : getOpenSilex().getModulesImplementingInterface(SPARQLExtension.class)) {
-                module.inMemoryInitialization();
+
+                // don't call method on SPARQLModule in order to avoid infinite recursion
+                if(! module.getClass().equals(SPARQLModule.class)){
+                    module.inMemoryInitialization();
+                }
             }
         }
     }

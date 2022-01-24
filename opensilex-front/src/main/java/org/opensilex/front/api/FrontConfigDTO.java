@@ -50,6 +50,8 @@ public class FrontConfigDTO {
     
     Boolean activateResetPassword;
 
+    String geocodingService;
+
     @ApiModelProperty(value = "Application url path prefix", example = "app")
     public String getPathPrefix() {
         return pathPrefix;
@@ -173,7 +175,13 @@ public class FrontConfigDTO {
     public void setActivateResetPassword(Boolean activateResetPassword) {
         this.activateResetPassword = activateResetPassword;
     }
-    
-    
 
+    @ApiModelProperty(value = "Geocoding service")
+    public String getGeocodingService() {
+        return geocodingService;
+    }
+
+    public void setGeocodingService(String geocodingService) {
+        this.geocodingService = geocodingService;
+    }
 }

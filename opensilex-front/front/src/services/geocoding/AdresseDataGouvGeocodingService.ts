@@ -16,10 +16,10 @@ const DEFAULT_OPTIONS: GeocodingOptions = {
 };
 
 /**
- * An implementation of the GeocodingService using the data.gouv.fr external API. See {@link https://adresse.data.gouv.fr/api-doc/adresse}.
+ * An implementation of the GeocodingService using the "Adresse" external API. See {@link https://adresse.data.gouv.fr/api-doc/adresse}.
  */
 @injectable()
-class DataGouvGeocodingService implements IGeocodingService {
+class AdresseDataGouvGeocodingService implements IGeocodingService {
     constructor() {
 
     }
@@ -75,4 +75,4 @@ class DataGouvGeocodingService implements IGeocodingService {
     }
 }
 
-export default DataGouvGeocodingService;
+export default AdresseDataGouvGeocodingService;

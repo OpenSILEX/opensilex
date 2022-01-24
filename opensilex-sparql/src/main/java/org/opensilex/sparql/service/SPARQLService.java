@@ -35,6 +35,7 @@ import org.opensilex.OpenSilex;
 import org.opensilex.service.BaseService;
 import org.opensilex.service.Service;
 import org.opensilex.service.ServiceDefaultDefinition;
+import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.*;
@@ -138,15 +139,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     private static BidiMap<String, String> getDefaultPrefixes() {
-        BidiMap<String, String> prefixes = new DualHashBidiMap<String, String>() {};
-
-        prefixes.put(RDFS.PREFIX, RDFS.NAMESPACE);
-        prefixes.put(FOAF.PREFIX, FOAF.NAMESPACE);
-        prefixes.put(DC.PREFIX, DCTerms.NS);
-        prefixes.put(OWL.PREFIX, OWL.NAMESPACE);
-        prefixes.put(XSD.PREFIX, XSD.NAMESPACE);
-
-        return prefixes;
+       return new DualHashBidiMap<>();
     }
 
     /**

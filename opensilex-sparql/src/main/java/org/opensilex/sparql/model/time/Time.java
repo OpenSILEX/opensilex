@@ -2,6 +2,7 @@ package org.opensilex.sparql.model.time;
 
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
+import org.eclipse.rdf4j.model.vocabulary.TIME;
 import org.opensilex.sparql.utils.Ontology;
 
 import java.net.URI;
@@ -13,11 +14,10 @@ import java.net.URI;
  */
 public class Time {
 
-    public static final String DOMAIN = "http://www.w3.org/2006/time";
 
-    public static final String PREFIX = "time";
+    public static final String PREFIX = TIME.PREFIX;
 
-    public static final String NS = DOMAIN + "#";
+    public static final String NS = TIME.NAMESPACE;
 
     /**
      * The namespace of the vocabulary as a string

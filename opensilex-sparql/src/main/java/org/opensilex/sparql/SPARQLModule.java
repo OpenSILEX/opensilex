@@ -6,13 +6,8 @@
 package org.opensilex.sparql;
 
 import org.apache.jena.riot.Lang;
-import org.apache.jena.vocabulary.DCTerms;
-import org.eclipse.rdf4j.model.vocabulary.DC;
-import org.eclipse.rdf4j.model.vocabulary.OWL;
-import org.eclipse.rdf4j.model.vocabulary.RDFS;
-import org.eclipse.rdf4j.model.vocabulary.XSD;
+import org.eclipse.rdf4j.model.vocabulary.*;
 import org.opensilex.sparql.extensions.OntologyFileDefinition;
-import org.opensilex.sparql.model.time.Time;
 import org.opensilex.sparql.service.SPARQLService;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -101,6 +96,8 @@ public class SPARQLModule extends OpenSilexModule implements SPARQLExtension{
         }
 
         LOGGER.debug("Set platform base URI for auto-generated URI: " + generationPrefixURI);
+
+        SPARQLService.addPrefix(XSD.PREFIX, XSD.NAMESPACE,this);
     }
 
     public String getBaseURIAlias() {
@@ -140,18 +137,26 @@ public class SPARQLModule extends OpenSilexModule implements SPARQLExtension{
                 OWL.PREFIX
         ));
         list.add(new OntologyFileDefinition(
-                Time.NS,
-                ONTOLOGIES_DIRECTORY+"/time.ttl",
+                TIME.NAMESPACE,
+                ONTOLOGIES_DIRECTORY + "/time.ttl",
                 Lang.TURTLE,
-                Time.PREFIX
+                TIME.PREFIX
         ));
 
         // https://www.dublincore.org/schemas/rdfs/ -> https://www.dublincore.org/specifications/dublin-core/dcmi-terms/dublin_core_terms.ttl
         list.add(new OntologyFileDefinition(
-                DCTerms.NS,
+                DC.NAMESPACE,
                 ONTOLOGIES_DIRECTORY+"/dc.ttl",
                 Lang.TURTLE,
                 DC.PREFIX
+        ));
+
+        // https://www.w3.org/2004/02/skos/vocabs
+        list.add(new OntologyFileDefinition(
+                SKOS.NAMESPACE,
+                ONTOLOGIES_DIRECTORY + "/skos.rdf",
+                Lang.RDFXML,
+                SKOS.PREFIX
         ));
         return list;
     }
@@ -172,7 +177,6 @@ public class SPARQLModule extends OpenSilexModule implements SPARQLExtension{
         // use SPARQLExtension default behavior
         SPARQLExtension.super.installOntologies(sparql,reset);
 
-        SPARQLService.addPrefix(XSD.PREFIX, XSD.NAMESPACE,this);
     }
 
     @Override
@@ -229,6 +233,7 @@ public class SPARQLModule extends OpenSilexModule implements SPARQLExtension{
 
     @Override
     public void startup() throws Exception {
+
         SPARQLServiceFactory factory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
         if (factory instanceof RDF4JInMemoryServiceFactory) {
             for (SPARQLExtension module : getOpenSilex().getModulesImplementingInterface(SPARQLExtension.class)) {

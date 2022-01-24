@@ -67,7 +67,7 @@ public class PhisWsModule extends OpenSilexModule implements APIExtension, SPARQ
 
             // try/with resource -> auto close stream (even in case of error)
             try(InputStream ontologyStream = new FileInputStream(ClassUtils.getFileFromClassArtifact(getClass(), ontologyDef.getFilePath()))){
-                sparql.loadOntology(ontologyDef.getUri(), ontologyStream, ontologyDef.getFileType());
+                sparql.loadOntology(ontologyDef.getGraphURI(), ontologyStream, ontologyDef.getFileType());
             }
 
         } catch (Exception ex) {

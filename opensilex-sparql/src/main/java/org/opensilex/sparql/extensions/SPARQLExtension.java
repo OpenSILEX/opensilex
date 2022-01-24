@@ -31,20 +31,20 @@ public interface SPARQLExtension extends OpenSilexExtension {
     public default void installOntologies(SPARQLService sparql, boolean reset) throws Exception {
         for (OntologyFileDefinition ontologyDef : getOntologiesFiles()) {
             if (reset) {
-                sparql.clearGraph(ontologyDef.getUri());
+                sparql.clearGraph(ontologyDef.getGraphURI());
             }
             InputStream ontologyStream = new FileInputStream(ClassUtils.getFileFromClassArtifact(getClass(), ontologyDef.getFilePath()));
-            sparql.loadOntology(ontologyDef.getUri(), ontologyStream, ontologyDef.getFileType());
+            sparql.loadOntology(ontologyDef.getGraphURI(), ontologyStream, ontologyDef.getFileType());
             ontologyStream.close();
         }
     }
 
     public default void checkOntologies(SPARQLService sparql) throws Exception {
         for (OntologyFileDefinition ontologyDef : getOntologiesFiles()) {
-            List<SPARQLStatement> results = sparql.getGraphStatement(ontologyDef.getUri());
+            List<SPARQLStatement> results = sparql.getGraphStatement(ontologyDef.getGraphURI());
 
             if (results.size() == 0) {
-                String errorMsg = ontologyDef.getUri().toString() + " is missing data into your triple store, did you execute `opensilex system setup` command ?";
+                String errorMsg = ontologyDef.getGraphURI().toString() + " is missing data into your triple store, did you execute `opensilex system setup` command ?";
                 LOGGER.warn("/!\\ " + errorMsg);
                 throw new Exception(errorMsg);
             }

@@ -117,7 +117,9 @@ public abstract class SPARQLServiceFactory extends ServiceFactory<SPARQLService>
             // add prefixes from modules ontologies
             for (SPARQLExtension module : getOpenSilex().getModulesImplementingInterface(SPARQLExtension.class)) {
                 for (OntologyFileDefinition ontologyDef : module.getOntologiesFiles()) {
-                    SPARQLService.addPrefix(ontologyDef.getPrefix(), ontologyDef.getPrefixUri().toString(), module);
+                    if(! StringUtils.isEmpty(ontologyDef.getPrefix())){
+                        SPARQLService.addPrefix(ontologyDef.getPrefix(), ontologyDef.getNamespace().toString(), module);
+                    }
                 }
             }
 

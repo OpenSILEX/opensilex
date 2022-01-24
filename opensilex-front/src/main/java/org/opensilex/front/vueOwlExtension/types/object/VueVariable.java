@@ -8,8 +8,6 @@ package org.opensilex.front.vueOwlExtension.types.object;
 
 import org.opensilex.core.ontology.Oeso;
 
-import java.util.Map;
-
 public class VueVariable extends VueFactorLevel {
     @Override
 

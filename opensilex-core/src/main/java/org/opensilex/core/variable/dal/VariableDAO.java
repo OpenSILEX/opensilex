@@ -27,6 +27,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import org.apache.commons.collections4.CollectionUtils;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
@@ -100,8 +101,9 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
             int page,
             int pageSize) throws Exception {
                 
-        List<VariableModel> variableList = experiment != null ? dataDAO.getUsedVariables(null, Collections.singletonList(experiment), null, null) : null;
-        
+        //List<VariableModel> variableList = experiment != null ? dataDAO.getUsedVariables(null, Collections.singletonList(experiment), null, null) : null;
+        Set<URI> variableUriList = experiment != null ? dataDAO.getUsedVariablesByExperiments(Collections.singletonList(experiment)) : null;
+
         return sparql.searchWithPagination(
                 VariableModel.class,
                 null,
@@ -140,11 +142,11 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
                         select.addWhere(SPARQLDeserializers.nodeURI(group), RDFS.member, makeVar(SPARQLResourceModel.URI_FIELD));
                     }
                     
-                    if (!CollectionUtils.isEmpty(variableList)) {
-                        List<URI> variableUriList = new ArrayList<>();
-                        for (VariableModel variable : variableList){
-                            variableUriList.add(variable.getUri());
-                        }
+                    if (!CollectionUtils.isEmpty(variableUriList)) {
+//                        List<URI> variableUriList = new ArrayList<>();
+//                        for (VariableModel variable : variableList){
+//                            variableUriList.add(variable.getUri());
+//                        }
                         SPARQLQueryHelper.addWhereUriValues(select, SPARQLResourceModel.URI_FIELD, variableUriList);
                     }
                     

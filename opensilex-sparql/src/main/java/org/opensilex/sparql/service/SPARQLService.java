@@ -5,8 +5,12 @@
 //******************************************************************************
 package org.opensilex.sparql.service;
 
+import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.collections4.bidimap.DualHashBidiMap;
+import org.apache.commons.collections4.trie.PatriciaTrie;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.*;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Node;
@@ -25,10 +29,7 @@ import org.apache.jena.sparql.path.PathFactory;
 import org.apache.jena.sparql.syntax.ElementNamedGraph;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
-import org.eclipse.rdf4j.model.vocabulary.FOAF;
-import org.eclipse.rdf4j.model.vocabulary.OWL;
-import org.eclipse.rdf4j.model.vocabulary.RDFS;
-import org.eclipse.rdf4j.model.vocabulary.XSD;
+import org.eclipse.rdf4j.model.vocabulary.*;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.opensilex.OpenSilex;
 import org.opensilex.service.BaseService;
@@ -136,35 +137,89 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         shutdown();
     }
 
-    private static HashMap<String, String> getDefaultPrefixes() {
-        return new HashMap<String, String>() {
-            {
-                put(RDFS.PREFIX, RDFS.NAMESPACE);
-                put(FOAF.PREFIX, FOAF.NAMESPACE);
-                put("dc", DCTerms.NS);
-                put(OWL.PREFIX, OWL.NAMESPACE);
-                put(XSD.PREFIX, XSD.NAMESPACE);
-            }
-        };
-    }
+    private static BidiMap<String, String> getDefaultPrefixes() {
+        BidiMap<String, String> prefixes = new DualHashBidiMap<String, String>() {};
 
-    private static HashMap<String, String> prefixes = getDefaultPrefixes();
+        prefixes.put(RDFS.PREFIX, RDFS.NAMESPACE);
+        prefixes.put(FOAF.PREFIX, FOAF.NAMESPACE);
+        prefixes.put(DC.PREFIX, DCTerms.NS);
+        prefixes.put(OWL.PREFIX, OWL.NAMESPACE);
+        prefixes.put(XSD.PREFIX, XSD.NAMESPACE);
 
-    public static void addPrefix(String prefix, String namespace) {
-        prefixes.put(prefix, namespace);
-    }
-
-    public static Map<String, String> getPrefixes() {
         return prefixes;
     }
 
+    private static BidiMap<String, String> prefixToNamespace = getDefaultPrefixes();
+    private static final Map<String,Object> prefixRegisters = new PatriciaTrie<>();
+
+    /**
+     * Register a pair of unique (prefix,namespace)
+     * @param prefix a non-empty rdf prefix
+     * @param namespace a non-empty rdf namespace
+     * @param caller object which call this method. Registered for better error explainability in case of duplicate prefix/namespace
+     *
+     * @throws IllegalArgumentException is throw if :
+     * <ul>
+     *    <li>prefix or namespace is null or empty</li>
+     *    <li>duplicate namespace for the given prefix : the error message contains the old namespace and prefix/namespace (and info about old caller)</li>
+     *    <li>duplicate prefix for the given namespace : the error message contains the old prefix and prefix/namespace (and info about old caller)</li>
+     * </ul>
+     */
+    public static void addPrefix(String prefix, String namespace, Object caller) throws IllegalArgumentException{
+
+        if(StringUtils.isEmpty(prefix)){
+            throw new IllegalArgumentException("Null or empty prefix "+prefix);
+        }
+        if(StringUtils.isEmpty(namespace)){
+            throw new IllegalArgumentException("Null or empty namespace "+namespace);
+        }
+        Objects.requireNonNull(caller);
+
+        if(prefixToNamespace.containsKey(prefix)){
+            String oldNamespace = prefixToNamespace.get(prefix);
+
+            // trying to replace namespace -> error
+            if(! oldNamespace.equals(namespace)){
+                String msg = String.format("prefix_namespace_duplicate: %s prefix has already been registered with namespace %s (duplicate_namespace: %s). Registered by %s",
+                        prefix,
+                        oldNamespace,
+                        namespace,
+                        prefixRegisters.get(prefix).toString()
+                );
+                throw new IllegalArgumentException(msg);
+            }
+        }
+
+        if(prefixToNamespace.containsValue(namespace)){
+            String oldPrefix = prefixToNamespace.inverseBidiMap().get(namespace);
+
+            // trying to replace prefix -> error
+            if(! oldPrefix.equals(prefix)){
+                String msg = String.format("prefix_namespace_duplicate: %s namespace has already been registered with prefix %s (duplicate_prefix: %s). Registered by %s",
+                        namespace,
+                        oldPrefix,
+                        prefix,
+                        prefixRegisters.get(oldPrefix).toString()
+                );
+                throw new IllegalArgumentException(msg);
+            }
+        }
+
+        // register prefix with namespace and module
+        prefixToNamespace.put(prefix, namespace);
+        prefixRegisters.put(prefix, caller);
+    }
+
+    public static Map<String, String> getPrefixToNamespace() {
+        return prefixToNamespace;
+    }
+
     public static PrefixMapping getPrefixMapping() {
-        return new SPARQLPrefixMapping().setNsPrefixes(prefixes);
+        return new SPARQLPrefixMapping().setNsPrefixes(prefixToNamespace);
     }
 
     private static void addPrefixes(UpdateBuilder builder) {
         builder.addPrefixes(getPrefixMapping());
-
     }
 
     private static void addPrefixes(AbstractQueryBuilder<?> builder) {
@@ -172,7 +227,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     public static void clearPrefixes() {
-        prefixes = getDefaultPrefixes();
+        prefixToNamespace = getDefaultPrefixes();
     }
 
     @Override

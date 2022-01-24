@@ -170,7 +170,7 @@ public class SPARQLModule extends OpenSilexModule implements SPARQLExtension{
         }
 
         // use SPARQLExtension default behavior
-        ((SPARQLExtension) this).installOntologies(sparql,reset);
+        SPARQLExtension.super.installOntologies(sparql,reset);
 
         SPARQLService.addPrefix(XSD.PREFIX, XSD.NAMESPACE,this);
     }

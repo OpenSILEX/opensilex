@@ -618,4 +618,33 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
         assertTrue(StringUtils.isNotEmpty(a3.getRenamedProperty()));
         assertEquals(a3.getA().getUri(), renamedUri);
     }
+
+    @Test
+    public void testAddPrefixDuplicate() {
+
+        String oldPrefix = "apache";
+        String oldNamespace = "https://commons.apache.org/";
+        SPARQLService.addPrefix(oldPrefix, oldNamespace, sparqlModule);
+
+        // trying to replace namespace
+        String newNamespace = "https://commons.apache.org/2";
+        IllegalArgumentException duplicateNamespaceEx = assertThrows(IllegalArgumentException.class, () -> {
+            SPARQLService.addPrefix(oldPrefix, newNamespace, sparqlModule);
+        });
+        assertTrue(duplicateNamespaceEx.getMessage().contains(oldNamespace));
+        assertTrue(duplicateNamespaceEx.getMessage().contains(newNamespace));
+        assertTrue(duplicateNamespaceEx.getMessage().contains(oldPrefix));
+        assertTrue(duplicateNamespaceEx.getMessage().contains(sparqlModule.toString()));
+
+
+        // trying to replace prefix
+        String newPrefix = "apache2";
+        IllegalArgumentException duplicatePrefixEx = assertThrows(IllegalArgumentException.class, () -> {
+            SPARQLService.addPrefix(newPrefix, oldNamespace, sparqlModule);
+        });
+        assertTrue(duplicatePrefixEx.getMessage().contains(oldPrefix));
+        assertTrue(duplicatePrefixEx.getMessage().contains(newPrefix));
+        assertTrue(duplicatePrefixEx.getMessage().contains(oldNamespace));
+        assertTrue(duplicateNamespaceEx.getMessage().contains(sparqlModule.toString()));
+    }
 }

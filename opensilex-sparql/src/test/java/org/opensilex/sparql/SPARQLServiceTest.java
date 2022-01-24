@@ -645,6 +645,6 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
         assertTrue(duplicatePrefixEx.getMessage().contains(oldPrefix));
         assertTrue(duplicatePrefixEx.getMessage().contains(newPrefix));
         assertTrue(duplicatePrefixEx.getMessage().contains(oldNamespace));
-        assertTrue(duplicateNamespaceEx.getMessage().contains(sparqlModule.toString()));
+        assertTrue(duplicatePrefixEx.getMessage().contains(sparqlModule.toString()));
     }
 }

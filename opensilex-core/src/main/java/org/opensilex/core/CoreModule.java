@@ -9,7 +9,6 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import java.net.URI;
 
-import org.eclipse.rdf4j.model.vocabulary.OWL;
 import org.opensilex.OpenSilex;
 import org.opensilex.OpenSilexModule;
 
@@ -23,13 +22,11 @@ import org.apache.jena.vocabulary.OA;
 import org.opensilex.OpenSilexModuleNotFoundException;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.Oeev;
-import org.opensilex.core.ontology.Time;
 import org.opensilex.core.ontology.dal.cache.*;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.variable.dal.InterestEntityModel;
 import org.opensilex.core.variable.dal.MethodModel;
-import org.opensilex.core.variablesGroup.dal.VariablesGroupDAO;
 import org.opensilex.core.variablesGroup.dal.VariablesGroupModel;
 import org.opensilex.nosql.mongodb.MongoDBConfig;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -38,7 +35,6 @@ import org.opensilex.server.rest.cache.JCSApiCacheExtension;
 import org.opensilex.sparql.SPARQLConfig;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.extensions.OntologyFileDefinition;
 import org.opensilex.sparql.extensions.SPARQLExtension;
@@ -118,6 +114,7 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
         SPARQLDeserializers.registerDatatypeClass(Oeso.longString, String.class);
     }
 
+    @Override
     public void install(boolean reset) throws Exception {
         insertDefaultProvenance();
 

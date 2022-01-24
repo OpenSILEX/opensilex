@@ -13,20 +13,13 @@ import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import org.apache.jena.riot.Lang;
 
-import org.opensilex.OpenSilex;
 import org.opensilex.phis.ontology.OesoExt;
-import org.opensilex.sparql.rdf4j.RDF4JConfig;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.OpenSilexModuleNotFoundException;
-import org.opensilex.core.CoreModule;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
-import org.opensilex.nosql.mongodb.MongoDBConfig;
 import org.opensilex.server.extensions.APIExtension;
-import org.opensilex.sparql.SPARQLConfig;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.extensions.OntologyFileDefinition;
@@ -62,13 +55,12 @@ public class PhisWsModule extends OpenSilexModule implements APIExtension, SPARQ
         insertDefaultSpecies();
     }
 
-    private void insertDefaultSpecies() throws URISyntaxException, OpenSilexModuleNotFoundException, IOException, SPARQLException {
+    private void insertDefaultSpecies() {
         try {
 
             SPARQLServiceFactory factory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
             SPARQLService sparql = factory.provide();
 
-            SPARQLConfig sparqlConfig = getOpenSilex().getModuleConfig(SPARQLModule.class, SPARQLConfig.class);
             String graph = sparql.getDefaultGraphURI(GermplasmModel.class).toString();
             OntologyFileDefinition ontologyDef = new OntologyFileDefinition(
                     graph,
@@ -77,12 +69,13 @@ public class PhisWsModule extends OpenSilexModule implements APIExtension, SPARQ
                     null
             );
 
-            InputStream ontologyStream = new FileInputStream(ClassUtils.getFileFromClassArtifact(getClass(), ontologyDef.getFilePath()));
-            sparql.loadOntology(ontologyDef.getUri(), ontologyStream, ontologyDef.getFileType());
-            ontologyStream.close();
-        
+            // try/with resource -> auto close stream (even in case of error)
+            try(InputStream ontologyStream = new FileInputStream(ClassUtils.getFileFromClassArtifact(getClass(), ontologyDef.getFilePath()))){
+                sparql.loadOntology(ontologyDef.getUri(), ontologyStream, ontologyDef.getFileType());
+            }
+
         } catch (Exception ex) {
-            LOGGER.error("Error while insering default species", ex);
+            LOGGER.error("Error while inserting default species", ex);
         } 
         
     }

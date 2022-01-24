@@ -6,7 +6,11 @@
 package org.opensilex.sparql;
 
 import org.apache.jena.riot.Lang;
+import org.apache.jena.vocabulary.DCTerms;
+import org.eclipse.rdf4j.model.vocabulary.DC;
 import org.eclipse.rdf4j.model.vocabulary.OWL;
+import org.eclipse.rdf4j.model.vocabulary.RDFS;
+import org.eclipse.rdf4j.model.vocabulary.XSD;
 import org.opensilex.sparql.extensions.OntologyFileDefinition;
 import org.opensilex.sparql.model.time.Time;
 import org.opensilex.sparql.service.SPARQLService;
@@ -122,6 +126,13 @@ public class SPARQLModule extends OpenSilexModule implements SPARQLExtension{
     @Override
     public List<OntologyFileDefinition> getOntologiesFiles() throws Exception {
         List<OntologyFileDefinition> list = new LinkedList<>();
+
+        list.add(new OntologyFileDefinition(
+                RDFS.NAMESPACE,
+                ONTOLOGIES_DIRECTORY+"/rdfs.ttl",
+                Lang.TURTLE,
+                RDFS.PREFIX
+        ));
         list.add(new OntologyFileDefinition(
                 OWL.NAMESPACE,
                 ONTOLOGIES_DIRECTORY+"/owl2.ttl",
@@ -133,6 +144,14 @@ public class SPARQLModule extends OpenSilexModule implements SPARQLExtension{
                 ONTOLOGIES_DIRECTORY+"/time.ttl",
                 Lang.TURTLE,
                 Time.PREFIX
+        ));
+
+        // https://www.dublincore.org/schemas/rdfs/ -> https://www.dublincore.org/specifications/dublin-core/dcmi-terms/dublin_core_terms.ttl
+        list.add(new OntologyFileDefinition(
+                DCTerms.NS,
+                ONTOLOGIES_DIRECTORY+"/dc.ttl",
+                Lang.TURTLE,
+                DC.PREFIX
         ));
         return list;
     }
@@ -152,6 +171,8 @@ public class SPARQLModule extends OpenSilexModule implements SPARQLExtension{
 
         // use SPARQLExtension default behavior
         ((SPARQLExtension) this).installOntologies(sparql,reset);
+
+        SPARQLService.addPrefix(XSD.PREFIX, XSD.NAMESPACE,this);
     }
 
     @Override

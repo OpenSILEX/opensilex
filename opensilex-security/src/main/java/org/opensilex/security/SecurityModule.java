@@ -27,6 +27,7 @@ import org.opensilex.security.profile.dal.ProfileModel;
 import org.opensilex.security.user.dal.UserDAO;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.extensions.APIExtension;
+import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.extensions.OntologyFileDefinition;
 import org.opensilex.sparql.extensions.SPARQLExtension;
 import org.opensilex.sparql.service.SPARQLService;
@@ -150,34 +151,34 @@ public class SecurityModule extends OpenSilexModule implements APIExtension, Log
     @Override
     public List<OntologyFileDefinition> getOntologiesFiles() throws Exception {
 
-        List<OntologyFileDefinition> list = SPARQLExtension.super.getOntologiesFiles();
+        List<OntologyFileDefinition> list = new ArrayList<>();
 
         list.add(new OntologyFileDefinition(
-                "http://www.opensilex.org/security#",
-                "ontologies/os-sec.owl",
+                SecurityOntology.NAMESPACE,
+                SPARQLModule.ONTOLOGIES_DIRECTORY + "/os-sec.owl",
                 Lang.RDFXML,
-                "os-sec"
+                SecurityOntology.PREFIX
         ));
 
         list.add(new OntologyFileDefinition(
                 FOAF.NAMESPACE,
                 "ontologies/foaf.rdf",
                 Lang.RDFXML,
-                "foaf"
+                FOAF.PREFIX
         ));
 
         list.add(new OntologyFileDefinition(
                 VCARD4.NAMESPACE,
                 "ontologies/vcard.ttl",
                 Lang.TTL,
-                "vcard"
+                VCARD4.PREFIX
         ));
 
         list.add(new OntologyFileDefinition(
                 ORG.NAMESPACE,
                 "ontologies/org.ttl",
                 Lang.TTL,
-                "org"
+                ORG.PREFIX
         ));
 
         return list;

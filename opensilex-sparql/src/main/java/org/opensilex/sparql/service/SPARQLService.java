@@ -149,6 +149,10 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         return prefixes;
     }
 
+    /**
+     * Prefix to namespace association.
+     * Use {@link BidiMap} interface, in order to keep key(prefix) and value(namespace) unicity.
+     */
     private static BidiMap<String, String> prefixToNamespace = getDefaultPrefixes();
     private static final Map<String,Object> prefixRegisters = new PatriciaTrie<>();
 
@@ -161,8 +165,8 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      * @throws IllegalArgumentException is throw if :
      * <ul>
      *    <li>prefix or namespace is null or empty</li>
-     *    <li>duplicate namespace for the given prefix : the error message contains the old namespace and prefix/namespace (and info about old caller)</li>
-     *    <li>duplicate prefix for the given namespace : the error message contains the old prefix and prefix/namespace (and info about old caller)</li>
+     *    <li>duplicate namespace for the given prefix : the error message contains the old namespace and prefix/namespace (and {@link Object#toString()} representation of the old caller)</li>
+     *    <li>duplicate prefix for the given namespace : the error message contains the old prefix and prefix/namespace (and {@link Object#toString()} representation of the old caller)</li>
      * </ul>
      */
     public static void addPrefix(String prefix, String namespace, Object caller) throws IllegalArgumentException{

@@ -7,21 +7,12 @@
 //******************************************************************************
 package org.opensilex.phis;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URISyntaxException;
-import java.util.LinkedList;
-import java.util.List;
 import org.apache.jena.riot.Lang;
-
-import org.opensilex.phis.ontology.OesoExt;
 import org.opensilex.OpenSilexModule;
-import org.opensilex.OpenSilexModuleNotFoundException;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
+import org.opensilex.phis.ontology.OesoExt;
 import org.opensilex.server.extensions.APIExtension;
 import org.opensilex.sparql.SPARQLModule;
-import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.extensions.OntologyFileDefinition;
 import org.opensilex.sparql.extensions.SPARQLExtension;
 import org.opensilex.sparql.service.SPARQLService;
@@ -29,6 +20,11 @@ import org.opensilex.sparql.service.SPARQLServiceFactory;
 import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Phis opensilex module implementation

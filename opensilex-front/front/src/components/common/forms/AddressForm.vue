@@ -72,7 +72,7 @@ import {FacilityAddressDTO} from "opensilex-core/model/facilityAddressDTO";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import IGeocodingService, {GeocodingAddressResult} from "../../../services/geocoding/IGeocodingService";
 
-const AUTOCOMPLETE_TIMEOUT_MS: number = 500;
+const AUTOCOMPLETE_TIMEOUT_MS: number = 250;
 
 @Component
 export default class AddressForm extends Vue {

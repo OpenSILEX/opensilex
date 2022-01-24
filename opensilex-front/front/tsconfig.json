@@ -18,8 +18,7 @@
         "types": ["node", "opensilex-security", "opensilex-core", "opensilex-phis"],
         "paths": {
             "opensilex-security": ["../../opensilex-security/front/src"],
-            "opensilex-core": ["../../opensilex-core/front/src"],
-            "opensilex-phis": ["../../opensilex-phis/front/src"]
+            "opensilex-core": ["../../opensilex-core/front/src"] 
         },
         "lib": [
             "esnext",
@@ -46,7 +45,6 @@
     "files": [
         "./typings.d.ts",
         "../../opensilex-security/front/types/opensilex-security.d.ts",
-        "../../opensilex-core/front/types/opensilex-core.d.ts",
-        "../../opensilex-phis/front/types/opensilex-phis.d.ts"
+        "../../opensilex-core/front/types/opensilex-core.d.ts"
     ]
 }

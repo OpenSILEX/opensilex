@@ -1022,7 +1022,6 @@ export default class OpenSilexVuePlugin {
     previewFilefromGetService(servicePath: string, name: string, extension: string) {
         this.showLoader();
 
-        console.log(this.baseApi);
         let url =
             this.baseApi +
             servicePath;
@@ -1069,7 +1068,7 @@ export default class OpenSilexVuePlugin {
                     divPreview.appendChild(error.appendChild(content));
                 }
                 let blob = new Blob([file], { type: type });
-                console.log(extension);
+                
                 if (type != null) {
                     let url = URL.createObjectURL(blob);
                     let iframe = document.createElement("iframe");
@@ -1086,7 +1085,6 @@ export default class OpenSilexVuePlugin {
     viewImageFromGetService(servicePath: string) {
         this.showLoader();
 
-        console.log(this.baseApi);
         let url =
             this.baseApi +
             servicePath;
@@ -1160,10 +1158,20 @@ export default class OpenSilexVuePlugin {
         });
     }
 
-    private factorCategories = {};
+    private categoriesNameByUri = {};
 
     public getFactorCategoryName(uri) {
-        return this.factorCategories[uri];
+        return this.categoriesNameByUri[uri];
+    }
+    private deepWalkObject(walkProperty : string,object :any, objectToFill : any, walkValidationFunction : Function,  workFunction : Function) {
+
+        if(walkValidationFunction(object)){
+            for (var childObject of object[walkProperty]) {
+                this.deepWalkObject(walkProperty,childObject,objectToFill,walkValidationFunction,workFunction);
+            } 
+        }else{
+            workFunction(object,objectToFill);
+        }
     }
 
     public loadFactorCategories() {
@@ -1173,11 +1181,22 @@ export default class OpenSilexVuePlugin {
                 .then(
                     (http
                     ) => {
-                        this.factorCategories = {};
+                        this.categoriesNameByUri = {};
+                        
                         http.response.result.forEach((categoryDto) => {
-                            this.factorCategories[categoryDto.uri] = categoryDto.name;
+                            // fill this.categoriesNameByUri by traversing category dto-tree
+                            this.deepWalkObject("children",categoryDto,this.categoriesNameByUri, 
+                            function (object) { 
+                                if(object == undefined){
+                                    return false;
+                                }else{
+                                    return (object.children.length > 0 ? true : false) ;
+                                }
+                            },function (object, arrayToFill) {
+                                arrayToFill[object.uri] = object.name;
+                            })
                         });
-                        resolve(this.factorCategories)
+                        resolve(this.categoriesNameByUri)
                     }
                 )
                 .catch(reject);

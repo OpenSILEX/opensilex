@@ -84,10 +84,10 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
     public List<OntologyFileDefinition> getOntologiesFiles() throws Exception {
         List<OntologyFileDefinition> list = SPARQLExtension.super.getOntologiesFiles();
         list.add(new OntologyFileDefinition(
-                "http://aims.fao.org/aos/agrovoc/factors",
-                ONTOLOGIES_DIRECTORY+"/agrovoc-factors.rdf",
+                "http://purl.obolibrary.org/obo/peco.owl",
+                ONTOLOGIES_DIRECTORY+"/peco_factors.owl",
                 Lang.RDFXML,
-                "agrovoc"
+                "peco"
         ));
         list.add(new OntologyFileDefinition(
                 OA.NS,

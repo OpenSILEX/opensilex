@@ -125,6 +125,11 @@ menu:
         route:
           path: /device-types
           component: opensilex-DeviceTypes
+      - id: factorCategoryVocabulary
+        label: component.menu.factorCategoryTypes
+        route:
+          path: /factor-category-types
+          component: opensilex-FactorCategoryTypes
       - id: eventVocabulary
         label: component.menu.eventTypes
         route:

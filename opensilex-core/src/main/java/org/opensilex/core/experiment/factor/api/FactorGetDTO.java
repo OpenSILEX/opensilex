@@ -84,7 +84,7 @@ public class FactorGetDTO {
         dto.setName(model.getName());
         dto.setDescription(model.getDescription());
         if(model.getCategory() != null){
-            dto.setCategory(model.getCategory().getUri());
+            dto.setCategory(model.getCategory());
         }
         dto.setExperiment(model.getExperiment().getUri());
         return dto;

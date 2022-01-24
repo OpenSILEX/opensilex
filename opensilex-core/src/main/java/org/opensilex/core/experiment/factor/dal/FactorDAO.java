@@ -148,13 +148,12 @@ public class FactorDAO {
         });
     }
     
-    public List<FactorCategorySKOSModel> searchCategories(String stringPattern, String lang ,List<OrderBy> orderByList) throws Exception{
+    public List<FactorCategoryModel> searchCategories(String stringPattern, String lang ,List<OrderBy> orderByList) throws Exception{
 
         return sparql.search(
-                FactorCategorySKOSModel.class,
+                FactorCategoryModel.class,
                 lang,
-                selectBuilder -> {
-                    filterOnFactors(selectBuilder);
+                selectBuilder -> { 
                     addFactorCategoryNameRegexFilter(selectBuilder, stringPattern);
                     addFactorCategoryNameLangFilter(selectBuilder, lang);
                 },
@@ -162,17 +161,9 @@ public class FactorDAO {
         );
 
     }
-    private void filterOnFactors(SelectBuilder selectBuilder) throws URISyntaxException {
-            Var uriVar = makeVar(FactorCategorySKOSModel.URI_FIELD);
-            selectBuilder.addWhere(new Triple(
-                    SPARQLDeserializers.nodeURI(new URI(AGROVOC_FACTOR_CONCEPT_URI)),
-                    SKOS.narrower.asNode(),
-                    uriVar)
-            );
-     }
-    
+  
     private void addFactorCategoryNameRegexFilter(SelectBuilder selectBuilder, String stringPattern) {
-        Expr regexFilter = SPARQLQueryHelper.regexFilter(FactorCategorySKOSModel.NAME_FIELD, stringPattern);
+        Expr regexFilter = SPARQLQueryHelper.regexFilter(FactorCategoryModel.NAME_FIELD, stringPattern);
         if (regexFilter != null) {
             selectBuilder.addFilter(regexFilter);
         }
@@ -180,7 +171,7 @@ public class FactorDAO {
 
     private void addFactorCategoryNameLangFilter(SelectBuilder selectBuilder, String lang) {
         if (!StringUtils.isEmpty(lang)) {
-            Expr langFilter = SPARQLQueryHelper.langFilter(FactorCategorySKOSModel.NAME_FIELD, Locale.forLanguageTag(lang).getLanguage());
+            Expr langFilter = SPARQLQueryHelper.langFilter(FactorCategoryModel.NAME_FIELD, Locale.forLanguageTag(lang).getLanguage());
             selectBuilder.addFilter(langFilter);
         }
     }

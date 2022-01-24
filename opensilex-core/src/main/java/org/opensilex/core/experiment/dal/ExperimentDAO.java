@@ -47,6 +47,7 @@ import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.SecurityOntology;
 import org.opensilex.security.user.dal.UserModel;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
+import org.opensilex.sparql.utils.Ontology;
 
 /**
  * @author Vincent MIGOT
@@ -211,10 +212,12 @@ public class ExperimentDAO {
             Var factors = makeVar(ExperimentModel.FACTORS_FIELD);
             Var xpUri = makeVar(ExperimentModel.URI_FIELD);
             Var category = makeVar(ExperimentModel.FACTORS_CATEGORIES_FIELD);
+            Var categories = makeVar("_categories");
 
             select.addWhere(factors, Oeso.studiedEffectIn,xpUri );
             select.addOptional(xpUri, Oeso.studyEffectOf, factors);
-            select.addWhere(factors, Oeso.hasCategory, category);
+            select.addWhere(categories, Ontology.subClassAny, category);
+            select.addWhere(factors, Oeso.hasCategory, categories);
             select.addFilter(SPARQLQueryHelper.inURIFilter(category, factorCategories));
         }
     }

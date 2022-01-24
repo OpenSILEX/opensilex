@@ -204,6 +204,7 @@
             "facilitiesTypes": "Facilities types",
             "deviceTypes": "Device object types",
             "eventTypes": "Event types",
+            "factorCategoryTypes": "Factor categories",
             "scientific-organisation": "Scientific Organization",
             "devices": "Devices",
             "events" : "Events",

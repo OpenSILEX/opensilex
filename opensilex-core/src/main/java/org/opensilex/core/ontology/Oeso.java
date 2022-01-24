@@ -113,6 +113,7 @@ public class Oeso {
     // public static final Resource Species = Ontology.resource(NS, "Species");
     // ---- FACTORS ----
     public static final Resource Factor = Ontology.resource(NS, "Factor");
+    public static final Resource FactorCategory = Ontology.resource(NS, "FactorCategory"); 
     public static final Resource FactorLevel = Ontology.resource(NS, "FactorLevel");
     public static final Property hasFactorLevel = Ontology.property(NS, "hasFactorLevel");
     public static final Property hasFactor = Ontology.property(NS, "hasFactor");

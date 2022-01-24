@@ -38,14 +38,16 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.opensilex.OpenSilex;
+import org.opensilex.core.CoreModule;
 import org.opensilex.core.experiment.api.ExperimentGetListDTO;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.core.experiment.factor.dal.FactorCategorySKOSModel;
 import org.opensilex.core.experiment.factor.dal.FactorDAO;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.experiment.factor.dal.FactorModel;
+import org.opensilex.core.ontology.Oeso;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.core.ontology.dal.cache.OntologyCache;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
@@ -60,6 +62,10 @@ import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
+import org.opensilex.sparql.model.SPARQLTreeListModel;
+import org.opensilex.sparql.ontology.dal.ClassModel;
+import org.opensilex.sparql.response.ResourceTreeDTO;
+import org.opensilex.sparql.response.ResourceTreeResponse;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
@@ -503,19 +509,10 @@ public class FactorAPI {
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList
     ) throws Exception {
 
-        FactorDAO dao = new FactorDAO(sparql);
+        OntologyCache cache = CoreModule.getOntologyCacheInstance();
+        SPARQLTreeListModel<ClassModel> treeList = cache.getSubClassesOf(new URI(Oeso.FactorCategory.getURI()), namePattern, currentUser.getLanguage(), true);
 
-        List<FactorCategorySKOSModel> resultList = dao.searchCategories(
-                namePattern,
-                currentUser.getLanguage(),
-                orderByList
-        );
-        ListWithPagination<FactorCategorySKOSModel> categoryFactors = new ListWithPagination(resultList);
-
-        ListWithPagination<FactorCategoryGetDTO> resultDTOList = categoryFactors.convert(
-                FactorCategoryGetDTO.class,
-                FactorCategoryGetDTO::new
-        );
-        return new PaginatedListResponse<>(resultDTOList).getResponse();
+        List<ResourceTreeDTO> treeDto = ResourceTreeDTO.fromResourceTree(treeList);
+        return new ResourceTreeResponse(treeDto).getResponse();
     }
 }

@@ -115,7 +115,6 @@
       <b-form-radio :value="DOCUMENT_CONTENT_TYPE_FILE">#Upload a file</b-form-radio>
       <b-form-radio :value="DOCUMENT_CONTENT_TYPE_EXTERNAL_SOURCE">#Link an external source</b-form-radio>
     </b-form-radio-group>
-
     <!-- File -->
     <opensilex-FileInputForm
       v-if="!editMode && documentContentType === DOCUMENT_CONTENT_TYPE_FILE"
@@ -124,6 +123,7 @@
       type="file"
       helpMessage="DocumentForm.file-help"
       browse-text="DocumentForm.browse"
+      :required="true"
       rules="size:100000"
     ></opensilex-FileInputForm>
 
@@ -132,8 +132,8 @@
       v-if="!editMode && documentContentType === DOCUMENT_CONTENT_TYPE_EXTERNAL_SOURCE"
       label="#External source"
       type="text"
-      rules="url"
       :value.sync="form.description.source"
+      :required="true"
     >
     </opensilex-InputForm>
   </b-form>
@@ -217,6 +217,11 @@ export default class DocumentForm extends Vue {
   }
 
   create(form) {
+    if (this.documentContentType === this.DOCUMENT_CONTENT_TYPE_FILE) {
+      this.form.description.source = undefined;
+    } else {
+      this.form.file = undefined;
+    }
     return this.$opensilex
      .uploadFileToService("/core/documents", this.form, null, false)
      .then((http: OpenSilexResponse<any>) => {

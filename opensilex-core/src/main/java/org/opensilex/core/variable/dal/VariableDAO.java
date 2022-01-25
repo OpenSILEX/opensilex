@@ -101,8 +101,8 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
             int page,
             int pageSize) throws Exception {
                 
-        //List<VariableModel> variableList = experiment != null ? dataDAO.getUsedVariables(null, Collections.singletonList(experiment), null, null) : null;
-        Set<URI> variableUriList = experiment != null ? dataDAO.getUsedVariablesByExperiments(Collections.singletonList(experiment)) : null;
+        List<VariableModel> variableList = experiment != null ? dataDAO.getUsedVariables(null, Collections.singletonList(experiment), new ArrayList(), new ArrayList()) : null;
+        //Set<URI> variableUriList = experiment != null ? dataDAO.getUsedVariablesByExperiments(Collections.singletonList(experiment)) : null;
 
         return sparql.searchWithPagination(
                 VariableModel.class,
@@ -142,11 +142,11 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
                         select.addWhere(SPARQLDeserializers.nodeURI(group), RDFS.member, makeVar(SPARQLResourceModel.URI_FIELD));
                     }
                     
-                    if (!CollectionUtils.isEmpty(variableUriList)) {
-//                        List<URI> variableUriList = new ArrayList<>();
-//                        for (VariableModel variable : variableList){
-//                            variableUriList.add(variable.getUri());
-//                        }
+                    if (!CollectionUtils.isEmpty(variableList)) {
+                        List<URI> variableUriList = new ArrayList<>();
+                        for (VariableModel variable : variableList){
+                            variableUriList.add(variable.getUri());
+                        }
                         SPARQLQueryHelper.addWhereUriValues(select, SPARQLResourceModel.URI_FIELD, variableUriList);
                     }
                     

@@ -598,7 +598,7 @@ public class DataDAO {
     }
     
     public Set<URI> getUsedVariablesByExperiments(List<URI> experiments) throws Exception {
-        Document filter = searchFilter(null, experiments, null, null, null, null, null, null, null, null, null);
+        Document filter = searchFilter(null, experiments, new ArrayList(), null, new ArrayList(), null, null, null, null, null, null);
         Set<URI> variableURIs = nosql.distinct("variable", URI.class, DATA_COLLECTION_NAME, filter);
         return variableURIs;
     }

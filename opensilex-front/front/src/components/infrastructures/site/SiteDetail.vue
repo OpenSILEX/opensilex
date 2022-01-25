@@ -91,8 +91,8 @@
     <opensilex-ModalForm
         ref="siteForm"
         component="opensilex-SiteForm"
-        createTitle="InfrastructureTree.add"
-        editTitle="InfrastructureTree.update"
+        createTitle="InfrastructureTree.addSite"
+        editTitle="InfrastructureTree.editSite"
         icon="ik#ik-globe"
         @onCreate="$emit('onCreate', $event)"
         @onUpdate="$emit('onUpdate', $event)"

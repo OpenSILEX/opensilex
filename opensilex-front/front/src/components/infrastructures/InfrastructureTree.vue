@@ -115,8 +115,8 @@
         "
         ref="siteForm"
         component="opensilex-SiteForm"
-        createTitle="InfrastructureTree.add"
-        editTitle="InfrastructureTree.update"
+        createTitle="InfrastructureTree.addSite"
+        editTitle="InfrastructureTree.editSite"
         icon="ik#ik-globe"
         @onCreate="refresh($event ? $event.uri : undefined)"
         @onUpdate="refresh($event ? $event.uri : undefined)"
@@ -531,6 +531,7 @@ en:
     edit: Edit organization
     add-child: Add sub-organization
     addSite: Add site
+    editSite: Edit site
     delete: Delete organization
     infrastructure-component: Organizations and sites
     infrastructure-help: "The organizations represent the hierarchy between the different sites, units, ... with a specific address and / or with dedicated teams."
@@ -545,6 +546,7 @@ fr:
     edit: Editer l'organisation
     add-child: Ajouter une sous-organisation
     addSite: Ajouter un site
+    editSite: Editer le site
     delete: Supprimer l'organisation
     infrastructure-component: Organisations et sites
     infrastructure-help: "Les organisations représentent la hiérarchie entre les différents sites, unités, ... disposant d'une adresse particulière et/ou avec des équipes dédiées."

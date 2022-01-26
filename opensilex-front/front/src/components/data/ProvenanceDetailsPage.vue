@@ -33,11 +33,11 @@
           <opensilex-Card label="component.common.description" icon="ik#ik-clipboard">
             <template v-slot:rightHeader>              
               <opensilex-EditButton
-                v-if="user.hasCredential(credentials.CREDENTIAL_DATA_DELETE_ID)"
+                v-if="user.hasCredential(credentials.CREDENTIAL_PROVENANCE_MODIFICATION_ID)"
                 @click="showEditForm"
               ></opensilex-EditButton>
               <opensilex-DeleteButton
-                v-if="user.hasCredential(credentials.CREDENTIAL_DATA_DELETE_ID)"
+                v-if="user.hasCredential(credentials.CREDENTIAL_PROVENANCE_DELETE_ID)"
                 @click="deleteProvenance"
               ></opensilex-DeleteButton>
             </template>
@@ -119,7 +119,7 @@
         v-else-if="isDocumentTab()"
         ref="documentTabList"
         :uri="uri"        
-        :modificationCredentialId="credentials.CREDENTIAL_GERMPLASM_MODIFICATION_ID"
+        :modificationCredentialId="credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID"
       ></opensilex-DocumentTabList>
 
       <opensilex-AnnotationList
@@ -128,8 +128,8 @@
       :target="uri"
       :displayTargetColumn="false"
       :enableActions="true"
-      :modificationCredentialId="credentials.CREDENTIAL_GERMPLASM_MODIFICATION_ID"
-      :deleteCredentialId="credentials.CREDENTIAL_GERMPLASM_DELETE_ID"
+      :modificationCredentialId="credentials.CREDENTIAL_ANNOTATION_MODIFICATION_ID"
+      :deleteCredentialId="credentials.CREDENTIAL_ANNOTATION_DELETE_ID"
       ></opensilex-AnnotationList>
       
     </opensilex-PageContent>   

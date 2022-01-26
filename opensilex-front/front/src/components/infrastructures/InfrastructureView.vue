@@ -77,7 +77,8 @@
 <script lang="ts">
 import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import {InfrastructureGetDTO, OrganisationsService} from "opensilex-core/index";
+// @ts-ignore
+import { OrganizationsService, InfrastructureGetDTO } from "opensilex-core/index";
 import {InfrastructureFacilityGetDTO} from "opensilex-core/model/infrastructureFacilityGetDTO";
 import {SiteGetDTO} from "opensilex-core/model/siteGetDTO";
 import Org from "../../ontologies/Org";
@@ -89,7 +90,7 @@ export default class InfrastructureView extends Vue {
   $opensilex: any;
   $store: any;
   $route: any;
-  service: OrganisationsService;
+  service: OrganizationsService;
 
   // Gestion des tabs : inspiré de VariablesView.vue
   static ORGANIZATION_TAB = "Organization";

@@ -127,18 +127,14 @@ export class OpenSilexRouter {
         let menu: Array<MenuItemDTO> = [];
         for (let i in items) {
             let item: MenuItemDTO = items[i];
-            let hasRouteAccess = false;
 
             if (item.route) {
                 let route = item.route;
-                if (user.hasAllCredentials(route.credentials)) {
-                    hasRouteAccess = true;
-                    menu.push(item);
-                    routes.push({
-                        path: route.path,
-                        component: this.getAsyncComponentLoader($opensilex, route.component)
-                    });
-                }
+                menu.push(item);
+                routes.push({
+                    path: route.path,
+                    component: this.getAsyncComponentLoader($opensilex, route.component)
+                });
             }
 
             let childItems: Array<MenuItemDTO> = [];

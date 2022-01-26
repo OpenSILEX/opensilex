@@ -130,7 +130,7 @@
 import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
-import {InfrastructureGetDTO, OrganisationsService} from "opensilex-core/index";
+import {InfrastructureGetDTO} from "opensilex-core/index";
 import {InfrastructureUpdateDTO} from "opensilex-core/model/infrastructureUpdateDTO";
 import OpenSilexVuePlugin, {GenericTreeOption, TreeOption} from "../../models/OpenSilexVuePlugin";
 import {SiteGetDTO} from "opensilex-core/model/siteGetDTO";
@@ -139,6 +139,7 @@ import {SiteUpdateDTO} from "opensilex-core/model/siteUpdateDTO";
 import {DropdownButtonOption} from "../common/dropdown/Dropdown.vue";
 import {ResourceDagDTO} from "opensilex-core/model/resourceDagDTO";
 import Oeso from "../../ontologies/Oeso";
+import {OrganizationsService} from "opensilex-core/api/organizations.service";
 
 type OrganizationOrSiteData = ResourceDagDTO & {
   isOrganization: boolean,
@@ -159,7 +160,7 @@ export default class InfrastructureTree extends Vue {
   $opensilex: OpenSilexVuePlugin;
   $store: any;
   $route: any;
-  service: OrganisationsService;
+  service: OrganizationsService;
 
   nodes: Array<OrganizationOrSiteTreeNode> = [];
 
@@ -214,7 +215,7 @@ export default class InfrastructureTree extends Vue {
 
   created() {
     this.service = this.$opensilex.getService(
-        "opensilex-core.OrganisationsService"
+      "opensilex-core.OrganizationsService"
     );
 
     let query: any = this.$route.query;

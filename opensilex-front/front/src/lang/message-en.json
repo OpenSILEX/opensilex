@@ -572,9 +572,18 @@
         "documents": "Documents",
         "annotations" : "Annotations",
         "device" : "Device",
-        "events": "Events"
+        "events": "Events",
+        "facilities": "Facilities",
+        "provenance": "Provenances",
+        "vocabulary": "Vocabulary",
+        "packages": "Packages"
     },
     "credential": {
+        "default": {
+            "access": "Menu access",
+            "modification": "Add / update",
+            "delete": "Delete"
+        },
         "experiment": {
             "modification": "Add / update experiments",
             "delete": "Delete experiments"
@@ -634,6 +643,18 @@
         "event": {
             "modification": "Add / update events",
             "delete": "Delete events"
+        },
+        "facility":  {
+            "modification": "Add / update facilities",
+            "delete": "Delete facilities"
+        },
+        "provenance": {
+            "modification": "Add / update provenances",
+            "delete": "Delete provenances"
+        },
+        "profile": {
+            "modification": "Add / update profiles",
+            "delete": "Delete profiles"
         }
     },
     "validations": {

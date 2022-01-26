@@ -57,8 +57,8 @@ import java.util.*;
 @Api(DataAPI.CREDENTIAL_DATA_GROUP_ID)
 @Path(ProvenanceAPI.PATH)
 @ApiCredentialGroup(
-        groupId = DataAPI.CREDENTIAL_DATA_GROUP_ID,
-        groupLabelKey = DataAPI.CREDENTIAL_DATA_GROUP_LABEL_KEY
+        groupId = ProvenanceAPI.CREDENTIAL_PROVENANCE_GROUP_ID,
+        groupLabelKey = ProvenanceAPI.CREDENTIAL_PROVENANCE_GROUP_LABEL_KEY
 )
 public class ProvenanceAPI {
 
@@ -66,6 +66,15 @@ public class ProvenanceAPI {
 
     public static final String PROVENANCE_ACTIVITY_TYPE = "http://www.w3.org/ns/prov#Activity";
     public static final String PROVENANCE_EXAMPLE_URI = "http://opensilex.dev/id/provenance/provenancelabel";
+
+    public static final String CREDENTIAL_PROVENANCE_GROUP_ID = "Provenance";
+    public static final String CREDENTIAL_PROVENANCE_GROUP_LABEL_KEY = "credential-groups.provenance";
+
+    public static final String CREDENTIAL_PROVENANCE_MODIFICATION_ID = "provenance-modification";
+    public static final String CREDENTIAL_PROVENANCE_MODIFICATION_LABEL_KEY = "credential.default.modification";
+
+    public static final String CREDENTIAL_PROVENANCE_DELETE_ID = "provenance-delete";
+    public static final String CREDENTIAL_PROVENANCE_DELETE_LABEL_KEY = "credential.default.delete";
 
     @CurrentUser
     UserModel currentUser;
@@ -80,8 +89,8 @@ public class ProvenanceAPI {
     @ApiOperation("Add a provenance")
     @ApiProtected
     @ApiCredential(
-            credentialId = DataAPI.CREDENTIAL_DATA_MODIFICATION_ID,
-            credentialLabelKey = DataAPI.CREDENTIAL_DATA_MODIFICATION_LABEL_KEY
+            credentialId = ProvenanceAPI.CREDENTIAL_PROVENANCE_MODIFICATION_ID,
+            credentialLabelKey = ProvenanceAPI.CREDENTIAL_PROVENANCE_MODIFICATION_LABEL_KEY
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -158,7 +167,7 @@ public class ProvenanceAPI {
 
     /**
      * @param name
-     * @param experiment
+     * @param description
      * @param activityType
      * @param agentURI
      * @param agentType
@@ -203,8 +212,8 @@ public class ProvenanceAPI {
     @ApiOperation("Delete a provenance that doesn't describe data")
     @ApiProtected
     @ApiCredential(
-            credentialId = DataAPI.CREDENTIAL_DATA_DELETE_ID,
-            credentialLabelKey = DataAPI.CREDENTIAL_DATA_DELETE_LABEL_KEY
+            credentialId = ProvenanceAPI.CREDENTIAL_PROVENANCE_DELETE_ID,
+            credentialLabelKey = ProvenanceAPI.CREDENTIAL_PROVENANCE_DELETE_LABEL_KEY
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -267,8 +276,8 @@ public class ProvenanceAPI {
     @ApiProtected
     @ApiOperation("Update a provenance")
     @ApiCredential(
-            credentialId = DataAPI.CREDENTIAL_DATA_MODIFICATION_ID,
-            credentialLabelKey = DataAPI.CREDENTIAL_DATA_MODIFICATION_LABEL_KEY
+            credentialId = ProvenanceAPI.CREDENTIAL_PROVENANCE_MODIFICATION_ID,
+            credentialLabelKey = ProvenanceAPI.CREDENTIAL_PROVENANCE_MODIFICATION_LABEL_KEY
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)

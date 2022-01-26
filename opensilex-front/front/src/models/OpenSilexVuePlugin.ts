@@ -102,6 +102,8 @@ export default class OpenSilexVuePlugin {
 
     setConfig(config: FrontConfigDTO) {
         this.config = config;
+        //The config may define a path prefix, necessary for the cookie
+        this.updateCookieValue();
     }
 
     getConfig() {
@@ -406,11 +408,14 @@ export default class OpenSilexVuePlugin {
         console.debug("Set cookie value:", this.getCookieName(), user.getToken());
         let domain = location.hostname;
         let pathPrefix = "/";
-        if (this.getConfig().pathPrefix && this.getConfig().pathPrefix != "") {
+        if (this.getConfig() && this.getConfig().pathPrefix && this.getConfig().pathPrefix != "") {
             pathPrefix = this.getConfig().pathPrefix;
         }
         $cookies.set(this.getCookieName(), user.getToken(), user.getExpiration() + "s", pathPrefix, domain, secure);
+    }
 
+    public updateCookieValue() {
+        this.setCookieValue(this.getUser());
     }
 
     public static hashCode(str: string) {

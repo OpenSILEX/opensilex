@@ -24,7 +24,7 @@
     // @ts-ignore
     import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
     // @ts-ignore
-    import {OrganisationsService} from "opensilex-core/api/organisations.service";
+    import {OrganizationsService} from "opensilex-core/api/organisations.service";
     // @ts-ignore
     import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
 
@@ -32,7 +32,7 @@
     export default class InfrastructureFacilitySelector extends Vue {
 
         $opensilex: any;
-        $service: OrganisationsService;
+        $service: OrganizationsService;
 
         @PropSync("facilities", {default: () => []})
         facilitiesURI;
@@ -52,7 +52,7 @@
         facilitiesByUriCache: Map<string, NamedResourceDTO>;
 
         created() {
-            this.$service = this.$opensilex.getService("opensilex.OrganisationsService");
+            this.$service = this.$opensilex.getService("opensilex.OrganizationsService");
             this.facilitiesByUriCache = new Map();
         }
 

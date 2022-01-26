@@ -9,6 +9,7 @@
     <opensilex-PageActions>
       <template v-slot>
         <opensilex-CreateButton
+            v-if="user.hasCredential(credentials.CREDENTIAL_PROVENANCE_MODIFICATION_ID)"
           @click="createProvenance()"
           label="ProvenanceView.add"
         ></opensilex-CreateButton>

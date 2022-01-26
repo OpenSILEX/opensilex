@@ -8,7 +8,7 @@
         <opensilex-EditButton
             v-if="
                   user.hasCredential(
-                    credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
+                    credentials.CREDENTIAL_FACILITY_MODIFICATION_ID
                   )
                 "
             @click="editInfrastructureFacility()"
@@ -18,7 +18,7 @@
         <opensilex-DeleteButton
             v-if="
                   user.hasCredential(
-                    credentials.CREDENTIAL_INFRASTRUCTURE_DELETE_ID
+                    credentials.CREDENTIAL_FACILITY_DELETE_ID
                   )
                 "
             @click="deleteInfrastructureFacility()"
@@ -29,7 +29,7 @@
       <opensilex-OrganizationFacilityModalForm
           v-if="
             user.hasCredential(
-              credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
+              credentials.CREDENTIAL_FACILITY_MODIFICATION_ID
             )
           "
           ref="infrastructureFacilityForm"
@@ -213,7 +213,7 @@ export default class OrganizationFacilityDetail extends Vue {
 
   deleteInfrastructureFacility() {
     this.$opensilex
-        .getService("opensilex.OrganisationsService")
+        .getService("opensilex.OrganizationsService")
         .deleteInfrastructureFacility(this.selected.uri)
         .then(() => {
           this.$router.push({

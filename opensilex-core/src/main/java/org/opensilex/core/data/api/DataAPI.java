@@ -137,10 +137,10 @@ public class DataAPI {
             "\"paramA\" : \"90\"}";
 
     public static final String CREDENTIAL_DATA_MODIFICATION_ID = "data-modification";
-    public static final String CREDENTIAL_DATA_MODIFICATION_LABEL_KEY = "credential.data.modification";
+    public static final String CREDENTIAL_DATA_MODIFICATION_LABEL_KEY = "credential.default.modification";
 
     public static final String CREDENTIAL_DATA_DELETE_ID = "data-delete";
-    public static final String CREDENTIAL_DATA_DELETE_LABEL_KEY = "credential.data.delete";
+    public static final String CREDENTIAL_DATA_DELETE_LABEL_KEY = "credential.default.delete";
     public static final int SIZE_MAX = 50000;
     
     Map<URI, URI> rootDeviceTypes = null;

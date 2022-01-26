@@ -55,19 +55,17 @@
          <opensilex-DeviceVisualizationTab
           v-else-if="isVisualizationTab()"
           :device="uri"
-          :modificationCredentialId="credentials.CREDENTIAL_DEVICE_MODIFICATION_ID"
           ></opensilex-DeviceVisualizationTab>
 
          <opensilex-DeviceDataFiles
           v-else-if="isDatafilesTab()"
           :device="uri"
-          :modificationCredentialId="credentials.CREDENTIAL_DEVICE_MODIFICATION_ID"
         ></opensilex-DeviceDataFiles>
         
           <opensilex-DocumentTabList
             v-else-if="isDocumentTab()"
             :uri="uri"
-            :modificationCredentialId="credentials.CREDENTIAL_DEVICE_MODIFICATION_ID"
+            :modificationCredentialId="credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID"
           ></opensilex-DocumentTabList>
 
           <opensilex-AnnotationList
@@ -76,8 +74,8 @@
             :target="uri"
             :displayTargetColumn="false"
             :enableActions="true"
-            :modificationCredentialId="credentials.CREDENTIAL_DEVICE_MODIFICATION_ID"
-            :deleteCredentialId="credentials.CREDENTIAL_DEVICE_DELETE_ID"
+            :modificationCredentialId="credentials.CREDENTIAL_ANNOTATION_MODIFICATION_ID"
+            :deleteCredentialId="credentials.CREDENTIAL_ANNOTATION_DELETE_ID"
             ></opensilex-AnnotationList>
 
           <opensilex-EventList

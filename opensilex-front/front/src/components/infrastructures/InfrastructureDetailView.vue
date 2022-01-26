@@ -52,7 +52,7 @@ export default class InfrastructureDetailView extends Vue {
   created() {
     this.uri = decodeURIComponent(this.$route.params.uri);
     this.service = this.$opensilex.getService(
-      "opensilex-core.OrganisationsService"
+      "opensilex-core.OrganizationsService"
     );
     this.refresh();
   }

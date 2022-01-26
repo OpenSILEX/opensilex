@@ -31,6 +31,8 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import static org.apache.jena.vocabulary.RDF.uri;
+
+import org.opensilex.security.user.api.UserAPI;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.security.SecurityModule;
@@ -62,7 +64,20 @@ import org.opensilex.utils.ListWithPagination;
  */
 @Api(SecurityModule.REST_SECURITY_API_ID)
 @Path("/security/profiles")
+@ApiCredentialGroup(
+        groupId = ProfileAPI.CREDENTIAL_PROFILE_GROUP_ID,
+        groupLabelKey = ProfileAPI.CREDENTIAL_PROFILE_GROUP_LABEL_KEY
+)
 public class ProfileAPI {
+
+    public static final String CREDENTIAL_PROFILE_GROUP_ID = "Profiles";
+    public static final String CREDENTIAL_PROFILE_GROUP_LABEL_KEY = "credential-groups.profiles";
+
+    public static final String CREDENTIAL_PROFILE_MODIFICATION_ID = "profile-modification";
+    public static final String CREDENTIAL_PROFILE_MODIFICATION_LABEL_KEY = "credential.default.modification";
+
+    public static final String CREDENTIAL_PROFILE_DELETE_ID = "profile-delete";
+    public static final String CREDENTIAL_PROFILE_DELETE_LABEL_KEY = "credential.default.delete";
 
     @Inject
     private SPARQLService sparql;
@@ -74,7 +89,11 @@ public class ProfileAPI {
         @ApiResponse(code = 403, message = "This current user can't create profiles"),
         @ApiResponse(code = 409, message = "The profile name already exists")
     })
-    @ApiProtected(adminOnly = true)
+    @ApiProtected()
+    @ApiCredential(
+            credentialId = CREDENTIAL_PROFILE_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_PROFILE_MODIFICATION_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response createProfile(
@@ -115,7 +134,11 @@ public class ProfileAPI {
 
     @PUT
     @ApiOperation("Update a profile")
-    @ApiProtected(adminOnly = true)
+    @ApiProtected()
+    @ApiCredential(
+            credentialId = CREDENTIAL_PROFILE_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_PROFILE_MODIFICATION_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
@@ -192,7 +215,11 @@ public class ProfileAPI {
     @DELETE
     @Path("{uri}")
     @ApiOperation("Delete a profile")
-    @ApiProtected(adminOnly = true)
+    @ApiProtected()
+    @ApiCredential(
+            credentialId = CREDENTIAL_PROFILE_DELETE_ID,
+            credentialLabelKey = CREDENTIAL_PROFILE_DELETE_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response deleteProfile(

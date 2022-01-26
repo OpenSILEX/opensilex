@@ -84,36 +84,30 @@
     >
       <template v-slot:selectableTableButtons="{ numberOfSelectedRows }">
         <b-dropdown
-          v-if="
-            user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)
-          "
           dropright
           class="mb-2 mr-2"
           :small="true"
           :disabled="numberOfSelectedRows == 0"
           text="actions"
         >
-          <b-dropdown-item-button @click="createDocument()">{{
-            $t("component.common.addDocument")
-          }}</b-dropdown-item-button>
-          <b-dropdown-item-button @click="exportDevices()">{{
-            $t("DeviceList.export")
-          }}</b-dropdown-item-button>
-          <b-dropdown-item-button @click="linkVariable()">{{
-            $t("DeviceList.linkVariable")
-          }}</b-dropdown-item-button>
+          <b-dropdown-item-button
+              v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
+              @click="createDocument()">{{$t('component.common.addDocument')}}</b-dropdown-item-button>
+          <b-dropdown-item-button @click="exportDevices()">{{$t('DeviceList.export')}}</b-dropdown-item-button>
+          <b-dropdown-item-button
+              v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
+              @click="linkVariable()">{{$t('DeviceList.linkVariable')}}</b-dropdown-item-button>
           <b-dropdown-divider></b-dropdown-divider>
 
           <!-- <b-dropdown-item-button disabled>{{$t('DeviceList.addAnnotation')}}
           </b-dropdown-item-button>-->
 
-          <b-dropdown-item-button @click="createEvents()">{{
-            $t("Event.add-multiple")
-          }}</b-dropdown-item-button>
-
-          <b-dropdown-item-button @click="createMoves()">{{
-            $t("Move.add")
-          }}</b-dropdown-item-button>
+          <b-dropdown-item-button
+              v-if="user.hasCredential(credentials.CREDENTIAL_EVENT_MODIFICATION_ID)"
+              @click="createEvents()">{{$t('Event.add-multiple')}}</b-dropdown-item-button>
+          <b-dropdown-item-button
+              v-if="user.hasCredential(credentials.CREDENTIAL_EVENT_MODIFICATION_ID)"
+              @click="createMoves()">{{$t('Move.add')}}</b-dropdown-item-button>
         </b-dropdown>
       </template>
 
@@ -146,7 +140,7 @@
     </opensilex-TableAsyncView>
 
     <opensilex-ModalForm
-      v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
+      v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
       ref="documentForm"
       component="opensilex-DocumentForm"
       createTitle="component.common.addDocument"
@@ -156,6 +150,7 @@
     ></opensilex-ModalForm>
 
     <opensilex-ModalForm
+        v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
       ref="deviceForm"
       component="opensilex-DeviceForm"
       editTitle="update"
@@ -175,16 +170,16 @@
     ></opensilex-VariableModalList>
 
     <opensilex-EventCsvForm
-      v-if="showEventForm"
-      ref="eventCsvForm"
-      :targets="selectedUris"
-    ></opensilex-EventCsvForm>
+        v-if="showEventForm && user.hasCredential(credentials.CREDENTIAL_EVENT_MODIFICATION_ID)"
+        ref="eventCsvForm"
+        :targets="selectedUris">
+    </opensilex-EventCsvForm>
 
     <opensilex-EventCsvForm
-      v-if="showMoveForm"
-      ref="moveCsvForm"
-      :targets="selectedUris"
-      :isMove="true"
+        v-if="showMoveForm && user.hasCredential(credentials.CREDENTIAL_EVENT_MODIFICATION_ID)"
+        ref="moveCsvForm"
+        :targets="selectedUris"
+        :isMove="true"
     ></opensilex-EventCsvForm>
   </div>
 </template>
@@ -549,7 +544,7 @@ en:
     addMove: Move
     showMap: Show in a map
     alertBadDeviceType: The selected type doesn't match with add variable
-    associated-device-error: Device is associated with 
+    associated-device-error: Device is associated with
 
     filter:
       namePattern: Name
@@ -588,7 +583,7 @@ fr:
     addMove: Déplacement
     showMap: Afficher sur une carte
     alertBadDeviceType: La selection comporte un type incompatible avec l'ajout de variable
-    associated-device-error: Le dispositif est associé à  
+    associated-device-error: Le dispositif est associé à
 
     filter:
       namePattern: Nom

@@ -9,6 +9,7 @@
     <opensilex-PageActions>
       <template v-slot>
         <opensilex-CreateButton
+            v-if="user.hasCredential(credentials.CREDENTIAL_DATA_MODIFICATION_ID)"
           @click="modalDataForm.showCreateForm()"
           label="OntologyCsvImporter.import"
         ></opensilex-CreateButton>

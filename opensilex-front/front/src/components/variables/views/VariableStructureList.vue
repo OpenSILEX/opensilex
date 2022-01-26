@@ -27,7 +27,7 @@
                     :small="true"
                 ></opensilex-EditButton>
                 <opensilex-DeleteButton
-                    v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID) && type == 'VariableGroup'"
+                    v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_DELETE_ID) && type == 'VariableGroup'"
                     @click="deleteVariablesGroup(node.data.uri)"
                     label="Delete"
                     :small="true"

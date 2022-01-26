@@ -9,7 +9,6 @@ import io.swagger.annotations.*;
 import org.opensilex.core.CoreModule;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
-import org.opensilex.core.organisation.api.InfrastructureAPI;
 import org.opensilex.core.organisation.dal.InfrastructureDAO;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -40,7 +39,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.opensilex.core.organisation.api.InfrastructureAPI.*;
+import static org.opensilex.core.organisation.api.InfrastructureAPI.CREDENTIAL_GROUP_INFRASTRUCTURE_ID;
 
 /**
  *
@@ -49,10 +48,19 @@ import static org.opensilex.core.organisation.api.InfrastructureAPI.*;
 @Api(CREDENTIAL_GROUP_INFRASTRUCTURE_ID)
 @Path("core/facilities")
 @ApiCredentialGroup(
-        groupId = InfrastructureAPI.CREDENTIAL_GROUP_INFRASTRUCTURE_ID,
-        groupLabelKey = InfrastructureAPI.CREDENTIAL_GROUP_INFRASTRUCTURE_LABEL_KEY
+        groupId = FacilityAPI.CREDENTIAL_GROUP_FACILITY_ID,
+        groupLabelKey = FacilityAPI.CREDENTIAL_GROUP_FACILITY_LABEL_KEY
 )
 public class FacilityAPI {
+
+    public static final String CREDENTIAL_GROUP_FACILITY_ID = "Facilities";
+    public static final String CREDENTIAL_GROUP_FACILITY_LABEL_KEY = "credential-groups.facilities";
+
+    public static final String CREDENTIAL_FACILITY_MODIFICATION_ID = "facility-modification";
+    public static final String CREDENTIAL_FACILITY_MODIFICATION_LABEL_KEY = "credential.default.modification";
+
+    public static final String CREDENTIAL_FACILITY_DELETE_ID = "facility-delete";
+    public static final String CREDENTIAL_FACILITY_DELETE_LABEL_KEY = "credential.default.delete";
 
     @Inject
     private SPARQLService sparql;
@@ -67,8 +75,8 @@ public class FacilityAPI {
     @ApiOperation("Create a facility")
     @ApiProtected
     @ApiCredential(
-            credentialId = CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID,
-            credentialLabelKey = CREDENTIAL_INFRASTRUCTURE_MODIFICATION_LABEL_KEY
+            credentialId = CREDENTIAL_FACILITY_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_FACILITY_MODIFICATION_LABEL_KEY
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -207,8 +215,8 @@ public class FacilityAPI {
     @ApiOperation("Delete a facility")
     @ApiProtected
     @ApiCredential(
-            credentialId = CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID,
-            credentialLabelKey = CREDENTIAL_INFRASTRUCTURE_MODIFICATION_LABEL_KEY
+            credentialId = CREDENTIAL_FACILITY_DELETE_ID,
+            credentialLabelKey = CREDENTIAL_FACILITY_DELETE_LABEL_KEY
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -228,8 +236,8 @@ public class FacilityAPI {
     @ApiOperation("Update a facility")
     @ApiProtected
     @ApiCredential(
-            credentialId = CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID,
-            credentialLabelKey = CREDENTIAL_INFRASTRUCTURE_MODIFICATION_LABEL_KEY
+            credentialId = CREDENTIAL_FACILITY_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_FACILITY_MODIFICATION_LABEL_KEY
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)

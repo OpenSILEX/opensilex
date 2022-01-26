@@ -15,7 +15,7 @@
         <opensilex-CreateButton
           v-if="
             user.hasCredential(
-              credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
+              credentials.CREDENTIAL_FACILITY_MODIFICATION_ID
             )
           "
           @click="facilityForm.showCreateForm()"
@@ -67,7 +67,7 @@
           <opensilex-EditButton
             v-if="
               user.hasCredential(
-                credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
+                credentials.CREDENTIAL_FACILITY_MODIFICATION_ID
               )
             "
             @click="editFacility(data.item)"
@@ -77,7 +77,7 @@
           <opensilex-DeleteButton
             v-if="
               user.hasCredential(
-                credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
+                credentials.CREDENTIAL_FACILITY_DELETE_ID
               )
             "
             @click="deleteFacility(data.item.uri)"
@@ -93,7 +93,7 @@
       v-if="
         withActions &&
         user.hasCredential(
-          credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
+          credentials.CREDENTIAL_FACILITY_MODIFICATION_ID
         )
       "
       @onCreate="onCreate"
@@ -106,14 +106,13 @@
 <script lang="ts">
 import {Component, Prop, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
-import {InfrastructureGetDTO} from "opensilex-core/index";
-import {OrganisationsService} from "opensilex-core/api/organisations.service";
 import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
 import {InfrastructureFacilityGetDTO} from "opensilex-core/model/infrastructureFacilityGetDTO";
 import {BTable} from "bootstrap-vue";
-import {NamedResourceDTOInfrastructureFacilityModel} from "opensilex-core/model/namedResourceDTOInfrastructureFacilityModel";
+import { NamedResourceDTOInfrastructureFacilityModel } from "opensilex-core/model/namedResourceDTOInfrastructureFacilityModel";
 import {InfrastructureFacilityCreationDTO} from "opensilex-core/model/infrastructureFacilityCreationDTO";
 import OrganizationFacilityModalForm from "./OrganizationFacilityModalForm.vue";
+import {OrganizationsService} from "opensilex-core/api/organizations.service";
 import {NamedResourceDTOInfrastructureModel} from "opensilex-core/model/namedResourceDTOInfrastructureModel";
 import {NamedResourceDTOSiteModel} from "opensilex-core/model/namedResourceDTOSiteModel";
 
@@ -121,7 +120,7 @@ import {NamedResourceDTOSiteModel} from "opensilex-core/model/namedResourceDTOSi
 export default class InfrastructureFacilitiesView extends Vue {
   $opensilex: any;
   $store: any;
-  service: OrganisationsService;
+  service: OrganizationsService;
 
   @Ref("facilityForm") readonly facilityForm!: OrganizationFacilityModalForm;
   @Ref("facilityTable") readonly facilityTable: BTable;
@@ -194,7 +193,7 @@ export default class InfrastructureFacilitiesView extends Vue {
 
   public deleteFacility(uri) {
     this.$opensilex
-      .getService("opensilex.OrganisationsService")
+      .getService("opensilex.OrganizationsService")
       .deleteInfrastructureFacility(uri)
       .then(() => {
         this.$emit("onDelete", uri);
@@ -208,7 +207,7 @@ export default class InfrastructureFacilitiesView extends Vue {
 
   created() {
     this.service = this.$opensilex.getService(
-        "opensilex-core.OrganisationsService"
+        "opensilex-core.OrganizationsService"
     );
 
     this.refresh();

@@ -102,21 +102,17 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Ref, Watch } from "vue-property-decorator";
+import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
-// @ts-ignore
-import { InfrastructureGetDTO } from "opensilex-core/index";
-import {OrganisationsService} from "opensilex-core/api/organisations.service";
-import {SiteGetDTO} from "opensilex-core/model/siteGetDTO";
-import {UriLinkDescription} from "../../common/views/UriListView.vue";
+import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
 import {SiteUpdateDTO} from "opensilex-core/model/siteUpdateDTO";
-import {ResourceDagDTO} from "opensilex-core/model/resourceDagDTO";
+import {SiteGetDTO} from "opensilex-core/model/siteGetDTO";
+import {OrganizationsService} from "opensilex-core/api/organizations.service";
 
 @Component
 export default class SiteDetail extends Vue {
   $opensilex: any;
-  organizationService: OrganisationsService;
+  organizationService: OrganizationsService;
 
   @Prop()
   selected: SiteGetDTO;

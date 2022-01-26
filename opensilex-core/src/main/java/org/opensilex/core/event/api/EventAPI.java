@@ -86,10 +86,10 @@ public class EventAPI {
     public static final String CREDENTIAL_EVENT_GROUP_LABEL_KEY = "credential-groups.events";
 
     public static final String CREDENTIAL_EVENT_MODIFICATION_ID = "event-modification";
-    public static final String CREDENTIAL_EVENT_MODIFICATION_LABEL_KEY = "credential.event.modification";
+    public static final String CREDENTIAL_EVENT_MODIFICATION_LABEL_KEY = "credential.default.modification";
 
     public static final String CREDENTIAL_EVENT_DELETE_ID = "event-delete";
-    public static final String CREDENTIAL_EVENT_DELETE_LABEL_KEY = "credential.event.delete";
+    public static final String CREDENTIAL_EVENT_DELETE_LABEL_KEY = "credential.default.delete";
 
     @Inject
     private SPARQLService sparql;
@@ -141,6 +141,10 @@ public class EventAPI {
             @ApiResponse(code = 409, message = "A move with the same URI already exists", response = ErrorResponse.class)
     })
     @ApiProtected
+    @ApiCredential(
+            credentialId = CREDENTIAL_EVENT_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_EVENT_MODIFICATION_LABEL_KEY
+    )
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     public Response importEventCSV(
@@ -523,6 +527,10 @@ public class EventAPI {
             @ApiResponse(code = 409, message = "A move with the same URI already exists", response = ErrorResponse.class)
     })
     @ApiProtected
+    @ApiCredential(
+            credentialId = CREDENTIAL_EVENT_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_EVENT_MODIFICATION_LABEL_KEY
+    )
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     public Response importMoveCSV(

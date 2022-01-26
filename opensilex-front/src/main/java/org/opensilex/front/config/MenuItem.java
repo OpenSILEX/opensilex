@@ -12,17 +12,11 @@ import org.opensilex.config.ConfigDescription;
  *
  * @author vidalmor
  */
-public interface MenuItem {
-    
-    @ConfigDescription("Menu entry identifier")
-    public String id();
+public interface MenuItem extends AbstractMenuItem {
     
     @ConfigDescription("Menu entry label")
-    public String label();
+    String label();
 
     @ConfigDescription("Menu entry children")
-    public List<MenuItem> children();
-
-    @ConfigDescription("Menu entry route (optional)")
-    public Route route();
+    List<MenuItem> children();
 }

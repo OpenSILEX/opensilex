@@ -25,7 +25,7 @@ import {Component} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
 import {SiteGetDTO} from "opensilex-core/model/siteGetDTO";
-import {OrganisationsService} from "opensilex-core/api/organisations.service";
+import {OrganizationsService} from "opensilex-core/api/organizations.service";
 
 @Component
 export default class SiteView extends Vue {
@@ -33,7 +33,7 @@ export default class SiteView extends Vue {
 
   selected: SiteGetDTO = null;
   uri = null;
-  service: OrganisationsService;
+  service: OrganizationsService;
 
   get user() {
     return this.$store.state.user;

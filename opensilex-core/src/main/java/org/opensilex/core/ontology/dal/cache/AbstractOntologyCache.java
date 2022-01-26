@@ -428,7 +428,7 @@ public abstract class AbstractOntologyCache implements OntologyCache {
         addProperties(
                 rootDomainUri,
                 topDataTypeProperty.getUri(),
-                domain -> ontologyDAO.searchDataProperties(domain, OpenSilex.DEFAULT_LANGUAGE),
+                domain -> ontologyDAO.searchDataProperties(domain,null, OpenSilex.DEFAULT_LANGUAGE),
                 this::addDataPropertiesToCache
         );
 
@@ -438,7 +438,7 @@ public abstract class AbstractOntologyCache implements OntologyCache {
         addProperties(
                 rootDomainUri,
                 topObjectProperty.getUri(),
-                domain -> ontologyDAO.searchObjectProperties(domain, OpenSilex.DEFAULT_LANGUAGE),
+                domain -> ontologyDAO.searchObjectProperties(domain,null, OpenSilex.DEFAULT_LANGUAGE),
                 this::addObjectPropertiesToCache
         );
     }

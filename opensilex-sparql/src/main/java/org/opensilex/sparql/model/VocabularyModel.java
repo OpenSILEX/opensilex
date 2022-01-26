@@ -20,6 +20,7 @@ public abstract class VocabularyModel<T extends VocabularyModel<T>> extends SPAR
             property = "label"
     )
     protected SPARQLLabel label;
+    public static final String LABEL_FIELD = "label";
 
     @SPARQLProperty(
             ontology = RDFS.class,

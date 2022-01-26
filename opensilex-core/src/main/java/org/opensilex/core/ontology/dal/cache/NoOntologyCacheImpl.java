@@ -92,7 +92,7 @@ public class NoOntologyCacheImpl implements OntologyCache {
     @Override
     public SPARQLTreeListModel<DatatypePropertyModel> searchDataProperties(URI domain, String lang) throws OntologyCacheException {
         try {
-            return ontologyDAO.searchDataProperties(domain, lang);
+            return ontologyDAO.searchDataProperties(domain,null, lang);
         } catch (Exception e) {
             throw new OntologyCacheException(e);
         }
@@ -116,7 +116,7 @@ public class NoOntologyCacheImpl implements OntologyCache {
     @Override
     public SPARQLTreeListModel<ObjectPropertyModel> searchObjectProperties(URI domain, String lang) throws OntologyCacheException {
         try {
-            return ontologyDAO.searchObjectProperties(domain, lang);
+            return ontologyDAO.searchObjectProperties(domain, null,lang);
         } catch (Exception e) {
             throw new OntologyCacheException(e);
         }

@@ -44,6 +44,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -285,7 +286,7 @@ public class OntologyAPI {
 
         OntologyStore ontologyStore = SPARQLModule.getOntologyStoreInstance();
         AbstractPropertyModel<?> model = ontologyStore.getProperty(propertyURI, propertyType, domainType, currentUser.getLanguage());
-        return new SingleObjectResponse<>(new RDFPropertyDTO(model)).getResponse();
+        return new SingleObjectResponse<>(new RDFPropertyDTO(model, currentUser.getLanguage())).getResponse();
     }
 
     @DELETE
@@ -326,15 +327,20 @@ public class OntologyAPI {
             @ApiResponse(code = 200, message = "Return property tree", response = ResourceTreeDTO.class, responseContainer = "List")
     })
     public Response getProperties(
-            @ApiParam(value = "Domain URI") @PathParam("domain") @NotNull @ValidURI URI domainURI
+            @ApiParam(value = "Domain URI") @QueryParam("domain") @NotNull @ValidURI URI domainURI,
+            @ApiParam(value = "Name regex pattern", example = "plant_height") @QueryParam("name") String namePattern,
+            @ApiParam(value = "Return properties with no rdfs:range defined") @QueryParam("accept_null_range") @DefaultValue("true") boolean acceptNullRange
     ) throws Exception {
+
+        Predicate<DatatypePropertyModel> dataPropFilter = acceptNullRange ? null : (property -> property.getRangeURI() != null);
+        Predicate<ObjectPropertyModel> objectPropFilter = acceptNullRange ? null : (property -> property.getRangeURI() != null);
 
         OntologyStore ontologyStore = SPARQLModule.getOntologyStoreInstance();
 
         List<ResourceTreeDTO> properties = ResourceTreeDTO.fromResourceTree(Arrays.asList(
-                ontologyStore.searchDataProperties(domainURI, currentUser.getLanguage(),true),
-                ontologyStore.searchObjectProperties(domainURI, currentUser.getLanguage(),true))
-        );
+                ontologyStore.searchDataProperties(domainURI, namePattern,currentUser.getLanguage(), true, dataPropFilter),
+                ontologyStore.searchObjectProperties(domainURI,  namePattern,currentUser.getLanguage(), true, objectPropFilter)
+        ));
         return new ResourceTreeResponse(properties).getResponse();
     }
 
@@ -349,12 +355,13 @@ public class OntologyAPI {
             @ApiResponse(code = 200, message = "Return data property tree", response = ResourceTreeDTO.class, responseContainer = "List")
     })
     public Response getDataProperties(
-            @ApiParam(value = "Domain URI") @QueryParam("domain") @ValidURI URI domainURI
-    ) throws Exception {
+            @ApiParam(value = "Domain URI") @QueryParam("domain") @ValidURI URI domainURI,
+            @ApiParam(value = "Name regex pattern", example = "plant_height") @QueryParam("name") String namePattern
+        ) throws Exception {
 
         OntologyStore ontologyStore = SPARQLModule.getOntologyStoreInstance();
         List<ResourceTreeDTO> properties = ResourceTreeDTO.fromResourceTree(
-                ontologyStore.searchDataProperties(domainURI, currentUser.getLanguage(),true)
+                ontologyStore.searchDataProperties(domainURI, namePattern,currentUser.getLanguage(), true, null)
         );
         return new ResourceTreeResponse(properties).getResponse();
     }
@@ -369,13 +376,14 @@ public class OntologyAPI {
             @ApiResponse(code = 200, message = "Return object property tree", response = ResourceTreeDTO.class, responseContainer = "List")
     })
     public Response getObjectProperties(
-            @ApiParam(value = "Domain URI") @QueryParam("domain") @ValidURI URI domainURI
+            @ApiParam(value = "Domain URI") @QueryParam("domain") @ValidURI URI domainURI,
+            @ApiParam(value = "Name regex pattern", example = "plant_height")@QueryParam("name")String namePattern
     ) throws Exception {
 
         OntologyStore ontologyStore = SPARQLModule.getOntologyStoreInstance();
 
         List<ResourceTreeDTO> properties = ResourceTreeDTO.fromResourceTree(
-                ontologyStore.searchObjectProperties(domainURI, currentUser.getLanguage(),true)
+                ontologyStore.searchObjectProperties(domainURI, namePattern, currentUser.getLanguage(), true, null)
         );
         return new ResourceTreeResponse(properties).getResponse();
     }
@@ -394,14 +402,15 @@ public class OntologyAPI {
     ) throws Exception {
 
         OntologyDAO dao = new OntologyDAO(sparql);
+        OntologyStore ontologyStore = SPARQLModule.getOntologyStoreInstance();
 
-        OwlRestrictionModel restriction = this.restrictionDtoToModel(dao, dto);
+        OwlRestrictionModel restriction = this.restrictionDtoToModel(ontologyStore, dto);
         Node propertyGraph = getPropertyGraph();
 
         if (!dao.addClassPropertyRestriction(propertyGraph, dto.getClassURI(), restriction, currentUser.getLanguage())) {
             return new ErrorResponse(Response.Status.CONFLICT, "Property restriction already exists for class", "Class URI: " + dto.getClassURI().toString() + " - Property URI: " + dto.getProperty().toString()).getResponse();
         }
-        SPARQLModule.getOntologyStoreInstance().reload();
+        ontologyStore.reload();
 
         return new ObjectUriResponse(new URI("about:blank")).getResponse();
     }
@@ -441,10 +450,11 @@ public class OntologyAPI {
             @ApiParam("Property description") @Valid OWLClassPropertyRestrictionDTO dto
     ) throws Exception {
         OntologyDAO dao = new OntologyDAO(sparql);
+        OntologyStore ontologyStore = SPARQLModule.getOntologyStoreInstance();
 
-        OwlRestrictionModel restriction = this.restrictionDtoToModel(dao, dto);
+        OwlRestrictionModel restriction = this.restrictionDtoToModel(ontologyStore, dto);
         dao.updateClassPropertyRestriction(getPropertyGraph(), dto.getClassURI(), restriction, currentUser.getLanguage());
-        SPARQLModule.getOntologyStoreInstance().reload();
+        ontologyStore.reload();
 
         return new ObjectUriResponse(new URI("about:blank")).getResponse();
     }
@@ -541,31 +551,29 @@ public class OntologyAPI {
     }
 
 
-    private OwlRestrictionModel restrictionDtoToModel(OntologyDAO dao, OWLClassPropertyRestrictionDTO dto) throws Exception {
+    private OwlRestrictionModel restrictionDtoToModel(OntologyStore ontologyStore, OWLClassPropertyRestrictionDTO dto) throws Exception {
         OwlRestrictionModel restriction = new OwlRestrictionModel();
 
-        URI propertyURI = dto.getProperty();
-        restriction.setOnProperty(propertyURI);
+        ClassModel domainClass = ontologyStore.getClassModel(dto.getClassURI(), dto.getDomain(), currentUser.getLanguage());
+        restriction.setDomain(domainClass.getUri());
+
+        PropertyModel property = ontologyStore.getProperty( dto.getProperty(), null, dto.getDomain(), currentUser.getLanguage());
+        restriction.setOnProperty(property.getUri());
+
+        if (property instanceof DatatypePropertyModel) {
+            restriction.setOnDataRange(((DatatypePropertyModel) property).getRange());
+        } else if (property instanceof ObjectPropertyModel) {
+            restriction.setOnClass(((ObjectPropertyModel) property).getRange());
+        }
 
         if (dto.isRequired()) {
             restriction.setMinCardinality(1);
         } else {
             restriction.setMinCardinality(0);
         }
-
         if (!dto.isList()) {
             restriction.setMaxCardinality(1);
         }
-
-        DatatypePropertyModel dataProp = dao.getDataProperty(propertyURI, dto.getDomain(), currentUser.getLanguage());
-        if (dataProp == null) {
-            URI objectRangeURI = dao.getObjectProperty(propertyURI, dto.getDomain(), currentUser.getLanguage()).getRange().getUri();
-//            restriction.setOnClass(objectRangeURI);
-        } else {
-            URI dataRangeURI = dataProp.getRange();
-            restriction.setOnDataRange(dataRangeURI);
-        }
-        restriction.setDomain(dto.getDomain());
 
         return restriction;
     }

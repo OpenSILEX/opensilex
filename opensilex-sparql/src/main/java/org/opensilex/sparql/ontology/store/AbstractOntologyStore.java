@@ -28,6 +28,7 @@ import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
 import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
+import org.opensilex.sparql.model.SPARQLTreeModel;
 import org.opensilex.sparql.model.VocabularyModel;
 import org.opensilex.sparql.ontology.dal.*;
 import org.opensilex.sparql.service.SPARQLService;
@@ -39,6 +40,9 @@ import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author rcolin
@@ -155,7 +159,7 @@ public abstract class AbstractOntologyStore implements OntologyStore {
     public void clear() {
         modelsByUris.clear();
 
-        if(! modelsGraph.vertexSet().isEmpty()){
+        if (!modelsGraph.vertexSet().isEmpty()) {
             Set<String> vertexesCopy = new HashSet<>(modelsGraph.vertexSet());
             modelsGraph.removeAllVertices(vertexesCopy);
         }
@@ -246,10 +250,10 @@ public abstract class AbstractOntologyStore implements OntologyStore {
                 property.setDomain(existingDomain);
 
                 // update ClassModel data/object properties
-                if(property instanceof DatatypePropertyModel){
+                if (property instanceof DatatypePropertyModel) {
                     existingDomain.getDatatypeProperties().put(property.getUri(), (DatatypePropertyModel) property);
 
-                }else if(property instanceof ObjectPropertyModel){
+                } else if (property instanceof ObjectPropertyModel) {
                     existingDomain.getObjectProperties().put(property.getUri(), (ObjectPropertyModel) property);
                 }
             }
@@ -270,7 +274,7 @@ public abstract class AbstractOntologyStore implements OntologyStore {
 
         if (restriction.getOnDataRange() == null) {
             LOGGER.warn("{} NULL owl:onDataRange for restriction {} on property {} {}", ANSI_RED, restriction.getUri(), property.getUri(), ANSI_RESET);
-        }else{
+        } else {
             //            restrictedClass.getDatatypeProperties().put(property.getUri(), property);
             restrictedClass.getRestrictionsByProperties().put(restriction.getOnProperty(), restriction);
         }
@@ -279,7 +283,7 @@ public abstract class AbstractOntologyStore implements OntologyStore {
     private void linkObjectProperty(OwlRestrictionModel restriction, ClassModel restrictedClass, ObjectPropertyModel property) throws SPARQLInvalidURIException {
         if (restriction.getOnClass() == null) {
             LOGGER.warn("{} NULL owl:onClass for restriction {} on property {} {}", ANSI_RED, restriction.getUri(), property.getUri(), ANSI_RESET);
-        }else{
+        } else {
             // update onClass with complete ClassModel from store
 
             restriction.setOnClass(getClassModel(restriction.getOnClass().getUri()));
@@ -324,6 +328,9 @@ public abstract class AbstractOntologyStore implements OntologyStore {
 
         String formattedAncestorURI = URIDeserializer.formatURI(ancestorURI).toString();
         String classURI = classModel.getUri().toString();
+        if (classURI.equals(ancestorURI.toString())) {
+            return;
+        }
 
         if (!modelsByUris.containsKey(formattedAncestorURI)) {
             throw new SPARQLInvalidURIException("Unknown ancestor " + ancestorURI + " for class " + classURI, ancestorURI);
@@ -432,29 +439,82 @@ public abstract class AbstractOntologyStore implements OntologyStore {
     }
 
     @Override
-    public SPARQLTreeListModel<ClassModel> searchSubClasses(URI classURI, String stringPattern, String lang, boolean excludeRoot) throws SPARQLException {
+    public SPARQLTreeListModel<ClassModel> searchSubClasses(URI classURI, String pattern, String lang, boolean excludeRoot) throws SPARQLException {
+        if(! StringUtils.isEmpty(pattern)){
+            return new NoOntologyStore(ontologyDAO).searchSubClasses(classURI, pattern, lang, excludeRoot);
+        }
         ClassModel classModel = getClassModel(classURI, null, lang);
         return new SPARQLTreeListModel<>(classModel, excludeRoot, true);
     }
 
     @Override
-    public SPARQLTreeListModel<DatatypePropertyModel> searchDataProperties(URI domain, String lang, boolean includeSubClasses) throws SPARQLException {
+    public SPARQLTreeListModel<DatatypePropertyModel> searchDataProperties(URI domain, String namePattern, String lang, boolean includeSubClasses, Predicate<DatatypePropertyModel> filter) throws SPARQLException {
 
-        ClassModel classModel = getClassModel(domain, null, lang);
-        if (includeSubClasses) {
-            addPropertiesFromSubClass(classModel);
+        if(! StringUtils.isEmpty(namePattern)){
+            return new NoOntologyStore(ontologyDAO).searchDataProperties(domain, namePattern, lang, includeSubClasses, filter);
         }
-        return new SPARQLTreeListModel<>(classModel.getDatatypeProperties().values(), OWL_DATATYPE_PROPERTY_MODEL.getUri(), true, true);
 
+        ClassModel classModel = getClassModel(domain);
+
+        List<DatatypePropertyModel> properties;
+        if (filter == null) {
+            properties = new ArrayList<>(classModel.getDatatypeProperties().values());
+        } else {
+            properties = classModel.getDatatypeProperties().values()
+                    .stream()
+                    .filter(filter)
+                    .collect(Collectors.toList());
+        }
+
+        if (includeSubClasses) {
+            if (filter == null) {
+                classModel.visit(child -> properties.addAll(child.getDatatypeProperties().values()));
+            } else {
+                classModel.visit(child -> child.getDatatypeProperties().values()
+                        .stream()
+                        .filter(filter)
+                        .collect(Collectors.toCollection(() -> properties)));
+            }
+        }
+
+        properties.forEach(property -> handleLang(lang, property));
+
+        return new SPARQLTreeListModel<>(properties, TOP_DATA_PROPERTY_URI, true, true);
     }
 
     @Override
-    public SPARQLTreeListModel<ObjectPropertyModel> searchObjectProperties(URI domain, String lang, boolean includeSubClasses) throws SPARQLException {
-        ClassModel classModel = getClassModel(domain, null, lang);
-        if (includeSubClasses) {
-            addPropertiesFromSubClass(classModel);
+    public SPARQLTreeListModel<ObjectPropertyModel> searchObjectProperties(URI domain, String namePattern, String pattern, boolean includeSubClasses, Predicate<ObjectPropertyModel> filter) throws SPARQLException {
+
+        if(! StringUtils.isEmpty(pattern)){
+            return new NoOntologyStore(ontologyDAO).searchObjectProperties(domain, pattern, namePattern, includeSubClasses, filter);
         }
-        return new SPARQLTreeListModel<>(classModel.getObjectProperties().values(), OWL_OBJECT_PROPERTY_MODEL.getUri(), true, true);
+
+        ClassModel classModel = getClassModel(domain);
+
+        List<ObjectPropertyModel> properties;
+        if (filter == null) {
+            properties = new ArrayList<>(classModel.getObjectProperties().values());
+        } else {
+            properties = classModel.getObjectProperties().values()
+                    .stream()
+                    .filter(filter)
+                    .collect(Collectors.toList());
+        }
+
+        if (includeSubClasses) {
+            if (filter == null) {
+                classModel.visit(child -> properties.addAll(child.getObjectProperties().values()));
+            } else {
+                classModel.visit(child -> child.getObjectProperties().values()
+                        .stream()
+                        .filter(filter)
+                        .collect(Collectors.toCollection(() -> properties)));
+            }
+        }
+
+        properties.forEach(property -> handleLang(namePattern, property));
+
+        return new SPARQLTreeListModel<>(properties, TOP_OBJECT_PROPERTY_URI, true, true);
     }
 
     @Override
@@ -465,5 +525,30 @@ public abstract class AbstractOntologyStore implements OntologyStore {
         model.visit(descendant -> handleLang(lang, descendant));
 
         return model;
+    }
+
+    @Override
+    public boolean classExist(URI rdfClass, URI ancestorClass) {
+        String classURI = formatURI(rdfClass);
+
+        if (!modelsByUris.containsKey(classURI)) {
+            return false;
+        }
+        if (ancestorClass == null) {
+            return true;
+        }
+
+        String ancestorURI = formatURI(ancestorClass);
+
+        if (ancestorURI.equals(classURI)) {
+            return true;
+        }
+
+        if (!modelsByUris.containsKey(ancestorURI)) {
+            return false;
+        }
+
+        Set<String> ancestors = JgraphtUtils.getVertexesFromAncestor(modelsGraph, ancestorURI, classURI, MAX_GRAPH_PATH_LENGTH);
+        return !ancestors.isEmpty();
     }
 }

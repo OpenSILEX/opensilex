@@ -172,6 +172,7 @@
                 editTitle="OntologyClassDetail.updateProperty"
                 @onCreate="$emit('onDetailChange')"
                 @onUpdate="$emit('onDetailChange')"
+                successMessage="OntologyClassView.the-type"
             ></opensilex-ModalForm>
         </div>
     </b-card>
@@ -275,7 +276,8 @@ export default class OntologyClassDetail extends Vue {
     }
 
     addProperty() {
-        this.ontologyService.getProperties(this.rdfType).then((http) => {
+      // get properties, only those with a rdfs:range defined
+        this.ontologyService.getProperties(this.rdfType,undefined,false).then((http) => {
             let formRef = this.classPropertyForm.getFormRef();
             formRef.setDomain(this.rdfType);
             formRef.setClassURI(this.selected.uri);

@@ -138,7 +138,7 @@ export default class OntologyPropertyView extends Vue {
     }
 
     refresh() {
-        this.propertiesTree.refresh();
+        this.propertiesTree.refresh(this.nameFilter);
     }
 
     updateFilter() {

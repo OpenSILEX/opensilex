@@ -126,7 +126,7 @@ public final class OntologyDAO {
                         Var parentNameField = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getObjectNameVarName(SPARQLTreeModel.PARENT_FIELD));
 
                         select.addFilter(SPARQLQueryHelper.or(
-                                SPARQLQueryHelper.regexFilter(ClassModel.NAME_FIELD, stringPattern),
+                                SPARQLQueryHelper.regexFilter(VocabularyModel.LABEL_FIELD, stringPattern),
                                 SPARQLQueryHelper.regexFilter(parentNameField.getVarName(), stringPattern)
                         ));
                     }
@@ -288,7 +288,7 @@ public final class OntologyDAO {
         return false;
     }
 
-    public SPARQLTreeListModel<DatatypePropertyModel> searchDataProperties(URI domain, String lang) throws Exception {
+    public SPARQLTreeListModel<DatatypePropertyModel> searchDataProperties(URI domain, String pattern, String lang) throws Exception {
 
         Map<String, WhereHandler> customHandlerByFields = new HashMap<>();
         addDomainSubClassOfExistExpr(customHandlerByFields, domain);
@@ -299,7 +299,12 @@ public final class OntologyDAO {
                 lang,
                 topDataPropertyUri,
                 true,
-                this::appendDomainBoundExpr,
+                select -> {
+                    appendDomainBoundExpr(select);
+                    if (!StringUtils.isEmpty(pattern)) {
+                        select.addFilter(SPARQLQueryHelper.regexFilter(VocabularyModel.LABEL_FIELD, pattern));
+                    }
+                },
                 customHandlerByFields
         );
     }
@@ -313,7 +318,7 @@ public final class OntologyDAO {
         select.addFilter(exprFactory.bound(makeVar(ObjectPropertyModel.DOMAIN_FIELD)));
     }
 
-    public SPARQLTreeListModel<ObjectPropertyModel> searchObjectProperties(URI domain, String lang) throws Exception {
+    public SPARQLTreeListModel<ObjectPropertyModel> searchObjectProperties(URI domain, String pattern, String lang) throws Exception {
 
         Map<String, WhereHandler> customHandlerByFields = new HashMap<>();
         addDomainSubClassOfExistExpr(customHandlerByFields, domain);
@@ -324,7 +329,12 @@ public final class OntologyDAO {
                 lang,
                 topObjectPropertyUri,
                 true,
-                this::appendDomainBoundExpr,
+                select -> {
+                    appendDomainBoundExpr(select);
+                    if (!StringUtils.isEmpty(pattern)) {
+                        select.addFilter(SPARQLQueryHelper.regexFilter(VocabularyModel.LABEL_FIELD, pattern));
+                    }
+                },
                 customHandlerByFields
         );
     }

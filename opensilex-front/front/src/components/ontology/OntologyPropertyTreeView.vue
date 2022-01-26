@@ -93,12 +93,12 @@ export default class OntologyPropertyTreeView extends Vue {
     @Watch("domain")
     onDomainChange() {
         if (this.domain) {
-            this.refresh();
+            this.refresh(undefined);
         }
     }
 
-    refresh() {
-        this.ontologyService.getProperties(this.domain)
+    refresh(nameFilter) {
+        this.ontologyService.getProperties(this.domain,nameFilter,true)
             .then(http => {
                 if (http && http.response.result) {
                     let treeNode = [];

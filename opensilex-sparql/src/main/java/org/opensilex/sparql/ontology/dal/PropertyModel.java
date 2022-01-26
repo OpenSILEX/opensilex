@@ -22,6 +22,8 @@ import java.net.URI;
  */
 public interface PropertyModel {
 
+    URI getUri();
+
     ClassModel getDomain();
 
     void setDomain(ClassModel domain);

@@ -88,6 +88,9 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
             sparql.clearGraph(experiment);
         }
 
+        final Response delResultGermplasm = getDeleteByUriResponse(target(GermplasmAPITest.deletePath), speciesUri.toString());
+        assertEquals(Response.Status.OK.getStatusCode(), delResultGermplasm.getStatus());
+
         experiment = null;
     }
 

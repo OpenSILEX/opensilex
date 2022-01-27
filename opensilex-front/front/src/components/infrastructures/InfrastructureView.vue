@@ -113,7 +113,7 @@ export default class InfrastructureView extends Vue {
 
   created() {
     this.service = this.$opensilex.getService(
-        "opensilex-core.OrganisationsService"
+        "opensilex-core.OrganizationsService"
     );
 
     let query = this.$route.query;

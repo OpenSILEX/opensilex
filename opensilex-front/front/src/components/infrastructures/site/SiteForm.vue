@@ -120,7 +120,7 @@ export default class SiteForm extends Vue {
 
   create(form) {
     return this.$opensilex
-        .getService("opensilex.OrganisationsService")
+        .getService("opensilex.OrganizationsService")
         .createSite(form)
         .then((http: HttpResponse<OpenSilexResponse<string>>) => {
           let uri = http.response.result;
@@ -145,7 +145,7 @@ export default class SiteForm extends Vue {
     delete form.rdf_type_name;
     console.log(form);
     return this.$opensilex
-        .getService("opensilex.OrganisationsService")
+        .getService("opensilex.OrganizationsService")
         .updateSite(form)
         .then((http: HttpResponse<OpenSilexResponse<string>>) => {
           let uri = http.response.result;

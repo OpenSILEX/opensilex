@@ -125,7 +125,7 @@ export default class SiteDetail extends Vue {
   @Ref("siteForm") readonly siteForm!: any;
 
   created() {
-    this.organizationService = this.$opensilex.getService("opensilex-core.OrganisationsService");
+    this.organizationService = this.$opensilex.getService("opensilex-core.OrganizationsService");
   }
 
   get user() {

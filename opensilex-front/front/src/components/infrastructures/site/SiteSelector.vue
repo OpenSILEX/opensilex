@@ -53,7 +53,7 @@ export default class SiteSelector extends Vue {
   siteByUriCache: Map<string, NamedResourceDTOSiteModel>;
 
   created() {
-    this.$service = this.$opensilex.getService("opensilex.OrganisationsService");
+    this.$service = this.$opensilex.getService("opensilex.OrganizationsService");
     this.siteByUriCache = new Map<string, NamedResourceDTOSiteModel>();
   }
 

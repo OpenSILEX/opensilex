@@ -223,7 +223,8 @@ public class VariableAPI {
                 experiment,                
                 orderByList,
                 page,
-                pageSize
+                pageSize,
+                this.currentUser
         );
 
         // Convert paginated list to DTO

@@ -597,8 +597,8 @@ public class DataDAO {
         return new VariableDAO(sparql,nosql,fs).getList(new ArrayList<>(variableURIs));
     }
     
-    public Set<URI> getUsedVariablesByExperiments(List<URI> experiments) throws Exception {
-        Document filter = searchFilter(null, experiments, null, null, null, null, null, null, null, null, null);
+    public Set<URI> getUsedVariablesByExperiments(UserModel user, List<URI> experiments) throws Exception {
+        Document filter = searchFilter(user, experiments, null, null, null, null, null, null, null, null, null);
         Set<URI> variableURIs = nosql.distinct("variable", URI.class, DATA_COLLECTION_NAME, filter);
         return variableURIs;
     }

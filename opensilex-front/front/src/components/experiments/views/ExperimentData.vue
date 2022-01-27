@@ -19,7 +19,7 @@
           >
             <template v-slot:filters>
               <!-- Variables  -->
-              <opensilex-FilterField halfWidth="true">
+              <!-- <opensilex-FilterField halfWidth="true">
                 <opensilex-UsedVariableSelector
                 label="DataView.filter.variables"
                 :multiple="true"
@@ -27,10 +27,10 @@
                 :experiment="uri"
                 :key="refreshKey"
                 ></opensilex-UsedVariableSelector>
-              </opensilex-FilterField>
+              </opensilex-FilterField> -->
 
               <!-- Variables -->
-              <!-- <opensilex-FilterField halfWidth="true">
+              <opensilex-FilterField halfWidth="true">
                 <opensilex-SelectForm
                   ref="varSelector"
                   label="DataView.filter.variables"
@@ -46,7 +46,7 @@
                   @clear="refreshVarSelector"
                   @select="refreshProvComponent"
                 ></opensilex-SelectForm>
-              </opensilex-FilterField> -->
+              </opensilex-FilterField>
 
               <!-- Scientific objects -->
               <opensilex-FilterField halfWidth="true">

@@ -27,14 +27,23 @@
     </opensilex-TextAreaForm>
 
     <!-- Variables -->
-    <opensilex-VariableSelector
+    <!-- <opensilex-VariableSelector
       ref="selectVariablesForm"
       label="VariableView.title"
       placeholder="VariableList.label-filter-placeholder"
       :multiple="true"
       :variables.sync="form.variables"
       :required="false">
-    </opensilex-VariableSelector>
+    </opensilex-VariableSelector> -->
+
+    <opensilex-VariableSelectorWithFilter
+      label="VariableView.title"
+      placeholder="VariableList.label-filter-placeholder"
+      :multiple="true"
+      :variables.sync="form.variables"
+      :required="false">
+    </opensilex-VariableSelectorWithFilter>
+
   </ValidationObserver>
 </template>
 
@@ -57,7 +66,7 @@ export default class GroupVariablesForm extends Vue {
   uriGenerated;
 
   @Ref("validatorRef") readonly validatorRef!: any;
-  @Ref("selectVariablesForm") readonly selectVariablesForm!: any;
+  //@Ref("selectVariablesForm") readonly selectVariablesForm!: any;
 
   get user() {
     return this.$store.state.user;

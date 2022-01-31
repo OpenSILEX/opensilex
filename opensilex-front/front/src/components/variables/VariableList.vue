@@ -305,7 +305,7 @@ export default class VariableList extends Vue {
         this.tableRef.onItemUnselected(row);
     }
 
-    searchVariablesWithAttribute() {
+    searchVariablesWithAttribute(options) {
         return this.$service.searchVariables(
             this.filter.name,
             this.filter.entity,
@@ -315,9 +315,9 @@ export default class VariableList extends Vue {
             this.filter.unit,
             this.filter.group,
             this.filter.experiment,
-            undefined,
-            undefined,
-            this.pageSize
+            options.orderBy,
+            options.currentPage,
+            options.pageSize
         );
     }
 

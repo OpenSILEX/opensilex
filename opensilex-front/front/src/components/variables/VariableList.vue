@@ -222,6 +222,9 @@ export default class VariableList extends Vue {
     @Prop()
     iconNumberOfSelectedRow;
 
+    @Prop()
+    pageSize;
+
     @PropSync("searchFilter", {
         default: () => {
         return {
@@ -302,7 +305,7 @@ export default class VariableList extends Vue {
         this.tableRef.onItemUnselected(row);
     }
 
-    searchVariablesWithAttribute(options) {
+    searchVariablesWithAttribute() {
         return this.$service.searchVariables(
             this.filter.name,
             this.filter.entity,
@@ -312,9 +315,9 @@ export default class VariableList extends Vue {
             this.filter.unit,
             this.filter.group,
             this.filter.experiment,
-            options.orderBy,
-            options.currentPage,
-            options.pageSize
+            undefined,
+            undefined,
+            this.pageSize
         );
     }
 

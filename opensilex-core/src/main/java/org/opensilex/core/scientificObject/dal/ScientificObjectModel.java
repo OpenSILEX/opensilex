@@ -85,7 +85,31 @@ public class ScientificObjectModel extends SPARQLTreeModel<ScientificObjectModel
     }
 
     @Override
-    public String[] getInstancePathSegments(SPARQLTreeModel<ScientificObjectModel> instance) {
+    public ScientificObjectModel getParent() {
+        return parent;
+    }
+
+    @Override
+    public void setParent(ScientificObjectModel parent) {
+        this.parent = parent;
+    }
+
+    @Override
+    public List<ScientificObjectModel> getChildren() {
+        return children;
+    }
+
+    @Override
+    public void setChildren(List<ScientificObjectModel> children) {
+        this.children = children;
+    }
+
+    @Override
+    public String getInstanceUriPath(SPARQLTreeModel<ScientificObjectModel> instance) {
+        StringBuilder sb = new StringBuilder();
+        if(experiment != null && !StringUtils.isEmpty(experiment.getName())){
+            sb.append(normalize(experiment.getName())).append("/");
+        }
 
         StringBuilder sb = new StringBuilder(GENERATION_PREFIX);
         if (instance.getName() != null) {

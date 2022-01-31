@@ -1,10 +1,10 @@
 <template>
     <div v-if="uri" class="container-fluid">
-        <opensilex-PageHeader
+        <!-- <opensilex-PageHeader
                 icon="ik#ik-layers"
                 :title="name"
                 description="component.experiment.view.title"
-        ></opensilex-PageHeader>
+        ></opensilex-PageHeader> -->
 
         <opensilex-PageActions :tabs="true" :returnButton="true">
             <template v-slot>

@@ -1,10 +1,10 @@
 <template>
   <div class="container-fluid">
-    <opensilex-PageHeader
+    <!-- <opensilex-PageHeader
       icon="fa#seedling"
       title="GermplasmView.title"
       description="GermplasmView.description"
-    ></opensilex-PageHeader>
+    ></opensilex-PageHeader> -->
 
     <opensilex-PageActions
     v-if="user.hasCredential(credentials.CREDENTIAL_GERMPLASM_MODIFICATION_ID)">

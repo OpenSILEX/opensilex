@@ -516,3 +516,17 @@
 .advancedMultiSelectorModal .modal-body .card .card-header {
     border-bottom: 0;
 }
+
+/********************************
+* MEDIA QUERIES
+********************************/
+
+@media (min-width: 200px) and (max-width: 1150px) {
+    .customized .header-top .top-menu .dropdown .dropdown-toggle {
+        height: 25px;
+        width: 25px;
+        font-size: 80%;
+        line-height: 5px;
+        padding: 5px;
+    }
+  }

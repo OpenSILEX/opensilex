@@ -1,7 +1,7 @@
 <template>
   <div class="container-fluid">
-    <opensilex-PageHeader v-if="isTypeTab()" :icon="icon" :title="typeTitle" :description="typeDescription"></opensilex-PageHeader>
-    <opensilex-PageHeader v-else :icon="icon" :title="propertiesTitle" :description="propertiesDescription"></opensilex-PageHeader>
+    <!-- <opensilex-PageHeader v-if="isTypeTab()" :icon="icon" :title="typeTitle" :description="typeDescription"></opensilex-PageHeader>
+    <opensilex-PageHeader v-else :icon="icon" :title="propertiesTitle" :description="propertiesDescription"></opensilex-PageHeader> -->
 
     <opensilex-PageActions :returnButton="false" >
       <template v-slot>

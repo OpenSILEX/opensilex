@@ -1,10 +1,10 @@
 <template>
   <div class="container-fluid">
-    <opensilex-PageHeader
+    <!-- <opensilex-PageHeader
       icon="ik#ik-user"
       title="UserView.title"
       description="UserView.description"
-    ></opensilex-PageHeader>
+    ></opensilex-PageHeader> -->
 
     <opensilex-PageActions v-if="user.hasCredential(credentials.CREDENTIAL_USER_MODIFICATION_ID)">
       <template v-slot>

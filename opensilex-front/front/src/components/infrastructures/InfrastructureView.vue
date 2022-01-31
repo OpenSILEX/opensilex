@@ -1,10 +1,10 @@
 <template>
   <div class="container-fluid">
-    <opensilex-PageHeader
+    <!-- <opensilex-PageHeader
       icon="ik#ik-globe"
       title="component.menu.infrastructures"
       description="InfrastructureView.description"
-    ></opensilex-PageHeader>
+    ></opensilex-PageHeader> -->
     <opensilex-PageActions>
       <div>
         <b-tabs content-class="mt-3" :value=currentTabIndex @input="updateType">

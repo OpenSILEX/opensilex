@@ -1,10 +1,10 @@
 <template>
   <div class="container-fluid">
-    <opensilex-PageHeader
+    <!-- <opensilex-PageHeader
       icon="ik#ik-bar-chart-line"
       title="component.menu.data.provenance"
       description="ProvenanceView.description"
-    ></opensilex-PageHeader>
+    ></opensilex-PageHeader> -->
 
     <opensilex-PageActions>
       <template v-slot>

@@ -1,12 +1,13 @@
 <template>
   <div class="container-fluid">
-    <opensilex-PageHeader
+    <!-- <opensilex-PageHeader
       icon="ik#ik-target"
       title="component.menu.scientificObjects"
       description="ScientificObjectList.description"
-    ></opensilex-PageHeader>
+    ></opensilex-PageHeader> -->
 
-    <opensilex-PageActions
+
+    <!-- <opensilex-PageActions
       v-if="
         user.hasCredential(
           credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID
@@ -32,7 +33,7 @@
         @csvImported="refresh()"
       ></opensilex-ScientificObjectCSVImporter>
     </opensilex-PageActions>
-    
+     -->
     <opensilex-PageContent>
       <opensilex-SearchFilterField
         @search="soList.refresh()"

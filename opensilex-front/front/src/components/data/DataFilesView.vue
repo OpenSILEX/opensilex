@@ -1,10 +1,10 @@
 <template>
   <div class="container-fluid">
-    <opensilex-PageHeader
+    <!-- <opensilex-PageHeader
       icon="fa#file-medical-alt"
       title="component.menu.data.datafiles"
       description="DataFilesView.description"
-    ></opensilex-PageHeader>
+    ></opensilex-PageHeader> -->
 
     <opensilex-PageContent>
       <template v-slot>

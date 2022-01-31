@@ -1,10 +1,10 @@
 <template>
   <div class="container-fluid">
-    <opensilex-PageHeader
+    <!-- <opensilex-PageHeader
       icon="ik#ik-users"
       title="component.menu.security.groups"
       description="component.group.description"
-    ></opensilex-PageHeader>
+    ></opensilex-PageHeader> -->
 
     <opensilex-PageActions v-if="user.hasCredential(credentials.CREDENTIAL_GROUP_MODIFICATION_ID)">
       <template v-slot>

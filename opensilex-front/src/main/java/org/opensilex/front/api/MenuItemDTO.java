@@ -7,6 +7,10 @@ package org.opensilex.front.api;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.opensilex.front.config.CustomMenuItem;
+import org.opensilex.front.config.MenuItem;
+
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +28,10 @@ public class MenuItemDTO {
 
         menuDTO.setId(menuItem.id());
         menuDTO.setLabel(menuItem.label());
+        // menuDTO.setIcon(menuItem.icon());
+        // menuDTO.setTitle(menuItem.title());
+        // menuDTO.setDescription(menuItem.description());
+
 
         List<MenuItem> mc = menuItem.children();
         List<MenuItemDTO> children = new ArrayList<>(mc.size());
@@ -82,6 +90,12 @@ public class MenuItemDTO {
 
     private RouteDTO route;
 
+    // private String icon;
+
+    // private String title;
+
+    // private String description;
+
     @ApiModelProperty(value = "Menu identifier", example = "users")
     public String getId() {
         return id;
@@ -118,4 +132,32 @@ public class MenuItemDTO {
         this.route = route;
     }
 
+    //////////////////////////////////////////
+
+    // @ApiModelProperty(value = "Header icon", example = "ik#ik-target")
+    // public String getIcon() {
+    //     return icon;
+    // }
+
+    // public void setIcon(String icon) {
+    //     this.icon = icon;
+    // }
+
+    // @ApiModelProperty(value = "Header title", example = "component.menu.scientificObjects")
+    // public String getTitle() {
+    //     return title;
+    // }
+
+    // public void setTitle(String title) {
+    //     this.title = title;
+    // }
+
+    // @ApiModelProperty(value = "Header description", example = "ScientificObjectList.description")
+    // public String getDescription() {
+    //     return description;
+    // }
+
+    // public void setDescription(String description) {
+    //     this.description = description;
+    // }
 }

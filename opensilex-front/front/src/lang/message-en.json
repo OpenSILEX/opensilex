@@ -157,8 +157,8 @@
             "user": {
                 "admin": "Admin",
                 "logout": "Logout",
-                "addObject": "Add object",
-                "csvImport": "CSV import"
+                "addObject": "Add Element",
+                "csvImport": "CSV Import"
             },
             "user-guide":"User Guide",
             "download-user-guide": "Download User Guide"

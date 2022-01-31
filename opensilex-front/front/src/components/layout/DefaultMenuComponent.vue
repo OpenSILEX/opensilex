@@ -1,5 +1,6 @@
 <template>
   <div>
+    <!-- Hamburger -->
     <div class="hamburger-container">
       <button
         class="hamburger hamburger--collapse"
@@ -12,6 +13,7 @@
         </span>
       </button>
     </div>
+      <!-- Sections menu -->
     <div class="app-sidebar">
       <div class="sidebar-content">
         <div class="nav-container">
@@ -146,7 +148,7 @@ export default class DefaultMenuComponent extends Vue {
   user-select: none;
   height: 60px;
   width: 60px;
-  left: 180px;
+  left: 0px;
   background-color: #00a38d;
 }
 
@@ -190,6 +192,16 @@ export default class DefaultMenuComponent extends Vue {
 .hamburger-inner,
 .hamburger-inner:after,
 .hamburger-inner:before {
-  width: 35px;
+  width: 41px;
+}
+
+@media (min-width: 250px) and (max-width: 1150px) {
+
+.hamburger-inner,
+.hamburger-inner:after,
+.hamburger-inner:before { 
+    width: 25px;
+
+  }
 }
 </style>

@@ -1,10 +1,10 @@
 <template>
   <div class="container-fluid">
-    <opensilex-PageHeader
+    <!-- <opensilex-PageHeader
       icon="ik#ik-folder"
       title="component.menu.projects"
       description="component.project.search-description"
-    ></opensilex-PageHeader>
+    ></opensilex-PageHeader> -->
 
     <opensilex-PageActions
       v-if="user.hasCredential(credentials.CREDENTIAL_PROJECT_MODIFICATION_ID)"

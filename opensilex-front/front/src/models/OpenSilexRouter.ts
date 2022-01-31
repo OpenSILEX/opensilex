@@ -12,10 +12,15 @@ export class OpenSilexRouter {
     private router: any;
     private pathPrefix: string
     private PUBLIC_ROUTE: string = "public";
+    private sectionAttributes : any = {};
 
     constructor(pathPrefix: string) {
         this.pathPrefix = pathPrefix;
         this.router = this.createRouter(User.ANONYMOUS());
+    }
+    
+    public getSectionAttributes() {
+        return this.sectionAttributes;
     }
 
     public getMenu() {
@@ -75,6 +80,7 @@ export class OpenSilexRouter {
                         component: this.getAsyncComponentLoader($opensilex, route.component),
                         meta:{public: true}
                     });
+                    
                 }
             }
 
@@ -128,6 +134,8 @@ export class OpenSilexRouter {
         for (let i in items) {
             let item: MenuItemDTO = items[i];
 
+
+            
             if (item.route) {
                 let route = item.route;
                 menu.push(item);
@@ -135,6 +143,11 @@ export class OpenSilexRouter {
                     path: route.path,
                     component: this.getAsyncComponentLoader($opensilex, route.component)
                 });
+                this.sectionAttributes[route.path] = {
+                    icon: route.icon,
+                    title: route.title,
+                    description: route.description
+                };
             }
 
             let childItems: Array<MenuItemDTO> = [];

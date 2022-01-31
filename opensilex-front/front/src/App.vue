@@ -6,7 +6,7 @@
          <!-- if route as credentials public -->
         <div v-if="this.$route.meta.public">
           <component
-          class="header-logo"
+          
           v-bind:is="headerComponent"
         ></component>
  
@@ -26,7 +26,7 @@
         </div>  
         <div v-else>
         <component
-          class="header-logo"
+          
           v-bind:is="headerComponent"
           v-if="user.isLoggedIn() && !disconnected && !embed"
         ></component>

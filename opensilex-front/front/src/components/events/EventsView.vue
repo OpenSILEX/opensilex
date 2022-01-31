@@ -1,11 +1,11 @@
 <template>
   <div class="container-fluid">
-    <opensilex-PageHeader
+    <!-- <opensilex-PageHeader
         icon="ik#ik-activity"
         title="Event.list-title"
         description="EventsView.description"
         :isExperimentalFeature="false"
-    ></opensilex-PageHeader>
+    ></opensilex-PageHeader> -->
 
     <opensilex-PageContent>
       <template v-slot>

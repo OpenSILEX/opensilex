@@ -7,9 +7,10 @@ package org.opensilex.front.api;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import java.util.List;
-import javax.validation.constraints.NotNull;
 import org.opensilex.front.config.Route;
+
+import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  *
@@ -28,6 +29,9 @@ public class RouteDTO {
         routeDTO.setPath(route.path());
         routeDTO.setComponent(route.component());
         routeDTO.setCredentials(route.credentials());
+        routeDTO.setIcon(route.icon());
+        routeDTO.setTitle(route.title());
+        routeDTO.setDescription(route.description());
 
         return routeDTO;
     }
@@ -39,6 +43,12 @@ public class RouteDTO {
     private String component;
 
     private List<String> credentials;
+
+    public String icon;
+
+    public String title;
+
+    public String description;
 
     @ApiModelProperty(value = "Route path", example = "/users")
     public String getPath() {
@@ -65,5 +75,34 @@ public class RouteDTO {
 
     public void setCredentials(List<String> credentials) {
         this.credentials = credentials;
+    }
+
+///////////////////////////////////////////////////////////////
+
+    @ApiModelProperty(value = "Route icon", example = "ik#ik-target")
+    public String getIcon() {
+        return icon;
+    }
+
+    public void setIcon(String icon) {
+        this.icon = icon;
+    }
+
+    @ApiModelProperty(value = "Route title", example = "component.menu.scientificObjects")
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    @ApiModelProperty(value = "Route description", example = "ScientificObjectList.description")
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

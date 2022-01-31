@@ -1,44 +1,38 @@
 <template>
   <div class="page-header">
-    <div class="row">
-      <div class="col-lg-8">
-        <div class="page-header-title">
-          <div class="d-inline">
-            <h5>
+            <h5 class="header-title">
               <opensilex-Icon :icon="icon" class="title-icon" />
               <slot name="title">&nbsp;{{ $t(title) }}</slot>
             </h5>
             <span class="title-description"><slot name="description" >{{ $t(description) }}</slot></span>
 
-            <span v-if="isExperimentalFeature">
+            <!-- <span v-if="isExperimentalFeature">
                 <span style="padding-left:1%"></span>
                 <label class="alert-warning">
                     <img alt="Warning" src="../../../theme/phis/images/construction.png"/>
                     {{ $t("component.common.warningInstruction") }}
                 </label>
-              </span>
-
-          </div>
-        </div>
-      </div>
-      <!-- <div class="col-lg-4">
-        <nav class="breadcrumb-container" aria-label="breadcrumb">
-          <ol class="breadcrumb">
+              </span> -->
+      <!-- <div>
+              
             <li class="breadcrumb-item">
               <router-link :to="{path: '/dashboard'}" :title="$t('component.menu.backToDashboard')">
                 <opensilex-Icon icon="ik#ik-grid" />
                 {{ $t('component.menu.dashboard') }}
               </router-link>
-            </li>
-            <li class="breadcrumb-item active">
-              <opensilex-Icon :icon="icon" />
-              <span class="navbar-title">&nbsp;{{ $t(title) }}</span>
+            </li> -->
 
-            </li>
-          </ol>
-        </nav>
+
+            <!-- Partie qui récupère dyanmiquement, à inserer dans le default ?-->
+            <!-- <h5>
+              <opensilex-Icon :icon="icon" class="title-icon"/>
+              <opensilex-Title :title="title" />
+              <opensilex-Description :description="description" />
+              <span>&nbsp;{{ $t(title) }}</span>
+            </h5>
+              <span class="title-description">&nbsp;{{ $t(description) }}</span>
       </div> -->
-    </div>
+
   </div>
 </template>
 
@@ -99,14 +93,30 @@ h5 {
     font-size: 0.9em;
     transition: 2s;
   }
+}
 
-  .title-icon {
+@media (min-width: 676px) and (max-width: 1150px) {
+    .title-icon {
     width: 30px;
     height: 30px;
     font-size: 16px;
     margin-right: 16px;
     transition: 2s
   }
+}
 
+@media (min-width: 200px) and (max-width: 675px) {
+  .title-icon{
+    display: none;
+  }
+  .header-title{
+padding-left: 0px;
+  }
+  .title-description{
+margin-left: 0px;
+  }
+  .page-header-title {
+  margin-left: -25px;
+}
 }
 </style>

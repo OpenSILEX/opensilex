@@ -1,10 +1,10 @@
 <template>
     <div class="container-fluid">
-        <opensilex-PageHeader
+        <!-- <opensilex-PageHeader
             icon="fa#vials"
             title="VariableView.title"
             description="VariableView.description"
-        ></opensilex-PageHeader>
+        ></opensilex-PageHeader> -->
 
         <div>
             <opensilex-PageActions>

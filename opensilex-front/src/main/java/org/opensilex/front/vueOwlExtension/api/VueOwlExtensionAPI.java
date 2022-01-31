@@ -6,7 +6,6 @@
 package org.opensilex.front.vueOwlExtension.api;
 
 import io.swagger.annotations.*;
-import org.opensilex.core.ontology.api.RDFPropertyDTO;
 import org.opensilex.core.ontology.api.RDFTypeDTO;
 import org.opensilex.front.vueOwlExtension.dal.VueClassExtensionModel;
 import org.opensilex.front.vueOwlExtension.dal.VueOwlExtensionDAO;
@@ -150,7 +149,7 @@ public class VueOwlExtensionAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Class deleted ", response = RDFPropertyDTO.class)
+            @ApiResponse(code = 200, message = "Class deleted ", response = ObjectUriResponse.class)
     })
     public Response deleteRDFType(
             @ApiParam(value = "RDF type") @QueryParam("rdf_type") @ValidURI URI classURI

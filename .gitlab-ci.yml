@@ -318,7 +318,16 @@ pages:
 # ##########################################
 
 ###################################
-##  GUILHEM-TEST-SNAPSHOT-DEPLOYMENT
+##  DEMO-BUILD-DEPLOYMENT
+###################################
+
+demo:build:
+  <<: *build_template_with_opensilex
+  rules:
+    - if: $CI_COMMIT_BRANCH == "demo"
+
+###################################
+##  MAX-TEST-SNAPSHOT-DEPLOYMENT
 ###################################
 
 maximilian:build:

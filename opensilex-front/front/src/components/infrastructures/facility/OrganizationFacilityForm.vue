@@ -9,6 +9,17 @@
         :generated.sync="uriGenerated"
     ></opensilex-UriForm>
 
+    <!-- Type -->
+    <opensilex-TypeForm
+        v-if="baseType"
+        :type.sync="form.rdf_type"
+        :baseType="baseType"
+        :required="true"
+        :disabled="editMode"
+        placeholder="OntologyObjectForm.form-type-placeholder"
+        @update:type="typeSwitch"
+    ></opensilex-TypeForm>
+
     <!-- Name -->
     <opensilex-InputForm
         :value.sync="form.name"
@@ -49,17 +60,6 @@
       :address.sync="form.address"
     >
     </opensilex-AddressForm>
-
-    <!-- Type -->
-    <opensilex-TypeForm
-        v-if="baseType"
-        :type.sync="form.rdf_type"
-        :baseType="baseType"
-        :required="true"
-        :disabled="editMode"
-        placeholder="OntologyObjectForm.form-type-placeholder"
-        @update:type="typeSwitch"
-    ></opensilex-TypeForm>
 
     <!-- Dynamic fields -->
     <div v-for="(relation, index) in typeRelations" v-bind:key="index">

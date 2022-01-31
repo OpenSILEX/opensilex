@@ -5,6 +5,12 @@
  */
 package org.opensilex.sparql;
 
+import org.opensilex.OpenSilex;
+import org.opensilex.OpenSilexModuleNotFoundException;
+import org.opensilex.server.ServerModule;
+import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.ontology.store.DefaultOntologyStore;
+import org.opensilex.sparql.ontology.store.OntologyStore;
 import org.opensilex.sparql.service.SPARQLService;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -28,11 +34,18 @@ import javax.ws.rs.core.UriBuilder;
  */
 public class SPARQLModule extends OpenSilexModule {
 
-    private static final String DEFAULT_BASE_URI = "http://default.opensilex.org/";
-
     private static final Logger LOGGER = LoggerFactory.getLogger(SPARQLModule.class);
 
+    private static final String DEFAULT_BASE_URI = "http://default.opensilex.org/";
     public static final String ONTOLOGY_BASE_DOMAIN = "http://www.opensilex.org/";
+
+    private URI baseURI;
+    private String baseURIAlias;
+    private URI generationPrefixURI;
+
+    private final Map<String, URI> customPrefixes = new HashMap<>();
+
+    private static OntologyStore ontologyStore;
 
     @Override
     public Class<?> getConfigClass() {
@@ -44,13 +57,6 @@ public class SPARQLModule extends OpenSilexModule {
         return "ontologies";
     }
 
-    private URI baseURI;
-
-    private String baseURIAlias;
-
-    private URI generationPrefixURI;
-    
-    private final Map<String, URI> customPrefixes = new HashMap<>();
 
     @Override
     public void setup() throws Exception {
@@ -167,6 +173,19 @@ public class SPARQLModule extends OpenSilexModule {
         factory.dispose(sparql);
     }
 
+    private static void initOntologyStore(OpenSilex openSilex, SPARQLService sparql) throws SPARQLException, OpenSilexModuleNotFoundException {
+
+        if(sparql == null){
+            return;
+        }
+        ontologyStore = new DefaultOntologyStore(sparql,openSilex);
+        ontologyStore.load();
+    }
+
+    public static OntologyStore getOntologyStoreInstance(){
+        return ontologyStore;
+    }
+
     @Override
     public void startup() throws Exception {
         SPARQLServiceFactory factory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
@@ -175,6 +194,9 @@ public class SPARQLModule extends OpenSilexModule {
                 module.inMemoryInitialization();
             }
         }
+
+        SPARQLService sparql = factory.provide();
+        SPARQLModule.initOntologyStore(getOpenSilex(),sparql);
     }
 
 }

@@ -13,7 +13,6 @@
  */
 package org.opensilex.sparql.ontology.dal;
 
-import org.opensilex.sparql.model.SPARQLLabel;
 
 import java.net.URI;
 
@@ -21,61 +20,16 @@ import java.net.URI;
  *
  * @author vince
  */
-public interface PropertyModel{
-
-    URI getUri();
-
-    void setUri(URI uri);
-
-    URI getType();
-
-    void setType(URI uri);
-
-     SPARQLLabel getTypeLabel();
-
-     void setTypeLabel(SPARQLLabel typeLabel);
-
-    String getName();
-
-    void setName(String name);
-
-    void setLabel(SPARQLLabel label);
-
-    SPARQLLabel getLabel();
-
-    void setComment(SPARQLLabel comment);
-
-    SPARQLLabel getComment();
+public interface PropertyModel {
 
     ClassModel getDomain();
 
     void setDomain(ClassModel domain);
 
+    URI getRangeURI();
+
     URI getTypeRestriction();
 
     void setTypeRestriction(URI typeRestriction);
-
-    default void fromModel(PropertyModel copy) {
-
-        setUri(copy.getUri());
-        setName(copy.getName());
-
-        setType(copy.getType());
-        if (copy.getTypeLabel() != null) {
-            setTypeLabel(new SPARQLLabel(copy.getTypeLabel()));
-        }
-
-        if (copy.getLabel() != null) {
-            setLabel(new SPARQLLabel(copy.getLabel()));
-        }
-        if (copy.getComment() != null) {
-            setComment(new SPARQLLabel(copy.getComment()));
-        }
-
-        setTypeRestriction(copy.getTypeRestriction());
-        if(copy.getDomain() != null){
-            setDomain(new ClassModel(copy.getDomain(),false));
-        }
-    }
 
 }

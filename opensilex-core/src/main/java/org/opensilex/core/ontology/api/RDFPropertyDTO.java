@@ -7,18 +7,17 @@ package org.opensilex.core.ontology.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.github.jsonldjava.utils.Obj;
 import org.apache.jena.vocabulary.OWL2;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLLabel;
-import org.opensilex.sparql.ontology.dal.ClassModel;
-import org.opensilex.sparql.ontology.dal.PropertyModel;
+import org.opensilex.sparql.ontology.dal.*;
 
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- *
  * @author vmigot
  */
 public class RDFPropertyDTO {
@@ -50,7 +49,7 @@ public class RDFPropertyDTO {
     public void setDomainType(URI domainType) {
         this.domainType = domainType;
     }
-        
+
     protected URI range;
 
     @JsonProperty("range_label")
@@ -143,7 +142,40 @@ public class RDFPropertyDTO {
         return isDataProperty(getType());
     }
 
-    public PropertyModel toModel(PropertyModel model) {
+    public RDFPropertyDTO() {
+
+    }
+
+    public RDFPropertyDTO(AbstractPropertyModel<?> model) {
+
+        setUri(model.getUri());
+        setType(model.getType());
+
+        if (model.getParent() != null) {
+            setParent(model.getParent().getUri());
+        }
+        setName(model.getLabel().getDefaultValue());
+        setLabelTranslations(model.getLabel().getAllTranslations());
+        if (model.getComment() != null) {
+            setComment(model.getComment().getDefaultValue());
+            setCommentTranslations(model.getComment().getAllTranslations());
+        } else {
+            setCommentTranslations(new HashMap<>());
+        }
+
+        if (model.getDomain() != null) {
+            setDomain(model.getDomain().getUri());
+        }
+
+        if(model instanceof DatatypePropertyModel){
+            setRange(((DatatypePropertyModel) model).getRange());
+        }else if(model instanceof ObjectPropertyModel){
+            setRange(((ObjectPropertyModel) model).getRange().getUri());
+            setRangeLabel(((ObjectPropertyModel) model).getRange().getName());
+        }
+    }
+
+    public AbstractPropertyModel<?> toModel(AbstractPropertyModel<?> model) {
 
         model.setUri(getUri());
         model.setLabel(SPARQLLabel.fromMap(getLabelTranslations()));
@@ -155,30 +187,6 @@ public class RDFPropertyDTO {
         }
 
         return model;
-    }
-
-    public static RDFPropertyDTO fromModel(PropertyModel model, PropertyModel parentModel) {
-        RDFPropertyDTO dto = new RDFPropertyDTO();
-
-        dto.setUri(model.getUri());
-        dto.setType(model.getType());
-        if (parentModel != null) {
-            dto.setParent(parentModel.getUri());
-        }
-        dto.setName(model.getLabel().getDefaultValue());
-        dto.setLabelTranslations(model.getLabel().getAllTranslations());
-        if (model.getComment() != null) {
-            dto.setComment(model.getComment().getDefaultValue());
-            dto.setCommentTranslations(model.getComment().getAllTranslations());
-        } else {
-            dto.setCommentTranslations(new HashMap<>());
-        }
-
-        if (model.getDomain() != null) {
-            dto.setDomain(model.getDomain().getUri());
-        }
-
-        return dto;
     }
 
     public static boolean isDataProperty(URI propertyType) {

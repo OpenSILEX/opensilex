@@ -5,13 +5,14 @@
 //******************************************************************************
 package org.opensilex.sparql.service;
 
-import java.net.URI;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.*;
 import org.apache.jena.arq.querybuilder.clauses.WhereClause;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.graph.Triple;
+import org.apache.jena.rdf.model.Property;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.core.mem.TupleSlot;
 import org.apache.jena.sparql.expr.*;
@@ -20,18 +21,19 @@ import org.apache.jena.sparql.expr.aggregate.AggregatorFactory;
 import org.apache.jena.sparql.syntax.Element;
 import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.sparql.syntax.ElementNamedGraph;
-import org.opensilex.sparql.deserializer.*;
+import org.opensilex.sparql.deserializer.DateDeserializer;
+import org.opensilex.sparql.deserializer.SPARQLDeserializer;
+import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.utils.OrderBy;
 
+import java.net.URI;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Stream;
-import org.apache.jena.graph.Triple;
-import org.apache.jena.rdf.model.Property;
-
-import org.opensilex.utils.OrderBy;
 
 /**
  * @author Vincent MIGOT
@@ -210,9 +212,47 @@ public class SPARQLQueryHelper {
         }
     }
 
+    /**
+     * @param varName       name of the SPARQL var
+     * @param lang          language code
+     * @param addNoLangExpr indicate if the filter must also matches on name var with no lang
+     * @return an {@link Expr} which match the given var with the given lang code
+     *
+     * @apiNote
+     * Examples of generated SPARQL:
+     * <br>
+     * <pre>
+     * <b>("name","en",true)</b><br>
+     *      FILTER ( LANGMATCHES(LANG(?name),"en") || LANGMATCHES(LANG(?name),"en") )  <br>
+     *
+     * <b>("name","en",false)</b><br>
+     *      FILTER ( LANGMATCHES(LANG(?name),"en") )
+     * </pre>
+     */
+    public static Expr langFilter(String varName, String lang, boolean addNoLangExpr) {
+
+        Node langVar = NodeFactory.createVariable(varName);
+        Expr langExpr = exprFactory.lang(langVar);
+        Expr langMatchesExpr = exprFactory.langMatches(langExpr, lang);
+
+        if (!addNoLangExpr) {
+            return langMatchesExpr;
+        }
+
+        Expr noLangMatchExpr = exprFactory.langMatches(langExpr, "");
+        return exprFactory.or(langMatchesExpr, noLangMatchExpr);
+    }
+
+    /**
+     *
+     * @param varName       name of the SPARQL var
+     * @param lang          language code
+     * @return an {@link Expr} which match the given var with the given lang code
+     *
+     * @see #langFilter(String, String, boolean)
+     */
     public static Expr langFilter(String varName, String lang) {
-        return exprFactory.or(exprFactory.langMatches(exprFactory.lang(NodeFactory.createVariable(varName)), lang),
-                exprFactory.langMatches(exprFactory.lang(NodeFactory.createVariable(varName)), ""));
+        return langFilter(varName,lang,true);
     }
 
     /**

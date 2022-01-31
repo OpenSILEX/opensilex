@@ -7,17 +7,17 @@
 package org.opensilex.core.experiment.api;
 
 import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.experiment.factor.dal.FactorModel;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
+import org.opensilex.core.organisation.dal.InfrastructureModel;
 import org.opensilex.core.project.dal.ProjectModel;
+import org.opensilex.security.group.dal.GroupModel;
+import org.opensilex.security.user.dal.UserModel;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import org.opensilex.core.experiment.factor.dal.FactorModel;
-import org.opensilex.core.organisation.dal.InfrastructureModel;
-import org.opensilex.core.species.dal.SpeciesModel;
-import org.opensilex.security.group.dal.GroupModel;
-import org.opensilex.security.user.dal.UserModel;
 
 /**
  * @author Vincent MIGOT
@@ -36,13 +36,8 @@ public class ExperimentCreationDTO extends ExperimentDTO {
         model.setDescription(getDescription());
         model.setIsPublic(isPublic);
 
-        List<SpeciesModel> speciesList = new ArrayList<>(species.size());
-        species.forEach((URI u) -> {
-            SpeciesModel species = new SpeciesModel();
-            species.setUri(u);
-            speciesList.add(species);
-        });
-        model.setSpecies(speciesList);
+        // No species at experiment creation
+        model.setSpecies(Collections.emptyList());
         
         List<InfrastructureModel> infrastructuresList = new ArrayList<>(infrastructures.size());
         infrastructures.forEach((URI u) -> {

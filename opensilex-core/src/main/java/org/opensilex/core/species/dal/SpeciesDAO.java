@@ -6,18 +6,19 @@
 //******************************************************************************
 package org.opensilex.core.species.dal;
 
-import java.net.URI;
-import java.util.ArrayList;
-import org.opensilex.sparql.service.SPARQLService;
-
-import java.util.List;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
-import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
+import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.OrderBy;
+
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
 /**
  * @author Renaud COLIN
@@ -64,5 +65,4 @@ public class SpeciesDAO {
                 orderByList
         );
     }
-
 }

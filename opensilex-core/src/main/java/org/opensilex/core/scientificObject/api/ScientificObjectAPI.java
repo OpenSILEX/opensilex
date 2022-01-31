@@ -24,8 +24,10 @@ import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.locationtech.jts.io.ParseException;
 import org.opensilex.core.csv.dal.AbstractCsvDao;
+import org.opensilex.core.csv.dal.CSVCell;
 import org.opensilex.core.csv.dal.CsvDao;
 import org.opensilex.core.csv.dal.DefaultCsvDao;
+import org.opensilex.core.csv.dal.error.CSVValidationModel;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveModel;
@@ -38,18 +40,15 @@ import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.experiment.factor.dal.FactorModel;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
-import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.CSVValidationDTO;
-import org.opensilex.core.csv.dal.CSVCell;
-import org.opensilex.core.csv.dal.error.CSVValidationModel;
-import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectSearchFilter;
+import org.opensilex.core.species.dal.SpeciesDAO;
 import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -67,6 +66,7 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
@@ -486,6 +486,10 @@ public class ScientificObjectAPI {
             @Valid ScientificObjectCreationDTO descriptionDto
     ) throws Exception {
 
+        ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
+        GeospatialDAO geoDAO = new GeospatialDAO(nosql);
+        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
+
         URI contextURI = descriptionDto.getExperiment();
         ExperimentModel experiment = null;
         validateContextAccess(contextURI);
@@ -496,7 +500,7 @@ public class ScientificObjectAPI {
             contextURI = globalScientificObjectGraph;
         } else {
             globalCopy = true;
-            experiment = new ExperimentDAO(sparql, nosql).get(contextURI, currentUser);
+            experiment = experimentDAO.get(contextURI, currentUser);
             if(experiment == null){
                 throw new NotFoundURIException("Unknown experiment",contextURI);
             }
@@ -504,12 +508,14 @@ public class ScientificObjectAPI {
 
         URI soType = descriptionDto.getType();
 
-        ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
-        GeospatialDAO geoDAO = new GeospatialDAO(nosql);
-
         sparql.startTransaction();
         try {
-            URI soURI = dao.create(contextURI, experiment, soType, descriptionDto.getUri(), descriptionDto.getName(), descriptionDto.getRelations(), currentUser);
+            ScientificObjectModel so = dao.create(contextURI, experiment, soType, descriptionDto.getUri(), descriptionDto.getName(), descriptionDto.getRelations(), currentUser);
+            URI soURI = so.getUri();
+
+            if (experiment != null) {
+                experimentDAO.updateExperimentSpeciesFromScientificObjects(contextURI);
+            }
 
             Node graphNode = SPARQLDeserializers.nodeURI(globalScientificObjectGraph);
             if (globalCopy && !sparql.uriExists(graphNode, soURI)) {
@@ -576,6 +582,7 @@ public class ScientificObjectAPI {
 
         URI contextURI = descriptionDto.getExperiment();
         validateContextAccess(contextURI);
+        boolean hasExperiment = contextURI != null;
         if (contextURI == null) {
             contextURI = sparql.getDefaultGraphURI(ScientificObjectModel.class);
         }
@@ -583,12 +590,17 @@ public class ScientificObjectAPI {
 
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
+        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
 
         nosql.startTransaction();
         sparql.startTransaction();
         try {
 
             URI soURI = dao.update(contextURI, soType, descriptionDto.getUri(), descriptionDto.getName(), descriptionDto.getRelations(), currentUser);
+
+            if (hasExperiment) {
+                experimentDAO.updateExperimentSpeciesFromScientificObjects(contextURI);
+            }
 
             if (descriptionDto.getGeometry() != null) {
                 GeospatialModel geospatialModel = new GeospatialModel();
@@ -648,8 +660,8 @@ public class ScientificObjectAPI {
         validateContextAccess(contextURI);
 
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
-
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
+        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
 
         nosql.startTransaction();
         sparql.startTransaction();
@@ -658,6 +670,9 @@ public class ScientificObjectAPI {
                 sparql.deleteByURI(sparql.getDefaultGraph(ScientificObjectModel.class), objectURI);
             } else {
                 dao.delete(contextURI, objectURI);
+
+                //update Exp species
+                experimentDAO.updateExperimentSpeciesFromScientificObjects(contextURI);
             }
             geoDAO.delete(objectURI, contextURI);
 
@@ -721,6 +736,8 @@ public class ScientificObjectAPI {
 
         csvValidation.setErrors(errors);
 
+        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
+
         final URI graphURI;
         if (insertIntoSomeXp) {
             graphURI = contextURI;
@@ -747,6 +764,7 @@ public class ScientificObjectAPI {
                         }
                         sparql.deletePrimitives(SPARQLDeserializers.nodeURI(graphURI), object.getUri(), Oeso.isHosted);
                     }
+
                     if (globalCopy) {
                         UpdateBuilder update = new UpdateBuilder();
                         boolean hasUpdateItem = false;
@@ -764,6 +782,11 @@ public class ScientificObjectAPI {
                         if (hasUpdateItem) {
                             sparql.executeUpdateQuery(update);
                         }
+                    }
+
+                    //Update experiment
+                    if (insertIntoSomeXp) {
+                        experimentDAO.updateExperimentSpeciesFromScientificObjects(contextURI);
                     }
 
                     List<GeospatialModel> geospatialModels = new ArrayList<>();
@@ -794,6 +817,11 @@ public class ScientificObjectAPI {
 
                 List<SPARQLNamedResourceModel> objects = errors.getObjects();
                 sparql.create(SPARQLDeserializers.nodeURI(graphURI), objects);
+
+                //Update experiment
+                if (insertIntoSomeXp) {
+                    experimentDAO.updateExperimentSpeciesFromScientificObjects(contextURI);
+                }
 
                 MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
                 for (SPARQLNamedResourceModel object : objects) {
@@ -1058,39 +1086,6 @@ public class ScientificObjectAPI {
                     if (!cell.getValue().isEmpty()) {
                         String factorLevelURI = SPARQLDeserializers.getExpandedURI(new URI(cell.getValue()));
                         if (!factorLevelURIs.contains(factorLevelURI)) {
-                            csvErrors.addInvalidValueError(cell);
-                        }
-                    }
-                } catch (URISyntaxException ex) {
-                    csvErrors.addInvalidURIError(cell);
-                }
-            });
-
-            List<SpeciesModel> experimentSpecies = xp.getSpecies();
-            boolean hasExperimentSpecies = !experimentSpecies.isEmpty();
-            List<String> germplasmStringURIs = new ArrayList<>();
-            List<URI> germplasmURIs = new ArrayList<>();
-
-            for (SpeciesModel germplasm : experimentSpecies) {
-                germplasmStringURIs.add(SPARQLDeserializers.getExpandedURI(germplasm.getUri()));
-                germplasmURIs.add(germplasm.getUri());
-            }
-
-            if (germplasmURIs.size() > 0) {
-                GermplasmDAO dao = new GermplasmDAO(sparql, nosql);
-                List<URI> subSpecies = dao.getGermplasmURIsBySpecies(germplasmURIs, currentUser.getLanguage());
-                for (URI germplasmURI : subSpecies) {
-                    germplasmStringURIs.add(SPARQLDeserializers.getExpandedURI(germplasmURI));
-                }
-            }
-
-            // Validator for experiments : if the experiment has species, all the specified germplasm must belong to one
-            // of the species in the experiment.
-            customValidators.put(Oeso.hasGermplasm.toString(), (cell, csvErrors) -> {
-                try {
-                    if (!cell.getValue().isEmpty()) {
-                        String germplasmURI = SPARQLDeserializers.getExpandedURI(new URI(cell.getValue()));
-                        if (hasExperimentSpecies && !germplasmStringURIs.contains(germplasmURI)) {
                             csvErrors.addInvalidValueError(cell);
                         }
                     }

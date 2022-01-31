@@ -18,9 +18,12 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.opensilex.core.AbstractMongoIntegrationTest;
-import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.experiment.api.ExperimentAPITest;
+import org.opensilex.core.experiment.api.ExperimentGetDTO;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
+import org.opensilex.core.germplasm.api.GermplasmAPITest;
+import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.SingleObjectResponse;
@@ -32,7 +35,7 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import java.net.URI;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -55,14 +58,18 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
     public static final String deletePath = path + "/{uri}";
     private int soCount = 1;
     private URI experiment;
+    private URI speciesUri;
 
     @Before
     public void beforeTest() throws Exception {
         final Response postResultXP = getJsonPostResponse(target(ExperimentAPITest.createPath), ExperimentAPITest.getCreationDTO());
         assertEquals(Status.CREATED.getStatusCode(), postResultXP.getStatus());
+        final Response postResultGermplasm = getJsonPostResponse(target(GermplasmAPITest.createPath), GermplasmAPITest.getCreationSpeciesDTO());
+        assertEquals(Status.CREATED.getStatusCode(), postResultGermplasm.getStatus());
 
         // ensure that the result is a well formed URI, else throw exception
         experiment = extractUriFromResponse(postResultXP);
+        speciesUri = extractUriFromResponse(postResultGermplasm);
         final Response getResultXP = getJsonGetByUriResponse(target(ExperimentAPITest.uriPath), experiment.toString());
         assertEquals(Status.OK.getStatusCode(), getResultXP.getStatus());
     }
@@ -81,6 +88,9 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
             sparql.clearGraph(experiment);
         }
 
+        final Response delResultGermplasm = getDeleteByUriResponse(target(GermplasmAPITest.deletePath), speciesUri.toString());
+        assertEquals(Response.Status.OK.getStatusCode(), delResultGermplasm.getStatus());
+
         experiment = null;
     }
 
@@ -94,7 +104,7 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
         return Collections.singletonList(GeospatialDAO.GEOSPATIAL_COLLECTION_NAME);
     }
 
-    protected ScientificObjectCreationDTO getCreationDTO(boolean withGeometry, boolean globalOs) throws Exception {
+    protected ScientificObjectCreationDTO getCreationDTO(boolean withGeometry, boolean globalOs, boolean withGermplasm) throws Exception {
         ScientificObjectCreationDTO dto = new ScientificObjectCreationDTO();
 
         if (withGeometry) {
@@ -114,11 +124,21 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
         if(! globalOs){
             dto.setExperiment(experiment);
         }
+
+        if (withGermplasm) {
+            RDFObjectRelationDTO germplasmRelation = new RDFObjectRelationDTO();
+            germplasmRelation.setProperty(new URI(Oeso.hasGermplasm.getURI()));
+            germplasmRelation.setValue(speciesUri.toString());
+            List<RDFObjectRelationDTO> relationList = new ArrayList<>();
+            relationList.add(germplasmRelation);
+            dto.setRelations(relationList);
+        }
+
         return dto;
     }
 
     public ScientificObjectCreationDTO getCreationDTO(boolean withGeometry) throws Exception {
-        return getCreationDTO(withGeometry,false);
+        return getCreationDTO(withGeometry, false, false);
     }
 
     public void testCreate(boolean withGeometry) throws Exception {
@@ -139,6 +159,24 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
     @Test
     public void testCreateWithoutGeometry() throws Exception {
         testCreate(false);
+    }
+
+    @Test
+    public void testCreateWithGermplasm() throws Exception {
+        ScientificObjectCreationDTO creationDTO = getCreationDTO(false, false, true);
+        final Response postResult = getJsonPostResponse(target(createPath), creationDTO);
+        assertEquals(Status.CREATED.getStatusCode(), postResult.getStatus());
+
+        // Check that the experiment is updated with the correct species
+        Response experimentResponse = getJsonGetByUriResponse(target(ExperimentAPITest.uriPath), experiment.toString());
+        JsonNode experimentNode = experimentResponse.readEntity(JsonNode.class);
+        SingleObjectResponse<ExperimentGetDTO> getExperimentResponse =
+                mapper.convertValue(experimentNode, new TypeReference<SingleObjectResponse<ExperimentGetDTO>>() {});
+        ExperimentGetDTO experimentGetDTO = getExperimentResponse.getResult();
+
+        assertEquals(experimentGetDTO.getSpecies().size(), 1);
+        assertEquals(SPARQLDeserializers.getShortURI(experimentGetDTO.getSpecies().get(0)),
+                SPARQLDeserializers.getShortURI(speciesUri));
     }
 
     @Test
@@ -185,7 +223,7 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
     @Test
     public void testCreateGlobalOSWithDuplicateNameOk() throws Exception {
 
-        ScientificObjectCreationDTO creationDTO = getCreationDTO(false,true);
+        ScientificObjectCreationDTO creationDTO = getCreationDTO(false, true, false);
         final Response postResult = getJsonPostResponse(target(createPath),creationDTO);
         assertEquals(Status.CREATED.getStatusCode(), postResult.getStatus());
 
@@ -196,12 +234,12 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
     @Test
     public void testUpdateGlobalOSWithDuplicateNameOk() throws Exception {
 
-        ScientificObjectCreationDTO creationDTO = getCreationDTO(false,true);
+        ScientificObjectCreationDTO creationDTO = getCreationDTO(false, true, false);
         final Response postResult = getJsonPostResponse(target(createPath),creationDTO);
         assertEquals(Status.CREATED.getStatusCode(), postResult.getStatus());
         creationDTO.setUri(extractUriFromResponse(postResult));
 
-        ScientificObjectCreationDTO creationDTO2 = getCreationDTO(false,true);
+        ScientificObjectCreationDTO creationDTO2 = getCreationDTO(false, true, false);
         creationDTO2.setName(creationDTO.getName()+"_diff");
         final Response postResult2 = getJsonPostResponse(target(createPath),creationDTO2);
         assertEquals(Status.CREATED.getStatusCode(), postResult2.getStatus());

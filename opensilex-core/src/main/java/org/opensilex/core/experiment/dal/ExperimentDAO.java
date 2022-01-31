@@ -8,26 +8,41 @@ package org.opensilex.core.experiment.dal;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.jena.arq.querybuilder.ExprFactory;
-import org.apache.jena.arq.querybuilder.SelectBuilder;
-import org.apache.jena.arq.querybuilder.WhereBuilder;
+import org.apache.jena.arq.querybuilder.*;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.expr.ExprVar;
+import org.apache.jena.sparql.path.P_Link;
+import org.apache.jena.sparql.path.P_Seq;
+import org.apache.jena.sparql.path.P_ZeroOrMore1;
+import org.apache.jena.sparql.path.Path;
 import org.apache.jena.sparql.syntax.ElementFilter;
 import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.sparql.syntax.ElementOptional;
+import org.apache.jena.vocabulary.DCTerms;
+import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.vocabulary.RDFS;
+import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.organisation.dal.InfrastructureDAO;
+import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
+import org.opensilex.core.organisation.dal.InfrastructureModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.authentication.ForbiddenURIAccessException;
+import org.opensilex.security.authentication.NotFoundURIException;
+import org.opensilex.security.authentication.SecurityOntology;
+import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
-import org.opensilex.utils.OrderBy;
+import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
+import org.opensilex.utils.OrderBy;
 
 import java.net.URI;
 import java.time.LocalDate;
@@ -36,18 +51,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.jena.arq.querybuilder.AskBuilder;
-import org.apache.jena.vocabulary.DCTerms;
-import org.opensilex.core.exception.DuplicateNameException;
-import org.opensilex.core.organisation.dal.InfrastructureDAO;
-import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
-import org.opensilex.core.organisation.dal.InfrastructureModel;
-import org.opensilex.security.authentication.ForbiddenURIAccessException;
-import org.opensilex.security.authentication.NotFoundURIException;
-import org.opensilex.security.authentication.SecurityOntology;
-import org.opensilex.security.user.dal.UserModel;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
-import org.opensilex.sparql.utils.Ontology;
 
 /**
  * @author Vincent MIGOT
@@ -490,5 +494,88 @@ public class ExperimentDAO {
         }
 
         return results.getList().get(0);
+    }
+
+    /**
+     * Update the experiment species from the germplasms of their scientific objects. The following request is used
+     * to perform the update :
+     *
+     * <pre>
+     * delete {
+     *         graph <.../set/experiments> {
+     *                 <__experimentUri__> vocabulary:hasSpecies ?oldSpecies.
+     *         }
+     * } insert {
+     *         graph <.../set/experiments> {
+     *                 <__experimentUri__> vocabulary:hasSpecies ?newSpecies.
+     *         }
+     * } where {
+     *         graph <__experimentUri__> {
+     *                 ?scientificObject a ?rdfType.
+     *                 ?scientificObject vocabulary:hasGermplasm ?germplasm.
+     *         }
+     *                 ?rdfType rdfs:subClassOf* vocabulary:ScientificObject.
+     *         {
+     *                 ?germplasm a/rdfs:subClassOf* vocabulary:Species.
+     *                 bind(?germplasm as ?newSpecies)
+     *         } union {
+     *                 ?germplasm vocabulary:fromSpecies ?newSpecies.
+     *         }
+     * }
+     * </pre>
+     *
+     * @param experimentUri
+     * @throws Exception
+     */
+    public void updateExperimentSpeciesFromScientificObjects(URI experimentUri) throws Exception {
+        // Vars
+        Var oldSpeciesVar = makeVar("oldSpecies");
+        Var newSpeciesVar = makeVar("newSpecies");
+        Var scientificObjectVar = makeVar("scientificObject");
+        Var germplasmVar = makeVar("germplasm");
+        Var rdfTypeVar = makeVar("rdfType");
+
+        // Uris
+        Node experimentGraph = SPARQLDeserializers.nodeURI(sparql.getDefaultGraphURI(ExperimentModel.class));
+        Node experimentUriNode = SPARQLDeserializers.nodeURI(experimentUri);
+
+        // Useful paths to reuse
+        Path subClassOf = new P_ZeroOrMore1(new P_Link(RDFS.subClassOf.asNode()));
+        Path aSubClassOf = new P_Seq(new P_Link(RDF.type.asNode()), subClassOf);
+
+        // Update statement building
+        UpdateBuilder update = new UpdateBuilder();
+        update.addDelete(experimentGraph, experimentUriNode, Oeso.hasSpecies.asNode(), oldSpeciesVar);
+        update.addInsert(experimentGraph, experimentUriNode, Oeso.hasSpecies.asNode(), newSpeciesVar);
+
+        // Where statement building
+        WhereBuilder where = new WhereBuilder();
+
+        // Selection of the scientific object and its germplasm
+        WhereBuilder whereInExperiment = new WhereBuilder();
+        whereInExperiment.addWhere(scientificObjectVar, RDF.type.asNode(), rdfTypeVar);
+        whereInExperiment.addWhere(scientificObjectVar, Oeso.hasGermplasm.asNode(), germplasmVar);
+        where.addGraph(experimentUriNode, whereInExperiment);
+        where.addWhere(rdfTypeVar, subClassOf, Oeso.ScientificObject.asNode());
+
+        // The two cases for the species
+        WhereBuilder whereIsSpecies = new WhereBuilder();
+        WhereBuilder whereFromSpecies = new WhereBuilder();
+
+        // First case : the germplasm is a species
+        whereIsSpecies.addWhere(germplasmVar, aSubClassOf, Oeso.Species.asNode());
+        whereIsSpecies.addBind(new ExprVar(germplasmVar), newSpeciesVar);
+
+        // Second case : the germplasm is derived from a species
+        whereFromSpecies.addWhere(germplasmVar, Oeso.fromSpecies.asNode(), newSpeciesVar);
+
+        // Union
+        where.addWhere(
+                whereIsSpecies.addUnion(whereFromSpecies)
+        );
+
+        update.addWhere(where);
+
+        sparql.executeUpdateQuery(update);
     }
 }

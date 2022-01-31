@@ -240,9 +240,9 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     @Override
     public void executeUpdateQuery(UpdateBuilder update) throws SPARQLException {
         addPrefixes(update);
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("SPARQL UPDATE\n" + update.build().toString());
-        }
+//        if (LOGGER.isDebugEnabled()) {
+//            LOGGER.debug("SPARQL UPDATE\n" + update.build().toString());
+//        }
         connection.executeUpdateQuery(update);
     }
 

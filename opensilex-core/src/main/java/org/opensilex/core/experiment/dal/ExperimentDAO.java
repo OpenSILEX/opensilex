@@ -497,39 +497,37 @@ public class ExperimentDAO {
     }
 
     /**
-     * Update the experiment species from the germplasms of their scientific objects.
+     * Update the experiment species from the germplasms of their scientific objects. The following request is used
+     * to perform the update :
+     *
+     * <pre>
+     * delete {
+     *         graph <.../set/experiments> {
+     *                 <__experimentUri__> vocabulary:hasSpecies ?oldSpecies.
+     *         }
+     * } insert {
+     *         graph <.../set/experiments> {
+     *                 <__experimentUri__> vocabulary:hasSpecies ?newSpecies.
+     *         }
+     * } where {
+     *         graph <__experimentUri__> {
+     *                 ?scientificObject a ?rdfType.
+     *                 ?scientificObject vocabulary:hasGermplasm ?germplasm.
+     *         }
+     *                 ?rdfType rdfs:subClassOf* vocabulary:ScientificObject.
+     *         {
+     *                 ?germplasm a/rdfs:subClassOf* vocabulary:Species.
+     *                 bind(?germplasm as ?newSpecies)
+     *         } union {
+     *                 ?germplasm vocabulary:fromSpecies ?newSpecies.
+     *         }
+     * }
+     * </pre>
      *
      * @param experimentUri
      * @throws Exception
      */
     public void updateExperimentSpeciesFromScientificObjects(URI experimentUri) throws Exception {
-        // The following query is used to update all species of the experiment
-        //
-        // delete {
-        //         graph <.../set/experiments> {
-        //                 <__experimentUri__> vocabulary:hasSpecies ?oldSpecies.
-        //         }
-        // } insert {
-        //         graph <.../set/experiments> {
-        //                 <__experimentUri__> vocabulary:hasSpecies ?newSpecies.
-        //         }
-        // } where {
-        //         graph <__experimentUri__> {
-        //                 ?scientificObject a ?rdfType.
-        //                 ?scientificObject vocabulary:hasGermplasm ?germplasm.
-        //         }
-        //         ?rdfType rdfs:subClassOf* vocabulary:ScientificObject.
-        //         {
-        //                 ?germplasm a/rdfs:subClassOf* vocabulary:Species.
-        //                 bind(?germplasm as ?newSpecies)
-        //         } union {
-        //                 ?germplasm vocabulary:fromSpecies ?newSpecies.
-        //         }
-        // }
-        //
-        // A union is used to handle both possible cases : either the germplasm itself is a species (first case), or
-        // the germplasm derives from a species (second case).
-
         // Vars
         Var oldSpeciesVar = makeVar("oldSpecies");
         Var newSpeciesVar = makeVar("newSpecies");

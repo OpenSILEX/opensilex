@@ -67,7 +67,7 @@ public class ProvenanceAPI {
     public static final String PROVENANCE_ACTIVITY_TYPE = "http://www.w3.org/ns/prov#Activity";
     public static final String PROVENANCE_EXAMPLE_URI = "http://opensilex.dev/id/provenance/provenancelabel";
 
-    public static final String CREDENTIAL_PROVENANCE_GROUP_ID = "Provenance";
+    public static final String CREDENTIAL_PROVENANCE_GROUP_ID = "Provenances";
     public static final String CREDENTIAL_PROVENANCE_GROUP_LABEL_KEY = "credential-groups.provenance";
 
     public static final String CREDENTIAL_PROVENANCE_MODIFICATION_ID = "provenance-modification";

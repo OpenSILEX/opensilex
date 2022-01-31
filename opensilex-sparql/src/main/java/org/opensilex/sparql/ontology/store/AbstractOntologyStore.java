@@ -483,10 +483,10 @@ public abstract class AbstractOntologyStore implements OntologyStore {
     }
 
     @Override
-    public SPARQLTreeListModel<ObjectPropertyModel> searchObjectProperties(URI domain, String namePattern, String pattern, boolean includeSubClasses, Predicate<ObjectPropertyModel> filter) throws SPARQLException {
+    public SPARQLTreeListModel<ObjectPropertyModel> searchObjectProperties(URI domain, String namePattern, String lang, boolean includeSubClasses, Predicate<ObjectPropertyModel> filter) throws SPARQLException {
 
-        if(! StringUtils.isEmpty(pattern)){
-            return new NoOntologyStore(ontologyDAO).searchObjectProperties(domain, pattern, namePattern, includeSubClasses, filter);
+        if(! StringUtils.isEmpty(namePattern)){
+            return new NoOntologyStore(ontologyDAO).searchObjectProperties(domain, namePattern, lang, includeSubClasses, filter);
         }
 
         ClassModel classModel = getClassModel(domain);
@@ -525,6 +525,16 @@ public abstract class AbstractOntologyStore implements OntologyStore {
         model.visit(descendant -> handleLang(lang, descendant));
 
         return model;
+    }
+
+    @Override
+    public DatatypePropertyModel getDataProperty(URI property, URI domain, String lang) throws SPARQLException {
+        return (DatatypePropertyModel) getProperty(property,OWL_DATATYPE_PROPERTY_MODEL.getUri(),domain,lang);
+    }
+
+    @Override
+    public ObjectPropertyModel getObjectProperty(URI property, URI domain, String lang) throws SPARQLException {
+        return (ObjectPropertyModel) getProperty(property,OWL_OBJECT_PROPERTY_MODEL.getUri(),domain,lang);
     }
 
     @Override

@@ -8,6 +8,7 @@
 
 package org.opensilex.sparql.ontology.store;
 
+import org.apache.jena.vocabulary.OWL2;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.ontology.dal.*;
@@ -27,6 +28,16 @@ public interface OntologyStore {
     }
 
     AbstractPropertyModel<?> getProperty(URI property, URI propertyType, URI domain, String lang) throws SPARQLException;
+
+    default DatatypePropertyModel getDataProperty(URI property, URI domain, String lang) throws SPARQLException {
+        return (DatatypePropertyModel) getProperty(property, URI.create(OWL2.DatatypeProperty.getURI()),domain,lang);
+    }
+
+    default ObjectPropertyModel getObjectProperty(URI property, URI domain, String lang) throws SPARQLException{
+        return (ObjectPropertyModel) getProperty(property, URI.create(OWL2.ObjectProperty.getURI()),domain,lang);
+    }
+
+    boolean classExist(URI rdfClass, URI parentClass) throws SPARQLException;
 
     ClassModel getClassModel(URI rdfClass, URI parentClass, String lang) throws SPARQLException;
 

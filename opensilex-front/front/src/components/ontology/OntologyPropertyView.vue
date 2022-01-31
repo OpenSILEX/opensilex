@@ -50,6 +50,7 @@ import OWL from "../../ontologies/OWL";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import OntologyPropertyTreeView from "./OntologyPropertyTreeView.vue";
 import {Store} from "vuex";
+import {RDFPropertyDTO} from "opensilex-core/model/rDFPropertyDTO";
 
 @Component
 export default class OntologyPropertyView extends Vue {
@@ -86,7 +87,7 @@ export default class OntologyPropertyView extends Vue {
         this.ontologyService = this.$opensilex.getService("opensilex-core.OntologyService");
     }
 
-    initForm(form) {
+    initForm(form: RDFPropertyDTO) {
         form.parent = this.parentURI;
         if (OWL.hasParent(form.parent)) {
             form.rdf_type = null;
@@ -95,7 +96,6 @@ export default class OntologyPropertyView extends Vue {
         } else if (OWL.isObjectTypeProperty(form.rdf_type)) {
             form.rdf_type = OWL.OBJECT_PROPERTY_URI;
         }
-        form.domain_rdf_type = this.rdfType;
     }
 
     parentURI;

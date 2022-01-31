@@ -22,6 +22,7 @@ import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
+import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
@@ -158,48 +159,50 @@ public class OntologyAPI {
         return new PaginatedListResponse<>(classes).getResponse();
     }
 
-    private DatatypePropertyModel getDataTypePropertyModel(OntologyDAO ontologyDAO, RDFPropertyDTO dto) throws Exception {
+    private DatatypePropertyModel getDataTypePropertyModel(OntologyStore ontologyStore, RDFPropertyDTO dto) throws SPARQLException {
 
         DatatypePropertyModel model = new DatatypePropertyModel();
         DatatypePropertyModel parentModel;
+        ClassModel domainModel;
 
         if (dto.getParent() != null) {
-            parentModel = ontologyDAO.getDataProperty(dto.getParent(), dto.getDomainType(), currentUser.getLanguage());
+            parentModel = ontologyStore.getDataProperty(dto.getParent(), dto.getDomain(), currentUser.getLanguage());
             if (parentModel == null) {
                 throw new SPARQLInvalidURIException(PARENT_URI_NOT_FOUND_MSG, dto.getParent());
             }
             model.setRange(parentModel.getRange());
+            domainModel = parentModel.getDomain();
         } else {
-            parentModel = CoreModule.getOntologyCacheInstance().getTopDatatypePropertyModel();
+            domainModel = ontologyStore.getClassModel(dto.getDomain(),null,currentUser.getLanguage());
             model.setRange(dto.getRange());
         }
         dto.toModel(model);
-        model.setParent(parentModel);
-
+        model.setDomain(domainModel);
         return model;
     }
 
-    private ObjectPropertyModel getObjectPropertyModel(OntologyDAO ontologyDAO, RDFPropertyDTO dto) throws Exception {
+    private ObjectPropertyModel getObjectPropertyModel(OntologyStore ontologyStore, RDFPropertyDTO dto) throws SPARQLException {
         ObjectPropertyModel model = new ObjectPropertyModel();
         ObjectPropertyModel parentModel;
+
         ClassModel rangeModel;
+        ClassModel domainModel;
         if (dto.getParent() != null) {
-            parentModel = ontologyDAO.getObjectProperty(dto.getParent(), dto.getDomainType(), currentUser.getLanguage());
+            parentModel = ontologyStore.getObjectProperty(dto.getParent(), dto.getDomain(), currentUser.getLanguage());
             if (parentModel == null) {
                 throw new SPARQLInvalidURIException(PARENT_URI_NOT_FOUND_MSG, dto.getParent());
             }
             rangeModel = parentModel.getRange();
+            domainModel = parentModel.getDomain();
         } else {
-            parentModel = CoreModule.getOntologyCacheInstance().getTopObjectPropertyModel();
-            rangeModel = new ClassModel();
-            rangeModel.setUri(dto.getRange());
+            rangeModel = ontologyStore.getClassModel(dto.getRange(),null,currentUser.getLanguage());
+            domainModel = ontologyStore.getClassModel(dto.getDomain(),null,currentUser.getLanguage());
         }
         dto.toModel(model);
-        model.setParent(parentModel);
+        model.setDomain(domainModel);
         model.setRange(rangeModel);
         return model;
     }
-
     @POST
     @Path("property")
     @ApiOperation(PROPERTY_CREATE_MSG)
@@ -214,17 +217,18 @@ public class OntologyAPI {
             @ApiParam("Property description") @Valid RDFPropertyDTO dto
     ) throws Exception {
         try {
+            OntologyStore ontologyStore = SPARQLModule.getOntologyStoreInstance();
             OntologyDAO dao = new OntologyDAO(sparql);
             Node propertyGraph = getPropertyGraph();
 
             boolean isDataProperty = dto.isDataProperty();
             if (isDataProperty) {
-                DatatypePropertyModel model = getDataTypePropertyModel(dao, dto);
+                DatatypePropertyModel model = getDataTypePropertyModel(ontologyStore, dto);
                 dao.createDataProperty(propertyGraph, model);
                 SPARQLModule.getOntologyStoreInstance().reload();
                 return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
             } else {
-                ObjectPropertyModel model = getObjectPropertyModel(dao, dto);
+                ObjectPropertyModel model = getObjectPropertyModel(ontologyStore, dto);
                 dao.createObjectProperty(propertyGraph, model);
                 SPARQLModule.getOntologyStoreInstance().reload();
                 return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
@@ -250,18 +254,20 @@ public class OntologyAPI {
     public Response updateProperty(
             @ApiParam("Property description") @Valid RDFPropertyDTO dto
     ) throws Exception {
+
         OntologyDAO dao = new OntologyDAO(sparql);
+        OntologyStore ontologyStore = SPARQLModule.getOntologyStoreInstance();
 
         Node propertyGraph = getPropertyGraph();
 
         boolean isDataProperty = dto.isDataProperty();
         if (isDataProperty) {
-            DatatypePropertyModel model = getDataTypePropertyModel(dao, dto);
+            DatatypePropertyModel model = getDataTypePropertyModel(ontologyStore, dto);
             dao.updateDataProperty(propertyGraph, model);
             SPARQLModule.getOntologyStoreInstance().reload();
             return new ObjectUriResponse(Response.Status.OK, model.getUri()).getResponse();
         } else {
-            ObjectPropertyModel objModel = getObjectPropertyModel(dao, dto);
+            ObjectPropertyModel objModel = getObjectPropertyModel(ontologyStore, dto);
             dao.updateObjectProperty(propertyGraph, objModel);
             SPARQLModule.getOntologyStoreInstance().reload();
             return new ObjectUriResponse(Response.Status.OK, objModel.getUri()).getResponse();
@@ -276,7 +282,7 @@ public class OntologyAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return property model definition ", response = RDFPropertyDTO.class)
+            @ApiResponse(code = 200, message = "Return property model definition ", response = RDFPropertyGetDTO.class)
     })
     public Response getProperty(
             @ApiParam(value = "Property URI") @QueryParam("uri") @ValidURI URI propertyURI,
@@ -286,7 +292,7 @@ public class OntologyAPI {
 
         OntologyStore ontologyStore = SPARQLModule.getOntologyStoreInstance();
         AbstractPropertyModel<?> model = ontologyStore.getProperty(propertyURI, propertyType, domainType, currentUser.getLanguage());
-        return new SingleObjectResponse<>(new RDFPropertyDTO(model, currentUser.getLanguage())).getResponse();
+        return new SingleObjectResponse<>(new RDFPropertyGetDTO(model, currentUser.getLanguage())).getResponse();
     }
 
     @DELETE
@@ -338,8 +344,8 @@ public class OntologyAPI {
         OntologyStore ontologyStore = SPARQLModule.getOntologyStoreInstance();
 
         List<ResourceTreeDTO> properties = ResourceTreeDTO.fromResourceTree(Arrays.asList(
-                ontologyStore.searchDataProperties(domainURI, namePattern,currentUser.getLanguage(), true, dataPropFilter),
-                ontologyStore.searchObjectProperties(domainURI,  namePattern,currentUser.getLanguage(), true, objectPropFilter)
+                ontologyStore.searchDataProperties(domainURI, namePattern, currentUser.getLanguage(), true, dataPropFilter),
+                ontologyStore.searchObjectProperties(domainURI, namePattern,currentUser.getLanguage(), true, objectPropFilter)
         ));
         return new ResourceTreeResponse(properties).getResponse();
     }

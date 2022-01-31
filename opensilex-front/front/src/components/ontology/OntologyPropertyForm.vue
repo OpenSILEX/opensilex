@@ -104,9 +104,7 @@ export default class OntologyPropertyForm extends Vue {
         uri: null,
         rdf_type: OWL.DATATYPE_PROPERTY_URI,
         parent: null,
-        name: null,
         name_translations: {},
-        comment: null,
         comment_translations: {},
         domain: null,
         range: null
@@ -120,9 +118,7 @@ export default class OntologyPropertyForm extends Vue {
       uri: null,
       rdf_type: OWL.DATATYPE_PROPERTY_URI,
       parent: null,
-      name: null,
       name_translations: {},
-      comment: null,
       comment_translations: {},
       domain: null,
       range: null
@@ -208,12 +204,9 @@ export default class OntologyPropertyForm extends Vue {
       uri: form.uri,
       rdf_type: form.rdf_type,
       parent: form.parent,
-      name: form.name,
       name_translations: form.name_translations,
-      comment: form.comment,
       comment_translations: form.comment_translations,
       domain: this.domain,
-      domain_rdf_type: form.domain_rdf_type,
       range: form.range
     };
 

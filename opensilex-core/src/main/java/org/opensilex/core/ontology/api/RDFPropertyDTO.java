@@ -7,14 +7,14 @@ package org.opensilex.core.ontology.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.github.jsonldjava.utils.Obj;
+import io.swagger.annotations.ApiModelProperty;
 import org.apache.jena.vocabulary.OWL2;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.ontology.dal.*;
 
 import java.net.URI;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -22,39 +22,56 @@ import java.util.Map;
  */
 public class RDFPropertyDTO {
 
+    @ApiModelProperty(
+            value = "URI of property",
+            required = true,
+            example = "http://opensilex.org/custom_object_property")
     protected URI uri;
 
     @JsonProperty("rdf_type")
+    @ApiModelProperty(
+            value = "The type of property",
+            notes = "Allowed values are owl:DatatypeProperty (for data-property) or owl:ObjectProperty (for object-property)",
+            required = true,
+            example = "owl:ObjectProperty"
+    )
     protected URI type;
 
-    protected String name;
-
-    protected String comment;
-
     @JsonProperty("name_translations")
+    @ApiModelProperty(
+            value = "Name by languages, at least one name/language is required. Use '' as language if no language is specified",
+            required = true
+    )
     protected Map<String, String> labelTranslations;
 
     @JsonProperty("comment_translations")
+    @ApiModelProperty(
+            value = "Description by languages, at least one description/language is required. Use '' as language if no language is specified",
+            required = true
+    )
     protected Map<String, String> commentTranslations;
 
+    @ApiModelProperty(
+            value = "Domain of the property : the rdf:type of any concept concerned by this property.",
+            required = true,
+            notes = "This domain definition must exist into the repository",
+            example = "vocabulary:SensingDevice"
+    )
     protected URI domain;
 
-    @JsonProperty("domain_rdf_type")
-    protected URI domainType;
-
-    public URI getDomainType() {
-        return domainType;
-    }
-
-    public void setDomainType(URI domainType) {
-        this.domainType = domainType;
-    }
-
+    @ApiModelProperty(
+            value = "Range of the property : the rdf:type of any value(can be a literal type or a concept type) concerned by this property.",
+            required = true,
+            notes = "The range definition(class or literal type) must exist into the repository",
+            example = "vocabulary:ScientificObject"
+    )
     protected URI range;
 
-    @JsonProperty("range_label")
-    protected String rangeLabel;
-
+    @ApiModelProperty(
+            value = "Parent of the property.",
+            notes = "The parent definition as a property must exist into the repository",
+            example = "http://opensilex.org/parent_custom_object_property"
+    )
     protected URI parent;
 
     public URI getUri() {
@@ -71,22 +88,6 @@ public class RDFPropertyDTO {
 
     public void setType(URI type) {
         this.type = type;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(String comment) {
-        this.comment = comment;
     }
 
     public Map<String, String> getLabelTranslations() {
@@ -121,14 +122,6 @@ public class RDFPropertyDTO {
         this.range = range;
     }
 
-    public String getRangeLabel() {
-        return rangeLabel;
-    }
-
-    public void setRangeLabel(String rangeLabel) {
-        this.rangeLabel = rangeLabel;
-    }
-
     public URI getParent() {
         return parent;
     }
@@ -139,7 +132,7 @@ public class RDFPropertyDTO {
 
     @JsonIgnore
     public boolean isDataProperty() {
-        return isDataProperty(getType());
+        return RDFPropertyDTO.isDataProperty(getType());
     }
 
     public RDFPropertyDTO() {
@@ -154,13 +147,11 @@ public class RDFPropertyDTO {
         if (model.getParent() != null) {
             setParent(model.getParent().getUri());
         }
-        setName(model.getLabel().getDefaultValue());
         setLabelTranslations(model.getLabel().getAllTranslations());
         if (model.getComment() != null) {
-            setComment(model.getComment().getDefaultValue());
             setCommentTranslations(model.getComment().getAllTranslations());
         } else {
-            setCommentTranslations(new HashMap<>());
+            setCommentTranslations(Collections.emptyMap());
         }
 
         if (model.getDomain() != null) {
@@ -170,8 +161,10 @@ public class RDFPropertyDTO {
         if(model instanceof DatatypePropertyModel){
             setRange(((DatatypePropertyModel) model).getRange());
         }else if(model instanceof ObjectPropertyModel){
-            setRange(((ObjectPropertyModel) model).getRange().getUri());
-            setRangeLabel(((ObjectPropertyModel) model).getRange().getName());
+            if(((ObjectPropertyModel) model).getRange() != null) {
+                ObjectPropertyModel objectProperty = (ObjectPropertyModel) model;
+                setRange(objectProperty.getRange().getUri());
+            }
         }
     }
 

@@ -155,7 +155,7 @@ public class EventAPI {
         EventDAO<EventModel> dao = new EventDAO<>(sparql,nosql);
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
 
-        EventCsvImporter csvImporter = new EventCsvImporter(ontologyDAO,file,currentUser);
+        EventCsvImporter csvImporter = new EventCsvImporter(sparql,ontologyDAO,file,currentUser);
         csvImporter.readFile(false);
 
         CSVValidationModel validation = csvImporter.getValidation();
@@ -210,7 +210,7 @@ public class EventAPI {
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition) throws Exception {
 
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
-        EventCsvImporter csvImporter = new EventCsvImporter(ontologyDAO,file,currentUser);
+        EventCsvImporter csvImporter = new EventCsvImporter(sparql,ontologyDAO,file,currentUser);
         csvImporter.readFile(true);
 
         CSVValidationModel validation = csvImporter.getValidation();
@@ -541,7 +541,7 @@ public class EventAPI {
         MoveEventDAO dao = new MoveEventDAO(sparql,nosql);
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
 
-        AbstractEventCsvImporter<MoveModel> csvImporter = new MoveEventCsvImporter(ontologyDAO,file,currentUser);
+        AbstractEventCsvImporter<MoveModel> csvImporter = new MoveEventCsvImporter(sparql,ontologyDAO,file,currentUser);
 
         return buildCsvResponse(csvImporter,dao).getResponse();
     }
@@ -559,7 +559,7 @@ public class EventAPI {
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition) throws Exception {
 
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
-        MoveEventCsvImporter csvImporter = new MoveEventCsvImporter(ontologyDAO,file,currentUser);
+        MoveEventCsvImporter csvImporter = new MoveEventCsvImporter(sparql,ontologyDAO,file,currentUser);
         csvImporter.readFile(true);
 
         CSVValidationModel validation = csvImporter.getValidation();

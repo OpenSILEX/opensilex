@@ -5,16 +5,19 @@ import com.mongodb.client.model.geojson.Point;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.locationtech.jts.io.ParseException;
+import org.opensilex.core.csv.dal.CSVCell;
 import org.opensilex.core.event.api.csv.AbstractEventCsvImporter;
 import org.opensilex.core.event.dal.move.TargetPositionModel;
 import org.opensilex.core.event.dal.move.MoveEventNoSqlModel;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.event.dal.move.PositionModel;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
-import org.opensilex.core.csv.dal.CSVCell;
+import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
+import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
 import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.sparql.service.SPARQLService;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -28,7 +31,7 @@ import java.util.stream.Stream;
 
 public class MoveEventCsvImporter extends AbstractEventCsvImporter<MoveModel> {
 
-    private final static LinkedHashSet<String> MOVE_HEADER = Stream.concat(
+    private static final LinkedHashSet<String> MOVE_HEADER = Stream.concat(
                     AbstractEventCsvImporter.EVENT_HEADER.stream(),
                     Stream.of(
                         MoveModel.FROM_FIELD,
@@ -42,8 +45,8 @@ public class MoveEventCsvImporter extends AbstractEventCsvImporter<MoveModel> {
             ).collect(Collectors.toCollection(LinkedHashSet::new)
     );
 
-    public MoveEventCsvImporter(OntologyDAO ontologyDAO, InputStream file, UserModel user){
-        super(ontologyDAO,file, user);
+    public MoveEventCsvImporter(SPARQLService sparql, OntologyDAO ontologyDAO, InputStream file, UserModel user) throws SPARQLInvalidClassDefinitionException, SPARQLMapperNotFoundException {
+        super(sparql,ontologyDAO,file, user);
     }
 
     @Override

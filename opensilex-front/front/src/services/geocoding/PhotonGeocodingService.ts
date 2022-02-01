@@ -27,7 +27,7 @@ class PhotonGeocodingService implements IGeocodingService {
 
     }
 
-    async search(partialAddress: string, options?: GeocodingOptions): Promise<any> {
+    async search(partialAddress: string, options?: GeocodingOptions): Promise<Array<GeocodingAddressResult>> {
         if (!options) {
             options = DEFAULT_OPTIONS;
         } else {

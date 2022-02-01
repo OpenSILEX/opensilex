@@ -110,6 +110,7 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
             config.setLoginComponent(frontConfig.loginComponent());
             config.setMenuComponent(frontConfig.menuComponent());
             config.setFooterComponent(frontConfig.footerComponent());
+            config.setGeocodingService(frontConfig.geocodingService());
 
             try {
                 AuthenticationService auth = getOpenSilex().getServiceInstance(AuthenticationService.DEFAULT_AUTHENTICATION_SERVICE, AuthenticationService.class);

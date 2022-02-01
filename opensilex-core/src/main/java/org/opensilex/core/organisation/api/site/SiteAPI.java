@@ -1,6 +1,7 @@
 package org.opensilex.core.organisation.api.site;
 
 import io.swagger.annotations.*;
+import org.apache.commons.collections4.CollectionUtils;
 import org.opensilex.core.organisation.api.InfrastructureAPI;
 import org.opensilex.core.organisation.dal.SiteModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -9,6 +10,8 @@ import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.server.exceptions.BadRequestException;
+import org.opensilex.server.exceptions.displayable.DisplayableBadRequestException;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
@@ -29,6 +32,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import java.net.URI;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -146,6 +150,11 @@ public class SiteAPI {
     public Response createSite(
             @ApiParam("Site creation object") @Valid SiteCreationDTO siteCreationDto
     ) throws Exception {
+        if (CollectionUtils.isEmpty(siteCreationDto.getOrganizations())) {
+            throw new DisplayableBadRequestException("A site must have at least one parent organization",
+                    "component.organization.exception.siteMustHaveParent");
+        }
+
         try {
             SiteDAO siteDAO = new SiteDAO(sparql, nosql);
 
@@ -175,6 +184,11 @@ public class SiteAPI {
     public Response updateSite(
             @ApiParam("Site update object") @Valid SiteUpdateDTO siteUpdateDTO
     ) throws Exception {
+        if (CollectionUtils.isEmpty(siteUpdateDTO.getOrganizations())) {
+            throw new DisplayableBadRequestException("A site must have at least one parent organization",
+                    "component.organization.exception.siteMustHaveParent");
+        }
+
         SiteDAO siteDAO = new SiteDAO(sparql, nosql);
 
         SiteModel siteModel = siteUpdateDTO.newModel();

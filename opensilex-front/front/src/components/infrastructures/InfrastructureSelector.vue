@@ -1,6 +1,7 @@
 <template>
   <opensilex-SelectForm
     :label="label"
+    :required="required"
     :selected.sync="infrastructuresURI"
     :multiple="multiple"
     :options="infrastructuresOptions"
@@ -31,6 +32,11 @@ export default class InfrastructureSelector extends Vue {
 
   @Prop()
   excludeInfrastructureURI: string;
+
+  @Prop({
+    default: false
+  })
+  required: boolean;
 
   infrastructuresOptions = [];
   mounted() {

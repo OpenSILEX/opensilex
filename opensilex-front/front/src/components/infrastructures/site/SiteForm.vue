@@ -24,6 +24,7 @@
         label="SiteForm.organizations"
         :infrastructures.sync="form.organizations"
         :multiple="true"
+        :required="true"
     ></opensilex-InfrastructureSelector>
 
     <!-- Facilities -->

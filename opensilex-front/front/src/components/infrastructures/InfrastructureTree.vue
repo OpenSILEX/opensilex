@@ -12,15 +12,26 @@
       </h3>
 
       <div class="card-header-right">
-        <opensilex-CreateButton
-          v-if="
-            user.hasCredential(
-              credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
-            )
-          "
-          @click="createOrganization()"
-          label="InfrastructureTree.add"
-        ></opensilex-CreateButton>
+        <div class="spaced-actions">
+          <opensilex-CreateButton
+            v-if="
+              user.hasCredential(
+                credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
+              )
+            "
+            @click="createOrganization()"
+            label="InfrastructureTree.add"
+          ></opensilex-CreateButton>
+          <opensilex-CreateButton
+            v-if="
+              user.hasCredential(
+                credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
+              )
+            "
+            @click="createSite()"
+            label="InfrastructureTree.addSite"
+          ></opensilex-CreateButton>
+        </div>
       </div>
     </template>
     <!-- Card body -->
@@ -490,7 +501,9 @@ export default class InfrastructureTree extends Vue {
   }
 
   initSiteForm(form) {
-    form.organizations = [this.parentURI];
+    if (this.parentURI) {
+      form.organizations = [this.parentURI];
+    }
   }
 }
 </script>
@@ -520,6 +533,12 @@ export default class InfrastructureTree extends Vue {
 .tree-multiple-icon {
   padding-left: 8px;
   color: #3cc6ff;
+}
+
+.spaced-actions {
+  button {
+    margin-left: 10px;
+  }
 }
 </style>
 

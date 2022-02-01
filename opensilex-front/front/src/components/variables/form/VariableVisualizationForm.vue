@@ -17,12 +17,11 @@
                 ref="devSelector"
                 :devices.sync="filter.device"
                 :variable="[variable]"
-                label="Devices"
+                label="DeviceDetails.title"
                 :multiple="true"
                 :showURI="false"
             ></opensilex-VariableDevicesSelector>
           </opensilex-FilterField>
-
 
           <opensilex-FilterField :halfWidth="true">
             <div class="row">

@@ -21,7 +21,7 @@
         <b-nav-item
             :active="isVisualizationTab()"
             :to="{ path: '/variable/visualization/' + encodeURIComponent(uri) }"
-        >{{ $t('DeviceDetails.visualization') }}
+        >{{ $t('VariableDetails.visualization') }}
         </b-nav-item>
 
       </template>

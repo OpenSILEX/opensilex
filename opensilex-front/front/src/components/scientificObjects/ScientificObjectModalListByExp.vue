@@ -92,7 +92,7 @@
         :isSelectable="true"
         :noActions="true"
         :pageSize="10"
-        :filter.sync="filter"
+        :searchFilter.sync="filter"
         :noUpdateURL="true"
       >
       </opensilex-ScientificObjectList>

@@ -512,7 +512,7 @@ public abstract class AbstractOntologyStore implements OntologyStore {
             }
         }
 
-        properties.forEach(property -> handleLang(namePattern, property));
+        properties.forEach(property -> handleLang(lang, property));
 
         return new SPARQLTreeListModel<>(properties, TOP_OBJECT_PROPERTY_URI, true, true);
     }

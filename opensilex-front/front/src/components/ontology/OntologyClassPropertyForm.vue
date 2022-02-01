@@ -68,8 +68,6 @@ export default class OntologyClassPropertyForm extends Vue {
     let excludedUris = new Set<string>(
         excludedProperties.map(vueProperty => vueProperty.property)
     );
-    console.log(excludedUris);
-    console.log(properties);
     this.availableProperties = properties.filter(
         dto => ! excludedUris.has(dto.uri)
     );

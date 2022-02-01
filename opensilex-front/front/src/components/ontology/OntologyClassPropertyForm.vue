@@ -30,6 +30,8 @@ import Vue from "vue";
 import OWL from "../../ontologies/OWL";
 // @ts-ignore
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
+import {VueRDFTypePropertyDTO} from "../../lib";
+import {ResourceTreeDTO} from "opensilex-core/model/resourceTreeDTO";
 
 @Component
 export default class OntologyClassPropertyForm extends Vue {
@@ -61,13 +63,17 @@ export default class OntologyClassPropertyForm extends Vue {
   availableProperties = null;
   excludedProperties = [];
   dataTypeProperties = [];
-  setProperties(properties, excludedProperties) {
-    this.availableProperties = properties;
+  setProperties(properties: ResourceTreeDTO[], excludedProperties: VueRDFTypePropertyDTO[]) {
 
+    let excludedUris = new Set<string>(
+        excludedProperties.map(vueProperty => vueProperty.property)
+    );
+    console.log(excludedUris);
+    console.log(properties);
+    this.availableProperties = properties.filter(
+        dto => ! excludedUris.has(dto.uri)
+    );
     this.excludedProperties = [];
-    excludedProperties.forEach((prop) => {
-      this.excludedProperties.push(prop.property);
-    });
 
     this.dataTypeProperties = [];
     this.availableProperties.forEach((prop) => {

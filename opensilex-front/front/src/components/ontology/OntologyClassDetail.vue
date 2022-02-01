@@ -183,6 +183,8 @@ import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
 import {OntologyService} from "opensilex-core/index";
+import {VueRDFTypePropertyDTO} from "../../lib";
+import OntologyClassPropertyForm from "./OntologyClassPropertyForm.vue";
 
 @Component
 export default class OntologyClassDetail extends Vue {
@@ -238,7 +240,7 @@ export default class OntologyClassDetail extends Vue {
         );
     }
 
-    get properties() {
+    get properties(): VueRDFTypePropertyDTO[] {
         let allProps = this.selected.data_properties.concat(
             this.selected.object_properties
         );
@@ -278,7 +280,7 @@ export default class OntologyClassDetail extends Vue {
     addProperty() {
       // get properties, only those with a rdfs:range defined
         this.ontologyService.getProperties(this.rdfType,undefined,false).then((http) => {
-            let formRef = this.classPropertyForm.getFormRef();
+            let formRef: OntologyClassPropertyForm = this.classPropertyForm.getFormRef();
             formRef.setDomain(this.rdfType);
             formRef.setClassURI(this.selected.uri);
             formRef.setProperties(http.response.result, this.properties);

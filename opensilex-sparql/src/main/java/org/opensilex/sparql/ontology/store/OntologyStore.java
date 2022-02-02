@@ -10,10 +10,13 @@ package org.opensilex.sparql.ontology.store;
 
 import org.apache.jena.vocabulary.OWL2;
 import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.ontology.dal.*;
 
 import java.net.URI;
+import java.util.Set;
+import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 
 public interface OntologyStore {
@@ -30,11 +33,11 @@ public interface OntologyStore {
     AbstractPropertyModel<?> getProperty(URI property, URI propertyType, URI domain, String lang) throws SPARQLException;
 
     default DatatypePropertyModel getDataProperty(URI property, URI domain, String lang) throws SPARQLException {
-        return (DatatypePropertyModel) getProperty(property, URI.create(OWL2.DatatypeProperty.getURI()),domain,lang);
+        return (DatatypePropertyModel) getProperty(property, URI.create(OWL2.DatatypeProperty.getURI()), domain, lang);
     }
 
-    default ObjectPropertyModel getObjectProperty(URI property, URI domain, String lang) throws SPARQLException{
-        return (ObjectPropertyModel) getProperty(property, URI.create(OWL2.ObjectProperty.getURI()),domain,lang);
+    default ObjectPropertyModel getObjectProperty(URI property, URI domain, String lang) throws SPARQLException {
+        return (ObjectPropertyModel) getProperty(property, URI.create(OWL2.ObjectProperty.getURI()), domain, lang);
     }
 
     boolean classExist(URI rdfClass, URI parentClass) throws SPARQLException;
@@ -43,8 +46,12 @@ public interface OntologyStore {
 
     SPARQLTreeListModel<ClassModel> searchSubClasses(URI parent, String pattern, String lang, boolean excludeRoot) throws SPARQLException;
 
-    SPARQLTreeListModel<DatatypePropertyModel> searchDataProperties(URI domain, String namePattern, String lang, boolean includeSubClasses, Predicate<DatatypePropertyModel> filter) throws SPARQLException;
+    SPARQLTreeListModel<DatatypePropertyModel> searchDataProperties(URI domain, String namePattern, String lang, boolean includeSubClasses, BiPredicate<DatatypePropertyModel, ClassModel> filter) throws SPARQLException;
 
-    SPARQLTreeListModel<ObjectPropertyModel> searchObjectProperties(URI domain, String namePattern, String lang, boolean includeSubClasses, Predicate<ObjectPropertyModel> filter) throws SPARQLException;
+    SPARQLTreeListModel<ObjectPropertyModel> searchObjectProperties(URI domain, String namePattern, String lang, boolean includeSubClasses, BiPredicate<ObjectPropertyModel, ClassModel> filter) throws SPARQLException;
+
+    Set<DatatypePropertyModel> getLinkableDataProperties(URI domain, String lang) throws SPARQLInvalidURIException;
+
+    Set<ObjectPropertyModel> getLinkableObjectProperties(URI domain, String lang) throws SPARQLInvalidURIException;
 
 }

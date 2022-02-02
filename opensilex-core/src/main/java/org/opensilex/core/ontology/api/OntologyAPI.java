@@ -33,6 +33,7 @@ import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.response.ResourceTreeDTO;
 import org.opensilex.sparql.response.ResourceTreeResponse;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.utils.ListWithPagination;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -45,15 +46,19 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author vince
  */
 @Api("Ontology")
-@Path("/ontology")
+@Path(OntologyAPI.PATH)
 public class OntologyAPI {
+
+    public static final String PATH = "/ontology";
 
     @CurrentUser
     UserModel currentUser;
@@ -93,8 +98,10 @@ public class OntologyAPI {
         return this.searchSubClassesOf(parentClass, null, ignoreRootClasses);
     }
 
+    public static final String SEARCH_SUB_CLASS_OF_PATH = "/subclasses_of/search";
+
     @GET
-    @Path("/subclasses_of/search")
+    @Path(SEARCH_SUB_CLASS_OF_PATH)
     @ApiOperation("Search sub-classes tree of an RDF class")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
@@ -103,7 +110,7 @@ public class OntologyAPI {
             @ApiResponse(code = 200, message = "Return sub-classes tree", response = ResourceTreeDTO.class, responseContainer = "List")
     })
     public Response searchSubClassesOf(
-            @ApiParam(value = "Parent RDF class URI") @QueryParam("parent_type") @ValidURI URI parentClass,
+            @ApiParam(value = "Parent RDF class URI") @QueryParam("parent_type") @ValidURI @NotNull URI parentClass,
             @ApiParam(value = "Name regex pattern", example = "plant_height") @QueryParam("name") String stringPattern,
             @ApiParam(value = "Flag to determine if only sub-classes must be include in result") @DefaultValue("false") @QueryParam("ignoreRootClasses") boolean ignoreRootClasses
     ) throws Exception {
@@ -335,21 +342,54 @@ public class OntologyAPI {
     public Response getProperties(
             @ApiParam(value = "Domain URI") @QueryParam("domain") @NotNull @ValidURI URI domainURI,
             @ApiParam(value = "Name regex pattern", example = "plant_height") @QueryParam("name") String namePattern,
-            @ApiParam(value = "Return properties with no rdfs:range defined") @QueryParam("accept_null_range") @DefaultValue("true") boolean acceptNullRange
-    ) throws Exception {
+            @ApiParam(value = "Return all properties from sub-classes") @QueryParam("include_sub_classes") @DefaultValue("true") boolean includeSubClasses,
+            @ApiParam(value = "Return properties with no rdfs:range defined") @QueryParam("accept_null_range") @DefaultValue("false") boolean acceptNullRange
+            ) throws Exception {
 
-        Predicate<DatatypePropertyModel> dataPropFilter = acceptNullRange ? null : (property -> property.getRangeURI() != null);
-        Predicate<ObjectPropertyModel> objectPropFilter = acceptNullRange ? null : (property -> property.getRangeURI() != null);
+        BiPredicate<DatatypePropertyModel, ClassModel> dataPropFilter = acceptNullRange ? null : ((property, classModel) -> property.getRangeURI() != null);
+        BiPredicate<ObjectPropertyModel, ClassModel> objectPropFilter = acceptNullRange ? null : ((property, classModel) -> property.getRangeURI() != null);
 
         OntologyStore ontologyStore = SPARQLModule.getOntologyStoreInstance();
 
         List<ResourceTreeDTO> properties = ResourceTreeDTO.fromResourceTree(Arrays.asList(
-                ontologyStore.searchDataProperties(domainURI, namePattern, currentUser.getLanguage(), true, dataPropFilter),
-                ontologyStore.searchObjectProperties(domainURI, namePattern,currentUser.getLanguage(), true, objectPropFilter)
+                ontologyStore.searchDataProperties(domainURI, namePattern, currentUser.getLanguage(), includeSubClasses, dataPropFilter),
+                ontologyStore.searchObjectProperties(domainURI, namePattern,currentUser.getLanguage(), includeSubClasses, objectPropFilter)
         ));
         return new ResourceTreeResponse(properties).getResponse();
     }
 
+
+    @GET
+    @Path("/linkable_properties")
+    @ApiOperation("Search properties linkable to a domain")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return property tree", response = ResourceTreeDTO.class, responseContainer = "List")
+    })
+    public Response getLinkableProperties(
+            @ApiParam(value = "Domain URI") @QueryParam("domain") @NotNull @ValidURI URI domainURI
+    ) throws Exception {
+
+        OntologyStore ontologyStore = SPARQLModule.getOntologyStoreInstance();
+
+        List<ResourceTreeDTO> dtos = new ArrayList<>();
+
+        ontologyStore.getLinkableDataProperties(domainURI, currentUser.getLanguage()).forEach(property -> {
+            ResourceTreeDTO dto = new ResourceTreeDTO();
+            dto.fromModel(property);
+            dtos.add(dto);
+        });
+
+        ontologyStore.getLinkableObjectProperties(domainURI, currentUser.getLanguage()).forEach(property -> {
+            ResourceTreeDTO dto = new ResourceTreeDTO();
+            dto.fromModel(property);
+            dtos.add(dto);
+        });
+
+        return new PaginatedListResponse<>(new ListWithPagination<>(dtos)).getResponse();
+    }
 
     @GET
     @Path("/data_properties")

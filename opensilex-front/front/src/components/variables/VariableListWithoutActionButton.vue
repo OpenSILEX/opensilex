@@ -74,7 +74,6 @@
 
                     <template v-slot:cell(name)="{data}">
                         <opensilex-UriLink
-                            v-if="!noActions"
                             :uri="data.item.uri"
                             :value="data.item.name"
                             :to="{path: '/variable/details/'+ encodeURIComponent(data.item.uri)}"

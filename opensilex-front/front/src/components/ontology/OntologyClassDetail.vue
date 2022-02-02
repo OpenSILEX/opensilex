@@ -278,8 +278,8 @@ export default class OntologyClassDetail extends Vue {
     }
 
     addProperty() {
-      // get properties, only those with a rdfs:range defined
-        this.ontologyService.getProperties(this.rdfType,undefined,false).then((http) => {
+        // get properties, only property which apply on this type, and with a properly rdfs:range defined
+        this.ontologyService.getProperties(this.rdfType,undefined,false,false).then((http) => {
             let formRef: OntologyClassPropertyForm = this.classPropertyForm.getFormRef();
             formRef.setDomain(this.rdfType);
             formRef.setClassURI(this.selected.uri);

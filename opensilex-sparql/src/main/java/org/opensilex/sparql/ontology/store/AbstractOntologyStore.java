@@ -28,7 +28,6 @@ import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
 import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
-import org.opensilex.sparql.model.SPARQLTreeModel;
 import org.opensilex.sparql.model.VocabularyModel;
 import org.opensilex.sparql.ontology.dal.*;
 import org.opensilex.sparql.service.SPARQLService;
@@ -40,8 +39,8 @@ import java.net.URI;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
+import java.util.function.BiPredicate;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 /**
@@ -447,75 +446,116 @@ public abstract class AbstractOntologyStore implements OntologyStore {
         return new SPARQLTreeListModel<>(classModel, excludeRoot, true);
     }
 
-    @Override
-    public SPARQLTreeListModel<DatatypePropertyModel> searchDataProperties(URI domain, String namePattern, String lang, boolean includeSubClasses, Predicate<DatatypePropertyModel> filter) throws SPARQLException {
+    private <PT extends AbstractPropertyModel<PT>> Set<PT> computeProperties(
+            boolean root,
+            Set<PT> accumulator,
+            ClassModel classModel,
+            Function<ClassModel, Stream<PT>> function,
+            boolean includeSubClasses,
+            BiPredicate<PT,ClassModel> filter,
+            String lang) {
 
-        if(! StringUtils.isEmpty(namePattern)){
+        if(root){
+            accumulator = new HashSet<>();
+        }
+        if (filter == null) {
+            function.apply(classModel).forEach(accumulator::add);
+        } else {
+            function.apply(classModel)
+                    .filter(property -> filter.test(property,classModel))
+                    .forEach(accumulator::add);
+        }
+
+        if (includeSubClasses) {
+            for(ClassModel child : classModel.getChildren()){
+                computeProperties(false, accumulator, child, function, includeSubClasses, filter, lang);
+            }
+        }
+        if(root){
+            accumulator.forEach(property -> handleLang(lang, property));
+        }
+        return accumulator;
+    }
+
+    BiPredicate<AbstractPropertyModel, ClassModel> getNullRangePredicate(){
+        return (property, classModel) -> property.getRangeURI() != null;
+    }
+
+    BiPredicate<DatatypePropertyModel,ClassModel> isRestrictedPredicate(){
+        return (property, classModel) -> classModel.getRestrictionsByProperties().containsKey(property.getUri());
+    }
+
+
+
+    @Override
+    public SPARQLTreeListModel<DatatypePropertyModel> searchDataProperties(URI domain, String namePattern, String lang, boolean includeSubClasses, BiPredicate<DatatypePropertyModel,ClassModel> filter) throws SPARQLException {
+
+        if (!StringUtils.isEmpty(namePattern)) {
             return new NoOntologyStore(ontologyDAO).searchDataProperties(domain, namePattern, lang, includeSubClasses, filter);
         }
 
-        ClassModel classModel = getClassModel(domain);
-
-        List<DatatypePropertyModel> properties;
-        if (filter == null) {
-            properties = new ArrayList<>(classModel.getDatatypeProperties().values());
-        } else {
-            properties = classModel.getDatatypeProperties().values()
-                    .stream()
-                    .filter(filter)
-                    .collect(Collectors.toList());
-        }
-
-        if (includeSubClasses) {
-            if (filter == null) {
-                classModel.visit(child -> properties.addAll(child.getDatatypeProperties().values()));
-            } else {
-                classModel.visit(child -> child.getDatatypeProperties().values()
-                        .stream()
-                        .filter(filter)
-                        .collect(Collectors.toCollection(() -> properties)));
-            }
-        }
-
-        properties.forEach(property -> handleLang(lang, property));
-
+        Set<DatatypePropertyModel> properties = computeProperties(
+                true,
+                new HashSet<>(),
+                getClassModel(domain),
+                (classModel -> classModel.getDatatypeProperties().values().stream()),
+                includeSubClasses,
+                filter,
+                lang
+        );
         return new SPARQLTreeListModel<>(properties, TOP_DATA_PROPERTY_URI, true, true);
+
     }
 
     @Override
-    public SPARQLTreeListModel<ObjectPropertyModel> searchObjectProperties(URI domain, String namePattern, String lang, boolean includeSubClasses, Predicate<ObjectPropertyModel> filter) throws SPARQLException {
+    public SPARQLTreeListModel<ObjectPropertyModel> searchObjectProperties(URI domain, String namePattern, String lang, boolean includeSubClasses,  BiPredicate<ObjectPropertyModel,ClassModel> filter) throws SPARQLException {
 
-        if(! StringUtils.isEmpty(namePattern)){
+        if (!StringUtils.isEmpty(namePattern)) {
             return new NoOntologyStore(ontologyDAO).searchObjectProperties(domain, namePattern, lang, includeSubClasses, filter);
         }
 
-        ClassModel classModel = getClassModel(domain);
-
-        List<ObjectPropertyModel> properties;
-        if (filter == null) {
-            properties = new ArrayList<>(classModel.getObjectProperties().values());
-        } else {
-            properties = classModel.getObjectProperties().values()
-                    .stream()
-                    .filter(filter)
-                    .collect(Collectors.toList());
-        }
-
-        if (includeSubClasses) {
-            if (filter == null) {
-                classModel.visit(child -> properties.addAll(child.getObjectProperties().values()));
-            } else {
-                classModel.visit(child -> child.getObjectProperties().values()
-                        .stream()
-                        .filter(filter)
-                        .collect(Collectors.toCollection(() -> properties)));
-            }
-        }
-
-        properties.forEach(property -> handleLang(lang, property));
-
+        Set<ObjectPropertyModel> properties = computeProperties(
+                true,
+                new HashSet<>(),
+                getClassModel(domain),
+                (classModel -> classModel.getObjectProperties().values().stream()),
+                includeSubClasses,
+                filter,
+                lang
+        );
         return new SPARQLTreeListModel<>(properties, TOP_OBJECT_PROPERTY_URI, true, true);
     }
+
+    public Set<DatatypePropertyModel> getLinkableDataProperties(URI domain, String lang) throws SPARQLInvalidURIException {
+
+        BiPredicate<DatatypePropertyModel,ClassModel> filter = (property,classModel) -> property.getRange() != null && ! classModel.getRestrictionsByProperties().containsKey(property.getUri());
+
+        return computeProperties(
+                true,
+                new HashSet<>(),
+                getClassModel(domain),
+                (classModel -> classModel.getDatatypeProperties().values().stream()),
+                false,
+                filter,
+                lang
+        );
+    }
+
+    public Set<ObjectPropertyModel> getLinkableObjectProperties(URI domain, String lang) throws SPARQLInvalidURIException {
+
+        BiPredicate<ObjectPropertyModel,ClassModel> filter = (property,classModel) -> property.getRange() != null && ! classModel.getRestrictionsByProperties().containsKey(property.getUri());
+
+        return computeProperties(
+                true,
+                new HashSet<>(),
+                getClassModel(domain),
+                (classModel -> classModel.getObjectProperties().values().stream()),
+                false,
+                filter,
+                lang
+        );
+    }
+
 
     @Override
     public AbstractPropertyModel<?> getProperty(URI uri, URI type, URI domain, String lang) throws SPARQLException {

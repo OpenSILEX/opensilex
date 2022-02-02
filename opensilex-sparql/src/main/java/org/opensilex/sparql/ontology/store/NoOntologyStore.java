@@ -9,7 +9,8 @@ import org.opensilex.sparql.ontology.dal.*;
 
 import java.net.URI;
 import java.util.Objects;
-import java.util.function.Predicate;
+import java.util.Set;
+import java.util.function.BiPredicate;
 
 /**
  * Implementation of Ontology storage based on the {@link OntologyDAO}
@@ -77,7 +78,7 @@ public class NoOntologyStore implements OntologyStore {
     }
 
     @Override
-    public SPARQLTreeListModel<DatatypePropertyModel> searchDataProperties(URI domain, String namePattern, String lang, boolean includeSubClasses, Predicate<DatatypePropertyModel> filter) throws SPARQLException {
+    public SPARQLTreeListModel<DatatypePropertyModel> searchDataProperties(URI domain, String namePattern, String lang, boolean includeSubClasses, BiPredicate<DatatypePropertyModel,ClassModel> filter) throws SPARQLException {
         try {
             return ontologyDAO.searchDataProperties(domain, namePattern, lang);
         } catch (Exception e) {
@@ -86,11 +87,21 @@ public class NoOntologyStore implements OntologyStore {
     }
 
     @Override
-    public SPARQLTreeListModel<ObjectPropertyModel> searchObjectProperties(URI domain, String namePattern, String lang, boolean includeSubClasses, Predicate<ObjectPropertyModel> filter) throws SPARQLException {
+    public SPARQLTreeListModel<ObjectPropertyModel> searchObjectProperties(URI domain, String namePattern, String lang, boolean includeSubClasses, BiPredicate<ObjectPropertyModel,ClassModel> filter) throws SPARQLException {
         try {
             return ontologyDAO.searchObjectProperties(domain, namePattern, lang);
         } catch (Exception e) {
             throw new SPARQLException(e);
         }
+    }
+
+    @Override
+    public Set<DatatypePropertyModel> getLinkableDataProperties(URI domain, String lang) throws SPARQLInvalidURIException {
+        return null;
+    }
+
+    @Override
+    public Set<ObjectPropertyModel> getLinkableObjectProperties(URI domain, String lang) throws SPARQLInvalidURIException {
+        return null;
     }
 }

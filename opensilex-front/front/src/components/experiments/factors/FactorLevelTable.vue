@@ -386,7 +386,7 @@ export default class FactorLevelTable extends Vue {
     return false;
   }
 
-  deleteFactorLevel(uri: string) : void {
+  deleteFactorLevel(uri: string) : any {
     console.debug("delete Factor Level" + uri);
     return this.service.deleteFactorLevel(uri);
   }

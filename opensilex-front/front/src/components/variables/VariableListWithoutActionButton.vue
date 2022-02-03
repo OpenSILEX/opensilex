@@ -70,7 +70,8 @@
                     :isSelectable="isSelectable"
                     :maximumSelectedRows="maximumSelectedRows"
                     labelNumberOfSelectedRow="VariableList.selected"
-                    :iconNumberOfSelectedRow="iconNumberOfSelectedRow">
+                    :iconNumberOfSelectedRow="iconNumberOfSelectedRow"
+                    :defaultPageSize="pageSize">
 
                     <template v-slot:cell(name)="{data}">
                         <opensilex-UriLink

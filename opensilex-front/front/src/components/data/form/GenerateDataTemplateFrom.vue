@@ -7,9 +7,25 @@
     @hide="requiredField = false"
     @show="shown()"
   >
-    <template v-slot:modal-ok>{{ $t("component.common.close") }}</template>
+    <!-- <template v-slot:modal-ok>{{ $t("component.common.close") }}</template> -->
     <template v-slot:modal-title>{{ $t("DataHelp.title") }}</template>
-
+    <template v-slot:modal-footer>
+      <b-button
+        v-if="variables.length == 0"
+        class="float-right"
+        @click="csvExportDataExample"
+        variant="outline-info"
+        :disabled="experiment==null && !validSelection"
+      >{{ $t("DataHelp.download-template-example") }}
+      </b-button>
+      <b-button 
+        @click="csvExport" 
+        variant="primary" 
+        :disabled="experiment==null && !validSelection || variables.length == 0">{{$t("OntologyCsvImporter.downloadTemplate")}}
+      </b-button>
+      &nbsp;
+      <font-awesome-icon icon="question-circle" v-b-tooltip.hover.right=" $t('DataTemplateForm.help') "/>
+    </template>
     <div>
       <ValidationObserver ref="validatorRefDataTemplate">
         <b-row>
@@ -60,7 +76,7 @@
             </opensilex-CSVSelectorInputForm>
           </b-col>
         </b-row>
-        <b-button 
+        <!-- <b-button 
           @click="csvExport" 
           variant="outline-primary" 
           :disabled="experiment==null && !validSelection || variables.length == 0">{{
@@ -75,8 +91,7 @@
           variant="outline-info"
           :disabled="experiment==null && !validSelection"
           >{{ $t("DataHelp.download-template-example") }}</b-button
-        >
-        <hr />
+        > -->
       </ValidationObserver>
     </div>
   </b-modal>

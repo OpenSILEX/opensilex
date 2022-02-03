@@ -173,7 +173,6 @@ export default class FactorDetails extends Vue {
 
     // Create csv content
     let csvContent =  rows.map(e => e.join(",")).join("\n");
-    console.log(csvContent);
     // download 
     let fileLink = document.createElement("a"); 
     var blob = new Blob([csvContent],{type: 'text/csv;charset=utf-8;'});

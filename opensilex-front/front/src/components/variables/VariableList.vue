@@ -181,6 +181,11 @@ import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
 import {
+  CharacteristicGetDTO,
+  EntityGetDTO,
+  InterestEntityGetDTO,
+  MethodGetDTO,
+  UnitGetDTO,
   VariablesGroupGetDTO,
   VariablesService
 } from "opensilex-core/index";

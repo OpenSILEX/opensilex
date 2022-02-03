@@ -14,7 +14,6 @@
 
                     <template v-slot:cell(name)="{data}">
                         <opensilex-UriLink
-                            v-if="!noActions"
                             :uri="data.item.uri"
                             :value="data.item.name"
                             :to="{path: '/variable/details/'+ encodeURIComponent(data.item.uri)}"
@@ -75,12 +74,30 @@
 </template>
 
 <script lang="ts">
-import {Component} from "vue-property-decorator";
+import {Vue, Component, Prop} from "vue-property-decorator";
 import VariableList from "./VariableList.vue";
 
 @Component
 export default class VariableListWithoutFilter extends VariableList {
+    @Prop()
+    filtre;
 
+    created(){
+        this.filter = this.filtre
+    }
+
+    // refresh() {
+    //     this.tableRef.selectAll = false;
+    //     this.tableRef.onSelectAll();
+    //     this.$opensilex.updateURLParameters(this.filter);
+    //     // Object.assign(this.filter,this.filtre);
+    //     this.tableRef.refresh();
+    // }
+
+    // reset(){
+    //     this.filter = this.filtre;
+    //     this.refresh();
+    // }
 }
 </script>
 

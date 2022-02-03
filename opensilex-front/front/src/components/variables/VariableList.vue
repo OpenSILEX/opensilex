@@ -3,7 +3,7 @@
         <opensilex-PageContent>
             <template>
 
-                <opensilex-SearchFilterField @clear="reset()" @search="refresh()" :showAdvancedSearch="true">
+                <opensilex-SearchFilterField @search="refresh()" @clear="reset()" :showAdvancedSearch="true">
                     <template v-slot:filters>
 
                         <opensilex-FilterField>
@@ -222,24 +222,36 @@ export default class VariableList extends Vue {
     @Prop()
     iconNumberOfSelectedRow;
 
-    @Prop()
-    pageSize;
-
-    @PropSync("searchFilter", {
-        default: () => {
-        return {
-            name: undefined,
-            entity: undefined,
-            entityOfInterest: undefined,
-            characteristic: undefined,
-            method: undefined,
-            unit: undefined,
-            group: undefined,
-            experiment: undefined
-        };
-        },
+    @Prop({
+        default: 20
     })
-    filter;
+    pageSize: number;
+
+    // @PropSync("searchFilter", {
+    //     default: () => {
+    //     return {
+    //         name: undefined,
+    //         entity: undefined,
+    //         entityOfInterest: undefined,
+    //         characteristic: undefined,
+    //         method: undefined,
+    //         unit: undefined,
+    //         group: undefined,
+    //         experiment: undefined
+    //     };
+    //     },
+    // })
+    // filter;
+    filter = {
+        name: undefined,
+        entity: undefined,
+        entityOfInterest: undefined,
+        characteristic: undefined,
+        method: undefined,
+        unit: undefined,
+        group: undefined,
+        experiment: undefined
+    };
 
     @Ref("groupVariableSelection") readonly groupVariableSelection!: any;
     @Ref("tableRef") readonly tableRef!: any;

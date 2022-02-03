@@ -22,7 +22,6 @@
         <opensilex-SearchFilterField
             @search="refresh()"
             @clear="$emit('clear')"
-            label="ScientificObjectList.filter.label"
             :showAdvancedSearch="true"
         >
             <template v-slot:filters>
@@ -101,8 +100,7 @@
         ref="varList"
         :isSelectable="true"
         :noActions="true"
-        :searchFilter.sync="filter"
-        :pageSize=5
+        :filtre="filter"
         >
         </opensilex-VariableListWithoutFilter>
     </div>
@@ -111,7 +109,8 @@
 
 <script lang="ts">
 import Vue from "vue";
-import { Component, Ref, Prop, PropSync } from "vue-property-decorator";
+import { Component, Ref, PropSync } from "vue-property-decorator";
+import VariableListWithoutFilter from "./VariableListWithoutFilter.vue";
 
 @Component
 export default class VariablesModalListByExp extends Vue {
@@ -133,7 +132,7 @@ export default class VariablesModalListByExp extends Vue {
   filter;
 
 
-  @Ref("varList") readonly varList!: any;
+  @Ref("varList") readonly varList!: VariableListWithoutFilter;
   @Ref("modalRef") readonly modalRef!: any;
 
   unSelect(row) {
@@ -156,24 +155,14 @@ export default class VariablesModalListByExp extends Vue {
     this.varList.refresh();
   }
 
-  reset() {
-    this.filter = {
-        name: undefined,
-        entity: undefined,
-        entityOfInterest: undefined,
-        characteristic: undefined,
-        method: undefined,
-        unit: undefined,
-        group: undefined,
-        experiment: undefined
-    };
-    this.refresh();
-  }
+  // reset(){
+  //   this.$emit('clear');
+  //   this.varList.reset();
+  // }
 
   refreshWithKeepingSelection() {
     this.varList.refreshWithKeepingSelection();
   }
-
 }
 </script>
 

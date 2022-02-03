@@ -167,20 +167,19 @@ export default class FactorDetails extends Vue {
       rows.push([
          level.uri,
           level.name,
-           level.description
+          ((level.description == null || undefined) ? "" : level.description)
       ])
     });
 
     // Create csv content
-    let csvContent = "data:text/csv;charset=utf-8," 
-    + rows.map(e => e.join(",")).join("\n");
-
-    // download
-    let encodedUri = encodeURI(csvContent);
+    let csvContent =  rows.map(e => e.join(",")).join("\n");
+    console.log(csvContent);
+    // download 
     let fileLink = document.createElement("a"); 
-    fileLink.href = encodedUri; 
+    var blob = new Blob([csvContent],{type: 'text/csv;charset=utf-8;'});
+    var url = URL.createObjectURL(blob);
+    fileLink.href = url;
     fileLink.setAttribute('download', 'export_'+ this.factor.name + '_factors_levels');
-    document.body.appendChild(fileLink);
     fileLink.click();
   }
 

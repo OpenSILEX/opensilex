@@ -91,7 +91,7 @@
         ref="soList"
         :isSelectable="true"
         :noActions="true"
-        :pageSize="10"
+        :pageSize="5"
         :searchFilter.sync="filter"
         :noUpdateURL="true"
       >

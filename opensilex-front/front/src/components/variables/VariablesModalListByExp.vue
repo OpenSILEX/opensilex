@@ -101,6 +101,7 @@
         :isSelectable="true"
         :noActions="true"
         :filtre="filter"
+        :pageSize="5"
         >
         </opensilex-VariableListWithoutFilter>
     </div>

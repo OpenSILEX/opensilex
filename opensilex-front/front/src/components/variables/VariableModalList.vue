@@ -21,7 +21,7 @@
         :noActions="true"
         :maximumSelectedRows="maximumSelectedRows"
         iconNumberOfSelectedRow="ik#ik-globe"
-
+        :pageSize="5"
       ></opensilex-VariableListWithoutActionButton>
     </div>
   </b-modal>

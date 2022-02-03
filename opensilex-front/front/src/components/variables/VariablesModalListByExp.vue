@@ -21,7 +21,7 @@
     <div class="card">
         <opensilex-SearchFilterField
             @search="refresh()"
-            @clear="$emit('clear')"
+            @clear="reset()"
             :showAdvancedSearch="true"
         >
             <template v-slot:filters>
@@ -100,7 +100,7 @@
         ref="varList"
         :isSelectable="true"
         :noActions="true"
-        :filtre="filter"
+        :experiment="filter.experiment"
         :pageSize="5"
         >
         </opensilex-VariableListWithoutFilter>
@@ -153,17 +153,25 @@ export default class VariablesModalListByExp extends Vue {
   }
 
   refresh() {
+    this.varList.filter = this.filter;
     this.varList.refresh();
   }
 
-  // reset(){
-  //   this.$emit('clear');
-  //   this.varList.reset();
-  // }
+  reset(){
+    this.filter.name = undefined;
+    this.filter.entity = undefined;
+    this.filter.entityOfInterest = undefined;
+    this.filter.characteristic = undefined;
+    this.filter.method = undefined;
+    this.filter.unit = undefined;
+    this.filter.group = undefined;
+    this.refresh();
+  }
 
   refreshWithKeepingSelection() {
     this.varList.refreshWithKeepingSelection();
   }
+
 }
 </script>
 

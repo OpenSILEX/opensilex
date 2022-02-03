@@ -228,6 +228,8 @@ export default class VariableList extends Vue {
     })
     pageSize: number;
 
+    @Prop()
+    experiment;
     // @PropSync("searchFilter", {
     //     default: () => {
     //     return {
@@ -327,7 +329,7 @@ export default class VariableList extends Vue {
             this.filter.method,
             this.filter.unit,
             this.filter.group,
-            this.filter.experiment,
+            this.experiment ? this.experiment : this.filter.experiment,
             options.orderBy,
             options.currentPage,
             options.pageSize

@@ -80,25 +80,7 @@ import VariableList from "./VariableList.vue";
 
 @Component
 export default class VariableListWithoutFilter extends VariableList {
-    @Prop()
-    filtre;
 
-    created(){
-        this.filter = this.filtre
-    }
-
-    // refresh() {
-    //     this.tableRef.selectAll = false;
-    //     this.tableRef.onSelectAll();
-    //     this.$opensilex.updateURLParameters(this.filter);
-    //     // Object.assign(this.filter,this.filtre);
-    //     this.tableRef.refresh();
-    // }
-
-    // reset(){
-    //     this.filter = this.filtre;
-    //     this.refresh();
-    // }
 }
 </script>
 

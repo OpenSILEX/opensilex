@@ -9,11 +9,15 @@ import org.opensilex.OpenSilex;
 import org.opensilex.OpenSilexModuleNotFoundException;
 import org.opensilex.server.ServerModule;
 import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.ontology.store.DefaultOntologyStore;
+import org.opensilex.sparql.ontology.store.NoOntologyStore;
 import org.opensilex.sparql.ontology.store.OntologyStore;
 import org.opensilex.sparql.service.SPARQLService;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
@@ -173,13 +177,29 @@ public class SPARQLModule extends OpenSilexModule {
         factory.dispose(sparql);
     }
 
+    private static final String ONTOLOGY_STORE_LOAD_SUCCESS_MSG = "Ontology store loaded with success. Duration: {} ms";
+
+
     private static void initOntologyStore(OpenSilex openSilex, SPARQLService sparql) throws SPARQLException, OpenSilexModuleNotFoundException {
 
-        if(sparql == null){
+        if (sparql == null) {
             return;
         }
-        ontologyStore = new DefaultOntologyStore(sparql,openSilex);
-        ontologyStore.load();
+
+        SPARQLConfig sparqlConfig = openSilex.getModuleConfig(SPARQLModule.class, SPARQLConfig.class);
+
+        if (sparqlConfig.enableOntologyStore()) {
+            Instant begin = Instant.now();
+
+            ontologyStore = new DefaultOntologyStore(sparql, openSilex);
+            ontologyStore.load();
+
+            long durationMs = Duration.between(begin, Instant.now()).toMillis();
+            LOGGER.info(ONTOLOGY_STORE_LOAD_SUCCESS_MSG, durationMs);
+        } else {
+            ontologyStore = new NoOntologyStore(new OntologyDAO(sparql));
+        }
+
     }
 
     public static OntologyStore getOntologyStoreInstance(){

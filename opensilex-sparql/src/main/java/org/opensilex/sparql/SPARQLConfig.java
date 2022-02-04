@@ -60,4 +60,9 @@ public interface SPARQLConfig {
             defaultBoolean = false
     )
     boolean enableSHACL();
+
+    @ConfigDescription(
+            value = "Enable optimized storage in RAM of ontologies classes, properties and restrictions"
+    )
+    boolean enableOntologyStore();
 }

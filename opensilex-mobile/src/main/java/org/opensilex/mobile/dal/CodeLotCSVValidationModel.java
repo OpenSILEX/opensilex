@@ -7,13 +7,15 @@
 package org.opensilex.mobile.dal;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.opensilex.core.csv.dal.CSVCell;
+import org.opensilex.core.csv.dal.error.CSVValidationModel;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.opensilex.core.ontology.dal.CSVCell;
-import org.opensilex.core.ontology.dal.CSVValidationModel;
+
 
 /**
  *

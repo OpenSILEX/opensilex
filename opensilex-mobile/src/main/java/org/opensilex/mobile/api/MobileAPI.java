@@ -54,9 +54,9 @@ import javax.ws.rs.core.Response;
 
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.opensilex.core.csv.dal.CSVCell;
 import org.opensilex.core.exception.DateMappingExceptionResponse;
 import org.opensilex.core.exception.DateValidationException;
-import org.opensilex.core.ontology.dal.CSVCell;
 import org.opensilex.mobile.dal.*;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.exceptions.NoSQLTooLargeSetException;

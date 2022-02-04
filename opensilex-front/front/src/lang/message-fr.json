@@ -560,6 +560,9 @@
                 "siteMustHaveParent": "Un site doit avoir au moins une organisation parente.",
                 "siteFacilityInvalidAddress": "Le site '{site}' et l'installation technique '{facility}' doivent avoir la même adresse."
             }
+        },
+        "facility": {
+            "filter-placeholder": "Rechercher des installations techniques..."
         }
     },
     "credential-groups": {

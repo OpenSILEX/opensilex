@@ -555,6 +555,9 @@
                 "siteMustHaveParent": "A site must have at least one parent organization.",
                 "siteFacilityInvalidAddress": "The site '{site}' and the facility '{facility}' must have the same address."
             }
+        },
+        "facility": {
+            "filter-placeholder": "Search facilities..."
         }
     },
     "credential-groups": {

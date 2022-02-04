@@ -24,6 +24,12 @@
       </div>
     </template>
 
+    <opensilex-StringFilter
+        :filter.sync="filter"
+        @update="updateFilter()"
+        placeholder="component.facility.filter-placeholder"
+    ></opensilex-StringFilter>
+
     <b-table
       striped
       hover
@@ -153,6 +159,8 @@ export default class InfrastructureFacilitiesView extends Vue {
   })
   withActions: boolean;
 
+  filter: string = "";
+
   get user() {
     return this.$store.state.user;
   }
@@ -218,7 +226,7 @@ export default class InfrastructureFacilitiesView extends Vue {
       return;
     }
 
-    return this.service.searchInfrastructureFacilities()
+    return this.service.searchInfrastructureFacilities(this.filter)
         .then((http: HttpResponse<OpenSilexResponse<Array<InfrastructureFacilityGetDTO>>>) => {
           this.fetchedFacilities = http.response.result;
         }).then(() => {
@@ -250,6 +258,10 @@ export default class InfrastructureFacilitiesView extends Vue {
 
   onCreate() {
     this.$emit("onCreate");
+  }
+
+  updateFilter() {
+    this.refresh();
   }
 }
 </script>

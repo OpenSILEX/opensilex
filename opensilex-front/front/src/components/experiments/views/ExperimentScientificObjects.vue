@@ -3,14 +3,14 @@
     <opensilex-PageActions>
       <opensilex-CreateButton
         v-if="
-          user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)
+          user.hasCredential(credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID)
         "
         @click="soForm.createScientificObject()"
         label="ExperimentScientificObjects.create-scientific-object"
       ></opensilex-CreateButton>&nbsp;
       <opensilex-CreateButton
         v-if="
-          user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)
+          user.hasCredential(credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID)
         "
         @click="importForm.show()"
         label="OntologyCsvImporter.import"

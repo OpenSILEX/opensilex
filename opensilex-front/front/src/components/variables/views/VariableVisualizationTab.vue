@@ -15,6 +15,8 @@
         v-if="isGraphicLoaded"
         ref="visuGraphic"
         :deviceType="false"
+        :lType="true"
+        :lWidth="true"
         :activateContextMenuShow="false"
     ></opensilex-DataVisuGraphic>
   </div>

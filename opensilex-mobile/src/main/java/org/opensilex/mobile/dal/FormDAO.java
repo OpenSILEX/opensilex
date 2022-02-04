@@ -24,18 +24,11 @@ import org.opensilex.utils.OrderBy;
  * @author Maximilian Hart
  */
 public class FormDAO {
-<<<<<<< HEAD
+
     public static final String FORM_COLLECTION_NAME = "forms";
     public static final String FORM_PREFIX = "id/forms";
     protected final MongoDBService nosql;
 
-=======
-    public static final String FORM_COLLECTION_NAME = "form";
-    public static final String FORM_PREFIX = "form";
-
-    protected final MongoDBService nosql; 
-     
->>>>>>> master
     public FormDAO(MongoDBService nosql ) {
         this.nosql = nosql;
     }

@@ -77,7 +77,7 @@
                         <opensilex-UriLink
                             :uri="data.item.uri"
                             :value="data.item.name"
-                            :to="{path: '/variable/details/'+ encodeURIComponent(data.item.uri)}"
+                            :url="'/variable/details/'+ encodeURIComponent(data.item.uri)"
                         ></opensilex-UriLink>
                     </template>
                     <template v-slot:row-details="{data}">
@@ -97,35 +97,6 @@
                     <template v-slot:cell(_characteristic_name)="{data}">{{ data.item.characteristic.name }}</template>
                     <template v-slot:cell(_method_name)="{data}">{{ data.item.method.name }}</template>
                     <template v-slot:cell(_unit_name)="{data}">{{data.item.unit.name }}</template>
-
-                    <template v-slot:cell(actions)="{data}">
-                        <b-button-group size="sm">
-                            <opensilex-DetailButton
-                                @click="loadVariablesGroupFromVariable(data)"
-                                label="component.common.details-label"
-                                :detailVisible="data.detailsShowing"
-                                :small="true"
-                            ></opensilex-DetailButton>
-                            <opensilex-EditButton
-                                v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
-                                @click="$emit('onEdit', data.item.uri)"
-                                label="component.common.list.buttons.update"
-                                :small="true"
-                            ></opensilex-EditButton>
-                            <opensilex-InteroperabilityButton
-                                v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
-                                :small="true"
-                                label="component.common.list.buttons.interoperability"
-                                @click="$emit('onInteroperability', data.item.uri)"
-                            ></opensilex-InteroperabilityButton>
-                            <opensilex-DeleteButton
-                                v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_DELETE_ID)"
-                                @click="$emit('onDelete', data.item.uri)"
-                                label="component.common.list.buttons.delete"
-                                :small="true"
-                            ></opensilex-DeleteButton>
-                        </b-button-group>
-                    </template>
                 </opensilex-TableAsyncView>
 
             </template>

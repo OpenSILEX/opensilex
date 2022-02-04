@@ -17,6 +17,7 @@ public class FormGetDTO extends FormUpdateDTO{
         formGetDTO.setOffset(model.getOffset());
         formGetDTO.setSectionUris(model.getSectionUris());
         formGetDTO.setParents(model.getParents());
+
         return formGetDTO;
     }
 }

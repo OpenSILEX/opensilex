@@ -9,6 +9,7 @@
     <opensilex-PageActions>
       <template v-slot>
         <opensilex-CreateButton
+            v-if="user.hasCredential(credentials.CREDENTIAL_PROVENANCE_MODIFICATION_ID)"
           @click="createProvenance()"
           label="ProvenanceView.add"
         ></opensilex-CreateButton>
@@ -136,33 +137,27 @@ export default class ProvenanceView extends Vue {
   }
 
   deleteProvenance(uri: string) {
-    console.debug("deleteProvenance " + uri);
+    console.log("deleteProvenance " + uri);
 
     this.service
-      .getUsedProvenances(null, null, null, null)
-      .then(http => {
-        let results = http.response.result;
-        if (results.length > 0) {
-          for (let result of results) {
-           let provURI = result.uri;
-            if (provURI != null && provURI == uri) {
-              this.$opensilex.showErrorToast(this.$i18n.t("ProvenanceView.associated-data-error"));
-            }}
+      .deleteProvenance(uri)
+      .then(() => {
+        this.provList.refresh();
+        let message =
+          this.$i18n.t("ProvenanceView.title") +
+          " " +
+          uri +
+          " " +
+          this.$i18n.t("component.common.success.delete-success-message");
+        this.$opensilex.showSuccessToast(message);
+      })
+      .catch((error) => {
+        if (error.response.result.message) {
+          this.$opensilex.errorHandler(error, error.response.result.message);
         } else {
-          this.service.deleteProvenance(uri)
-          .then(() => {
-            this.provList.refresh();
-            let message =
-              this.$i18n.t("ProvenanceView.title") +
-              " " +
-              uri +
-              " " +
-              this.$i18n.t("component.common.success.delete-success-message");
-            this.$opensilex.showSuccessToast(message);
-          })
-          .catch(this.$opensilex.errorHandler);
-          }
-      }); 
+          this.$opensilex.errorHandler(error);
+        }
+      });
   }
 
   successMessage(form) {

@@ -5,30 +5,15 @@
  */
 package org.opensilex.core.scientificObject.dal;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.util.*;
-import java.util.function.Function;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.trie.PatriciaTrie;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.jena.arq.querybuilder.AbstractQueryBuilder;
+import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
+import org.apache.jena.arq.querybuilder.clauses.WhereClause;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -41,34 +26,37 @@ import org.apache.jena.sparql.path.Path;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.OpenSilex;
-import org.opensilex.core.event.dal.move.TargetPositionModel;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveModel;
+import org.opensilex.core.event.dal.move.TargetPositionModel;
 import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.exception.DuplicateNameListException;
+import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
+import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
-import org.opensilex.core.ontology.dal.ClassModel;
-import org.opensilex.core.ontology.dal.OntologyDAO;
 import org.opensilex.core.ontology.dal.SPARQLRelationFetcher;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
 import org.opensilex.core.scientificObject.api.ScientificObjectNodeDTO;
 import org.opensilex.core.scientificObject.api.ScientificObjectNodeWithChildrenDTO;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.sparql.deserializer.DateDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.exceptions.SPARQLInvalidModelException;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapperIndex;
 import org.opensilex.sparql.mapping.SPARQLListFetcher;
 import org.opensilex.sparql.model.*;
 import org.opensilex.sparql.model.time.InstantModel;
+import org.opensilex.sparql.ontology.dal.ClassModel;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
-import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
@@ -76,6 +64,19 @@ import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.ThrowingConsumer;
 import org.opensilex.utils.ThrowingFunction;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
 /**
  *
@@ -130,7 +131,11 @@ public class ScientificObjectDAO {
 
     public ListWithPagination<ScientificObjectNodeWithChildrenDTO> searchChildren(ScientificObjectSearchFilter searchFilter) throws Exception {
 
-        searchFilter.setOnlyFetchOsWithNoParent(true);
+        if(!searchFilter.getRdfTypes().isEmpty() || !searchFilter.getFactorLevels().isEmpty() || !searchFilter.getPattern().isEmpty() && !searchFilter.getPattern().equals(".*") || searchFilter.getFacility() != null) {
+            searchFilter.setOnlyFetchOsWithNoParent(false);
+        } else {
+            searchFilter.setOnlyFetchOsWithNoParent(true);
+        }
 
         ListWithPagination<ScientificObjectNodeDTO> results = searchAsDto(searchFilter);
         if(results.getList().isEmpty()){
@@ -669,7 +674,6 @@ public class ScientificObjectDAO {
     /**
      *
      * @param contextURI object graph
-     * @param uriGenerationPrefix uri prefix
      * @param soType object type
      * @param objectURI object uri
      * @param name object name
@@ -678,30 +682,18 @@ public class ScientificObjectDAO {
      * @return the URI of the created object
      * @throws DuplicateNameException if some object with the same name exist into the given graph
      */
-    public URI create(URI contextURI, URI uriGenerationPrefix, URI soType, URI objectURI, String name, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws DuplicateNameException, Exception {
+    public ScientificObjectModel create(URI contextURI, ExperimentModel experiment, URI soType, URI objectURI, String name, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws DuplicateNameException, Exception {
 
         checkUniqueNameByGraph(contextURI,name,null,true);
 
         Node graphNode = SPARQLDeserializers.nodeURI(contextURI);
 
-        if (objectURI == null) {
-            ScientificObjectURIGenerator uriGenerator = new ScientificObjectURIGenerator(uriGenerationPrefix);
-            int retry = 0;
-            objectURI = uriGenerator.generateURI(contextURI.toString(), name, retry);
-            while (sparql.uriExists(graphNode, objectURI)) {
-                retry++;
-                objectURI = uriGenerator.generateURI(contextURI.toString(), name, retry);
-            }
-        }
-
-        ScientificObjectModel object = initObject(contextURI, soType, name, relations, currentUser);
-        object.setUri(objectURI);
+        ScientificObjectModel object = initObject(contextURI, experiment, soType, name, relations, currentUser);
 
         try {
             sparql.startTransaction();
             nosql.startTransaction();
             sparql.create(graphNode, object);
-            objectURI = object.getUri();
 
             MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
             MoveModel facilityMoveEvent = new MoveModel();
@@ -716,7 +708,7 @@ public class ScientificObjectDAO {
             sparql.rollbackTransaction(ex);
         }
 
-        return objectURI;
+        return object;
     }
 
     public static boolean fillFacilityMoveEvent(MoveModel facilityMoveEvent, SPARQLResourceModel object) throws Exception {
@@ -773,7 +765,7 @@ public class ScientificObjectDAO {
 
         checkUniqueNameByGraph(contextURI,name,objectURI,false);
 
-        SPARQLResourceModel object = initObject(contextURI, soType, name, relations, currentUser);
+        SPARQLResourceModel object = initObject(contextURI, null, soType, name, relations, currentUser);
         object.setUri(objectURI);
 
         Node graphNode = SPARQLDeserializers.nodeURI(contextURI);
@@ -855,22 +847,22 @@ public class ScientificObjectDAO {
         return object.getUri();
     }
 
-    private ScientificObjectModel initObject(URI contextURI, URI soType, String name, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws Exception {
+    private ScientificObjectModel initObject(URI contextURI, ExperimentModel xp, URI soType, String name, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws Exception {
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
         ClassModel model = ontologyDAO.getClassModel(soType, new URI(Oeso.ScientificObject.getURI()), currentUser.getLanguage());
 
         ScientificObjectModel object = new ScientificObjectModel();
         object.setType(soType);
+        object.setName(name);
 
         if (relations != null) {
             for (RDFObjectRelationDTO relation : relations) {
-                if (!ontologyDAO.validateObjectValue(contextURI, model, relation.getProperty(), relation.getValue(), object)) {
+                URI propertyShortURI = new URI(SPARQLDeserializers.getShortURI(relation.getProperty()));
+                if (!ontologyDAO.validateObjectValue(contextURI, model, propertyShortURI, relation.getValue(), object)) {
                     throw new InvalidValueException("Invalid relation value for " + relation.getProperty().toString() + " => " + relation.getValue());
                 }
             }
         }
-
-        object.addRelation(contextURI, new URI(RDFS.label.getURI()), String.class, name);
 
         return object;
     }

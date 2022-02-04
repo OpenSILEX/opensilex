@@ -16,7 +16,7 @@ import java.net.URI;
 @SPARQLResource(
         ontology = Oeso.class,
         resource = "Entity",
-        graph = "set/variables"
+        graph = VariableModel.GRAPH
 )
 public class EntityModel extends BaseVariableModel<EntityModel> {
 
@@ -28,9 +28,8 @@ public class EntityModel extends BaseVariableModel<EntityModel> {
     }
 
     @Override
-    public String[] getUriSegments(EntityModel instance) {
+    public String[] getInstancePathSegments(EntityModel instance) {
         return new String[]{
-                "variable",
                 "entity",
                 instance.getName()
         };

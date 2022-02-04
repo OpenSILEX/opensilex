@@ -5,10 +5,7 @@
 //******************************************************************************
 package org.opensilex.core.organisation.dal;
 
-import java.net.URI;
-import java.util.*;
-import java.util.stream.Collectors;
-
+import com.mongodb.client.model.geojson.Geometry;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.ExprFactory;
@@ -20,24 +17,32 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.path.P_Link;
 import org.apache.jena.sparql.path.P_ZeroOrMore1;
-import org.apache.jena.sparql.vocabulary.FOAF;
-import org.apache.jena.vocabulary.DCTerms;
-import org.apache.jena.vocabulary.RDF;
-import org.opensilex.sparql.exceptions.SPARQLInvalidModelException;
 import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.external.geocoding.GeocodingService;
+import org.opensilex.core.external.geocoding.OpenStreetMapGeocodingService;
+import org.opensilex.core.geospatial.dal.GeospatialDAO;
+import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.organisation.api.facitity.FacilityAddressDTO;
+import org.opensilex.core.organisation.api.site.SiteAddressDTO;
+import org.opensilex.core.organisation.api.site.SiteDAO;
+import org.opensilex.core.organisation.exception.SiteFacilityInvalidAddressException;
+import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
 import org.opensilex.security.authentication.NotFoundURIException;
-import org.opensilex.security.authentication.SecurityOntology;
 import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
-import org.opensilex.sparql.service.SPARQLQueryHelper;
-import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
+
+import java.net.URI;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
@@ -47,9 +52,27 @@ import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 public class InfrastructureDAO {
 
     protected final SPARQLService sparql;
+    protected final MongoDBService nosql;
+    protected final GeocodingService geocodingService;
 
-    public InfrastructureDAO(SPARQLService sparql) {
+    protected final OrganizationSPARQLHelper organizationSPARQLHelper;
+
+    protected final GeospatialDAO geospatialDAO;
+    protected final SiteDAO siteDAO;
+
+    protected final URI addressGraphURI;
+
+    public InfrastructureDAO(SPARQLService sparql, MongoDBService nosql) throws Exception {
         this.sparql = sparql;
+        this.nosql = nosql;
+
+        this.organizationSPARQLHelper = new OrganizationSPARQLHelper(sparql);
+
+        this.geospatialDAO = new GeospatialDAO(nosql);
+        this.geocodingService = new OpenStreetMapGeocodingService();
+        this.siteDAO = new SiteDAO(sparql, nosql, this);
+
+        addressGraphURI = sparql.getDefaultGraphURI(InfrastructureModel.class);
     }
 
     public List<InfrastructureModel> search(String pattern, List<URI> organizationsRestriction, UserModel user) throws Exception {
@@ -91,7 +114,7 @@ public class InfrastructureDAO {
         }
 
         AskBuilder ask = sparql.getUriExistsQuery(InfrastructureModel.class, infrastructureURI);
-        addAskInfrastructureAccess(ask, null, SPARQLDeserializers.nodeURI(infrastructureURI), user);
+        addAskInfrastructureAccess(ask, null, infrastructureURI, user);
 
         if (!sparql.executeAskQuery(ask)) {
             throw new ForbiddenURIAccessException(infrastructureURI);
@@ -105,7 +128,9 @@ public class InfrastructureDAO {
         }
 
         SelectBuilder askFacilityAccess = sparql.getUriListExistQuery(InfrastructureFacilityModel.class, facilityUris);
-        addAskInfrastructureAccess(askFacilityAccess, null, makeVar(InfrastructureFacilityModel.INFRASTRUCTURE_FIELD), user);
+        Var orgVar = makeVar(InfrastructureFacilityModel.INFRASTRUCTURE_FIELD);
+        askFacilityAccess.addWhere(orgVar, Oeso.isHosted, makeVar(InfrastructureFacilityModel.URI_FIELD));
+        addAskInfrastructureAccess(askFacilityAccess, orgVar, null, user);
 
         for (SPARQLResult result : sparql.executeSelectQuery(askFacilityAccess)) {
             boolean value = Boolean.parseBoolean(result.getStringValue(SPARQLService.EXISTING_VAR));
@@ -128,10 +153,45 @@ public class InfrastructureDAO {
         }
 
         AskBuilder ask = sparql.getUriExistsQuery(InfrastructureFacilityModel.class, infrastructureFacilityURI);
-        addAskInfrastructureAccess(ask, makeVar(InfrastructureFacilityModel.INFRASTRUCTURE_FIELD), null, user);
+        Var orgVar = makeVar(InfrastructureFacilityModel.INFRASTRUCTURE_FIELD);
+        ask.addWhere(orgVar, Oeso.isHosted, SPARQLDeserializers.nodeURI(infrastructureFacilityURI));
+        addAskInfrastructureAccess(ask, orgVar, null, user);
 
         if (!sparql.executeAskQuery(ask)) {
             throw new ForbiddenURIAccessException(infrastructureFacilityURI);
+        }
+    }
+
+    /**
+     * Checks if a facility address is valid (it must be the same as its sites).
+     *
+     * @param facilityModel The facility
+     * @param user The user
+     * @throws SiteFacilityInvalidAddressException if the address is invalid
+     */
+    protected void validateFacilityAddress(InfrastructureFacilityModel facilityModel, UserModel user) throws Exception {
+        if (facilityModel.getUri() == null) {
+            return;
+        }
+
+        if (facilityModel.getAddress() == null) {
+            return;
+        }
+
+        List<SiteModel> siteModelList = this.siteDAO.getSitesByFacility(facilityModel.getUri(), user);
+
+        for (SiteModel siteModel : siteModelList) {
+            if (siteModel.getAddress() != null) {
+                FacilityAddressDTO facilityAddress = new FacilityAddressDTO();
+                facilityAddress.fromModel(facilityModel.getAddress());
+
+                SiteAddressDTO siteAddress = new SiteAddressDTO();
+                siteAddress.fromModel(siteModel.getAddress());
+
+                if (!Objects.equals(facilityAddress, siteAddress)) {
+                    throw new SiteFacilityInvalidAddressException(siteModel.getName(), facilityModel.getName());
+                }
+            }
         }
     }
 
@@ -142,7 +202,7 @@ public class InfrastructureDAO {
      * cycle in the hierarchy graph (for example, adding a child organization as a parent creates a cycle).
      *
      * @param model the organization to update
-     * @throws SPARQLInvalidModelException if a cycle is found
+     * @throws BadRequestException if a cycle is found
      */
     protected void validateOrganizationHierarchy(InfrastructureModel model) throws Exception {
         AskBuilder ask = sparql.getUriExistsQuery(InfrastructureModel.class, model.getUri());
@@ -166,7 +226,7 @@ public class InfrastructureDAO {
         SPARQLQueryHelper.addWhereUriValues(ask, childrenVar.getVarName(), parentUriList);
 
         if (sparql.executeAskQuery(ask)) {
-            throw new SPARQLInvalidModelException("Invalid organization model : parents cannot be children of the organization");
+            throw new BadRequestException("Invalid organization model : parents cannot be children of the organization");
         }
     }
 
@@ -189,10 +249,9 @@ public class InfrastructureDAO {
      * @param user
      * @throws Exception
      */
-    protected void addAskInfrastructureAccess(WhereClause<?> where, Var uriVar, Object orgUri, UserModel user) throws Exception {
-        Var userProfileVar = makeVar("_userProfile");
+    protected void addAskInfrastructureAccess(WhereClause<?> where, Var uriVar, URI orgUri, UserModel user) throws Exception {
         Var userVar = makeVar("_userURI");
-        Var parentVar = makeVar("_parent");
+        Node orgUriNode = SPARQLDeserializers.nodeURI(orgUri);
 
         /*
         We'll build a quite complicated request. It will look like this :
@@ -233,11 +292,7 @@ public class InfrastructureDAO {
 
         // This first where clause is used to retrieve all users in the associated groups of the organizations, or the
         // associated groups of the ascendant organizations in the hierarchy.
-        WhereBuilder userProfileGroup = new WhereBuilder();
-        userProfileGroup.addWhere(parentVar, new P_ZeroOrMore1(new P_Link(Oeso.hasPart.asNode())), uriVar != null ? uriVar : orgUri);
-        userProfileGroup.addWhere(parentVar, SecurityOntology.hasGroup.asNode(), makeVar(InfrastructureModel.GROUP_FIELD));
-        userProfileGroup.addWhere(makeVar(InfrastructureModel.GROUP_FIELD), SecurityOntology.hasUserProfile.asNode(), userProfileVar);
-        userProfileGroup.addWhere(userProfileVar, SecurityOntology.hasUser.asNode(), userVar);
+        WhereBuilder userProfileGroup = organizationSPARQLHelper.buildOrganizationGroupUserClause(uriVar != null ? uriVar : orgUriNode, userVar);
         userInGroupOrCreator.addOptional(userProfileGroup);
         Expr isInGroup = SPARQLQueryHelper.and(
                 SPARQLQueryHelper.bound(userVar),
@@ -245,7 +300,7 @@ public class InfrastructureDAO {
 
         // Retrieve the creator of the organizations
         Var creatorVar = makeVar(ExperimentModel.CREATOR_FIELD);
-        userInGroupOrCreator.addOptional(uriVar != null ? uriVar : orgUri, DCTerms.creator.asNode(), creatorVar);
+        userInGroupOrCreator.addOptional(organizationSPARQLHelper.buildOrganizationCreatorClause(uriVar != null ? uriVar : orgUriNode, creatorVar));
         Expr isCreator = SPARQLQueryHelper.and(
                 SPARQLQueryHelper.bound(creatorVar),
                 SPARQLQueryHelper.eq(creatorVar, user.getUri()));
@@ -254,53 +309,27 @@ public class InfrastructureDAO {
         userInGroupOrCreator.addFilter(SPARQLQueryHelper.or(isInGroup, isCreator));
 
         // Here we create the nested select clause
-        Var nestedParentVar = makeVar("_parent");
-        Var nestedGroupVar = makeVar("_group");
-        Var nestedTypeFieldVar = makeVar("_rdfType");
         Var nestedUriVar = uriVar != null
                 ? uriVar
                 : makeVar(InfrastructureModel.URI_FIELD);
-        SelectBuilder noGroupSelect2 = new SelectBuilder();
-        noGroupSelect2.setDistinct(true);
-        noGroupSelect2.addVar(nestedUriVar);
+        SelectBuilder noGroupSelect = organizationSPARQLHelper.buildNoGroupOrganizationSelect(nestedUriVar, orgUri);
 
-        // The type clause for Organizations
-        noGroupSelect2.addWhere(nestedTypeFieldVar, Ontology.subClassAny, FOAF.Organization);
-        noGroupSelect2.addGraph(sparql.getDefaultGraph(InfrastructureModel.class),
-                nestedUriVar, RDF.type, nestedTypeFieldVar);
-
-        // The where clause to retrieve the groups of the organization
-        WhereBuilder noGroupWhere = new WhereBuilder();
-        noGroupWhere.addWhere(nestedParentVar, new P_ZeroOrMore1(new P_Link(Oeso.hasPart.asNode())), nestedUriVar);
-        noGroupWhere.addWhere(nestedParentVar, SecurityOntology.hasGroup.asNode(), nestedGroupVar);
-        noGroupSelect2.addOptional(noGroupWhere);
-
-        if (orgUri != null) {
-            noGroupSelect2.addWhereValueVar(nestedUriVar);
-            noGroupSelect2.addWhereValueRow(orgUri);
-        }
-        // At the end of the nested select, we only keep those who don't have any group
-        noGroupSelect2.addGroupBy(nestedUriVar);
-
-        // append HAVING(COUNT(?_group) = 0) Expr
-        Expr noGroupEqExpr = SPARQLQueryHelper.countEqExpr(nestedGroupVar,false,0);
-        noGroupSelect2.addHaving(noGroupEqExpr);
 
         // Create the union
-        userInGroupOrCreator.addUnion(noGroupSelect2);
+        userInGroupOrCreator.addUnion(noGroupSelect);
 
         where.addWhere(userInGroupOrCreator);
     }
 
     /**
-     * Get all organizations accessible by a giver user. See {@link #addAskInfrastructureAccess(WhereClause, Var, Object, UserModel)}
+     * Get all organizations accessible by a giver user. See {@link #addAskInfrastructureAccess(WhereClause, Var, URI, UserModel)}
      * for further information on the conditions for an organization to be considered accessible.
      *
      * @param user
      * @return
      * @throws Exception
      */
-    protected Set<URI> getUserInfrastructures(UserModel user) throws Exception {
+    public Set<URI> getUserInfrastructures(UserModel user) throws Exception {
         if (user == null || user.isAdmin()) {
             return null;
         }
@@ -340,6 +369,8 @@ public class InfrastructureDAO {
     }
 
     public InfrastructureFacilityModel createFacility(InfrastructureFacilityModel instance, UserModel user) throws Exception {
+        validateFacilityAddress(instance, user);
+
         String lang = null;
         if (user != null) {
             lang = user.getLanguage();
@@ -347,6 +378,9 @@ public class InfrastructureDAO {
         List<InfrastructureModel> infrastructureModels = sparql.getListByURIs(InfrastructureModel.class, instance.getInfrastructureUris(), lang);
         instance.setInfrastructures(infrastructureModels);
         sparql.create(instance);
+
+        createFacilityGeospatialModel(instance);
+
         return instance;
     }
 
@@ -421,15 +455,72 @@ public class InfrastructureDAO {
 
     public void deleteFacility(URI uri, UserModel user) throws Exception {
         validateInfrastructureFacilityAccess(uri, user);
+
+        InfrastructureFacilityModel model = sparql.getByURI(InfrastructureFacilityModel.class, uri, user.getLanguage());
+        URI graphUri = sparql.getDefaultGraphURI(InfrastructureModel.class);
+
+        // Must delete the associated address if there is one
+        if (model.getAddress() != null) {
+            if (this.geospatialDAO.getGeometryByURI(uri, graphUri) != null) {
+                this.geospatialDAO.delete(uri, graphUri);
+            }
+
+            sparql.delete(FacilityAddressModel.class, model.getAddress().getUri());
+        }
+
         sparql.delete(InfrastructureFacilityModel.class, uri);
     }
 
     public InfrastructureFacilityModel updateFacility(InfrastructureFacilityModel instance, UserModel user) throws Exception {
         validateInfrastructureFacilityAccess(instance.getUri(), user);
+        validateFacilityAddress(instance, user);
+
         List<InfrastructureModel> infrastructureModels = sparql.getListByURIs(InfrastructureModel.class, instance.getInfrastructureUris(), user.getLanguage());
         instance.setInfrastructures(infrastructureModels);
-        sparql.deleteByURI(sparql.getDefaultGraph(InfrastructureFacilityModel.class), instance.getUri());
-        sparql.create(instance);
+
+        URI graphUri = sparql.getDefaultGraphURI(InfrastructureModel.class);
+
+        InfrastructureFacilityModel existingModel = sparql.getByURI(InfrastructureFacilityModel.class, instance.getUri(), user.getLanguage());
+
+        if (existingModel.getAddress() != null) {
+            if (this.geospatialDAO.getGeometryByURI(instance.getUri(), graphUri) != null) {
+                this.geospatialDAO.delete(instance.getUri(), graphUri);
+            }
+
+            sparql.delete(FacilityAddressModel.class, existingModel.getAddress().getUri());
+        }
+
+        createFacilityGeospatialModel(instance);
+
+        sparql.update(instance);
         return instance;
+    }
+
+    public GeospatialModel getFacilityGeospatialModel(URI facilityUri) {
+        return geospatialDAO.getGeometryByURI(facilityUri, addressGraphURI);
+    }
+
+    private void createFacilityGeospatialModel(InfrastructureFacilityModel facility) {
+        if (facility.getAddress() == null) {
+            return;
+        }
+
+        FacilityAddressDTO addressDto = new FacilityAddressDTO();
+        addressDto.fromModel(facility.getAddress());
+
+        Geometry geom = geocodingService.getPointFromAddress(addressDto.toReadableAddress());
+
+        if (geom == null) {
+            return;
+        }
+
+        GeospatialModel geospatialModel = new GeospatialModel();
+        geospatialModel.setUri(facility.getUri());
+        geospatialModel.setName(facility.getName());
+        geospatialModel.setRdfType(facility.getType());
+        geospatialModel.setGraph(addressGraphURI);
+        geospatialModel.setGeometry(geom);
+
+        this.geospatialDAO.create(geospatialModel);
     }
 }

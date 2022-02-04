@@ -9,14 +9,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import io.swagger.annotations.*;
-import java.io.IOException;
-import java.io.StringWriter;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
-import org.opensilex.core.data.dal.DataDAO;
+import org.opensilex.core.URIsListPostDTO;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
@@ -27,10 +24,9 @@ import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
-import org.opensilex.server.response.ErrorResponse;
-import org.opensilex.server.response.ObjectUriResponse;
-import org.opensilex.server.response.PaginatedListResponse;
-import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.server.response.*;
+import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
+import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.service.SPARQLService;
@@ -44,15 +40,15 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
+import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
-import org.opensilex.core.URIsListPostDTO;
-
-import org.opensilex.server.response.ErrorDTO;
-import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 @Api(VariableAPI.CREDENTIAL_VARIABLE_GROUP_ID)
 @Path(VariableAPI.PATH)
@@ -68,10 +64,10 @@ public class VariableAPI {
     public static final String CREDENTIAL_VARIABLE_GROUP_LABEL_KEY = "credential-groups.variables";
 
     public static final String CREDENTIAL_VARIABLE_MODIFICATION_ID = "variable-modification";
-    public static final String CREDENTIAL_VARIABLE_MODIFICATION_LABEL_KEY = "credential.variable.modification";
+    public static final String CREDENTIAL_VARIABLE_MODIFICATION_LABEL_KEY = "credential.default.modification";
 
     public static final String CREDENTIAL_VARIABLE_DELETE_ID = "variable-delete";
-    public static final String CREDENTIAL_VARIABLE_DELETE_LABEL_KEY = "credential.variable.delete";
+    public static final String CREDENTIAL_VARIABLE_DELETE_LABEL_KEY = "credential.default.delete";
 
     @Inject
     private SPARQLService sparql;
@@ -187,43 +183,56 @@ public class VariableAPI {
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
 
-
     @GET
     @ApiOperation(
-            value = "Search variables by name, long name, entity, characteristic, method or unit name",
+            value = "Search variables",
             notes = "The following fields could be used for sorting : \n\n" +
                     " _entity_name/entityName : the name of the variable entity\n\n"+
                     " _characteristic_name/characteristicName : the name of the variable characteristic\n\n"+
                     " _method_name/methodName : the name of the variable method\n\n"+
                     " _unit_name/unitName : the name of the variable unit\n\n"
-            )
+    )
     @ApiProtected
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return variables", response = VariableGetDTO.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Return variables", response = VariableGetDTO.class, responseContainer = "List")
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchVariables(
-            @ApiParam(value = "Name regex pattern", example = "plant_height") @QueryParam("name") String namePattern ,
+            @ApiParam(value = "Name regex pattern", example = "plant_height") @QueryParam("name") String name,
+            @ApiParam(value = "Entity filter") @QueryParam("entity") @ValidURI URI entity,
+            @ApiParam(value = "Entity of interest filter") @QueryParam("entity_of_interest") @ValidURI URI interestEntity,
+            @ApiParam(value = "Characteristic filter") @QueryParam("characteristic") @ValidURI URI characteristic,
+            @ApiParam(value = "Method filter") @QueryParam("method") @ValidURI URI method,
+            @ApiParam(value = "Unit filter") @QueryParam("unit") @ValidURI URI unit,
+            @ApiParam(value = "Group filter") @QueryParam("group_of_variables") @ValidURI URI group,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         VariableDAO dao = getDao();
-        ListWithPagination<VariableModel> resultList = dao.search(
-                namePattern,
+        ListWithPagination<VariableModel> variables = dao.search(
+                name,
+                entity,
+                interestEntity,
+                characteristic,
+                method,
+                unit,
+                group,                
                 orderByList,
                 page,
                 pageSize
         );
 
-        ListWithPagination<VariableGetDTO> resultDTOList = resultList.convert(
+        // Convert paginated list to DTO
+        ListWithPagination<VariableGetDTO> resultDTOList = variables.convert(
                 VariableGetDTO.class,
                 VariableGetDTO::fromModel
         );
+        
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
-
+    
     @GET
     @Path("details")
     @ApiOperation(

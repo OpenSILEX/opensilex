@@ -5,14 +5,29 @@
  */
 package org.opensilex.core.organisation.api.facitity;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-import java.net.URI;
-import java.util.List;
-import java.util.stream.Collectors;
+import io.swagger.annotations.*;
+import org.opensilex.core.CoreModule;
+import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
+import org.opensilex.core.organisation.dal.InfrastructureDAO;
+import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
+import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.authentication.ApiCredential;
+import org.opensilex.security.authentication.ApiCredentialGroup;
+import org.opensilex.security.authentication.ApiProtected;
+import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.server.exceptions.InvalidValueException;
+import org.opensilex.server.response.*;
+import org.opensilex.server.rest.validation.ValidURI;
+import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
+import org.opensilex.sparql.ontology.dal.ClassModel;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
+import org.opensilex.sparql.response.NamedResourceDTO;
+import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.utils.ListWithPagination;
+import org.opensilex.utils.OrderBy;
+
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
@@ -20,31 +35,11 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.net.URI;
+import java.util.List;
+import java.util.stream.Collectors;
 
-import org.opensilex.core.CoreModule;
-import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
-import org.opensilex.core.ontology.dal.ClassModel;
-import org.opensilex.core.ontology.dal.OntologyDAO;
-import org.opensilex.core.organisation.api.InfrastructureAPI;
-import org.opensilex.core.organisation.dal.InfrastructureDAO;
-import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
-import org.opensilex.server.response.*;
-import org.opensilex.security.authentication.ApiCredential;
-import org.opensilex.security.authentication.ApiCredentialGroup;
-import org.opensilex.security.authentication.ApiProtected;
-import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.user.dal.UserModel;
-import org.opensilex.server.rest.validation.ValidURI;
-import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
-import org.opensilex.sparql.service.SPARQLService;
-
-import static org.opensilex.core.organisation.api.InfrastructureAPI.*;
-import org.opensilex.server.exceptions.InvalidValueException;
-
-import org.opensilex.sparql.response.NamedResourceDTO;
-import org.opensilex.utils.ListWithPagination;
-import org.opensilex.utils.OrderBy;
+import static org.opensilex.core.organisation.api.InfrastructureAPI.CREDENTIAL_GROUP_INFRASTRUCTURE_ID;
 
 /**
  *
@@ -53,13 +48,25 @@ import org.opensilex.utils.OrderBy;
 @Api(CREDENTIAL_GROUP_INFRASTRUCTURE_ID)
 @Path("core/facilities")
 @ApiCredentialGroup(
-        groupId = InfrastructureAPI.CREDENTIAL_GROUP_INFRASTRUCTURE_ID,
-        groupLabelKey = InfrastructureAPI.CREDENTIAL_GROUP_INFRASTRUCTURE_LABEL_KEY
+        groupId = FacilityAPI.CREDENTIAL_GROUP_FACILITY_ID,
+        groupLabelKey = FacilityAPI.CREDENTIAL_GROUP_FACILITY_LABEL_KEY
 )
 public class FacilityAPI {
 
+    public static final String CREDENTIAL_GROUP_FACILITY_ID = "Facilities";
+    public static final String CREDENTIAL_GROUP_FACILITY_LABEL_KEY = "credential-groups.facilities";
+
+    public static final String CREDENTIAL_FACILITY_MODIFICATION_ID = "facility-modification";
+    public static final String CREDENTIAL_FACILITY_MODIFICATION_LABEL_KEY = "credential.default.modification";
+
+    public static final String CREDENTIAL_FACILITY_DELETE_ID = "facility-delete";
+    public static final String CREDENTIAL_FACILITY_DELETE_LABEL_KEY = "credential.default.delete";
+
     @Inject
     private SPARQLService sparql;
+
+    @Inject
+    private MongoDBService nosql;
 
     @CurrentUser
     UserModel currentUser;
@@ -68,8 +75,8 @@ public class FacilityAPI {
     @ApiOperation("Create a facility")
     @ApiProtected
     @ApiCredential(
-            credentialId = CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID,
-            credentialLabelKey = CREDENTIAL_INFRASTRUCTURE_MODIFICATION_LABEL_KEY
+            credentialId = CREDENTIAL_FACILITY_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_FACILITY_MODIFICATION_LABEL_KEY
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -81,7 +88,7 @@ public class FacilityAPI {
             @ApiParam("Facility description") @Valid InfrastructureFacilityCreationDTO dto
     ) throws Exception {
         try {
-            InfrastructureDAO dao = new InfrastructureDAO(sparql);
+            InfrastructureDAO dao = new InfrastructureDAO(sparql, nosql);
             InfrastructureFacilityModel facility = dto.newModel();
 
             if (dto.getRelations() != null) {
@@ -117,7 +124,7 @@ public class FacilityAPI {
         @ApiResponse(code = 404, message = "Facility URI not found", response = ErrorResponse.class)
     })
     public Response getAllFacilities() throws Exception {
-        InfrastructureDAO dao = new InfrastructureDAO(sparql);
+        InfrastructureDAO dao = new InfrastructureDAO(sparql, nosql);
         List<InfrastructureFacilityModel> facilities = dao.getAllFacilities(currentUser);
 
         List<NamedResourceDTO> dtoList = facilities.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
@@ -139,9 +146,14 @@ public class FacilityAPI {
     public Response getInfrastructureFacility(
             @ApiParam(value = "facility URI", example = "http://opensilex.dev/organisations/facility/phenoarch", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        InfrastructureDAO dao = new InfrastructureDAO(sparql);
-        InfrastructureFacilityModel model = dao.getFacility(uri, currentUser);
-        return new SingleObjectResponse<>(InfrastructureFacilityGetDTO.getDTOFromModel(model, true)).getResponse();
+        InfrastructureDAO dao = new InfrastructureDAO(sparql, nosql);
+
+        InfrastructureFacilityGetDTO facilityGetDTO = InfrastructureFacilityGetDTO.getDTOFromModel(
+                dao.getFacility(uri, currentUser),
+                true
+        );
+        facilityGetDTO.fromGeospatialModel(dao.getFacilityGeospatialModel(uri));
+        return new SingleObjectResponse<>(facilityGetDTO).getResponse();
     }
 
     @GET
@@ -158,7 +170,7 @@ public class FacilityAPI {
     public Response getFacilitiesByURI(
             @ApiParam(value = "Facilities URIs", required = true) @QueryParam("uris") @NotNull @NotEmpty @ValidURI List<URI> uris) throws Exception {
 
-        InfrastructureDAO dao = new InfrastructureDAO(sparql);
+        InfrastructureDAO dao = new InfrastructureDAO(sparql, nosql);
         List<InfrastructureFacilityModel> facilities = dao.getFacilitiesByURI(currentUser, uris);
 
         if (facilities.isEmpty()) {
@@ -188,11 +200,11 @@ public class FacilityAPI {
             @ApiParam(value = "Page size") @QueryParam("page_size") int pageSize
     ) throws Exception {
 
-        InfrastructureDAO dao = new InfrastructureDAO(sparql);
+        InfrastructureDAO dao = new InfrastructureDAO(sparql, nosql);
         ListWithPagination<InfrastructureFacilityModel> facilities = dao.searchFacilities(currentUser, pattern, organizations, orderByList, page, pageSize);
 
         List<InfrastructureFacilityGetDTO> dtoList = facilities.getList().stream()
-                .map((facilityModel) -> InfrastructureFacilityGetDTO.getDTOFromModel(facilityModel, false))
+                .map((facilityModel) -> InfrastructureFacilityGetDTO.getDTOFromModel(facilityModel, true))
                 .collect(Collectors.toList());
 
         return new PaginatedListResponse<>(dtoList).getResponse();
@@ -203,8 +215,8 @@ public class FacilityAPI {
     @ApiOperation("Delete a facility")
     @ApiProtected
     @ApiCredential(
-            credentialId = CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID,
-            credentialLabelKey = CREDENTIAL_INFRASTRUCTURE_MODIFICATION_LABEL_KEY
+            credentialId = CREDENTIAL_FACILITY_DELETE_ID,
+            credentialLabelKey = CREDENTIAL_FACILITY_DELETE_LABEL_KEY
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -215,7 +227,7 @@ public class FacilityAPI {
     public Response deleteInfrastructureFacility(
             @ApiParam(value = "Facility URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
     ) throws Exception {
-        InfrastructureDAO dao = new InfrastructureDAO(sparql);
+        InfrastructureDAO dao = new InfrastructureDAO(sparql, nosql);
         dao.deleteFacility(uri, currentUser);
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
@@ -224,8 +236,8 @@ public class FacilityAPI {
     @ApiOperation("Update a facility")
     @ApiProtected
     @ApiCredential(
-            credentialId = CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID,
-            credentialLabelKey = CREDENTIAL_INFRASTRUCTURE_MODIFICATION_LABEL_KEY
+            credentialId = CREDENTIAL_FACILITY_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_FACILITY_MODIFICATION_LABEL_KEY
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -237,7 +249,7 @@ public class FacilityAPI {
             @ApiParam("Facility description")
             @Valid InfrastructureFacilityUpdateDTO dto
     ) throws Exception {
-        InfrastructureDAO dao = new InfrastructureDAO(sparql);
+        InfrastructureDAO dao = new InfrastructureDAO(sparql, nosql);
 
         InfrastructureFacilityModel facility = dto.newModel();
 

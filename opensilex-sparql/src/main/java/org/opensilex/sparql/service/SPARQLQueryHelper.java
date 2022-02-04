@@ -13,6 +13,7 @@ import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.core.mem.TupleSlot;
 import org.apache.jena.sparql.expr.*;
 import org.apache.jena.sparql.expr.aggregate.Aggregator;
 import org.apache.jena.sparql.expr.aggregate.AggregatorFactory;
@@ -27,6 +28,8 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Stream;
+import org.apache.jena.graph.Triple;
+import org.apache.jena.rdf.model.Property;
 
 import org.opensilex.utils.OrderBy;
 
@@ -522,6 +525,39 @@ public class SPARQLQueryHelper {
         }
        
     }
+       
+    /**
+     * <pre>
+     *    Append a Subject Property Object clause to the given select
+     * </pre>
+     *
+     * @param select the SelectBuilder to update  
+     * @param graph the graph to find 
+     * @param subject the subject of the relation
+     * @param property the property of the relation
+     * @param value the object of the relation
+     * 
+     */
+     
+    public static void appendRelationFilter(SelectBuilder select, String graph, Node subject, Property property, Object value) throws Exception {
+
+        Objects.requireNonNull(select);
+        Objects.requireNonNull(subject);
+
+        // Get the ElementGroup in which we must append the triple
+        ElementGroup elementGroup;
+        if (graph != null) {
+            elementGroup = getSelectOrCreateGraphElementGroup(select.getWhereHandler().getClause(), NodeFactory.createURI(graph));
+        } else {
+            elementGroup = select.getWhereHandler().getClause();
+        }
+
+        // get deserializer associated to the given value and create triple
+        SPARQLDeserializer<?> deserializer = SPARQLDeserializers.getForClass(value.getClass());
+        Triple triple = new Triple(subject, property.asNode(), deserializer.getNode(value));
+        elementGroup.addTriplePattern(triple);
+    }
+    
 
     public static Var makeVar(Object o) {
         return Converters.makeVar(o);
@@ -650,5 +686,66 @@ public class SPARQLQueryHelper {
                 new ExprAggregator(sparqlVar,countAgg) ,
                 NodeFactory.createLiteral(value.toString(), datatype)
         );
+    }
+
+    /**
+     * Build a triple with the given URI inserted in the specified tupleSlot.
+     *
+     * @param s Subject variable
+     * @param p Predicate variable
+     * @param o Object variable
+     * @param uri URI to insert
+     * @param tupleSlot Tuple slot where to insert the URI
+     * @return
+     * @throws IllegalArgumentException If GRAPH is given as a tuple slot
+     */
+    public static Triple buildUriTriple(Var s, Var p, Var o, URI uri, TupleSlot tupleSlot) throws IllegalArgumentException {
+        Node uriNode = Objects.requireNonNull(SPARQLDeserializers.nodeURI(uri));
+
+        Triple uriTriple;
+
+        switch (tupleSlot) {
+            case SUBJECT:
+                uriTriple = new Triple(uriNode, p, o);
+                break;
+            case PREDICATE:
+                uriTriple = new Triple(s, uriNode, o);
+                break;
+            case OBJECT:
+                uriTriple = new Triple(s, p, uriNode);
+                break;
+            default:
+                throw new IllegalArgumentException();
+        }
+
+        return uriTriple;
+    }
+
+    /**
+     * Adds the given triple in the where clause. If `namedGraph` is specified, then the triple will be matched in the
+     * specified named graph. Otherwise, the triple will be matched only in the default graph.
+     *
+     * @param where Where clause
+     * @param triple Triple to match
+     * @param namedGraph The named graph to look for the triple. If null, the default graph will be used.
+     */
+    public static void addTripleWhereClause(WhereClause<?> where, Triple triple, Object namedGraph) {
+        if (Objects.nonNull(namedGraph)) {
+            where.addGraph(namedGraph, triple);
+        } else {
+            Var graphVar = makeVar("_g");
+            where.addWhere(triple);
+            WhereBuilder notExistsWhere = new WhereBuilder();
+            notExistsWhere.addGraph(graphVar, triple);
+            where.addFilter(SPARQLQueryHelper.exprFactory.notexists(notExistsWhere));
+        }
+    }
+
+    public static WhereBuilder buildURIExistsClause(URI uri, TupleSlot tupleSlot, boolean inNamedGraph)
+            throws IllegalArgumentException {
+        WhereBuilder where = new WhereBuilder();
+        Triple triple = buildUriTriple(makeVar("_s"), makeVar("_p"), makeVar("_o"), uri, tupleSlot);
+        addTripleWhereClause(where, triple, inNamedGraph ? makeVar("_g") : null);
+        return where;
     }
 }

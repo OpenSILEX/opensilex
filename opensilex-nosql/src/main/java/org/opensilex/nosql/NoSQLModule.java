@@ -13,6 +13,7 @@ import org.bson.Document;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.nosql.mongodb.MongoDBConfig;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.nosql.mongodb.MongoModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,7 +23,7 @@ import org.slf4j.LoggerFactory;
  */
 public class NoSQLModule extends OpenSilexModule {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(NoSQLModule.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(NoSQLModule.class);
 
     @Override
     public Class<?> getConfigClass() {
@@ -50,7 +51,7 @@ public class NoSQLModule extends OpenSilexModule {
 
     @Override
     public void check() throws Exception {
-        MongoDBConfig config = getOpenSilex().loadConfigPath("big-data.mongodb.config", MongoDBConfig.class);
+        MongoDBConfig config = getOpenSilex().loadConfigPath(MongoDBConfig.DEFAULT_CONFIG_PATH, MongoDBConfig.class);
         MongoClient mongo = MongoDBService.getMongoDBClient(config);
         MongoDatabase db = mongo.getDatabase(config.database());
 
@@ -78,7 +79,7 @@ public class NoSQLModule extends OpenSilexModule {
     }
     
     public void initMongo(boolean reset) throws Exception {
-        MongoDBConfig config = getOpenSilex().loadConfigPath("big-data.mongodb.config", MongoDBConfig.class);
+        MongoDBConfig config = getOpenSilex().loadConfigPath(MongoDBConfig.DEFAULT_CONFIG_PATH, MongoDBConfig.class);
         MongoClient mongo = MongoDBService.getMongoDBClient(config);
         LOGGER.info("Install with parameters : Reset :" + String.valueOf(reset) + ", Db : " + config.database());
         if (reset) {            

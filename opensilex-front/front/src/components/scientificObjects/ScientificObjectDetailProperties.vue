@@ -403,11 +403,7 @@ export default class ScientificObjectDetailProperties extends Vue {
       if (
         lastMove &&
         lastMove.to &&
-        lastMove.to.uri &&
-        this.$opensilex.Oeso.checkURIs(
-          relation.property,
-          this.$opensilex.Oeso.HAS_FACILITY
-        )
+        lastMove.to.uri 
       ) {
         relation.value = lastMove.to.uri;
       }

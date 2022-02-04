@@ -16,11 +16,18 @@ import javax.validation.constraints.NotNull;
 import java.net.URI;
 
 public class FormUpdateDTO extends FormCreationDTO{
+<<<<<<< HEAD
 
     private URI uri;
 
     private String updateDate;
 
+=======
+    
+    protected URI uri;
+
+    
+>>>>>>> master
     @NotNull
     @ValidURI
     @ApiModelProperty(value = "URI of the form being updated", required = true)
@@ -57,4 +64,9 @@ public class FormUpdateDTO extends FormCreationDTO{
     public void setUri(URI uri) {
         this.uri = uri;
     }
+<<<<<<< HEAD
+=======
+    
+    
+>>>>>>> master
 }

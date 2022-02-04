@@ -4,6 +4,8 @@ import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.opensilex.sparql.utils.Ontology;
 
+import java.net.URI;
+
 /**
  * Vocabulary definition from the Time ontology.
  * @see <a href="https://www.w3.org/TR/owl-time/">https://www.w3.org/TR/owl-time/</a>
@@ -37,6 +39,8 @@ public class Time {
      * OWL Class which define a temporal entity with zero duration.
      */
     public static final Resource Instant = Ontology.resource(NS,"Instant");
+
+    public static final URI InstantURI = URI.create(Time.Instant.getURI());
 
     /**
      * @see <a href="https://www.w3.org/TR/owl-time/#time:hasTime">time:hasTime</a>

@@ -481,6 +481,38 @@ $opensilex.loadModules([
 ]).then(() => {
   $opensilex.initAsyncComponents(components).then(() => {
     console.debug("Default components loaded !");
+
+    // Define user
+    console.debug("Define current user...");
+    let user: User | undefined = undefined;
+    if (urlParams.has("token")) {
+      let token = urlParams.get("token");
+      console.debug("Try to load user from URL token...");
+      if (token != null) {
+        user = User.fromToken(token);
+        $opensilex.setCookieValue(user);
+        console.debug("User successfully loaded from URL token !");
+      }
+    }
+
+    if (user == undefined) {
+      console.debug("Try to load user from cookie...");
+      user = $opensilex.loadUserFromCookie();
+      console.debug("User successfully loaded from cookie !");
+    }
+
+    if (!user.isLoggedIn()) {
+      console.debug("User is ANONYMOUS !");
+      i18n.locale = lang;
+    } else {
+      console.debug("User is:", user.getEmail());
+      i18n.locale = user.getLocale() || lang;
+    }
+
+    // Init user
+    console.debug("Initialize global user");
+    store.commit("login", user);
+
     // Get OpenSilex configuration
     console.debug("Start loading configuration...");
     const vueJsService = $opensilex.getService<VueJsService>("VueJsService");
@@ -517,44 +549,14 @@ $opensilex.loadModules([
                 console.debug("Application is not embed");
               }
 
-              // Define user
-              console.debug("Define current user...");
-              let user: User | undefined = undefined;
-              if (urlParams.has("token")) {
-                let token = urlParams.get("token");
-                console.debug("Try to load user from URL token...");
-                if (token != null) {
-                  user = User.fromToken(token);
-                  $opensilex.setCookieValue(user);
-                  console.debug("User successfully loaded from URL token !");
-                }
-              }
-
-              if (user == undefined) {
-                console.debug("Try to load user from cookie...");
-                user = $opensilex.loadUserFromCookie();
-                console.debug("User successfully loaded from cookie !");
-              }
-
-              if (!user.isLoggedIn()) {
-                console.debug("User is ANONYMOUS !");
-                i18n.locale = lang;
-              } else {
-                console.debug("User is:", user.getEmail());
-                i18n.locale = user.getLocale() || lang;
-              }
-
               if (i18n.locale != lang) {
                 lang = i18n.locale;
                 store.commit("lang", i18n.locale);
               }
 
-              // Init user
-              console.debug("Initialize global user");
-              store.commit("login", user);
-
               // Init routing
               console.debug("Initialize routing");
+              store.commit("resetRouter");
               let router: VueRouter = store.state.openSilexRouter.getRouter();
 
               // Initialise main layout components from configuration

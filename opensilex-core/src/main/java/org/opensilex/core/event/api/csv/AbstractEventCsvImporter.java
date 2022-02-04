@@ -7,10 +7,20 @@ import org.apache.commons.lang3.StringUtils;
 import org.locationtech.jts.io.ParseException;
 import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.ontology.Oeev;
-import org.opensilex.core.ontology.dal.*;
+import org.opensilex.core.csv.dal.CSVCell;
+import org.opensilex.core.csv.dal.error.CSVValidationModel;
+import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.sparql.deserializer.URIDeserializer;
+import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
+import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
 import org.opensilex.sparql.model.time.InstantModel;
+import org.opensilex.sparql.ontology.dal.ClassModel;
+import org.opensilex.sparql.ontology.dal.OwlRestrictionModel;
+import org.opensilex.sparql.ontology.dal.PropertyModel;
+import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,14 +36,17 @@ import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 public abstract class AbstractEventCsvImporter<T extends EventModel> {
 
-    public final static String TARGET_COLUMN = "targets";
+    static final Logger LOGGER = LoggerFactory.getLogger(AbstractEventCsvImporter.class);
 
-    protected final static LinkedHashSet<String> EVENT_HEADER = new LinkedHashSet<>(Arrays.asList(
-            EventModel.URI_FIELD,
-            EventModel.TYPE_FIELD,
+    public static final String TARGET_COLUMN = "targets";
+
+    protected static final LinkedHashSet<String> EVENT_HEADER = new LinkedHashSet<>(Arrays.asList(
+            SPARQLResourceModel.URI_FIELD,
+            SPARQLResourceModel.TYPE_FIELD,
             EventModel.IS_INSTANT_FIELD,
             EventModel.START_FIELD,
             EventModel.END_FIELD,
@@ -41,9 +54,13 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
             EventModel.DESCRIPTION_FIELD
     ));
 
-    public final static int ROWS_BEGIN_IDX = 2;
+    /**
+     * The {@link Set} of properties URI, which are manually handled for an {@link EventModel}
+     */
+    protected final Set<String> managedProperties;
 
-    Logger LOGGER = LoggerFactory.getLogger(getClass());
+    public static final int ROWS_BEGIN_IDX = 2;
+
 
     private final InputStream file;
     private List<T> models;
@@ -53,11 +70,16 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
 
     private final UserModel user;
 
-    public AbstractEventCsvImporter(OntologyDAO ontologyDAO, InputStream file, UserModel user) {
+    protected AbstractEventCsvImporter(SPARQLService sparql, OntologyDAO ontologyDAO, InputStream file, UserModel user) throws SPARQLInvalidClassDefinitionException, SPARQLMapperNotFoundException {
         this.ontologyDAO = ontologyDAO;
         this.file = file;
         this.user = user;
         validation = new CSVValidationModel();
+
+        managedProperties = sparql.getMapperIndex().getForClass(EventModel.class)
+                .getClassAnalizer()
+                .getManagedProperties().stream().map(property -> URIDeserializer.formatURIAsStr(property.getURI()))
+                .collect(Collectors.toSet());
     }
 
 
@@ -83,7 +105,7 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
 
             String[] csvHeader = readHeader(csvReader);
 
-            LinkedHashSet<URI> customProperties = null;
+            List<URI> customProperties = null;
 
             // read custom header if additional columns are found
             if(!validation.hasErrors() && csvHeader.length > getHeader().size()){
@@ -102,12 +124,12 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
         }
     }
 
-    protected LinkedHashSet<URI> readCustomHeader(String[] header) throws Exception {
+    protected List<URI> readCustomHeader(String[] header) throws Exception {
 
         URI eventUri = new URI(Oeev.Event.getURI());
 
         int propsBeginIndex = getHeader().size();
-        LinkedHashSet<URI> customProperties = new LinkedHashSet<>();
+        List<URI> customProperties = new ArrayList<>();
 
         // read each custom column and check if a property match into the ontology
         for (int i = propsBeginIndex; i < header.length; i++) {
@@ -116,7 +138,7 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
             if(StringUtils.isEmpty(property)){
                 validation.addInvalidHeaderURI(i,property);
             }else{
-                URI propertyUri = new URI(property);
+                URI propertyUri = URIDeserializer.formatURI(property);
 
                 // searching for a data-type or object-type property
                 PropertyModel propertyModel = ontologyDAO.getDataProperty(propertyUri,eventUri,this.user.getLanguage());
@@ -174,7 +196,7 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
         return csvHeader;
     }
 
-    private void readAndValidateBody(CsvParser csvReader,boolean validateOnly, LinkedHashSet<URI> customProperties) throws Exception {
+    private void readAndValidateBody(CsvParser csvReader,boolean validateOnly, List<URI> customProperties) throws Exception {
 
         String[] row;
 
@@ -210,7 +232,7 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
                                    String[] row,
                                    int rowIndex,
                                    AtomicInteger colIndex,
-                                   LinkedHashSet<URI> customProperties,
+                                   List<URI> customProperties,
                                    Map<URI, ClassModel> classesByType,
                                    Map<URI, List<URI>> missedPropertiesByType
     ) throws Exception {
@@ -228,7 +250,7 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
                 classesByType.put(type,classModel);
 
             }catch (NotFoundURIException e){
-                CSVCell csvCell = new CSVCell(rowIndex, colIndex.get(), type.toString(), EventModel.TYPE_FIELD);
+                CSVCell csvCell = new CSVCell(rowIndex, colIndex.get(), type.toString(), SPARQLResourceModel.TYPE_FIELD);
                 validation.addInvalidURIError(csvCell);
                 return;
             }
@@ -243,10 +265,17 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
 
         Iterator<URI> propsIt = customProperties.iterator();
 
+
         for (int i = row.length - customProperties.size(); i < row.length; i++) {
 
             String propValue = row[i];
             URI property = propsIt.next();
+
+            // exclude read managed properties, already handled
+            if(managedProperties.contains(property.toString())){
+                continue;
+            }
+
             OwlRestrictionModel propertyRestriction = classModel.getRestrictions().get(property);
 
             boolean nullOrEmpty = StringUtils.isEmpty(propValue);
@@ -284,8 +313,17 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
             missedRequiredProperties = new LinkedList<>();
 
             for (Map.Entry<URI, OwlRestrictionModel> entry : classModel.getRestrictions().entrySet()) {
-                if (entry.getValue().isRequired() && !customProperties.contains(entry.getKey())) {
-                    missedRequiredProperties.add(entry.getKey());
+
+                URI property = entry.getKey();
+
+                // exclude read managed properties, already handled
+                if (managedProperties.contains(property.toString())) {
+                    continue;
+                }
+
+                // required property
+                if (entry.getValue().isRequired() && !customProperties.contains(property)) {
+                    missedRequiredProperties.add(property);
                 }
             }
 
@@ -293,6 +331,7 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
         }
 
 
+        // if some required restriction -> error
         if(! missedRequiredProperties.isEmpty()){
             missedRequiredProperties.forEach(property -> {
                 CSVCell csvCell = new CSVCell(rowIndex, colIndex.get(), null, property.toString());
@@ -303,7 +342,7 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
     }
 
     protected void readAndValidateRow(T model , String[] row, int rowIndex, AtomicInteger colIndex,
-                                      LinkedHashSet<URI> customProperties,
+                                      List<URI> customProperties,
                                       Map<URI,ClassModel> classesByTypeIndex,
                                       Map<URI,List<URI>> missedPropertiesByType
     ) throws Exception {

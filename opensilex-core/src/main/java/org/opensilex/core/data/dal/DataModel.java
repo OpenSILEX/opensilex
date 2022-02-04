@@ -123,7 +123,7 @@ public class DataModel extends MongoModel {
     }
            
     @Override
-    public String[] getUriSegments(MongoModel instance) {
+    public String[] getInstancePathSegments(MongoModel instance) {
         ObjectMapper mapper = ObjectMapperContextResolver.getObjectMapper();
         String provenanceString = "";
         try {

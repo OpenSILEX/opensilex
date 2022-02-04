@@ -47,14 +47,8 @@ import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 export default class ScientificObjectVisualizationTab extends Vue {
   $opensilex: any;
 
-  @Prop()
-  modificationCredentialId;
-
   get user() {
     return this.$store.state.user;
-  }
-  get credentials() {
-    return this.$store.state.credentials;
   }
 
   @Prop()

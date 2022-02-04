@@ -6,15 +6,18 @@
 //******************************************************************************
 package org.opensilex.core.device.dal;
 
-import java.time.LocalDate;
-import java.net.URI;
-import java.util.List;
-import java.util.Map;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLTreeModel;
+
+import java.net.URI;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author sammy
@@ -22,10 +25,13 @@ import org.opensilex.sparql.model.SPARQLTreeModel;
 @SPARQLResource(
         ontology = Oeso.class,
         resource = "Device",
-        graph = "set/devices",
+        graph = DeviceModel.GRAPH,
         prefix = "device"
 )
 public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
+
+    public static final String GRAPH = "device";
+
      @SPARQLProperty(
             ontology = Oeso.class,
             property = "isPartOf"
@@ -153,5 +159,14 @@ public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
 
     public void setAttributes(Map<String, String> attributes) {
         this.attributes = attributes;
+    }
+
+    @Override
+    public String getInstanceUriPath(SPARQLTreeModel<DeviceModel> instance) {
+
+        if(! StringUtils.isEmpty(instance.getName())){
+            return normalize(instance.getName());
+        }
+        return RandomStringUtils.randomAlphabetic(8);
     }
 }

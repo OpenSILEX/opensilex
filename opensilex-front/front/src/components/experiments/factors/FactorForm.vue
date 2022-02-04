@@ -35,22 +35,37 @@
       </div>
 
       <p class="alert-info">
-        {{ $t("component.factor.category-help-more") }} :
+        {{ $t("component.factor.category-help-more") }} : PECO (
+        <a
+          target="_blank"
+          href="http://agroportal.lirmm.fr/ontologies/PECO/?p=classes&conceptid=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FPECO_0001001"
+        >
+          Agroportal
+        </a>
+        ;
+        <a
+          target="_blank"
+          href="http://agroportal.lirmm.fr/ontologies/PECO/?p=classes&conceptid=http%3A%2F%2Fpurl.obolibrary.org%2Fobo%2FPECO_0007359"
+        >
+          Ontobee
+        </a>
+        ) - AGROVOC (
         <a
           target="_blank"
           href="http://agroportal.lirmm.fr/ontologies/AGROVOC/?p=classes&conceptid=http%3A%2F%2Faims.fao.org%2Faos%2Fagrovoc%2Fc_331093"
         >
-          AgroPortal
+          Agroportal
         </a>
-        (
-        {{ $t("component.factor.or") }}
+        ;
         <a
           target="_blank"
-          href="https://agrovoc.uniroma2.it/agrovoc/agrovoc/en/page/?uri=http%3A%2F%2Faims.fao.org%2Faos%2Fagrovoc%2Fc_331093"
+          href="http://agroportal.lirmm.fr/ontologies/AGROVOC/?p=classes&conceptid=http%3A%2F%2Faims.fao.org%2Faos%2Fagrovoc%2Fc_331093"
         >
-          AGROVOC
+          Agrovoc
         </a>
         )
+        {{ $t("component.factor.or") }}
+        
       </p>
       <!-- Category-->
       <div id="v-step-1">
@@ -84,12 +99,12 @@
 
 
 <script lang="ts">
-import { Component, Prop, Ref, Watch } from "vue-property-decorator";
+import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
-import { FactorsService } from "opensilex-core/index";
-// @ts-ignore
-import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse";
+import HttpResponse, {
+  OpenSilexResponse,
+} from "opensilex-security/HttpResponse";
 
 @Component
 export default class FactorForm extends Vue {
@@ -107,8 +122,8 @@ export default class FactorForm extends Vue {
 
   uriGenerated = true;
 
-  @Prop({default: false})
-  editMode : boolean;
+  @Prop({ default: false })
+  editMode: boolean;
 
   @Prop({
     default: () => {

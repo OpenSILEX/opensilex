@@ -156,7 +156,7 @@ public class AuthenticationAPI {
         }
 
         // Authenticate found user with provided password
-        if (user != null && authentication.authenticate(user, authenticationDTO.getPassword(), userDAO.getAccessList(user.getUri()))) {
+        if (user != null && authentication.authenticate(user, authenticationDTO.getPassword(), userDAO.getCredentialList(user.getUri()))) {
             // Return user token
             return new SingleObjectResponse<TokenGetDTO>(new TokenGetDTO(user.getToken())).getResponse();
         } else {
@@ -433,7 +433,7 @@ public class AuthenticationAPI {
         user = userDAO.getByEmailOrCreate(user, openSilex.getDefaultLanguage());
 
         // Authenticate found user with provided password
-        if (user != null && authentication.authenticate(user, userDAO.getAccessList(user.getUri()))) {
+        if (user != null && authentication.authenticate(user, userDAO.getCredentialList(user.getUri()))) {
             // Return user token
             return new SingleObjectResponse<TokenGetDTO>(new TokenGetDTO(user.getToken())).getResponse();
         } else {

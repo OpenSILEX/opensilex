@@ -7,6 +7,7 @@
 package org.opensilex.nosql.mongodb;
 
 import java.util.Map;
+
 import org.opensilex.config.ConfigDescription;
 import org.opensilex.service.ServiceConfig;
 
@@ -15,7 +16,9 @@ import org.opensilex.service.ServiceConfig;
  *
  * @author Vincent Migot
  */
-    public interface MongoDBConfig extends ServiceConfig {
+public interface MongoDBConfig extends ServiceConfig {
+
+    String DEFAULT_CONFIG_PATH = "big-data.mongodb.config";
 
     @ConfigDescription(
             value = "MongoDB main host",
@@ -27,37 +30,37 @@ import org.opensilex.service.ServiceConfig;
             value = "MongoDB main host port",
             defaultInt = 27017
     )
-    public int port();
+    int port();
 
     @ConfigDescription(
             value = "MongoDB database",
             defaultString = "opensilex"
     )
-    public String database();
+    String database();
 
     @ConfigDescription(
             value = "MongoDB username"
     )
-    public String username();
+    String username();
 
     @ConfigDescription(
             value = "MongoDB password"
     )
-    public String password();
+    String password();
 
     @ConfigDescription(
             value = "MongoDB authentication database"
     )
-    public String authDB();
+    String authDB();
 
     @ConfigDescription(
             value = "MongoDB other connection options"
     )
-    public Map<String, String> options();
-    
+    Map<String, String> options();
+
     @ConfigDescription(
             value = "timezone",
             defaultString = "UTC"
     )
-    public String timezone();
+    String timezone();
 }

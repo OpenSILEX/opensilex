@@ -81,16 +81,16 @@
           :displayTargetColumn="false"
           :enableActions="true"
           :modificationCredentialId="
-            credentials.CREDENTIAL_FACTOR_MODIFICATION_ID
+            credentials.CREDENTIAL_ANNOTATION_MODIFICATION_ID
           "
-          :deleteCredentialId="credentials.CREDENTIAL_FACTOR_DELETE_ID"
+          :deleteCredentialId="credentials.CREDENTIAL_ANNOTATION_DELETE_ID"
           @onEdit="annotationModalForm.showEditForm($event)"
         ></opensilex-AnnotationList>
 
         <opensilex-DocumentTabList
           v-else-if="isDocumentTab()"
           :uri="uri"
-          :modificationCredentialId="credentials.CREDENTIAL_FACTOR_MODIFICATION_ID"
+          :modificationCredentialId="credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID"
         ></opensilex-DocumentTabList>
       </template>
     </opensilex-PageContent>

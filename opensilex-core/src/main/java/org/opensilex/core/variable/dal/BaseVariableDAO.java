@@ -7,6 +7,7 @@ package org.opensilex.core.variable.dal;
 
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.sparql.expr.Expr;
+import org.opensilex.sparql.exceptions.SPARQLInvalidUriListException;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
@@ -62,5 +63,12 @@ public class BaseVariableDAO<T extends SPARQLNamedResourceModel<T>> {
                 page,
                 pageSize
         );
+    }
+
+    /**
+     *  @throws SPARQLInvalidUriListException if any URI from uris could not be loaded
+     */
+    public List<T> getList(List<URI> uris) throws Exception {
+        return sparql.getListByURIs(objectClass, uris, null);
     }
 }

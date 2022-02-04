@@ -18,7 +18,7 @@ import org.opensilex.sparql.annotations.SPARQLResource;
 @SPARQLResource(
         ontology = TEST_ONTOLOGY.class,
         resource = "B",
-        graph = "data"
+        graph = TEST_ONTOLOGY.GRAPH_SUFFIX
 )
 public class B extends SPARQLResourceModel {
     

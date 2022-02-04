@@ -72,9 +72,9 @@ public class AreaAPI {
     public static final String CREDENTIAL_AREA_GROUP_LABEL_KEY = "credential-groups.area";
 
     public static final String CREDENTIAL_AREA_MODIFICATION_ID = "area-modification";
-    public static final String CREDENTIAL_AREA_MODIFICATION_LABEL_KEY = "credential.area.modification";
+    public static final String CREDENTIAL_AREA_MODIFICATION_LABEL_KEY = "credential.default.modification";
 
-    public static final String CREDENTIAL_AREA_DELETE_LABEL_KEY = "credential.area.delete";
+    public static final String CREDENTIAL_AREA_DELETE_LABEL_KEY = "credential.default.delete";
     public static final String INVALID_GEOMETRY = "Invalid geometry (longitude must be between -180 and 180 and latitude must be between -90 and 90, no self-intersection, ...)";
     private static final String CREDENTIAL_AREA_DELETE_ID = "area-delete";
 

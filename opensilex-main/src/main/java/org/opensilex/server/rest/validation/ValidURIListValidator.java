@@ -7,13 +7,14 @@
 package org.opensilex.server.rest.validation;
 
 import java.net.URI;
+import java.util.LinkedList;
 import java.util.List;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
 /**
  * Class used by URL annotation to validate that a string value list contains an
- * URL. {@code null} elements are considered valid.
+ * URL.
  *
  * @see org.opensilex.server.rest.validation.URL
  * @author Arnaud Charleroy
@@ -21,11 +22,13 @@ import javax.validation.ConstraintValidatorContext;
  */
 public class ValidURIListValidator implements ConstraintValidator<ValidURI, List<URI>> {
 
+    private static final String INVALID_URI_MSG = "The URI at the index [%d] (start at 1) is not a valid URL : %s";
+
     /**
      * Check is list is made of valid URL.
      *
      * @param valueList list of values to check
-     * @param context constraint context to strore errors
+     * @param context constraint context to store errors
      * @return true if all values are URL and false otherwise
      */
     @Override
@@ -34,24 +37,27 @@ public class ValidURIListValidator implements ConstraintValidator<ValidURI, List
             return true;
         }
 
-        Boolean allValid = true;
-        URI lastUrlCheck = null;
+        List<Integer> invalidUrisIndexes = new LinkedList<>();
 
-        // loop over string
-        for (URI uri : valueList) {
-            if (!uri.isAbsolute()) {
-                allValid = false;
-                lastUrlCheck = uri;
+        for (int i = 0; i < valueList.size(); i++) {
+            URI uri = valueList.get(i);
+            if (uri == null || !uri.isAbsolute()) {
+                invalidUrisIndexes.add(i);
             }
         }
 
-        // if not valid returns the last false index
-        if (!allValid) {
+        // append a custom constraint violation for each bad URI
+        if (! invalidUrisIndexes.isEmpty()) {
             context.disableDefaultConstraintViolation();
-            context.buildConstraintViolationWithTemplate(
-                    "The uri at the index [" + valueList.indexOf(lastUrlCheck) + "] is not an URL"
-            ).addConstraintViolation();
+
+            invalidUrisIndexes.forEach(badUriIdx -> {
+                // start from index 1 instead of 0 for better error comprehension for any user
+                String msg = String.format(INVALID_URI_MSG, badUriIdx + 1, valueList.get(badUriIdx));
+                context.buildConstraintViolationWithTemplate(msg)
+                        .addConstraintViolation();
+            });
+            return false;
         }
-        return allValid;
+        return true;
     }
 }

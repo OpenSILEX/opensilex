@@ -5,17 +5,18 @@
 //******************************************************************************
 package org.opensilex.sparql.annotations;
 
+import org.opensilex.uri.generation.DefaultURIGenerator;
+import org.opensilex.uri.generation.URIGenerator;
+
 import java.lang.annotation.Documented;
-import static java.lang.annotation.ElementType.TYPE;
 import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Target;
-import org.opensilex.sparql.utils.DefaultURIGenerator;
-import org.opensilex.sparql.utils.URIGenerator;
+
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- *
  * @author vincent
  */
 @Target(TYPE)
@@ -24,17 +25,19 @@ import org.opensilex.sparql.utils.URIGenerator;
 @Inherited
 public @interface SPARQLResource {
 
-    public Class<?> ontology();
+    Class<?> ontology();
 
-    public String resource();
+    String resource();
 
-    public Class<? extends URIGenerator> uriGenerator() default DefaultURIGenerator.class;
+    Class<? extends URIGenerator> uriGenerator() default DefaultURIGenerator.class;
 
-    public String graph() default "";
+    String graph() default "";
 
-    public String prefix() default "";
+    String prefix() default "";
 
-    public boolean ignoreValidation() default false;
+    boolean ignoreValidation() default false;
 
-    public boolean allowBlankNode() default false;
+    boolean allowBlankNode() default false;
+
+    boolean handleCustomProperties() default false;
 }

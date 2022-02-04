@@ -155,6 +155,7 @@ export default class DataValidationReport extends Vue {
     this.loadErrorType("invalidDateErrors", errors, globalErrors);
     this.loadErrorType("invalidExperimentErrors", errors, globalErrors);
     this.loadErrorType("invalidDeviceErrors", errors, globalErrors);
+    this.loadErrorType("deviceChoiceAmbiguityErrors", errors, globalErrors);
     this.loadErrorType("invalidDataTypeErrors", errors, globalErrors);
     this.loadErrorType("duplicatedDataErrors", errors, globalErrors);
     this.loadErrorType("duplicatedExperimentErrors", errors, globalErrors);
@@ -257,6 +258,11 @@ export default class DataValidationReport extends Vue {
       case "invalidDeviceErrors":
         return this.$t(
           "DataValidationReport.invalidDeviceErrorMessage",
+          validationError
+        );
+      case "deviceChoiceAmbiguityErrors":
+        return this.$t(
+          "DataValidationReport.deviceChoiceAmbiguityErrors",
           validationError
         );
       case "duplicateURIErrors":
@@ -451,6 +457,7 @@ en:
     invalidDateErrors: Invalid date format
     invalidExperimentErrors: Experiment name or uri not found
     invalidDeviceErrors: Device name or uri not found
+    deviceChoiceAmbiguityErrors: Ambiguity in Device choice
     duplicatedExperimentErrors: Duplicate experiment name (you must use uri)
     duplicatedDeviceErrors: Duplicate device name (you must use uri)
     duplicatedObjectErrors: Duplicate object name (you must use uri)
@@ -507,9 +514,10 @@ fr:
     invalidObjectErrors: Le nom ou l'uri de l'objet n'est pas présent dans cette expérimentation
     invalidDateErrors: Format de date invalide
     invalidExperimentErrors: Le nom ou l'uri de l'expérimentation n'existe pas
-    invalidDeviceErrors: Le nom ou l'uri du device n'existe pas
+    invalidDeviceErrors: Le nom ou l'uri du dispositif n'existe pas
+    deviceChoiceAmbiguityErrors: Ambiguité sur le choix du dispositif
     duplicatedExperimentErrors: Doublon sur le nom de l'experimentation (utilisez l'uri)
-    duplicatedDeviceErrors: Doublon sur le nom du device (utilisez l'uri)
+    duplicatedDeviceErrors: Doublon sur le nom du dispositif (utilisez l'uri)
     duplicatedObjectErrors: Doublon sur le nom de l'objet (utilisez l'uri)
     alreadyExistingURIErrors: URI déjà existante
     duplicateURIErrors: URI dupliquée
@@ -522,7 +530,7 @@ fr:
     invalidValueErrorMessage: "Colonne: '{header}' - Valeur: '{value}'"
     invalidObjectErrorMessage: "Colonne: scientific_object - Valeur: '{value}'" 
     invalidExperimentErrorMessage: "Colonne: experiment - Valeur: '{value}'" 
-    invalidDeviceErrorMessage: "Colonne: device - Valeur: '{value}'" 
+    invalidDeviceErrorMessage: "Colonne: dispositif - Valeur: '{value}'" 
     invalidDateErrorMessage: "Colonne:  Date - Valeur: '{value}'" 
     invalidDataTypeErrorMessage: Le type de données attendu n'est pas valide
     CSVIsValid: La première étape de validation est un succès, cliquez OK pour continuer

@@ -8,7 +8,7 @@
         <opensilex-EditButton
             v-if="
                   user.hasCredential(
-                    credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
+                    credentials.CREDENTIAL_FACILITY_MODIFICATION_ID
                   )
                 "
             @click="editInfrastructureFacility()"
@@ -18,7 +18,7 @@
         <opensilex-DeleteButton
             v-if="
                   user.hasCredential(
-                    credentials.CREDENTIAL_INFRASTRUCTURE_DELETE_ID
+                    credentials.CREDENTIAL_FACILITY_DELETE_ID
                   )
                 "
             @click="deleteInfrastructureFacility()"
@@ -29,7 +29,7 @@
       <opensilex-OrganizationFacilityModalForm
           v-if="
             user.hasCredential(
-              credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
+              credentials.CREDENTIAL_FACILITY_MODIFICATION_ID
             )
           "
           ref="infrastructureFacilityForm"
@@ -59,11 +59,30 @@
       ></opensilex-TypeView>
       <!-- Organisations -->
       <opensilex-UriListView
+          v-if="hasOrganizations"
           label="OrganizationFacilityDetail.organizations"
           :list="organizationUriList"
           :inline="false"
       >
       </opensilex-UriListView>
+
+      <!-- Site -->
+      <opensilex-UriListView
+          v-if="hasSites"
+          label="OrganizationFacilityDetail.site"
+          :list="siteUriList"
+          :inline="false"
+      >
+      </opensilex-UriListView>
+
+      <!-- Address -->
+      <opensilex-AddressView
+          v-if="selectedFacilityOrDefault.address"
+          :address="selectedFacilityOrDefault.address"
+          :geometry="selectedFacilityOrDefault.geometry"
+          noGeometryLabel="OrganizationFacilityDetail.noGeometryWarning"
+      >
+      </opensilex-AddressView>
 
       <div>
         <div v-for="(v, index) in typeProperties" v-bind:key="index">
@@ -146,6 +165,14 @@ export default class OrganizationFacilityDetail extends Vue {
     return {};
   }
 
+  get hasOrganizations() {
+    return !!this.selected && this.selected.organizations.length > 0;
+  }
+
+  get hasSites() {
+    return !!this.selected && this.selected.sites.length > 0;
+  }
+
   get organizationUriList() {
     if (!this.selected) {
       return [];
@@ -161,6 +188,21 @@ export default class OrganizationFacilityDetail extends Vue {
     });
   }
 
+  get siteUriList() {
+    if (!this.selected) {
+      return [];
+    }
+    return this.selected.sites.map(site => {
+      return {
+        uri: site.uri,
+        value: site.name,
+        to: {
+          path: "/infrastructure/site/details/" + encodeURIComponent(site.uri),
+        },
+      };
+    });
+  }
+
   editInfrastructureFacility() {
     let editDto = {
       ...this.selected,
@@ -171,7 +213,7 @@ export default class OrganizationFacilityDetail extends Vue {
 
   deleteInfrastructureFacility() {
     this.$opensilex
-        .getService("opensilex.OrganisationsService")
+        .getService("opensilex.OrganizationsService")
         .deleteInfrastructureFacility(this.selected.uri)
         .then(() => {
           this.$router.push({
@@ -312,7 +354,13 @@ export default class OrganizationFacilityDetail extends Vue {
 en:
   OrganizationFacilityDetail:
     organizations: Organizations
+    site: "Site"
+    address: "Address"
+    noGeometryWarning: No geometry was associated with the address. Maybe the address is invalid.
 fr:
   OrganizationFacilityDetail:
     organizations: Organisations
+    site: "Site"
+    address: "Adresse"
+    noGeometryWarning: Aucune géométrie n'a pu être déterminée à partir de l'adresse. L'adresse est peut-être invalide.
 </i18n>

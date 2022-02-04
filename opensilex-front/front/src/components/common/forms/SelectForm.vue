@@ -466,8 +466,12 @@ export default class SelectForm extends Vue {
             });
             this.internalOption = nodeList;
             if(list.length>0 && this.defaultSelectedValue){
-               this.selection=list[0].uri;
-               this.$emit("select", this.selection);
+              var URISelected = []
+              list.forEach((element, index) => {
+                URISelected.push(element.uri);
+              });
+              this.selection=URISelected;
+              this.$emit("select", this.selection);
             }
             
             callback(null, this.internalOption);

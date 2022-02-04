@@ -25,6 +25,31 @@
         :multiple="true"
     ></opensilex-InfrastructureSelector>
 
+    <!-- Site -->
+    <opensilex-SiteSelector
+        v-if="editMode && form.sites && form.sites.length > 0"
+        label="component.common.organization.site"
+        :multiple="true"
+        :sites.sync="form.sites"
+        :disabled="true"
+    >
+    </opensilex-SiteSelector>
+
+    <!-- Address toggle -->
+    <b-form-checkbox
+        v-model="hasAddress"
+        :value="true"
+        :unchecked-value="false"
+        @change="onAddressToggled"
+        switches
+    >{{$t("OrganizationFacilityForm.toggleAddress")}}</b-form-checkbox>
+
+    <!-- Address -->
+    <opensilex-AddressForm
+      :address.sync="form.address"
+    >
+    </opensilex-AddressForm>
+
     <!-- Type -->
     <opensilex-TypeForm
         v-if="baseType"
@@ -53,7 +78,7 @@
 </template>
 
 <script lang="ts">
-import {Component, Prop, Ref} from "vue-property-decorator";
+import {Component, Prop, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
 import {OntologyService} from "opensilex-core/api/ontology.service";
 import {VueJsOntologyExtensionService} from "../../../lib";
@@ -75,6 +100,7 @@ export default class OrganizationFacilityForm extends Vue {
     default: OrganizationFacilityForm.getEmptyForm()
   })
   form: InfrastructureFacilityCreationDTO;
+  hasAddress: boolean;
 
   baseType: string;
   typeModel = null;
@@ -84,11 +110,12 @@ export default class OrganizationFacilityForm extends Vue {
     return OrganizationFacilityForm.getEmptyForm();
   }
 
-  static getEmptyForm() {
+  static getEmptyForm(): InfrastructureFacilityCreationDTO {
     return {
       uri: undefined,
       rdf_type: undefined,
       name: undefined,
+      address: undefined,
       organizations: [],
       relations: []
     };
@@ -98,6 +125,21 @@ export default class OrganizationFacilityForm extends Vue {
     this.ontologyService = this.$opensilex.getService("opensilex.OntologyService");
     this.vueOntologyService = this.$opensilex.getService("opensilex.VueJsOntologyExtensionService");
     this.baseType = this.$opensilex.Oeso.FACILITY_TYPE_URI;
+    this.hasAddress = !!this.form.address;
+  }
+
+  @Watch("form")
+  onFacilityChanged() {
+    // Update hasAddress checkbox
+    this.hasAddress = !!this.form.address;
+    // Reset the type model
+    this.resetTypeModel();
+  }
+
+  onAddressToggled() {
+    this.form.address = this.hasAddress
+      ? {}
+      : undefined;
   }
 
   // Manage dynamic fields depending on the type
@@ -210,3 +252,12 @@ export default class OrganizationFacilityForm extends Vue {
 <style scoped>
 
 </style>
+
+<i18n>
+en:
+  OrganizationFacilityForm:
+    toggleAddress: "Address"
+fr:
+  OrganizationFacilityForm:
+    toggleAddress: "Adresse"
+</i18n>

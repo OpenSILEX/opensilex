@@ -528,10 +528,15 @@ class SPARQLClassQueryBuilder {
 
     }
 
-    private void addTimeTimeStamp(Field field, Var propertyFieldVar, AbstractQueryBuilder<?> select, WhereHandler handler){
+    private void addTimeTimeStamp(Field field, Var propertyFieldVar, AbstractQueryBuilder<?> select, WhereHandler handler) {
 
         String timeStampVarName = getTimeStampVarName(field.getName());
         Var timeStampVar = makeVar(timeStampVarName);
+
+        // projection of timestamp variables for direct retrieval in SELECT
+        if (select instanceof SelectBuilder){
+            ((SelectBuilder) select).addVar(timeStampVar);
+        }
 
         TriplePath timeStampTriple = select.makeTriplePath(propertyFieldVar, Time.inXSDDateTimeStamp,timeStampVar);
         handler.addWhere(timeStampTriple);

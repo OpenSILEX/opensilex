@@ -18,10 +18,12 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
 @SPARQLResource(
         ontology = VueOwlExtension.class,
         resource = "ClassExtension",
-        graph = "opensilex-owl-extension",
+        graph = VueClassExtensionModel.GRAPH,
         prefix = "oowl-ext"
 )
 public class VueClassExtensionModel extends SPARQLResourceModel {
+
+    public static final String GRAPH = "opensilex-owl-extension";
 
     @SPARQLProperty(
             ontology = VueOwlExtension.class,

@@ -13,42 +13,7 @@ import com.mongodb.bulk.BulkWriteError;
 import com.mongodb.client.result.DeleteResult;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringWriter;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.zone.ZoneRulesException;
-import java.util.*;
-import java.util.stream.Collectors;
-import javax.inject.Inject;
-import javax.validation.Valid;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
+import io.swagger.annotations.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.graph.Node;
@@ -57,27 +22,24 @@ import org.bson.Document;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.opensilex.core.CoreModule;
-import org.opensilex.core.data.dal.DataCSVValidationModel;
-import org.opensilex.core.data.dal.DataDAO;
-import org.opensilex.core.data.dal.DataModel;
-import org.opensilex.core.data.dal.DataProvenanceModel;
-import org.opensilex.core.data.dal.ProvEntityModel;
+import org.opensilex.core.data.dal.*;
 import org.opensilex.core.data.utils.DataValidateUtils;
-import org.opensilex.core.device.api.DeviceAPI;
 import org.opensilex.core.data.utils.ParsedDateTimeMongo;
+import org.opensilex.core.device.api.DeviceAPI;
 import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.device.dal.DeviceModel;
+import org.opensilex.core.exception.*;
 import org.opensilex.core.exception.CSVDataTypeException;
 import org.opensilex.core.exception.DateMappingExceptionResponse;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
-import org.opensilex.core.ontology.dal.ClassModel;
-import org.opensilex.core.ontology.dal.cache.CaffeineOntologyCache;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.core.exception.DataTypeException;
 import org.opensilex.core.exception.DateValidationException;
+import org.opensilex.core.exception.DeviceOrTargetToDataException;
+import org.opensilex.core.exception.DeviceProvenanceAmbiguityException;
 import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.exception.NoVariableDataTypeException;
 import org.opensilex.core.exception.TimezoneAmbiguityException;
@@ -85,14 +47,13 @@ import org.opensilex.core.exception.TimezoneException;
 import org.opensilex.core.exception.UnableToParseDateException;
 import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.experiment.utils.ImportDataIndex;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.ontology.dal.CSVCell;
-import org.opensilex.core.ontology.dal.OntologyDAO;
+import org.opensilex.core.csv.dal.CSVCell;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.core.provenance.api.ProvenanceAPI;
+import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.AgentModel;
-import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidUriListException;
@@ -105,27 +66,44 @@ import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.exceptions.NotFoundException;
-import org.opensilex.server.response.ErrorDTO;
-import org.opensilex.server.response.ErrorResponse;
-import org.opensilex.server.response.ObjectUriResponse;
-import org.opensilex.server.response.PaginatedListResponse;
-import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.server.response.*;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
-import org.opensilex.sparql.model.SPARQLTreeListModel;
-import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
+import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
+import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.response.ResourceTreeDTO;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ClassUtils;
 import org.opensilex.utils.ListWithPagination;
+import org.opensilex.utils.OrderBy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.opensilex.utils.OrderBy;
+
+import javax.inject.Inject;
+import javax.validation.Valid;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.zone.ZoneRulesException;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author sammy
@@ -137,6 +115,9 @@ import org.opensilex.utils.OrderBy;
         groupLabelKey = DataAPI.CREDENTIAL_DATA_GROUP_LABEL_KEY
 )
 public class DataAPI {
+
+    public static final String PATH = "/core/data";
+
     protected final static Logger LOGGER = LoggerFactory.getLogger(DataAPI.class);
 
     public static final String CREDENTIAL_DATA_GROUP_ID = "Data";
@@ -156,14 +137,15 @@ public class DataAPI {
             "\"paramA\" : \"90\"}";
 
     public static final String CREDENTIAL_DATA_MODIFICATION_ID = "data-modification";
-    public static final String CREDENTIAL_DATA_MODIFICATION_LABEL_KEY = "credential.data.modification";
+    public static final String CREDENTIAL_DATA_MODIFICATION_LABEL_KEY = "credential.default.modification";
 
     public static final String CREDENTIAL_DATA_DELETE_ID = "data-delete";
-    public static final String CREDENTIAL_DATA_DELETE_LABEL_KEY = "credential.data.delete";
+    public static final String CREDENTIAL_DATA_DELETE_LABEL_KEY = "credential.default.delete";
     public static final int SIZE_MAX = 50000;
-
-    private Map<URI, URI> rootDeviceTypes = null;
-
+    
+    Map<URI, URI> rootDeviceTypes = null;
+    private Map<DeviceModel, List<URI>> variablesToDevices = new HashMap<>();
+    
     @Inject
     private MongoDBService nosql;
 
@@ -187,10 +169,9 @@ public class DataAPI {
             @ApiResponse(code = 400, message = "Bad user request", response = ErrorResponse.class),
             @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
     public Response addListData(
-            @ApiParam("Data description") @Valid List<DataCreationDTO> dtoList
+            @ApiParam("Data description") @Valid @NotNull @NotEmpty List<DataCreationDTO> dtoList
     ) throws Exception {
         DataDAO dao = new DataDAO(nosql, sparql, fs);
-
         List<DataModel> dataList = new ArrayList<>();
         try {
             if (dtoList.size() > SIZE_MAX) {
@@ -201,10 +182,21 @@ public class DataAPI {
                 DataModel model = dto.newModel();
                 dataList.add(model);
             }
-
-            validData(dataList);
+            
+            dataList = validData(dataList);
 
             dataList = (List<DataModel>) dao.createAll(dataList);
+            if(variablesToDevices.size() > 0) {
+               
+                DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
+                for (Map.Entry variablesToDevice : variablesToDevices.entrySet() ){
+                    
+                    deviceDAO.associateVariablesToDevice((DeviceModel) variablesToDevice.getKey(),(List<URI>)variablesToDevice.getValue(), user );
+                    
+                }
+            }
+            // do the  variable/device associations here ..
+            
             List<URI> createdResources = new ArrayList<>();
             for (DataModel data : dataList) {
                 createdResources.add(data.getUri());
@@ -523,100 +515,313 @@ public class DataAPI {
     }
 
 
-    /**
-     * Check one data type
+
+    /** 
+     * check that value is coherent with the variable datatype 
      *
+     * @param variable
+     * @param data
+     * @param dataIndex
+     * @throws Exception
+     */
+    private void checkVariableDatumTypes(VariableModel variable, DataModel data, int dataIndex) throws Exception {
+        if (data.getValue() != null) {
+            URI variableUri = variable.getUri();
+            URI dataType = variable.getDataType();
+            Object value = data.getValue(); 
+            if (!DataValidateUtils.checkTypeCoherence(dataType, value)) {
+                throw new DataTypeException(variableUri, value, dataType, dataIndex);
+            }
+        }
+    }
+    
+    
+    /** 
+     * First check in the data provenance if there is a device 
+     * Then check in the provenance and fill the data provenance with the device
+     * If no device and no target return an exception
+     *
+     * @param provDAO
+     * @param data
+     * @param hasTarget 
+     * @param variableCheckedDevice 
+     * @param provenanceToDevice 
+
+     * @throws Exception
+     */
+    private void variablesDeviceAssociation(ProvenanceDAO provDAO, DataModel data, boolean hasTarget, Map<DeviceModel, URI> variableCheckedDevice, Map<URI, DeviceModel> provenanceToDevice) throws Exception{
+        
+        DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
+        URI provenanceURI = data.getProvenance().getUri();
+        DeviceModel deviceFromProvWasAssociated = checkAndReturnDeviceFromDataProvenance(data, deviceDAO); 
+        if (deviceFromProvWasAssociated == null) {
+            
+            DeviceModel device = null;
+            if(provenanceToDevice.containsKey(provenanceURI)) {
+               device = provenanceToDevice.get(provenanceURI);
+               //check
+            } else {
+                device = checkAndReturnDeviceFromProvenance(deviceDAO, provDAO, data);
+                provenanceToDevice.put(provenanceURI,device);
+            }
+          
+            if (device != null) {
+                
+                if (!variableIsAssociatedToDevice(device, data.getVariable())) {
+                    addVariableToDevice(device,data.getVariable()); // add variable/device
+                }
+                
+                if (rootDeviceTypes == null) {
+                    rootDeviceTypes = getRootDeviceTypes();
+                }
+
+                DataProvenanceModel provMod = data.getProvenance();
+                List<ProvEntityModel> agents = null;
+                if (provMod.getProvWasAssociatedWith() == null) {
+                    agents = new ArrayList<>();
+                } else {
+                    agents = provMod.getProvWasAssociatedWith();
+                }
+
+                ProvEntityModel agent = new ProvEntityModel();
+                agent.setUri(device.getUri());
+                URI rootType = rootDeviceTypes.get(device.getType()); 
+                agent.setType(rootType);
+                agents.add(agent);
+                provMod.setProvWasAssociatedWith(agents);
+                data.setProvenance(provMod);
+            } else {
+                if(!hasTarget) {
+                   throw new DeviceOrTargetToDataException(data);
+                }
+            } 
+           
+        } else {
+            boolean deviceIsChecked = variableCheckedDevice.containsKey(deviceFromProvWasAssociated) && variableCheckedDevice.get(deviceFromProvWasAssociated) == data.getVariable() ;
+            if(!deviceIsChecked){
+                if (!variableIsAssociatedToDevice(deviceFromProvWasAssociated, data.getVariable())) {
+                    addVariableToDevice(deviceFromProvWasAssociated,data.getVariable()); // add variable/device
+                }
+                variableCheckedDevice.put(deviceFromProvWasAssociated,data.getVariable());
+                
+            }
+        }
+    }
+    
+    /** 
+     * check and return Device from Provenance if no ambiguity
+     *
+     * @param deviceDAO
+     * @param provDAO
      * @param data
      * @throws Exception
      */
-    public void checkVariableDataTypes(DataModel data) throws Exception {
-        checkVariableDataTypes(Collections.singletonList(data));
-    }
+    private DeviceModel checkAndReturnDeviceFromProvenance(DeviceDAO deviceDAO, ProvenanceDAO provDAO, DataModel data) throws Exception {
 
-    /**
-     * Check data list type
-     *
-     * @param datas
-     * @throws Exception
-     */
-    public void checkVariableDataTypes(List<DataModel> datas) throws Exception {
+       ProvenanceModel provenance = provDAO.get(data.getProvenance().getUri());
 
-        VariableDAO dao = new VariableDAO(sparql, nosql,fs);
-        Map<URI, URI> variableTypes = new HashMap<>();
-        int dataIndex = 0;
-        for (DataModel data : datas) {
-            checkVariableDatumTypes(dao, variableTypes, data, dataIndex);
-            dataIndex++;
-        }
-    }
-
-    private void checkVariableDatumTypes(VariableDAO dao, Map<URI, URI> variableTypes, DataModel data, int dataIndex) throws Exception {
-        if (data.getValue() != null) {
-            URI variableUri = data.getVariable();
-            if (!variableTypes.containsKey(variableUri)) {
-                VariableModel variable = dao.get(data.getVariable());
-                if (variable.getDataType() == null) {
-                    throw new NoVariableDataTypeException(variableUri);
-                } else {
-                    variableTypes.put(variableUri, variable.getDataType());
+       DeviceModel deviceToReturn = null ;
+       List<DeviceModel> devices = new ArrayList<>();
+       List<DeviceModel> linkedDevices = new ArrayList<>();
+                               
+       if (provenance.getAgents() != null && !provenance.getAgents().isEmpty()) {
+           
+            for (AgentModel agent : provenance.getAgents()) {
+                if(agent.getRdfType() == null) {
+                     throw new ProvenanceAgentTypeException(agent.getUri().toString());
+                }
+                if (deviceDAO.isDeviceType(agent.getRdfType())) {
+                    DeviceModel device = deviceDAO.getDeviceByURI(agent.getUri(), user);
+                    if (device != null) {
+                        devices.add(device);
+                       
+                        if(variableIsAssociatedToDevice(device, data.getVariable())){
+                            linkedDevices.add(device);
+                        }
+                    }
                 }
             }
-            URI dataType = variableTypes.get(variableUri);
+           
+            switch (linkedDevices.size()) {
+                case 0:
+                    if (devices.size() > 1) {
+                        throw new DeviceProvenanceAmbiguityException(provenance.getUri().toString());
+                    } else {
+                        if (!devices.isEmpty()) {
+                            deviceToReturn = devices.get(0);
+                        }
+                    }
+                    break;
+                case 1:
+                    deviceToReturn = linkedDevices.get(0);
+                    break;
+                default :
+                    throw new DeviceProvenanceAmbiguityException(provenance.getUri().toString());
 
-            if (!DataValidateUtils.checkTypeCoherence(dataType, data.getValue())) {
-                throw new DataTypeException(variableUri, data.getValue(), dataType, dataIndex);
+            }    
+            
+        }
+        return deviceToReturn;
+    }
+    
+    /** 
+     * check and return Device from Data Provenance if no ambiguity
+     * Exception if two devices as provenance agent
+     *
+     * @param deviceDAO
+     * @param data
+     * @throws Exception
+     */
+    private DeviceModel checkAndReturnDeviceFromDataProvenance(DataModel data, DeviceDAO deviceDAO) throws Exception{
+        
+        
+       boolean deviceIsLinked = false; // to test if there are 2 devices
+       URI agentToReturn = null;
+       DeviceModel device = null;
+       if(data.getProvenance().getProvWasAssociatedWith()!= null && !data.getProvenance().getProvWasAssociatedWith().isEmpty()){
+            for (ProvEntityModel agent : data.getProvenance().getProvWasAssociatedWith()) {
+                
+                    if(agent.getType() == null) {
+                        throw new ProvenanceAgentTypeException(agent.getUri().toString());
+                    }
+                    
+                    if (deviceDAO.isDeviceType(agent.getType())) {
+                        if(!deviceIsLinked) {
+                            deviceIsLinked = true;
+                            agentToReturn = agent.getUri();
+
+                        } else {
+                            throw new DeviceProvenanceAmbiguityException(data.getProvenance().getUri().toString());
+                        }
+                    }
+            }
+            if(agentToReturn != null){
+                device = deviceDAO.getDeviceByURI(agentToReturn, user);
+            }
+        }
+        return device;
+    }
+    
+    
+    /** 
+     * check if variable is associated to device
+     * @param device
+     * @param variable
+     * @throws Exception
+     */
+    private boolean variableIsAssociatedToDevice(DeviceModel device, URI variable){
+        List<SPARQLModelRelation> variables = device.getRelations(Oeso.measures).collect(Collectors.toList());
+
+        if (!variables.isEmpty()) {
+            if (variables.stream().anyMatch(var -> (SPARQLDeserializers.compareURIs(var.getValue(), variable.toString())))) {
+                return true;
+            }
+
+        }
+        return false;
+        
+    }
+    
+     
+    public Map<DeviceModel, List<URI>> getVariablesToDevices() {
+        return variablesToDevices;
+    }
+
+    public void setVariablesToDevices(Map<DeviceModel,  List<URI>> variablesToDevices) {
+        this.variablesToDevices = variablesToDevices;
+    }
+    
+    public void addVariableToDevice(DeviceModel device, URI variable) {
+        
+        if (!variablesToDevices.containsKey(device)) {
+            List<URI> list = new ArrayList<>();
+            list.add(variable);
+            variablesToDevices.put(device, list);
+        } else {
+            if (!variablesToDevices.get(device).contains(variable)) {
+                variablesToDevices.get(device).add(variable);
             }
         }
     }
 
-    private void validData(List<DataModel> dataList) throws Exception {
+    
+    /**
+     * Check variable data list before creation
+     * Complete the prov_was_associated_with provenance attribut
+     *
+     * @param dataList
+     * @throws Exception
+     */
+    private List<DataModel> validData(List<DataModel> dataList) throws Exception {
 
         VariableDAO variableDAO = new VariableDAO(sparql,nosql,fs);
 
-        Map<URI, URI> variableTypes = new HashMap<>();
-        Set<URI> variableURIs = new HashSet<>();
+        Map<URI, VariableModel> variableURIs = new HashMap<>();
         Set<URI> notFoundedVariableURIs = new HashSet<>();
-        Set<URI> objectURIs = new HashSet<>();
-        Set<URI> notFoundedObjectURIs = new HashSet<>();
+        Set<URI> targetURIs = new HashSet<>();
+        Set<URI> notFoundedTargetURIs = new HashSet<>();
         Set<URI> provenanceURIs = new HashSet<>();
         Set<URI> notFoundedProvenanceURIs = new HashSet<>();
         Set<URI> expURIs = new HashSet<>();
         Set<URI> notFoundedExpURIs = new HashSet<>();
-
+        Map<DeviceModel, URI> variableCheckedDevice =  new HashMap<>();
+        Map<URI, DeviceModel> provenanceToDevice =  new HashMap<>();
+        
+        List<DataModel> validData = new ArrayList<>();
         int dataIndex = 0;
         for (DataModel data : dataList) {
+            
+            boolean hasTarget = false;
             // check variable uri and datatype
-            if (data.getVariable() != null) {
-                if (!variableURIs.contains(data.getVariable())) {
-                    variableURIs.add(data.getVariable());
-                    VariableModel variable = variableDAO.get(data.getVariable());
-
+            if (data.getVariable() != null) {  // and if null ?
+                VariableModel variable = null;
+                URI variableURI = data.getVariable();
+                if (!variableURIs.containsKey(variableURI)) {
+                    variable = variableDAO.get(variableURI);  
                     if (variable == null) {
-                        notFoundedVariableURIs.add(data.getVariable());
+                        notFoundedVariableURIs.add(variableURI);
                     } else {
-                        checkVariableDatumTypes(variableDAO, variableTypes, data, dataIndex);
-                        dataIndex++;
+                        if (variable.getDataType() == null) {
+                            throw new NoVariableDataTypeException(variableURI);
+                        }
+                        variableURIs.put(variableURI, variable);
                     }
+                } else {
+                    variable = variableURIs.get(variableURI);
+                    
                 }
+                if(!notFoundedVariableURIs.contains(variableURI)) {
+                    checkVariableDatumTypes(variable, data, dataIndex); 
+                    dataIndex++;
+                }
+                
+              
             }
+            
 
-            //check objects uri
+            //check targets uri
             if (data.getTarget() != null) {
-                if (!objectURIs.contains(data.getTarget())) {
-                    objectURIs.add(data.getTarget());
+                hasTarget = true ;
+                if (!targetURIs.contains(data.getTarget())) {
+                    targetURIs.add(data.getTarget());
                     if (!sparql.uriExists((Node) null, data.getTarget())) {
-                        notFoundedObjectURIs.add(data.getTarget());
+                        hasTarget = false ;
+                        notFoundedTargetURIs.add(data.getTarget()); 
                     }
                 }
             }
 
-            //check provenance uri
+            //check provenance uri and variables device association
             ProvenanceDAO provDAO = new ProvenanceDAO(nosql, sparql);
             if (!provenanceURIs.contains(data.getProvenance().getUri())) {
                 provenanceURIs.add(data.getProvenance().getUri());
-                if (!provDAO.provenanceExists(data.getProvenance().getUri())) {
+                if (!provDAO.provenanceExists(data.getProvenance().getUri())) {  
                     notFoundedProvenanceURIs.add(data.getProvenance().getUri());
-                }
+                } 
+            }
+            
+            if(!notFoundedProvenanceURIs.contains(data.getProvenance().getUri())){
+                variablesDeviceAssociation(provDAO, data, hasTarget, variableCheckedDevice, provenanceToDevice);
             }
 
             // check experiments uri
@@ -630,21 +835,25 @@ public class DataAPI {
                     }
                 }
             }
+            
+            validData.add(data);
 
         }
 
         if (!notFoundedVariableURIs.isEmpty()) {
-            throw new NoSQLInvalidUriListException("wrong variable uris: ", new ArrayList<>(notFoundedVariableURIs));
+            throw new NoSQLInvalidUriListException("wrong variable uris: ", new ArrayList<>(notFoundedVariableURIs));// NOSQL Exception ? come from sparql request
         }
-        if (!notFoundedObjectURIs.isEmpty()) {
-            throw new NoSQLInvalidUriListException("wrong target uris", new ArrayList<>(notFoundedObjectURIs));
+        if (!notFoundedTargetURIs.isEmpty()) {
+            throw new NoSQLInvalidUriListException("wrong target uris", new ArrayList<>(notFoundedTargetURIs)); // NOSQL Exception ? come from sparql request
         }
         if (!notFoundedProvenanceURIs.isEmpty()) {
-            throw new NoSQLInvalidUriListException("wrong provenance uris: ", new ArrayList<>(notFoundedProvenanceURIs));
+            throw new NoSQLInvalidUriListException("wrong provenance uris: ", new ArrayList<>(notFoundedProvenanceURIs)); 
         }
         if (!notFoundedExpURIs.isEmpty()) {
-            throw new NoSQLInvalidUriListException("wrong experiments uris: ", new ArrayList<>(notFoundedExpURIs));
+            throw new NoSQLInvalidUriListException("wrong experiments uris: ", new ArrayList<>(notFoundedExpURIs)); // NOSQL Exception ? come from sparql request
         }
+        
+        return validData;
 
     }
 
@@ -844,6 +1053,14 @@ public class DataAPI {
             List<DataModel> data = new ArrayList<>(validation.getData().keySet());
             try {
                 dao.createAll(data);
+                
+                if(!validation.getVariablesToDevices().isEmpty()){
+                    DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
+                    for (Map.Entry variablesToDevice : validation.getVariablesToDevices().entrySet() ){
+                        deviceDAO.associateVariablesToDevice((DeviceModel) variablesToDevice.getKey(),(List<URI>)variablesToDevice.getValue(), user );
+                    }
+                }
+                
                 validation.setNbLinesImported(data.size());
             } catch (NoSQLTooLargeSetException ex) {
                 validation.setTooLargeDataset(true);
@@ -924,7 +1141,7 @@ public class DataAPI {
     }
     
     private final String expHeader = "experiment";
-    private final String soHeader = "target";
+    private final String targetHeader = "target";
     private final String dateHeader = "date";
     private final String deviceHeader = "device";
     private final String rawdataHeader = "raw_data";
@@ -932,16 +1149,16 @@ public class DataAPI {
     private DataCSVValidationModel validateWholeCSV(ProvenanceModel provenance, InputStream file, UserModel currentUser) throws Exception {       
         DataCSVValidationModel csvValidation = new DataCSVValidationModel();
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
-        Map<String, SPARQLNamedResourceModel> nameURIScientificObjects = new HashMap<>();
-        List<String> notExistingObjects = new ArrayList<>();
-        List<String> duplicatedObjects = new ArrayList<>();
+        Map<String, SPARQLNamedResourceModel> nameURITargets = new HashMap<>();
+        List<String> notExistingTargets = new ArrayList<>();
+        List<String> duplicatedTargets = new ArrayList<>();
         
-        ExperimentDAO xpDAO = new ExperimentDAO(sparql);
+        ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql);
         Map<String, ExperimentModel> nameURIExperiments = new HashMap<>();
         List<String> notExistingExperiments = new ArrayList<>();
         List<String> duplicatedExperiments = new ArrayList<>();
         
-        DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql);
+        DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
         Map<String,DeviceModel> nameURIDevices = new HashMap<>();
         List<String> notExistingDevices = new ArrayList<>();
         List<String> duplicatedDevices = new ArrayList<>();
@@ -950,13 +1167,17 @@ public class DataAPI {
         Boolean hasDevice = false;
         if (agents !=  null) {
             for (AgentModel agent:agents) {
-                if (agent.getRdfType() != null && deviceDAO.isDeviceType(agent.getRdfType())) {
+                if (agent.getRdfType() != null && deviceDAO.isDeviceType(agent.getRdfType())) { 
                     hasDevice = true;
                     break;
                 }
             }
         }
         
+        Map<String,DeviceModel> variableCheckedProvDevice =  new HashMap<>();
+        List<String> checkedVariables = new ArrayList<>();
+        
+        Map<String, DeviceModel> variableCheckedDevice = new HashMap<>();
 
         Map<Integer, String> headerByIndex = new HashMap<>();
 
@@ -971,8 +1192,8 @@ public class DataAPI {
             // Line 1
             String[] ids = csvReader.parseNext();
             Set<String> headers = Arrays.stream(ids).filter(Objects::nonNull).map(id -> id.toLowerCase(Locale.ENGLISH)).collect(Collectors.toSet());
-            if (!headers.contains(deviceHeader) && !headers.contains(soHeader) && !hasDevice) {
-                csvValidation.addMissingHeaders(Arrays.asList(deviceHeader + " or " + soHeader));
+            if (!headers.contains(deviceHeader) && !headers.contains(targetHeader) && !hasDevice) {
+                csvValidation.addMissingHeaders(Arrays.asList(deviceHeader + " or " + targetHeader));
             }  
             
             // 1. check variables
@@ -987,7 +1208,7 @@ public class DataAPI {
                         csvValidation.addEmptyHeader(i+1);
                     } else {                       
                     
-                        if (header.equalsIgnoreCase(expHeader) || header.equalsIgnoreCase(soHeader) 
+                        if (header.equalsIgnoreCase(expHeader) || header.equalsIgnoreCase(targetHeader) 
                             || header.equalsIgnoreCase(dateHeader) || header.equalsIgnoreCase(deviceHeader)
                             || header.equalsIgnoreCase(rawdataHeader)) {
                             headerByIndex.put(i, header);                            
@@ -1037,6 +1258,9 @@ public class DataAPI {
                         validateCSVRow = validateCSVRow(
                                 provenance,
                                 hasDevice,
+                                variableCheckedDevice,
+                                variableCheckedProvDevice,
+                                checkedVariables,
                                 values, 
                                 rowIndex, 
                                 csvValidation, 
@@ -1046,9 +1270,9 @@ public class DataAPI {
                                 duplicatedExperiments,
                                 nameURIExperiments,                                
                                 ontologyDAO,
-                                notExistingObjects,
-                                duplicatedObjects,
-                                nameURIScientificObjects,
+                                notExistingTargets,
+                                duplicatedTargets,
+                                nameURITargets,
                                 deviceDAO,
                                 notExistingDevices,
                                 duplicatedDevices,
@@ -1079,6 +1303,9 @@ public class DataAPI {
     private boolean validateCSVRow(
             ProvenanceModel provenance, 
             Boolean hasDevice,
+            Map<String, DeviceModel> variableCheckedDevice,
+            Map<String,DeviceModel> variableCheckedProvDevice,
+            List<String> checkedVariables,
             String[] values, 
             int rowIndex, 
             DataCSVValidationModel csvValidation, 
@@ -1088,9 +1315,9 @@ public class DataAPI {
             List<String> duplicatedExperiments,
             Map<String, ExperimentModel> nameURIExperiments,
             OntologyDAO ontologyDAO, 
-            List<String> notExistingObjects,
-            List<String> duplicatedObjects,
-            Map<String, SPARQLNamedResourceModel> nameURIScientificObjects,
+            List<String> notExistingTargets,
+            List<String> duplicatedTargets,
+            Map<String, SPARQLNamedResourceModel> nameURITargets,
             DeviceDAO deviceDAO, 
             List<String> notExistingDevices,
             List<String> duplicatedDevices,
@@ -1105,14 +1332,14 @@ public class DataAPI {
         
         List<ProvEntityModel> agents = new ArrayList<>();
         List<URI> experiments = new ArrayList<>();
-        SPARQLNamedResourceModel object = null;
+        SPARQLNamedResourceModel target = null;
         
-        Boolean missingTargetOrDevice = true;
+        Boolean missingTargetOrDevice = false;
         int targetColIndex = 0;
         int deviceColIndex = 0;
         
-        for (int colIndex = 0; colIndex < values.length; colIndex++) {            
-                        
+        DeviceModel device = null; 
+        for (int colIndex = 0; colIndex < values.length; colIndex++) {  
             if (headerByIndex.get(colIndex).equalsIgnoreCase(expHeader)) {
                 //check experiment column
                 ExperimentModel exp = null;
@@ -1126,7 +1353,7 @@ public class DataAPI {
                         if (duplicatedExperiments.contains(expNameOrUri)) {
                             CSVCell cell = new CSVCell(rowIndex, colIndex, expNameOrUri, "EXPERIMENT_ID");
                             csvValidation.addDuplicateExperimentError(cell);
-                            duplicatedExperiments.add(expNameOrUri);
+                            validRow = false;
                             break;
                         }
                         
@@ -1137,11 +1364,15 @@ public class DataAPI {
                                 CSVCell cell = new CSVCell(rowIndex, colIndex, expNameOrUri, "EXPERIMENT_ID");
                                 csvValidation.addDuplicateExperimentError(cell);
                                 duplicatedExperiments.add(expNameOrUri);
+                                validRow = false;
                                 break;
                             }
                         }
                         if (exp == null) {
-                            notExistingExperiments.add(expNameOrUri);
+                            if (!notExistingExperiments.contains(expNameOrUri)) {
+                                notExistingExperiments.add(expNameOrUri);
+                            }
+                           
                             CSVCell cell = new CSVCell(rowIndex, colIndex, expNameOrUri, "EXPERIMENT_ID");
                             csvValidation.addInvalidExperimentError(cell);
                             validRow = false;
@@ -1156,46 +1387,45 @@ public class DataAPI {
                 }
                 
             
-            } else if (headerByIndex.get(colIndex).equalsIgnoreCase(soHeader)) {
-                //check object column
-                String objectNameOrUri = values[colIndex];   
+            } else if (headerByIndex.get(colIndex).equalsIgnoreCase(targetHeader)) {
+                //check target column
+                String targetNameOrUri = values[colIndex];   
                 targetColIndex = colIndex;
                 
-                if (StringUtils.isEmpty(objectNameOrUri)) {
-                   if (hasDevice) {
-                       missingTargetOrDevice = false;
-                   }
-                } else {
-                    missingTargetOrDevice = false;
-                    if (nameURIScientificObjects.containsKey(objectNameOrUri)) {
-                        object = nameURIScientificObjects.get(objectNameOrUri);
+                if (!StringUtils.isEmpty(targetNameOrUri)){
+                    if (nameURITargets.containsKey(targetNameOrUri)) {
+                        target = nameURITargets.get(targetNameOrUri);
                     } else {
                         // test not in uri list
-                        if (duplicatedObjects.contains(objectNameOrUri)) {
-                            CSVCell cell = new CSVCell(rowIndex, colIndex, objectNameOrUri, "OBJECT_ID");
+                        if (duplicatedTargets.contains(targetNameOrUri)) {
+                            CSVCell cell = new CSVCell(rowIndex, colIndex, targetNameOrUri, "TARGET_ID");
                             csvValidation.addDuplicateObjectError(cell);
-                            duplicatedObjects.add(objectNameOrUri);
+                            validRow = false;
                             break;
                         }
                         
-                        if (!notExistingObjects.contains(objectNameOrUri)) {
+                        if (!notExistingTargets.contains(targetNameOrUri)) {
                             try {
-                                object = getTargetByNameOrURI(ontologyDAO, objectNameOrUri);
+                                target = getTargetByNameOrURI(ontologyDAO, targetNameOrUri);
                             } catch (DuplicateNameException e) {
-                                CSVCell cell = new CSVCell(rowIndex, colIndex, objectNameOrUri, "OBJECT_ID");
+                                CSVCell cell = new CSVCell(rowIndex, colIndex, targetNameOrUri, "TARGET_ID");
                                 csvValidation.addDuplicateObjectError(cell);
-                                duplicatedObjects.add(objectNameOrUri);
+                                duplicatedTargets.add(targetNameOrUri);
+                                validRow = false;
                                 break;
                             }                            
                         }
-                        if (object == null) {
-                            notExistingObjects.add(objectNameOrUri);
-                            CSVCell cell = new CSVCell(rowIndex, colIndex, objectNameOrUri, "OBJECT_ID");
+                        if (target == null) {
+                            if (!notExistingTargets.contains(targetNameOrUri)) {
+                               notExistingTargets.add(targetNameOrUri);   
+                            }
+                           
+                            CSVCell cell = new CSVCell(rowIndex, colIndex, targetNameOrUri, "TARGET_ID");
                             csvValidation.addInvalidObjectError(cell);
                             validRow = false;
                             break;
                         } else {
-                            nameURIScientificObjects.put(objectNameOrUri, object);
+                            nameURITargets.put(targetNameOrUri, target);
                         }
                     }
                 }
@@ -1213,17 +1443,11 @@ public class DataAPI {
             
             } else if (headerByIndex.get(colIndex).equalsIgnoreCase(deviceHeader)){
                 // check device column
-                DeviceModel device = null;
                 String deviceNameOrUri = values[colIndex];
                 deviceColIndex = colIndex;
                 
                 // test in uri list
-                if (StringUtils.isEmpty(deviceNameOrUri)) {
-                    if (hasDevice) {
-                        missingTargetOrDevice = false;
-                    }                    
-                } else {
-                    missingTargetOrDevice = false;
+                if (!StringUtils.isEmpty(deviceNameOrUri)) {
                      if (nameURIDevices.containsKey(deviceNameOrUri)) {                    
                         device = nameURIDevices.get(deviceNameOrUri);                    
                     } else {
@@ -1231,7 +1455,7 @@ public class DataAPI {
                         if (duplicatedDevices.contains(deviceNameOrUri)) {
                             CSVCell cell = new CSVCell(rowIndex, colIndex, deviceNameOrUri, "DEVICE_ID");
                             csvValidation.addDuplicateDeviceError(cell);
-                            duplicatedDevices.add(deviceNameOrUri);
+                            validRow = false;
                             break;
                         }
                         
@@ -1242,82 +1466,186 @@ public class DataAPI {
                                 CSVCell cell = new CSVCell(rowIndex, colIndex, deviceNameOrUri, "DEVICE_ID");
                                 csvValidation.addDuplicateDeviceError(cell);
                                 duplicatedDevices.add(deviceNameOrUri);
+                                validRow = false;
                                 break;
                             }
                         }
                         if (device == null) {
-                            notExistingDevices.add(deviceNameOrUri);
+                            if (!notExistingDevices.contains(deviceNameOrUri)) {
+                                notExistingDevices.add(deviceNameOrUri);
+                            }
                             CSVCell cell = new CSVCell(rowIndex, colIndex, deviceNameOrUri, "DEVICE_ID");
                             csvValidation.addInvalidDeviceError(cell);
                             validRow = false;
                             break;
                         } else {
-                            if (rootDeviceTypes == null) {
-                                rootDeviceTypes = getRootDeviceTypes();
-                            }
-                            URI rootType = rootDeviceTypes.get(device.getType());
-                            device.setType(rootType);
                             nameURIDevices.put(deviceNameOrUri, device);                        
                         }
                     }    
                 }
-                
-                if (device != null) {
-                    ProvEntityModel agent = new ProvEntityModel();
-                    agent.setUri(device.getUri());
-                    agent.setType(device.getType());
-                    agents.add(agent);
-                }
                
-            } else if (!headerByIndex.get(colIndex).equalsIgnoreCase(rawdataHeader)) {
+            } else if (!headerByIndex.get(colIndex).equalsIgnoreCase(rawdataHeader)) { // Variable/Value column
                 if (headerByIndex.containsKey(colIndex)) {
                     // If value is not blank and null
-                    if (!StringUtils.isEmpty(values[colIndex])){
-
-                        DataModel dataModel = new DataModel();
-                        DataProvenanceModel provenanceModel = new DataProvenanceModel();
-                        provenanceModel.setUri(provenance.getUri());
-                        if (!experiments.isEmpty()) {                    
-                            provenanceModel.setExperiments(experiments);
+                    if (!StringUtils.isEmpty(values[colIndex])){ 
+                       
+                        String variable = headerByIndex.get(colIndex);
+                        URI varURI = URI.create(variable);
+                        if (!hasDevice && device == null && target == null) {
+                            missingTargetOrDevice = true;
+                            validRow = false;
+                            break;      
                         }
-                        if (!agents.isEmpty()) {
-                            provenanceModel.setProvWasAssociatedWith(agents);
-                        }
-
-                        dataModel.setDate(parsedDateTimeMongo.getInstant());
-                        dataModel.setOffset(parsedDateTimeMongo.getOffset());
-                        dataModel.setIsDateTime(parsedDateTimeMongo.getIsDateTime());
-                        
-                        if (object != null) {
-                            dataModel.setTarget(object.getUri());
-                        }                        
-                        dataModel.setProvenance(provenanceModel);
-                        URI varURI = URI.create(headerByIndex.get(colIndex));
-                        dataModel.setVariable(varURI);
-                        dataModel.setValue(ExperimentAPI.returnValidCSVDatum(varURI, values[colIndex].trim(), mapVariableUriDataType.get(varURI), rowIndex, colIndex, csvValidation));
-                        if (colIndex+1<values.length) {
-                            if (headerByIndex.get(colIndex+1).equalsIgnoreCase(rawdataHeader) && values[colIndex+1] != null) {
-                                dataModel.setRawData(ExperimentAPI.returnValidRawData(varURI, values[colIndex+1].trim(), mapVariableUriDataType.get(varURI), rowIndex, colIndex+1, csvValidation));
+                        if (device != null) {
+                            
+                            boolean variableIsChecked = variableCheckedDevice.containsKey(variable) && variableCheckedDevice.get(variable) == device ;
+                            if(!variableIsChecked){
+                                if (!variableIsAssociatedToDevice(device, varURI)) {
+                                    csvValidation.addVariableToDevice(device, varURI);
+                                }
+                                variableCheckedDevice.put(variable, device);
                             }
+                    
+                        } else if (hasDevice) {
+                            if (!checkedVariables.contains(variable)) { // do it one time but write the error on each row if there is one
+                                List<DeviceModel> devices = new ArrayList<>();
+                                List<DeviceModel> linkedDevice = new ArrayList<>();
+                                DeviceModel dev = null;
+                                for (AgentModel agent : provenance.getAgents()) {
+                                    if (agent.getRdfType() != null && deviceDAO.isDeviceType(agent.getRdfType())) {
+                                        dev = deviceDAO.getDeviceByURI(agent.getUri(), user);
+                                        if (dev != null) {
+
+                                            if (variableIsAssociatedToDevice(dev, varURI)) {
+                                                linkedDevice.add(dev) ;
+                                            }
+                                            devices.add(dev);
+                                        }
+                                    }
+                                }
+                                switch (linkedDevice.size()) {
+                                    case 0:
+                                        if (devices.size() > 1) {
+                                            //wich device to choose ?
+                                            CSVCell cell = new CSVCell(rowIndex, colIndex, provenance.getUri().toString(), "DEVICE_AMBIGUITY_ID");  // add specific exception
+                                            csvValidation.addDeviceChoiceAmbiguityError(cell);
+                                            validRow = false;
+                                        } else {
+                                            if (!devices.isEmpty()) {
+                                                csvValidation.addVariableToDevice(devices.get(0), varURI);
+                                               
+                                                variableCheckedProvDevice.put(variable, devices.get(0));
+                                            } else {
+                                                if(target == null){
+                                                    missingTargetOrDevice = true;
+                                                    validRow = false;
+                                                }
+                                                
+                                            }
+
+                                        }
+                                        break;
+                                    case 1:
+
+                                        variableCheckedProvDevice.put(variable, linkedDevice.get(0));
+                                        break;
+                                        
+                                    default :
+                                        //witch device to choose ?
+                                        CSVCell cell = new CSVCell(rowIndex, colIndex, provenance.getUri().toString(), "DEVICE_AMBIGUITY_ID"); // add specific exception
+                                        csvValidation.addDeviceChoiceAmbiguityError(cell);
+                                        validRow = false;
+                                        break;
+
+                                }
+                                checkedVariables.add(variable);
+                                
+                            
+                            } else {
+                                if(!variableCheckedProvDevice.containsKey(variable)){
+                                     CSVCell cell = new CSVCell(rowIndex, colIndex, provenance.getUri().toString(), "DEVICE_AMBIGUITY_ID");  // add specific exception
+                                     csvValidation.addDeviceChoiceAmbiguityError(cell);
+                                     validRow = false;
+                                     break;
+                                }
+                                
+                            }
+                            
                         }
                         
-                        csvValidation.addData(dataModel,rowIndex);
-                        // check for duplicate data
-                        URI objectUri = null;
-                        if (object != null) {
-                            objectUri = object.getUri();
+                        if (validRow) {
+                            DataModel dataModel = new DataModel();
+                            DataProvenanceModel provenanceModel = new DataProvenanceModel();
+                            provenanceModel.setUri(provenance.getUri());
+                            
+                            if (!experiments.isEmpty()) {                    
+                                provenanceModel.setExperiments(experiments);
+                            }
+                            
+                            if (device != null) {
+                                ProvEntityModel agent = new ProvEntityModel();
+                                if (rootDeviceTypes == null) {
+                                    rootDeviceTypes = getRootDeviceTypes();
+                                }
+                                URI rootType = rootDeviceTypes.get(device.getType());
+                                agent.setType(rootType);
+                                agent.setUri(device.getUri());
+                                agents.add(agent);
+                                provenanceModel.setProvWasAssociatedWith(agents);
+                                
+                            } else if (hasDevice ) {
+                                
+                                DeviceModel checkedDevice = variableCheckedProvDevice.get(variable);
+                                ProvEntityModel agent = new ProvEntityModel();
+                                if (rootDeviceTypes == null) {
+                                    rootDeviceTypes = getRootDeviceTypes();
+                                }
+                                URI rootType = rootDeviceTypes.get(checkedDevice.getType());
+                                agent.setType(rootType);
+                                agent.setUri(checkedDevice.getUri());
+                                agents.add(agent);
+                                provenanceModel.setProvWasAssociatedWith(agents);
+                                
+                            }
+
+                            dataModel.setDate(parsedDateTimeMongo.getInstant());
+                            dataModel.setOffset(parsedDateTimeMongo.getOffset());
+                            dataModel.setIsDateTime(parsedDateTimeMongo.getIsDateTime());
+
+                            if (target != null) {
+                                dataModel.setTarget(target.getUri());
+                            }                        
+                            dataModel.setProvenance(provenanceModel);
+                            dataModel.setVariable(varURI);
+                            dataModel.setValue(ExperimentAPI.returnValidCSVDatum(varURI, values[colIndex].trim(), mapVariableUriDataType.get(varURI), rowIndex, colIndex, csvValidation));
+                            if (colIndex+1<values.length) {
+                                if (headerByIndex.get(colIndex+1).equalsIgnoreCase(rawdataHeader) && values[colIndex+1] != null) {
+                                    dataModel.setRawData(ExperimentAPI.returnValidRawData(varURI, values[colIndex+1].trim(), mapVariableUriDataType.get(varURI), rowIndex, colIndex+1, csvValidation));
+                                }
+                            }
+
+                            // check for duplicate data
+                            URI targetUri = null;
+                            if (target != null) {
+                                targetUri = target.getUri();
+                            }
+                            ImportDataIndex importDataIndex = new ImportDataIndex(parsedDateTimeMongo.getInstant(),varURI, provenance.getUri(), targetUri);
+                            if (!duplicateDataByIndex.contains(importDataIndex)) { 
+                                duplicateDataByIndex.add(importDataIndex);
+                            } else {
+                                String variableName = csvValidation.getHeadersLabels().get(colIndex) + '(' + csvValidation.getHeaders().get(colIndex) + ')';
+                                CSVCell duplicateCell = new CSVCell(rowIndex, colIndex, values[colIndex].trim(), variableName);
+                                csvValidation.addDuplicatedDataError(duplicateCell);
+                            }   
+
+                            csvValidation.addData(dataModel,rowIndex);
                         }
-                        ImportDataIndex importDataIndex = new ImportDataIndex(parsedDateTimeMongo.getInstant(),varURI, provenance.getUri(), objectUri);
-                        if (!duplicateDataByIndex.contains(importDataIndex)) { 
-                            duplicateDataByIndex.add(importDataIndex);
-                        }else{
-                            String variableName = csvValidation.getHeadersLabels().get(colIndex) + '(' + csvValidation.getHeaders().get(colIndex) + ')';
-                            CSVCell duplicateCell = new CSVCell(rowIndex, colIndex, values[colIndex].trim(), variableName);
-                            csvValidation.addDuplicatedDataError(duplicateCell);
-                        }    
+                        
                     }
                 }
-            } 
+            }
+            
+            
         }
         
         if (missingTargetOrDevice) {
@@ -1349,8 +1677,7 @@ public class DataAPI {
 
         return map;
     }
-
-    private void childrenToRoot(List<ResourceTreeDTO> children, Map<URI, URI> map, URI agentRootType) {
+    private void childrenToRoot( List<ResourceTreeDTO> children,Map<URI, URI> map, URI agentRootType){
         for (ResourceTreeDTO subTree : children) {
             map.put(subTree.getUri(), agentRootType);
             List<ResourceTreeDTO> child = subTree.getChildren();

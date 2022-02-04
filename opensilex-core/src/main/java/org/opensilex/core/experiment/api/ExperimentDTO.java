@@ -39,13 +39,7 @@ public abstract class ExperimentDTO {
     
     @JsonProperty("objective")
     protected String objective;
-    
-    @JsonProperty("species")
-    protected List<URI> species = new ArrayList<>();
-   
-    @JsonProperty("variables")  
-    protected List<URI> variables = new ArrayList<>();
-    
+
     @JsonProperty("organisations") 
     protected List<URI> infrastructures = new ArrayList<>();
 
@@ -169,16 +163,6 @@ public abstract class ExperimentDTO {
         return this;
     }
 
-    
-    public List<URI> getSpecies() {
-        return species;
-    }
-
-    public ExperimentDTO setSpecies(List<URI> species) {
-        this.species = species;
-        return this;
-    }
-
     public Boolean getIsPublic() {
         return isPublic;
     }
@@ -203,15 +187,6 @@ public abstract class ExperimentDTO {
 
     public ExperimentDTO setFacilities(List<URI> facilities) {
         this.facilities = facilities;
-        return this;
-    }
-
-    public List<URI> getVariables() {
-        return variables;
-    }
-
-    public ExperimentDTO setVariables(List<URI> variables) {
-        this.variables = variables;
         return this;
     }
 

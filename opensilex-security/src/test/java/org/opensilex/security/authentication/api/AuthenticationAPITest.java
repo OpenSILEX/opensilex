@@ -82,6 +82,7 @@ public class AuthenticationAPITest extends AbstractSecurityIntegrationTest {
             {
                 add(UserAPI.CREDENTIAL_USER_DELETE_ID);
                 add(UserAPI.CREDENTIAL_USER_MODIFICATION_ID);
+                add("user-access");
             }
         };
 
@@ -89,6 +90,7 @@ public class AuthenticationAPITest extends AbstractSecurityIntegrationTest {
             {
                 add(GroupAPI.CREDENTIAL_GROUP_DELETE_ID);
                 add(GroupAPI.CREDENTIAL_GROUP_MODIFICATION_ID);
+                add("group-access");
             }
         };
 

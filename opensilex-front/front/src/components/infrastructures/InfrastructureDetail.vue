@@ -1,114 +1,126 @@
 <template>
-  <b-card v-if="selected">
-    <template v-slot:header>
-      <h3>
-        <opensilex-Icon icon="ik#ik-clipboard" />
-        {{ $t("component.common.details-label") }}
-      </h3>
-      <div class="card-header-right" v-if="withActions">
-        <b-button-group>
-          <opensilex-EditButton
-            v-if="
-              user.hasCredential(
-                credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
-              )
-            "
-            @click="editInfrastructure()"
-            label="InfrastructureTree.edit"
-            :small="true"
-          ></opensilex-EditButton>
-          <opensilex-DeleteButton
-            v-if="
-              user.hasCredential(
-                credentials.CREDENTIAL_INFRASTRUCTURE_DELETE_ID
-              )
-            "
-            @click="deleteInfrastructure()"
-            label="InfrastructureTree.delete"
-            :small="true"
-          ></opensilex-DeleteButton>
-        </b-button-group>
-        <opensilex-ModalForm
-          ref="infrastructureForm"
-          component="opensilex-InfrastructureForm"
-          createTitle="InfrastructureTree.add"
-          editTitle="InfrastructureTree.update"
-          icon="ik#ik-globe"
-          @onCreate="$emit('onCreate', $event)"
-          @onUpdate="$emit('onUpdate', $event)"
-          :initForm="setParents"
-        ></opensilex-ModalForm>
+  <div style="display: contents;">
+    <b-card v-if="selected">
+      <template v-slot:header>
+        <h3>
+          <opensilex-Icon icon="ik#ik-clipboard" />
+          {{ $t("component.common.details-label") }}
+        </h3>
+        <div class="card-header-right" v-if="withActions">
+          <b-button-group>
+            <opensilex-EditButton
+              v-if="
+                user.hasCredential(
+                  credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
+                )
+              "
+              @click="editInfrastructure()"
+              label="InfrastructureTree.edit"
+              :small="true"
+            ></opensilex-EditButton>
+            <opensilex-DeleteButton
+              v-if="
+                user.hasCredential(
+                  credentials.CREDENTIAL_INFRASTRUCTURE_DELETE_ID
+                )
+              "
+              @click="deleteInfrastructure()"
+              label="InfrastructureTree.delete"
+              :small="true"
+            ></opensilex-DeleteButton>
+          </b-button-group>
+        </div>
+      </template>
+      <div>
+        <!-- URI -->
+        <opensilex-UriView
+          :uri="selected.uri"
+          :value="selected.uri"
+          :to="{
+            path: '/infrastructure/details/' + encodeURIComponent(selected.uri),
+          }"
+        ></opensilex-UriView>
+        <!-- Name -->
+        <opensilex-StringView
+          label="component.common.name"
+          :value="selected.name"
+        ></opensilex-StringView>
+        <!-- Type -->
+        <opensilex-TypeView
+          :type="selected.rdf_type"
+          :typeLabel="selected.rdf_type_name"
+        ></opensilex-TypeView>
+
+        <!-- Parents -->
+        <opensilex-UriListView
+          v-if="hasParents"
+          :list="parentUriList"
+          label="InfrastructureDetail.parentOrganizations"
+          :inline="false"
+        >
+        </opensilex-UriListView>
+
+        <!-- Groups -->
+        <opensilex-UriListView
+            label="InfrastructureDetail.groups.label"
+            :list="groupUriList"
+            :inline="false"
+            v-if="hasGroups"
+        >
+        </opensilex-UriListView>
+
+        <!-- Facilities -->
+        <opensilex-UriListView
+            label="InfrastructureDetail.facilities.label"
+            :list="facilityUriList"
+            :inline="false"
+            v-if="hasFacilities"
+          >
+        </opensilex-UriListView>
+
+        <!-- Sites -->
+        <opensilex-UriListView
+            label="InfrastructureDetail.sites.label"
+            :list="siteUriList"
+            :inline="false"
+            v-if="hasSites"
+          >
+        </opensilex-UriListView>
+
+        <!-- Expe -->
+        <opensilex-UriListView
+            label="InfrastructureDetail.experiments.label"
+            :list="experimentUriList"
+            :inline="false"
+            v-if="hasExperiments"
+          >
+        </opensilex-UriListView>
       </div>
-    </template>
-    <div>
-      <!-- URI -->
-      <opensilex-UriView
-        :uri="selected.uri"
-        :value="selected.uri"
-        :to="{
-          path: '/infrastructure/details/' + encodeURIComponent(selected.uri),
-        }"
-      ></opensilex-UriView>
-      <!-- Name -->
-      <opensilex-StringView
-        label="component.common.name"
-        :value="selected.name"
-      ></opensilex-StringView>
-      <!-- Type -->
-      <opensilex-TypeView
-        :type="selected.rdf_type"
-        :typeLabel="selected.rdf_type_name"
-      ></opensilex-TypeView>
-
-      <!-- Parents -->
-      <opensilex-UriListView
-        v-if="hasParents"
-        :list="parentUriList"
-        label="InfrastructureDetail.parent-orga"
-        :inline="false"
-      >
-      </opensilex-UriListView>
-
-      <opensilex-UriListView
-          label="InfrastructureDetail.groups.label"
-          :list="groupUriList"
-          :inline="false"
-          v-if="hasGroups"
-      >
-      </opensilex-UriListView>
-
-      <opensilex-UriListView
-          label="InfrastructureDetail.facilities.label"
-          :list="facilityUriList"
-          :inline="false"
-          v-if="hasFacilities"
-        >
-      </opensilex-UriListView>
-
-      <!-- Expe -->
-      <opensilex-UriListView
-          label="InfrastructureDetail.experiments.label"
-          :list="experimentUriList"
-          :inline="false"
-          v-if="hasExperiments"
-        >
-      </opensilex-UriListView>
-    </div>
-  </b-card>
+    </b-card>
+    <opensilex-ModalForm
+        ref="infrastructureForm"
+        component="opensilex-InfrastructureForm"
+        createTitle="InfrastructureTree.add"
+        editTitle="InfrastructureTree.update"
+        icon="ik#ik-globe"
+        @onCreate="$emit('onCreate', $event)"
+        @onUpdate="$emit('onUpdate', $event)"
+        :initForm="setParents"
+    ></opensilex-ModalForm>
+  </div>
 </template>
 
 <script lang="ts">
-import {Component, Prop, Ref, Watch} from "vue-property-decorator";
+import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
 import {InfrastructureGetDTO} from "opensilex-core/index";
-import {OrganisationsService} from "opensilex-core/api/organisations.service";
-import {ResourceDagDTO} from "opensilex-core/model/resourceDagDTO";
+import {OrganizationsService} from "opensilex-core/api/organizations.service";
 
 @Component
 export default class InfrastructureDetail extends Vue {
   $opensilex: any;
-  organizationService: OrganisationsService;
+  organizationService: OrganizationsService;
 
   @Prop()
   selected: InfrastructureGetDTO;
@@ -121,7 +133,7 @@ export default class InfrastructureDetail extends Vue {
   @Ref("infrastructureForm") readonly infrastructureForm!: any;
 
   created() {
-    this.organizationService = this.$opensilex.getService("opensilex-core.OrganisationsService");
+    this.organizationService = this.$opensilex.getService("opensilex-core.OrganizationsService");
   }
 
   get user() {
@@ -142,6 +154,10 @@ export default class InfrastructureDetail extends Vue {
 
   get hasFacilities() {
     return this.selected.facilities.length > 0;
+  }
+
+  get hasSites() {
+    return this.selected.sites.length > 0;
   }
 
   get hasExperiments() {
@@ -166,7 +182,7 @@ export default class InfrastructureDetail extends Vue {
         uri: parent.uri,
         value: parent.name,
         to: {
-          path: "/groups#" + encodeURIComponent(parent.uri),
+          path: "/infrastructure/details/" + encodeURIComponent(parent.uri),
         },
       }
     });
@@ -179,6 +195,18 @@ export default class InfrastructureDetail extends Vue {
         value: facility.name,
         to: {
           path: "/infrastructure/facility/details/" + encodeURIComponent(facility.uri)
+        }
+      };
+    });
+  }
+
+  get siteUriList() {
+    return this.selected.sites.map(site => {
+      return {
+        uri: site.uri,
+        value: site.name,
+        to: {
+          path: "/infrastructure/site/details/" + encodeURIComponent(site.uri)
         }
       };
     });
@@ -233,22 +261,24 @@ export default class InfrastructureDetail extends Vue {
 <i18n>
 en:
   InfrastructureDetail:
-    parent-orga: Parent organizations
+    parentOrganizations: Parent organizations
     groups:
       label: "Groups"
-      edit: "Edit"
     facilities:
       label: "Facilities"
+    sites:
+      label: "Sites"
     experiments:
       label: "Experiments"
 fr:
   InfrastructureDetail:
-    parent-orga: Organisations parentes
+    parentOrganizations: Organisations parentes
     groups:
       label: "Groupes"
-      edit: "Modifier"
     facilities:
       label: "Installations techniques"
+    sites:
+      label: "Sites"
     experiments:
       label: "Expérimentations"
 </i18n>

@@ -28,6 +28,7 @@ import org.opensilex.core.data.dal.DataProvenanceModel;
 import org.opensilex.core.experiment.api.ExperimentAPITest;
 import org.opensilex.core.provenance.api.ProvenanceAPITest;
 import org.opensilex.core.provenance.api.ProvenanceCreationDTO;
+import org.opensilex.core.scientificObject.api.ScientificObjectAPITest;
 import org.opensilex.core.variable.api.VariableApiTest;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
@@ -74,10 +75,10 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
         variable = extractUriFromResponse(postResultVar);
         
         //create scientific object
-//        ScientificObjectAPITest soAPI = new ScientificObjectAPITest();
-//        Response postResultSO = getJsonPostResponse(target(ScientificObjectAPITest.createPath), soAPI.getCreationDTO(false));
-//        scientificObjects = new ArrayList<>();
-//        scientificObjects.add(extractUriFromResponse(postResultSO)); 
+        ScientificObjectAPITest soAPI = new ScientificObjectAPITest();
+        Response postResultSO = getJsonPostResponse(target(ScientificObjectAPITest.createPath), soAPI.getCreationDTO(false));
+        scientificObjects = new ArrayList<>();
+        scientificObjects.add(extractUriFromResponse(postResultSO)); 
         
     }
     
@@ -87,7 +88,7 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
         
         dataDTO.setProvenance(provenance);
         dataDTO.setVariable(variable);
-        //dataDTO.setScientificObjects(scientificObjects);
+        dataDTO.setTarget(scientificObjects.get(0));
         dataDTO.setValue(5.56);
         dataDTO.setDate(date);
                 

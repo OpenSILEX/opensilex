@@ -107,7 +107,7 @@ public class FactorDetailsGetDTO extends SKOSReferencesDTO {
         dto.setUri(model.getUri());
         dto.setName(model.getName());
         if(model.getCategory() != null){
-            dto.setCategory(model.getCategory().getUri());
+            dto.setCategory(model.getCategory());
         }
         dto.setDescription(model.getDescription());
         dto.setExperiment(model.getExperiment().getUri());

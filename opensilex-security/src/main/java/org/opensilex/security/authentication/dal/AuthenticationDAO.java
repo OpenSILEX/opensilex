@@ -5,25 +5,28 @@
  */
 package org.opensilex.security.authentication.dal;
 
-import org.opensilex.security.user.dal.UserModel;
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.sparql.core.Var;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.SecurityOntology;
-import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.security.credentials.ExtraCredentialService;
+import org.opensilex.security.credentials.config.Credential;
+import org.opensilex.security.credentials.config.CredentialConfig;
+import org.opensilex.security.credentials.config.CredentialGroup;
+import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
-import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
+import org.opensilex.sparql.service.SPARQLService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.lang.reflect.Method;
+import java.util.*;
+
+import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
 /**
  *
@@ -35,8 +38,11 @@ public final class AuthenticationDAO {
 
     private final SPARQLService sparql;
 
+    private final ExtraCredentialService extraCredentialService;
+
     public AuthenticationDAO(SPARQLService sparql) {
         this.sparql = sparql;
+        this.extraCredentialService = new ExtraCredentialService();
     }
 
     public static String getCredentialIdFromMethod(Method method) {
@@ -91,6 +97,32 @@ public final class AuthenticationDAO {
                     }
                 }
             });
+
+            // Register extra credentials from config file
+            CredentialConfig extraCredentialConfig = extraCredentialService.getCredentialConfig();
+            for (CredentialGroup credentialGroup : extraCredentialConfig.credentialGroups()) {
+                String groupId = credentialGroup.id();
+                String groupLabelKey = credentialGroup.label();
+
+                if (!StringUtils.isEmpty(groupId)) {
+                    if (groupLabelKey.isEmpty()) {
+                        groupLabelKey = groupId;
+                    }
+
+                    if (!credentialsGroups.containsKey(groupId)) {
+                        credentialsGroups.put(groupId, new HashMap<>());
+                        credentialsGroupLabels.put(groupId, groupLabelKey);
+                    }
+
+                    Map<String, String> groupMap = credentialsGroups.get(groupId);
+
+                    for (Credential credential : credentialGroup.credentials()) {
+                        LOGGER.debug("Register extra credential: " + groupId + " - " + credential.id() + " (" + credential.label() + ")");
+                        groupMap.put(credential.id(), credential.label());
+                        credentialsIdList.add(credential.id());
+                    }
+                }
+            }
         }
     }
 

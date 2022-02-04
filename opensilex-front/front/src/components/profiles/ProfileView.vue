@@ -8,7 +8,9 @@
 
     <opensilex-PageActions>
       <template v-slot>
-        <opensilex-CreateButton @click="profileForm.showCreateForm()" label="component.profile.add"></opensilex-CreateButton>
+        <opensilex-CreateButton
+            v-if="user.hasCredential(credentials.CREDENTIAL_PROFILE_MODIFICATION_ID)"
+            @click="profileForm.showCreateForm()" label="component.profile.add"></opensilex-CreateButton>
       </template>
     </opensilex-PageActions>
 

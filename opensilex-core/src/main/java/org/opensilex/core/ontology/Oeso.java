@@ -106,11 +106,14 @@ public class Oeso {
     public static final Resource Facility = Ontology.resource(NS, "Facility");
     public static final Resource Installation = Ontology.resource(NS, "Installation");
     public static final Property isHosted = Ontology.property(NS, "isHosted");
+    public static final Property containsFacility = Ontology.property(NS, "containsFacility");
+    public static final Property withinSite = Ontology.property(NS, "withinSite");
 
     // ---- SPECIES ----
     // public static final Resource Species = Ontology.resource(NS, "Species");
     // ---- FACTORS ----
     public static final Resource Factor = Ontology.resource(NS, "Factor");
+    public static final Resource FactorCategory = Ontology.resource(NS, "FactorCategory"); 
     public static final Resource FactorLevel = Ontology.resource(NS, "FactorLevel");
     public static final Property hasFactorLevel = Ontology.property(NS, "hasFactorLevel");
     public static final Property hasFactor = Ontology.property(NS, "hasFactor");
@@ -164,5 +167,4 @@ public class Oeso {
     public static final Property personInCharge = Ontology.property(NS,"personInCharge");
     public static final Property startUp = Ontology.property(NS,"startUp");
     public static final Property removal = Ontology.property(NS,"removal");
-
 }

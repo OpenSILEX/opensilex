@@ -18,8 +18,10 @@ public class FormModel extends MongoModel {
     private String codeLot;
     private boolean isRoot;
     private Instant creationDate;
+
     private Instant lastUpdateDate;
     private String offset;
+
 
     /*@BsonCreator
     public FormModel(){}*/
@@ -28,6 +30,7 @@ public class FormModel extends MongoModel {
         constructorBis(codeLot, commitAddress, isRoot);
         this.creationDate = creationDate;
         this.lastUpdateDate = creationDate;
+
     }
     public FormModel(String codeLot, String commitAddress, boolean isRoot){
         constructorBis(codeLot, commitAddress, isRoot);
@@ -89,6 +92,7 @@ public class FormModel extends MongoModel {
     public Instant getLastUpdateDate() {
         return lastUpdateDate;
     }
+
     public String getOffset() {
         return offset;
     }
@@ -96,8 +100,9 @@ public class FormModel extends MongoModel {
         this.offset = offset;
     }
     @Override
-    public String[] getUriSegments(MongoModel instance) {
+    public String[] getInstancePathSegments(MongoModel instance) {
         return new String[]{codeLot, creationDate.toString()};
+
     }
 
 }

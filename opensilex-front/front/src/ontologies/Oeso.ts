@@ -1,6 +1,5 @@
 let OESO_URI = "http://www.opensilex.org/vocabulary/oeso";
 let OESO_PREFIX = "vocabulary";
-let FOAF_URI = "http://xmlns.com/foaf/0.1";
 
 let getShortURI = (uri) => {
     return uri.replace(OESO_URI + "#", OESO_PREFIX + ":")
@@ -14,7 +13,6 @@ let ontologies = {
     URI: OESO_URI,
     PROJECT_TYPE_URI: OESO_URI + "#Project",
     EXPERIMENT_TYPE_URI: OESO_URI + "#Experiment",
-    ORGANIZATION_TYPE_URI: FOAF_URI + "/Organization",
     SCIENTIFIC_OBJECT_TYPE_URI: OESO_URI + "#ScientificObject",
     FACILITY_TYPE_URI: OESO_URI + "#Facility",
     GERMPLASM_TYPE_URI: OESO_URI + "#Germplasm",
@@ -45,6 +43,7 @@ let ontologies = {
     IS_PART_OF: OESO_URI + "#isPartOf",
     IMAGE_TYPE_URI: OESO_URI + "#Image",
     DATAFILE_TYPE_URI: OESO_URI + "#Datafile",
+    FACTOR_CATEGORY_URI: OESO_URI + '#FactorCategory',
     getShortURI: getShortURI,
     checkURIs: checkURIs
 };

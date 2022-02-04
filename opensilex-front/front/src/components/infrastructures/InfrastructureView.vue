@@ -4,7 +4,6 @@
       icon="ik#ik-globe"
       title="component.menu.infrastructures"
       description="InfrastructureView.description"
-      :isExperimentalFeature="true"
     ></opensilex-PageHeader>
     <opensilex-PageActions>
       <div>
@@ -19,7 +18,7 @@
         <!-- Infrastructure tree -->
         <opensilex-InfrastructureTree
           ref="infrastructureTree"
-          @onSelect="updateSelectedOrganization"
+          @onSelect="onSelectedOrganizationOrSite"
         ></opensilex-InfrastructureTree>
       </div>
       <div class="col-md-6">
@@ -28,15 +27,23 @@
             :selected="selectedOrganization"
             @onUpdate="refresh"
         ></opensilex-InfrastructureDetail>
+        <!-- Site detail -->
+        <opensilex-SiteDetail
+            :selected="selectedSite"
+            :withActions="true"
+            @onUpdate="refresh"
+        ></opensilex-SiteDetail>
         <!-- Facilities -->
         <opensilex-InfrastructureFacilitiesView
-            v-if="selectedOrganization"
+            v-if="selectedFacilities"
 
-            :withActions="true"
+            :withActions="facilitiesActions"
             @onUpdate="refresh"
             @onCreate="refresh"
             @onDelete="refresh"
-            :selected="selectedOrganization"
+            :facilities="selectedFacilities"
+            :organization="selectedOrganization"
+            :site="selectedSite"
             :isSelectable="false"
             ref="organizationFacilitiesView"
             @facilitySelected="updateSelectedFacility"
@@ -68,18 +75,22 @@
 </template>
 
 <script lang="ts">
-import { Component, Ref } from "vue-property-decorator";
+import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
-import { OrganisationsService, InfrastructureGetDTO } from "opensilex-core/index";
+import { OrganizationsService, InfrastructureGetDTO } from "opensilex-core/index";
 import {InfrastructureFacilityGetDTO} from "opensilex-core/model/infrastructureFacilityGetDTO";
+import {SiteGetDTO} from "opensilex-core/model/siteGetDTO";
+import Org from "../../ontologies/Org";
+import {NamedResourceDTOInfrastructureFacilityModel} from "opensilex-core/model/namedResourceDTOInfrastructureFacilityModel";
+import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
 
 @Component
 export default class InfrastructureView extends Vue {
   $opensilex: any;
   $store: any;
   $route: any;
-  service: OrganisationsService;
+  service: OrganizationsService;
 
   // Gestion des tabs : inspiré de VariablesView.vue
   static ORGANIZATION_TAB = "Organization";
@@ -97,9 +108,14 @@ export default class InfrastructureView extends Vue {
   @Ref("facilitiesView") readonly facilitiesView!: any;
 
   selectedOrganization: InfrastructureGetDTO = null;
+  selectedSite: SiteGetDTO = null;
   selectedFacility: InfrastructureFacilityGetDTO = null;
 
   created() {
+    this.service = this.$opensilex.getService(
+        "opensilex-core.OrganizationsService"
+    );
+
     let query = this.$route.query;
     if (query && query.tab) {
       let requestedTab = decodeURIComponent(query.tab).toLowerCase();
@@ -120,6 +136,20 @@ export default class InfrastructureView extends Vue {
 
   get credentials() {
     return this.$store.state.credentials;
+  }
+
+  get facilitiesActions(): boolean {
+    return !!this.selectedOrganization;
+  }
+
+  get selectedFacilities(): Array<NamedResourceDTOInfrastructureFacilityModel> {
+    if (this.selectedOrganization) {
+      return this.selectedOrganization.facilities;
+    }
+    if (this.selectedSite) {
+      return this.selectedSite.facilities;
+    }
+    return undefined;
   }
 
   get organizationTab() {
@@ -148,17 +178,36 @@ export default class InfrastructureView extends Vue {
     }
   }
 
+  onSelectedOrganizationOrSite(selection: InfrastructureGetDTO | SiteGetDTO) {
+    if (Org.checkURIS(Org.SITE_TYPE_URI, selection.rdf_type)) {
+      this.updateSeletedSite(selection);
+    } else { // Organization
+      this.updateSelectedOrganization(selection);
+    }
+  }
+
   updateSelectedOrganization(newSelection) {
+    this.selectedSite = undefined;
     this.selectedOrganization = newSelection;
   }
 
+  updateSeletedSite(newSite) {
+    this.selectedOrganization = undefined;
+    this.selectedSite = newSite;
+  }
+
   updateSelectedFacility(facility: InfrastructureFacilityGetDTO) {
-    this.selectedFacility = facility;
+    this.service
+        .getInfrastructureFacility(facility.uri)
+        .then((http: HttpResponse<OpenSilexResponse<InfrastructureFacilityGetDTO>>) => {
+          let detailDTO: InfrastructureFacilityGetDTO = http.response.result;
+          this.selectedFacility = detailDTO;
+        });
   }
 
   refresh() {
     if (this.infrastructureTree) {
-      this.infrastructureTree.refresh(this.selectedOrganization.uri);
+      this.infrastructureTree.refresh(this.selectedOrganization ? this.selectedOrganization.uri : undefined);
     }
     if (this.facilitiesView) {
       this.facilitiesView.refresh();
@@ -174,11 +223,11 @@ export default class InfrastructureView extends Vue {
 en:
   InfrastructureView:
     description: Manage and configure organizations
-    organizations: Organizations
+    organizations: Organizations and sites
     facilities: Facilities
 fr:
   InfrastructureView:
     description: Gérer et configurer les organisations
-    organizations: Organisations
+    organizations: Organisations et sites
     facilities: Installations techniques
 </i18n>

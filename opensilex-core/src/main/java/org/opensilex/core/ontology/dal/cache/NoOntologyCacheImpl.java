@@ -1,8 +1,12 @@
 package org.opensilex.core.ontology.dal.cache;
 
 import org.opensilex.OpenSilex;
-import org.opensilex.core.ontology.dal.*;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
+import org.opensilex.sparql.ontology.dal.ClassModel;
+import org.opensilex.sparql.ontology.dal.DatatypePropertyModel;
+import org.opensilex.sparql.ontology.dal.ObjectPropertyModel;
+import org.opensilex.sparql.ontology.dal.OwlRestrictionModel;
 import org.opensilex.sparql.service.SPARQLService;
 
 import java.net.URI;

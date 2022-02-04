@@ -97,10 +97,10 @@ public class GermplasmAPI {
     public static final String CREDENTIAL_GERMPLASM_GROUP_LABEL_KEY = "credential-groups.germplasm";
 
     public static final String CREDENTIAL_GERMPLASM_MODIFICATION_ID = "germplasm-modification";
-    public static final String CREDENTIAL_GERMPLASM_MODIFICATION_LABEL_KEY = "credential.germplasm.modification";
+    public static final String CREDENTIAL_GERMPLASM_MODIFICATION_LABEL_KEY = "credential.default.modification";
 
     public static final String CREDENTIAL_GERMPLASM_DELETE_ID = "germplasm-delete";
-    public static final String CREDENTIAL_GERMPLASM_DELETE_LABEL_KEY = "credential.germplasm.delete";
+    public static final String CREDENTIAL_GERMPLASM_DELETE_LABEL_KEY = "credential.default.delete";
 
     public final String GERMPLASM_EXAMPLE_URI = "http://opensilex/set/experiments/ZA17";
     public static final String GERMPLASM_EXAMPLE_TYPE = "http://www.opensilex.org/vocabulary/oeso#Variety";
@@ -331,6 +331,30 @@ public class GermplasmAPI {
 
         // Return paginated list of exp DTO
         return new PaginatedListResponse<>(resultDTOList).getResponse();
+    }
+    
+    /**
+     * Return all available germplasm attributes
+     * @return
+     * @throws java.lang.Exception
+     */
+    @GET
+    @Path("attributes")
+    @ApiOperation("Get attributes of all germplasm")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return germplasm attributes", response = ExperimentGetListDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 404, message = "Germplasm attributes not found", response = ErrorDTO.class)
+    })
+    public Response getGermplasmAttributes() throws Exception {
+        // Get germplasm from DAO by URI
+        GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
+        List<String> distinctAttributes = germplasmDAO.getDistinctGermplasAttributes();
+
+        // Return list of
+        return new SingleObjectResponse<>(distinctAttributes).getResponse();
     }
 
     /**

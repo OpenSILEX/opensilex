@@ -29,6 +29,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.opensilex.core.organisation.dal.InfrastructureDAO;
 import org.opensilex.core.organisation.dal.InfrastructureModel;
+import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
@@ -56,17 +57,20 @@ import org.opensilex.sparql.service.SPARQLService;
 )
 public class InfrastructureAPI {
 
-    public static final String CREDENTIAL_GROUP_INFRASTRUCTURE_ID = "Organisations";
+    public static final String CREDENTIAL_GROUP_INFRASTRUCTURE_ID = "Organizations";
     public static final String CREDENTIAL_GROUP_INFRASTRUCTURE_LABEL_KEY = "credential-groups.infrastructures";
 
     public static final String CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID = "infrastructure-modification";
-    public static final String CREDENTIAL_INFRASTRUCTURE_MODIFICATION_LABEL_KEY = "credential.infrastructure.modification";
+    public static final String CREDENTIAL_INFRASTRUCTURE_MODIFICATION_LABEL_KEY = "credential.default.modification";
 
     public static final String CREDENTIAL_INFRASTRUCTURE_DELETE_ID = "infrastructure-delete";
-    public static final String CREDENTIAL_INFRASTRUCTURE_DELETE_LABEL_KEY = "credential.infrastructure.delete";
+    public static final String CREDENTIAL_INFRASTRUCTURE_DELETE_LABEL_KEY = "credential.default.delete";
 
     @Inject
     private SPARQLService sparql;
+
+    @Inject
+    private MongoDBService nosql;
 
     @CurrentUser
     UserModel currentUser;
@@ -89,7 +93,7 @@ public class InfrastructureAPI {
             @ApiParam("Organisation description") @Valid InfrastructureCreationDTO dto
     ) throws Exception {
         try {
-            InfrastructureDAO dao = new InfrastructureDAO(sparql);
+            InfrastructureDAO dao = new InfrastructureDAO(sparql, nosql);
             InfrastructureModel model = dto.newModel();
             model.setCreator(currentUser.getUri());
 
@@ -115,7 +119,7 @@ public class InfrastructureAPI {
     public Response getInfrastructure(
             @ApiParam(value = "Organisation URI", example = "http://opensilex.dev/organisation/phenoarch", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        InfrastructureDAO dao = new InfrastructureDAO(sparql);
+        InfrastructureDAO dao = new InfrastructureDAO(sparql, nosql);
         InfrastructureModel model = dao.get(uri, currentUser);
         return new SingleObjectResponse<>(InfrastructureGetDTO.getDTOFromModel(model)).getResponse();
     }
@@ -137,7 +141,7 @@ public class InfrastructureAPI {
     public Response deleteInfrastructure(
             @ApiParam(value = "Organisation URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
     ) throws Exception {
-        InfrastructureDAO dao = new InfrastructureDAO(sparql);
+        InfrastructureDAO dao = new InfrastructureDAO(sparql, nosql);
         dao.delete(uri, currentUser);
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
@@ -154,7 +158,7 @@ public class InfrastructureAPI {
             @ApiParam(value = "Regex pattern for filtering list by names", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern,
             @ApiParam(value = " organisation URIs") @QueryParam("organisation_uris") List<URI> infraURIs
     ) throws Exception {
-        InfrastructureDAO dao = new InfrastructureDAO(sparql);
+        InfrastructureDAO dao = new InfrastructureDAO(sparql, nosql);
 
         List<InfrastructureModel> organizations = dao.search(pattern, infraURIs, currentUser);
         ResourceDagDTOBuilder<InfrastructureModel> dtoBuilder = new ResourceDagDTOBuilder<>(organizations);
@@ -178,7 +182,7 @@ public class InfrastructureAPI {
             @ApiParam("Organisation description")
             @Valid InfrastructureUpdateDTO dto
     ) throws Exception {
-        InfrastructureDAO dao = new InfrastructureDAO(sparql);
+        InfrastructureDAO dao = new InfrastructureDAO(sparql, nosql);
 
         InfrastructureModel infrastructure = dao.update(dto.newModel(), currentUser);
         Response response = new ObjectUriResponse(Response.Status.OK, infrastructure.getUri()).getResponse();

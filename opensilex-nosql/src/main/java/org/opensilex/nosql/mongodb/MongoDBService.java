@@ -8,6 +8,7 @@ package org.opensilex.nosql.mongodb;
 
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoClientSettings;
+import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.ClientSession;
 import com.mongodb.client.DistinctIterable;
 import com.mongodb.client.FindIterable;
@@ -41,8 +42,12 @@ import org.opensilex.utils.OrderBy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.core.UriBuilder;
+
 @ServiceDefaultDefinition(config = MongoDBConfig.class)
 public class MongoDBService extends BaseService {
+
+    public final static String DEFAULT_SERVICE = "mongodb";
 
     private final static Logger LOGGER = LoggerFactory.getLogger(MongoDBService.class);
     private final String URI_FIELD = "uri";
@@ -127,10 +132,10 @@ public class MongoDBService extends BaseService {
 
     }
 
-    public <T extends MongoModel> void create(T instance, Class<T> instanceClass, String collectionName, String prefix) throws Exception {
+    public <T extends MongoModel> void create(T instance, Class<T> instanceClass, String collectionName, String uriGenerationPrefix) throws Exception {
         LOGGER.debug("MONGO CREATE - Collection : " + collectionName);
         if (instance.getUri() == null) {
-            generateUniqueUriIfNullOrValidateCurrent(instance, prefix, collectionName);
+            generateUniqueUriIfNullOrValidateCurrent(instance, uriGenerationPrefix, collectionName);
         }
         MongoCollection<T> collection = db.getCollection(collectionName, instanceClass);
         try {
@@ -358,6 +363,22 @@ public class MongoDBService extends BaseService {
 
         return results;
     }
+    
+    public <Document> Set<Document> aggregate( 
+            String collectionName,
+             List aggregationArgs) {
+        LOGGER.debug("MONGO SEARCH - Collection : " + collectionName + " - Aggregation pipeline : " + aggregationArgs.toString());
+        Set<Document> results = new HashSet<>();
+        MongoCollection collection = db.getCollection(collectionName);
+
+        AggregateIterable<Document> aggregate = collection.aggregate(aggregationArgs);
+
+        for (Document res : aggregate) {
+            results.add(res);
+        }
+
+        return results;
+    }
 
     public <T extends MongoModel> void delete(Class<T> instanceClass, String collectionName, URI uri) throws NoSQLInvalidURIException {
         LOGGER.debug("MONGO DELETE - Collection : " + collectionName + " - uri : "  + uri);
@@ -489,20 +510,20 @@ public class MongoDBService extends BaseService {
      *
      * @param <T>
      * @param instance will be updated by a new generated URI
-     * @param prefix
+     * @param instanceClassPrefix
      * @param collectionName
      * @throws Exception
      */
-    public <T extends MongoModel> void generateUniqueUriIfNullOrValidateCurrent(T instance, String prefix, String collectionName) throws Exception {
+    public <T extends MongoModel> void generateUniqueUriIfNullOrValidateCurrent(T instance, String instanceClassPrefix, String collectionName) throws Exception {
         URI uri = instance.getUri();
 
         if (uri == null) {
 
             int retry = 0;
-            String graphPrefix = generationPrefixURI.resolve(prefix).toString();
-            uri = instance.generateURI(graphPrefix, instance, retry);
+            String prefix = UriBuilder.fromUri(generationPrefixURI).path(instanceClassPrefix).toString();
+            uri = instance.generateURI(prefix, instance, retry);
             while (uriExists(instance.getClass(), collectionName, uri)) {
-                uri = instance.generateURI(graphPrefix, instance, retry++);
+                uri = instance.generateURI(prefix, instance, retry++);
             }
             instance.setUri(uri);
 

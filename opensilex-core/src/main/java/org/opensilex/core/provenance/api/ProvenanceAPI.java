@@ -6,47 +6,16 @@
 //******************************************************************************
 package org.opensilex.core.provenance.api;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import javax.inject.Inject;
-import javax.naming.NamingException;
-import javax.validation.Valid;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import io.swagger.annotations.*;
 import org.apache.jena.arq.querybuilder.AskBuilder;
-import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.opensilex.core.data.api.DataAPI;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataFileModel;
 import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.ontology.dal.OntologyDAO;
-import org.opensilex.core.ontology.dal.URITypesModel;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
+import org.opensilex.sparql.ontology.dal.URITypesModel;
 import org.opensilex.core.provenance.dal.AgentModel;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
@@ -59,16 +28,26 @@ import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
-import org.opensilex.server.response.ErrorDTO;
-import org.opensilex.server.response.ErrorResponse;
-import org.opensilex.server.response.ObjectUriResponse;
-import org.opensilex.server.response.PaginatedListResponse;
-import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.server.response.*;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
+
+import javax.inject.Inject;
+import javax.naming.NamingException;
+import javax.validation.Valid;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.text.ParseException;
+import java.util.*;
 
 /**
  * Provenance API
@@ -76,15 +55,26 @@ import org.opensilex.utils.OrderBy;
  * @author Alice Boizet
  */
 @Api(DataAPI.CREDENTIAL_DATA_GROUP_ID)
-@Path("/core/provenances")
+@Path(ProvenanceAPI.PATH)
 @ApiCredentialGroup(
-        groupId = DataAPI.CREDENTIAL_DATA_GROUP_ID,
-        groupLabelKey = DataAPI.CREDENTIAL_DATA_GROUP_LABEL_KEY
+        groupId = ProvenanceAPI.CREDENTIAL_PROVENANCE_GROUP_ID,
+        groupLabelKey = ProvenanceAPI.CREDENTIAL_PROVENANCE_GROUP_LABEL_KEY
 )
 public class ProvenanceAPI {
 
+    public static final String PATH = "/core/provenances";
+
     public static final String PROVENANCE_ACTIVITY_TYPE = "http://www.w3.org/ns/prov#Activity";
     public static final String PROVENANCE_EXAMPLE_URI = "http://opensilex.dev/id/provenance/provenancelabel";
+
+    public static final String CREDENTIAL_PROVENANCE_GROUP_ID = "Provenances";
+    public static final String CREDENTIAL_PROVENANCE_GROUP_LABEL_KEY = "credential-groups.provenance";
+
+    public static final String CREDENTIAL_PROVENANCE_MODIFICATION_ID = "provenance-modification";
+    public static final String CREDENTIAL_PROVENANCE_MODIFICATION_LABEL_KEY = "credential.default.modification";
+
+    public static final String CREDENTIAL_PROVENANCE_DELETE_ID = "provenance-delete";
+    public static final String CREDENTIAL_PROVENANCE_DELETE_LABEL_KEY = "credential.default.delete";
 
     @CurrentUser
     UserModel currentUser;
@@ -99,8 +89,8 @@ public class ProvenanceAPI {
     @ApiOperation("Add a provenance")
     @ApiProtected
     @ApiCredential(
-            credentialId = DataAPI.CREDENTIAL_DATA_MODIFICATION_ID,
-            credentialLabelKey = DataAPI.CREDENTIAL_DATA_MODIFICATION_LABEL_KEY
+            credentialId = ProvenanceAPI.CREDENTIAL_PROVENANCE_MODIFICATION_ID,
+            credentialLabelKey = ProvenanceAPI.CREDENTIAL_PROVENANCE_MODIFICATION_LABEL_KEY
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -177,7 +167,7 @@ public class ProvenanceAPI {
 
     /**
      * @param name
-     * @param experiment
+     * @param description
      * @param activityType
      * @param agentURI
      * @param agentType
@@ -222,8 +212,8 @@ public class ProvenanceAPI {
     @ApiOperation("Delete a provenance that doesn't describe data")
     @ApiProtected
     @ApiCredential(
-            credentialId = DataAPI.CREDENTIAL_DATA_DELETE_ID,
-            credentialLabelKey = DataAPI.CREDENTIAL_DATA_DELETE_LABEL_KEY
+            credentialId = ProvenanceAPI.CREDENTIAL_PROVENANCE_DELETE_ID,
+            credentialLabelKey = ProvenanceAPI.CREDENTIAL_PROVENANCE_DELETE_LABEL_KEY
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -238,7 +228,7 @@ public class ProvenanceAPI {
         List<URI> provenances = new ArrayList();
         provenances.add(uri);
         DataDAO dataDAO = new DataDAO(nosql, sparql, null);
-        ListWithPagination<DataModel> dataList = dataDAO.search(
+        int datacount = dataDAO.count(
                 currentUser,
                 null,
                 null,
@@ -249,13 +239,11 @@ public class ProvenanceAPI {
                 null,
                 null,
                 null,
-                null,
-                null,
-                0,
-                1
+                null
+              
         );
         
-        ListWithPagination<DataFileModel> datafilesList = dataDAO.searchFiles(
+       int datafilesCount = dataDAO.countFiles(
                 currentUser,
                 null,
                 null,
@@ -264,20 +252,17 @@ public class ProvenanceAPI {
                 null,
                 null,
                 null,
-                null,
-                null,
-                0,
-                1
+                null
         );
 
-        if (dataList.getTotal() > 0 || datafilesList.getTotal() > 0) {
+        if (datacount > 0 || datafilesCount > 0) {
             return new ErrorResponse(
                     Response.Status.BAD_REQUEST,
                     "The provenance is linked to some data",
                     "You can't delete a provenance linked to data"
             ).getResponse();
         } else {
-            try {
+            try { 
                 dao.delete(uri);
                 return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
 
@@ -291,8 +276,8 @@ public class ProvenanceAPI {
     @ApiProtected
     @ApiOperation("Update a provenance")
     @ApiCredential(
-            credentialId = DataAPI.CREDENTIAL_DATA_MODIFICATION_ID,
-            credentialLabelKey = DataAPI.CREDENTIAL_DATA_MODIFICATION_LABEL_KEY
+            credentialId = ProvenanceAPI.CREDENTIAL_PROVENANCE_MODIFICATION_ID,
+            credentialLabelKey = ProvenanceAPI.CREDENTIAL_PROVENANCE_MODIFICATION_LABEL_KEY
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)

@@ -19,10 +19,12 @@ import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 @SPARQLResource(
         ontology = SecurityOntology.class,
         resource = "Profile",
-        graph = "profiles",
+        graph = ProfileModel.GRAPH,
         prefix = "prf"
 )
 public class ProfileModel extends SPARQLNamedResourceModel<ProfileModel> {
+
+    public static final String GRAPH = "profile";
 
     @SPARQLProperty(
             ontology = SecurityOntology.class,

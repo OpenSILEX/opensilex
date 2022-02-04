@@ -10,15 +10,16 @@
 package org.opensilex.core.experiment.factor.dal;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.SKOSReferencesModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
-import org.opensilex.sparql.utils.ClassURIGenerator;
+import org.opensilex.uri.generation.ClassURIGenerator;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -27,10 +28,12 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
 @SPARQLResource(
         ontology = Oeso.class,
         resource = "Factor",
-        graph = "set/factors",
+        graph = FactorModel.GRAPH,
         prefix = "factor"
 )
 public class FactorModel extends SKOSReferencesModel implements ClassURIGenerator<FactorModel> {
+
+    public static final String GRAPH = "factor";
 
     @SPARQLProperty(
             ontology = RDFS.class,
@@ -43,7 +46,7 @@ public class FactorModel extends SKOSReferencesModel implements ClassURIGenerato
             ontology = Oeso.class,
             property = "hasCategory"
     )
-    FactorCategorySKOSModel category;
+    URI category;
     public static final String CATEGORY_FIELD = "category";
     
     @SPARQLProperty(
@@ -88,11 +91,11 @@ public class FactorModel extends SKOSReferencesModel implements ClassURIGenerato
         this.name = name;
     }
 
-    public FactorCategorySKOSModel getCategory(){
+    public URI getCategory(){
         return category;
     }
 
-    public void setCategory(FactorCategorySKOSModel category) {
+    public void setCategory(URI category) {
         this.category = category;
     }
 
@@ -129,7 +132,7 @@ public class FactorModel extends SKOSReferencesModel implements ClassURIGenerato
     }
     
     @Override
-    public String[] getUriSegments(FactorModel instance) {
+    public String[] getInstancePathSegments(FactorModel instance) {
         return new String[]{
             getExperiment().getName(),
             instance.getName()

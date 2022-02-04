@@ -38,7 +38,7 @@ import { DevicesService, DeviceCreationDTO } from "opensilex-core/index";
 import VueRouter from "vue-router";
 
 @Component
-export default class Device extends Vue {
+export default class DeviceView extends Vue {
   $opensilex: any;
   $store: any;
   $router: VueRouter;

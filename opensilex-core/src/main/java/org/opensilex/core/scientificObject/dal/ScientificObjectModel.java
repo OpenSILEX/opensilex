@@ -1,22 +1,28 @@
 package org.opensilex.core.scientificObject.dal;
 
-import java.time.LocalDate;
-import java.util.List;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLTreeModel;
+import org.opensilex.uri.generation.ClassURIGenerator;
+
+import java.time.LocalDate;
+import java.util.List;
 
 @SPARQLResource(
         ontology = Oeso.class,
         resource = "ScientificObject",
-        graph = "set/scientific-objects",
-        prefix = "so"
+        graph = ScientificObjectModel.GRAPH,
+        prefix = ScientificObjectModel.PREFIX
 )
+public class ScientificObjectModel extends SPARQLTreeModel<ScientificObjectModel> implements ClassURIGenerator<SPARQLTreeModel<ScientificObjectModel>> {
 
-public class ScientificObjectModel extends SPARQLTreeModel<ScientificObjectModel> {
-    
+    public static final String GRAPH = "scientific-object";
+    public static final String PREFIX = "so";
+    public static final String GENERATION_PREFIX = "so-";
+
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "isPartOf",
@@ -78,4 +84,16 @@ public class ScientificObjectModel extends SPARQLTreeModel<ScientificObjectModel
         this.factorLevels = factorLevels;
     }
 
+    @Override
+    public String[] getInstancePathSegments(SPARQLTreeModel<ScientificObjectModel> instance) {
+
+        StringBuilder sb = new StringBuilder(GENERATION_PREFIX);
+        if (instance.getName() != null) {
+            sb.append(instance.getName());
+        } else {
+            sb.append(RandomStringUtils.randomAlphabetic(8));
+        }
+        return new String[]{sb.toString()};
+    }
+    
 }

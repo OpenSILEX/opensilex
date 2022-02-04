@@ -7,6 +7,7 @@
 package org.opensilex.server.rest.serialization;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -52,6 +53,7 @@ public class ObjectMapperContextResolver implements ContextResolver<ObjectMapper
         mapper.enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT);
         mapper.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS);
         mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
+        mapper.enable(JsonParser.Feature.STRICT_DUPLICATE_DETECTION);
         // TODO: Uncomment this line to avoid serialization of null fields
 //        mapper.setSerializationInclusion(Include.NON_NULL);
         return mapper;

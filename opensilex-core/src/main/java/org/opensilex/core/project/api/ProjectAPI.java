@@ -64,10 +64,10 @@ public class ProjectAPI {
     public static final String CREDENTIAL_PROJECT_GROUP_LABEL_KEY = "credential-groups.projects";
 
     public static final String CREDENTIAL_PROJECT_MODIFICATION_ID = "project-modification";
-    public static final String CREDENTIAL_PROJECT_MODIFICATION_LABEL_KEY = "credential.project.modification";
+    public static final String CREDENTIAL_PROJECT_MODIFICATION_LABEL_KEY = "credential.default.modification";
 
     public static final String CREDENTIAL_PROJECT_DELETE_ID = "project-delete";
-    public static final String CREDENTIAL_PROJECT_DELETE_LABEL_KEY = "credential.project.delete";
+    public static final String CREDENTIAL_PROJECT_DELETE_LABEL_KEY = "credential.default.delete";
 
     protected static final String PROJECT_EXAMPLE_URI = "http://opensilex/set/project/BW1";
 
@@ -254,7 +254,7 @@ public class ProjectAPI {
     /**
      * Remove a project
      *
-     * @param prjctUri the project URI
+     * @param uri the project URI
      * @return a {@link Response} with a {@link ObjectUriResponse} containing
      * the deleted Project {@link URI}
      */

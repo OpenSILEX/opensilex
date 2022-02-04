@@ -318,7 +318,16 @@ pages:
 # ##########################################
 
 ###################################
-##  GUILHEM-TEST-SNAPSHOT-DEPLOYMENT
+##  DEMO-BUILD-DEPLOYMENT
+###################################
+
+demo:build:
+  <<: *build_template_with_opensilex
+  rules:
+    - if: $CI_COMMIT_BRANCH == "demo"
+
+###################################
+##  MAX-TEST-SNAPSHOT-DEPLOYMENT
 ###################################
 
 maximilian:build:
@@ -452,6 +461,60 @@ test:valentin:deploy:
   needs:
     - valentin:build
 
+  ###################################
+  ##  SEBASTIEN-TEST-BUILD-DEPLOYMENT
+  ###################################
+
+sebastien:build:
+  <<: *build_template_with_opensilex
+  rules:
+    - if: $CI_COMMIT_BRANCH == "sebastien"
+
+test:sebastien:deploy:
+  <<: *deploy_opensilex_before_script
+  <<: *deploy_opensilex_template
+  variables:
+    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/sebastien"
+    INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
+    OPENSILEX_JAR_ADMIN_PORT: 4089
+    OPENSILEX_JAR_PORT: 8089
+    REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
+    REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
+    REMOTE_SERVER_RSYNC_DIR: "mistea/sebastien"
+    REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "sebastien"
+      when: on_success
+  needs:
+    - sebastien:build
+
+###################################
+##  BENDY-TEST-BUILD-DEPLOYMENT
+###################################
+
+bendy:build:
+  <<: *build_template_with_opensilex
+  rules:
+    - if: $CI_COMMIT_BRANCH == "bendy"
+
+test:bendy:deploy:
+  <<: *deploy_opensilex_before_script
+  <<: *deploy_opensilex_template
+  variables:
+    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/bendy"
+    INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
+    OPENSILEX_JAR_ADMIN_PORT: 4100
+    OPENSILEX_JAR_PORT: 8100
+    REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
+    REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
+    REMOTE_SERVER_RSYNC_DIR: "mistea/bendy"
+    REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "bendy"
+      when: on_success
+  needs:
+    - bendy:build  
+
 ###################################
 ##  JULIEN-TEST-BUILD-DEPLOYMENT
 ###################################
@@ -505,33 +568,6 @@ test:renaud:deploy:
       when: on_success
   needs:
     - renaud:build
-
-###################################
-##  VINCENT-TEST-BUILD-DEPLOYMENT
-###################################
-
-vincent:build:
-  <<: *build_template_with_opensilex
-  rules:
-    - if: $CI_COMMIT_BRANCH == "vincent"
-
-test:vincent:deploy:
-  <<: *deploy_opensilex_before_script
-  <<: *deploy_opensilex_template
-  variables:
-    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/vincent"
-    INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
-    OPENSILEX_JAR_ADMIN_PORT: 4089
-    OPENSILEX_JAR_PORT: 8089
-    REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
-    REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
-    REMOTE_SERVER_RSYNC_DIR: "mistea/vincent"
-    REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
-  rules:
-    - if: $CI_COMMIT_BRANCH == "vincent"
-      when: on_success
-  needs:
-    - vincent:build
 
 ###################################
 ## TEMPORARY-TEST-BUILD-DEPLOYMENT

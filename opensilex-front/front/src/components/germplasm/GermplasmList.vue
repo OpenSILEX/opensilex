@@ -76,15 +76,16 @@
 
       <template v-slot:advancedSearch>
         <opensilex-FilterField>
-          <opensilex-StringFilter
-            :filter.sync="filter.metadataKey"
-            label="GermplasmList.filter.metadataKey"
-          ></opensilex-StringFilter>
+          <opensilex-GermplasmAttributesSelector
+          :germplasmAttribute.sync="filter.metadataKey"
+          label="GermplasmList.filter.metadataKey"
+          ></opensilex-GermplasmAttributesSelector> 
         </opensilex-FilterField>
         <opensilex-FilterField>
+          <span >{{$t("GermplasmList.filter.metadataValue")}}</span>
           <opensilex-StringFilter
+            class="mt-1"  
             :filter.sync="filter.metadataValue"
-            label="GermplasmList.filter.metadataValue"
           ></opensilex-StringFilter>
         </opensilex-FilterField>
       </template>     
@@ -107,7 +108,8 @@
           :small="true"
           :disabled="numberOfSelectedRows == 0"
           text=actions>
-            <b-dropdown-item-button    
+            <b-dropdown-item-button
+                v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
               @click="createDocument()"
             >{{$t('component.common.addDocument')}}</b-dropdown-item-button>
             <b-dropdown-item-button

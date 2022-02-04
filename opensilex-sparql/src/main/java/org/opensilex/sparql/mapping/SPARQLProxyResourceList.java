@@ -5,10 +5,16 @@
 //******************************************************************************
 package org.opensilex.sparql.mapping;
 
+import org.apache.jena.graph.Node;
+import org.opensilex.sparql.exceptions.SPARQLInvalidUriListException;
+import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.service.SPARQLService;
+
 import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 import org.apache.jena.graph.Node;
+import org.opensilex.sparql.exceptions.SPARQLInvalidUriListException;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 
@@ -27,6 +33,10 @@ class SPARQLProxyResourceList<T extends SPARQLResourceModel> extends SPARQLProxy
     protected final Class<T> genericType;
     protected final Collection<URI> uris;
 
+    /**
+     *
+     * @throws SPARQLInvalidUriListException if any URI from uris could not be loaded
+     */
     @Override
     protected List<T> loadData() throws Exception {
         return service.loadListByURIs(graph, genericType, uris, lang,null,null);

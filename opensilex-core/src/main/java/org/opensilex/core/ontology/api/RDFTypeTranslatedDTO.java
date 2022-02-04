@@ -6,11 +6,11 @@
 package org.opensilex.core.ontology.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.HashMap;
-import java.util.Map;
-import org.opensilex.core.ontology.dal.ClassModel;
+import org.opensilex.sparql.ontology.dal.ClassModel;
 
 import javax.validation.constraints.NotEmpty;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *

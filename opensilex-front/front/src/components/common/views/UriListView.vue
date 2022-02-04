@@ -32,6 +32,14 @@
 import { Component, Prop, PropSync } from "vue-property-decorator";
 import copy from "copy-to-clipboard";
 import Vue from "vue";
+import {UriLinkDestination} from "./UriLink.vue";
+
+export interface UriLinkDescription {
+  uri: string,
+  value: string,
+  url?: string,
+  to: UriLinkDestination
+}
 
 @Component
 export default class UriListView extends Vue {
@@ -40,7 +48,7 @@ export default class UriListView extends Vue {
   label: string;
 
   @Prop()
-  list: Array<any>;
+  list: Array<UriLinkDescription>;
 
   @Prop({
     default: true

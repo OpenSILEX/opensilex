@@ -31,7 +31,7 @@
         <opensilex-FilterField>
           <opensilex-AgentTypeSelector
             :multiple="false"
-            :agentType.sync="filter.agent_type"
+            :selected.sync="filter.agent_type"
             @clear="filter.agent = undefined"
             @select="filter.agent = undefined"
             :key="lang"
@@ -39,14 +39,14 @@
           </opensilex-AgentTypeSelector>
         </opensilex-FilterField>
 
-        <opensilex-FilterField v-if="filter.agent_type == 'vocabulary:Operator'">
+        <opensilex-FilterField v-if="filter.agent_type === 'vocabulary:Operator'">
           <opensilex-UserSelector
             :users.sync="filter.agent"
             label="ProvenanceForm.agent"
           ></opensilex-UserSelector>
         </opensilex-FilterField>
 
-        <opensilex-FilterField v-else-if="filter.agent_type != undefined && filter.agent_type != null">
+        <opensilex-FilterField v-else-if="filter.agent_type">
           <opensilex-DeviceSelector
             ref="deviceSelector"
             label="ProvenanceForm.agent"
@@ -106,14 +106,14 @@
       <template v-slot:cell(actions)="{data}">
         <b-button-group size="sm">
           <opensilex-EditButton
-            v-if="user.hasCredential(credentials.CREDENTIAL_DATA_MODIFICATION_ID)"
+            v-if="user.hasCredential(credentials.CREDENTIAL_PROVENANCE_MODIFICATION_ID)"
             @click="$emit('onEdit', data.item.uri)"
             label="ProvenanceList.update"
             :small="true"
             
           ></opensilex-EditButton>
           <opensilex-DeleteButton
-            v-if="user.hasCredential(credentials.CREDENTIAL_DATA_DELETE_ID)"
+            v-if="user.hasCredential(credentials.CREDENTIAL_PROVENANCE_DELETE_ID)"
             @click="$emit('onDelete', data.item.uri)"
             label="ProvenanceList.delete"
             :small="true"
@@ -182,7 +182,7 @@ export default class ProvenanceList extends Vue {
   @Ref("deviceSelector") readonly deviceSelector!: any;
   @Ref("documentForm") readonly documentForm!: any;
 
-  filter = {
+  filter: any = {
     name: undefined,
     activity_type: undefined,
     agent_type: undefined,

@@ -75,6 +75,7 @@ export default class DeviceSelector extends Vue {
         this.deviceType, // rdf_type filter
         true, // include_subtypes boolean
         query, // name filter
+        undefined, // variable filter
         undefined, // year filter
         undefined, // existence_date filter
         undefined, // brand filter

@@ -27,12 +27,6 @@
         :requiredStart="true"
     ></opensilex-DateRangePickerForm>
 
-    <!-- Species -->
-    <opensilex-SpeciesSelector
-      :required="true"
-      :multiple="true"
-      :species.sync="experiment.species"
-    ></opensilex-SpeciesSelector>
     <!-- Objective -->
     <opensilex-TextAreaForm
       :value.sync="experiment.objective"

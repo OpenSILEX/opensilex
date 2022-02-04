@@ -28,7 +28,6 @@ import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.variable.dal.InterestEntityModel;
 import org.opensilex.core.variable.dal.MethodModel;
-import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variablesGroup.dal.VariablesGroupDAO;
 import org.opensilex.core.variablesGroup.dal.VariablesGroupModel;
 import org.opensilex.nosql.mongodb.MongoDBConfig;
@@ -39,6 +38,7 @@ import org.opensilex.sparql.SPARQLConfig;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
+import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.extensions.OntologyFileDefinition;
 import org.opensilex.sparql.extensions.SPARQLExtension;
 import org.opensilex.sparql.service.SPARQLService;
@@ -84,10 +84,10 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
     public List<OntologyFileDefinition> getOntologiesFiles() throws Exception {
         List<OntologyFileDefinition> list = SPARQLExtension.super.getOntologiesFiles();
         list.add(new OntologyFileDefinition(
-                "http://aims.fao.org/aos/agrovoc/factors",
-                ONTOLOGIES_DIRECTORY+"/agrovoc-factors.rdf",
+                "http://purl.obolibrary.org/obo/peco.owl",
+                ONTOLOGIES_DIRECTORY+"/peco_factors.owl",
                 Lang.RDFXML,
-                "agrovoc"
+                "peco"
         ));
         list.add(new OntologyFileDefinition(
                 OA.NS,
@@ -112,6 +112,12 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
                 ONTOLOGIES_DIRECTORY+"/owl2.ttl",
                 Lang.TURTLE,
                 OWL.PREFIX
+        ));
+        list.add(new OntologyFileDefinition(
+                Time.NS,
+                ONTOLOGIES_DIRECTORY+"/time.ttl",
+                Lang.TURTLE,
+                Time.PREFIX
         ));
         return list;
     }
@@ -148,7 +154,7 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
     private void insertDefaultProvenance() throws Exception {
 
         SPARQLConfig sparqlConfig = getOpenSilex().getModuleConfig(SPARQLModule.class, SPARQLConfig.class);
-        MongoDBConfig config = getOpenSilex().loadConfigPath("big-data.mongodb.config", MongoDBConfig.class);
+        MongoDBConfig config = getOpenSilex().loadConfigPath(MongoDBConfig.DEFAULT_CONFIG_PATH, MongoDBConfig.class);
         MongoClient mongo = MongoDBService.getMongoDBClient(config);
         MongoDatabase db = mongo.getDatabase(config.database());
 
@@ -223,43 +229,46 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
             LOGGER.info(successMsg);
         }
     }
-    
+
+
+    private static final String DEFAULT_VARIABLE_GROUP_NAME = "Environmental variables";
+    private static final String DEFAULT_VARIABLE_GROUP_DESCRIPTION = "This group is about environmental variables\"";
+
     private void insertDefaultVariablesGroup() throws Exception {
         SPARQLServiceFactory factory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
         SPARQLService sparql = factory.provide();
         
-        VariablesGroupDAO dao = new VariablesGroupDAO(sparql);   
         VariablesGroupModel variablesGroup = new VariablesGroupModel();
-        String name = "Environmental variables";
+        variablesGroup.setName(DEFAULT_VARIABLE_GROUP_NAME);
+        variablesGroup.setDescription(DEFAULT_VARIABLE_GROUP_DESCRIPTION);
         
-        variablesGroup.setName(name);
-        variablesGroup.setDescription("This group is about environmental variables");
-        
-        LOGGER.info("Insert default variables group: " + variablesGroup.getUri());
+        LOGGER.info("Insert default variables group: {}",variablesGroup.getUri());
         try {
-           dao.create(variablesGroup); 
+           sparql.create(variablesGroup);
         } catch (Exception e) {
-           LOGGER.warn("Couldn't create default variables group : " + e.getMessage());
-           throw e;
+            throw new SPARQLException("Couldn't create default variables group : " + e.getMessage(), e);
         }
     }
-    
+
+    private static final URI STANDARD_METHOD_URI = URI.create("http://www.opensilex.org/vocabulary/oeso#standard_method");
+    private static final String STANDARD_METHOD_NAME = "Standard method";
+    private static final String STANDARD_METHOD_DESCRIPTION = "For usual method";
+
     private void insertDefaultMethod() throws Exception {
+
         SPARQLServiceFactory factory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
         SPARQLService sparql = factory.provide();
-        
+
         MethodModel method = new MethodModel();
-        String name = "Standard";
-        
-        method.setName(name);
-        method.setDescription("This method is standard");
-        
-        LOGGER.info("Insert default method: " + method.getUri());
+        method.setUri(STANDARD_METHOD_URI);
+        method.setName(STANDARD_METHOD_NAME);
+        method.setDescription(STANDARD_METHOD_DESCRIPTION);
+
+        LOGGER.info("Insert default method {}", method.getUri());
         try {
-           sparql.create(method); 
+            sparql.create(method);
         } catch (Exception e) {
-           LOGGER.warn("Couldn't create default method : " + e.getMessage());
-           throw e;
+            throw new SPARQLException("Couldn't create default method : " + e.getMessage(), e);
         }
     }
     
@@ -296,8 +305,7 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
            sparql.create(greenHouse);
            sparql.create(chamberGrowth);
         } catch (Exception e) {
-           LOGGER.warn("Couldn't create default entities of interest : " + e.getMessage());
-           throw e;
+            throw new SPARQLException("Couldn't create default entities of interest : " + e.getMessage(), e);
         }
     }
 }

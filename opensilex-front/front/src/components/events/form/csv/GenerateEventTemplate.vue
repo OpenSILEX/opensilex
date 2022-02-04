@@ -151,8 +151,12 @@ export default class GenerateEventTemplate extends Vue {
 
     generateCSV(typeModels) {
 
-        let headers = ["uri", "rdfType", "isInstant", "start", "end", "targets", "description"];
-        let headersDescription = [
+      let headers = ["uri", "rdfType", "isInstant", "start", "end", "targets", "description"];
+
+      // list of properties URI to exclude from custom properties
+      let managedProperties = ["oeev:isInstant", "time:hasBeginning", "time:hasEnd", "oeev:concerns", "rdfs:comment"];
+
+      let headersDescription = [
             this.getPropertyDescription("Event.uri-help", false, "Event.uri-example"),
             this.getPropertyDescription("Event.type-help", false, "Event.type-example"),
             this.getPropertyDescription("Event.is-instant-help", true, "Event.is-instant-example"),
@@ -176,8 +180,8 @@ export default class GenerateEventTemplate extends Vue {
             );
         }
 
-
-        let visitedProperties = new Set();
+        // exclude managed properties -> ensure that no property is present twice into header
+        let visitedProperties = new Set(managedProperties);
 
         // for each type, add all non visited property header column and description
         for (let typeResult of typeModels) {

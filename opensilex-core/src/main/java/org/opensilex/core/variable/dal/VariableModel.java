@@ -10,7 +10,7 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
-import org.opensilex.sparql.utils.ClassURIGenerator;
+import org.opensilex.uri.generation.ClassURIGenerator;
 
 import java.net.URI;
 
@@ -18,10 +18,12 @@ import java.net.URI;
 @SPARQLResource(
         ontology = Oeso.class,
         resource = "Variable",
-        graph = "set/variables",
+        graph = VariableModel.GRAPH,
         ignoreValidation = true
 )
 public class VariableModel extends BaseVariableModel<VariableModel> implements ClassURIGenerator<VariableModel> {
+
+    public static final String GRAPH = "variable";
 
     @SPARQLProperty(
             ontology = SKOS.class,
@@ -182,12 +184,5 @@ public class VariableModel extends BaseVariableModel<VariableModel> implements C
         this.species = species;
     }
 
-    @Override
-    public String[] getUriSegments(VariableModel instance) {
-        return new String[]{
-            "variable",
-            instance.getName()
-        };
-    }
 }
 

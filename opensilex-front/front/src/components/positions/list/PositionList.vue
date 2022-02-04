@@ -96,7 +96,7 @@
         ></opensilex-EventModalView>
 
         <opensilex-EventModalForm
-            v-if="renderModalForm"
+            v-if="user.hasCredential(credentials.CREDENTIAL_EVENT_MODIFICATION_ID)"
             ref="modalForm"
             :target="target"
             defaultEventType="oeev:Move"
@@ -198,7 +198,6 @@ export default class PositionList extends Vue {
         });
     }
 
-    renderModalForm = false;
     renderCsvForm = false;
 
     created() {
@@ -230,7 +229,6 @@ export default class PositionList extends Vue {
     }
 
     showForm() {
-        this.renderModalForm = true;
         this.$nextTick(() => {
             this.modalForm.showCreateForm();
         });

@@ -7,7 +7,6 @@
     @hide="requiredField = false"
     @show="shown()"
   >
-    <!-- <template v-slot:modal-ok>{{ $t("component.common.close") }}</template> -->
     <template v-slot:modal-title>{{ $t("DataHelp.title") }}</template>
     <template v-slot:modal-footer>
       <b-button
@@ -48,15 +47,6 @@
         </b-row>
         <b-row>
           <b-col cols="9">
-              <!-- <opensilex-VariableSelector
-                  label="DataTemplateForm.select-variables"
-                  placeholder="VariableList.label-filter-placeholder"
-                  :multiple="true"
-                  :variables.sync="variables"
-                  :required="requiredField"
-              >
-              </opensilex-VariableSelector> -->
-
             <opensilex-VariableSelectorWithFilter
               label="DataTemplateForm.select-variables"
               placeholder="VariableList.label-filter-placeholder"
@@ -76,22 +66,6 @@
             </opensilex-CSVSelectorInputForm>
           </b-col>
         </b-row>
-        <!-- <b-button 
-          @click="csvExport" 
-          variant="outline-primary" 
-          :disabled="experiment==null && !validSelection || variables.length == 0">{{
-          $t("OntologyCsvImporter.downloadTemplate")
-        }}</b-button>
-        &nbsp;
-        <font-awesome-icon icon="question-circle" v-b-tooltip.hover.right=" $t('DataTemplateForm.help') "/>
-        <b-button
-          v-if="variables.length == 0"
-          class="float-right"
-          @click="csvExportDataExample"
-          variant="outline-info"
-          :disabled="experiment==null && !validSelection"
-          >{{ $t("DataHelp.download-template-example") }}</b-button
-        > -->
       </ValidationObserver>
     </div>
   </b-modal>
@@ -140,7 +114,7 @@ export default class GenerateDataTemplateFrom extends Vue {
     { text: this.deviceColumn, value: this.deviceColumn }
   ];
 
-  //@Ref("validatorRefDataTemplate") readonly validatorRefDataTemplate!: any;
+  @Ref("validatorRefDataTemplate") readonly validatorRefDataTemplate!: any;
 
   @Ref("modalRef") readonly modalRef!: any;
 
@@ -161,19 +135,19 @@ export default class GenerateDataTemplateFrom extends Vue {
 
   datatypes: Array<VariableDatatypeDTO> = [];
 
-  // reset() {
-  //   this.validatorRefDataTemplate.reset();
-  //   this.experiment = null;
-  //   this.variables = [];
-  // }
+  reset() {
+    this.validatorRefDataTemplate.reset();
+    this.experiment = null;
+    this.variables = [];
+  }
 
   show() {
     this.modalRef.show();
   }
 
-  // validateTemplate() {
-  //   return this.validatorRefDataTemplate.validate({ silent: true });
-  // }
+  validateTemplate() {
+    return this.validatorRefDataTemplate.validate({ silent: true });
+  }
 
   loadDatatypes() {
     if (this.datatypes.length == 0) {
@@ -326,9 +300,9 @@ export default class GenerateDataTemplateFrom extends Vue {
 
   csvExport() {
     let arrData;
-    //this.validateTemplate().then((isValid) => {
+    this.validateTemplate().then((isValid) => {
       // fill in large
-      //if (isValid) {
+      if (isValid) {
         let line1 = [];
         let line2 = [];
         let line3 = [];
@@ -405,8 +379,8 @@ export default class GenerateDataTemplateFrom extends Vue {
             "datasetTemplate"
           );
         });
-      //}
-    //});
+      }
+    });
   }
 
   loadMethods() {

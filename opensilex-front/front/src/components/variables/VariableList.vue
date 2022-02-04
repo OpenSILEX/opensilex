@@ -230,21 +230,7 @@ export default class VariableList extends Vue {
 
     @Prop()
     experiment;
-    // @PropSync("searchFilter", {
-    //     default: () => {
-    //     return {
-    //         name: undefined,
-    //         entity: undefined,
-    //         entityOfInterest: undefined,
-    //         characteristic: undefined,
-    //         method: undefined,
-    //         unit: undefined,
-    //         group: undefined,
-    //         experiment: undefined
-    //     };
-    //     },
-    // })
-    // filter;
+
     filter = {
         name: undefined,
         entity: undefined,
@@ -426,10 +412,6 @@ export default class VariableList extends Vue {
     }
 
     created() {
-        // let query: any = this.$route.query;
-        // if (query.name) {
-        //   this.nameFilter = decodeURIComponent(query.name);
-        // }
         this.$opensilex.updateFiltersFromURL(this.$route.query, this.filter);
         this.$opensilex.disableLoader();
         this.$service = this.$opensilex.getService("opensilex.VariablesService");

@@ -18,17 +18,6 @@
             @clear="clear()"
           >
             <template v-slot:filters>
-              <!-- Variables  -->
-              <!-- <opensilex-FilterField halfWidth="true">
-                <opensilex-UsedVariableSelector
-                label="DataView.filter.variables"
-                :multiple="true"
-                :variables.sync="filter.variables"
-                :experiment="uri"
-                :key="refreshKey"
-                ></opensilex-UsedVariableSelector>
-              </opensilex-FilterField> -->
-
               <!-- Variables -->
               <opensilex-FilterField halfWidth="true">
                 <opensilex-SelectForm

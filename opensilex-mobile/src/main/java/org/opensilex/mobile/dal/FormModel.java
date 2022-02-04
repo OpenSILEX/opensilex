@@ -11,11 +11,10 @@ import java.util.List;
 public class FormModel extends MongoModel {
 
     private List<URI> sectionUris;
-    private List<URI> children;
-    private List<URI> parents;
-    private List<URI> availableChildren;
+    private List<String> children;
+    private List<String> parents;
     private String commitAddress;
-    private String type;
+    private URI type;
     private String codeLot;
     private boolean isRoot;
     private Instant creationDate;
@@ -40,21 +39,34 @@ public class FormModel extends MongoModel {
         sectionUris = new ArrayList<>();
         children = new ArrayList<>();
         parents = new ArrayList<>();
-        availableChildren = new ArrayList<>();
     }
 
     public List<URI> getSectionUris() {return sectionUris;}
     public void setSectionUris(List<URI> sectionUris) {this.sectionUris = sectionUris;}
-    public List<URI> getChildren() {return children;}
-    public void setChildren(List<URI> children) {this.children = children;}
-    public List<URI> getParents() {return parents;}
-    public void setParents(List<URI> parents) {this.parents = parents;}
-    public void addParent(URI parent){this.parents.add(parent);}
-    public void addAvChild(URI child){this.availableChildren.add(child);}
-    public List<URI> getAvailableChildren() {return availableChildren;}
-    public void setAvailableChildren(List<URI> availableChildren) {this.availableChildren = availableChildren;}
-    public String getType() {return type;}
-    public void setType(String type) {this.type = type;}
+    public List<String> getChildren() {return children;}
+    public void setChildren(List<String> children) {this.children = children;}
+    public List<String> getParents() {return parents;}
+    public void setParents(List<String> parents) {this.parents = parents;}
+    public void addParent(String parent){
+        boolean allreadyExists = false;
+        for(String s : this.parents){
+            allreadyExists = s.equals(parent);
+        }
+        if(!allreadyExists){
+            this.parents.add(parent);
+        }
+    }
+    public void addChild(String child){
+        boolean allreadyExists = false;
+        for(String s : this.children){
+            allreadyExists = s.equals(child);
+        }
+        if(!allreadyExists){
+            this.children.add(child);
+        }
+    }
+    public URI getType() {return type;}
+    public void setType(URI type) {this.type = type;}
     public void setCommitAddress(String commitAddress) {
         this.commitAddress = commitAddress;
     }

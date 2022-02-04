@@ -19,6 +19,7 @@ import io.swagger.annotations.ApiResponses;
 
 import java.io.*;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
@@ -67,6 +68,7 @@ import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.utils.ClassUtils;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
@@ -239,6 +241,8 @@ public class MobileAPI {
      * @return a {@link Response} with a paginated list if successful
      * @throws java.lang.Exception if fail
      */
+
+
     @GET
     @Path("form_get")
     @ApiOperation("Search forms")
@@ -250,6 +254,7 @@ public class MobileAPI {
     })
     public Response searchForms(
             @ApiParam(value = "Search by uris") @QueryParam("uris") List<URI> uris,
+            @ApiParam(value = "RDF type", example = "http://www.opensilex.org/vocabulary/iado#Harvest") @QueryParam("rdf_type") @ValidURI URI rdfType,//TODO Check sous classe de precess
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
@@ -258,6 +263,7 @@ public class MobileAPI {
 
         ListWithPagination<FormModel> resultList = dao.search(
                 uris,
+                rdfType,
                 orderByList,
                 page,
                 pageSize
@@ -432,18 +438,19 @@ public class MobileAPI {
             if(!visited.containsKey(code)) {
                 Instant now = Instant.now();
                 form = new FormModel(code.getHead(), "firstCommit", parent==null, removeMillis(now));
+                form.setType(code.getType());
                 form = dao.create(form);
                 visited.put(code, form);
             }else{
                 form = visited.get(code);
             }
             if(parent!=null){
-                form.addParent(parent.getUri());
-                parent.addAvChild(form.getUri());
+                form.addParent(parent.getCodeLot());
+                parent.addChild(form.getCodeLot());
                 parent = dao.update(parent);
                 form = dao.update(form);
             }
-            convertAndCreate(code.getAvailableChildren(), visited, form, dao);
+            convertAndCreate(code.getChildren(), visited, form, dao);
         }
         return visited;
     }
@@ -471,6 +478,8 @@ public class MobileAPI {
 
     private final String parentHeader = "parent";
     private final String childHeader = "enfant";
+    private final String parentTypeHeader = "parenttype";
+    private final String childTypeHeader = "enfanttype";
 
 
     private CodeLotCSVValidationModel validateWholeCSV(InputStream file) throws Exception {
@@ -486,8 +495,8 @@ public class MobileAPI {
             // Line 1
             String[] ids = csvReader.parseNext();
             Set<String> headers = Arrays.stream(ids).filter(Objects::nonNull).map(id -> id.toLowerCase(Locale.ENGLISH)).collect(Collectors.toSet());
-            if (!headers.contains(parentHeader) && !headers.contains(childHeader)) {
-                csvValidation.addMissingHeaders(Arrays.asList(parentHeader + " or " + childHeader));
+            if (!headers.contains(parentHeader) || !headers.contains(childHeader)|| !headers.contains(parentTypeHeader)|| !headers.contains(childTypeHeader)) {
+                csvValidation.addMissingHeaders(Arrays.asList("a header is missing"));
             }
 
             // 1. check variables
@@ -500,7 +509,7 @@ public class MobileAPI {
                         csvValidation.addEmptyHeader(i + 1);
                     } else {
 
-                        if (header.equalsIgnoreCase(parentHeader) || header.equalsIgnoreCase(childHeader)) {
+                        if (header.equalsIgnoreCase(parentHeader) || header.equalsIgnoreCase(childHeader)|| header.equalsIgnoreCase(parentTypeHeader)|| header.equalsIgnoreCase(childTypeHeader)) {
                             IndexByHeader.put(header.toLowerCase(Locale.ENGLISH), i);
 
                         } else {
@@ -518,8 +527,8 @@ public class MobileAPI {
                 String[] values;
 
                 // Line 2 This doesnt apply to me? i have no headers labels, what are they?
-//                String[] headersLabels = csvReader.parseNext();
-//                csvValidation.setHeadersLabelsFromArray(headersLabels);
+               String[] headersLabels = csvReader.parseNext();
+               csvValidation.setHeadersLabelsFromArray(headersLabels);
                 // Line 3
                 //csvReader.parseNext();
                 // Line 4
@@ -532,6 +541,8 @@ public class MobileAPI {
                                 csvValidation,
                                 IndexByHeader.get(parentHeader),
                                 IndexByHeader.get(childHeader),
+                                IndexByHeader.get(parentTypeHeader),
+                                IndexByHeader.get(childTypeHeader),
                                 allCodes
                                 );
                     } catch (Exception e) {
@@ -568,6 +579,21 @@ public class MobileAPI {
             return currentBranch;
         }
     }
+    private URI typeStringToUri(String stringType) throws URISyntaxException {
+        switch(stringType){
+            case "RougeLiquide":
+                return new URI("http://www.opensilex.org/vocabulary/iado#RedLiquidWinemaking");
+            case "RougeSolide":
+                return new URI("http://www.opensilex.org/vocabulary/iado#RedSolidWinemaking");
+            case "Vendange":
+                return new URI("http://www.opensilex.org/vocabulary/iado#Harvest");
+            case "Blanc":
+                return new URI("http://www.opensilex.org/vocabulary/iado#WhiteWineMaking");
+            case "Rose":
+                return new URI("http://www.opensilex.org/vocabulary/iado#RoseWinemaking");
+            default: return null;
+        }
+    }
 
     private boolean validateCSVRow(
             String[] values,
@@ -575,16 +601,24 @@ public class MobileAPI {
             CodeLotCSVValidationModel csvValidation,
             int parentColumnIndex,
             int childColumnIndex,
+            int parentTypeIndex,
+            int enfantTypeIndex,
             List<CodeLotModel> allCodes
-    ){
+    ) throws URISyntaxException {
         boolean validRow = true;
         String parent = null;
         String child = null;
+        URI parentType = null;
+        URI childType = null;
         for (int colIndex = 0; colIndex < values.length; colIndex++) {
             if (colIndex == parentColumnIndex) {
                 parent = values[colIndex];
             } else if (colIndex == childColumnIndex) {
                 child = values[colIndex];
+            } else if(colIndex == parentTypeIndex){
+                parentType = typeStringToUri(values[colIndex]);
+            } else if(colIndex == enfantTypeIndex){
+                childType = typeStringToUri(values[colIndex]);
             }
         }
         CSVCell errorCell = new CSVCell(rowIndex, childColumnIndex, child, "enfant");
@@ -596,16 +630,26 @@ public class MobileAPI {
             if (parent == null && child == null) {
                 validRow = false;
             } else {
-                //parent is not null:
+                //parent is not null: //test type
+                if(parentType==null || parentType.equals("")){
+                    csvValidation.addTypeError(errorCell);
+                    validRow = false;
+                }
                 //Start by testing that they are not equal if child is not null:
                 boolean childNotNull = !(child == null);
+                if(childNotNull){
+                    if(childType==null || childType.equals("")){
+                        csvValidation.addTypeError(errorCell);
+                        validRow = false;
+                    }
+                }
                 if (childNotNull && parent.equals(child)) {
                     csvValidation.addBoucleError(errorCell);
                     return false;
                 }
                 //Fetch the code corresponding to parent and child if not null:
-                CodeLotModel parentCode = new CodeLotModel(parent);
-                CodeLotModel childCode = new CodeLotModel(child);
+                CodeLotModel parentCode = new CodeLotModel(parent, parentType);
+                CodeLotModel childCode = new CodeLotModel(child, childType);
                 boolean foundParent = false;
                 boolean foundChild = false;
                 int i = 0;

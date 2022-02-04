@@ -15,6 +15,7 @@ import java.util.List;
 import org.bson.Document;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 
@@ -41,11 +42,12 @@ public class FormDAO {
 
     public ListWithPagination<FormModel> search(
             List<URI> uris,
+            URI rdfType,
             List<OrderBy> orderByList,
             Integer page,
             Integer pageSize) throws Exception {
 
-        Document filter = searchFilter(uris);
+        Document filter = searchFilter(uris, rdfType);
 
         ListWithPagination<FormModel> forms = nosql.searchWithPagination(FormModel.class, FORM_COLLECTION_NAME, filter, orderByList, page, pageSize);
 
@@ -53,7 +55,7 @@ public class FormDAO {
 
     }
 
-    public Document searchFilter(List<URI> uris) throws Exception {
+    public Document searchFilter(List<URI> uris, URI rdfType) throws Exception {
 
         Document filter = new Document();
 
@@ -61,6 +63,11 @@ public class FormDAO {
             Document inFilter = new Document();
             inFilter.put("$in", uris);
             filter.put("uri", inFilter);
+        }
+
+        if(rdfType!=null){
+            URI expandedRdfType = new URI(SPARQLDeserializers.getExpandedURI(rdfType));
+            filter.put("type", expandedRdfType);
         }
         return filter;
     }

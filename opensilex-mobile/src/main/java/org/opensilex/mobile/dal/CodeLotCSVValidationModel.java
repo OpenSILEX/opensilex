@@ -32,6 +32,7 @@ public class CodeLotCSVValidationModel extends CSVValidationModel {
     private final Map<Integer, List<CSVCell>> linkedSibblingErrors = new HashMap<>();
     private final Map<Integer, List<CSVCell>> shortCircuitErrors = new HashMap<>();
     private Map<Integer, List<CSVCell>> duplicatedDataErrors = new HashMap<>();
+    private Map<Integer, List<CSVCell>> formTypeErrors = new HashMap<>();
 
     private List<String> headers = new ArrayList<>();
 
@@ -185,6 +186,18 @@ public class CodeLotCSVValidationModel extends CSVValidationModel {
             boucleErrors.put(rowIndex, new ArrayList<>());
         }
         boucleErrors.get(rowIndex).add(cell);
+    }
+
+    public Map<Integer, List<CSVCell>> getTypeErrors() {
+        return formTypeErrors;
+    }
+
+    public void addTypeError(CSVCell cell) {
+        int rowIndex = cell.getRowIndex();
+        if (!formTypeErrors.containsKey(rowIndex)) {
+            formTypeErrors.put(rowIndex, new ArrayList<>());
+        }
+        formTypeErrors.get(rowIndex).add(cell);
     }
 
     public void addDuplicatedDataError(CSVCell cell) {

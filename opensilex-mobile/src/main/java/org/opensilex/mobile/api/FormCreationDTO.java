@@ -18,10 +18,9 @@ import java.util.List;
 public class FormCreationDTO {
 
     private List<URI> sectionUris;
-    private List<URI> children;
-    private List<URI> parents;
-    private List<URI> availableChildren;
-    private String type;
+    private List<String> children;
+    private List<String> parents;
+    private URI type;
     private String codeLot;
     private boolean isRoot;
     private String creationDate;
@@ -30,7 +29,6 @@ public class FormCreationDTO {
 
     public FormModel newModel() throws TimezoneAmbiguityException, TimezoneException, UnableToParseDateException {
         FormModel model = new FormModel(this.codeLot, this.commitAddress, this.isRoot);
-        model.setAvailableChildren(this.availableChildren);
         model.setChildren(this.children);
         model.setCommitAddress(commitAddress);
         model.setType(this.type);
@@ -60,28 +58,24 @@ public class FormCreationDTO {
         this.sectionUris = sectionUris;
     }
 
-    @JsonProperty("form_children_uris")
-    public List<URI> getChildren() {
+    @JsonProperty("form_children_codes")
+    public List<String> getChildren() {
         return children;
     }
 
-    public void setChildren(List<URI> children) {
+    public void setChildren(List<String> children) {
         this.children = children;
     }
 
-    @JsonProperty("form_parents_uris")
-    public List<URI> getParents() {
+    @JsonProperty("form_parents_codes")
+    public List<String> getParents() {
         return parents;
     }
 
-    public void setParents(List<URI> parents) {
+    public void setParents(List<String> parents) {
         this.parents = parents;
     }
 
-    @JsonProperty("empty_children_uris")
-    public List<URI> getAvailableChildren() {
-        return availableChildren;
-    }
 
     @JsonProperty("commit_address")
     @NotNull
@@ -94,16 +88,13 @@ public class FormCreationDTO {
         this.commitAddress = s;
     }
 
-    public void setAvailableChildren(List<URI> availableChildren) {
-        this.availableChildren = availableChildren;
-    }
 
     @JsonProperty("type")
-    public String getType() {
+    public URI getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(URI type) {
         this.type = type;
     }
 

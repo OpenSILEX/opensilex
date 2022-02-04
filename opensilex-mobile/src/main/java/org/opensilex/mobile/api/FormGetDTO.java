@@ -11,7 +11,6 @@ public class FormGetDTO extends FormUpdateDTO{
         formGetDTO.setUri(model.getUri());
         formGetDTO.setCommitAddress(model.getCommitAddress());
         formGetDTO.setCodeLot(model.getCodeLot());
-        formGetDTO.setAvailableChildren(model.getAvailableChildren());
         formGetDTO.setChildren(model.getChildren());
         formGetDTO.setRoot(model.isRoot());
         formGetDTO.setType(model.getType());

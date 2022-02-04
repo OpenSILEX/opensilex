@@ -6,6 +6,7 @@
 //******************************************************************************
 package org.opensilex.mobile.dal;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,13 +21,15 @@ import java.util.List;
 public class CodeLotModel {
 
     private final String head;
-    private final List<CodeLotModel> availableChildren;
+    private final URI type;
+    private final List<CodeLotModel> children;
     private final List<CodeLotModel> parents;
 
-    public CodeLotModel(String head) {
+    public CodeLotModel(String head, URI type) {
         this.head = head;
-        this.availableChildren = new ArrayList<>();
+        this.children = new ArrayList<>();
         this.parents = new ArrayList<>();
+        this.type = type;
     }
 
     public String getHead() {
@@ -37,12 +40,16 @@ public class CodeLotModel {
         return parents;
     }
 
-    public List<CodeLotModel> getAvailableChildren() {
-        return availableChildren;
+    public URI getType() {
+        return type;
+    }
+
+    public List<CodeLotModel> getChildren() {
+        return children;
     }
 
     public void addChild(CodeLotModel child) {
-        this.availableChildren.add(child);
+        this.children.add(child);
     }
 
     public void addParent(CodeLotModel parent) {
@@ -52,8 +59,8 @@ public class CodeLotModel {
     public boolean containsChild(String child) {
         boolean found = false;
         int i = 0;
-        while (!found && i < availableChildren.size()) {
-            if (availableChildren.get(i).getHead().equals(child)) {
+        while (!found && i < children.size()) {
+            if (children.get(i).getHead().equals(child)) {
                 found = true;
             }
             i++;

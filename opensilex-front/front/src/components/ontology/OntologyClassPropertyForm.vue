@@ -6,6 +6,7 @@
       :options="propertiesOptions"
       :required="true"
       label="OntologyClassPropertyForm.property"
+      @update:selected="updateIsListProperty"
     ></opensilex-SelectForm>
 
     <!-- is abstract -->
@@ -91,6 +92,17 @@ export default class OntologyClassPropertyForm extends Vue {
       this.availableProperties,
       this.excludedProperties
     );
+  }
+
+  updateIsListProperty(){
+    if(! this.form.property || ! this.dataTypeProperties){
+      return;
+    }
+
+    // if the property is a data property then set is_list to false, since we don't actually handle generics list component for data-property
+    if(this.dataTypeProperties.indexOf(this.form.property) >= 0){
+      this.form.is_list = false;
+    }
   }
 
   create(form) {

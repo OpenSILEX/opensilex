@@ -42,6 +42,7 @@
             id="type"
             :types.sync="filter.types"
             :multiple="true"
+            :experimentURI="filter.experiment"
           ></opensilex-ScientificObjectTypeSelector>
         </opensilex-FilterField>
       </template>
@@ -66,6 +67,7 @@
               :factorLevels.sync="filter.factorLevels"
               :multiple="true"
               :required="false"
+              :experimentURI="filter.experiment"
             ></opensilex-FactorLevelSelector>
           </b-form-group>
         </opensilex-FilterField>
@@ -99,7 +101,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Ref, Prop } from "vue-property-decorator";
+import { Component } from "vue-property-decorator";
 import ScientificObjectModalList from "./ScientificObjectModalList.vue";
 
 @Component

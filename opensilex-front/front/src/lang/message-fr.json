@@ -136,7 +136,11 @@
                 }
             },
             "addDocument": "Ajouter un document",
-            "warningInstruction" : "Fonctionnalité expérimentale"
+            "warningInstruction" : "Fonctionnalité expérimentale",
+            "organization": {
+                "site": "Site",
+                "sites": "Sites"
+            }
         },
         "copyToClipboard": {
             "copyUri": "Copier l'URI dans le presse papier",
@@ -199,7 +203,8 @@
             "scientificObjectTypes": "Types d'objets scientifiques",
             "facilitiesTypes": "Types d'installations techniques",
             "deviceTypes": "Types de capteurs",
-            "eventTypes": "Types d'évènements",
+            "eventTypes": "Types d'évènements", 
+            "factorCategoryTypes": "Catégories de facteurs",
             "scientific-organisation": "Organisation scientifique",
             "devices": "Dispositifs",
             "events" : "Évènements",
@@ -549,6 +554,11 @@
         },
         "document": {
             "nopreview": "Pas de prévisualisation possible"
+        },
+        "organization": {
+            "exception": {
+                "siteFacilityInvalidAddress": "Le site '{site}' et l'installation technique '{facility}' doivent avoir la même adresse."
+            }
         }
     },
     "credential-groups": {
@@ -567,9 +577,18 @@
         "documents": "Documents",
         "annotations" : "Annotations",
         "device" : "Dispositifs",
-        "events": "Événements"
+        "events": "Événements",
+        "facilities": "Installations techniques",
+        "provenance": "Provenances",
+        "vocabulary": "Vocabulaire",
+        "packages": "Librairies"
     },
     "credential": {
+        "default": {
+            "access": "Accès menu",
+            "modification": "Ajout / modification",
+            "delete": "Suppression"
+        },
         "experiment": {
             "modification": "Ajout / Modification des expérimentations",
             "delete": "Suppression des expérimentations"
@@ -629,6 +648,18 @@
         "event": {
             "modification": "Ajout / Modification des événements",
             "delete": "Suppression des événements"
+        },
+        "facility":  {
+            "modification": "Ajout / Modification des installations techniques",
+            "delete": "Suppression des installations techniques"
+        },
+        "provenance": {
+            "modification": "Ajout / Modification des provenances",
+            "delete": "Suppression des provenances"
+        },
+        "profile": {
+            "modification": "Ajout / Modification des profils",
+            "delete": "Suppression des profils"
         }
     },
     "validations": {

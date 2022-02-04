@@ -23,8 +23,9 @@ import org.opensilex.utils.OrderBy;
  * @author Arnaud Charleroy
  */
 public class FormDAO {
-    public static final String FORM_COLLECTION_NAME = "forms";
-    public static final String FORM_PREFIX = "id/forms";
+    public static final String FORM_COLLECTION_NAME = "form";
+    public static final String FORM_PREFIX = "form";
+
     protected final MongoDBService nosql; 
      
     public FormDAO(MongoDBService nosql ) {

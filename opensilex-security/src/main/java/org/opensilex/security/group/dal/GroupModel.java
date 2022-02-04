@@ -19,10 +19,12 @@ import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 @SPARQLResource(
         ontology = SecurityOntology.class,
         resource = "Group",
-        graph = "groups",
+        graph = GroupModel.GRAPH,
         prefix = "grp"
 )
 public class GroupModel extends SPARQLNamedResourceModel<GroupModel> {
+
+    public static final String GRAPH = "group";
 
     @SPARQLProperty(
             ontology = DCTerms.class,

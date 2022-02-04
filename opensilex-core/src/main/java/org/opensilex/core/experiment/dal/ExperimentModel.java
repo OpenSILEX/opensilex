@@ -7,23 +7,23 @@
 package org.opensilex.core.experiment.dal;
 
 import org.apache.jena.vocabulary.RDFS;
+import org.opensilex.core.experiment.factor.dal.FactorModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
-import org.opensilex.core.project.dal.ProjectModel;
-import org.opensilex.sparql.annotations.SPARQLProperty;
-import org.opensilex.sparql.annotations.SPARQLResource;
-import org.opensilex.sparql.model.SPARQLNamedResourceModel;
-import org.opensilex.sparql.utils.ClassURIGenerator;
-
-import java.net.URI;
-import java.time.LocalDate;
-import java.util.List;
-import org.opensilex.core.experiment.factor.dal.FactorModel;
 import org.opensilex.core.organisation.dal.InfrastructureModel;
+import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.security.authentication.SecurityOntology;
 import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.sparql.annotations.SPARQLProperty;
+import org.opensilex.sparql.annotations.SPARQLResource;
+import org.opensilex.sparql.model.SPARQLNamedResourceModel;
+import org.opensilex.uri.generation.ClassURIGenerator;
+
+import java.net.URI;
+import java.time.LocalDate;
+import java.util.List;
 
 /**
  * @author Vincent MIGOT
@@ -31,10 +31,12 @@ import org.opensilex.security.user.dal.UserModel;
 @SPARQLResource(
         ontology = Oeso.class,
         resource = "Experiment",
-        graph = "set/experiments",
+        graph = ExperimentModel.GRAPH,
         prefix = "expe"
 )
 public class ExperimentModel extends SPARQLNamedResourceModel<ExperimentModel> implements ClassURIGenerator<ExperimentModel> {
+
+    public static final String GRAPH = "experiment";
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -116,8 +118,8 @@ public class ExperimentModel extends SPARQLNamedResourceModel<ExperimentModel> i
     )
     List<InfrastructureFacilityModel> facilities;
     public static final String FACILITY_FIELD = "facilities";
- 
-    
+
+
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "isPublic"
@@ -125,10 +127,10 @@ public class ExperimentModel extends SPARQLNamedResourceModel<ExperimentModel> i
     protected Boolean isPublic;
     public static final String IS_PUBLIC_FIELD = "isPublic";
 
-    @SPARQLProperty(
-            ontology = Oeso.class,
-            property = "measures"
-    )
+//    @SPARQLProperty(
+//            ontology = Oeso.class,
+//            property = "measures"
+//    )
     List<URI> variables;
     public static final String VARIABLES_FIELD = "variables";
 

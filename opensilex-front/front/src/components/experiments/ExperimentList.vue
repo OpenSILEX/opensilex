@@ -100,7 +100,8 @@
           :small="true"
           :disabled="numberOfSelectedRows == 0"
           text=actions>
-            <b-dropdown-item-button    
+            <b-dropdown-item-button
+                v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
               @click="createDocument()"
             >{{$t('component.common.addDocument')}}</b-dropdown-item-button>
         </b-dropdown>
@@ -171,7 +172,7 @@
       </template>
     </opensilex-TableAsyncView>
     <opensilex-ModalForm
-      v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
+      v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
       ref="documentForm"
       component="opensilex-DocumentForm"
       createTitle="component.common.addDocument"
@@ -190,6 +191,7 @@ import moment from "moment";
 import { SpeciesDTO, SpeciesService, ProjectGetDTO } from "opensilex-core/index";
 // @ts-ignore
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
+import {User} from "../../models/User";
 
 @Component
 export default class ExperimentList extends Vue {
@@ -209,7 +211,7 @@ export default class ExperimentList extends Vue {
   })
   noActions;
 
-  get user() {
+  get user(): User {
     return this.$store.state.user;
   }
 

@@ -5,16 +5,32 @@
 //******************************************************************************
 package org.opensilex.sparql;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.OWL2;
 import org.apache.jena.vocabulary.RDF;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.opensilex.OpenSilex;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.exceptions.SPARQLInvalidUriListException;
 import org.opensilex.sparql.model.*;
+import org.opensilex.sparql.service.SPARQLQueryHelper;
+import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.unit.test.AbstractUnitTest;
+import org.opensilex.uri.generation.URIGeneratorTest;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -24,34 +40,67 @@ import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import org.apache.jena.vocabulary.OWL2;
-
 import static org.junit.Assert.*;
-import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.exceptions.SPARQLException;
-import org.opensilex.sparql.service.SPARQLQueryHelper;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
-import org.opensilex.sparql.service.SPARQLService;
-import org.opensilex.unit.test.AbstractUnitTest;
 
 /**
- *
  * @author vincent
  */
 public abstract class SPARQLServiceTest extends AbstractUnitTest {
 
     protected static SPARQLService sparql;
-
     protected static SPARQLModule sparqlModule;
+    protected static URI ontologyDataUri;
+
+    protected static byte[] ontologyDataBytes;
+    protected static byte[] renameDataDefaultBytes;
+    protected static byte[] renameDataInGraphBytes;
 
     public static void initialize() throws Exception {
         sparqlModule = opensilex.getModuleByClass(SPARQLModule.class);
 
         InputStream ontology = OpenSilex.getResourceAsStream(TEST_ONTOLOGY.FILE_PATH.toString());
         sparql.loadOntology(sparqlModule.getBaseURI(), ontology, TEST_ONTOLOGY.FILE_FORMAT);
+        ontologyDataUri = sparql.getDefaultGraphURI(B.class);
 
+        // load ontology data in memory as byte[], use it in order to load quickly (than reading file) these data during each before() method call.
         InputStream ontologyData = OpenSilex.getResourceAsStream(TEST_ONTOLOGY.DATA_FILE_PATH.toString());
-        sparql.loadOntology(sparqlModule.getSuffixedURI("data"), ontologyData, TEST_ONTOLOGY.DATA_FILE_FORMAT);
+        ontologyDataBytes = IOUtils.toByteArray(ontologyData);
+        assert (ontologyDataBytes != null && ontologyDataBytes.length > 0);
+
+        // load rename data in default graph
+        InputStream renameDataDefault = OpenSilex.getResourceAsStream(TEST_ONTOLOGY.RENAME_DATA_DEFAULT_FILE_PATH.toString());
+        renameDataDefaultBytes = IOUtils.toByteArray(renameDataDefault);
+        assert (renameDataDefaultBytes != null && renameDataDefaultBytes.length > 0);
+
+        // load rename data in named graph
+        InputStream renameDataInGraph = OpenSilex.getResourceAsStream(TEST_ONTOLOGY.RENAME_DATA_IN_GRAPH_FILE_PATH.toString());
+        renameDataInGraphBytes = IOUtils.toByteArray(renameDataInGraph);
+        assert (renameDataInGraphBytes != null && renameDataInGraphBytes.length > 0);
+    }
+
+    @Before
+    public void before() throws SPARQLException, IOException, URISyntaxException {
+        // load ontology data file
+        ByteArrayInputStream ontologyDataStream = new ByteArrayInputStream(ontologyDataBytes);
+        sparql.loadOntology(ontologyDataUri, ontologyDataStream, TEST_ONTOLOGY.DATA_FILE_FORMAT);
+        ontologyDataStream.close();
+
+        // load test data for rename (in default graph)
+        ByteArrayInputStream renameDataDefaultStream = new ByteArrayInputStream(renameDataDefaultBytes);
+        sparql.loadOntology(null, renameDataDefaultStream, TEST_ONTOLOGY.RENAME_DATA_FILE_FORMAT);
+        renameDataDefaultStream.close();
+
+        // load test data for rename (in named graph)
+        ByteArrayInputStream renameDataInGraphStream = new ByteArrayInputStream(renameDataInGraphBytes);
+        sparql.loadOntology(new URI(TEST_ONTOLOGY.RENAME_DATA_GRAPH_URI), renameDataInGraphStream, TEST_ONTOLOGY.RENAME_DATA_FILE_FORMAT);
+        renameDataInGraphStream.close();
+    }
+
+    @After
+    public void after() throws Exception {
+        sparql.clearGraphs(ontologyDataUri.toString(),
+                TEST_ONTOLOGY.RENAME_DATA_GRAPH_URI);
     }
 
     @Test
@@ -72,17 +121,9 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
     public void testGetByURI() throws Exception {
         URI aURI = new URI("http://test.opensilex.org/a/001");
         A a = sparql.getByURI(A.class, aURI, null);
+        assertNotNull("http://test.opensilex.org/a/001 should exists", a);
 
         assertEquals("Instance URI must be the same", aURI, a.getUri());
-
-        B b = a.getB();
-
-        assertNotNull("Instance object relation should exists", b);
-        assertTrue("b Must be an instance of B", b instanceof B);
-
-        URI bURI = new URI("http://test.opensilex.org/b/001");
-
-        assertEquals("B Instance URI must be the same", bURI, b.getUri());
         assertEquals("A.getString Method should return the configured string", "azerty", a.getString());
         assertEquals("A.isBool Method should return the configured boolean", Boolean.TRUE, a.isBool());
         assertEquals("A.getByteVar Method should return the configured byte", Byte.valueOf((byte) 10), a.getByteVar());
@@ -101,6 +142,12 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
         OffsetDateTime dateTime = a.getDatetime();
         assertEquals("A.getDatetime Method should return the configured date time", expectedDateTime, dateTime);
 
+        B b = a.getB();
+        assertNotNull("Instance object relation should exists", b);
+
+        URI bURI = new URI("http://test.opensilex.org/b/001");
+
+        assertEquals("B Instance URI must be the same", bURI, b.getUri());
         assertEquals("B.isBool Method should return the configured boolean", Boolean.FALSE, b.getBool());
         assertEquals("B.getByteVar Method should return the configured byte", Byte.valueOf((byte) -4), b.getByteVar());
         assertEquals("B.getCharVar Method should return the configured char", Character.valueOf('X'), b.getCharVar());
@@ -152,20 +199,20 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
     }
 
     @Test
-    public void testCreateAll() throws Exception{
+    public void testCreateAll() throws Exception {
 
         int n = 5;
 
         List<A> aList = new ArrayList<>(n);
         for (int i = 0; i < n; i++) {
             A a = new A();
-            a.setUri(new URI("http://test.opensilex.org/a/testCreateAll"+i));
+            a.setUri(new URI("http://test.opensilex.org/a/testCreateAll" + i));
             a.setBool(true);
             a.setCharVar('V');
             aList.add(a);
         }
 
-        sparql.create(null, aList,null,false);
+        sparql.create(null, aList, null, false);
 
         for (int i = 0; i < n; i++) {
             A createdA = aList.get(i);
@@ -175,20 +222,20 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
     }
 
     @Test
-    public void testCreateAllWithQueryReuse() throws Exception{
+    public void testCreateAllWithQueryReuse() throws Exception {
 
         int n = 5;
 
         List<A> aList = new ArrayList<>(n);
         for (int i = 0; i < n; i++) {
             A a = new A();
-            a.setUri(new URI("http://test.opensilex.org/a/testCreateAll"+i));
+            a.setUri(new URI("http://test.opensilex.org/a/testCreateAll" + i));
             a.setBool(true);
             a.setCharVar('V');
             aList.add(a);
         }
 
-        sparql.create(null, aList,n,false);
+        sparql.create(null, aList, n, false);
 
         for (int i = 0; i < n; i++) {
             A createdA = aList.get(i);
@@ -267,12 +314,12 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
         a2.setCharVar('V');
         aList.add(a2);
 
-        sparql.create(A.class,Arrays.asList(a,a2));
+        sparql.create(A.class, Arrays.asList(a, a2));
 
         List<URI> uris = aList.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList());
-        Set<URI> existingUris = sparql.getExistingUris(A.class,uris,true);
+        Set<URI> existingUris = sparql.getExistingUris(A.class, uris, true);
 
-        assertEquals(existingUris.size(),uris.size());
+        assertEquals(existingUris.size(), uris.size());
         for (URI uri : uris) {
             URI expandedURI = new URI(SPARQLDeserializers.getExpandedURI(uri));
             assertTrue(existingUris.contains(expandedURI));
@@ -286,11 +333,11 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
         uris.add(new URI("test:unknownUri1"));
         uris.add(new URI("test:unknownUri2"));
 
-        Set<URI> existingUris = sparql.getExistingUris(A.class,uris,true);
+        Set<URI> existingUris = sparql.getExistingUris(A.class, uris, true);
         assertTrue(existingUris.isEmpty());
 
-        Set<URI> unknownUris = sparql.getExistingUris(A.class,uris,false);
-        assertEquals(unknownUris.size(),uris.size());
+        Set<URI> unknownUris = sparql.getExistingUris(A.class, uris, false);
+        assertEquals(unknownUris.size(), uris.size());
         for (URI uri : uris) {
             URI expandedURI = new URI(SPARQLDeserializers.getExpandedURI(uri));
             assertTrue(unknownUris.contains(expandedURI));
@@ -321,11 +368,11 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
         assertTrue(bList.isEmpty());
 
         // the graph have changed so B should be found in the new graph
-        bList = sparql.search(SPARQLDeserializers.nodeURI(newGraphUri), B.class,null,null);
+        bList = sparql.search(SPARQLDeserializers.nodeURI(newGraphUri), B.class, null, null);
         assertFalse(bList.isEmpty());
     }
 
-    //    @Test
+    //   @Test
     public void testUriListExists() throws Exception {
 
         B b = new B();
@@ -377,7 +424,7 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
         assertTrue(others.containsKey("en"));
         assertEquals("testCreateEN", others.get("en"));
 
-        assertTrue(labelActual.getAllTranslations().size() == 2);
+        assertEquals(2, labelActual.getAllTranslations().size());
 
         cActual = sparql.getByURI(C.class, c.getUri(), "en");
         labelActual = cActual.getLabel();
@@ -390,16 +437,16 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
 
         List<C> list = sparql.search(C.class, "fr");
         assertFalse(list.isEmpty());
-        assertTrue(list.size() == 2);
+        assertEquals(2, list.size());
 
         list = sparql.search(C.class, "ru");
         assertFalse(list.isEmpty());
-        assertTrue(list.size() == 2);
+        assertEquals(2, list.size());
         assertEquals("ru", list.get(0).getLabel().getDefaultLang());
 
         list = sparql.search(C.class, null);
         assertFalse(list.isEmpty());
-        assertTrue(list.size() == 2);
+        assertEquals(2, list.size());
         assertEquals(OpenSilex.DEFAULT_LANGUAGE, list.get(0).getLabel().getDefaultLang());
 
         // TODO test delete
@@ -441,4 +488,134 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
         assertEquals(1, results.size());
     }
 
+    @Test
+    @Ignore("test used to micro-bench URI generation and normalization performance")
+    public void testUriGenerationPerformance() throws URISyntaxException, SPARQLException {
+
+        int n=1000000;
+        SPARQLNamedResourceModel<?>[] models = new SPARQLNamedResourceModel[n];
+
+        String specialCharPart = RandomStringUtils.random(8,String.join("",URIGeneratorTest.EXPECTED_REMOVED_CHARACTERS));
+
+        for (int i = 0; i < n; i++) {
+            SPARQLNamedResourceModel<?> model = new SPARQLNamedResourceModel<>();
+            model.setName("SPARQLNamedResourceModel"+specialCharPart+i);
+            models[i] = model;
+        }
+        String prefix = sparql.getDefaultGenerationURI(SPARQLNamedResourceModel.class).toString();
+
+        for(SPARQLNamedResourceModel model : models){
+            URI uri = model.generateURI(prefix,model,0);
+            assertNotNull(uri);
+            model.setUri(uri);
+        }
+    }
+
+    @Test
+    public void testLoadByUris() throws Exception {
+
+        A a1 = new A();
+        A a2 = new A();
+        sparql.create(a1);
+        sparql.create(a2);
+
+        List<A> loadedList = sparql.loadListByURIs(A.class,Arrays.asList(a1.getUri(),a2.getUri()),OpenSilex.DEFAULT_LANGUAGE);
+        assertTrue(loadedList.contains(a1));
+        assertTrue(loadedList.contains(a2));
+        assertEquals(2,loadedList.size());
+
+        // try to insert doublons, ensure loading is OK
+        loadedList = sparql.loadListByURIs(A.class,Arrays.asList(a1.getUri(),a2.getUri(),a1.getUri()),OpenSilex.DEFAULT_LANGUAGE);
+        assertTrue(loadedList.contains(a1));
+        assertTrue(loadedList.contains(a2));
+        assertEquals(2,loadedList.size());
+    }
+
+    @Test
+    public void testLoadByUrisFail() throws Exception{
+
+        A a1 = new A();
+        A a2 = new A();
+        sparql.create(a1);
+        sparql.create(a2);
+
+        URI unknownUri = URI.create("test:testLoadByUrisFail");
+
+        // try to trigger exception throw
+        SPARQLInvalidUriListException loadExpectedEx = assertThrows(SPARQLInvalidUriListException.class, () -> {
+            sparql.loadListByURIs(A.class, Arrays.asList(a1.getUri(), a2.getUri(), unknownUri), OpenSilex.DEFAULT_LANGUAGE);
+        });
+
+        assertTrue(loadExpectedEx.getUris().contains(unknownUri));
+    }
+
+    @Test
+    public void testCheckUriExists() throws Exception {
+        A a = new A();
+        sparql.create(a);
+
+        boolean exists = sparql.checkTripleURIExists(a.getUri());
+
+        assertTrue(exists);
+    }
+
+    @Test
+    public void testCheckUriDoesNotExist() throws Exception {
+        URI uriToCheck = new URI("http://test.opensilex.org/thisUriShouldNotExist");
+
+        boolean exists = sparql.checkTripleURIExists(uriToCheck);
+
+        assertFalse(exists);
+    }
+
+    @Test
+    public void testRenameUri() throws Exception {
+        URI uriToRename = new URI("http://test.opensilex.org/rename/uriToRename");
+        URI renamedUri = new URI("http://test.opensilex.org/rename/renamedUri");
+        URI a2Uri = new URI("http://test.opensilex.org/rename/a2");
+        URI a3Uri = new URI("http://test.opensilex.org/rename/a3");
+
+        A aToRename = sparql.getByURI(A.class, uriToRename, null);
+        A renamedA = sparql.getByURI(A.class, renamedUri, null);
+        A a2 = sparql.getByURI(A.class, a2Uri, null);
+        A a3 = sparql.getByURI(A.class, a3Uri, null);
+
+        // Verify that nothing has been renamed yet
+        assertNotNull(aToRename); // subject in default graph
+        assertNull(renamedA);
+        assertNotNull(a2);
+        assertNotNull(a3);
+
+        assertTrue(StringUtils.isNotEmpty(a2.getPropertyToRename())); // property in default graph
+        assertNull(a2.getRenamedProperty());
+        assertEquals(a2.getA().getUri(), uriToRename); // object in default graph
+
+        assertEquals(aToRename.getInteger(), Integer.valueOf(4)); // subject in named graph
+        assertTrue(StringUtils.isNotEmpty(a3.getPropertyToRename())); // property in named graph
+        assertNull(a3.getRenamedProperty());
+        assertEquals(a3.getA().getUri(), uriToRename);
+
+        // Execute the rename operation and update the objects
+        sparql.renameTripleURI(uriToRename, renamedUri);
+
+        aToRename = sparql.getByURI(A.class, uriToRename, null);
+        renamedA = sparql.getByURI(A.class, renamedUri, null);
+        a2 = sparql.getByURI(A.class, a2Uri, null);
+        a3 = sparql.getByURI(A.class, a3Uri, null);
+
+        // Assert that everything has been renamed
+        assertNull(aToRename); // subject in default graph
+        assertNotNull(renamedA);
+        assertNotNull(a2);
+        assertNotNull(a3);
+
+        assertNull(a2.getPropertyToRename()); // property in default graph
+        assertTrue(StringUtils.isNotEmpty(a2.getRenamedProperty()));
+        assertEquals(a2.getA().getUri(), renamedUri); // object in default graph
+
+        assertEquals(renamedA.getInteger(), Integer.valueOf(4)); // subject in named graph
+        assertNull(a3.getPropertyToRename()); // property in named graph
+        assertTrue(StringUtils.isNotEmpty(a3.getRenamedProperty()));
+        assertEquals(a3.getA().getUri(), renamedUri);
+    }
 }

@@ -5,37 +5,35 @@
  */
 package org.opensilex.front;
 
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
-import org.opensilex.front.config.FrontRoutingConfig;
-import org.opensilex.front.config.Route;
-import org.opensilex.front.config.MenuItem;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.inject.Inject;
 import org.apache.catalina.Context;
-import org.opensilex.config.ConfigManager;
-import org.opensilex.front.api.FrontConfigDTO;
-import org.opensilex.front.api.MenuItemDTO;
-import org.opensilex.front.api.RouteDTO;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.OpenSilexModuleNotFoundException;
-import org.opensilex.front.config.CustomMenuItem;
+import org.opensilex.config.ConfigManager;
+import org.opensilex.front.api.FrontConfigDTO;
+import org.opensilex.front.api.RouteDTO;
+import org.opensilex.front.config.FrontRoutingConfig;
+import org.opensilex.front.config.MenuItem;
+import org.opensilex.front.config.Route;
+import org.opensilex.front.config.UserConfigService;
 import org.opensilex.security.EmailConfig;
 import org.opensilex.security.OpenIDConfig;
 import org.opensilex.security.SecurityConfig;
 import org.opensilex.security.SecurityModule;
 import org.opensilex.security.authentication.AuthenticationService;
 import org.opensilex.security.email.EmailService;
+import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.ServerConfig;
 import org.opensilex.server.ServerModule;
 import org.opensilex.server.extensions.APIExtension;
 import org.opensilex.server.extensions.ServerExtension;
 import org.opensilex.server.scanner.IgnoreJarScanner;
+import org.opensilex.sparql.service.SPARQLService;
 import org.slf4j.LoggerFactory;
+
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  *
@@ -89,11 +87,19 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
     public static final String FRONT_CONFIG_FILE = "opensilex.front.yml";
     public static final String FRONT_CONFIG_PATH = FRONT_EXTENSIONS_DIRECTORY + FRONT_CONFIG_FILE;
 
-    private FrontConfigDTO config = null;
+    private UserConfigService userConfigService;
 
-    public FrontConfigDTO getConfigDTO(String lang) {
-        if (this.config == null || getOpenSilex().isDev()) {
-            FrontConfig frontConfig = getConfig(FrontConfig.class);
+    private FrontConfigDTO config = null;
+    private List<MenuItem> globalMenu = null;
+    private URI lastUserUri = null;
+
+    public FrontConfigDTO getConfigDTO(UserModel currentUser, SPARQLService sparql) {
+        FrontConfig frontConfig = getConfig(FrontConfig.class);
+
+        // General config, valid for all users
+        if (this.config == null || currentUser.getUri() != lastUserUri || getOpenSilex().isDev()) {
+            String lang = currentUser.getLanguage();
+            lastUserUri = currentUser.getUri();
 
             FrontConfigDTO config = new FrontConfigDTO();
 
@@ -104,6 +110,7 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
             config.setLoginComponent(frontConfig.loginComponent());
             config.setMenuComponent(frontConfig.menuComponent());
             config.setFooterComponent(frontConfig.footerComponent());
+            config.setGeocodingService(frontConfig.geocodingService());
 
             try {
                 AuthenticationService auth = getOpenSilex().getServiceInstance(AuthenticationService.DEFAULT_AUTHENTICATION_SERVICE, AuthenticationService.class);
@@ -135,10 +142,8 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
                 config.setThemeName(themeId[1]);
             }
 
-            Map<String, String> menuLabelMap = new HashMap<>();
-            List<MenuItemDTO> globalMenu = new ArrayList<>();
             List<RouteDTO> globalRoutes = new ArrayList<>();
-            List<String> menuExclusions = frontConfig.menuExclusions();
+            globalMenu = new ArrayList<>();
 
             for (OpenSilexModule m : getOpenSilex().getModules()) {
                 try {
@@ -146,12 +151,7 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
                         ConfigManager cfg = new ConfigManager();
                         cfg.addSource(m.getFileInputStream(FRONT_CONFIG_PATH));
                         FrontRoutingConfig frontRoutingConfig = cfg.loadConfig("", FrontRoutingConfig.class);
-                        for (MenuItem menuItem : frontRoutingConfig.menu()) {
-                            if (!menuExclusions.contains(menuItem.id())) {
-                                MenuItemDTO menuDTO = MenuItemDTO.fromModel(menuItem, menuLabelMap, menuExclusions);
-                                globalMenu.add(menuDTO);
-                            }
-                        }
+                        globalMenu.addAll(frontRoutingConfig.menu());
 
                         for (Route route : frontRoutingConfig.routes()) {
                             RouteDTO routeDTO = RouteDTO.fromModel(route);
@@ -163,23 +163,18 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
                 }
             }
 
-            List<CustomMenuItem> customMenu = frontConfig.customMenu();
-            if (customMenu != null && customMenu.size() > 0) {
-                List<MenuItemDTO> customMenuDTO = new ArrayList<>();
-                for (CustomMenuItem menuItem : customMenu) {
-                    if (!menuExclusions.contains(menuItem.id())) {
-                        MenuItemDTO menuDTO = MenuItemDTO.fromCustomModel(menuItem, menuLabelMap, menuExclusions, lang);
-                        customMenuDTO.add(menuDTO);
-                    }
-                }
-                globalMenu = customMenuDTO;
-            }
-
-            config.setMenu(globalMenu);
             config.setRoutes(globalRoutes);
 
             this.config = config;
         }
+
+        // User-specific config
+        if (userConfigService == null) {
+            userConfigService = new UserConfigService(sparql);
+        }
+
+        this.config.setMenu(userConfigService.getUserMenu(currentUser, globalMenu, new HashMap<>(),
+                frontConfig.menuExclusions(), frontConfig.customMenu()));
 
         return this.config;
     }

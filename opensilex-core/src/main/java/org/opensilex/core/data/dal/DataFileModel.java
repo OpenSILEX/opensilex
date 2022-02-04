@@ -24,6 +24,8 @@ public class DataFileModel extends DataModel {
     String filename;
     String path;
 
+    public static final String RDF_TYPE_FIELD = "rdfType";
+
     public URI getRdfType() {
         return rdfType;
     }
@@ -49,7 +51,7 @@ public class DataFileModel extends DataModel {
     }
     
     @Override
-    public String[] getUriSegments(MongoModel instance) {
+    public String[] getInstancePathSegments(MongoModel instance) {
     ObjectMapper mapper = ObjectMapperContextResolver.getObjectMapper();
         String provenanceString = "";
         try {

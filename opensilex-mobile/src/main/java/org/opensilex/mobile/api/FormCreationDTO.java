@@ -9,7 +9,9 @@ package org.opensilex.mobile.api;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
+import java.util.List;
 import java.util.Map;
+import javax.validation.constraints.NotNull;
 import org.bson.Document;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.data.utils.ParsedDateTimeMongo;
@@ -31,16 +33,20 @@ public class FormCreationDTO {
 
     private URI type;
 
-    private Map formData;
+    private List<Map> formData;
 
-    protected String timezone;
+    private String timezone;
+
+    private String commitAddress;
+
+    private String name;
 
     @JsonProperty("form_data")
-    public Map getFormData() {
+    public List<Map> getFormData() {
         return formData;
     }
 
-    public void setFormData(Map formData) {
+    public void setFormData(List<Map> formData) {
         this.formData = formData;
     }
     
@@ -53,6 +59,28 @@ public class FormCreationDTO {
 
     public void setCreationDate(String creationDate) {
         this.creationDate = creationDate;
+    }
+
+    @JsonProperty("commit_address")
+    @NotNull
+    @ApiModelProperty(value = "address of the commit", required = true)
+    public String getCommitAddress(){
+        return commitAddress;
+    }
+
+    @JsonProperty("name")
+    @NotNull
+    @ApiModelProperty(value = "code lot of the form", required = true)
+    public String getName(){
+        return name;
+    }
+
+    public void setName(String s){
+        this.name = s;
+    }
+
+    public void setCommitAddress(String s){
+        this.commitAddress = s;
     }
 
     @ApiModelProperty(value = "to specify if the offset is not in the date and if the timezone is different from the default one")
@@ -74,9 +102,10 @@ public class FormCreationDTO {
 
     public FormModel newModel() throws TimezoneAmbiguityException, TimezoneException, UnableToParseDateException {
         FormModel model = new FormModel();
-        
+        model.setCommitAddress(commitAddress);
+        model.setName(name);
         model.setType(type);
-        model.setFormData(new Document(formData));
+        model.setFormData(formData);
         ParsedDateTimeMongo parsedDateTimeMongo = DataValidateUtils.setDataDateInfo(getCreationDate(), getTimezone());
 
         if (parsedDateTimeMongo == null) {

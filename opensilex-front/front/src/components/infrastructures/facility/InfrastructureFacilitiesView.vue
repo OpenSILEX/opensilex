@@ -15,7 +15,7 @@
         <opensilex-CreateButton
           v-if="
             user.hasCredential(
-              credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
+              credentials.CREDENTIAL_FACILITY_MODIFICATION_ID
             )
           "
           @click="facilityForm.showCreateForm()"
@@ -33,7 +33,7 @@
       sort-by="rdf_type_name"
       :selectable="isSelectable"
       selectMode="single"
-      :items="facilities"
+      :items="displayableFacilities"
       :fields="fields"
       @row-selected="onFacilitySelected"
       ref="facilityTable"
@@ -67,7 +67,7 @@
           <opensilex-EditButton
             v-if="
               user.hasCredential(
-                credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
+                credentials.CREDENTIAL_FACILITY_MODIFICATION_ID
               )
             "
             @click="editFacility(data.item)"
@@ -77,7 +77,7 @@
           <opensilex-DeleteButton
             v-if="
               user.hasCredential(
-                credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
+                credentials.CREDENTIAL_FACILITY_DELETE_ID
               )
             "
             @click="deleteFacility(data.item.uri)"
@@ -93,7 +93,7 @@
       v-if="
         withActions &&
         user.hasCredential(
-          credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
+          credentials.CREDENTIAL_FACILITY_MODIFICATION_ID
         )
       "
       @onCreate="onCreate"
@@ -106,34 +106,42 @@
 <script lang="ts">
 import {Component, Prop, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
-import {InfrastructureGetDTO} from "opensilex-core/index";
-import {OrganisationsService} from "opensilex-core/api/organisations.service";
 import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
 import {InfrastructureFacilityGetDTO} from "opensilex-core/model/infrastructureFacilityGetDTO";
 import {BTable} from "bootstrap-vue";
-import {NamedResourceDTOInfrastructureFacilityModel} from "opensilex-core/model/namedResourceDTOInfrastructureFacilityModel";
+import { NamedResourceDTOInfrastructureFacilityModel } from "opensilex-core/model/namedResourceDTOInfrastructureFacilityModel";
 import {InfrastructureFacilityCreationDTO} from "opensilex-core/model/infrastructureFacilityCreationDTO";
 import OrganizationFacilityModalForm from "./OrganizationFacilityModalForm.vue";
+import {OrganizationsService} from "opensilex-core/api/organizations.service";
+import {NamedResourceDTOInfrastructureModel} from "opensilex-core/model/namedResourceDTOInfrastructureModel";
+import {NamedResourceDTOSiteModel} from "opensilex-core/model/namedResourceDTOSiteModel";
 
 @Component
 export default class InfrastructureFacilitiesView extends Vue {
   $opensilex: any;
   $store: any;
-  service: OrganisationsService;
+  service: OrganizationsService;
 
   @Ref("facilityForm") readonly facilityForm!: OrganizationFacilityModalForm;
   @Ref("facilityTable") readonly facilityTable: BTable;
 
   @Prop()
-  selected: InfrastructureGetDTO;
+  organization: NamedResourceDTOInfrastructureModel;
 
-  get user() {
-    return this.$store.state.user;
-  }
+  @Prop()
+  site: NamedResourceDTOSiteModel;
 
-  get credentials() {
-    return this.$store.state.credentials;
-  }
+  /**
+   * Facilities as prop. If defined, then these facilities only are displayed in the view. Otherwise, facilities are
+   * fetched from the server.
+   */
+  @Prop()
+  facilities: Array<NamedResourceDTOInfrastructureFacilityModel>;
+  /**
+   * Facilities fetched from the server, only if {@link facilities} is undefined.
+   */
+  fetchedFacilities: Array<NamedResourceDTOInfrastructureFacilityModel> = [];
+  selectedFacility: NamedResourceDTOInfrastructureFacilityModel = undefined;
 
   @Prop({
     default: false,
@@ -144,6 +152,21 @@ export default class InfrastructureFacilitiesView extends Vue {
     default: false
   })
   withActions: boolean;
+
+  get user() {
+    return this.$store.state.user;
+  }
+
+  get credentials() {
+    return this.$store.state.credentials;
+  }
+
+  get displayableFacilities() {
+    if (Array.isArray(this.facilities)) {
+      return this.facilities;
+    }
+    return this.fetchedFacilities;
+  }
 
   get fields() {
     let fields = [
@@ -168,12 +191,9 @@ export default class InfrastructureFacilitiesView extends Vue {
     return fields;
   }
 
-  facilities: Array<NamedResourceDTOInfrastructureFacilityModel> = [];
-  selectedFacility: NamedResourceDTOInfrastructureFacilityModel = undefined;
-
   public deleteFacility(uri) {
     this.$opensilex
-      .getService("opensilex.OrganisationsService")
+      .getService("opensilex.OrganizationsService")
       .deleteInfrastructureFacility(uri)
       .then(() => {
         this.$emit("onDelete", uri);
@@ -187,37 +207,32 @@ export default class InfrastructureFacilitiesView extends Vue {
 
   created() {
     this.service = this.$opensilex.getService(
-        "opensilex-core.OrganisationsService"
+        "opensilex-core.OrganizationsService"
     );
 
     this.refresh();
   }
 
   refresh() {
-    let searchPromise = this.selected
-      ? this.service.searchInfrastructureFacilities(undefined, [this.selected.uri])
-      : this.service.searchInfrastructureFacilities();
+    if (Array.isArray(this.facilities)) {
+      return;
+    }
 
-    return searchPromise
+    return this.service.searchInfrastructureFacilities()
         .then((http: HttpResponse<OpenSilexResponse<Array<InfrastructureFacilityGetDTO>>>) => {
-          this.facilities = http.response.result;
+          this.fetchedFacilities = http.response.result;
         }).then(() => {
 
           // Select the first element
-          if (this.isSelectable && this.facilities.length > 0) {
+          if (this.isSelectable && this.fetchedFacilities.length > 0) {
             this.facilityTable.selectRow(0);
           }
         });
   }
 
-  @Watch("selected")
-  onRefreshSelectedOrganization() {
-    this.facilities = this.selected.facilities;
-  }
-
   initForm(form: InfrastructureFacilityCreationDTO) {
-    if (this.selected) {
-      form.organizations = [this.selected.uri];
+    if (this.organization) {
+      form.organizations = [this.organization.uri];
     }
   }
 
@@ -258,5 +273,5 @@ fr:
     add: Ajouter une installation technique
     facilities: Installations techniques
     infrastructure-facility-help: "Les installations techniques correspondent aux différentes installations fixes d'une organisation.
-                                  Il peux s'agir de serres, parcelles cadastrales, chambres de culture, ..."
+                                  Il peut s'agir de serres, parcelles cadastrales, chambres de culture, ..."
 </i18n>

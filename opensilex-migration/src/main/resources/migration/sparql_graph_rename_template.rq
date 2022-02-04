@@ -1,0 +1,25 @@
+MOVE <__OPENSILEX_BASE_URI_TO_REPLACE__/users> TO <__OPENSILEX_BASE_URI_TO_REPLACE__/set/user> ;
+MOVE <__OPENSILEX_BASE_URI_TO_REPLACE__/groups> TO <__OPENSILEX_BASE_URI_TO_REPLACE__/set/group> ;
+MOVE <__OPENSILEX_BASE_URI_TO_REPLACE__/profiles> TO <__OPENSILEX_BASE_URI_TO_REPLACE__/set/profile> ;
+
+MOVE <__OPENSILEX_BASE_URI_TO_REPLACE__/set/infrastructures> TO <__OPENSILEX_BASE_URI_TO_REPLACE__/set/organization> ;
+MOVE <__OPENSILEX_BASE_URI_TO_REPLACE__/set/projects> TO <__OPENSILEX_BASE_URI_TO_REPLACE__/set/project> ;
+MOVE <__OPENSILEX_BASE_URI_TO_REPLACE__/set/experiments> TO <__OPENSILEX_BASE_URI_TO_REPLACE__/set/experiment> ;
+MOVE <__OPENSILEX_BASE_URI_TO_REPLACE__/set/devices> TO <__OPENSILEX_BASE_URI_TO_REPLACE__/set/device> ;
+MOVE <__OPENSILEX_BASE_URI_TO_REPLACE__/set/events> TO <__OPENSILEX_BASE_URI_TO_REPLACE__/set/event> ;
+MOVE <__OPENSILEX_BASE_URI_TO_REPLACE__/set/annotations> TO <__OPENSILEX_BASE_URI_TO_REPLACE__/set/annotation> ;
+
+MOVE <__OPENSILEX_BASE_URI_TO_REPLACE__/set/variables> TO <__OPENSILEX_BASE_URI_TO_REPLACE__/set/variable> ;
+MOVE <__OPENSILEX_BASE_URI_TO_REPLACE__/set/germplasms> TO <__OPENSILEX_BASE_URI_TO_REPLACE__/set/germplasm> ;
+MOVE <__OPENSILEX_BASE_URI_TO_REPLACE__/set/factors> TO <__OPENSILEX_BASE_URI_TO_REPLACE__/set/factor> ;
+
+MOVE <__OPENSILEX_BASE_URI_TO_REPLACE__/set/documents> TO <__OPENSILEX_BASE_URI_TO_REPLACE__/set/document> ;
+MOVE <__OPENSILEX_BASE_URI_TO_REPLACE__/set/scientific-objects> TO <__OPENSILEX_BASE_URI_TO_REPLACE__/set/scientific-object> ;
+MOVE <__OPENSILEX_BASE_URI_TO_REPLACE__/set/areas> TO <__OPENSILEX_BASE_URI_TO_REPLACE__/set/area> ;
+
+MOVE <__OPENSILEX_BASE_URI_TO_REPLACE__/properties> TO <__OPENSILEX_BASE_URI_TO_REPLACE__/set/properties> ;
+MOVE <__OPENSILEX_BASE_URI_TO_REPLACE__/opensilex-owl-extension> TO <__OPENSILEX_BASE_URI_TO_REPLACE__/set/opensilex-owl-extension> ;
+
+MOVE <http://www.opensilex.org/vocabulary/oeso> TO	<http://opensilex.org/vocabulary/oeso> ;
+MOVE <http://www.opensilex.org/vocabulary/oeev> TO	<http://opensilex.org/vocabulary/oeev> ;
+MOVE <http://www.opensilex.org/vocabulary/oeso-phis> TO	<http://opensilex.org/vocabulary/oeso-ext> ;

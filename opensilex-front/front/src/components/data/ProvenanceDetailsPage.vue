@@ -33,11 +33,11 @@
           <opensilex-Card label="component.common.description" icon="ik#ik-clipboard">
             <template v-slot:rightHeader>              
               <opensilex-EditButton
-                v-if="user.hasCredential(credentials.CREDENTIAL_DATA_DELETE_ID)"
+                v-if="user.hasCredential(credentials.CREDENTIAL_PROVENANCE_MODIFICATION_ID)"
                 @click="showEditForm"
               ></opensilex-EditButton>
               <opensilex-DeleteButton
-                v-if="user.hasCredential(credentials.CREDENTIAL_DATA_DELETE_ID)"
+                v-if="user.hasCredential(credentials.CREDENTIAL_PROVENANCE_DELETE_ID)"
                 @click="deleteProvenance"
               ></opensilex-DeleteButton>
             </template>
@@ -100,11 +100,12 @@
                   <opensilex-UriLink v-if="$opensilex.Oeso.checkURIs($opensilex.Oeso.OPERATOR_TYPE_URI, data.item.rdf_type)"
                     :uri="data.item.uri"
                     :value="data.item.name"
-                    :to="{path: '/device/details/'+ encodeURIComponent(data.item.uri)}"
+                    :to="{path: '/users?filter='+ encodeURIComponent(data.item.last_name)}"
                   ></opensilex-UriLink>
                   <opensilex-UriLink v-else
                     :uri="data.item.uri"
                     :value="data.item.name"
+                    :to="{path: '/device/details/'+ encodeURIComponent(data.item.uri)}"
                   ></opensilex-UriLink>
                 </template>
                 
@@ -118,7 +119,7 @@
         v-else-if="isDocumentTab()"
         ref="documentTabList"
         :uri="uri"        
-        :modificationCredentialId="credentials.CREDENTIAL_GERMPLASM_MODIFICATION_ID"
+        :modificationCredentialId="credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID"
       ></opensilex-DocumentTabList>
 
       <opensilex-AnnotationList
@@ -127,8 +128,8 @@
       :target="uri"
       :displayTargetColumn="false"
       :enableActions="true"
-      :modificationCredentialId="credentials.CREDENTIAL_GERMPLASM_MODIFICATION_ID"
-      :deleteCredentialId="credentials.CREDENTIAL_GERMPLASM_DELETE_ID"
+      :modificationCredentialId="credentials.CREDENTIAL_ANNOTATION_MODIFICATION_ID"
+      :deleteCredentialId="credentials.CREDENTIAL_ANNOTATION_DELETE_ID"
       ></opensilex-AnnotationList>
       
     </opensilex-PageContent>   
@@ -239,6 +240,7 @@ export default class ProvenanceDetailsPage extends Vue {
               .getUser(prov.prov_agent[i].uri)
               .then((http: HttpResponse<OpenSilexResponse<UserGetDTO>>) => {
                 prov.prov_agent[i]["name"] = http.response.result.first_name + " " + http.response.result.last_name;
+                prov.prov_agent[i]["last_name"] = http.response.result.last_name;
               })
               .catch(this.$opensilex.errorHandler);
             } else {
@@ -309,37 +311,34 @@ export default class ProvenanceDetailsPage extends Vue {
     return form;
   }
 
+
   deleteProvenance() {
+    
     this.service
-      .getUsedProvenances(null, null, null, null)
-      .then(http => {
-        let results = http.response.result;
-        if (results.length > 0) {
-          for (let result of results) {
-           let provURI = result.uri;
-            if (provURI != null && provURI == this.uri) {
-              this.$opensilex.showErrorToast(this.$i18n.t("ProvenanceView.associated-data-error"));
-            }}
+      .deleteProvenance(this.provenance.uri)
+      .then(() => {
+        let message =
+          this.$i18n.t("ProvenanceView.title") +
+          " " +
+          this.provenance.uri +
+          " " +
+          this.$i18n.t("component.common.success.delete-success-message");
+        this.$opensilex.showSuccessToast(message);
+        this.$router.push({
+          path: "/provenances",
+        });
+      })
+      .catch((error) => {
+        if (error.response.result.message) {
+          this.$opensilex.errorHandler(error, error.response.result.message);
         } else {
-            this.service
-            .deleteProvenance(this.provenance.uri)
-            .then(() => {
-              let message =
-                this.$i18n.t("ProvenanceView.title") +
-                " " +
-                this.provenance.uri +
-                " " +
-                this.$i18n.t("component.common.success.delete-success-message");
-              this.$opensilex.showSuccessToast(message);
-              this.$router.push({
-                  path: "/provenances"
-                });
-            })
-            .catch(this.$opensilex.errorHandler);
+          this.$opensilex.errorHandler(error);
         }
-      }); 
+      });
+
   }
 
+  
   tableFields = [
     {
       key: "name",

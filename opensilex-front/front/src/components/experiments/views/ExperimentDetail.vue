@@ -155,7 +155,7 @@
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
-import { ExperimentGetDTO, ExperimentsService, ProjectsService, OrganisationsService, SpeciesDTO, SpeciesService, FactorsService, FactorGetDTO } from "opensilex-core/index";
+import { ExperimentGetDTO, ExperimentsService, ProjectsService, OrganizationsService, SpeciesDTO, SpeciesService, FactorsService, FactorGetDTO } from "opensilex-core/index";
 // @ts-ignore
 import { SecurityService, GroupDTO, UserGetDTO } from "opensilex-security/index";
 import moment from "moment";
@@ -307,8 +307,8 @@ export default class ExperimentDetail extends Vue {
   }
 
   loadInfrastructures() {
-    let service: OrganisationsService = this.$opensilex.getService(
-      "opensilex.OrganisationsService"
+    let service: OrganizationsService = this.$opensilex.getService(
+      "opensilex.OrganizationsService"
     );
     this.infrastructuresList = [];
 

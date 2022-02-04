@@ -1,7 +1,7 @@
 <template>
   <div class="container-fluid">
-    <opensilex-PageHeader v-if="isTypeTab()" :icon="icon" :title="typeTitle"></opensilex-PageHeader>
-    <opensilex-PageHeader v-else :icon="icon" :title="propertiesTitle"></opensilex-PageHeader>
+    <opensilex-PageHeader v-if="isTypeTab()" :icon="icon" :title="typeTitle" :description="typeDescription"></opensilex-PageHeader>
+    <opensilex-PageHeader v-else :icon="icon" :title="propertiesTitle" :description="propertiesDescription"></opensilex-PageHeader>
 
     <opensilex-PageActions :returnButton="false" >
       <template v-slot>
@@ -30,7 +30,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Ref } from "vue-property-decorator";
+import {Component, Prop} from "vue-property-decorator";
 import Vue from "vue";
 
 @Component
@@ -48,10 +48,16 @@ export default class OntologyTypesView extends Vue {
   typeTitle;
 
   @Prop()
+  typeDescription;
+
+  @Prop()
   typeURI;
 
   @Prop()
   propertiesTitle;
+
+  @Prop()
+  propertiesDescription
 
   @Prop()
   propertiesURI;

@@ -5,7 +5,6 @@
       :required="property.is_required"
       :multiple="property.is_list"
       :germplasm.sync="internalValue"
-      :experiment="context ? context.experimentURI : undefined"
     ></opensilex-GermplasmSelector>
   </div>
 </template>

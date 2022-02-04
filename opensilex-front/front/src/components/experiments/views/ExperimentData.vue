@@ -334,8 +334,10 @@ export default class ExperimentData extends Vue {
   }
 
   loadSO(scientificObjectsURIs) {
+
+    const sos = scientificObjectsURIs.filter((x, i, a) => a.indexOf(x) == i); // distinct element on array
     return this.$opensilex.getService("opensilex.ScientificObjectsService")
-      .getScientificObjectsListByUris(undefined,scientificObjectsURIs)
+      .getScientificObjectsListByUris(this.uri,sos)
       .then((http: HttpResponse<OpenSilexResponse<Array<ScientificObjectNodeDTO>>>) => {
           return (http && http.response) ? http.response.result : undefined
     }).catch(this.$opensilex.errorHandler);

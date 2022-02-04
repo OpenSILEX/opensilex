@@ -32,14 +32,24 @@
         </b-row>
         <b-row>
           <b-col cols="9">
-            <opensilex-VariableSelector
-              label="DataTemplateForm.select-variables"
-              placeholder="VariableList.label-filter-placeholder"
-              :multiple="true"
-              :variables.sync="variables"
-              :required="requiredField"
-            >
-            </opensilex-VariableSelector>
+              <opensilex-VariableSelector
+                  label="DataTemplateForm.select-variables"
+                  placeholder="VariableList.label-filter-placeholder"
+                  :multiple="true"
+                  :variables.sync="variables"
+                  :required="requiredField"
+              >
+              </opensilex-VariableSelector>
+
+<!--            <opensilex-VariableSelectorWithFilter-->
+<!--              label="DataTemplateForm.select-variables"-->
+<!--              placeholder="VariableList.label-filter-placeholder"-->
+<!--              :multiple="true"-->
+<!--              :variables.sync="variables"-->
+<!--              :required="requiredField"-->
+<!--            >-->
+<!--            </opensilex-VariableSelectorWithFilter>-->
+
             <opensilex-CheckboxForm
               :value.sync="withRawData"
               title="DataTemplateForm.with-raw-data"
@@ -71,12 +81,12 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Ref } from "vue-property-decorator";
+import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
-import { VariablesService, VariableDatatypeDTO } from "opensilex-core/index";
+import {VariableDatatypeDTO, VariablesService} from "opensilex-core/index";
 // @ts-ignore
-import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
+import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 
 @Component
 export default class GenerateDataTemplateFrom extends Vue {

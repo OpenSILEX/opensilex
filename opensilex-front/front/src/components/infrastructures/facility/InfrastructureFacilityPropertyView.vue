@@ -45,7 +45,7 @@ export default class InfrastructureFacilityPropertyView extends Vue {
     if (this.value) {
       this.$opensilex.disableLoader();
       this.$opensilex
-        .getService("opensilex.OrganisationsService")
+        .getService("opensilex.OrganizationsService")
         .getInfrastructureFacility(this.value)
         .then((http) => {
           this.infrastructure = http.response.result;

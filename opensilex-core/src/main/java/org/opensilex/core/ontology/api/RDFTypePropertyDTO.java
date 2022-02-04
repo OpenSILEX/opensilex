@@ -7,13 +7,14 @@ package org.opensilex.core.ontology.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.opensilex.sparql.model.SPARQLLabel;
+import org.opensilex.sparql.ontology.dal.DatatypePropertyModel;
+import org.opensilex.sparql.ontology.dal.ObjectPropertyModel;
+import org.opensilex.sparql.ontology.dal.OwlRestrictionModel;
+import org.opensilex.sparql.ontology.dal.PropertyModel;
+
 import java.net.URI;
 import java.util.Map;
-import org.opensilex.core.ontology.dal.DatatypePropertyModel;
-import org.opensilex.core.ontology.dal.ObjectPropertyModel;
-import org.opensilex.core.ontology.dal.OwlRestrictionModel;
-import org.opensilex.core.ontology.dal.PropertyModel;
-import org.opensilex.sparql.model.SPARQLLabel;
 
 /**
  *

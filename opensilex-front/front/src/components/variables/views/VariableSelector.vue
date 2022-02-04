@@ -19,10 +19,10 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
+import {Component, Prop, PropSync} from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
-import { NamedResourceDTO, VariableDetailsDTO } from "opensilex-core/index";
+import {NamedResourceDTO, VariableDetailsDTO} from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse"
 
 @Component
@@ -52,7 +52,7 @@ export default class VariableSelector extends Vue {
   get placeholder() {
     return this.multiple
       ? "VariableSelector.placeholder-multiple"
-      : "VariableSelector.variables.placeholder";
+      : "VariableSelector.placeholder";
   }
 
   searchVariables(query, page, pageSize) {
@@ -61,14 +61,23 @@ export default class VariableSelector extends Vue {
     if (this.filterLabel === ".*") {
       this.filterLabel = undefined;
     }
-    console.debug(query);
 
     return this.$opensilex
-      .getService("opensilex.VariablesService")
-      .searchVariables(this.filterLabel, null, page, pageSize)
-      .then(http => {
-        return http;
-      });
+        .getService("opensilex.VariablesService")
+        .searchVariables(
+            this.filterLabel,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            ["name=asc"],
+            page,
+            pageSize
+        ).then(http => {
+          return http;
+        });
   }
 
   variableToSelectNode(dto: NamedResourceDTO) {
@@ -106,7 +115,7 @@ export default class VariableSelector extends Vue {
 
 en:
   VariableSelector:    
-    placeholder : Select one variable
+    placeholder : Select a variable
     placeholder-multiple : Select one or more variables
     filter-search-no-result : No variable found    
             

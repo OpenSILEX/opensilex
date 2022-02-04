@@ -12,26 +12,36 @@ menu:
         route:
           path: /infrastructures
           component: opensilex-InfrastructureView
+          credentials:
+            - organization-access
       - id: projects
         label: component.menu.projects
         route:
           path: /projects
           component: opensilex-ProjectView
+          credentials:
+            - project-access
       - id: experiments
         label: component.menu.experiments
         route:
           path: /experiments
           component: opensilex-ExperimentListView
+          credentials:
+            - experiment-access
       - id: devices
         label: component.menu.devices
         route:
           path: /devices
           component: opensilex-DeviceView
+          credentials:
+            - device-access
       - id: events
         label: component.menu.events
         route:
           path: /events
           component: opensilex-EventsView
+          credentials:
+            - event-access
   - id: experimentalDesign
     label: component.menu.experimentalDesign.label
     children:
@@ -40,22 +50,30 @@ menu:
         route:
           path: /variables
           component: opensilex-VariablesView
+          credentials:
+            - variable-access
       - id: germplasm
         label: component.menu.experimentalDesign.germplasm
         icon: ik-cloud-rain
         route:
           path: /germplasm
           component: opensilex-GermplasmView
+          credentials:
+            - germplasm-access
       - id: documents
         label: Documents
         route:
           path: /documents
           component: opensilex-DocumentView
+          credentials:
+            - document-access
       - id: scientificObjects
         label: component.menu.scientificObjects
         route:
           path: /scientific-objects
           component: opensilex-ScientificObjectView
+          credentials:
+            - scientific-objects-access
   - id: data-menu
     label: component.menu.data.label
     children:
@@ -69,16 +87,22 @@ menu:
         route:
           path: /provenances
           component: opensilex-ProvenanceView
+          credentials:
+            - provenance-access
       - id: data
         label: component.menu.data.tabularData
         route:
           path: /data
           component: opensilex-DataView
+          credentials:
+            - data-access
       - id: datafiles
         label: component.menu.data.datafiles
         route:
           path: /files
           component: opensilex-DataFilesView
+          credentials:
+            - data-access
 
       # - id: equipments
       #   label: component.menu.equipments.label
@@ -115,21 +139,36 @@ menu:
         route:
           path: /facilities-types
           component: opensilex-InfrastructureFacilitiesTypes
+          credentials:
+            - vocabulary-access
       - id: scientificObjectVocabulary
         label: component.menu.scientificObjectTypes
         route:
           path: /scientific-object-types
           component: opensilex-ScientificObjectTypes
+          credentials:
+            - vocabulary-access
       - id: deviceVocabulary
         label: component.menu.deviceTypes
         route:
           path: /device-types
           component: opensilex-DeviceTypes
+          credentials:
+            - vocabulary-access
+      - id: factorCategoryVocabulary
+        label: component.menu.factorCategoryTypes
+        route:
+          path: /factor-category-types
+          component: opensilex-FactorCategoryTypes
+          credentials:
+            - vocabulary-access
       - id: eventVocabulary
         label: component.menu.eventTypes
         route:
           path: /event-types
           component: opensilex-EventTypes
+          credentials:
+            - vocabulary-access
 
   - id: configuration
     label: component.menu.configuration
@@ -139,23 +178,29 @@ menu:
         route:
           path: /users
           component: opensilex-UserView
+          credentials:
+            - user-access
       - id: groups
         label: component.menu.security.groups
         route:
           path: /groups
           component: opensilex-GroupView
+          credentials:
+            - group-access
       - id: profiles
         label: component.menu.security.profiles
         route:
           path: /profiles
           component: opensilex-ProfileView
           credentials:
-            - is-admin
+            - profile-access
       - id: system
         label: component.menu.tools.system
         route:
           path: /system
-          component: opensilex-SystemView 
+          component: opensilex-SystemView
+          credentials:
+            - is-admin
   - id: tools
     label: component.menu.tools.label
     children:
@@ -164,12 +209,16 @@ menu:
         route:
           path: /packages
           component: opensilex-PackagesView
+          credentials:
+            - package-access
 
 routes:
   - path: /infrastructure/details/:uri
     component: opensilex-InfrastructureDetailView
   - path: /infrastructure/facility/details/:uri
     component: opensilex-InfrastructureFacilityView
+  - path: /infrastructure/site/details/:uri
+    component: opensilex-SiteView
   - path: /experiment/details/:uri
     component: opensilex-ExperimentView
   - path: /experiment/scientific-objects/:uri
@@ -201,8 +250,10 @@ routes:
     component: opensilex-VariableView
     credentials: []
   - path: /variable/annotations/:uri
-    component: opensilex-VariableView  
-    
+    component: opensilex-VariableView
+  - path: /variable/visualization/:uri
+    component: opensilex-VariableView
+
   - path: /variables_group/details/:uri
     component: opensilex-GroupVariablesDescription
   - path: /variables_group/annotations/:uri

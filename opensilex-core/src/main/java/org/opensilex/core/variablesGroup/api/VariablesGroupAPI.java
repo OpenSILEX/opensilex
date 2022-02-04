@@ -181,9 +181,7 @@ public class VariablesGroupAPI {
 
         if (!models.isEmpty()) {
             List<VariablesGroupGetDTO> resultDTOList = new ArrayList<>(models.size());
-            models.forEach(result -> {
-                resultDTOList.add(VariablesGroupGetDTO.fromModel(result));
-            });
+            models.forEach(result -> resultDTOList.add(VariablesGroupGetDTO.fromModel(result)));
 
             return new PaginatedListResponse<>(resultDTOList).getResponse();
         } else {

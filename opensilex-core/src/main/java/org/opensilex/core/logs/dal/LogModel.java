@@ -5,13 +5,12 @@
  */
 package org.opensilex.core.logs.dal;
 
-import java.net.URI;
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import org.bson.Document;
 import org.opensilex.nosql.mongodb.MongoModel;
+
+import java.net.URI;
+import java.time.LocalDateTime;
+import java.util.UUID;
 
 /**
  *
@@ -70,13 +69,9 @@ import org.opensilex.nosql.mongodb.MongoModel;
     }
     
      @Override
-    public String[] getUriSegments(MongoModel instance) {
-        Instant instant = datetime.atZone(ZoneOffset.UTC).toInstant();
-
+    public String[] getInstancePathSegments(MongoModel instance) {
          return new String[]{
-            Timestamp.from(instant).toString(),
-            userUri.toString(),
-            remoteAdress
+                 UUID.randomUUID().toString()
         };
     }
 

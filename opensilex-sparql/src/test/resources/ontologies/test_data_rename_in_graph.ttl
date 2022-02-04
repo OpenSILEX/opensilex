@@ -1,0 +1,7 @@
+@prefix testR: <http://test.opensilex.org/rename/> .
+@prefix test: <http://test.opensilex.org/> .
+
+testR:uriToRename test:hasInt 4 .
+
+testR:a3 testR:uriToRename "object";
+  test:hasRelationToA testR:uriToRename .

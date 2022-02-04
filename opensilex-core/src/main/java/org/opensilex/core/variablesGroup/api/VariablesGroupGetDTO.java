@@ -12,35 +12,36 @@ import java.util.List;
 
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.core.variablesGroup.dal.VariablesGroupModel;
-import org.opensilex.core.variable.api.VariableGetDTO;
+import org.opensilex.sparql.response.NamedResourceDTO;
 
 /**
  * @author Hamza IKIOU
  */
 public class VariablesGroupGetDTO extends VariablesGroupDTO {
-    
-        @JsonProperty("variables")
-        protected List<VariableGetDTO> variablesList = new ArrayList<>();
 
-        public List<VariableGetDTO> getVariablesList() {
-            return variablesList;
-        }
+    @JsonProperty("variables")
+    protected List<NamedResourceDTO<VariableModel>> variablesList = new ArrayList<>();
 
-        public void setVariablesList(List<VariableGetDTO> variablesList) {
-            this.variablesList = variablesList;
-        }
-        
-        public static VariablesGroupGetDTO fromModel(VariablesGroupModel model) {
+    public List<NamedResourceDTO<VariableModel>> getVariablesList() {
+        return variablesList;
+    }
+
+    public void setVariablesList(List<NamedResourceDTO<VariableModel>> variablesList) {
+        this.variablesList = variablesList;
+    }
+
+    public static VariablesGroupGetDTO fromModel(VariablesGroupModel model) {
 
         VariablesGroupGetDTO dto = new VariablesGroupGetDTO();
 
         dto.setUri(model.getUri());
         dto.setName(model.getName());
         dto.setDescription(model.getDescription());
-        
-        List<VariableGetDTO> variableList = new ArrayList<>();
+
+        List<NamedResourceDTO<VariableModel>> variableList = new ArrayList<>(model.getVariablesList().size());
+
         for (VariableModel variableModel : model.getVariablesList()) {
-            variableList.add(VariableGetDTO.fromModel(variableModel));
+            variableList.add(NamedResourceDTO.getDTOFromModel(variableModel));
         }
         dto.setVariablesList(variableList);
 

@@ -7,9 +7,14 @@ package org.opensilex.core.organisation.api.facitity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.annotations.ApiModel;
+import org.geojson.GeoJsonObject;
+import org.opensilex.core.geospatial.dal.GeospatialDAO;
+import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
 import org.opensilex.core.organisation.dal.InfrastructureModel;
+import org.opensilex.core.organisation.dal.SiteModel;
 import org.opensilex.sparql.response.NamedResourceDTO;
 
 import javax.validation.constraints.NotNull;
@@ -23,32 +28,17 @@ import java.util.stream.Collectors;
  * @author vince
  */
 @ApiModel
-@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "organizations"})
+@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "organizations", "sites", "address", "geometry"})
 public class InfrastructureFacilityGetDTO extends InfrastructureFacilityDTO {
-
-    @JsonProperty("rdf_type_name")
-    protected String typeLabel;
 
     @JsonProperty("organizations")
     protected List<NamedResourceDTO<InfrastructureModel>> infrastructures;
 
-    protected String name;
+    @JsonProperty("sites")
+    protected List<NamedResourceDTO<SiteModel>> sites;
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getTypeLabel() {
-        return typeLabel;
-    }
-
-    public void setTypeLabel(String typeLabel) {
-        this.typeLabel = typeLabel;
-    }
+    @JsonProperty("geometry")
+    protected GeoJsonObject geometry;
 
     @NotNull
     public List<NamedResourceDTO<InfrastructureModel>> getInfrastructures() {
@@ -57,6 +47,22 @@ public class InfrastructureFacilityGetDTO extends InfrastructureFacilityDTO {
 
     public void setInfrastructures(List<NamedResourceDTO<InfrastructureModel>> infrastructures) {
         this.infrastructures = infrastructures;
+    }
+
+    public List<NamedResourceDTO<SiteModel>> getSites() {
+        return sites;
+    }
+
+    public void setSites(List<NamedResourceDTO<SiteModel>> sites) {
+        this.sites = sites;
+    }
+
+    public GeoJsonObject getGeometry() {
+        return geometry;
+    }
+
+    public void setGeometry(GeoJsonObject geometry) {
+        this.geometry = geometry;
     }
 
     @Override
@@ -72,6 +78,16 @@ public class InfrastructureFacilityGetDTO extends InfrastructureFacilityDTO {
             });
             model.setInfrastructures(infrastructureModels);
         }
+
+        if (getSites() != null) {
+            List<SiteModel> siteModels = new ArrayList<>();
+            getSites().forEach(site -> {
+                SiteModel siteModel = new SiteModel();
+                siteModel.setUri(site.getUri());
+                siteModels.add(siteModel);
+            });
+            model.setSites(siteModels);
+        }
     }
 
     public void fromModel(InfrastructureFacilityModel model) {
@@ -83,6 +99,23 @@ public class InfrastructureFacilityGetDTO extends InfrastructureFacilityDTO {
                     .map(infrastructureModel ->
                             (NamedResourceDTO<InfrastructureModel>)NamedResourceDTO.getDTOFromModel(infrastructureModel))
                     .collect(Collectors.toList()));
+        }
+
+        if (model.getSites() != null) {
+            setSites(model.getSites().stream()
+                    .map(siteModel -> (NamedResourceDTO<SiteModel>)NamedResourceDTO.getDTOFromModel(siteModel))
+                    .collect(Collectors.toList()));
+        }
+    }
+
+    public void fromModelWithGeospatialInfo(InfrastructureFacilityModel facilityModel, GeospatialModel geospatialModel) throws JsonProcessingException {
+        fromModel(facilityModel);
+        fromGeospatialModel(geospatialModel);
+    }
+
+    public void fromGeospatialModel(GeospatialModel geospatialModel) throws JsonProcessingException {
+        if (geospatialModel != null) {
+            setGeometry(GeospatialDAO.geometryToGeoJson(geospatialModel.getGeometry()));
         }
     }
 }

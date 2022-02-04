@@ -90,6 +90,8 @@
                 <opensilex-TextAreaForm
                     :value.sync="form.description"
                     label="component.common.description"
+                    helpMessage="Event.description"
+                    placeholder="Event.description"
                 >
                 </opensilex-TextAreaForm>
             </div>
@@ -124,7 +126,7 @@ import {EventCreationDTO} from "opensilex-core/model/eventCreationDTO";
 import {OntologyService} from "opensilex-core/api/ontology.service";
 import MoveForm from "./MoveForm.vue";
 import {MoveCreationDTO} from "opensilex-core/model/moveCreationDTO";
-import {VueJsOntologyExtensionService, VueRDFTypeDTO} from "../../../lib";
+import {VueJsOntologyExtensionService} from "../../../lib";
 
 @Component
 export default class EventForm extends Vue {
@@ -152,6 +154,8 @@ export default class EventForm extends Vue {
 
     startRequired = false;
     endRequired = true;
+
+    internalTypeProperties: Set<string> = new Set(["rdfs:comment", "oeev:concerns", "time:hasBeginning", "time:hasEnd", "oeev:isInstant"]);
 
     propertyFilter = (property) => property;
 
@@ -186,8 +190,8 @@ export default class EventForm extends Vue {
         this.baseType = baseType;
     }
 
-    setContext(context){
-      this.context = context;
+    setContext(context) {
+        this.context = context;
     }
 
     updateRequiredProps() {
@@ -233,41 +237,33 @@ export default class EventForm extends Vue {
         return property.input_component;
     }
 
-    resetTypeModel(){
+    resetTypeModel() {
         this.typeModel = undefined;
     }
 
 
     get typeRelations() {
 
-        let internalTypeProperties = [];
+        if (!this.typeModel) {
+            return [];
+        }
 
-        if (this.typeModel) {
-            for (let i in this.typeModel.data_properties) {
-                let dataProperty = this.typeModel.data_properties[i];
-                if (dataProperty.property != "rdfs:label") {
+        let properties = [];
 
-                    let relation = this.form.relations.find(relation => relation.property == dataProperty.property);
+        this.typeModel.data_properties
+            .concat(this.typeModel.object_properties)
+            .filter(propertyModel => !this.internalTypeProperties.has(propertyModel.property))
+            .forEach(propertyModel => {
 
-                    internalTypeProperties.push({
-                        property: dataProperty,
-                        value: relation.value
-                    });
-                }
-            }
+                let relation = this.form.relations.find(relation => relation.property == propertyModel.property);
 
-            for (let i in this.typeModel.object_properties) {
-
-                let objectProperty = this.typeModel.object_properties[i];
-                let relation = this.form.relations.find(relation => relation.property == objectProperty.property);
-
-                internalTypeProperties.push({
-                    property: objectProperty,
+                properties.push({
+                    property: propertyModel,
                     value: relation.value
                 });
-            }
-        }
-        return internalTypeProperties;
+            });
+
+        return properties;
     }
 
     typeSwitch(type) {
@@ -282,35 +278,23 @@ export default class EventForm extends Vue {
                 this.typeModel = http.response.result;
                 if (!this.editMode) {
                     let relations = [];
-                    for (let i in this.typeModel.data_properties) {
-                        let dataProperty = this.typeModel.data_properties[i];
-                        if (dataProperty.is_list) {
-                            relations.push({
-                                value: [],
-                                property: dataProperty.property
-                            });
-                        } else {
-                            relations.push({
-                                value: undefined,
-                                property: dataProperty.property
-                            });
-                        }
-                    }
 
-                    for (let i in this.typeModel.object_properties) {
-                        let objectProperty = this.typeModel.object_properties[i];
-                        if (objectProperty.is_list) {
-                            relations.push({
-                                value: [],
-                                property: objectProperty.property
-                            });
-                        } else {
-                            relations.push({
-                                value: undefined,
-                                property: objectProperty.property
-                            });
-                        }
-                    }
+                    this.typeModel.data_properties
+                        .concat(this.typeModel.object_properties)
+                        .filter(propertyModel => !this.internalTypeProperties.has(propertyModel.property))
+                        .forEach(property => {
+                            if (property.is_list) {
+                                relations.push({
+                                    value: [],
+                                    property: property.property
+                                });
+                            } else {
+                                relations.push({
+                                    value: undefined,
+                                    property: property.property
+                                });
+                            }
+                        });
 
                     this.form.relations = relations;
                 }
@@ -318,7 +302,7 @@ export default class EventForm extends Vue {
 
     }
 
-    updateRelation(newValue,property){
+    updateRelation(newValue, property) {
 
         let relation = this.form.relations.find(relation =>
             relation.property == property.property

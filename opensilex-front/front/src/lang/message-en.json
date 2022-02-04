@@ -137,7 +137,11 @@
                 }
             },
             "addDocument": "Add document",
-            "warningInstruction" : "Experimental feature"
+            "warningInstruction" : "Experimental feature",
+            "organization": {
+                "site": "Site",
+                "sites": "Sites"
+            }
         },
         "copyToClipboard": {
             "copyUri": "Copy URI to clipboard",
@@ -200,6 +204,7 @@
             "facilitiesTypes": "Facilities types",
             "deviceTypes": "Device object types",
             "eventTypes": "Event types",
+            "factorCategoryTypes": "Factor categories",
             "scientific-organisation": "Scientific Organization",
             "devices": "Devices",
             "events" : "Events",
@@ -544,6 +549,11 @@
         },
         "document": {
             "nopreview": "No preview possible"
+        },
+        "organization": {
+            "exception": {
+                "siteFacilityInvalidAddress": "The site '{site}' and the facility '{facility}' must have the same address."
+            }
         }
     },
     "credential-groups": {
@@ -562,9 +572,18 @@
         "documents": "Documents",
         "annotations" : "Annotations",
         "device" : "Device",
-        "events": "Events"
+        "events": "Events",
+        "facilities": "Facilities",
+        "provenance": "Provenances",
+        "vocabulary": "Vocabulary",
+        "packages": "Packages"
     },
     "credential": {
+        "default": {
+            "access": "Menu access",
+            "modification": "Add / update",
+            "delete": "Delete"
+        },
         "experiment": {
             "modification": "Add / update experiments",
             "delete": "Delete experiments"
@@ -624,6 +643,18 @@
         "event": {
             "modification": "Add / update events",
             "delete": "Delete events"
+        },
+        "facility":  {
+            "modification": "Add / update facilities",
+            "delete": "Delete facilities"
+        },
+        "provenance": {
+            "modification": "Add / update provenances",
+            "delete": "Delete provenances"
+        },
+        "profile": {
+            "modification": "Add / update profiles",
+            "delete": "Delete profiles"
         }
     },
     "validations": {

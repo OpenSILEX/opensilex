@@ -5,12 +5,13 @@ import org.apache.jena.vocabulary.OWL2;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.ontology.dal.*;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.model.SPARQLTreeModel;
+import org.opensilex.sparql.ontology.dal.*;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ThrowingFunction;
 

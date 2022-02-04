@@ -12,7 +12,7 @@ import org.apache.jena.vocabulary.OA;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.sparql.utils.ClassURIGenerator;
+import org.opensilex.uri.generation.ClassURIGenerator;
 
 import java.net.URI;
 import java.time.OffsetDateTime;
@@ -25,9 +25,11 @@ import java.util.UUID;
 @SPARQLResource(
         ontology = OA.class,
         resource = "Annotation",
-        graph = "set/annotations"
+        graph = AnnotationModel.GRAPH
 )
 public class AnnotationModel extends SPARQLResourceModel implements ClassURIGenerator<AnnotationModel> {
+
+    public static final String GRAPH = "annotation";
 
     @SPARQLProperty(
             ontology = DCTerms.class,
@@ -94,7 +96,7 @@ public class AnnotationModel extends SPARQLResourceModel implements ClassURIGene
     }
 
     @Override
-    public String[] getUriSegments(AnnotationModel instance) {
+    public String[] getInstancePathSegments(AnnotationModel instance) {
         return new String[]{
                 UUID.randomUUID().toString()
         };

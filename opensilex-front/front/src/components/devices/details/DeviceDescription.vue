@@ -1,39 +1,77 @@
 <template>
   <div class="container-fluid">
-
     <opensilex-PageContent>
       <b-row>
         <b-col>
-          <opensilex-Card label="DeviceDescription.description" icon="ik#ik-clipboard">            
-          <template v-slot:rightHeader>
-            <opensilex-EditButton
-              v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
-              label="DeviceDescription.update"
-              @click="editDeviceForm"
-            ></opensilex-EditButton>
-            <opensilex-DeleteButton
-              v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_DELETE_ID)"
-              label="DeviceDescription.delete"
-              :small="true"
-              @click="deleteDevice(device.uri)"
-            ></opensilex-DeleteButton>
-
-          </template>
+          <opensilex-Card
+            label="DeviceDescription.description"
+            icon="ik#ik-clipboard"
+          >
+            <template v-slot:rightHeader>
+              <opensilex-EditButton
+                v-if="
+                  user.hasCredential(
+                    credentials.CREDENTIAL_DEVICE_MODIFICATION_ID
+                  )
+                "
+                label="DeviceDescription.update"
+                @click="editDeviceForm"
+              ></opensilex-EditButton>
+              <opensilex-DeleteButton
+                v-if="
+                  user.hasCredential(credentials.CREDENTIAL_DEVICE_DELETE_ID)
+                "
+                label="DeviceDescription.delete"
+                :small="true"
+                @click="deleteDevice(device.uri)"
+              ></opensilex-DeleteButton>
+            </template>
             <template v-slot:body>
               <opensilex-UriView :uri="device.uri"></opensilex-UriView>
-              <opensilex-StringView label="DeviceDescription.type" :value="device.rdf_type_name"></opensilex-StringView>
-              <opensilex-StringView label="DeviceDescription.name" :value="device.name"></opensilex-StringView>
-              <opensilex-StringView label="DeviceDescription.brand" :value="device.brand"></opensilex-StringView>
-              <opensilex-StringView label="DeviceDescription.constructorModel" :value="device.constructor_model"></opensilex-StringView>
-              <opensilex-StringView label="DeviceDescription.serialNumber" :value="device.serial_number"></opensilex-StringView>
-              <opensilex-StringView label="DeviceDescription.personInCharge" :value="device.person_in_charge"></opensilex-StringView> 
-              <opensilex-StringView label="DeviceDescription.start_up" :value="device.start_up"></opensilex-StringView>
-              <opensilex-StringView label="DeviceDescription.removal" :value="device.removal"></opensilex-StringView>
-              <opensilex-StringView label="DeviceDescription.description" :value="device.description"></opensilex-StringView>
+              <opensilex-StringView
+                label="DeviceDescription.type"
+                :value="device.rdf_type_name"
+              ></opensilex-StringView>
+              <opensilex-StringView
+                label="DeviceDescription.name"
+                :value="device.name"
+              ></opensilex-StringView>
+              <opensilex-StringView
+                label="DeviceDescription.brand"
+                :value="device.brand"
+              ></opensilex-StringView>
+              <opensilex-StringView
+                label="DeviceDescription.constructorModel"
+                :value="device.constructor_model"
+              ></opensilex-StringView>
+              <opensilex-StringView
+                label="DeviceDescription.serialNumber"
+                :value="device.serial_number"
+              ></opensilex-StringView>
+              <opensilex-StringView
+                label="DeviceDescription.personInCharge"
+                :value="device.person_in_charge"
+              ></opensilex-StringView>
+              <opensilex-StringView
+                label="DeviceDescription.start_up"
+                :value="device.start_up"
+              ></opensilex-StringView>
+              <opensilex-StringView
+                label="DeviceDescription.removal"
+                :value="device.removal"
+              ></opensilex-StringView>
+              <opensilex-StringView
+                label="DeviceDescription.description"
+                :value="device.description"
+              ></opensilex-StringView>
             </template>
           </opensilex-Card>
-      
-          <opensilex-Card label="DeviceDescription.additionalInfo" icon="ik#ik-clipboard" v-if="addInfo.length !== 0">
+
+          <opensilex-Card
+            label="DeviceDescription.additionalInfo"
+            icon="ik#ik-clipboard"
+            v-if="addInfo.length !== 0"
+          >
             <template v-slot:body>
               <b-table
                 ref="tableAtt"
@@ -44,13 +82,17 @@
                 :fields="attributeFields"
                 :items="addInfo"
               >
-                <template v-slot:head(attribute)="data">{{$t(data.label)}}</template>
-                <template v-slot:head(value)="data">{{$t(data.label)}}</template>
+                <template v-slot:head(attribute)="data">{{
+                  $t(data.label)
+                }}</template>
+                <template v-slot:head(value)="data">{{
+                  $t(data.label)
+                }}</template>
               </b-table>
             </template>
           </opensilex-Card>
-      </b-col>
-      <!-- <b-col sm="5">
+        </b-col>
+        <!-- <b-col sm="5">
         <opensilex-Card label="DeviceDescription.events" icon="ik#ik-clipboard">
             <template v-slot:body>
  
@@ -69,38 +111,46 @@
           </opensilex-Card>
       </b-col> -->
         <b-col>
-        <opensilex-Card label="DeviceDescription.variables" icon="ik#ik-clipboard">
-          <template v-slot:body>
-            <opensilex-TableView
-              v-if=" device.relations.length !== 0"
-              :items="device.relations"
-              :fields="relationsFields"
-              :globalFilterField="true"
-            >
-              <template v-slot:cell(uri)="{ data }">
-                <opensilex-UriLink
-                  :uri="data.item.value"
-                  :value="data.item.value"
-                  :to="{path: '/variable/details/'+ encodeURIComponent(data.item.value)}"
-                ></opensilex-UriLink>
-              </template>  
-            </opensilex-TableView>
+          <opensilex-Card
+            label="DeviceDescription.variables"
+            icon="ik#ik-clipboard"
+          >
+            <template v-slot:body>
+              <opensilex-TableView
+                v-if="device.relations.length !== 0"
+                :items="device.relations"
+                :fields="relationsFields"
+                :globalFilterField="true"
+              >
+                <template v-slot:cell(uri)="{ data }">
+                  <opensilex-UriLink
+                    :uri="data.item.value"
+                    :value="data.item.value"
+                    :to="{
+                      path:
+                        '/variable/details/' +
+                        encodeURIComponent(data.item.value),
+                    }"
+                  ></opensilex-UriLink>
+                </template>
+              </opensilex-TableView>
 
-            <p v-else>
-              <strong>{{
-                $t("DeviceDescription.no-var-provided")
-              }}</strong>
-            </p>
-          </template>
-
-        </opensilex-Card>
-        <opensilex-Card label="DeviceDescription.position" icon="ik#ik-clipboard" v-if="addInfo.length !== 0">
+              <p v-else>
+                <strong>{{ $t("DeviceDescription.no-var-provided") }}</strong>
+              </p>
+            </template>
+          </opensilex-Card>
+          <opensilex-Card
+            label="DeviceDescription.position"
+            icon="ik#ik-clipboard"
+            v-if="addInfo.length !== 0"
+          >
             <template v-slot:body>
               <opensilex-AssociatedPositionList
                 :target="uri"
               ></opensilex-AssociatedPositionList>
             </template>
-        </opensilex-Card>
+          </opensilex-Card>
         </b-col>
       </b-row>
     </opensilex-PageContent>
@@ -154,24 +204,24 @@ export default class DeviceDescription extends Vue {
       key: "uri",
       label: "DeviceDescription.uri",
       sortable: true,
-    }
+    },
   ];
 
-  device: DeviceGetDetailsDTO = { 
-        uri: null,
-        rdf_type: null,
-        name: null,
-        brand: null,
-        constructor_model: null,
-        serial_number: null,
-        person_in_charge: null,
-        start_up: null,
-        removal: null,
-        description: null,
-        metadata: null,
-        relations: []
-      };
-  
+  device: DeviceGetDetailsDTO = {
+    uri: null,
+    rdf_type: null,
+    name: null,
+    brand: null,
+    constructor_model: null,
+    serial_number: null,
+    person_in_charge: null,
+    start_up: null,
+    removal: null,
+    description: null,
+    metadata: null,
+    relations: [],
+  };
+
   created() {
     this.service = this.$opensilex.getService("opensilex.DevicesService");
     this.uri = decodeURIComponent(this.$route.params.uri);
@@ -190,7 +240,7 @@ export default class DeviceDescription extends Vue {
   }
 
   getAddInfo() {
-    this.addInfo = []
+    this.addInfo = [];
     for (const property in this.device.metadata) {
       let tableData = {
         attribute: property,
@@ -218,7 +268,14 @@ export default class DeviceDescription extends Vue {
         this.$router.go(-1);
         this.$emit("onDelete", uri);
       })
-      .catch(this.$opensilex.errorHandler);
+      .catch((error) => {
+        if (error.response.result.title && error.response.result.title === "LINKED_DEVICE_ERROR") {
+          let message = this.$i18n.t("DeviceList.associated-device-error") + " " + error.response.result.message;
+          this.$opensilex.showErrorToast(message);
+        } else {
+          this.$opensilex.errorHandler(error);
+        }
+      });
   }
 
   @Ref("deviceForm") readonly deviceForm!: any;
@@ -228,7 +285,6 @@ export default class DeviceDescription extends Vue {
     let devicetoSend = JSON.parse(JSON.stringify(this.device));
     this.deviceForm.showEditForm(devicetoSend);
   }
-  
 }
 </script>
 

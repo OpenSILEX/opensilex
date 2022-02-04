@@ -5,63 +5,52 @@
  */
 package org.opensilex.core.ontology.api;
 
+import io.swagger.annotations.*;
+import org.apache.jena.graph.Node;
 import org.opensilex.core.CoreModule;
-import org.opensilex.core.ontology.dal.cache.CaffeineOntologyCache;
+import org.opensilex.core.URIsListPostDTO;
 import org.opensilex.core.ontology.dal.cache.OntologyCache;
+import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
+import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.server.exceptions.ConflictException;
+import org.opensilex.server.exceptions.NotFoundException;
+import org.opensilex.server.response.ErrorResponse;
+import org.opensilex.server.response.ObjectUriResponse;
+import org.opensilex.server.response.PaginatedListResponse;
+import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.server.rest.validation.ValidURI;
+import org.opensilex.sparql.SPARQLModule;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
+import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
+import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
+import org.opensilex.sparql.model.SPARQLNamedResourceModel;
+import org.opensilex.sparql.model.SPARQLTreeListModel;
+import org.opensilex.sparql.ontology.dal.ClassModel;
+import org.opensilex.sparql.ontology.dal.DatatypePropertyModel;
+import org.opensilex.sparql.ontology.dal.ObjectPropertyModel;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
+import org.opensilex.sparql.ontology.dal.OwlRestrictionModel;
+import org.opensilex.sparql.ontology.dal.URITypesModel;
+import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.response.ResourceTreeDTO;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import org.opensilex.sparql.response.ResourceTreeResponse;
+import org.opensilex.sparql.service.SPARQLService;
 
+import javax.inject.Inject;
+import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-import javax.inject.Inject;
-import javax.validation.Valid;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
-import org.apache.jena.graph.Node;
-import org.opensilex.core.URIsListPostDTO;
-import org.opensilex.server.rest.validation.ValidURI;
-import org.opensilex.sparql.model.SPARQLTreeListModel;
-import org.opensilex.sparql.service.SPARQLService;
-import org.opensilex.core.ontology.dal.ClassModel;
-import org.opensilex.core.ontology.dal.DatatypePropertyModel;
-import org.opensilex.core.ontology.dal.ObjectPropertyModel;
-import org.opensilex.core.ontology.dal.OntologyDAO;
-import org.opensilex.core.ontology.dal.OwlRestrictionModel;
-import org.opensilex.core.ontology.dal.URITypesModel;
-import org.opensilex.security.authentication.ApiProtected;
-import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.user.dal.UserModel;
-import org.opensilex.server.response.ErrorResponse;
-import org.opensilex.server.response.ObjectUriResponse;
-import org.opensilex.server.response.PaginatedListResponse;
-import org.opensilex.server.response.SingleObjectResponse;
-import org.opensilex.sparql.SPARQLModule;
-import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
-import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
-import org.opensilex.sparql.model.SPARQLNamedResourceModel;
-import org.opensilex.sparql.response.NamedResourceDTO;
-import org.opensilex.sparql.response.ResourceTreeResponse;
 
 /**
  * @author vince
@@ -85,8 +74,10 @@ public class OntologyAPI {
     public static final String PROPERTY_UPDATE_MSG = "Update a RDF property";
     public static final String PARENT_URI_NOT_FOUND_MSG = "Parent URI not found";
 
+    public static final String PROPERTIES_GRAPH = SPARQLClassObjectMapper.DEFAULT_GRAPH_KEYWORD+"/properties";
+
     private Node getPropertyGraph() {
-        return SPARQLDeserializers.nodeURI(sparqlModule.getSuffixedURI("properties"));
+        return SPARQLDeserializers.nodeURI(sparqlModule.getSuffixedURI(PROPERTIES_GRAPH));
     }
 
 
@@ -534,6 +525,38 @@ public class OntologyAPI {
         List<URITypesModel> checkedURIsTypes = dao.checkURIsTypes(dto.getUris(), rdfTypes);
         List<URITypesDTO> dtoList = checkedURIsTypes.stream().map(URITypesDTO::fromModel).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();
+    }
+
+    @PUT
+    @Path("{uri}/rename")
+    @ApiOperation(value = "Rename all occurrences of the given URI", notes = "**This method should not be used unless you " +
+            "are fully understanding what you are doing, as it may have side-effects for external ontologies. Please " +
+            "note that occurrences of the URI will NOT be changed in the NoSQL database (MongoDB).**")
+    @ApiProtected(adminOnly = true)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "The URI was successfully renamed")
+    })
+    public Response renameURI(
+            @ApiParam(value = "The URI to rename") @PathParam("uri") @NotNull URI uri,
+            @ApiParam(value = "The new URI") @QueryParam("newUri") @NotNull URI newUri
+    ) throws Exception {
+        if (!sparql.checkTripleURIExists(uri)) {
+            throw new NotFoundException("URI not found : " + uri);
+        }
+        if (sparql.checkTripleURIExists(newUri)) {
+            throw new ConflictException("Cannot rename the URI, target URI already exists : " + newUri);
+        }
+        try {
+            sparql.startTransaction();
+            sparql.renameTripleURI(uri, newUri);
+            sparql.renameGraph(uri, newUri);
+            sparql.commitTransaction();
+        } catch (Exception e) {
+            sparql.rollbackTransaction(e);
+            throw e;
+        }
+        return new ObjectUriResponse(Response.Status.OK, newUri).getResponse();
     }
 
 

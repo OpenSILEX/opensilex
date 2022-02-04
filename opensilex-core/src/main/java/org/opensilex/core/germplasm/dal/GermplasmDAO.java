@@ -9,13 +9,8 @@ package org.opensilex.core.germplasm.dal;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.mongodb.client.MongoCollection;
-import static com.mongodb.client.model.Filters.eq;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
-import java.net.URI;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
@@ -30,25 +25,32 @@ import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.SKOS;
 import org.bson.Document;
-import static org.opensilex.core.experiment.dal.ExperimentDAO.appendUserExperimentsFilter;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.germplasm.api.GermplasmCreationDTO;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.user.dal.UserModel;
-import org.opensilex.sparql.deserializer.SPARQLDeserializer;
-import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
-import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
-import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
+import org.opensilex.utils.OrderBy;
+
+import java.net.URI;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
+
+import static com.mongodb.client.model.Aggregates.*;
+import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Projections.computed;
+import static org.opensilex.core.experiment.dal.ExperimentDAO.appendUserExperimentsFilter;
+import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
 /**
  * Germplasm DAO
@@ -65,7 +67,7 @@ public class GermplasmDAO {
     protected final MongoDBService nosql;
     protected final Node defaultGraph;
 
-    public static final String ATTRIBUTES_COLLECTION_NAME = "germplasmAttributes";
+    public static final String ATTRIBUTES_COLLECTION_NAME = "germplasmAttribute";
 
     public GermplasmDAO(SPARQLService sparql, MongoDBService nosql) {
         this.sparql = sparql;
@@ -257,6 +259,17 @@ public class GermplasmDAO {
             return new ListWithPagination<>(Collections.emptyList());
         }
 
+        // Filter by experiment if it has any species. Otherwise, don't apply any filter on experiments (because it
+        // doesn't make sens).
+        final URI finalExperiment;
+        if (experiment != null) {
+            AskBuilder askExperimentHasSpecies = sparql.getUriExistsQuery(ExperimentModel.class, experiment)
+                    .addWhere(SPARQLDeserializers.nodeURI(experiment), Oeso.hasSpecies, makeVar(ExperimentModel.SPECIES_FIELD));
+            finalExperiment = sparql.executeAskQuery(askExperimentHasSpecies) ? experiment : null;
+        } else {
+            finalExperiment = null;
+        }
+
         return sparql.searchWithPagination(
                 GermplasmModel.class,
                 user.getLanguage(),
@@ -275,7 +288,7 @@ public class GermplasmDAO {
                     appendURIsFilter(select, filteredUris);
 
                     ElementGroup germplasmGraphElem = SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(rootElementGroup, defaultGraph);
-                    appendExperimentFilter(select, experiment, germplasmGraphElem);
+                    appendExperimentFilter(select, finalExperiment, germplasmGraphElem);
                 },
                 orderByList,
                 page,
@@ -458,6 +471,31 @@ public class GermplasmDAO {
         );
         
     }
+    
+    /**
+     * Get all germplasm attributes
+     * @return 
+     */
+    public List<String> getDistinctGermplasAttributes(){
+        // Make an aggregation on ATTRIBUTES_COLLECTION
+        
+        // 1.project - Transform document to multiple array elements
+        // 2.unwind - Transform multiple array elements to simple array
+        // 3.group - Return unique arrays keys only
+        Set<Document> germplasAttributesKeys = nosql.aggregate(ATTRIBUTES_COLLECTION_NAME, Arrays.asList(
+            project(computed("attributes", new Document("$objectToArray", "$attribute"))),
+            unwind("$attributes"),
+            group("$attributes.k")
+        ));
+        
+        // Return a list of unique arrays keys
+        List<String> germplasAttributesKeysList = new ArrayList<>();
+        for (Document germplasAttribute : germplasAttributesKeys){
+            germplasAttributesKeysList.add((String) germplasAttribute.get("_id"));
+        }
+        Collections.sort(germplasAttributesKeysList);
+        return germplasAttributesKeysList;
+    }
 
     public ListWithPagination<ExperimentModel> getExpFromGermplasm(
             UserModel currentUser,
@@ -530,7 +568,12 @@ public class GermplasmDAO {
         Document filter = new Document();
         if (metadata != null) {
             for (String key:metadata.keySet()) {
-                filter.put("attribute." + key, metadata.get(key));
+                Document regexFilter = new Document();
+                regexFilter.put("$regex", ".*" + Pattern.quote(metadata.get(key).toString()) + ".*" );
+                // Case ignore
+                regexFilter.put("$options", "i" );
+                
+                filter.put("attribute." + key, regexFilter);
             }
         }
         Set<URI> germplasmURIs = nosql.distinct("uri", URI.class, ATTRIBUTES_COLLECTION_NAME, filter);

@@ -5,18 +5,7 @@
 //******************************************************************************
 package org.opensilex.sparql.service;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.net.URI;
-import java.util.List;
-import java.util.function.Consumer;
-import java.util.stream.Stream;
-
-import org.apache.jena.arq.querybuilder.AskBuilder;
-import org.apache.jena.arq.querybuilder.ConstructBuilder;
-import org.apache.jena.arq.querybuilder.DescribeBuilder;
-import org.apache.jena.arq.querybuilder.SelectBuilder;
-import org.apache.jena.arq.querybuilder.UpdateBuilder;
+import org.apache.jena.arq.querybuilder.*;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.rdf.model.Model;
@@ -27,6 +16,13 @@ import org.apache.jena.riot.Lang;
 import org.opensilex.service.Service;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapperIndex;
+
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.net.URI;
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 /**
  *
@@ -51,6 +47,8 @@ public interface SPARQLConnection extends Service {
     }
 
     public void executeUpdateQuery(UpdateBuilder update) throws SPARQLException;
+
+    void executeUpdateQuery(String update) throws SPARQLException;
 
     public void executeDeleteQuery(UpdateBuilder update) throws SPARQLException;
 
@@ -79,7 +77,9 @@ public interface SPARQLConnection extends Service {
     public boolean isShaclEnabled();
 
     public default void loadOntology(URI graph, InputStream ontology, Lang format) throws SPARQLException {
-        Node graphNode = NodeFactory.createURI(graph.toString());
+        Node graphNode = graph != null
+                ? NodeFactory.createURI(graph.toString())
+                : null;
         Model model = ModelFactory.createDefaultModel();
         model.read(ontology, null, format.getName());
 
@@ -88,7 +88,11 @@ public interface SPARQLConnection extends Service {
 
         while (iterator.hasNext()) {
             Statement statement = iterator.nextStatement();
-            insertQuery.addInsert(graphNode, statement.asTriple());
+            if (graphNode != null) {
+                insertQuery.addInsert(graphNode, statement.asTriple());
+            } else {
+                insertQuery.addInsert(statement.asTriple());
+            }
         }
         executeUpdateQuery(insertQuery);
     }

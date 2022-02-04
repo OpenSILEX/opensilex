@@ -2,8 +2,7 @@ package org.opensilex.core.ontology.dal.cache;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import org.opensilex.core.ontology.dal.OntologyDAO;
-import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.service.SPARQLService;
 
 import java.net.URI;

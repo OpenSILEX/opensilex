@@ -67,4 +67,10 @@ public interface FrontConfig {
     )
     List<CustomMenuItem> customMenu();
 
+    @ConfigDescription(
+            value = "Geocoding service to autocomplete the address",
+            defaultString = "Photon"
+    )
+    String geocodingService();
+
 }

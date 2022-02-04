@@ -6,6 +6,8 @@
 //******************************************************************************
 package org.opensilex.update;
 
+import org.opensilex.OpenSilex;
+
 import java.time.OffsetDateTime;
 
 /**
@@ -20,19 +22,24 @@ public interface OpenSilexModuleUpdate {
      *
      * @return Date of update creation
      */
-    public OffsetDateTime getDate();
+    OffsetDateTime getDate();
 
     /**
      * Description of the update.
      *
      * @return Description
      */
-    public String getDescription();
+    String getDescription();
 
     /**
      * Update logic to implement.
-     *
-     * @throws Exception Update can throw any exception
      */
-    public void execute() throws Exception;
+     void execute() throws OpensilexModuleUpdateException;
+
+    /**
+     * @param opensilex the Opensilex instance
+     */
+     void setOpensilex(OpenSilex opensilex);
+
+
 }

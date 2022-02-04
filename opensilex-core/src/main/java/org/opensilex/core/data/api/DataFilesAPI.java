@@ -52,7 +52,7 @@ import org.bson.Document;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_OBJECTURI;
-import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_VARIABLEURI;
+
 import org.opensilex.core.data.dal.DataDAO;
 import static org.opensilex.core.data.dal.DataDAO.FS_FILE_PREFIX;
 import org.opensilex.core.data.dal.DataFileModel;
@@ -64,11 +64,10 @@ import org.opensilex.core.exception.DateValidationException;
 import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.ontology.dal.OntologyDAO;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
-import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidUriListException;
@@ -470,7 +469,7 @@ public class DataFilesAPI {
         List<URI> rdfTypes = new ArrayList<>();
         
         if (rdfType != null) {
-            rdfTypes = ontoDao.getSubclassRdfTypes(rdfType, user);
+            rdfTypes = ontoDao.getSubclassRdfTypes(rdfType, user.getLanguage());
         }        
         
         ListWithPagination<DataFileModel> resultList = dao.searchFiles(

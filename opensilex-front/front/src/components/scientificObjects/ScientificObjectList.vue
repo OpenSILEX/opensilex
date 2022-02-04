@@ -19,22 +19,29 @@
             :disabled="numberOfSelectedRows == 0"
             text="actions"
           >
-            <b-dropdown-item-button @click="$emit('createDocument')">
+            <b-dropdown-item-button
+                v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
+                @click="$emit('createDocument')">
               {{ $t("component.common.addDocument") }}
             </b-dropdown-item-button>
             <b-dropdown-item-button @click="exportCSV(false)">
               Export CSV
             </b-dropdown-item-button>
 
-            <b-dropdown-item-button @click="$emit('createEvents')">
+            <b-dropdown-item-button
+                v-if="user.hasCredential(credentials.CREDENTIAL_EVENT_MODIFICATION_ID)"
+                @click="$emit('createEvents')">
               {{ $t("Event.add-multiple") }}
             </b-dropdown-item-button>
-            <b-dropdown-item-button @click="$emit('createMoves')">
+            <b-dropdown-item-button
+                v-if="user.hasCredential(credentials.CREDENTIAL_EVENT_MODIFICATION_ID)"
+                @click="$emit('createMoves')">
               {{ $t("Move.add") }}
             </b-dropdown-item-button>
           </b-dropdown>
 
           <opensilex-CreateButton
+              v-if="!noActions" 
               class="mb-2 mr-2"
               @click="exportCSV(true)"
               :disabled="tableRef.totalRow === 0"

@@ -11,7 +11,7 @@ import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.sparql.utils.ClassURIGenerator;
+import org.opensilex.uri.generation.ClassURIGenerator;
 
 /**
  *
@@ -20,7 +20,7 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
 @SPARQLResource(
         ontology = SecurityOntology.class,
         resource = "GroupUserProfile",
-        graph = "groups",
+        graph = GroupModel.GRAPH,
         prefix = "grp"
 )
 public class GroupUserProfileModel extends SPARQLResourceModel implements ClassURIGenerator<GroupUserProfileModel> {
@@ -59,7 +59,7 @@ public class GroupUserProfileModel extends SPARQLResourceModel implements ClassU
         this.profile = profile;
     }
     
-    public String[] getUriSegments(GroupUserProfileModel instance) {
+    public String[] getInstancePathSegments(GroupUserProfileModel instance) {
         return new String[]{
             "" + System.identityHashCode(instance)
         };

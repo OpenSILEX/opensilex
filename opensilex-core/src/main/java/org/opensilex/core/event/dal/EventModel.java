@@ -9,12 +9,12 @@ package org.opensilex.core.event.dal;
 
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.ontology.Oeev;
-import org.opensilex.sparql.model.time.Time;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
-import org.opensilex.sparql.model.time.InstantModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.sparql.utils.ClassURIGenerator;
+import org.opensilex.sparql.model.time.InstantModel;
+import org.opensilex.sparql.model.time.Time;
+import org.opensilex.uri.generation.ClassURIGenerator;
 
 import java.net.URI;
 import java.util.List;
@@ -28,11 +28,12 @@ import java.util.UUID;
 @SPARQLResource(
         ontology = Oeev.class,
         resource = "Event",
-        graph = EventModel.GRAPH
+        graph = EventModel.GRAPH,
+        handleCustomProperties = true
 )
 public class EventModel extends SPARQLResourceModel implements ClassURIGenerator<EventModel> {
 
-    public static final String GRAPH = "set/events";
+    public static final String GRAPH = "event";
 
     @SPARQLProperty(
             ontology = Oeev.class,
@@ -51,14 +52,16 @@ public class EventModel extends SPARQLResourceModel implements ClassURIGenerator
 
     @SPARQLProperty(
             ontology = Time.class,
-            property = "hasBeginning"
+            property = "hasBeginning",
+            useDefaultGraph = false
     )
     private InstantModel start;
     public static final String START_FIELD = "start";
 
     @SPARQLProperty(
             ontology = Time.class,
-            property = "hasEnd"
+            property = "hasEnd",
+            useDefaultGraph = false
     )
     private InstantModel end;
     public static final String END_FIELD = "end";
@@ -113,7 +116,7 @@ public class EventModel extends SPARQLResourceModel implements ClassURIGenerator
     }
 
     @Override
-    public String[] getUriSegments(EventModel instance) {
+    public String[] getInstancePathSegments(EventModel instance) {
         return new String[]{
                 UUID.randomUUID().toString()
         };

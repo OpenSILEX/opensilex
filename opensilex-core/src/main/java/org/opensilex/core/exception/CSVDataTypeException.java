@@ -7,7 +7,7 @@
 package org.opensilex.core.exception;
 
 import java.net.URI;
-import org.opensilex.core.ontology.dal.CSVCell;
+import org.opensilex.core.csv.dal.CSVCell;
 
 /**
  *

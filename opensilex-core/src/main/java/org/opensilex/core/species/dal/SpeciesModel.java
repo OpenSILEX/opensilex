@@ -1,6 +1,7 @@
 package org.opensilex.core.species.dal;
 
 import org.apache.jena.vocabulary.RDFS;
+import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
@@ -10,9 +11,9 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
 @SPARQLResource(
         ontology = Oeso.class,
         resource = "Species",
-        graph = "set/germplasms"
+        graph = GermplasmModel.GRAPH
 )
-public class SpeciesModel extends SPARQLResourceModel  {
+public class SpeciesModel extends SPARQLResourceModel {
 
     @SPARQLProperty(
             ontology = RDFS.class,
@@ -30,4 +31,9 @@ public class SpeciesModel extends SPARQLResourceModel  {
     public void setLabel(SPARQLLabel label) {
         this.label = label;
     }
+
+    public String getName() {
+        return getLabel().getDefaultValue();
+    }
+
 }

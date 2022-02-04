@@ -119,12 +119,16 @@ let store = new Vuex.Store({
       CREDENTIAL_EXPERIMENT_DELETE_ID: "experiment-delete",
       CREDENTIAL_GROUP_MODIFICATION_ID: "group-modification",
       CREDENTIAL_GROUP_DELETE_ID: "group-delete",
+      CREDENTIAL_PROFILE_MODIFICATION_ID: "profile-modification",
+      CREDENTIAL_PROFILE_DELETE_ID: "profile-delete",
       CREDENTIAL_PROJECT_MODIFICATION_ID: "project-modification",
       CREDENTIAL_PROJECT_DELETE_ID: "project-delete",
       CREDENTIAL_USER_MODIFICATION_ID: "user-modification",
       CREDENTIAL_USER_DELETE_ID: "user-delete",
       CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID: "infrastructure-modification",
       CREDENTIAL_INFRASTRUCTURE_DELETE_ID: "infrastructure-delete",
+      CREDENTIAL_FACILITY_MODIFICATION_ID: "facility-modification",
+      CREDENTIAL_FACILITY_DELETE_ID: "facility-delete",
       CREDENTIAL_VARIABLE_MODIFICATION_ID: "variable-modification",
       CREDENTIAL_VARIABLE_DELETE_ID: "variable-delete",
       CREDENTIAL_FACTOR_MODIFICATION_ID: "factor-modification",
@@ -143,7 +147,9 @@ let store = new Vuex.Store({
       CREDENTIAL_EVENT_MODIFICATION_ID: "event-modification",
       CREDENTIAL_EVENT_DELETE_ID: "event-delete",
       CREDENTIAL_ANNOTATION_MODIFICATION_ID: "annotation-modification",
-      CREDENTIAL_ANNOTATION_DELETE_ID: "annotation-delete"
+      CREDENTIAL_ANNOTATION_DELETE_ID: "annotation-delete",
+      CREDENTIAL_PROVENANCE_MODIFICATION_ID: "provenance-modification",
+      CREDENTIAL_PROVENANCE_DELETE_ID: "provenance-delete"
     }
   },
   getters: {
@@ -195,10 +201,12 @@ let store = new Vuex.Store({
         console.debug("Define user");
         currentUser = user;
         state.user = user;
-        console.debug("Reset router");
-        state.openSilexRouter.resetRouter(state.user);
-        console.debug("Reset menu");
-        state.menu = Menu.fromMenuItemDTO(state.openSilexRouter.getMenu());
+        if (state.openSilexRouter) {
+          console.debug("Reset router");
+          state.openSilexRouter.resetRouter(state.user);
+          console.debug("Reset menu");
+          state.menu = Menu.fromMenuItemDTO(state.openSilexRouter.getMenu());
+        }
       }
     },
     logout(state) {
@@ -290,6 +298,14 @@ let store = new Vuex.Store({
     },
     goBack(state) {
       state.previousPage.pop();
+    },
+    resetRouter(state) {
+      if (state.openSilexRouter) {
+        console.debug("Reset router");
+        state.openSilexRouter.resetRouter(state.user);
+        console.debug("Reset menu");
+        state.menu = Menu.fromMenuItemDTO(state.openSilexRouter.getMenu());
+      }
     }
   },
   actions: {

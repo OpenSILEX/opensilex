@@ -6,22 +6,21 @@
     rules="decimal"
     :disabled="false"
     :required="property.is_required"
-  ></opensilex-InputForm>
+    :helpMessage="property.comment"
+    placeholder="XSDDecimalInput.placeholder"
+    ></opensilex-InputForm>
 </template>
 
 <script lang="ts">
 import {
   Component,
   Prop,
-  Model,
-  Provide,
   PropSync,
 } from "vue-property-decorator";
 import Vue from "vue";
 
 @Component
 export default class XSDDecimalInput extends Vue {
-  $opensilex: any;
 
   @Prop()
   property;
@@ -33,4 +32,14 @@ export default class XSDDecimalInput extends Vue {
 
 <style scoped lang="scss">
 </style>
+
+<i18n>
+
+en:
+    XSDDecimalInput:
+        placeholder: "Enter a decimal number, ex : 8611.53"
+fr:
+    XSDDecimalInput:
+        placeholder: "Saisir un nombre décimal, ex : 8611.53"
+</i18n>
 

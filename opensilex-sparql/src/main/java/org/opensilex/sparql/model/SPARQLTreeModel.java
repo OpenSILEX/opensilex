@@ -5,12 +5,8 @@
  */
 package org.opensilex.sparql.model;
 
-import org.apache.commons.collections4.CollectionUtils;
-
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Stack;
 import java.util.function.Consumer;
 
 /**

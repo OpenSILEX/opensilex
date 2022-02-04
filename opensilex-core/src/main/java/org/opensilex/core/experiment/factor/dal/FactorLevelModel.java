@@ -15,7 +15,7 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
-import org.opensilex.sparql.utils.ClassURIGenerator;
+import org.opensilex.uri.generation.ClassURIGenerator;
 
 /**
  *
@@ -24,7 +24,7 @@ import org.opensilex.sparql.utils.ClassURIGenerator;
 @SPARQLResource(
         ontology = Oeso.class,
         resource = "FactorLevel",
-        graph = "set/factors",
+        graph = FactorModel.GRAPH,
         prefix = "factor"
 )
 public class FactorLevelModel extends SPARQLNamedResourceModel<FactorLevelModel> implements ClassURIGenerator<FactorLevelModel> {
@@ -59,7 +59,7 @@ public class FactorLevelModel extends SPARQLNamedResourceModel<FactorLevelModel>
     }
 
     @Override
-    public String[] getUriSegments(FactorLevelModel instance) {
+    public String[] getInstancePathSegments(FactorLevelModel instance) {
         return new String[]{
             getFactor().getExperiment().getName(),
             getFactor().getName(),

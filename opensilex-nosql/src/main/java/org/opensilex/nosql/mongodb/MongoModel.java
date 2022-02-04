@@ -6,8 +6,9 @@
 //******************************************************************************
 package org.opensilex.nosql.mongodb;
 
+import org.opensilex.uri.generation.ClassURIGenerator;
+
 import java.net.URI;
-import org.opensilex.nosql.utils.ClassURIGenerator;
 
 /**
  *
@@ -18,6 +19,8 @@ public class MongoModel implements ClassURIGenerator<MongoModel> {
     protected URI baseURI;
     protected URI uri;
 
+    public static final String URI_FIELD = "uri";
+
     public URI getUri() {
         return uri;
     }
@@ -27,7 +30,7 @@ public class MongoModel implements ClassURIGenerator<MongoModel> {
     }
 
     @Override
-    public String[] getUriSegments(MongoModel instance) {
+    public String[] getInstancePathSegments(MongoModel instance) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 

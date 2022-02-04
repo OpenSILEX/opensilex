@@ -1,172 +1,178 @@
 <template>
-  <opensilex-TreeView :nodes.sync="nodes" @select="displayClassDetail($event.data.uri)">
-    <template v-slot:node="{ node }">
+    <opensilex-TreeView :nodes.sync="nodes" @select="displayClassDetail($event.data.uri)">
+        <template v-slot:node="{ node }">
       <span class="item-icon">
-        <opensilex-Icon v-if="classesParametersByURI[node.data.uri] && classesParametersByURI[node.data.uri].icon" :icon="classesParametersByURI[node.data.uri].icon" />
+        <opensilex-Icon v-if="classesParametersByURI[node.data.uri] && classesParametersByURI[node.data.uri].icon"
+                        :icon="classesParametersByURI[node.data.uri].icon"/>
       </span>&nbsp;
-      <strong v-if="node.data.selected">{{ node.title }}</strong>
-      <span v-if="!node.data.selected">{{ node.title }}</span>
-    </template>
+            <strong v-if="node.data.selected">{{ node.title }}</strong>
+            <span v-if="!node.data.selected">{{ node.title }}</span>
+        </template>
 
-    <template v-slot:buttons="{ node }">
-      <opensilex-EditButton
-        v-if="isManagedClass(node.data.uri) && user.isAdmin()"
-        @click="$emit('editClass' ,node.data)"
-        label="OntologyClassTreeView.edit"
-        :small="true"
-      ></opensilex-EditButton>
-      <opensilex-AddChildButton
-        v-if="user.isAdmin()"
-        @click="$emit('createChildClass' ,node.data.uri)"
-        label="OntologyClassTreeView.add-child"
-        :small="true"
-      ></opensilex-AddChildButton>
-      <opensilex-DeleteButton
-        v-if="isManagedClass(node.data.uri) && user.isAdmin()"
-        @click="$emit('deleteRDFType' ,node.data)"
-        label="OntologyClassTreeView.delete"
-        :small="true"
-      ></opensilex-DeleteButton>
-    </template>
-  </opensilex-TreeView>
+        <template v-slot:buttons="{ node }">
+            <opensilex-EditButton
+                v-if="isManagedClass(node.data.uri) && user.isAdmin()"
+                @click="$emit('editClass' ,node.data)"
+                label="OntologyClassTreeView.edit"
+                :small="true"
+            ></opensilex-EditButton>
+            <opensilex-AddChildButton
+                v-if="user.isAdmin()"
+                @click="$emit('createChildClass' ,node.data.uri)"
+                label="OntologyClassTreeView.add-child"
+                :small="true"
+            ></opensilex-AddChildButton>
+            <opensilex-DeleteButton
+                v-if="isManagedClass(node.data.uri) && user.isAdmin()"
+                @click="$emit('deleteRDFType' ,node.data)"
+                label="OntologyClassTreeView.delete"
+                :small="true"
+            ></opensilex-DeleteButton>
+        </template>
+    </opensilex-TreeView>
 </template>
 
 <script lang="ts">
-import { Component, Ref, Prop, Watch } from "vue-property-decorator";
+import {Component, Prop, Watch} from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
-import { OntologyService, ResourceTreeDTO } from "opensilex-core/index";
+import {OntologyService, ResourceTreeDTO} from "opensilex-core/index";
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+import {Store} from "vuex";
+import {VueJsOntologyExtensionService} from "../../lib";
+
 @Component
 export default class OntologyClassTreeView extends Vue {
-  $opensilex: any;
-  $store: any;
 
-  get user() {
-    return this.$store.state.user;
-  }
+    $opensilex: OpenSilexVuePlugin;
+    $store: Store<any>;
+    ontologyService: OntologyService;
+    vueJsOntologyService: VueJsOntologyExtensionService;
 
-  get credentials() {
-    return this.$store.state.credentials;
-  }
+    get user() {
+        return this.$store.state.user;
+    }
 
-  @Prop()
-  rdfType;
+    get credentials() {
+        return this.$store.state.credentials;
+    }
 
-  public nodes = [];
+    @Prop()
+    rdfType;
 
-  public selected = null;
+    public nodes = [];
 
-  created() {
-    this.onRootClassChange();
-  }
+    public selected = null;
 
-  private langUnwatcher;
-  mounted() {
-    this.langUnwatcher = this.$store.watch(
-      () => this.$store.getters.language,
-      lang => {
-        if (this.selected) {
-          this.displayClassDetail(this.selected.uri);
+    created() {
+        this.ontologyService = this.$opensilex.getService("opensilex-core.OntologyService");
+        this.vueJsOntologyService = this.$opensilex.getService("opensilex-front.VueJsOntologyExtensionService");
+        this.onRootClassChange();
+    }
+
+    private langUnwatcher;
+
+    mounted() {
+        this.langUnwatcher = this.$store.watch(
+            () => this.$store.getters.language,
+            lang => {
+                if (this.selected) {
+                    this.displayClassDetail(this.selected.uri);
+                }
+            }
+        );
+    }
+
+    beforeDestroy() {
+        this.langUnwatcher();
+    }
+
+    @Watch("rdfType")
+    onRootClassChange() {
+        if (this.rdfType) {
+            this.refresh(undefined, undefined);
         }
-      }
-    );
-  }
-
-  beforeDestroy() {
-    this.langUnwatcher();
-  }
-
-  @Watch("rdfType")
-  onRootClassChange() {
-    if (this.rdfType) {
-      this.refresh(undefined,undefined);
     }
-  }
 
-  resourceTree: Array<ResourceTreeDTO> = null;
+    resourceTree: Array<ResourceTreeDTO> = null;
 
-  getTree() {
-    return this.resourceTree;
-  }
+    getTree() {
+        return this.resourceTree;
+    }
 
-  classesParametersByURI = {};
+    classesParametersByURI = {};
 
-  refresh(selection, nameFilter) {
+    refresh(selection, nameFilter) {
 
-    Promise.all([
-      this.$opensilex
-        .getService("opensilex-core.OntologyService")
-        .searchSubClassesOf(this.rdfType, nameFilter,false),
-      this.$opensilex
-        .getService("opensilex-front.VueJsOntologyExtensionService")
-        .getRDFTypesParameters()
-    ]).then(results => {
-      let classesParameters = results[1].response.result;
-      this.classesParametersByURI = {};
-      for (let i in classesParameters) {
-        this.classesParametersByURI[classesParameters[i].uri] = classesParameters[i];
-      }
+        Promise.all([
+            this.ontologyService.searchSubClassesOf(this.rdfType, nameFilter, false),
+            this.vueJsOntologyService.getRDFTypesParameters()
+        ]).then(results => {
+            let classesParameters = results[1].response.result;
+            this.classesParametersByURI = {};
+            for (let i in classesParameters) {
+                this.classesParametersByURI[classesParameters[i].uri] = classesParameters[i];
+            }
 
-      let treeNode = [];
-      if(results[0].response.result.length > 0){
-        this.resourceTree = results[0].response.result;
-        for (let i in this.resourceTree[0].children) {
-          let node = this.dtoToNode(this.resourceTree[0].children[i], selection);
-          treeNode.push(node);
+            let treeNode = [];
+            if (results[0].response.result.length > 0) {
+                this.resourceTree = results[0].response.result;
+                for (let i in this.resourceTree[0].children) {
+                    let node = this.dtoToNode(this.resourceTree[0].children[i], selection);
+                    treeNode.push(node);
 
-          this.nodes = treeNode;
+                    this.nodes = treeNode;
+                }
+            } else {
+                this.nodes = treeNode;
+            }
+
+            if (selection) {
+                this.displayClassDetail(selection.uri);
+            }
+        }).catch(this.$opensilex.errorHandler);
+    }
+
+    displayClassDetail(uri) {
+        this.vueJsOntologyService
+            .getRDFTypeProperties(uri, this.rdfType)
+            .then(http => {
+                this.selected = http.response.result;
+                this.$emit("selectionChange", this.selected);
+            }).catch(this.$opensilex.errorHandler);
+    }
+
+    private dtoToNode(dto: ResourceTreeDTO, selection) {
+        let isLeaf = dto.children.length == 0;
+
+        let childrenDTOs = [];
+        if (!isLeaf) {
+            for (let i in dto.children) {
+                childrenDTOs.push(this.dtoToNode(dto.children[i], selection));
+            }
         }
-      }else{
-         this.nodes = treeNode;
-      }
-      
-      if (selection) {
-        this.displayClassDetail(selection.uri);
-      }
-    });
-  }
 
-  displayClassDetail(uri) {
-    this.$opensilex
-      .getService("opensilex-core.VueJsOntologyExtensionService")
-      .getRDFTypeProperties(uri, this.rdfType)
-      .then(http => {
-        this.selected = http.response.result;
-        this.$emit("selectionChange", this.selected);
-      });
-  }
+        if (selection && selection.uri == dto.uri) {
+            this.selected = selection;
+        }
 
-  private dtoToNode(dto: ResourceTreeDTO, selection) {
-    let isLeaf = dto.children.length == 0;
+        let isSelected = this.selected && this.selected.uri == dto.uri;
 
-    let childrenDTOs = [];
-    if (!isLeaf) {
-      for (let i in dto.children) {
-        childrenDTOs.push(this.dtoToNode(dto.children[i], selection));
-      }
+        return {
+            title: dto.name,
+            data: dto,
+            isLeaf: isLeaf,
+            children: childrenDTOs,
+            isExpanded: true,
+            isSelected: isSelected,
+            isDraggable: false,
+            isSelectable: !dto.disabled
+        };
     }
 
-    if (selection && selection.uri == dto.uri) {
-      this.selected = selection;
+    isManagedClass(rdfClassURI) {
+        return !!this.classesParametersByURI[rdfClassURI];
     }
-
-    let isSelected = this.selected && this.selected.uri == dto.uri;
-
-    return {
-      title: dto.name,
-      data: dto,
-      isLeaf: isLeaf,
-      children: childrenDTOs,
-      isExpanded: true,
-      isSelected: isSelected,
-      isDraggable: false,
-      isSelectable: !dto.disabled
-    };
-  }
-
-  isManagedClass(rdfClassURI) {
-    return !!this.classesParametersByURI[rdfClassURI];
-  }
 }
 </script>
 
@@ -175,14 +181,16 @@ export default class OntologyClassTreeView extends Vue {
 
 <i18n>
 en:
-  OntologyClassTreeView:
-    edit: Edit object type
-    add-child: Add sub-object type
-    delete: Delete object type
+    OntologyClassTreeView:
+        edit: Edit object type
+        add-child: Add sub-object type
+        delete: Delete object type
 
 fr:
-  OntologyClassTreeView:
-    edit: Editer le type d'objet
-    add-child: Ajouter un sous-type d'objet
-    delete: Supprimer le type d'objet
+    OntologyClassTreeView:
+        edit: Editer le type d'objet
+        add-child: Ajouter un sous-type d'objet
+        delete: Supprimer le type d'objet
+
+
 </i18n>

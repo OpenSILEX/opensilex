@@ -9,20 +9,28 @@ package org.opensilex.sparql.model.time;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.sparql.utils.ClassURIGenerator;
+import org.opensilex.uri.generation.ClassURIGenerator;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
 /**
  * @author Renaud COLIN
+ *
+ * Model describing an Instant by using the {@link Time#Instant} concept
+ * @see Time#Instant
  */
+
 @SPARQLResource(
         ontology = Time.class,
         resource = "Instant",
-        graph = "set/events"
+        graph = InstantModel.GRAPH
 )
 public class InstantModel extends SPARQLResourceModel implements ClassURIGenerator<InstantModel> {
+
+    public static final String GRAPH = "instant";
 
     @SPARQLProperty(
         ontology = Time.class,
@@ -38,7 +46,13 @@ public class InstantModel extends SPARQLResourceModel implements ClassURIGenerat
     public void setDateTimeStamp(OffsetDateTime dateTimeStamp) { this.dateTimeStamp = dateTimeStamp; }
 
     @Override
-    public String[] getUriSegments(InstantModel instance) {
+    public URI generateURI(String prefix, InstantModel instance, int retryCount) throws URISyntaxException {
+        String instantPrefix = prefix.replace("event","instant");
+        return ClassURIGenerator.super.generateURI(instantPrefix, instance, retryCount);
+    }
+
+    @Override
+    public String[] getInstancePathSegments(InstantModel instance) {
         return new String[]{
                 UUID.randomUUID().toString()
         };

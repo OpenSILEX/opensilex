@@ -138,12 +138,12 @@
                             <b-button-group size="sm">
 
                                 <opensilex-EditButton
-                                    v-if="! modificationCredentialId || user.hasCredential(modificationCredentialId)"
+                                    v-if="user.hasCredential(modificationCredentialId)"
                                     @click="editEvent(data.item.uri,data.item.rdf_type)"
                                     :small="true"
                                 ></opensilex-EditButton>
                                 <opensilex-DeleteButton
-                                    v-if="! deleteCredentialId || user.hasCredential(deleteCredentialId)"
+                                    v-if="user.hasCredential(deleteCredentialId)"
                                     @click="deleteEvent(data.item.uri)"
                                     label="EventForm.delete"
                                     :small="true"
@@ -176,7 +176,7 @@
         ></opensilex-EventCsvForm>
 
         <opensilex-ModalForm
-            v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
+            v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
             ref="documentForm"
             component="opensilex-DocumentForm"
             createTitle="component.common.addDocument"

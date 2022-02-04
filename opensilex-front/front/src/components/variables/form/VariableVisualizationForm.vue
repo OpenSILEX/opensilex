@@ -58,6 +58,8 @@ import {
 } from "opensilex-core/index";
 // @ts-ignore
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
+let yesterday = new Date((new Date()).setHours(0,0,0,0) - 1000*60*60*24)
+// let yesterday = new Date((new Date()).valueOf() - 1000*60*60*24)
 
 @Component
 export default class VariableVisualizationForm extends Vue {
@@ -69,7 +71,7 @@ export default class VariableVisualizationForm extends Vue {
   countIsLoading: boolean = false;
   filter = {
     variable: null,
-    startDate: undefined,
+    startDate: yesterday,
     endDate: undefined,
     device: [],
   };

@@ -85,16 +85,6 @@
                 </opensilex-FilterField>
             </template>
         </opensilex-SearchFilterField> 
-        
-        <!-- <div>
-          <button
-            id="buttonValidate"
-            type="button"
-            class="btn btn-primary"
-            block="false"
-            v-on:click="hide(true)"
-          >{{ $t('component.common.validateSelection') }}</button>
-        </div> -->
 
         <opensilex-VariableListWithoutFilter 
         ref="varList"
@@ -176,8 +166,4 @@ export default class VariablesModalListByExp extends Vue {
 </script>
 
 <style scoped lang="scss">
-    // #buttonValidate {
-    //   display: block;
-    //   margin-left: auto;
-    // }
 </style>

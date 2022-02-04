@@ -19,8 +19,6 @@
         ref="variableSelection"
         :isSelectable="true"
         :noActions="true"
-        :maximumSelectedRows="maximumSelectedRows"
-        iconNumberOfSelectedRow="ik#ik-globe"
         :pageSize="5"
       ></opensilex-VariableListWithoutActionButton>
     </div>
@@ -28,14 +26,11 @@
 </template>
 
 <script lang="ts">
-import { Component, Ref, Prop } from "vue-property-decorator";
+import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import VariableList from "./VariableList.vue";
 
 @Component
 export default class VariableModalList extends Vue {
-  @Prop()
-  maximumSelectedRows;
 
   @Ref("variableSelection") readonly variableSelection!: any;
 

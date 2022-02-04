@@ -70,8 +70,9 @@
                     :isSelectable="isSelectable"
                     :maximumSelectedRows="maximumSelectedRows"
                     labelNumberOfSelectedRow="VariableList.selected"
-                    :iconNumberOfSelectedRow="iconNumberOfSelectedRow"
-                    :defaultPageSize="pageSize">
+                    iconNumberOfSelectedRow="fa#vials"
+                    :defaultPageSize="pageSize"
+                    :selectMode="selectMode">
 
                     <template v-slot:cell(name)="{data}">
                         <opensilex-UriLink
@@ -106,12 +107,13 @@
 </template>
 
 <script lang="ts">
-import {Component} from "vue-property-decorator";
+import {Component, Prop} from "vue-property-decorator";
 import VariableList from "./VariableList.vue";
 
 @Component
 export default class VariableListWithoutActionButton extends VariableList {
-
+    @Prop()
+    selectMode;
 }
 </script>
 

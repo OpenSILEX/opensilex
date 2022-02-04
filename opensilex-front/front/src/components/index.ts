@@ -461,8 +461,6 @@ import VariableListWithoutFilter from './variables/VariableListWithoutFilter.vue
 components["opensilex-VariableListWithoutFilter"] = VariableListWithoutFilter;
 import VariableListWithoutActionButton from './variables/VariableListWithoutActionButton.vue';
 components["opensilex-VariableListWithoutActionButton"] = VariableListWithoutActionButton;
-// import UsedVariableList from './variables/UsedVariableList.vue';
-// components["opensilex-UsedVariableList"] = UsedVariableList;
 import VariablesView from './variables/VariablesView.vue';
 components["opensilex-VariablesView"] = VariablesView;
 import VariableDetails from './variables/VariableDetails.vue';
@@ -486,18 +484,16 @@ import TraitForm from './variables/form/TraitForm.vue';
 components["opensilex-TraitForm"] = TraitForm;
 import VariableModalList from './variables/VariableModalList.vue';
 components["opensilex-VariableModalList"] = VariableModalList;
+// import VariableModalListSingleSelection from './variables/VariableModalListSingleSelection.vue';
+// components["opensilex-VariableModalListSingleSelection"] = VariableModalListSingleSelection;
 import VariablesModalListByExp from './variables/VariablesModalListByExp.vue';
 components["opensilex-VariablesModalListByExp"] = VariablesModalListByExp;
-// import UsedVariableModalList from './variables/UsedVariableModalList.vue';
-// components["opensilex-UsedVariableModalList"] = UsedVariableModalList;
 import VariableSelector from './variables/views/VariableSelector.vue';
 components["opensilex-VariableSelector"] = VariableSelector;
 import UsedVariableSelector from './variables/views/UsedVariableSelector.vue';
 components["opensilex-UsedVariableSelector"] = UsedVariableSelector;
 import VariableSelectorWithFilter from './variables/views/VariableSelectorWithFilter.vue';
 components["opensilex-VariableSelectorWithFilter"] = VariableSelectorWithFilter;
-// import UsedVariableSelectorWithFilter from './variables/views/UsedVariableSelectorWithFilter.vue';
-// components["opensilex-UsedVariableSelectorWithFilter"] = UsedVariableSelectorWithFilter;
 
 // GroupVariables
 import GroupVariablesForm from './groupVariable/GroupVariablesForm.vue';

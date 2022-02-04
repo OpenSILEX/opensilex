@@ -32,7 +32,6 @@ import org.opensilex.sparql.model.VocabularyModel;
 import org.opensilex.sparql.ontology.dal.*;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.JgraphtUtils;
-import org.opensilex.utils.AnsiUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,8 +43,7 @@ import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import static org.opensilex.utils.AnsiUtils.ANSI_RED;
-import static org.opensilex.utils.AnsiUtils.ANSI_RESET;
+import static org.opensilex.utils.AnsiUtils.*;
 
 /**
  * @author rcolin
@@ -75,7 +73,7 @@ public abstract class AbstractOntologyStore implements OntologyStore {
 
     public static final OwlRestrictionModel OWL_ROOT_RESTRICTION_MODEL = getRootRestrictionModel();
 
-    private static final String STORE_LOADING_MSG = "{} {} loaded [OK] time: {} ms";
+    private static final String STORE_LOADING_MSG = "{} {} {} loaded [OK] time: {} ms {}";
     private static final String WRONG_PROPERTY_TYPE_MSG = "Property (%s) type (%s) don't match with the given type : %s. ";
     private static final String WRONG_DOMAIN_MSG = "Property (%s) domain (%s) don't match with the given domain : %s. ";
 
@@ -141,7 +139,7 @@ public abstract class AbstractOntologyStore implements OntologyStore {
             List<ClassModel> classes = storeLoader.getClasses();
             addAll(classes);
             long elapsedMs = Duration.between(begin, Instant.now()).toMillis();
-            LOGGER.info(STORE_LOADING_MSG, classes.size(), "classes", elapsedMs);
+            LOGGER.info(STORE_LOADING_MSG, ANSI_GREEN, classes.size(), "classes", elapsedMs, ANSI_RESET);
 
             // Initial properties loading
             begin = Instant.now();
@@ -149,14 +147,14 @@ public abstract class AbstractOntologyStore implements OntologyStore {
             addAll(properties);
             linkPropertiesWithClasses(properties);
             elapsedMs = Duration.between(begin, Instant.now()).toMillis();
-            LOGGER.info(STORE_LOADING_MSG, properties.size(), "properties", elapsedMs);
+            LOGGER.info(STORE_LOADING_MSG, ANSI_GREEN, properties.size(), "properties", elapsedMs, ANSI_RESET);
 
             // Initial OWL restrictions loading
             begin = Instant.now();
             List<OwlRestrictionModel> restrictions = storeLoader.getRestrictions();
             linkRestrictions(restrictions);
             elapsedMs = Duration.between(begin, Instant.now()).toMillis();
-            LOGGER.info(STORE_LOADING_MSG, restrictions.size(), "restrictions", elapsedMs);
+            LOGGER.info(STORE_LOADING_MSG, ANSI_GREEN, restrictions.size(), "restrictions", elapsedMs, ANSI_RESET);
 
         } catch (Exception e) {
             throw new SPARQLException(e);
@@ -283,7 +281,6 @@ public abstract class AbstractOntologyStore implements OntologyStore {
         if (restriction.getOnDataRange() == null) {
             LOGGER.warn("{} NULL owl:onDataRange for restriction {} on property {} {}", ANSI_RED, restriction.getUri(), property.getUri(), ANSI_RESET);
         } else {
-            //            restrictedClass.getDatatypeProperties().put(property.getUri(), property);
             restrictedClass.getRestrictionsByProperties().put(restriction.getOnProperty(), restriction);
         }
     }
@@ -293,9 +290,7 @@ public abstract class AbstractOntologyStore implements OntologyStore {
             LOGGER.warn("{} NULL owl:onClass for restriction {} on property {} {}", ANSI_RED, restriction.getUri(), property.getUri(), ANSI_RESET);
         } else {
             // update onClass with complete ClassModel from store
-
             restriction.setOnClass(getClassModel(restriction.getOnClass().getUri()));
-            //            restrictedClass.getObjectProperties().put(property.getUri(), property);
             restrictedClass.getRestrictionsByProperties().put(restriction.getOnProperty(), restriction);
         }
     }
@@ -357,16 +352,6 @@ public abstract class AbstractOntologyStore implements OntologyStore {
                     classModel.getRestrictionsByProperties().put(ancestorRestriction.getUri(), ancestorRestriction)
             );
         }
-    }
-
-    private void addPropertiesFromSubClass(ClassModel classModel) {
-
-        classModel.visit(child -> {
-            if (classModel != child) {
-                classModel.getDatatypeProperties().putAll(child.getDatatypeProperties());
-                classModel.getObjectProperties().putAll(child.getObjectProperties());
-            }
-        });
     }
 
     private void handleLang(String lang, VocabularyModel<?> model) {
@@ -486,16 +471,6 @@ public abstract class AbstractOntologyStore implements OntologyStore {
         return accumulator;
     }
 
-    BiPredicate<AbstractPropertyModel, ClassModel> getNullRangePredicate(){
-        return (property, classModel) -> property.getRangeURI() != null;
-    }
-
-    BiPredicate<DatatypePropertyModel,ClassModel> isRestrictedPredicate(){
-        return (property, classModel) -> classModel.getRestrictionsByProperties().containsKey(property.getUri());
-    }
-
-
-
     @Override
     public SPARQLTreeListModel<DatatypePropertyModel> searchDataProperties(URI domain, String namePattern, String lang, boolean includeSubClasses, BiPredicate<DatatypePropertyModel,ClassModel> filter) throws SPARQLException {
 
@@ -550,6 +525,7 @@ public abstract class AbstractOntologyStore implements OntologyStore {
         );
     }
 
+    
     public Set<ObjectPropertyModel> getLinkableObjectProperties(URI domain, String lang) throws SPARQLInvalidURIException {
 
         BiPredicate<ObjectPropertyModel,ClassModel> filter = (property,classModel) -> property.getRange() != null && ! classModel.getRestrictionsByProperties().containsKey(property.getUri());

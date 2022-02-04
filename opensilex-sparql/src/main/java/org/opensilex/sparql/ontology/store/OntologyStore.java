@@ -17,7 +17,6 @@ import org.opensilex.sparql.ontology.dal.*;
 import java.net.URI;
 import java.util.Set;
 import java.util.function.BiPredicate;
-import java.util.function.Predicate;
 
 public interface OntologyStore {
 

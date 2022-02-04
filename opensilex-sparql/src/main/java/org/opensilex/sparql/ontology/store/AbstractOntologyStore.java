@@ -32,6 +32,7 @@ import org.opensilex.sparql.model.VocabularyModel;
 import org.opensilex.sparql.ontology.dal.*;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.JgraphtUtils;
+import org.opensilex.utils.AnsiUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,6 +43,9 @@ import java.util.*;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 import java.util.stream.Stream;
+
+import static org.opensilex.utils.AnsiUtils.ANSI_RED;
+import static org.opensilex.utils.AnsiUtils.ANSI_RESET;
 
 /**
  * @author rcolin
@@ -62,8 +66,13 @@ public abstract class AbstractOntologyStore implements OntologyStore {
     static final int MAX_GRAPH_PATH_LENGTH = 20;
 
     public static final ClassModel OWL_CLASS_MODEL = getRootClassModel();
+
+    public static final URI TOP_DATA_PROPERTY_URI = URIDeserializer.formatURI(OWL2.topDataProperty.getURI());
     public static final DatatypePropertyModel OWL_DATATYPE_PROPERTY_MODEL = getRootDataTypePropertyModel();
+
+    public static final URI TOP_OBJECT_PROPERTY_URI = URIDeserializer.formatURI(OWL2.topObjectProperty.getURI());
     public static final ObjectPropertyModel OWL_OBJECT_PROPERTY_MODEL = getRootObjectPropertyModel();
+
     public static final OwlRestrictionModel OWL_ROOT_RESTRICTION_MODEL = getRootRestrictionModel();
 
     private static final String STORE_LOADING_MSG = "{} {} loaded [OK] time: {} ms";

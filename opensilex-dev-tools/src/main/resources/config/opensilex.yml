@@ -6,6 +6,7 @@ ontologies:
         config:
             serverURI: http://localhost:7200
             repository: opensilex
+        enableOntologyStore: true
 
 
 file-system:

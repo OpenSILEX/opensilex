@@ -277,7 +277,7 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
                 continue;
             }
 
-            OwlRestrictionModel propertyRestriction = classModel.getRestrictions().get(property);
+            OwlRestrictionModel propertyRestriction = classModel.getRestrictionsByProperties().get(property);
 
             boolean nullOrEmpty = StringUtils.isEmpty(propValue);
 
@@ -313,7 +313,7 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
             // compute the list of required property excluded from the custom properties list
             missedRequiredProperties = new LinkedList<>();
 
-            for (Map.Entry<URI, OwlRestrictionModel> entry : classModel.getRestrictions().entrySet()) {
+            for (Map.Entry<URI, OwlRestrictionModel> entry : classModel.getRestrictionsByProperties().entrySet()) {
 
                 URI property = entry.getKey();
 

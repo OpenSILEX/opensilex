@@ -77,19 +77,30 @@ export default class SiteSelector extends Vue {
   }
 
   loadSites(siteUris) {
-    if (this.siteByUriCache.size > 0) {
-      return Array.from(this.siteByUriCache.values());
-    }
-
     if (!Array.isArray(siteUris) || siteUris.length === 0) {
       return undefined;
     }
 
-    if (typeof siteUris[0] === "object") {
-      return siteUris;
+    if (this.siteByUriCache.size === 0) {
+      let siteDtos = [];
+
+      siteUris.forEach(site => {
+        if (site.name && site.name.length > 0 && site.uri && site.uri.length > 0) {
+          siteDtos.push(site);
+        }
+      });
+
+      if (siteDtos.length > 0) {
+        return siteDtos;
+      }
+
+      return this.$service.getSitesByURI(siteUris)
+        .then((http: HttpResponse<OpenSilexResponse<Array<NamedResourceDTOSiteModel>>>) =>
+            (http && http.response) ? http.response.result : undefined
+        );
     }
 
-    return this.$service.getSitesByURI(siteUris);
+    return siteUris.map(siteUri => this.siteByUriCache.get(siteUri));
   }
 
   siteToSelectNode(siteDto: NamedResourceDTOSiteModel) {

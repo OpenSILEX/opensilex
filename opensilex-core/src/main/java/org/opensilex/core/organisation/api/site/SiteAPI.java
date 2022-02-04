@@ -118,7 +118,7 @@ public class SiteAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Sites retrieved", response = NamedResourceDTO.class)
+            @ApiResponse(code = 200, message = "Sites retrieved", response = NamedResourceDTO.class, responseContainer = "List")
     })
     public Response getSitesByURI(
             @ApiParam(value = "Site URIs", required = true) @QueryParam("uris") @NotNull @NotEmpty @ValidURI List<URI> uris

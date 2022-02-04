@@ -197,6 +197,11 @@ export default class InfrastructureView extends Vue {
   }
 
   updateSelectedFacility(facility: InfrastructureFacilityGetDTO) {
+    if (!facility || !facility.uri) {
+      this.selectedFacility = undefined;
+      return;
+    }
+
     this.service
         .getInfrastructureFacility(facility.uri)
         .then((http: HttpResponse<OpenSilexResponse<InfrastructureFacilityGetDTO>>) => {

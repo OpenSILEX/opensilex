@@ -9,13 +9,14 @@ package org.opensilex.sparql.ontology.dal;
 
 import java.net.URI;
 import java.util.List;
+import org.opensilex.sparql.model.SPARQLModel;
 
 /**
  *
  * @author Alice Boizet
  */
-public class URITypesModel  {
-    
+public class URITypesModel implements SPARQLModel {
+
     protected URI uri;
 
     protected List<URI> rdfTypes;
@@ -23,7 +24,7 @@ public class URITypesModel  {
     public URITypesModel(URI uri, List<URI> rdfTypes) {
         this.uri = uri;
         this.rdfTypes = rdfTypes;
-    }    
+    }
 
     public URI getUri() {
         return uri;
@@ -40,6 +41,5 @@ public class URITypesModel  {
     public void setRdfTypes(List<URI> rdfTypes) {
         this.rdfTypes = rdfTypes;
     }
-
 
 }

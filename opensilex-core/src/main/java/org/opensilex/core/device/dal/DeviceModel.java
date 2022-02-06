@@ -32,7 +32,7 @@ public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
 
     public static final String GRAPH = "device";
 
-     @SPARQLProperty(
+    @SPARQLProperty(
             ontology = Oeso.class,
             property = "isPartOf"
     )
@@ -45,7 +45,7 @@ public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
             ignoreUpdateIfNull = true
     )
     protected List<DeviceModel> children;
-    
+
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasBrand"
@@ -59,44 +59,44 @@ public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
     )
     String model;
     public static final String MODEL_FIELD = "model";
-    
+
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasSerialNumber"
     )
     String serialNumber;
     public static final String SERIALNUMBER_FIELD = "serialNumber";
-    
+
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "personInCharge"
     )
     URI personInCharge;
     public static final String PERSON_IN_CHARGE_FIELD = "personInCharge";
-    
+
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "startUp"
     )
     LocalDate startUp;
     public static final String STARTUP_FIELD = "startUp";
-    
+
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "removal"
     )
     LocalDate removal;
     public static final String REMOVAL_FIELD = "removal";
-    
+
     @SPARQLProperty(
             ontology = RDFS.class,
             property = "comment"
     )
     String description;
     public static final String COMMENT_FIELD = "description";
-    
+
     Map<String, String> attributes;
-    
+
     public String getBrand() {
         return brand;
     }
@@ -104,7 +104,7 @@ public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
     public void setBrand(String brand) {
         this.brand = brand;
     }
-    
+
     public String getModel() {
         return model;
     }
@@ -120,7 +120,7 @@ public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
     public void setSerialNumber(String serialNumber) {
         this.serialNumber = serialNumber;
     }
-    
+
     public URI getPersonInCharge() {
         return personInCharge;
     }
@@ -128,7 +128,7 @@ public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
     public void setPersonInCharge(URI personInCharge) {
         this.personInCharge = personInCharge;
     }
-    
+
     public LocalDate getStartUp() {
         return startUp;
     }
@@ -136,7 +136,7 @@ public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
     public void setStartUp(LocalDate startUp) {
         this.startUp = startUp;
     }
-    
+
     public LocalDate getRemoval() {
         return removal;
     }
@@ -144,7 +144,7 @@ public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
     public void setRemoval(LocalDate removal) {
         this.removal = removal;
     }
-    
+
     public String getDescription() {
         return description;
     }
@@ -152,33 +152,13 @@ public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
     public void setDescription(String description) {
         this.description = description;
     }
-    
+
     public Map<String, String> getAttributes() {
         return attributes;
     }
 
     public void setAttributes(Map<String, String> attributes) {
         this.attributes = attributes;
-    }
-
-    @Override
-    public DeviceModel getParent() {
-        return parent;
-    }
-
-    @Override
-    public void setParent(DeviceModel parent) {
-        this.parent = parent;
-    }
-
-    @Override
-    public List<DeviceModel> getChildren() {
-        return children;
-    }
-
-    @Override
-    public void setChildren(List<DeviceModel> children) {
-        this.children = children;
     }
 
     @Override

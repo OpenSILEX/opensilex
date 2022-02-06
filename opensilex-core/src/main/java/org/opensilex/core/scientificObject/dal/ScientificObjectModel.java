@@ -38,7 +38,7 @@ public class ScientificObjectModel extends SPARQLTreeModel<ScientificObjectModel
             useDefaultGraph = false
     )
     protected List<ScientificObjectModel> children;
-    
+
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasCreationDate"
@@ -85,26 +85,6 @@ public class ScientificObjectModel extends SPARQLTreeModel<ScientificObjectModel
     }
 
     @Override
-    public ScientificObjectModel getParent() {
-        return parent;
-    }
-
-    @Override
-    public void setParent(ScientificObjectModel parent) {
-        this.parent = parent;
-    }
-
-    @Override
-    public List<ScientificObjectModel> getChildren() {
-        return children;
-    }
-
-    @Override
-    public void setChildren(List<ScientificObjectModel> children) {
-        this.children = children;
-    }
-
-    @Override
     public String[] getInstancePathSegments(SPARQLTreeModel<ScientificObjectModel> instance) {
 
         StringBuilder sb = new StringBuilder(GENERATION_PREFIX);
@@ -115,6 +95,5 @@ public class ScientificObjectModel extends SPARQLTreeModel<ScientificObjectModel
         }
         return new String[]{sb.toString()};
     }
-
 
 }

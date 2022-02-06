@@ -6,7 +6,6 @@
 package org.opensilex.sparql.model;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -16,16 +15,27 @@ import java.util.function.Consumer;
  */
 public abstract class SPARQLTreeModel<T extends SPARQLTreeModel<T>> extends SPARQLNamedResourceModel<SPARQLTreeModel<T>> {
 
+    protected T parent;
     public static final String PARENT_FIELD = "parent";
+
+    protected List<T> children;
     public static final String CHILDREN_FIELD = "children";
 
-    public abstract T getParent() ;
+    public T getParent() {
+        return parent;
+    }
 
-    public abstract void setParent(T parent);
+    public void setParent(T parent) {
+        this.parent = parent;
+    }
 
-    public abstract List<T> getChildren();
+    public List<T> getChildren() {
+        return children;
+    }
 
-    public abstract void setChildren(List<T> children);
+    public void setChildren(List<T> children) {
+        this.children = children;
+    }
 
     public List<T> getNodes() {
         List<T> visitedList = new ArrayList<>();
@@ -37,7 +47,7 @@ public abstract class SPARQLTreeModel<T extends SPARQLTreeModel<T>> extends SPAR
         consumer.accept((T) this);
         if (getChildren() != null) {
             getChildren().forEach(
-                child -> child.visit(consumer)
+                    child -> child.visit(consumer)
             );
         }
     }

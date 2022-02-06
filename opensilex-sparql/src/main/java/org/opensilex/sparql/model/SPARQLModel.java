@@ -5,20 +5,6 @@
 //******************************************************************************
 package org.opensilex.sparql.model;
 
-import java.net.URI;
-
 public interface SPARQLModel {
-
-    URI getUri();
-
-    void setUri(URI uri);
-
-    URI getType();
-
-    void setType(URI type);
-
-    SPARQLLabel getTypeLabel();
-
-    void setTypeLabel(SPARQLLabel typeLabel);
 
 }

@@ -5,11 +5,6 @@
  */
 package org.opensilex.core.organisation.dal;
 
-import java.net.URI;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.apache.jena.vocabulary.VCARD4;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.sparql.annotations.SPARQLProperty;
@@ -44,14 +39,14 @@ public class InfrastructureFacilityModel extends SPARQLTreeModel<InfrastructureF
             ignoreUpdateIfNull = true,
             useDefaultGraph = false
     )
-    protected List<InfrastructureFacilityModel> children = new LinkedList<>();
+    protected List<InfrastructureFacilityModel> children;
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "isHosted",
             inverse = true
     )
-    private List<InfrastructureModel> infrastructures = new LinkedList<>();
+    private List<InfrastructureModel> infrastructures;
     public static final String INFRASTRUCTURE_FIELD = "infrastructures";
 
     @SPARQLProperty(
@@ -76,26 +71,6 @@ public class InfrastructureFacilityModel extends SPARQLTreeModel<InfrastructureF
 
     public void setInfrastructures(List<InfrastructureModel> infrastructures) {
         this.infrastructures = infrastructures;
-    }
-
-    @Override
-    public InfrastructureFacilityModel getParent() {
-        return parent;
-    }
-
-    @Override
-    public void setParent(InfrastructureFacilityModel parent) {
-        this.parent = parent;
-    }
-
-    @Override
-    public List<InfrastructureFacilityModel> getChildren() {
-        return children;
-    }
-
-    @Override
-    public void setChildren(List<InfrastructureFacilityModel> children) {
-        this.children = children;
     }
 
     public List<URI> getInfrastructureUris() {

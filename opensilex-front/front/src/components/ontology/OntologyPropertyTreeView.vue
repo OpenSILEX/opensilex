@@ -100,7 +100,7 @@ export default class OntologyPropertyTreeView extends Vue {
     refresh(nameFilter) {
 
         // get properties on domain, including those from sub-classes
-        this.ontologyService.getProperties(this.domain,nameFilter,true,true)
+        this.ontologyService.getProperties(this.domain,nameFilter,true,false)
             .then(http => {
                 if (http && http.response.result) {
                     let treeNode = [];

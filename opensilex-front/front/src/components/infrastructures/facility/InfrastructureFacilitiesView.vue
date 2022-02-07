@@ -171,7 +171,9 @@ export default class InfrastructureFacilitiesView extends Vue {
 
   get displayableFacilities() {
     if (Array.isArray(this.facilities)) {
-      return this.facilities;
+      return !this.filter
+          ? this.facilities
+          : this.facilities.filter(facility => facility.name.match(new RegExp(this.filter, "i")));
     }
     return this.fetchedFacilities;
   }

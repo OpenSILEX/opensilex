@@ -6,5 +6,5 @@
 package org.opensilex.sparql.model;
 
 public interface SPARQLModel {
-
+    
 }

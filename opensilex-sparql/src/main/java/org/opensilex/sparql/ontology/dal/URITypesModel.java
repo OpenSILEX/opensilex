@@ -16,7 +16,7 @@ import org.opensilex.sparql.model.SPARQLModel;
  * @author Alice Boizet
  */
 public class URITypesModel implements SPARQLModel {
-
+    
     protected URI uri;
 
     protected List<URI> rdfTypes;
@@ -24,7 +24,7 @@ public class URITypesModel implements SPARQLModel {
     public URITypesModel(URI uri, List<URI> rdfTypes) {
         this.uri = uri;
         this.rdfTypes = rdfTypes;
-    }
+    }    
 
     public URI getUri() {
         return uri;

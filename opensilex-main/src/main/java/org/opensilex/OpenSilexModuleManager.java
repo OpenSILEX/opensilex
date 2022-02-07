@@ -6,15 +6,6 @@
 //******************************************************************************
 package org.opensilex;
 
-import org.apache.commons.io.FileUtils;
-import org.opensilex.config.ConfigManager;
-import org.opensilex.dependencies.DependencyManager;
-import org.opensilex.service.Service;
-import org.opensilex.service.ServiceManager;
-import org.opensilex.utils.ClassUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -23,9 +14,24 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.ServiceLoader;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import org.apache.commons.io.FileUtils;
+import org.opensilex.config.ConfigManager;
+import org.opensilex.dependencies.DependencyManager;
+import org.opensilex.service.Service;
+import org.opensilex.service.ServiceManager;
+import org.opensilex.utils.ClassUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Module manager for OpenSilex applications.
@@ -230,7 +236,7 @@ public class OpenSilexModuleManager {
             LOGGER.error("Error while loading modules with dependencies", ex);
         }
 
-        return new HashSet<>();
+        return null;
     }
 
     /**

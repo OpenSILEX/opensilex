@@ -47,7 +47,7 @@ public abstract class SPARQLTreeModel<T extends SPARQLTreeModel<T>> extends SPAR
         consumer.accept((T) this);
         if (getChildren() != null) {
             getChildren().forEach(
-                    child -> child.visit(consumer)
+                child -> child.visit(consumer)
             );
         }
     }

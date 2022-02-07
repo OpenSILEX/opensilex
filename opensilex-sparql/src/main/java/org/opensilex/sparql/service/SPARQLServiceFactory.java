@@ -104,7 +104,7 @@ public abstract class SPARQLServiceFactory extends ServiceFactory<SPARQLService>
                 SPARQLService.addPrefix(sparqlConfig.generationBaseURIAlias(), sparqlConfig.generationBaseURI());
             }
             sparqlModule.getCustomPrefixes().forEach((prefix, uri) ->
-                    SPARQLService.addPrefix(prefix, uri.toString())
+                SPARQLService.addPrefix(prefix, uri.toString())
             );
 
             for (SPARQLExtension module : getOpenSilex().getModulesImplementingInterface(SPARQLExtension.class)) {

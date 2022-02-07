@@ -38,7 +38,7 @@ public class ScientificObjectModel extends SPARQLTreeModel<ScientificObjectModel
             useDefaultGraph = false
     )
     protected List<ScientificObjectModel> children;
-
+    
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasCreationDate"
@@ -95,5 +95,5 @@ public class ScientificObjectModel extends SPARQLTreeModel<ScientificObjectModel
         }
         return new String[]{sb.toString()};
     }
-
+    
 }

@@ -54,16 +54,15 @@ public class DatatypePropertyModel extends AbstractPropertyModel<DatatypePropert
 
     protected Set<DatatypePropertyModel> parents;
 
-
     @SPARQLProperty(
             ontology = RDFS.class,
             property = "range"
     )
     protected URI range;
 
-
     public DatatypePropertyModel() {
         children = new LinkedList<>();
+        setChildren(children);
         parents = new HashSet<>();
     }
 
@@ -73,26 +72,6 @@ public class DatatypePropertyModel extends AbstractPropertyModel<DatatypePropert
 
     public void setRange(URI range) {
         this.range = range;
-    }
-
-    @Override
-    public List<DatatypePropertyModel> getChildren() {
-        return children;
-    }
-
-    @Override
-    public void setChildren(List<DatatypePropertyModel> children) {
-        this.children = children;
-    }
-
-    @Override
-    public DatatypePropertyModel getParent() {
-        return parent;
-    }
-
-    @Override
-    public void setParent(DatatypePropertyModel parent) {
-        this.parent = parent;
     }
 
     @Override

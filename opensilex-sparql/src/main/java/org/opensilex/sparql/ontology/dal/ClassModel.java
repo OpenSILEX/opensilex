@@ -54,6 +54,7 @@ public class ClassModel extends VocabularyModel<ClassModel> {
     public ClassModel() {
         super();
         children = new LinkedList<>();
+        super.children = children;
         parents = new HashSet<>();
     }
 
@@ -66,7 +67,9 @@ public class ClassModel extends VocabularyModel<ClassModel> {
         rdfTypeName = other.getTypeLabel();
 
         children = other.getChildren();
+        setChildren(children);
         parent = other.getParent();
+        setParent(parent);
         parents = other.getParents();
 
         datatypeProperties = other.getDatatypeProperties();
@@ -149,25 +152,25 @@ public class ClassModel extends VocabularyModel<ClassModel> {
         return getObjectProperties().get(propertyURI);
     }
 
-    @Override
-    public List<ClassModel> getChildren() {
-        return children;
-    }
-
-    @Override
-    public void setChildren(List<ClassModel> children) {
-        this.children = children;
-    }
-
-    @Override
-    public ClassModel getParent() {
-        return parent;
-    }
-
-    @Override
-    public void setParent(ClassModel parent) {
-        this.parent = parent;
-    }
+//    @Override
+//    public List<ClassModel> getChildren() {
+//        return children;
+//    }
+//
+//    @Override
+//    public void setChildren(List<ClassModel> children) {
+//        this.children = children;
+//    }
+//
+//    @Override
+//    public ClassModel getParent() {
+//        return parent;
+//    }
+//
+//    @Override
+//    public void setParent(ClassModel parent) {
+//        this.parent = parent;
+//    }
 
     public Set<ClassModel> getParents() {
         return parents;

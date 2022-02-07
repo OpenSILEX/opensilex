@@ -56,7 +56,7 @@ public abstract class AbstractOntologyStore implements OntologyStore {
     private final OntologyDAO ontologyDAO;
 
     private final List<String> languages;
-    private static final String NO_LANG = "";
+    protected static final String NO_LANG = "";
 
     private final Map<String, VocabularyModel<?>> modelsByUris;
     private final Graph<String, DefaultEdge> modelsGraph;

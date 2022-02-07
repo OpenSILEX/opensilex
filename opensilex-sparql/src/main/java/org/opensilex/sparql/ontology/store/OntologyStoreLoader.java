@@ -37,6 +37,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.apache.jena.arq.querybuilder.Converters.makeVar;
+import static org.opensilex.sparql.ontology.store.AbstractOntologyStore.NO_LANG;
 
 /**
  * @author rcolin
@@ -284,7 +285,8 @@ class OntologyStoreLoader {
                 label.addTranslation(value, languages.get(i));
             }
         }
-
+        label.setDefaultLang(NO_LANG);
+        label.setDefaultValue(label.getAllTranslations().get(NO_LANG));
         return label;
     }
 

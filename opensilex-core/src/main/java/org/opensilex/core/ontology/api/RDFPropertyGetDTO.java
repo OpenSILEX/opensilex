@@ -2,6 +2,8 @@ package org.opensilex.core.ontology.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
+import org.apache.commons.lang3.StringUtils;
+import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.ontology.dal.AbstractPropertyModel;
 import org.opensilex.sparql.ontology.dal.ObjectPropertyModel;
 
@@ -38,7 +40,13 @@ public class RDFPropertyGetDTO extends RDFPropertyDTO {
 
         if (model instanceof ObjectPropertyModel && ((ObjectPropertyModel) model).getRange() != null) {
             ObjectPropertyModel objectProperty = (ObjectPropertyModel) model;
-            setRangeLabel(objectProperty.getRange().getLabel().getAllTranslations().get(lang));
+            SPARQLLabel propertyRangeLabel = objectProperty.getRange().getLabel();
+
+            if(propertyRangeLabel.getAllTranslations().containsKey(lang)){
+                setRangeLabel(propertyRangeLabel.getAllTranslations().get(lang));
+            }else if(propertyRangeLabel.getDefaultValue() != null){
+                setRangeLabel(propertyRangeLabel.getDefaultValue());
+            }
         }
     }
 

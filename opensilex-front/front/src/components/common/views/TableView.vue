@@ -1,5 +1,9 @@
 <template>
   <div>
+     <b-input-group size="sm">
+        <slot name="export" v-if="this.computedTotalRows > 0" >          
+        </slot>
+      </b-input-group>
     <div class="card">
       <div v-if="globalFilterField">
         <div>
@@ -68,7 +72,7 @@
         v-model="currentPage"
         :aria-controls="this.uuid"
         :per-page="pageSize"
-        :total-rows="filter == null ? (totalRows = data.length) : totalRows"
+        :total-rows="computedTotalRows"
       ></b-pagination>
     </div>
   </div>
@@ -155,6 +159,10 @@ export default class TableView extends Vue {
     // Trigger pagination to update the number of buttons/pages due to filtering
     this.totalRows = filteredItems.length;
     this.currentPage = 1;
+  }
+
+  get computedTotalRows() {
+    return this.filter == null ? (this.totalRows = this.data.length) : this.totalRows
   }
 
   getCurrentItemLimit() : number {

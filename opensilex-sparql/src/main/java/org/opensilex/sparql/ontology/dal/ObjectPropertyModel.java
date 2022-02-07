@@ -58,6 +58,7 @@ public class ObjectPropertyModel extends AbstractPropertyModel<ObjectPropertyMod
 
     public ObjectPropertyModel() {
         children = new LinkedList<>();
+        setChildren(children);
         parents = new HashSet<>();
     }
 
@@ -77,25 +78,25 @@ public class ObjectPropertyModel extends AbstractPropertyModel<ObjectPropertyMod
         this.range = range;
     }
 
-    @Override
-    public List<ObjectPropertyModel> getChildren() {
-        return children;
-    }
-
-    @Override
-    public void setChildren(List<ObjectPropertyModel> children) {
-        this.children = children;
-    }
-
-    @Override
-    public ObjectPropertyModel getParent() {
-        return parent;
-    }
-
-    @Override
-    public void setParent(ObjectPropertyModel parent) {
-        this.parent = parent;
-    }
+//    @Override
+//    public List<ObjectPropertyModel> getChildren() {
+//        return children;
+//    }
+//
+//    @Override
+//    public void setChildren(List<ObjectPropertyModel> children) {
+//        this.children = children;
+//    }
+//
+//    @Override
+//    public ObjectPropertyModel getParent() {
+//        return parent;
+//    }
+//
+//    @Override
+//    public void setParent(ObjectPropertyModel parent) {
+//        this.parent = parent;
+//    }
 
     @Override
     public Set<ObjectPropertyModel> getParents() {

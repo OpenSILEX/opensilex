@@ -410,9 +410,9 @@ public abstract class AbstractOntologyStore implements OntologyStore {
         if (type != null && !SPARQLDeserializers.compareURIs(model.getType(), type)) {
             throw new SPARQLInvalidURIException(String.format(WRONG_PROPERTY_TYPE_MSG, uri, model.getType(), type), uri);
         }
-        if (domain != null && (model.getDomain() == null || !SPARQLDeserializers.compareURIs(model.getDomain().getUri(), domain))) {
-            throw new SPARQLInvalidURIException(String.format(WRONG_DOMAIN_MSG, uri, model.getDomain(), domain), uri);
-        }
+//        if (domain != null && ( !SPARQLDeserializers.compareURIs(model.getDomain().getUri(), domain))) {
+//            throw new SPARQLInvalidURIException(String.format(WRONG_DOMAIN_MSG, uri, model.getDomain(), domain), uri);
+//        }
 
         return model;
     }

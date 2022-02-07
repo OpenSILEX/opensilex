@@ -99,7 +99,9 @@
           class="mb-2 mr-2"
           :small="true"
           :disabled="numberOfSelectedRows == 0"
-          text=actions>
+          text=actions
+          v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
+        >
             <b-dropdown-item-button
                 v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
               @click="createDocument()"

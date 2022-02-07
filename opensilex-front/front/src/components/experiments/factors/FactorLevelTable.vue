@@ -131,6 +131,8 @@ export default class FactorLevelTable extends Vue {
   $store: any;
   $i18n: any;
   $papa: any;
+  $bvModal: any;
+
   service: FactorsService;
   langs: any = {
     fr: {
@@ -262,6 +264,7 @@ export default class FactorLevelTable extends Vue {
     }
     if (tmpLength < this.internalFactorLevels.length) {
       this.$opensilex.showSuccessToast("Data successfully loaded");
+      this.removeEmptyValues();
     }
   }
 
@@ -276,7 +279,7 @@ export default class FactorLevelTable extends Vue {
     langs: this.langs,
   };
 
-  cellActions(evt, clickedCell) {
+  cellActions(evt, clickedCell): void {
     console.debug(evt, clickedCell);
     let columnName = clickedCell.getField();
     console.debug(columnName);
@@ -322,7 +325,7 @@ export default class FactorLevelTable extends Vue {
     }
   }
 
-  deleteFactorLevelRow(factorLevelUri: string, uriCell: any) {
+  deleteFactorLevelRow(factorLevelUri: string, uriCell: any): void {
     console.debug("remove factor level", factorLevelUri);
 
     this.deleteFactorLevel(factorLevelUri)
@@ -349,7 +352,7 @@ export default class FactorLevelTable extends Vue {
       });
   }
 
-  hasEmptyValue() {
+  hasEmptyValue() : boolean{
     if (this.internalFactorLevels.length != 0) {
       if (
         this.internalFactorLevels.some(
@@ -362,7 +365,15 @@ export default class FactorLevelTable extends Vue {
     return false;
   }
 
-  hasDuplicateName(name: string) {
+  removeEmptyValues() : void {
+    if (this.internalFactorLevels.length != 0) {
+      this.internalFactorLevels = this.internalFactorLevels.filter(
+          (factorLevel) => factorLevel.name != null && factorLevel.name != ""
+        ); 
+    }
+  }
+
+  hasDuplicateName(name: string) : boolean {
     if (this.internalFactorLevels.length != 0) {
       if (
         this.internalFactorLevels.some(
@@ -375,12 +386,12 @@ export default class FactorLevelTable extends Vue {
     return false;
   }
 
-  deleteFactorLevel(uri: string) {
+  deleteFactorLevel(uri: string) : any {
     console.debug("delete Factor Level" + uri);
     return this.service.deleteFactorLevel(uri);
   }
 
-  resetTable() {
+  resetTable() : void {
     this.$bvModal
       .msgBoxConfirm(
         this.$i18n
@@ -400,7 +411,7 @@ export default class FactorLevelTable extends Vue {
       });
   }
 
-  addEmptyRow() {
+  addEmptyRow() : void  {
     console.debug("Add row", "empty row", this.hasEmptyValue());
     if (!this.hasEmptyValue()) {
       Vue.set(this.internalFactorLevels, this.internalFactorLevels.length, {
@@ -414,19 +425,19 @@ export default class FactorLevelTable extends Vue {
       );
     }
   }
-  addRow(row) {
+  addRow(row): void  {
     console.debug("Add row", row, "empty row", this.hasEmptyValue());
     if (row.name != undefined && row.name != null && row.name != "") {
       Vue.set(this.internalFactorLevels, this.internalFactorLevels.length, row);
     }
   }
 
-  changeTableLang(lang: string) {
+  changeTableLang(lang: string): void  {
     let tabulatorInstance = this.tabulatorRef.getInstance();
     tabulatorInstance.setLocale(lang);
   }
 
-  csvExport() {
+  csvExport(): void {
     let arrData = [{ name: "", description: "" }];
     this.$papa.download(this.$papa.unparse(arrData), "factorLevelTemplate");
   }

@@ -115,28 +115,6 @@
         <rdfs:label xml:lang="fr">concerne</rdfs:label>
         <rdfs:label xml:lang="en">concerns</rdfs:label>
     </owl:ObjectProperty>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#dateOfLastCalibration -->
-
-    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#dateOfLastCalibration">
-        <rdfs:subPropertyOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#deviceProperty"/>
-        <rdfs:subPropertyOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasDate"/>
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
-    </owl:ObjectProperty>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#dateOfPurchase -->
-
-    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#dateOfPurchase">
-        <rdfs:subPropertyOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#deviceProperty"/>
-        <rdfs:subPropertyOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasDate"/>
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
-    </owl:ObjectProperty>
-    
-
 
     <!-- http://www.opensilex.org/vocabulary/oeso#endDate -->
 
@@ -226,15 +204,6 @@
     </owl:ObjectProperty>
     
 
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#hasModel -->
-
-    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasModel">
-        <rdfs:subPropertyOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#deviceProperty"/>
-    </owl:ObjectProperty>
-    
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#hasOptic -->
 
     <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasOptic">
@@ -251,17 +220,6 @@
         <rdfs:subPropertyOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#deviceProperty"/>
         <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#RadiometricTarget"/>
     </owl:ObjectProperty>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#hasSerialNumber -->
-
-    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasSerialNumber">
-        <rdfs:subPropertyOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#deviceProperty"/>
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
-    </owl:ObjectProperty>
-    
-
 
     <!-- http://www.opensilex.org/vocabulary/oeso#hasShape -->
 
@@ -557,10 +515,7 @@
     <!-- http://www.opensilex.org/vocabulary/oeso#hasBrand -->
 
     <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasBrand">
-        <rdfs:subPropertyOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#deviceProperty"/>
     </owl:DatatypeProperty>
-    
-
 
     <!-- http://www.opensilex.org/vocabulary/oeso#hasDate -->
 
@@ -924,6 +879,7 @@
 
     <!-- http://www.opensilex.org/vocabulary/oeso#startUp -->
     <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#startUp">
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
         <rdfs:label xml:lang="en">Startup</rdfs:label>
         <rdfs:label xml:lang="fr">Date de démarrage</rdfs:label>
@@ -931,6 +887,7 @@
 
     <!-- http://www.opensilex.org/vocabulary/oeso#removal -->
     <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#removal">
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
         <rdfs:label xml:lang="en">Removal</rdfs:label>
         <rdfs:label xml:lang="fr">Date d'enlèvement</rdfs:label>
@@ -945,21 +902,21 @@
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasBrand"/>
                 <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                <owl:onDataRange rdf:resource="http://www.opensilex.org/vocabulary/oeso#longString"/>
+                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasModel"/>
                 <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                <owl:onDataRange rdf:resource="http://www.opensilex.org/vocabulary/oeso#longString"/>
+                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasSerialNumber"/>
                 <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                <owl:onDataRange rdf:resource="http://www.opensilex.org/vocabulary/oeso#longString"/>
+                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
             </owl:Restriction>
         </rdfs:subClassOf>
         <rdfs:subClassOf>
@@ -2266,10 +2223,14 @@
         <rdfs:comment xml:lang="en">BRDF(θ)=P1+P2cos(θ)+1/2*P3(3*cos^2θ−1)+1/2*P4(5*cos^3θ−3*cosθ)</rdfs:comment>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#dateOfLastCalibration">
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
         <rdfs:label xml:lang="fr">date de la dernière calibration</rdfs:label>
         <rdfs:label xml:lang="en">date of last calibration</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#dateOfPurchase">
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
         <rdfs:label xml:lang="en">date of purchase</rdfs:label>
         <rdfs:label xml:lang="fr">date d&apos;achat</rdfs:label>
     </rdf:Description>
@@ -2287,6 +2248,8 @@
         <rdfs:label xml:lang="fr">demi angle d&apos;ouverture (°)</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#hasBrand">
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
         <rdfs:label xml:lang="fr">constructeur</rdfs:label>
         <rdfs:label xml:lang="en">brand</rdfs:label>
     </rdf:Description>
@@ -2295,6 +2258,8 @@
         <rdfs:label xml:lang="en">date</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#hasModel">
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
         <rdfs:label xml:lang="en">Model</rdfs:label>
         <rdfs:label xml:lang="fr">Modèle</rdfs:label>
     </rdf:Description>
@@ -2305,6 +2270,8 @@
         <rdfs:comment xml:lang="en">The value must be in the following list : Carpet, Paint, Spetralon</rdfs:comment>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#hasSerialNumber">
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
         <rdfs:label xml:lang="en">serial number</rdfs:label>
         <rdfs:label xml:lang="fr">numéro de série</rdfs:label>
     </rdf:Description>

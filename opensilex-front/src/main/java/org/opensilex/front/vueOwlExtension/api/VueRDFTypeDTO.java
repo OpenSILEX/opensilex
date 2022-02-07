@@ -15,6 +15,7 @@ import org.opensilex.sparql.ontology.dal.ClassModel;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -62,16 +63,8 @@ public class VueRDFTypeDTO extends RDFTypeTranslatedDTO {
         } else {
             setIsAbstract(false);
         }
-
-        this.dataProperties = classModel.getDatatypeProperties().values()
-                .stream()
-                .map(property -> new VueRDFTypePropertyDTO(classModel,property))
-                .collect(Collectors.toList());
-
-        this.objectProperties = classModel.getObjectProperties().values()
-                .stream()
-                .map(property -> new VueRDFTypePropertyDTO(classModel,property))
-                .collect(Collectors.toList());
+        dataProperties = new ArrayList<>();
+        objectProperties = new ArrayList<>();
     }
 
     public VueRDFTypeDTO(){

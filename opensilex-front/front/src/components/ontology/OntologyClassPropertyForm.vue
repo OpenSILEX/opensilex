@@ -122,7 +122,7 @@ export default class OntologyClassPropertyForm extends Vue {
       .getService("opensilex.OntologyService")
       .addClassPropertyRestriction(propertyForm)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-        let msg = this.$i18n.t("OntologyClassPropertyForm.link-success-msg", form.property, form.rdf_type).toString();
+        let msg = this.$i18n.t("OntologyClassPropertyForm.link-success-msg", [form.property, form.rdf_type]).toString();
         this.$opensilex.showSuccessToast(msg);
       })
       .catch(this.$opensilex.errorHandler);
@@ -195,10 +195,10 @@ export default class OntologyClassPropertyForm extends Vue {
 en:
     OntologyClassPropertyForm:
         property: Property
-        link-success-msg: 'The property {property} has been added to {type} type'
+        link-success-msg: 'The property {0} has been added to {0} type'
 
 fr:
     OntologyClassPropertyForm:
         property: Propriété
-        link-success-msg: 'La propriété {property} a été ajoutée au type {type}'
+        link-success-msg: 'La propriété {0} a été ajoutée au type {1}'
 </i18n>

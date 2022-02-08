@@ -49,6 +49,9 @@ import static org.opensilex.core.organisation.api.InfrastructureAPI.*;
 )
 public class SiteAPI {
 
+    public static final String SITE_MUST_HAVE_PARENT_EXCEPTION = "A site must have at least one parent organization";
+    public static final String SITE_MUST_HAVE_PARENT_KEY = "component.organization.exception.siteMustHaveParent";
+
     @Inject
     private SPARQLService sparql;
 
@@ -151,8 +154,7 @@ public class SiteAPI {
             @ApiParam("Site creation object") @Valid SiteCreationDTO siteCreationDto
     ) throws Exception {
         if (CollectionUtils.isEmpty(siteCreationDto.getOrganizations())) {
-            throw new DisplayableBadRequestException("A site must have at least one parent organization",
-                    "component.organization.exception.siteMustHaveParent");
+            throw new DisplayableBadRequestException(SITE_MUST_HAVE_PARENT_EXCEPTION, SITE_MUST_HAVE_PARENT_KEY);
         }
 
         try {
@@ -185,8 +187,7 @@ public class SiteAPI {
             @ApiParam("Site update object") @Valid SiteUpdateDTO siteUpdateDTO
     ) throws Exception {
         if (CollectionUtils.isEmpty(siteUpdateDTO.getOrganizations())) {
-            throw new DisplayableBadRequestException("A site must have at least one parent organization",
-                    "component.organization.exception.siteMustHaveParent");
+            throw new DisplayableBadRequestException(SITE_MUST_HAVE_PARENT_EXCEPTION, SITE_MUST_HAVE_PARENT_KEY);
         }
 
         SiteDAO siteDAO = new SiteDAO(sparql, nosql);

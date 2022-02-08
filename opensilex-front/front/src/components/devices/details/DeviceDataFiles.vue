@@ -282,7 +282,6 @@ export default class DeviceDataFiles extends Vue {
     this.$opensilex.getService("opensilex.OntologyService")
     .getSubClassesOf(Oeso.DATAFILE_TYPE_URI, false)
     .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
-      console.log(http.response.result);
       let parentType = http.response.result[0];
       let key = parentType.uri;
       this.rdf_types[key] = parentType.name;

@@ -9,6 +9,17 @@
         :generated.sync="uriGenerated"
     ></opensilex-UriForm>
 
+    <!-- Type -->
+    <opensilex-TypeForm
+        v-if="baseType"
+        :type.sync="form.rdf_type"
+        :baseType="baseType"
+        :required="true"
+        :disabled="editMode"
+        placeholder="OntologyObjectForm.form-type-placeholder"
+        @update:type="typeSwitch"
+    ></opensilex-TypeForm>
+
     <!-- Name -->
     <opensilex-InputForm
         :value.sync="form.name"
@@ -49,17 +60,6 @@
       :address.sync="form.address"
     >
     </opensilex-AddressForm>
-
-    <!-- Type -->
-    <opensilex-TypeForm
-        v-if="baseType"
-        :type.sync="form.rdf_type"
-        :baseType="baseType"
-        :required="true"
-        :disabled="editMode"
-        placeholder="OntologyObjectForm.form-type-placeholder"
-        @update:type="typeSwitch"
-    ></opensilex-TypeForm>
 
     <!-- Dynamic fields -->
     <div v-for="(relation, index) in typeRelations" v-bind:key="index">
@@ -171,10 +171,11 @@ export default class OrganizationFacilityForm extends Vue {
         if (dataProperty.property != "rdfs:label") {
 
           let relation = this.form.relations.find(relation => relation.property == dataProperty.property);
+          let relationValue = relation ? relation.value : undefined;
 
           internalTypeProperties.push({
             property: dataProperty,
-            value: relation.value
+            value: relationValue
           });
         }
       }
@@ -183,10 +184,11 @@ export default class OrganizationFacilityForm extends Vue {
 
         let objectProperty = this.typeModel.object_properties[i];
         let relation = this.form.relations.find(relation => relation.property == objectProperty.property);
+        let relationValue = relation ? relation.value : undefined;
 
         internalTypeProperties.push({
           property: objectProperty,
-          value: relation.value
+          value: relationValue
         });
       }
     }
@@ -244,7 +246,16 @@ export default class OrganizationFacilityForm extends Vue {
         relation.property == property.property
     );
 
-    relation.value = newValue;
+    if (relation) {
+      relation.value = newValue;
+      return;
+    }
+
+    relation = {
+      property: property.property,
+      value: newValue
+    };
+    this.form.relations.push(relation);
   }
 }
 </script>

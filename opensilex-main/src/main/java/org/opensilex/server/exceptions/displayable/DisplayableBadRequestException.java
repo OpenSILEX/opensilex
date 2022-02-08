@@ -9,6 +9,7 @@
 package org.opensilex.server.exceptions.displayable;
 
 import javax.ws.rs.core.Response;
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -17,6 +18,10 @@ import java.util.Map;
  * @author Valentin RIGOLLE
  */
 public class DisplayableBadRequestException extends DisplayableResponseException {
+    public DisplayableBadRequestException(String message, String translationKey) {
+        this(message, translationKey, Collections.emptyMap());
+    }
+
     public DisplayableBadRequestException(String message, String translationKey, Map<String, String> translationValues) {
         super(message,
                 Response.Status.BAD_REQUEST,

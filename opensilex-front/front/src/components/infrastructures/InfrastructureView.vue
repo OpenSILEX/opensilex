@@ -5,13 +5,23 @@
       title="component.menu.infrastructures"
       description="InfrastructureView.description"
     ></opensilex-PageHeader>
-    <opensilex-PageActions>
-      <div>
-        <b-tabs content-class="mt-3" :value=currentTabIndex @input="updateType">
-          <b-tab :title="$t('InfrastructureView.organizations')"></b-tab>
-          <b-tab :title="$t('InfrastructureView.facilities')"></b-tab>
-        </b-tabs>
-      </div>
+    <opensilex-PageActions
+        :tabs="true"
+    >
+      <template v-slot>
+          <b-nav-item
+            :active="organizationTab"
+            to="?tab=Organization"
+          >
+            {{ $t('InfrastructureView.organizations') }}
+          </b-nav-item>
+          <b-nav-item
+            :active="facilityTab"
+            to="?tab=Facility"
+          >
+            {{ $t('InfrastructureView.facilities') }}
+          </b-nav-item>
+      </template>
     </opensilex-PageActions>
     <div class="row" v-if="organizationTab">
       <div class="col-md-6">
@@ -161,15 +171,13 @@ export default class InfrastructureView extends Vue {
   }
 
   updateType(tabIndex) {
-    if (tabIndex < 0 || tabIndex >= InfrastructureView.TABS.length) {
+    if (tabIndex === this.currentTabIndex) {
       return;
     }
-    if (tabIndex !== this.currentTabIndex) {
-      this.onTabChange(this.currentTabIndex, tabIndex);
-      this.currentTabIndex = tabIndex;
-      this.currentTabName = InfrastructureView.TABS[this.currentTabIndex];
-    }
-    this.$opensilex.updateURLParameter("tab",this.currentTabName);
+
+    this.onTabChange(this.currentTabIndex, tabIndex);
+    this.currentTabIndex = tabIndex;
+    this.currentTabName = InfrastructureView.TABS[this.currentTabIndex];
   }
 
   onTabChange(oldIndex, newIndex) {
@@ -197,6 +205,11 @@ export default class InfrastructureView extends Vue {
   }
 
   updateSelectedFacility(facility: InfrastructureFacilityGetDTO) {
+    if (!facility || !facility.uri) {
+      this.selectedFacility = undefined;
+      return;
+    }
+
     this.service
         .getInfrastructureFacility(facility.uri)
         .then((http: HttpResponse<OpenSilexResponse<InfrastructureFacilityGetDTO>>) => {

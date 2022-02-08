@@ -430,7 +430,7 @@ export default class OpenSilexVuePlugin {
     }
 
     private handleError(error, message?) {
-        if (!message && !!error.response.result && !!error.response.result.translationKey) {
+        if (!message && !!error.response && !!error.response.result && !!error.response.result.translationKey) {
             message = this.$i18n.t(error.response.result.translationKey, error.response.result.translationValues);
         }
 

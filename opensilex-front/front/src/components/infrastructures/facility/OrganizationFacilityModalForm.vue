@@ -41,7 +41,8 @@ export default class OrganizationFacilityModalForm extends Vue {
           .setBaseType(this.$opensilex.Oeso.FACILITY_TYPE_URI);
         let editDto = {
           ...http.response.result,
-          organizations: http.response.result.organizations.map(org => org.uri)
+          organizations: http.response.result.organizations.map(org => org.uri),
+          sites: http.response.result.sites.map(site => site.uri)
         };
         this.facilityForm.showEditForm(editDto);
       }).catch(this.$opensilex.errorHandler);

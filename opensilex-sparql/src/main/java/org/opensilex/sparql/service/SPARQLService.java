@@ -602,6 +602,11 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         }
         List<T> list = search(graph, objectClass, lang, filterHandler, customHandlerByFields, null, null, null, null);
 
+        if (!excludeRoot && CollectionUtils.isEmpty(list)) {
+            T rootInstance = getByURI(graph, objectClass, root, lang);
+            list.add(rootInstance);
+        }
+
         SPARQLTreeListModel<T> tree = new SPARQLTreeListModel<T>(list, SPARQLDeserializers.formatURI(root), excludeRoot);
 
         for (T item : list) {

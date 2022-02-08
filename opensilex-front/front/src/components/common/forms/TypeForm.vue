@@ -43,7 +43,7 @@ export default class TypeForm extends Vue {
   service: OntologyService;
 
   @PropSync("type")
-  typeURI: string;
+  typeURI: any[];
 
   @Prop()
   baseType: string;
@@ -59,6 +59,12 @@ export default class TypeForm extends Vue {
 
   @Prop()
   disabled: boolean;
+
+  /**
+   * If only one option is available, automatically select it
+   */
+  @Prop({default: false})
+  selectIfOnlyOption: boolean;
 
   @Prop({default: false})
   multiple: boolean;
@@ -111,6 +117,11 @@ export default class TypeForm extends Vue {
         );
         if (callback) {
           callback();
+        }
+        // With "selectOneOption", if only one root option is present it is automatically selected
+        if (this.selectIfOnlyOption && this.typesOptions.length === 1 &&
+            (!Array.isArray(this.typesOptions[0].children) || this.typesOptions[0].children.length === 0)) {
+          this.typeURI = [this.typesOptions[0].id];
         }
       })
       .catch((error) => {

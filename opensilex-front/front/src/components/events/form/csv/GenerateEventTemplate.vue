@@ -21,6 +21,7 @@
                             :required="false"
                             :baseType="isMove ? this.$opensilex.Oeev.MOVE_TYPE_URI : this.$opensilex.Oeev.EVENT_TYPE_URI"
                             :ignoreRoot="false"
+                            :selectIfOnlyOption="isMove"
                             placeholder="Event.type-placeholder"
                         ></opensilex-TypeForm>
                     </b-col>
@@ -40,10 +41,11 @@
 <script lang="ts">
 import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
+import OpenSilexVuePlugin from "../../../../models/OpenSilexVuePlugin";
 
 @Component
 export default class GenerateEventTemplate extends Vue {
-    $opensilex: any;
+    $opensilex: OpenSilexVuePlugin;
     $store: any;
     $t: any;
     $i18n: any;

@@ -76,12 +76,16 @@ public class FormCreationDTO {
         this.parents = parents;
     }
 
-
+    @JsonProperty("commit_address")
+    @NotNull
+    @ApiModelProperty(value = "address of the commit", required = true)
+    public String getCommitAddress(){
+        return commitAddress;
+    }
 
     public void setCommitAddress(String s){
         this.commitAddress = s;
     }
-
 
     @JsonProperty("type")
     public URI getType() {

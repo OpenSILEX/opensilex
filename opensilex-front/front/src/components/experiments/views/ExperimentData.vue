@@ -44,7 +44,8 @@
                   :clearable="true"
                   :multiple="true"
                   @clear="refreshSoSelector"
-                  @select="refreshProvComponent"
+                  @validate="refreshProvComponent()"
+                  :limit="1"
                 ></opensilex-SelectForm>
               </opensilex-FilterField>
 
@@ -178,6 +179,7 @@ export default class ExperimentData extends Vue {
   }
   
   refreshProvComponent(){
+    console.log("select on experiment data");
     this.refreshKey += 1;
   }
 
@@ -209,16 +211,7 @@ export default class ExperimentData extends Vue {
   }
 
   refreshSoSelector() {
-    
-    this.soFilter = {
-      name: "",
-      experiment: this.uri,
-      germplasm: undefined,
-      factorLevels: [],
-      types: [],
-      existenceDate: undefined,
-      creationDate: undefined,
-    };
+   
     this.refreshProvComponent();
     this.soSelector.refreshModalSearch();
   }

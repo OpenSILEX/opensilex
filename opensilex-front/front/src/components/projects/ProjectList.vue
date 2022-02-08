@@ -46,8 +46,10 @@
       :fields="fields"
       defaultSortBy="start_date"
       :isSelectable="true"
-      :maximumSelectedRows="maximumSelectedRows"
       labelNumberOfSelectedRow="component.project.selectedLabel"
+      @select="$emit('select', $event)"
+      @unselect="$emit('unselect', $event)"
+      @selectall="$emit('selectall', $event)"
     >
       <template v-slot:selectableTableButtons="{ numberOfSelectedRows }">
         <b-dropdown
@@ -127,7 +129,7 @@
 
 <script lang="ts">
 import moment from "moment";
-import { Component, Ref, Prop } from "vue-property-decorator";
+import { Component, Ref, Prop,PropSync } from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
 import { ProjectsService } from "opensilex-core/index";
@@ -140,6 +142,7 @@ export default class ProjectList extends Vue {
   service: ProjectsService;
 
   @Ref("documentForm") readonly documentForm!: any;
+  @Ref("tableRef") readonly tableRef!: any;
 
   get user() {
     return this.$store.state.user;
@@ -158,20 +161,23 @@ export default class ProjectList extends Vue {
   })
   noActions;
 
-  @Prop()
-  maximumSelectedRows;
-
   @Prop({
     default: false
   })
   noUpdateURL;
 
-  filter = {
-    year: undefined,
-    name: "",
-    keyword: "",
-    financial: "",
-  };
+  @PropSync("searchFilter", {
+    default: () => {
+      return {
+        year: undefined,
+        name: "",
+        keyword: "",
+        financial: "",
+      };
+    },
+  })
+  filter;
+ 
 
   reset() {
     this.filter = {
@@ -233,16 +239,16 @@ export default class ProjectList extends Vue {
     return this.tableRef.getSelected();
   }
 
-  @Ref("tableRef") readonly tableRef!: any;
+
   refresh() {
+    
     this.tableRef.selectAll = false;
     this.tableRef.onSelectAll();
-
+    this.tableRef.refresh();
     if (!this.noUpdateURL) {
       this.$opensilex.updateURLParameters(this.filter);
     }
 
-    this.tableRef.refresh();
   }
 
   loadData(options) {

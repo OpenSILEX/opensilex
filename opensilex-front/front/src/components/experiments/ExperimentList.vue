@@ -58,16 +58,19 @@
         <!-- Projects -->
         <opensilex-FilterField>
           <opensilex-SelectForm
+            ref="projectSelector"
             label="ExperimentList.filter-project"
             placeholder="ExperimentList.filter-project-placeholder"
             :selected.sync="filter.projects"
             :conversionMethod="projectGetDTOToSelectNode"
             modalComponent="opensilex-ProjectModalList"
             :itemLoadingMethod="loadProjects"
+            :filter.sync="projectFilter"
             :isModalSearch="true"
             :clearable="true"
             :multiple="true"
-            @clear="filter.projects=null"
+            @clear="refreshProjectSelector"
+            :limit="1"
           ></opensilex-SelectForm>
         </opensilex-FilterField>
 
@@ -225,6 +228,7 @@ export default class ExperimentList extends Vue {
   speciesByUri: Map<String, SpeciesDTO> = new Map<String, SpeciesDTO>();
 
   @Ref("tableRef") readonly tableRef!: any;
+  @Ref("projectSelector") readonly projectSelector!: any;
 
   refresh() {
     this.tableRef.selectAll = false;
@@ -242,6 +246,13 @@ export default class ExperimentList extends Vue {
     state: "",
   };
 
+  projectFilter = {
+    year: undefined,
+    name: "",
+    keyword: "",
+    financial: "",
+  }
+
   reset() {
     this.filter = {
       name: "",
@@ -252,6 +263,12 @@ export default class ExperimentList extends Vue {
       state: "",
     };   
     this.refresh();
+  }
+
+
+  refreshProjectSelector() {
+   
+    this.projectSelector.refreshModalSearch();
   }
 
   searchExperiments(options) {

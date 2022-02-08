@@ -10,6 +10,9 @@
         labelNumberOfSelectedRow="ScientificObjectList.selected"
         iconNumberOfSelectedRow="ik#ik-target"
         :defaultPageSize="pageSize"
+        @select="$emit('select', $event)"
+        @unselect="$emit('unselect', $event)"
+        @selectall="$emit('selectall', $event)"
       >
         <template v-slot:selectableTableButtons="{ numberOfSelectedRows }">
           <b-dropdown

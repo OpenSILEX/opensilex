@@ -77,6 +77,7 @@
                   :multiple="true"
                   @clear="refreshSoSelector"
                   @select="refreshComponent"
+                  :limit="1"
                 ></opensilex-SelectForm>
               </opensilex-FilterField>
 

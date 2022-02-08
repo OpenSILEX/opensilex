@@ -94,6 +94,10 @@
         :pageSize="5"
         :searchFilter.sync="filter"
         :noUpdateURL="true"
+        @select="$emit('select', $event)"
+        @unselect="$emit('unselect', $event)"
+        @selectall="$emit('selectall', $event)"
+       
       >
       </opensilex-ScientificObjectList>
     </div>
@@ -106,7 +110,7 @@ import ScientificObjectModalList from "./ScientificObjectModalList.vue";
 
 @Component
 export default class ScientificObjectModalListByExp extends ScientificObjectModalList {
-
+ 
 }
 </script>
 

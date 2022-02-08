@@ -52,6 +52,7 @@ import OntologyPropertyTreeView from "./OntologyPropertyTreeView.vue";
 import {Store} from "vuex";
 import {RDFPropertyDTO} from "opensilex-core/model/rDFPropertyDTO";
 import {RDFPropertyGetDTO} from "opensilex-core/model/rDFPropertyGetDTO";
+import OntologyPropertyForm from "./OntologyPropertyForm.vue";
 
 @Component
 export default class OntologyPropertyView extends Vue {
@@ -97,6 +98,7 @@ export default class OntologyPropertyView extends Vue {
         } else if (OWL.isObjectTypeProperty(form.rdf_type)) {
             form.rdf_type = OWL.OBJECT_PROPERTY_URI;
         }
+        form.domain = this.rdfType;
     }
 
     parentURI;
@@ -108,12 +110,13 @@ export default class OntologyPropertyView extends Vue {
             this.propertiesTree.getTree()
         );
         propertyFormComponent.setDomain(this.rdfType);
+
         this.propertyForm.showCreateForm();
     }
 
     showEditForm(data) {
         this.ontologyService.getProperty(data.uri, data.rdf_type, this.rdfType).then(http => {
-            let propertyFormComponent = this.propertyForm.getFormRef();
+            let propertyFormComponent: OntologyPropertyForm = this.propertyForm.getFormRef();
             propertyFormComponent.setParentPropertiesTree(
                 this.propertiesTree.getTree()
             );

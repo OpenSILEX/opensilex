@@ -37,6 +37,7 @@
       :required="true"
       :selected.sync="form.range"
       :options="datatypes"
+      helpMessage="OntologyPropertyForm.dataProperty-help"
     ></opensilex-SelectForm>
 
     <opensilex-SelectForm
@@ -45,6 +46,7 @@
       :required="true"
       :selected.sync="form.range"
       :options="objectTypes"
+      helpMessage="OntologyPropertyForm.objectProperty-help"
     ></opensilex-SelectForm>
 
     <opensilex-SelectForm
@@ -53,32 +55,41 @@
       :required="true"
       :selected.sync="form.parent"
       :options="availableParents"
+      helpMessage="OntologyPropertyForm.inheritedType-help"
     ></opensilex-SelectForm>
+
+    <opensilex-TypeForm
+        :type.sync="form.domain"
+        :baseType="this.domain"
+        ignoreRoot="false"
+        label="OntologyPropertyForm.domain"
+        helpMessage="OntologyPropertyForm.domain-help"
+    ></opensilex-TypeForm>
 
     <opensilex-InputForm
       :value.sync="form.name_translations.en"
       label="OntologyPropertyForm.labelEN"
       type="text"
-      :required="true"
+      :required.sync="enLangRequired"
     ></opensilex-InputForm>
 
     <opensilex-TextAreaForm
       :value.sync="form.comment_translations.en"
       label="OntologyPropertyForm.commentEN"
-      :required="true"
+      :required="false"
     ></opensilex-TextAreaForm>
 
     <opensilex-InputForm
       :value.sync="form.name_translations.fr"
       label="OntologyPropertyForm.labelFR"
       type="text"
-      :required="true"
+      :required.sync="otherLangRequired"
     ></opensilex-InputForm>
 
     <opensilex-TextAreaForm
       :value.sync="form.comment_translations.fr"
       label="OntologyPropertyForm.commentFR"
-      :required="true"
+      :required="false"
     ></opensilex-TextAreaForm>
   </b-form>
 </template>
@@ -89,11 +100,31 @@ import Vue from "vue";
 import OWL from "../../ontologies/OWL";
 // @ts-ignore
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+import {OntologyService} from "opensilex-core/api/ontology.service";
 
 @Component
 export default class OntologyPropertyForm extends Vue {
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
+  $store: any;
   OWL = OWL;
+  service: OntologyService;
+
+  get lang() {
+    return this.$store.getters.language;
+  }
+
+  enLangRequired: boolean = this.$store.getters.language == "en";
+  otherLangRequired: boolean = this.$store.getters.language != "en";
+
+  created(){
+    this.service = this.$opensilex.getService("opensilex.OntologyService");
+
+//     otherLangRequired: boolean = ! this.$store.getters.language.localeCompare('en');
+
+  }
+
+
 
   @Prop()
   editMode;
@@ -221,9 +252,7 @@ export default class OntologyPropertyForm extends Vue {
   }
 
   create(form) {
-    return this.$opensilex
-      .getService("opensilex.OntologyService")
-      .createProperty(this.computeFormToSend(form))
+    return this.service.createProperty(this.computeFormToSend(form))
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         let uri = http.response.result;
         let message = this.$i18n.t("OntologyPropertyView.the-property") + " " +uri + this.$i18n.t("component.common.success.creation-success-message");
@@ -243,9 +272,7 @@ export default class OntologyPropertyForm extends Vue {
   }
 
   update(form) {
-    return this.$opensilex
-      .getService("opensilex.OntologyService")
-      .updateProperty(this.computeFormToSend(form))
+    return this.service.updateProperty(this.computeFormToSend(form))
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         let uri = http.response.result;
         let message = this.$i18n.t("OntologyPropertyView.the-property") + " " +uri + this.$i18n.t("component.common.success.update-success-message");
@@ -268,12 +295,17 @@ en:
         objectProperty: Object property
         inheritedType: Type inherited from parent
         data-type: Data type
+        dataProperty-help: Property which relate individuals (e.g. device,scientific object, facility) to literal data (integer,deciaml,date,string,etc)
         object-type: Object class
+        objectProperty-help: Property which relate individuals (e.g. device,scientific object, facility) to other individuals (e.g. device,scientific object, facility)
+        inheritedType-help: Use same property type (can be Data or Object) as the selected parent.
         labelEN: English name
         labelFR: French name
         commentEN: English description
         commentFR: French description
         property-already-exists: Property with same URI already exists
+        domain: Domain
+        domain-help: Type concerned by the property. The property can be linked to the domain and on all domain descendant.
 
 fr:
     OntologyPropertyForm:
@@ -282,10 +314,15 @@ fr:
         objectProperty: Relation vers un objet
         inheritedType: Type hérité du parent
         data-type: Type de donnée
+        dataProperty-help: Property which relate individuals (e.g. device,scientific object, facility) to literal data (integer,deciaml,date,string,etc)
         object-type: Classe d'objet
+        objectProperty-help: Property which relate individuals (e.g. device,scientific object, facility) to other individuals
+        inheritedType-help: Use same property type (can be Data or Object) as the selected parent.
         labelEN: Nom anglais
         labelFR: Nom français
         commentEN: Description anglaise
         commentFR: Description française
         property-already-exists: Une propriété existe déjà avec la même URI
+        domain: Domaine
+        domain-help: Type concerné par la propriété. La propriété peut être liée au domaine choisi et a tous les descendant du domaine.
 </i18n>

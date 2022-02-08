@@ -1,6 +1,6 @@
 <template>
   <opensilex-OntologyTypesView
-    :rdfType="$opensilex.Oeso.DEVICE_TYPE_URI"
+    :rdfType="this.$opensilex.Oeso.getShortURI(this.$opensilex.Oeso.DEVICE_TYPE_URI)"
     icon="ik#ik-settings"
     typeTitle="DeviceTypes.typeTitle"
     typeDescription="DeviceTypes.typeDescription"
@@ -15,10 +15,11 @@
 <script lang="ts">
 import {Component} from "vue-property-decorator";
 import Vue from "vue";
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 
 @Component
 export default class DeviceTypes extends Vue {
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
 }
 </script>
 

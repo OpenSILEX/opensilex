@@ -18,18 +18,19 @@
     <div class="container-fluid boxed-layout">
 <!------------------------------------------------------->
 
-<h5 class="header-title">
+<h5 v-if="iconvalue" class="header-title">
   <opensilex-Icon :icon.sync="iconvalue" class="title-icon"/>
   <!-- <slot name="icon"> {{ $t(iconvalue) }}</slot> -->
   <slot name="title">&nbsp;{{ $t(titlevalue) }}</slot>
 </h5>
+<h5 v-else> <br> </h5>
 <span class="title-description"><slot name="description" >{{ $t(descriptionevalue) }}</slot></span>
 
 <!------------------------------------------------------->
       <div class="d-flex justify-content-end">
         <div class="top-menu d-flex align-items-center">
 
-          <b-dropdown
+          <!-- <b-dropdown
             id="AddDropdown"
             class="top-menu-add-btn"
             :title="user.getAddMessage()"
@@ -48,7 +49,7 @@
               <i class="ik ik-download dropdown-icon"></i>
               {{ $t("component.header.user.csvImport") }}
             </b-dropdown-item>
-          </b-dropdown>
+          </b-dropdown> -->
 <!------------------------------------------------------->
           <opensilex-HelpButton
             class="topbarBtnHelp"
@@ -120,16 +121,9 @@ export default class DefaultHeaderComponent extends Vue {
   $opensilex: any;
   $route: any;
   $t: any;
-
   icon: any;
-
   title: any;
-
   description: any;
-
-  // @Prop({default: false})
-  // isExperimentalFeature: boolean;
-
 
 //   @Watch('$route', { immediate: true, deep: true })
 // onUrlChange(newVal: any) {
@@ -151,9 +145,8 @@ export default class DefaultHeaderComponent extends Vue {
    * Return the section path icon
    */
   get iconvalue() {
-    let pathicon = this.$store.state.openSilexRouter.sectionAttributes[this.$route.path];
+    const pathicon = this.$store.state.openSilexRouter.sectionAttributes[this.$route.path];
     if (!pathicon) {
-      
       return ""
     }
     else {
@@ -164,7 +157,7 @@ export default class DefaultHeaderComponent extends Vue {
   /**
    * Return the section path title
    */
-    get titlevalue() {
+  get titlevalue() {
     let pathtitle = this.$store.state.openSilexRouter.sectionAttributes[this.$route.path];
     if (!pathtitle) {
       return undefined
@@ -177,7 +170,7 @@ export default class DefaultHeaderComponent extends Vue {
   /**
    * Return the section path description
    */
-      get descriptionevalue() {
+  get descriptionevalue() {
     let pathdescription = this.$store.state.openSilexRouter.sectionAttributes[this.$route.path];
     if (!pathdescription) {
       return undefined
@@ -220,9 +213,13 @@ export default class DefaultHeaderComponent extends Vue {
   created() {
     window.addEventListener("resize", this.handleResize);
     this.handleResize();
-    console.log("la route :");
+    console.log("les routes :");
     console.log(this.$store.state.openSilexRouter.sectionAttributes);
+    console.log("current full path : ");
     console.log(this.$router.currentRoute.fullPath)
+    console.log("this.icon : ");
+    console.log(this.icon);
+    console.log(this.$store.state.openSilexRouter);
   }
 
   beforeDestroy() {
@@ -230,7 +227,7 @@ export default class DefaultHeaderComponent extends Vue {
   }
 
   handleResize() {
-    const minSize = 768;
+    const minSize = 1025;
     if (
       document.body.clientWidth <= minSize &&
       (this.width == null || this.width > minSize)
@@ -246,10 +243,13 @@ export default class DefaultHeaderComponent extends Vue {
     }
   }
 }
-
 </script>
 
 <style scoped lang="scss">
+
+.header-top {
+  height: 65px;
+}
 
 .app-logo {
   text-align: left;
@@ -292,7 +292,7 @@ export default class DefaultHeaderComponent extends Vue {
   justify-content: center;
   align-items: center;
   box-shadow: 0 2px 12px -3px rgba(0, 0, 0, 0.5);
-  background-color: #00a38d;
+  background-color: #00a38d; 
 }
 
 #menu-container {
@@ -307,13 +307,24 @@ export default class DefaultHeaderComponent extends Vue {
 .top-menu {
   position: absolute;
   float: right;
-  // margin-right: 36px;
-  // margin-right: 20px;
   top: 10px;
 }
 
 .top-menu-add-btn {
   margin-right: 10px;
+}
+
+.topbarBtnHelp {
+  height: 20px;
+  line-height: 5px;
+  border: none;
+  width: 10px;
+  padding-bottom: 2px;
+  margin-bottom: 4px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 @media (min-width: 1380px) and (max-width: 1650px) {
@@ -322,7 +333,6 @@ export default class DefaultHeaderComponent extends Vue {
     transition: 1s;
   }
 }
-
 @media (min-width: 1151px) and (max-width: 1379px) {
   .container-fluid {
     width: 80%;
@@ -332,18 +342,18 @@ export default class DefaultHeaderComponent extends Vue {
     margin-right:20px;
     transition: 1s;
   }
-
 }
 @media (min-width: 250px) and (max-width: 1150px) {
-
   .topbarBtnHelp { 
     height: 25px;
     width: 25px;
     font-size: 85%;
     line-height: 9px;
-    padding: 5px;
   }
-    .header-brand .text {
+  .top-menu {
+    margin-top: 10px;
+  }
+  .header-brand .text {
     font-size: 90%;
     margin-left: 45px;
   }
@@ -360,13 +370,11 @@ export default class DefaultHeaderComponent extends Vue {
     margin-right: 110px;
   }
 }
-
 @media (min-width: 800px) and (max-width: 949px) {
   .top-menu{
     margin-right: 120px;
     transition: 1s;
   }
-
 }
 @media (min-width: 676px) and (max-width: 799px) {
   .top-menu{
@@ -388,13 +396,15 @@ export default class DefaultHeaderComponent extends Vue {
   .container-fluid {
   margin-left: 240px;
   transition: 1s;
-}
-    .header-brand .text {
+  }
+  .header-brand .text {
     margin-left: 5px;
   }
   .header-brand-img {
     margin-left: 0px;
   }
-
+  .header-title, .title-description {
+    margin-left: -30px;
+  }
 }
 </style>

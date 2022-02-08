@@ -6,10 +6,29 @@
       description="UserView.description"
     ></opensilex-PageHeader> -->
 
-    <opensilex-PageActions v-if="user.hasCredential(credentials.CREDENTIAL_USER_MODIFICATION_ID)">
-      <template v-slot>
-        <opensilex-CreateButton @click="userForm.showCreateForm()" label="UserView.create"></opensilex-CreateButton>
-      </template>
+    <opensilex-PageActions 
+      class="pageActions"
+      v-if="
+      user.hasCredential(
+        credentials.CREDENTIAL_USER_MODIFICATION_ID)
+    ">
+      <b-dropdown
+        id="AddDropdown"
+        class="top-menu-add-btn"
+        :title="user.getAddMessage()"
+        variant="link"
+      >
+        <template v-slot:button-content>
+          <i class="icon ik ik-plus header-plus"></i>
+        </template>
+        <b-dropdown-item href="#">
+          <opensilex-CreateButton
+            @click="userForm.showCreateForm()"
+            label="UserView.create"
+            class="createButton">
+          </opensilex-CreateButton>
+        </b-dropdown-item>
+      </b-dropdown>
     </opensilex-PageActions>
 
     <opensilex-PageContent>
@@ -61,6 +80,20 @@ export default class UserView extends Vue {
 </script>
 
 <style scoped lang="scss">
+.pageActions {
+    position: fixed;
+    top: 8px;
+    left: 380px;
+    width: 10px;
+    background: none;
+    z-index: 1100;
+}
+
+@media (min-width: 200px) and (max-width: 675px) {
+  .pageActions {
+   left: 270px
+  }
+}
 </style>
 
 <i18n>

@@ -36,7 +36,7 @@ menu:
             - experiment-access
           icon: ik#ik-layers
           title: component.menu.experiments
-          description: Manage and configure experiments
+          description: component.experiment.search.description
       - id: devices
         label: component.menu.devices
         route:
@@ -197,6 +197,9 @@ menu:
           component: opensilex-DeviceTypes
           credentials:
             - vocabulary-access
+          icon: ik#ik-settings
+          title: DeviceTypes.typeTitle
+          description: DeviceTypes.typeDescription
       - id: factorCategoryVocabulary
         label: component.menu.factorCategoryTypes
         route:
@@ -214,7 +217,6 @@ menu:
           component: opensilex-EventTypes
           credentials:
             - vocabulary-access
-
           icon: ik#ik-settings
           title: EventTypes.typeTitle
           description: EventTypes.typeDescription
@@ -280,7 +282,6 @@ menu:
 routes:
   - path: /infrastructure/details/:uri
     component: opensilex-InfrastructureDetailView
-    icon: ik#ik-globe
   - path: /infrastructure/facility/details/:uri
     component: opensilex-InfrastructureFacilityView
   - path: /infrastructure/site/details/:uri
@@ -302,9 +303,15 @@ routes:
 
   - path: /scientific-object-types/properties
     component: opensilex-ScientificObjectTypes
+    icon: ik#ik-settings
+    title: ScientificObjectTypes.typeTitle
+    description: ScientificObjectTypes.typeDescription 
 
   - path: /facilities-types/properties
     component: opensilex-InfrastructureFacilitiesTypes
+    icon: ik#ik-settings
+    title: InfrastructureFacilitiesTypes.typeTitle
+    description: InfrastructureFacilitiesTypes.typeDescription
 
   - path: /device-types/properties
     component: opensilex-DeviceTypes
@@ -334,6 +341,9 @@ routes:
   - path: /germplasm/create
     component: opensilex-GermplasmCreate
     credentials: [germplasm-modification]
+    icon: fa#seedling
+    title: GermplasmCreate.title
+    description: GermplasmCreate.description
   - path: /germplasm/details/:uri
     component: opensilex-GermplasmDetails
     credentials: []
@@ -380,6 +390,9 @@ routes:
   - path: /devices/create
     component: opensilex-DeviceCreate
     credentials: [device-modification]
+    icon: ik#ik-thermometer
+    title: DeviceCreate.title
+    description: DeviceCreate.description
 
   - path: /area/details/:uri
     component: opensilex-AreaDetails
@@ -391,6 +404,9 @@ routes:
   - path: /scientific-objects/details/:uri
     component: opensilex-ScientificObjectDetailView
     credentials: []
+    icon: ik#ik-target
+    title: component.menu.scientificObjects
+    description: ScientificObjectList.description
   - path: /infrastructures/details/:uri
     component: opensilex-InfrastructureDetailView
     credentials: []

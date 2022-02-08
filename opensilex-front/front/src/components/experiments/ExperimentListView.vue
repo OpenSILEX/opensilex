@@ -8,15 +8,30 @@
     ></opensilex-PageHeader> -->
 
     <opensilex-PageActions
-      v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
-    >
-      <template v-slot>
+    class= "pageActions"
+      v-if="
+        user.hasCredential(
+          credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)
+          ">
+    <b-dropdown
+      id="AddDropdown"
+      class="top-menu-add-btn"
+      :title="user.getAddMessage()"
+      variant="link"
+    >    
+    <template v-slot:button-content>
+      <i class="icon ik ik-plus header-plus"></i>
+    </template>
+      <b-dropdown-item href="#">  
         <opensilex-CreateButton
           @click="experimentForm.showCreateForm()"
           label="component.experiment.search.buttons.create-experiment"
+          class="createButton"
         ></opensilex-CreateButton>
-      </template>
+      </b-dropdown-item>
+    </b-dropdown>
     </opensilex-PageActions>
+      
 
     <opensilex-PageContent>
       <template v-slot>
@@ -108,6 +123,20 @@ export default class ExperimentListView extends Vue {
 
 
 <style scoped lang="scss">
+.pageActions {
+    position: fixed;
+    top: 8px;
+    left: 440px;
+    width: 10px;
+    background: none;
+    z-index: 1100;
+}
+
+@media (min-width: 200px) and (max-width: 675px) {
+  .pageActions {
+   left: 330px
+  }
+}
 </style>
 
 <i18n>

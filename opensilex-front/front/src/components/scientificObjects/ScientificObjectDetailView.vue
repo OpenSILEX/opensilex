@@ -4,6 +4,7 @@
       icon="ik#ik-target"
       title="component.menu.scientificObjects"
       :description="selected ? selected.name : ''"
+      class="detail-element-header"
     ></opensilex-PageHeader>
 
     <opensilex-ScientificObjectDetail
@@ -12,6 +13,7 @@
       :objectByContext="objectByContext"
       :globalView="true"
       :withReturnButton="true"
+      icon="ik#ik-target"
       @onUpdate="refresh"
     ></opensilex-ScientificObjectDetail>
   </div>

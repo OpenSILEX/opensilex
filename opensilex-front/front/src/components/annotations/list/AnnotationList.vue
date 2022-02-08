@@ -13,11 +13,26 @@
 
                 <div class="card-body">
                     <div class="button-zone">
-                        <opensilex-CreateButton
-                                v-if="user.hasCredential(modificationCredentialId)"
-                                label="Annotation.add"
-                                @click="annotationModalForm.showCreateForm([target])"
-                        ></opensilex-CreateButton>
+            <opensilex-PageActions class="pageActions">
+                <b-dropdown
+                    id="AddDropdown"
+                    class="top-menu-add-btn"
+                    :title="user.getAddMessage()"
+                    variant="link"
+                >
+                <template v-slot:button-content>
+                    <i class="ik ik-plus header-plus"></i>
+                </template>
+                <b-dropdown-item href="#">
+                    <opensilex-CreateButton
+                        v-if="user.hasCredential(modificationCredentialId)"
+                        label="Annotation.add"
+                        @click="annotationModalForm.showCreateForm([target])"
+                        class="createButton"
+                    ></opensilex-CreateButton>
+                </b-dropdown-item>
+                </b-dropdown>
+            </opensilex-PageActions>
                     </div>
                     <opensilex-PageContent 
                            v-if="renderComponent">
@@ -317,6 +332,28 @@
 
     }
 </script>
+
+<style scoped lang="scss">
+
+.header-plus {
+    margin-left: 75px;
+}
+
+.pageActions {
+    position: fixed;
+    top: 8px;
+    left: 390px;
+    width: 10px;
+    background: none;
+    z-index: 1100; 
+}
+
+@media (min-width: 200px) and (max-width: 675px) {
+  .pageActions {
+   left: 280px
+  }
+}
+</style>
 
 
 <i18n>

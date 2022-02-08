@@ -1,10 +1,10 @@
 <template>
   <div class="container-fluid" v-if="selected">
-    <opensilex-PageHeader
+    <!-- <opensilex-PageHeader
         icon="ik#ik-globe"
         :title="selected.name"
         :description="selected.rdf_type_name"
-    ></opensilex-PageHeader>
+    ></opensilex-PageHeader> -->
     <opensilex-PageActions :tabs="false" :returnButton="true">
     </opensilex-PageActions>
     <div class="row">

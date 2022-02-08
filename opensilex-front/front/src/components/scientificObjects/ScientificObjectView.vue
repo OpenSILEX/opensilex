@@ -6,35 +6,59 @@
       description="ScientificObjectList.description"
     ></opensilex-PageHeader> -->
 
+<!------------------------------------------------>
 
-    <!-- <opensilex-PageActions
+
+    <opensilex-PageActions
+    class= "pageActions"
       v-if="
         user.hasCredential(
-          credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID
-        )
-      "
-    >
+          credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID)
+      ">
+          <b-dropdown
+            id="AddDropdown"
+            class="top-menu-add-btn"
+            :title="user.getAddMessage()"
+            variant="link"
+          >
+            <template v-slot:button-content>
+              <i class="icon ik ik-plus header-plus"></i>
+            </template>
+            <b-dropdown-item href="#">
+              <!-- <i class="ik ik-share dropdown-icon"></i> -->
       <opensilex-CreateButton
         @click="soForm.createScientificObject()"
         label="ExperimentScientificObjects.create-scientific-object"
+        class="createButton"
       ></opensilex-CreateButton>
       <opensilex-ScientificObjectForm
         ref="soForm"
         @onUpdate="redirectToDetail"
         @onCreate="redirectToDetail"
       ></opensilex-ScientificObjectForm>
-      &nbsp;
+              <!-- {{ $t("component.header.user.addObject") }} -->
+            </b-dropdown-item>
+
+            <b-dropdown-item href="#" @click.prevent="logout">
       <opensilex-CreateButton
         @click="importForm.show()"
         label="OntologyCsvImporter.import"
+        class="createButton"
       ></opensilex-CreateButton>
+              <!-- <i class="ik ik-download dropdown-icon"></i>
+              {{ $t("component.header.user.csvImport") }} -->
+            </b-dropdown-item>
+          </b-dropdown>
+    </opensilex-PageActions>
+
+
+<!------------------------------------------------>
+    
+    <opensilex-PageContent>
       <opensilex-ScientificObjectCSVImporter
         ref="importForm"
         @csvImported="refresh()"
       ></opensilex-ScientificObjectCSVImporter>
-    </opensilex-PageActions>
-     -->
-    <opensilex-PageContent>
       <opensilex-SearchFilterField
         @search="soList.refresh()"
         @clear="reset()"
@@ -252,4 +276,18 @@ export default class ScientificObjectView extends Vue {
 </script>
 
 <style scoped lang="scss">
+.pageActions {
+    position: fixed;
+    top: 8px;
+    left: 485px;
+    width: 10px;
+    background: none;
+    z-index: 1100;
+}
+
+@media (min-width: 200px) and (max-width: 675px) {
+  .pageActions {
+   left: 375px
+  }
+}
 </style>

@@ -1,11 +1,11 @@
 <template>
     <div class="container-fluid">
-
+<!-- 
         <opensilex-PageHeader
           icon="fa#sun"
           description="GroupVariablesDescription.type"
           :title="variablesGroup.name">
-        </opensilex-PageHeader>
+        </opensilex-PageHeader> -->
 
         <opensilex-PageActions :tabs="true" :returnButton="true">
             <template v-slot>

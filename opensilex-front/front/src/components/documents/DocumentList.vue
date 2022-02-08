@@ -1,11 +1,29 @@
 <template>
   <div>
     <opensilex-PageActions
-      v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
-    >
-      <template v-slot>
-        <opensilex-CreateButton @click="documentForm.showCreateForm()" label="DocumentView.add"></opensilex-CreateButton>
-      </template>
+    class= "pageActions"
+      v-if="
+      user.hasCredential(
+        credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)
+        ">
+      <b-dropdown
+            id="AddDropdown"
+            class="top-menu-add-btn"
+            :title="user.getAddMessage()"
+            variant="link"
+          >
+            <template v-slot:button-content>
+              <i class="icon ik ik-plus header-plus"></i>
+            </template>
+            <b-dropdown-item href="#">
+
+        <opensilex-CreateButton
+        @click="documentForm.showCreateForm()"
+        label="DocumentView.add"
+        class="createButton"
+        ></opensilex-CreateButton>
+            </b-dropdown-item>
+      </b-dropdown>
     </opensilex-PageActions>
 
     <opensilex-SearchFilterField
@@ -354,6 +372,21 @@ export default class DocumentList extends Vue {
 </script>
 
 <style scoped lang="scss">
+
+.pageActions {
+    position: fixed;
+    top: 8px;
+    left: 425px;
+    width: 10px;
+    background: none;
+    z-index: 1100;
+}
+
+@media (min-width: 200px) and (max-width: 675px) {
+  .pageActions {
+   left: 310px
+  }
+}
 </style>
 
 <i18n>

@@ -30,5 +30,12 @@ export default class HelpButton extends Vue {
 </script>
 
 <style scoped lang="scss">
+
+// .btn-outline-info{
+//     border-radius: 10px;
+//     padding: 10px 5px;
+//     height: 10px;
+// }
+
 </style>
 

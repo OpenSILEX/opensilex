@@ -6,14 +6,29 @@
       description="DataView.description"
     ></opensilex-PageHeader> -->
 
-    <opensilex-PageActions>
-      <template v-slot>
+    <opensilex-PageActions
+    class="pageActions"
+    >
+    <b-dropdown
+      id="AddDropdown"
+      class="top-menu-add-btn"
+      :title="user.getAddMessage()"
+      variant="link"
+    >
+    <template v-slot:button-content>
+      <i class="icon ik ik-plus header-plus"></i>
+    </template>
+      <b-dropdown-item href="#">
         <opensilex-CreateButton
-            v-if="user.hasCredential(credentials.CREDENTIAL_DATA_MODIFICATION_ID)"
+            v-if="user.hasCredential(
+              credentials.CREDENTIAL_DATA_MODIFICATION_ID)"
           @click="modalDataForm.showCreateForm()"
           label="OntologyCsvImporter.import"
-        ></opensilex-CreateButton>
-      </template>
+          class="createButton"
+        >
+        </opensilex-CreateButton>
+      </b-dropdown-item>
+    </b-dropdown>
     </opensilex-PageActions>
 
     <opensilex-ModalForm
@@ -334,6 +349,20 @@ export default class DataView extends Vue {
 </script>
 
 <style scoped lang="scss">
+.pageActions {
+    position: fixed;
+    top: 8px;
+    left: 370px;
+    width: 10px;
+    background: none;
+    z-index: 1100;
+}
+
+@media (min-width: 200px) and (max-width: 675px) {
+  .pageActions {
+   left: 260px
+  }
+}
 </style>
 
 <i18n>

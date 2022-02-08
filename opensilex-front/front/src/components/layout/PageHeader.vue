@@ -2,7 +2,7 @@
   <div class="page-header">
             <h5 class="header-title">
               <opensilex-Icon :icon="icon" class="title-icon" />
-              <slot name="title">&nbsp;{{ $t(title) }}</slot>
+              <span class="title-title"><slot name="title">&nbsp;{{ $t(title) }}</slot></span>
             </h5>
             <span class="title-description"><slot name="description" >{{ $t(description) }}</slot></span>
 
@@ -84,26 +84,26 @@ h5 {
   white-space: pre;
 }
 
-@media (min-width: 200px) and (max-width: 1150px) {
-  h5 {
-    font-size: 1.2em;
-    transition: 2s;
-  }
-  .title-description{
-    font-size: 0.9em;
-    transition: 2s;
-  }
-}
+// @media (min-width: 200px) and (max-width: 1150px) {
+//   h5 {
+//     font-size: 1.2em;
+//     transition: 2s;
+//   }
+//   .title-description{
+//     font-size: 0.9em;
+//     transition: 2s;
+//   }
+// }
 
-@media (min-width: 676px) and (max-width: 1150px) {
-    .title-icon {
-    width: 30px;
-    height: 30px;
-    font-size: 16px;
-    margin-right: 16px;
-    transition: 2s
-  }
-}
+// @media (min-width: 676px) and (max-width: 1150px) {
+//     .title-icon {
+//     width: 30px;
+//     height: 30px;
+//     font-size: 16px;
+//     margin-right: 16px;
+//     transition: 2s
+//   }
+// }
 
 @media (min-width: 200px) and (max-width: 675px) {
   .title-icon{

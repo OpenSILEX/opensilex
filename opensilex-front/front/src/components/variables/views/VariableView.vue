@@ -4,6 +4,7 @@
         icon="fa#sun"
         description="VariableView.type"
         :title="variable.name"
+        class="detail-element-header"
     ></opensilex-PageHeader>
 
     <opensilex-PageActions :tabs="true" :returnButton="true">

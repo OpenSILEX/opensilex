@@ -1,6 +1,6 @@
 <template>
   <div class="card">
-    <div class="card-header row clearfix" :style="(small ? 'padding: 8px 20px;' : '')">
+    <div class=" row clearfix" :style="(small ? 'padding: 8px 20px;' : '')">
       <div class="d-inline-block w-100 float-left">
         <slot name="buttons"></slot>
         <b-nav :tabs="(tabs == true ? true : false)">
@@ -81,15 +81,21 @@ export default class PageActions extends Vue {
 </script>
 
 <style scoped lang="scss">
+
+.nav {
+  margin-left: 14px;
+}
+
 .back-button {
   display: flex;
   justify-content: center;
   align-items: center;
+  padding-top: 4px;
   padding-right: 6px;
   padding-bottom: 4px;
-  height: 35px!important;
-  padding-top: 4px;
   padding-left: 9px;
+
+  height: 35px!important;
 }
 
 button {

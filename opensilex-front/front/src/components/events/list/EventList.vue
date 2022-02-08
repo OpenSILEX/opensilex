@@ -2,19 +2,37 @@
 
     <div class="card">
 
-        <opensilex-PageActions>
-
-            <opensilex-CreateButton
-                v-if="user.hasCredential(modificationCredentialId)"
-                label="Event.add"
-                @click="showForm"
-            ></opensilex-CreateButton>
-
-            <opensilex-CreateButton
-                v-if="user.hasCredential(modificationCredentialId)"
-                label="OntologyCsvImporter.import"
-                @click="showCsvForm"
-            ></opensilex-CreateButton>
+        <opensilex-PageActions
+        class="pageActions"
+        >
+            <b-dropdown
+                id="AddDropdown"
+                class="top-menu-add-btn"
+                :title="user.getAddMessage()"
+                variant="link"
+            >
+                <template v-slot:button-content>
+                    <i class="icon ik ik-plus header-plus"></i>
+                </template>
+                <b-dropdown-item href="#">
+                    <opensilex-CreateButton
+                        v-if="user.hasCredential(modificationCredentialId)"
+                        label="Event.add"
+                        class="createButton"
+                        @click="showForm"
+                    >
+                    </opensilex-CreateButton>
+                </b-dropdown-item>
+                <b-dropdown-item>
+                    <opensilex-CreateButton
+                        v-if="user.hasCredential(modificationCredentialId)"
+                        label="OntologyCsvImporter.import"
+                        class="createButton"
+                        @click="showCsvForm"
+                    >
+                    </opensilex-CreateButton>
+                </b-dropdown-item>
+            </b-dropdown>
 
         </opensilex-PageActions>
 
@@ -468,6 +486,24 @@ export default class EventList extends Vue {
 
 
 <style scoped lang="scss">
+
+.header-plus {
+    margin-left: 90px;
+}
+.pageActions {
+    position: fixed;
+    top: 8px;
+    left: 390px;
+    width: 10px;
+    background: none;
+    z-index: 1100;
+}
+
+@media (min-width: 200px) and (max-width: 675px) {
+  .pageActions {
+   left: 280px
+  }
+}
 </style>
 
 <i18n>

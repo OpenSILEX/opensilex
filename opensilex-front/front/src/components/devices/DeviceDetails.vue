@@ -4,6 +4,7 @@
       icon="ik#ik-thermometer"
       title="DeviceDetails.title"
       :description="device.name"
+      class="detail-element-header"
     ></opensilex-PageHeader>
 
     <opensilex-PageActions :tabs="true" :returnButton="true" >

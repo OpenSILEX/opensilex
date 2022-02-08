@@ -4,6 +4,7 @@
       icon="ik#ik-file-text"
       :title="document.title"
       description="DocumentDetails.title"
+      class="detail-element-header"
     ></opensilex-PageHeader>
 
     <opensilex-PageActions :returnButton="true" >   

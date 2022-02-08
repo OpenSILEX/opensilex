@@ -6,12 +6,32 @@
       description="component.profile.description"
     ></opensilex-PageHeader> -->
 
-    <opensilex-PageActions>
-      <template v-slot>
-        <opensilex-CreateButton
-            v-if="user.hasCredential(credentials.CREDENTIAL_PROFILE_MODIFICATION_ID)"
-            @click="profileForm.showCreateForm()" label="component.profile.add"></opensilex-CreateButton>
+    <opensilex-PageActions
+      class= "pageActions"
+      v-if="
+        user.hasCredential(
+          credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)
+    ">
+      <b-dropdown
+        id="AddDropdown"
+        class="top-menu-add-btn"
+        :title="user.getAddMessage()"
+        variant="link"
+      >
+      <template v-slot:button-content>
+        <i class="icon ik ik-plus header-plus"></i>
       </template>
+        <b-dropdown-item href="#">
+          <opensilex-CreateButton
+            v-if="
+            user.hasCredential(
+              credentials.CREDENTIAL_PROFILE_MODIFICATION_ID)"
+            @click="profileForm.showCreateForm()"
+            label="component.profile.add"
+            class="createButton">
+          </opensilex-CreateButton>
+        </b-dropdown-item>
+      </b-dropdown>
     </opensilex-PageActions>
 
     <opensilex-PageContent>
@@ -70,4 +90,18 @@ export default class ProfileView extends Vue {
 </script>
 
 <style scoped lang="scss">
+.pageActions {
+    position: fixed;
+    top: 8px;
+    left: 395px;
+    width: 10px;
+    background: none;
+    z-index: 1100;
+}
+
+@media (min-width: 200px) and (max-width: 675px) {
+  .pageActions {
+   left: 285px
+  }
+}
 </style>

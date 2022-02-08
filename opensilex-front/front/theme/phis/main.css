@@ -395,9 +395,8 @@
 
 .customized .header-top .top-menu .dropdown .dropdown-toggle {
     border-radius: 10px;
-    padding: 10px;
-    border: 1px solid #D8DDE5;
-    height: 30px;
+    padding: 1px;
+    height: 20px;
     line-height: 30px;
 }
 
@@ -517,6 +516,46 @@
     border-bottom: 0;
 }
 
+.createButton {
+    background-color: #00A38D;
+    border-color: #00A38D;
+}
+
+.header-plus {
+    font-weight: 900;
+    font-size: larger;
+    color: #00A38D;
+    padding: 1px;
+    border-radius: 40%;
+    transition: 1s;
+}
+.header-plus:hover{
+    background-color: #17A2B8;
+    color : #fff;
+}
+
+/* .title-title {
+width: 50%;
+height: 25px;
+display: flex;
+flex-wrap: wrap; 
+overflow: hidden; 
+  } */
+  /* soit du wrap mais depasse... réduire taille police?*/
+  /* soit du overflow mais l'on a plus que le debut...*/
+  
+.detail-element-header {
+  position: fixed;
+    top: 10px;
+    left: 275px;
+    z-index: 1100;
+    width: 100%
+}
+@media (min-width: 200px) and (max-width: 675px) {
+  .detail-element-header {
+   left: 230px
+  }
+}
 /********************************
 * MEDIA QUERIES
 ********************************/

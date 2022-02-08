@@ -2,6 +2,7 @@
   <div class="container-fluid">
     <opensilex-PageHeader
       :title="name"
+      class="detail-element-header"
       description="component.project.project"
     ></opensilex-PageHeader>
 

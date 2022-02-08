@@ -60,10 +60,12 @@ import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
+import org.opensilex.sparql.ontology.store.OntologyStore;
 import org.opensilex.sparql.response.ResourceTreeDTO;
 import org.opensilex.sparql.response.ResourceTreeResponse;
 import org.opensilex.sparql.service.SPARQLService;
@@ -509,8 +511,8 @@ public class FactorAPI {
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList
     ) throws Exception {
 
-        OntologyCache cache = CoreModule.getOntologyCacheInstance();
-        SPARQLTreeListModel<ClassModel> treeList = cache.getSubClassesOf(new URI(Oeso.FactorCategory.getURI()), namePattern, currentUser.getLanguage(), true);
+        OntologyStore ontologyStore = SPARQLModule.getOntologyStoreInstance();
+        SPARQLTreeListModel<ClassModel> treeList = ontologyStore.searchSubClasses(new URI(Oeso.FactorCategory.getURI()), namePattern, currentUser.getLanguage(), true);
 
         List<ResourceTreeDTO> treeDto = ResourceTreeDTO.fromResourceTree(treeList);
         return new ResourceTreeResponse(treeDto).getResponse();

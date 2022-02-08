@@ -1537,8 +1537,8 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     <!-- http://www.opensilex.org/vocabulary/oeso#Trait -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Trait">
-        <rdfs:isDefinedBy xml:lang="en">Trait</rdfs:isDefinedBy>
-        <rdfs:isDefinedBy xml:lang="fr">Trait</rdfs:isDefinedBy>
+        <rdfs:label xml:lang="en">Trait</rdfs:label>
+        <rdfs:label xml:lang="fr">Trait</rdfs:label>
         <rdfs:isDefinedBy xml:lang="en">http://purl.org/ppeo/PPEO.owl#PPEO_000009</rdfs:isDefinedBy>
     </owl:Class>
     

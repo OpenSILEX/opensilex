@@ -43,7 +43,6 @@ public class VueOwlExtensionDAO {
             sparql.create(instanceExtension);
 
             ClassModel insertedInstance = sparql.getByURI(ClassModel.class,instance.getUri(),OpenSilex.DEFAULT_LANGUAGE);
-            CoreModule.getOntologyCacheInstance().addClass(insertedInstance);
 
             sparql.commitTransaction();
         } catch (Exception ex) {
@@ -58,7 +57,6 @@ public class VueOwlExtensionDAO {
             sparql.update(instanceExtension);
 
             ClassModel updatedInstance = sparql.getByURI(ClassModel.class,instance.getUri(),OpenSilex.DEFAULT_LANGUAGE);
-            CoreModule.getOntologyCacheInstance().updateClass(updatedInstance);
 
             sparql.commitTransaction();
         } catch (Exception ex) {
@@ -71,7 +69,6 @@ public class VueOwlExtensionDAO {
             sparql.startTransaction();
             sparql.delete(ClassModel.class, classURI);
             sparql.delete(VueClassExtensionModel.class, classURI);
-            CoreModule.getOntologyCacheInstance().removeClass(classURI);
             sparql.commitTransaction();
         } catch (Exception ex) {
             sparql.rollbackTransaction(ex);

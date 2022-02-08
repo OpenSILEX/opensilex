@@ -10,6 +10,10 @@
       <opensilex-StringView label="OntologyPropertyDetail.type" :value="typeValue"></opensilex-StringView>
       <!-- Value Type -->
       <opensilex-StringView label="OntologyPropertyDetail.value-type" :value="rangeValue"></opensilex-StringView>
+
+      <!-- Domain -->
+      <opensilex-StringView label="OntologyPropertyDetail.domain" :value="selected.domain_label"></opensilex-StringView>
+
       <!-- Name -->
       <opensilex-StringView label="component.common.name" :value="selected.name"></opensilex-StringView>
       <!-- Comment -->
@@ -22,13 +26,14 @@
 import { Component, Prop, Ref, Watch } from "vue-property-decorator";
 import Vue from "vue";
 import OWL from "../../ontologies/OWL";
+import {RDFPropertyGetDTO} from "opensilex-core/model/rDFPropertyGetDTO";
 
 @Component
 export default class OntologyPropertyDetail extends Vue {
   $opensilex: any;
 
   @Prop()
-  selected;
+  selected: RDFPropertyGetDTO;
 
   get typeValue() {
     if (OWL.isDatatypeProperty(this.selected.rdf_type)) {
@@ -63,11 +68,13 @@ en:
     title: Property detail
     type: Type
     value-type: Value type
+    domain: Concerns
 
 fr:
   OntologyPropertyDetail:
     title: Détail de la propriété
     type: Type
     value-type: Type de valeur
+    domain: Concerne
 
 </i18n>

@@ -24,6 +24,9 @@ public class RDFPropertyGetDTO extends RDFPropertyDTO {
     )
     protected String comment;
 
+    @JsonProperty("domain_label")
+    protected String domainLabel;
+
     @JsonProperty("range_label")
     protected String rangeLabel;
 
@@ -38,6 +41,15 @@ public class RDFPropertyGetDTO extends RDFPropertyDTO {
             setComment(model.getComment().getAllTranslations().get(lang));
         }
 
+        if(model.getDomain() != null){
+            SPARQLLabel propertyDomainLabel = model.getDomain().getLabel();
+            if(propertyDomainLabel.getAllTranslations().containsKey(lang)){
+                setDomainLabel(propertyDomainLabel.getAllTranslations().get(lang));
+            }else if(propertyDomainLabel.getDefaultValue() != null){
+                setDomainLabel(propertyDomainLabel.getDefaultValue());
+            }
+        }
+
         if (model instanceof ObjectPropertyModel && ((ObjectPropertyModel) model).getRange() != null) {
             ObjectPropertyModel objectProperty = (ObjectPropertyModel) model;
             SPARQLLabel propertyRangeLabel = objectProperty.getRange().getLabel();
@@ -48,6 +60,7 @@ public class RDFPropertyGetDTO extends RDFPropertyDTO {
                 setRangeLabel(propertyRangeLabel.getDefaultValue());
             }
         }
+
     }
 
     public String getRangeLabel() {
@@ -74,4 +87,11 @@ public class RDFPropertyGetDTO extends RDFPropertyDTO {
         this.comment = comment;
     }
 
+    public String getDomainLabel() {
+        return domainLabel;
+    }
+
+    public void setDomainLabel(String domainLabel) {
+        this.domainLabel = domainLabel;
+    }
 }

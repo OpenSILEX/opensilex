@@ -51,6 +51,7 @@ import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import OntologyPropertyTreeView from "./OntologyPropertyTreeView.vue";
 import {Store} from "vuex";
 import {RDFPropertyDTO} from "opensilex-core/model/rDFPropertyDTO";
+import {RDFPropertyGetDTO} from "opensilex-core/model/rDFPropertyGetDTO";
 
 @Component
 export default class OntologyPropertyView extends Vue {
@@ -76,7 +77,7 @@ export default class OntologyPropertyView extends Vue {
     @Prop()
     icon;
 
-    selected = null;
+    selected: RDFPropertyGetDTO = null;
 
     @Ref("propertyForm") readonly propertyForm!: any;
     @Ref("propertiesTree") readonly propertiesTree!: OntologyPropertyTreeView;

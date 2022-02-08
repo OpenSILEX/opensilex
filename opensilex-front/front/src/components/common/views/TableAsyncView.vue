@@ -410,6 +410,7 @@ export default class TableAsyncView extends Vue {
       this.selectedItems = [];
       this.numberOfSelectedRows = this.selectedItems.length;
       this.tableRef.clearSelected();
+      this.$emit("selectall",this.selectedItems);
     }
   }
 

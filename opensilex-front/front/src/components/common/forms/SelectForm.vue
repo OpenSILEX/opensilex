@@ -433,6 +433,14 @@ export default class SelectForm extends Vue {
     }
     this.$emit("deselect", value);
   }
+  
+  selectall(selectedValues) {
+    if(selectedValues){
+       this.selection = selectedValues.map((item => this.conversionMethod(item).id));
+    } else {
+      this.selection = null;    
+    }
+  }
 
   close(field) {
     if (field.validator) {
@@ -576,15 +584,6 @@ export default class SelectForm extends Vue {
   showModal() {
     let searchModal: any = this.$refs.searchModal;
     searchModal.show();
-  }
-  
-  selectall(selectedValues) {
-    let values = selectedValues.map((item =>
-      this.conversionMethod(item)
-    ));
-    for (let i = 0; i < values.length; i++) {
-      this.select(values[i]);
-    }
   }
 
   updateValues() {

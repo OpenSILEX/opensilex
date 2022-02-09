@@ -467,31 +467,29 @@
 
         <template v-slot:cell(actions)="{ data }">
           <b-button-group size="sm">
-            <div v-if="user.admin === true">
-              <opensilex-DetailButton
-                  :detailVisible="data['detailsShowing']"
-                  :small="true"
-                  label="MapView.details"
-                  @click="showDetails(data)"
-              ></opensilex-DetailButton>
+            <opensilex-DetailButton
+                :detailVisible="data['detailsShowing']"
+                :small="true"
+                label="MapView.details"
+                @click="showDetails(data)"
+            ></opensilex-DetailButton>
 
-              <opensilex-EditButton
-                  v-if=" data.item.properties.nature === 'Area'
-                    ? user.hasCredential(credentials.CREDENTIAL_AREA_MODIFICATION_ID)
-                    : user.hasCredential(credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID)"
-                  :small="true"
-                  label="MapView.update"
-                  @click="edit(data)"
-              ></opensilex-EditButton>
+            <opensilex-EditButton
+                v-if="data.item.properties.nature === 'Area'
+                  ? user.hasCredential(credentials.CREDENTIAL_AREA_MODIFICATION_ID)
+                  : user.hasCredential(credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID)"
+                :small="true"
+                label="MapView.update"
+                @click="edit(data)"
+            ></opensilex-EditButton>
 
-              <opensilex-DeleteButton
-                  v-if=" data.item.properties.nature === 'Area'
-                    ? user.hasCredential(credentials.CREDENTIAL_AREA_DELETE_ID)
-                    : user.hasCredential(credentials.CREDENTIAL_SCIENTIFIC_OBJECT_DELETE_ID)"
-                  label="MapView.delete-button"
-                  @click="selectedFeatures.splice(selectedFeatures.indexOf(data.item),1) && deleteItem(data)"
-              ></opensilex-DeleteButton>
-            </div>
+            <opensilex-DeleteButton
+                v-if=" data.item.properties.nature === 'Area'
+                  ? user.hasCredential(credentials.CREDENTIAL_AREA_DELETE_ID)
+                  : user.hasCredential(credentials.CREDENTIAL_SCIENTIFIC_OBJECT_DELETE_ID)"
+                label="MapView.delete-button"
+                @click="selectedFeatures.splice(selectedFeatures.indexOf(data.item),1) && deleteItem(data)"
+            ></opensilex-DeleteButton>
           </b-button-group>
         </template>
       </opensilex-TableView>

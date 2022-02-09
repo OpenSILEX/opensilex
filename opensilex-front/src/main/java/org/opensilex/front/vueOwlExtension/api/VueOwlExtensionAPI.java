@@ -226,7 +226,7 @@ public class VueOwlExtensionAPI {
     public Response getObjectTypes() throws Exception {
         List<VueObjectTypeDTO> datatypeDTOs = new ArrayList<>();
 
-        OntologyDAO dao = new OntologyDAO(sparql);
+        OntologyStore ontologyStore = SPARQLModule.getOntologyStoreInstance();
 
         for (VueOntologyObjectType objectType : VueOwlExtensionDAO.getObjectTypes()) {
             VueObjectTypeDTO dto = new VueObjectTypeDTO();
@@ -235,7 +235,7 @@ public class VueOwlExtensionAPI {
             dto.setInputComponentsByProperty(objectType.getInputComponentsMap());
             dto.setViewComponent(objectType.getViewComponent());
 
-            ClassModel objectClass = dao.getClassModel(dto.getUri(), null, currentUser.getLanguage());
+            ClassModel objectClass = ontologyStore.getClassModel(dto.getUri(), null, currentUser.getLanguage());
             dto.setRdfClass(new RDFTypeDTO(objectClass));
             dto.setName(objectClass.getName());
             datatypeDTOs.add(dto);

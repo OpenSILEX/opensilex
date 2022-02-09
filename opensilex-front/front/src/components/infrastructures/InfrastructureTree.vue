@@ -65,7 +65,7 @@
       <template v-slot:buttons="{ node }">
         <opensilex-DetailButton
           @click="showOrganizationOrSiteDetail(node.data)"
-          label="InfrastructureTree.showDetail"
+          :label="node.data.isOrganization ? $t('InfrastructureTree.showDetail') : $t('InfrastructureTree.showDetailSite')"
           :small="true"
         ></opensilex-DetailButton>
         <opensilex-EditButton
@@ -75,7 +75,7 @@
             )
           "
           @click="editOrganizationOrSite(node.data)"
-          label="InfrastructureTree.edit"
+          :label="node.data.isOrganization ? $t('InfrastructureTree.edit') : $t('InfrastructureTree.editSite')"
           :small="true"
         ></opensilex-EditButton>
         <opensilex-Dropdown
@@ -97,7 +97,7 @@
             user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_DELETE_ID)
           "
           @click="deleteOrganizationOrSite(node.data)"
-          label="InfrastructureTree.delete"
+          :label="node.data.isOrganization ? $t('InfrastructureTree.delete') : $t('InfrastructureTree.deleteSite')"
           :small="true"
         ></opensilex-DeleteButton>
       </template>
@@ -553,9 +553,11 @@ en:
     addSite: Add site
     editSite: Edit site
     delete: Delete organization
+    deleteSite: Delete site
     infrastructure-component: Organizations and sites
     infrastructure-help: "The organizations represent the hierarchy between the different sites, units, ... with a specific address and / or with dedicated teams."
     showDetail: Organization details
+    showDetailSite: Site details
     organization-multiple-tooltip: "This organization has several parent organizations"
     site-multiple-tooltip: "This site hosts several organizations"
 fr:
@@ -568,9 +570,11 @@ fr:
     addSite: Ajouter un site
     editSite: Editer le site
     delete: Supprimer l'organisation
+    deleteSite: Delete site
     infrastructure-component: Organisations et sites
     infrastructure-help: "Les organisations représentent la hiérarchie entre les différents sites, unités, ... disposant d'une adresse particulière et/ou avec des équipes dédiées."
     showDetail: Détail de l'organisation
+    showDetailSite: Détail du site
     organization-multiple-tooltip: "Cette organisation a plusieurs organisations parentes"
     site-multiple-tooltip: "Ce site héberge plusieurs organisations"
 

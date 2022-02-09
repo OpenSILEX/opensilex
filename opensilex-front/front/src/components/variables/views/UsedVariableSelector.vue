@@ -57,14 +57,14 @@ export default class UsedVariableSelector extends Vue {
     if (this.objects != null) {
       objects = this.objects;
     }
-    // console.log("variables :", this.variableOBJ)
     if (this.device != null) {
       return this.$opensilex.getService("opensilex.DevicesService").getDevice(this.device).then(http => {
         let variables = [];
         if(http.response.result && http.response.result.relations){
           http.response.result.relations.forEach(relation => {
-            if(relation.property=="vocabulary:measures"){
-              variables.push(relation.value);
+            const measures_prop = this.$opensilex.Oeso.MEASURES_PROP_URI;
+            if(relation.property == measures_prop || relation.property == this.$opensilex.Oeso.getShortURI(measures_prop)){ // in case uri is long..
+                variables.push(relation.value);
             }
           });
           if(variables.length > 0){

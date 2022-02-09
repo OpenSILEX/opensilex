@@ -76,6 +76,8 @@
                   :clearable="true"
                   :multiple="true"
                   @clear="refreshSoSelector"
+                  @onValidate="refreshComponent"
+                  @onClose="refreshComponent"
                   @select="refreshComponent"
                   :limit="1"
                 ></opensilex-SelectForm>

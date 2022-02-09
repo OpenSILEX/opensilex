@@ -145,7 +145,8 @@
         ref="searchModal"
         :maximumSelectedRows="maximumSelectedItems"
         :searchFilter.sync="searchModalFilter"
-        @onValidate="updateValues"
+        @onClose="$emit('onClose')"
+        @onValidate="$emit('onValidate')"
         @shown="showModalSearch"
         @close='$emit("close")'
         @clear='$emit("clear")'
@@ -586,9 +587,6 @@ export default class SelectForm extends Vue {
     searchModal.show();
   }
 
-  updateValues() {
-    this.$emit("validate");
-  }
   
   showDetails() {
     this.detailVisible != this.detailVisible;

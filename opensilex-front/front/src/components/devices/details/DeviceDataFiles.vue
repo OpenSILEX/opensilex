@@ -47,7 +47,8 @@
                   :clearable="true"
                   :multiple="true"
                   @clear="refreshSoSelector"
-                  @validate="refreshProvComponent"
+                  @onValidate="refreshProvComponent"
+                  @onClose="refreshProvComponent"
                   :limit="1"
                 ></opensilex-SelectForm>
               </opensilex-FilterField>

@@ -147,6 +147,8 @@ export default class ScientificObjectModalList extends Vue {
     this.modalRef.hide();
     if (validate) {
       this.$emit("onValidate", this.soList.getSelected());
+    } else {
+      this.$emit("onClose");
     }
   }
 

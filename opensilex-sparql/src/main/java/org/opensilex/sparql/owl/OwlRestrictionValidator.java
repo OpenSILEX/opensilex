@@ -204,8 +204,10 @@ public abstract class OwlRestrictionValidator<T extends ValidationContext> {
             String type = entry.getKey();
             Map<String, List<T>> validationByValue = entry.getValue();
 
+            Set<String> valuesForType = validationByValue.keySet();
+
             // build SPARQL query for validating values according type
-            SelectBuilder checkQuery = sparql.getCheckUriListExistQuery(type, validationByValue.keySet().stream());
+            SelectBuilder checkQuery = sparql.getCheckUriListExistQuery(type, valuesForType.stream(),valuesForType.size());
 
             // Use iterator to lookup over SPARQL results by keeping match with map values
             Iterator<Map.Entry<String, List<T>>> validationsByValue = validationByValue.entrySet().iterator();

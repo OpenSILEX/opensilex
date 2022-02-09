@@ -39,7 +39,7 @@ public class CSVCell {
         this.header = cell.getHeader();
         this.value = cell.getValue();
     }
-    
+
     public CSVCell(int rowIndex, int colIndex, String value, String header) {
         this.rowIndex = rowIndex;
         this.colIndex = colIndex;

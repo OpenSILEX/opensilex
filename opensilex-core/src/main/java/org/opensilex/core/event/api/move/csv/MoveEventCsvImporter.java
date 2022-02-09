@@ -5,7 +5,7 @@ import com.mongodb.client.model.geojson.Point;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.locationtech.jts.io.ParseException;
-import org.opensilex.core.csv.dal.CSVCell;
+import org.opensilex.sparql.csv.CSVCell;
 import org.opensilex.core.event.api.csv.AbstractEventCsvImporter;
 import org.opensilex.core.event.dal.move.TargetPositionModel;
 import org.opensilex.core.event.dal.move.MoveEventNoSqlModel;

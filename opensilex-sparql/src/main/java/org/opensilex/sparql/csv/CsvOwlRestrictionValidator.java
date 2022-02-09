@@ -1,7 +1,6 @@
 package org.opensilex.sparql.csv;
 
 import org.opensilex.sparql.owl.OwlRestrictionValidator;
-import org.opensilex.sparql.csv.error.CSVValidationModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OwlRestrictionModel;

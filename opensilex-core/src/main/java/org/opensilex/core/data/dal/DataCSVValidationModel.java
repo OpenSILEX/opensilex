@@ -12,15 +12,15 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.opensilex.core.csv.dal.CSVCell;
-import org.opensilex.core.csv.dal.error.CSVValidationModel;
 import org.opensilex.core.device.dal.DeviceModel;
+import org.opensilex.sparql.csv.CSVCell;
+import org.opensilex.sparql.csv.CSVValidationModel;
 
 /**
  *
  * @author vmigot
  */
-public class DataCSVValidationModel extends CSVValidationModel{
+public class DataCSVValidationModel extends CSVValidationModel {
 
     @JsonIgnore()
     private HashMap<DataModel, Integer> data = new HashMap<>();

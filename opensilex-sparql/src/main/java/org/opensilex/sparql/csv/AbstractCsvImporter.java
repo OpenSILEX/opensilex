@@ -7,7 +7,6 @@ import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.opensilex.sparql.SPARQLModule;
-import org.opensilex.sparql.csv.error.CSVValidationModel;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
@@ -162,8 +161,9 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
         // second way : (array of int) return a boolean array (true/false) and apply "mask" on array */
 
         Iterator<Map.Entry<String, Integer>> entryIterator = filledUrisToIndexesInChunk.entrySet().iterator();
+        Set<String> filledUris = filledUrisToIndexesInChunk.keySet();
 
-        SelectBuilder checkUrisQuery = sparql.getCheckUriListExistQuery(classURI.toString(), filledUrisToIndexesInChunk.keySet());
+        SelectBuilder checkUrisQuery = sparql.getCheckUriListExistQuery(classURI.toString(), filledUris.stream(), filledUris.size());
         sparql.executeSelectQueryAsStream(checkUrisQuery).forEach((SPARQLResult result) -> {
 
             boolean uriExists = Boolean.parseBoolean(result.getStringValue(SPARQLService.EXISTING_VAR));

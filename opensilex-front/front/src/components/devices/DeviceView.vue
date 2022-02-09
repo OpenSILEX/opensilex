@@ -14,6 +14,17 @@
           @click="goToDeviceCreate"
           label="Device.add"
         ></opensilex-CreateButton>
+
+        <opensilex-CreateButton
+            label="OntologyCsvImporter.import"
+            @click="showCsvForm"
+        ></opensilex-CreateButton>
+
+        <opensilex-DeviceCsvForm
+            v-if="renderCsvForm"
+            ref="csvForm"
+            @csvImported="onImport"
+        ></opensilex-DeviceCsvForm>
       </template>
     </opensilex-PageActions>
 
@@ -36,13 +47,21 @@ import HttpResponse, {
 // @ts-ignore
 import { DevicesService, DeviceCreationDTO } from "opensilex-core/index";
 import VueRouter from "vue-router";
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+import DeviceCsvForm from "./csv/DeviceCsvForm.vue";
+import DeviceDetails from "./DeviceDetails.vue";
+import DeviceForm from "./DeviceForm.vue";
+import DeviceList from "./DeviceList.vue";
 
 @Component
 export default class DeviceView extends Vue {
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
   $store: any;
   $router: VueRouter;
   service: DevicesService;
+
+  renderCsvForm = false;
+  @Ref("csvForm") readonly csvForm!: DeviceCsvForm;
 
   get user() {
     return this.$store.state.user;
@@ -52,9 +71,9 @@ export default class DeviceView extends Vue {
     return this.$store.state.credentials;
   }
 
-  @Ref("deviceList") readonly deviceList!: any;
-  @Ref("deviceForm") readonly deviceForm!: any;
-  @Ref("deviceDetails") readonly deviceDetails!: any;
+  @Ref("deviceList") readonly deviceList!: DeviceList;
+  @Ref("deviceForm") readonly deviceForm!: DeviceForm;
+  @Ref("deviceDetails") readonly deviceDetails!: DeviceDetails;
   @Ref("deviceAttributesForm") readonly deviceAttributesForm!: any;
 
   created() {
@@ -75,6 +94,17 @@ export default class DeviceView extends Vue {
           this.deviceList.refresh();
         })
     );
+  }
+
+  showCsvForm() {
+    this.renderCsvForm = true;
+    this.$nextTick(() => {
+      this.csvForm.show();
+    });
+  }
+
+  onImport(response) {
+    this.deviceList.refresh();
   }
 }
 </script>

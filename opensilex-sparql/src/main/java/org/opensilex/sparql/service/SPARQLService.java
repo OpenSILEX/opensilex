@@ -1580,7 +1580,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      * }
      * }</pre>
      */
-    public SelectBuilder getCheckUriListExistQuery(String type, Stream<String> uris) {
+    public SelectBuilder getCheckUriListExistQuery(String type, Stream<String> uris, int streamSize) {
 
         Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
         Var typeVar = makeVar(SPARQLResourceModel.TYPE_FIELD);
@@ -1597,7 +1597,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                 .addVar(SPARQLQueryHelper.getExprFactory().exists(where), existing);
 
         // append VALUES ?uri  :uri_1 ... :uri_n
-        SPARQLQueryHelper.addWhereUriStringValues(select, uriVar.getVarName(), uris, true, uris.size());
+        SPARQLQueryHelper.addWhereUriStringValues(select, uriVar.getVarName(), uris, true, streamSize);
 
         return select;
     }

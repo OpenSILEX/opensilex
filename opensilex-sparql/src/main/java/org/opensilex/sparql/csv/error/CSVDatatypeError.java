@@ -13,7 +13,6 @@
  */
 package org.opensilex.sparql.csv.error;
 
-
 import org.opensilex.sparql.csv.CSVCell;
 
 import java.net.URI;

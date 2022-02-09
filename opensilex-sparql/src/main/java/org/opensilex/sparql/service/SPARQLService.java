@@ -7,9 +7,11 @@ package org.opensilex.sparql.service;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.*;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Query;
 import org.apache.jena.rdf.model.Property;
@@ -36,6 +38,7 @@ import org.opensilex.service.Service;
 import org.opensilex.service.ServiceDefaultDefinition;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.*;
 import org.opensilex.sparql.mapping.SPARQLClassAnalyzer;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
@@ -1556,16 +1559,57 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
     public static final String EXISTING_VAR = "existing";
 
-    public <T extends SPARQLResourceModel> SelectBuilder getUriListExistQuery(Class<T> objectClass, Collection<URI> uris) throws Exception {
+    /**
+     * @param type the rdf:type (if null/empty then the query only search if there exist an occurrence of <b>( ?uri a ?rdfType )</b> triple pattern for each URI
+     * @param uris the {@link Collection} of URI to check in {@link String} representation
+     * @return a {@link SelectBuilder} which when executed, indicate for each element of uris, if the element exist (TRUE/FALSE)
+     * as an instance of the type (or as any rdf:type if no type is provided)
+     *
+     * @apiNote The produced SPARQL query look likes
+     * <pre>
+     * {@code
+     * PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+     * SELECT  (EXISTS {
+     *         ?rdfType rdfs:subClassOf* :some_rdf_type.
+     *         ?uri  a  ?rdfType
+     *     } AS ?existing)
+     * WHERE{
+     *     VALUES ?uri {
+     *         :uri_1 :uri_2 :uri_n
+     *     }
+     * }
+     * }</pre>
+     */
+    public SelectBuilder getCheckUriListExistQuery(String type, Stream<String> uris) {
 
+        Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
+        Var typeVar = makeVar(SPARQLResourceModel.TYPE_FIELD);
+        Var existing = makeVar(SPARQLService.EXISTING_VAR);
+
+        WhereBuilder where = new WhereBuilder();
+        if (! StringUtils.isEmpty(type)) {
+            where.addWhere(typeVar, Ontology.subClassAny, NodeFactory.createURI(URIDeserializer.getExpandedURI(type)));
+        }
+        where.addWhere(uriVar, RDF.type, typeVar);
+
+        // add EXIST {} expression as var of SELECT
+        SelectBuilder select = new SelectBuilder()
+                .addVar(SPARQLQueryHelper.getExprFactory().exists(where), existing);
+
+        // append VALUES ?uri  :uri_1 ... :uri_n
+        SPARQLQueryHelper.addWhereUriStringValues(select, uriVar.getVarName(), uris, true, uris.size());
+
+        return select;
+    }
+
+    public <T extends SPARQLResourceModel> SelectBuilder getUriListExistQuery(Class<T> objectClass, Stream<URI> uris, int streamSize) throws Exception {
         Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
         Var existing = makeVar(EXISTING_VAR);
 
         SelectBuilder select = new SelectBuilder();
-        SPARQLQueryHelper.addWhereValues(select, uriVar.getVarName(), uris);
+        SPARQLQueryHelper.addWhereUriValues(select, uriVar.getVarName(), uris,streamSize);
 
-        WhereBuilder where = new WhereBuilder()
-                .addWhere(uriVar, makeVar("p"), makeVar("o"));
+        WhereBuilder where = new WhereBuilder();
 
         if (objectClass != null) {
             SPARQLClassObjectMapper<T> mapper = getMapperIndex().getForClass(objectClass);
@@ -1573,12 +1617,18 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             Resource typeDef = mapper.getRDFType();
             where.addWhere(typeVar, Ontology.subClassAny, typeDef)
                     .addWhere(uriVar, RDF.type, typeVar);
+        }else{
+            where.addWhere(uriVar, makeVar("p"), makeVar("o"));
         }
 
         Expr existExpr = SPARQLQueryHelper.getExprFactory().exists(where);
         select.addVar(existExpr, existing);
 
         return select;
+    }
+
+    public <T extends SPARQLResourceModel> SelectBuilder getUriListExistQuery(Class<T> objectClass, Collection<URI> uris) throws Exception {
+        return getUriListExistQuery(objectClass, uris.stream(), uris.size());
     }
 
     /**

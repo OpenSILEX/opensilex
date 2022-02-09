@@ -11,15 +11,10 @@ package org.opensilex.sparql.owl;
 import org.apache.commons.collections4.trie.PatriciaTrie;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
-import org.apache.jena.arq.querybuilder.WhereBuilder;
-import org.apache.jena.graph.NodeFactory;
-import org.apache.jena.sparql.core.Var;
-import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
@@ -27,10 +22,8 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OwlRestrictionModel;
 import org.opensilex.sparql.ontology.store.OntologyStore;
-import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
-import org.opensilex.sparql.utils.Ontology;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -38,15 +31,12 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
-import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
-
 public abstract class OwlRestrictionValidator<T extends ValidationContext> {
 
     protected final SPARQLService sparql;
     protected final OntologyStore ontologyStore;
 
     protected boolean isValid;
-    //    protected Map<String, List<String>> valuesByTypeToCheck;
     protected Map<String, Map<String, List<T>>> validationByTypesAndValues;
 
     protected OwlRestrictionValidator(SPARQLService sparql, OntologyStore ontologyStore) {
@@ -54,7 +44,6 @@ public abstract class OwlRestrictionValidator<T extends ValidationContext> {
         this.ontologyStore = ontologyStore;
 
         isValid = true;
-//        valuesByTypeToCheck = new PatriciaTrie<>();
         validationByTypesAndValues = new PatriciaTrie<>();
     }
 
@@ -216,7 +205,7 @@ public abstract class OwlRestrictionValidator<T extends ValidationContext> {
             Map<String, List<T>> validationByValue = entry.getValue();
 
             // build SPARQL query for validating values according type
-            SelectBuilder checkQuery = sparql.getCheckUriListExistQuery(type, validationByValue.keySet());
+            SelectBuilder checkQuery = sparql.getCheckUriListExistQuery(type, validationByValue.keySet().stream());
 
             // Use iterator to lookup over SPARQL results by keeping match with map values
             Iterator<Map.Entry<String, List<T>>> validationsByValue = validationByValue.entrySet().iterator();

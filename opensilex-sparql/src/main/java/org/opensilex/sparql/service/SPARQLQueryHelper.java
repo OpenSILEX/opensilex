@@ -21,10 +21,7 @@ import org.apache.jena.sparql.expr.aggregate.AggregatorFactory;
 import org.apache.jena.sparql.syntax.Element;
 import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.sparql.syntax.ElementNamedGraph;
-import org.opensilex.sparql.deserializer.DateDeserializer;
-import org.opensilex.sparql.deserializer.SPARQLDeserializer;
-import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
-import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.deserializer.*;
 import org.opensilex.utils.OrderBy;
 
 import java.net.URI;
@@ -297,7 +294,7 @@ public class SPARQLQueryHelper {
         addWhereUriValues(where,varName,values.stream(),values.size());
     }
 
-    public static void addWhereUriValues(WhereClause<?> where, String varName, Stream<URI> values, int size) {
+    public static void addWhereUriStringValues(WhereClause<?> where, String varName, Stream<String> values, boolean expandUri, int size) {
 
         if (size == 0){
             return;
@@ -307,10 +304,15 @@ public class SPARQLQueryHelper {
         Object[] nodes = new Node[size];
         AtomicInteger i = new AtomicInteger();
         values.forEach(uri -> {
-            nodes[i.getAndIncrement()] = SPARQLDeserializers.nodeURI(uri);
+            String expandedUri = expandUri ? URIDeserializer.getExpandedURI(uri) : uri;
+            nodes[i.getAndIncrement()] = NodeFactory.createURI(expandedUri);
         });
 
         where.addWhereValueVar(varName, nodes);
+    }
+
+    public static void addWhereUriValues(WhereClause<?> where, String varName, Stream<URI> values, int size) {
+        addWhereUriStringValues(where,varName,values.map(URI::toString),true,size);
     }
 
     /**

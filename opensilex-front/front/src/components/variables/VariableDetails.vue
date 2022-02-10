@@ -290,5 +290,5 @@ fr:
     advanced: Informations avancées
     edit: Editer la variable
     edit-references: Editer les références
-    visualization: Visualisation des données associés à un instruments
+    visualization: Visualisation des données associées à un instrument
 </i18n>

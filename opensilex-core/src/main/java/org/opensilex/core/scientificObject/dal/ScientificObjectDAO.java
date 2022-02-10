@@ -8,12 +8,9 @@ package org.opensilex.core.scientificObject.dal;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.trie.PatriciaTrie;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.jena.arq.querybuilder.AbstractQueryBuilder;
-import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
-import org.apache.jena.arq.querybuilder.clauses.WhereClause;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -33,7 +30,6 @@ import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.exception.DuplicateNameListException;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
-import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.ontology.dal.SPARQLRelationFetcher;
@@ -42,13 +38,11 @@ import org.opensilex.core.scientificObject.api.ScientificObjectNodeDTO;
 import org.opensilex.core.scientificObject.api.ScientificObjectNodeWithChildrenDTO;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.user.dal.UserModel;
-import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.sparql.deserializer.DateDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
-import org.opensilex.sparql.exceptions.SPARQLInvalidModelException;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapperIndex;
 import org.opensilex.sparql.mapping.SPARQLListFetcher;
@@ -448,7 +442,7 @@ public class ScientificObjectDAO {
         optionalTypeLabelHandler.addWhere(builder.makeTriplePath(typeVar, RDFS.label, typeNameVar));
         // Add rdf type label lang filter
         Locale locale = Locale.forLanguageTag(searchFilter.getLang());
-        optionalTypeLabelHandler.addFilter(SPARQLQueryHelper.langFilter(SPARQLResourceModel.TYPE_NAME_FIELD, locale.getLanguage()));
+        optionalTypeLabelHandler.addFilter(SPARQLQueryHelper.langFilterWithDefault(SPARQLResourceModel.TYPE_NAME_FIELD, locale.getLanguage()));
         builder.getWhereHandler().addOptional(optionalTypeLabelHandler);
 
         // Add creation and destruction date as optional fields

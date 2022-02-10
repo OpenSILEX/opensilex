@@ -210,9 +210,30 @@ public class SPARQLQueryHelper {
         }
     }
 
-    public static Expr langFilter(String varName, String lang) {
-        return exprFactory.or(exprFactory.langMatches(exprFactory.lang(NodeFactory.createVariable(varName)), lang),
-                exprFactory.langMatches(exprFactory.lang(NodeFactory.createVariable(varName)), ""));
+    /**
+     * Constructs a lang filter on the variable. Also takes the default language if it exists (the filters keeps at
+     * most 2 values). Do not use this method if you want only one language.
+     *
+     * @see SPARQLQueryHelper#langFilter(Var, String)
+     *
+     * @param varName
+     * @param lang
+     * @return
+     */
+    public static Expr langFilterWithDefault(String varName, String lang) {
+        return exprFactory.or(langFilter(makeVar(varName), lang), langFilter(makeVar(varName), ""));
+    }
+
+    /**
+     * Constructs an exclusive lang filter on the variable. To filter the default language, use an empty String as the
+     * language parameter.
+     *
+     * @param var
+     * @param lang
+     * @return
+     */
+    public static Expr langFilter(Var var, String lang) {
+        return exprFactory.langMatches(exprFactory.lang(var), lang);
     }
 
     /**

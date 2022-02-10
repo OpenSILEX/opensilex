@@ -48,8 +48,6 @@ import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectSearchFilter;
-import org.opensilex.core.species.dal.SpeciesDAO;
-import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.authentication.ApiCredential;
@@ -208,7 +206,7 @@ public class ScientificObjectAPI {
         select.setDistinct(true);
         select.addWhere("?type", Ontology.subClassStrict, Oeso.ScientificObject);
         select.addWhere("?type", RDFS.label, "?label");
-        select.addFilter(SPARQLQueryHelper.langFilter("label", currentUser.getLanguage()));
+        select.addFilter(SPARQLQueryHelper.langFilterWithDefault("label", currentUser.getLanguage()));
 
         List<ListItemDTO> types = new ArrayList<>();
 

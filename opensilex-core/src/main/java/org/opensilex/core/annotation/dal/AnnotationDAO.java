@@ -221,7 +221,7 @@ public class AnnotationDAO {
 
     private void addMotivationNameLangFilter(SelectBuilder selectBuilder, String lang) {
         if (!StringUtils.isEmpty(lang)) {
-            Expr langFilter = SPARQLQueryHelper.langFilter(SPARQLNamedResourceModel.NAME_FIELD, Locale.forLanguageTag(lang).getLanguage());
+            Expr langFilter = SPARQLQueryHelper.langFilterWithDefault(SPARQLNamedResourceModel.NAME_FIELD, Locale.forLanguageTag(lang).getLanguage());
             selectBuilder.addFilter(langFilter);
         }
     }

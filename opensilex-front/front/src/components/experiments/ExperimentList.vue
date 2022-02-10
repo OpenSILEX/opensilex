@@ -428,7 +428,7 @@ export default class ExperimentList extends Vue {
     if (dto) {
       return {
         id: dto.uri,
-        name: dto.shortname ? dto.shortname : dto.name,
+        label: dto.name,
       };
     }
     return null;

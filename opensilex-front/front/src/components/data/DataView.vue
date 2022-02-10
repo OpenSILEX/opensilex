@@ -319,8 +319,10 @@ export default class DataView extends Vue {
       return this.$opensilex.getService("opensilex.ScientificObjectsService")
         .getScientificObjectsListByUris(undefined,scientificObjectsURIs)
         .then((http: HttpResponse<OpenSilexResponse<Array<ScientificObjectNodeDTO>>>) => {
-            return (http && http.response) ? http.response.result : undefined
-    }).catch(this.$opensilex.errorHandler);
+            return (http && http.response) ? http.response.result : undefined })
+        .catch( error => {
+            this.$opensilex.errorHandler;
+            return [{uri:"unknowObject", name: "unknowObject"}]; });
   }
 
   soGetDTOToSelectNode(dto) {

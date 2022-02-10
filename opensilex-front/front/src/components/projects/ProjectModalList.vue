@@ -23,6 +23,7 @@
         ref="projectSelection"
         :isSelectable="true"
         :noActions="true"
+        :pageSize="5"
         :noUpdateURL="true"
         :searchFilter.sync="filter"
         @select="$emit('select', $event)"

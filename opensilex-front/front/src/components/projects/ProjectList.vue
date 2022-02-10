@@ -45,6 +45,7 @@
       :searchMethod="loadData"
       :fields="fields"
       defaultSortBy="start_date"
+      :defaultPageSize="pageSize"
       :isSelectable="true"
       labelNumberOfSelectedRow="component.project.selectedLabel"
       @select="$emit('select', $event)"
@@ -162,6 +163,11 @@ export default class ProjectList extends Vue {
   })
   noActions;
 
+  @Prop({
+    default: 20
+  })
+  pageSize: number;
+  
   @Prop({
     default: false
   })

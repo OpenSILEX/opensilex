@@ -242,7 +242,6 @@ export default class DataVisuGraphic extends Vue {
 
     this.lineType = this.lType ? this.lType : false;
     this.lineWidth = this.lWidth ? this.lWidth : false;
-
   }
 
 

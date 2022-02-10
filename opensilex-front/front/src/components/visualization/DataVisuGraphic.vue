@@ -177,6 +177,8 @@ export default class DataVisuGraphic extends Vue {
   variable;
   selectedPointsCount = 0;
 
+  lineType = false;
+  lineWidth = false;
   yAxis = {
     title: {
       text: ""
@@ -187,15 +189,6 @@ export default class DataVisuGraphic extends Vue {
   private concernedItem;
   chartOptionsValues: any = [];
 
-  @Prop({
-    default: false
-  })
-  lType;
-
-  @Prop({
-    default: false
-  })
-  lWidth;
 
   @Prop({
     default: false
@@ -212,8 +205,16 @@ export default class DataVisuGraphic extends Vue {
   })
   isAddEvents;
 
-  lineType = this.lType;
-  lineWidth = this.lWidth;
+  @Prop({
+    default: false
+  })
+  lType;
+
+  @Prop({
+    default: false
+  })
+  lWidth;
+
   data: any = null;
   provenance: any = null;
   annotations = [];
@@ -238,6 +239,10 @@ export default class DataVisuGraphic extends Vue {
       proceed.apply(this, Array.prototype.slice.call(arguments, 1));
       item.color = color;
     });
+
+    this.lineType = this.lType ? this.lType : false;
+    this.lineWidth = this.lWidth ? this.lWidth : false;
+
   }
 
 

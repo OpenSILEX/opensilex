@@ -40,7 +40,7 @@
           <template v-slot:filters>
 
               <!-- Variables -->
-              <opensilex-FilterField>
+              <opensilex-FilterField  quarterWidth="true">
                 <opensilex-UsedVariableSelector
                 ref="varSelector"
                 label="DataView.filter.variables"
@@ -51,7 +51,7 @@
               </opensilex-FilterField>
             
               <!-- Experiments -->
-              <opensilex-FilterField>
+              <opensilex-FilterField  quarterWidth="true">
                 <opensilex-ExperimentSelector
                   label="DataView.filter.experiments"
                   :experiments.sync="filter.experiments"
@@ -60,7 +60,26 @@
                   @clear="updateSOFilter"
                 ></opensilex-ExperimentSelector>
               </opensilex-FilterField> 
-            
+
+              <opensilex-FilterField quarterWidth="true">
+                <!-- Start Date -->
+                <opensilex-DateTimeForm
+                    :value.sync="filter.start_date"
+                    label="component.common.begin"
+                    name="startDate"
+                    :max-date="filter.end_date ? filter.end_date : undefined"                
+                ></opensilex-DateTimeForm>
+              </opensilex-FilterField>
+
+              <opensilex-FilterField quarterWidth="true">
+                <!-- End Date -->
+                <opensilex-DateTimeForm
+                    :value.sync="filter.end_date"
+                    label="component.common.end"
+                    name="endDate"
+                    :min-date="filter.start_date ? filter.start_date : undefined"
+                ></opensilex-DateTimeForm>
+              </opensilex-FilterField>
               <!-- Scientific objects -->
               <opensilex-FilterField halfWidth="true">
                 <opensilex-SelectForm
@@ -80,28 +99,21 @@
                 ></opensilex-SelectForm>
               </opensilex-FilterField>
 
-              <opensilex-FilterField>
-                <!-- Start Date -->
-                <opensilex-DateTimeForm
-                    :value.sync="filter.start_date"
-                    label="component.common.begin"
-                    name="startDate"
-                    :max-date="filter.end_date ? filter.end_date : undefined"                
-                ></opensilex-DateTimeForm>
+               <!-- targets -->
+              <opensilex-FilterField quarterWidth="true">
+                <opensilex-TagInputForm
+                  class="overflow-auto"
+                  style="height: 90px"
+                  :value.sync="filter.targets"
+                  label="DataView.filter.targets"
+                  helpMessage="DataView.filter.targets-help"
+                  type="text"
+                ></opensilex-TagInputForm>
               </opensilex-FilterField>
-
-              <opensilex-FilterField>
-                <!-- End Date -->
-                <opensilex-DateTimeForm
-                    :value.sync="filter.end_date"
-                    label="component.common.end"
-                    name="endDate"
-                    :min-date="filter.start_date ? filter.start_date : undefined"
-                ></opensilex-DateTimeForm>
-              </opensilex-FilterField>
+            
 
               <!-- Provenance -->
-              <opensilex-FilterField halfWidth="true">
+              <opensilex-FilterField quarterWidth="true">
                 <opensilex-DataProvenanceSelector
                   ref="provSelector"
                   :provenances.sync="filter.provenance"
@@ -147,7 +159,7 @@
 </template>
 
 <script lang="ts">
-import { Prop, Component, Ref } from "vue-property-decorator";
+import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import { ProvenanceGetDTO } from "opensilex-core/index";
 import {ScientificObjectNodeDTO} from "opensilex-core/model/scientificObjectNodeDTO";
@@ -188,7 +200,8 @@ export default class DataView extends Vue {
     variables: [],
     provenance: null,
     experiments: [],
-    scientificObjects: []
+    scientificObjects: [],
+    targets: []
   };
 
   soFilter = {
@@ -218,7 +231,8 @@ export default class DataView extends Vue {
       variables: [],
       provenance: null,
       experiments: [],
-      scientificObjects: []
+      scientificObjects: [],
+      targets: []
     };
 
     this.soSelector.refreshModalSearch();
@@ -242,6 +256,8 @@ export default class DataView extends Vue {
 
   created() {
     this.service = this.$opensilex.getService("opensilex.DataService");
+    console.log("this.$i18n");
+    console.log(this.$i18n.locale);
   }
 
   get getSelectedProv() {
@@ -358,6 +374,8 @@ en:
       scientificObjects: Scientific object(s)
       scientificObjects-placeholder: Select scientific objects
       provenance: Provenance
+      targets: Target(s)
+      targets-help: Copy target's URI here
 
 fr:
   DataView:
@@ -378,6 +396,8 @@ fr:
       variables: Variable(s)
       scientificObjects: Objet(s) scientifique(s)
       scientificObjects-placeholder: Sélectionner des objets scientifiques
-      provenance: Provenance      
+      provenance: Provenance  
+      targets: Cible(s)
+      targets-help: Copier les URI des cibles ici    
   
 </i18n>

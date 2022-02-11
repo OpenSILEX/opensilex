@@ -40,8 +40,11 @@ import java.util.stream.Collectors;
  * @author vince
  */
 @Api("Vue.js - Ontology extension")
-@Path("/vuejs/owl_extension")
+@Path(VueOwlExtensionAPI.PATH)
 public class VueOwlExtensionAPI {
+
+    public static final String PATH = "/vuejs/owl_extension";
+
 
     @CurrentUser
     UserModel currentUser;

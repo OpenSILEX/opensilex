@@ -5,8 +5,8 @@
  */
 package org.opensilex.core.data.api;
 
+import org.opensilex.core.csv.api.CSVValidationDTO;
 import org.opensilex.core.data.dal.DataCSVValidationModel;
-import org.opensilex.core.csv.dal.CSVValidationDTO;
 
 /**
  *

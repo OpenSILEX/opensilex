@@ -1,5 +1,7 @@
 package org.opensilex.sparql.mapping;
 
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
@@ -7,6 +9,7 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.aggregate.AggGroupConcat;
 import org.apache.jena.sparql.lang.sparql_11.ParseException;
 import org.apache.jena.sparql.syntax.ElementGroup;
@@ -23,6 +26,7 @@ import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ClassUtils;
+import org.opensilex.utils.OrderBy;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -31,6 +35,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
+import static org.opensilex.sparql.service.SPARQLQueryHelper.or;
 
 /**
  * Optimization of multi-valued relations fetching for a {@link SPARQLResourceModel}.
@@ -48,6 +53,7 @@ public class SPARQLListFetcher<T extends SPARQLResourceModel> {
 
     private final SelectBuilder initialSelect;
     private final List<T> results;
+    private final List<OrderBy> initialOrderByList;
 
     private final Map<String,SPARQLClassObjectMapper<?>> objectMappers;
 
@@ -68,13 +74,17 @@ public class SPARQLListFetcher<T extends SPARQLResourceModel> {
      *                              </pre>
      * @param initialSelect         the initial builder
      * @param initialResults        the List of {@link SPARQLResourceModel}, each item from list will be updated by adding values for multi-valued properties
+     * @param initialOrderByList    the List of initial{@link OrderBy}, needed in order that SPARQL query executed by this fetcher, returns results in the same order as initialSelect SPARQL query
+
      */
     public SPARQLListFetcher(SPARQLService sparql,
                              Class<T> objectClass,
                              Node graph,
                              Map<String, Boolean> fieldsToFetch,
                              SelectBuilder initialSelect,
-                             List<T> initialResults) throws SPARQLDeserializerNotFoundException, SPARQLInvalidClassDefinitionException, SPARQLMapperNotFoundException {
+                             List<T> initialResults,
+                             List<OrderBy> initialOrderByList
+    ) throws SPARQLDeserializerNotFoundException, SPARQLInvalidClassDefinitionException, SPARQLMapperNotFoundException {
 
         this.sparql = sparql;
         this.mapper = sparql.getMapperIndex().getForClass(objectClass);
@@ -82,11 +92,16 @@ public class SPARQLListFetcher<T extends SPARQLResourceModel> {
         this.initialSelect = initialSelect;
         this.results = initialResults;
 
-        if (fieldsToFetch == null || fieldsToFetch.isEmpty()) {
+        if (MapUtils.isEmpty(fieldsToFetch)) {
             throw new IllegalArgumentException("Null or empty fieldsToFetch");
         }
-
         this.fieldsToFetch = fieldsToFetch;
+
+        if(CollectionUtils.isEmpty(initialOrderByList)){
+            throw new IllegalArgumentException("Null or empty initialOrderByList");
+        }
+        this.initialOrderByList = initialOrderByList;
+
         concatVarNameByFields = new LinkedHashMap<>();
 
         for (String fieldName : fieldsToFetch.keySet()) {
@@ -212,6 +227,11 @@ public class SPARQLListFetcher<T extends SPARQLResourceModel> {
         SelectBuilder select = outerSelect
                 .addSubQuery(innerSelect)
                 .addGroupBy(uriVar);     // append the GROUP BY in order to support the GROUP_CONCAT aggregator
+
+        // append initial ORDER BY in order to keep the same ordering as initial query
+        for(OrderBy orderBy : initialOrderByList){
+            select.addOrderBy(exprFactory.asVar(orderBy.getFieldName()),orderBy.getOrder());
+        }
 
         // add VALUES manually, else VALUES clause are not copied from clone()
         select.getValuesHandler().addAll(innerSelect.getValuesHandler());

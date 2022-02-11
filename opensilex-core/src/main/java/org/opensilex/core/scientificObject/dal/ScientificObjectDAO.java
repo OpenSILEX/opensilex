@@ -8,11 +8,7 @@ package org.opensilex.core.scientificObject.dal;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.trie.PatriciaTrie;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.jena.arq.querybuilder.AbstractQueryBuilder;
-import org.apache.jena.arq.querybuilder.AskBuilder;
-import org.apache.jena.arq.querybuilder.ExprFactory;
-import org.apache.jena.arq.querybuilder.SelectBuilder;
-import org.apache.jena.arq.querybuilder.WhereBuilder;
+import org.apache.jena.arq.querybuilder.*;
 import org.apache.jena.arq.querybuilder.clauses.WhereClause;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Node;
@@ -294,6 +290,12 @@ public class ScientificObjectDAO {
             return new ListWithPagination<>(Collections.emptyList());
         }
 
+        // default ORDER BY ?uri
+        if(CollectionUtils.isEmpty(searchFilter.getOrderByList())){
+            OrderBy uriDescOrder = new OrderBy(SPARQLResourceModel.URI_FIELD, Order.DESCENDING);
+            searchFilter.setOrderByList(Collections.singletonList(uriDescOrder));
+        }
+
         SelectBuilder select = getSelect(searchFilter);
         Stream<SPARQLResult> resultStream = sparql.executeSelectQueryAsStream(select);
 
@@ -314,7 +316,8 @@ public class ScientificObjectDAO {
                     SPARQLDeserializers.nodeURI(searchFilter.getExperiment()),
                     fieldToFetchMap,
                     select,
-                    results
+                    results,
+                    searchFilter.getOrderByList()
             );
             listFetcher.updateModels();
         }

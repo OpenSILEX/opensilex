@@ -7,6 +7,7 @@
 
 package org.opensilex.core.event.dal;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
@@ -53,6 +54,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
+import static org.opensilex.sparql.service.SPARQLQueryHelper.or;
 
 /**
  * @author Renaud COLIN
@@ -353,8 +355,9 @@ public class EventDAO<T extends EventModel> {
 
     protected void updateOrderByList(List<OrderBy> orderByList) {
 
-        if (orderByList == null) {
-            return;
+        if (CollectionUtils.isEmpty(orderByList)) {
+            // Use default ORDER-BY since we use SPARQLListFetcher
+            orderByList = Collections.singletonList(SPARQLClassObjectMapper.DEFAULT_ORDER_BY);
         }
 
         // specific ordering on end/start -> ordering on timestamp
@@ -424,7 +427,8 @@ public class EventDAO<T extends EventModel> {
                 eventGraph,
                 fieldsToFetch,
                 initialSelect.get(),
-                results.getList()
+                results.getList(),
+                orderByList
         );
         dataListFetcher.updateModels();
 
@@ -488,7 +492,8 @@ public class EventDAO<T extends EventModel> {
                 eventGraph,
                 fieldsToFetch,
                 initialSelect.get(),
-                results.getList()
+                results.getList(),
+                orderByList
         );
         dataListFetcher.updateModels();
 

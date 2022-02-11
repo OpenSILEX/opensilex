@@ -7,6 +7,7 @@ package org.opensilex.sparql.mapping;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
+import org.apache.jena.arq.querybuilder.Order;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
@@ -31,10 +32,12 @@ import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.model.time.InstantModel;
 import org.opensilex.sparql.model.time.Time;
+import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.uri.generation.URIGenerator;
 import org.opensilex.utils.ClassUtils;
+import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.ThrowingBiConsumer;
 import org.opensilex.utils.ThrowingConsumer;
 import org.slf4j.Logger;
@@ -69,6 +72,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     protected SPARQLClassAnalyzer classAnalizer;
 
     private final DateTimeDeserializer timeDeserializer;
+    public static final OrderBy DEFAULT_ORDER_BY = new OrderBy(SPARQLResourceModel.URI_FIELD, Order.ASCENDING);
 
     /**
      * Default keyword used for each {@link org.opensilex.sparql.model.SPARQLResourceModel} associated graph

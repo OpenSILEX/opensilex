@@ -1005,7 +1005,7 @@ public class ExperimentAPI {
                             }                        
                         csvValidation.addData(dataModel, rowIndex);
                         // check for duplicate data
-                        ImportDataIndex importDataIndex = new ImportDataIndex(parsedDateTimeMongo.getInstant(), varURI, experimentURI, object.getUri());
+                        ImportDataIndex importDataIndex = new ImportDataIndex(parsedDateTimeMongo.getInstant(), varURI, experimentURI, object.getUri(), null);
                         if (!duplicateDataByIndex.contains(importDataIndex)) {
                             duplicateDataByIndex.add(importDataIndex);
                         } else {

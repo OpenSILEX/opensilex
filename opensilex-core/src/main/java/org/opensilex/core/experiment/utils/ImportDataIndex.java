@@ -19,7 +19,8 @@ public class ImportDataIndex {
     private Instant date;
     private URI variableUri;
     private URI provenanceUri;
-    private URI objectUri; 
+    private URI objectUri;
+    private URI deviceUri;
 
     public URI getProvenanceUri() {
         return provenanceUri;
@@ -52,12 +53,21 @@ public class ImportDataIndex {
     public void setVariableUri(URI variableUri) {
         this.variableUri = variableUri;
     }
+
+    public URI getDeviceUri() {
+        return deviceUri;
+    }
+
+    public void setDeviceUri(URI deviceUri) {
+        this.deviceUri = deviceUri;
+    }
     
-    public ImportDataIndex(Instant date, URI variableUri, URI provenanceUri, URI objectUri) {
+    public ImportDataIndex(Instant date, URI variableUri, URI provenanceUri, URI objectUri, URI deviceUri) {
         this.date = date;
         this.variableUri = variableUri;
         this.provenanceUri = provenanceUri;
         this.objectUri = objectUri;
+        this.deviceUri = deviceUri;
     }
 
     @Override
@@ -67,6 +77,7 @@ public class ImportDataIndex {
         hash = 67 * hash + Objects.hashCode(this.variableUri);
         hash = 67 * hash + Objects.hashCode(this.provenanceUri);
         hash = 67 * hash + Objects.hashCode(this.objectUri);
+        hash = 67 * hash + Objects.hashCode(this.deviceUri);
         return hash;
     }
 
@@ -94,9 +105,11 @@ public class ImportDataIndex {
         if (!Objects.equals(this.objectUri, other.objectUri)) {
             return false;
         }
+        if (!Objects.equals(this.deviceUri, other.deviceUri)) {
+            return false;
+        }
         return true;
     }
 
-  
 
 }

@@ -108,12 +108,11 @@
 
     <!-- switch -->
     <b-form-radio-group
-        label="#Document content"
         v-model="documentContentType"
         v-if="!editMode"
     >
-      <b-form-radio :value="DOCUMENT_CONTENT_TYPE_FILE">#Upload a file</b-form-radio>
-      <b-form-radio :value="DOCUMENT_CONTENT_TYPE_EXTERNAL_SOURCE">#Link an external source</b-form-radio>
+      <b-form-radio :value="DOCUMENT_CONTENT_TYPE_FILE">{{ $t("DocumentForm.upload-file") }}</b-form-radio>
+      <b-form-radio :value="DOCUMENT_CONTENT_TYPE_EXTERNAL_SOURCE">{{ $t("DocumentForm.link-external-source") }}</b-form-radio>
     </b-form-radio-group>
     <!-- File -->
     <opensilex-FileInputForm
@@ -130,7 +129,7 @@
     <!-- Source -->
     <opensilex-InputForm
       v-if="!editMode && documentContentType === DOCUMENT_CONTENT_TYPE_EXTERNAL_SOURCE"
-      label="#External source"
+      label="DocumentForm.external-source"
       type="text"
       :value.sync="form.description.source"
       :required="true"
@@ -301,6 +300,9 @@ en:
     identifier-help: Recommended practice is to identify the resource by means of a string conforming to an identification system. Examples include International Standard Book Number (ISBN), Digital Object Identifier (DOI), and Uniform Resource Name (URN). Persistent identifiers should be provided as HTTP URIs.
     placeholder-identifier: doi:10.1340/309registries
     browse: Browse
+    upload-file: Upload a file
+    link-external-source: Link an external source
+    external-source: External source
     error:
       document-already-exists: Document already exists
       file-name-too-long: File name is too long
@@ -339,6 +341,9 @@ fr:
     identifier-help: La pratique recommandée est d'identifier la ressource au moyen d'une chaîne conforme à un système d'identification. Les exemples incluent le numéro international normalisé du livre (ISBN), l'identificateur d'objet numérique (DOI) et le nom uniforme de ressource (URN). Les identificateurs persistants doivent être fournis sous forme d'URI HTTP.
     placeholder-identifier: doi:10.1340/309registries
     browse: Parcourir
+    upload-file: Importer un fichier
+    link-external-source: Lier une source externe
+    external-source: Source externe
     error:
       document-already-exists: Le document existe déjà
       file-name-too-long: Le nom du fichier est trop long

@@ -9,18 +9,34 @@
           icon="question-circle"
           v-b-tooltip.hover.top="$t('InfrastructureTree.infrastructure-help')"
         />
-      </h3>
 
+        <opensilex-PageActions>
+          <!-- <b-dropdown
+            id="AddDropdown"
+            class="top-menu-add-btn"
+            :title="user.getAddMessage()"
+            variant="link"
+          >
+          <template v-slot:button-content>
+              <i class="icon ik ik-plus header-plus"></i>
+          </template>
+            <b-dropdown-item href="#"> -->
+              <opensilex-CreateButton
+                v-if="
+                  user.hasCredential(
+                    credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
+                  )
+                "
+                @click="createOrganization()"
+                label="InfrastructureTree.add"
+                class="createButton"
+              ></opensilex-CreateButton>
+            <!-- </b-dropdown-item>
+          </b-dropdown> -->
+        </opensilex-PageActions>
+
+      </h3>
       <div class="card-header-right">
-        <opensilex-CreateButton
-          v-if="
-            user.hasCredential(
-              credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
-            )
-          "
-          @click="createOrganization()"
-          label="InfrastructureTree.add"
-        ></opensilex-CreateButton>
       </div>
     </template>
     <!-- Card body -->
@@ -511,6 +527,26 @@ export default class InfrastructureTree extends Vue {
   width: 23px;
 }
 
+// .header-plus {
+//     margin-left: 65px;
+// }
+
+// .pageActions {
+//     position: fixed;
+//     top: 8px;
+//     left: 370px;
+//     width: 10px;
+//     background: none;
+//     z-index: 1100; 
+// }
+
+// @media (min-width: 200px) and (max-width: 675px) {
+//   .pageActions {
+//    left: 280px
+//   }
+// }
+
+
 @media (max-width: 768px) {
   .sl-vue-tree-root {
     min-height: auto;
@@ -520,6 +556,10 @@ export default class InfrastructureTree extends Vue {
 .tree-multiple-icon {
   padding-left: 8px;
   color: #3cc6ff;
+}
+.createButton, .helpButton{
+  margin-bottom: -10px;
+  margin-top: 5px;
 }
 </style>
 

@@ -3,11 +3,27 @@
     <div class="col col-xl-12">
       <opensilex-Card icon>
         <template v-slot:header>
-          <opensilex-CreateButton
-            v-if="user.hasCredential(credentials.CREDENTIAL_DATA_MODIFICATION_ID)"
-            @click="dataForm.showCreateForm()"
-            label="OntologyCsvImporter.import"
-          ></opensilex-CreateButton>
+        <opensilex-PageActions
+        >
+          <!-- <b-dropdown
+            id="AddDropdown"
+            class="top-menu-add-btn"
+            :title="user.getAddMessage()"
+            variant="link"
+          >
+          <template v-slot:button-content>
+              <i class="ik ik-plus header-plus"></i>
+          </template>
+            <b-dropdown-item href="#"> -->
+              <opensilex-CreateButton
+                v-if="user.hasCredential(credentials.CREDENTIAL_DATA_MODIFICATION_ID)"
+                @click="dataForm.showCreateForm()"
+                label="OntologyCsvImporter.import"
+                class="createButton"
+              ></opensilex-CreateButton>
+            <!-- </b-dropdown-item>
+          </b-dropdown> -->
+        </opensilex-PageActions>
         </template>
         <template v-slot:body>
           <opensilex-SearchFilterField
@@ -356,6 +372,11 @@ export default class ExperimentData extends Vue {
 </script>
 
 <style scoped lang="scss">
+.createButton {
+  margin-bottom: -20px;
+  margin-top: -15px;
+  margin-left: -20px;
+}
 </style>
 
 <i18n>

@@ -4,11 +4,13 @@
       icon="fa#seedling"
       title="GermplasmCreate.title"
       description="GermplasmCreate.description"
+      class="detail-element-header"
     ></opensilex-PageHeader>
     <opensilex-PageActions :returnButton="true" >
       <opensilex-HelpButton
       @click="helpModal.show()"
       label="component.common.help-button"
+      class="helpButton"
       ></opensilex-HelpButton>
     </opensilex-PageActions>
 
@@ -139,6 +141,9 @@ export default class GermplasmCreate extends Vue {
 </script>
 
 <style scoped lang="scss">
+.helpButton {
+  height: 35px;
+}
 </style>
 
 <i18n>

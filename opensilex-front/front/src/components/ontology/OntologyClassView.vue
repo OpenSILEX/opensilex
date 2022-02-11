@@ -5,10 +5,27 @@
         <div class="col-md-6">
             <b-card>
                 <div class="button-zone">
-                    <opensilex-CreateButton v-if="user.isAdmin()"
-                                            @click="showCreateForm()"
-                                            label="OntologyClassView.add">
-                    </opensilex-CreateButton>
+                    <!-- <opensilex-PageActions
+                    class="pageActions"
+                    >
+                        <b-dropdown
+                            id="AddDropdown"
+                            class="top-menu-add-btn"
+                            :title="user.getAddMessage()"
+                            variant="link"
+                        >
+                        <template v-slot:button-content>
+                            <i class="ik ik-plus header-plus"></i>
+                        </template>
+                            <b-dropdown-item href="#"> -->
+                                <opensilex-CreateButton v-if="user.isAdmin()"
+                                    @click="showCreateForm()"
+                                    label="OntologyClassView.add"
+                                    class="createButton">
+                                </opensilex-CreateButton>
+                            <!-- </b-dropdown-item>
+                        </b-dropdown>
+                    </opensilex-PageActions> -->
                     <opensilex-ModalForm
                         ref="classForm"
                         component="opensilex-OntologyClassForm"
@@ -153,6 +170,31 @@ export default class OntologyClassView extends Vue {
 </script>
 
 <style scoped lang="scss">
+
+
+.header-plus {
+    margin-left: 90px;
+}
+.pageActions {
+    position: fixed;
+    top: 8px;
+    left: 325px;
+    width: 10px;
+    background: none;
+    z-index: 1100;
+}
+
+@media (min-width: 200px) and (max-width: 675px) {
+  .pageActions {
+   left: 235px
+  }
+}
+
+.createButton{
+  margin-bottom: -10px;
+  margin-top: -10px
+}
+
 div.sticky {
     position: -webkit-sticky; /* Safari */
     position: sticky;

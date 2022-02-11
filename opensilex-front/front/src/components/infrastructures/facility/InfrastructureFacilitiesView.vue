@@ -10,17 +10,32 @@
             $t('InfrastructureFacilitiesView.infrastructure-facility-help')
           "
         />
+         <opensilex-PageActions>
+            <!-- <b-dropdown
+                id="AddDropdown"
+                class="top-menu-add-btn"
+                :title="user.getAddMessage()"
+                variant="link"
+            >
+            <template v-slot:button-content>
+                <i class="icon ik ik-plus header-plus"></i>
+            </template>
+                <b-dropdown-item href="#"> -->
+                  <opensilex-CreateButton
+                    v-if="
+                      user.hasCredential(
+                        credentials.CREDENTIAL_FACILITY_MODIFICATION_ID
+                      )
+                    "
+                    @click="facilityForm.showCreateForm()"
+                    label="InfrastructureFacilitiesView.add"
+                    class="createButton"
+                  ></opensilex-CreateButton>
+                <!-- </b-dropdown-item>
+            </b-dropdown> -->
+         </opensilex-PageActions>
       </h3>
       <div class="card-header-right" v-if="withActions">
-        <opensilex-CreateButton
-          v-if="
-            user.hasCredential(
-              credentials.CREDENTIAL_FACILITY_MODIFICATION_ID
-            )
-          "
-          @click="facilityForm.showCreateForm()"
-          label="InfrastructureFacilitiesView.add"
-        ></opensilex-CreateButton>
       </div>
     </template>
 
@@ -255,6 +270,30 @@ export default class InfrastructureFacilitiesView extends Vue {
 </script>
 
 <style scoped lang="scss">
+// .header-plus {
+//     margin-left: 65px;
+//     padding: 0;
+//     font-size-adjust: 10px;
+// }
+
+// .pageActions {
+//     position: fixed;
+//     top: 8px;
+//     left: 370px;
+//     width: 10px;
+//     background: none;
+//     z-index: 1100; 
+// }
+
+// @media (min-width: 200px) and (max-width: 675px) {
+//   .pageActions {
+//    left: 280px
+//   }
+// }
+.createButton, .helpButton{
+  margin-bottom: -10px;
+  margin-top: 5px;
+}
 </style>
 
 <i18n>

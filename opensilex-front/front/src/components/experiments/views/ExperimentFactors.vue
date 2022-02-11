@@ -1,19 +1,36 @@
 <template>
   <div class="container-fluid">
     <opensilex-PageActions>
-      <template v-slot>
+      <!-- <template v-slot>
+                    <b-dropdown
+                id="AddDropdown"
+                class="top-menu-add-btn"
+                :title="user.getAddMessage()"
+                variant="link"
+            >
+                <template v-slot:button-content>
+                    <i class="ik ik-plus header-plus"></i>
+                </template>
+                <b-dropdown-item href="#"> -->
         <opensilex-HelpButton
           @click="helpModal.show()"
           label="component.common.help-button"
+          class="helpButton"
         ></opensilex-HelpButton>
+                <!-- </b-dropdown-item>
+                <b-dropdown-item> -->
         <opensilex-CreateButton
           v-if="
             user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID)
           "
           @click="factorForm.showCreateForm()"
           label="component.factor.add-button"
+          class="createButton"
         ></opensilex-CreateButton>
-      </template>
+                <!-- </b-dropdown-item>
+                    </b-dropdown>
+
+      </template> -->
     </opensilex-PageActions>
     <b-modal ref="helpModal" size="xl" hide-header ok-only>
       <opensilex-FactorsHelp></opensilex-FactorsHelp>
@@ -224,6 +241,12 @@ export default class ExperimentFactors extends Vue {
 </script>
 
 <style scoped lang="scss">
+.createButton, .helpButton{
+  margin-bottom: 10px;
+  margin-top: -1px;
+  margin-left: 0;
+  margin-right: 5px;
+} 
 </style>
 
 

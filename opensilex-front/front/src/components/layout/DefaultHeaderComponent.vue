@@ -23,7 +23,7 @@
   <!-- <slot name="icon"> {{ $t(iconvalue) }}</slot> -->
   <slot name="title">&nbsp;{{ $t(titlevalue) }}</slot>
 </h5>
-<h5 v-else> <br> </h5>
+<span v-else> <br> </span>
 <span class="title-description"><slot name="description" >{{ $t(descriptionevalue) }}</slot></span>
 
 <!------------------------------------------------------->
@@ -295,12 +295,15 @@ export default class DefaultHeaderComponent extends Vue {
   background-color: #00a38d; 
 }
 
+.header-title{
+  margin-bottom: 0px;
+}
 #menu-container {
   top: 60px!important;
 }
 
 .container-fluid {
-  margin-left: 260px;
+  margin-left: 240px;
   width: 85%;
 }
 
@@ -387,7 +390,7 @@ export default class DefaultHeaderComponent extends Vue {
     width: 150px;
   }
   .top-menu{
-    margin-right: 150px;
+    margin-right: 170px;
     transition: 1s;
   }
   .title-icon{

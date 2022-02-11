@@ -60,6 +60,10 @@ export default class PageHeader extends Vue {
 </script>
 
 <style scoped lang="scss">
+
+.page-header{
+  z-index: 1030;
+}
 .title-icon {
   float: left;
   width: 40px;
@@ -83,6 +87,9 @@ h5 {
 .navbar-title {
   white-space: pre;
 }
+// .title-title {
+//   font-weight: bolder;
+// }
 
 // @media (min-width: 200px) and (max-width: 1150px) {
 //   h5 {

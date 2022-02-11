@@ -1,5 +1,6 @@
 <template>
-  <div class="card">
+  <!-- <div class="card"> -->
+  <div>
     <div class=" row clearfix" :style="(small ? 'padding: 8px 20px;' : '')">
       <div class="d-inline-block w-100 float-left">
         <slot name="buttons"></slot>
@@ -84,6 +85,7 @@ export default class PageActions extends Vue {
 
 .nav {
   margin-left: 14px;
+  // margin-bottom: -18px;
 }
 
 .back-button {
@@ -94,7 +96,7 @@ export default class PageActions extends Vue {
   padding-right: 6px;
   padding-bottom: 4px;
   padding-left: 9px;
-
+  margin-bottom: 18px;
   height: 35px!important;
 }
 

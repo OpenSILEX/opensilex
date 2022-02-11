@@ -1,25 +1,41 @@
 <template>
   <div ref="page">
     <opensilex-PageActions>
-      <opensilex-CreateButton
-        v-if="
-          user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)
-        "
-        @click="soForm.createScientificObject()"
-        label="ExperimentScientificObjects.create-scientific-object"
-      ></opensilex-CreateButton>&nbsp;
+      <!-- <b-dropdown
+        id="AddDropdown"
+        class="top-menu-add-btn"
+        :title="user.getAddMessage()"
+        variant="link"
+      >
+      <template v-slot:button-content>
+          <i class="ik ik-plus header-plus"></i>
+      </template>
+      <b-dropdown-item href="#"> -->
+        <opensilex-CreateButton
+          v-if="
+            user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)
+          "
+          @click="soForm.createScientificObject()"
+          label="ExperimentScientificObjects.create-scientific-object"
+          class="createButton">
+        </opensilex-CreateButton>&nbsp;
+      <!-- </b-dropdown-item>
+      <b-dropdown-item> -->
       <opensilex-CreateButton
         v-if="
           user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)
         "
         @click="importForm.show()"
         label="OntologyCsvImporter.import"
-      ></opensilex-CreateButton>
+        class="createButton">
+      </opensilex-CreateButton>
       <opensilex-ScientificObjectCSVImporter
         ref="importForm"
         :experimentURI="uri"
         @csvImported="refresh()"
       ></opensilex-ScientificObjectCSVImporter>
+      <!-- </b-dropdown-item>
+      </b-dropdown> -->
     </opensilex-PageActions>
 
     <div class="row">
@@ -734,6 +750,13 @@ export default class ExperimentScientificObjects extends Vue {
 
 .card-header .badge {
   margin-left: 5px;
+}
+
+.createButton, .helpButton{
+  margin-bottom: 10px;
+  margin-top: 1px;
+  margin-left: 0;
+  margin-right: 5px;
 }
 </style>
 

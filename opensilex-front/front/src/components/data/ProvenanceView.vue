@@ -5,7 +5,7 @@
       title="component.menu.data.provenance"
       description="ProvenanceView.description"
     ></opensilex-PageHeader> -->
-
+<!-- 
     <opensilex-PageActions
       class="pageActions"
     >
@@ -18,7 +18,7 @@
     <template v-slot:button-content>
       <i class="icon ik ik-plus header-plus"></i>
     </template>
-      <b-dropdown-item href="#">
+      <b-dropdown-item href="#"> -->
         <opensilex-CreateButton
           v-if="
             user.hasCredential(
@@ -28,9 +28,9 @@
           class="createButton"
         >
         </opensilex-CreateButton>
-      </b-dropdown-item>
+      <!-- </b-dropdown-item>
     </b-dropdown>
-    </opensilex-PageActions>
+    </opensilex-PageActions> -->
 
     <opensilex-ModalForm
       ref="provenanceForm"
@@ -185,19 +185,23 @@ export default class ProvenanceView extends Vue {
 
 
 <style scoped lang="scss">
-.pageActions {
-    position: fixed;
-    top: 8px;
-    left: 450px;
-    width: 10px;
-    background: none;
-    z-index: 1100;
-}
+// .pageActions {
+//     position: fixed;
+//     top: 8px;
+//     left: 450px;
+//     width: 10px;
+//     background: none;
+//     z-index: 1100;
+// }
 
-@media (min-width: 200px) and (max-width: 675px) {
-  .pageActions {
-   left: 340px
-  }
+// @media (min-width: 200px) and (max-width: 675px) {
+//   .pageActions {
+//    left: 340px
+//   }
+// }
+.createButton{
+  margin-bottom: 10px;
+  margin-top: -15px
 }
 </style>
 

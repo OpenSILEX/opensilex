@@ -9,27 +9,28 @@
 
     <div class="card-body">
       <div class="button-zone">
-        <opensilex-PageActions
+        <!-- <opensilex-PageActions
         class="pageActions"
         >
-            <b-dropdown
-                id="AddDropdown"
-                class="top-menu-add-btn"
-                :title="user.getAddMessage()"
-                variant="link"
-            >
-                <template v-slot:button-content>
-                    <i class="ik ik-plus header-plus"></i>
-                </template>
-                <b-dropdown-item href="#">
-      <opensilex-CreateButton
-        v-if="user.hasCredential(modificationCredentialId)"
-        @click="createDocument()"
-        label="DocumentTabList.add"
-      ></opensilex-CreateButton>
-                </b-dropdown-item>
+          <b-dropdown
+            id="AddDropdown"
+            class="top-menu-add-btn"
+            :title="user.getAddMessage()"
+            variant="link"
+          >
+          <template v-slot:button-content>
+              <i class="ik ik-plus header-plus"></i>
+          </template>
+            <b-dropdown-item href="#"> -->
+              <opensilex-CreateButton
+                v-if="user.hasCredential(modificationCredentialId)"
+                @click="createDocument()"
+                label="DocumentTabList.add"
+                class="createButton"
+              ></opensilex-CreateButton>
+              <!-- </b-dropdown-item>
             </b-dropdown>
-        </opensilex-PageActions>
+        </opensilex-PageActions> -->
       </div>
 
       <opensilex-StringFilter
@@ -341,22 +342,26 @@ export default class DocumentTabList extends Vue {
 </script>
 
 <style scoped lang="scss">
-.header-plus {
-    margin-left: 90px;
-}
-.pageActions {
-    position: fixed;
-    top: 8px;
-    left: 390px;
-    width: 10px;
-    background: none;
-    z-index: 1100;
-}
+// .header-plus {
+//     margin-left: 90px;
+// }
+// .pageActions {
+//     position: fixed;
+//     top: 8px;
+//     left: 375px;
+//     width: 10px;
+//     background: none;
+//     z-index: 1100;
+// }
 
-@media (min-width: 200px) and (max-width: 675px) {
-  .pageActions {
-   left: 280px
-  }
+// @media (min-width: 200px) and (max-width: 675px) {
+//   .pageActions {
+//    left: 280px
+//   }
+// }
+.createButton{
+  margin-bottom: -15px;
+  margin-top: -15px
 }
 </style>
 

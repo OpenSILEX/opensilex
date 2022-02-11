@@ -9,13 +9,13 @@
 <!------------------------------------------------>
 
 
-    <opensilex-PageActions
+    <!-- <opensilex-PageActions
     class= "pageActions"
       v-if="
         user.hasCredential(
           credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID)
-      ">
-          <b-dropdown
+      "> -->
+          <!-- <b-dropdown
             id="AddDropdown"
             class="top-menu-add-btn"
             :title="user.getAddMessage()"
@@ -24,8 +24,7 @@
             <template v-slot:button-content>
               <i class="icon ik ik-plus header-plus"></i>
             </template>
-            <b-dropdown-item href="#">
-              <!-- <i class="ik ik-share dropdown-icon"></i> -->
+            <b-dropdown-item href="#"> -->
       <opensilex-CreateButton
         @click="soForm.createScientificObject()"
         label="ExperimentScientificObjects.create-scientific-object"
@@ -37,9 +36,9 @@
         @onCreate="redirectToDetail"
       ></opensilex-ScientificObjectForm>
               <!-- {{ $t("component.header.user.addObject") }} -->
-            </b-dropdown-item>
+            <!-- </b-dropdown-item>
 
-            <b-dropdown-item href="#" @click.prevent="logout">
+            <b-dropdown-item href="#" @click.prevent="logout"> -->
       <opensilex-CreateButton
         @click="importForm.show()"
         label="OntologyCsvImporter.import"
@@ -47,9 +46,9 @@
       ></opensilex-CreateButton>
               <!-- <i class="ik ik-download dropdown-icon"></i>
               {{ $t("component.header.user.csvImport") }} -->
-            </b-dropdown-item>
+            <!-- </b-dropdown-item>
           </b-dropdown>
-    </opensilex-PageActions>
+    </opensilex-PageActions> -->
 
 
 <!------------------------------------------------>
@@ -276,18 +275,23 @@ export default class ScientificObjectView extends Vue {
 </script>
 
 <style scoped lang="scss">
-.pageActions {
-    position: fixed;
-    top: 8px;
-    left: 485px;
-    width: 10px;
-    background: none;
-    z-index: 1100;
-}
+// .pageActions {
+//     position: fixed;
+//     top: 8px;
+//     left: 485px;
+//     width: 10px;
+//     background: none;
+//     z-index: 1100;
+// }
 
-@media (min-width: 200px) and (max-width: 675px) {
-  .pageActions {
-   left: 375px
-  }
+// @media (min-width: 200px) and (max-width: 675px) {
+//   .pageActions {
+//    left: 375px
+//   }
+// }
+.createButton{
+  margin-bottom: 10px;
+  margin-top: -15px;
+  margin-right: 5px;
 }
 </style>

@@ -33,8 +33,12 @@
             :withActions="true"
             @onUpdate="refresh"
         ></opensilex-SiteDetail>
+      </div>
+    </div>
+    <div class="row" v-if="facilityTab">
+      <div class="col-md-6">
         <!-- Facilities -->
-        <opensilex-InfrastructureFacilitiesView
+        <!-- <opensilex-InfrastructureFacilitiesView
             v-if="selectedFacilities"
 
             :withActions="facilitiesActions"
@@ -47,12 +51,7 @@
             :isSelectable="false"
             ref="organizationFacilitiesView"
             @facilitySelected="updateSelectedFacility"
-        ></opensilex-InfrastructureFacilitiesView>
-      </div>
-    </div>
-    <div class="row" v-if="facilityTab">
-      <div class="col-md-6">
-        <!-- Facilities -->
+        ></opensilex-InfrastructureFacilitiesView> -->
         <opensilex-InfrastructureFacilitiesView
             :withActions="true"
             @onUpdate="refresh"

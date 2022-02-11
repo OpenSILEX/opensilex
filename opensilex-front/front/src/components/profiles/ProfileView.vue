@@ -6,7 +6,7 @@
       description="component.profile.description"
     ></opensilex-PageHeader> -->
 
-    <opensilex-PageActions
+    <!-- <opensilex-PageActions
       class= "pageActions"
       v-if="
         user.hasCredential(
@@ -21,7 +21,7 @@
       <template v-slot:button-content>
         <i class="icon ik ik-plus header-plus"></i>
       </template>
-        <b-dropdown-item href="#">
+        <b-dropdown-item href="#"> -->
           <opensilex-CreateButton
             v-if="
             user.hasCredential(
@@ -30,9 +30,9 @@
             label="component.profile.add"
             class="createButton">
           </opensilex-CreateButton>
-        </b-dropdown-item>
+        <!-- </b-dropdown-item>
       </b-dropdown>
-    </opensilex-PageActions>
+    </opensilex-PageActions> -->
 
     <opensilex-PageContent>
       <template v-slot>
@@ -93,10 +93,14 @@ export default class ProfileView extends Vue {
 .pageActions {
     position: fixed;
     top: 8px;
-    left: 395px;
+    left: 375px;
     width: 10px;
     background: none;
     z-index: 1100;
+}
+.createButton{
+  margin-bottom: 10px;
+  margin-top: -15px
 }
 
 @media (min-width: 200px) and (max-width: 675px) {

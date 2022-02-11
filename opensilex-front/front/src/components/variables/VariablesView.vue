@@ -19,24 +19,42 @@
                         <b-tab :title="$t('VariableView.groupVariable')" @click="refreshSelected"></b-tab>
                     </b-tabs>
                 </div>
-
+                </opensilex-PageActions>
                 <div class="col-lg-5">
-                    <opensilex-HelpButton
-                            @click="helpModal.show()"
-                            label="component.common.help-button"
-                    ></opensilex-HelpButton>
-                    <b-modal ref="helpModal" size="xl" hide-header ok-only>
-                        <opensilex-VariableHelp v-if="elementType != 'VariableGroup'"></opensilex-VariableHelp>
-                        <opensilex-GroupVariablesHelp v-else></opensilex-GroupVariablesHelp>
-                    </b-modal>
-
-                    <opensilex-CreateButton
-                        v-show="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
-                        @click="showCreateForm"
-                        :label="buttonTitle"
-                    ></opensilex-CreateButton>
+                    <opensilex-PageActions
+                    >
+                        <!-- <b-dropdown
+                            id="AddDropdown"
+                            class="top-menu-add-btn"
+                            :title="user.getAddMessage()"
+                            variant="link"
+                        >
+                        <template v-slot:button-content>
+                            <i class="ik ik-plus header-plus"></i>
+                        </template>
+                            <b-dropdown-item href="#"> -->
+                                <opensilex-HelpButton
+                                    @click="helpModal.show()"
+                                    label="component.common.help-button"
+                                    class="helpButton"
+                                ></opensilex-HelpButton>
+                                <b-modal ref="helpModal" size="xl" hide-header ok-only>
+                                    <opensilex-VariableHelp v-if="elementType != 'VariableGroup'"></opensilex-VariableHelp>
+                                    <opensilex-GroupVariablesHelp v-else></opensilex-GroupVariablesHelp>
+                                </b-modal>
+                            <!-- </b-dropdown-item>
+                            <b-dropdown-item> -->
+                                <opensilex-CreateButton
+                                    v-show="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
+                                    @click="showCreateForm"
+                                    :label="buttonTitle"
+                                    class="createButton"
+                                ></opensilex-CreateButton>
+                            <!-- </b-dropdown-item>
+                        </b-dropdown> -->
+                    </opensilex-PageActions>
                 </div>
-            </opensilex-PageActions>
+            <!-- </opensilex-PageActions> -->
             <opensilex-PageContent
                 v-if="loadVariableList()" >
                 <template v-slot>
@@ -513,6 +531,26 @@ export default class VariablesView extends Vue {
 </script>
 
 <style scoped lang="scss">
+// .pageActions {
+//     position: fixed;
+//     top: 8px;
+//     left: 405px;
+//     width: 10px;
+//     background: none;
+//     z-index: 1100;
+// }
+
+// @media (min-width: 200px) and (max-width: 675px) {
+//   .pageActions {
+//    left: 295px
+//   }
+// }
+.createButton, .helpButton{
+  margin-bottom: 5px;
+  margin-top: -10px;
+  margin-left: -10px;
+  margin-right: 15px;
+}
 </style>
 
 <i18n>

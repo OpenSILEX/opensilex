@@ -3,8 +3,28 @@
         <div class="col-md-6">
             <b-card>
                 <div class="button-zone">
-                    <opensilex-CreateButton v-if="user.isAdmin()" @click="showCreateForm()"
-                                            label="OntologyPropertyView.add"></opensilex-CreateButton>
+                    <!-- <opensilex-PageActions
+                    class="pageActions"
+                    >
+                        <b-dropdown
+                            id="AddDropdown"
+                            class="top-menu-add-btn"
+                            :title="user.getAddMessage()"
+                            variant="link"
+                        >
+                        <template v-slot:button-content>
+                            <i class="ik ik-plus header-plus"></i>
+                        </template>
+                            <b-dropdown-item href="#"> -->
+                                <opensilex-CreateButton
+                                    v-if="user.isAdmin()"
+                                    @click="showCreateForm()"
+                                    label="OntologyPropertyView.add"
+                                    class="createButton"
+                                ></opensilex-CreateButton>
+                            <!-- </b-dropdown-item>
+                        </b-dropdown>
+                    </opensilex-PageActions> -->
                     <opensilex-ModalForm
                         ref="propertyForm"
                         component="opensilex-OntologyPropertyForm"
@@ -15,6 +35,8 @@
                         @onUpdate="refresh()"
                         modalSize="lg"
                         :icon="icon"
+                        :title="propertiesTitle"
+                        :description="propertiesDescription"
                     ></opensilex-ModalForm>
                 </div>
 
@@ -71,6 +93,9 @@ export default class OntologyPropertyView extends Vue {
 
     @Prop()
     icon;
+
+    @Prop()
+    description;
 
     selected = null;
 
@@ -145,6 +170,29 @@ export default class OntologyPropertyView extends Vue {
 </script>
 
 <style scoped lang="scss">
+
+.header-plus {
+    margin-left: 90px;
+}
+.pageActions {
+    position: fixed;
+    top: 8px;
+    left: 390px;
+    width: 10px;
+    background: none;
+    z-index: 1100;
+}
+
+.createButton{
+  margin-bottom: -10px;
+  margin-top: -10px
+}
+
+@media (min-width: 200px) and (max-width: 675px) {
+  .pageActions {
+   left: 280px
+  }
+}
 </style>
 
 

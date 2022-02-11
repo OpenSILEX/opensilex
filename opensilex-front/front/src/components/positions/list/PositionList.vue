@@ -1,19 +1,33 @@
 <template>
     <div class="card">
         <opensilex-PageActions>
+            <!-- <b-dropdown
+                id="AddDropdown"
+                class="top-menu-add-btn"
+                :title="user.getAddMessage()"
+                variant="link"
+            >
+            <template v-slot:button-content>
+                <i class="ik ik-plus header-plus"></i>
+            </template>
 
-            <opensilex-CreateButton
-                v-if="user.hasCredential(modificationCredentialId)"
-                label="Move.add"
-                @click="showForm"
-            ></opensilex-CreateButton>
-
-            <opensilex-CreateButton
-                v-if="user.hasCredential(modificationCredentialId)"
-                label="OntologyCsvImporter.import"
-                @click="showCsvForm"
-            ></opensilex-CreateButton>
-
+                <b-dropdown-item href="#"> -->
+                    <opensilex-CreateButton
+                        v-if="user.hasCredential(modificationCredentialId)"
+                        label="Move.add"
+                        @click="showForm"
+                        class="createButton"
+                    ></opensilex-CreateButton>
+                <!-- </b-dropdown-item>
+                <b-dropdown-item> -->
+                    <opensilex-CreateButton
+                        v-if="user.hasCredential(modificationCredentialId)"
+                        label="OntologyCsvImporter.import"
+                        @click="showCsvForm"
+                        class="createButton"
+                    ></opensilex-CreateButton>
+                <!-- </b-dropdown-item>
+            </b-dropdown> -->
         </opensilex-PageActions>
 
         <opensilex-PageContent v-if="renderComponent">
@@ -352,6 +366,10 @@ export default class PositionList extends Vue {
 
 
 <style scoped lang="scss">
+.createButton{
+  margin-bottom:-5px;
+  margin-top: 5px
+}
 </style>
 
 <i18n>

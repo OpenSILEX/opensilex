@@ -1,7 +1,7 @@
 <template>
   <div class="container-fluid">
-    <!-- <opensilex-PageHeader v-if="isTypeTab()" :icon="icon" :title="typeTitle" :description="typeDescription"></opensilex-PageHeader>
-    <opensilex-PageHeader v-else :icon="icon" :title="propertiesTitle" :description="propertiesDescription"></opensilex-PageHeader> -->
+    <!-- <opensilex-PageHeader  v-if="isTypeTab()" :icon="icon" :title="typeTitle" :description="typeDescription" ></opensilex-PageHeader> -->
+    <opensilex-PageHeader v-if="isPropertiesType()" :icon="icon" :title="propertiesTitle" :description="propertiesDescription" class="detail-element-header"></opensilex-PageHeader>
 
     <opensilex-PageActions :returnButton="false" >
       <template v-slot>
@@ -81,6 +81,7 @@ export default class OntologyTypesView extends Vue {
   color: #007bff; 
 }
 </style>
+
 
 <i18n>
 en:

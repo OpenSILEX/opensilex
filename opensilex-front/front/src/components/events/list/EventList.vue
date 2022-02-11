@@ -3,9 +3,9 @@
     <div class="card">
 
         <opensilex-PageActions
-        class="pageActions"
+        
         >
-            <b-dropdown
+          <!--  <b-dropdown
                 id="AddDropdown"
                 class="top-menu-add-btn"
                 :title="user.getAddMessage()"
@@ -14,7 +14,7 @@
                 <template v-slot:button-content>
                     <i class="icon ik ik-plus header-plus"></i>
                 </template>
-                <b-dropdown-item href="#">
+                <b-dropdown-item href="#"> -->
                     <opensilex-CreateButton
                         v-if="user.hasCredential(modificationCredentialId)"
                         label="Event.add"
@@ -22,8 +22,8 @@
                         @click="showForm"
                     >
                     </opensilex-CreateButton>
-                </b-dropdown-item>
-                <b-dropdown-item>
+                <!-- </b-dropdown-item>
+                <b-dropdown-item> -->
                     <opensilex-CreateButton
                         v-if="user.hasCredential(modificationCredentialId)"
                         label="OntologyCsvImporter.import"
@@ -31,10 +31,10 @@
                         @click="showCsvForm"
                     >
                     </opensilex-CreateButton>
-                </b-dropdown-item>
-            </b-dropdown>
+                <!-- </b-dropdown-item>
+            </b-dropdown>-->
 
-        </opensilex-PageActions>
+        </opensilex-PageActions> 
 
         <opensilex-SearchFilterField
             @search="refresh()"
@@ -487,22 +487,25 @@ export default class EventList extends Vue {
 
 <style scoped lang="scss">
 
-.header-plus {
-    margin-left: 90px;
-}
-.pageActions {
-    position: fixed;
-    top: 8px;
-    left: 390px;
-    width: 10px;
-    background: none;
-    z-index: 1100;
-}
+// .header-plus {
+//     margin-left: 90px;
+// }
+// .pageActions {
+//     position: fixed;
+//     top: 8px;
+//     left: 390px;
+//     width: 10px;
+//     background: none;
+//     z-index: 1100;
+// }
 
-@media (min-width: 200px) and (max-width: 675px) {
-  .pageActions {
-   left: 280px
-  }
+// @media (min-width: 200px) and (max-width: 675px) {
+//   .pageActions {
+//    left: 280px
+//   }
+// }
+.createButton{
+  margin-top: 5px;
 }
 </style>
 

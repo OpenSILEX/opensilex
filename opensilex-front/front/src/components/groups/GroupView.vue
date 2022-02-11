@@ -5,7 +5,7 @@
       title="component.menu.security.groups"
       description="component.group.description"
     ></opensilex-PageHeader> -->
-    <opensilex-PageActions
+    <!-- <opensilex-PageActions
       class= "pageActions"
       v-if="
         user.hasCredential(
@@ -20,16 +20,16 @@
         <template v-slot:button-content>
           <i class="icon ik ik-plus header-plus"></i>
         </template>
-        <b-dropdown-item href="#">
+        <b-dropdown-item href="#"> -->
           <opensilex-CreateButton
             @click="groupForm.showCreateForm()"
             label="component.group.add"
             class="createButton"
           >
           </opensilex-CreateButton>
-        </b-dropdown-item>
+        <!-- </b-dropdown-item>
       </b-dropdown>
-    </opensilex-PageActions>
+    </opensilex-PageActions> -->
 
     <opensilex-PageContent>
       <template v-slot>
@@ -89,15 +89,19 @@ export default class GroupView extends Vue {
 .pageActions {
     position: fixed;
     top: 8px;
-    left: 390px;
+    left: 375px;
     width: 10px;
     background: none;
     z-index: 1100;
 }
+.createButton{
+  margin-bottom: 10px;
+  margin-top: -15px
+}
 
 @media (min-width: 200px) and (max-width: 675px) {
   .pageActions {
-   left: 280px
+   left: 285px
   }
 }
 </style>

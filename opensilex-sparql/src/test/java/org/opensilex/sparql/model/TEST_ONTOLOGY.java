@@ -41,6 +41,10 @@ public class TEST_ONTOLOGY {
     public static final String uriToRenameString = "uriToRename";
     public static final String renamedUriString = "renamedUri";
 
+    public static final Path MULTIPLE_LABEL_DATA_FILE_PATH = Paths.get("ontologies", "test_data_multiple_labels.ttl");
+    public static final Lang MULTIPLE_LABEL_DATA_FILE_FORMAT = RDFLanguages.TURTLE;
+    public static final String MULTIPLE_LABEL_DATA_GRAPH_URI = "http://test.opensilex.org/multiple-labels/graph";
+
     public static final Resource A = Ontology.resource(NAMESPACE, "A");
     public static final Resource B = Ontology.resource(NAMESPACE, "B");
     public static final Resource C = Ontology.resource(NAMESPACE, "C");

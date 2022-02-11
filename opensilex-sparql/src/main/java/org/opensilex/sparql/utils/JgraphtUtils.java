@@ -19,6 +19,10 @@ import java.util.*;
  */
 public class JgraphtUtils {
 
+    private JgraphtUtils(){
+        // private constructor in order to prevent instantiation
+    }
+
     /**
      *
      * @param graph the {@link Graph} on which performs this algorithm

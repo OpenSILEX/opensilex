@@ -218,12 +218,11 @@ export default class DataList extends Vue {
     }
     
     return new Promise((resolve, reject) => {
-      this.service.searchDataList(
+      this.service.getDataListByTargets(
         this.$opensilex.prepareGetParameter(this.filter.start_date), // start_date
         this.$opensilex.prepareGetParameter(this.filter.end_date), // end_date
         undefined, // timezone,
         this.filter.experiments, // experiments
-        [].concat(this.filter.scientificObjects, this.filter.targets), // targets &
         this.$opensilex.prepareGetParameter(this.filter.variables), // variables,
         undefined, // devices
         undefined, // min_confidence
@@ -232,7 +231,8 @@ export default class DataList extends Vue {
         undefined, // metadata
         options.orderBy, // order_by
         options.currentPage,
-        options.pageSize
+        options.pageSize,
+        [].concat(this.filter.scientificObjects, this.filter.targets), // targets &
       )
       .then((http) => {
           

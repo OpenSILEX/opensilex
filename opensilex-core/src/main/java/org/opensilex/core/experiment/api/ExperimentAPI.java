@@ -20,6 +20,9 @@ import java.io.StringWriter;
 import static java.lang.Float.NaN;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.scientificObject.api.ScientificObjectAPI;
+import org.opensilex.core.scientificObject.api.ScientificObjectNodeWithChildrenDTO;
+import org.opensilex.core.scientificObject.dal.ScientificObjectSearchFilter;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
@@ -344,6 +347,53 @@ public class ExperimentAPI {
         return new ObjectUriResponse(xpUri).getResponse();
     }
 
+
+    @GET
+    @Path("{uri}/scientific_object_children")
+    @ApiOperation(
+            value = "Get children of a scientific object",
+            notes = "If the parent field is empty, the service return all root elements \n\n" +
+                    "The scientific objects in response have a field with the count of their children \n\n"
+    )
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return list of scientific objects children from a scientific object", response = ScientificObjectNodeWithChildrenDTO.class, responseContainer = "List")
+    })
+    public Response getScientificObjectsChildren(
+            @ApiParam(value = EXPERIMENT_API_VALUE, example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri,
+            @ApiParam(value = "Parent object URI", example = ScientificObjectAPI.SCIENTIFIC_OBJECT_EXAMPLE_URI) @QueryParam("parent") URI parentURI,
+            @ApiParam(value = "Regex pattern for filtering by name", example = ".*") @DefaultValue(".*") @QueryParam("name") String pattern,
+            @ApiParam(value = "RDF type filter", example = "vocabulary:Plant") @QueryParam("rdf_types") @ValidURI List<URI> rdfTypes,
+            @ApiParam(value = "Factor levels URI", example = "vocabulary:IrrigationStress") @QueryParam("factor_levels") @ValidURI List<URI> factorLevels,
+            @ApiParam(value = "Facility", example = "diaphen:serre-2") @QueryParam("facility") @ValidURI URI facility,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+    ) throws Exception {
+
+        ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
+
+        ScientificObjectSearchFilter searchFilter = new ScientificObjectSearchFilter()
+                .setExperiment(xpUri)
+                .setPattern(pattern)
+                .setRdfTypes(rdfTypes)
+                .setParentURI(parentURI)
+                .setFactorLevels(factorLevels)
+                .setFacility(facility);
+
+        searchFilter.setPage(page)
+                .setPageSize(pageSize)
+                .setOrderByList(orderByList)
+                .setLang(currentUser.getLanguage());
+
+        ListWithPagination<ScientificObjectNodeWithChildrenDTO> dtoList = dao.searchChildren(searchFilter);
+
+        return new PaginatedListResponse<ScientificObjectNodeWithChildrenDTO>(dtoList).getResponse();
+    }
+
+
     @GET
     @Path("{uri}/available_facilities")
     @ApiOperation("Get facilities available for an experiment")
@@ -351,8 +401,8 @@ public class ExperimentAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return facilities list", response = InfrastructureFacilityGetDTO.class, responseContainer = "List"),
-        @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)
+            @ApiResponse(code = 200, message = "Return facilities list", response = InfrastructureFacilityGetDTO.class, responseContainer = "List"),
+            @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)
     })
     public Response getAvailableFacilities(
             @ApiParam(value = EXPERIMENT_API_VALUE, example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri
@@ -365,6 +415,7 @@ public class ExperimentAPI {
         }).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();
     }
+
 
     @GET
     @Path("{uri}/species")

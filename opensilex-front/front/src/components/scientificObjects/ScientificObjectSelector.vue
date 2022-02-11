@@ -58,9 +58,9 @@ export default class ScientificObjectSelector extends Vue {
     search(query, page, pageSize) {
         return this.$service
             .searchScientificObjects(
+                query, // pattern?: string,
                 undefined, // experiment uri?: string,
                 undefined, // rdfTypes?: Array<string>,
-                query, // pattern?: string,
                 undefined, // parentURI?: string,
                 undefined, // Germplasm
                 undefined, // factorLevels?: Array<string>,*

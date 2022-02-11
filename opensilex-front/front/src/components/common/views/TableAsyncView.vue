@@ -154,7 +154,7 @@ export default class TableAsyncView extends Vue {
   selectedRowIndex;
 
   @Prop()
-  maximumSelectedRows;
+  maximumSelectedRows; // if you need a limit of selected items
 
   selectedItems = [];
   selectedItem;
@@ -214,15 +214,17 @@ export default class TableAsyncView extends Vue {
     return "cell(" + key + ")";
   }
 
-  //first step
+  //first step ( manage if limit of selected items)
   // item = clicked item : We cannot unselect the item here, cause it's not selected at this time..
   onRowClicked(item) {
 
     const idx = this.selectedItems.findIndex(it => item.uri === it.uri);
     if (idx >= 0) {
-      this.selectedItems.splice(idx, 1);
+      this.selectedItems.splice(idx, 1); // the item exist ? so it's an unselect action
+      this.$emit("unselect", item);
     } else {
       this.selectedItems.push(item);
+      this.$emit("select", item);
     }
     this.numberOfSelectedRows = this.selectedItems.length;
 
@@ -259,6 +261,7 @@ export default class TableAsyncView extends Vue {
 
    refresh() {
     this.currentPage = 1;
+    this.pageSize=this.defaultPageSize;
     this.tableRef.refresh();
   }
 
@@ -316,6 +319,7 @@ export default class TableAsyncView extends Vue {
   }
 
   loadData() {
+
     let orderBy = this.getOrderBy();
 
     if (this.useQueryParams) {
@@ -397,6 +401,7 @@ export default class TableAsyncView extends Vue {
         this.selectedItems = http.response.result;
         this.numberOfSelectedRows = this.selectedItems.length;
         this.tableRef.selectAllRows();
+        this.$emit("selectall",this.selectedItems);
         return this.selectedItems;
         }) 
       }
@@ -405,6 +410,7 @@ export default class TableAsyncView extends Vue {
       this.selectedItems = [];
       this.numberOfSelectedRows = this.selectedItems.length;
       this.tableRef.clearSelected();
+      this.$emit("selectall",this.selectedItems);
     }
   }
 

@@ -51,8 +51,10 @@
                 :isModalSearch="true"
                 :clearable="true"
                 :multiple="true"
-                @select="refreshProvComponent"
+                @onValidate="refreshProvComponent"
+                @onClose="refreshProvComponent"
                 @clear="refreshSoSelector"
+                :limit="1"
               ></opensilex-SelectForm>
             </opensilex-FilterField>
 

@@ -19,6 +19,7 @@
         ref="variableSelection"
         :isSelectable="true"
         :noActions="true"
+        :pageSize="5"
         :maximumSelectedRows="maximumSelectedRows"
         iconNumberOfSelectedRow="ik#ik-globe"
       ></opensilex-VariableList>
@@ -29,7 +30,6 @@
 <script lang="ts">
 import { Component, Ref, Prop } from "vue-property-decorator";
 import Vue from "vue";
-import VariableList from "./VariableList.vue";
 
 @Component
 export default class VariableModalList extends Vue {

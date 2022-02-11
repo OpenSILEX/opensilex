@@ -67,6 +67,7 @@
                     :searchMethod="searchVariablesWithAttribute"
                     :fields="fields"
                     defaultSortBy="name"
+                    :defaultPageSize="pageSize"
                     :isSelectable="isSelectable"
                     :maximumSelectedRows="maximumSelectedRows"
                     labelNumberOfSelectedRow="VariableList.selected"
@@ -221,6 +222,11 @@ export default class VariableList extends Vue {
 
     @Prop()
     iconNumberOfSelectedRow;
+
+    @Prop({
+    default: 20
+    })
+    pageSize: number;
 
     @Ref("groupVariableSelection") readonly groupVariableSelection!: any;
     @Ref("tableRef") readonly tableRef!: any;

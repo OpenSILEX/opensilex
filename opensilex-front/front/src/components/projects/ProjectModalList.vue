@@ -22,21 +22,37 @@
       <opensilex-ProjectList 
         ref="projectSelection"
         :isSelectable="true"
-        :maximumSelectedRows="maximumSelectedRows"
         :noActions="true"
+        :pageSize="5"
         :noUpdateURL="true"
+        :searchFilter.sync="filter"
+        @select="$emit('select', $event)"
+        @unselect="$emit('unselect', $event)"
+        @selectall="$emit('selectall', $event)"
         ></opensilex-ProjectList>
     </div>
   </b-modal>
 </template>
 
 <script lang="ts">
-import { Component, Ref, Prop } from "vue-property-decorator";
-import ProjectList from "./ProjectList.vue";
+import Vue from "vue";
+import { Component, Ref, PropSync} from "vue-property-decorator";
 
 @Component
-export default class ProjectModalList extends ProjectList {
+export default class ProjectModalList extends Vue {
   @Ref("projectSelection") readonly projectSelection!: any;
+
+  @PropSync("searchFilter", {
+    default: () => {
+      return {
+        year: undefined,
+        name: "",
+        keyword: "",
+        financial: "",
+      };
+    },
+  })
+  filter: any;  
 
   unSelect(row) {
     this.projectSelection.onItemUnselected(row);
@@ -53,6 +69,9 @@ export default class ProjectModalList extends ProjectList {
     if (validate) {
       this.$emit("onValidate", this.projectSelection.getSelected());
     }
+  }
+   refresh() {
+    this.projectSelection.refresh();
   }
 }
 </script>

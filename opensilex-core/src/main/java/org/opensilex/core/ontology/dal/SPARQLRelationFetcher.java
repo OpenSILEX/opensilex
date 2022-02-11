@@ -13,7 +13,6 @@ import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.sparql.syntax.ElementOptional;
 import org.apache.jena.sparql.syntax.ElementTriplesBlock;
 import org.opensilex.OpenSilex;
-import org.opensilex.core.ontology.dal.cache.OntologyCacheException;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
@@ -65,7 +64,7 @@ public class SPARQLRelationFetcher<T extends SPARQLResourceModel> {
 
     private final Pattern specialCharsPattern;
 
-    public SPARQLRelationFetcher(SPARQLService sparql, Class<T> objectClass, Node graph, SelectBuilder initialSelect, List<T> results) throws URISyntaxException, SPARQLException, OntologyCacheException {
+    public SPARQLRelationFetcher(SPARQLService sparql, Class<T> objectClass, Node graph, SelectBuilder initialSelect, List<T> results) throws URISyntaxException, SPARQLException {
 
         this.sparql = sparql;
         SPARQLClassObjectMapper<T> mapper = sparql.getMapperIndex().getForClass(objectClass);

@@ -19,16 +19,13 @@ import java.util.List;
 
 import org.apache.jena.riot.Lang;
 import org.apache.jena.vocabulary.OA;
-import org.opensilex.OpenSilexModuleNotFoundException;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Time;
-import org.opensilex.core.ontology.dal.cache.*;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.variable.dal.InterestEntityModel;
 import org.opensilex.core.variable.dal.MethodModel;
-import org.opensilex.core.variablesGroup.dal.VariablesGroupDAO;
 import org.opensilex.core.variablesGroup.dal.VariablesGroupModel;
 import org.opensilex.nosql.mongodb.MongoDBConfig;
 import org.opensilex.nosql.mongodb.MongoDBService;

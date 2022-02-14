@@ -99,7 +99,8 @@ export default class DataList extends Vue {
         variables: [],
         provenance: null,
         experiments: [],
-        scientificObjects: []
+        scientificObjects: [],
+        targets: []
       };
     },
   })
@@ -215,14 +216,14 @@ export default class DataList extends Vue {
     if (provUris != undefined) {
       provUris = [provUris];
     }
-
+    
     return new Promise((resolve, reject) => {
       this.service.searchDataList(
         this.$opensilex.prepareGetParameter(this.filter.start_date), // start_date
         this.$opensilex.prepareGetParameter(this.filter.end_date), // end_date
         undefined, // timezone,
         this.filter.experiments, // experiments
-        this.filter.scientificObjects, // targets
+        [].concat(this.filter.scientificObjects, this.filter.targets), // targets &
         this.$opensilex.prepareGetParameter(this.filter.variables), // variables,
         undefined, // devices
         undefined, // min_confidence

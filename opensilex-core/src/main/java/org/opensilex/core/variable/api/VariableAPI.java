@@ -282,11 +282,12 @@ public class VariableAPI {
     public Response getDatatypes() throws URISyntaxException {
 
         List<VariableDatatypeDTO> variablesXsdTypes = Arrays.asList(
-            new VariableDatatypeDTO(XSDDatatype.XSDboolean, "datatypes.boolean"),
-            new VariableDatatypeDTO(XSDDatatype.XSDdate, "datatypes.date"),
-            new VariableDatatypeDTO(XSDDatatype.XSDdecimal, "datatypes.decimal"),
-            new VariableDatatypeDTO(XSDDatatype.XSDinteger, "datatypes.number"),
-            new VariableDatatypeDTO(XSDDatatype.XSDstring, "datatypes.string")
+                new VariableDatatypeDTO(XSDDatatype.XSDboolean, "datatypes.boolean"),
+                new VariableDatatypeDTO(XSDDatatype.XSDdate, "datatypes.date"),
+                new VariableDatatypeDTO(XSDDatatype.XSDdateTime, "datatypes.datetime"),
+                new VariableDatatypeDTO(XSDDatatype.XSDdecimal, "datatypes.decimal"),
+                new VariableDatatypeDTO(XSDDatatype.XSDinteger, "datatypes.number"),
+                new VariableDatatypeDTO(XSDDatatype.XSDstring, "datatypes.string")
         );
 
         return new PaginatedListResponse<>(variablesXsdTypes).getResponse();

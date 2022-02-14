@@ -24,7 +24,9 @@
           @select="loadProvenanceAndCheckUploadedData"
           @clear="reset()"
           :multiple="false"
-          :actionHandler="showProvenanceCreateForm"
+          :actionHandler="user.hasCredential(credentials.CREDENTIAL_PROVENANCE_MODIFICATION_ID)
+            ? showProvenanceCreateForm
+            : undefined"
           :viewHandler="showProvenanceDetails"
           :viewHandlerDetailsVisible="visibleDetails"
           :showURI="false"

@@ -526,7 +526,7 @@ public class MobileAPI {
                 int rowIndex = 0;
                 String[] values;
 
-                // Line 2 This doesnt apply to me? i have no headers labels, what are they?
+                // Line 2 
                String[] headersLabels = csvReader.parseNext();
                csvValidation.setHeadersLabelsFromArray(headersLabels);
                 // Line 3

@@ -1629,7 +1629,11 @@ public class DataAPI {
                             if (target != null) {
                                 targetUri = target.getUri();
                             }
-                            ImportDataIndex importDataIndex = new ImportDataIndex(parsedDateTimeMongo.getInstant(),varURI, provenance.getUri(), targetUri);
+                            URI deviceUri = null;
+                            if (device !=null) {
+                                deviceUri = device.getUri();
+                            }
+                            ImportDataIndex importDataIndex = new ImportDataIndex(parsedDateTimeMongo.getInstant(),varURI, provenance.getUri(), targetUri, deviceUri);
                             if (!duplicateDataByIndex.contains(importDataIndex)) { 
                                 duplicateDataByIndex.add(importDataIndex);
                             } else {

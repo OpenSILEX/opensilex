@@ -375,14 +375,13 @@ export default class DataImportForm extends Vue {
                 }
               }
             }
-          })
-          .catch((e) => {
+          }).catch((e) => {
             console.error(e);
-          });
+            this.$opensilex.errorHandler(e);
+        });
       }
     });
   }
-
   reset() {
     this.resetProvenanceForm();
     this.resetValidationPart();

@@ -9,6 +9,10 @@
         :isSelectable="true"
         labelNumberOfSelectedRow="ScientificObjectList.selected"
         iconNumberOfSelectedRow="ik#ik-target"
+        :defaultPageSize="pageSize"
+        @select="$emit('select', $event)"
+        @unselect="$emit('unselect', $event)"
+        @selectall="$emit('selectall', $event)"
       >
         <template v-slot:selectableTableButtons="{ numberOfSelectedRows }">
           <b-dropdown
@@ -277,12 +281,6 @@ export default class ScientificObjectList extends Vue {
   }
 
   searchScientificObject(options) {
-
-    if(this.tableRef.selectAll){
-      options.pageSize = this.tableRef.getSelectAllLimit();
-    }else if (this.pageSize != null) {
-      options.pageSize = this.pageSize;
-    }
 
     let scientificObjectsService: ScientificObjectsService = this.$opensilex.getService(
       "opensilex.ScientificObjectsService"

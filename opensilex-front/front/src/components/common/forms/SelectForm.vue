@@ -24,6 +24,7 @@
           @input="clearIfNeeded"
           @deselect="searchModal.unSelect($event)"
           @open="showModal"
+          :limit="limit"
         >
           <template v-slot:option-label="{ node }">
             <slot name="option-label" v-bind:node="node">{{ node.label }}</slot>
@@ -59,6 +60,7 @@
           :disable-branch-nodes="disableBranchNodes"
           :search-nested="searchNested"
           :show-count="showCount"
+          :limit="limit"
         >
           <template v-slot:option-label="{ node }">
             <slot name="option-label" v-bind:node="node">{{ node.label }}</slot>
@@ -99,6 +101,7 @@
           :disable-branch-nodes="disableBranchNodes"
           :search-nested="searchNested"
           :show-count="showCount"
+          :limit="limit"
         >
           <template v-slot:option-label="{ node }">
             <slot name="option-label" v-bind:node="node">{{ node.label }}</slot>
@@ -142,10 +145,14 @@
         ref="searchModal"
         :maximumSelectedRows="maximumSelectedItems"
         :searchFilter.sync="searchModalFilter"
-        @onValidate="updateValues"
+        @onClose="$emit('onClose')"
+        @onValidate="$emit('onValidate')"
         @shown="showModalSearch"
         @close='$emit("close")'
         @clear='$emit("clear")'
+        @select="select(conversionMethod($event))"
+        @unselect="deselect(conversionMethod($event))"
+        @selectall="selectall"
       ></component>
     </template>
   </opensilex-FormField>
@@ -153,7 +160,7 @@
 
 <script lang="ts">
 import { Component, Prop, PropSync, Watch, Ref } from "vue-property-decorator";
-import Vue, { PropOptions } from "vue";
+import Vue from "vue";
 import AsyncComputedProp from "vue-async-computed-decorator";
 
 @Component
@@ -286,6 +293,10 @@ export default class SelectForm extends Vue {
 
   @Prop()
   maximumSelectedItems;
+
+  @Prop()
+  limit: number; // limit number of items in the input box
+
   detailVisible: boolean = false;
 
   @AsyncComputedProp()
@@ -422,6 +433,14 @@ export default class SelectForm extends Vue {
       this.selection = null;
     }
     this.$emit("deselect", value);
+  }
+  
+  selectall(selectedValues) {
+    if(selectedValues){
+       this.selection = selectedValues.map((item => this.conversionMethod(item).id));
+    } else {
+      this.selection = null;    
+    }
   }
 
   close(field) {
@@ -568,15 +587,6 @@ export default class SelectForm extends Vue {
     searchModal.show();
   }
 
-  updateValues(selectedValues) {
-    let values = selectedValues.map((item =>
-      this.conversionMethod(item)
-    ));
-
-    for (let i = 0; i < values.length; i++) {
-      this.select(values[i]);
-    }
-  }
   
   showDetails() {
     this.detailVisible != this.detailVisible;

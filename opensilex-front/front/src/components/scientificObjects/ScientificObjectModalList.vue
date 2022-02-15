@@ -97,9 +97,12 @@
         ref="soList"
         :isSelectable="true"
         :noActions="true"
-        :pageSize="10"
+        :pageSize="5"
         :searchFilter.sync="filter"
         :noUpdateURL="true"
+        @select="$emit('select', $event)"
+        @unselect="$emit('unselect', $event)"
+        @selectall="$emit('selectall', $event)"
       >
       </opensilex-ScientificObjectList>
     </div>
@@ -142,9 +145,10 @@ export default class ScientificObjectModalList extends Vue {
 
   hide(validate: boolean) {
     this.modalRef.hide();
-
     if (validate) {
       this.$emit("onValidate", this.soList.getSelected());
+    } else {
+      this.$emit("onClose");
     }
   }
 
@@ -168,6 +172,7 @@ export default class ScientificObjectModalList extends Vue {
   refreshWithKeepingSelection() {
     this.soList.refreshWithKeepingSelection();
   }
+
 
 }
 </script>

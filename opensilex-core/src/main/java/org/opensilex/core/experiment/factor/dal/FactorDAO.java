@@ -10,7 +10,6 @@
 package org.opensilex.core.experiment.factor.dal;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -20,7 +19,6 @@ import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.vocabulary.RDFS;
-import org.apache.jena.vocabulary.SKOS;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -171,7 +169,7 @@ public class FactorDAO {
 
     private void addFactorCategoryNameLangFilter(SelectBuilder selectBuilder, String lang) {
         if (!StringUtils.isEmpty(lang)) {
-            Expr langFilter = SPARQLQueryHelper.langFilter(FactorCategoryModel.NAME_FIELD, Locale.forLanguageTag(lang).getLanguage());
+            Expr langFilter = SPARQLQueryHelper.langFilterWithDefault(FactorCategoryModel.NAME_FIELD, Locale.forLanguageTag(lang).getLanguage());
             selectBuilder.addFilter(langFilter);
         }
     }

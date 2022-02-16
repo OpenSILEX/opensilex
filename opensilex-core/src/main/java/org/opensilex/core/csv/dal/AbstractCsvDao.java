@@ -552,7 +552,7 @@ public abstract class AbstractCsvDao<T extends SPARQLNamedResourceModel> impleme
         propertyNamesRequest.addVar(uriVar);
         propertyNamesRequest.addVar(nameVar);
         propertyNamesRequest.addWhere(uriVar, RDFS.label, nameVar);
-        propertyNamesRequest.addFilter(SPARQLQueryHelper.langFilter(nameVar.getVarName(), lang));
+        propertyNamesRequest.addFilter(SPARQLQueryHelper.langFilterWithDefault(nameVar.getVarName(), lang));
         SPARQLQueryHelper.inURI(propertyNamesRequest, uriVar.getVarName(), columnWithAbsoluteUris);
 
         sparql.executeSelectQuery(propertyNamesRequest, (result) -> {

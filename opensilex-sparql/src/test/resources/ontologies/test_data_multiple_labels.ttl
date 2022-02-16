@@ -1,0 +1,18 @@
+@prefix test: <http://test.opensilex.org/> .
+@prefix testML: <http://test.opensilex.org/multiple-labels/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+
+testML:SubclassA
+    a owl:Class ;
+    rdfs:subClassOf test:A .
+
+test:A
+    rdfs:label "A default label" ;
+    rdfs:label "A french label"@fr .
+
+testML:InstanceD
+    a test:D ;
+    test:requiredLabel "A default required label" ;
+    test:optionalLabel "A default label" ;
+    test:optionalLabel "A french label"@fr .

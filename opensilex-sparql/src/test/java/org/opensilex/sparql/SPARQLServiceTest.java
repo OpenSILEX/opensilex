@@ -24,6 +24,7 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidUriListException;
 import org.opensilex.sparql.model.*;
+import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.unit.test.AbstractUnitTest;
@@ -55,6 +56,7 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
     protected static byte[] ontologyDataBytes;
     protected static byte[] renameDataDefaultBytes;
     protected static byte[] renameDataInGraphBytes;
+    protected static byte[] multipleLabelDataBytes;
 
     public static void initialize() throws Exception {
         sparqlModule = opensilex.getModuleByClass(SPARQLModule.class);
@@ -77,6 +79,11 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
         InputStream renameDataInGraph = OpenSilex.getResourceAsStream(TEST_ONTOLOGY.RENAME_DATA_IN_GRAPH_FILE_PATH.toString());
         renameDataInGraphBytes = IOUtils.toByteArray(renameDataInGraph);
         assert (renameDataInGraphBytes != null && renameDataInGraphBytes.length > 0);
+
+        // load multiple url data
+        InputStream multipleLabelData = OpenSilex.getResourceAsStream(TEST_ONTOLOGY.MULTIPLE_LABEL_DATA_FILE_PATH.toString());
+        multipleLabelDataBytes = IOUtils.toByteArray(multipleLabelData);
+        assert (multipleLabelDataBytes != null && multipleLabelDataBytes.length > 0);
     }
 
     @Before
@@ -95,6 +102,11 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
         ByteArrayInputStream renameDataInGraphStream = new ByteArrayInputStream(renameDataInGraphBytes);
         sparql.loadOntology(new URI(TEST_ONTOLOGY.RENAME_DATA_GRAPH_URI), renameDataInGraphStream, TEST_ONTOLOGY.RENAME_DATA_FILE_FORMAT);
         renameDataInGraphStream.close();
+
+        // load test data for multiple labels
+        ByteArrayInputStream multipleLabelDataStream = new ByteArrayInputStream(multipleLabelDataBytes);
+        sparql.loadOntology(new URI(TEST_ONTOLOGY.MULTIPLE_LABEL_DATA_GRAPH_URI), multipleLabelDataStream, TEST_ONTOLOGY.MULTIPLE_LABEL_DATA_FILE_FORMAT);
+        multipleLabelDataStream.close();
     }
 
     @After
@@ -617,5 +629,45 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
         assertNull(a3.getPropertyToRename()); // property in named graph
         assertTrue(StringUtils.isNotEmpty(a3.getRenamedProperty()));
         assertEquals(a3.getA().getUri(), renamedUri);
+    }
+
+    /**
+     * Tests that only one value is returned, even when multiple labels (including a default language label) are defined
+     */
+    @Test
+    public void testMultipleLabels() throws Exception {
+        URI aSubclassUri = new URI("http://test.opensilex.org/multiple-labels/SubclassA");
+        ClassModel aSubclass = sparql.loadByURI(null, ClassModel.class, aSubclassUri, "fr", null, null);
+        assertNotNull(aSubclass);
+
+        URI aURI = new URI("http://test.opensilex.org/A");
+        ClassModel aParentClassFr = sparql.loadByURI(null, ClassModel.class, aURI, "fr", null, null);
+        assertNotNull(aParentClassFr);
+        assertEquals("A french label", aParentClassFr.getName());
+
+        ClassModel aParentClassDefault = sparql.loadByURI(null, ClassModel.class, aURI, "", null, null);
+        assertNotNull(aParentClassDefault);
+        assertEquals("A default label", aParentClassDefault.getName());
+
+        ClassModel aParentClassEn = sparql.loadByURI(null, ClassModel.class, aURI, "en", null, null);
+        assertEquals("A default label", aParentClassEn.getName());
+    }
+
+    @Test
+    public void testMultipleLabelsOptional() throws Exception {
+        URI dInstanceURI = new URI("http://test.opensilex.org/multiple-labels/InstanceD");
+
+        D dInstanceFr = sparql.loadByURI(null, D.class, dInstanceURI, "fr", null, null);
+        assertEquals("A french label", dInstanceFr.getOptionalLabel().getDefaultValue());
+
+        D dInstanceEn = sparql.loadByURI(null, D.class, dInstanceURI, "en", null, null);
+        assertEquals("A default label", dInstanceEn.getOptionalLabel().getDefaultValue());
+
+        D dInstanceDefault = sparql.loadByURI(null, D.class, dInstanceURI, "", null, null);
+        assertEquals("A default label", dInstanceDefault.getOptionalLabel().getDefaultValue());
+
+        assertEquals("A default required label", dInstanceFr.getRequiredLabel().getDefaultValue());
+        assertEquals("A default required label", dInstanceEn.getRequiredLabel().getDefaultValue());
+        assertEquals("A default required label", dInstanceDefault.getRequiredLabel().getDefaultValue());
     }
 }

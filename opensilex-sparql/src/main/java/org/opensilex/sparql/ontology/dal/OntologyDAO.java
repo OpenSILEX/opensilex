@@ -47,7 +47,6 @@ import org.opensilex.sparql.utils.Ontology;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -534,7 +533,7 @@ public final class OntologyDAO {
         select.addVar(nameVar);
         select.addWhere(SPARQLDeserializers.nodeURI(uri), RDFS.label, nameVar);
         Locale locale = Locale.forLanguageTag(language);
-        select.addFilter(SPARQLQueryHelper.langFilter(nameField, locale.getLanguage()));
+        select.addFilter(SPARQLQueryHelper.langFilterWithDefault(nameField, locale.getLanguage()));
         List<SPARQLResult> results = sparql.executeSelectQuery(select);
         String name;
         if (results.size() >= 1) {
@@ -579,8 +578,8 @@ public final class OntologyDAO {
         select.addWhere(typeVar, RDFS.label, typeNameVar);
         select.addGroupBy(SPARQLResourceModel.URI_FIELD).addGroupBy(SPARQLResourceModel.TYPE_FIELD).addGroupBy(SPARQLResourceModel.TYPE_NAME_FIELD);
         Locale locale = Locale.forLanguageTag(language);
-        select.addFilter(SPARQLQueryHelper.langFilter(nameField, locale.getLanguage()));
-        select.addFilter(SPARQLQueryHelper.langFilter(SPARQLResourceModel.TYPE_NAME_FIELD, locale.getLanguage()));
+        select.addFilter(SPARQLQueryHelper.langFilterWithDefault(nameField, locale.getLanguage()));
+        select.addFilter(SPARQLQueryHelper.langFilterWithDefault(SPARQLResourceModel.TYPE_NAME_FIELD, locale.getLanguage()));
             select.addFilter(SPARQLQueryHelper.inURIFilter(SPARQLResourceModel.URI_FIELD, uris));
    
 

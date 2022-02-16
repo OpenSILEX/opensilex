@@ -11,6 +11,7 @@ import org.opensilex.sparql.SPARQLServiceTest;
 import org.opensilex.sparql.model.A;
 import org.opensilex.sparql.model.B;
 import org.opensilex.sparql.model.C;
+import org.opensilex.sparql.model.D;
 
 /**
  *
@@ -29,7 +30,8 @@ public class RDF4JConnectionTest extends SPARQLServiceTest {
         factory.getMapperIndex().addClasses(
                 A.class,
                 B.class,
-                C.class
+                C.class,
+                D.class
         );
         sparql = factory.provide();
         SPARQLServiceTest.initialize();

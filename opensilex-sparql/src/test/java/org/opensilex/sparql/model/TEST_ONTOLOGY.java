@@ -41,9 +41,14 @@ public class TEST_ONTOLOGY {
     public static final String uriToRenameString = "uriToRename";
     public static final String renamedUriString = "renamedUri";
 
+    public static final Path MULTIPLE_LABEL_DATA_FILE_PATH = Paths.get("ontologies", "test_data_multiple_labels.ttl");
+    public static final Lang MULTIPLE_LABEL_DATA_FILE_FORMAT = RDFLanguages.TURTLE;
+    public static final String MULTIPLE_LABEL_DATA_GRAPH_URI = "http://test.opensilex.org/multiple-labels/graph";
+
     public static final Resource A = Ontology.resource(NAMESPACE, "A");
     public static final Resource B = Ontology.resource(NAMESPACE, "B");
     public static final Resource C = Ontology.resource(NAMESPACE, "C");
+    public static final Resource D = Ontology.resource(NAMESPACE, "D");
     public static final Resource Fail = Ontology.resource(NAMESPACE, "Fail");
 
     public static final Property hasRelationToA = Ontology.property(NAMESPACE, "hasRelationToA");
@@ -63,6 +68,8 @@ public class TEST_ONTOLOGY {
     public static final Property hasStringList = Ontology.property(NAMESPACE, "hasStringList");
 
     public static final Property hasLabel = Ontology.property(NAMESPACE, "hasLabel");
+    public static final Property requiredLabel = Ontology.property(NAMESPACE, "requiredLabel");
+    public static final Property optionalLabel = Ontology.property(NAMESPACE, "optionalLabel");
 
     public static final Property uriToRename = Ontology.property(NAMESPACE_RENAME, "uriToRename");
     public static final Property renamedUri = Ontology.property(NAMESPACE_RENAME, "renamedUri");

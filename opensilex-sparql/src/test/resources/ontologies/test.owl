@@ -164,6 +164,22 @@
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
     </owl:DatatypeProperty>
 
+
+    <!-- http://test.opensilex.org/requiredLabel -->
+
+    <owl:DatatypeProperty rdf:about="http://test.opensilex.org/requiredLabel">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
+
+    <!-- http://test.opensilex.org/optionalLabel -->
+
+    <owl:DatatypeProperty rdf:about="http://test.opensilex.org/optionalLabel">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:DatatypeProperty>
+
     <!-- 
     ///////////////////////////////////////////////////////////////////////////////////////
     //
@@ -188,6 +204,10 @@
     <!-- http://test.opensilex.org/C -->
 
     <owl:Class rdf:about="http://test.opensilex.org/C"/>
+
+    <!-- http://test.opensilex.org/D -->
+
+    <owl:Class rdf:about="http://test.opensilex.org/D"/>
 </rdf:RDF>
 
 

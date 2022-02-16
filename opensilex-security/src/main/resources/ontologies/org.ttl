@@ -84,25 +84,6 @@ org:Organization a owl:Class, rdfs:Class;
 org:Organization rdfs:label "organización"@es ;
     rdfs:comment "Grupo de personas que se organiza en una comunidad u otro tipo de estructura social, comercial o política. Dicho grupo tiene un objetivo o motivo común para su existencia que va más allá del conjunto de personas que lo forman y que puede actuar como “agente”. A menudo las organizaciones se pueden agrupar en estructuras jerárquicas. Se recomienda el uso de etiquetas de SKOS para denominar a cada “organización”. En concreto, `skos:prefLabel` para la denominación principal o recomendada (aquella reconocida legalmente, siempre que sea posible), `skos:altLabel` para denominaciones alternativas (nombre comercial, sigla, denominación por la que se conoce a la organización coloquialmente) y `skos:notation` para referirse al código que identifique a la organización en una lista de códigos. Denominaciones alternativas: _colectivo_ _corporación_ _grupo_"@es .
 
-org:FormalOrganization a owl:Class, rdfs:Class;
-
-    rdfs:subClassOf  org:Organization, foaf:Organization;
-    rdfs:label "Formal Organization"@en;
-    rdfs:label "Organisation Formelle"@fr;
-    rdfs:label "Organizzazione formale"@it;
-
-    rdfs:comment """An Organization which is recognized in the world at large, in particular in legal jurisdictions, with associated rights and responsibilities. Examples include a Corporation, Charity, Government or Church. Note that this is a super class of `gr:BusinessEntity` and it is recommended to use the GoodRelations vocabulary to denote Business classifications such as DUNS or NAICS."""@en; 
-    rdfs:comment """Une Organisation reconnue, en particulier par les juridictions locales, ayant des droits et des responsabilités. Exemples : entreprises, association à but non-lucratif, collectivité, église. Notez que c'est une super-classe de `gr:BusinessEntity` et qu'il est recommandé d'utiliser le vocabulaire GoodRelations pour indiquer les classifications économiques comme le code NACE."""@fr;     
-    rdfs:comment """Un'organizzazione che è riconosciuta a livello mondiale o, in generale, all'interno di una qualche giurisdizione, e che quindi possiede diritti e responsabilità. Ad esempio aziende, enti governativi, associazioni di volontariato. Si noti che questa è una superclasse di `gr:BusinessEntity` e che quindi è raccomandabile usare il vocabolario GoodRelations per esprimere classificazioni di tipo industriale e commerciale come DUNS e NAICS."""@it;
-    rdfs:comment "関連する権利と責任を有する（特に法的管轄区域において）世界中に広く認識されている組織。例には、企業、慈善団体、政府や教会が含まれます。"@ja;
-    rdfs:isDefinedBy <http://www.w3.org/ns/org> ;
-    .
-
-org:FormalOrganization rdfs:label "organización formal"@es ;
-    rdfs:comment "Organización reconocida a nivel mundial, en particular en jurisdicciones legales, con derechos y responsabilidades asociadas. Algunos ejemplos son: organización corporativa, organización benéfica, organización gubernamental, organización religiosa. Se debe tener en cuenta que ésta es una superclase de `gr:BusinessEntity` y que se recomienda el uso del vocabulario GoodRelations para referirse a clasificaciones de negocios tales como DUNS o NAICS."@es .
-
-gr:BusinessEntity rdfs:subClassOf org:FormalOrganization .
-
 org:OrganizationalUnit a owl:Class, rdfs:Class;
     rdfs:subClassOf  org:Organization;
 
@@ -199,50 +180,6 @@ org:purpose a rdf:Property;
 
 org:purpose rdfs:label "tiene objetivo"@es ;
     rdfs:comment "Finalidad u objetivo de la organización. La organización puede tener muchos objetivos a diferentes niveles de abstracción, pero en la naturaleza de las organizaciones está el tener una razón para existir, y la finalidad de esta propiedad es documentar dicha razón. La organización podrá tener más de un objetivo. Se recomienda el uso de vocabularios controlados o listas de códigos para indicar el objetivo, preferentemente mediante el uso de un `skos:Concept`. Sin embargo, el rango no está predeterminado, de forma que otros tipos de esquemas descriptivos tiene cabida. Se espera que ciertas especializaciones de este vocabulario o ciertos perfiles de aplicaciones restrinjan el rango del objetivo. Denominaciones alternativas: área_ _jurisdicción_ _ responsabilidad _ (especialmente cuando se aplica a unidades tales como ministerios o divisiones administrativas de los gobiernos)"@es .
-
-org:hasUnit a owl:ObjectProperty, rdf:Property;
-
-    rdfs:label "has Unit"@en;
-    rdfs:label "possède une Unité"@fr;
-    rdfs:label "ha Unit"@it;
-
-    rdfs:domain org:FormalOrganization;
-    rdfs:range  org:OrganizationalUnit;
-    rdfs:subPropertyOf org:hasSubOrganization;
-
-    rdfs:comment """Indicates a unit which is part of this Organization, e.g. a Department within a larger FormalOrganization. Inverse of `org:unitOf`."""@en;
-    rdfs:comment """Indique une Unité qui fait partie d'une Organisation, par exemple un Départment au sein d'une Organisation Formelle plus large. Inverse de `org:unitOf`."""@fr;    
-    rdfs:comment """Indica un'unità che è parte di questa Organization, come ad esempio un dipartimento facente parte di una più ampia FormalOrganization. È l'inverso di `org:unitOf`."""@it;
-    rdfs:comment "例えば、より大きな組織内の部局など、この組織の一部である単位を示します。"@ja;
-    rdfs:isDefinedBy <http://www.w3.org/ns/org> ;
-    .
-
-org:hasUnit rdfs:label "contiene unidad"@es ;
-    rdfs:comment "Unidad que es parte de la organización, como, por ejemplo, un departamento incluido en una organización formal más amplia."@es .
-
-org:unitOf a owl:ObjectProperty, rdf:Property;
-
-    rdfs:label "unit Of"@en;
-    rdfs:label "unité de"@fr;
-    rdfs:label "unità di"@it;
-
-    rdfs:domain org:OrganizationalUnit; 
-    rdfs:range  org:FormalOrganization;  
-    rdfs:subPropertyOf org:subOrganizationOf;
-
-    rdfs:comment """Indicates an Organization of which this Unit is a part, e.g. a Department within a larger FormalOrganization. This is the inverse of `org:hasUnit`."""@en;
-    rdfs:comment """Indique l'Organisation dont cette Organisation ou Unité fait partie, par exemple un Départment au sein d'une Organisation Formelle plus large. Inverse de `org:hasUnit`."""@fr;    
-    rdfs:comment """Indica un Organization di cui questa Unit fa parte, come ad esempio un dipartimento all'interno di una più vasta FormalOrganization. È l'inverso di `org:hasUnit`."""@it;
-    rdfs:comment "例えば、より大きな組織内の部局など、この単位がその一部分である組織を示します。"@ja;
-    rdfs:isDefinedBy <http://www.w3.org/ns/org> ;
-    .
-
-org:unitOf rdfs:label "es unidad de"@es ;
-    rdfs:comment "Organización de la que es parte esta unidad, por ejemplo, un departamento incluido en una organización formal más amplia."@es .
-
-org:unitOf owl:inverseOf org:hasUnit .
-
-org:hasUnit owl:inverseOf org:unitOf .
 
 
 org:classification a owl:ObjectProperty, rdf:Property;
@@ -708,28 +645,6 @@ org:hasPrimarySite a owl:ObjectProperty, rdf:Property;
 
 org:hasPrimarySite rdfs:label "tiene sede principal en"@es ;
     rdfs:comment "Oficina principal de la organización, la opción por defecto para ponerse en contacto con una organización, aunque no corresponde necesariamente con las oficinas centrales de la organización."@es .
-
-
-org:hasRegisteredSite a owl:ObjectProperty, rdf:Property;
-
-    rdfs:label "registered Site"@en;
-    rdfs:label "siège social"@fr;
-    rdfs:label "sede legale"@it;
-
-    rdfs:domain org:FormalOrganization;
-    rdfs:range  org:Site;
-    rdfs:subPropertyOf org:hasPrimarySite;
-
-    rdfs:comment """Indicates the legally registered site for the organization, in many legal jurisdictions there is a requirement that FormalOrganizations such as Companies or Charities have such a primary designed site. """@en;
-    rdfs:comment """Indique l'établissement principal légalement enregistré pour l'Organisation. Dans de nombreuses juridictions existe l'obligation pour une Organisation Formelle d'avoir un tel site principal. """@fr;    
-    rdfs:comment """Indica la sede legale per l'Organization. In molte giurisdizioni è richiesto che una FormalOrganization abbia una sede di questo tipo."""@it;
-    rdfs:comment "組織の法律上登録されたサイトを示し、多くの法的管轄区域では、会社や慈善団体などのFormalOrganizations（正式な組織）がそのような主要サイトを持っているという要件があります。"@ja;
-    rdfs:isDefinedBy <http://www.w3.org/ns/org> ;
-    .
-
- org:hasRegisteredSite rdfs:label "tiene sede registrada en"@es ;
-    rdfs:comment "Oficina o sede legalmente registrada de la organización. En muchas jurisdicciones legales existe el requisito de que organizaciones formales tales como empresas u organizaciones de beneficencia tengan una sede principal de este tipo."@es .
-
 
 org:basedAt a owl:ObjectProperty, rdf:Property;
 

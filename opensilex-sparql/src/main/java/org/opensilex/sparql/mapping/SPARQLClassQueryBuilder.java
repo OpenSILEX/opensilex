@@ -7,7 +7,6 @@ package org.opensilex.sparql.mapping;
 
 import java.io.StringWriter;
 
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.*;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
@@ -49,7 +48,6 @@ import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.vocabulary.OWL2;
 import org.apache.jena.vocabulary.RDFS;
-import org.opensilex.OpenSilex;
 import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 
@@ -302,10 +300,7 @@ class SPARQLClassQueryBuilder {
         String typeLabelFieldName = analyzer.getTypeLabelFieldName();
         Var typeLabelFieldVar = makeVar(typeLabelFieldName);
 
-        WhereHandler optionalTypeLabelHandler = new WhereHandler();
-        optionalTypeLabelHandler.addWhere(builder.makeTriplePath(typeFieldVar, RDFS.label, typeLabelFieldVar));
-        addLangFilter(typeLabelFieldName, lang, optionalTypeLabelHandler);
-        whereHandler.addOptional(optionalTypeLabelHandler);
+        addOptionalLangClauseOrDefault(whereHandler, typeFieldVar, RDFS.label.asNode(), typeLabelFieldVar, lang);
 
         if(customHandlerByFields != null){
             if(customHandlerByFields.containsKey(SPARQLNamedResourceModel.URI_FIELD)){
@@ -397,6 +392,45 @@ class SPARQLClassQueryBuilder {
                                    Map<String,WhereHandler> customHandlerByFields,
                                    String lang,
                                    boolean isObject) {
+        // If the property is not an object and a language is specified, then a filter on the language will be added.
+        // In order to fetch the default language in the case where the specified language does not exist, the clause
+        // will be duplicated with different language filters.
+        if (lang != null && !isObject && analyzer.isOptional(field)) {
+            addSelectPropertyWithLangFilter(select, graph, uriFieldName, property, field, requiredHandlersByGraph,
+                    optionalHandlersByGraph, customHandlerByFields, lang, false, false);
+            if (!lang.isEmpty()) {
+                addSelectPropertyWithLangFilter(select, graph, uriFieldName, property, field, requiredHandlersByGraph,
+                        optionalHandlersByGraph, customHandlerByFields, "", false, false);
+            }
+        } else {
+            addSelectPropertyWithLangFilter(select, graph, uriFieldName, property, field, requiredHandlersByGraph,
+                    optionalHandlersByGraph, customHandlerByFields, lang, isObject, true);
+        }
+    }
+
+    /**
+     * Add a WHERE clause into the handler, with the specified language filter.
+     *
+     * @param select
+     * @param graph
+     * @param uriFieldName
+     * @param property
+     * @param field
+     * @param requiredHandlersByGraph
+     * @param optionalHandlersByGraph
+     * @param customHandlerByFields
+     * @param lang
+     * @param isObject
+     * @param filterLangWithDefault If true, the lang filter will have two options : the specified language and the
+     *                              default language. If false, only the specified language will be filtered.
+     */
+    private void addSelectPropertyWithLangFilter(AbstractQueryBuilder<?> select, Node graph, String uriFieldName, Property property, Field field,
+                                                 Map<String, WhereHandler> requiredHandlersByGraph,
+                                                 Map<String, List<WhereHandler>> optionalHandlersByGraph,
+                                                 Map<String,WhereHandler> customHandlerByFields,
+                                                 String lang,
+                                                 boolean isObject,
+                                                 boolean filterLangWithDefault) {
 
         Var uriFieldVar = makeVar(uriFieldName);
         Var propertyFieldVar = makeVar(field.getName());
@@ -455,10 +489,11 @@ class SPARQLClassQueryBuilder {
         }
 
         if (lang != null && !isObject) {
-            if (lang.isEmpty()) {
-                lang = OpenSilex.DEFAULT_LANGUAGE;
+            if (filterLangWithDefault) {
+                addLangFilterWithDefault(field.getName(), lang, handler);
+            } else {
+                handler.addFilter(SPARQLQueryHelper.langFilter(propertyFieldVar, lang));
             }
-            addLangFilter(field.getName(), lang, handler);
         }
 
         if (rdtTypeTriple != null) {
@@ -491,13 +526,7 @@ class SPARQLClassQueryBuilder {
                                        Map<String, WhereHandler> requiredHandlersByGraph) throws SPARQLInvalidClassDefinitionException, SPARQLMapperNotFoundException {
 
         String objFieldName = getObjectNameVarName(field.getName());
-        WhereHandler objectNameOptionalHandler = new WhereHandler();
-        TriplePath objectNameTriple = select.makeTriplePath(propertyFieldVar, RDFS.label, makeVar(objFieldName));
-        objectNameOptionalHandler.addWhere(objectNameTriple);
-        if (lang != null) {
-            addLangFilter(objFieldName, lang, objectNameOptionalHandler);
-        }
-        handler.addOptional(objectNameOptionalHandler);
+        addOptionalLangClauseOrDefault(handler, propertyFieldVar, RDFS.label.asNode(), makeVar(objFieldName), lang);
 
         String objDefaultFieldName = getObjectDefaultNameVarName(field.getName());
 
@@ -508,7 +537,7 @@ class SPARQLClassQueryBuilder {
         WhereHandler objectNameDefaultOptionalHandler = new WhereHandler();
         objectNameDefaultOptionalHandler.addWhere(objectDefaultNameTriple);
         if (lang != null) {
-            addLangFilter(objDefaultFieldName, lang, objectNameDefaultOptionalHandler);
+            addLangFilterWithDefault(objDefaultFieldName, lang, objectNameDefaultOptionalHandler);
         }
 
         // if the object is stored in the same graph as the current model then try to get object name into this graph
@@ -542,10 +571,85 @@ class SPARQLClassQueryBuilder {
         handler.addWhere(timeStampTriple);
     }
 
-    private void addLangFilter(String fieldName, String lang,
-                               WhereHandler handler) {
+    /**
+     * Add a lang filter which also takes the default language, if it exists. That means that this filter can return
+     * at most 2 values. Do not use this method if you want only one value.
+     *
+     * @param fieldName
+     * @param lang
+     * @param handler
+     */
+    private void addLangFilterWithDefault(String fieldName, String lang,
+                                          WhereHandler handler) {
         Locale locale = Locale.forLanguageTag(lang);
-        handler.addFilter(SPARQLQueryHelper.langFilter(fieldName, locale.getLanguage()));
+        handler.addFilter(SPARQLQueryHelper.langFilterWithDefault(fieldName, locale.getLanguage()));
+    }
+
+    /**
+     * Add an optional where clause with a single triple and an exclusive filter on the language. The following SPARQL
+     * code is generated :
+     *
+     * <pre>
+     *     OPTIONAL {
+     *         ?fieldVar property ?fieldNameVar
+     *         FILTER langMatches(lang(?fieldNameVar), "lang")
+     *     }
+     * </pre>
+     *
+     * For example, with the parameters <code>rdfType</code>, <code>RDFS.label</code>, <code>rdfTypeName</code> and <code>"en"</code>,
+     * the following code is generated :
+     *
+     * <pre>
+     *     OPTIONAL {
+     *         ?rdfType rdfs:label ?rdfTypeName
+     *         FILTER (langMatches(lang(?rdfTypeName), "en")
+     *     }
+     * </pre>
+     *
+     * The method can also be used to filter on the default language with an empty string as the language parameter.
+     *
+     * @param where
+     * @param fieldVar
+     * @param property
+     * @param fieldNameVar
+     * @param lang
+     */
+    private void addOptionalLangClause(WhereHandler where, Var fieldVar, Node property, Var fieldNameVar, String lang) {
+        WhereBuilder optionalLang = new WhereBuilder();
+        optionalLang.addWhere(fieldVar, property, fieldNameVar);
+        optionalLang.addFilter(SPARQLQueryHelper.langFilter(fieldNameVar, lang));
+        where.addOptional(optionalLang.getWhereHandler());
+    }
+
+    /**
+     * <p>
+     *     Add two optional where clauses, both with the same single triple but with different filters. In the first
+     *     case, the filter matches the given language. In the second case, the filter matches the default language.
+     *     So, the query will return the property in the preferred language if it exists, and in the default language otherwise.
+     *     It is guaranteed that at most one value will be returned.
+     * </p>
+     * <p>
+     *     For example, it can be used to retrieve the label of a RDF type :
+     * </p>
+     * <pre>
+     *     OPTIONAL {
+     *         ?rdfType rdfs:label ?rdfTypeName
+     *         FILTER (langMatches(lang(?rdfTypeName), "en")
+     *     } OPTIONAL {
+     *         ?rdfType rdfs:label ?rdfTypeName
+     *         FILTER (langMatches(lang(?rdfTypeName), "")
+     *     }
+     * </pre>
+     *
+     * @param where
+     * @param fieldVar
+     * @param property
+     * @param fieldNameVar
+     * @param lang
+     */
+    private void addOptionalLangClauseOrDefault(WhereHandler where, Var fieldVar, Node property, Var fieldNameVar, String lang) {
+        addOptionalLangClause(where, fieldVar, property, fieldNameVar, lang);
+        addOptionalLangClause(where, fieldVar, property, fieldNameVar, "");
     }
 
     private <T extends SPARQLResourceModel> Node executeOnInstanceTriples(Node graph, T instance, BiConsumer<Quad, Field> tripleHandler, boolean blankNode) throws Exception {

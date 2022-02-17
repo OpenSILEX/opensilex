@@ -162,21 +162,36 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
     }
 
     @Test
-    public void testCreateWithGermplasm() throws Exception {
-        ScientificObjectCreationDTO creationDTO = getCreationDTO(false, false, true);
-        final Response postResult = getJsonPostResponse(target(createPath), creationDTO);
+    public void testCreateAndDeleteWithGermplasm() throws Exception {
+        ScientificObjectCreationDTO scientificObjectDTO = getCreationDTO(false, false, true);
+        final Response postResult = getJsonPostResponse(target(createPath), scientificObjectDTO);
         assertEquals(Status.CREATED.getStatusCode(), postResult.getStatus());
 
         // Check that the experiment is updated with the correct species
-        Response experimentResponse = getJsonGetByUriResponse(target(ExperimentAPITest.uriPath), experiment.toString());
+        ExperimentGetDTO experimentGetDTO = retrieveExperiment(experiment);
+
+        assertEquals(1, experimentGetDTO.getSpecies().size());
+        assertEquals(SPARQLDeserializers.getShortURI(experimentGetDTO.getSpecies().get(0)),
+                SPARQLDeserializers.getShortURI(speciesUri));
+
+        // Remove the relation from the scientific object
+        scientificObjectDTO.setUri(extractUriFromResponse(postResult));
+        scientificObjectDTO.setRelations(Collections.emptyList());
+        final Response putResult = getJsonPutResponse(target(updatePath), scientificObjectDTO);
+        assertEquals(Status.OK.getStatusCode(), putResult.getStatus());
+
+        // Check that the species of the experiment is gone
+        experimentGetDTO = retrieveExperiment(experiment);
+
+        assertEquals(0, experimentGetDTO.getSpecies().size());
+    }
+
+    private ExperimentGetDTO retrieveExperiment(URI experimentUri) throws Exception {
+        Response experimentResponse = getJsonGetByUriResponse(target(ExperimentAPITest.uriPath), experimentUri.toString());
         JsonNode experimentNode = experimentResponse.readEntity(JsonNode.class);
         SingleObjectResponse<ExperimentGetDTO> getExperimentResponse =
                 mapper.convertValue(experimentNode, new TypeReference<SingleObjectResponse<ExperimentGetDTO>>() {});
-        ExperimentGetDTO experimentGetDTO = getExperimentResponse.getResult();
-
-        assertEquals(experimentGetDTO.getSpecies().size(), 1);
-        assertEquals(SPARQLDeserializers.getShortURI(experimentGetDTO.getSpecies().get(0)),
-                SPARQLDeserializers.getShortURI(speciesUri));
+        return getExperimentResponse.getResult();
     }
 
     @Test

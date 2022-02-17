@@ -510,19 +510,31 @@ public class ExperimentDAO {
      *                 <__experimentUri__> vocabulary:hasSpecies ?newSpecies.
      *         }
      * } where {
-     *         graph <__experimentUri__> {
-     *                 ?scientificObject a ?rdfType.
-     *                 ?scientificObject vocabulary:hasGermplasm ?germplasm.
-     *         }
-     *                 ?rdfType rdfs:subClassOf* vocabulary:ScientificObject.
-     *         {
-     *                 ?germplasm a/rdfs:subClassOf* vocabulary:Species.
-     *                 bind(?germplasm as ?newSpecies)
-     *         } union {
-     *                 ?germplasm vocabulary:fromSpecies ?newSpecies.
+     *         optional {
+     *                 graph <.../set/experiments> {
+     *                         <__experimentUri__> vocabulary:hasSpecies ?oldSpecies.
+     *                 }
+     *         } optional {
+     *                 graph <__experimentUri__> {
+     *                         ?scientificObject a ?rdfType.
+     *                         ?scientificObject vocabulary:hasGermplasm ?germplasm.
+     *                 }
+     *                         ?rdfType rdfs:subClassOf* vocabulary:ScientificObject.
+     *                 {
+     *                         ?germplasm a/rdfs:subClassOf* vocabulary:Species.
+     *                         bind(?germplasm as ?newSpecies)
+     *                 } union {
+     *                         ?germplasm vocabulary:fromSpecies ?newSpecies.
+     *                 }
      *         }
      * }
      * </pre>
+     *
+     * Note : I perform the operation within a single request. The downside is that the "where" section has two independent
+     * optionals, the first corresponding to the "delete" statement, and the second corresponding to the "insert".
+     * I guess this could cause performance issues, as a cartesian product is done. Maybe it would be better to do it in
+     * two requests, even if this mean having more communication latency, but I'm not sure...
+     * - Valentin Rigolle
      *
      * @param experimentUri
      * @throws Exception
@@ -551,12 +563,20 @@ public class ExperimentDAO {
         // Where statement building
         WhereBuilder where = new WhereBuilder();
 
+        // Old species
+        WhereBuilder whereOldSpecies = new WhereBuilder();
+        whereOldSpecies.addGraph(experimentGraph, experimentUriNode, Oeso.hasSpecies.asNode(), oldSpeciesVar);
+        where.addOptional(whereOldSpecies);
+
+        // New species
+        WhereBuilder whereNewSpecies = new WhereBuilder();
+
         // Selection of the scientific object and its germplasm
         WhereBuilder whereInExperiment = new WhereBuilder();
         whereInExperiment.addWhere(scientificObjectVar, RDF.type.asNode(), rdfTypeVar);
         whereInExperiment.addWhere(scientificObjectVar, Oeso.hasGermplasm.asNode(), germplasmVar);
-        where.addGraph(experimentUriNode, whereInExperiment);
-        where.addWhere(rdfTypeVar, subClassOf, Oeso.ScientificObject.asNode());
+        whereNewSpecies.addGraph(experimentUriNode, whereInExperiment);
+        whereNewSpecies.addWhere(rdfTypeVar, subClassOf, Oeso.ScientificObject.asNode());
 
         // The two cases for the species
         WhereBuilder whereIsSpecies = new WhereBuilder();
@@ -570,9 +590,11 @@ public class ExperimentDAO {
         whereFromSpecies.addWhere(germplasmVar, Oeso.fromSpecies.asNode(), newSpeciesVar);
 
         // Union
-        where.addWhere(
+        whereNewSpecies.addWhere(
                 whereIsSpecies.addUnion(whereFromSpecies)
         );
+
+        where.addOptional(whereNewSpecies);
 
         update.addWhere(where);
 

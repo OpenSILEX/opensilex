@@ -86,6 +86,14 @@ public class B extends SPARQLResourceModel {
             property = "hasStringList"
     )
     private List<String> stringList;
+    public static final String STRING_LIST_FIELD = "stringList";
+
+    @SPARQLProperty(
+            ontology = TEST_ONTOLOGY.class,
+            property = "hasAList"
+    )
+    private List<A> aList;
+    public static final String A_LIST_FIELD = "aList";
     
     public A getA() {
         return a;
@@ -165,5 +173,13 @@ public class B extends SPARQLResourceModel {
 
     public void setStringList(List<String> stringList) {
         this.stringList = stringList;
+    }
+
+    public List<A> getaList() {
+        return aList;
+    }
+
+    public void setaList(List<A> aList) {
+        this.aList = aList;
     }
 }

@@ -1,0 +1,50 @@
+@prefix test: <http://test.opensilex.org/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+test:SPARQLListFetcherTest_a1
+    a test:A .
+
+test:SPARQLListFetcherTest_a2
+    a test:A .
+
+test:SPARQLListFetcherTest_a3
+    a test:A .
+
+test:SPARQLListFetcherTest_b1
+    a test:B;
+    test:hasFloat "-2.425"^^xsd:float ;
+    test:hasDouble "3.5"^^xsd:double ;
+    test:hasChar "X" ;
+    test:hasShort "-2"^^xsd:short  ;
+    test:hasStringList "opensilex" ;
+    test:hasStringList "inrae" ;
+    test:hasStringList "apache" ;
+    test:hasAList test:SPARQLListFetcherTest_a1 ;
+    test:hasAList test:SPARQLListFetcherTest_a2 .
+
+
+test:SPARQLListFetcherTest_b2
+    a test:B;
+    test:hasFloat "-2.425"^^xsd:float ;
+    test:hasDouble "3.5"^^xsd:double ;
+    test:hasChar "X" ;
+    test:hasShort "-2"^^xsd:short  ;
+    test:hasStringList "open-science" ;
+    test:hasStringList "sparql" ;
+    test:hasStringList "sparql" .
+
+test:SPARQLListFetcherTest_b3
+    a test:B;
+    test:hasFloat "-2.425"^^xsd:float ;
+    test:hasDouble "3.5"^^xsd:double ;
+    test:hasChar "X" ;
+    test:hasShort "-2"^^xsd:short  ;
+    test:hasStringList "ontologies" ;
+    test:hasStringList "reasoning" ;
+    test:hasStringList "database" ;
+    test:hasAList test:SPARQLListFetcherTest_a1 ;
+    test:hasAList test:SPARQLListFetcherTest_a3 .
+
+

@@ -8,9 +8,8 @@ package org.opensilex.core.scientificObject.dal;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.trie.PatriciaTrie;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.jena.arq.querybuilder.ExprFactory;
-import org.apache.jena.arq.querybuilder.SelectBuilder;
-import org.apache.jena.arq.querybuilder.WhereBuilder;
+import org.apache.jena.arq.querybuilder.*;
+import org.apache.jena.arq.querybuilder.clauses.WhereClause;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -286,6 +285,11 @@ public class ScientificObjectDAO {
         int total = getCount(searchFilter);
         if (total == 0) {
             return new ListWithPagination<>(Collections.emptyList());
+        }
+
+        // set default ORDER BY ?uri. Needed if we use multi-valued properties fetching
+        if(CollectionUtils.isEmpty(searchFilter.getOrderByList())){
+            searchFilter.setOrderByList(Collections.singletonList(SPARQLClassObjectMapper.DEFAULT_ORDER_BY));
         }
 
         SelectBuilder select = getSelect(searchFilter);

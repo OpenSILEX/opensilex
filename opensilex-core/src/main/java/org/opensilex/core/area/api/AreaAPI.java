@@ -39,12 +39,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.opensilex.core.event.dal.EventDAO;
 import org.opensilex.core.event.dal.EventModel;
@@ -334,8 +329,10 @@ public class AreaAPI {
             }
 
             // Search Event by URI values  List
-            EventDAO eventDAO = new EventDAO(sparql, nosql);
-            ListWithPagination<EventModel> search = eventDAO.search(temporalAreasUris,
+            EventDAO<EventModel> eventDAO = new EventDAO<>(sparql, nosql);
+            ListWithPagination<EventModel> search = eventDAO.search(
+                    null,
+                    temporalAreasUris,
                     null,
                     null,
                     start != null ? OffsetDateTime.parse(start) : null,

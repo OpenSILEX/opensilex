@@ -19,11 +19,11 @@ import org.opensilex.sparql.service.SPARQLService;
  */
 public class RDF4JInMemoryServiceFactory extends RDF4JServiceFactory {
 
-    public RDF4JInMemoryServiceFactory() throws URISyntaxException {
+    public RDF4JInMemoryServiceFactory(){
         super(getInMemoryRepository());
     }
 
-    public static Repository getInMemoryRepository() throws URISyntaxException {
+    public static Repository getInMemoryRepository() {
         MemoryStore memoryStore = new MemoryStore();
         ShaclSail shacl = new ShaclSail(memoryStore);
         SailRepository repository = new SailRepository(shacl);

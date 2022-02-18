@@ -415,6 +415,7 @@ public class EventAPI {
 
         ListWithPagination<EventModel> resultList = dao.search(
                 target,
+                null,
                 descriptionPattern,
                 type,
                 start != null ? OffsetDateTime.parse(start) : null,

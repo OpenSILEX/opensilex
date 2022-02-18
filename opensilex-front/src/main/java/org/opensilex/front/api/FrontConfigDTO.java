@@ -52,6 +52,9 @@ public class FrontConfigDTO {
 
     String geocodingService;
 
+    @NotNull
+    boolean userIsAnonymous;
+
     @ApiModelProperty(value = "Application url path prefix", example = "app")
     public String getPathPrefix() {
         return pathPrefix;
@@ -183,5 +186,14 @@ public class FrontConfigDTO {
 
     public void setGeocodingService(String geocodingService) {
         this.geocodingService = geocodingService;
+    }
+
+    @ApiModelProperty
+    public boolean getUserIsAnonymous() {
+        return userIsAnonymous;
+    }
+
+    public void setUserIsAnonymous(boolean userIsAnonymous) {
+        this.userIsAnonymous = userIsAnonymous;
     }
 }

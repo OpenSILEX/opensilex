@@ -176,6 +176,8 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
         this.config.setMenu(userConfigService.getUserMenu(currentUser, globalMenu, new HashMap<>(),
                 frontConfig.menuExclusions(), frontConfig.customMenu()));
 
+        this.config.setUserIsAnonymous(currentUser.isAnonymous());
+
         return this.config;
     }
 }

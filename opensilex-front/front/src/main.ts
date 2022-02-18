@@ -522,8 +522,15 @@ $opensilex.loadModules([
         const config: FrontConfigDTO = configResponse.response.result;
         $opensilex.setConfig(config);
 
-        const authService = $opensilex.getService<AuthenticationService>("AuthenticationService");
         let baseURL = window.location.href.split(/[?#]/)[0];
+
+        if (config.userIsAnonymous && user.isLoggedIn()) {
+          console.log("User should be anonymous, force logout");
+          store.commit("logout");
+          window.location = baseURL;
+        }
+
+        const authService = $opensilex.getService<AuthenticationService>("AuthenticationService");
         if (baseURL.endsWith("/app/openid") && urlParams.has('code')) {
           console.debug("Identify user with OpenID Connect");
           authService.authenticateOpenID(urlParams.get("code"))

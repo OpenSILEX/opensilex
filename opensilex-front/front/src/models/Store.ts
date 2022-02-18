@@ -1,15 +1,12 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import { User } from './User'
+import {User} from './User'
 import VueRouter from 'vue-router';
-import { FrontConfigDTO } from '../lib';
-import { Menu } from './Menu';
-import { OpenSilexRouter } from './OpenSilexRouter';
+import {Menu} from './Menu';
+import {OpenSilexRouter} from './OpenSilexRouter';
 import OpenSilexVuePlugin from './OpenSilexVuePlugin';
-// @ts-ignore
-import { AuthenticationService } from 'opensilex-security/index';
-// @ts-ignore
-import { SystemService, VersionInfoDTO } from 'opensilex-core/index';
+import {AuthenticationService} from 'opensilex-security/index';
+import {FrontConfigDTO} from "../lib";
 
 Vue.use(Vuex)
 Vue.use(VueRouter)
@@ -72,7 +69,8 @@ let defaultConfig: FrontConfigDTO = {
   menuComponent: "opensilex-front-ToDoComponent",
   footerComponent: "opensilex-front-ToDoComponent",
   menu: [],
-  routes: []
+  routes: [],
+  userIsAnonymous: true
 };
 
 let computePage = function(router) {
@@ -230,10 +228,12 @@ let store = new Vuex.Store({
       state.user = User.ANONYMOUS();
       getOpenSilexPlugin().clearCookie();
       state.disconnected = true;
-      console.debug("Reset router");
-      state.openSilexRouter.resetRouter(state.user);
-      console.debug("Reset menu");
-      state.menu = Menu.fromMenuItemDTO(state.openSilexRouter.getMenu());
+      if (state.openSilexRouter) {
+        console.debug("Reset router");
+        state.openSilexRouter.resetRouter(state.user);
+        console.debug("Reset menu");
+        state.menu = Menu.fromMenuItemDTO(state.openSilexRouter.getMenu());
+      }
     },
     setConfig(state, config: FrontConfigDTO) {
       state.config = config;

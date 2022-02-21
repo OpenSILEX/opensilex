@@ -31,7 +31,8 @@
             <opensilex-Icon :icon="'ik#ik-activity'" />
           </slot>
         </b-button>
-        <opensilex-Button icon="fa#stopwatch" label="MapView.dateRange" @click="handleDateRangeStatus"></opensilex-Button>
+        
+        <opensilex-Button v-if="false" icon="fa#stopwatch" label="MapView.dateRange" @click="handleDateRangeStatus"></opensilex-Button>  <!--// in waiting for the bug' s correction -->
       </div>
       <span class="p-2">
         <label class="alert-warning">
@@ -50,7 +51,7 @@
       ></opensilex-Button>
     </div>
     <opensilex-ModalForm
-        v-if="!errorGeometry"
+        v-if="!errorGeometry && showArea"
         ref="areaForm"
         :successMessage="successMessageArea"
         component="opensilex-AreaForm"
@@ -581,6 +582,7 @@ export default class MapView extends Vue {
   range: { from: Date, to: Date } = { from: null, to: null };
   // filter: any = {};
 
+  private showArea: boolean = false;
   private editingMode: boolean = false;
   private displayDateRange: boolean = false;
   private displayAreas: boolean = true;
@@ -700,7 +702,8 @@ export default class MapView extends Vue {
         this.rangeSelector.setRange(this.range.from, this.range.to);
       }
     );
-    this.initDateRange();
+   // BUG on the ranSelector component when Experiment period is large
+   // this.initDateRange(); 
   }
 
   initAreaForm(form) {
@@ -1109,7 +1112,7 @@ export default class MapView extends Vue {
     }
   }
 
-  handleDateRangeStatus() {
+  handleDateRangeStatus() {  //DISABLE TO WAIT FIX BUG DATRANGE
     this.displayDateRange = !this.displayDateRange;
     if (this.displayDateRange == false &&
     (this.range.from != this.minDate || this.range.to != this.maxDate)) { // If all SO are already charged
@@ -1215,7 +1218,10 @@ export default class MapView extends Vue {
   }
 
   showCreateForm() {
-    this.areaForm.showCreateForm();
+    this.showArea = true;
+    this.$nextTick(() => {
+      this.areaForm.showCreateForm();
+    });
   }
 
   showTemporalAreas() {
@@ -1243,12 +1249,12 @@ export default class MapView extends Vue {
         let res = http.response.result;
         this.minDate = new Date(res.start_date);
         this.minDate.setHours(0,0,0,0);
-        if (res.end_date) {
-          this.maxDate = new Date(res.end_date);
-        } else {
-          this.maxDate = new Date();
-        }
-        this.maxDate.setHours(0,0,0,0);
+         if (res.end_date) {
+           this.maxDate = new Date(res.end_date);
+         } else {
+           this.maxDate = new Date();
+         }
+        // this.maxDate.setHours(0,0,0,0);
         
         // checkfilter
         // let from ;
@@ -1274,14 +1280,14 @@ export default class MapView extends Vue {
   }
 
   configDateRange() {
-    this.rangeSelector.min = this.minDate;
-    this.rangeSelector.max = this.maxDate;
-    this.rangeSelector.range = this.range;
-    this.rangeSelector.majorTicksInterval = this.majorTicksIntervalFct();
-    this.rangeSelector.minorTicksInterval = this.minorTicksIntervalFct();
-    this.rangeSelector.labelsFormat = this.labelsFormatFct();
-    this.rangeSelector.range = { from: this.range.from, to: this.range.to };
-    this.rangeSelector.refresh();
+    this.rangeSelector.min = this.minDate;  // WRONG WAY
+    this.rangeSelector.max = this.maxDate;  // WRONG WAY
+    this.rangeSelector.range = this.range;  // WRONG WAY
+    this.rangeSelector.majorTicksInterval = this.majorTicksIntervalFct();  // WRONG WAY
+    this.rangeSelector.minorTicksInterval = this.minorTicksIntervalFct();  // WRONG WAY
+    this.rangeSelector.labelsFormat = this.labelsFormatFct(); // WRONG WAY
+    this.rangeSelector.range = { from: this.range.from, to: this.range.to };  // WRONG WAY
+    this.rangeSelector.refresh(); // WRONG WAY
   }
 
   initDateRange() {
@@ -1289,7 +1295,7 @@ export default class MapView extends Vue {
     if (!this.minDate || !this.maxDate || !this.range.from || !this.range.to) {
       this.getRangeDatesOfExperiment()
       .then(() => {
-        this.configDateRange();
+       this.configDateRange();
       });
     } else {
       this.configDateRange();

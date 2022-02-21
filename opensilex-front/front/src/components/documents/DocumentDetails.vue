@@ -82,12 +82,22 @@
               <opensilex-StringView label="DocumentDetails.keywords" :value="document.keywords">
                 <span v-if="document.keywords"><span :key="keywords" v-for="(keywords) in document.keywords">{{ keywords }} - </span></span>
               </opensilex-StringView>
+              <opensilex-UriView
+                  v-if="document.source"
+                  title="DocumentDetails.source"
+                  :url="document.source"
+                  :value="document.source"
+              ></opensilex-UriView>
             </template>
           </opensilex-Card>
       </b-col>
 
       <b-col sm="5">
-        <opensilex-Card label="DocumentDetails.file" icon="ik#ik-download">
+        <opensilex-Card
+            label="DocumentDetails.file"
+            icon="ik#ik-download"
+            v-if="hasFile"
+        >
             <template v-slot:body>
               <div class="button-zone">
               <b-button 
@@ -160,10 +170,15 @@ export default class DocumentDetails extends Vue {
           language: null,
           format: null,
           deprecated: null,
-          keywords: null
+          keywords: null,
+          source: null
       };
   
   targetsTypes = [];
+
+  get hasFile() {
+    return !this.document.source;
+  }
 
   created() {
     this.service = this.$opensilex.getService("opensilex.DocumentsService");
@@ -270,6 +285,7 @@ en:
     preview: Preview File
     update: Update Document
     delete: Delete Document
+    source: Source
 
 fr:
   DocumentDetails:
@@ -293,4 +309,5 @@ fr:
     preview: Aperçu du fichier
     update: Modifier Document
     delete: Supprimer Document
+    source: Source
 </i18n>

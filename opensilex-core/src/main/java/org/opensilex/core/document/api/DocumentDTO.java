@@ -6,13 +6,13 @@
 //******************************************************************************
 package org.opensilex.core.document.api;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
-import org.opensilex.core.document.dal.DocumentModel;
+
 import java.net.URI;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import javax.validation.constraints.NotNull;
+
 import org.opensilex.server.rest.validation.Required;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -21,7 +21,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
  * @author Fernandez Emilie 
  */
 
-@JsonPropertyOrder({"uri", "identifier", "rdf_type", "rdf_type_name", "title", "date", "description", "targets", "authors", "language", "format", "keywords", "deprecated" })
+@JsonPropertyOrder({"uri", "identifier", "rdf_type", "rdf_type_name", "title", "date", "description", "targets", "authors", "language", "format", "keywords", "deprecated", "source" })
 public abstract class DocumentDTO {
 
     protected URI uri;
@@ -47,6 +47,8 @@ public abstract class DocumentDTO {
     protected String format;
 
     protected String description;
+
+    protected URI source;
 
     @JsonProperty("keywords")
     protected List<String> subject = new ArrayList<>();
@@ -184,5 +186,17 @@ public abstract class DocumentDTO {
         return this;
     }
 
+    public URI getSource() {
+        return source;
+    }
 
+    public DocumentDTO setSource(URI source) {
+        this.source = source;
+        return this;
+    }
+
+    @JsonIgnore
+    public boolean hasFile() {
+        return source != null;
+    }
 }

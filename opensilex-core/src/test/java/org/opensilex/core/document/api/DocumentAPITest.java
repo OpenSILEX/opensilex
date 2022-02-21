@@ -102,6 +102,42 @@ public class DocumentAPITest extends AbstractSecurityIntegrationTest {
     }
 
     @Test
+    public void testCreateWithSource() throws Exception {
+        URI sourceUri = new URI("http://example.com");
+
+        DocumentCreationDTO creationDTO = getCreationDTO();
+        creationDTO.setUri(new URI("http://opensilex.org/testCreateWithSource"));
+        creationDTO.setSource(sourceUri);
+        MultiPart multiPart = new FormDataMultiPart().field("description", creationDTO, MediaType.APPLICATION_JSON_TYPE);
+
+        final Response postResult = getJsonPostResponseMultipart(target(path), multiPart);
+        assertEquals(Status.CREATED.getStatusCode(), postResult.getStatus());
+
+        // ensure that the result is a well formed URI, else throw exception
+        URI createdUri = extractUriFromResponse(postResult);
+        final Response getResult = getJsonGetByUriResponse(target(uriPath), createdUri.toString());
+        assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
+
+        // try to deserialize object
+        JsonNode node = getResult.readEntity(JsonNode.class);
+        SingleObjectResponse<DocumentGetDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<DocumentGetDTO>>() {
+        });
+        DocumentGetDTO dtoFromApi = getResponse.getResult();
+
+        assertEquals(sourceUri, dtoFromApi.getSource());
+    }
+
+    @Test
+    public void testCreateWithoutFileOrSourceFail() throws Exception {
+        DocumentCreationDTO creationDTO = getCreationDTO();
+        creationDTO.setUri(new URI("http://opensilex.org/testCreateWithoutFileOrSourceFail"));
+        MultiPart multiPart = new FormDataMultiPart().field("description", creationDTO, MediaType.APPLICATION_JSON_TYPE);
+
+        final Response postResult = getJsonPostResponseMultipart(target(path), multiPart);
+        assertEquals(Status.BAD_REQUEST.getStatusCode(), postResult.getStatus());
+    }
+
+    @Test
     public void testCreateFsFail() throws Exception{
 
         File file = tmpFolder.newFile("testCreateFsFail.txt");

@@ -128,11 +128,20 @@
             :deprecated="data.item.deprecated"
           ></opensilex-DeprecatedButton>
           <opensilex-Button
+              v-if="!data.item.source"
            component="opensilex-DocumentDetails"
             @click="loadFile(data.item.uri, data.item.title, data.item.format)"
             label="DocumentList.download"
             :small="true"
             icon= "ik#ik-download"
+            variant="outline-info"
+          ></opensilex-Button>
+          <opensilex-Button
+            v-if="data.item.source"
+            @click="browseSource(data.item.source)"
+            label="DocumentList.browseSource"
+            :small="true"
+            icon="ik#ik-link"
             variant="outline-info"
           ></opensilex-Button>
           <!-- <opensilex-DeleteButton
@@ -299,7 +308,8 @@ export default class DocumentList extends Vue {
             language: document.language,
             format: document.format,
             deprecated: document.deprecated,
-            keywords: document.keywords
+            keywords: document.keywords,
+            source: document.source
           }
         };
         this.documentForm.showEditForm(form);
@@ -325,7 +335,8 @@ export default class DocumentList extends Vue {
             language: document.language,
             format: document.format,
             deprecated: !document.deprecated,
-            keywords: document.keywords
+            keywords: document.keywords,
+            source: document.source
           }
         };
       this.updateForDeprecated(form);
@@ -348,6 +359,10 @@ export default class DocumentList extends Vue {
     let path = "/core/documents/" + encodeURIComponent(uri);
     this.$opensilex
      .downloadFilefromService(path, title, format);
+  }
+
+  browseSource(source: string) {
+    window.open(source);
   }
 
 }
@@ -375,6 +390,7 @@ en:
     cancelDeprecated: Cancel Deprecated
     identifier: Identifier
     download: Download file
+    browseSource: Browse source
 
     filter:
       title: Title
@@ -411,6 +427,7 @@ fr:
     cancelDeprecated: Annuler Obsolète
     identifier: Identifiant
     download: Télécharger le fichier
+    browseSource: Naviguer à la source
 
     filter:
       title: Titre

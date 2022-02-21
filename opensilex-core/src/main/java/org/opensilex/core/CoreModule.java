@@ -9,6 +9,7 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
 import java.net.URI;
 
+import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.OWL;
 import org.opensilex.OpenSilex;
 import org.opensilex.OpenSilexModule;
@@ -118,6 +119,12 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
                 ONTOLOGIES_DIRECTORY+"/time.ttl",
                 Lang.TURTLE,
                 Time.PREFIX
+        ));
+        list.add(new OntologyFileDefinition(
+                DCTERMS.NAMESPACE,
+                ONTOLOGIES_DIRECTORY + "/dublin_core_terms.ttl",
+                Lang.TTL,
+                DCTERMS.PREFIX
         ));
         return list;
     }

@@ -6,15 +6,7 @@
 //******************************************************************************
 package org.opensilex.core.document.api;
 
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.opensilex.core.document.dal.DocumentModel;
-import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.fs.service.FileStorageService;
 
 /**
  *
@@ -39,7 +31,8 @@ public class DocumentGetDTO extends DocumentDTO {
                 .setFormat(model.getFormat())
                 .setDescription(model.getDescription())
                 .setSubject(model.getSubject())
-                .setDeprecated(Boolean.parseBoolean(model.getDeprecated()));
+                .setDeprecated(Boolean.parseBoolean(model.getDeprecated()))
+                .setSource(model.getSource());
 
         return dto;
     }

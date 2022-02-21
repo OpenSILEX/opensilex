@@ -24,6 +24,7 @@ import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.rdf.model.Property;
+import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
@@ -65,9 +66,31 @@ public class DocumentDAO {
         this.fs = fs;
     }
 
+    /**
+     * Creates a document, either with a file or from a source URL if the `file` parameter is null.
+     *
+     * @param instance The document instance.
+     * @param file The file to associate with the document. If null, a document with a source will be created.
+     * @return The new document
+     * @throws Exception
+     */
     public DocumentModel create(DocumentModel instance, File file) throws Exception {
+        if (file == null) {
+            return createWithSource(instance);
+        }
+        return createWithFile(instance, file);
+    }
 
-        if(file.length() == 0){
+    /**
+     * Creates a document with a file.
+     *
+     * @param instance
+     * @param file
+     * @return
+     * @throws Exception If the file is empty.
+     */
+    public DocumentModel createWithFile(DocumentModel instance, File file) throws Exception {
+        if (file.length() == 0) {
             throw new IOException(instance.getUri()+ " : empty document "+file.getPath());
         }
 
@@ -79,6 +102,23 @@ public class DocumentDAO {
         }catch (IOException e){
             sparql.rollbackTransaction(e);
         }
+
+        return instance;
+    }
+
+    /**
+     * Creates a document with a source URL. The property `source` should not be null.
+     *
+     * @param instance
+     * @return
+     * @throws Exception If the property `source` of the document is null.
+     */
+    public DocumentModel createWithSource(DocumentModel instance) throws Exception {
+        if (instance.getSource() == null) {
+            throw new BadRequestException("Source cannot be null");
+        }
+
+        sparql.create(instance);
 
         return instance;
     }

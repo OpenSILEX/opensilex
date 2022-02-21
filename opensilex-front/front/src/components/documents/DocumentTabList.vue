@@ -66,12 +66,21 @@
                         :small="true"
                       ></opensilex-DeprecatedButton>
                       <opensilex-Button
+                          v-if="!data.item.source"
                         component="opensilex-DocumentDetails"
                         @click="loadFile(data.item.uri, data.item.title, data.item.format)"
                         label="DocumentList.download"
                         :small="true"
                         icon= "ik#ik-download"
                         variant="outline-info"
+                      ></opensilex-Button>
+                      <opensilex-Button
+                          v-if="data.item.source"
+                          @click="browseSource(data.item.source)"
+                          label="DocumentList.browseSource"
+                          :small="true"
+                          icon="ik#ik-link"
+                          variant="outline-info"
                       ></opensilex-Button>
                     </b-button-group>
                   </template>
@@ -319,6 +328,10 @@ export default class DocumentTabList extends Vue {
     this.filter.title = "";
     this.$opensilex.updateURLParameter("name", undefined, undefined);
     this.refresh();
+  }
+
+  browseSource(source: string) {
+    window.open(source);
   }
 
 }

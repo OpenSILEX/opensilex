@@ -65,7 +65,6 @@
         <!-- Documentation module -->
         <module>opensilex-doc</module>
         <module>opensilex-mobile</module>
-
         <module>opensilex-migration</module>
     </modules>
     
@@ -139,12 +138,12 @@
             <artifactId>opensilex-mobile</artifactId>
             <version>${revision}</version>
         </dependency>
-
         <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex-migration</artifactId>
             <version>${revision}</version>
         </dependency>
+
         
         <!--Other extension modules must be declared as dependencies-->
 <!--        <dependency>

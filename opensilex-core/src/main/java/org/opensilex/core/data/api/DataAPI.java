@@ -233,7 +233,6 @@ public class DataAPI {
         }
     }
 
-
     @GET
     @Path("{uri}")
     @ApiOperation("Get data")
@@ -254,7 +253,36 @@ public class DataAPI {
         } catch (NoSQLInvalidURIException e) {
             throw new NotFoundURIException("Invalid or unknown data URI ", uri);
         }
-
+    }
+    @POST
+    @Path("by_targets")
+    @ApiOperation(MediaType.APPLICATION_JSON)
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return data list", response = DataGetDTO.class, responseContainer = "List")
+    })
+    public Response getDataListByTargets(
+            @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
+            @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
+            @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
+            @ApiParam(value = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
+            @ApiParam(value = "Search by variables uris", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variables") List<URI> variables,
+            @ApiParam(value = "Search by devices uris", example = DeviceAPI.DEVICE_EXAMPLE_URI) @QueryParam("devices") List<URI> devices,
+            @ApiParam(value = "Search by minimal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("min_confidence") @Min(0) @Max(1) Float confidenceMin,
+            @ApiParam(value = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE_MAX) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
+            @ApiParam(value = "Search by provenances", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
+            @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @DefaultValue("date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize,
+            @ApiParam(value = "Targets uris") List<URI> objects
+    )throws Exception {
+        if (objects == null) {
+            objects = new ArrayList<>();
+        }
+        return getDataList(startDate,endDate,timezone, experiments, objects,variables,devices,confidenceMin,confidenceMax, provenances,metadata, orderByList,page, pageSize);
     }
 
     @GET
@@ -281,6 +309,25 @@ public class DataAPI {
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
+        return getDataList(startDate,endDate,timezone, experiments, objects,variables,devices,confidenceMin,confidenceMax, provenances,metadata, orderByList,page, pageSize);
+    }
+
+    private Response getDataList(
+            String startDate,
+            String endDate,
+            String timezone,
+            List<URI> experiments,
+            List<URI> objects,
+            List<URI> variables,
+            List<URI> devices,
+            Float confidenceMin,
+            Float confidenceMax,
+            List<URI> provenances,
+            String metadata,
+            List<OrderBy> orderByList,
+            int page,
+            int pageSize) throws Exception{
+
         DataDAO dao = new DataDAO(nosql, sparql, fs);
 
         //convert dates
@@ -331,9 +378,9 @@ public class DataAPI {
         );
 
         ListWithPagination<DataGetDTO> resultDTOList = resultList.convert(DataGetDTO.class, DataGetDTO::getDtoFromModel);
-
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
+
 
 
     @GET

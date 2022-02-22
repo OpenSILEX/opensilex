@@ -256,7 +256,7 @@ public class DataAPI {
     }
     @POST
     @Path("by_targets")
-    @ApiOperation(MediaType.APPLICATION_JSON)
+    @ApiOperation("Search data from a large list of scientific objects")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)

@@ -106,13 +106,7 @@ public class DocumentAPI {
             try {
                 DocumentModel documentModel = docDto.newModel();
 
-                // If a file has been uploaded with the request, then file.length() returns the correct size.
-                // Otherwise, file.length() returns a seemingly arbitrary value (for example, 9). In order to test if
-                // a file has been uploaded with the request, we must test fileDetail.getSize() instead (which will
-                // return -1 in the case where no file is transmitted).
-                boolean hasFile = fileDetail != null && fileDetail.getSize() >= 0;
-
-                if (hasFile && (file.length() == 0 || file.length() >= 104857600)) {
+                if (file != null && (file.length() == 0 || file.length() >= 104857600)) {
                     return new ErrorResponse(
                             Response.Status.BAD_REQUEST,
                             "Bad file",
@@ -120,7 +114,7 @@ public class DocumentAPI {
                     ).getResponse();
                 }
 
-                if (hasFile) {
+                if (file != null) {
                     String format = FilenameUtils.getExtension(fileDetail.getFileName());
                     documentModel.setFormat(format);
                 } else if (docDto.getSource() == null) {
@@ -145,7 +139,7 @@ public class DocumentAPI {
                     ).getResponse();
                 }
 
-                documentDAO.create(documentModel, hasFile ? file : null);
+                documentDAO.create(documentModel, file);
                 return new ObjectUriResponse(Response.Status.CREATED, documentModel.getUri()).getResponse();
 
             } catch (SPARQLAlreadyExistingUriException e) {

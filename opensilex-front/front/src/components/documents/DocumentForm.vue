@@ -133,6 +133,7 @@
       type="text"
       :value.sync="form.description.source"
       :required="true"
+      rules="url"
     >
     </opensilex-InputForm>
   </b-form>
@@ -217,9 +218,9 @@ export default class DocumentForm extends Vue {
 
   create(form) {
     if (this.documentContentType === this.DOCUMENT_CONTENT_TYPE_FILE) {
-      this.form.description.source = undefined;
+      delete this.form.description.source;
     } else {
-      this.form.file = undefined;
+      delete this.form.file;
     }
     return this.$opensilex
      .uploadFileToService("/core/documents", this.form, null, false)

@@ -16,11 +16,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.opensilex.core.document.dal.DocumentModel;
+import org.opensilex.core.ontology.Oeso;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 
 import javax.ws.rs.client.WebTarget;
@@ -36,11 +38,12 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.opensilex.core.ontology.Oeso;
+import java.util.Objects;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM_TYPE;
 import static junit.framework.TestCase.assertEquals;
@@ -103,7 +106,7 @@ public class DocumentAPITest extends AbstractSecurityIntegrationTest {
 
     @Test
     public void testCreateWithSource() throws Exception {
-        URI sourceUri = new URI("http://example.com");
+        URI sourceUri = new URI("https://example.org");
 
         DocumentCreationDTO creationDTO = getCreationDTO();
         creationDTO.setUri(new URI("http://opensilex.org/testCreateWithSource"));
@@ -370,6 +373,74 @@ public class DocumentAPITest extends AbstractSecurityIntegrationTest {
         List<DocumentGetDTO> docDto = docListResponse.getResult();
 
         assertFalse(docDto.isEmpty());
+    }
+
+    /**
+     * Tests the search with a "multiple" parameter (which should filter on the title OR keyword)
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testSearchMultiple() throws Exception {
+        URI exampleSource = new URI("https://example.org");
+
+        // Creates a document with "test" as keyword
+        DocumentCreationDTO document1 = getCreationDTO();
+        document1.setTitle("document1");
+        document1.setSubject(new ArrayList<String>() {{
+            add("test");
+        }});
+        document1.setSource(exampleSource);
+        // Creates a document with "test" as title
+        DocumentCreationDTO document2 = getCreationDTO();
+        document2.setTitle("test");
+        document2.setSubject(new ArrayList<>());
+        document2.setSource(exampleSource);
+        // Creates a document without "test" in title nor keyword
+        DocumentCreationDTO document3 = getCreationDTO();
+        document3.setTitle("document3");
+        document3.setSubject(new ArrayList<>());
+        document3.setSource(exampleSource);
+
+        // Creates the multiparts to send in the request
+        MultiPart multiPart1 = new FormDataMultiPart().field("description", document1, MediaType.APPLICATION_JSON_TYPE);
+        MultiPart multiPart2 = new FormDataMultiPart().field("description", document2, MediaType.APPLICATION_JSON_TYPE);
+        MultiPart multiPart3 = new FormDataMultiPart().field("description", document3, MediaType.APPLICATION_JSON_TYPE);
+
+        // Request to create the documents
+        final Response postResult1 = getJsonPostResponseMultipart(target(path), multiPart1);
+        URI documentUri1 = SPARQLDeserializers.formatURI(extractUriFromResponse(postResult1));
+        final Response postResult2 = getJsonPostResponseMultipart(target(path), multiPart2);
+        URI documentUri2 = SPARQLDeserializers.formatURI(extractUriFromResponse(postResult2));
+        final Response postResult3 = getJsonPostResponseMultipart(target(path), multiPart3);
+        URI documentUri3 = SPARQLDeserializers.formatURI(extractUriFromResponse(postResult3));
+
+        // Search params
+        Map<String, Object> params = new HashMap<String, Object>() {
+            {
+                put("multiple", "test");
+            }
+        };
+
+        // Perform the search
+        WebTarget searchTarget = appendSearchParams(target(path), 0, 50, params);
+        final Response getResult = appendToken(searchTarget).get();
+        assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
+
+        // Get the result and assert that they are correct
+        JsonNode node = getResult.readEntity(JsonNode.class);
+        PaginatedListResponse<DocumentGetDTO> docListResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<DocumentGetDTO>>() {
+        });
+        List<DocumentGetDTO> documentSearchList = docListResponse.getResult();
+
+        // We should get the document 1 and the document 2, but not the 3
+        assertEquals(2, documentSearchList.size());
+        assertTrue(documentSearchList.stream().anyMatch(document ->
+                Objects.equals(SPARQLDeserializers.formatURI(document.getUri()), documentUri1)));
+        assertTrue(documentSearchList.stream().anyMatch(document ->
+                Objects.equals(SPARQLDeserializers.formatURI(document.getUri()), documentUri2)));
+        assertTrue(documentSearchList.stream().noneMatch(document ->
+                Objects.equals(SPARQLDeserializers.formatURI(document.getUri()), documentUri3)));
     }
 
     @Override

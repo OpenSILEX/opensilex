@@ -45,7 +45,6 @@
           <opensilex-DateTimeForm
             :value.sync="form.activity_start_date"
             label="ProvenanceForm.start"
-            :required="!disableValidation"
             helpMessage="ProvenanceForm.start-help"
           ></opensilex-DateTimeForm>
         </div>

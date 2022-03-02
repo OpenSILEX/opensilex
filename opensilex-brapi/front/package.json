@@ -4,18 +4,19 @@
     "private": true,
     "scripts": {
         "serve": "vue-cli-service build --target lib --formats umd-min src/index.ts --mode development --watch",
-        "build": "echo export interface ModelObject {} > src/lib/model/modelObject.ts && vue-cli-service build --target lib --formats commonjs,umd-min src/index.ts --mode production",  
+        "build": "echo export interface ModelObject {} > src/lib/model/modelObject.ts && vue-cli-service build  --target lib --formats commonjs,umd-min src/index.ts --mode production",
         "lint": "vue-cli-service lint",
+        "check:browserlist": "yarn add caniuse-lite && yarn remove caniuse-lite",
         "check:outdated": "yarn outdated || cd .",
         "check:security": "yarn audit || cd ."
     },
     "devDependencies": {
-        "@vue/cli-plugin-babel": "4.5.7",
-        "@vue/cli-plugin-eslint": "4.5.7",
-        "@vue/cli-plugin-router": "4.5.7",
-        "@vue/cli-plugin-typescript": "4.5.7",
-        "@vue/cli-plugin-vuex": "4.5.7",
-        "@vue/cli-service": "4.5.7",
+        "@vue/cli-plugin-babel": "4.5.15",
+        "@vue/cli-plugin-eslint": "4.5.15",
+        "@vue/cli-plugin-router": "4.5.15",
+        "@vue/cli-plugin-typescript": "4.5.15",
+        "@vue/cli-plugin-vuex": "4.5.15",
+        "@vue/cli-service": "4.5.15",
         "@vue/eslint-config-typescript": "7.0.0"
     },
     "eslintConfig": {
@@ -43,9 +44,5 @@
         "> 1%",
         "last 2 versions"
     ],
-    "dependencies": {
-        "copy-to-clipboard": "^3.3.1",
-        "moment": "^2.24.0",
-        "vue-i18n": "^8.16.0"
-    }
+    "dependencies": {}
 }

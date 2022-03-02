@@ -47,7 +47,7 @@ public class AbstractMongoIntegrationTest extends AbstractSecurityIntegrationTes
         Map<String, String> args = new HashMap<>();
         String replicaName = "rs0";
         args.put("--replSet", replicaName);
-        mongoExec = runtime.prepare(MongodConfig.builder().version(Version.V4_0_12)
+        mongoExec = runtime.prepare(MongodConfig.builder().version(Version.V5_0_5)
                 .args(args)
                 .cmdOptions(MongoCmdOptions.builder().useNoJournal(false).build())
                 .net(new Net("127.0.0.1", nodePort, false)).build());

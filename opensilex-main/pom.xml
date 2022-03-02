@@ -22,8 +22,7 @@
 ******************************************************************************
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>opensilex-main</artifactId>
     <packaging>jar</packaging>
@@ -31,7 +30,7 @@
 
     <url>https://www.opensilex.org/</url>
     <version>${revision}</version>
-    
+
     <parent>
         <groupId>org.opensilex</groupId>
         <artifactId>opensilex-parent</artifactId>
@@ -46,7 +45,7 @@
             <version>2.2.10-1</version>
         </dependency>
     </dependencies>
-    
+
     <build>
         <!-- include swagger webapp -->
         <resources>
@@ -73,7 +72,7 @@
                     <skip>${ignoreMavenPluginVersion}</skip>
                 </configuration>
             </plugin>
-            
+
             <!-- Front Node & Yarn management -->
             <plugin>
                 <groupId>com.github.eirslett</groupId>
@@ -88,7 +87,7 @@
                         </goals>
                         <phase>initialize</phase>
                     </execution>
-                    
+
                     <!-- install typescript and dts-generator types definition generator globally -->
                     <execution>
                         <id>install typescript and dts-generator globally</id>
@@ -113,7 +112,21 @@
                         </configuration>
                         <phase>initialize</phase>
                     </execution>
-                    
+
+                    <!-- Check browserlist -->
+                    <execution>
+                        <id>install browserlist</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>yarn</goal>
+                        </goals>
+
+                        <configuration>
+                            <arguments>run check:browserlist</arguments>
+                            <workingDirectory>../</workingDirectory>
+                        </configuration>
+                    </execution>
+
                     <!-- Check shared Javascript dependencies version -->
                     <execution>
                         <id>check common js outdated dependencies</id>
@@ -128,7 +141,7 @@
                             <workingDirectory>../</workingDirectory>
                         </configuration>
                     </execution>
-                            
+
                     <!-- Check shared Javascript dependencies security issues -->
                     <execution>
                         <id>check common js dependencies security issues</id>
@@ -143,10 +156,10 @@
                             <workingDirectory>../</workingDirectory>
                         </configuration>
                     </execution>
-                    
+
                 </executions>
             </plugin>
-            
+
             <!-- Generate Shaded jar with dependencies -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -161,16 +174,13 @@
                             <shadedArtifactAttached>true</shadedArtifactAttached>
                             <shadedClassifierName>full</shadedClassifierName>
                             <transformers>
-                                <transformer
-                                    implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
-                                <transformer
-                                    implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <manifestEntries>
                                         <Main-Class>org.opensilex.cli.MainCommand</Main-Class>
                                     </manifestEntries>
                                 </transformer>
-                                <transformer
-                                    implementation="org.apache.maven.plugins.shade.resource.ComponentsXmlResourceTransformer" />
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ComponentsXmlResourceTransformer" />
                             </transformers>
                             <filters>
                                 <filter>
@@ -207,7 +217,7 @@
                     </execution>
                 </executions>
             </plugin>
-            
+
             <!-- Include git revision informations -->
             <plugin>
                 <groupId>pl.project13.maven</groupId>
@@ -232,7 +242,7 @@
                         <includeOnlyProperty>^git.commit.id.(abbrev|full)$</includeOnlyProperty>
                         <includeOnlyProperty>^git.commit.message.full$</includeOnlyProperty>
                         <includeOnlyProperty>^git.commit.user.(name|email)$</includeOnlyProperty>
-                        
+
                     </includeOnlyProperties>
                     <commitIdGenerationMode>full</commitIdGenerationMode>
                 </configuration>

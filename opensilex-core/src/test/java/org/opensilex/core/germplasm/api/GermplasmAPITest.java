@@ -121,9 +121,9 @@ public class GermplasmAPITest extends AbstractMongoIntegrationTest {
         species.setUri(extractUriFromResponse(postResult));
         species.setName("new alias");
         
-        //check that you can't update a species
+        //check that you can update germplasm
         final Response updateSpecies = getJsonPutResponse(target(updatePath), species);
-        assertEquals(Status.BAD_REQUEST.getStatusCode(), updateSpecies.getStatus());        
+        assertEquals(Status.OK.getStatusCode(), updateSpecies.getStatus());        
 
     }
 

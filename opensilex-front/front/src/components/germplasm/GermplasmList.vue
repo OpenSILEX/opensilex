@@ -128,7 +128,7 @@
       <template v-slot:cell(actions)="{data}">
         <b-button-group size="sm">
           <opensilex-EditButton
-            v-if="user.hasCredential(credentials.CREDENTIAL_GERMPLASM_MODIFICATION_ID) && !data.item.rdf_type.endsWith('Species')"
+            v-if="user.hasCredential(credentials.CREDENTIAL_GERMPLASM_MODIFICATION_ID)"
             @click="$emit('onEdit', data.item.uri)"
             label="GermplasmList.update"
             :small="true"

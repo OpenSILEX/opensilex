@@ -625,13 +625,6 @@ public class GermplasmAPI {
     ) throws Exception {
         try {
             GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
-            if (SPARQLDeserializers.compareURIs(germplasmDTO.getRdfType().toString(), Oeso.Species.getURI())) {
-                return new ErrorResponse(
-                        Response.Status.BAD_REQUEST,
-                        "The germplasm is a species",
-                        "You can't update a species"
-                ).getResponse();
-            }
             ErrorResponse error = check(germplasmDTO, germplasmDAO, true);
             if (error != null) {
                 return error.getResponse();

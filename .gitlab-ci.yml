@@ -257,9 +257,9 @@ update:nightly:builds:branch:
 
 ##  BUILD VERSIONS # example https://gitlab.com/gitlab-org/gitlab-foss/issues/13755
 
-.with_java8: &java8
+.with_java9: &java9
   variables:
-    JAVA_VERSION: 8
+    JAVA_VERSION: 9
 
 .with_java11: &java11
   variables:
@@ -277,8 +277,8 @@ update:nightly:builds:branch:
   variables:
     JAVA_VERSION: 14
 
-test:build:java8:
-  <<: *java8
+test:build:java9:
+  <<: *java9
   <<: *test_build_on_schedules
 
 test:build:java11:
@@ -513,7 +513,7 @@ test:bendy:deploy:
     - if: $CI_COMMIT_BRANCH == "bendy"
       when: on_success
   needs:
-    - bendy:build  
+    - bendy:build
 
 ###################################
 ##  JULIEN-TEST-BUILD-DEPLOYMENT

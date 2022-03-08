@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -94,12 +95,6 @@ public class IrodsFileSystemConnection extends BaseService implements Service, F
     
     public Path getAbsolutePath(Path filePath) throws IOException {
         return this.getStorageBasePath().resolve(filePath).toAbsolutePath();
-    }
-
-    @Override
-    public String readFile(Path filePath) throws IOException {
-        byte[] bytes = readFileAsByteArray(filePath);
-        return new String(bytes,StandardCharsets.UTF_8);
     }
 
     @Override

@@ -7,9 +7,9 @@ jobs:
     - uses: actions/checkout@master
     - name:  curl
       run: |
-        git clone --recurse-submodules https://oauth2:${{ secrets.FORGEMIA_PAT }}@forgemia.inra.fr/OpenSILEX/opensilex.git
-        cd opensilex/
+        git clone https://oauth2:${{ secrets.FORGEMIA_PAT }}@forgemia.inra.fr/OpenSILEX/opensilex-dev.git
+        cd opensilex-dev/
         git fetch origin
-        git checkout upstream
+        git checkout upstream 2>/dev/null || git checkout -b upstream
         git pull https://github.com/OpenSILEX/opensilex.git master
         git push origin upstream

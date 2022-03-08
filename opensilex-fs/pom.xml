@@ -30,6 +30,12 @@
     </properties>
     
     <dependencies>
+        <!-- OpenSilex NoSQL -->
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-nosql</artifactId>
+            <version>${revision}</version>
+        </dependency>
         <!-- OpenSilex Base -->
         <dependency>
             <groupId>org.opensilex</groupId>

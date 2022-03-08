@@ -13,21 +13,16 @@ import org.opensilex.service.ServiceConfig;
  *
  * @author vince
  */
-public interface FileStorageServiceConfig extends ServiceConfig {
-
-    @ConfigDescription(
-            value = "Base path for file storage"
-    )
-    public String basePath();
+public interface FileStorageServiceConfig extends ServiceConfig { 
     
     @ConfigDescription(
         value = "Default file system storage"
     )
-    public FileStorageConnection defaultFS();
+    public String defaultFS();
 
     @ConfigDescription(
             value = "Map of file storage connection definition by identifier"
-    )
+     )
     public Map<String, FileStorageConnection> connections();
 
     @ConfigDescription(

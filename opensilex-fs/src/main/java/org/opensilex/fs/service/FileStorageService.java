@@ -12,7 +12,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.opensilex.config.InvalidConfigException;
-import org.opensilex.fs.local.LocalFileSystemConnection;
 import org.opensilex.service.BaseService;
 import org.opensilex.service.Service;
 import org.opensilex.service.ServiceDefaultDefinition;
@@ -24,7 +23,10 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.logging.Level;
 import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.lang3.StringUtils;
+import org.opensilex.fs.local.TempFileSystemConnection;
 
 /**
  * File storage service to access any filesystem (default to local)
@@ -48,12 +50,6 @@ public class FileStorageService extends BaseService implements Service {
 
     public FileStorageService(FileStorageServiceConfig config) throws InvalidConfigException {
         super(config);
-        FileStorageConnection tmpDefaultFS = config.defaultFS();
-        if (tmpDefaultFS == null) {
-            this.defaultFS = new LocalFileSystemConnection(getStorageBasePath());
-        } else {
-            this.defaultFS = tmpDefaultFS;
-        }
         connections = config.connections();
         for (Map.Entry<String, String> path : config.customPath().entrySet()) {
             Path pathPrefix = Paths.get(path.getKey());
@@ -89,48 +85,80 @@ public class FileStorageService extends BaseService implements Service {
                 }
             }
         });
+        String tmpDefaultFS = (StringUtils.isBlank(config.defaultFS()) ? null : config.defaultFS());
+
+        if (!connections.containsKey(tmpDefaultFS)) {
+            LOGGER.info("File storage connection not found: " + tmpDefaultFS + " Default temporary file system will be used on configured mongo server");
+        }
+        if (tmpDefaultFS == null) {
+            TempFileSystemConnection tempFileSystemConnection = null;
+            try {
+                tempFileSystemConnection = new TempFileSystemConnection();
+            } catch (IOException ex) {
+                 LOGGER.error(ex.getMessage(),ex);
+            }
+            this.defaultFS = tempFileSystemConnection;
+        } else {
+            this.defaultFS = connections.get(tmpDefaultFS);
+        }
+        if(this.defaultFS == null){
+            throw new InvalidConfigException("File storage connection not set");
+        }
     }
 
     @Override
     public void setup() throws Exception {
-        defaultFS.setOpenSilex(getOpenSilex());
-        defaultFS.setup();
+        if (defaultFS != null) {
+            defaultFS.setOpenSilex(getOpenSilex());
+            defaultFS.setup();
+        }
         for (FileStorageConnection connection : connections.values()) {
-            connection.setOpenSilex(getOpenSilex());
-            connection.setup();
+            if (connection != null) {
+                connection.setOpenSilex(getOpenSilex());
+                connection.setup();
+            }
         }
     }
 
     @Override
     public void clean() throws Exception {
-        defaultFS.clean();
+        if (defaultFS != null) {
+            defaultFS.clean();
+        }
+
         for (FileStorageConnection connection : connections.values()) {
-            connection.clean();
+            if (connection != null) {
+                connection.clean();
+            }
         }
     }
 
     @Override
     public void startup() throws Exception {
-        defaultFS.startup();
+        if (defaultFS != null) {
+            defaultFS.startup();
+        }
         for (FileStorageConnection connection : connections.values()) {
-            connection.startup();
+            if (connection != null) {
+                connection.startup();
+            }
         }
     }
 
     @Override
     public void shutdown() throws Exception {
-        defaultFS.shutdown();
+        if (defaultFS != null) {
+            defaultFS.shutdown();
+        }
         for (FileStorageConnection connection : connections.values()) {
-            connection.shutdown();
+            if (connection != null) {
+                connection.shutdown();
+            }
         }
     }
 
     public FileStorageServiceConfig getImplementedConfig() {
         return (FileStorageServiceConfig) this.getConfig();
-    }
-
-    public Path getStorageBasePath() {
-        return Paths.get(getImplementedConfig().basePath());
     }
 
     protected FileStorageConnection getConnection(String prefix) {
@@ -152,12 +180,12 @@ public class FileStorageService extends BaseService implements Service {
         return getConnection(prefix).readFile(filePath);
     }
 
-    public void writeFile(String prefix, Path filePath, String content) throws IOException {
+    public void writeFile(String prefix, Path filePath, String content, URI fileURI) throws IOException {
         LOGGER.debug("WRITE FILE: " + filePath.toString());
         getConnection(prefix).writeFile(filePath, content);
     }
 
-    public void writeFile(String prefix, Path filePath, File file) throws IOException {
+    public void writeFile(String prefix, Path filePath, File file, URI fileURI) throws IOException {
         LOGGER.debug("WRITE FILE: " + filePath.toString());
         getConnection(prefix).writeFile(filePath, file);
     }
@@ -181,7 +209,7 @@ public class FileStorageService extends BaseService implements Service {
         LOGGER.debug("DELETE FILE: " + filePath.toString());
         getConnection(prefix).delete(filePath);
     }
-    
+
     public Path getFilePathFromPrefixURI(String prefix, URI fileURI) {
         return Paths.get(prefix, fileURI.getPath(), Hex.encodeHexString(fileURI.toString().getBytes(StandardCharsets.UTF_8)));
     }
@@ -191,16 +219,20 @@ public class FileStorageService extends BaseService implements Service {
     }
 
     public void writeFile(String prefix, URI fileURI, String content) throws IOException {
-        writeFile(prefix, getFilePathFromPrefixURI(prefix, fileURI), content);
+        writeFile(prefix, getFilePathFromPrefixURI(prefix, fileURI), content, fileURI);
     }
 
     public void writeFile(String prefix, URI fileURI, File file) throws IOException {
-        Path filePath = getFilePathFromPrefixURI(prefix, fileURI);        
+        Path filePath = getFilePathFromPrefixURI(prefix, fileURI);
         try {
             createDirectories(prefix, filePath.getParent());
-        } catch (Exception e) {
+        } catch (IOException e) {
             LOGGER.debug(e.getMessage());
         }
+        getConnection(prefix).writeFile(filePath, file);
+    }
+    
+    public void writeFile(String prefix, Path filePath, File file) throws IOException {
         getConnection(prefix).writeFile(filePath, file);
     }
 
@@ -220,7 +252,6 @@ public class FileStorageService extends BaseService implements Service {
         try {
             getConnection(prefix).delete(file);
         } catch (Exception e) {
-            
         }
     }
 }

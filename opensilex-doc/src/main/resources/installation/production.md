@@ -1,5 +1,27 @@
-Install OpenSILEX in production
-===============================
+# Install OpenSILEX in production
+
+- [Install OpenSILEX in production](#install-opensilex-in-production)
+- [Pre-requesites](#pre-requesites)
+  - [Operating System](#operating-system)
+  - [Java](#java)
+  - [Set up MongoDB](#set-up-mongodb)
+  - [Set up a triplestore](#set-up-a-triplestore)
+    - [RDF4J](#rdf4j)
+    - [GraphDB](#graphdb)
+- [Installation](#installation)
+  - [Set up a user](#set-up-a-user)
+  - [Create directories](#create-directories)
+  - [Download & extract OpenSILEX production release](#download--extract-opensilex-production-release)
+  - [Configuration](#configuration)
+    - [Create main configuration file](#create-main-configuration-file)
+    - [Configure logging](#configure-logging)
+  - [Initialize database and check configuration](#initialize-database-and-check-configuration)
+    - [Create a script to access instructions](#create-a-script-to-access-instructions)
+    - [Add an alias](#add-an-alias)
+    - [Initialize your triplestore](#initialize-your-triplestore)
+  - [Start openSilex](#start-opensilex)
+  - [Stop openSilex](#stop-opensilex)
+  - [Add a Reverse Proxy Nginx to redirect application on port 80](#add-a-reverse-proxy-nginx-to-redirect-application-on-port-80)
 
 # Pre-requesites
 
@@ -9,14 +31,14 @@ OpenSILEX should work on any system where the required softwares are available b
 
 Commands in this document should work on any Debian-like distribution (with sudo configured) but should be easily adapted for any Linux distributions
 
-## Java 
+## Java
 
 You need at least [Java JDK 8+](https://jdk.java.net/) installed on the server operating system.
 
 You can install it on linux with the following command:
 
 ```
-sudo apt install openjdk-11-jdk 
+sudo apt install openjdk-11-jdk
 ```
 
 You can check java installation and version with the following command:
@@ -118,21 +140,25 @@ su - opensilex
 ## Create directories
 
 Directory for OpenSILEX binaries:
+
 ```
 mkdir -p /home/opensilex/bin
 ```
 
 Directory for OpenSILEX configuration file:
+
 ```
 mkdir -p /home/opensilex/config
 ```
 
 Directory for OpenSILEX data file storage:
+
 ```
 mkdir -p /home/opensilex/data
 ```
 
 Directory for OpenSILEX file logs:
+
 ```
 mkdir -p /home/opensilex/logs
 ```
@@ -141,7 +167,7 @@ mkdir -p /home/opensilex/logs
 
 Please download the OpenSILEX latest release archive on [Github](https://github.com/OpenSILEX/opensilex/releases)
 In this paragraph, `<X.Y.Z>` means the OpenSILEX release version.
-Extract the downloaded zip file into ```/home/opensilex/bin```
+Extract the downloaded zip file into `/home/opensilex/bin`
 
 Linux example commands:
 
@@ -151,7 +177,9 @@ wget https://github.com/OpenSILEX/opensilex/releases/download/X.Y.Z/opensilex-X.
 unzip opensilex-X.Y.Z.zip
 
 ```
+
 For latest version
+
 ```
 cd /home/opensilex/bin
 wget https://github.com/OpenSILEX/opensilex/releases/download/1.0.0-beta/opensilex-release-1.0.0-beta.zip
@@ -181,7 +209,6 @@ You should get the following directory structure:
 
 ## Configuration
 
-
 ### Create main configuration file
 
 Create a YML file in `/home/opensilex/config` named `opensilex.yml` for example.
@@ -191,35 +218,35 @@ Here is a minimal example of configuration content, where all values must be ada
 
 ```yml
 ontologies:
-    baseURI: http://www.opensilex.org/
-    baseURIAlias: os
-    sparql:
-        config:
-            serverURI: http://localhost:8080/rdf4j-server/
-            repository: opensilex
+  baseURI: http://www.opensilex.org/
+  baseURIAlias: os
+  sparql:
+    config:
+      serverURI: http://localhost:8080/rdf4j-server/
+      repository: opensilex
 
 file-system:
-    fs:
-        config:
-            basePath: /home/opensilex/data
-    
-big-data:   
-    mongodb:
-        config:
-            host: localhost
-            port: 27017
-            database: opensilex
+  fs:
+    config:
+      basePath: /home/opensilex/data
+
+big-data:
+  mongodb:
+    config:
+      host: localhost
+      port: 27017
+      database: opensilex
 ```
 
 **N.B.** The ontologies OESO and OEEV are stored in [opensilex-core/src/main/resources/ontologies](https://forgemia.inra.fr/OpenSILEX/opensilex-dev/-/tree/master/opensilex-core/src/main/resources/ontologies). Other specific ontologies can be stored in each module.
 
 ### Configure logging
 
-Edit the file ```/home/opensilex/bin/<X.Y.Z>/logback.xml```
+Edit the file `/home/opensilex/bin/<X.Y.Z>/logback.xml`
 
 Set the path property to reflect your installation:
 
-```                
+```
 <property name="log.path" value="/home/opensilex/logs"/>
 ```
 
@@ -227,17 +254,18 @@ We use Java Logback library for logging in our application, please read their [d
 
 By default logs will be printed to the console output and writen into a rotating daily log file stored for 30 days.
 
-
 ## Initialize database and check configuration
 
 ### Create a script to access instructions
 
 - Create
+
 ```
 nano /home/opensilex/bin/<X.Y.Z>/opensilex.sh
 ```
 
 - Content
+
 ```
 #!/bin/bash
 
@@ -251,28 +279,33 @@ java -jar $SCRIPT_DIR/opensilex.jar --BASE_DIRECTORY=$SCRIPT_DIR --CONFIG_FILE=$
 ```
 
 - Activation
+
 ```
 chmod +x /home/opensilex/bin/<X.Y.Z>/opensilex.sh
 ```
 
 ### Add an alias
 
-- Edit 
+- Edit
+
 ```
 nano ~/.bash_aliases
 ```
 
 - Content
+
 ```
 alias opensilex="/home/opensilex/bin/<X.Y.Z>/opensilex.sh"
 ```
 
 - Activation
+
 ```
 source  ~/.bashrc
 ```
 
 - Verification
+
 ```
 opensilex help
 ```
@@ -322,12 +355,14 @@ opensilex server stop --host=192.168.178.31 --adminPort=4081
 ## Add a Reverse Proxy Nginx to redirect application on port 80
 
 Instructions
+
 ```
 sudo apt install nginx
-sudo nano /etc/nginx/sites-enabled/default  
+sudo nano /etc/nginx/sites-enabled/default
 ```
 
 Content
+
 ```
         location / {
                 #comment the following line to avoid an error and enable proxy
@@ -339,6 +374,7 @@ Content
 ```
 
 Activation
+
 ```
 sudo systemctl restart nginx
 ```

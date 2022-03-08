@@ -7,20 +7,27 @@ ontologies:
             serverURI: http://localhost:8667/rdf4j-server/
             repository: opensilex
 
-
 file-system:
     fs:
         config:
-            basePath: ../../opensilex-data
-#            defaultFS:
-#                implementation: org.opensilex.fs.local.LocalFileSystemConnection
-#            connections:
-#                irods:
-#                    implementation: org.opensilex.fs.irods.IrodsFileSystemConnection
-#                    config:
-#                        basePath: /FranceGrillesZone/home/fg-phenome/PHIS
-#            customPath:
-#                datafile/: irods
+            defaultFS: local
+            connections:
+                local:
+                    implementation: org.opensilex.fs.local.LocalFileSystemConnection
+                    config:
+                        basePath: ../../opensilex-data
+            #     irods:
+            #         implementation: org.opensilex.fs.irods.IrodsFileSystemConnection
+            #         config:
+            #             basePath: /FranceGrillesZone/home/fg-phenome/PHIS
+                gridfs:
+                    implementation: org.opensilex.fs.gridfs.GridFSConnection
+                    config:
+                        host: localhost
+                        port: 8668
+                        database: opensilex
+            # customPath:
+            #     datafile/: irods
 
 big-data:
     mongodb:

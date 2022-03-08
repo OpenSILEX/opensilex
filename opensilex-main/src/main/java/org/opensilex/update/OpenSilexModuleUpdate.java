@@ -33,6 +33,7 @@ public interface OpenSilexModuleUpdate {
 
     /**
      * Update logic to implement.
+     * @throws org.opensilex.update.OpensilexModuleUpdateException
      */
      void execute() throws OpensilexModuleUpdateException;
 

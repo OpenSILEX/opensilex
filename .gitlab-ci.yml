@@ -707,3 +707,12 @@ test:guilhem:deploy:
       when: on_success
   needs:
     - guilhem:build
+
+######################################
+##  PHENO3C-PROD-BUILD-DEPLOYMENT
+######################################
+
+pheno3c:build:
+  <<: *build_template_with_opensilex
+  rules:
+    - if: $CI_COMMIT_BRANCH == "pheno3c"

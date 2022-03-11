@@ -278,6 +278,7 @@ en:
     advanced: Advanced information
     edit: Edit variable
     edit-references: Edit references
+    visualization: Device associated Data Visualization
 fr:
   VariableDetails:
     title: Vue détaillée de la variable
@@ -289,4 +290,5 @@ fr:
     advanced: Informations avancées
     edit: Editer la variable
     edit-references: Editer les références
+    visualization: Visualisation des données associées à un instrument
 </i18n>

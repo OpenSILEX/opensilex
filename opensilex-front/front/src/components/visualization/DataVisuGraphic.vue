@@ -189,6 +189,7 @@ export default class DataVisuGraphic extends Vue {
   private concernedItem;
   chartOptionsValues: any = [];
 
+
   @Prop({
     default: false
   })
@@ -203,6 +204,16 @@ export default class DataVisuGraphic extends Vue {
     default: true
   })
   isAddEvents;
+
+  @Prop({
+    default: false
+  })
+  lType;
+
+  @Prop({
+    default: false
+  })
+  lWidth;
 
   data: any = null;
   provenance: any = null;
@@ -228,6 +239,9 @@ export default class DataVisuGraphic extends Vue {
       proceed.apply(this, Array.prototype.slice.call(arguments, 1));
       item.color = color;
     });
+
+    this.lineType = this.lType;
+    this.lineWidth = this.lWidth;
   }
 
 
@@ -615,7 +629,7 @@ export default class DataVisuGraphic extends Vue {
         this.topPosition = e.pageY;
       });
       this.selectedValue = e.point.y;
-      this.selectedObject = e.point.objectUri;
+      this.selectedObject = e.point.objectUri ? e.point.objectUri : e.point.deviceUri;
       this.selectedProvenance = e.point.provenanceUri;
       this.selectedData = e.point.data.uri;
 

@@ -21,7 +21,7 @@
         <b-nav-item
             :active="isVisualizationTab()"
             :to="{ path: '/variable/visualization/' + encodeURIComponent(uri) }"
-        >{{ $t('DeviceDetails.visualization') }}
+        >{{ $t('VariableDetails.visualization') }}
         </b-nav-item>
 
       </template>
@@ -43,6 +43,7 @@
                 :modificationCredentialId="credentials.CREDENTIAL_ANNOTATION_MODIFICATION_ID"
                 :deleteCredentialId="credentials.CREDENTIAL_ANNOTATION_DELETE_ID"
         ></opensilex-AnnotationList>
+
         <opensilex-VariableVisualizationTab
             v-else-if="isVisualizationTab()"
             :variable="uri"

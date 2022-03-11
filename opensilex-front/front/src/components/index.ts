@@ -473,7 +473,6 @@ import VariableDevicesSelector from './variables/form/VariableDevicesSelector.vu
 components["opensilex-VariableDevicesSelector"] = VariableDevicesSelector;
 import VariableHelp from './variables/views/VariableHelp.vue';
 components["opensilex-VariableHelp"] = VariableHelp;
-
 import VariableCreate from './variables/form/VariableCreate.vue';
 components["opensilex-VariableCreate"] = VariableCreate;
 import VariableForm from './variables/form/VariableForm.vue';

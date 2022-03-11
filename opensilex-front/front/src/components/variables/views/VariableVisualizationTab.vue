@@ -3,6 +3,7 @@
     <opensilex-VariableVisualizationForm
         ref="variableVisualizationForm"
         :variable="variable"
+        :devices="devicesURI"
         @search="onSearch"
         @update="onUpdate"
     ></opensilex-VariableVisualizationForm>
@@ -15,8 +16,23 @@
         v-if="isGraphicLoaded"
         ref="visuGraphic"
         :deviceType="false"
-        :activateContextMenuShow="false"
+        :lType="true"
+        :lWidth="true"
+        @addEventIsClicked="showEventForm"
+        @dataAnnotationIsClicked="showAnnotationForm"
     ></opensilex-DataVisuGraphic>
+
+    <opensilex-AnnotationModalForm
+        ref="annotationModalForm"
+        @onCreate="onAnnotationCreated"
+    ></opensilex-AnnotationModalForm>
+
+    <opensilex-EventModalForm
+        ref="eventsModalForm"
+        :target="target"
+        :eventCreatedTime="eventCreatedTime"
+        @onCreate="onEventCreated"
+    ></opensilex-EventModalForm>
   </div>
 </template>
 
@@ -29,6 +45,8 @@ import Highcharts from "highcharts";
 import {
   DevicesService,
   DataGetDTO,
+  EventsService,
+  EventGetDTO,
 } from "opensilex-core/index";
 // @ts-ignore
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
@@ -57,20 +75,68 @@ export default class VariableVisualizationTab extends Vue {
   @Prop()
   variable;
 
+
   isGraphicLoaded: boolean = true;
+  target = [];
+  eventCreatedTime = "";
 
   form;
   selectedVariable;
+  devicesInfo = [];
   devicesService: DevicesService;
+  eventsService: EventsService;
   deviceColorMap = [];
-
   @Ref("page") readonly page!: any;
   @Ref("visuGraphic") readonly visuGraphic!: any;
+  @Ref("annotationModalForm") readonly annotationModalForm!: any;
+  @Ref("eventsModalForm") readonly eventsModalForm!: any;
   @Ref("variableVisualizationForm") readonly variableVisualizationForm!: any;
 
+  get devicesURI() {
+    return this.devicesInfo.map(dev => {
+      return dev.uri;
+    });
+  }
+
+  private langUnwatcher;
+
+  mounted() {
+    this.langUnwatcher = this.$store.watch(
+        () => this.$store.getters.language,
+        lang => {
+          if (this.isGraphicLoaded) {
+            this.onUpdate(this.form);
+          }
+        }
+    );
+  }
+
+  beforeDestroy() {
+    this.langUnwatcher();
+  }
+
+  onAnnotationCreated() {
+    this.visuGraphic.updateDataAnnotations();
+  }
+
+  onEventCreated() {
+    this.onUpdate(this.form)
+    this.variableVisualizationForm.getTotalEventsCount();
+  }
+
+  showEventForm(value) {
+    this.target = value.target;
+    this.eventCreatedTime = value;
+    this.eventsModalForm.showCreateForm();
+  }
+
+  showAnnotationForm(target) {
+    this.annotationModalForm.showCreateForm([target]);
+  }
 
   created() {
     this.dataService = this.$opensilex.getService("opensilex.DataService");
+    this.eventsService = this.$opensilex.getService("opensilex.EventsService");
     this.$opensilex.disableLoader();
   }
 
@@ -91,23 +157,6 @@ export default class VariableVisualizationTab extends Vue {
           this.$i18n.t("ExperimentDataVisuView.datatypeMessageB")
       );
     }
-  }
-
-  private langUnwatcher;
-
-  mounted() {
-    this.langUnwatcher = this.$store.watch(
-        () => this.$store.getters.language,
-        lang => {
-          if (this.isGraphicLoaded) {
-            this.onUpdate(this.form);
-          }
-        }
-    );
-  }
-
-  beforeDestroy() {
-    this.langUnwatcher();
   }
 
   buildColorsDevicesMap() {
@@ -183,40 +232,59 @@ export default class VariableVisualizationTab extends Vue {
 
   loadSeries() {
     if (this.variable) {
-      this.buildSeries();
+      return this.$opensilex
+          .getService("opensilex.DevicesService")
+          .getDeviceByUris(this.form.device)
+          .then(http => {
+            this.devicesInfo = http.response.result;
+            this.buildSeries();
+          })
+
     }
   }
 
   buildSeries() {
+    var promises = [];
     var promise;
+    const series = [];
+    let serie;
     this.dataService = this.$opensilex.getService("opensilex.DataService");
 
     this.$opensilex.disableLoader();
+    promise = this.buildEventsSeries();
+    promises.push(promise);
     promise = this.buildDataSeries();
+    promises.push(promise);
 
-    promise.then(values => {
+    Promise.all(promises).then(values => {
       let series = [];
 
-      if (values) {
-        values.forEach(serie => {
+      if (values[0]) {
+        values[0].forEach(serie => {
+          series.push(serie);
+        });
+      }
+
+      if (values[1]) {
+        values[1].forEach(serie => {
           series.push(serie);
         });
       }
 
       this.isGraphicLoaded = true;
       this.$nextTick(() => {
-        this.visuGraphic.reload(series, this.selectedVariable, false);
+        this.visuGraphic.reload(series, this.selectedVariable, this.form.showEvents);
       });
     });
   }
 
-
   buildDataSeries() {
-    let series = [];
+    let series = [],
+        serie;
     let promises = [],
         promise;
-    this.form.device.forEach((element, index) => {
-      promise = this.buildDataSerie(element);
+    this.devicesInfo.forEach((device, index) => {
+      promise = this.buildDataSerie(device);
       promises.push(promise);
     });
 
@@ -230,65 +298,154 @@ export default class VariableVisualizationTab extends Vue {
     });
   }
 
+  buildEventsSeries() {
+    if (this.form && this.form.showEvents) {
+      let series = [],
+          serie;
+      let promises = [],
+          promise;
+      this.devicesInfo.forEach((device, index) => {
+        promise = this.buildEventsSerie(device);
+        promises.push(promise);
+      })
+      return Promise.all(promises).then(values => {
+        values.forEach(serie => {
+          if (serie !== undefined) {
+            series.push(serie);
+          }
+        });
+        return series;
+      });
+    } else {
+      return null;
+    }
+  }
+
+  buildEventsSerie(concernedItem) {
+    return this.eventsService
+        .searchEvents(
+            undefined,
+            this.form.startDate != undefined && this.form.startDate != ""
+                ? this.form.startDate
+                : undefined,
+            this.form.endDate != undefined && this.form.endDate != ""
+                ? this.form.endDate
+                : undefined,
+            concernedItem.uri,
+            undefined,
+            undefined,
+            0,
+            0
+        )
+        .then((http: HttpResponse<OpenSilexResponse<Array<EventGetDTO>>>) => {
+          const events = http.response.result as Array<EventGetDTO>;
+          if (events.length > 0) {
+            const cleanEventsData = [];
+            let convertedDate, toAdd, label, title;
+
+            events.forEach(element => {
+              label = element.rdf_type_name
+                  ? element.rdf_type_name
+                  : element.rdf_type;
+              if (element.start != null) {
+                let endTime = element.end ? element.end : "en cours..";
+                label = label + "(End: " + endTime + ")";
+              }
+              title = label.charAt(0).toUpperCase();
+              let stringDateWithoutUTC;
+              if (element.start != null) {
+                stringDateWithoutUTC =
+                    moment.parseZone(element.start).format("YYYYMMDD HHmmss") +
+                    "+00:00";
+              } else {
+                stringDateWithoutUTC =
+                    moment.parseZone(element.end).format("YYYYMMDD HHmmss") +
+                    "+00:00";
+              }
+
+              let dateWithoutUTC = moment(stringDateWithoutUTC).valueOf();
+              toAdd = {
+                x: dateWithoutUTC,
+                title: title,
+                text: label,
+                eventUri: element.uri,
+              };
+
+              cleanEventsData.push(toAdd);
+            });
+            let name = concernedItem.name ? concernedItem.name : concernedItem.uri
+            return {
+              type: "flags",
+              allowOverlapX: false,
+              name: "Events ->" + name,
+              lineWidth: 1,
+              yAxis: 1,
+              data: cleanEventsData,
+              style: {
+                // text style
+                color: "white"
+              },
+              fillColor: this.deviceColorMap[concernedItem.uri],
+              legendColor: this.deviceColorMap[concernedItem.uri]
+
+            };
+          } else {
+            return undefined;
+          }
+        });
+  }
 
   buildDataSerie(concernedItem) {
-    return this.$opensilex
-        .getService("opensilex.DevicesService")
-        .getDevice(concernedItem)
-        .then((http: HttpResponse<OpenSilexResponse<DeviceGetDTO>>) => {
-          let deviceInfo = http.response.result;
-          return this.dataService
-              .searchDataList(
-                  this.form.startDate != undefined && this.form.startDate != ""
-                      ? this.form.startDate
-                      : undefined,
-                  this.form.endDate != undefined && this.form.endDate != ""
-                      ? this.form.endDate
-                      : undefined,
-                  undefined,
-                  undefined,
-                  undefined,
-                  [this.variable],
-                  this.form.device ? [concernedItem] : undefined,
-                  undefined,
-                  undefined,
-                  undefined,
-                  undefined, //this.addMetadataFilter(),
-                  ["date=asc"],
-                  0,
-                  50000
-              )
-              .then((http: HttpResponse<OpenSilexResponse<Array<DataGetDTO>>>) => {
-                const data = http.response.result as Array<DataGetDTO>;
-                let dataLength = data.length;
-                if (dataLength > 0) {
-                  const cleanData = this.dataTransforme(data, concernedItem);
-                  if (dataLength > 50000) {
-                    this.$opensilex.showInfoToast(
-                        this.$i18n.t("ExperimentDataVisuView.limitSizeMessageA") +
-                        " " +
-                        dataLength +
-                        " " +
-                        this.$i18n.t("ExperimentDataVisuView.limitSizeMessageB") +
-                        concernedItem +
-                        this.$i18n.t("ExperimentDataVisuView.limitSizeMessageC")
-                    );
-                  }
+    return this.dataService
+        .searchDataList(
+            this.form.startDate != undefined && this.form.startDate != ""
+                ? this.form.startDate
+                : undefined,
+            this.form.endDate != undefined && this.form.endDate != ""
+                ? this.form.endDate
+                : undefined,
+            undefined,
+            undefined,
+            undefined,
+            [this.variable],
+            this.form.device ? [concernedItem.uri] : undefined,
+            undefined,
+            undefined,
+            this.form.provenance ? [this.form.provenance] : undefined,
+            undefined, //this.addMetadataFilter(),
+            ["date=asc"],
+            0,
+            50000
+        )
+        .then((http: HttpResponse<OpenSilexResponse<Array<DataGetDTO>>>) => {
+          const data = http.response.result as Array<DataGetDTO>;
+          let dataLength = data.length;
+          if (dataLength > 0) {
+            const cleanData = this.dataTransforme(data, concernedItem);
+            if (dataLength > 50000) {
+              this.$opensilex.showInfoToast(
+                  this.$i18n.t("ExperimentDataVisuView.limitSizeMessageA") +
+                  " " +
+                  dataLength +
+                  " " +
+                  this.$i18n.t("ExperimentDataVisuView.limitSizeMessageB") +
+                  concernedItem.name +
+                  this.$i18n.t("ExperimentDataVisuView.limitSizeMessageC")
+              );
+            }
 
-                  let name = deviceInfo.name ? deviceInfo.name : concernedItem
-                  return {
-                    name: name,
-                    data: cleanData,
-                    visible: true,
-                    color: this.deviceColorMap[concernedItem],
-                    legendColor: this.deviceColorMap[concernedItem]
-                  };
-                }
-              })
-              .catch(error => {
-              });
+            let name = concernedItem.name ? concernedItem.name : concernedItem.uri
+            return {
+              name: name,
+              data: cleanData,
+              visible: true,
+              color: this.deviceColorMap[concernedItem.uri],
+              legendColor: this.deviceColorMap[concernedItem.uri]
+            };
+          }
         })
-        .catch(this.$opensilex.errorHandler);
+        .catch(error => {
+        });
   }
 
 
@@ -312,7 +469,7 @@ export default class VariableVisualizationTab extends Vue {
         offset: offset,
         dateWithOffset: highchartsDate + offset,
         provenanceUri: element.provenance.uri,
-        deviceUri: concernedItem, //concernedItem,
+        deviceUri: concernedItem.uri, //concernedItem,
         data: element
       };
       cleanData.push(toAdd);

@@ -66,10 +66,6 @@ export default class ProvenanceSelector extends Vue {
   })
   multiple;
 
-  @Prop({
-    default: true
-  })
-  showURI;
 
   @Prop()
   viewHandler: Function;
@@ -124,7 +120,7 @@ export default class ProvenanceSelector extends Vue {
   provenancesToSelectNode(dto: ProvenanceGetDTO) {
     return {
       id: dto.uri,
-      label: this.showURI ? dto.name + " (" + dto.uri + ")" : dto.name
+      label: dto.name
     };
   }
   select(value) {

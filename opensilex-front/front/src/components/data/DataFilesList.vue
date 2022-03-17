@@ -195,19 +195,19 @@ export default class DataFilesList extends Vue {
     }
 
     return new Promise((resolve, reject) => {
-        this.service.getDataFileDescriptionsBySearch(
+        this.service.getDataFileDescriptionsByTargets(
           this.$opensilex.prepareGetParameter(this.filter.rdf_type),
           this.$opensilex.prepareGetParameter(this.filter.start_date), // start_date
           this.$opensilex.prepareGetParameter(this.filter.end_date), // end_date
           undefined, // timezone,
           this.filter.experiments, // experiments
-          this.filter.scientificObjects, // scientific_object
           this.filter.devices, //devices
           provUris, // provenances
           undefined, // metadata
           undefined, // order_by
           options.currentPage,
-          options.pageSize
+          options.pageSize,
+          this.filter.scientificObjects, // scientific_object
         ).then((http) => {
         let promiseArray = [];
         let objectsToLoad = [];

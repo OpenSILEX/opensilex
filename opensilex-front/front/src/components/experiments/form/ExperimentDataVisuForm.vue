@@ -59,7 +59,6 @@
               :multiple="false"
               :viewHandler="showProvenanceDetails"
               :viewHandlerDetailsVisible="visibleDetails"
-              :showURI="false"
             ></opensilex-DataProvenanceSelector>
           </opensilex-FilterField>
 

@@ -21,7 +21,7 @@
           >
             <template v-slot:filters>
               <!-- Variables -->
-              <opensilex-FilterField fullWidth="true">
+              <opensilex-FilterField halfWidth="true">
                 <opensilex-UsedVariableSelector
                   label="DataView.filter.variables"
                   :multiple="true"
@@ -31,16 +31,24 @@
                 ></opensilex-UsedVariableSelector>
               </opensilex-FilterField>
 
-              <!-- targets -->
-              <opensilex-FilterField halfWidth="true">
-                <opensilex-TagInputForm
-                  class="overflow-auto"
-                  style="height: 90px"
-                  :value.sync="filter.targets"
-                  label="DataView.filter.targets"
-                  helpMessage="DataView.filter.targets-help"
-                  type="text"
-                ></opensilex-TagInputForm>
+                <opensilex-FilterField quarterWidth="true">
+                <!-- Start Date -->
+                <opensilex-DateTimeForm
+                  :value.sync="filter.start_date"
+                  label="component.common.begin"
+                  name="startDate"
+                  :max-date="filter.end_date ? filter.end_date : undefined"
+                ></opensilex-DateTimeForm>
+              </opensilex-FilterField>
+
+              <opensilex-FilterField quarterWidth="true">
+                <!-- End Date -->
+                <opensilex-DateTimeForm
+                  :value.sync="filter.end_date"
+                  label="component.common.end"
+                  name="endDate"
+                  :min-date="filter.start_date ? filter.start_date : undefined"
+                ></opensilex-DateTimeForm>
               </opensilex-FilterField>
 
               <!-- Scientific objects -->
@@ -50,9 +58,7 @@
                   label="DataView.filter.scientificObjects"
                   placeholder="DataView.filter.scientificObjects-placeholder"
                   :selected.sync="filter.scientificObjects"
-                  :conversionMethod="soGetDTOToSelectNode"
                   modalComponent="opensilex-ScientificObjectModalListByExp"
-                  :itemLoadingMethod="loadSO"
                   :filter.sync="soFilter"
                   :isModalSearch="true"
                   :clearable="true"
@@ -64,28 +70,22 @@
                 ></opensilex-SelectForm>
               </opensilex-FilterField>
 
-              <opensilex-FilterField>
-                <!-- Start Date -->
-                <opensilex-DateTimeForm
-                  :value.sync="filter.start_date"
-                  label="component.common.begin"
-                  name="startDate"
-                  :max-date="filter.end_date ? filter.end_date : undefined"
-                ></opensilex-DateTimeForm>
+                   <!-- targets -->
+              <opensilex-FilterField halfWidth="true">
+                <opensilex-TagInputForm
+                  class="overflow-auto"
+                  style="height: 90px"
+                  :value.sync="filter.targets"
+                  label="DataView.filter.targets"
+                  helpMessage="DataView.filter.targets-help"
+                  type="text"
+                ></opensilex-TagInputForm>
               </opensilex-FilterField>
 
-              <opensilex-FilterField>
-                <!-- End Date -->
-                <opensilex-DateTimeForm
-                  :value.sync="filter.end_date"
-                  label="component.common.end"
-                  name="endDate"
-                  :min-date="filter.start_date ? filter.start_date : undefined"
-                ></opensilex-DateTimeForm>
-              </opensilex-FilterField>
+            
 
               <!-- Provenance -->
-              <opensilex-FilterField halfWidth="true">
+              <opensilex-FilterField halfWidth="true" >
                 <opensilex-DataProvenanceSelector
                   ref="provSelector"
                   :provenances.sync="filter.provenance"
@@ -96,7 +96,6 @@
                   :multiple="false"
                   :viewHandler="showProvenanceDetails"
                   :viewHandlerDetailsVisible="visibleDetails"
-                  :showURI="false"
                   :key="refreshKey"
                 ></opensilex-DataProvenanceSelector>
 
@@ -230,9 +229,9 @@ export default class ExperimentData extends Vue {
   }
 
   refreshSoSelector() {
-   
-    this.refreshProvComponent();
+    
     this.soSelector.refreshModalSearch();
+    this.refreshProvComponent();
   }
 
   successMessage(form) {
@@ -344,30 +343,6 @@ export default class ExperimentData extends Vue {
     });
   }
 
-  loadSO(scientificObjectsURIs) {
-    const sos = scientificObjectsURIs.filter((x, i, a) => a.indexOf(x) == i); // distinct element on array
-    return this.$opensilex
-      .getService("opensilex.ScientificObjectsService")
-      .getScientificObjectsListByUris(this.uri, sos)
-      .then(
-        (
-          http: HttpResponse<OpenSilexResponse<Array<ScientificObjectNodeDTO>>>
-        ) => {
-          return http && http.response ? http.response.result : undefined;
-        }
-      )
-      .catch(this.$opensilex.errorHandler);
-  }
-
-  soGetDTOToSelectNode(dto) {
-    if (dto) {
-      return {
-        id: dto.uri,
-        label: dto.name,
-      };
-    }
-    return null;
-  }
 }
 </script>
 

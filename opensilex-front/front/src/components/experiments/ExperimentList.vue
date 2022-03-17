@@ -56,15 +56,13 @@
 
       <template v-slot:advancedSearch>
         <!-- Projects -->
-        <opensilex-FilterField>
+        <opensilex-FilterField halfWidth="true">
           <opensilex-SelectForm
             ref="projectSelector"
             label="ExperimentList.filter-project"
             placeholder="ExperimentList.filter-project-placeholder"
             :selected.sync="filter.projects"
-            :conversionMethod="projectGetDTOToSelectNode"
             modalComponent="opensilex-ProjectModalList"
-            :itemLoadingMethod="loadProjects"
             :filter.sync="projectFilter"
             :isModalSearch="true"
             :clearable="true"
@@ -75,7 +73,7 @@
         </opensilex-FilterField>
 
         <!-- State -->
-        <opensilex-FilterField>
+        <opensilex-FilterField halfWidth="true">
           <opensilex-SelectForm
             label="ExperimentList.filter-state"
             placeholder="ExperimentList.filter-state-placeholder"
@@ -424,16 +422,7 @@ export default class ExperimentList extends Vue {
       .catch(this.$opensilex.errorHandler);
   }
 
-  projectGetDTOToSelectNode(dto) {
-    if (dto) {
-      return {
-        id: dto.uri,
-        label: dto.name,
-      };
-    }
-    return null;
-  } 
-    createDocument() {
+  createDocument() {
     this.documentForm.showCreateForm();
   }
 
@@ -471,13 +460,6 @@ export default class ExperimentList extends Vue {
     return null;
   }
 
-  loadProjects(projectsURIs) {
-      return this.$opensilex.getService("opensilex.ProjectsService")
-        .getProjectsByURI(projectsURIs)
-        .then((http: HttpResponse<OpenSilexResponse<Array<ProjectGetDTO>>>) => {
-            return (http && http.response) ? http.response.result : undefined
-    }).catch(this.$opensilex.errorHandler);
-  }
 
 }
 </script>

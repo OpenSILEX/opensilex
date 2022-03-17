@@ -42,11 +42,10 @@
               <!-- Variables -->
               <opensilex-FilterField  quarterWidth="true">
                 <opensilex-UsedVariableSelector
-                ref="varSelector"
-                label="DataView.filter.variables"
-                :multiple="true"
-                :variables.sync="filter.variables"
-                :key="refreshKey"
+                  ref="varSelector"
+                  label="DataView.filter.variables"
+                  :multiple="true"
+                  :variables.sync="filter.variables"
                 ></opensilex-UsedVariableSelector>
               </opensilex-FilterField>
             
@@ -87,9 +86,7 @@
                   label="DataView.filter.scientificObjects"
                   placeholder="DataView.filter.scientificObjects-placeholder"
                   :selected.sync="filter.scientificObjects"
-                  :conversionMethod="soGetDTOToSelectNode"
                   modalComponent="opensilex-ScientificObjectModalList"
-                  :itemLoadingMethod="loadSO"
                   :filter.sync="soFilter"
                   :isModalSearch="true"
                   :clearable="true"
@@ -103,7 +100,7 @@
               </opensilex-FilterField>
 
                <!-- targets -->
-              <opensilex-FilterField quarterWidth="true">
+              <opensilex-FilterField halfWidth="true">
                 <opensilex-TagInputForm
                   class="overflow-auto"
                   style="height: 90px"
@@ -116,7 +113,7 @@
             
 
               <!-- Provenance -->
-              <opensilex-FilterField quarterWidth="true">
+              <opensilex-FilterField >
                 <opensilex-DataProvenanceSelector
                   ref="provSelector"
                   :provenances.sync="filter.provenance"
@@ -127,7 +124,6 @@
                   :multiple="false"
                   :viewHandler="showProvenanceDetails"
                   :viewHandlerDetailsVisible="visibleDetails"
-                  :showURI="false"
                   :key="refreshKey"
                 ></opensilex-DataProvenanceSelector>
 
@@ -217,10 +213,11 @@ export default class DataView extends Vue {
       creationDate: undefined,
     };
 
+
   refreshSoSelector() {
 
-    this.refreshComponent();
     this.soSelector.refreshModalSearch();
+    this.refreshComponent();
   }
 
   refreshComponent(){
@@ -328,27 +325,7 @@ export default class DataView extends Vue {
   refreshDataAfterImportation(){
     this.refresh();
   }
-
-  loadSO(scientificObjectsURIs) {
-      return this.$opensilex.getService("opensilex.ScientificObjectsService")
-        .getScientificObjectsListByUris(undefined,scientificObjectsURIs)
-        .then((http: HttpResponse<OpenSilexResponse<Array<ScientificObjectNodeDTO>>>) => {
-            return (http && http.response) ? http.response.result : undefined })
-        .catch( error => {
-            this.$opensilex.errorHandler(error);
-            return [{uri:"unknowObject", name: "unknowObject"}]; });
-  }
-
-  soGetDTOToSelectNode(dto) {
-    if (dto) {
-      return {
-        id: dto.uri,
-        label: dto.name
-      };
-    }
-    return null;
-  }
-
+  
 }
 </script>
 

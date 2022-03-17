@@ -254,9 +254,10 @@ public class DataAPI {
             throw new NotFoundURIException("Invalid or unknown data URI ", uri);
         }
     }
+
     @POST
     @Path("by_targets")
-    @ApiOperation("Search data from a large list of scientific objects")
+    @ApiOperation("Search data for a large list of targets")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -277,12 +278,12 @@ public class DataAPI {
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @DefaultValue("date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize,
-            @ApiParam(value = "Targets uris") List<URI> objects
+            @ApiParam(value = "Targets uris") List<URI> targets
     )throws Exception {
-        if (objects == null) {
-            objects = new ArrayList<>();
+        if (targets == null) {
+            targets = new ArrayList<>();
         }
-        return getDataList(startDate,endDate,timezone, experiments, objects,variables,devices,confidenceMin,confidenceMax, provenances,metadata, orderByList,page, pageSize);
+        return getDataList(startDate, endDate, timezone, experiments, targets, variables, devices, confidenceMin, confidenceMax, provenances, metadata, orderByList, page, pageSize);
     }
 
     @GET
@@ -298,7 +299,7 @@ public class DataAPI {
             @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
             @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
             @ApiParam(value = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
-            @ApiParam(value = "Search by targets uris", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("targets") List<URI> objects,
+            @ApiParam(value = "Search by targets uris", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("targets") List<URI> targets,
             @ApiParam(value = "Search by variables uris", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variables") List<URI> variables,
             @ApiParam(value = "Search by devices uris", example = DeviceAPI.DEVICE_EXAMPLE_URI) @QueryParam("devices") List<URI> devices,
             @ApiParam(value = "Search by minimal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("min_confidence") @Min(0) @Max(1) Float confidenceMin,
@@ -309,7 +310,7 @@ public class DataAPI {
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
-        return getDataList(startDate,endDate,timezone, experiments, objects,variables,devices,confidenceMin,confidenceMax, provenances,metadata, orderByList,page, pageSize);
+        return getDataList(startDate, endDate, timezone, experiments, targets, variables, devices, confidenceMin, confidenceMax, provenances, metadata, orderByList, page, pageSize);
     }
 
     private Response getDataList(
@@ -317,7 +318,7 @@ public class DataAPI {
             String endDate,
             String timezone,
             List<URI> experiments,
-            List<URI> objects,
+            List<URI> targets,
             List<URI> variables,
             List<URI> devices,
             Float confidenceMin,
@@ -363,7 +364,7 @@ public class DataAPI {
         ListWithPagination<DataModel> resultList = dao.search(
                 user,
                 experiments,
-                objects,
+                targets,
                 variables,
                 provenances,
                 devices,
@@ -1005,10 +1006,10 @@ public class DataAPI {
 
         return prepareCSVExport;
     }
-    
+
     @GET
     @Path("provenances")
-    @ApiOperation("Get provenances linked to data")
+    @ApiOperation("Search provenances linked to data")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -1021,14 +1022,43 @@ public class DataAPI {
             @ApiParam(value = "Search by variables uris", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variables") List<URI> variables,
             @ApiParam(value = "Search by devices uris", example = DeviceAPI.DEVICE_EXAMPLE_URI) @QueryParam("devices") List<URI> devices
     ) throws Exception {
-        
+        return searchUsedProvenances(experiments, objects, variables, devices);
+    }
+
+    @POST
+    @Path("provenances/by_targets")
+    @ApiOperation("Search provenances linked to data for a large list of targets")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return provenances list", response = ProvenanceGetDTO.class, responseContainer = "List")
+    })
+    public Response getUsedProvenancesByTargets(
+            @ApiParam(value = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
+            @ApiParam(value = "Search by variables uris", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variables") List<URI> variables,
+            @ApiParam(value = "Search by devices uris", example = DeviceAPI.DEVICE_EXAMPLE_URI) @QueryParam("devices") List<URI> devices,
+            @ApiParam(value = "Targets uris") List<URI> targets
+    ) throws Exception {
+        if (targets == null) {
+            targets = new ArrayList<>();
+        }
+        return searchUsedProvenances(experiments, targets, variables, devices);
+    }
+
+    private Response searchUsedProvenances(
+            List<URI> experiments,
+            List<URI> targets,
+            List<URI> variables,
+            List<URI> devices) throws Exception {
+
         DataDAO dataDAO = new DataDAO(nosql, sparql, null);
-        Set<URI> provenanceURIs = dataDAO.getDataProvenances(user, experiments, objects, variables, devices);
+        Set<URI> provenanceURIs = dataDAO.getDataProvenances(user, experiments, targets, variables, devices);
 
         ProvenanceDAO provenanceDAO = new ProvenanceDAO(nosql, sparql);
         List<ProvenanceModel> resultList = provenanceDAO.getListByURIs(new ArrayList<>(provenanceURIs));
         List<ProvenanceGetDTO> resultDTOList = new ArrayList<>();
-        
+
         resultList.forEach(result -> {
             resultDTOList.add(ProvenanceGetDTO.fromModel(result));
         });

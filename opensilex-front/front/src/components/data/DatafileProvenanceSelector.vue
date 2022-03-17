@@ -70,11 +70,6 @@ export default class DatafileProvenanceSelector extends Vue {
   })
   multiple;
 
-  @Prop({
-    default: true,
-  })
-  showURI;
-
   @Prop()
   viewHandler: Function;
 
@@ -105,7 +100,7 @@ export default class DatafileProvenanceSelector extends Vue {
    
     return this.$opensilex
       .getService("opensilex.DataService")
-      .getDatafilesProvenances(this.experiments, this.targets, this.devices)
+      .getDatafilesProvenancesByTargets(this.experiments, this.devices, this.targets)
       .then(http => {
         return http.response.result;
       });

@@ -64,7 +64,6 @@
               :multiple="false"
               :viewHandler="showProvenanceDetails"
               :viewHandlerDetailsVisible="visibleDetails"
-              :showURI="false"
               :key="refreshKey"
             ></opensilex-DatafileProvenanceSelector>
 

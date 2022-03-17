@@ -39,9 +39,7 @@
                   label="DataView.filter.scientificObjects"
                   placeholder="DataView.filter.scientificObjects-placeholder"
                   :selected.sync="filter.scientificObjects"
-                  :conversionMethod="soGetDTOToSelectNode"
                   modalComponent="opensilex-ScientificObjectModalList"
-                  :itemLoadingMethod="loadSO"
                   :filter.sync="soFilter"
                   :isModalSearch="true"
                   :clearable="true"
@@ -84,7 +82,6 @@
                   :experiments="filter.experiments"
                   :viewHandler="showProvenanceDetails"
                   :viewHandlerDetailsVisible="visibleDetails"
-                  :showURI="false"
                   :key="refreshKey"
                 ></opensilex-DatafileProvenanceSelector>
                 <b-collapse
@@ -309,23 +306,6 @@ export default class DeviceDataFiles extends Vue {
     .catch(this.$opensilex.errorHandler);
   }
 
-  soGetDTOToSelectNode(dto) {
-    if (dto) {
-      return {
-        id: dto.uri,
-        label: dto.name
-      };
-    }
-    return null;
-  }
-
-  loadSO(scientificObjectsURIs) {
-    return this.$opensilex.getService("opensilex.ScientificObjectsService")
-      .getScientificObjectsListByUris(undefined,scientificObjectsURIs)
-      .then((http: HttpResponse<OpenSilexResponse<Array<ScientificObjectNodeDTO>>>) => {
-          return (http && http.response) ? http.response.result : undefined
-    }).catch(this.$opensilex.errorHandler);
-  }
   
 }
 </script>

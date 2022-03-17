@@ -99,7 +99,7 @@ export default class UsedProvenanceSelector extends Vue {
 
     return this.$opensilex
       .getService("opensilex.DataService")
-      .getUsedProvenances(experiments, objects, null, devices)
+      .getUsedProvenancesByTargets(experiments, null, devices, objects)
       .then(http => {
         return http.response.result;
       });

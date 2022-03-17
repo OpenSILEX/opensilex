@@ -29,7 +29,6 @@
             : undefined"
           :viewHandler="showProvenanceDetails"
           :viewHandlerDetailsVisible="visibleDetails"
-          :showURI="false"
           :required="true"
         ></opensilex-ProvenanceSelector>
         <b-collapse id="collapse-4" v-model="visibleDetails" class="mt-2">

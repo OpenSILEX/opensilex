@@ -65,7 +65,6 @@
               :multiple="false"
               :viewHandler="showProvenanceDetails"
               :viewHandlerDetailsVisible="visibleDetails"
-              :showURI="false"
               @select="loadProvenance"
               @clear="clearProvenance"
             ></opensilex-DataProvenanceSelector>

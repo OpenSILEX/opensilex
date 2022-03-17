@@ -397,7 +397,7 @@ public class DataFilesAPI {
      * This service searches for file descriptions according to the search parameters given.
      *
      * @param pageSize
-     * @param objects
+     * @param targets
      * @param provenances
      * @param timezone
      * @param experiments
@@ -424,7 +424,7 @@ public class DataFilesAPI {
             @ApiParam(value = "Search by maximal date", example = DataAPI.DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
             @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DataAPI.DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
             @ApiParam(value = "Search by experiments", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
-            @ApiParam(value = "Search by targets uris list", example = DataAPI.DATA_EXAMPLE_OBJECTURI) @QueryParam("targets") List<URI> objects,
+            @ApiParam(value = "Search by targets uris list", example = DataAPI.DATA_EXAMPLE_OBJECTURI) @QueryParam("targets") List<URI> targets,
             @ApiParam(value = "Search by devices uris", example = DeviceAPI.DEVICE_EXAMPLE_URI) @QueryParam("devices") List<URI> devices,
             @ApiParam(value = "Search by provenance uris list", example = DataAPI.DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
             @ApiParam(value = "Search by metadata", example = DataAPI.DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
@@ -433,50 +433,98 @@ public class DataFilesAPI {
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
 
     ) throws Exception {
+        return  searchDataFiles(rdfType, startDate, endDate, timezone, experiments, targets, devices, provenances, metadata, orderByList, page, pageSize);
+    }
+
+    @POST
+    @Path("by_targets")
+    @ApiOperation("Search data files for a large list of targets ")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return data file list", response = DataFileGetDTO.class, responseContainer = "List")
+    })
+    public Response getDataFileDescriptionsByTargets(
+            @ApiParam(value = "Search by rdf type uri") @QueryParam("rdf_type") URI rdfType,
+            @ApiParam(value = "Search by minimal date", example = DataAPI.DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
+            @ApiParam(value = "Search by maximal date", example = DataAPI.DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
+            @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DataAPI.DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
+            @ApiParam(value = "Search by experiments", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
+            @ApiParam(value = "Search by devices uris", example = DeviceAPI.DEVICE_EXAMPLE_URI) @QueryParam("devices") List<URI> devices,
+            @ApiParam(value = "Search by provenance uris list", example = DataAPI.DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
+            @ApiParam(value = "Search by metadata", example = DataAPI.DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @DefaultValue("date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize,
+            @ApiParam(value = "Search by targets uris list")  List<URI> targets
+            ) throws Exception {
+
+        if (targets == null) {
+            targets = new ArrayList<>();
+        }
+        return  searchDataFiles(rdfType, startDate, endDate, timezone, experiments, targets, devices, provenances, metadata, orderByList, page, pageSize);
+    }
+
+    private Response searchDataFiles(
+            URI rdfType,
+            String startDate,
+            String endDate,
+            String timezone,
+            List<URI> experiments,
+            List<URI> targets,
+            List<URI> devices,
+            List<URI> provenances,
+            String metadata,
+            List<OrderBy> orderByList,
+            int page,
+            int pageSize
+
+    ) throws Exception {
         DataDAO dao = new DataDAO(nosql, sparql, fs);
-        
+
         //convert dates
         Instant startInstant = null;
         Instant endInstant = null;
-        
+
         if (startDate != null) {
             try  {
                 startInstant = DataValidateUtils.getDateInstant(startDate, timezone, Boolean.FALSE);
             } catch (DateValidationException e) {
                 return new DateMappingExceptionResponse().toResponse(e);
-            }              
+            }
         }
-        
+
         if (endDate != null) {
             try {
                 endInstant = DataValidateUtils.getDateInstant(endDate, timezone, Boolean.TRUE);
             } catch (DateValidationException e) {
                 return new DateMappingExceptionResponse().toResponse(e);
-            }   
+            }
         }
-        
+
         Document metadataFilter = null;
         if (metadata != null) {
             try {
                 metadataFilter = Document.parse(metadata);
             } catch (Exception e) {
                 return new ErrorResponse(Response.Status.BAD_REQUEST, "METADATA_PARAM_ERROR", "unable to parse metadata")
-            .getResponse();
+                        .getResponse();
             }
         }
-        
+
         OntologyDAO ontoDao = new OntologyDAO(sparql);
         List<URI> rdfTypes = new ArrayList<>();
-        
+
         if (rdfType != null) {
             rdfTypes = ontoDao.getSubclassRdfTypes(rdfType, user.getLanguage());
-        }        
-        
+        }
+
         ListWithPagination<DataFileModel> resultList = dao.searchFiles(
                 user,
                 rdfTypes,
                 experiments,
-                objects,
+                targets,
                 provenances,
                 devices,
                 startInstant,
@@ -486,13 +534,13 @@ public class DataFilesAPI {
                 page,
                 pageSize
         );
-        
+
         ListWithPagination<DataFileGetDTO> resultDTOList = resultList.convert(DataFileGetDTO.class, DataFileGetDTO::fromModel);
 
         return new PaginatedListResponse<>(resultDTOList).getResponse();
 
-    } 
-    
+    }
+
     private <T extends DataFileCreationDTO> void validDataFileDescription(List<T> dtoList) throws Exception {
         Set<URI> objectURIs = new HashSet<>();
         Set<URI> notFoundedObjectURIs = new HashSet<>();
@@ -565,7 +613,7 @@ public class DataFilesAPI {
  
     @GET
     @Path("provenances")
-    @ApiOperation("Get provenances linked to datafiles")
+    @ApiOperation("Search provenances linked to datafiles")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -574,17 +622,45 @@ public class DataFilesAPI {
     })
     public Response getDatafilesProvenances(
             @ApiParam(value = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
-            @ApiParam(value = "Search by targets uris", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("targets") List<URI> objects,
+            @ApiParam(value = "Search by targets uris", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("targets") List<URI> targets,
             @ApiParam(value = "Search by devices uris", example = DeviceAPI.DEVICE_EXAMPLE_URI) @QueryParam("devices") List<URI> devices            
     ) throws Exception {
-        
+        return searchDatafilesProvenances(experiments, targets, devices);
+    }
+
+    @POST
+    @Path("provenances/by_targets")
+    @ApiOperation("Search provenances linked to datafiles for a large list of targets")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return provenances list", response = ProvenanceGetDTO.class, responseContainer = "List")
+    })
+    public Response getDatafilesProvenancesByTargets(
+            @ApiParam(value = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
+            @ApiParam(value = "Search by devices uris", example = DeviceAPI.DEVICE_EXAMPLE_URI) @QueryParam("devices") List<URI> devices,
+            @ApiParam(value = "Search by targets uris") List<URI> targets
+            ) throws Exception {
+        if (targets == null) {
+            targets = new ArrayList<>();
+        }
+        return searchDatafilesProvenances(experiments, targets, devices);
+    }
+
+    private Response searchDatafilesProvenances(
+            List<URI> experiments,
+            List<URI> targets,
+            List<URI> devices
+    ) throws Exception {
+
         DataDAO dataDAO = new DataDAO(nosql, sparql, null);
-        Set<URI> provenanceURIs = dataDAO.getDatafileProvenances(user, experiments, objects, devices);
+        Set<URI> provenanceURIs = dataDAO.getDatafileProvenances(user, experiments, targets, devices);
 
         ProvenanceDAO provenanceDAO = new ProvenanceDAO(nosql, sparql);
         List<ProvenanceModel> resultList = provenanceDAO.getListByURIs(new ArrayList<>(provenanceURIs));
         List<ProvenanceGetDTO> resultDTOList = new ArrayList<>();
-        
+
         resultList.forEach(result -> {
             resultDTOList.add(ProvenanceGetDTO.fromModel(result));
         });

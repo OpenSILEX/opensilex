@@ -1,4 +1,6 @@
 <template>
+
+ 
   <opensilex-FormField
     :rules="rules"
     :required="required"
@@ -6,6 +8,8 @@
     :helpMessage="helpMessage"
   >
     <template v-slot:field="field">
+
+      <b-spinner small label="Small Spinning" v-if="loading"></b-spinner>
       <input :id="field.id" type="hidden" :value="hiddenValue" />
       <b-input-group class="select-button-container">
         <treeselect
@@ -146,7 +150,7 @@
         :maximumSelectedRows="maximumSelectedItems"
         :searchFilter.sync="searchModalFilter"
         @onClose="$emit('onClose')"
-        @onValidate="$emit('onValidate')"
+        @onValidate="onValidate"
         @shown="showModalSearch"
         @close='$emit("close")'
         @clear='$emit("clear")'
@@ -167,6 +171,7 @@ import AsyncComputedProp from "vue-async-computed-decorator";
 export default class SelectForm extends Vue {
   $opensilex: any;
   currentValue;
+  loading = false;
 
   @Ref("searchModal") readonly searchModal!: any;
 
@@ -219,8 +224,15 @@ export default class SelectForm extends Vue {
   @Prop({
     type: Function,
     default: function (e) {
-      return e;
-    },
+      if (e && e.name) {
+        return {
+            id: e.uri,
+            label: (e.name.length > 20) ? e.name.substr(0, 20-1) + '...' : e.name
+          };
+      } else {
+        return e;
+      }
+    }
   })
   conversionMethod: Function;
 
@@ -298,65 +310,92 @@ export default class SelectForm extends Vue {
   limit: number; // limit number of items in the input box
 
   detailVisible: boolean = false;
+  selectedCopie = [] ;
 
   @AsyncComputedProp()
   selectedValues(): Promise<any> {
     return new Promise((resolve, reject) => {
-      if (this.itemLoadingMethod) {
-        if (!this.selection || this.selection.length == 0) {
-          if (this.multiple) {
+      if(this.isModalSearch) {
+    
+          if (!this.selection || this.selection.length == 0) {
             resolve([]);
+            
+          } else if (this.currentValue) {
+            resolve(this.currentValue);
           } else {
-            resolve();
-          }
-        } else if (this.currentValue) {
-          resolve(this.currentValue);
-        } else {
-          this.$opensilex.disableLoader();
-          let uris = this.selection;
-          if (!this.multiple) {
-            uris = [this.selection];
-          }
-          let loadingPromise = this.itemLoadingMethod(uris);
-          if (!(loadingPromise instanceof Promise)) {
-            loadingPromise = Promise.resolve(loadingPromise);
-          }
-          loadingPromise
-            .then((list) => {
-              let nodeList = [];
-              list.forEach((item) => {
-                nodeList.push(this.conversionMethod(item));
-              });
-              if (this.multiple) {
-                this.currentValue = nodeList;
-              } else {
-                this.currentValue = nodeList[0];
-              }
-
-              resolve(this.currentValue);
-            })
-            .catch((error) => {
-              this.$opensilex.errorHandler(error);
-              reject(error);
+            
+            let nodeList = [];
+            this.selectedCopie.forEach((item) => {
+              nodeList.push(this.conversionMethod(item));
             });
-        }
-      } else if (this.searchMethod) {
-        resolve(this.selectedNodes);
-      } else {
-        let currentOptions = this.options || this.internalOption;
-        if (this.multiple) {
-          if (this.selection && this.selection.length > 0) {
-            let items = this.findListInTree(currentOptions, this.selection);
-            resolve(items);
-          } else {
-            resolve([]);
+            this.currentValue = nodeList;
+
+            if(this.loading) {
+              this.loading = false;
+            }
+            resolve(this.currentValue);
           }
-        } else {
-          if (this.selection) {
-            let item = this.findInTree(currentOptions, this.selection);
-            resolve(item);
+
+
+      } else {
+
+         if (this.itemLoadingMethod) {
+          if (!this.selection || this.selection.length == 0) {
+            if (this.multiple) {
+              resolve([]);
+            } else {
+              resolve();
+            }
+           
+          } else if (this.currentValue) {
+            resolve(this.currentValue);
           } else {
-            resolve();
+            this.$opensilex.disableLoader();
+            let uris = this.selection;
+            if (!this.multiple) {
+              uris = [this.selection];
+            }
+            let loadingPromise = this.itemLoadingMethod(uris);
+            if (!(loadingPromise instanceof Promise)) {
+              loadingPromise = Promise.resolve(loadingPromise);
+            }
+            loadingPromise
+              .then((list) => {
+                let nodeList = [];
+                list.forEach((item) => {
+                  nodeList.push(this.conversionMethod(item));
+                });
+                if (this.multiple) {
+                  this.currentValue = nodeList;
+                } else {
+                  this.currentValue = nodeList[0];
+                }
+                resolve(this.currentValue);
+              })
+              .catch((error) => {
+                
+                this.$opensilex.errorHandler(error);
+                reject(error);
+              });
+          }
+        } else if (this.searchMethod) {
+          resolve(this.selectedNodes);
+        } else {
+          let currentOptions = this.options || this.internalOption;
+          if (this.multiple) {
+            if (this.selection && this.selection.length > 0) {
+              let items = this.findListInTree(currentOptions, this.selection);
+              resolve(items);
+            } else {
+              resolve([]);
+            }
+          } else {
+            if (this.selection) {
+              let item = this.findInTree(currentOptions, this.selection);
+              resolve(item);
+            } else {
+              resolve();
+            }
           }
         }
       }
@@ -417,29 +456,61 @@ export default class SelectForm extends Vue {
     return "";
   }
 
-  select(value) {
-    if (this.multiple) {
-      this.selection.push(value.id);
-    } else {
-      this.selection = value.id;
+ select(value) {
+    if(this.isModalSearch)  {
+      // copy selected items in local variable to wait validate action and then, change the selection
+      this.selectedCopie.push(value);
+    } 
+    else {
+      if (this.multiple) {
+        this.selection.push(value.id);
+      } else {
+        this.selection = value.id;
+      }
+
     }
+   
     this.$emit("select", value);
   }
 
-  deselect(value) {
-    if (this.multiple) {
-      this.selection = this.selection.filter((id) => id !== value.id);
-    } else {
-      this.selection = null;
+  deselect(item) {
+    if(this.isModalSearch)  {
+      // copy selected items in local variable to wait validate action and then, change the selection
+      this.selectedCopie = this.selectedCopie.filter((value) => value.id !== item.id);
+    } 
+    else {
+      if (this.multiple) {
+        this.selection = this.selection.filter((id) => id !== item.id);
+      } else {
+        this.selection = null;
+      }
     }
-    this.$emit("deselect", value);
+  
+    this.$emit("deselect", item);
+  }
+  
+  onValidate(){
+    
+      if(this.selectedCopie == null || this.selectedCopie.length == 0) {
+        this.loading = false;
+      } else {
+        this.loading = true;
+      }
+      setTimeout(() => { // fix :  time to close the modal .
+        this.selection = this.selectedCopie.map(value => value.id);
+        this.$emit('onValidate');
+      }, 400);
+    
   }
   
   selectall(selectedValues) {
-    if(selectedValues){
-       this.selection = selectedValues.map((item => this.conversionMethod(item).id));
-    } else {
-      this.selection = null;    
+    
+    if(selectedValues){  
+      // copy selected items in local variable to wait validate action and then, change the selection
+      this.selectedCopie = selectedValues.map((item => this.conversionMethod(item)));
+    }
+    else {
+      this.selectedCopie = null;    
     }
   }
 
@@ -587,7 +658,6 @@ export default class SelectForm extends Vue {
     searchModal.show();
   }
 
-  
   showDetails() {
     this.detailVisible != this.detailVisible;
   }

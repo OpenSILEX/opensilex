@@ -37,7 +37,7 @@ public class ExperimentCreationDTO extends ExperimentDTO {
         model.setIsPublic(isPublic);
 
         // No species at experiment creation
-        model.setSpecies(Collections.emptyList());
+        model.setSpecies(null);
         
         List<InfrastructureModel> infrastructuresList = new ArrayList<>(infrastructures.size());
         infrastructures.forEach((URI u) -> {

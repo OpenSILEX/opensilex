@@ -100,7 +100,8 @@ public class ExperimentModel extends SPARQLNamedResourceModel<ExperimentModel> i
 
     @SPARQLProperty(
             ontology = Oeso.class,
-            property = "hasSpecies"
+            property = "hasSpecies",
+            ignoreUpdateIfNull = true
     )
     List<SpeciesModel> species;
     public static final String SPECIES_FIELD = "species";

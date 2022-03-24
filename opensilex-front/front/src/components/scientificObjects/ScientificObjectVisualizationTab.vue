@@ -2,7 +2,7 @@
   <div ref="page">
     <opensilex-ScientificObjectVisualizationForm
       ref="scientificObjectVisualizationForm"
-      :scientificObject="scientificObject"
+      :scientificObject="scientificObject.uri"
       @search="onSearch"
     ></opensilex-ScientificObjectVisualizationForm>
 
@@ -99,7 +99,7 @@ export default class ScientificObjectVisualizationTab extends Vue {
 
 
   showAddEventComponent(time) {
-    this.target = this.scientificObject;
+    this.target = this.scientificObject.uri;
     this.eventCreatedTime = time;
     this.eventsModalForm.showCreateForm();
   }
@@ -169,7 +169,7 @@ export default class ScientificObjectVisualizationTab extends Vue {
             this.visuGraphic.reload(
               series,
               this.selectedVariable,
-              this.form.showEvents
+              this.form
             );
           });
         })
@@ -191,7 +191,7 @@ export default class ScientificObjectVisualizationTab extends Vue {
           this.form.endDate != undefined && this.form.endDate != ""
             ? this.form.endDate
             : undefined,
-          this.scientificObject,
+          this.scientificObject.uri,
           undefined,
           undefined,
           0,
@@ -298,7 +298,7 @@ export default class ScientificObjectVisualizationTab extends Vue {
             : undefined,
           undefined,
           undefined,
-          [this.scientificObject],
+          [this.scientificObject.uri],
           [this.form.variable],
           undefined,
           undefined,
@@ -329,7 +329,7 @@ export default class ScientificObjectVisualizationTab extends Vue {
             }
 
             return {
-              name: this.selectedVariable.name,
+              name: this.scientificObject.name,
               data: cleanData,
               yAxis: 0,
               visible: true

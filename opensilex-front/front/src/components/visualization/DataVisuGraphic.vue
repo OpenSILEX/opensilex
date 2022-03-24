@@ -30,7 +30,7 @@
 
     <div class="card">
       <div ref="header" class="card-header" v-if="chartOptions.length">
-        <opensilex-HelpButton label="component.common.help-button" @click="helpModal.show()"></opensilex-HelpButton>
+        <opensilex-HelpButton :label="helpText" @click="helpModal.show()"></opensilex-HelpButton>
 
         <div class="card-header-right mr-4">
           <b-dropdown right size="lg" variant="link" toggle-class="text-decoration-none" no-caret>
@@ -189,6 +189,12 @@ export default class DataVisuGraphic extends Vue {
   private concernedItem;
   chartOptionsValues: any = [];
 
+  startDate;
+  endDate;
+
+  get helpText() {
+    return this.showEvents ? this.$i18n.t("DataVisuGraphic.rightClick") :  ""
+  }
 
   @Prop({
     default: false
@@ -403,10 +409,11 @@ export default class DataVisuGraphic extends Vue {
           xAxis: {
             type: "datetime",
             title: { text: "time" },
-            // tickInterval: 24 *3600 * 1000, labels: {
+            min: this.startDate? moment(this.startDate).toDate().getTime(): undefined,
+            max: this.endDate? moment(this.endDate).toDate().getTime(): undefined,
             labels: {
               formatter: function() {
-                return Highcharts.dateFormat("%e %b %Y", this.value);
+                return Highcharts.dateFormat("%e-%b-%Y %H:%M:%S", this.value);
               }
             },
             ordinal: false,
@@ -422,7 +429,7 @@ export default class DataVisuGraphic extends Vue {
               if (this.point.y) {
                 let date = moment
                   .parseZone(this.point.data.date)
-                  .format("YYYY-MM-DD HH:mm:ss");
+                  .format("DD-MM-YYYY HH:mm:ss");
                 return (
                   "" +
                   this.point.series.name +
@@ -447,7 +454,7 @@ export default class DataVisuGraphic extends Vue {
                   this.point.text +
                   "</b></span>" +
                   "<br/>Time:<b> " +
-                  Highcharts.dateFormat("%Y-%m-%d %H:%M:%S", this.x) +
+                  Highcharts.dateFormat("%d-%m-%Y %H:%M:%S", this.x) +
                   "</b> "
                 );
               }
@@ -546,13 +553,23 @@ export default class DataVisuGraphic extends Vue {
     //this.closeIntervalContextMenu();
   }
 
-  reload(series, variable, isEvents) {
+  reload(series, variable, form) {
+
+    if(form) {
+      this.startDate = form.startDate;
+      this.endDate = form.endDate;
+    }
+    
+    if(form && form.showEvents) {
+      this.showEvents = form.showEvents;
+    }
+   
     this.detailDataShow = false;
     this.detailEventShow = false;
-    this.showEvents = isEvents;
+    
     this.variable = variable;
     if (series.length > 0) {
-      this.yAxis = this.buildYAxis(isEvents);
+      this.yAxis = this.buildYAxis(this.showEvents);
     }
     this.series = series;
   }
@@ -818,6 +835,7 @@ export default class DataVisuGraphic extends Vue {
 }
 </style>
 
+
 <i18n>
   fr: 
     DataVisuGraphic:
@@ -829,6 +847,7 @@ export default class DataVisuGraphic extends Vue {
       chartLineView : Mode courbe
       fullscreen : Plein ecran
       download : Télecharger l'image
+      rightClick : click droit sur un point pour ajouter un evénement ou une annotation
 
   en: 
     DataVisuGraphic:
@@ -839,5 +858,6 @@ export default class DataVisuGraphic extends Vue {
       scatterPlotView : Scatter plot view
       chartLineView : Chart line view
       fullscreen : Fullscreen
-      download : Download image
+      download : Download image 
+      rightClick : right click on a point to add event or annotation
 </i18n>

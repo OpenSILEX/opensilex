@@ -84,8 +84,7 @@ export default class DateTimeForm extends Vue {
 
   private modelConfig = {
     type: "string",
-    mask: "iso",
-    timeAdjust: "00:00:00",
+    mask: "iso"
   };
 
   input(value) {

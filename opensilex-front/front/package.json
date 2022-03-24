@@ -40,7 +40,7 @@
         "sl-vue-tree": "^1.8.5",
         "style-loader": "2.0.0",
         "tabulator-tables": "4.9.3",
-        "v-calendar": "^2.3.4",
+        "v-calendar": "^2.4.1",
         "vue-async-computed": "^3.8.3",
         "vue-async-computed-decorator": "0.0.5",
         "vue-click-outside": "1.1.0",

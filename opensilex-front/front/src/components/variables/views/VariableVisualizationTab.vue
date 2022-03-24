@@ -273,7 +273,7 @@ export default class VariableVisualizationTab extends Vue {
 
       this.isGraphicLoaded = true;
       this.$nextTick(() => {
-        this.visuGraphic.reload(series, this.selectedVariable, this.form.showEvents);
+        this.visuGraphic.reload(series, this.selectedVariable, this.form);
       });
     });
   }

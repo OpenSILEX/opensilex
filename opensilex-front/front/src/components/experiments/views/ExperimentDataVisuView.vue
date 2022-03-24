@@ -241,7 +241,7 @@ export default class ExperimentDataVisuView extends Vue {
 
       this.showGraphicComponent = true;
       this.$nextTick(() => {
-        this.visuGraphic.reload(series, this.selectedVariable, this.form.showEvents);
+        this.visuGraphic.reload(series, this.selectedVariable, this.form);
       });
     });
   }

@@ -80,7 +80,7 @@
 
     <opensilex-ScientificObjectVisualizationTab
       v-if="isVisualizationTab"
-      :scientificObject="selected.uri"
+      :scientificObject="selected"
     ></opensilex-ScientificObjectVisualizationTab>
 
     <opensilex-DocumentTabList

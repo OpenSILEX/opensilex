@@ -171,7 +171,7 @@ export default class DeviceVisualizationTab extends Vue {
             this.visuGraphic.reload(
               series,
               this.selectedVariable,
-              this.form.showEvents
+              this.form
             );
           });
         })

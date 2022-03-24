@@ -46,7 +46,7 @@ export default class UsedVariableSelector extends Vue {
   get placeholder() {
     return this.multiple
         ? "VariableSelector.placeholder-multiple"
-        : "VariableSelector.variables.placeholder";
+        : "VariableSelector.placeholder";
   }
   loadVariables() {
     let experiments = null;

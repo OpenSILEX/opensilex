@@ -87,36 +87,6 @@ export default class GermplasmView extends Vue {
     this.$router.push({ path: '/germplasm/create' });
   }  
 
-
-  callCreateGermplasmService(form: GermplasmCreationDTO, done) {
-    done(
-      this.service
-        .createGermplasm(false,form)
-        .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-          let uri = http.response.result;
-          console.debug("germplasm created", uri);
-          this.germplasmList.refresh();
-        })
-    );
-  }
-
-  callUpdateGermplasmService(form: GermplasmUpdateDTO, done) {
-    console.debug(form);
-    done(
-      this.service
-        .updateGermplasm(form)
-        .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-          let uri = http.response.result;
-          this.$router.push({
-            path: "/germplasm/" + encodeURIComponent(uri),
-          });
-
-        })
-        .catch(this.$opensilex.errorHandler)
-    );
-  }
-
-
   editGermplasm(uri: string) {
     console.debug("editGermplasm " + uri);
     this.service

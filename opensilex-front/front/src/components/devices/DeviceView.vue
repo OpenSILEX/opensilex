@@ -66,16 +66,6 @@ export default class DeviceView extends Vue {
     this.$router.push({ path: '/devices/create' });
   }
   
-  callCreateDeviceService(form: DeviceCreationDTO, done) {
-    done(
-      this.service
-        .createDevice(false,form)
-        .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-          let uri = http.response.result;
-          this.deviceList.refresh();
-        })
-    );
-  }
 }
 </script>
 

@@ -138,8 +138,8 @@ fr:
         textual-position-help: Description textuelle de la position
         from: De
         from-placeholder: dev-infra:serreA
-        from-help: "URI de l'installation technique de départ (L'installation doit exister)."
+        from-help: "URI de l'installation environnementale de départ (L'installation doit exister)."
         to: Vers
         to-placeholder: dev-infra:serreB
-        to-help: "URI de l'installation technique d'arrivée (L'installation doit exister)."
+        to-help: "URI de l'installation environnementale d'arrivée (L'installation doit exister)."
 </i18n>

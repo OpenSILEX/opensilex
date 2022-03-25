@@ -10,7 +10,7 @@
         :itemLoadingMethod="loadSites"
         :conversionMethod="siteToSelectNode"
         :disabled="disabled"
-        noResultsText="InfrastructureFacilitySelector.no-result"
+        noResultsText="FacilitySelector.no-result"
         @select="select"
         @deselect="deselect"
     ></opensilex-SelectForm>

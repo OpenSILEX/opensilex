@@ -28,6 +28,13 @@ menu:
           component: opensilex-ExperimentListView
           credentials:
             - experiment-access
+      - id: facilities
+        label: component.menu.facilities
+        route:
+          path: /facilities
+          component: opensilex-FacilityListView
+          credentials:
+            - facility-access
       - id: devices
         label: component.menu.devices
         route:
@@ -138,7 +145,7 @@ menu:
         label: component.menu.facilitiesTypes
         route:
           path: /facilities-types
-          component: opensilex-InfrastructureFacilitiesTypes
+          component: opensilex-FacilitiesTypes
           credentials:
             - vocabulary-access
       - id: scientificObjectVocabulary
@@ -215,8 +222,6 @@ menu:
 routes:
   - path: /infrastructure/details/:uri
     component: opensilex-InfrastructureDetailView
-  - path: /infrastructure/facility/details/:uri
-    component: opensilex-InfrastructureFacilityView
   - path: /infrastructure/site/details/:uri
     component: opensilex-SiteView
   - path: /experiment/details/:uri
@@ -234,11 +239,14 @@ routes:
   - path: /experiment/factors/:uri
     component: opensilex-ExperimentView
 
+  - path: /facility/details/:uri
+    component: opensilex-FacilityView
+
   - path: /scientific-object-types/properties
     component: opensilex-ScientificObjectTypes
 
   - path: /facilities-types/properties
-    component: opensilex-InfrastructureFacilitiesTypes
+    component: opensilex-FacilitiesTypes
 
   - path: /device-types/properties
     component: opensilex-DeviceTypes

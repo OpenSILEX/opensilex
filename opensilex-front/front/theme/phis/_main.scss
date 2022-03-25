@@ -385,7 +385,7 @@ p {
 		    position: fixed;
 		    left: 0;
 		    top: 0;
-		    min-width: 240px;
+		    width: 240px;
 		    height: 100vh;
 		    background-color: $white;
 		    z-index: 1040;
@@ -494,10 +494,10 @@ p {
 								.submenu-content {
 								    background-color: #f3f3f3;
 								    .menu-item {
-									    padding: 10px 5px;
-									    font-size: 13px;
-									    padding-left: 50px;
-									    margin: 0;
+										font-size: 13px;
+										padding: 10px 5px 10px 50px;
+										margin: 0;
+										text-overflow: ellipsis;
 									    &::before {
 										    display: none;
 										}

@@ -2,7 +2,7 @@
   <b-card>
     <template v-slot:header>
       <h3>
-        {{ $t("InfrastructureFacilitiesView.facilities") }}
+        {{ $t("FacilitiesView.facilities") }}
         &nbsp;
         <font-awesome-icon
           icon="question-circle"
@@ -19,7 +19,7 @@
             )
           "
           @click="facilityForm.showCreateForm()"
-          label="InfrastructureFacilitiesView.add"
+          label="FacilitiesView.add"
         ></opensilex-CreateButton>
       </div>
     </template>
@@ -54,7 +54,7 @@
         <opensilex-UriLink
           :to="{
             path:
-              '/infrastructure/facility/details/' +
+              '/facility/details/' +
               encodeURIComponent(data.item.uri),
           }"
           :uri="data.item.uri"
@@ -77,7 +77,7 @@
               )
             "
             @click="editFacility(data.item)"
-            label="InfrastructureFacilitiesView.update"
+            label="FacilitiesView.update"
             :small="true"
           ></opensilex-EditButton>
           <opensilex-DeleteButton
@@ -87,14 +87,14 @@
               )
             "
             @click="deleteFacility(data.item.uri)"
-            label="InfrastructureFacilitiesView.delete"
+            label="FacilitiesView.delete"
             :small="true"
           ></opensilex-DeleteButton>
         </b-button-group>
       </template>
     </b-table>
 
-    <opensilex-OrganizationFacilityModalForm
+    <opensilex-FacilityModalForm
       ref="facilityForm"
       v-if="
         withActions &&
@@ -105,30 +105,30 @@
       @onCreate="onCreate"
       @onUpdate="onUpdate"
       :initForm="initForm"
-    ></opensilex-OrganizationFacilityModalForm>
+    ></opensilex-FacilityModalForm>
   </b-card>
 </template>
 
 <script lang="ts">
 import {Component, Prop, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
-import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
+import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
 import {InfrastructureFacilityGetDTO} from "opensilex-core/model/infrastructureFacilityGetDTO";
 import {BTable} from "bootstrap-vue";
 import { NamedResourceDTOInfrastructureFacilityModel } from "opensilex-core/model/namedResourceDTOInfrastructureFacilityModel";
 import {InfrastructureFacilityCreationDTO} from "opensilex-core/model/infrastructureFacilityCreationDTO";
-import OrganizationFacilityModalForm from "./OrganizationFacilityModalForm.vue";
+import FacilityModalForm from "./FacilityModalForm.vue";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
 import {NamedResourceDTOInfrastructureModel} from "opensilex-core/model/namedResourceDTOInfrastructureModel";
 import {NamedResourceDTOSiteModel} from "opensilex-core/model/namedResourceDTOSiteModel";
 
 @Component
-export default class InfrastructureFacilitiesView extends Vue {
+export default class FacilitiesView extends Vue {
   $opensilex: any;
   $store: any;
   service: OrganizationsService;
 
-  @Ref("facilityForm") readonly facilityForm!: OrganizationFacilityModalForm;
+  @Ref("facilityForm") readonly facilityForm!: FacilityModalForm;
   @Ref("facilityTable") readonly facilityTable: BTable;
 
   @Prop()
@@ -273,7 +273,7 @@ export default class InfrastructureFacilitiesView extends Vue {
 
 <i18n>
 en:
-  InfrastructureFacilitiesView:
+  FacilitiesView:
     update: Update facility
     delete: Delete facility
     add: Add facility
@@ -281,11 +281,11 @@ en:
     infrastructure-facility-help: "Factilities correspond to the various fixed installations of an organization.
                                   These can be greenhouses, cadastral plots, culture chambers, ..."
 fr:
-  InfrastructureFacilitiesView:
-    update: Modifier l'installation technique
-    delete: Supprimer l'installation technique
-    add: Ajouter une installation technique
-    facilities: Installations techniques
-    infrastructure-facility-help: "Les installations techniques correspondent aux différentes installations fixes d'une organisation.
+  FacilitiesView:
+    update: Modifier l'installation environnementale
+    delete: Supprimer l'installation environnementale
+    add: Ajouter une installation environnementale
+    facilities: Installations environnementales
+    infrastructure-facility-help: "Les installations environnementales correspondent aux différentes installations fixes d'une organisation.
                                   Il peut s'agir de serres, parcelles cadastrales, chambres de culture, ..."
 </i18n>

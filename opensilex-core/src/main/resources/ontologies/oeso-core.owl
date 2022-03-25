@@ -163,9 +163,9 @@ OESO</rdfs:label>
         <rdfs:domain rdf:resource="http://www.w3.org/ns/org#Site"/>
         <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#Facility"/>
         <rdfs:comment xml:lang="en">Indicates a facility spatially located within the site</rdfs:comment>
-        <rdfs:comment xml:lang="fr">Indique une installation technique localisée dans le site</rdfs:comment>
+        <rdfs:comment xml:lang="fr">Indique une installation environnementale localisée dans le site</rdfs:comment>
         <rdfs:label xml:lang="en">Contains facility</rdfs:label>
-        <rdfs:label xml:lang="fr">Contient l&apos;installation technique</rdfs:label>
+        <rdfs:label xml:lang="fr">Contient l&apos;installation environnementale</rdfs:label>
     </owl:ObjectProperty>
     
 
@@ -471,7 +471,7 @@ OESO</rdfs:label>
         <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Experiment"/>
         <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#Facility"/>
         <rdfs:label xml:lang="en">uses facility</rdfs:label>
-        <rdfs:label xml:lang="fr">utilise l&apos;installation technique</rdfs:label>
+        <rdfs:label xml:lang="fr">utilise l&apos;installation environnementale</rdfs:label>
     </owl:ObjectProperty>
     
 
@@ -493,7 +493,7 @@ OESO</rdfs:label>
         <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Facility"/>
         <rdfs:range rdf:resource="http://www.w3.org/ns/org#Site"/>
         <rdfs:comment xml:lang="en">Indicates the site in which the facility is located</rdfs:comment>
-        <rdfs:comment xml:lang="fr">Indique le site dans lequel l&apos;installation technique est située</rdfs:comment>
+        <rdfs:comment xml:lang="fr">Indique le site dans lequel l&apos;installation environnementale est située</rdfs:comment>
         <rdfs:label xml:lang="fr">Est situé à l&apos;intérieur du site</rdfs:label>
         <rdfs:label xml:lang="en">Is located within site</rdfs:label>
         <rdfs:seeAlso xml:lang="fr">Similaire à &lt;http://www.opengis.net/ont/geosparql#within&gt;</rdfs:seeAlso>
@@ -2285,7 +2285,7 @@ Used in OpenSILEX for group things</rdfs:comment>
         <rdfs:label xml:lang="fr">contexte expérimental</rdfs:label>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#Facility">
-        <rdfs:label xml:lang="fr">Installation technique</rdfs:label>
+        <rdfs:label xml:lang="fr">Installation environnementale</rdfs:label>
         <rdfs:label xml:lang="en">Facility</rdfs:label>
         <rdfs:comment xml:lang="fr">Material facility like greenhouse, compartment, etc.</rdfs:comment>
     </rdf:Description>

@@ -45,6 +45,7 @@
     <opensilex-TreeView
         :nodes.sync="nodes"
         @select="displayNodesDetail"
+        ref="treeView"
     >
       <template v-slot:node="{ node }">
         <span class="item-icon">
@@ -114,8 +115,8 @@
       createTitle="InfrastructureTree.add"
       editTitle="InfrastructureTree.update"
       icon="ik#ik-globe"
-      @onCreate="refresh($event ? $event.uri : undefined)"
-      @onUpdate="refresh($event ? $event.uri : undefined)"
+      @onCreate="onCreate"
+      @onUpdate="onUpdate"
       :initForm="initOrganizationForm"
     ></opensilex-ModalForm>
     <opensilex-ModalForm
@@ -129,8 +130,8 @@
         createTitle="InfrastructureTree.addSite"
         editTitle="InfrastructureTree.editSite"
         icon="ik#ik-globe"
-        @onCreate="refresh($event ? $event.uri : undefined)"
-        @onUpdate="refresh($event ? $event.uri : undefined)"
+        @onCreate="onCreate"
+        @onUpdate="onUpdate"
         :initForm="initSiteForm"
         :doNotHideOnError="true"
     ></opensilex-ModalForm>
@@ -149,8 +150,8 @@ import ModalForm from "../common/forms/ModalForm.vue";
 import {SiteUpdateDTO} from "opensilex-core/model/siteUpdateDTO";
 import {DropdownButtonOption} from "../common/dropdown/Dropdown.vue";
 import {ResourceDagDTO} from "opensilex-core/model/resourceDagDTO";
-import Oeso from "../../ontologies/Oeso";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
+import TreeView from "../common/views/TreeView.vue";
 
 type OrganizationOrSiteData = ResourceDagDTO & {
   isOrganization: boolean,
@@ -184,6 +185,7 @@ export default class InfrastructureTree extends Vue {
 
   @Ref("infrastructureForm") readonly infrastructureForm!: ModalForm;
   @Ref("siteForm") readonly siteForm!: ModalForm;
+  @Ref("treeView") readonly treeView: TreeView<OrganizationOrSiteData>;
 
   private createOptions: Array<DropdownButtonOption> = [
     {
@@ -252,30 +254,64 @@ export default class InfrastructureTree extends Vue {
     this.langUnwatcher();
   }
 
-  refresh(uri?) {
-    Promise.all([
+  refresh(uri?): Promise<void> {
+    return Promise.all([
       this.fetchOrganizationsAsTree(),
       this.fetchSites()
     ]).then(result => {
       let tree: Array<GenericTreeOption> = result[0];
       let sites: Array<SiteGetDTO> = result[1];
 
-      let mappedNodes = this.appendSitesToTree(tree, sites);
+      // Keep no selection
+      this.selectedOrganization = undefined;
+      this.selectedSite = undefined;
 
-      if (mappedNodes.length > 0) {
-        mappedNodes[0].isSelected = true;
+      this.nodes = this.appendSitesToTree(tree, sites);
 
-        if (!uri) {
-          if (mappedNodes[0].data.isOrganization) {
-            this.displayOrganizationDetail(mappedNodes[0].data.uri, true);
-          } else {
-            this.displaySiteDetail(mappedNodes[0].data.uri, true);
-          }
+      if (uri) {
+        this.selectFirstNode(node => node.data.uri === uri);
+      } else {
+        this.$emit("onSelect");
+      }
+    }).catch(this.$opensilex.errorHandler);
+  }
+
+  /**
+   * Programmatically select the first node that matches the given predicate.
+   *
+   * @param predicate
+   * @param currentNode The node to explore with its children. If not specified, all nodes will be explored.
+   */
+  selectFirstNode(predicate: (node: OrganizationOrSiteTreeNode) => boolean, currentNode?: OrganizationOrSiteTreeNode): OrganizationOrSiteTreeNode {
+    // If no current node is given, apply the method on each root node
+    if (!currentNode) {
+      for (let node of this.nodes) {
+        let result = this.selectFirstNode(predicate, node);
+        if (result) {
+          return result;
         }
       }
+      return undefined;
+    }
 
-      this.nodes = mappedNodes;
-    }).catch(this.$opensilex.errorHandler);
+    // Test the predicate against the current node
+    if (predicate(currentNode)) {
+      // Select it
+      currentNode.isSelected = true;
+      this.displayNodesDetail(currentNode);
+      return currentNode;
+    }
+
+    // Test the predicate against the children
+    if (currentNode.children) {
+      for (let node of currentNode.children) {
+        let result = this.selectFirstNode(predicate, node);
+        if (result) {
+          return result;
+        }
+      }
+    }
+    return undefined;
   }
 
   private async fetchOrganizationsAsTree(): Promise<Array<GenericTreeOption>> {
@@ -454,6 +490,7 @@ export default class InfrastructureTree extends Vue {
     this.service
       .deleteInfrastructure(uri)
       .then(() => {
+        this.$emit("onDelete");
         this.refresh();
       })
       .catch(this.$opensilex.errorHandler);
@@ -491,6 +528,7 @@ export default class InfrastructureTree extends Vue {
     this.service
         .deleteSite(uri)
         .then(() => {
+          this.$emit("onDelete");
           this.refresh();
         })
         .catch(this.$opensilex.errorHandler);
@@ -504,6 +542,18 @@ export default class InfrastructureTree extends Vue {
     if (this.parentURI) {
       form.organizations = [this.parentURI];
     }
+  }
+
+  onCreate() {
+    let selectedNode = this.treeView.getSelectedNode();
+    this.refresh(selectedNode?.uri);
+    this.$emit("onCreate");
+  }
+
+  onUpdate() {
+    let selectedNode = this.treeView.getSelectedNode();
+    this.refresh(selectedNode?.uri);
+    this.$emit("onCreate");
   }
 }
 </script>

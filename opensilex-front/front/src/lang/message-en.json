@@ -174,8 +174,9 @@
                 "visualization":"Visualization"
             },
             "experiments": "Experiments",
+            "facilities": "Facilities",
             "variables": "Variables",
-            "infrastructure": "Organization",
+            "infrastructure": "Organizations",
             "installations": "Installations",
             "projects": "Projects",
             "scientificObjects": "Scientific Objects",

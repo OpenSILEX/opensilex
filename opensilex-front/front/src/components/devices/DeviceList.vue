@@ -574,7 +574,7 @@ fr:
     update: Editer le dispositif
     delete: Supprimer le dispositif
     selected: Dispositifs selectionnés
-    facility: Installation technique
+    facility: Installation environnementale
     linkVariable: Lier des variables
     export: Exporter la liste
     alertSelectSize: La selection contient trop de ligne, 1000 lignes maximum

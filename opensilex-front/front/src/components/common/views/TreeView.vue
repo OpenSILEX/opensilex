@@ -1,5 +1,9 @@
 <template>
-  <sl-vue-tree v-model="nodeList" @select="selectItem" @toggle="$emit('toggle', $event)">
+  <sl-vue-tree v-model="nodeList"
+               @select="onSelectItem"
+               @toggle="$emit('toggle', $event)"
+               ref="slVueTree"
+  >
     <template slot="toggle" slot-scope="{ node }">
       <span class="toggle-icon" v-if="!node.isLeaf">
         <opensilex-Icon v-if="node.isExpanded" icon="fa#chevron-down" />
@@ -25,25 +29,38 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, PropSync } from "vue-property-decorator";
+import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
 import copy from "copy-to-clipboard";
 import Vue from "vue";
+import SlVueTree, { ISlTreeNodeModel } from "sl-vue-tree";
 
 @Component
-export default class TreeView extends Vue {
+export default class TreeView<T> extends Vue {
   @PropSync("nodes")
-  nodeList: any;
+  nodeList: Array<ISlTreeNodeModel<T>>;
 
   @Prop()
   noButtons: boolean;
 
+  @Ref("slVueTree") slVueTree: SlVueTree<T>;
+
   copy = copy;
 
-  selectItem(nodes: any[]) {
+  onSelectItem(nodes: any[]) {
     if (nodes.length > 0) {
-      let node = nodes[nodes.length - 1];
       this.$emit("select", nodes[0]);
     }
+  }
+
+  /**
+   * Return the current selected node
+   */
+  getSelectedNode(): T | undefined {
+    let selectedNode = this.slVueTree.getSelected();
+    if (!Array.isArray(selectedNode) || selectedNode.length === 0) {
+      return undefined;
+    }
+    return selectedNode[0].data;
   }
 }
 </script>

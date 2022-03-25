@@ -199,7 +199,7 @@ fr :
     type-help: "URI du type d'objet scientifique"
     hasCreationDate-help: "Date de création (format: AAAA-MM-JJ)"
     hasDestructionDate-help: "Date de destruction (format: AAAA-MM-JJ)"
-    hasFacility-help: "Installation technique initiale"
+    hasFacility-help: "Installation environnementale initiale"
     isPartOf-help: "URI ou nom du parent"
     comment-help: "Description"
     geometry-help: "Coordonnées géospatiales (Format WKT)"

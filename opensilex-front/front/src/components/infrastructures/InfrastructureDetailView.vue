@@ -19,7 +19,7 @@
       </div>
       <div class="col-md-6">
         <!-- Infrastructure facilities -->
-        <opensilex-InfrastructureFacilitiesView
+        <opensilex-FacilitiesView
           :facilities="selected.facilities"
           :organization="selected"
           :selected="selected"
@@ -28,7 +28,7 @@
           @onUpdate="refresh"
           @onCreate="refresh"
           @onDelete="refresh"
-        ></opensilex-InfrastructureFacilitiesView>
+        ></opensilex-FacilitiesView>
       </div>
     </div>
   </div>

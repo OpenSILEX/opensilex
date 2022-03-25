@@ -4,7 +4,7 @@
       v-if="label"
       :target="target"
       :to="{
-        path: '/infrastructure/facility/details/' + encodeURIComponent(value),
+        path: '/facility/details/' + encodeURIComponent(value),
       }"
       :uri="value"
       :value="label"
@@ -21,7 +21,7 @@ import {
 import Vue from "vue";
 
 @Component
-export default class InfrastructureFacilityPropertyView extends Vue {
+export default class FacilityPropertyView extends Vue {
   $opensilex: any;
 
   @Prop()

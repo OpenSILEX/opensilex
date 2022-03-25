@@ -154,7 +154,7 @@ export default class SiteDetail extends Vue {
         uri: organization.uri,
         value: organization.name,
         to: {
-          path: "/infrastructure/facility/details/" + encodeURIComponent(organization.uri),
+          path: "/facility/details/" + encodeURIComponent(organization.uri),
         },
       }
     });
@@ -166,7 +166,7 @@ export default class SiteDetail extends Vue {
         uri: facility.uri,
         value: facility.name,
         to: {
-          path: "/infrastructure/facility/details/" + encodeURIComponent(facility.uri),
+          path: "/facility/details/" + encodeURIComponent(facility.uri),
         },
       }
     });
@@ -227,7 +227,7 @@ en:
     noGeometryWarning: No geometry was associated with the address. Maybe the address is invalid.
 fr:
   SiteDetail:
-    facilities: Installations techniques
+    facilities: Installations environnementales
     groups: Groupes
     noGeometryWarning: Aucune géométrie n'a pu être déterminée à partir de l'adresse. L'adresse est peut-être invalide.
 </i18n>

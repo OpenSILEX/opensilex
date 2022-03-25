@@ -9,12 +9,12 @@
     </opensilex-PageActions>
     <div class="row">
       <div class="col-md-12">
-        <opensilex-OrganizationFacilityDetail
+        <opensilex-FacilityDetail
           :selected="selected"
           :withActions="true"
           @onUpdate="refresh"
         >
-        </opensilex-OrganizationFacilityDetail>
+        </opensilex-FacilityDetail>
       </div>
     </div>
   </div>
@@ -23,12 +23,12 @@
 <script lang="ts">
 import { Component, Ref, Watch } from "vue-property-decorator";
 import Vue from "vue";
-import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
+import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 // @ts-ignore
 import { InfrastructureGetDTO } from "opensilex-core/index";
 
 @Component
-export default class InfrastructureFacilityView extends Vue {
+export default class FacilityView extends Vue {
   $opensilex: any;
 
   selected: InfrastructureGetDTO = null;

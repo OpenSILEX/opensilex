@@ -21,12 +21,12 @@ public class VueFacilities implements VueOntologyObjectType {
 
     @Override
     public String getInputComponent() {
-        return "opensilex-InfrastructureFacilityPropertySelector";
+        return "opensilex-FacilityPropertySelector";
     }
 
     @Override
     public String getViewComponent() {
-        return "opensilex-InfrastructureFacilityPropertyView";
+        return "opensilex-FacilityPropertyView";
     }
 
 }

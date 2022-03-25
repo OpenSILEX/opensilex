@@ -28,11 +28,11 @@
     ></opensilex-InfrastructureSelector>
 
     <!-- Facilities -->
-    <opensilex-InfrastructureFacilitySelector
+    <opensilex-FacilitySelector
         label="SiteForm.facilities"
         :facilities.sync="form.facilities"
         :multiple="true"
-    ></opensilex-InfrastructureFacilitySelector>
+    ></opensilex-FacilitySelector>
 
     <!-- Groups -->
     <opensilex-GroupSelector
@@ -48,7 +48,7 @@
         :unchecked-value="false"
         @change="onAddressToggled"
         switches
-    >{{$t("OrganizationFacilityForm.toggleAddress")}}</b-form-checkbox>
+    >{{$t("FacilityForm.toggleAddress")}}</b-form-checkbox>
 
     <!-- Address -->
     <opensilex-AddressForm
@@ -172,7 +172,7 @@ en:
 fr:
   SiteForm:
     organizations: Organisations
-    facilities: Installations techniques
+    facilities: Installations environnementales
     groups: Groupes
     toggleAddress: "Adresse"
     siteAlreadyExists: Ce site existe déjà

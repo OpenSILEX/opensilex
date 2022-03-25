@@ -53,7 +53,7 @@
         :unchecked-value="false"
         @change="onAddressToggled"
         switches
-    >{{$t("OrganizationFacilityForm.toggleAddress")}}</b-form-checkbox>
+    >{{$t("FacilityForm.toggleAddress")}}</b-form-checkbox>
 
     <!-- Address -->
     <opensilex-AddressForm
@@ -81,11 +81,11 @@
 import {Component, Prop, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
 import {OntologyService} from "opensilex-core/api/ontology.service";
-import {VueJsOntologyExtensionService} from "../../../lib";
+import {VueJsOntologyExtensionService} from "../../lib";
 import {InfrastructureFacilityCreationDTO} from "opensilex-core/model/infrastructureFacilityCreationDTO";
 
 @Component
-export default class OrganizationFacilityForm extends Vue {
+export default class FacilityForm extends Vue {
   @Ref("validatorRef") readonly validatorRef!: any;
 
   $opensilex: any;
@@ -97,7 +97,7 @@ export default class OrganizationFacilityForm extends Vue {
   editMode: boolean;
 
   @Prop({
-    default: OrganizationFacilityForm.getEmptyForm()
+    default: FacilityForm.getEmptyForm()
   })
   form: InfrastructureFacilityCreationDTO;
   hasAddress: boolean;
@@ -107,7 +107,7 @@ export default class OrganizationFacilityForm extends Vue {
   propertyComponents = [];
 
   getEmptyForm() {
-    return OrganizationFacilityForm.getEmptyForm();
+    return FacilityForm.getEmptyForm();
   }
 
   static getEmptyForm(): InfrastructureFacilityCreationDTO {
@@ -266,9 +266,9 @@ export default class OrganizationFacilityForm extends Vue {
 
 <i18n>
 en:
-  OrganizationFacilityForm:
+  FacilityForm:
     toggleAddress: "Address"
 fr:
-  OrganizationFacilityForm:
+  FacilityForm:
     toggleAddress: "Adresse"
 </i18n>

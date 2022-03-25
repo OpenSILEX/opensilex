@@ -12,7 +12,7 @@
                   )
                 "
             @click="editInfrastructureFacility()"
-            label="InfrastructureFacilitiesView.update"
+            label="FacilitiesView.update"
             :small="true"
         ></opensilex-EditButton>
         <opensilex-DeleteButton
@@ -22,11 +22,11 @@
                   )
                 "
             @click="deleteInfrastructureFacility()"
-            label="InfrastructureFacilitiesView.delete"
+            label="FacilitiesView.delete"
             :small="true"
         ></opensilex-DeleteButton>
       </b-button-group>
-      <opensilex-OrganizationFacilityModalForm
+      <opensilex-FacilityModalForm
           v-if="
             user.hasCredential(
               credentials.CREDENTIAL_FACILITY_MODIFICATION_ID
@@ -34,7 +34,7 @@
           "
           ref="infrastructureFacilityForm"
           @onUpdate="refresh"
-      ></opensilex-OrganizationFacilityModalForm>
+      ></opensilex-FacilityModalForm>
     </template>
 
     <template v-slot:body>
@@ -43,7 +43,7 @@
           :uri="selectedFacilityOrDefault.uri"
           :value="selectedFacilityOrDefault.uri"
           :to="{
-            path: '/infrastructure/facility/details/' + encodeURIComponent(selectedFacilityOrDefault.uri),
+            path: '/facility/details/' + encodeURIComponent(selectedFacilityOrDefault.uri),
           }"
       >
       </opensilex-UriView>
@@ -60,7 +60,7 @@
       <!-- Organisations -->
       <opensilex-UriListView
           v-if="hasOrganizations"
-          label="OrganizationFacilityDetail.organizations"
+          label="FacilityDetail.organizations"
           :list="organizationUriList"
           :inline="false"
       >
@@ -69,7 +69,7 @@
       <!-- Site -->
       <opensilex-UriListView
           v-if="hasSites"
-          label="OrganizationFacilityDetail.site"
+          label="FacilityDetail.site"
           :list="siteUriList"
           :inline="false"
       >
@@ -80,7 +80,7 @@
           v-if="selectedFacilityOrDefault.address"
           :address="selectedFacilityOrDefault.address"
           :geometry="selectedFacilityOrDefault.geometry"
-          noGeometryLabel="OrganizationFacilityDetail.noGeometryWarning"
+          noGeometryLabel="FacilityDetail.noGeometryWarning"
       >
       </opensilex-AddressView>
 
@@ -125,7 +125,7 @@ import {InfrastructureFacilityGetDTO} from "opensilex-core/model/infrastructureF
 import {Prop, Ref, Watch} from "vue-property-decorator";
 
 @Component
-export default class OrganizationFacilityDetail extends Vue {
+export default class FacilityDetail extends Vue {
   $opensilex: any;
 
   @Prop()
@@ -352,13 +352,13 @@ export default class OrganizationFacilityDetail extends Vue {
 
 <i18n>
 en:
-  OrganizationFacilityDetail:
+  FacilityDetail:
     organizations: Organizations
     site: "Site"
     address: "Address"
     noGeometryWarning: No geometry was associated with the address. Maybe the address is invalid.
 fr:
-  OrganizationFacilityDetail:
+  FacilityDetail:
     organizations: Organisations
     site: "Site"
     address: "Adresse"

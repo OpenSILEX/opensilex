@@ -173,6 +173,7 @@
                 "visualization":"Visualisation"
             },
             "experiments": "Expérimentations",
+            "facilities": "Installations environnementales",
             "infrastructure": "Organisations",
             "installations": "Installations",
             "projects": "Projets",
@@ -201,7 +202,7 @@
             "infrastructures": "Organisations",
             "configuration": "Administration",
             "scientificObjectTypes": "Types d'objets scientifiques",
-            "facilitiesTypes": "Types d'installations techniques",
+            "facilitiesTypes": "Types d'installations environnementales",
             "deviceTypes": "Types de capteurs",
             "eventTypes": "Types d'évènements", 
             "factorCategoryTypes": "Catégories de facteurs",
@@ -558,11 +559,11 @@
         "organization": {
             "exception": {
                 "siteMustHaveParent": "Un site doit avoir au moins une organisation parente.",
-                "siteFacilityInvalidAddress": "Le site '{site}' et l'installation technique '{facility}' doivent avoir la même adresse."
+                "siteFacilityInvalidAddress": "Le site '{site}' et l'installation environnementale '{facility}' doivent avoir la même adresse."
             }
         },
         "facility": {
-            "filter-placeholder": "Rechercher des installations techniques..."
+            "filter-placeholder": "Rechercher des installations environnementales..."
         }
     },
     "credential-groups": {
@@ -654,8 +655,8 @@
             "delete": "Suppression des événements"
         },
         "facility":  {
-            "modification": "Ajout / Modification des installations techniques",
-            "delete": "Suppression des installations techniques"
+            "modification": "Ajout / Modification des installations environnementales",
+            "delete": "Suppression des installations environnementales"
         },
         "provenance": {
             "modification": "Ajout / Modification des provenances",

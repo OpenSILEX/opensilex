@@ -7,7 +7,7 @@
       :multiple="property.is_list"
       :required="property.is_required"
       :optionsLoadingMethod="loadFacilities"
-      placeholder="InfrastructureFacilityPropertySelector.placeholder"
+      placeholder="FacilityPropertySelector.placeholder"
     ></opensilex-SelectForm>
   </div>
 </template>
@@ -23,7 +23,7 @@ import {
 import Vue from "vue";
 
 @Component
-export default class InfrastructureFacilityPropertySelector extends Vue {
+export default class FacilityPropertySelector extends Vue {
   $opensilex: any;
 
   @Prop()
@@ -90,12 +90,12 @@ export default class InfrastructureFacilityPropertySelector extends Vue {
 
 <i18n>
 en:
-  InfrastructureFacilityPropertySelector:
+  FacilityPropertySelector:
     label: Facilities
     placeholder: Select a facility
 
 fr:
-  InfrastructureFacilityPropertySelector:
-    label: Installation technique
-    placeholder: Sélectionner une installation technique
+  FacilityPropertySelector:
+    label: Installation environnementale
+    placeholder: Sélectionner une installation environnementale
 </i18n>

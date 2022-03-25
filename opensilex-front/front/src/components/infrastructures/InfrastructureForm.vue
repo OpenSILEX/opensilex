@@ -43,12 +43,12 @@
     ></opensilex-GroupSelector>
 
     <!-- Facilities -->
-    <opensilex-InfrastructureFacilitySelector
+    <opensilex-FacilitySelector
         label="InfrastructureForm.form-facilities-label"
         :facilities.sync="form.facilities"
         :multiple="true"
     >
-    </opensilex-InfrastructureFacilitySelector>
+    </opensilex-FacilitySelector>
   </b-form>
 </template>
 
@@ -201,5 +201,5 @@ fr:
     form-parent-placeholder: Sélectionner l'organisation parente
     infrastructure-already-exists: Une organisation existe déjà avec cette URI
     form-group-label: Groupes
-    form-facilities-labe: Installations techniques
+    form-facilities-labe: Installations environnementales
 </i18n>

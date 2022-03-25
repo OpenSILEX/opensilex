@@ -1,9 +1,9 @@
 <template>
   <opensilex-ModalForm
     ref="facilityForm"
-    component="opensilex-OrganizationFacilityForm"
-    createTitle="InfrastructureFacilitiesView.add"
-    editTitle="InfrastructureFacilitiesView.update"
+    component="opensilex-FacilityForm"
+    createTitle="FacilitiesView.add"
+    editTitle="FacilitiesView.update"
     icon="ik#ik-map"
     :createAction="callInfrastructureFacilityCreation"
     :updateAction="callInfrastructureFacilityUpdate"
@@ -17,11 +17,11 @@
 <script lang="ts">
 import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
+import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import {InfrastructureFacilityCreationDTO} from "opensilex-core/model/infrastructureFacilityCreationDTO";
 
 @Component
-export default class OrganizationFacilityModalForm extends Vue {
+export default class FacilityModalForm extends Vue {
   $opensilex: any;
 
   @Prop({
@@ -140,8 +140,8 @@ en:
     infrastructure-facility-already-exists: Infrastructure facility already exists with this URI
 fr:
   InfrastructureFacilityForm:
-    facility-uri: URI de l'installation technique
-    form-name-placeholder: Saisir le nom de l'installation technique
-    form-type-placeholder: Sélectionner le type de l'installation technique
-    infrastructure-facility-already-exists: Une installation technique existe déjà avec cette URI
+    facility-uri: URI de l'installation environnementale
+    form-name-placeholder: Saisir le nom de l'installation environnementale
+    form-type-placeholder: Sélectionner le type de l'installation environnementale
+    infrastructure-facility-already-exists: Une installation environnementale existe déjà avec cette URI
 </i18n>

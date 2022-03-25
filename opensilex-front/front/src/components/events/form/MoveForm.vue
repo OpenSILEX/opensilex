@@ -6,22 +6,22 @@
 
         <div class="row">
             <div class="col-lg-5">
-                <opensilex-InfrastructureFacilitySelector
+                <opensilex-FacilitySelector
                         label="Position.from"
                         :facilities.sync="form.from"
                         :multiple="false"
                         :required="false"
                         helpMessage="Position.from-help"
-                ></opensilex-InfrastructureFacilitySelector>
+                ></opensilex-FacilitySelector>
             </div>
             <div class="col-lg-5">
-                <opensilex-InfrastructureFacilitySelector
+                <opensilex-FacilitySelector
                         label="Position.to"
                         :facilities.sync="form.to"
                         :multiple="false"
                         :required="false"
                         helpMessage="Position.to-help"
-                ></opensilex-InfrastructureFacilitySelector>
+                ></opensilex-FacilitySelector>
             </div>
         </div>
 

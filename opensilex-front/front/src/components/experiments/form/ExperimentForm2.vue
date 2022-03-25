@@ -26,11 +26,11 @@
       :multiple="true"
     ></opensilex-InfrastructureSelector>
 
-    <opensilex-InfrastructureFacilitySelector
+    <opensilex-FacilitySelector
       label="component.experiment.facilities"
       :facilities.sync="experiment.facilities"
       :multiple="true"
-    ></opensilex-InfrastructureFacilitySelector>
+    ></opensilex-FacilitySelector>
 
     <opensilex-GroupSelector
       label="component.experiment.groups"

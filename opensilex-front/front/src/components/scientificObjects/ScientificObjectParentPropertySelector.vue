@@ -110,7 +110,7 @@ en:
 
 fr:
   ScientificObjectParentPropertySelector:
-    label: Installation technique
-    placeholder: Sélectionner une installation technique
+    label: Installation environnementale
+    placeholder: Sélectionner une installation environnementale
     parent-placeholder: Sélectionner un objet scientifique
 </i18n>

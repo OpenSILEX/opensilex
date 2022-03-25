@@ -5,25 +5,7 @@
       title="component.menu.infrastructures"
       description="InfrastructureView.description"
     ></opensilex-PageHeader>
-    <opensilex-PageActions
-        :tabs="true"
-    >
-      <template v-slot>
-          <b-nav-item
-            :active="organizationTab"
-            to="?tab=Organization"
-          >
-            {{ $t('InfrastructureView.organizations') }}
-          </b-nav-item>
-          <b-nav-item
-            :active="facilityTab"
-            to="?tab=Facility"
-          >
-            {{ $t('InfrastructureView.facilities') }}
-          </b-nav-item>
-      </template>
-    </opensilex-PageActions>
-    <div class="row" v-if="organizationTab">
+    <div class="row">
       <div class="col-md-6">
         <!-- Infrastructure tree -->
         <opensilex-InfrastructureTree
@@ -35,50 +17,27 @@
         <!-- Infrastructure detail -->
         <opensilex-InfrastructureDetail
             :selected="selectedOrganization"
-            @onUpdate="refresh"
+            @onUpdate="refreshTree"
         ></opensilex-InfrastructureDetail>
         <!-- Site detail -->
         <opensilex-SiteDetail
             :selected="selectedSite"
             :withActions="true"
-            @onUpdate="refresh"
+            @onUpdate="refreshTree"
         ></opensilex-SiteDetail>
         <!-- Facilities -->
-        <opensilex-InfrastructureFacilitiesView
+        <opensilex-FacilitiesView
             v-if="selectedFacilities"
 
             :withActions="facilitiesActions"
-            @onUpdate="refresh"
-            @onCreate="refresh"
-            @onDelete="refresh"
+            @onUpdate="refreshTree"
+            @onCreate="refreshTree"
+            @onDelete="refreshTree"
             :facilities="selectedFacilities"
             :organization="selectedOrganization"
             :site="selectedSite"
             :isSelectable="false"
-            ref="organizationFacilitiesView"
-            @facilitySelected="updateSelectedFacility"
-        ></opensilex-InfrastructureFacilitiesView>
-      </div>
-    </div>
-    <div class="row" v-if="facilityTab">
-      <div class="col-md-6">
-        <!-- Facilities -->
-        <opensilex-InfrastructureFacilitiesView
-            :withActions="true"
-            @onUpdate="refresh"
-            @onCreate="refresh"
-            @onDelete="refresh"
-            :isSelectable="true"
-            ref="facilitiesView"
-            @facilitySelected="updateSelectedFacility"
-        ></opensilex-InfrastructureFacilitiesView>
-      </div>
-      <div class="col-md-6">
-        <!-- Facility detail -->
-        <opensilex-OrganizationFacilityDetail
-            :selected="selectedFacility"
-        >
-        </opensilex-OrganizationFacilityDetail>
+        ></opensilex-FacilitiesView>
       </div>
     </div>
   </div>
@@ -87,13 +46,13 @@
 <script lang="ts">
 import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
-import { OrganizationsService, InfrastructureGetDTO } from "opensilex-core/index";
-import {InfrastructureFacilityGetDTO} from "opensilex-core/model/infrastructureFacilityGetDTO";
+import {InfrastructureGetDTO, OrganizationsService} from "opensilex-core/index";
 import {SiteGetDTO} from "opensilex-core/model/siteGetDTO";
 import Org from "../../ontologies/Org";
-import {NamedResourceDTOInfrastructureFacilityModel} from "opensilex-core/model/namedResourceDTOInfrastructureFacilityModel";
-import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
+import {
+  NamedResourceDTOInfrastructureFacilityModel
+} from "opensilex-core/model/namedResourceDTOInfrastructureFacilityModel";
+import InfrastructureTree from "./InfrastructureTree.vue";
 
 @Component
 export default class InfrastructureView extends Vue {
@@ -102,42 +61,17 @@ export default class InfrastructureView extends Vue {
   $route: any;
   service: OrganizationsService;
 
-  // Gestion des tabs : inspiré de VariablesView.vue
-  static ORGANIZATION_TAB = "Organization";
-  static FACILITY_TAB = "Facility";
-  static TABS = [
-      InfrastructureView.ORGANIZATION_TAB,
-      InfrastructureView.FACILITY_TAB
-  ];
-
-  currentTabIndex = 0;
-  currentTabName = InfrastructureView.TABS[this.currentTabIndex];
-
-  @Ref("infrastructureTree") readonly infrastructureTree!: any;
+  @Ref("infrastructureTree") readonly infrastructureTree!: InfrastructureTree;
   @Ref("organizationFacilitiesView") readonly organizationFacilitiesView!: any;
   @Ref("facilitiesView") readonly facilitiesView!: any;
 
   selectedOrganization: InfrastructureGetDTO = null;
   selectedSite: SiteGetDTO = null;
-  selectedFacility: InfrastructureFacilityGetDTO = null;
 
   created() {
     this.service = this.$opensilex.getService(
         "opensilex-core.OrganizationsService"
     );
-
-    let query = this.$route.query;
-    if (query && query.tab) {
-      let requestedTab = decodeURIComponent(query.tab).toLowerCase();
-      let index = InfrastructureView.TABS.findIndex(tab => tab.toLowerCase() === requestedTab);
-      if (index >= 0) {
-        this.updateType(index);
-      } else {
-        this.updateType(0);
-      }
-    } else {
-      this.updateType(0);
-    }
   }
 
   get user() {
@@ -162,36 +96,22 @@ export default class InfrastructureView extends Vue {
     return undefined;
   }
 
-  get organizationTab() {
-    return this.currentTabName == InfrastructureView.ORGANIZATION_TAB;
-  }
-
-  get facilityTab() {
-    return this.currentTabName == InfrastructureView.FACILITY_TAB;
-  }
-
-  updateType(tabIndex) {
-    if (tabIndex === this.currentTabIndex) {
+  onSelectedOrganizationOrSite(selection: InfrastructureGetDTO | SiteGetDTO) {
+    if (!selection) {
+      this.clearSelection();
       return;
     }
 
-    this.onTabChange(this.currentTabIndex, tabIndex);
-    this.currentTabIndex = tabIndex;
-    this.currentTabName = InfrastructureView.TABS[this.currentTabIndex];
-  }
-
-  onTabChange(oldIndex, newIndex) {
-    if (InfrastructureView.TABS[oldIndex] === InfrastructureView.FACILITY_TAB) {
-      this.selectedFacility = undefined;
-    }
-  }
-
-  onSelectedOrganizationOrSite(selection: InfrastructureGetDTO | SiteGetDTO) {
     if (Org.checkURIS(Org.SITE_TYPE_URI, selection.rdf_type)) {
-      this.updateSeletedSite(selection);
+      this.updateSelectedSite(selection);
     } else { // Organization
       this.updateSelectedOrganization(selection);
     }
+  }
+
+  clearSelection() {
+    this.selectedSite = undefined;
+    this.selectedOrganization = undefined;
   }
 
   updateSelectedOrganization(newSelection) {
@@ -199,32 +119,20 @@ export default class InfrastructureView extends Vue {
     this.selectedOrganization = newSelection;
   }
 
-  updateSeletedSite(newSite) {
+  updateSelectedSite(newSite) {
     this.selectedOrganization = undefined;
     this.selectedSite = newSite;
   }
 
-  updateSelectedFacility(facility: InfrastructureFacilityGetDTO) {
-    if (!facility || !facility.uri) {
-      this.selectedFacility = undefined;
-      return;
+  refreshTree() {
+    let uri = undefined;
+    if (this.selectedOrganization) {
+      uri = this.selectedOrganization.uri;
+    } else if (this.selectedSite) {
+      uri = this.selectedSite.uri;
     }
 
-    this.service
-        .getInfrastructureFacility(facility.uri)
-        .then((http: HttpResponse<OpenSilexResponse<InfrastructureFacilityGetDTO>>) => {
-          let detailDTO: InfrastructureFacilityGetDTO = http.response.result;
-          this.selectedFacility = detailDTO;
-        });
-  }
-
-  refresh() {
-    if (this.infrastructureTree) {
-      this.infrastructureTree.refresh(this.selectedOrganization ? this.selectedOrganization.uri : undefined);
-    }
-    if (this.facilitiesView) {
-      this.facilitiesView.refresh();
-    }
+    this.infrastructureTree.refresh(uri);
   }
 }
 </script>
@@ -242,5 +150,5 @@ fr:
   InfrastructureView:
     description: Gérer et configurer les organisations
     organizations: Organisations et sites
-    facilities: Installations techniques
+    facilities: Installations environnementales
 </i18n>

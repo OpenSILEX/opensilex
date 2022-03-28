@@ -14,9 +14,11 @@ import com.mongodb.client.model.geojson.Polygon;
 import com.mongodb.client.model.geojson.Position;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.riot.Lang;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.opensilex.OpenSilex;
 import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.core.experiment.api.ExperimentAPITest;
 import org.opensilex.core.experiment.api.ExperimentGetDTO;
@@ -35,6 +37,8 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -56,6 +60,10 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
     public static final String createPath = path + "/";
     public static final String updatePath = path + "/";
     public static final String deletePath = path + "/{uri}";
+
+    private static final String GERMPLASM_RESTRICTION_ONTOLOGY_GRAPH = "http://www.opensilex.org/vocabulary/test-germplasm-restriction#";
+    private static final Path GERMPLASM_RESTRICTION_ONTOLOGY_PATH = Paths.get("ontologies", "germplasmRestriction.owl");
+
     private int soCount = 1;
     private URI experiment;
     private URI speciesUri;
@@ -161,8 +169,19 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
         testCreate(false);
     }
 
+    /**
+     * Tests the automatic update of the species in an experiment based on their scientific objects.
+     * This test needs the "hasGermplasm" restriction on scientific objects to work, thus the ontology
+     * "germplasmRestriction" is added.
+     *
+     * @throws Exception
+     */
     @Test
-    public void testCreateAndDeleteWithGermplasm() throws Exception {
+    public void testCreateAndDeleteWithGermplasmWithRestriction() throws Exception {
+        URI germplasmRestrictionOntologyGraphUri = new URI(GERMPLASM_RESTRICTION_ONTOLOGY_GRAPH);
+        getSparqlService().loadOntology(germplasmRestrictionOntologyGraphUri,
+                OpenSilex.getResourceAsStream(GERMPLASM_RESTRICTION_ONTOLOGY_PATH.toString()), Lang.RDFXML);
+
         ScientificObjectCreationDTO scientificObjectDTO = getCreationDTO(false, false, true);
         final Response postResult = getJsonPostResponse(target(createPath), scientificObjectDTO);
         assertEquals(Status.CREATED.getStatusCode(), postResult.getStatus());
@@ -184,6 +203,21 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
         experimentGetDTO = retrieveExperiment(experiment);
 
         assertEquals(0, experimentGetDTO.getSpecies().size());
+
+        getSparqlService().clearGraph(germplasmRestrictionOntologyGraphUri);
+    }
+
+    /**
+     * Tests that creating a scientific object with a germplasm fails when the "hasGermplasm" restriction is not present
+     * in the ontology
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testCreateWithGermplasmWithoutRestrictionShouldFail() throws Exception {
+        ScientificObjectCreationDTO scientificObjectDTO = getCreationDTO(false, false, true);
+        final Response postResult = getJsonPostResponse(target(createPath), scientificObjectDTO);
+        assertEquals(Status.BAD_REQUEST.getStatusCode(), postResult.getStatus());
     }
 
     private ExperimentGetDTO retrieveExperiment(URI experimentUri) throws Exception {

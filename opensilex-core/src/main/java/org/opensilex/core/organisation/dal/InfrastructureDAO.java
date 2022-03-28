@@ -17,6 +17,8 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.path.P_Link;
 import org.apache.jena.sparql.path.P_ZeroOrMore1;
+import org.apache.jena.sparql.syntax.ElementVisitor;
+import org.apache.jena.sparql.vocabulary.FOAF;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.external.geocoding.GeocodingService;
 import org.opensilex.core.external.geocoding.OpenStreetMapGeocodingService;
@@ -37,6 +39,7 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 
@@ -440,15 +443,31 @@ public class InfrastructureDAO {
     }
 
     public List<InfrastructureFacilityModel> getAllFacilities(UserModel user) throws Exception {
-        Set<URI> infras = getUserInfrastructures(user);
+        return getAllFacilities(user, null);
+    }
 
-        if (infras != null && infras.size() == 0) {
+    public List<InfrastructureFacilityModel> getAllFacilities(UserModel user, Collection<URI> organizationUriFilter) throws Exception {
+        Set<URI> organizationUriSet = getUserInfrastructures(user);
+
+        if (organizationUriSet != null && organizationUriSet.size() == 0) {
             return new ArrayList<>();
         }
 
+        if (organizationUriFilter != null) { // Filter the organizations
+            if (organizationUriSet != null) {
+                organizationUriSet.retainAll(organizationUriFilter);
+            } else { // null means that all organizations are available (user is admin)
+                organizationUriSet = new HashSet<>(organizationUriFilter);
+            }
+        }
+
+
+        Set<URI> finalOrganizationUriSet = organizationUriSet;
         return sparql.search(InfrastructureFacilityModel.class, user.getLanguage(), (select) -> {
-            if (infras != null) {
-                SPARQLQueryHelper.inURI(select, InfrastructureFacilityModel.INFRASTRUCTURE_FIELD, infras);
+            if (finalOrganizationUriSet != null) {
+                select.addWhere(makeVar(InfrastructureFacilityModel.INFRASTRUCTURE_FIELD), Ontology.typeSubClassAny, FOAF.Organization.asNode());
+                select.addGraph(sparql.getDefaultGraph(InfrastructureModel.class), makeVar(InfrastructureFacilityModel.INFRASTRUCTURE_FIELD), Oeso.isHosted.asNode(), makeVar(SPARQLResourceModel.URI_FIELD));
+                SPARQLQueryHelper.inURI(select, InfrastructureFacilityModel.INFRASTRUCTURE_FIELD, finalOrganizationUriSet);
             }
         });
     }

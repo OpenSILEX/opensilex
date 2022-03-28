@@ -7,6 +7,8 @@ package org.opensilex.sparql.extensions;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.riot.Lang;
 
 /**
@@ -26,9 +28,13 @@ public class OntologyFileDefinition {
     private final URI prefixUri;
 
     public OntologyFileDefinition(String uri, String filePath, Lang fileType, String prefix) throws URISyntaxException {
-        String baseUri = uri.toString().replaceAll("#", "");
+        this(uri, filePath, fileType, prefix, null);
+    }
+
+    public OntologyFileDefinition(String uri, String filePath, Lang fileType, String prefix, String prefixUri) throws URISyntaxException {
+        String baseUri = uri.replaceAll("#", "");
         this.uri = new URI(baseUri);
-        this.prefixUri = new URI(baseUri + "#");
+        this.prefixUri = new URI(StringUtils.defaultIfEmpty(prefixUri, baseUri + "#"));
         this.filePath = filePath;
         this.fileType = fileType;
         this.prefix = prefix;

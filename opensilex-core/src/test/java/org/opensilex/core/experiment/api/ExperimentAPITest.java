@@ -9,9 +9,15 @@ package org.opensilex.core.experiment.api;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.Test;
+import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.organisation.api.facitity.InfrastructureFacilityGetDTO;
+import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
+import org.opensilex.core.organisation.dal.InfrastructureModel;
+import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
@@ -21,11 +27,7 @@ import java.time.LocalDate;
 import java.util.*;
 
 import static junit.framework.TestCase.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
-import org.opensilex.sparql.model.SPARQLResourceModel;
+import static org.junit.Assert.*;
 
 /**
  * @author Vincent MIGOT
@@ -40,6 +42,7 @@ public class ExperimentAPITest extends AbstractSecurityIntegrationTest {
     public static String createPath = path;
     public static String updatePath = path ;
     public static String deletePath = path + "/{uri}";
+    public static String getAvailableFacilitiesPath = uriPath + "/available_facilities";
 
     public static ExperimentCreationDTO getCreationDTO() {
 
@@ -50,6 +53,50 @@ public class ExperimentAPITest extends AbstractSecurityIntegrationTest {
         xpDto.setStartDate(currentDate.minusDays(3));
         xpDto.setEndDate(currentDate.plusDays(3));
         xpDto.setObjective("Objective");
+        return xpDto;
+    }
+
+    private InfrastructureFacilityModel createFacility(URI uri) throws Exception {
+        InfrastructureFacilityModel facilityModel = new InfrastructureFacilityModel();
+        facilityModel.setUri(uri);
+        getSparqlService().create(facilityModel);
+        return facilityModel;
+    }
+
+    private InfrastructureModel createOrganization(URI organizationUri, URI facilityUri) throws Exception {
+        InfrastructureModel organizationModel = new InfrastructureModel();
+        organizationModel.setUri(organizationUri);
+        if (Objects.nonNull(facilityUri)) {
+            organizationModel.setFacilities(new ArrayList<InfrastructureFacilityModel>() {{
+                add(createFacility(facilityUri));
+            }});
+        }
+        getSparqlService().create(organizationModel);
+        return organizationModel;
+    }
+
+    private void deleteFacility(URI uri) throws Exception {
+        getSparqlService().delete(InfrastructureFacilityModel.class, uri);
+    }
+
+    private void deleteOrganization(URI uri) throws Exception {
+        getSparqlService().delete(InfrastructureModel.class, uri);
+    }
+
+    public static ExperimentCreationDTO getCreationDTOWithOrganization(URI organizationURI) {
+
+        ExperimentCreationDTO xpDto = new ExperimentCreationDTO();
+        xpDto.setName("xpWithOrganization");
+
+        LocalDate currentDate = LocalDate.now();
+        xpDto.setStartDate(currentDate.minusDays(3));
+        xpDto.setEndDate(currentDate.plusDays(3));
+        xpDto.setObjective("Objective");
+
+        xpDto.setInfrastructures(new ArrayList<URI>() {{
+            add(organizationURI);
+        }});
+
         return xpDto;
     }
 
@@ -183,7 +230,75 @@ public class ExperimentAPITest extends AbstractSecurityIntegrationTest {
 
         assertFalse(xps.isEmpty());
     }
-    
+
+    /**
+     * Tests that `getAllFacilities` is correctly restricted when the experiment is associated with an organization
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testGetAvailableFacilitiesWithOrganization() throws Exception {
+        URI facilityWithoutOrganizationUri = new URI("test:facilityWithoutOrganization");
+        URI facilityWithOrganizationUri = new URI("test:facilityWithOrganization");
+        URI organizationUri = new URI("test:organization");
+
+        createFacility(facilityWithoutOrganizationUri);
+        createOrganization(organizationUri, facilityWithOrganizationUri);
+
+        ExperimentCreationDTO creationDTO = getCreationDTOWithOrganization(organizationUri);
+        final Response postResult = getJsonPostResponse(target(createPath), creationDTO);
+        assertEquals(Status.CREATED.getStatusCode(), postResult.getStatus());
+        URI uri = extractUriFromResponse(postResult);
+
+        final Response getResult = getJsonGetResponse(target(getAvailableFacilitiesPath).resolveTemplate("uri", uri));
+        assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
+        JsonNode node = getResult.readEntity(JsonNode.class);
+        PaginatedListResponse<InfrastructureFacilityGetDTO> facilitiesListResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<InfrastructureFacilityGetDTO>>() {
+        });
+        List<InfrastructureFacilityGetDTO> facilitiesList = facilitiesListResponse.getResult();
+
+        assertEquals(1, facilitiesList.size());
+        assertEquals(facilityWithOrganizationUri, facilitiesList.get(0).getUri());
+
+        deleteFacility(facilityWithOrganizationUri);
+        deleteFacility(facilityWithoutOrganizationUri);
+        deleteOrganization(organizationUri);
+    }
+
+    /**
+     * Tests that `getAllFacilities` returns all facilities when the experiment is not associated with an organization
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testGetAvailableFacilitiesWithoutOrganization() throws Exception {
+        URI facilityWithoutOrganizationUri = new URI("test:facilityWithoutOrganization");
+        URI facilityWithOrganizationUri = new URI("test:facilityWithOrganization");
+        URI organizationUri = new URI("test:organization");
+
+        createFacility(facilityWithoutOrganizationUri);
+        createOrganization(organizationUri, facilityWithOrganizationUri);
+
+        ExperimentCreationDTO creationDTO = getCreationDTO();
+        final Response postResult = getJsonPostResponse(target(createPath), creationDTO);
+        assertEquals(Status.CREATED.getStatusCode(), postResult.getStatus());
+        URI uri = extractUriFromResponse(postResult);
+
+        final Response getResult = getJsonGetResponse(target(getAvailableFacilitiesPath).resolveTemplate("uri", uri));
+        assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
+        JsonNode node = getResult.readEntity(JsonNode.class);
+        PaginatedListResponse<InfrastructureFacilityGetDTO> facilitiesListResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<InfrastructureFacilityGetDTO>>() {
+        });
+        List<InfrastructureFacilityGetDTO> facilitiesList = facilitiesListResponse.getResult();
+
+        assertEquals(2, facilitiesList.size());
+        assertTrue(facilitiesList.stream().anyMatch(facility -> Objects.equals(facility.getUri(), facilityWithOrganizationUri)));
+        assertTrue(facilitiesList.stream().anyMatch(facility -> Objects.equals(facility.getUri(), facilityWithoutOrganizationUri)));
+
+        deleteFacility(facilityWithOrganizationUri);
+        deleteFacility(facilityWithoutOrganizationUri);
+        deleteOrganization(organizationUri);
+    }
 
     @Override
     protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {

@@ -46,10 +46,8 @@ import org.opensilex.utils.OrderBy;
 
 import java.net.URI;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
@@ -448,23 +446,16 @@ public class ExperimentDAO {
 
         ExperimentModel xp = sparql.getByURI(ExperimentModel.class, xpUri, user.getLanguage());
 
-        List<InfrastructureModel> infrastructures = xp.getInfrastructures();
+        Collection<URI> organizationUriFilter = xp.getInfrastructures()
+                .stream().map(SPARQLResourceModel::getUri)
+                .collect(Collectors.toSet());
 
-        if (xp.getInfrastructures().size() == 0) {
-            InfrastructureDAO infraDAO = new InfrastructureDAO(sparql, nosql);
-            List<InfrastructureFacilityModel> infrastructuresFacilities = infraDAO.getAllFacilities(user);
-            return infrastructuresFacilities;
+        InfrastructureDAO organizationDAO = new InfrastructureDAO(sparql, nosql);
+
+        if (CollectionUtils.isEmpty(organizationUriFilter)) {
+            return organizationDAO.getAllFacilities(user);
         } else {
-            List<URI> infraURIs = new ArrayList<>();
-            infrastructures.forEach(infra -> {
-                infraURIs.add(infra.getUri());
-            });
-
-            return sparql.search(InfrastructureFacilityModel.class, user.getLanguage(), (select) -> {
-                if (infraURIs.size() > 0) {
-                    SPARQLQueryHelper.inURI(select, InfrastructureFacilityModel.INFRASTRUCTURE_FIELD, infraURIs);
-                }
-            });
+            return organizationDAO.getAllFacilities(user, organizationUriFilter);
         }
     }
 

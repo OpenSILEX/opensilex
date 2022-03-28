@@ -163,7 +163,8 @@ public class SecurityModule extends OpenSilexModule implements APIExtension, Log
                 FOAF.NAMESPACE,
                 "ontologies/foaf.rdf",
                 Lang.RDFXML,
-                "foaf"
+                "foaf",
+                FOAF.NAMESPACE
         ));
 
         list.add(new OntologyFileDefinition(

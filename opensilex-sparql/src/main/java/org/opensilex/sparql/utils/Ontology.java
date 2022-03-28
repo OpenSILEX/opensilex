@@ -9,10 +9,8 @@ import java.net.URI;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
-import org.apache.jena.sparql.path.P_Link;
-import org.apache.jena.sparql.path.P_OneOrMore1;
-import org.apache.jena.sparql.path.P_ZeroOrMore1;
-import org.apache.jena.sparql.path.Path;
+import org.apache.jena.sparql.path.*;
+import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 
 /**
@@ -22,6 +20,8 @@ import org.apache.jena.vocabulary.RDFS;
 public abstract class Ontology {
 
     public static final Path subClassAny;
+
+    public static final Path typeSubClassAny;
     
     public static final Path subClassStrict;
     
@@ -32,6 +32,7 @@ public abstract class Ontology {
     
     static {
         subClassAny = new P_ZeroOrMore1(new P_Link(RDFS.subClassOf.asNode()));
+        typeSubClassAny = new P_Seq(new P_Link(RDF.type.asNode()), subClassAny);
         subClassStrict = new P_OneOrMore1(new P_Link(RDFS.subClassOf.asNode()));
         subPropertyAny = new P_ZeroOrMore1(new P_Link(RDFS.subPropertyOf.asNode()));
     }

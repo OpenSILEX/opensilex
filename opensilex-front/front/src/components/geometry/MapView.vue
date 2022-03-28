@@ -3,129 +3,158 @@
     <div v-if="!editingMode" id="selected" class="d-flex">
       <div class="mr-auto p-2">
         <opensilex-CreateButton
-            v-if="user.hasCredential(credentials.CREDENTIAL_AREA_MODIFICATION_ID)"
-            label="MapView.add-area-button"
-            @click="editingMode = true"
+          v-if="user.hasCredential(credentials.CREDENTIAL_AREA_MODIFICATION_ID)"
+          label="MapView.add-area-button"
+          @click="editingMode = true"
         ></opensilex-CreateButton>
         <!-- map panel, controls -->
         <b-button v-b-toggle.map-sidebar>{{ $t("MapView.mapPanel") }}</b-button>
         <!--// map panel, controls -->
-        <opensilex-Button icon="fa#crosshairs" label="MapView.center" @click="defineCenter"></opensilex-Button>
-        <opensilex-Button icon="fa#save" label="MapView.save" @click="saveMap"></opensilex-Button>
+        <opensilex-Button
+          icon="fa#crosshairs"
+          label="MapView.center"
+          @click="defineCenter"
+        ></opensilex-Button>
+        <opensilex-Button
+          icon="fa#save"
+          label="MapView.save"
+          @click="saveMap"
+        ></opensilex-Button>
         <b-modal id="modal-save-map">
           <template #default>
             <p>{{ $t("MapView.save-confirmation") }}</p>
           </template>
           <template #modal-footer>
-            <b-button variant="danger" @click="savePDF(titleFile)">PDF</b-button>
+            <b-button variant="danger" @click="savePDF(titleFile)"
+              >PDF</b-button
+            >
             <b-button variant="info" @click="savePNG(titleFile)">PNG</b-button>
-            <b-button variant="success" @click="saveShapefile(titleFile)">Shapefile</b-button>
+            <b-button variant="success" @click="saveShapefile(titleFile)"
+              >Shapefile</b-button
+            >
           </template>
         </b-modal>
         <b-button
           v-on:click="showTemporalAreas"
           v-b-toggle.event-sidebar
           :title="$t('MapView.time')"
-          >
+        >
           <slot name="icon">
             <opensilex-Icon :icon="'ik#ik-activity'" />
           </slot>
         </b-button>
-        
-        <opensilex-Button v-if="false" icon="fa#stopwatch" label="MapView.dateRange" @click="handleDateRangeStatus"></opensilex-Button>  <!--// in waiting for the bug' s correction -->
+
+        <opensilex-Button
+          icon="fa#stopwatch"
+          label="MapView.dateRange"
+          @click="handleDateRangeStatus"
+        ></opensilex-Button>
+        <!--// in waiting for the bug' s correction -->
       </div>
       <span class="p-2">
         <label class="alert-warning">
-          <img alt="Warning" src="../../../theme/phis/images/construction.png"/>
+          <img
+            alt="Warning"
+            src="../../../theme/phis/images/construction.png"
+          />
           {{ $t("MapView.WarningInstruction") }}
         </label>
       </span>
     </div>
     <div v-if="editingMode" id="editing">
       <opensilex-Button
-          :small="false"
-          icon
-          label="MapView.selected-button"
-          variant="secondary"
-          @click="editingMode = false"
+        :small="false"
+        icon
+        label="MapView.selected-button"
+        variant="secondary"
+        @click="editingMode = false"
       ></opensilex-Button>
     </div>
     <opensilex-ModalForm
-        v-if="!errorGeometry && showArea"
-        ref="areaForm"
-        :successMessage="successMessageArea"
-        component="opensilex-AreaForm"
-        createTitle="Area.add"
-        editTitle="Area.update"
-        icon="fa#sun"
-        modalSize="lg"
-        @onCreate="showAreaDetails"
-        @onUpdate="callAreaUpdate"
-        :initForm="initAreaForm"
+      v-if="!errorGeometry && showArea"
+      ref="areaForm"
+      :successMessage="successMessageArea"
+      component="opensilex-AreaForm"
+      createTitle="Area.add"
+      editTitle="Area.update"
+      icon="fa#sun"
+      modalSize="lg"
+      @onCreate="showAreaDetails"
+      @onUpdate="callAreaUpdate"
+      :initForm="initAreaForm"
     ></opensilex-ModalForm>
     <opensilex-ScientificObjectForm
-        v-if=" user.hasCredential(credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID)"
-        ref="soForm"
-        :context="{ experimentURI: this.experiment }"
-        @onCreate="callScientificObjectUpdate"
-        @onUpdate="callScientificObjectUpdate"
+      v-if="
+        user.hasCredential(
+          credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID
+        )
+      "
+      ref="soForm"
+      :context="{ experimentURI: this.experiment }"
+      @onCreate="callScientificObjectUpdate"
+      @onUpdate="callScientificObjectUpdate"
     />
 
-    <div id="mapPoster" :class="editingMode ? 'bg-light border border-secondary' : ''">
+    <div
+      id="mapPoster"
+      :class="editingMode ? 'bg-light border border-secondary' : ''"
+    >
       <p class="alert-info">
         <span v-if="!editingMode" v-html="$t('MapView.Instruction')"></span>
       </p>
       <!-- "mapControls" to display the scale -->
       <vl-map
-          ref="map"
-          :default-controls="mapControls"
-          :load-tiles-while-animating="true"
-          :load-tiles-while-interacting="true"
-          class="map"
-          data-projection="EPSG:4326"
-          style="height: 500px"
-          @created="mapCreated"
-          @pointermove="onMapPointerMove"
+        ref="map"
+        :default-controls="mapControls"
+        :load-tiles-while-animating="true"
+        :load-tiles-while-interacting="true"
+        class="map"
+        data-projection="EPSG:4326"
+        style="height: 500px"
+        @created="mapCreated"
+        @pointermove="onMapPointerMove"
       >
         <vl-view
-            ref="mapView"
-            :min-zoom="2"
-            :zoom="3"
-            @update:rotation="areaRecovery"
-            @update:zoom="areaRecovery"
-            @update:center="overlayPositionsRecovery"
+          ref="mapView"
+          :min-zoom="2"
+          :zoom="3"
+          @update:rotation="areaRecovery"
+          @update:zoom="areaRecovery"
+          @update:center="overlayPositionsRecovery"
         ></vl-view>
 
         <vl-layer-tile id="osm">
-          <vl-source-osm :wrap-x="false"/>
+          <vl-source-osm :wrap-x="false" />
         </vl-layer-tile>
 
         <!-- position ternary to show the overlay only if mouse on Object else default value -->
         <!-- stop-event property to be sure the map is not glitching vertically -->
         <vl-overlay
-            id="overlay"
-            :position="overlayCoordinate.length === 2 ? overlayCoordinate : [0, 0]"
-            :stop-event="selectPointerMove.name && selectPointerMove.type ? true : false">
+          id="overlay"
+          :position="
+            overlayCoordinate.length === 2 ? overlayCoordinate : [0, 0]
+          "
+          :stop-event="
+            selectPointerMove.name && selectPointerMove.type ? true : false
+          "
+        >
           <template slot-scope="scope">
-            <div
-                class="panel-content"
-            >{{ displayInfoInOverlay() }}
-            </div>
+            <div class="panel-content">{{ displayInfoInOverlay() }}</div>
           </template>
         </vl-overlay>
 
         <vl-overlay
-            id="detailItem"
-            :position="centerMap.length === 2 ? centerMap : [0, 0]"
+          id="detailItem"
+          :position="centerMap.length === 2 ? centerMap : [0, 0]"
         >
           <template slot-scope="scope">
             <div class="panel-content">
               <opensilex-DisplayInformationAboutItem
-                  :details-s-o="detailsSO"
-                  :experiment="experiment"
-                  :item="selectedFeatures[0]"
-                  :showName="true"
-                  :withBasicProperties="true"
+                :details-s-o="detailsSO"
+                :experiment="experiment"
+                :item="selectedFeatures[0]"
+                :showName="true"
+                :withBasicProperties="true"
               />
             </div>
           </template>
@@ -138,52 +167,79 @@
             :visible="isAreaVisible(area)"
           >
             <div v-if="area.properties.type != temporalAreaType">
-              <vl-source-vector ref="vectorSourceArea" :features="[area]"></vl-source-vector>
+              <vl-source-vector
+                ref="vectorSourceArea"
+                :features="[area]"
+              ></vl-source-vector>
               <vl-style-box>
                 <vl-style-stroke color="green"></vl-style-stroke>
                 <vl-style-fill color="rgba(200,255,200,0.4)"></vl-style-fill>
               </vl-style-box>
             </div>
-            <div v-if="area.properties.type == temporalAreaType && !isSelectedArea(area)">
-              <vl-source-vector ref="vectorSourceArea" :features="[area]"></vl-source-vector>
+            <div
+              v-if="
+                area.properties.type == temporalAreaType &&
+                !isSelectedArea(area)
+              "
+            >
+              <vl-source-vector
+                ref="vectorSourceArea"
+                :features="[area]"
+              ></vl-source-vector>
               <vl-style-box>
                 <vl-style-stroke color="red"></vl-style-stroke>
                 <vl-style-fill color="rgba(128,139,150,0.4)"></vl-style-fill>
               </vl-style-box>
             </div>
-            <div v-if="area.properties.type == temporalAreaType && isSelectedArea(area)">
-              <vl-source-vector ref="vectorSourceArea" :features="[area]"></vl-source-vector>
+            <div
+              v-if="
+                area.properties.type == temporalAreaType && isSelectedArea(area)
+              "
+            >
+              <vl-source-vector
+                ref="vectorSourceArea"
+                :features="[area]"
+              ></vl-source-vector>
               <vl-style-box>
                 <vl-style-stroke color="#33A0CC" :width="3"></vl-style-stroke>
                 <vl-style-fill color="rgba(255,255,255,0.6)"></vl-style-fill>
               </vl-style-box>
             </div>
           </vl-layer-vector>
-          <vl-layer-vector
-              v-for="layerSO in featuresOS"
-              :key="layerSO.id"
-          >
-            <vl-source-vector ref="vectorSource" :features="layerSO"></vl-source-vector>
+          <vl-layer-vector v-for="layerSO in featuresOS" :key="layerSO.id">
+            <vl-source-vector
+              ref="vectorSource"
+              :features="layerSO"
+            ></vl-source-vector>
           </vl-layer-vector>
           <vl-layer-vector
-              v-for="layer in tabLayer"
-              :key="layer.ref"
-              :visible="displayFilters && layer.display === 'true'"
+            v-for="layer in tabLayer"
+            :key="layer.ref"
+            :visible="displayFilters && layer.display === 'true'"
           >
-            <vl-source-vector :ref="layer.ref" :features.sync="layer.tabFeatures"></vl-source-vector>
+            <vl-source-vector
+              :ref="layer.ref"
+              :features.sync="layer.tabFeatures"
+            ></vl-source-vector>
             <vl-style-box>
-              <vl-style-stroke v-if="layer.vlStyleStrokeColor" :color="layer.vlStyleStrokeColor"></vl-style-stroke>
+              <vl-style-stroke
+                v-if="layer.vlStyleStrokeColor"
+                :color="layer.vlStyleStrokeColor"
+              ></vl-style-stroke>
               <!-- outline color -->
               <vl-style-fill
-                  v-if="layer.vlStyleFillColor"
-                  :color="colorFeature(layer.vlStyleFillColor)"
+                v-if="layer.vlStyleFillColor"
+                :color="colorFeature(layer.vlStyleFillColor)"
               ></vl-style-fill>
               <vl-style-circle :radius="5">
-                <vl-style-stroke v-if="layer.vlStyleStrokeColor" :color="layer.vlStyleStrokeColor"></vl-style-stroke>
+                <vl-style-stroke
+                  v-if="layer.vlStyleStrokeColor"
+                  :color="layer.vlStyleStrokeColor"
+                ></vl-style-stroke>
                 <!-- outline color -->
                 <vl-style-fill
-                    v-if="layer.vlStyleFillColor"
-                    :color="colorFeature(layer.vlStyleFillColor)"
+                  v-if="layer.vlStyleFillColor"
+                  :color="colorFeature(layer.vlStyleFillColor)"
                 ></vl-style-fill>
               </vl-style-circle>
             </vl-style-box>
@@ -194,18 +250,18 @@
           <div id="editionMode">
             <vl-layer-vector :visible="false">
               <vl-source-vector
-                  :features.sync="temporaryArea"
-                  ident="the-source"
-                  @update:features="memorizesArea"
+                :features.sync="temporaryArea"
+                ident="the-source"
+                @update:features="memorizesArea"
               ></vl-source-vector>
             </vl-layer-vector>
 
             <!-- Creating a new area -->
             <vl-interaction-draw
-                v-if="editingMode"
-                source="the-source"
-                type="Polygon"
-                @drawend="showCreateForm()"
+              v-if="editingMode"
+              source="the-source"
+              type="Polygon"
+              @drawend="showCreateForm()"
             >
               <vl-style-box>
                 <vl-style-stroke color="blue"></vl-style-stroke>
@@ -217,28 +273,46 @@
 
         <!-- to make the selection -->
         <vl-interaction-select
-            v-if="!editingMode"
-            id="select"
-            ref="selectInteraction"
-            :features="selectedFeatures"
-            @update:features="updateSelectionFeatures"
+          v-if="!editingMode"
+          id="select"
+          ref="selectInteraction"
+          :features="selectedFeatures"
+          @update:features="updateSelectionFeatures"
         />
       </vl-map>
     </div>
 
-    <b-sidebar id="event-sidebar" v-model="timelineSidebarVisibility" width="400px" right class="sidebar-content" no-header shadow>
+    <b-sidebar
+      id="event-sidebar"
+      v-model="timelineSidebarVisibility"
+      width="400px"
+      right
+      class="sidebar-content"
+      no-header
+      shadow
+    >
       <template #default="{ hide }">
-        <div class="b-sidebar-header header-brand hamburger-container opensilex-sidebar-header">
+        <div
+          class="
+            b-sidebar-header
+            header-brand
+            hamburger-container
+            opensilex-sidebar-header
+          "
+        >
           <div class="d-flex">
             <span id="map-sidebar___title__" class="text mr-auto p-3">
-              {{ $t('MapView.eventPanelTitle').toUpperCase() }}
+              {{ $t("MapView.eventPanelTitle").toUpperCase() }}
               &nbsp;
               <font-awesome-icon
                 icon="question-circle"
                 v-b-tooltip.hover.top="$t('MapView.eventPanel-help')"
               />
             </span>
-            <button class="hamburger hamburger--collapse is-active p-3" @click="hide">
+            <button
+              class="hamburger hamburger--collapse is-active p-3"
+              @click="hide"
+            >
               <span class="hamburger-box">
                 <span class="hamburger-inner"></span>
               </span>
@@ -246,23 +320,35 @@
           </div>
         </div>
         <div v-if="temporalAreas.length == 0" class="p-3">
-          <p>{{ $t('MapView.noTemporalAreas') }}</p>
+          <p>{{ $t("MapView.noTemporalAreas") }}</p>
         </div>
         <opensilex-Timeline
           :items="temporalAreas"
           :selectedFeatures="selectedFeatures"
           @onClick="selectFeaturesFromTimeline"
-          >
+        >
         </opensilex-Timeline>
       </template>
     </b-sidebar>
 
     <b-sidebar id="map-sidebar" visible no-header class="sidebar-content">
       <template #default="{ hide }">
-        <div class="b-sidebar-header header-brand hamburger-container opensilex-sidebar-header">
+        <div
+          class="
+            b-sidebar-header
+            header-brand
+            hamburger-container
+            opensilex-sidebar-header
+          "
+        >
           <div class="d-flex">
-            <span id="map-sidebar___title__" class="text mr-auto p-3">{{ $t('MapView.mapPanelTitle').toUpperCase() }}</span>
-            <button class="hamburger hamburger--collapse is-active p-3" @click="hide">
+            <span id="map-sidebar___title__" class="text mr-auto p-3">{{
+              $t("MapView.mapPanelTitle").toUpperCase()
+            }}</span>
+            <button
+              class="hamburger hamburger--collapse is-active p-3"
+              @click="hide"
+            >
               <span class="hamburger-box">
                 <span class="hamburger-inner"></span>
               </span>
@@ -270,13 +356,21 @@
           </div>
         </div>
         <b-tabs content-class="mt-3">
-
           <opensilex-TreeView :nodes.sync="scientificObjects">
             <template v-slot:node="{ node }">
-              <span class="item-icon">
-              </span>&nbsp;
-              <span v-if="node.title == 'Scientific Object'">{{ $t('MapView.mapPanelScientificObjects') }} ({{ getNumberScientificObjects(featuresOS) }})</span>
-              <span v-else>{{ getType(node.data.properties.type) }} ({{ getNumberScientificObjectsByType(getType(node.data.properties.type)) }})</span>
+              <span class="item-icon"> </span>&nbsp;
+              <span v-if="node.title == 'Scientific Object'"
+                >{{ $t("MapView.mapPanelScientificObjects") }} ({{
+                  getNumberScientificObjects(featuresOS)
+                }})</span
+              >
+              <span v-else
+                >{{ getType(node.data.properties.type) }} ({{
+                  getNumberScientificObjectsByType(
+                    getType(node.data.properties.type)
+                  )
+                }})</span
+              >
             </template>
 
             <template v-slot:buttons="{ node }">
@@ -301,14 +395,20 @@
 
           <opensilex-TreeView :nodes.sync="areas">
             <template v-slot:node="{ node }">
-              <span class="item-icon">
-              </span>&nbsp;
-              <span v-if="node.title == 'Areas'">{{ $t('MapView.mapPanelAreas') }} ({{ featuresArea.length }})</span>
-              <span v-else>{{ $t('MapView.mapPanelAreas' + node.title) }} ({{ getNumberByZone(node.title) }})</span>
+              <span class="item-icon"> </span>&nbsp;
+              <span v-if="node.title == 'Areas'"
+                >{{ $t("MapView.mapPanelAreas") }} ({{
+                  featuresArea.length
+                }})</span
+              >
+              <span v-else
+                >{{ $t("MapView.mapPanelAreas" + node.title) }} ({{
+                  getNumberByZone(node.title)
+                }})</span
+              >
             </template>
 
             <template v-slot:buttons="{ node }">
-
               <opensilex-CheckboxForm
                 v-if="node.title == 'Areas'"
                 :value.sync="displayAreas"
@@ -337,48 +437,60 @@
 
           <opensilex-TreeView :nodes.sync="filters">
             <template v-slot:node="{ node }">
-              <span class="item-icon">
-              </span>&nbsp;
-                <span v-if="node.title == 'Filters'">{{ $t('MapView.mapPanelFilters') }} ({{ tabLayer.length }})</span>
-                <span class="p-2 bd-highlight" v-else>{{ node.title }}</span>
+              <span class="item-icon"> </span>&nbsp;
+              <span v-if="node.title == 'Filters'"
+                >{{ $t("MapView.mapPanelFilters") }} ({{
+                  tabLayer.length
+                }})</span
+              >
+              <span class="p-2 bd-highlight" v-else>{{ node.title }}</span>
             </template>
 
             <template v-slot:buttons="{ node }">
-
               <opensilex-CheckboxForm
-              :disabled="!tabLayer.length"
-              v-if="node.title == 'Filters'"
-              :value.sync="displayFilters"
-              class="col-lg-2"
-              :small="true"
-            ></opensilex-CheckboxForm>
-              <div class="d-flex flex-row mx-auto" v-if="node.title != 'Filters'">
-                <opensilex-CheckboxForm
-                v-if="node.title != 'Filters'"
-                :value="true"
-                @update:value="updateFilterDisplay(node)"
-                class="align-self-center"
+                :disabled="!tabLayer.length"
+                v-if="node.title == 'Filters'"
+                :value.sync="displayFilters"
+                class="col-lg-2"
                 :small="true"
-                :disabled="!displayFilters"
+              ></opensilex-CheckboxForm>
+              <div
+                class="d-flex flex-row mx-auto"
+                v-if="node.title != 'Filters'"
+              >
+                <opensilex-CheckboxForm
+                  v-if="node.title != 'Filters'"
+                  :value="true"
+                  @update:value="updateFilterDisplay(node)"
+                  class="align-self-center"
+                  :small="true"
+                  :disabled="!displayFilters"
                 ></opensilex-CheckboxForm>
-                <opensilex-InputForm style="width: 35px !important;"
+                <opensilex-InputForm
+                  style="width: 35px !important"
                   v-if="node.data.vlStyleStrokeColor"
                   type="color"
                   :value.sync="node.data.vlStyleStrokeColor"
                   @update:value="updateColorFilter(node, 'vlStyleStrokeColor')"
-                class="align-self-center"
+                  class="align-self-center"
                 ></opensilex-InputForm>
-                <opensilex-InputForm style="width: 35px !important;"
+                <opensilex-InputForm
+                  style="width: 35px !important"
                   v-if="node.data.vlStyleFillColor"
                   type="color"
                   :value.sync="node.data.vlStyleFillColor"
                   @update:value="updateColorFilter(node, 'vlStyleFillColor')"
-                class="align-self-center"
+                  class="align-self-center"
                 ></opensilex-InputForm>
                 <opensilex-DeleteButton
                   label="FilterMap.filter.delete-button"
                   :small="true"
-                  @click="tabLayer.forEach((element, index) => { if (element.titleDisplay == node.data.titleDisplay) tabLayer.splice(index, 1) })"
+                  @click="
+                    tabLayer.forEach((element, index) => {
+                      if (element.titleDisplay == node.data.titleDisplay)
+                        tabLayer.splice(index, 1);
+                    })
+                  "
                   class="align-self-center"
                 ></opensilex-DeleteButton>
               </div>
@@ -387,20 +499,20 @@
           <opensilex-CreateButton
             class="ml-50 mt-10"
             label="MapView.create-filter"
-            @click="filterForm.showCreateForm();"
-        ></opensilex-CreateButton>
+            @click="filterForm.showCreateForm()"
+          ></opensilex-CreateButton>
         </b-tabs>
       </template>
     </b-sidebar>
     <opensilex-ModalForm
       v-if="!errorGeometry"
-        ref="filterForm"
-        component="opensilex-FilterMap"
-        createTitle="Filter.add"
-        editTitle="Filter.update"
-        icon="fa#sun"
-        modalSize="m"
-        @onCreate="showFiltersDetails"
+      ref="filterForm"
+      component="opensilex-FilterMap"
+      createTitle="Filter.add"
+      editTitle="Filter.update"
+      icon="fa#sun"
+      modalSize="m"
+      @onCreate="showFiltersDetails"
     ></opensilex-ModalForm>
     {{ $t("MapView.Legend") }}:
     <span id="OS">{{ $t("MapView.LegendSO") }}</span>
@@ -408,9 +520,8 @@
     <span id="PerennialArea">{{ $t("MapView.LegendPerennialArea") }}</span>
     &nbsp;-&nbsp;
     <span id="TemporalArea">{{ $t("MapView.LegendTemporalArea") }}</span>
-    <div class="timeline-slider" v-if="minDate != null && maxDate != null">
+    <div class="timeline-slider" v-if="displayDateRange">
       <JqxRangeSelector
-        v-show="displayDateRange"
         ref="JqxRangeSelector"
         class="mx-auto"
         width="75%"
@@ -420,24 +531,28 @@
         :max="maxDate"
         :range="range"
         :labelsOnTicks="false"
-        majorTicksInterval="day"
-        minorTicksInterval="hour"
-        labelsFormat="ddd"
+        :majorTicksInterval="majorTicksInterval"
+        :minorTicksInterval="minorTicksInterval"
+        :labelsFormat="labelsFormat"
+        :markersFormatFunction="markersDateRangeFormat"
         theme="dark"
-        :markersFormatFunction=markersDateRangeFormat
         @change="onChangeDateRange($event)"
-        >
+      >
       </JqxRangeSelector>
     </div>
-    <div id="selectedTable" v-if="selectedFeatures.length !== 0" class="selected-features" >
+    <div
+      id="selectedTable"
+      v-if="selectedFeatures.length !== 0"
+      class="selected-features"
+    >
       <opensilex-TableView
-          v-if="selectedFeatures.length !== 0"
-          :fields="fieldsSelected"
-          :items="selectedFeatures"
+        v-if="selectedFeatures.length !== 0"
+        :fields="fieldsSelected"
+        :items="selectedFeatures"
       >
         <template v-slot:cell(name)="{ data }">
           <opensilex-UriLink
-              :to="
+            :to="
               data.item.properties.nature === 'Area'
                 ? {
                     path:
@@ -450,46 +565,63 @@
                       encodeURIComponent(data.item.properties.uri),
                   }
             "
-              :uri="data.item.properties.uri"
-              :value="data.item.properties.name"
-              target="_blank"
+            :uri="data.item.properties.uri"
+            :value="data.item.properties.name"
+            target="_blank"
           ></opensilex-UriLink>
         </template>
 
-        <template v-slot:cell(type)="{ data }">{{ nameType(data.item.properties.type) }}</template>
+        <template v-slot:cell(type)="{ data }">{{
+          nameType(data.item.properties.type)
+        }}</template>
 
         <template v-slot:row-details="{ data }">
           <opensilex-DisplayInformationAboutItem
-              :details-s-o="detailsSO"
-              :experiment="experiment"
-              :item="data.item"
+            :details-s-o="detailsSO"
+            :experiment="experiment"
+            :item="data.item"
           />
         </template>
 
         <template v-slot:cell(actions)="{ data }">
           <b-button-group size="sm">
             <opensilex-DetailButton
-                :detailVisible="data['detailsShowing']"
-                :small="true"
-                label="MapView.details"
-                @click="showDetails(data)"
+              :detailVisible="data['detailsShowing']"
+              :small="true"
+              label="MapView.details"
+              @click="showDetails(data)"
             ></opensilex-DetailButton>
 
             <opensilex-EditButton
-                v-if="data.item.properties.nature === 'Area'
-                  ? user.hasCredential(credentials.CREDENTIAL_AREA_MODIFICATION_ID)
-                  : user.hasCredential(credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID)"
-                :small="true"
-                label="MapView.update"
-                @click="edit(data)"
+              v-if="
+                data.item.properties.nature === 'Area'
+                  ? user.hasCredential(
+                      credentials.CREDENTIAL_AREA_MODIFICATION_ID
+                    )
+                  : user.hasCredential(
+                      credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID
+                    )
+              "
+              :small="true"
+              label="MapView.update"
+              @click="edit(data)"
             ></opensilex-EditButton>
 
             <opensilex-DeleteButton
-                v-if=" data.item.properties.nature === 'Area'
+              v-if="
+                data.item.properties.nature === 'Area'
                   ? user.hasCredential(credentials.CREDENTIAL_AREA_DELETE_ID)
-                  : user.hasCredential(credentials.CREDENTIAL_SCIENTIFIC_OBJECT_DELETE_ID)"
-                label="MapView.delete-button"
-                @click="selectedFeatures.splice(selectedFeatures.indexOf(data.item),1) && deleteItem(data)"
+                  : user.hasCredential(
+                      credentials.CREDENTIAL_SCIENTIFIC_OBJECT_DELETE_ID
+                    )
+              "
+              label="MapView.delete-button"
+              @click="
+                selectedFeatures.splice(
+                  selectedFeatures.indexOf(data.item),
+                  1
+                ) && deleteItem(data)
+              "
             ></opensilex-DeleteButton>
           </b-button-group>
         </template>
@@ -499,40 +631,40 @@
 </template>
 
 <script lang="ts">
-import {Component, Ref} from "vue-property-decorator";
+import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import {DragBox} from "ol/interaction";
+import { DragBox } from "ol/interaction";
 import { GeoJSON } from "ol/format";
-import { Vector } from 'ol/source';
-import Collection from 'ol/Collection';
-import Select from 'ol/interaction/Select';
-import Feature from 'ol/Feature';
-import * as olExtent from 'ol/extent';
-import Polygon from 'ol/geom/Polygon';
-import Point from 'ol/geom/Point';
-import {platformModifierKeyOnly} from "ol/events/condition";
+import { Vector } from "ol/source";
+import Collection from "ol/Collection";
+import Select from "ol/interaction/Select";
+import Feature from "ol/Feature";
+import * as olExtent from "ol/extent";
+import Polygon from "ol/geom/Polygon";
+import Point from "ol/geom/Point";
+import { platformModifierKeyOnly } from "ol/events/condition";
 import * as olExt from "vuelayers/lib/ol-ext";
-let shpwrite = require('shp-write');
+let shpwrite = require("shp-write");
 // @ts-ignore
-import {ScientificObjectNodeDTO} from "opensilex-core/index";
+import { ScientificObjectNodeDTO } from "opensilex-core/index";
 // @ts-ignore
-import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
-import {transformExtent} from "vuelayers/src/ol-ext/proj";
+import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
+import { transformExtent } from "vuelayers/src/ol-ext/proj";
 // @ts-ignore
-import {AreaGetDTO} from "opensilex-core/model/areaGetDTO";
+import { AreaGetDTO } from "opensilex-core/model/areaGetDTO";
 // @ts-ignore
-import { EventGetDTO } from 'opensilex-core/model/eventGetDTO';
+import { EventGetDTO } from "opensilex-core/model/eventGetDTO";
 // @ts-ignore
-import {ObjectUriResponse} from "opensilex-core/model/objectUriResponse";
+import { ObjectUriResponse } from "opensilex-core/model/objectUriResponse";
 // @ts-ignore
-import {ResourceTreeDTO} from "opensilex-core/model/resourceTreeDTO";
-import {defaults, ScaleLine} from "ol/control";
+import { ResourceTreeDTO } from "opensilex-core/model/resourceTreeDTO";
+import { defaults, ScaleLine } from "ol/control";
 import Oeso from "../../ontologies/Oeso";
 import * as turf from "@turf/turf";
-import { jsPDF } from "jspdf"
-import { saveAs } from 'file-saver';
+import { jsPDF } from "jspdf";
+import { saveAs } from "file-saver";
 // @ts-ignore
-import {ScientificObjectDetailDTO} from "opensilex-core/model/scientificObjectDetailDTO";
+import { ScientificObjectDetailDTO } from "opensilex-core/model/scientificObjectDetailDTO";
 
 @Component
 export default class MapView extends Vue {
@@ -555,7 +687,10 @@ export default class MapView extends Vue {
   featuresArea: any[] = [];
   temporaryArea: any[] = [];
   temporalAreas: any[] = [];
-  selectPointerMove: { name: string, type: string } = { name: null, type: null };
+  selectPointerMove: { name: string; type: string } = {
+    name: null,
+    type: null,
+  };
   overlayCoordinate: any[] = [];
   centerMap: any[] = [];
   tabLayer: any[] = [];
@@ -564,22 +699,25 @@ export default class MapView extends Vue {
   fieldsSelected = [
     {
       key: "name",
-      label: "MapView.name"
+      label: "MapView.name",
     },
     {
       key: "type",
-      label: "MapView.type"
+      label: "MapView.type",
     },
     {
       key: "actions",
-      label: "actions"
-    }
+      label: "actions",
+    },
   ];
   selectedFeatures: any[] = [];
   timelineSidebarVisibility: boolean = false;
   minDate: Date = null;
   maxDate: Date = null;
-  range: { from: Date, to: Date } = { from: null, to: null };
+  majorTicksInterval = "day";
+  labelsFormat = "yyyy";
+  minorTicksInterval = "hour";
+  range: { from: Date; to: Date } = { from: null, to: null };
   // filter: any = {};
 
   private showArea: boolean = false;
@@ -606,37 +744,39 @@ export default class MapView extends Vue {
   private eventsService = "EventsService";
   private scientificObjectURI: string;
   private scientificObjects: any = [];
-  private areas: any = [{
-    "title": "Areas",
-    "isLeaf": false,
-    "children": [
-      {
-        "title": "PerennialZone",
-        "isLeaf": true,
-        "isSelectable": false,
-        "isDraggable": false,
-        "isCheckable": true,
-        "isExpanded": false,
-        "isSelected": null,
-        "children": []
-      },
-      {
-        "title": "TemporalZone",
-        "isLeaf": true,
-        "isSelectable": false,
-        "isDraggable": false,
-        "isCheckable": true,
-        "isExpanded": false,
-        "isSelected": null,
-        "children": []
-      }
-    ],
-    "isExpanded": true,
-    "isSelected": null,
-    "isDraggable": false,
-    "isSelectable": false,
-    "isCheckable": true
-  }];
+  private areas: any = [
+    {
+      title: "Areas",
+      isLeaf: false,
+      children: [
+        {
+          title: "PerennialZone",
+          isLeaf: true,
+          isSelectable: false,
+          isDraggable: false,
+          isCheckable: true,
+          isExpanded: false,
+          isSelected: null,
+          children: [],
+        },
+        {
+          title: "TemporalZone",
+          isLeaf: true,
+          isSelectable: false,
+          isDraggable: false,
+          isCheckable: true,
+          isExpanded: false,
+          isSelected: null,
+          children: [],
+        },
+      ],
+      isExpanded: true,
+      isSelected: null,
+      isDraggable: false,
+      isSelectable: false,
+      isCheckable: true,
+    },
+  ];
   private langUnwatcher;
 
   get user() {
@@ -652,26 +792,26 @@ export default class MapView extends Vue {
   }
 
   get titleFile(): String {
-    return this.getType(this.$attrs.uri) + '-map';
+    return this.getType(this.$attrs.uri) + "-map";
   }
 
   get filters() {
     let result = [];
     let filt = {
-        "title": "Filters",
-        "data": {
-          "isCheckable": true,
-          "name": "Filters",
-          "selected": false,
-          "disabled": false,
-        },
-        "isLeaf": false,
-        "children": [],
-        "isExpanded": true,
-        "isSelected": null,
-        "isDraggable": false,
-        "isSelectable": false,
-        "isCheckable": true
+      title: "Filters",
+      data: {
+        isCheckable: true,
+        name: "Filters",
+        selected: false,
+        disabled: false,
+      },
+      isLeaf: false,
+      children: [],
+      isExpanded: true,
+      isSelected: null,
+      isDraggable: false,
+      isSelectable: false,
+      isCheckable: true,
     };
 
     for (let filter of this.tabLayer) {
@@ -679,8 +819,8 @@ export default class MapView extends Vue {
         title: filter.titleDisplay,
         isLeaf: true,
       };
-      tmp.isSelectable = false
-      tmp.isDraggable = false
+      tmp.isSelectable = false;
+      tmp.isDraggable = false;
       tmp.isCheckable = true;
       tmp.isExpanded = false;
       tmp.isSelected = null;
@@ -692,23 +832,11 @@ export default class MapView extends Vue {
     return result;
   }
 
-  set filters(value) { }
-
-  mounted() {
-    this.langUnwatcher = this.$store.watch(
-      () => this.$store.getters.language,
-      lang => {
-        this.rangeSelector.refresh(); // Refresh date range
-        this.rangeSelector.setRange(this.range.from, this.range.to);
-      }
-    );
-   // BUG on the ranSelector component when Experiment period is large
-   // this.initDateRange(); 
-  }
+  set filters(value) {}
 
   initAreaForm(form) {
-    form.minDate = this.minDate; 
-    form.maxDate = this.maxDate; 
+    form.minDate = this.minDate;
+    form.maxDate = this.maxDate;
     return form;
   }
 
@@ -717,10 +845,13 @@ export default class MapView extends Vue {
   }
 
   displayInfoInOverlay(): string {
-    if (this.selectPointerMove.name && this.selectPointerMove.type) { // if Object existing and filled
-      return this.selectPointerMove.name + " (" + this.selectPointerMove.type + ")";
+    if (this.selectPointerMove.name && this.selectPointerMove.type) {
+      // if Object existing and filled
+      return (
+        this.selectPointerMove.name + " (" + this.selectPointerMove.type + ")"
+      );
     } else {
-      return '';
+      return "";
     }
   }
 
@@ -728,7 +859,7 @@ export default class MapView extends Vue {
     let res = 0;
 
     for (let layer of featureOs) {
-      res += layer.length
+      res += layer.length;
     }
     return res;
   }
@@ -747,7 +878,7 @@ export default class MapView extends Vue {
   }
 
   getNumberByZone(zoneType: String): Number {
-    if (zoneType == 'PerennialZone') {
+    if (zoneType == "PerennialZone") {
       return this.getNumberPerennialZone();
     } else {
       return this.getNumberTemporalZone();
@@ -792,9 +923,9 @@ export default class MapView extends Vue {
   }
 
   updateColorFilter(node: any, type: String) {
-    this.tabLayer.forEach(layer => {
+    this.tabLayer.forEach((layer) => {
       if (layer.titleDisplay == node.title) {
-        if (type == 'vlStyleStrokeColor') {
+        if (type == "vlStyleStrokeColor") {
           layer.vlStyleStrokeColor = node.data.vlStyleStrokeColor;
         } else {
           layer.vlStyleFillColor = node.data.vlStyleFillColor;
@@ -804,10 +935,12 @@ export default class MapView extends Vue {
     });
   }
 
-  updateArea(node) { // Update the visibility of areas
-    const type: 'Areas' | 'PerennialZone' | 'TemporalZone' = node.title; // What node is clicked ?
+  updateArea(node) {
+    // Update the visibility of areas
+    const type: "Areas" | "PerennialZone" | "TemporalZone" = node.title; // What node is clicked ?
     const layers = this.map.$map.getLayers();
-    layers.forEach((element, index) => { // Iterate all layers of the map (OpenLayers API) to find the ones that are linked to ScientificObjects
+    layers.forEach((element, index) => {
+      // Iterate all layers of the map (OpenLayers API) to find the ones that are linked to ScientificObjects
       const source = element.getSource();
       if (source) {
         const collection = source.featuresCollection_;
@@ -816,14 +949,20 @@ export default class MapView extends Vue {
           if (array && array.length > 0) {
             // We can check only the first element of the array
             // instead of check all elements (optimisation)
-            if (array[0].values_.nature == "Area" && // Element must be of type 'Area'
-            (type == 'Areas' || // If 'Areas' node is clicked
-            (type == 'PerennialZone' && this.getType(array[0].values_.type) != 'TemporalArea') // If 'PerennialZone' node is clicked and element is not temporal area type
-            || (type == 'TemporalZone' && this.getType(array[0].values_.type) == 'TemporalArea'))) { // If 'TemporalZone' node is clicked and element is temporal area type
+            if (
+              array[0].values_.nature == "Area" && // Element must be of type 'Area'
+              (type == "Areas" || // If 'Areas' node is clicked
+                (type == "PerennialZone" &&
+                  this.getType(array[0].values_.type) != "TemporalArea") || // If 'PerennialZone' node is clicked and element is not temporal area type
+                (type == "TemporalZone" &&
+                  this.getType(array[0].values_.type) == "TemporalArea"))
+            ) {
+              // If 'TemporalZone' node is clicked and element is temporal area type
               let status: boolean = false;
-              if (type == 'Areas') {
+              if (type == "Areas") {
                 status = this.displayAreas;
-                if (status) { // Trick to save or get the last visible status
+                if (status) {
+                  // Trick to save or get the last visible status
                   status = element.get("last-visible-status");
                 } else {
                   element.set("last-visible-status", element.getVisible());
@@ -841,10 +980,12 @@ export default class MapView extends Vue {
     });
   }
 
-  updateScientificObject(node) { // Update the Scientific Objects of areas
-    const isAllScientificObjects: boolean = node.title == 'Scientific Object'; // is the 'Scientific Object' node clicked ?
+  updateScientificObject(node) {
+    // Update the Scientific Objects of areas
+    const isAllScientificObjects: boolean = node.title == "Scientific Object"; // is the 'Scientific Object' node clicked ?
     const layers = this.map.$map.getLayers();
-    layers.forEach((element, index) => { // Iterate all layers of the map (OpenLayers API) to find the ones that are linked to ScientificObjects
+    layers.forEach((element, index) => {
+      // Iterate all layers of the map (OpenLayers API) to find the ones that are linked to ScientificObjects
       const source = element.getSource();
       if (source) {
         const collection = source.featuresCollection_;
@@ -853,12 +994,17 @@ export default class MapView extends Vue {
           if (array && array.length > 0) {
             // We can check only the first element of the array
             // instead of check all elements (optimisation)
-            if (array[0].values_.nature == "ScientificObjects" && (isAllScientificObjects // All Scientific Objects
-            || array[0].values_.name == node.title)) { // Only the only type selected
+            if (
+              array[0].values_.nature == "ScientificObjects" &&
+              (isAllScientificObjects || // All Scientific Objects
+                array[0].values_.name == node.title)
+            ) {
+              // Only the only type selected
               let status: boolean = false;
               if (isAllScientificObjects) {
                 status = this.displaySO;
-                if (status) { // Trick to save or get the last visible status
+                if (status) {
+                  // Trick to save or get the last visible status
                   status = element.get("last-visible-status");
                 } else {
                   element.set("last-visible-status", element.getVisible());
@@ -878,9 +1024,11 @@ export default class MapView extends Vue {
 
   getType(type: string): String {
     const res = new URL(type);
-    if (res.hash != '') { // long type (example: http://opensilex.dev/set/area#youpi)
+    if (res.hash != "") {
+      // long type (example: http://opensilex.dev/set/area#youpi)
       return res.hash;
-    } else { // short type (example: Vocabulary#Area)
+    } else {
+      // short type (example: Vocabulary#Area)
       return res.pathname;
     }
   }
@@ -895,37 +1043,37 @@ export default class MapView extends Vue {
 
   initScientificObjects() {
     let scientificObject: any = {
-      "title": "Scientific Object",
-      "data": {
-        "isCheckable": true,
-        "name": "Scientific Object",
-        "selected": false,
-        "disabled": false,
+      title: "Scientific Object",
+      data: {
+        isCheckable: true,
+        name: "Scientific Object",
+        selected: false,
+        disabled: false,
       },
-      "isLeaf": false,
-      "children": [],
-      "isExpanded": true,
-      "isSelected": null,
-      "isDraggable": false,
-      "isSelectable": false,
-      "isCheckable": true
+      isLeaf: false,
+      children: [],
+      isExpanded: true,
+      isSelected: null,
+      isDraggable: false,
+      isSelectable: false,
+      isCheckable: true,
     };
 
-    this.featuresOS.forEach(item => {
+    this.featuresOS.forEach((item) => {
       if (item[0].properties.name) {
-        item[0].title = item[0].properties.name
-        item[0].isLeaf = true
-        item[0].isSelectable = false
-        item[0].isDraggable = false
+        item[0].title = item[0].properties.name;
+        item[0].isLeaf = true;
+        item[0].isSelectable = false;
+        item[0].isDraggable = false;
         item[0].isCheckable = true;
         item[0].isExpanded = false;
         item[0].isSelected = null;
         item[0].data = {
-          "children": [],
-          "name": item[0].properties.name,
-          "disabled": false,
-          "selected": false,
-        }
+          children: [],
+          name: item[0].properties.name,
+          disabled: false,
+          selected: false,
+        };
         item[0].data.properties = item[0].properties;
         item[0].data.geometry = item[0].geometry;
       }
@@ -958,7 +1106,7 @@ export default class MapView extends Vue {
   isSelectedArea(area) {
     for (let selected of this.selectedFeatures) {
       if (selected.properties.uri == area.properties.uri) {
-        return true;  
+        return true;
       }
     }
     return false;
@@ -984,7 +1132,7 @@ export default class MapView extends Vue {
 
   showAreaDetails(areaUriResult: any) {
     if (areaUriResult instanceof Promise) {
-      areaUriResult.then(areaUri => {
+      areaUriResult.then((areaUri) => {
         this.recoveryShowArea(areaUri);
       });
     } else {
@@ -996,32 +1144,32 @@ export default class MapView extends Vue {
     if (filterResult.ref) {
       this.tabLayer.forEach((element, index) => {
         if (element.ref == filterResult.ref) {
-          this.tabLayer.splice(index, 1)
+          this.tabLayer.splice(index, 1);
         }
-      })
+      });
       this.tabLayer.push(filterResult);
     }
   }
 
-  onMapPointerMove({pixel}: any) {
+  onMapPointerMove({ pixel }: any) {
     // Gets the name when the cursor hovers over the item.
     const hitFeature = this.map.forEachFeatureAtPixel(
-        pixel,
-        feature => feature
+      pixel,
+      (feature) => feature
     );
     if (hitFeature) {
       this.selectPointerMove = {
         name: hitFeature.values_.name,
-        type: this.nameType(hitFeature.values_.type)
+        type: this.nameType(hitFeature.values_.type),
       };
     } else {
-      this.selectPointerMove = { name: null, type: null};
+      this.selectPointerMove = { name: null, type: null };
     }
   }
 
   callAreaUpdate(areaUriResult) {
     if (areaUriResult instanceof Promise) {
-      areaUriResult.then(areaUri => {
+      areaUriResult.then((areaUri) => {
         this.recoveryArea(areaUri);
       });
     } else {
@@ -1029,29 +1177,9 @@ export default class MapView extends Vue {
     }
   }
 
-  markersDateRangeFormat(value: string, position: string) {
-    const date = new Date(value);
-    let res: string = "";
-    
-    if (position == 'left')
-      res += this.$i18n.t("MapView.marketFrom");
-    else
-      res += this.$i18n.t("MapView.marketTo");
-    res += ": ";
-    if (this.$store.getters.language == 'en') {
-      res += String(date.getMonth() + 1).padStart(2, '0') + "/" + String(date.getDate()).padStart(2, '0');
-    } else {
-      res += String(date.getDate()).padStart(2, '0') + "/" + String(date.getMonth() + 1).padStart(2, '0');
-    }
-    res += "/" + date.getFullYear();
-    return "<span>" + res + "<span>";
-  }
-
   onChangeDateRange(event) {
-    this.$opensilex.showLoader();
-    this.range = { from: event.args.from, to: event.args.to }
-    
-
+    //this.$opensilex.showLoader();
+    this.range = { from: event.args.from, to: event.args.to };
     let startDate: string = this.formatDate(this.range.from);
     let endDate: string = this.formatDate(this.range.to);
 
@@ -1060,16 +1188,15 @@ export default class MapView extends Vue {
     // this.$opensilex.updateURLParameters(this.filter);
 
     this.recoveryScientificObjects(startDate, endDate);
-    this.areaRecovery()
+    this.areaRecovery();
   }
 
   formatDate(date): string {
     let d = new Date(date),
-        month = String(d.getMonth() + 1).padStart(2, '0'),
-        day = String(d.getDate()).padStart(2, '0'),
-        year = d.getFullYear();
-
-    return [year, month, day].join('-');
+      month = String(d.getMonth() + 1).padStart(2, "0"),
+      day = String(d.getDate()).padStart(2, "0"),
+      year = d.getFullYear();
+    return [year, month, day].join("-");
   }
 
   calcDifferenceDateInDays(from: Date, to: Date): number {
@@ -1077,50 +1204,6 @@ export default class MapView extends Vue {
     let diffInDays = diffInTime / (1000 * 3600 * 24);
 
     return diffInDays;
-  }
-
-  majorTicksIntervalFct() {
-    const from = this.minDate;
-    const to = this.maxDate;
-
-    if (this.calcDifferenceDateInDays(from, to) > 40) {
-      return 'month';
-    } else {
-      return 'day';
-    }
-  }
-
-  minorTicksIntervalFct() {
-    const from = this.minDate;
-    const to = this.maxDate;
-
-    if (this.calcDifferenceDateInDays(from, to) > 40) {
-      return 'day';
-    } else {
-      return 'hour';
-    }
-  }
-
-  labelsFormatFct() {
-    const from = this.minDate;
-    const to = this.maxDate;
-
-    if (this.calcDifferenceDateInDays(from, to) > 40) {
-      return 'MMM';
-    } else {
-      return 'ddd';
-    }
-  }
-
-  handleDateRangeStatus() {  //DISABLE TO WAIT FIX BUG DATRANGE
-    this.displayDateRange = !this.displayDateRange;
-    if (this.displayDateRange == false &&
-    (this.range.from != this.minDate || this.range.to != this.maxDate)) { // If all SO are already charged
-      this.recoveryScientificObjects();
-      this.minDate = this.range.from;
-      this.maxDate = this.range.to;
-      this.rangeSelector.refresh();
-    }
   }
 
   selectFeaturesFromTimeline(uri) {
@@ -1137,7 +1220,7 @@ export default class MapView extends Vue {
       }
     }
   }
-  
+
   callScientificObjectUpdate() {
     if (this.callSO) {
       this.callSO = false;
@@ -1145,36 +1228,39 @@ export default class MapView extends Vue {
       this.removeFromFeatureOS(this.scientificObjectURI, this.selectedFeatures);
 
       this.$opensilex
-          .getService(this.scientificObjectsService)
-          .getScientificObjectDetail(this.scientificObjectURI, this.experiment)
-          .then((http: HttpResponse<OpenSilexResponse<ScientificObjectDetailDTO>>) => {
-                const result = http.response.result as any;
+        .getService(this.scientificObjectsService)
+        .getScientificObjectDetail(this.scientificObjectURI, this.experiment)
+        .then(
+          (
+            http: HttpResponse<OpenSilexResponse<ScientificObjectDetailDTO>>
+          ) => {
+            const result = http.response.result as any;
 
-                if (result.geometry != null) {
-                  result.geometry.properties = {
-                    uri: result.uri,
-                    name: result.name,
-                    type: result.rdf_type,
-                    nature: "ScientificObjects",
-                    display: "true"
-                  };
+            if (result.geometry != null) {
+              result.geometry.properties = {
+                uri: result.uri,
+                name: result.name,
+                type: result.rdf_type,
+                nature: "ScientificObjects",
+                display: "true",
+              };
 
-                  let inserted = false;
-                  this.featuresOS.forEach(item => {
-                    if (item[0].properties.type == result.rdf_type) {
-                      item.push(result.geometry);
-                      inserted = true;
-                    }
-                  });
-                  if (!inserted) {
-                    this.featuresOS.push([result.geometry]);
-                  }
-
-                  this.selectedFeatures.push(result.geometry);
+              let inserted = false;
+              this.featuresOS.forEach((item) => {
+                if (item[0].properties.type == result.rdf_type) {
+                  item.push(result.geometry);
+                  inserted = true;
                 }
+              });
+              if (!inserted) {
+                this.featuresOS.push([result.geometry]);
               }
-          )
-          .catch(this.$opensilex.errorHandler);
+
+              this.selectedFeatures.push(result.geometry);
+            }
+          }
+        )
+        .catch(this.$opensilex.errorHandler);
     }
   }
 
@@ -1192,7 +1278,7 @@ export default class MapView extends Vue {
         if (unKinkedPoly.features.length > 1) {
           let coordinates = [];
 
-          unKinkedPoly.features.forEach(item => {
+          unKinkedPoly.features.forEach((item) => {
             coordinates.push(item.geometry.coordinates);
           });
 
@@ -1225,9 +1311,14 @@ export default class MapView extends Vue {
   }
 
   showTemporalAreas() {
-    if (this.displayAreas && !this.displayTemporalAreas && !this.timelineSidebarVisibility) { // show temporal areas if clicking events panel
+    if (
+      this.displayAreas &&
+      !this.displayTemporalAreas &&
+      !this.timelineSidebarVisibility
+    ) {
+      // show temporal areas if clicking events panel
       this.displayTemporalAreas = true;
-      this.updateArea({ title: 'TemporalZone' });
+      this.updateArea({ title: "TemporalZone" });
     }
   }
 
@@ -1240,66 +1331,145 @@ export default class MapView extends Vue {
     this.recoveryScientificObjects();
   }
 
-  getRangeDatesOfExperiment(): Promise<any> {
-    return new Promise ((resolve) => {
-      this.$opensilex
-      .getService("opensilex.ExperimentsService")
-      .getExperiment(this.experiment)
-      .then(http => {
-        let res = http.response.result;
-        this.minDate = new Date(res.start_date);
-        this.minDate.setHours(0,0,0,0);
-         if (res.end_date) {
-           this.maxDate = new Date(res.end_date);
-         } else {
-           this.maxDate = new Date();
-         }
-        // this.maxDate.setHours(0,0,0,0);
-        
-        // checkfilter
-        // let from ;
-        // if(!this.filter.from  ){
-        //   from = this.minDate;
-        // }else{
-        //   from = this.filter.from
-        // }
-        // let to;
-        // console.log(this.filter,!this.filter.to)
-        // if(!this.filter.to  ){
-        //   to = this.maxDate;
-        // }else{
-        //   to = this.filter.to
-        // }
-
-
-        // this.range = { from: from, to: to};
-        resolve("");
-      })
-      .catch(this.$opensilex.errorHandler);
-    });
+  majorTicksIntervalFct() {
+    if (this.minDate || this.maxDate) {
+      const from = this.minDate;
+      const to = this.maxDate;
+      if (this.calcDifferenceDateInDays(from, to) > 600) {
+        return "year";
+      } else if (this.calcDifferenceDateInDays(from, to) > 40) {
+        return "month";
+      } else {
+        return "day";
+      }
+    } else {
+      return "day";
+    }
   }
 
-  configDateRange() {
-    this.rangeSelector.min = this.minDate;  // WRONG WAY
-    this.rangeSelector.max = this.maxDate;  // WRONG WAY
-    this.rangeSelector.range = this.range;  // WRONG WAY
-    this.rangeSelector.majorTicksInterval = this.majorTicksIntervalFct();  // WRONG WAY
-    this.rangeSelector.minorTicksInterval = this.minorTicksIntervalFct();  // WRONG WAY
-    this.rangeSelector.labelsFormat = this.labelsFormatFct(); // WRONG WAY
-    this.rangeSelector.range = { from: this.range.from, to: this.range.to };  // WRONG WAY
-    this.rangeSelector.refresh(); // WRONG WAY
+  minorTicksIntervalFct() {
+    if (this.minDate || this.maxDate) {
+      const from = this.minDate;
+      const to = this.maxDate;
+
+      if (this.calcDifferenceDateInDays(from, to) > 600) {
+        return "month";
+      } else if (this.calcDifferenceDateInDays(from, to) > 40) {
+        return "day";
+      } else {
+        return "hour";
+      }
+    } else {
+      return "hour";
+    }
+  }
+
+  labelsFormatFct() {
+    if (this.minDate || this.maxDate) {
+      const from = this.minDate;
+      const to = this.maxDate;
+
+      if (this.calcDifferenceDateInDays(from, to) > 600) {
+        return "yyyy";
+      } else if (this.calcDifferenceDateInDays(from, to) > 40) {
+        return "MM";
+      } else {
+        return "dd";
+      }
+    } else {
+      return "ddd";
+    }
+  }
+
+  markersDateRangeFormat(value: string, position: string) {
+    const date = new Date(value);
+    let res: string = "";
+
+    if (position == "left") res += this.$i18n.t("MapView.marketFrom");
+    else res += this.$i18n.t("MapView.marketTo");
+    res += ": ";
+    if (this.$store.getters.language == "en") {
+      res +=
+        String(date.getMonth() + 1).padStart(2, "0") +
+        "/" +
+        String(date.getDate()).padStart(2, "0");
+    } else {
+      res +=
+        String(date.getDate()).padStart(2, "0") +
+        "/" +
+        String(date.getMonth() + 1).padStart(2, "0");
+    }
+    res += "/" + date.getFullYear();
+    return "<span>" + res + "<span>";
+  }
+
+  configDateRange(experiment) {
+    let min = new Date(experiment.start_date);
+    min.setHours(0, 0, 0, 0);
+
+    let max;
+    if (experiment.end_date) {
+      max = new Date(experiment.end_date);
+    } else {
+      max = new Date();
+    }
+
+    max.setHours(0, 0, 0, 0);
+    this.minDate = min;
+    this.maxDate = max;
+    this.range = { from: min, to: max };
+
+    this.minorTicksInterval = this.minorTicksIntervalFct();
+    this.majorTicksInterval = this.majorTicksIntervalFct();
+    this.labelsFormat = this.labelsFormatFct();
+  }
+
+  handleDateRangeStatus() {
+    if (this.displayDateRange) {
+      this.displayDateRange = !this.displayDateRange;
+    } else {
+      this.initDateRange();
+    }
   }
 
   initDateRange() {
     // Recover start and end of the experiment
     if (!this.minDate || !this.maxDate || !this.range.from || !this.range.to) {
-      this.getRangeDatesOfExperiment()
-      .then(() => {
-       this.configDateRange();
-      });
+      this.getRangeDatesOfExperiment();
     } else {
-      this.configDateRange();
+      this.displayDateRange = !this.displayDateRange;
     }
+  }
+
+  getRangeDatesOfExperiment(): Promise<any> {
+    return new Promise((resolve) => {
+      this.$opensilex
+        .getService("opensilex.ExperimentsService")
+        .getExperiment(this.experiment)
+        .then((http) => {
+          let res = http.response.result;
+          this.configDateRange(res);
+          this.displayDateRange = !this.displayDateRange;
+
+          // checkfilter
+          // let from ;
+          // if(!this.filter.from  ){
+          //   from = this.minDate;
+          // }else{
+          //   from = this.filter.from
+          // }
+          // let to;
+          // console.log(this.filter,!this.filter.to)
+          // if(!this.filter.to  ){
+          //   to = this.maxDate;
+          // }else{
+          //   to = this.filter.to
+          // }
+
+          resolve("");
+        })
+        .catch(this.$opensilex.errorHandler);
+    });
   }
 
   mapCreated(map) {
@@ -1311,22 +1481,25 @@ export default class MapView extends Vue {
         if (this.isMapHasLayer) {
           const extent = dragBox.getGeometry().getExtent();
           if (this.$refs.vectorSource) {
-            (this.$refs.vectorSource as any).forEach(vector => {
+            (this.$refs.vectorSource as any).forEach((vector) => {
               const source = vector.$source;
-  
-              source.forEachFeatureIntersectingExtent(extent, (feature: any) => {
-                feature = olExt.writeGeoJsonFeature(feature);
-                this.selectedFeatures.push(feature);
-              });
+
+              source.forEachFeatureIntersectingExtent(
+                extent,
+                (feature: any) => {
+                  feature = olExt.writeGeoJsonFeature(feature);
+                  this.selectedFeatures.push(feature);
+                }
+              );
             });
           }
         }
-      }
+      },
     });
 
     map.$map.addInteraction(dragBox);
 
-    this.map.$map.on('click', (event) => {
+    this.map.$map.on("click", (event) => {
       let isFeatureSelected = this.map.$map.getFeaturesAtPixel(event.pixel);
       if (!isFeatureSelected && !this.editingMode) {
         this.selectedFeatures = [];
@@ -1344,14 +1517,14 @@ export default class MapView extends Vue {
   }
 
   private waitFor(conditionFunction) {
-
-    const poll = resolve => {
+    const poll = (resolve) => {
       if (conditionFunction()) resolve();
-      else setTimeout(_ => {
-        this.$opensilex.showLoader();
-        poll(resolve);
-      },200);
-    }
+      else
+        setTimeout((_) => {
+          this.$opensilex.showLoader();
+          poll(resolve);
+        }, 200);
+    };
 
     return new Promise(poll);
   }
@@ -1360,21 +1533,29 @@ export default class MapView extends Vue {
     return new Promise((resolve, reject) => {
       if (this.featuresOS.length > 0) {
         try {
-          const isVectorSourceMounted = (vector) => vector && vector.$source && vector.$source.getExtent()
-          && vector.$source.getExtent()[0] && vector.$source.getExtent()[0] != Infinity; // Condition to be sure sources has been mounted
-          this.waitFor(_ => this.vectorSource.length === this.featuresOS.length && this.vectorSource.every(isVectorSourceMounted)) // Wait all vectors charged
-          .then(() => {
-            let extent = olExtent.createEmpty();
-            for (let vector of this.vectorSource) {
-              if (vector && vector.$source) {
-                let extentTemporary = vector.$source.getExtent();
-                olExtent.extend(extent, extentTemporary);
+          const isVectorSourceMounted = (vector) =>
+            vector &&
+            vector.$source &&
+            vector.$source.getExtent() &&
+            vector.$source.getExtent()[0] &&
+            vector.$source.getExtent()[0] != Infinity; // Condition to be sure sources has been mounted
+          this.waitFor(
+            (_) =>
+              this.vectorSource.length === this.featuresOS.length &&
+              this.vectorSource.every(isVectorSourceMounted)
+          ) // Wait all vectors charged
+            .then(() => {
+              let extent = olExtent.createEmpty();
+              for (let vector of this.vectorSource) {
+                if (vector && vector.$source) {
+                  let extentTemporary = vector.$source.getExtent();
+                  olExtent.extend(extent, extentTemporary);
+                }
               }
-            }
-            this.mapView.$view.fit(extent);
-            this.$opensilex.hideLoader();
-            resolve(true);
-          });
+              this.mapView.$view.fit(extent);
+              this.$opensilex.hideLoader();
+              resolve(true);
+            });
         } catch (e) {
           this.$opensilex.hideLoader();
           reject(false);
@@ -1382,7 +1563,7 @@ export default class MapView extends Vue {
       } else {
         resolve(false);
       }
-    })
+    });
   }
 
   select(value) {
@@ -1396,20 +1577,20 @@ export default class MapView extends Vue {
     this.service = this.$opensilex.getService("opensilex.OntologyService");
 
     this.service
-        .getSubClassesOf(Oeso.SCIENTIFIC_OBJECT_TYPE_URI, true)
-        .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
-          const res = http.response.result;
-          this.extracted(res, typeLabel);
-        })
-        .catch(this.$opensilex.errorHandler);
+      .getSubClassesOf(Oeso.SCIENTIFIC_OBJECT_TYPE_URI, true)
+      .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
+        const res = http.response.result;
+        this.extracted(res, typeLabel);
+      })
+      .catch(this.$opensilex.errorHandler);
 
     this.service
-        .getSubClassesOf(Oeso.AREA_TYPE_URI, true)
-        .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
-          const res = http.response.result;
-          this.extracted(res, typeLabel);
-        })
-        .catch(this.$opensilex.errorHandler);
+      .getSubClassesOf(Oeso.AREA_TYPE_URI, true)
+      .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
+        const res = http.response.result;
+        this.extracted(res, typeLabel);
+      })
+      .catch(this.$opensilex.errorHandler);
 
     this.typeLabel = typeLabel;
   }
@@ -1429,54 +1610,62 @@ export default class MapView extends Vue {
 
     if (data.item.properties.nature === "Area") {
       this.$opensilex
-          .getService(this.areaService)
-          .deleteArea(uri)
-          .then((http: HttpResponse<OpenSilexResponse<ObjectUriResponse>>) => {
-            if (data.item.properties.type == "vocabulary:TemporalArea") {
-              return this.deleteEvent(uri);
-            }
-            let message =
-                this.$i18n.t("Area.title") +
-                " " +
-                http.response.result +
-                " " +
-                this.$i18n.t("component.common.success.delete-success-message");
-            this.$opensilex.showSuccessToast(message);
-            this.removeFromFeaturesArea(uri, this.featuresArea);
-          })
-          .catch(this.$opensilex.errorHandler);
+        .getService(this.areaService)
+        .deleteArea(uri)
+        .then((http: HttpResponse<OpenSilexResponse<ObjectUriResponse>>) => {
+          if (data.item.properties.type == "vocabulary:TemporalArea") {
+            return this.deleteEvent(uri);
+          }
+          let message =
+            this.$i18n.t("Area.title") +
+            " " +
+            http.response.result +
+            " " +
+            this.$i18n.t("component.common.success.delete-success-message");
+          this.$opensilex.showSuccessToast(message);
+          this.removeFromFeaturesArea(uri, this.featuresArea);
+        })
+        .catch(this.$opensilex.errorHandler);
     } else {
       this.$opensilex
-          .getService(this.scientificObjectsService)
-          .deleteScientificObject(uri, this.experiment)
-          .then(http => {
-            let message =
-                this.$i18n.t("ScientificObjects.title") +
-                " " +
-                http.response.result +
-                " " +
-                this.$i18n.t("component.common.success.delete-success-message");
-            this.$opensilex.showSuccessToast(message);
-            this.removeFromFeatureOS(uri, this.featuresOS);
-          })
-          .catch(this.$opensilex.errorHandler);
+        .getService(this.scientificObjectsService)
+        .deleteScientificObject(uri, this.experiment)
+        .then((http) => {
+          let message =
+            this.$i18n.t("ScientificObjects.title") +
+            " " +
+            http.response.result +
+            " " +
+            this.$i18n.t("component.common.success.delete-success-message");
+          this.$opensilex.showSuccessToast(message);
+          this.removeFromFeatureOS(uri, this.featuresOS);
+        })
+        .catch(this.$opensilex.errorHandler);
     }
   }
 
   colorFeature(color) {
-    return "rgba(" + parseInt(color.slice(1, 3), 16) + "," + parseInt(color.slice(3, 5), 16) + "," + parseInt(color.slice(5, 7), 16) + ",0.5)"
+    return (
+      "rgba(" +
+      parseInt(color.slice(1, 3), 16) +
+      "," +
+      parseInt(color.slice(3, 5), 16) +
+      "," +
+      parseInt(color.slice(5, 7), 16) +
+      ",0.5)"
+    );
   }
 
   saveMap() {
-    this.$bvModal.show('modal-save-map');
+    this.$bvModal.show("modal-save-map");
   }
 
   savePNG(titleFile: String) {
-    let canvas = document.getElementsByTagName('canvas')[0];
+    let canvas = document.getElementsByTagName("canvas")[0];
     canvas.toBlob((blob) => {
-      saveAs(blob, titleFile + '.png');
+      saveAs(blob, titleFile + ".png");
     });
-    this.$bvModal.hide('modal-save-map');
+    this.$bvModal.hide("modal-save-map");
   }
 
   savePDF(titleFile: String) {
@@ -1484,20 +1673,20 @@ export default class MapView extends Vue {
     let size = map.getSize();
     let dim = [size[0], size[1]];
     let resolution = 32;
-    let width = Math.round(dim[0] * resolution / 25.4);
-    let height = Math.round(dim[1] * resolution / 25.4);
+    let width = Math.round((dim[0] * resolution) / 25.4);
+    let height = Math.round((dim[1] * resolution) / 25.4);
     let extent = map.getView().calculateExtent(size);
-    map.once('rendercomplete', (event) => {
+    map.once("rendercomplete", (event) => {
       let canvas = event.context.canvas;
-      let data = canvas.toDataURL('image/jpeg');
+      let data = canvas.toDataURL("image/jpeg");
       let pdf = new jsPDF({
-        orientation: 'landscape',
-        unit: 'px',
-        format: [dim[0], dim[1]]
+        orientation: "landscape",
+        unit: "px",
+        format: [dim[0], dim[1]],
       });
-      pdf.addImage(data, 'JPEG', 0, 0, dim[0], dim[1]);
-      pdf.save(titleFile + '.pdf');
-      this.$bvModal.hide('modal-save-map');
+      pdf.addImage(data, "JPEG", 0, 0, dim[0], dim[1]);
+      pdf.save(titleFile + ".pdf");
+      this.$bvModal.hide("modal-save-map");
       map.setSize(size);
       map.getView().fit(extent, { size: size });
     });
@@ -1512,7 +1701,7 @@ export default class MapView extends Vue {
     for (let layer of this.featuresOS) {
       for (let obj of layer) {
         geometry = null;
-        if (obj.geometry.type == 'Point') {
+        if (obj.geometry.type == "Point") {
           geometry = new Point(obj.geometry.coordinates);
         } else {
           geometry = new Polygon(obj.geometry.coordinates);
@@ -1521,37 +1710,37 @@ export default class MapView extends Vue {
           geometry,
           name: obj.properties.name,
         });
-        vectorSource.addFeature(feature)
+        vectorSource.addFeature(feature);
       }
     }
     for (let layer of this.featuresArea) {
       geometry = null;
-      if (layer.geometry.type == 'Point') {
+      if (layer.geometry.type == "Point") {
         geometry = new Point(layer.geometry.coordinates);
       } else {
         geometry = new Polygon(layer.geometry.coordinates);
       }
       feature = new Feature({
         geometry,
-        name: layer.properties.name
+        name: layer.properties.name,
       });
-      vectorSource.addFeature(feature)
+      vectorSource.addFeature(feature);
     }
     let writer = new GeoJSON();
     let geojsonStr = writer.writeFeatures(vectorSource.getFeatures());
     let geoJson = JSON.parse(geojsonStr);
     shpwrite.download(geoJson);
-    this.$bvModal.hide('modal-save-map');
+    this.$bvModal.hide("modal-save-map");
   }
 
-  appendTemporalArea(obj) { 
+  appendTemporalArea(obj) {
     let minDate = this.$opensilex.prepareGetParameter(this.minDate);
     let maxDate = this.$opensilex.prepareGetParameter(this.maxDate);
 
-    if(minDate != undefined){
+    if (minDate != undefined) {
       minDate = minDate.toISOString();
     }
-    if(maxDate != undefined){
+    if (maxDate != undefined) {
       maxDate = maxDate.toISOString();
     }
 
@@ -1560,7 +1749,7 @@ export default class MapView extends Vue {
       .searchEvents(undefined, minDate, maxDate, obj.uri)
       .then((http: HttpResponse<OpenSilexResponse<EventGetDTO>>) => {
         const res = http.response.result[0] as any;
-        if(res != undefined) { 
+        if (res != undefined) {
           res.targets = [obj.uri];
           this.temporalAreas.push(res);
           this.temporalAreas.sort((a: any, b: any) => {
@@ -1575,40 +1764,43 @@ export default class MapView extends Vue {
     if (features.length && features[0]) {
       this.selectedFeatures = features;
     }
-    return this.selectedFeatures.length === 1 ? this.showDetails(this.selectedFeatures[0], true) : '';
+    return this.selectedFeatures.length === 1
+      ? this.showDetails(this.selectedFeatures[0], true)
+      : "";
   }
 
   private recoveryShowArea(areaUri) {
     if (areaUri != undefined) {
       this.editingMode = false;
       this.$opensilex
-          .getService(this.areaService)
-          .getByURI(areaUri.toString())
-          .then((http: HttpResponse<OpenSilexResponse<AreaGetDTO>>) => {
-            const res = http.response.result as any;
-            if (res.geometry != null) {
-              res.geometry.properties = {
-                uri: res.uri,
-                name: res.name,
-                type: res.rdf_type,
-                nature: "Area"
-              };
-              for (let area of this.featuresArea) {
-                if (area.properties.uri == res.geometry.properties.uri) { // Check if already exists
-                  return;
-                }
+        .getService(this.areaService)
+        .getByURI(areaUri.toString())
+        .then((http: HttpResponse<OpenSilexResponse<AreaGetDTO>>) => {
+          const res = http.response.result as any;
+          if (res.geometry != null) {
+            res.geometry.properties = {
+              uri: res.uri,
+              name: res.name,
+              type: res.rdf_type,
+              nature: "Area",
+            };
+            for (let area of this.featuresArea) {
+              if (area.properties.uri == res.geometry.properties.uri) {
+                // Check if already exists
+                return;
               }
-              this.featuresArea.push(res.geometry);
-              if (res.geometry.properties.type == this.temporalAreaType) {
-                this.appendTemporalArea(res.geometry.properties);
-                this.displayTemporalAreas = true;
-              } else {
-                this.displayPerennialAreas = true;
-              }
-              return;
             }
-          })
-          .catch(this.$opensilex.errorHandler);
+            this.featuresArea.push(res.geometry);
+            if (res.geometry.properties.type == this.temporalAreaType) {
+              this.appendTemporalArea(res.geometry.properties);
+              this.displayTemporalAreas = true;
+            } else {
+              this.displayPerennialAreas = true;
+            }
+            return;
+          }
+        })
+        .catch(this.$opensilex.errorHandler);
     }
   }
 
@@ -1619,33 +1811,34 @@ export default class MapView extends Vue {
       this.removeFromTemporalAreasByTarget(areaUri, this.temporalAreas);
 
       this.$opensilex
-          .getService(this.areaService)
-          .getByURI(areaUri)
-          .then((http: HttpResponse<OpenSilexResponse<AreaGetDTO>>) => {
-            const res = http.response.result as any;
-            if (res.geometry != null) {
-              res.geometry.properties = {
-                uri: res.uri,
-                name: res.name,
-                type: res.rdf_type,
-                nature: "Area"
-              };
-              for (let area of this.featuresArea) {
-                if (area.properties.uri == res.geometry.properties.uri) { // Check if already exists
-                  return;
-                }
+        .getService(this.areaService)
+        .getByURI(areaUri)
+        .then((http: HttpResponse<OpenSilexResponse<AreaGetDTO>>) => {
+          const res = http.response.result as any;
+          if (res.geometry != null) {
+            res.geometry.properties = {
+              uri: res.uri,
+              name: res.name,
+              type: res.rdf_type,
+              nature: "Area",
+            };
+            for (let area of this.featuresArea) {
+              if (area.properties.uri == res.geometry.properties.uri) {
+                // Check if already exists
+                return;
               }
-              this.featuresArea.push(res.geometry);
-              if (res.geometry.properties.type == this.temporalAreaType) {
-                this.appendTemporalArea(res.geometry.properties);
-              }
-              this.selectedFeatures.push(res.geometry);
             }
-          })
-          .catch(this.$opensilex.errorHandler)
-          .finally(() =>{ 
-            this.$opensilex.hideLoader();
-          });
+            this.featuresArea.push(res.geometry);
+            if (res.geometry.properties.type == this.temporalAreaType) {
+              this.appendTemporalArea(res.geometry.properties);
+            }
+            this.selectedFeatures.push(res.geometry);
+          }
+        })
+        .catch(this.$opensilex.errorHandler)
+        .finally(() => {
+          this.$opensilex.hideLoader();
+        });
     }
   }
 
@@ -1654,44 +1847,52 @@ export default class MapView extends Vue {
     this.featuresOS = [];
 
     this.$opensilex
-        .getService(this.scientificObjectsService)
-        .searchScientificObjectsWithGeometryListByUris(this.experiment, startDate, endDate)
-        .then((http: HttpResponse<OpenSilexResponse<Array<ScientificObjectNodeDTO>>>) => {
-              const res = http.response.result as any;
-              res.forEach(element => {
-                if (element.geometry != null) {
-                  element.geometry.properties = {
-                    uri: element.uri,
-                    name: element.name,
-                    type: element.rdf_type,
-                    nature: "ScientificObjects",
-                    display: "true"
-                  };
+      .getService(this.scientificObjectsService)
+      .searchScientificObjectsWithGeometryListByUris(
+        this.experiment,
+        startDate,
+        endDate
+      )
+      .then(
+        (
+          http: HttpResponse<OpenSilexResponse<Array<ScientificObjectNodeDTO>>>
+        ) => {
+          const res = http.response.result as any;
+          res.forEach((element) => {
+            if (element.geometry != null) {
+              element.geometry.properties = {
+                uri: element.uri,
+                name: element.name,
+                type: element.rdf_type,
+                nature: "ScientificObjects",
+                display: "true",
+              };
 
-                  let inserted = false;
-                  this.featuresOS.forEach(item => {
-                    if (item[0].properties.type == element.rdf_type) {
-                      item.push(element.geometry);
-                      inserted = true;
-                    }
-                  });
-                  if (!inserted) {
-                    this.featuresOS.push([element.geometry]);
-                  }
+              let inserted = false;
+              this.featuresOS.forEach((item) => {
+                if (item[0].properties.type == element.rdf_type) {
+                  item.push(element.geometry);
+                  inserted = true;
                 }
               });
-              if (res.length != 0) {
-                this.endReceipt = true;
+              if (!inserted) {
+                this.featuresOS.push([element.geometry]);
               }
             }
-        )
-        .catch((e) => {
-          this.$opensilex.errorHandler(e);
-          this.$opensilex.hideLoader();
-        })
-        .finally(() => {
-          this.defineCenter()
-          .catch(() => { // In case of OpenLayer error, recall function in 300ms
+          });
+          if (res.length != 0) {
+            this.endReceipt = true;
+          }
+        }
+      )
+      .catch((e) => {
+        this.$opensilex.errorHandler(e);
+        this.$opensilex.hideLoader();
+      })
+      .finally(() => {
+        this.defineCenter()
+          .catch(() => {
+            // In case of OpenLayer error, recall function in 300ms
             setTimeout(() => {
               this.defineCenter();
             }, 300);
@@ -1699,74 +1900,85 @@ export default class MapView extends Vue {
           .finally(() => {
             this.$opensilex.hideLoader();
           });
-          this.initScientificObjects();
-        });
+        this.initScientificObjects();
+      });
   }
 
   private scientificObjectsDetails(scientificObjectUri: any) {
     if (scientificObjectUri != undefined) {
       this.detailsSO = false;
       this.$opensilex.disableLoader();
-      console.debug("showScientificObjects", scientificObjectUri);
       this.$opensilex
-          .getService(this.scientificObjectsService)
-          .getScientificObjectDetail(scientificObjectUri, this.experiment)
-          .then((http: HttpResponse<OpenSilexResponse<ScientificObjectDetailDTO>>) => {
-                let result = http.response.result;
-                this.selectedFeatures.forEach(item => {
-                  if (item.properties.uri === result.uri) {
-                    item.properties.OS = result;
-                    this.detailsSO = true;
-                  }
-                });
+        .getService(this.scientificObjectsService)
+        .getScientificObjectDetail(scientificObjectUri, this.experiment)
+        .then(
+          (
+            http: HttpResponse<OpenSilexResponse<ScientificObjectDetailDTO>>
+          ) => {
+            let result = http.response.result;
+            this.selectedFeatures.forEach((item) => {
+              if (item.properties.uri === result.uri) {
+                item.properties.OS = result;
+                this.detailsSO = true;
               }
-          )
-          .catch(this.$opensilex.errorHandler)
-          .finally(() => {
-            this.$opensilex.enableLoader();
-          });
+            });
+          }
+        )
+        .catch(this.$opensilex.errorHandler)
+        .finally(() => {
+          this.$opensilex.enableLoader();
+        });
     }
   }
 
   private removeFromFeaturesArea(uri, features) {
-    features.forEach(item => {
-      const {uri: uriItem} = item.properties;
+    features.forEach((item) => {
+      const { uri: uriItem } = item.properties;
       let regExp = /area:.+|area#.+/;
 
-      if (uri.slice(uri.search(regExp) + 5) == uriItem.slice(uriItem.search(regExp) + 5)) {
+      if (
+        uri.slice(uri.search(regExp) + 5) ==
+        uriItem.slice(uriItem.search(regExp) + 5)
+      ) {
         features.splice(features.indexOf(item), 1);
       }
     });
   }
 
   private removeFromTemporalAreas(uri, features) {
-    features.forEach(item => {
+    features.forEach((item) => {
       const uriItem = item.uri;
       let regExp = /events:.+|events#.+/;
 
-      if (uri.slice(uri.search(regExp) + 5) == uriItem.slice(uriItem.search(regExp) + 5)) {
+      if (
+        uri.slice(uri.search(regExp) + 5) ==
+        uriItem.slice(uriItem.search(regExp) + 5)
+      ) {
         features.splice(features.indexOf(item), 1);
       }
     });
   }
 
   private removeFromTemporalAreasByTarget(uri, features) {
-    features.forEach(item => {
+    features.forEach((item) => {
       const uriItem = item.targets[0];
       let regExp = /area:.+|area#.+/;
 
-      if (uri.slice(uri.search(regExp) + 5) == uriItem.slice(uriItem.search(regExp) + 5)) {
+      if (
+        uri.slice(uri.search(regExp) + 5) ==
+        uriItem.slice(uriItem.search(regExp) + 5)
+      ) {
         features.splice(features.indexOf(item), 1);
       }
     });
   }
 
   private removeFromFeatureOS(uri, features, higherLevelFeatures = []) {
-    features.forEach(item => {
+    features.forEach((item) => {
       if (item.type === undefined) {
         this.removeFromFeatureOS(uri, item, features);
       } else {
-        const {uri: uriItem} = item.properties;
+        const { uri: uriItem } = item.properties;
 
         if (uri == uriItem) {
           if (features.length > 1 || higherLevelFeatures.length == 0) {
@@ -1803,21 +2015,27 @@ export default class MapView extends Vue {
               this.$i18n.t("component.common.success.delete-success-message");
             this.$opensilex.showSuccessToast(message);
             this.removeFromFeaturesArea(uri, this.featuresArea);
-            this.removeFromTemporalAreas(http.response.result, this.temporalAreas);
+            this.removeFromTemporalAreas(
+              http.response.result,
+              this.temporalAreas
+            );
           })
           .catch(this.$opensilex.errorHandler);
       })
       .catch(this.$opensilex.errorHandler)
-      .finally(() =>{ 
+      .finally(() => {
         this.$opensilex.hideLoader();
       });
   }
 
-  private extracted(res: Array<ResourceTreeDTO>, typeLabel: { uri: string; name: string }[]) {
-    res.forEach(({name, uri, children}) => {
+  private extracted(
+    res: Array<ResourceTreeDTO>,
+    typeLabel: { uri: string; name: string }[]
+  ) {
+    res.forEach(({ name, uri, children }) => {
       typeLabel.push({
         uri: uri,
-        name: name.substr(0, 1).toUpperCase() + name.substr(1)
+        name: name.substr(0, 1).toUpperCase() + name.substr(1),
       });
       if (children.length > 0) {
         this.extracted(children, typeLabel);
@@ -1835,25 +2053,25 @@ export default class MapView extends Vue {
 
   private getCoordinateExtent() {
     return transformExtent(
-        this.mapView.$view.calculateExtent(),
-        "EPSG:3857",
-        "EPSG:4326"
+      this.mapView.$view.calculateExtent(),
+      "EPSG:3857",
+      "EPSG:4326"
     );
   }
 
   private calcOverlayCoordinate(coordinateExtent) {
     this.overlayCoordinate = [
       coordinateExtent[0] +
-      (coordinateExtent[2] - coordinateExtent[0]) * 0.0303111,
+        (coordinateExtent[2] - coordinateExtent[0]) * 0.0303111,
       coordinateExtent[3] +
-      (coordinateExtent[1] - coordinateExtent[3]) * 0.025747
+        (coordinateExtent[1] - coordinateExtent[3]) * 0.025747,
     ];
   }
 
   private calcCenterMap(coordinateExtent) {
     this.centerMap = [
       (coordinateExtent[0] + coordinateExtent[2]) / 2,
-      (coordinateExtent[1] + coordinateExtent[3]) / 2
+      (coordinateExtent[1] + coordinateExtent[3]) / 2,
     ];
   }
 
@@ -1865,14 +2083,14 @@ export default class MapView extends Vue {
     this.calcCenterMap(coordinateExtent);
 
     if (
-        coordinateExtent[0] >= -180 &&
-        coordinateExtent[0] <= 180 &&
-        coordinateExtent[2] >= -180 &&
-        coordinateExtent[2] <= 180 &&
-        coordinateExtent[1] >= -90 &&
-        coordinateExtent[1] <= 90 &&
-        coordinateExtent[3] >= -90 &&
-        coordinateExtent[3] <= 90
+      coordinateExtent[0] >= -180 &&
+      coordinateExtent[0] <= 180 &&
+      coordinateExtent[2] >= -180 &&
+      coordinateExtent[2] <= 180 &&
+      coordinateExtent[1] >= -90 &&
+      coordinateExtent[1] <= 90 &&
+      coordinateExtent[3] >= -90 &&
+      coordinateExtent[3] <= 90
     ) {
       let geometry = {
         type: "Polygon",
@@ -1882,74 +2100,79 @@ export default class MapView extends Vue {
             [coordinateExtent[0], coordinateExtent[1]],
             [coordinateExtent[0], coordinateExtent[3]],
             [coordinateExtent[2], coordinateExtent[3]],
-            [coordinateExtent[2], coordinateExtent[1]]
-          ]
-        ]
+            [coordinateExtent[2], coordinateExtent[1]],
+          ],
+        ],
       };
 
       this.featuresArea = [];
       this.temporalAreas = [];
 
       let minDate = this.range.from;
-      if(minDate== null){
+      if (minDate == null) {
         minDate = this.minDate;
       }
 
       let maxDate = this.range.to;
-      if(maxDate== null){
+      if (maxDate == null) {
         maxDate = this.maxDate;
       }
-      minDate = this.$opensilex.prepareGetParameter(minDate); 
-      console.debug("minDate",minDate,this.minDate,this.range.from  );
-      
-       maxDate = this.$opensilex.prepareGetParameter(maxDate); 
-      console.debug("maxDate",maxDate,this.maxDate,this.range.to ); 
+      minDate = this.$opensilex.prepareGetParameter(minDate);
+      console.debug("minDate", minDate, this.minDate, this.range.from);
 
-      let minDateString :string = undefined;
-      let maxDateString :string = undefined;
- 
-      if(minDate != undefined){
+      maxDate = this.$opensilex.prepareGetParameter(maxDate);
+      console.debug("maxDate", maxDate, this.maxDate, this.range.to);
+
+      let minDateString: string = undefined;
+      let maxDateString: string = undefined;
+
+      if (minDate != undefined) {
         minDateString = minDate.toISOString();
       }
-      
-      if(maxDate != undefined){
+
+      if (maxDate != undefined) {
         maxDateString = maxDate.toISOString();
       }
 
       this.$opensilex
-          .getService(this.areaService)
-          .searchIntersects(JSON.parse(JSON.stringify(geometry)), minDateString, maxDateString)
-          .then((http: HttpResponse<OpenSilexResponse<Array<AreaGetDTO>>>) => {
-            const res = http.response.result as any;
-            res.forEach(element => {
-              if (element.geometry != null) {
-                element.geometry.properties = {
-                  uri: element.uri,
-                  name: element.name,
-                  type: element.rdf_type,
-                  description: element.description,
-                  nature: "Area"
-                };
-                let bool = true;
-                for (let area of this.featuresArea) {
-                  if (area.properties.uri == element.geometry.properties.uri) { // Check if already exists
-                    bool = false;
-                  }
-                }
-                if (bool) {
-                  this.featuresArea.push(element.geometry);
-                  if (element.geometry.properties.type == this.temporalAreaType) {
-                    this.appendTemporalArea(element.geometry.properties);
-                  }
+        .getService(this.areaService)
+        .searchIntersects(
+          JSON.parse(JSON.stringify(geometry)),
+          minDateString,
+          maxDateString
+        )
+        .then((http: HttpResponse<OpenSilexResponse<Array<AreaGetDTO>>>) => {
+          const res = http.response.result as any;
+          res.forEach((element) => {
+            if (element.geometry != null) {
+              element.geometry.properties = {
+                uri: element.uri,
+                name: element.name,
+                type: element.rdf_type,
+                description: element.description,
+                nature: "Area",
+              };
+              let bool = true;
+              for (let area of this.featuresArea) {
+                if (area.properties.uri == element.geometry.properties.uri) {
+                  // Check if already exists
+                  bool = false;
                 }
               }
-            });
-          })
-          .catch(this.$opensilex.errorHandler)
-          .finally(() =>{
-            this.endReceipt = true;
-            this.$opensilex.hideLoader();
+              if (bool) {
+                this.featuresArea.push(element.geometry);
+                if (element.geometry.properties.type == this.temporalAreaType) {
+                  this.appendTemporalArea(element.geometry.properties);
+                }
+              }
+            }
           });
+        })
+        .catch(this.$opensilex.errorHandler)
+        .finally(() => {
+          this.endReceipt = true;
+          this.$opensilex.hideLoader();
+        });
     }
   }
 
@@ -1958,13 +2181,13 @@ export default class MapView extends Vue {
 
     if (data.item.properties.nature === "Area") {
       this.$opensilex
-          .getService(this.areaService)
-          .getByURI(uri)
-          .then((http: HttpResponse<OpenSilexResponse<AreaGetDTO>>) => {
-            let form: any = http.response.result;
-            this.areaForm.showEditForm(form);
-          })
-          .catch(this.$opensilex.errorHandler);
+        .getService(this.areaService)
+        .getByURI(uri)
+        .then((http: HttpResponse<OpenSilexResponse<AreaGetDTO>>) => {
+          let form: any = http.response.result;
+          this.areaForm.showEditForm(form);
+        })
+        .catch(this.$opensilex.errorHandler);
     } else {
       this.callSO = true;
       this.scientificObjectURI = uri;
@@ -1975,7 +2198,6 @@ export default class MapView extends Vue {
 </script>
 
 <style lang="scss" scoped>
-
 @import "~jqwidgets-scripts/jqwidgets/styles/jqx.base.css";
 @import "~jqwidgets-scripts/jqwidgets/styles/jqx.dark.css";
 
@@ -2014,7 +2236,10 @@ p {
   box-shadow: none;
 }
 
-::v-deep .jqx-scrollbar-state-normal-dark, .jqx-grid-bottomright-dark, .jqx-panel-bottomright-dark, .jqx-listbox-bottomright-dark {
+::v-deep .jqx-scrollbar-state-normal-dark,
+.jqx-grid-bottomright-dark,
+.jqx-panel-bottomright-dark,
+.jqx-listbox-bottomright-dark {
   background-color: transparent !important;
 }
 
@@ -2023,20 +2248,23 @@ p {
 }
 
 ::v-deep .jqx-fill-state-normal-dark {
-    background: #00a38d;
-    border-color: #00a38d;
+  background: #00a38d;
+  border-color: #00a38d;
 }
 
-::v-deep .jqx-scrollbar-thumb-state-normal-dark, .jqx-scrollbar-thumb-state-normal-horizontal-dark {
-    background: transparent;
-    border-color: transparent;
+::v-deep .jqx-scrollbar-thumb-state-normal-dark,
+.jqx-scrollbar-thumb-state-normal-horizontal-dark {
+  background: transparent;
+  border-color: transparent;
 }
 
-::v-deep .jqx-scrollbar-state-normal-dark, .jqx-grid-bottomright-dark,
-.jqx-panel-bottomright-dark, .jqx-listbox-bottomright-dark{
-    background-color: #3e3e42a8 !important;
-    border: 1px solid #3e3e42a8;
-    border-left-color: #3e3e42a8;
+::v-deep .jqx-scrollbar-state-normal-dark,
+.jqx-grid-bottomright-dark,
+.jqx-panel-bottomright-dark,
+.jqx-listbox-bottomright-dark {
+  background-color: #3e3e42a8 !important;
+  border: 1px solid #3e3e42a8;
+  border-left-color: #3e3e42a8;
 }
 
 ::v-deep .jqx-rangeselector-inner-slider {
@@ -2109,16 +2337,15 @@ p {
 }
 
 @keyframes slide-up {
-    0% {
-        opacity: 0;
-        transform: translateY(20px);
-    }
-    100% {
-        opacity: 1;
-        transform: translateY(0);
-    }
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
-
 </style>
 
 <i18n>

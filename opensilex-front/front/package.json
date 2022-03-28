@@ -61,7 +61,7 @@
         "vuedraggable": "^2.24.3",
         "vuejs-datepicker": "^1.6.2",
         "vuejs-logger": "1.10.2",
-        "vuelayers": "0.11.37",
+        "vuelayers": "0.11.35",
         "weekstart": "^1.1.0",
         "wkt": "^0.1.1"
     },

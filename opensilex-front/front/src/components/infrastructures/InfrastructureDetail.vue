@@ -69,15 +69,6 @@
         >
         </opensilex-UriListView>
 
-        <!-- Facilities -->
-        <opensilex-UriListView
-            label="InfrastructureDetail.facilities.label"
-            :list="facilityUriList"
-            :inline="false"
-            v-if="hasFacilities"
-          >
-        </opensilex-UriListView>
-
         <!-- Sites -->
         <opensilex-UriListView
             label="InfrastructureDetail.sites.label"
@@ -152,10 +143,6 @@ export default class InfrastructureDetail extends Vue {
     return this.selected.groups.length > 0;
   }
 
-  get hasFacilities() {
-    return this.selected.facilities.length > 0;
-  }
-
   get hasSites() {
     return this.selected.sites.length > 0;
   }
@@ -185,18 +172,6 @@ export default class InfrastructureDetail extends Vue {
           path: "/infrastructure/details/" + encodeURIComponent(parent.uri),
         },
       }
-    });
-  }
-
-  get facilityUriList() {
-    return this.selected.facilities.map(facility => {
-      return {
-        uri: facility.uri,
-        value: facility.name,
-        to: {
-          path: "/facility/details/" + encodeURIComponent(facility.uri)
-        }
-      };
     });
   }
 

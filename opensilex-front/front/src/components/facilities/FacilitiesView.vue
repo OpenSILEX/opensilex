@@ -7,7 +7,7 @@
         <font-awesome-icon
           icon="question-circle"
           v-b-tooltip.hover.top="
-            $t('InfrastructureFacilitiesView.infrastructure-facility-help')
+            $t('FacilitiesView.infrastructure-facility-help')
           "
         />
       </h3>

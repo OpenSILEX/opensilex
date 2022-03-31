@@ -10,7 +10,7 @@
         :itemLoadingMethod="loadSites"
         :conversionMethod="siteToSelectNode"
         :disabled="disabled"
-        noResultsText="FacilitySelector.no-result"
+        noResultsText="SiteSelector.no-result"
         @select="select"
         @deselect="deselect"
     ></opensilex-SelectForm>
@@ -44,7 +44,7 @@ export default class SiteSelector extends Vue {
   @Prop()
   helpMessage;
 
-  @Prop({default: "InfrastructureFacilitySelector.placeholder"})
+  @Prop({default: "FacilitySelector.placeholder"})
   placeholder;
 
   @Prop()
@@ -127,3 +127,14 @@ export default class SiteSelector extends Vue {
 <style scoped>
 
 </style>
+
+<i18n>
+en:
+  SiteSelector:
+    placeholder: Search and select a site
+    no-result: No site found
+fr:
+  SiteSelector:
+    placeholder: "Rechercher et sélectionner un site"
+    no-result: "Aucun site trouvé"
+</i18n>

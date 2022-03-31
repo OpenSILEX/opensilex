@@ -1,9 +1,8 @@
 <template>
   <div class="static-field">
-    <span class="field-view-title">{{$t(label)}}:</span>
+    <span class="field-view-title">{{$t(label)}}</span>
     <span class="static-field-line">{{value}}</span>
-    <opensilex-UriLink class="uri" v-if="uri != null && uri.startsWith('http')" :uri="uri" :url="uri" :allowCopy="allowCopy"></opensilex-UriLink>
-    <opensilex-UriLink class="uri" v-else :uri="uri" :to="to" :allowCopy="allowCopy"></opensilex-UriLink>
+    <opensilex-UriLink class="uri" :uri="uri" :url="uri" :value="uri" :to="to" :allowCopy="allowCopy"></opensilex-UriLink>
   </div>
 </template>
 

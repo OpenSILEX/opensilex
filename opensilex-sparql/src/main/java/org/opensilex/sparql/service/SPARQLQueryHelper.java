@@ -15,8 +15,11 @@ import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.core.mem.TupleSlot;
 import org.apache.jena.sparql.expr.*;
+import org.apache.jena.sparql.expr.aggregate.AggGroupConcat;
+import org.apache.jena.sparql.expr.aggregate.AggGroupConcatDistinct;
 import org.apache.jena.sparql.expr.aggregate.Aggregator;
 import org.apache.jena.sparql.expr.aggregate.AggregatorFactory;
+import org.apache.jena.sparql.lang.sparql_11.ParseException;
 import org.apache.jena.sparql.syntax.Element;
 import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.sparql.syntax.ElementNamedGraph;
@@ -768,5 +771,27 @@ public class SPARQLQueryHelper {
         Triple triple = buildUriTriple(makeVar("_s"), makeVar("_p"), makeVar("_o"), uri, tupleSlot);
         addTripleWhereClause(where, triple, inNamedGraph ? makeVar("_g") : null);
         return where;
+    }
+
+    /**
+     * Reserved keyword used for GROUP_CONCAT var naming
+     */
+    private static final String CONCAT_VAR_SUFFIX = "__opensilex__concat";
+
+    public static final String GROUP_CONCAT_SEPARATOR = ",";
+
+
+    public static String getConcatVarName(String varName){
+        return varName+CONCAT_VAR_SUFFIX;
+    }
+
+    public static void appendGroupConcatAggregator(SelectBuilder select, Var var, boolean distinct) throws ParseException {
+
+        Aggregator groupConcat = distinct ?
+                new AggGroupConcatDistinct(exprFactory.asExpr(var), GROUP_CONCAT_SEPARATOR) :
+                new AggGroupConcat(exprFactory.asExpr(var), GROUP_CONCAT_SEPARATOR);
+
+        Var concatVar = makeVar(getConcatVarName(var.getVarName()));
+        select.addVar(groupConcat.toString(), concatVar);
     }
 }

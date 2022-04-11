@@ -4,8 +4,11 @@ import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.A;
 import org.opensilex.sparql.model.B;
+import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.OpenSilexTestEnvironment;
 import org.opensilex.utils.OrderBy;
@@ -181,6 +184,90 @@ public class SPARQLListFetcherTest  {
                 initialResults
         ));
 
+    }
+
+
+    /**
+     * Test that {@link SPARQLListFetcher} properly use URIS provided into VALUES clause by the initialSelect
+     */
+    @Test
+    public void testWithInitialSelectWithValuesHandler() throws Exception {
+
+        SPARQLService sparql = openSilexTestEnv.getSparql();
+
+        List<OrderBy> orderByList = Collections.singletonList(SPARQLClassObjectMapper.DEFAULT_ORDER_BY);
+        AtomicReference<SelectBuilder> initialSelect = new AtomicReference<>();
+
+
+        Object[] uriNodes = SPARQLDeserializers.nodeListURIAsArray(Arrays.asList(b1.getUri(), b3.getUri()));
+
+        // only fetch b1 and b3
+        List<B> initialResults = sparql.search(B.class, null, (select) -> {
+            initialSelect.set(select);
+
+            // test with addValueVar
+            select.addValueVar(SPARQLResourceModel.URI_FIELD,uriNodes);
+        }, orderByList);
+
+        assertEquals(2,initialResults.size());
+
+        Map<String,Boolean> fieldsToFetch = new HashMap<>();
+        fieldsToFetch.put(B.STRING_LIST_FIELD,true);
+        fieldsToFetch.put(B.A_LIST_FIELD,true);
+
+        SPARQLListFetcher<B> listFetcher = new SPARQLListFetcher<>(
+                sparql,
+                B.class,
+                null,
+                fieldsToFetch,
+                initialSelect.get(),
+                initialResults
+        );
+        listFetcher.updateModels();
+
+        assertModelEquals(b1,initialResults.get(0));
+        assertModelEquals(b3,initialResults.get(1));
+    }
+
+    /**
+     * Test that {@link SPARQLListFetcher} properly use URIS provided into VALUES clause by the initialSelect.
+     */
+    @Test
+    public void testWithInitialSelectWithWhereValuesHandler() throws Exception {
+
+        SPARQLService sparql = openSilexTestEnv.getSparql();
+
+        List<OrderBy> orderByList = Collections.singletonList(SPARQLClassObjectMapper.DEFAULT_ORDER_BY);
+        AtomicReference<SelectBuilder> initialSelect = new AtomicReference<>();
+
+        Object[] uriNodes = SPARQLDeserializers.nodeListURIAsArray(Arrays.asList(b1.getUri(), b3.getUri()));
+
+        // only fetch b1 and b3
+        List<B> initialResults = sparql.search(B.class, null, (select) -> {
+            initialSelect.set(select);
+
+            // test with addWhereValueVar
+            select.addWhereValueVar(SPARQLResourceModel.URI_FIELD,uriNodes);
+        }, orderByList);
+
+        assertEquals(2,initialResults.size());
+
+        Map<String,Boolean> fieldsToFetch = new HashMap<>();
+        fieldsToFetch.put(B.STRING_LIST_FIELD,true);
+        fieldsToFetch.put(B.A_LIST_FIELD,true);
+
+        SPARQLListFetcher<B> listFetcher = new SPARQLListFetcher<>(
+                sparql,
+                B.class,
+                null,
+                fieldsToFetch,
+                initialSelect.get(),
+                initialResults
+        );
+        listFetcher.updateModels();
+
+        assertModelEquals(b1,initialResults.get(0));
+        assertModelEquals(b3,initialResults.get(1));
     }
 
 }

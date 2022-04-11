@@ -1,5 +1,6 @@
 package org.opensilex.core.ontology.dal;
 
+import org.apache.commons.collections4.trie.PatriciaTrie;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
@@ -8,6 +9,7 @@ import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.lang.sparql_11.ParseException;
 import org.apache.jena.sparql.syntax.ElementFilter;
 import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.sparql.syntax.ElementOptional;
@@ -23,6 +25,7 @@ import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
+import org.opensilex.sparql.ontology.dal.OwlRestrictionModel;
 import org.opensilex.sparql.ontology.dal.PropertyModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLResult;
@@ -31,7 +34,7 @@ import org.opensilex.sparql.service.SPARQLService;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -59,9 +62,14 @@ public class SPARQLRelationFetcher<T extends SPARQLResourceModel> {
     private final SelectBuilder initialSelect;
     private final List<T> results;
 
-    private final Set<PropertyModel> typesProperties;
-    private final Map<URI, List<URI>> propertiesByType;
-    private final Map<URI, List<String>> propertiesByTypeVarNames;
+    private final Set<PropertyModel> typesMonoValuedProperties;
+    private final Map<URI, List<URI>> monoValuedPropertiesByType;
+    private final Map<URI, List<String>> monoValuedPropertiesByTypeVarNames;
+
+    private final Set<PropertyModel> typesMultiValuedProperties;
+    private final Map<URI, List<URI>> multiValuedPropertiesByType;
+    private final Map<URI, List<String>> multiValuedPropertiesByTypeVarNames;
+
 
     private final Pattern specialCharsPattern;
 
@@ -85,9 +93,13 @@ public class SPARQLRelationFetcher<T extends SPARQLResourceModel> {
             managedProperties.add(URIDeserializer.formatURI(property.toString()));
         }
 
-        this.typesProperties = new HashSet<>();
-        this.propertiesByType = new HashMap<>();
-        this.propertiesByTypeVarNames = new HashMap<>();
+        this.typesMonoValuedProperties = new HashSet<>();
+        this.monoValuedPropertiesByType = new HashMap<>();
+        this.monoValuedPropertiesByTypeVarNames = new HashMap<>();
+
+        this.typesMultiValuedProperties = new HashSet<>();
+        this.multiValuedPropertiesByType = new HashMap<>();
+        this.multiValuedPropertiesByTypeVarNames = new HashMap<>();
 
         specialCharsPattern = Pattern.compile("[^A-Za-z0-9]");
 
@@ -100,9 +112,6 @@ public class SPARQLRelationFetcher<T extends SPARQLResourceModel> {
                     classModel.getObjectProperties().values().stream()
             );
 
-            List<URI> propertiesUris = new ArrayList<>();
-            List<String> propertiesNames = new ArrayList<>();
-
             // update properties set and type <-> properties index
             propertyStream.forEach(property -> {
 
@@ -111,34 +120,41 @@ public class SPARQLRelationFetcher<T extends SPARQLResourceModel> {
 
                 // don't handle properties which are initially present into SPARQLModel (not managed by this class)
                 if (!managedProperties.contains(formattedPropertyUri)) {
-                    typesProperties.add(property);
-                    propertiesUris.add(formattedPropertyUri);
+
+                    OwlRestrictionModel propertyRestriction = classModel.getRestrictions().get(formattedPropertyUri);
+                    if(propertyRestriction == null){
+                        throw new IllegalArgumentException("Property must have an associated OWL2 restriction in order to known if the property is multi-valued");
+                    }
 
                     String propertyName = specialCharsPattern.matcher(property.getName()).replaceAll("_");
-                    propertiesNames.add(propertyName);
+
+                    if (propertyRestriction.isList()) {
+                        typesMultiValuedProperties.add(property);
+                        multiValuedPropertiesByType.computeIfAbsent(classModel.getUri(),uri -> new ArrayList<>()).add(formattedPropertyUri);
+                        multiValuedPropertiesByTypeVarNames.computeIfAbsent(classModel.getUri(),uri -> new ArrayList<>()).add(propertyName);
+                    } else {
+                        typesMonoValuedProperties.add(property);
+                        monoValuedPropertiesByType.computeIfAbsent(classModel.getUri(),uri -> new ArrayList<>()).add(formattedPropertyUri);
+                        monoValuedPropertiesByTypeVarNames.computeIfAbsent(classModel.getUri(),uri -> new ArrayList<>()).add(propertyName);
+                    }
                 }
             });
-
-            propertiesByType.put(classModel.getUri(), propertiesUris);
-            propertiesByTypeVarNames.put(classModel.getUri(), propertiesNames);
         }
     }
 
+    protected SelectBuilder getRelationSelect(boolean isMultiValued) throws ParseException {
 
-    protected SelectBuilder getSelect() {
-
-        SelectBuilder select = initialSelect.clone();
-
-        Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
+        Set<PropertyModel> properties = isMultiValued ? typesMultiValuedProperties : typesMonoValuedProperties;
 
         // compute properties SPARQL vars
-        List<Var> propertiesVars = new ArrayList<>(typesProperties.size());
-        typesProperties.forEach(property -> {
+        List<Var> propertiesVars = properties.stream()
+                .map(property -> specialCharsPattern.matcher(property.getName()).replaceAll("_"))
+                .map(SPARQLQueryHelper::makeVar)
+                .collect(Collectors.toList());
 
-            // ensure that property var is syntactically correct in SPARQL
-            String propertyName =  specialCharsPattern.matcher(property.getName()).replaceAll("_");
-            propertiesVars.add(makeVar(propertyName));
-        });
+
+        SelectBuilder select = initialSelect.clone();
+        Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
 
         // add ?uri var + each property name as SPARQL var
         select.setDistinct(true);
@@ -159,7 +175,7 @@ public class SPARQLRelationFetcher<T extends SPARQLResourceModel> {
 
         // append triple <?uri :property_uri ?property_name> for each property
         int propertyIdx = 0;
-        for (PropertyModel property : typesProperties) {
+        for (PropertyModel property : properties) {
 
             Node propertyNode = SPARQLDeserializers.nodeURI(property.getUri());
             Var propertyVar = propertiesVars.get(propertyIdx++);
@@ -181,52 +197,72 @@ public class SPARQLRelationFetcher<T extends SPARQLResourceModel> {
             }
         }
 
-        innerGraphElemGroup.addElementFilter(new ElementFilter(propertyBoundednessOurExpr));
-
-        return select;
-    }
-
-    public void updateModels() throws SPARQLException {
-
-        if (typesProperties.isEmpty()) {
-            return;
+        if(propertyBoundednessOurExpr != null){
+            innerGraphElemGroup.addElementFilter(new ElementFilter(propertyBoundednessOurExpr));
         }
 
-        SelectBuilder selectWithProperties = getSelect();
+        if(! isMultiValued){
+            return select;
+        }
 
-        AtomicInteger modelsIdx = new AtomicInteger(0);
-        AtomicInteger resultsIdx = new AtomicInteger(0);
+        // Build upper query
+        SelectBuilder multivaluedSelect = new SelectBuilder()
+                .setDistinct(true)
+                .addVar(uriVar)
+                .addSubQuery(select)
+                .addGroupBy(uriVar);
 
-        sparql.executeSelectQueryAsStream(selectWithProperties).forEach(result -> {
+        // copy VALUES clause because if VALUES are inserted with SelectBuilder.addValueVar(var,values), then addSubQuery() don't copy VALUES from SelectBuilder.getWhereHandler().getValuesMap()
+        // addSubQuery() work if VALUES are inserted with SelectBuilder.addWhereValueVar(var,values), in this case VALUES are copied from SelectBuilder.getValuesHandler()
+        multivaluedSelect.getValuesHandler().addAll(select.getValuesHandler());
 
-            boolean modelResultMatch = false;
-            while (!modelResultMatch) {
+        // Add projection to the multivalued field with the GROUP_CONCAT aggregator
+        for(Var propertyVar : propertiesVars){
+            SPARQLQueryHelper.appendGroupConcatAggregator(multivaluedSelect,propertyVar,true);
+        }
+        return multivaluedSelect;
+    }
 
-                String uriValue = result.getStringValue(SPARQLResourceModel.URI_FIELD);
+    private void updateProperties(Map<String,T> modelsByUris, SelectBuilder select, BiConsumer<SPARQLResult,T> resultToModelConsumer) throws SPARQLException {
 
-                if (modelsIdx.get() >= results.size()) {
-                    String errorMsg = uriValue +" : URI from SPARQL results (at index"+resultsIdx+") should be included into initial results.";
-                    throw new IllegalStateException(errorMsg);
-                }
-                T model = results.get(modelsIdx.get());
-                if (SPARQLDeserializers.compareURIs(model.getUri().toString(), uriValue)) {
-                    update(result, model);
-                    modelResultMatch = true;
-                }else{
-                    // no matching with model => try with the next model
-                    // only update when no matching, since several result can match with one model (e.g. when they are multiple value for a property)
-                    modelsIdx.incrementAndGet();
-                }
+        sparql.executeSelectQueryAsStream(select).forEach(result -> {
+
+            // Get the model corresponding to the result
+            String rowUri = URIDeserializer.formatURIAsStr(result.getStringValue(SPARQLResourceModel.URI_FIELD));
+            T initialModel = modelsByUris.get(rowUri);
+
+            // ensure model is not null, since the query use a FILTER in case of no associated values
+            if(initialModel != null){
+                resultToModelConsumer.accept(result,initialModel);
             }
-
-            resultsIdx.getAndIncrement();
         });
     }
 
-    protected void update(SPARQLResult result, T initialModel) {
+    public void updateModels() throws SPARQLException, ParseException {
 
-        List<URI> typeProperties = this.propertiesByType.get(initialModel.getType());
-        List<String> propertiesNames = this.propertiesByTypeVarNames.get(initialModel.getType());
+        if (typesMonoValuedProperties.isEmpty() && typesMultiValuedProperties.isEmpty()) {
+            return;
+        }
+
+        // compute index between models and models URIs in order to associate in O(n) time complexity, the n results from selectWithMultivalued
+        Map<String,T> modelsByUris = new PatriciaTrie<>();
+        results.forEach(result ->
+                modelsByUris.put(URIDeserializer.formatURIAsStr(result.getUri().toString()), result)
+        );
+
+        if(! typesMonoValuedProperties.isEmpty()){
+            updateProperties(modelsByUris,getRelationSelect(false),this::updateMonoValued);
+        }
+
+        if(! typesMultiValuedProperties.isEmpty()){
+            updateProperties(modelsByUris,getRelationSelect(true),this::updateMultiValued);
+        }
+    }
+
+    protected void updateMonoValued(SPARQLResult result, T initialModel) {
+
+        List<URI> typeProperties = this.monoValuedPropertiesByType.get(initialModel.getType());
+        List<String> propertiesNames = this.monoValuedPropertiesByTypeVarNames.get(initialModel.getType());
 
         for (int i = 0; i < typeProperties.size(); i++) {
 
@@ -236,6 +272,30 @@ public class SPARQLRelationFetcher<T extends SPARQLResourceModel> {
             if (!StringUtils.isEmpty(relationValue)) {
                 URI propertyUri = typeProperties.get(i);
                 initialModel.addRelation(graphUri, propertyUri, null, relationValue);
+            }
+        }
+    }
+
+    protected void updateMultiValued(SPARQLResult result, T initialModel) {
+
+        List<URI> typeProperties = this.multiValuedPropertiesByType.get(initialModel.getType());
+        List<String> propertiesNames = this.multiValuedPropertiesByTypeVarNames.get(initialModel.getType());
+
+        for (int i = 0; i < typeProperties.size(); i++) {
+
+            String propertyVarName = SPARQLQueryHelper.getConcatVarName(propertiesNames.get(i));
+            String unparsedValue = result.getStringValue(propertyVarName);
+
+            if (!StringUtils.isEmpty(unparsedValue)) {
+                String[] values = unparsedValue.split(SPARQLQueryHelper.GROUP_CONCAT_SEPARATOR);
+                if(values.length > 0){
+
+                    URI propertyUri = typeProperties.get(i);
+                    for (String value : values) {
+                        initialModel.addRelation(graphUri, propertyUri, null, value);
+                    }
+                }
+
             }
         }
     }

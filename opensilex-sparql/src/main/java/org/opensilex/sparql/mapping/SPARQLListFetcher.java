@@ -36,6 +36,7 @@ import java.net.URI;
 import java.util.*;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
+import static org.opensilex.sparql.service.SPARQLQueryHelper.regexFilterOnURI;
 
 /**
  * <pre>
@@ -362,7 +363,14 @@ public class SPARQLListFetcher<T extends SPARQLResourceModel> {
             }
         });
 
-        return multivaluedSelect.addSubQuery(innerSelect);
+        // add original query as sub query
+        multivaluedSelect.addSubQuery(innerSelect);
+
+        // copy VALUES clause because if VALUES are inserted with SelectBuilder.addValueVar(var,values), then addSubQuery() don't copy VALUES from SelectBuilder.getWhereHandler().getValuesMap()
+        // addSubQuery() copy VALUES if they are inserted with SelectBuilder.addWhereValueVar(var,values), in this case VALUES are copied from SelectBuilder.getValuesHandler()
+        multivaluedSelect.getValuesHandler().addAll(innerSelect.getValuesHandler());
+
+        return multivaluedSelect;
     }
 
     protected void update(SPARQLResult result, SPARQLResourceModel initialModel) throws Exception {

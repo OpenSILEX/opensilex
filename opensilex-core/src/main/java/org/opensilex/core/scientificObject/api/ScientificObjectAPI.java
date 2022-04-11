@@ -879,7 +879,7 @@ public class ScientificObjectAPI {
     @Path("export")
     @ApiOperation("Export a given list of scientific object URIs to csv data file")
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Data file exported")
+            @ApiResponse(code = 200, message = "Data file exported")
     })
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
@@ -891,7 +891,6 @@ public class ScientificObjectAPI {
         validateContextAccess(dto.getExperiment());
 
         ScientificObjectDAO soDao = new ScientificObjectDAO(sparql, nosql);
-        OntologyDAO ontologyDAO = new OntologyDAO(sparql);
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
         MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
 

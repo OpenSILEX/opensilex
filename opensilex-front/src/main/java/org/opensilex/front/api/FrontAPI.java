@@ -83,6 +83,20 @@ public class FrontAPI {
     }
 
     @GET
+    @Path("/user_config")
+    @ApiOperation(value = "Return the user-specific configuration")
+    @ApiTranslatable
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Front application configuration", response = UserFrontConfigDTO.class)
+    })
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getUserConfig() throws Exception {
+        UserFrontConfigDTO config = frontModule.getUserConfigDTO(user);
+
+        return new SingleObjectResponse<>(config).getResponse();
+    }
+
+    @GET
     @Path("/extension/js/{module}.js")
     @ApiOperation(value = "Return the front Vue JS extension file to include")
     @ApiResponses(value = {

@@ -377,6 +377,11 @@ export default class OpenSilexVuePlugin {
 
     private getCookieName() {
         let cookieName = OpenSilexVuePlugin.COOKIE_NAME + "-" + this.cookieSuffix;
+        // If a prefix exists, add it to the cookie name
+        let pathPrefix = this.getPathPrefix();
+        if (pathPrefix) {
+            cookieName += pathPrefix;
+        }
         console.debug("Read cookie name:", cookieName);
         return cookieName;
     }
@@ -411,7 +416,7 @@ export default class OpenSilexVuePlugin {
     }
 
     private getPathPrefix(): string {
-        if (this.getConfig() && this.getConfig().pathPrefix && this.getConfig().pathPrefix != "") {
+        if (this.getConfig() && this.getConfig().pathPrefix) {
             return this.getConfig().pathPrefix;
         }
         console.error("No path prefix in configuration");

@@ -525,7 +525,7 @@ $opensilex.loadModules([
         let baseURL = window.location.href.split(/[?#]/)[0];
 
         if (config.userIsAnonymous && user.isLoggedIn()) {
-          console.log("User should be anonymous, force logout");
+          console.debug("User should be anonymous, force logout");
           store.commit("logout");
           window.location = baseURL;
         }

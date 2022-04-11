@@ -55,17 +55,21 @@ export class User {
         return this.expire;
     }
 
-    public getExpirationMs() {
+    public getDurationUntilExpirationSeconds() {
+        return this.expire - Math.floor(Date.now() / 1000);
+    }
+
+    public getDurationUntilExpirationMs() {
         return (this.expire * 1000 - Date.now());
     }
 
     public getInactivityRenewDelayMs() {
-        let exipreAfter = this.getExpirationMs();
-        return Math.floor((2 / 3) * exipreAfter);
+        let expireAfter = this.getDurationUntilExpirationMs();
+        return Math.floor((2 / 3) * expireAfter);
     }
 
     public needRenew() {
-        return this.getExpirationMs() > 0 && this.getInactivityRenewDelayMs() <= 0;
+        return this.getDurationUntilExpirationMs() > 0 && this.getInactivityRenewDelayMs() <= 0;
     }
 
     public getToken() {

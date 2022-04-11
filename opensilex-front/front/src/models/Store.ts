@@ -169,8 +169,8 @@ let store = new Vuex.Store({
         autoRenewTimeout = undefined;
       }
 
-      let exipreAfter = user.getExpirationMs();
-      let expireDate = new Date(exipreAfter);
+      let expireAfter = user.getDurationUntilExpirationMs();
+      let expireDate = new Date(expireAfter);
       console.debug("Define expiration timeout", expireDate.getMinutes(), "min", expireDate.getSeconds(), "sec");
       expireTimeout = setTimeout(() => {
         console.debug("Automatically call logout");
@@ -179,7 +179,7 @@ let store = new Vuex.Store({
         let opensilex = getOpenSilexPlugin();
         let message = opensilex.$i18n.t("component.common.errors.unauthorized-error");
         opensilex.showErrorToast("" + message);
-      }, exipreAfter);
+      }, expireAfter);
 
       let inactivityRenewDelay = user.getInactivityRenewDelayMs();
       let inactivityRenewDelayDate = new Date(inactivityRenewDelay);

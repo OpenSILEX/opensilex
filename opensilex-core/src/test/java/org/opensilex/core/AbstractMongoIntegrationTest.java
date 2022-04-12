@@ -13,6 +13,7 @@ import com.mongodb.client.MongoDatabase;
 import de.flapdoodle.embed.mongo.MongodExecutable;
 import de.flapdoodle.embed.mongo.MongodProcess;
 import de.flapdoodle.embed.mongo.MongodStarter;
+import de.flapdoodle.embed.mongo.config.Defaults;
 import de.flapdoodle.embed.mongo.config.MongoCmdOptions;
 import de.flapdoodle.embed.mongo.config.MongodConfig;
 import de.flapdoodle.embed.mongo.config.Net;
@@ -24,6 +25,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import static org.awaitility.Awaitility.await;
+
+import de.flapdoodle.embed.mongo.packageresolver.Command;
+import de.flapdoodle.embed.process.config.RuntimeConfig;
+import de.flapdoodle.embed.process.config.process.ProcessOutput;
 import org.bson.Document;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
@@ -42,14 +47,21 @@ public class AbstractMongoIntegrationTest extends AbstractSecurityIntegrationTes
 
     @BeforeClass
     public static void initMongo() throws IOException {
-        MongodStarter runtime = MongodStarter.getDefaultInstance();
+
+        RuntimeConfig runtimeConfig = Defaults.runtimeConfigFor(Command.MongoD)
+                .processOutput(ProcessOutput.silent())
+                .build();
+
+        MongodStarter runtime = MongodStarter.getInstance(runtimeConfig);
         int nodePort = 28018;
         Map<String, String> args = new HashMap<>();
         String replicaName = "rs0";
         args.put("--replSet", replicaName);
-        mongoExec = runtime.prepare(MongodConfig.builder().version(Version.V5_0_5)
+        mongoExec = runtime.prepare(MongodConfig.builder().version(Version.V4_0_12)
                 .args(args)
-                .cmdOptions(MongoCmdOptions.builder().useNoJournal(false).build())
+                .cmdOptions(MongoCmdOptions.builder()
+                        .useNoJournal(false).
+                                build())
                 .net(new Net("127.0.0.1", nodePort, false)).build());
         mongod = mongoExec.start();
 

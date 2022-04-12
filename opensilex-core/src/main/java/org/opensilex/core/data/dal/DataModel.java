@@ -11,6 +11,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
+
 import org.apache.commons.codec.digest.DigestUtils;
 import org.bson.Document;
 import org.opensilex.nosql.mongodb.MongoModel;
@@ -124,23 +126,8 @@ public class DataModel extends MongoModel {
            
     @Override
     public String[] getInstancePathSegments(MongoModel instance) {
-        ObjectMapper mapper = ObjectMapperContextResolver.getObjectMapper();
-        String provenanceString = "";
-        try {
-            provenanceString = mapper.writeValueAsString(getProvenance());
-        } catch (JsonProcessingException ex) {            
-        }
-        
-        String objectsString = "";
-        if (getTarget() != null) {
-            objectsString = getTarget().toString();
-        }
-        
-        String md5Hash = DigestUtils.md5Hex(getVariable().toString() + objectsString + provenanceString);
-        
-        return new String[]{            
-            String.valueOf(getDate().getEpochSecond()),
-            md5Hash
+        return new String[]{
+                UUID.randomUUID().toString()
         };
     } 
 

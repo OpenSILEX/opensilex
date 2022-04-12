@@ -113,13 +113,13 @@ public class DataDAO {
 
     public List<DataModel> createAll(List<DataModel> instances) throws Exception {
         createIndexes(); 
-        nosql.createAll(instances, DataModel.class, DATA_COLLECTION_NAME, DATA_PREFIX);
+        nosql.createAll(instances, DataModel.class, DATA_COLLECTION_NAME, DATA_PREFIX,false);
         return instances;
     } 
 
     public List<DataFileModel> createAllFiles(List<DataFileModel> instances) throws Exception {
         createIndexes();
-        nosql.createAll(instances, DataFileModel.class, FILE_COLLECTION_NAME, FILE_PREFIX);
+        nosql.createAll(instances, DataFileModel.class, FILE_COLLECTION_NAME, FILE_PREFIX,false);
         return instances;
     }
 
@@ -522,7 +522,7 @@ public class DataDAO {
 
     public <T extends DataFileModel> void insertFile(DataFileModel model, File file) throws Exception {
         //generate URI
-        nosql.generateUniqueUriIfNullOrValidateCurrent(model, FILE_PREFIX, FILE_COLLECTION_NAME);
+        nosql.generateUniqueUriIfNullOrValidateCurrent(model, true, FILE_PREFIX, FILE_COLLECTION_NAME);
 
         final String filename = Base64.getEncoder().encodeToString(model.getUri().toString().getBytes());
         Path filePath = Paths.get(FS_FILE_PREFIX, filename);

@@ -135,7 +135,7 @@ public class MongoDBService extends BaseService {
     public <T extends MongoModel> void create(T instance, Class<T> instanceClass, String collectionName, String uriGenerationPrefix) throws Exception {
         LOGGER.debug("MONGO CREATE - Collection : " + collectionName);
         if (instance.getUri() == null) {
-            generateUniqueUriIfNullOrValidateCurrent(instance, uriGenerationPrefix, collectionName);
+            generateUniqueUriIfNullOrValidateCurrent(instance, true,uriGenerationPrefix, collectionName);
         }
         MongoCollection<T> collection = db.getCollection(collectionName, instanceClass);
         try {
@@ -149,11 +149,11 @@ public class MongoDBService extends BaseService {
         }
     }
 
-    public <T extends MongoModel> void createAll(List<T> instances, Class<T> instanceClass, String collectionName, String prefix) throws Exception {
+    public <T extends MongoModel> void createAll(List<T> instances, Class<T> instanceClass, String collectionName, String prefix, boolean checkUriExist) throws Exception {
         LOGGER.debug("MONGO CREATE - Collection : " + collectionName);
         for (T instance : instances) {
             if (instance.getUri() == null) {
-                generateUniqueUriIfNullOrValidateCurrent(instance, prefix, collectionName);
+                generateUniqueUriIfNullOrValidateCurrent(instance, checkUriExist,prefix, collectionName);
             }
         }
 
@@ -514,7 +514,7 @@ public class MongoDBService extends BaseService {
      * @param collectionName
      * @throws Exception
      */
-    public <T extends MongoModel> void generateUniqueUriIfNullOrValidateCurrent(T instance, String instanceClassPrefix, String collectionName) throws Exception {
+    public <T extends MongoModel> void generateUniqueUriIfNullOrValidateCurrent(T instance, boolean checkUriExist, String instanceClassPrefix, String collectionName) throws Exception {
         URI uri = instance.getUri();
 
         if (uri == null) {
@@ -522,12 +522,12 @@ public class MongoDBService extends BaseService {
             int retry = 0;
             String prefix = UriBuilder.fromUri(generationPrefixURI).path(instanceClassPrefix).toString();
             uri = instance.generateURI(prefix, instance, retry);
-            while (uriExists(instance.getClass(), collectionName, uri)) {
+            while (checkUriExist && uriExists(instance.getClass(), collectionName, uri)) {
                 uri = instance.generateURI(prefix, instance, retry++);
             }
             instance.setUri(uri);
 
-        } else if (uriExists(instance.getClass(), collectionName, uri)) {
+        } else if (checkUriExist && uriExists(instance.getClass(), collectionName, uri)) {
             throw new NoSQLAlreadyExistingUriException(uri);
         }
     }

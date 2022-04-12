@@ -511,6 +511,7 @@ $opensilex.loadModules([
         console.debug("User successfully loaded from cookie !");
       }
 
+      // Set language
       if (!user.isLoggedIn()) {
         console.debug("User is ANONYMOUS !");
         i18n.locale = lang;
@@ -519,7 +520,7 @@ $opensilex.loadModules([
         i18n.locale = user.getLocale() || lang;
       }
 
-      // Init user
+      // Init user in store
       console.debug("Initialize global user");
       store.commit("login", user);
 
@@ -534,6 +535,7 @@ $opensilex.loadModules([
 
           let baseURL = window.location.href.split(/[?#]/)[0];
 
+          // If user is anonymous in the API but logged in according to the cookie, we must force the logout
           if (userConfig.userIsAnonymous && user.isLoggedIn()) {
             console.debug("User should be anonymous, force logout");
             store.commit("logout");

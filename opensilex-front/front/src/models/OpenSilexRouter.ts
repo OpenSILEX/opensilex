@@ -90,7 +90,7 @@ export class OpenSilexRouter {
             });
         }
 
-        if (!!this.userFrontConfig) {
+        if (this.userFrontConfig) {
             this.menu = this.buildMenu(this.userFrontConfig.menu, routes, user);
         }
 

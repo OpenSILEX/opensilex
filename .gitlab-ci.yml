@@ -743,3 +743,12 @@ pheno3c:build:
   <<: *build_template_with_opensilex
   rules:
     - if: $CI_COMMIT_BRANCH == "pheno3c"
+
+#########################################
+##  SIXTINE-SANDBOX-PROD-BUILD-DEPLOYMENT
+#########################################
+
+sixtine-sandbox:build:
+  <<: *build_template_with_opensilex
+  rules:
+    - if: $CI_COMMIT_BRANCH == "sixtine-sandbox"

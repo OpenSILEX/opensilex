@@ -107,6 +107,7 @@ import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
 import {InfrastructureGetDTO} from "opensilex-core/index";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
+import DTOConverter from "../../models/DTOConverter";
 
 @Component
 export default class InfrastructureDetail extends Vue {
@@ -203,14 +204,7 @@ export default class InfrastructureDetail extends Vue {
     this.organizationService
       .getInfrastructure(this.selected.uri)
       .then((http: HttpResponse<OpenSilexResponse<InfrastructureGetDTO>>) => {
-        let getDto = http.response.result;
-        let editDto = {
-          ...getDto,
-          uri: getDto.uri,
-          groups: getDto.groups.map(group => group.uri),
-          facilities: getDto.facilities.map(facility => facility.uri),
-          parents: getDto.parents.map(parent => parent.uri)
-        };
+        let editDto = DTOConverter.extractURIFromResourceProperties(http.response.result);
         this.infrastructureForm.showEditForm(editDto);
       })
       .catch(this.$opensilex.errorHandler);

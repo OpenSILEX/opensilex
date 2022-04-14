@@ -19,6 +19,7 @@ import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import {InfrastructureFacilityCreationDTO} from "opensilex-core/model/infrastructureFacilityCreationDTO";
+import DTOConverter from "../../models/DTOConverter";
 
 @Component
 export default class FacilityModalForm extends Vue {
@@ -39,11 +40,7 @@ export default class FacilityModalForm extends Vue {
         this.facilityForm
           .getFormRef()
           .setBaseType(this.$opensilex.Oeso.FACILITY_TYPE_URI);
-        let editDto = {
-          ...http.response.result,
-          organizations: http.response.result.organizations.map(org => org.uri),
-          sites: http.response.result.sites.map(site => site.uri)
-        };
+        let editDto = DTOConverter.extractURIFromResourceProperties(http.response.result);
         this.facilityForm.showEditForm(editDto);
       }).catch(this.$opensilex.errorHandler);
   }

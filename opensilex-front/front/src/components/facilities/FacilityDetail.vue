@@ -123,6 +123,7 @@ import Component from "vue-class-component";
 import Vue from "vue";
 import {InfrastructureFacilityGetDTO} from "opensilex-core/model/infrastructureFacilityGetDTO";
 import {Prop, Ref, Watch} from "vue-property-decorator";
+import DTOConverter from "../../models/DTOConverter";
 
 @Component
 export default class FacilityDetail extends Vue {
@@ -204,11 +205,7 @@ export default class FacilityDetail extends Vue {
   }
 
   editInfrastructureFacility() {
-    let editDto = {
-      ...this.selected,
-      organizations: this.selected.organizations.map(org => org.uri)
-    };
-    this.infrastructureFacilityForm.showEditForm(editDto);
+    this.infrastructureFacilityForm.showEditForm(DTOConverter.extractURIFromResourceProperties(this.selected));
   }
 
   deleteInfrastructureFacility() {

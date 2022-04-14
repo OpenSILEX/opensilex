@@ -152,15 +152,23 @@
 </template>
 
 <script lang="ts">
-import { Component, Ref } from "vue-property-decorator";
+import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
-import { ExperimentGetDTO, ExperimentsService, ProjectsService, OrganizationsService, SpeciesDTO, SpeciesService, FactorsService, FactorGetDTO } from "opensilex-core/index";
-// @ts-ignore
-import { SecurityService, GroupDTO, UserGetDTO } from "opensilex-security/index";
+import {
+  ExperimentGetDTO,
+  ExperimentsService,
+  FactorGetDTO,
+  FactorsService,
+  OrganizationsService,
+  ProjectsService,
+  SpeciesDTO,
+  SpeciesService
+} from "opensilex-core/index";
+import {GroupDTO, SecurityService, UserGetDTO} from "opensilex-security/index";
 import moment from "moment";
-// @ts-ignore
-import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
+import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
+import DTOConverter from "../../../models/DTOConverter";
+
 @Component
 export default class ExperimentDetail extends Vue {
   $opensilex: any;
@@ -209,35 +217,7 @@ export default class ExperimentDetail extends Vue {
   }
 
   showEditForm() {
-    this.convertDtoBeforeEditForm();
-    // make a deep copy of the experiment in order to not change the current dto
-    // In case a field has been updated into the form without confirmation (by sending update to the server)
-    let experimentDtoCopy = JSON.parse(JSON.stringify(this.experiment));
-
-    this.experimentForm.showEditForm(experimentDtoCopy);
-  }
-
-  convertDtoBeforeEditForm() {
-    if (
-      this.experiment.projects &&
-      this.experiment.projects.length > 0 &&
-      this.experiment.projects[0].uri //convert experiment 's project list only one time on open form
-    ) {
-      this.experiment.projects = this.experiment.projects.map((project) => {
-        return project.uri;
-      });
-    }
-    if (
-      this.experiment.organisations &&
-      this.experiment.organisations.length > 0 &&
-      this.experiment.organisations[0].uri
-    ) {
-      this.experiment.organisations = this.experiment.organisations.map(
-        (organisation) => {
-          return organisation.uri;
-        }
-      );
-    }
+    this.experimentForm.showEditForm(DTOConverter.extractURIFromResourceProperties(this.experiment));
   }
 
   get infrastructuresListURIs() {

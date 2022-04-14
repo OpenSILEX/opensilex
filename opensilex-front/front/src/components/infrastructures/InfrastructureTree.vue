@@ -152,6 +152,7 @@ import {DropdownButtonOption} from "../common/dropdown/Dropdown.vue";
 import {ResourceDagDTO} from "opensilex-core/model/resourceDagDTO";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
 import TreeView from "../common/views/TreeView.vue";
+import DTOConverter from "../../models/DTOConverter";
 
 type OrganizationOrSiteData = ResourceDagDTO & {
   isOrganization: boolean,
@@ -475,13 +476,7 @@ export default class InfrastructureTree extends Vue {
           ? detailDTO.parents[0].uri
           : undefined;
 
-        let editDTO: InfrastructureUpdateDTO = {
-          ...detailDTO,
-          uri: detailDTO.uri,
-          groups: detailDTO.groups.map(group => group.uri),
-          facilities: detailDTO.facilities.map(facility => facility.uri),
-          parents: detailDTO.parents.map(parent => parent.uri)
-        };
+        let editDTO: InfrastructureUpdateDTO = DTOConverter.extractURIFromResourceProperties(detailDTO);
         this.infrastructureForm.showEditForm(editDTO);
       });
   }
@@ -511,15 +506,7 @@ export default class InfrastructureTree extends Vue {
     this.service
         .getSite(uri)
         .then((http: HttpResponse<OpenSilexResponse<SiteGetDTO>>) => {
-          let detailDTO: SiteGetDTO = http.response.result;
-
-          let editDTO: SiteUpdateDTO = {
-            ...detailDTO,
-            uri: detailDTO.uri,
-            groups: detailDTO.groups.map(group => group.uri),
-            facilities: detailDTO.facilities.map(facility => facility.uri),
-            organizations: detailDTO.organizations.map(org => org.uri)
-          };
+          let editDTO: SiteUpdateDTO = DTOConverter.extractURIFromResourceProperties(http.response.result);
           this.siteForm.showEditForm(editDTO);
         });
   }

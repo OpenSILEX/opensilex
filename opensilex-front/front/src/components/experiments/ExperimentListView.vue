@@ -38,8 +38,9 @@
 </template>
 
 <script lang="ts">
-import { Component, Ref } from "vue-property-decorator";
+import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
+import DTOConverter from "../../models/DTOConverter";
 
 @Component
 export default class ExperimentListView extends Vue {
@@ -67,34 +68,8 @@ export default class ExperimentListView extends Vue {
       .getExperiment(uri)
       .then(http => {
 
-        this.experimentForm.showEditForm(this.convertDtoBeforeEditForm(http.response.result));
+        this.experimentForm.showEditForm(DTOConverter.extractURIFromResourceProperties(http.response.result));
       });
-  }
-
-  convertDtoBeforeEditForm(experiment) {  //update experiment don't need detailled list attributs
-    let convertedExperiment= experiment;
-    
-    if (
-     experiment.projects &&
-     experiment.projects.length>0
-    ) {
-
-     convertedExperiment.projects = experiment.projects.map(project => {
-        return project.uri;
-      });
-    }
-
-    if (
-      experiment.organisations &&
-      experiment.organisations.length >0 
-    ) {
-     convertedExperiment.organisations = experiment.organisations.map(
-        organisation => {
-          return organisation.uri;
-        }
-      );
-    }
-    return convertedExperiment;
   }
 
   redirectToCreatedExperiment(experiment) {

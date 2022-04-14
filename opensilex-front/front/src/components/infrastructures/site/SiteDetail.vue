@@ -108,6 +108,7 @@ import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
 import {SiteUpdateDTO} from "opensilex-core/model/siteUpdateDTO";
 import {SiteGetDTO} from "opensilex-core/model/siteGetDTO";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
+import DTOConverter from "../../../models/DTOConverter";
 
 @Component
 export default class SiteDetail extends Vue {
@@ -188,14 +189,7 @@ export default class SiteDetail extends Vue {
     this.organizationService
         .getSite(this.selected.uri)
         .then((http: HttpResponse<OpenSilexResponse<SiteGetDTO>>) => {
-          let getDto = http.response.result;
-          let editDto: SiteUpdateDTO = {
-            ...getDto,
-            uri: getDto.uri,
-            groups: getDto.groups.map(group => group.uri),
-            facilities: getDto.facilities.map(facility => facility.uri),
-            organizations: getDto.organizations.map(org => org.uri)
-          };
+          let editDto: SiteUpdateDTO = DTOConverter.extractURIFromResourceProperties(http.response.result);
           this.siteForm.showEditForm(editDto);
         })
         .catch(this.$opensilex.errorHandler);

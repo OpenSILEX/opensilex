@@ -23,7 +23,7 @@ import {ServiceBinder} from "../services/ServiceBinder";
 
 declare var $cookies: VueCookies;
 
-declare var window: any;
+declare var window: Window | any;
 
 export interface TreeOption<T extends TreeOption<T>> {
     id: string,
@@ -382,7 +382,7 @@ export default class OpenSilexVuePlugin {
 
     public clearCookie() {
         console.debug("Clear cookie " + this.getCookieName() + " with path " + this.getPathPrefix());
-        $cookies.remove(this.getCookieName(), this.getPathPrefix());
+        $cookies.remove(this.getCookieName(), this.getPathPrefix(), (window as Window).location.hostname);
     }
 
     public loadUserFromCookie(): User {

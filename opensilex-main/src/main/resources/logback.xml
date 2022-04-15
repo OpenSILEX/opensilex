@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration debug="false" scan="true">
     <!-- configuration variables-->
-    <property name="log.pattern" value="%d{dd MMM yyyy;HH:mm:ss.SSS} [%thread] %-5level %logger - %msg%n" />
+    <property name="log.pattern" value="%d{dd MMM yyyy;HH:mm:ss.SSS} [%thread] %-5level %logger %X{client-id} %X{host-name} %X{request-id} %X{user-id} - %msg%n" />
     <property name="default.log.level" value="WARN"/>
     <property name="opensilex.log.level" value="${opensilex.log.level:-INFO}"/>
     

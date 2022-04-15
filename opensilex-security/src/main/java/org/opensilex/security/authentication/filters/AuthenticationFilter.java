@@ -9,6 +9,7 @@ package org.opensilex.security.authentication.filters;
 import org.opensilex.security.authentication.AuthenticationService;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Optional;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -17,12 +18,16 @@ import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Locale;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.annotation.Priority;
 import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
+import javax.ws.rs.container.ContainerResponseContext;
+import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.container.ResourceInfo;
 import javax.ws.rs.core.Context;
@@ -41,6 +46,7 @@ import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 /**
  * <pre>
@@ -81,10 +87,17 @@ import org.slf4j.LoggerFactory;
 @Provider
 @PreMatching
 @Priority(Priorities.AUTHENTICATION)
-public class AuthenticationFilter implements ContainerRequestFilter {
-
+public class AuthenticationFilter implements ContainerRequestFilter, ContainerResponseFilter  {
+    private static final String CLIENT_ID = "client-id";
+    private static final String HOST_NAME = "host-name";
+    private static final String REQUEST_ID = "request-id";
+    private static final String USER_ID = "user-id";
+    
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthenticationFilter.class);
 
+    @Context
+    protected HttpServletRequest httpRequest;
+ 
     @Context
     HttpHeaders headers;
 
@@ -97,9 +110,17 @@ public class AuthenticationFilter implements ContainerRequestFilter {
     @Inject
     OpenSilex opensilex;
 
+    private String defaultClientId() {
+        return "Direct:" + httpRequest.getRemoteAddr();
+    }
+    
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
-
+        Optional<String> clientId = Optional.fromNullable(httpRequest.getHeader("X-Forwarded-For"));
+        MDC.put(CLIENT_ID, clientId.or(defaultClientId())); 
+        MDC.put(REQUEST_ID, UUID.randomUUID().toString());
+        MDC.put(HOST_NAME, httpRequest.getServerName());
+        
         LOGGER.debug("Incoming request URI: " + requestContext.getUriInfo().getRequestUri());
         LOGGER.debug("Incoming request method: " + requestContext.getMethod());
         final AtomicBoolean isJSON = new AtomicBoolean(false);
@@ -186,5 +207,11 @@ public class AuthenticationFilter implements ContainerRequestFilter {
         SecurityContext originalContext = requestContext.getSecurityContext();
         SecurityContext newContext = new SecurityContextProxy(originalContext, user);
         requestContext.setSecurityContext(newContext);
+        MDC.put(USER_ID, user.getEmail().toString());
+    }
+
+    @Override
+    public void filter(ContainerRequestContext requestContext, ContainerResponseContext responseContext) throws IOException {
+        MDC.clear();
     }
 }

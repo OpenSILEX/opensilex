@@ -369,18 +369,12 @@ export default class OpenSilexVuePlugin {
 
     private static COOKIE_NAME = "opensilex-token";
 
-    private cookieSuffix: string = "";
-
-    public setCookieSuffix(suffix: string) {
-        this.cookieSuffix = Math.abs(OpenSilexVuePlugin.hashCode(suffix)) + "";
-    }
-
     private getCookieName() {
-        let cookieName = OpenSilexVuePlugin.COOKIE_NAME + "-" + this.cookieSuffix;
+        let cookieName = OpenSilexVuePlugin.COOKIE_NAME;
         // If a prefix exists, add it to the cookie name
         let pathPrefix = this.getPathPrefix();
         if (pathPrefix) {
-            cookieName += pathPrefix;
+            cookieName += pathPrefix.replace('/', '-');
         }
         console.debug("Read cookie name:", cookieName);
         return cookieName;

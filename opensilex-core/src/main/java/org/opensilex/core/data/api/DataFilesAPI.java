@@ -20,6 +20,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.FileSystem;
+import java.nio.file.FileSystems;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -214,7 +216,7 @@ public class DataFilesAPI {
                 // get the the absolute file path according to the fileStorageDirectory
                 java.nio.file.Path absoluteFilePath = fs.getAbsolutePath(FS_FILE_PREFIX, Paths.get(model.getPath()));
 
-                if (!fs.exist(FS_FILE_PREFIX, absoluteFilePath)) {
+                if (model.getArchive() == null && !fs.exist(FS_FILE_PREFIX, absoluteFilePath)) {
                     return new ErrorResponse(
                                 Response.Status.BAD_REQUEST,
                                 "File not found",
@@ -287,7 +289,9 @@ public class DataFilesAPI {
 
             java.nio.file.Path filePath = Paths.get(description.getPath());
             byte[] fileContent = fs.readFileAsByteArray(FS_FILE_PREFIX, filePath);
-
+            if(description.getArchive() != null) {
+                return Response.status(Response.Status.NOT_IMPLEMENTED.getStatusCode()).build();
+            }
             if (ArrayUtils.isEmpty(fileContent)) {
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()).build();
             }

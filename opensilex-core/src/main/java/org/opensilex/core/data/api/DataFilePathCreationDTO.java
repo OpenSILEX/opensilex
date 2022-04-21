@@ -43,7 +43,7 @@ public class DataFilePathCreationDTO extends DataFileCreationDTO {
         model.setRdfType(getRdfType());
         model.setTarget(getTarget());
         model.setUri(getUri());
-
+        model.setArchive(getArchive());
         model.setPath(relativePath);        
         ParsedDateTimeMongo parsedDateTimeMongo = DataValidateUtils.setDataDateInfo(getDate(), getTimezone());
         model.setDate(parsedDateTimeMongo.getInstant());

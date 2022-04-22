@@ -8065,9 +8065,9 @@ nan@^2.12.1:
   integrity sha512-8ZtvEnA2c5aYCZYd1cvgdnU6cqwixRoYg70xPLWUws5ORTa/lnw+u4amixRS/Ac5U5mQVgp9pnlSUnbNWFaWZQ==
 
 nanoid@^3.1.23:
-  version "3.1.23"
-  resolved "https://registry.yarnpkg.com/nanoid/-/nanoid-3.1.23.tgz#f744086ce7c2bc47ee0a8472574d5c78e4183a81"
-  integrity sha512-FiB0kzdP0FFVGDKlRLEQ1BgDzU87dy5NnzjeW9YZNt+/c3+q82EQDUwniSAUxp/F0gFNI1ZhKU1FqYsMuqZVnw==
+  version "3.3.3"
+  resolved "https://registry.yarnpkg.com/nanoid/-/nanoid-3.3.3.tgz#fd8e8b7aa761fe807dba2d1b98fb7241bb724a25"
+  integrity sha512-p1sjXuopFs0xg+fPASzQ28agW1oHD7xDsd9Xkf3T15H3c/cifrFHVwrh74PdoklAPi+i7MdRsE47vm2r6JoB+w==
 
 nanomatch@^1.2.9:
   version "1.2.13"
@@ -11086,7 +11086,7 @@ uuid@^3.3.2, uuid@^3.4.0:
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.4.0.tgz#b23e4358afa8a202fe7a100af1f5f883f02007ee"
   integrity sha512-HjSDRw6gZE5JMggctHBcjVak08+KEVhSIiDzFnT9S9aegmp85S/bReBVTb4QTFaRNptJ9kuYaNhnbNEOkbKb/A==
 
-v-calendar@^2.3.4:
+v-calendar@^2.4.1:
   version "2.4.1"
   resolved "https://registry.yarnpkg.com/v-calendar/-/v-calendar-2.4.1.tgz#ab50ee6956833aa8e1d2c7297dc3c0511b1751e7"
   integrity sha512-nhzOlHM2cinv+8jIcnAx+nTo63U40szv3Ig41uLMpGK1U5sApgCP6ggigprsnlMOM5VRq1G/1B8rNHkRrLbGjw==
@@ -11352,10 +11352,10 @@ vuejs-logger@1.10.2:
   resolved "https://registry.yarnpkg.com/vuejs-logger/-/vuejs-logger-1.10.2.tgz#f5397b349e121599f110016d2704b10836bf464e"
   integrity sha512-3gOFbBUevhbGBW6l9s6bGnex7XSaRsxuDE9nmFOkgb+ImbrQmEls0dObmkrNIgIFoF8ujlqIsFHd5FxCt4RGyg==
 
-vuelayers@0.11.37:
-  version "0.11.37"
-  resolved "https://registry.yarnpkg.com/vuelayers/-/vuelayers-0.11.37.tgz#61dfbadf8b1500128fabe82ed7e9f7841fc3ea1b"
-  integrity sha512-it1iW+EN3OOquAJzzsJImYIpgxplUFkPQj/5RhzetlYERf0kY53mlg/WeBb+PhhTXgaiRAjq/axoVom1WI8J3Q==
+vuelayers@0.11.35:
+  version "0.11.35"
+  resolved "https://registry.yarnpkg.com/vuelayers/-/vuelayers-0.11.35.tgz#2f342e6250575cd0e03285c5f4775bedfa4d3702"
+  integrity sha512-b9Eh5QXSsunHO05hsuQBk0TB1kbDHMyPbyjL0M+XqVkE+glUq22ExcFA5EcHzphaRRCzs6nQaqvpJcAkm0COiQ==
   dependencies:
     "@babel/runtime-corejs3" "^7.7.4"
     "@turf/point-on-feature" "^5.1.5"

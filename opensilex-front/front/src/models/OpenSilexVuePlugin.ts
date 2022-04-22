@@ -23,7 +23,7 @@ import {ServiceBinder} from "../services/ServiceBinder";
 
 declare var $cookies: VueCookies;
 
-declare var window: any;
+declare var window: Window | any;
 
 export interface TreeOption<T extends TreeOption<T>> {
     id: string,
@@ -102,8 +102,6 @@ export default class OpenSilexVuePlugin {
 
     setConfig(config: FrontConfigDTO) {
         this.config = config;
-        //The config may define a path prefix, necessary for the cookie
-        this.updateCookieValue();
     }
 
     getConfig() {
@@ -371,20 +369,20 @@ export default class OpenSilexVuePlugin {
 
     private static COOKIE_NAME = "opensilex-token";
 
-    private cookieSuffix: string = "";
-
-    public setCookieSuffix(suffix: string) {
-        this.cookieSuffix = Math.abs(OpenSilexVuePlugin.hashCode(suffix)) + "";
-    }
-
     private getCookieName() {
-        let cookieName = OpenSilexVuePlugin.COOKIE_NAME + "-" + this.cookieSuffix;
+        let cookieName = OpenSilexVuePlugin.COOKIE_NAME;
+        // If a prefix exists, add it to the cookie name
+        let pathPrefix = this.getPathPrefix();
+        if (pathPrefix) {
+            cookieName += pathPrefix.replace('/', '-');
+        }
         console.debug("Read cookie name:", cookieName);
         return cookieName;
     }
 
     public clearCookie() {
-        $cookies.remove(this.getCookieName());
+        console.debug("Clear cookie " + this.getCookieName() + " with path " + this.getPathPrefix());
+        $cookies.remove(this.getCookieName(), this.getPathPrefix(), (window as Window).location.hostname);
     }
 
     public loadUserFromCookie(): User {
@@ -394,7 +392,6 @@ export default class OpenSilexVuePlugin {
         if (token != null) {
             try {
                 user = User.fromToken(token);
-                this.setCookieValue(user);
             } catch (error) {
                 console.error(error);
             }
@@ -404,18 +401,20 @@ export default class OpenSilexVuePlugin {
     }
 
     public setCookieValue(user: User) {
+        this.clearCookie();
         let secure: boolean = ('https:' == document.location.protocol);
-        console.debug("Set cookie value:", this.getCookieName(), user.getToken());
+        console.debug("Set cookie value:", this.getCookieName(), this.getPathPrefix(),  user.getToken());
         let domain = location.hostname;
-        let pathPrefix = "/";
-        if (this.getConfig() && this.getConfig().pathPrefix && this.getConfig().pathPrefix != "") {
-            pathPrefix = this.getConfig().pathPrefix;
-        }
-        $cookies.set(this.getCookieName(), user.getToken(), user.getExpiration() + "s", pathPrefix, domain, secure);
+        $cookies.set(this.getCookieName(), user.getToken(), user.getDurationUntilExpirationSeconds() + "s",
+            this.getPathPrefix(), domain, secure);
     }
 
-    public updateCookieValue() {
-        this.setCookieValue(this.getUser());
+    private getPathPrefix(): string {
+        if (this.getConfig() && this.getConfig().pathPrefix) {
+            return this.getConfig().pathPrefix;
+        }
+        console.error("No path prefix in configuration");
+        return undefined;
     }
 
     public static hashCode(str: string) {

@@ -35,9 +35,6 @@ public class FrontConfigDTO {
     String footerComponent;
 
     @NotNull
-    List<MenuItemDTO> menu;
-
-    @NotNull
     List<RouteDTO> routes;
 
     String themeModule;
@@ -51,9 +48,6 @@ public class FrontConfigDTO {
     Boolean activateResetPassword;
 
     String geocodingService;
-
-    @NotNull
-    boolean userIsAnonymous;
 
     @ApiModelProperty(value = "Application url path prefix", example = "app")
     public String getPathPrefix() {
@@ -118,15 +112,6 @@ public class FrontConfigDTO {
         this.loginComponent = loginComponent;
     }
 
-    @ApiModelProperty(value = "Application menu with routes")
-    public List<MenuItemDTO> getMenu() {
-        return menu;
-    }
-
-    public void setMenu(List<MenuItemDTO> menu) {
-        this.menu = menu;
-    }
-
     @ApiModelProperty(value = "List of configured routes")
     public List<RouteDTO> getRoutes() {
         return routes;
@@ -186,14 +171,5 @@ public class FrontConfigDTO {
 
     public void setGeocodingService(String geocodingService) {
         this.geocodingService = geocodingService;
-    }
-
-    @ApiModelProperty
-    public boolean getUserIsAnonymous() {
-        return userIsAnonymous;
-    }
-
-    public void setUserIsAnonymous(boolean userIsAnonymous) {
-        this.userIsAnonymous = userIsAnonymous;
     }
 }

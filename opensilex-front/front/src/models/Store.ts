@@ -6,7 +6,7 @@ import {Menu} from './Menu';
 import {OpenSilexRouter} from './OpenSilexRouter';
 import OpenSilexVuePlugin from './OpenSilexVuePlugin';
 import {AuthenticationService} from 'opensilex-security/index';
-import {FrontConfigDTO} from "../lib";
+import {FrontConfigDTO, UserFrontConfigDTO} from "../lib";
 
 Vue.use(Vuex)
 Vue.use(VueRouter)
@@ -68,8 +68,11 @@ let defaultConfig: FrontConfigDTO = {
   loginComponent: "opensilex-front-ToDoComponent",
   menuComponent: "opensilex-front-ToDoComponent",
   footerComponent: "opensilex-front-ToDoComponent",
+  routes: []
+};
+
+let defaultUserConfig: UserFrontConfigDTO = {
   menu: [],
-  routes: [],
   userIsAnonymous: true
 };
 
@@ -103,6 +106,7 @@ let store = new Vuex.Store({
     loaderVisible: false,
     openSilexRouter: null,
     config: defaultConfig,
+    userConfig: defaultUserConfig,
     menu: menu,
     menuVisible: true,
     disconnected: false,
@@ -169,8 +173,8 @@ let store = new Vuex.Store({
         autoRenewTimeout = undefined;
       }
 
-      let exipreAfter = user.getExpirationMs();
-      let expireDate = new Date(exipreAfter);
+      let expireAfter = user.getDurationUntilExpirationMs();
+      let expireDate = new Date(expireAfter);
       console.debug("Define expiration timeout", expireDate.getMinutes(), "min", expireDate.getSeconds(), "sec");
       expireTimeout = setTimeout(() => {
         console.debug("Automatically call logout");
@@ -179,7 +183,7 @@ let store = new Vuex.Store({
         let opensilex = getOpenSilexPlugin();
         let message = opensilex.$i18n.t("component.common.errors.unauthorized-error");
         opensilex.showErrorToast("" + message);
-      }, exipreAfter);
+      }, expireAfter);
 
       let inactivityRenewDelay = user.getInactivityRenewDelayMs();
       let inactivityRenewDelayDate = new Date(inactivityRenewDelay);
@@ -239,6 +243,10 @@ let store = new Vuex.Store({
       state.config = config;
       state.openSilexRouter = new OpenSilexRouter(config.pathPrefix);
       state.openSilexRouter.setConfig(config);
+    },
+    setUserConfig(state, userConfig: UserFrontConfigDTO) {
+      state.userConfig = userConfig;
+      state.openSilexRouter.setUserConfig(userConfig);
     },
     showLoader(state) {
       if (loaderCount == 0) {

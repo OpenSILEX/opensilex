@@ -1,13 +1,14 @@
 import { User } from './User';
 import Vue from 'vue';
 import { ModuleComponentDefinition } from './ModuleComponentDefinition';
-import { MenuItemDTO, FrontConfigDTO } from '../lib';
+import {MenuItemDTO, FrontConfigDTO, UserFrontConfigDTO} from '../lib';
 import VueRouter from 'vue-router';
 import OpenSilexVuePlugin from './OpenSilexVuePlugin';
 
 export class OpenSilexRouter {
 
     private frontConfig: FrontConfigDTO;
+    private userFrontConfig: UserFrontConfigDTO;
     private menu: Array<MenuItemDTO> = [];
     private router: any;
     private pathPrefix: string
@@ -24,6 +25,10 @@ export class OpenSilexRouter {
 
     public setConfig(config: FrontConfigDTO) {
         this.frontConfig = config;
+    }
+
+    public setUserConfig(userConfig: UserFrontConfigDTO) {
+        this.userFrontConfig = userConfig;
     }
 
     public getRouter() {
@@ -78,12 +83,15 @@ export class OpenSilexRouter {
                 }
             }
 
-            this.menu = this.buildMenu(frontConfig.menu, routes, user);
             
             routes.push({
                 path: "*",
                 component: this.getAsyncComponentLoader($opensilex, frontConfig.notFoundComponent)
             });
+        }
+
+        if (this.userFrontConfig) {
+            this.menu = this.buildMenu(this.userFrontConfig.menu, routes, user);
         }
 
         return routes;

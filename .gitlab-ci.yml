@@ -1,3 +1,15 @@
+#########
+## STAGES
+#########
+
+# Default Gitlab stages are : build, test, deploy
+# The custom stage `check` is added for merge requests (see job merge-request:check)
+stages:
+  - check
+  - build
+  - test
+  - deploy
+
 ########################
 ##GLOBAL VARIABLES
 ########################
@@ -127,9 +139,9 @@ variables:
     - echo "$REMOTE_SERVER_SSH_KEY" >> ${HOME}/.ssh/id_rsa
     - chmod 600 ${HOME}/.ssh/id_rsa
 
-########################
+##################################
 ##  DEPLOY OPENSILEX TEST TEMPLATE
-########################
+##################################
 
 .deploy:opensilex:instance: &deploy_opensilex_template
   stage: deploy
@@ -176,15 +188,62 @@ variables:
     reports:
       dotenv: deploy.env
 
-# ########################
-# ##  DEFAULT BUILD
-# ########################
+#################
+### DEFAULT BUILD
+#################
 
-opensilex:build:
+opensilex-master:build:
   <<: *build_template_with_opensilex
   rules:
-    - if: $CI_MERGE_REQUEST_ID
     - if: $CI_COMMIT_BRANCH == "master"
+
+opensilex-develop-release:build:
+  <<: *build_template_with_opensilex
+  rules:
+    - if: $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "release"
+
+##################################
+### MERGE REQUESTS CHECK AND BUILD
+##################################
+
+# Checks that the merge request is valid (target branch must not be master, except if the
+# source is the release or a hotfix branch)
+# Merge requests marked with the Draft: keyword are also blocked
+# No pipeline is triggered for MR from the release branch, because the last release pipeline can be used instead.
+merge-request:check:
+  stage: check
+  script:
+    - if [[ $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master" &&
+      $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME != "release" &&
+      ! $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ ^hotfix\/.* ]]; then
+    -   echo "Merging from $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME to master is forbidden"
+    -   exit 1
+    - fi
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event' && $CI_MERGE_REQUEST_TITLE !~ /^(Draft:|\[Draft\]|\(Draft\)).*/i && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME != "release"
+
+# Builds the merge request
+merge-request:build:
+  <<: *build_template_with_opensilex
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event' && $CI_MERGE_REQUEST_TITLE !~ /^(Draft:|\[Draft\]|\(Draft\)).*/i && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME != "release"
+  needs:
+    - job: "merge-request:check"
+
+####################
+### TEST DEPLOYMENTS
+####################
+
+# Trigger pipeline for deployment of the master branch
+trigger:opensilex-master:deploy:test:
+  stage: deploy
+  image: curlimages/curl
+  script:
+    - curl --request POST --form "variables[DEPLOY]=opensilex-master" --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$CI_COMMIT_SHA" --form "variables[OPENSILEX_APP_REVISION]=$OPENSILEX_APP_REVISION" https://forgemia.inra.fr/api/v4/projects/403/trigger/pipeline
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+  needs:
+    - job: "opensilex-master:build"
 
 # Trigger pipeline for sixtine module deployment
 trigger:sixtine:build:
@@ -195,18 +254,29 @@ trigger:sixtine:build:
   rules:
     - if: $CI_COMMIT_BRANCH == "master"
   needs:
-    - job: "opensilex:build"
+    - job: "opensilex-master:build"
 
-# Trigger pipeline for phis module deployment
-trigger:phis:deploy:test:
+# Trigger pipeline for the deployment of either develop or release branches
+# - If a commit is pushed on branch release, then release is deployed
+# - If a commit is pushed on branch develop AND there is no release branch, then develop is deployed
+# - Otherwise, nothing is deployed
+trigger:opensilex-develop-release:deploy:test:
   stage: deploy
   image: curlimages/curl
   script:
-    - curl --request POST --form "variables[DEPLOY]=phis-test" --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$CI_COMMIT_SHA" --form "variables[OPENSILEX_APP_REVISION]=$OPENSILEX_APP_REVISION" https://forgemia.inra.fr/api/v4/projects/403/trigger/pipeline
+    - if [[ $CI_COMMIT_BRANCH == "release" ]]; then
+    -   echo 'Deploying release'
+    -   curl --request POST --form "variables[DEPLOY]=opensilex-release" --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$CI_COMMIT_SHA" --form "variables[OPENSILEX_APP_REVISION]=$OPENSILEX_APP_REVISION" https://forgemia.inra.fr/api/v4/projects/403/trigger/pipeline
+    - elif [[ -z $(git branch --list release) ]]; then
+    -   echo 'Deploying develop'
+    -   curl --request POST --form "variables[DEPLOY]=opensilex-develop" --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$CI_COMMIT_SHA" --form "variables[OPENSILEX_APP_REVISION]=$OPENSILEX_APP_REVISION" https://forgemia.inra.fr/api/v4/projects/403/trigger/pipeline
+    - else
+    -   echo 'Nothing do deploy'
+    - fi
   rules:
-    - if: $CI_COMMIT_BRANCH == "master"
+    - if: $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "release"
   needs:
-    - job: "opensilex:build"
+    - job: "opensilex-develop-release:build"
 
 # Trigger pipeline for data-analysis module deployment
 #trigger:dataanalysis:deploy:test:
@@ -235,9 +305,9 @@ update:nightly:builds:branch:
   rules:
     - if: $CI_COMMIT_BRANCH == "master"
 
-########################
+###############################################
 ##  BUILD - TESTS WITH DIFFERENT MAVEN VERSIONS
-########################
+###############################################
 
 ##  BUILD TEMPLATE
 .test:build: &test_build_on_schedules
@@ -352,33 +422,6 @@ test:maximilian:deploy:
       when: on_success
   needs:
     - maximilian:build
-
-###################################
-##  SAMMY-TEST-SNAPSHOT-DEPLOYMENT
-###################################
-
-sammy:build:
-  <<: *build_template_with_opensilex
-  rules:
-    - if: $CI_COMMIT_BRANCH == "sammy"
-
-test:sammy:deploy:
-  <<: *deploy_opensilex_before_script
-  <<: *deploy_opensilex_template
-  variables:
-    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/sammy"
-    INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
-    OPENSILEX_JAR_ADMIN_PORT: 4085
-    OPENSILEX_JAR_PORT: 8085
-    REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
-    REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
-    REMOTE_SERVER_RSYNC_DIR: "mistea/sammy"
-    REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
-  rules:
-    - if: $CI_COMMIT_BRANCH == "sammy"
-      when: on_success
-  needs:
-    - sammy:build
 
 ###################################
 ##  ARNAUD-TEST-BUILD-DEPLOYMENT

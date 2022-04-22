@@ -7,6 +7,8 @@
 package org.opensilex.core.data.dal;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import javax.validation.constraints.NotNull;
 import java.net.URI;
 
 /**
@@ -14,9 +16,12 @@ import java.net.URI;
  * @author Alice Boizet
  */
 public class ProvEntityModel {
+
+    @NotNull
     @JsonProperty("rdf_type")
     URI type;
-    
+
+    @NotNull
     URI uri;
 
     public URI getType() {

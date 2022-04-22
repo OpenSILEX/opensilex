@@ -11,6 +11,7 @@ import org.opensilex.OpenSilexModuleNotFoundException;
 import org.opensilex.config.ConfigManager;
 import org.opensilex.front.api.FrontConfigDTO;
 import org.opensilex.front.api.RouteDTO;
+import org.opensilex.front.api.UserFrontConfigDTO;
 import org.opensilex.front.config.FrontRoutingConfig;
 import org.opensilex.front.config.MenuItem;
 import org.opensilex.front.config.Route;
@@ -173,11 +174,19 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
             userConfigService = new UserConfigService(sparql);
         }
 
-        this.config.setMenu(userConfigService.getUserMenu(currentUser, globalMenu, new HashMap<>(),
-                frontConfig.menuExclusions(), frontConfig.customMenu()));
-
-        this.config.setUserIsAnonymous(currentUser.isAnonymous());
 
         return this.config;
+    }
+
+    public UserFrontConfigDTO getUserConfigDTO(UserModel currentUser) {
+        FrontConfig frontConfig = getConfig(FrontConfig.class);
+        UserFrontConfigDTO userConfig = new UserFrontConfigDTO();
+
+        userConfig.setMenu(userConfigService.getUserMenu(currentUser, globalMenu, new HashMap<>(),
+                frontConfig.menuExclusions(), frontConfig.customMenu()));
+
+        userConfig.setUserIsAnonymous(currentUser.isAnonymous());
+
+        return userConfig;
     }
 }

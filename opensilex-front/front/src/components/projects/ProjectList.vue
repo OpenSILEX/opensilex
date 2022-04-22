@@ -173,17 +173,12 @@ export default class ProjectList extends Vue {
   })
   noUpdateURL;
 
-  @PropSync("searchFilter", {
-    default: () => {
-      return {
-        year: undefined,
-        name: "",
-        keyword: "",
-        financial: "",
-      };
-    },
-  })
-  filter;
+  filter = {
+    year: undefined,
+    name: "",
+    keyword: "",
+    financial: ""
+    };
  
 
   reset() {

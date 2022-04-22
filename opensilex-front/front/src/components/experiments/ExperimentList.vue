@@ -63,7 +63,6 @@
             placeholder="ExperimentList.filter-project-placeholder"
             :selected.sync="filter.projects"
             modalComponent="opensilex-ProjectModalList"
-            :filter.sync="projectFilter"
             :isModalSearch="true"
             :clearable="true"
             :multiple="true"
@@ -243,13 +242,6 @@ export default class ExperimentList extends Vue {
     yearFilter: undefined,
     state: "",
   };
-
-  projectFilter = {
-    year: undefined,
-    name: "",
-    keyword: "",
-    financial: "",
-  }
 
   reset() {
     this.filter = {

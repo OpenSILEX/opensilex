@@ -176,15 +176,13 @@ export default class ExperimentDataVisuView extends Vue {
   }
 
   onSearch(form) {
-
     this.initLoader = true;
     this.form = form;
     this.showGraphicComponent = false;
     this.$opensilex.enableLoader();
-
     this.$opensilex
       .getService("opensilex.VariablesService")
-      .getVariable(form.variable)
+      .getVariable(form.variable[0])
       .then((http: HttpResponse<OpenSilexResponse>) => {
         this.selectedVariable = http.response.result;
         const datatype = this.selectedVariable.datatype.split("#")[1];

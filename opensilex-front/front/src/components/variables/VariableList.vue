@@ -3,7 +3,7 @@
         <opensilex-PageContent>
             <template>
 
-                <opensilex-SearchFilterField @clear="reset()" @search="refresh()" :showAdvancedSearch="true">
+                <opensilex-SearchFilterField @search="refresh()" @clear="reset()" :showAdvancedSearch="true">
                     <template v-slot:filters>
 
                         <opensilex-FilterField>
@@ -71,9 +71,12 @@
                     :isSelectable="isSelectable"
                     :maximumSelectedRows="maximumSelectedRows"
                     labelNumberOfSelectedRow="VariableList.selected"
-                    :iconNumberOfSelectedRow="iconNumberOfSelectedRow">
+                    iconNumberOfSelectedRow="fa#vials"
+                    @select="$emit('select', $event)"
+                    @unselect="$emit('unselect', $event)"
+                    @selectall="$emit('selectall', $event)">
 
-                    <template v-slot:selectableTableButtons="{ numberOfSelectedRows }">
+                    <template v-if="!noActions" v-slot:selectableTableButtons="{ numberOfSelectedRows }">
                       <b-dropdown
                         dropright
                         class="mb-2 mr-2"
@@ -95,7 +98,13 @@
 
                     <template v-slot:cell(name)="{data}">
                         <opensilex-UriLink
-                            v-if="!noActions"
+                            v-if="noActions"
+                            :uri="data.item.uri"
+                            :value="data.item.name"
+                            :url="'/app/variable/details/'+ encodeURIComponent(data.item.uri)"
+                        ></opensilex-UriLink>
+                        <opensilex-UriLink
+                            v-else
                             :uri="data.item.uri"
                             :value="data.item.name"
                             :to="{path: '/variable/details/'+ encodeURIComponent(data.item.uri)}"
@@ -119,7 +128,7 @@
                     <template v-slot:cell(_method_name)="{data}">{{ data.item.method.name }}</template>
                     <template v-slot:cell(_unit_name)="{data}">{{data.item.unit.name }}</template>
 
-                    <template v-slot:cell(actions)="{data}">
+                    <template v-if="!noActions" v-slot:cell(actions)="{data}">
                         <b-button-group size="sm">
                             <opensilex-DetailButton
                                 @click="loadVariablesGroupFromVariable(data)"
@@ -150,7 +159,7 @@
                 </opensilex-TableAsyncView>
 
                 <opensilex-ModalForm
-                    v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
+                    v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID) && !noActions"
                     ref="groupVariablesForm"
                     modalSize="lg"
                     @onCreate="refresh($event)"
@@ -162,6 +171,7 @@
                 ></opensilex-ModalForm>
 
                 <opensilex-GroupVariablesModalList
+                    v-if="!noActions"
                     label="label"
                     ref="groupVariableSelection"
                     :isModalSearch="true"
@@ -177,7 +187,7 @@
 </template>
 
 <script lang="ts">
-import {Component, Prop, Ref} from "vue-property-decorator";
+import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
 import {
@@ -224,9 +234,36 @@ export default class VariableList extends Vue {
     iconNumberOfSelectedRow;
 
     @Prop({
-    default: 20
+        default: 20
     })
     pageSize: number;
+
+    @Prop({
+        default: false
+    })
+    withAssociatedData: boolean; // affiche les variables associées aux datas uniquement
+    
+    @Prop()
+    experiment;
+
+    @Prop()
+    objects;
+
+    @Prop()
+    devices;
+
+    filter = {
+        name: undefined,
+        entity: undefined,
+        entityOfInterest: undefined,
+        characteristic: undefined,
+        method: undefined,
+        unit: undefined,
+        group: undefined,
+        experiment: undefined,
+        objects: undefined,
+        devices: undefined
+    };
 
     @Ref("groupVariableSelection") readonly groupVariableSelection!: any;
     @Ref("tableRef") readonly tableRef!: any;
@@ -255,15 +292,7 @@ export default class VariableList extends Vue {
         this.groupVariablesForm.showCreateForm();
     }
 
-    filter = {
-        name: undefined,
-        entity: undefined,
-        entityOfInterest: undefined,
-        characteristic: undefined,
-        method: undefined,
-        unit: undefined,
-        group: undefined
-    };
+
 
     reset() {
         this.filter = {
@@ -273,7 +302,10 @@ export default class VariableList extends Vue {
             characteristic: undefined,
             method: undefined,
             unit: undefined,
-            group: undefined
+            group: undefined,
+            experiment: undefined,
+            objects: undefined,
+            devices: undefined
         };
         this.refresh();
     }
@@ -283,6 +315,11 @@ export default class VariableList extends Vue {
         this.tableRef.onSelectAll();
         this.$opensilex.updateURLParameters(this.filter);
 
+        this.tableRef.refresh();
+    }
+
+    refreshWithKeepingSelection() {
+        this.$opensilex.updateURLParameters(this.filter);
         this.tableRef.refresh();
     }
 
@@ -303,6 +340,10 @@ export default class VariableList extends Vue {
             this.filter.method,
             this.filter.unit,
             this.filter.group,
+            this.withAssociatedData,
+            this.experiment ? this.experiment : this.filter.experiment,
+            this.objects ? this.objects : this.filter.objects,
+            this.devices ? this.devices : this.filter.devices,
             options.orderBy,
             options.currentPage,
             options.pageSize
@@ -399,10 +440,6 @@ export default class VariableList extends Vue {
     }
 
     created() {
-        // let query: any = this.$route.query;
-        // if (query.name) {
-        //   this.nameFilter = decodeURIComponent(query.name);
-        // }
         this.$opensilex.updateFiltersFromURL(this.$route.query, this.filter);
         this.$opensilex.disableLoader();
         this.$service = this.$opensilex.getService("opensilex.VariablesService");

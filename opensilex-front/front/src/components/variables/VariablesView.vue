@@ -121,7 +121,7 @@
                         </template>
                     </opensilex-Card>
 
-                    <opensilex-Card v-if="!loadVariableList() && useGenericDetailsPage() && groupVariablesPage() && selected.variables != undefined" :label="$t('VariableView.type')" :selected="selected">
+                    <opensilex-Card v-if="!loadVariableList() && useGenericDetailsPage() && groupVariablesPage() && selected.variables != undefined" :label="$t('VariableView.type')" :selected="selected" icon="fa#vials">
                         <template v-slot:body>
 
                             <opensilex-TableView
@@ -140,7 +140,7 @@
 
                             </opensilex-TableView>
 
-                            <p v-else><strong>{{$t("GroupVariablesDetails.no-var-provided")}}</strong></p>
+                            <p v-else><strong>{{$t("VariableView.no-var-provided")}}</strong></p>
 
                         </template>
                     </opensilex-Card>
@@ -535,6 +535,7 @@ en:
         add-unit: Add unit
         groupVariable: "Group of variables"
         add-groupVariable: Add a group of variables
+        no-var-provided: No variable provided
 
 fr:
     VariableView:
@@ -555,6 +556,7 @@ fr:
         add-unit: Ajouter une unité
         groupVariable: "Groupe de variables"
         add-groupVariable: Ajouter un groupe de variables
+        no-var-provided: Aucune variable associée
 
 </i18n>
 

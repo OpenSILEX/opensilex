@@ -591,10 +591,16 @@ public class DataDAO {
         return nosql.deleteOnCriteria(DataModel.class, DATA_COLLECTION_NAME, filter);
     }
 
-    public List<VariableModel> getUsedVariables(UserModel user, List<URI> experiments, List<URI> objects, List<URI> provenances) throws Exception {             
-        Document filter = searchFilter(user, experiments, objects, null, provenances, null, null, null, null, null, null);
+    public List<VariableModel> getUsedVariables(UserModel user, List<URI> experiments, List<URI> objects, List<URI> provenances, List<URI> devices) throws Exception {             
+        Document filter = searchFilter(user, experiments, objects, null, provenances, devices, null, null, null, null, null);
         Set<URI> variableURIs = nosql.distinct("variable", URI.class, DATA_COLLECTION_NAME, filter);
         return new VariableDAO(sparql,nosql,fs).getList(new ArrayList<>(variableURIs));
+    }
+    
+    public Set<URI> getUsedVariablesByExpeSoDevice(UserModel user, List<URI> experiments, List<URI> objects, List<URI> devices) throws Exception {
+        Document filter = searchFilter(user, experiments, objects, null, devices, null, null, null, null, null, null);
+        Set<URI> variableURIs = nosql.distinct("variable", URI.class, DATA_COLLECTION_NAME, filter);
+        return variableURIs;
     }
     
     public Response prepareCSVWideExportResponse(List<DataModel> resultList, UserModel user, boolean withRawData) throws Exception {

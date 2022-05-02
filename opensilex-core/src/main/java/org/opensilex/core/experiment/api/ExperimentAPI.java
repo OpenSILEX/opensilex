@@ -438,7 +438,7 @@ public class ExperimentAPI {
         DataDAO dao = new DataDAO(nosql, sparql, fs);
         List<URI> experiments = new ArrayList<>();
         experiments.add(xpUri);
-        List<VariableModel> variables = dao.getUsedVariables(currentUser, experiments, objects, null);
+        List<VariableModel> variables = dao.getUsedVariables(currentUser, experiments, objects, null, null);
 
         List<NamedResourceDTO> dtoList = variables.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();

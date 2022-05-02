@@ -12,14 +12,14 @@
         <template v-slot:filters>
           <!-- Type  -->
           <opensilex-FilterField :halfWidth="true">
-            <opensilex-UsedVariableSelector
-              label="ScientificObjectVisualizationForm.variable.label"
+            <opensilex-VariableSelectorWithFilter
+              placeholder="VariableSelector.placeholder"
               :variables.sync="filter.variable"
-              :multiple="false"
+              :withAssociatedData="true"
               :objects="[scientificObject]"
+              maximumSelectedRows="1"
               :required="true"
-              :clearable="true"
-            ></opensilex-UsedVariableSelector>
+            ></opensilex-VariableSelectorWithFilter>
           </opensilex-FilterField>
 
           <opensilex-FilterField :halfWidth="true">
@@ -104,7 +104,7 @@ export default class ScientificObjectVisualizationForm extends Vue {
   countIsLoading: boolean = false;
 
   filter = {
-    variable: null,
+    variable: [],
     startDate: undefined,
     endDate: undefined,
     provenance: undefined,
@@ -112,7 +112,7 @@ export default class ScientificObjectVisualizationForm extends Vue {
   };
 
   resetFilters() {
-    this.filter.variable = null;
+    this.filter.variable = [];
     this.filter.startDate = undefined;
     this.filter.endDate = undefined;
     this.filter.provenance = undefined;

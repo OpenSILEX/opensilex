@@ -24,10 +24,11 @@
         </div>
 
          <div class="col col-xl-3 col-sm-6 col-12">
-          <opensilex-VariableSelector
-            label="DeviceList.filter.variable"
+          <opensilex-VariableSelectorWithFilter
+            placeholder="VariableSelector.placeholder"
             :variables.sync="filter.variable"
-          ></opensilex-VariableSelector>
+            maximumSelectedRows="1"
+          ></opensilex-VariableSelectorWithFilter>
          </div>
 
         <div class="col col-xl-3 col-sm-6 col-12">
@@ -225,7 +226,7 @@ export default class DeviceList extends Vue {
   filter = {
     name: undefined,
     rdf_type: undefined,
-    variable: undefined,
+    variable: [],
     start_up: undefined,
     existence_date: undefined,
     brand: undefined,
@@ -250,7 +251,7 @@ export default class DeviceList extends Vue {
     this.filter = {
       name: undefined,
       rdf_type: undefined,
-      variable: undefined,
+      variable: [],
       start_up: undefined,
       existence_date: undefined,
       brand: undefined,
@@ -345,7 +346,7 @@ export default class DeviceList extends Vue {
       this.filter.rdf_type, // rdf_type filter
       true, // include_subtypes boolean,
       this.filter.name, // name filter
-      this.filter.variable, // variable filter
+      this.filter.variable[0], // variable filter
       this.filter.start_up, // year filter
       this.filter.existence_date, // existence_date filter
       this.filter.brand, // brand filter

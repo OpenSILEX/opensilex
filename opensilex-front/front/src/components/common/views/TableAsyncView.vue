@@ -224,13 +224,15 @@ export default class TableAsyncView extends Vue {
       this.$emit("unselect", item);
     } else {
       this.selectedItems.push(item);
-      this.$emit("select", item);
+      if(!this.maximumSelectedRows || this.numberOfSelectedRows < this.maximumSelectedRows) {
+        this.$emit("select", item);
+      }
     }
     this.numberOfSelectedRows = this.selectedItems.length;
 
     if (
       this.maximumSelectedRows &&
-      this.maximumSelectedRows > 1 &&
+      this.maximumSelectedRows >= 1 &&
       this.numberOfSelectedRows > this.maximumSelectedRows
     ) {
       this.selectedRowIndex = this.tableRef.sortedItems.findIndex(
@@ -244,7 +246,7 @@ export default class TableAsyncView extends Vue {
   onRowSelected(items) {
     if (
       this.maximumSelectedRows &&
-      this.maximumSelectedRows > 1 &&
+      this.maximumSelectedRows >= 1 &&
       this.numberOfSelectedRows > this.maximumSelectedRows
     ) {
       this.tableRef.unselectRow(this.selectedRowIndex);

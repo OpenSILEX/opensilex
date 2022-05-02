@@ -1239,7 +1239,7 @@ public class ScientificObjectAPI {
     ) throws Exception {
 
         DataDAO dao = new DataDAO(nosql, sparql, null);
-        List<VariableModel> variables = dao.getUsedVariables(currentUser, null, Arrays.asList(uri), null);
+        List<VariableModel> variables = dao.getUsedVariables(currentUser, null, Arrays.asList(uri), null, null);
         List<NamedResourceDTO> dtoList = variables.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();
 

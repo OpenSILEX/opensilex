@@ -460,8 +460,6 @@ components["opensilex-ScientificObjectView"] = ScientificObjectView;
 // Variables
 import VariableList from './variables/VariableList.vue';
 components["opensilex-VariableList"] = VariableList;
-// import UsedVariableList from './variables/UsedVariableList.vue';
-// components["opensilex-UsedVariableList"] = UsedVariableList;
 import VariablesView from './variables/VariablesView.vue';
 components["opensilex-VariablesView"] = VariablesView;
 import VariableDetails from './variables/VariableDetails.vue';
@@ -484,34 +482,22 @@ import TraitForm from './variables/form/TraitForm.vue';
 components["opensilex-TraitForm"] = TraitForm;
 import VariableModalList from './variables/VariableModalList.vue';
 components["opensilex-VariableModalList"] = VariableModalList;
-// import UsedVariableModalList from './variables/UsedVariableModalList.vue';
-// components["opensilex-UsedVariableModalList"] = UsedVariableModalList;
 import VariableSelector from './variables/views/VariableSelector.vue';
 components["opensilex-VariableSelector"] = VariableSelector;
 import UsedVariableSelector from './variables/views/UsedVariableSelector.vue';
 components["opensilex-UsedVariableSelector"] = UsedVariableSelector;
-// import VariableSelectorWithFilter from './variables/views/VariableSelectorWithFilter.vue';
-// components["opensilex-VariableSelectorWithFilter"] = VariableSelectorWithFilter;
-// import UsedVariableSelectorWithFilter from './variables/views/UsedVariableSelectorWithFilter.vue';
-// components["opensilex-UsedVariableSelectorWithFilter"] = UsedVariableSelectorWithFilter;
+import VariableSelectorWithFilter from './variables/views/VariableSelectorWithFilter.vue';
+components["opensilex-VariableSelectorWithFilter"] = VariableSelectorWithFilter;
 
 // GroupVariables
 import GroupVariablesForm from './groupVariable/GroupVariablesForm.vue';
 components["opensilex-GroupVariablesForm"] = GroupVariablesForm;
-import GroupVariablesDetails from './groupVariable/GroupVariablesDetails.vue';
-components["opensilex-GroupVariablesDetails"] = GroupVariablesDetails;
-import GroupVariablesDescription from './groupVariable/GroupVariablesDescription.vue';
-components["opensilex-GroupVariablesDescription"] = GroupVariablesDescription;
 import GroupVariablesHelp from './groupVariable/GroupVariablesHelp.vue';
 components["opensilex-GroupVariablesHelp"] = GroupVariablesHelp;
 import GroupVariablesList from './groupVariable/GroupVariablesList.vue';
 components["opensilex-GroupVariablesList"] = GroupVariablesList;
 import GroupVariablesModalList from './groupVariable/GroupVariablesModalList.vue';
 components["opensilex-GroupVariablesModalList"] = GroupVariablesModalList;
-// import GroupVariablesListWithVariables from './groupVariable/GroupVariablesListWithVariables.vue';
-// components["opensilex-GroupVariablesListWithVariables"] = GroupVariablesListWithVariables;
-// import GroupVariablesModalListWithVariables from './groupVariable/GroupVariablesModalListWithVariables.vue';
-// components["opensilex-GroupVariablesModalListWithVariables"] = GroupVariablesModalListWithVariables;
 import GroupVariablesSelector from './groupVariable/GroupVariablesSelector.vue';
 components["opensilex-GroupVariablesSelector"] = GroupVariablesSelector;
 

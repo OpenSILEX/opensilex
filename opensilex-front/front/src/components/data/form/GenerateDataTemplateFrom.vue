@@ -7,9 +7,24 @@
     @hide="requiredField = false"
     @show="shown()"
   >
-    <template v-slot:modal-ok>{{ $t("component.common.close") }}</template>
     <template v-slot:modal-title>{{ $t("DataHelp.title") }}</template>
-
+    <template v-slot:modal-footer>
+      <b-button
+        v-if="variables.length == 0"
+        class="float-right"
+        @click="csvExportDataExample"
+        variant="outline-info"
+        :disabled="experiment==null && !validSelection"
+      >{{ $t("DataHelp.download-template-example") }}
+      </b-button>
+      <b-button 
+        @click="csvExport" 
+        variant="primary" 
+        :disabled="experiment==null && !validSelection || variables.length == 0">{{$t("OntologyCsvImporter.downloadTemplate")}}
+      </b-button>
+      &nbsp;
+      <font-awesome-icon icon="question-circle" v-b-tooltip.hover.right=" $t('DataTemplateForm.help') "/>
+    </template>
     <div>
       <ValidationObserver ref="validatorRefDataTemplate">
         <b-row>
@@ -32,23 +47,10 @@
         </b-row>
         <b-row>
           <b-col cols="9">
-              <opensilex-VariableSelector
-                  label="DataTemplateForm.select-variables"
-                  placeholder="VariableList.label-filter-placeholder"
-                  :multiple="true"
-                  :variables.sync="variables"
-                  :required="requiredField"
-              >
-              </opensilex-VariableSelector>
-
-<!--            <opensilex-VariableSelectorWithFilter-->
-<!--              label="DataTemplateForm.select-variables"-->
-<!--              placeholder="VariableList.label-filter-placeholder"-->
-<!--              :multiple="true"-->
-<!--              :variables.sync="variables"-->
-<!--              :required="requiredField"-->
-<!--            >-->
-<!--            </opensilex-VariableSelectorWithFilter>-->
+            <opensilex-VariableSelectorWithFilter
+              placeholder="VariableSelector.placeholder-multiple"
+              :variables.sync="variables"
+            ></opensilex-VariableSelectorWithFilter>
 
             <opensilex-CheckboxForm
               :value.sync="withRawData"
@@ -60,21 +62,6 @@
             </opensilex-CSVSelectorInputForm>
           </b-col>
         </b-row>
-        <b-button 
-          @click="csvExport" 
-          variant="outline-primary" 
-          :disabled="experiment==null && !validSelection">{{
-          $t("OntologyCsvImporter.downloadTemplate")
-        }}</b-button>
-        <b-button
-          v-if="variables.length == 0"
-          class="float-right"
-          @click="csvExportDataExample"
-          variant="outline-info"
-          :disabled="experiment==null && !validSelection"
-          >{{ $t("DataHelp.download-template-example") }}</b-button
-        >
-        <hr />
       </ValidationObserver>
     </div>
   </b-modal>
@@ -84,7 +71,7 @@
 import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
-import {VariableDatatypeDTO, VariablesService} from "opensilex-core/index";
+import {VariableDatatypeDTO, VariableDetailsDTO, VariablesService} from "opensilex-core/index";
 // @ts-ignore
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 
@@ -155,7 +142,7 @@ export default class GenerateDataTemplateFrom extends Vue {
   }
 
   validateTemplate() {
-    return this.validatorRefDataTemplate.validate();
+    return this.validatorRefDataTemplate.validate({ silent: true });
   }
 
   loadDatatypes() {
@@ -435,6 +422,7 @@ export default class GenerateDataTemplateFrom extends Vue {
 <i18n>
 en :
   DataTemplateForm:
+    help: The button is disabled if no variables are selected
     with-raw-data: "With raw data columns"
     raw-data: "Raw data"
     type-list: "Array of "
@@ -446,6 +434,7 @@ en :
       column-data-type : "Column data type: "
 fr :
   DataTemplateForm:
+    help: Le bouton est désactivé si aucune variable n'est sélectionnée
     with-raw-data: "Avec colonnes 'raw data' (données brutes)"
     raw-data: "Données brutes"
     type-list: "Liste de "

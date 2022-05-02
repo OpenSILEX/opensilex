@@ -1077,11 +1077,12 @@ public class DataAPI {
     public Response getUsedVariables(
             @ApiParam(value = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
             @ApiParam(value = "Search by targets uris", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("targets") List<URI> objects,
-            @ApiParam(value = "Search by provenance uris", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("provenances") List<URI> provenances
+            @ApiParam(value = "Search by provenance uris", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("provenances") List<URI> provenances,
+            @ApiParam(value = "Search by device uris") @QueryParam("devices") List<URI> devices
     ) throws Exception {
         
         DataDAO dataDAO = new DataDAO(nosql, sparql, null);
-        List<VariableModel> variables = dataDAO.getUsedVariables(user, experiments, objects, provenances);
+        List<VariableModel> variables = dataDAO.getUsedVariables(user, experiments, objects, provenances, devices);
         List<NamedResourceDTO> dtoList = variables.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();
     }

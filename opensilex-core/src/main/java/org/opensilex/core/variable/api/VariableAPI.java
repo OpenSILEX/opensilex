@@ -206,6 +206,10 @@ public class VariableAPI {
             @ApiParam(value = "Method filter") @QueryParam("method") @ValidURI URI method,
             @ApiParam(value = "Unit filter") @QueryParam("unit") @ValidURI URI unit,
             @ApiParam(value = "Group filter") @QueryParam("group_of_variables") @ValidURI URI group,
+            @ApiParam(value = "Set this param to true to get associated data") @DefaultValue("false") @QueryParam("withAssociatedData") boolean withAssociatedData,
+            @ApiParam(value = "Experiment filter") @QueryParam("experiments") List<URI> experiments,
+            @ApiParam(value = "Scientific object filter") @QueryParam("scientific_objects") List<URI> objects,
+            @ApiParam(value = "Device filter") @QueryParam("devices") List<URI> devices,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
@@ -218,10 +222,15 @@ public class VariableAPI {
                 characteristic,
                 method,
                 unit,
-                group,                
+                group,
+                withAssociatedData,
+                devices,
+                experiments,
+                objects,                
                 orderByList,
                 page,
-                pageSize
+                pageSize,
+                this.currentUser
         );
 
         // Convert paginated list to DTO

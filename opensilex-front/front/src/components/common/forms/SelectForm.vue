@@ -149,6 +149,10 @@
         ref="searchModal"
         :maximumSelectedRows="maximumSelectedItems"
         :searchFilter.sync="searchModalFilter"
+        :withAssociatedData="withAssociatedData"
+        :experiment="experiment"
+        :objects="objects"
+        :devices="devices"
         @onClose="$emit('onClose')"
         @onValidate="onValidate"
         @shown="showModalSearch"
@@ -308,6 +312,19 @@ export default class SelectForm extends Vue {
 
   @Prop()
   limit: number; // limit number of items in the input box
+
+  // props for variableSelectorWithFilter
+  @Prop()
+  withAssociatedData;
+
+  @Prop()
+  experiment;
+
+  @Prop()
+  objects;
+
+  @Prop()
+  devices;
 
   detailVisible: boolean = false;
   selectedCopie = [] ;

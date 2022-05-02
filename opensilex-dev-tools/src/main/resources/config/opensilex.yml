@@ -26,8 +26,6 @@ file-system:
                         host: localhost
                         port: 8668
                         database: opensilex
-            # customPath:
-            #     datafile/: irods
 
 big-data:
     mongodb:

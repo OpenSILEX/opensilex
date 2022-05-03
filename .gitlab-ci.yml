@@ -289,7 +289,8 @@ trigger:opensilex-develop-release:deploy:test:
   rules:
     - if: $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "release"
   needs:
-    - job: "opensilex-develop-release:build"
+    - job: "opensilex-release:build"
+    - job: "opensilex-develop:build"
 
 
 #################

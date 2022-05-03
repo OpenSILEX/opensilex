@@ -188,19 +188,29 @@ variables:
     reports:
       dotenv: deploy.env
 
-#################
-### DEFAULT BUILD
-#################
+##################
+### DEFAULT BUILDS
+##################
 
 opensilex-master:build:
   <<: *build_template_with_opensilex
   rules:
     - if: $CI_COMMIT_BRANCH == "master"
 
-opensilex-develop-release:build:
+opensilex-develop:build:
   <<: *build_template_with_opensilex
   rules:
-    - if: $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "release"
+    - if: $CI_COMMIT_BRANCH == "develop"
+
+opensilex-release:build:
+  <<: *build_template_with_opensilex
+  rules:
+    - if: $CI_COMMIT_BRANCH == "release"
+
+opensilex-valentin-test-release:build:
+  <<: *build_template_with_opensilex
+  rules:
+    - if: $CI_COMMIT_BRANCH == "valentin-test-release"
 
 ##################################
 ### MERGE REQUESTS CHECK AND BUILD
@@ -280,6 +290,35 @@ trigger:opensilex-develop-release:deploy:test:
     - if: $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "release"
   needs:
     - job: "opensilex-develop-release:build"
+
+
+#################
+### CLOSE RELEASE
+#################
+
+opensilex-release:finish:
+  stage: deploy
+  image: alpine
+  script:
+    - if [[ -z $RELEASE_TAG ]]; then
+    -   echo 'RELEASE_TAG must be set'
+    - exit
+    -   else
+    -   echo "Finishing release $RELEASE_TAG"
+    - fi
+    - apk update
+    - apk add git
+    - RELEASE_COMMIT_MESSAGE="Release $RELEASE_TAG"
+    - git remote set-url origin "https://oauth2:$GITLAB_USER_CI_PAT@forgemia.inra.fr/OpenSILEX/opensilex-dev.git"
+    - git checkout valentin-test-master
+    - git merge valentin-test-release --no-ff -m "$RELEASE_COMMIT_MESSAGE"
+    - git push -f
+    - curl -X POST -F "token=$CI_JOB_TOKEN" -F "source_branch=valentin-test-release" -F "target_branch=valentin-test-develop" -F "title=$RELEASE_COMMIT_MESSAGE" https://forgemia.inra.fr/api/v4/projects/1675/merge_requests
+  rules:
+    - if: $CI_COMMIT_BRANCH == "valentin-test-release"
+  needs:
+    - job: "opensilex-valentin-test-release:build"
+  when: manual
 
 # Trigger pipeline for data-analysis module deployment
 #trigger:dataanalysis:deploy:test:

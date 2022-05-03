@@ -328,11 +328,13 @@ opensilex-release:finish:
     - git log -1
     - git config user.name "OpenSILEX Team"
     - git config user.email contact@opensilex.org
-    - git merge valentin-test-release --no-ff --commit --allow-unrelated-histories -m "$RELEASE_COMMIT_MESSAGE"
-    - git diff
-    - git tag -a -m "$RELEASE_COMMIT_MESSAGE" "$RELEASE_TAG"
-    - git push -f
-    - curl -X POST -F "token=$CI_JOB_TOKEN" -F "source_branch=valentin-test-release" -F "target_branch=valentin-test-develop" -F "title=$RELEASE_COMMIT_MESSAGE" https://forgemia.inra.fr/api/v4/projects/1675/merge_requests
+    - if git merge valentin-test-release --no-ff --commit --allow-unrelated-histories -m "$RELEASE_COMMIT_MESSAGE"; then
+    -   git tag -a -m "$RELEASE_COMMIT_MESSAGE" "$RELEASE_TAG"
+    -   git push -f
+    -   curl -X POST -F "token=$CI_JOB_TOKEN" -F "source_branch=valentin-test-release" -F "target_branch=valentin-test-develop" -F "title=$RELEASE_COMMIT_MESSAGE" https://forgemia.inra.fr/api/v4/projects/1675/merge_requests
+    - else
+    -   git diff
+    - fi
   rules:
     - if: $CI_COMMIT_BRANCH == "valentin-test-release"
   needs:

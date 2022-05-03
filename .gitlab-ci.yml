@@ -316,10 +316,10 @@ opensilex-release:finish:
     - git fetch origin
     - git branch
     - if [[ -n $(git branch --list valentin-test-release) ]]; then
-    -   git branch -d valentin-test-release
+    -   git branch -D valentin-test-release
     - fi
     - if [[ -n $(git branch --list valentin-test-master) ]]; then
-    -   git branch -d valentin-test-master
+    -   git branch -D valentin-test-master
     - fi
     - git branch
     - git checkout -t origin/valentin-test-release

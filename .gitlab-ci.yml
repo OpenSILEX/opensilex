@@ -208,7 +208,9 @@ opensilex-release:build:
     - if: $CI_COMMIT_BRANCH == "release"
 
 opensilex-valentin-test-release:build:
-  <<: *build_template_with_opensilex
+  stage: build
+  script:
+    - echo "build valentin-test-release"
   rules:
     - if: $CI_COMMIT_BRANCH == "valentin-test-release"
 

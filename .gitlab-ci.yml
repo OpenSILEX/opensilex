@@ -324,7 +324,7 @@ opensilex-release:finish:
     - fi
     - git branch
     - git checkout -t origin/valentin-test-release
-    - git log -1
+    - git log -30
     - git checkout -t origin/valentin-test-master
     - git log -1
     - git config user.name "OpenSILEX Team"

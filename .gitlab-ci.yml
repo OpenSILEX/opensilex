@@ -326,7 +326,8 @@ opensilex-release:finish:
     - git log -1
     - git checkout -t origin/valentin-test-master
     - git log -1
-    - git merge valentin-test-release --no-ff -m "$RELEASE_COMMIT_MESSAGE" --allow-unrelated-histories
+    - git merge valentin-test-release --no-ff --no-commit --allow-unrelated-histories
+    - git commit -m "$RELEASE_COMMIT_MESSAGE" --author="OpenSILEX Forgemia Runner <contact@opensilex.org>"
     - git tag -a -m "$RELEASE_COMMIT_MESSAGE" "$RELEASE_TAG"
     - git push -f
     - curl -X POST -F "token=$CI_JOB_TOKEN" -F "source_branch=valentin-test-release" -F "target_branch=valentin-test-develop" -F "title=$RELEASE_COMMIT_MESSAGE" https://forgemia.inra.fr/api/v4/projects/1675/merge_requests

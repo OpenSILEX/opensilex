@@ -315,10 +315,10 @@ opensilex-release:finish:
     - git remote set-url origin "https://oauth2:$GITLAB_USER_CI_PAT@forgemia.inra.fr/OpenSILEX/opensilex-dev.git"
     - git fetch origin
     - git branch
-    - if [[ git show-ref --quiet refs/heads/valentin-test-release ]]; then
+    - if git show-ref --quiet refs/heads/valentin-test-release; then
     -   git branch -D valentin-test-release
     - fi
-    - if [[ git show-ref --quiet refs/heads/valentin-test-master ]]; then
+    - if git show-ref --quiet refs/heads/valentin-test-master; then
     -   git branch -D valentin-test-master
     - fi
     - git branch

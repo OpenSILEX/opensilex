@@ -302,8 +302,6 @@ trigger:opensilex-develop-release:deploy:test:
 opensilex-release:finish:
   stage: deploy
   image: alpine
-  variables:
-    GIT_DEPTH: 0
   script:
     - if [[ -z $RELEASE_TAG ]]; then
     -   echo 'RELEASE_TAG must be set'
@@ -316,7 +314,7 @@ opensilex-release:finish:
     - RELEASE_COMMIT_MESSAGE="Release $RELEASE_TAG"
     - "echo \"Remote : https://oauth2:$GITLAB_USER_CI_PAT@forgemia.inra.fr/OpenSILEX/opensilex-dev.git\""
     - git remote set-url origin "https://oauth2:$GITLAB_USER_CI_PAT@forgemia.inra.fr/OpenSILEX/opensilex-dev.git"
-    - git fetch origin
+    - git fetch origin --unshallow
     - git branch
     - if git show-ref --quiet refs/heads/valentin-test-release; then
     -   git branch -D valentin-test-release

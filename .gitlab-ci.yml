@@ -314,7 +314,7 @@ opensilex-release:finish:
     - RELEASE_COMMIT_MESSAGE="Release $RELEASE_TAG"
     - git remote set-url origin "https://oauth2:$GITLAB_USER_CI_PAT@forgemia.inra.fr/OpenSILEX/opensilex-dev.git"
     - git fetch origin
-    - git checkout origin/valentin-test-master
+    - git checkout -t origin/valentin-test-master
     - git merge origin/valentin-test-release --no-ff -m "$RELEASE_COMMIT_MESSAGE"
     - git tag -a -m "$RELEASE_COMMIT_MESSAGE" "$RELEASE_TAG"
     - git push -f

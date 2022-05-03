@@ -311,6 +311,7 @@ opensilex-release:finish:
     - fi
     - apk update
     - apk add git
+    - apk add curl
     - RELEASE_COMMIT_MESSAGE="Release $RELEASE_TAG"
     - "echo \"Remote : https://oauth2:$GITLAB_USER_CI_PAT@forgemia.inra.fr/OpenSILEX/opensilex-dev.git\""
     - git remote set-url origin "https://oauth2:$GITLAB_USER_CI_PAT@forgemia.inra.fr/OpenSILEX/opensilex-dev.git"

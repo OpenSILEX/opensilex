@@ -302,6 +302,8 @@ trigger:opensilex-develop-release:deploy:test:
 opensilex-release:finish:
   stage: deploy
   image: alpine
+  variables:
+    GIT_DEPTH: 0
   script:
     - if [[ -z $RELEASE_TAG ]]; then
     -   echo 'RELEASE_TAG must be set'

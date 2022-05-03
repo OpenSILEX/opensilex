@@ -329,6 +329,7 @@ opensilex-release:finish:
     - git log -1
     - git config user.name "OpenSILEX Team"
     - git config user.email contact@opensilex.org
+    - git branch --contains ebfb30536023d7100474eb7459dc37a98697b024
     - git merge valentin-test-release --no-ff --commit -m "$RELEASE_COMMIT_MESSAGE"
     - git tag -a -m "$RELEASE_COMMIT_MESSAGE" "$RELEASE_TAG"
     - git push -f

@@ -423,7 +423,7 @@ export default class VariableList extends Vue {
             {
                 key: "_interest_entity_name",
                 label: "VariableView.entityOfInterest",
-                sortable: true
+                sortable: false
             },
             {
                 key: "_characteristic_name",

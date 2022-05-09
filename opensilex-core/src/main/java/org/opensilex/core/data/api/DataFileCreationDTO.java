@@ -51,7 +51,10 @@ public class DataFileCreationDTO {
     
     @NotNull
     private DataProvenanceModel provenance;
-    
+
+    @ApiModelProperty(value = "archive file URI if file is inside")
+    private URI archive;
+
     @ApiModelProperty(value = "to specify if the offset is not in the date and if the timezone is different from the default one", example = DataAPI.DATA_EXAMPLE_TIMEZONE)
     private String timezone;
 
@@ -113,7 +116,10 @@ public class DataFileCreationDTO {
     public void setMetadata(Document metadata) {
         this.metadata = metadata;
     }
-      
+
+    public URI getArchive() { return archive; }
+
+    public void setArchive(URI archive) { this.archive = archive; }
     
     public DataFileModel newModel() throws UnableToParseDateException, TimezoneAmbiguityException, TimezoneException {
         DataFileModel model = new DataFileModel();
@@ -122,6 +128,7 @@ public class DataFileCreationDTO {
         model.setRdfType(rdfType);
         model.setTarget(target);
         model.setUri(uri);
+        model.setArchive(archive);
         
         ParsedDateTimeMongo parsedDateTimeMongo = DataValidateUtils.setDataDateInfo(getDate(), getTimezone());
         model.setDate(parsedDateTimeMongo.getInstant());
@@ -142,4 +149,5 @@ public class DataFileCreationDTO {
         ObjectMapper mapper = ObjectMapperContextResolver.getObjectMapper();
         return mapper.readValue(param, DataFileCreationDTO.class);
     }
+
 }

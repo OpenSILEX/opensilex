@@ -10,23 +10,12 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.gridfs.GridFSBucket;
-import com.mongodb.client.gridfs.GridFSBuckets;
-import com.mongodb.client.gridfs.GridFSDownloadStream;
-import com.mongodb.client.gridfs.GridFSFindIterable;
-import com.mongodb.client.gridfs.GridFSUploadStream;
+import com.mongodb.client.gridfs.*;
 import com.mongodb.client.gridfs.model.GridFSFile;
 import com.mongodb.client.gridfs.model.GridFSUploadOptions;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bson.types.ObjectId;
@@ -37,6 +26,13 @@ import org.opensilex.service.BaseService;
 import org.opensilex.service.ServiceDefaultDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 
 /**
  *
@@ -53,6 +49,8 @@ public class GridFSConnection extends BaseService implements FileStorageConnecti
     public static String BUCKETS_COLLECTION_NAME = "fs";
     public static String FILES_COLLECTION_NAME = BUCKETS_COLLECTION_NAME + ".files";
     public static String CHUNKS_COLLECTION_NAME = BUCKETS_COLLECTION_NAME + ".chunks";
+
+    public static final int CHUNK_SIZE = 1048576;
 
     public static Logger LOGGER =  LoggerFactory.getLogger(GridFSConnection.class);
     
@@ -106,8 +104,12 @@ public class GridFSConnection extends BaseService implements FileStorageConnecti
 
         try ( GridFSDownloadStream downloadStream = gridFSBucket.openDownloadStream(fileId)) { 
             int fileLength = (int) downloadStream.getGridFSFile().getLength();
+            int chunkSize = downloadStream.getGridFSFile().getChunkSize();
             byte[] bytesToWriteTo = new byte[fileLength];
-            downloadStream.read(bytesToWriteTo);
+            int bytesRead = 0;
+            while (bytesRead < fileLength) {
+                bytesRead += downloadStream.read(bytesToWriteTo, bytesRead, chunkSize);
+            }
 
             return bytesToWriteTo; 
         } 
@@ -120,7 +122,7 @@ public class GridFSConnection extends BaseService implements FileStorageConnecti
         byte[] data = content.getBytes(StandardCharsets.UTF_8);
 
         GridFSUploadOptions options = new GridFSUploadOptions()
-                .chunkSizeBytes(1048576)
+                .chunkSizeBytes(CHUNK_SIZE)
                 .metadata(new Document("path", filePath.toString()));
 
         try ( GridFSUploadStream uploadStream = gridFSBucket.openUploadStream(null, options)) {
@@ -134,7 +136,7 @@ public class GridFSConnection extends BaseService implements FileStorageConnecti
         try ( InputStream streamToUploadFrom = new FileInputStream(file)) {
 
             GridFSUploadOptions options = new GridFSUploadOptions()
-                    .chunkSizeBytes(1048576)
+                    .chunkSizeBytes(CHUNK_SIZE)
                     .metadata(new Document("path", filePath.toString()));
 
             gridFSBucket.uploadFromStream(filePath.getParent().toString(), streamToUploadFrom, options);

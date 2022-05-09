@@ -94,7 +94,11 @@ public class IrodsFileSystemConnection extends BaseService implements Service, F
     }
     
     public Path getAbsolutePath(Path filePath) throws IOException {
-        return this.getStorageBasePath().resolve(filePath).toAbsolutePath();
+        if (filePath.isAbsolute()) {
+            return filePath;
+        } else {
+            return this.getStorageBasePath().resolve(filePath).toAbsolutePath();
+        }
     }
 
     @Override

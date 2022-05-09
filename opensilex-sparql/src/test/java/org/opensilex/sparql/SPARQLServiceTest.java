@@ -9,6 +9,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
+import org.apache.jena.arq.querybuilder.Order;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -29,6 +30,7 @@ import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.unit.test.AbstractUnitTest;
 import org.opensilex.uri.generation.URIGeneratorTest;
+import org.opensilex.utils.OrderBy;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -43,6 +45,7 @@ import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
+import static org.opensilex.sparql.service.SPARQLQueryHelper.or;
 
 /**
  * @author vincent
@@ -669,5 +672,44 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
         assertEquals("A default required label", dInstanceFr.getRequiredLabel().getDefaultValue());
         assertEquals("A default required label", dInstanceEn.getRequiredLabel().getDefaultValue());
         assertEquals("A default required label", dInstanceDefault.getRequiredLabel().getDefaultValue());
+    }
+
+    @Test
+    public void testSearchOrderWithPartialOrder() throws Exception {
+
+        int n = 20;
+        OffsetDateTime dateTime = OffsetDateTime.now();
+        Node graph = NodeFactory.createURI(TEST_ONTOLOGY.NAMESPACE + "testSearchOrderWithPartialOrder");
+
+        List<A> models = new ArrayList<>(n);
+
+        // create models with some common properties (date and datetime)
+        for (int i = 0; i < n; i++) {
+            A a = new A();
+
+            // create URI like _10, _11, _12 in order to easily compare order just after in the test
+            a.setUri(URI.create("test:testSearchOrderWithPartialOrder_"+(10+i)));
+            a.setString(""+i);
+            a.setDatetime(dateTime);
+
+            models.add(a);
+        }
+
+        // use custom graph for this test
+        sparql.create(graph,models);
+
+        List<OrderBy> orderByList = new LinkedList<>();
+        orderByList.add(new OrderBy("dateTime", Order.ASCENDING));
+
+        int pageSize = 10;
+
+        List<A> search = sparql.searchWithPagination(graph, A.class, null, null, null, null, orderByList, 0, pageSize)
+                .getList();
+
+        for (int i = 0; i < search.size(); i++) {
+            A initialModel = models.get(i);
+            A modelFromDB = search.get(i);
+            assertEquals(initialModel,modelFromDB);
+        }
     }
 }

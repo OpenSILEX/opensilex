@@ -25,7 +25,6 @@
         :noActions="true"
         :pageSize="5"
         :noUpdateURL="true"
-        :searchFilter.sync="filter"
         @select="$emit('select', $event)"
         @unselect="$emit('unselect', $event)"
         @selectall="$emit('selectall', $event)"
@@ -41,18 +40,6 @@ import { Component, Ref, PropSync} from "vue-property-decorator";
 @Component
 export default class ProjectModalList extends Vue {
   @Ref("projectSelection") readonly projectSelection!: any;
-
-  @PropSync("searchFilter", {
-    default: () => {
-      return {
-        year: undefined,
-        name: "",
-        keyword: "",
-        financial: "",
-      };
-    },
-  })
-  filter: any;  
 
   unSelect(row) {
     this.projectSelection.onItemUnselected(row);

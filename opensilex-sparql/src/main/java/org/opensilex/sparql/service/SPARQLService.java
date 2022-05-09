@@ -763,12 +763,22 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         SelectBuilder select = mapper.getSelectBuilder(graph, language, filterHandler, customHandlerByFields);
 
         if (orderByList != null) {
-            orderByList.forEach((OrderBy orderBy) -> {
+
+            OrderBy defaultOrderBy = SPARQLClassObjectMapper.DEFAULT_ORDER_BY;
+            boolean useDefaultOrder = orderByList.stream().anyMatch(orderBy -> orderBy.getFieldName().equals(defaultOrderBy.getFieldName()));
+
+            // add the default order in order to maintain a strict order in case where two results are equals according
+            // orderByList. Else results can be non-deterministic since there are no guarantee or result order from triplestore
+            if (!useDefaultOrder) {
+                orderByList.add(defaultOrderBy);
+            }
+
+            for (OrderBy orderBy : orderByList) {
                 Expr fieldOrderExpr = mapper.getFieldOrderExpr(orderBy.getFieldName());
                 if (fieldOrderExpr != null) {
                     select.addOrderBy(fieldOrderExpr, orderBy.getOrder());
                 }
-            });
+            }
         }
 
         if (offset != null && limit != null) {

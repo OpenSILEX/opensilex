@@ -48,10 +48,15 @@
                 label="DeviceDescription.serialNumber"
                 :value="device.serial_number"
               ></opensilex-StringView>
-              <opensilex-StringView
-                label="DeviceDescription.personInCharge"
-                :value="device.person_in_charge"
-              ></opensilex-StringView>
+ 
+              <opensilex-UriView
+                title="DeviceDescription.personInCharge"
+                :value="personInCharge.value"
+                :uri="personInCharge.uri"
+                :url="personInCharge.url"
+               ></opensilex-UriView>
+             
+
               <opensilex-StringView
                 label="DeviceDescription.start_up"
                 :value="device.start_up"
@@ -170,7 +175,7 @@
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
-import { DevicesService, DeviceGetDetailsDTO } from "opensilex-core/index";
+import { DevicesService, DeviceGetDetailsDTO, SecurityService, UserGetDTO } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
 
 @Component
@@ -183,6 +188,13 @@ export default class DeviceDescription extends Vue {
   service: DevicesService;
   uri: string = null;
   addInfo = [];
+
+  securityService: SecurityService;
+  personInCharge: any = {
+    uri:null,
+    value:null,
+    url:null
+  };
 
   @Ref("modalRef") readonly modalRef!: any;
   @Ref("tableAtt") readonly tableAtt!: any;
@@ -234,9 +246,24 @@ export default class DeviceDescription extends Vue {
       .getDevice(this.uri)
       .then((http: HttpResponse<OpenSilexResponse<DeviceGetDetailsDTO>>) => {
         this.device = http.response.result;
+        if(this.device.person_in_charge) {
+          this.loadPersonInCharge();
+        }
         this.getAddInfo();
       })
       .catch(this.$opensilex.errorHandler);
+  }
+  
+  loadPersonInCharge() {
+    this.securityService = this.$opensilex.getService("opensilex.SecurityService");
+      this.securityService.getUser(this.device.person_in_charge).then((http: HttpResponse<OpenSilexResponse<UserGetDTO>>) => {
+        const user = http.response.result;
+        this.personInCharge = {
+          uri: user.email,
+          url: "mailto:" + user.email,
+          value: user.first_name + " " + user.last_name,
+        }
+      });
   }
 
   getAddInfo() {

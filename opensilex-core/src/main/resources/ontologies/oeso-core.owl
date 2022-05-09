@@ -919,6 +919,8 @@ OESO</rdfs:label>
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Archive">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Datafile"/>
+        <rdfs:label xml:lang="en">Archive</rdfs:label>
+        <rdfs:label xml:lang="fr">Archive</rdfs:label>
         <rdfs:comment xml:lang="en">Archive</rdfs:comment>
         <rdfs:comment xml:lang="fr">Archive</rdfs:comment>
     </owl:Class>

@@ -53,7 +53,11 @@ public class LocalFileSystemConnection extends BaseService implements FileStorag
         if (this.basePath == null) {
             return filePath;
         }
-        return this.basePath.resolve(filePath);
+        if (filePath.isAbsolute()) {
+            return filePath;
+        } else {
+            return this.basePath.resolve(filePath);
+        }
     }
 
     public File getAbsolutePathFile(Path path) throws IOException {

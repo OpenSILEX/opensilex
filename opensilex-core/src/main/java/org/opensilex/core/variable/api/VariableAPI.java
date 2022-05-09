@@ -199,7 +199,7 @@ public class VariableAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchVariables(
-            @ApiParam(value = "Name regex pattern", example = "plant_height") @QueryParam("name") String name,
+            @ApiParam(value = "Name regex pattern", example = "plant_height") @QueryParam("name") String namePattern,
             @ApiParam(value = "Entity filter") @QueryParam("entity") @ValidURI URI entity,
             @ApiParam(value = "Entity of interest filter") @QueryParam("entity_of_interest") @ValidURI URI interestEntity,
             @ApiParam(value = "Characteristic filter") @QueryParam("characteristic") @ValidURI URI characteristic,
@@ -216,7 +216,7 @@ public class VariableAPI {
     ) throws Exception {
         VariableDAO dao = getDao();
         ListWithPagination<VariableModel> variables = dao.search(
-                name,
+                namePattern,
                 entity,
                 interestEntity,
                 characteristic,

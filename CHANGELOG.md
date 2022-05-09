@@ -7,6 +7,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0-rc+3] - 2022-05-05
+
+Be careful, updating to this new version need some manual operations to be done. See [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc+3.md).
+New installations don't need further action.
+
+### Added or changed
+
+- Display of menu entries can now be configured via user profiles
+- Species of an experiment are now automatically deduced by the germplasms of scientific objects
+- The geocoding service for address autocompletion can now be specified in the configuration file
+- Factor levels can now be exported from the factor detail page
+- In the facilities list, facilities can now be filtered by name
+- In an experiment or in the global context, data can now be filtered by target uris
+- Documents can now reference an external resource by URL instead of uploading a file
+- Species can now be updated like any other germplasm
+- Documents can now be stored using the GridFS Mongo Connector (see [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc+3.md))
+- Events and annotations can now be added on a device
+- Facilities are now part of their own menu entry
+- A new document type "Archive" was added to represent a compressed set of files, where each can be described as a document (but they cannot be downloaded)
+
+### Fixed
+
+- Updated factor categories to be more understandable
+- Fixed some inaccurate controls based on user profile and credentials
+- Some columns in the event CSV template that were present twice are now shown only once
+- The scientific object filter for experiment data now correctly shows the scientific objects of the experiment
+- Fixed empty line after adding factor level via CSV
+- The address field in facility form now works correctly if the facility has specific properties
+- Data visualization from a device now shows variables correctly
+- Uniqueness check on data import now takes the device into account
+- Fixed a problem on new installations where it was impossible to log in
+- Factor levels can now be correctly exported from a set of scientific objects
+- Optimized loading of the map, fixed the problem where it would sometimes freeze
+- Data can now correctly be filtered by a big number of targets (API : POST /core/data/by_targets)
+- Provenances can also be filtered by a big number of targets (API : POST /core/data/provenances/by_targets)
+- Filtering documents by keyword now correctly works
+- Importing germplasms with specific properties via CSV now works properly; no line are skipped
+- Improved data visualization and fixed some display problems
+- Fixed the creation of scientific objects with an associated facility (with the property "isHosted")
+- Optimized data import, changed data URI generation on import
+- Fixed error shown when opening an experiment hosted by at least one facility
+- Fixed "reset" button on project list filters 
+- Fixed cookie management that could cause multiple problems; including "Request header too long" errors on requests
+- Variables can now correctly be sorted in the table view
+- Some visual and ergonomic changes
+
 ## [1.0.0-rc+2] - 2022-01-23
 
 Be carful, updating to this new version need to execute some actions. See [Versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc+2.md).

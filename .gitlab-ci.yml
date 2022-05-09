@@ -309,28 +309,41 @@ opensilex-release:finish:
     - else
     -   echo "Finishing release $RELEASE_TAG"
     - fi
+    # Install packages git & curl
     - apk update
     - apk add git
     - apk add curl
+    # Config & variables
     - RELEASE_COMMIT_MESSAGE="Release $RELEASE_TAG"
+    - RELEASE_INTERMEDIATE_BRANCH="valentin-test-release-$RELEASE_TAG"
+    - git config user.name "OpenSILEX Team"
+    - git config user.email contact@opensilex.org
     - git remote set-url origin "https://oauth2:$GITLAB_USER_CI_PAT@forgemia.inra.fr/OpenSILEX/opensilex-dev.git"
+    # Fetch and unshallows the project
     - git fetch origin --unshallow
-    - git branch
+    # Removes the local branches if necessary
     - if git show-ref --quiet refs/heads/valentin-test-release; then
     -   git branch -D valentin-test-release
     - fi
     - if git show-ref --quiet refs/heads/valentin-test-master; then
     -   git branch -D valentin-test-master
     - fi
+    - if git show-ref --quiet refs/heads/$RELEASE_INTERMEDIATE_BRANCH; then
+    -   git branch -D $RELEASE_INTERMEDIATE_BRANCH
+    - fi
+    # Create intermediate branch to avoir conflicts
+    - git checkout valentin-test-release
+    - git checkout -b $RELEASE_INTERMEDIATE_BRANCH
+    - git merge origin/valentin-test-master -s ours
+    # Merge into master
     - git checkout valentin-test-master
-    - git config user.name "OpenSILEX Team"
-    - git config user.email contact@opensilex.org
-    - git branch --contains ebfb30536023d7100474eb7459dc37a98697b024
-    - git merge origin/valentin-test-release --squash
+    - git merge $RELEASE_INTERMEDIATE_BRANCH --squash
     - git commit -m "$RELEASE_COMMIT_MESSAGE"
     - git tag -a -m "$RELEASE_COMMIT_MESSAGE" "$RELEASE_TAG"
+    # Push master and the release tag
     - git push -f origin valentin-test-master
     - git push origin $RELEASE_TAG
+    # Trigger the merge request to develop
     - curl -X POST -F "token=$CI_JOB_TOKEN" -F "source_branch=valentin-test-release" -F "target_branch=valentin-test-develop" -F "title=$RELEASE_COMMIT_MESSAGE" https://forgemia.inra.fr/api/v4/projects/1675/merge_requests
   rules:
     - if: $CI_COMMIT_BRANCH == "valentin-test-release"

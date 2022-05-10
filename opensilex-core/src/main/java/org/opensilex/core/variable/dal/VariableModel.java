@@ -88,6 +88,7 @@ public class VariableModel extends BaseVariableModel<VariableModel> implements C
             property = "hasTimeInterval"
     )
     private String timeInterval;
+    public static final String TIME_INTERVAL_FIELD_NAME = "timeInterval";
 
     @SPARQLProperty(
         ontology = Oeso.class,
@@ -101,7 +102,8 @@ public class VariableModel extends BaseVariableModel<VariableModel> implements C
             required = true
     )
     private URI dataType;
-
+    public static final String DATA_TYPE_FIELD_NAME = "dataType";
+    
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasSpecies"

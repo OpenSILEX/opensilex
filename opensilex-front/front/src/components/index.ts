@@ -472,6 +472,10 @@ import VariableVisualizationForm from './variables/form/VariableVisualizationFor
 components["opensilex-VariableVisualizationForm"] = VariableVisualizationForm;
 import VariableDevicesSelector from './variables/form/VariableDevicesSelector.vue';
 components["opensilex-VariableDevicesSelector"] = VariableDevicesSelector;
+import VariableDataTypeSelector from './variables/form/VariableDataTypeSelector.vue';
+components["opensilex-VariableDataTypeSelector"] = VariableDataTypeSelector;
+import VariableTimeIntervalSelector from './variables/form/VariableTimeIntervalSelector.vue';
+components["opensilex-VariableTimeIntervalSelector"] = VariableTimeIntervalSelector;
 import VariableHelp from './variables/views/VariableHelp.vue';
 components["opensilex-VariableHelp"] = VariableHelp;
 import VariableCreate from './variables/form/VariableCreate.vue';

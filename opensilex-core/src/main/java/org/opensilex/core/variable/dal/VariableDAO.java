@@ -174,6 +174,8 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
             URI method,
             URI unit,
             URI group,
+            URI dataType,
+            String timeInterval,
             boolean withAssociatedData,
             List<URI> devices,
             List<URI> experiments,
@@ -243,6 +245,14 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
 
                     if (group != null) {
                         select.addWhere(SPARQLDeserializers.nodeURI(group), RDFS.member, makeVar(SPARQLResourceModel.URI_FIELD));
+                    }
+                    
+                    if (dataType != null) {
+                        select.addFilter(SPARQLQueryHelper.eq(VariableModel.DATA_TYPE_FIELD_NAME, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(dataType.toString()))));
+                    }
+                    
+                    if (!StringUtils.isEmpty(timeInterval)) {
+                        select.addFilter(SPARQLQueryHelper.regexFilter(VariableModel.TIME_INTERVAL_FIELD_NAME, timeInterval));
                     }
 
                     if (variableUriList != null) {

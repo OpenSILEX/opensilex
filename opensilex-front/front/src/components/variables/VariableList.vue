@@ -59,6 +59,20 @@
                             ></opensilex-UnitSelector>
                         </opensilex-FilterField>
 
+                        <opensilex-FilterField>
+                            <opensilex-VariableDataTypeSelector
+                                label="OntologyPropertyForm.data-type"
+                                :datatype.sync="filter.dataType"
+                            ></opensilex-VariableDataTypeSelector>
+                        </opensilex-FilterField>
+
+                        <opensilex-FilterField>
+                            <opensilex-VariableTimeIntervalSelector
+                                label="VariableForm.time-interval"
+                                :timeinterval.sync="filter.timeInterval"    
+                            ></opensilex-VariableTimeIntervalSelector>
+                        </opensilex-FilterField>
+
                     </template>
                 </opensilex-SearchFilterField>
 
@@ -260,6 +274,8 @@ export default class VariableList extends Vue {
         method: undefined,
         unit: undefined,
         group: undefined,
+        dataType: undefined,
+        timeInterval: undefined,
         experiment: undefined,
         objects: undefined,
         devices: undefined
@@ -303,6 +319,8 @@ export default class VariableList extends Vue {
             method: undefined,
             unit: undefined,
             group: undefined,
+            dataType: undefined,
+            timeInterval: undefined,
             experiment: undefined,
             objects: undefined,
             devices: undefined
@@ -340,6 +358,8 @@ export default class VariableList extends Vue {
             this.filter.method,
             this.filter.unit,
             this.filter.group,
+            this.filter.dataType,
+            this.filter.timeInterval,
             this.withAssociatedData,
             this.experiment ? this.experiment : this.filter.experiment,
             this.objects ? this.objects : this.filter.objects,

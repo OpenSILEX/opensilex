@@ -351,7 +351,7 @@ opensilex-release:finish:
     - >
       curl -X POST -F "private_token=$JOB_API_TOKEN" -F "source_branch=valentin-test-release" 
       -F "target_branch=valentin-test-develop" -F "title=[Release] Merge $RELEASE_TAG into develop" 
-      -F "remove_source_branch=true" -F "labels[0]=finishing release"
+      -F "remove_source_branch=true" -F "labels[]=finishing release"
       https://forgemia.inra.fr/api/v4/projects/1675/merge_requests
   rules:
     - if: $CI_COMMIT_BRANCH == "valentin-test-release"

@@ -328,6 +328,9 @@ opensilex-release:close:
     - git remote set-url origin "https://oauth2:$GITLAB_USER_CI_PAT@forgemia.inra.fr/OpenSILEX/opensilex-dev.git"
     # Fetch and unshallows the project
     - git fetch origin --unshallow
+    # Remove local tags
+    - git tag -l | xargs git tag -d
+    - git fetch origin --tags
     # Remove the local branches if necessary
     - if git show-ref --quiet refs/heads/valentin-test-release; then
     -   git branch -D valentin-test-release
@@ -338,9 +341,6 @@ opensilex-release:close:
     - if git show-ref --quiet refs/heads/$RELEASE_INTERMEDIATE_BRANCH; then
     -   git branch -D $RELEASE_INTERMEDIATE_BRANCH
     - fi
-    # Remove local tags
-    - git tag -l | xargs git tag -d
-    - git fetch --tags
     # Create intermediate branch to avoir conflicts
     - git checkout valentin-test-release
     - git checkout -b $RELEASE_INTERMEDIATE_BRANCH

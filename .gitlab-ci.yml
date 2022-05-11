@@ -218,8 +218,7 @@ opensilex-valentin-test-master:build:
   stage: build
   <<: *build_template_with_opensilex
   rules:
-    - if: $CI_COMMIT_BRANCH == "valentin-test-master" && $CI_COMMIT_TAG == null
-    - if: $CI_COMMIT_BRANCH == "valentin-test-master" && $CI_COMMIT_TAG != null
+    - if: $CI_COMMIT_BRANCH == "valentin-test-master"
       variables:
         OPENSILEX_APP_REVISION: $CI_COMMIT_TAG
 
@@ -339,6 +338,9 @@ opensilex-release:close:
     - if git show-ref --quiet refs/heads/$RELEASE_INTERMEDIATE_BRANCH; then
     -   git branch -D $RELEASE_INTERMEDIATE_BRANCH
     - fi
+    # Remove local tags
+    - git tag -l | xargs git tag -d
+    - git fetch --tags
     # Create intermediate branch to avoir conflicts
     - git checkout valentin-test-release
     - git checkout -b $RELEASE_INTERMEDIATE_BRANCH

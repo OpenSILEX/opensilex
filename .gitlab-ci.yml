@@ -226,7 +226,6 @@ merge-request:check:
   stage: check
   script:
     - if [[ $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master" &&
-      $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME != "release" &&
       ! $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ ^hotfix\/.* ]]; then
     -   echo "Merging from $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME to master is forbidden"
     -   exit 1
@@ -321,7 +320,7 @@ opensilex-release:finish:
     - git remote set-url origin "https://oauth2:$GITLAB_USER_CI_PAT@forgemia.inra.fr/OpenSILEX/opensilex-dev.git"
     # Fetch and unshallows the project
     - git fetch origin --unshallow
-    # Removes the local branches if necessary
+    # Remove the local branches if necessary
     - if git show-ref --quiet refs/heads/valentin-test-release; then
     -   git branch -D valentin-test-release
     - fi
@@ -340,11 +339,20 @@ opensilex-release:finish:
     - git merge $RELEASE_INTERMEDIATE_BRANCH --squash
     - git commit -m "$RELEASE_COMMIT_MESSAGE"
     - git tag -a -m "$RELEASE_COMMIT_MESSAGE" "$RELEASE_TAG"
+    # Check that there is no diff between master and release now
+    - if ! git diff valentin-test-master valentin-test-release --exit-code; then
+    -   echo "Something went wrong with the merge; master and release should be the same but have differences"
+    -   exit 1
+    - fi
     # Push master and the release tag
     - git push -f origin valentin-test-master
     - git push origin $RELEASE_TAG
     # Trigger the merge request to develop
-    - curl -X POST -F "private_token=$JOB_API_TOKEN" -F "source_branch=valentin-test-release" -F "target_branch=valentin-test-develop" -F "title=$RELEASE_COMMIT_MESSAGE" https://forgemia.inra.fr/api/v4/projects/1675/merge_requests
+    - >
+      curl -X POST -F "private_token=$JOB_API_TOKEN" -F "source_branch=valentin-test-release" 
+      -F "target_branch=valentin-test-develop" -F "title=[Release] Merge $RELEASE_TAG into develop" 
+      -F "remove_source_branch=true" -F "labels[0]=finishing release"
+      https://forgemia.inra.fr/api/v4/projects/1675/merge_requests
   rules:
     - if: $CI_COMMIT_BRANCH == "valentin-test-release"
   needs:

@@ -365,7 +365,7 @@ opensilex-release:close:
 
 opensilex-release:github:deploy:
   stage: deploy
-  image: alpine
+  image: maven:$MVN_VERSION-jdk-$JAVA_VERSION
   script:
     - if [[ -z $RELEASE_TAG ]]; then
     -   echo 'RELEASE_TAG must be set'
@@ -373,7 +373,7 @@ opensilex-release:github:deploy:
     - else
     -   echo "Finishing release $RELEASE_TAG"
     - fi
-    # Install packages curl & jq (to read json)
+    # Install packages git, curl & jq (to read json)
     - apk update
     - apk add git
     - apk add curl

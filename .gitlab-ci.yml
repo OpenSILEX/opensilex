@@ -334,7 +334,7 @@ opensilex-release:finish:
     # Create intermediate branch to avoir conflicts
     - git checkout valentin-test-release
     - git checkout -b $RELEASE_INTERMEDIATE_BRANCH
-    - git merge origin/valentin-test-master -s ours
+    - git merge origin/valentin-test-master -s ours --no-edit
     # Merge into master
     - git checkout valentin-test-master
     - git merge $RELEASE_INTERMEDIATE_BRANCH --squash
@@ -344,7 +344,7 @@ opensilex-release:finish:
     - git push -f origin valentin-test-master
     - git push origin $RELEASE_TAG
     # Trigger the merge request to develop
-    - curl -X POST -F "token=$CI_JOB_TOKEN" -F "source_branch=valentin-test-release" -F "target_branch=valentin-test-develop" -F "title=$RELEASE_COMMIT_MESSAGE" https://forgemia.inra.fr/api/v4/projects/1675/merge_requests
+    - curl -X POST -F "private_token=$JOB_API_TOKEN" -F "source_branch=valentin-test-release" -F "target_branch=valentin-test-develop" -F "title=$RELEASE_COMMIT_MESSAGE" https://forgemia.inra.fr/api/v4/projects/1675/merge_requests
   rules:
     - if: $CI_COMMIT_BRANCH == "valentin-test-release"
   needs:

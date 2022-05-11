@@ -409,7 +409,7 @@ opensilex-release:github:deploy:
     - job: "opensilex-release:close"
   rules:
     - if: $CI_COMMIT_BRANCH == "valentin-test-release"
-  when: on_success
+  when: manual
 
 # Trigger pipeline for data-analysis module deployment
 #trigger:dataanalysis:deploy:test:

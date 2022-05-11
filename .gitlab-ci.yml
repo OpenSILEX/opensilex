@@ -214,6 +214,15 @@ opensilex-valentin-test-release:build:
   rules:
     - if: $CI_COMMIT_BRANCH == "valentin-test-release"
 
+opensilex-valentin-test-master:build:
+  stage: build
+  <<: *build_template_with_opensilex
+  rules:
+    - if: $CI_COMMIT_BRANCH == "valentin-test-master" && $CI_COMMIT_TAG == null
+    - if: $CI_COMMIT_BRANCH == "valentin-test-master" && $CI_COMMIT_TAG != null
+      variables:
+        OPENSILEX_APP_REVISION: $CI_COMMIT_TAG
+
 ##################################
 ### MERGE REQUESTS CHECK AND BUILD
 ##################################
@@ -298,7 +307,7 @@ trigger:opensilex-develop-release:deploy:test:
 ### CLOSE RELEASE
 #################
 
-opensilex-release:finish:
+opensilex-release:close:
   stage: deploy
   image: alpine
   script:
@@ -358,6 +367,37 @@ opensilex-release:finish:
   needs:
     - job: "opensilex-valentin-test-release:build"
   when: manual
+
+opensilex-master:github-release:deploy:
+  stage: deploy
+  image: alpine
+  script:
+    # Install packages curl & jq (to read json)
+    - apk update
+    - apk add curl
+    - apk add jq
+    # Get archive
+    - >
+      curl -H "JOB-TOKEN:$CI_JOB_TOKEN" --location --output "opensilex-release-$CI_COMMIT_TAG.zip"
+      https://forgemia.inra.fr/api/v4/projects/1675/jobs/artifacts/valentin-test-master/download?job=opensilex-valentin-test-master:build
+    - >
+      GITHUB_RELEASE_CREATION_RESPONSE=$(
+      curl -X POST -u "$TEST_GITHUB_ACCOUNT:$TEST_GITHUB_TOKEN"
+      -F "tag_name=$CI_COMMIT_TAG"
+      https://api.github.com/repos/OpenSILEX/opensilex/releases
+      )
+    - echo $GITHUB_RELEASE_CREATION_RESPONSE
+    - GITHUB_RELEASE_ID=$(jq .id <<< "$GITHUB_RELEASE_CREATION_RESPONSE")
+    - echo $GITHUB_RELEASE_ID
+    - >
+      curl -X POST -u "$TEST_GITHUB_ACCOUNT:$TEST_GITHUB_TOKEN"
+      -H "Content-Type: application/zip"
+      --data-binary @"opensilex-release-$CI_COMMIT_TAG.zip"
+  needs:
+    - job: "opensilex-valentin-test-master:build"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "valentin-test-master" && $CI_COMMIT_TAG != null
+  when: on_success
 
 # Trigger pipeline for data-analysis module deployment
 #trigger:dataanalysis:deploy:test:

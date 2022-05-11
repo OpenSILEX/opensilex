@@ -365,7 +365,7 @@ opensilex-release:close:
 
 opensilex-release:github:deploy:
   stage: deploy
-  image: maven:$MVN_VERSION-jdk-$JAVA_VERSION
+  image: alpine
   script:
     - if [[ -z $RELEASE_TAG ]]; then
     -   echo 'RELEASE_TAG must be set'
@@ -378,6 +378,7 @@ opensilex-release:github:deploy:
     - apk add git
     - apk add curl
     - apk add jq
+    - apk add maven
     # Get project
     - git fetch origin
     - git remote set-url origin "https://oauth2:$GITLAB_USER_CI_PAT@forgemia.inra.fr/OpenSILEX/opensilex-dev.git"

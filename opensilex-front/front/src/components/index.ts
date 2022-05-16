@@ -504,6 +504,10 @@ import GroupVariablesModalList from './groupVariable/GroupVariablesModalList.vue
 components["opensilex-GroupVariablesModalList"] = GroupVariablesModalList;
 import GroupVariablesSelector from './groupVariable/GroupVariablesSelector.vue';
 components["opensilex-GroupVariablesSelector"] = GroupVariablesSelector;
+import GroupVariablesDescription from './groupVariable/GroupVariablesDescription.vue';
+components["opensilex-GroupVariablesDescription"] = GroupVariablesDescription;
+import GroupVariablesDetails from './groupVariable/GroupVariablesDetails.vue';
+components["opensilex-GroupVariablesDetails"] = GroupVariablesDetails;
 
 // Entity
 import EntityForm from './variables/form/EntityForm.vue';

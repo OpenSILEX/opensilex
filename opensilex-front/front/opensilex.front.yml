@@ -266,6 +266,8 @@ routes:
     component: opensilex-GroupVariablesDescription
   - path: /variables_group/annotations/:uri
     component: opensilex-GroupVariablesDescription
+  - path: /variables_group/documents/:uri
+    component: opensilex-GroupVariablesDescription
 
   - path: /project/details/:uri
     component: opensilex-ProjectDetails

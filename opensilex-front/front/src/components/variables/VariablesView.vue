@@ -110,7 +110,7 @@
 
                 <div class="col-md-6">
                     <!-- Element details page -->
-                    <opensilex-VariableStructureDetails v-show="!loadVariableList() && useGenericDetailsPage()" :selected="selected"></opensilex-VariableStructureDetails>
+                    <opensilex-VariableStructureDetails v-show="!loadVariableList() && useGenericDetailsPage()" :variableGroup="groupVariablesPage()" :selected="selected"></opensilex-VariableStructureDetails>
                     <!-- Unit specialized details page -->
                     <opensilex-UnitDetails v-show="!loadVariableList() && !useGenericDetailsPage() && !groupVariablesPage()" :selected="selected"></opensilex-UnitDetails>
 
@@ -457,7 +457,7 @@ export default class VariablesView extends Vue {
             let message = this.$i18n.t(form.name) + this.$i18n.t("component.common.success.creation-success-message");
             this.$opensilex.showSuccessToast(message);
             let uri = http.response.result;
-            this.refresh(uri);
+            this.$router.push({path: "/variables_group/details/" + encodeURIComponent(uri)});
       })
       .catch(error => {
         if (error.status == 409) {

@@ -70,6 +70,12 @@
                 <opensilex-UriLink 
                   :uri="target.uri"  
                   :value="target.uri"  
+                  v-else-if="target.rdf_types.includes($opensilex.Oeso.VARIABLESGROUP_TYPE_URI)"           
+                  :to="{path: '/variables_group/details/'+ encodeURIComponent(target.uri)}"
+                ></opensilex-UriLink>
+                <opensilex-UriLink 
+                  :uri="target.uri"  
+                  :value="target.uri"  
                   v-else  
                 ></opensilex-UriLink> 
                 </span>
@@ -244,7 +250,7 @@ export default class DocumentDetails extends Vue {
   
   loadTargetsTypes() {
     let ontologyService = this.$opensilex.getService("opensilex.OntologyService");
-    let types = new Array(Oeso.GERMPLASM_TYPE_URI, Oeso.DEVICE_TYPE_URI, Oeso.PROJECT_TYPE_URI, Oeso.EXPERIMENT_TYPE_URI);
+    let types = new Array(Oeso.GERMPLASM_TYPE_URI, Oeso.DEVICE_TYPE_URI, Oeso.PROJECT_TYPE_URI, Oeso.EXPERIMENT_TYPE_URI, Oeso.VARIABLESGROUP_TYPE_URI);
     let body = {
       uris: this.document.targets
     }

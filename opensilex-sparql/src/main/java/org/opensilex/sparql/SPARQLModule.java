@@ -5,9 +5,19 @@
  */
 package org.opensilex.sparql;
 
+import org.opensilex.OpenSilex;
+import org.opensilex.OpenSilexModuleNotFoundException;
+import org.opensilex.server.ServerModule;
+import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
+import org.opensilex.sparql.ontology.store.DefaultOntologyStore;
+import org.opensilex.sparql.ontology.store.NoOntologyStore;
+import org.opensilex.sparql.ontology.store.OntologyStore;
 import org.opensilex.sparql.service.SPARQLService;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
@@ -28,11 +38,18 @@ import javax.ws.rs.core.UriBuilder;
  */
 public class SPARQLModule extends OpenSilexModule {
 
-    private static final String DEFAULT_BASE_URI = "http://default.opensilex.org/";
-
     private static final Logger LOGGER = LoggerFactory.getLogger(SPARQLModule.class);
 
+    private static final String DEFAULT_BASE_URI = "http://default.opensilex.org/";
     public static final String ONTOLOGY_BASE_DOMAIN = "http://www.opensilex.org/";
+
+    private URI baseURI;
+    private String baseURIAlias;
+    private URI generationPrefixURI;
+
+    private final Map<String, URI> customPrefixes = new HashMap<>();
+
+    private static OntologyStore ontologyStore;
 
     @Override
     public Class<?> getConfigClass() {
@@ -44,13 +61,6 @@ public class SPARQLModule extends OpenSilexModule {
         return "ontologies";
     }
 
-    private URI baseURI;
-
-    private String baseURIAlias;
-
-    private URI generationPrefixURI;
-    
-    private final Map<String, URI> customPrefixes = new HashMap<>();
 
     @Override
     public void setup() throws Exception {
@@ -167,6 +177,36 @@ public class SPARQLModule extends OpenSilexModule {
         factory.dispose(sparql);
     }
 
+    private static final String ONTOLOGY_STORE_LOAD_SUCCESS_MSG = "Ontology store loaded with success. Duration: {} ms";
+
+
+    private static void initOntologyStore(OpenSilex openSilex, SPARQLService sparql) throws SPARQLException, OpenSilexModuleNotFoundException {
+
+        if (sparql == null) {
+            return;
+        }
+
+        SPARQLConfig sparqlConfig = openSilex.getModuleConfig(SPARQLModule.class, SPARQLConfig.class);
+
+        // don't load OntologyStore in case of build phase (ex : Swagger or maven) since no real RDF4J connection is set in this case
+        if (sparqlConfig.enableOntologyStore() && (openSilex.isDev() || openSilex.isProd())) {
+            Instant begin = Instant.now();
+
+            ontologyStore = new DefaultOntologyStore(sparql, openSilex);
+            ontologyStore.load();
+
+            long durationMs = Duration.between(begin, Instant.now()).toMillis();
+            LOGGER.info(ONTOLOGY_STORE_LOAD_SUCCESS_MSG, durationMs);
+        } else {
+            ontologyStore = new NoOntologyStore(new OntologyDAO(sparql));
+        }
+
+    }
+
+    public static OntologyStore getOntologyStoreInstance(){
+        return ontologyStore;
+    }
+
     @Override
     public void startup() throws Exception {
         SPARQLServiceFactory factory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
@@ -175,6 +215,9 @@ public class SPARQLModule extends OpenSilexModule {
                 module.inMemoryInitialization();
             }
         }
+
+        SPARQLService sparql = factory.provide();
+        SPARQLModule.initOntologyStore(getOpenSilex(),sparql);
     }
 
 }

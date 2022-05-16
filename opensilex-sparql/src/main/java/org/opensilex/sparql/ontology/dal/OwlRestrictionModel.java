@@ -14,7 +14,7 @@
 package org.opensilex.sparql.ontology.dal;
 
 import org.apache.jena.vocabulary.OWL2;
-import org.opensilex.sparql.annotations.SPARQLIgnore;
+import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -22,7 +22,6 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
 import java.net.URI;
 
 /**
- *
  * @author vince
  */
 @SPARQLResource(
@@ -33,50 +32,65 @@ import java.net.URI;
 )
 public class OwlRestrictionModel extends SPARQLResourceModel {
 
-    @SPARQLIgnore
-    URI domain;
+    @SPARQLProperty(
+            ontology = RDFS.class,
+            property = "subClassOf",
+            required = true,
+            inverse = true
+    )
+    ClassModel domain;
+    public static final String DOMAIN_FIELD = "domain";
 
     @SPARQLProperty(
             ontology = OWL2.class,
-            property = "onProperty"
+            property = "onProperty",
+            required = true
     )
     URI onProperty;
+    public static final String ON_PROPERTY_FIELD = "onProperty";
 
     @SPARQLProperty(
             ontology = OWL2.class,
             property = "onDataRange"
     )
     URI onDataRange;
+    public static final String ON_DATA_RANGE_FIELD = "onDataRange";
+
 
     @SPARQLProperty(
             ontology = OWL2.class,
-            property = "onClass"
+            property = ON_CLASS
     )
     URI onClass;
+    public static final String ON_CLASS = "onClass";
 
     @SPARQLProperty(
             ontology = OWL2.class,
             property = "minQualifiedCardinality"
     )
-    Integer minCardinality;
+    Integer minQualifiedCardinality;
+    public static final String MIN_CARDINALITY_FIELD = "minQualifiedCardinality";
 
     @SPARQLProperty(
             ontology = OWL2.class,
             property = "maxQualifiedCardinality"
     )
-    Integer maxCardinality;
+    Integer maxQualifiedCardinality;
+    public static final String MAX_CARDINALITY_FIELD = "maxQualifiedCardinality";
 
     @SPARQLProperty(
             ontology = OWL2.class,
             property = "qualifiedCardinality"
     )
-    Integer cardinality;
+    Integer qualifiedCardinality;
+    public static final String CARDINALITY_FIELD = "qualifiedCardinality";
 
     @SPARQLProperty(
             ontology = OWL2.class,
             property = "someValuesFrom"
     )
     URI someValuesFrom;
+    public static final String SOME_VALUES_FROM_FIELD = "someValuesFrom";
 
     public URI getOnProperty() {
         return onProperty;
@@ -102,28 +116,28 @@ public class OwlRestrictionModel extends SPARQLResourceModel {
         this.onClass = onClass;
     }
 
-    public Integer getMinCardinality() {
-        return minCardinality;
+    public Integer getMinQualifiedCardinality() {
+        return minQualifiedCardinality;
     }
 
-    public void setMinCardinality(Integer minCardinality) {
-        this.minCardinality = minCardinality;
+    public void setMinQualifiedCardinality(Integer minQualifiedCardinality) {
+        this.minQualifiedCardinality = minQualifiedCardinality;
     }
 
-    public Integer getMaxCardinality() {
-        return maxCardinality;
+    public Integer getMaxQualifiedCardinality() {
+        return maxQualifiedCardinality;
     }
 
-    public void setMaxCardinality(Integer maxCardinality) {
-        this.maxCardinality = maxCardinality;
+    public void setMaxQualifiedCardinality(Integer maxQualifiedCardinality) {
+        this.maxQualifiedCardinality = maxQualifiedCardinality;
     }
 
-    public Integer getCardinality() {
-        return cardinality;
+    public Integer getQualifiedCardinality() {
+        return qualifiedCardinality;
     }
 
-    public void setCardinality(Integer cardinality) {
-        this.cardinality = cardinality;
+    public void setQualifiedCardinality(Integer qualifiedCardinality) {
+        this.qualifiedCardinality = qualifiedCardinality;
     }
 
     public URI getSomeValuesFrom() {
@@ -134,44 +148,44 @@ public class OwlRestrictionModel extends SPARQLResourceModel {
         this.someValuesFrom = someValuesFrom;
     }
 
-    public URI getDomain() {
+    public ClassModel getDomain() {
         return domain;
     }
 
-    public void setDomain(URI domain) {
+    public void setDomain(ClassModel domain) {
         this.domain = domain;
     }
 
     public boolean isList() {
-        if (getCardinality() != null) {
-            return getCardinality() > 1;
+        if (getQualifiedCardinality() != null) {
+            return getQualifiedCardinality() > 1;
         }
-        if (getMaxCardinality() != null) {
-            return getMaxCardinality() > 1;
+        if (getMaxQualifiedCardinality() != null) {
+            return getMaxQualifiedCardinality() > 1;
         }
-        if (getMinCardinality() != null) {
-            return getMinCardinality() > 1 || getMaxCardinality() == null;
+        if (getMinQualifiedCardinality() != null) {
+            return getMinQualifiedCardinality() > 1 || getMaxQualifiedCardinality() == null;
         }
 
         return getSomeValuesFrom() != null;
     }
 
     public boolean isOptional() {
-        if (getMinCardinality() != null) {
-            return getMinCardinality() == 0;
+        if (getMinQualifiedCardinality() != null) {
+            return getMinQualifiedCardinality() == 0;
         }
 
         return !isRequired();
     }
 
     public boolean isRequired() {
-        if (getCardinality() != null) {
-            return getCardinality() >= 1;
+        if (getQualifiedCardinality() != null) {
+            return getQualifiedCardinality() >= 1;
         }
-        if (getMinCardinality() != null) {
-            return getMinCardinality() >= 1;
+        if (getMinQualifiedCardinality() != null) {
+            return getMinQualifiedCardinality() >= 1;
         }
-        
+
         return false;
     }
 

@@ -223,9 +223,9 @@
             event.relations.forEach(relation => {
                 let property = relation.property;
 
-                let propertyModel = typeModel.object_properties.find(propertyModel => propertyModel.property == property)
+                let propertyModel = typeModel.object_properties.find(propertyModel => propertyModel.uri == property)
                 if(! propertyModel){
-                    propertyModel = typeModel.data_properties.find(propertyModel => propertyModel.property == property)
+                    propertyModel = typeModel.data_properties.find(propertyModel => propertyModel.uri == property)
                 }
 
                 if(propertyModel.is_list){

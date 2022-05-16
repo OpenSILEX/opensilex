@@ -90,6 +90,12 @@ public final class OpenSilex {
     public final static String DEV_PROFILE_ID = "dev";
 
     /**
+     * Maven/Swagger build profile identifier
+     */
+    public final static String BUILD_PROFILE_ID = "build";
+
+
+    /**
      * Environment key for OpenSilex base directory.
      */
     public final static String BASE_DIR_ENV_KEY = "OPENSILEX_BASE_DIRECTORY";
@@ -701,6 +707,15 @@ public final class OpenSilex {
      */
     public boolean isDebug() {
         return setup.isDebug();
+    }
+
+    /**
+     * Determine if maven build profile is build.
+     *
+     * @return true if maven profile is build and false otherwise
+     */
+    public boolean isBuild(){
+        return getProfileId().equals(BUILD_PROFILE_ID);
     }
 
     /**

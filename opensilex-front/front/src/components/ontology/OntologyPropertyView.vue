@@ -14,14 +14,15 @@
                         @onCreate="refresh()"
                         @onUpdate="refresh()"
                         modalSize="lg"
+                        successMessage="OntologyPropertyView.the-property"
                         :icon="icon"
                     ></opensilex-ModalForm>
                 </div>
 
                 <opensilex-StringFilter
-                    :filter.sync="filter"
+                    :filter.sync="nameFilter"
                     @update="updateFilter()"
-                    placeholder="OntologyClassView.search"
+                    placeholder="OntologyPropertyView.search"
                 ></opensilex-StringFilter>
 
                 <opensilex-OntologyPropertyTreeView
@@ -35,7 +36,7 @@
             </b-card>
         </div>
         <div class="col-md-6">
-            <opensilex-OntologyPropertyDetail :selected="selected"/>
+            <opensilex-OntologyPropertyDetail :selected.sync="selected"/>
         </div>
     </div>
 </template>
@@ -49,14 +50,19 @@ import OWL from "../../ontologies/OWL";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import OntologyPropertyTreeView from "./OntologyPropertyTreeView.vue";
 import {Store} from "vuex";
+import {RDFPropertyDTO} from "opensilex-core/model/rDFPropertyDTO";
+import {RDFPropertyGetDTO} from "opensilex-core/model/rDFPropertyGetDTO";
+import OntologyPropertyForm from "./OntologyPropertyForm.vue";
 
 @Component
 export default class OntologyPropertyView extends Vue {
 
-    $opensilex: OpenSilexVuePlugin;
-    $store: Store<any>;
+  $opensilex: OpenSilexVuePlugin;
+  $store: Store<any>;
 
-    /**
+  private nameFilter: string = "";
+
+  /**
      * Return the current connected user
      */
     get user() {
@@ -72,7 +78,7 @@ export default class OntologyPropertyView extends Vue {
     @Prop()
     icon;
 
-    selected = null;
+    selected: RDFPropertyGetDTO = null;
 
     @Ref("propertyForm") readonly propertyForm!: any;
     @Ref("propertiesTree") readonly propertiesTree!: OntologyPropertyTreeView;
@@ -83,7 +89,7 @@ export default class OntologyPropertyView extends Vue {
         this.ontologyService = this.$opensilex.getService("opensilex-core.OntologyService");
     }
 
-    initForm(form) {
+    initForm(form: RDFPropertyDTO) {
         form.parent = this.parentURI;
         if (OWL.hasParent(form.parent)) {
             form.rdf_type = null;
@@ -92,7 +98,7 @@ export default class OntologyPropertyView extends Vue {
         } else if (OWL.isObjectTypeProperty(form.rdf_type)) {
             form.rdf_type = OWL.OBJECT_PROPERTY_URI;
         }
-        form.domain_rdf_type = this.rdfType;
+        form.domain = this.rdfType;
     }
 
     parentURI;
@@ -104,12 +110,13 @@ export default class OntologyPropertyView extends Vue {
             this.propertiesTree.getTree()
         );
         propertyFormComponent.setDomain(this.rdfType);
+
         this.propertyForm.showCreateForm();
     }
 
     showEditForm(data) {
         this.ontologyService.getProperty(data.uri, data.rdf_type, this.rdfType).then(http => {
-            let propertyFormComponent = this.propertyForm.getFormRef();
+            let propertyFormComponent: OntologyPropertyForm = this.propertyForm.getFormRef();
             propertyFormComponent.setParentPropertiesTree(
                 this.propertiesTree.getTree()
             );
@@ -131,11 +138,11 @@ export default class OntologyPropertyView extends Vue {
     deleteProperty(data) {
         this.ontologyService.deleteProperty(data.uri, data.rdf_type).then(() => {
             this.refresh();
-        });
+        }).catch(this.$opensilex.errorHandler);
     }
 
     refresh() {
-        this.propertiesTree.refresh();
+        this.propertiesTree.refresh(this.nameFilter);
     }
 
     updateFilter() {
@@ -153,10 +160,12 @@ en:
     OntologyPropertyView:
         add: Create property
         update: Update property
-
+        the-property: The property
+        search: Search and select a property
 fr:
     OntologyPropertyView:
         add: Créer une propriété
         update: Mettre à jour la propriété
-
+        the-property: La propriété
+        search: Rechercher et sélectioner une propriété
 </i18n>

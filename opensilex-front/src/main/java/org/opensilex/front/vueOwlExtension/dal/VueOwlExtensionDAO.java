@@ -13,6 +13,7 @@ import org.opensilex.front.vueOwlExtension.types.VueOntologyObjectType;
 import org.opensilex.front.vueOwlExtension.types.VueOntologyType;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.ontology.dal.ClassModel;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.slf4j.Logger;
@@ -31,20 +32,18 @@ public class VueOwlExtensionDAO {
     private static final Logger LOGGER = LoggerFactory.getLogger(VueOwlExtensionDAO.class);
 
     private final SPARQLService sparql;
+    private final OntologyDAO ontologyDAO;
 
     public VueOwlExtensionDAO(SPARQLService sparql) {
         this.sparql = sparql;
+        this.ontologyDAO = new OntologyDAO(sparql);
     }
 
     public void createExtendedClass(ClassModel instance, VueClassExtensionModel instanceExtension) throws Exception {
         try {
             sparql.startTransaction();
-            sparql.create(instance);
-            sparql.create(instanceExtension);
-
-            ClassModel insertedInstance = sparql.getByURI(ClassModel.class,instance.getUri(),OpenSilex.DEFAULT_LANGUAGE);
-            CoreModule.getOntologyCacheInstance().addClass(insertedInstance);
-
+            ontologyDAO.create(instance);
+            sparql.create(instanceExtension,false); // reuse the same URI as the ClassModel -> no need to check URI
             sparql.commitTransaction();
         } catch (Exception ex) {
             sparql.rollbackTransaction(ex);
@@ -54,11 +53,8 @@ public class VueOwlExtensionDAO {
     public void updateExtendedClass(ClassModel instance, VueClassExtensionModel instanceExtension) throws Exception {
         try {
             sparql.startTransaction();
-            sparql.update(instance);
+            ontologyDAO.update(instance);
             sparql.update(instanceExtension);
-
-            ClassModel updatedInstance = sparql.getByURI(ClassModel.class,instance.getUri(),OpenSilex.DEFAULT_LANGUAGE);
-            CoreModule.getOntologyCacheInstance().updateClass(updatedInstance);
 
             sparql.commitTransaction();
         } catch (Exception ex) {
@@ -68,10 +64,14 @@ public class VueOwlExtensionDAO {
 
     public void deleteExtendedClass(URI classURI) throws Exception {
         try {
+            VueClassExtensionModel extensionModel = sparql.getByURI(VueClassExtensionModel.class,classURI,null);
+            if(extensionModel == null){
+                throw new IllegalArgumentException("Could not delete custom class "+classURI+". This class is not found or is not a custom class");
+            }
+
             sparql.startTransaction();
-            sparql.delete(ClassModel.class, classURI);
+            ontologyDAO.deleteClass(classURI);
             sparql.delete(VueClassExtensionModel.class, classURI);
-            CoreModule.getOntologyCacheInstance().removeClass(classURI);
             sparql.commitTransaction();
         } catch (Exception ex) {
             sparql.rollbackTransaction(ex);

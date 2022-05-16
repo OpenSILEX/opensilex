@@ -6,7 +6,7 @@
 //******************************************************************************
 package org.opensilex.mobile.api;
 
-import org.opensilex.core.ontology.api.CSVValidationDTO;
+import org.opensilex.core.csv.api.CSVValidationDTO;
 import org.opensilex.mobile.dal.CodeLotCSVValidationModel;
 
 /**

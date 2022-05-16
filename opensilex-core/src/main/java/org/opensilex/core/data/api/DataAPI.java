@@ -21,7 +21,7 @@ import org.apache.jena.vocabulary.RDFS;
 import org.bson.Document;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
-import org.opensilex.core.CoreModule;
+import org.opensilex.core.csv.dal.CSVCell;
 import org.opensilex.core.data.dal.*;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.data.utils.ParsedDateTimeMongo;
@@ -49,7 +49,7 @@ import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.utils.ImportDataIndex;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.csv.dal.CSVCell;
+import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.core.provenance.api.ProvenanceAPI;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
@@ -1744,7 +1744,7 @@ public class DataAPI {
     // Map who associate each type with its root type
     private Map<URI, URI> getRootDeviceTypes() throws URISyntaxException, Exception {
 
-        SPARQLTreeListModel<ClassModel> treeList = CoreModule.getOntologyCacheInstance().getSubClassesOf(new URI(Oeso.Device.toString()), null, user.getLanguage(), true);
+        SPARQLTreeListModel<ClassModel> treeList = SPARQLModule.getOntologyStoreInstance().searchSubClasses(new URI(Oeso.Device.toString()), null, user.getLanguage(), true);
         List<ResourceTreeDTO> treeDtos = ResourceTreeDTO.fromResourceTree(treeList);
 
         Map<URI, URI> map = new HashMap<>();

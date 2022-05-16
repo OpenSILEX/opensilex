@@ -35,8 +35,7 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
-import org.opensilex.sparql.exceptions.SPARQLException;
-import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
+import org.opensilex.sparql.exceptions.*;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.model.*;
 import org.opensilex.sparql.response.ResourceTreeDTO;
@@ -46,6 +45,8 @@ import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 import java.util.*;
 import java.util.function.Consumer;
@@ -61,12 +62,26 @@ public final class OntologyDAO {
     private final URI topDataPropertyUri = URI.create(OWL2.topDataProperty.getURI());
     private final URI topObjectPropertyUri = URI.create(OWL2.topObjectProperty.getURI());
 
+    /**
+     * Custom classes and properties are stored inside 'set/properties' graph. Read-Write <br><br>
+     * Classes and properties embedded from OpenSILEX ontologies are stored inside their ontology graph. Read-Only
+     */
+    public static final String CUSTOM_TYPES_AND_PROPERTIES_GRAPH = "properties";
+
+    private final Node customGraph;
 
     public OntologyDAO(SPARQLService sparql) {
         this.sparql = sparql;
+
+        String customGraphURI = UriBuilder.fromUri(sparql.getBaseURI())
+                .path(SPARQLClassObjectMapper.DEFAULT_GRAPH_KEYWORD)
+                .path(CUSTOM_TYPES_AND_PROPERTIES_GRAPH)
+                .toString();
+
+        customGraph = NodeFactory.createURI(customGraphURI);
     }
 
-    private static final  Logger LOGGER = LoggerFactory.getLogger(OntologyDAO.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(OntologyDAO.class);
 
     public URI getTopDataPropertyUri() {
         return topDataPropertyUri;
@@ -74,6 +89,60 @@ public final class OntologyDAO {
 
     public URI getTopObjectPropertyUri() {
         return topObjectPropertyUri;
+    }
+
+    public Node getCustomGraph() {
+        return customGraph;
+    }
+
+    public void create(ClassModel model) throws Exception {
+        sparql.create(customGraph, model);
+    }
+
+    public void update(ClassModel model) throws Exception {
+        sparql.update(customGraph, model);
+    }
+
+    public void deleteClass(URI classURI) throws Exception {
+
+        // check that no instance is associated to class
+        if (sparql.existInstanceOf(classURI)) {
+            throw new IllegalArgumentException("Some objects are instance of " + classURI + ". You must delete them thirst");
+        }
+        ClassModel model = getClassModel(classURI,null,null);
+        if(! model.getChildren().isEmpty()){
+            throw new IllegalArgumentException("The class "+classURI+" has child class. You must delete them thirst");
+        }
+        if(! model.getDatatypeProperties().isEmpty()){
+            throw new IllegalArgumentException("The class "+classURI+" is concerned by some data-properties. You must delete them thirst");
+        }
+        if(! model.getObjectProperties().isEmpty()){
+            throw new IllegalArgumentException("The class "+classURI+" is concerned by some object-properties. You must delete them thirst");
+        }
+
+        try{
+            sparql.startTransaction();
+            sparql.delete(null, ClassModel.class, classURI);
+
+            Node restriction = makeVar("restriction");
+            Node property = makeVar("p");
+            Node object = makeVar("o");
+            Node classNode = SPARQLDeserializers.nodeURI(classURI);
+
+            UpdateBuilder deleteRestrictionOnClass = new UpdateBuilder()
+                    .addDelete(customGraph, new WhereBuilder()
+                            .addWhere(classNode, RDFS.subClassOf, restriction)
+                            .addWhere(restriction, property, object)
+                    ).addGraph(customGraph, new WhereBuilder()
+                            .addWhere(classNode, RDFS.subClassOf, restriction)
+                            .addWhere(restriction, RDF.type, OWL2.Restriction)
+                            .addWhere(restriction, property, object));
+
+            sparql.executeUpdateQuery(deleteRestrictionOnClass);
+            sparql.commitTransaction();
+        }catch (Exception e){
+            sparql.rollbackTransaction();
+        }
     }
 
     public ClassModel getClassModel(URI rdfClass, URI parentClass, String lang) throws SPARQLException {
@@ -84,9 +153,9 @@ public final class OntologyDAO {
             parentHandler = new WhereHandler();
             parentHandler.addWhere(new TriplePath(makeVar(SPARQLTreeModel.PARENT_FIELD), Ontology.subClassAny, SPARQLDeserializers.nodeURI(parentClass)));
         }
-
+        ClassModel model;
         try {
-            ClassModel model = sparql.loadByURI(
+            model = sparql.loadByURI(
                     null, // don't specify a graph, since multiple graph can contain a class definition
                     ClassModel.class,
                     rdfClass,
@@ -94,13 +163,16 @@ public final class OntologyDAO {
                     null,
                     parentClass != null ? Collections.singletonMap(SPARQLTreeModel.PARENT_FIELD, parentHandler) : null
             );
+        } catch (Exception e) {
+            throw new SPARQLException(e);
+        }
 
-            if (model == null) {
-                throw new SPARQLInvalidURIException("URI not found", rdfClass);
-            }
+        if (model == null) {
+            throw new SPARQLInvalidUriListException("URI not found ", Collections.singletonList(rdfClass));
+        }
 
+        try {
             buildProperties(model, lang);
-
             return model;
         } catch (Exception e) {
             throw new SPARQLException(e);
@@ -125,7 +197,7 @@ public final class OntologyDAO {
                         Var parentNameField = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getObjectNameVarName(SPARQLTreeModel.PARENT_FIELD));
 
                         select.addFilter(SPARQLQueryHelper.or(
-                                SPARQLQueryHelper.regexFilter(ClassModel.NAME_FIELD, stringPattern),
+                                SPARQLQueryHelper.regexFilter(VocabularyModel.LABEL_FIELD, stringPattern),
                                 SPARQLQueryHelper.regexFilter(parentNameField.getVarName(), stringPattern)
                         ));
                     }
@@ -192,15 +264,15 @@ public final class OntologyDAO {
     private void addRestriction(OwlRestrictionModel restriction,
                                 Map<URI, OwlRestrictionModel> mergedRestrictions,
                                 Map<URI, URI> datatypePropertiesURI,
-                                Map<URI, URI> objectPropertiesURI) throws SPARQLException{
+                                Map<URI, URI> objectPropertiesURI) throws SPARQLException {
 
         URI propertyURI = restriction.getOnProperty();
 
         if (mergedRestrictions.containsKey(propertyURI)) {
             OwlRestrictionModel mergedRestriction = mergedRestrictions.get(propertyURI);
-            mergedRestriction.setCardinality(restriction.getCardinality());
-            mergedRestriction.setMinCardinality(restriction.getMinCardinality());
-            mergedRestriction.setMaxCardinality(restriction.getMaxCardinality());
+            mergedRestriction.setQualifiedCardinality(restriction.getQualifiedCardinality());
+            mergedRestriction.setMinQualifiedCardinality(restriction.getMinQualifiedCardinality());
+            mergedRestriction.setMaxQualifiedCardinality(restriction.getMaxQualifiedCardinality());
         } else {
             mergedRestrictions.put(propertyURI, restriction);
         }
@@ -227,7 +299,7 @@ public final class OntologyDAO {
     public void buildProperties(ClassModel model, String lang) throws Exception {
 
         List<OwlRestrictionModel> restrictions = getOwlRestrictions(model.getUri(), lang);
-        if(restrictions.isEmpty()){
+        if (restrictions.isEmpty()) {
             return;
         }
 
@@ -235,10 +307,10 @@ public final class OntologyDAO {
         Map<URI, URI> objectPropertiesURI = new HashMap<>();
         Map<URI, OwlRestrictionModel> mergedRestrictions = new HashMap<>();
 
-        for(OwlRestrictionModel restriction : restrictions){
+        for (OwlRestrictionModel restriction : restrictions) {
             addRestriction(restriction, mergedRestrictions, datatypePropertiesURI, objectPropertiesURI);
         }
-        model.setRestrictions(mergedRestrictions);
+        model.setRestrictionsByProperties(mergedRestrictions);
 
         buildDataAndObjectProperties(model, lang, datatypePropertiesURI, objectPropertiesURI);
     }
@@ -252,12 +324,15 @@ public final class OntologyDAO {
             SPARQLResourceModel object
     ) {
 
-        OwlRestrictionModel restriction = model.getRestrictions().get(propertyURI);
+        OwlRestrictionModel restriction = model.getRestrictionsByProperties().get(propertyURI);
         boolean nullOrEmpty = (value == null || value.isEmpty());
         if (restriction != null) {
             if (restriction.isRequired() && nullOrEmpty) {
                 return false;
-            } else if (model.isDatatypePropertyRestriction(propertyURI)) {
+            }else if(nullOrEmpty && ! restriction.isRequired()){
+                return true;
+            }
+            else if (model.isDatatypePropertyRestriction(propertyURI)) {
                 try {
                     SPARQLDeserializer<?> deserializer = SPARQLDeserializers.getForDatatype(restriction.getSubjectURI());
 
@@ -267,9 +342,9 @@ public final class OntologyDAO {
                     }
                 } catch (SPARQLDeserializerNotFoundException ex) {
                     LOGGER.warn("Error while searching deserializer that should never happend for type: " + restriction.getSubjectURI(), ex);
+                    return false;
                 }
-            } else if (model.isObjectPropertyRestriction(propertyURI)) {
-                if (!value.isEmpty() && URIDeserializer.validateURI(value)) {
+            } else if (model.isObjectPropertyRestriction(propertyURI) && URIDeserializer.validateURI(value)) {
                     try {
                         URI objectURI = new URI(value);
                         URI classURI = restriction.getSubjectURI();
@@ -280,28 +355,43 @@ public final class OntologyDAO {
                     } catch (Exception ex) {
                         LOGGER.warn("Error while creating or validating URI that should never happend with value: " + value, ex);
                     }
-                }
             }
         }
 
         return false;
     }
 
-    public SPARQLTreeListModel<DatatypePropertyModel> searchDataProperties(URI domain, String lang) throws Exception {
+
+
+    public SPARQLTreeListModel<DatatypePropertyModel> searchDataProperties(URI domain, String pattern, String lang) throws Exception {
+        return searchProperties(DatatypePropertyModel.class, topDataPropertyUri, domain, pattern, lang);
+    }
+
+    public SPARQLTreeListModel<ObjectPropertyModel> searchObjectProperties(URI domain, String pattern, String lang) throws Exception {
+        return searchProperties(ObjectPropertyModel.class, topObjectPropertyUri, domain, pattern, lang);
+    }
+
+    private <PT extends AbstractPropertyModel<PT>> SPARQLTreeListModel<PT> searchProperties(Class<PT> propertyClazz, URI topPropertyUri, URI domain, String pattern, String lang) throws Exception {
 
         Map<String, WhereHandler> customHandlerByFields = new HashMap<>();
         addDomainSubClassOfExistExpr(customHandlerByFields, domain);
 
         return sparql.searchResourceTree(
-               null, // don't specify a graph, since multiple graph can contain a property definition
-                DatatypePropertyModel.class,
+                null, // don't specify a graph, since multiple graph can contain a property definition
+                propertyClazz,
                 lang,
-                topDataPropertyUri,
+                topPropertyUri,
                 true,
-                this::appendDomainBoundExpr,
+                select -> {
+                    appendDomainBoundExpr(select);
+                    if (!StringUtils.isEmpty(pattern)) {
+                        select.addFilter(SPARQLQueryHelper.regexFilter(VocabularyModel.LABEL_FIELD, pattern));
+                    }
+                },
                 customHandlerByFields
         );
     }
+
 
     protected void appendDomainBoundExpr(SelectBuilder select) {
 
@@ -309,49 +399,95 @@ public final class OntologyDAO {
 
         // the filtering on domain subClass will apply for any bound type,
         // but if type is not bound, it match since the domain field is optional. So we must ensure that domain is bound
-        select.addFilter(exprFactory.bound(makeVar(ObjectPropertyModel.DOMAIN_FIELD)));
-    }
-
-    public SPARQLTreeListModel<ObjectPropertyModel> searchObjectProperties(URI domain, String lang) throws Exception {
-
-        Map<String, WhereHandler> customHandlerByFields = new HashMap<>();
-        addDomainSubClassOfExistExpr(customHandlerByFields, domain);
-
-        return sparql.searchResourceTree(
-                null, // don't specify a graph, since multiple graph can contain a property definition
-                ObjectPropertyModel.class,
-                lang,
-                topObjectPropertyUri,
-                true,
-                this::appendDomainBoundExpr,
-                customHandlerByFields
-        );
+        select.addFilter(exprFactory.bound(makeVar(AbstractPropertyModel.DOMAIN_FIELD)));
     }
 
     private void addDomainSubClassOfExistExpr(Map<String, WhereHandler> customHandlerByFields, URI domain) {
 
         if (domain != null) {
             WhereHandler handler = new WhereHandler();
-            handler.addWhere(new TriplePath(makeVar(DatatypePropertyModel.DOMAIN_FIELD), Ontology.subClassAny, SPARQLDeserializers.nodeURI(domain)));
-            customHandlerByFields.put(DatatypePropertyModel.DOMAIN_FIELD, handler);
+            handler.addWhere(new TriplePath(makeVar(AbstractPropertyModel.DOMAIN_FIELD), Ontology.subClassAny, SPARQLDeserializers.nodeURI(domain)));
+            customHandlerByFields.put(AbstractPropertyModel.DOMAIN_FIELD, handler);
         }
     }
 
+    private void addGetLinkablePropertyHandler(Map<String, WhereHandler> customHandlerByFields, URI domain, URI ancestor) {
 
-    public void createDataProperty(Node graph, DatatypePropertyModel dataProperty) throws Exception {
-        sparql.create(graph, dataProperty);
+        Var domainVar = makeVar(AbstractPropertyModel.DOMAIN_FIELD);
 
-        // get the inserted model, by loading this model by the SPARQL service, we ensure that all fields are auto-filled if possible (e.g. rdfTypeName)
-        DatatypePropertyModel insertedProperty = getDataProperty(dataProperty.getUri(),null,null);
-       // CoreModule.getOntologyCacheInstance().createDataProperty(insertedProperty);
+        if (domain != null) {
+            WhereHandler handler = new WhereHandler();
+            customHandlerByFields.put(AbstractPropertyModel.DOMAIN_FIELD, handler);
+
+            // add :domain_uri rdfs:subClassOf* ?domain
+            handler.addWhere(new TriplePath(SPARQLDeserializers.nodeURI(domain),Ontology.subClassAny,domainVar));
+
+            if(ancestor != null){
+                // add ?domain rdfs:subClassOf* :ancestor_uri
+                handler.addWhere(new TriplePath(domainVar, Ontology.subClassAny, SPARQLDeserializers.nodeURI(ancestor)));
+            }
+        }
     }
 
-    public void createObjectProperty(Node graph, ObjectPropertyModel objectProperty) throws Exception {
-        sparql.create(graph, objectProperty);
+    protected void appendPropertyNotRestrictedFilter(SelectBuilder select, URI domain){
 
-        // get the inserted model, by loading this model by the SPARQL service, we ensure that all fields are auto-filled if possible (e.g. rdfTypeName)
-        ObjectPropertyModel insertedProperty = getObjectProperty(objectProperty.getUri(),null,null);
-       // CoreModule.getOntologyCacheInstance().createObjectProperty(insertedProperty);
+        appendDomainBoundExpr(select);
+
+        Var restrictionVar = makeVar("restriction");
+        Var restrictedClassVar = makeVar("restricted_class");
+
+        Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
+
+        // add ( MINUS { properties which are already linked to a restriction } )
+        select.addMinus(new WhereBuilder()
+                .addWhere(restrictionVar, OWL2.onProperty, uriVar)
+                .addWhere(restrictedClassVar,RDFS.subClassOf,restrictionVar)
+                .addWhere(SPARQLDeserializers.nodeURI(domain), Ontology.subClassAny, restrictedClassVar)
+        );
+    }
+
+    private <PT extends AbstractPropertyModel<PT>> Set<PT> getLinkableProperties(Class<PT> propertyClazz, URI topPropertyUri, URI domain, URI ancestor, String lang) throws SPARQLException {
+
+        Map<String, WhereHandler> customHandlerByFields = new HashMap<>();
+        addGetLinkablePropertyHandler(customHandlerByFields, domain, ancestor);
+
+        Set<PT> modelSet = new HashSet<>();
+
+        try {
+            sparql.searchResourceTree(
+                    null, // don't specify a graph, since multiple graph can contain a property definition
+                    propertyClazz,
+                    lang,
+                    topPropertyUri,
+                    true,
+                    select -> {
+                        appendPropertyNotRestrictedFilter(select, domain);
+                    },
+                    customHandlerByFields
+            ).traverse(modelSet::add);
+
+        } catch (Exception e) {
+            throw new SPARQLException(e);
+        }
+
+        return modelSet;
+    }
+
+    public Set<DatatypePropertyModel> getLinkableDataProperties(URI domain, URI ancestor, String lang) throws SPARQLException {
+        return getLinkableProperties(DatatypePropertyModel.class, topDataPropertyUri, domain, ancestor, lang);
+    }
+
+    public Set<ObjectPropertyModel> getLinkableObjectProperties(URI domain, URI ancestor, String lang) throws SPARQLException {
+        return getLinkableProperties(ObjectPropertyModel.class, topObjectPropertyUri, domain, ancestor, lang);
+    }
+
+
+    public void createDataProperty(DatatypePropertyModel dataProperty) throws Exception {
+        sparql.create(customGraph, dataProperty);
+    }
+
+    public void createObjectProperty(ObjectPropertyModel objectProperty) throws Exception {
+        sparql.create(customGraph, objectProperty);
     }
 
     public DatatypePropertyModel getDataProperty(URI propertyURI, URI domain, String lang) throws Exception {
@@ -393,81 +529,83 @@ public final class OntologyDAO {
         Node newRangeNode = SPARQLDeserializers.nodeURI(newRange);
 
         Triple oldRangeTriple = isDataProperty ?
-                new Triple(uriVar,OWL2.onDataRange.asNode(),rangeVar) :
-                new Triple(uriVar,OWL2.onClass.asNode(),rangeVar);
+                new Triple(uriVar, OWL2.onDataRange.asNode(), rangeVar) :
+                new Triple(uriVar, OWL2.onClass.asNode(), rangeVar);
 
         Triple newRangeTriple = isDataProperty ?
-                new Triple(uriVar,OWL2.onDataRange.asNode(),newRangeNode) :
-                new Triple(uriVar,OWL2.onClass.asNode(),newRangeNode);
+                new Triple(uriVar, OWL2.onDataRange.asNode(), newRangeNode) :
+                new Triple(uriVar, OWL2.onClass.asNode(), newRangeNode);
 
         UpdateBuilder update = new UpdateBuilder()
-                .addDelete(oldRangeTriple)
-                .addInsert(newRangeTriple)
-                .addWhere(uriVar,OWL2.onProperty,propertyNode)
-                .addWhere(oldRangeTriple);
+                .addDelete(customGraph, oldRangeTriple)
+                .addInsert(customGraph, newRangeTriple)
+                .addGraph(customGraph, new WhereBuilder().
+                        addWhere(uriVar, OWL2.onProperty, propertyNode)
+                        .addWhere(oldRangeTriple));
+
 
         sparql.executeUpdateQuery(update);
     }
 
-    public void updateDataProperty(Node graph, DatatypePropertyModel property) throws Exception {
+    public void updateDataProperty(DatatypePropertyModel property) throws Exception {
 
-        try{
+        try {
             sparql.startTransaction();
-            sparql.update(graph, property);
-            updateRestrictionRangeOnProperty(property.getUri(),property.getRange(),true);
+            sparql.update(customGraph, property);
+            updateRestrictionRangeOnProperty(property.getUri(), property.getRange(), true);
             sparql.commitTransaction();
-        }catch (Exception e){
+        } catch (Exception e) {
             sparql.rollbackTransaction(e);
         }
-
-        // get the inserted model, by loading this model by the SPARQL service, we ensure that all fields are auto-filled if possible (e.g. rdfTypeName)
-        DatatypePropertyModel updatedProperty = getDataProperty(property.getUri(),null,null);
-       // CoreModule.getOntologyCacheInstance().updateDataProperty(updatedProperty);
     }
 
-    public void updateObjectProperty(Node graph, ObjectPropertyModel property) throws Exception {
+    public void updateObjectProperty(ObjectPropertyModel property) throws Exception {
 
-        try{
+        try {
             sparql.startTransaction();
-            sparql.update(graph, property);
-            updateRestrictionRangeOnProperty(property.getUri(),property.getRange().getUri(),false);
+            sparql.update(customGraph, property);
+            updateRestrictionRangeOnProperty(property.getUri(), property.getRange().getUri(), false);
             sparql.commitTransaction();
-        }catch (Exception e){
+        } catch (Exception e) {
             sparql.rollbackTransaction(e);
         }
-
-        // get the updated model, by loading this model by the SPARQL service, we ensure that all fields are auto-filled if possible (e.g. rdfTypeName)
-        ObjectPropertyModel updatedProperty = getObjectProperty(property.getUri(),null,null);
-       // CoreModule.getOntologyCacheInstance().updateObjectProperty(updatedProperty);
-
     }
 
-    public void deleteDataProperty(Node propertyGraph, URI propertyURI) throws Exception {
-        ClassModel domain = getDataProperty(propertyURI, null, null).getDomain();
-        if (domain != null) {
-           // CoreModule.getOntologyCacheInstance().deleteDataProperty(propertyURI, domain.getUri());
+    public void deleteDataProperty(URI uri) throws Exception {
+        // check that no instance is associated to class
+        if (sparql.anyPropertyValue(uri)) {
+            throw new IllegalArgumentException("Some objects use the data-property " + uri + ". You must delete these relations first");
         }
 
-        sparql.delete(propertyGraph, DatatypePropertyModel.class, propertyURI);
-    }
-
-    public void deleteObjectProperty(Node propertyGraph, URI propertyURI) throws Exception {
-        ClassModel domain = getObjectProperty(propertyURI, null, null).getDomain();
-        if (domain != null) {
-           // CoreModule.getOntologyCacheInstance().deleteObjectProperty(propertyURI, domain.getUri());
+        DatatypePropertyModel model = getDataProperty(uri,null,null);
+        if(! model.getChildren().isEmpty()){
+            throw new IllegalArgumentException("The property "+uri+" has child properties. You must delete them thirst");
         }
 
-        sparql.delete(propertyGraph, ObjectPropertyModel.class, propertyURI);
+        sparql.delete(customGraph, DatatypePropertyModel.class, uri);
     }
 
-    public boolean addClassPropertyRestriction(Node graph, URI classURI, OwlRestrictionModel restriction, String lang) throws Exception {
-        List<OwlRestrictionModel> results = getClassPropertyRestriction(graph, classURI, restriction.getOnProperty(), lang);
+    public void deleteObjectProperty(URI uri) throws Exception {
+
+        // check that no instance is associated to class
+        if (sparql.anyPropertyValue(uri)) {
+            throw new IllegalArgumentException("Some objects use the object-property " + uri + ". You must delete these relations first");
+        }
+
+        ObjectPropertyModel model = getObjectProperty(uri,null,null);
+        if(! model.getChildren().isEmpty()){
+            throw new IllegalArgumentException("The property "+uri+" has child properties. You must delete them thirst");
+        }
+        sparql.delete(customGraph, ObjectPropertyModel.class, uri);
+    }
+
+    public boolean addClassPropertyRestriction(URI classURI, OwlRestrictionModel restriction, String lang) throws Exception {
+        List<OwlRestrictionModel> results = getClassPropertyRestriction(null, classURI, restriction.getOnProperty(), lang);
 
         if (results.size() == 0) {
-            sparql.create(graph, restriction, false, true, (create, node) -> {
-                create.addInsert(graph, SPARQLDeserializers.nodeURI(classURI), RDFS.subClassOf, node);
+            sparql.create(customGraph, restriction, false, true, (create, node) -> {
+                create.addInsert(customGraph, SPARQLDeserializers.nodeURI(classURI), RDFS.subClassOf, node);
             });
-           // CoreModule.getOntologyCacheInstance().addRestriction(restriction);
             return true;
         } else {
             return false;
@@ -490,33 +628,28 @@ public final class OntologyDAO {
         );
     }
 
-    public void deleteClassPropertyRestriction(Node graph, URI classURI, URI propertyURI, String lang) throws Exception {
-        List<OwlRestrictionModel> results = getClassPropertyRestriction(graph, classURI, propertyURI, lang);
+    public void deleteClassPropertyRestriction(URI classURI, URI propertyURI, String lang) throws Exception {
+        List<OwlRestrictionModel> results = getClassPropertyRestriction(customGraph, classURI, propertyURI, lang);
 
         if (results.size() == 0) {
             throw new NotFoundException("Class property restriction not found for : " + classURI.toString() + " - " + propertyURI.toString());
         } else if (results.size() > 1) {
-            throw new NotFoundException("Multiple class property restrictions found (should never happend) for : " + classURI.toString() + " - " + propertyURI.toString());
+            throw new NotFoundException("Multiple class property restrictions found (should never happened) for : " + classURI.toString() + " - " + propertyURI.toString());
         } else {
             UpdateBuilder delete = new UpdateBuilder();
-            delete.addDelete(graph, SPARQLDeserializers.nodeURI(classURI), RDFS.subClassOf, "?s");
-            delete.addDelete(graph, "?s", "?p", "?o");
+            delete.addDelete(customGraph, SPARQLDeserializers.nodeURI(classURI), RDFS.subClassOf, "?s");
+            delete.addDelete(customGraph, "?s", "?p", "?o");
             delete.addWhere("?s", OWL2.onProperty, SPARQLDeserializers.nodeURI(propertyURI));
             delete.addWhere("?s", "?p", "?o");
             sparql.executeDeleteQuery(delete);
-
-           // CoreModule.getOntologyCacheInstance().deleteRestriction(propertyURI, classURI);
         }
     }
 
-    public void updateClassPropertyRestriction(Node graph, URI classURI, OwlRestrictionModel restriction, String language) throws Exception {
+    public void updateClassPropertyRestriction(URI classURI, OwlRestrictionModel restriction, String language) throws Exception {
         try {
             sparql.startTransaction();
-            deleteClassPropertyRestriction(graph, classURI, restriction.getOnProperty(), language);
-            addClassPropertyRestriction(graph, classURI, restriction, language);
-
-           // CoreModule.getOntologyCacheInstance().updateRestriction(restriction);
-
+            deleteClassPropertyRestriction(classURI, restriction.getOnProperty(), language);
+            addClassPropertyRestriction(classURI, restriction, language);
             sparql.commitTransaction();
 
         } catch (Exception ex) {
@@ -547,58 +680,57 @@ public final class OntologyDAO {
 
     public List<SPARQLNamedResourceModel> getURILabels(Collection<URI> uris, String language, URI context) throws Exception {
         List<SPARQLNamedResourceModel> resultList = new ArrayList<>();
-        
+
         if (uris.size() > 0) {
             // Gracefully handle empty uris.
             // SHOULD be backward compatible, since prvious behaviour in said situation was crash
-        SelectBuilder select = new SelectBuilder();
-        select.setDistinct(true);
+            SelectBuilder select = new SelectBuilder();
+            select.setDistinct(true);
 
-        String nameField = "name";
-        String namesField = "names";
-        Var nameVar = makeVar(nameField);
-        ExprFactory exprFactory = select.getExprFactory();
-        Aggregator groupConcat = AggregatorFactory.createGroupConcat(true, exprFactory.asExpr(nameVar), " | ", null);
-        Var fieldConcatVar = makeVar(namesField);
-        select.addVar(groupConcat.toString(), fieldConcatVar);
+            String nameField = "name";
+            String namesField = "names";
+            Var nameVar = makeVar(nameField);
+            ExprFactory exprFactory = select.getExprFactory();
+            Aggregator groupConcat = AggregatorFactory.createGroupConcat(true, exprFactory.asExpr(nameVar), " | ", null);
+            Var fieldConcatVar = makeVar(namesField);
+            select.addVar(groupConcat.toString(), fieldConcatVar);
 
-        Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
-        select.addVar(uriVar);
-        Var typeVar = makeVar(SPARQLResourceModel.TYPE_FIELD);
-        select.addVar(typeVar);
-        Var typeNameVar = makeVar(SPARQLResourceModel.TYPE_NAME_FIELD);
-        select.addVar(typeNameVar);
+            Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
+            select.addVar(uriVar);
+            Var typeVar = makeVar(SPARQLResourceModel.TYPE_FIELD);
+            select.addVar(typeVar);
+            Var typeNameVar = makeVar(SPARQLResourceModel.TYPE_NAME_FIELD);
+            select.addVar(typeNameVar);
 
-        if (context != null) {
-            select.addGraph(NodeFactory.createURI(SPARQLDeserializers.nodeURI(context).toString()), new Triple(uriVar, NodeFactory.createURI(RDFS.label.toString()), nameVar));
-        } else {
-            select.addWhere(uriVar, RDFS.label, nameVar);
-        }
-        select.addWhere(uriVar, RDF.type, typeVar);
-        select.addWhere(typeVar, RDFS.label, typeNameVar);
-        select.addGroupBy(SPARQLResourceModel.URI_FIELD).addGroupBy(SPARQLResourceModel.TYPE_FIELD).addGroupBy(SPARQLResourceModel.TYPE_NAME_FIELD);
-        Locale locale = Locale.forLanguageTag(language);
-        select.addFilter(SPARQLQueryHelper.langFilterWithDefault(nameField, locale.getLanguage()));
-        select.addFilter(SPARQLQueryHelper.langFilterWithDefault(SPARQLResourceModel.TYPE_NAME_FIELD, locale.getLanguage()));
+            if (context != null) {
+                select.addGraph(NodeFactory.createURI(SPARQLDeserializers.nodeURI(context).toString()), new Triple(uriVar, NodeFactory.createURI(RDFS.label.toString()), nameVar));
+            } else {
+                select.addWhere(uriVar, RDFS.label, nameVar);
+            }
+            select.addWhere(uriVar, RDF.type, typeVar);
+            select.addWhere(typeVar, RDFS.label, typeNameVar);
+            select.addGroupBy(SPARQLResourceModel.URI_FIELD).addGroupBy(SPARQLResourceModel.TYPE_FIELD).addGroupBy(SPARQLResourceModel.TYPE_NAME_FIELD);
+            Locale locale = Locale.forLanguageTag(language);
+            select.addFilter(SPARQLQueryHelper.langFilterWithDefault(nameField, locale.getLanguage()));
+            select.addFilter(SPARQLQueryHelper.langFilterWithDefault(SPARQLResourceModel.TYPE_NAME_FIELD, locale.getLanguage()));
             select.addFilter(SPARQLQueryHelper.inURIFilter(SPARQLResourceModel.URI_FIELD, uris));
-   
 
 
-        List<SPARQLResult> results = sparql.executeSelectQuery(select);
-        SPARQLDeserializer<URI> uriDeserializer = SPARQLDeserializers.getForClass(URI.class);
-        
-        for (SPARQLResult result : results) {
-            SPARQLNamedResourceModel model = new SPARQLNamedResourceModel();
-            model.setName(result.getStringValue(namesField));
-            model.setUri(uriDeserializer.fromString(result.getStringValue(SPARQLResourceModel.URI_FIELD)));
-            model.setType(uriDeserializer.fromString(result.getStringValue(SPARQLResourceModel.TYPE_FIELD)));
-            SPARQLLabel typeLabel = new SPARQLLabel();
-            typeLabel.setDefaultLang(locale.getLanguage());
-            typeLabel.setDefaultValue(result.getStringValue(SPARQLResourceModel.TYPE_NAME_FIELD));
-            model.setTypeLabel(typeLabel);
-            resultList.add(model);
+            List<SPARQLResult> results = sparql.executeSelectQuery(select);
+            SPARQLDeserializer<URI> uriDeserializer = SPARQLDeserializers.getForClass(URI.class);
+
+            for (SPARQLResult result : results) {
+                SPARQLNamedResourceModel model = new SPARQLNamedResourceModel();
+                model.setName(result.getStringValue(namesField));
+                model.setUri(uriDeserializer.fromString(result.getStringValue(SPARQLResourceModel.URI_FIELD)));
+                model.setType(uriDeserializer.fromString(result.getStringValue(SPARQLResourceModel.TYPE_FIELD)));
+                SPARQLLabel typeLabel = new SPARQLLabel();
+                typeLabel.setDefaultLang(locale.getLanguage());
+                typeLabel.setDefaultValue(result.getStringValue(SPARQLResourceModel.TYPE_NAME_FIELD));
+                model.setTypeLabel(typeLabel);
+                resultList.add(model);
+            }
         }
-     }
         return resultList;
     }
 
@@ -696,5 +828,6 @@ public final class OntologyDAO {
 
         return resultList;
     }
+
 
 }

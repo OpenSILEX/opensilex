@@ -13,6 +13,8 @@ import org.opensilex.uri.generation.ClassURIGenerator;
 
 import java.net.URI;
 
+import static org.opensilex.sparql.ontology.dal.OntologyDAO.CUSTOM_TYPES_AND_PROPERTIES_GRAPH;
+
 /**
  *
  * @author vince
@@ -20,8 +22,7 @@ import java.net.URI;
 @SPARQLResource(
         ontology = VueOwlExtension.class,
         resource = "ClassPropertyExtension",
-        graph = VueClassExtensionModel.GRAPH,
-        prefix = "oowl-ext"
+        graph = CUSTOM_TYPES_AND_PROPERTIES_GRAPH
 )
 public class VueClassPropertyExtensionModel extends SPARQLResourceModel implements ClassURIGenerator<VueClassPropertyExtensionModel> {
 

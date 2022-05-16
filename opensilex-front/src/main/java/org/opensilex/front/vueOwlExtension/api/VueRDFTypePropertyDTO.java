@@ -6,16 +6,20 @@
 package org.opensilex.front.vueOwlExtension.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.opensilex.front.vueOwlExtension.dal.VueOwlExtensionDAO;
+import org.opensilex.front.vueOwlExtension.types.VueOntologyObjectType;
+import org.opensilex.front.vueOwlExtension.types.VueOntologyType;
+import org.opensilex.sparql.ontology.dal.*;
+
 import java.net.URI;
 import java.util.Map;
 
 /**
- *
  * @author vmigot
  */
 public class VueRDFTypePropertyDTO {
 
-    protected URI property;
+    protected URI uri;
 
     @JsonProperty("target_property")
     protected URI targetProperty;
@@ -44,12 +48,54 @@ public class VueRDFTypePropertyDTO {
     @JsonProperty("is_custom")
     protected boolean isCustom;
 
-    public URI getProperty() {
-        return property;
+    public VueRDFTypePropertyDTO() {
     }
 
-    public void setProperty(URI property) {
-        this.property = property;
+    public VueRDFTypePropertyDTO(ClassModel classModel, AbstractPropertyModel<?> propertyModel) {
+
+        setIsCustom(false);
+        setUri(propertyModel.getUri());
+        setName(propertyModel.getName());
+        if (propertyModel.getComment() != null) {
+            setComment(propertyModel.getComment().getDefaultValue());
+        }
+
+        // use restriction for list/required/inherited
+        OwlRestrictionModel restriction = classModel.getRestrictionsByProperties().get(propertyModel.getUri());
+        setIsList(restriction.isList());
+        setIsRequired(restriction.isRequired());
+        setInherited(classModel.isInherited(restriction));
+
+        URI range = propertyModel instanceof ObjectPropertyModel ?
+                restriction.getOnClass() :
+                restriction.getOnDataRange();
+
+        if(range == null){
+            return;
+        }
+
+        // get vue description associated with the range/target datatype/type
+        VueOntologyType vueType = VueOwlExtensionDAO.getVueType(range);
+        if (vueType != null) {
+            setTargetProperty(range);
+            setInputComponent(vueType.getInputComponent());
+            setViewComponent(vueType.getViewComponent());
+            setIsCustom(true);
+
+            if(propertyModel instanceof ObjectPropertyModel){
+                VueOntologyObjectType vueObjectType = (VueOntologyObjectType) vueType;
+                setInputComponentsByProperty(vueObjectType.getInputComponentsMap());
+            }
+        }
+
+    }
+
+    public URI getUri() {
+        return uri;
+    }
+
+    public void setUri(URI uri) {
+        this.uri = uri;
     }
 
     public URI getTargetProperty() {

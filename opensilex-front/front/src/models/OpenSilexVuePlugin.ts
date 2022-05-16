@@ -431,12 +431,14 @@ export default class OpenSilexVuePlugin {
     private handleError(error, message?) {
         if (!message && !!error.response && !!error.response.result && !!error.response.result.translationKey) {
             message = this.$i18n.t(error.response.result.translationKey, error.response.result.translationValues);
+        }else if(error.response.result.message){
+            message = error.response.result.message;
         }
 
         this.enableLoader();
         switch (error.status) {
             case 400:
-                console.error("Constraint validation error", error);
+                console.error("Constraint validation error", message);
                 this.handleConstraintError(error, message);
                 break;
             case 401:

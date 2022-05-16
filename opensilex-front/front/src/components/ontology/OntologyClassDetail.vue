@@ -172,6 +172,7 @@
                 editTitle="OntologyClassDetail.updateProperty"
                 @onCreate="$emit('onDetailChange')"
                 @onUpdate="$emit('onDetailChange')"
+                successMessage="OntologyClassView.the-type"
             ></opensilex-ModalForm>
         </div>
     </b-card>
@@ -182,6 +183,8 @@ import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
 import {OntologyService} from "opensilex-core/index";
+import {VueRDFTypePropertyDTO} from "../../lib";
+import OntologyClassPropertyForm from "./OntologyClassPropertyForm.vue";
 
 @Component
 export default class OntologyClassDetail extends Vue {
@@ -237,29 +240,30 @@ export default class OntologyClassDetail extends Vue {
         );
     }
 
-    get properties() {
-        let allProps = this.selected.data_properties.concat(
+    get properties(): VueRDFTypePropertyDTO[] {
+        let allProps: VueRDFTypePropertyDTO[] = this.selected.data_properties.concat(
             this.selected.object_properties
         );
         let pOrder = this.selected.properties_order;
+
         allProps.sort((a, b) => {
-            if (a.property == b.property) {
+            if (a.uri == b.uri) {
                 return 0;
             }
 
-            if (a.property == "rdfs:label") {
+            if (a.uri == "rdfs:label") {
                 return -1;
             }
 
-            if (b.property == "rdfs:label") {
+            if (b.uri == "rdfs:label") {
                 return 1;
             }
 
-            let aIndex = pOrder.indexOf(a.property);
-            let bIndex = pOrder.indexOf(b.property);
+            let aIndex = pOrder.indexOf(a.uri);
+            let bIndex = pOrder.indexOf(b.uri);
             if (aIndex == -1) {
                 if (bIndex == -1) {
-                    return a.property.localeCompare(b.property);
+                    return a.uri.localeCompare(b.uri);
                 } else {
                     return -1;
                 }
@@ -271,15 +275,17 @@ export default class OntologyClassDetail extends Vue {
                 }
             }
         });
-        return allProps;
+
+      return allProps;
     }
 
     addProperty() {
-        this.ontologyService.getProperties(this.rdfType).then((http) => {
-            let formRef = this.classPropertyForm.getFormRef();
+        // get properties, only property which apply on this type, and with a properly rdfs:range defined
+      this.ontologyService.getLinkableProperties(this.selected.uri, this.rdfType).then((http) => {
+            let formRef: OntologyClassPropertyForm = this.classPropertyForm.getFormRef();
             formRef.setDomain(this.rdfType);
             formRef.setClassURI(this.selected.uri);
-            formRef.setProperties(http.response.result, this.properties);
+            formRef.setProperties(http.response.result);
             this.classPropertyForm.showCreateForm();
         });
     }
@@ -296,8 +302,9 @@ export default class OntologyClassDetail extends Vue {
     setPropertiesOrder() {
         let propertiesOrder = ["rdfs:label"];
         for (let p of this.customPropertyOrder) {
-            propertiesOrder.push(p.property);
+            propertiesOrder.push(p.uri);
         }
+
 
         this.ontologyService = this.$opensilex
             .getService("opensilex-front.VueJsOntologyExtensionService")
@@ -311,7 +318,7 @@ export default class OntologyClassDetail extends Vue {
     startSetPropertiesOrder() {
         this.customPropertyOrder = [];
         for (let p of this.properties) {
-            if (p.property != "rdfs:label") {
+            if (p.uri != "rdfs:label") {
                 this.customPropertyOrder.push(p);
             }
         }

@@ -123,7 +123,7 @@
             <template v-slot:body>
               <opensilex-TableView
                 v-if="device.relations.length !== 0"
-                :items="device.relations"
+                :items="device.relations.filter(relation => isVariableRelation(relation))"
                 :fields="relationsFields"
                 :globalFilterField="true"
               >
@@ -177,6 +177,7 @@ import Vue from "vue";
 // @ts-ignore
 import { DevicesService, DeviceGetDetailsDTO, SecurityService, UserGetDTO } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
+import {RDFObjectRelationDTO} from "opensilex-core/model/rDFObjectRelationDTO";
 
 @Component
 export default class DeviceDescription extends Vue {
@@ -312,6 +313,12 @@ export default class DeviceDescription extends Vue {
     let devicetoSend = JSON.parse(JSON.stringify(this.device));
     this.deviceForm.showEditForm(devicetoSend);
   }
+
+  isVariableRelation(relation: RDFObjectRelationDTO): boolean {
+    const measures_prop = this.$opensilex.Oeso.MEASURES_PROP_URI;
+    return relation.property == measures_prop || relation.property == this.$opensilex.Oeso.getShortURI(measures_prop);
+  }
+
 }
 </script>
 

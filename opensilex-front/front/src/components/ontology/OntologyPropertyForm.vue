@@ -1,263 +1,298 @@
 <template>
-  <b-form v-if="form.name_translations">
-    <opensilex-InputForm
-      :value.sync="form.uri"
-      label="component.common.uri"
-      type="text"
-      rules="url"
-      :disabled="editMode"
-      :required="true"
-    ></opensilex-InputForm>
+    <b-form v-if="form.name_translations">
+        <opensilex-InputForm
+            :value.sync="form.uri"
+            label="component.common.uri"
+            type="text"
+            rules="url"
+            :disabled="editMode"
+            :required="true"
+        ></opensilex-InputForm>
 
-    <b-form-group :label="$t('OntologyPropertyForm.propertyType')">
-      <b-form-radio
-        v-model="form.rdf_type"
-        name="propertyType"
-        id="datatypeRadio"
-        :value="OWL.DATATYPE_PROPERTY_URI"
-        :disabled="editMode"
-      >{{$t("OntologyPropertyForm.dataProperty")}}</b-form-radio>
-      <b-form-radio
-        v-model="form.rdf_type"
-        name="propertyType"
-        :value="OWL.OBJECT_PROPERTY_URI"
-        :disabled="editMode"
-      >{{$t("OntologyPropertyForm.objectProperty")}}</b-form-radio>
-      <b-form-radio
-        v-model="form.rdf_type"
-        name="inheritedType"
-        :value="null"
-        :disabled="editMode"
-      >{{$t("OntologyPropertyForm.inheritedType")}}</b-form-radio>
-    </b-form-group>
+        <hr/>
 
-    <opensilex-SelectForm
-      v-if="form.rdf_type == OWL.DATATYPE_PROPERTY_URI"
-      label="OntologyPropertyForm.data-type"
-      :required="true"
-      :selected.sync="form.range"
-      :options="datatypes"
-    ></opensilex-SelectForm>
+        <div class="row">
 
-    <opensilex-SelectForm
-      v-if="form.rdf_type == OWL.OBJECT_PROPERTY_URI"
-      label="OntologyPropertyForm.object-type"
-      :required="true"
-      :selected.sync="form.range"
-      :options="objectTypes"
-    ></opensilex-SelectForm>
+            <div class="col-lg-6">
+                <b-form-group :label="$t('OntologyPropertyForm.propertyType')">
+                    <b-form-radio
+                        v-model="form.rdf_type"
+                        name="propertyType"
+                        id="datatypeRadio"
+                        :value="OWL.DATATYPE_PROPERTY_URI"
+                        :disabled="editMode"
+                    >{{$t("OntologyPropertyForm.dataProperty")}}
+                    </b-form-radio>
+                    <b-form-radio
+                        v-model="form.rdf_type"
+                        name="propertyType"
+                        :value="OWL.OBJECT_PROPERTY_URI"
+                        :disabled="editMode"
+                    >{{$t("OntologyPropertyForm.objectProperty")}}
+                    </b-form-radio>
+                    <b-form-radio
+                        v-model="form.rdf_type"
+                        name="inheritedType"
+                        :value="null"
+                        :disabled="editMode"
+                    >{{$t("OntologyPropertyForm.inheritedType")}}
+                    </b-form-radio>
+                </b-form-group>
+            </div>
+            <div class="col-lg-6">
+                <opensilex-SelectForm
+                    v-if="form.rdf_type == OWL.DATATYPE_PROPERTY_URI"
+                    label="OntologyPropertyForm.data-type"
+                    :required="true"
+                    :selected.sync="form.range"
+                    :options="datatypes"
+                    helpMessage="OntologyPropertyForm.dataProperty-help"
+                ></opensilex-SelectForm>
 
-    <opensilex-SelectForm
-      v-if="form.rdf_type == null"
-      label="component.common.parent"
-      :required="true"
-      :selected.sync="form.parent"
-      :options="availableParents"
-    ></opensilex-SelectForm>
+                <opensilex-SelectForm
+                    v-if="form.rdf_type == OWL.OBJECT_PROPERTY_URI"
+                    label="OntologyPropertyForm.object-type"
+                    :required="true"
+                    :selected.sync="form.range"
+                    :options="objectTypes"
+                    helpMessage="OntologyPropertyForm.objectProperty-help"
+                ></opensilex-SelectForm>
 
-    <opensilex-InputForm
-      :value.sync="form.name_translations.en"
-      label="OntologyPropertyForm.labelEN"
-      type="text"
-      :required="true"
-    ></opensilex-InputForm>
+                <opensilex-SelectForm
+                    v-if="form.rdf_type == null"
+                    label="component.common.parent"
+                    :required="true"
+                    :selected.sync="form.parent"
+                    :options="availableParents"
+                    helpMessage="OntologyPropertyForm.inheritedType-help"
+                ></opensilex-SelectForm>
 
-    <opensilex-TextAreaForm
-      :value.sync="form.comment_translations.en"
-      label="OntologyPropertyForm.commentEN"
-      :required="true"
-    ></opensilex-TextAreaForm>
+                <opensilex-TypeForm
+                    :type.sync="form.domain"
+                    :baseType="this.domain"
+                    ignoreRoot="false"
+                    label="OntologyPropertyForm.domain"
+                    helpMessage="OntologyPropertyForm.domain-help"
+                ></opensilex-TypeForm>
+            </div>
 
-    <opensilex-InputForm
-      :value.sync="form.name_translations.fr"
-      label="OntologyPropertyForm.labelFR"
-      type="text"
-      :required="true"
-    ></opensilex-InputForm>
+        </div>
 
-    <opensilex-TextAreaForm
-      :value.sync="form.comment_translations.fr"
-      label="OntologyPropertyForm.commentFR"
-      :required="true"
-    ></opensilex-TextAreaForm>
-  </b-form>
+
+        <hr/>
+        <opensilex-InputForm
+            :value.sync="form.name_translations.en"
+            label="OntologyPropertyForm.labelEN"
+            type="text"
+            :required.sync="enLangRequired"
+        ></opensilex-InputForm>
+
+        <opensilex-TextAreaForm
+            :value.sync="form.comment_translations.en"
+            label="OntologyPropertyForm.commentEN"
+            :required="false"
+        ></opensilex-TextAreaForm>
+
+        <opensilex-InputForm
+            :value.sync="form.name_translations.fr"
+            label="OntologyPropertyForm.labelFR"
+            type="text"
+            :required.sync="otherLangRequired"
+        ></opensilex-InputForm>
+
+        <opensilex-TextAreaForm
+            :value.sync="form.comment_translations.fr"
+            label="OntologyPropertyForm.commentFR"
+            :required="false"
+        ></opensilex-TextAreaForm>
+
+    </b-form>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Ref } from "vue-property-decorator";
+import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import OWL from "../../ontologies/OWL";
 // @ts-ignore
-import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
+import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+import {OntologyService} from "opensilex-core/api/ontology.service";
 
 @Component
 export default class OntologyPropertyForm extends Vue {
-  $opensilex: any;
-  OWL = OWL;
+    $opensilex: OpenSilexVuePlugin;
+    $store: any;
+    OWL = OWL;
+    service: OntologyService;
 
-  @Prop()
-  editMode;
-
-  @Prop({
-    default: () => {
-      return {
-        uri: null,
-        rdf_type: OWL.DATATYPE_PROPERTY_URI,
-        parent: null,
-        name: null,
-        name_translations: {},
-        comment: null,
-        comment_translations: {},
-        domain: null,
-        range: null
-      };
-    }
-  })
-  form;
-
-  getEmptyForm() {
-    return {
-      uri: null,
-      rdf_type: OWL.DATATYPE_PROPERTY_URI,
-      parent: null,
-      name: null,
-      name_translations: {},
-      comment: null,
-      comment_translations: {},
-      domain: null,
-      range: null
-    };
-  }
-
-  get datatypes() {
-    let datatypeOptions = [];
-    for (let i in this.$opensilex.datatypes) {
-      let label: any = this.$t(this.$opensilex.datatypes[i].label_key);
-      datatypeOptions.push({
-        id: this.$opensilex.datatypes[i].uri,
-        label: label.charAt(0).toUpperCase() + label.slice(1)
-      });
+    get lang() {
+        return this.$store.getters.language;
     }
 
-    datatypeOptions.sort((a, b) => {
-      let comparison = 0;
-      if (a.name > b.name) {
-        comparison = 1;
-      } else if (a.name < b.name) {
-        comparison = -1;
-      }
-      return comparison;
-    });
+    enLangRequired: boolean = this.$store.getters.language == "en";
+    otherLangRequired: boolean = this.$store.getters.language != "en";
 
-    return datatypeOptions;
-  }
-
-  get objectTypes() {
-    let objectTypeOptions = [];
-    for (let i in this.$opensilex.objectTypes) {
-      objectTypeOptions.push({
-        id: this.$opensilex.objectTypes[i].uri,
-        label: this.$opensilex.objectTypes[i].rdf_type.name
-      });
-    }
-    objectTypeOptions.sort((a, b) => {
-      let comparison = 0;
-      if (a.name > b.name) {
-        comparison = 1;
-      } else if (a.name < b.name) {
-        comparison = -1;
-      }
-      return comparison;
-    });
-
-    return objectTypeOptions;
-  }
-
-  availableParents = [];
-  parentByURI = {};
-  setParentPropertiesTree(nodes) {
-    this.parentByURI = {};
-    this.availableParents = this.loadNodesRecursivly(nodes);
-  }
-
-  private loadNodesRecursivly(nodes) {
-    let parents = [];
-    for (let i in nodes) {
-      let node = nodes[i];
-      let selectItem: any = {
-        id: node.data.uri,
-        label: node.title
-      };
-      this.parentByURI[node.data.uri] = node.data;
-      if (node.children && node.children.length > 0) {
-        selectItem.children = this.loadNodesRecursivly(node.children);
-      }
-      parents.push(selectItem);
+    created() {
+        this.service = this.$opensilex.getService("opensilex.OntologyService");
     }
 
-    return parents;
-  }
 
-  private domain = null;
-  setDomain(domain) {
-    this.domain = domain;
-  }
+    @Prop()
+    editMode;
 
-  private computeFormToSend(form) {
-    let sentForm = {
-      uri: form.uri,
-      rdf_type: form.rdf_type,
-      parent: form.parent,
-      name: form.name,
-      name_translations: form.name_translations,
-      comment: form.comment,
-      comment_translations: form.comment_translations,
-      domain: this.domain,
-      domain_rdf_type: form.domain_rdf_type,
-      range: form.range
-    };
-
-    if (sentForm.rdf_type == null) {
-      let parentType = this.parentByURI[form.parent];
-      sentForm.rdf_type = parentType.rdf_type;
-    } else {
-      sentForm.parent = null;
-    }
-
-    return sentForm;
-  }
-
-  create(form) {
-    return this.$opensilex
-      .getService("opensilex.OntologyService")
-      .createProperty(this.computeFormToSend(form))
-      .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-        let uri = http.response.result;
-        console.debug("Property created", uri);
-      })
-      .catch(error => {
-        if (error.status == 409) {
-          console.error("Property already exists", error);
-          this.$opensilex.errorHandler(
-            error,
-            this.$t("OntologyPropertyForm.property-already-exists")
-          );
-        } else {
-          this.$opensilex.errorHandler(error);
+    @Prop({
+        default: () => {
+            return {
+                uri: null,
+                rdf_type: OWL.DATATYPE_PROPERTY_URI,
+                parent: null,
+                name_translations: {},
+                comment_translations: {},
+                domain: null,
+                range: null
+            };
         }
-      });
-  }
+    })
+    form;
 
-  update(form) {
-    return this.$opensilex
-      .getService("opensilex.OntologyService")
-      .updateProperty(this.computeFormToSend(form))
-      .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-        let uri = http.response.result;
-        console.debug("Property updated", uri);
-      })
-      .catch(this.$opensilex.errorHandler);
-  }
+    getEmptyForm() {
+        return {
+            uri: null,
+            rdf_type: OWL.DATATYPE_PROPERTY_URI,
+            parent: null,
+            name_translations: {},
+            comment_translations: {},
+            domain: null,
+            range: null
+        };
+    }
+
+    get datatypes() {
+        let datatypeOptions = [];
+        for (let i in this.$opensilex.datatypes) {
+            let label: any = this.$t(this.$opensilex.datatypes[i].label_key);
+            datatypeOptions.push({
+                id: this.$opensilex.datatypes[i].uri,
+                label: label.charAt(0).toUpperCase() + label.slice(1)
+            });
+        }
+
+        datatypeOptions.sort((a, b) => {
+            let comparison = 0;
+            if (a.name > b.name) {
+                comparison = 1;
+            } else if (a.name < b.name) {
+                comparison = -1;
+            }
+            return comparison;
+        });
+
+        return datatypeOptions;
+    }
+
+    get objectTypes() {
+        let objectTypeOptions = [];
+        for (let i in this.$opensilex.objectTypes) {
+            objectTypeOptions.push({
+                id: this.$opensilex.objectTypes[i].uri,
+                label: this.$opensilex.objectTypes[i].rdf_type.name
+            });
+        }
+        objectTypeOptions.sort((a, b) => {
+            let comparison = 0;
+            if (a.name > b.name) {
+                comparison = 1;
+            } else if (a.name < b.name) {
+                comparison = -1;
+            }
+            return comparison;
+        });
+
+        return objectTypeOptions;
+    }
+
+    availableParents = [];
+    parentByURI = {};
+
+    setParentPropertiesTree(nodes) {
+        this.parentByURI = {};
+        this.availableParents = this.loadNodesRecursivly(nodes);
+    }
+
+    private loadNodesRecursivly(nodes) {
+        let parents = [];
+        for (let i in nodes) {
+            let node = nodes[i];
+            let selectItem: any = {
+                id: node.data.uri,
+                label: node.title
+            };
+            this.parentByURI[node.data.uri] = node.data;
+            if (node.children && node.children.length > 0) {
+                selectItem.children = this.loadNodesRecursivly(node.children);
+            }
+            parents.push(selectItem);
+        }
+
+        return parents;
+    }
+
+    private domain = null;
+
+    setDomain(domain) {
+        this.domain = domain;
+    }
+
+    private computeFormToSend(form) {
+        let sentForm = {
+            uri: form.uri,
+            rdf_type: form.rdf_type,
+            parent: form.parent,
+            name_translations: form.name_translations,
+            comment_translations: form.comment_translations,
+            domain: form.domain,
+            range: form.range
+        };
+
+        if (sentForm.rdf_type == null) {
+            let parentType = this.parentByURI[form.parent];
+            sentForm.rdf_type = parentType.rdf_type;
+        } else {
+            sentForm.parent = null;
+        }
+
+        return sentForm;
+    }
+
+    create(form) {
+        return this.service.createProperty(this.computeFormToSend(form))
+            .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+                let uri = http.response.result;
+                let message = this.$i18n.t("OntologyPropertyView.the-property") + " " + uri + this.$i18n.t("component.common.success.creation-success-message");
+                this.$opensilex.showSuccessToast(message);
+            })
+            .catch(error => {
+                if (error.status == 409) {
+                    console.error("Property already exists", error);
+                    this.$opensilex.errorHandler(
+                        error,
+                        this.$t("OntologyPropertyForm.property-already-exists")
+                    );
+                } else {
+                    this.$opensilex.errorHandler(error);
+                }
+            });
+    }
+
+    update(form) {
+        return this.service.updateProperty(this.computeFormToSend(form))
+            .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+                let uri = http.response.result;
+                let message = this.$i18n.t("OntologyPropertyView.the-property") + " " + uri + this.$i18n.t("component.common.success.update-success-message");
+                this.$opensilex.showSuccessToast(message);
+            })
+            .catch(this.$opensilex.errorHandler);
+    }
 }
 </script>
 
@@ -273,12 +308,17 @@ en:
         objectProperty: Object property
         inheritedType: Type inherited from parent
         data-type: Data type
+        dataProperty-help: Property which relate individuals (e.g. device,scientific object, facility) to literal data (integer,deciaml,date,string,etc)
         object-type: Object class
+        objectProperty-help: Property which relate individuals (e.g. device,scientific object, facility) to other individuals (e.g. device,scientific object, facility)
+        inheritedType-help: Use same property type (can be Data or Object) as the selected parent.
         labelEN: English name
         labelFR: French name
         commentEN: English description
         commentFR: French description
         property-already-exists: Property with same URI already exists
+        domain: Domain
+        domain-help: Type concerned by the property. The property can be linked to the domain and on all domain descendant.
 
 fr:
     OntologyPropertyForm:
@@ -287,10 +327,16 @@ fr:
         objectProperty: Relation vers un objet
         inheritedType: Type hérité du parent
         data-type: Type de donnée
+        dataProperty-help: Property which relate individuals (e.g. device,scientific object, facility) to literal data (integer,deciaml,date,string,etc)
         object-type: Classe d'objet
+        objectProperty-help: Property which relate individuals (e.g. device,scientific object, facility) to other individuals
+        inheritedType-help: Use same property type (can be Data or Object) as the selected parent.
         labelEN: Nom anglais
         labelFR: Nom français
         commentEN: Description anglaise
         commentFR: Description française
         property-already-exists: Une propriété existe déjà avec la même URI
+        domain: Domaine
+        domain-help: Type concerné par la propriété. La propriété peut être liée au domaine choisi et a tous les descendant du domaine.
+
 </i18n>

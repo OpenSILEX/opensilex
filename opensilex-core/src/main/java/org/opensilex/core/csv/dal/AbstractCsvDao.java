@@ -151,7 +151,7 @@ public abstract class AbstractCsvDao<T extends SPARQLNamedResourceModel> impleme
                             ClassModel model = sparql.getOntologyDao().getClassModel(rdfType, parentClass, lang);
 
                             Map<String, OwlRestrictionModel> restrictionsByID = new HashMap<>();
-                            model.getRestrictions().values().forEach(restriction -> {
+                            model.getRestrictionsByProperties().values().forEach(restriction -> {
                                 String propertyURI = SPARQLDeserializers.getExpandedURI(restriction.getOnProperty());
                                 restrictionsByID.put(propertyURI, restriction);
                             });

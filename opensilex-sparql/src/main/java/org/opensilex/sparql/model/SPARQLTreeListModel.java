@@ -5,12 +5,11 @@
  */
 package org.opensilex.sparql.model;
 
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+
 import java.net.URI;
 import java.util.*;
 import java.util.function.Consumer;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
 /**
  * @author vince
@@ -148,79 +147,5 @@ public class SPARQLTreeListModel<T extends SPARQLTreeModel<T>> {
         listChildren(instance, child ->
                 traverseNode(child, handler)
         );
-    }
-
-    private void removeLinkWithChildren(URI instanceUri) {
-
-        // update link between parent and old children
-        if (modelsByParent.containsKey(instanceUri)) {
-            Set<T> oldChildren = modelsByParent.get(instanceUri);
-
-            // all old children become orphans :'(
-            if (oldChildren != null) {
-
-                for (T oldChild : oldChildren) {
-                    // update the child node itself
-                    oldChild.setParent(null);
-
-                    // update itemParents index
-                    parentByModel.put(oldChild.getUri(), null);
-                }
-                // the set of orphans receive new node
-                modelsByParent.computeIfAbsent(null, key -> new HashSet<>()).addAll(oldChildren);
-            }
-        }
-    }
-
-    private void removeLinkWithParent(URI childUri) {
-
-        T parent = parentByModel.get(childUri);
-
-        URI parentUri;
-
-        // find the old parent : null if the old parent is the root, parent.getUri() else
-        if (parent == null) {
-            parentUri = null;
-        } else {
-            // if the parentUri is root, then use null
-            parentUri = SPARQLDeserializers.compareURIs(root, parent.getUri()) ? null : parent.getUri();
-        }
-
-        // the old parent loose a child :(
-        modelsByParent.get(parentUri).removeIf(
-                child -> SPARQLDeserializers.compareURIs(child.getUri().toString(), childUri)
-        );
-
-        // update the parent node itself
-        if (parent != null && !CollectionUtils.isEmpty(parent.getChildren())) {
-            parent.getChildren().removeIf(
-                    model -> SPARQLDeserializers.compareURIs(model.getUri().toString(), childUri)
-            );
-        }
-    }
-
-
-    /**
-     * Remove SPARQLTreeModel associated with the given modelUri if exists
-     *
-     * @param modelUri URI of a SPARQLTreeModel
-     */
-    public void remove(URI modelUri) {
-
-        URI formattedUri = SPARQLDeserializers.formatURI(modelUri);
-
-        // instance not found into tree
-        if (!parentByModel.containsKey(formattedUri)) {
-            return;
-        }
-
-        removeLinkWithChildren(formattedUri);
-        removeLinkWithParent(formattedUri);
-
-        // remove parent from the two indexes
-        parentByModel.remove(formattedUri);
-        modelsByParent.remove(formattedUri);
-
-        selectionList.removeIf(uri -> uri.equals(modelUri));
     }
 }

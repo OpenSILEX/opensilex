@@ -18,6 +18,7 @@ import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
 import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
 import org.opensilex.sparql.model.time.InstantModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.ontology.dal.OwlRestrictionModel;
 import org.opensilex.sparql.ontology.dal.PropertyModel;
 import org.opensilex.sparql.service.SPARQLService;
@@ -276,7 +277,7 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
                 continue;
             }
 
-            OwlRestrictionModel propertyRestriction = classModel.getRestrictions().get(property);
+            OwlRestrictionModel propertyRestriction = classModel.getRestrictionsByProperties().get(property);
 
             boolean nullOrEmpty = StringUtils.isEmpty(propValue);
 
@@ -312,7 +313,7 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
             // compute the list of required property excluded from the custom properties list
             missedRequiredProperties = new LinkedList<>();
 
-            for (Map.Entry<URI, OwlRestrictionModel> entry : classModel.getRestrictions().entrySet()) {
+            for (Map.Entry<URI, OwlRestrictionModel> entry : classModel.getRestrictionsByProperties().entrySet()) {
 
                 URI property = entry.getKey();
 

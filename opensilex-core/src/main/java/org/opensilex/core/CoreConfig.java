@@ -19,14 +19,4 @@ public interface CoreConfig {
     )
     boolean enableLogs();
 
-
-    /**
-     * @see org.opensilex.core.ontology.dal.cache.OntologyCache
-     * @see org.opensilex.core.ontology.api.OntologyAPI
-     */
-    @ConfigDescription(
-            value = "Indicate if the module must put in cache classes and properties"
-    )
-    boolean enableOntologyCaching();
-
 }

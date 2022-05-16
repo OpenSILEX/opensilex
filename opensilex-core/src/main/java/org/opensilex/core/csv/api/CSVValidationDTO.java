@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.opensilex.core.ontology.api;
+package org.opensilex.core.csv.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.opensilex.core.csv.dal.error.CSVValidationModel;

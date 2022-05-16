@@ -222,6 +222,13 @@ public final class SPARQLClassAnalyzer {
         fieldsByGetter = HashBiMap.create(fieldsByName.size());
         fieldsBySetter = HashBiMap.create(fieldsByName.size());
         for (Method method : methods) {
+
+            // Don't consider an abstract getter/setter as a field getter, only consider implemented methods
+            // Else IllegalArgumentException if thrown since the method name will be inserted two time (definition + implementation)
+            if(Modifier.isAbstract(method.getModifiers())){
+                continue;
+            }
+
             if (isGetter(method)) {
                 Field getter = findFieldByGetter(method);
                 if (getter != null) {

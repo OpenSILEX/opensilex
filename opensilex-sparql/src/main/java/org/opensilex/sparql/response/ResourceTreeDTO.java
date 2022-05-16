@@ -23,7 +23,7 @@ public class ResourceTreeDTO extends NamedResourceDTO<SPARQLTreeModel<?>> {
 
     private boolean disabled;
 
-    private List<ResourceTreeDTO> children;
+    private List<ResourceTreeDTO> children = new LinkedList<>();
 
 
     public URI getParent() {

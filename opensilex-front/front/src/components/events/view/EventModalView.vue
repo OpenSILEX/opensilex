@@ -129,10 +129,10 @@
 
                     this.eventPropertyByUri = new Map();
                     typeModel.data_properties.forEach(property => {
-                        this.eventPropertyByUri.set(property.property, property);
+                        this.eventPropertyByUri.set(property.uri, property);
                     });
                     typeModel.object_properties.forEach(property => {
-                        this.eventPropertyByUri.set(property.property, property);
+                        this.eventPropertyByUri.set(property.uri, property);
                     });
                 }).catch(this.$opensilex.errorHandler);
 

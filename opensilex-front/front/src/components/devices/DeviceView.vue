@@ -1,71 +1,104 @@
 <template>
-  <div class="container-fluid">
-    <opensilex-PageHeader
-      icon="ik#ik-thermometer"
-      title="Device.title"
-      description="Device.description"
-    ></opensilex-PageHeader>
+    <div class="container-fluid">
+        <opensilex-PageHeader
+            icon="ik#ik-thermometer"
+            title="Device.title"
+            description="Device.description"
+        ></opensilex-PageHeader>
 
-    <opensilex-PageActions
-      v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
-    >
-      <template v-slot>
-        <opensilex-CreateButton 
-          @click="goToDeviceCreate"
-          label="Device.add"
-        ></opensilex-CreateButton>
-      </template>
-    </opensilex-PageActions>
+        <opensilex-PageActions
+            v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
+        >
+            <template v-slot>
 
-    <opensilex-PageContent>
-      <template v-slot>
-        <opensilex-DeviceList
-          ref="deviceList"          
-        ></opensilex-DeviceList>
-      </template>
-    </opensilex-PageContent>
-  </div>
+                <opensilex-CreateButton
+                    label="Device.add"
+                    @click="modalForm.showCreateForm()"
+                ></opensilex-CreateButton>
+
+                <opensilex-CreateButton
+                    label="OntologyCsvImporter.import"
+                    @click="showCsvForm"
+                ></opensilex-CreateButton>
+
+                <opensilex-DeviceModalForm
+                    ref="modalForm"
+                    @onCreate="displayAfterCreation($event)"
+                ></opensilex-DeviceModalForm>
+
+                <opensilex-DeviceCsvForm
+                    v-if="renderCsvForm"
+                    ref="csvForm"
+                    @csvImported="deviceList.refresh()"
+                ></opensilex-DeviceCsvForm>
+
+            </template>
+        </opensilex-PageActions>
+
+        <opensilex-PageContent>
+            <template v-slot>
+                <opensilex-DeviceList
+                    ref="deviceList"
+                ></opensilex-DeviceList>
+            </template>
+        </opensilex-PageContent>
+    </div>
 </template>
 
 <script lang="ts">
-import { Component, Ref } from "vue-property-decorator";
+import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {
-  OpenSilexResponse
+    OpenSilexResponse
 } from "../../lib/HttpResponse";
 // @ts-ignore
-import { DevicesService, DeviceCreationDTO } from "opensilex-core/index";
+import {DeviceCreationDTO} from "opensilex-core/index";
 import VueRouter from "vue-router";
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+import DeviceCsvForm from "./csv/DeviceCsvForm.vue";
+import DeviceDetails from "./DeviceDetails.vue";
+import DeviceList from "./DeviceList.vue";
+import DeviceModalForm from "./form/DeviceModalForm.vue";
 
 @Component
 export default class DeviceView extends Vue {
-  $opensilex: any;
-  $store: any;
-  $router: VueRouter;
-  service: DevicesService;
+    $opensilex: OpenSilexVuePlugin;
+    $store: any;
+    $router: VueRouter;
 
-  get user() {
-    return this.$store.state.user;
-  }
+    @Ref("modalForm") readonly modalForm!: DeviceModalForm;
 
-  get credentials() {
-    return this.$store.state.credentials;
-  }
+    renderCsvForm = false;
+    @Ref("csvForm") readonly csvForm!: DeviceCsvForm;
 
-  @Ref("deviceList") readonly deviceList!: any;
-  @Ref("deviceForm") readonly deviceForm!: any;
-  @Ref("deviceDetails") readonly deviceDetails!: any;
-  @Ref("deviceAttributesForm") readonly deviceAttributesForm!: any;
+    @Ref("deviceList") readonly deviceList!: DeviceList;
+    @Ref("deviceDetails") readonly deviceDetails!: DeviceDetails;
+    @Ref("deviceAttributesForm") readonly deviceAttributesForm!: any;
 
-  created() {
-    this.service = this.$opensilex.getService("opensilex.DevicesService");
-  }
+    get user() {
+        return this.$store.state.user;
+    }
 
-  goToDeviceCreate(){    
-    this.$store.commit("storeReturnPage", this.$router);
-    this.$router.push({ path: '/devices/create' });
-  }
-  
+    get credentials() {
+        return this.$store.state.credentials;
+    }
+
+    created() {
+    }
+
+    showCsvForm() {
+        this.renderCsvForm = true;
+        this.$nextTick(() => {
+            this.csvForm.show();
+        });
+    }
+
+    displayAfterCreation(device : DeviceCreationDTO){
+        this.$store.commit("storeReturnPage", this.$router);
+        this.$router.push({path: "/device/details/" + encodeURIComponent(device.uri)});
+    }
+
+
 }
 </script>
 
@@ -74,17 +107,18 @@ export default class DeviceView extends Vue {
 
 <i18n>
 en:
-  Device:
-    title: Device
-    description: Manage Device
-    add: Add device
-    update: Update device
-    delete: Delete device
+    Device:
+        title: Device
+        description: Manage Device
+        add: Add device
+        update: Update device
+        delete: Delete device
 fr:
-  Device:
-    title: Dispositif
-    description: Gestion des dispositifs
-    add: Ajouter un dispositif
-    update: Editer un dispositif
-    delete: Supprimer un dispositif
+    Device:
+        title: Dispositif
+        description: Gestion des dispositifs
+        add: Ajouter un dispositif
+        update: Editer un dispositif
+        delete: Supprimer un dispositif
+
 </i18n>

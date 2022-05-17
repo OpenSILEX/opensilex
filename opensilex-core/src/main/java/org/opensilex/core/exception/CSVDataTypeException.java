@@ -6,8 +6,9 @@
 //******************************************************************************
 package org.opensilex.core.exception;
 
+import org.opensilex.sparql.csv.CSVCell;
+
 import java.net.URI;
-import org.opensilex.core.csv.dal.CSVCell;
 
 /**
  *
@@ -18,7 +19,7 @@ public class CSVDataTypeException extends Exception {
     private final Object value;
     private final URI dataType;
     private final Integer dataIndex; 
-    private final CSVCell csvCell; 
+    private final CSVCell csvCell;
 
     
      public CSVDataTypeException(URI variable, Object value, URI dataType, int dataIndex) {

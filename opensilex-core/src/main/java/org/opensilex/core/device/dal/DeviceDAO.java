@@ -20,7 +20,6 @@ import org.apache.jena.sparql.core.TriplePath;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.vocabulary.RDFS;
 import org.bson.Document;
-import org.opensilex.core.CoreModule;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.ontology.Oeso;
@@ -111,7 +110,7 @@ public class DeviceDAO {
         attributeCollection.createIndex(Indexes.ascending(MongoModel.URI_FIELD), unicityOptions);
     }
     
-    public URI create(DeviceModel devModel, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws Exception {
+    public URI create(DeviceModel devModel, UserModel currentUser) throws Exception {
 
 
         ClassModel classModel = SPARQLModule.getOntologyStoreInstance().getClassModel(

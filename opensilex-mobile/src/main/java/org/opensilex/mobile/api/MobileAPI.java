@@ -54,7 +54,6 @@ import javax.ws.rs.core.Response;
 
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
-import org.opensilex.core.csv.dal.CSVCell;
 import org.opensilex.core.exception.DateMappingExceptionResponse;
 import org.opensilex.core.exception.DateValidationException;
 import org.opensilex.mobile.dal.*;
@@ -69,7 +68,7 @@ import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
-import org.opensilex.server.rest.validation.ValidURI;
+import org.opensilex.sparql.csv.CSVCell;
 import org.opensilex.utils.ClassUtils;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;

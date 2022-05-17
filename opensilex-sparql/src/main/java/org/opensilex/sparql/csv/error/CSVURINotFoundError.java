@@ -1,5 +1,5 @@
 /*******************************************************************************
- *                         CSVDuplicateURIError.java
+ *                         CSVURINotFoundError.java
  * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
  * Copyright © INRAE 2021.
  * Contact: renaud.colin@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
@@ -11,25 +11,35 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.opensilex.core.csv.dal.error;
+package org.opensilex.sparql.csv.error;
 
-import org.opensilex.core.csv.dal.CSVCell;
+
+import org.opensilex.sparql.csv.CSVCell;
+
+import java.net.URI;
 
 /**
  *
  * @author vmigot
  */
-public class CSVDuplicateURIError extends CSVCell {
+public class CSVURINotFoundError extends CSVCell {
 
-    private int previousRow;
+    private final URI rdfType;
 
-    public CSVDuplicateURIError(CSVCell cell, int previousRow) {
+    private final URI objectURI;
+
+    public CSVURINotFoundError(CSVCell cell, URI classURI, URI objectURI) {
         super(cell);
-        this.previousRow = previousRow;
+        this.rdfType = classURI;
+        this.objectURI = objectURI;
     }
 
-    public int getPreviousRow() {
-        return previousRow;
+    public URI getRdfType() {
+        return rdfType;
+    }
+
+    public URI getObjectURI() {
+        return objectURI;
     }
 
 }

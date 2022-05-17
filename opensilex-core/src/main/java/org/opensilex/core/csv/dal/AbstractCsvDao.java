@@ -8,7 +8,6 @@
 
 package org.opensilex.core.csv.dal;
 
-
 import com.opencsv.CSVWriter;
 import com.opencsv.ICSVWriter;
 import com.univocity.parsers.csv.CsvParser;
@@ -18,7 +17,8 @@ import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.RDFS;
-import org.opensilex.core.csv.dal.error.CSVValidationModel;
+import org.opensilex.sparql.csv.CSVCell;
+import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;

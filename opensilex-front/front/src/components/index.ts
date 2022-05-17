@@ -272,6 +272,7 @@ components["opensilex-DeprecatedButton"] = DeprecatedButton;
 import Dropdown from './common/dropdown/Dropdown.vue'
 components["opensilex-Dropdown"] = Dropdown;
 
+// Vocabulary/Ontology
 import OntologyClassDetail from './ontology/OntologyClassDetail.vue'
 components["opensilex-OntologyClassDetail"] = OntologyClassDetail;
 import OntologyClassTreeView from './ontology/OntologyClassTreeView.vue'
@@ -296,7 +297,8 @@ import OntologyTypesView from './ontology/OntologyTypesView.vue'
 components["opensilex-OntologyTypesView"] = OntologyTypesView;
 import OntologyObjectForm from './ontology/OntologyObjectForm.vue'
 components["opensilex-OntologyObjectForm"] = OntologyObjectForm;
-
+import OntologyRelationsForm from './ontology/OntologyRelationsForm.vue'
+components["opensilex-OntologyRelationsForm"] = OntologyRelationsForm;
 
 import XSDBooleanInput from './ontology/XSDBooleanInput.vue'
 components["opensilex-XSDBooleanInput"] = XSDBooleanInput;
@@ -718,10 +720,11 @@ import DeviceTable from './devices/DeviceTable.vue';
 components["opensilex-DeviceTable"] = DeviceTable;
 import DeviceAttributesTable from './devices/DeviceAttributesTable.vue';
 components["opensilex-DeviceAttributesTable"] = DeviceAttributesTable;
-import DeviceForm from './devices/DeviceForm.vue';
+import DeviceForm from './devices/form/DeviceForm.vue';
 components["opensilex-DeviceForm"] = DeviceForm;
-import DeviceVariablesTable from './devices/DeviceVariablesTable.vue';
-components["opensilex-DeviceVariablesTable"] = DeviceVariablesTable;
+import DeviceModalForm from './devices/form/DeviceModalForm.vue';
+components["opensilex-DeviceModalForm"] = DeviceModalForm;
+
 import DeviceVisualizationTab from './devices/DeviceVisualizationTab.vue';
 components["opensilex-DeviceVisualizationTab"] = DeviceVisualizationTab;
 import DeviceVisualizationForm from './devices/visualization/DeviceVisualizationForm.vue';
@@ -734,6 +737,12 @@ import  DeviceSelector from './devices/DeviceSelector.vue';
 components["opensilex-DeviceSelector"] = DeviceSelector;
 import  DevicePropertySelector from './devices/DevicePropertySelector.vue';
 components["opensilex-DevicePropertySelector"] = DevicePropertySelector;
+import  DeviceCsvForm from './devices/csv/DeviceCsvForm.vue';
+components["opensilex-DeviceCsvForm"] = DeviceCsvForm;
+import DeviceCsvTemplateGenerator from './devices/csv/DeviceCsvTemplateGenerator.vue';
+components["opensilex-DeviceCsvTemplateGenerator"] = DeviceCsvTemplateGenerator;
+import DeviceImportHelp from './devices/csv/DeviceImportHelp.vue';
+components["opensilex-DeviceImportHelp"] = DeviceImportHelp;
 
 // EVENTS
 import EventModalForm from './events/form/EventModalForm.vue';

@@ -67,6 +67,7 @@
             "geometry-help": "Coordonnées géospatiales au format WKT",
             "select-all" : "Sélectionner tout",
             "unselect-all" : "Désélectionner tout",
+            "example": "Exemple",
             "errors": {
                 "error-title": "Erreur",
                 "constraint-error": "Une erreur de validation s'est produite, merci de vérifier les données saisies.",
@@ -203,7 +204,7 @@
             "configuration": "Administration",
             "scientificObjectTypes": "Types d'objets scientifiques",
             "facilitiesTypes": "Types d'installations environnementales",
-            "deviceTypes": "Types de capteurs",
+            "deviceTypes": "Types de dispositifs",
             "eventTypes": "Types d'évènements", 
             "factorCategoryTypes": "Catégories de facteurs",
             "scientific-organisation": "Organisation scientifique",
@@ -685,5 +686,14 @@
         "string": "texte court",
         "longstring": "texte long",
         "uri": "uri"
+    },
+    "datatype-example": {
+        "integer": "8611",
+        "decimal": "44.521",
+        "string": "Opensilex",
+        "uri": "http://opensilex.org/",
+        "date": "2022-01-01",
+        "datetime": "2022-01-01T00:00:00Z",
+        "boolean": "vrai ou faux"
     }
 }

@@ -18,7 +18,7 @@
         :flat="true"
         v-model="typeURI"
         :multiple="multiple"
-        @select="field.validator && field.validator.validate()"
+        @select="field.validator && field.validator.validate(); $emit('select',$event)"
         @close="field.validator && field.validator.validate()"
         @input="$emit('input', $event)"
       />

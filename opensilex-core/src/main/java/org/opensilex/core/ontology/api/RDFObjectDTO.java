@@ -6,8 +6,12 @@
 package org.opensilex.core.ontology.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.commons.collections4.CollectionUtils;
+import org.opensilex.sparql.model.SPARQLResourceModel;
+
 import java.net.URI;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -46,6 +50,18 @@ public class RDFObjectDTO {
 
     public void setRelations(List<RDFObjectRelationDTO> relations) {
         this.relations = relations;
+    }
+
+    public void toModel(SPARQLResourceModel model){
+        model.setUri(uri);
+        model.setType(type);
+
+//        if (!CollectionUtils.isEmpty(relations)) {
+//            model.setRelations(relations.stream()
+//                    .map(RDFObjectRelationDTO::toModel)
+//                    .collect(Collectors.toList())
+//            );
+//        }
     }
 
 }

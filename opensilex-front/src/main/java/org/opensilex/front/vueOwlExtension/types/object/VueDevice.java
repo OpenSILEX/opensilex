@@ -10,7 +10,7 @@ public class VueDevice implements VueOntologyObjectType {
 
     @Override
     public String getTypeUri() {
-        return Oeso.SensingDevice.getURI();
+        return Oeso.Device.getURI();
     }
 
     @Override

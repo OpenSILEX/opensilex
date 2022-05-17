@@ -9,11 +9,11 @@ import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema.Builder;
 import io.swagger.annotations.*;
-import org.apache.jena.arq.querybuilder.AskBuilder;
-import org.apache.jena.vocabulary.RDF;
-import org.apache.jena.vocabulary.RDFS;
 import org.bson.Document;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.opensilex.core.URIsListPostDTO;
+import org.opensilex.core.csv.api.CSVValidationDTO;
 import org.opensilex.core.data.api.DataFileGetDTO;
 import org.opensilex.core.data.api.DataGetDTO;
 import org.opensilex.core.data.dal.DataDAO;
@@ -26,6 +26,8 @@ import org.opensilex.core.exception.UnableToParseDateException;
 import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
+import org.opensilex.sparql.csv.DefaultCsvImporter;
+import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
@@ -41,13 +43,13 @@ import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.server.rest.validation.ValidURI;
-import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
+import org.opensilex.utils.TokenGenerator;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -57,11 +59,13 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.time.zone.ZoneRulesException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -140,7 +144,7 @@ public class DeviceAPI {
                 DeviceModel devModel = new DeviceModel();
                 deviceDTO.toModel(devModel);
                 deviceDAO.initDevice(devModel, deviceDTO.getRelations(), currentUser);
-                URI uri = deviceDAO.create(devModel, deviceDTO.getRelations(), currentUser);
+                URI uri = deviceDAO.create(devModel, currentUser);
                 return new ObjectUriResponse(Response.Status.CREATED, uri).getResponse();
             } catch (SPARQLAlreadyExistingUriException ex) {
                 return new ErrorResponse(
@@ -326,39 +330,39 @@ public class DeviceAPI {
     private ErrorResponse check(DeviceDTO deviceDTO) throws Exception {
 
         // check if device URI already exists
-        if (sparql.uriExists(DeviceModel.class, deviceDTO.getUri())) {
-            // Return error response 409 - CONFLICT if URI already exists
-            return new ErrorResponse(
-                    Response.Status.CONFLICT,
-                    "Device URI already exists",
-                    "Duplicated URI: " + deviceDTO.getUri()
-            );
-        }
+//        if (sparql.uriExists(DeviceModel.class, deviceDTO.getUri())) {
+//            // Return error response 409 - CONFLICT if URI already exists
+//            return new ErrorResponse(
+//                    Response.Status.CONFLICT,
+//                    "Device URI already exists",
+//                    "Duplicated URI: " + deviceDTO.getUri()
+//            );
+//        }
 
-        AskBuilder askQuery = new AskBuilder()
-            .from(sparql.getDefaultGraph(DeviceModel.class).toString())
-            .addWhere("?uri", RDF.type, SPARQLDeserializers.nodeURI(deviceDTO.getType()))
-            .addWhere("?uri", RDFS.label, deviceDTO.getName());
-        boolean exists = sparql.executeAskQuery(askQuery);
-        if (exists) {
-            // Return error response 409 - CONFLICT if label already exists
-            return new ErrorResponse(
-                    Response.Status.PRECONDITION_FAILED,
-                    "Device label already exists for this type",
-                    "Duplicated label: " + deviceDTO.getName()
-            );
-        }
+//        AskBuilder askQuery = new AskBuilder()
+//            .from(sparql.getDefaultGraph(DeviceModel.class).toString())
+//            .addWhere("?uri", RDF.type, SPARQLDeserializers.nodeURI(deviceDTO.getType()))
+//            .addWhere("?uri", RDFS.label, deviceDTO.getName());
+//        boolean exists = sparql.executeAskQuery(askQuery);
+//        if (exists) {
+//            // Return error response 409 - CONFLICT if label already exists
+//            return new ErrorResponse(
+//                    Response.Status.PRECONDITION_FAILED,
+//                    "Device label already exists for this type",
+//                    "Duplicated label: " + deviceDTO.getName()
+//            );
+//        }
 
         //Check that the given person exist in DB
-        if (deviceDTO.getPersonInCharge()!= null) {
-            if (!sparql.uriExists(UserModel.class,deviceDTO.getPersonInCharge())) {
-                return new ErrorResponse(
-                        Response.Status.BAD_REQUEST,
-                        "The given person doesn't exist in the database",
-                        "unknown person : " + deviceDTO.getPersonInCharge().toString()
-                );
-            }
-        }
+//        if (deviceDTO.getPersonInCharge()!= null) {
+//            if (!sparql.uriExists(UserModel.class,deviceDTO.getPersonInCharge())) {
+//                return new ErrorResponse(
+//                        Response.Status.BAD_REQUEST,
+//                        "The given person doesn't exist in the database",
+//                        "unknown person : " + deviceDTO.getPersonInCharge().toString()
+//                );
+//            }
+//        }
         
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
         ClassModel model = ontologyDAO.getClassModel(deviceDTO.getType(), new URI(Oeso.Device.getURI()), currentUser.getLanguage());
@@ -378,6 +382,79 @@ public class DeviceAPI {
         }
 
         return null;
+    }
+
+    @POST
+    @Path("import")
+    @ApiOperation(value = "Import a CSV file with one device per line")
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Device(s) imported with success", response = CSVValidationDTO.class)
+    })
+    @ApiProtected
+    @ApiCredential(
+            credentialId = CREDENTIAL_DEVICE_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_DEVICE_MODIFICATION_LABEL_KEY
+    )
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response importCSV(
+            @ApiParam(value = "Device file", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
+            @FormDataParam("file") FormDataContentDisposition fileContentDisposition
+    ) throws Exception {
+
+        DefaultCsvImporter<DeviceModel> csvImporter = new DefaultCsvImporter<>(
+                sparql,
+                DeviceModel.class,
+                sparql.getDefaultGraphURI(DeviceModel.class),
+                DeviceModel::new
+        );
+        CSVValidationModel csvValidationModel = csvImporter.read(file, false);
+
+        CSVValidationDTO validationDTO = new CSVValidationDTO();
+        validationDTO.setErrors(csvValidationModel);
+
+        if (!csvValidationModel.hasErrors()) {
+            String token = TokenGenerator.getValidationToken(5, ChronoUnit.MINUTES, Collections.emptyMap());
+            validationDTO.setValidationToken(token);
+            validationDTO.setNbLinesImported(csvValidationModel.getNbObjectImported());
+        }
+        return new SingleObjectResponse<>(validationDTO).getResponse();
+    }
+
+    @POST
+    @Path("import_validation")
+    @ApiOperation(value = "Validate the import of a CSV file with one device per line")
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Device(s) checked", response = CSVValidationDTO.class)
+    })
+    @ApiProtected
+    @ApiCredential(
+            credentialId = CREDENTIAL_DEVICE_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_DEVICE_MODIFICATION_LABEL_KEY
+    )
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response validateCSV(
+            @ApiParam(value = "Device file", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
+            @FormDataParam("file") FormDataContentDisposition fileContentDisposition
+    ) throws Exception {
+
+        DefaultCsvImporter<DeviceModel> csvImporter = new DefaultCsvImporter<>(
+                sparql,
+                DeviceModel.class,
+                sparql.getDefaultGraphURI(DeviceModel.class),
+                DeviceModel::new
+        );
+        CSVValidationModel csvValidationModel = csvImporter.read(file, true);
+
+        CSVValidationDTO validationDTO = new CSVValidationDTO();
+        validationDTO.setErrors(csvValidationModel);
+
+        if (!csvValidationModel.hasErrors()) {
+            String token = TokenGenerator.getValidationToken(5, ChronoUnit.MINUTES, Collections.emptyMap());
+            validationDTO.setValidationToken(token);
+        }
+        return new SingleObjectResponse<>(validationDTO).getResponse();
     }
         
     @GET

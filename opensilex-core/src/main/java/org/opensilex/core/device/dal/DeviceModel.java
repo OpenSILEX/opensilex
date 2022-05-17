@@ -32,19 +32,19 @@ public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
 
     public static final String GRAPH = "device";
 
-     @SPARQLProperty(
-            ontology = Oeso.class,
-            property = "isPartOf"
-    )
-    protected DeviceModel parent;
+//     @SPARQLProperty(
+//            ontology = Oeso.class,
+//            property = "isPartOf"
+//    )
+//    protected DeviceModel parent;
 
-    @SPARQLProperty(
-            ontology = Oeso.class,
-            property = "isPartOf",
-            inverse = true,
-            ignoreUpdateIfNull = true
-    )
-    protected List<DeviceModel> children;
+//    @SPARQLProperty(
+//            ontology = Oeso.class,
+//            property = "isPartOf",
+//            inverse = true,
+//            ignoreUpdateIfNull = true
+//    )
+//    protected List<DeviceModel> children;
     
     @SPARQLProperty(
             ontology = Oeso.class,

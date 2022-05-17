@@ -50,7 +50,7 @@
 
     <opensilex-PageContent>
         <template v-slot>
-          <opensilex-DeviceDescription v-if="isDetailsTab()" :uri="uri"></opensilex-DeviceDescription>
+          <opensilex-DeviceDescription v-if="isDetailsTab()"></opensilex-DeviceDescription>
 
          <opensilex-DeviceVisualizationTab
           v-else-if="isVisualizationTab()"
@@ -141,7 +141,8 @@
               removal: null,
               relations: null,
               description: null
-            };
+        };
+
         created() {
           this.service = this.$opensilex.getService("opensilex.DevicesService");
           this.uri = decodeURIComponent(this.$route.params.uri);

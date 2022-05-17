@@ -11,9 +11,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.opensilex.core.csv.dal.error;
+package org.opensilex.sparql.csv.error;
 
-import org.opensilex.core.csv.dal.CSVCell;
+import org.opensilex.sparql.csv.CSVCell;
 
 import java.net.URI;
 

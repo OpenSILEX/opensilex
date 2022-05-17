@@ -11,7 +11,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.opensilex.core.csv.dal.error;
+package org.opensilex.sparql.csv;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.net.URI;
@@ -23,7 +23,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.opensilex.core.csv.dal.CSVCell;
+import org.opensilex.sparql.csv.error.CSVDatatypeError;
+import org.opensilex.sparql.csv.error.CSVDuplicateURIError;
+import org.opensilex.sparql.csv.error.CSVURINotFoundError;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 
@@ -61,6 +63,8 @@ public class CSVValidationModel {
     private Map<Integer, CSVCell> alreadyExistingURIErrors = new HashMap<>();
 
     private Map<Integer, CSVDuplicateURIError> duplicateURIErrors = new HashMap<>();
+
+    private int nbObjectImported;
 
     public List<String> getMissingHeaders() {
         return missingHeaders;
@@ -221,6 +225,14 @@ public class CSVValidationModel {
 
     public void addEmptyHeader(Integer emptyHeader) {
         emptyHeaders.add(emptyHeader);
+    }
+
+    public int getNbObjectImported() {
+        return nbObjectImported;
+    }
+
+    public void setNbObjectImported(int nbObjectImported) {
+        this.nbObjectImported = nbObjectImported;
     }
 
 }

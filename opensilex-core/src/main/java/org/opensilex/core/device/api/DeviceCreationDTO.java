@@ -75,21 +75,14 @@ public class DeviceCreationDTO extends DeviceDTO {
     }
     
     public void toModel(DeviceModel model) {
-        model.setUri(getUri());
-        model.setType(getType());
+
+        super.toModel(model);
         model.setName(getName());
-        if (getBrand() != null) {
-            model.setBrand(getBrand());
-        }
-        
-        if(getConstructorModel() != null){
-            model.setModel(getConstructorModel());
-        }
-        
-        if(getSerialNumber() != null){
-            model.setSerialNumber(getSerialNumber());
-        }
-        
+
+        model.setBrand(getBrand());
+        model.setModel(getConstructorModel());
+        model.setSerialNumber(getSerialNumber());
+
         if(getPersonInCharge() != null){
             model.setPersonInCharge(getPersonInCharge());
         }
@@ -102,10 +95,8 @@ public class DeviceCreationDTO extends DeviceDTO {
             model.setRemoval(getRemoval());
         }
         
-        if(getDescription() != null){
-            model.setDescription(getDescription());
-        }
-        
+        model.setDescription(getDescription());
+
         if (metadata != null ) {
            model.setAttributes(metadata);
         }

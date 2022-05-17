@@ -68,6 +68,7 @@
             "geometry-help": "Geospatial coordinates in WKT format",
             "select-all" : "Select all",
             "unselect-all" : "Unselect all",
+            "example": "Example",
             "errors": {
                 "error-title": "Error",
                 "constraint-error": "A data validation error occurred, please check the validity of the submitted fields.",
@@ -712,5 +713,14 @@
         "string": "short string",
         "longstring": "long string",
         "uri": "uri"
+    },
+    "datatype-example": {
+        "integer": "8611",
+        "decimal": "44.521",
+        "string": "Opensilex",
+        "uri": "http://opensilex.org/",
+        "date": "2022-01-01",
+        "datetime": "2022-01-01T00:00:00Z",
+        "boolean": "True or false"
     }
 }

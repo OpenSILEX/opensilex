@@ -10,6 +10,7 @@ import java.net.URISyntaxException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.model.SPARQLModelRelation;
+import org.opensilex.sparql.utils.Ontology;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -60,5 +61,14 @@ public class RDFObjectRelationDTO {
 
         return dto;
     }
+
+    public SPARQLModelRelation toModel(){
+        SPARQLModelRelation relation = new SPARQLModelRelation();
+        relation.setValue(value);
+        relation.setProperty(Ontology.property(property));
+        return relation;
+    }
+
+
 
 }

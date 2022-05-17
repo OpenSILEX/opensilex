@@ -11,7 +11,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.opensilex.core.csv.dal;
+package org.opensilex.sparql.csv;
 
 /**
  *
@@ -27,13 +27,19 @@ public class CSVCell {
 
     private String value;
 
+    private String msg;
+
+    public CSVCell(){
+
+    }
+
     public CSVCell(CSVCell cell) {
         this.rowIndex = cell.getRowIndex();
         this.colIndex = cell.getColIndex();
         this.header = cell.getHeader();
         this.value = cell.getValue();
     }
-    
+
     public CSVCell(int rowIndex, int colIndex, String value, String header) {
         this.rowIndex = rowIndex;
         this.colIndex = colIndex;
@@ -73,4 +79,11 @@ public class CSVCell {
         this.value = value;
     }
 
+    public String getMsg() {
+        return msg;
+    }
+
+    public void setMsg(String msg) {
+        this.msg = msg;
+    }
 }

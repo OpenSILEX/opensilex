@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.jena.graph.Node;
 import org.apache.jena.rdf.model.Property;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLStatement;
 import org.opensilex.sparql.model.SPARQLModelRelation;
@@ -51,7 +52,7 @@ class SPARQLProxyRelationList extends SPARQLProxy<List> {
 
                 relation.setProperty(Ontology.property(statement.getPredicate()));
 
-                boolean isReverse = uri.toString().equals(statement.getObject());
+                boolean isReverse = SPARQLDeserializers.compareURIs(uri.toString(),statement.getObject());
                 relation.setReverse(isReverse);
 
                 if (isReverse) {

@@ -415,7 +415,7 @@ public class UriGenerationTest extends AbstractMongoIntegrationTest {
         // test retry with same name -> same uri generation -> retry count suffix add
         model.setUri(null);
         getSparqlService().create(model);
-        expectedUri = getOpensilexBaseURI()+"id/device/name1";
+        expectedUri = getOpensilexBaseURI()+"id/device/name/1";
         Assert.assertEquals(model.getUri().toString(),expectedUri);
 
         // test with a custom type and a special name

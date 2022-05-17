@@ -146,8 +146,6 @@ export default class VariableDetails extends Vue {
   service: VariablesService;
   dataService: DataService;
 
-  speciesList = [];
-
   get user() {
     return this.$store.state.user;
   }
@@ -164,10 +162,25 @@ export default class VariableDetails extends Vue {
 
   @Ref("skosReferences") skosReferences!: ExternalReferencesModalForm;
 
+  get speciesList() {
+    if (!this.variable.species) {
+      return [];
+    }
+
+    return this.variable.species.map(species => {
+      return {
+        uri: species.uri,
+        value: species.name,
+        to: {
+          path: "/germplasm/details/" + encodeURIComponent(species.uri),
+        }
+      };
+    });
+  }
+
   created() {
     this.service = this.$opensilex.getService("opensilex.VariablesService");
     this.dataService = this.$opensilex.getService("opensilex-core.DataService");
-    this.loadSpecies();
   }
 
 
@@ -213,39 +226,6 @@ export default class VariableDetails extends Vue {
             }).catch(this.$opensilex.errorHandler);
           }
         });
-  }
-
-  loadSpecies() {
-    let service: SpeciesService = this.$opensilex.getService(
-        "opensilex.SpeciesService"
-    );
-    this.speciesList = [];
-    if (this.variable.species && this.variable.species.length > 0) {
-      service
-          .getAllSpecies()
-          .then((http: HttpResponse<OpenSilexResponse<Array<SpeciesDTO>>>) => {
-            for (let i = 0; i < http.response.result.length; i++) {
-              if (
-                  this.variable.species.find(
-                      (species) => species == http.response.result[i].uri
-                  )
-              ) {
-                this.speciesList.push(http.response.result[i]);
-              }
-            }
-
-            this.speciesList = this.speciesList.map((item) => {
-              return {
-                uri: item.uri,
-                value: item.name,
-                to: {
-                  path: "/germplasm/details/" + encodeURIComponent(item.uri),
-                },
-              };
-            });
-          })
-          .catch(this.$opensilex.errorHandler);
-    }
   }
 
   getCountDataPromise(uri) {

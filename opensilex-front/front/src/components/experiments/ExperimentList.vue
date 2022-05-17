@@ -119,10 +119,13 @@
       </template>
 
       <template v-slot:cell(species)="{ data }">
-        <span :key="index" v-for="(uri, index) in data.item.species">
-          <span :title="uri">{{ getSpeciesName(uri) }}</span>
-          <span v-if="index + 1 < data.item.species.length">,</span>
+        <span class="species-list" v-if="data.item.species.length > 0">
+          <span :key="index" v-for="(uri, index) in data.item.species">
+            <span :title="uri">{{ getSpeciesName(uri) }}</span>
+            <span v-if="index + 1 < data.item.species.length">, </span>
+          </span>
         </span>
+        <span v-else></span>
       </template>
 
       <template v-slot:cell(start_date)="{ data }">
@@ -441,23 +444,18 @@ export default class ExperimentList extends Vue {
       file: undefined
     }
   }
-
-  soGetDTOToSelectNode(dto) {
-    if (dto) {
-      return {
-        id: dto.uri,
-        label: dto.name
-      };
-    }
-    return null;
-  }
-
-
 }
 </script>
 
 
 <style scoped lang="scss">
+.species-list {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  display: inline-block;
+  max-width: 40vw;
+}
 </style>
 
 <i18n>

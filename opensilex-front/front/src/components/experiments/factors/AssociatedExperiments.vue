@@ -2,11 +2,12 @@
   <div class="container-fluid">
     <opensilex-PageContent>
       <template v-slot>
-        <opensilex-TableAsyncView ref="tableRef" :searchMethod="searchExperiments" :fields="fields">
+        <opensilex-TableAsyncView ref="tableRef" :searchMethod="searchMethod" :fields="fields">
           <template v-slot:cell(uri)="{data}">
             <opensilex-UriLink
               :uri="data.item.uri"
               :to="{path: '/experiment/details/'+ encodeURIComponent(data.item.uri)}"
+              :value="data.item.uri"
             ></opensilex-UriLink>
           </template>
 
@@ -14,7 +15,13 @@
 
           <template v-slot:cell(species)="{data}">
             <span :key="index" v-for="(uri, index) in data.item.species">
-              <span :title="uri">{{ getSpeciesName(uri) }}</span>
+              <span :title="uri">
+                {{
+                  speciesByUri.get(uri)
+                  ? speciesByUri.get(uri).name
+                  : undefined
+                }}
+              </span>
               <span v-if="index + 1 < data.item.species.length">,</span>
             </span>
           </template>
@@ -62,6 +69,7 @@ import moment from "moment";
 import { SpeciesDTO, SpeciesService } from "opensilex-core/index";
 // @ts-ignore
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
+import {ExperimentGetDTO} from "opensilex-core/model/experimentGetDTO";
 
 export class ExperimentState {
   code: String;
@@ -89,7 +97,7 @@ export default class ExperimentList extends Vue {
   speciesByUri: Map<String, SpeciesDTO> = new Map<String, SpeciesDTO>();
 
   @Prop()
-  uri : string; 
+  searchMethod : () => Promise<HttpResponse<OpenSilexResponse<Array<ExperimentGetDTO>>>>;
 
   created() {
   let service: SpeciesService = this.$opensilex.getService(
@@ -111,15 +119,6 @@ export default class ExperimentList extends Vue {
       .catch(this.$opensilex.errorHandler);
   }
 
-
-  searchExperiments(options) {
-     
-    return this.$opensilex
-      .getService("opensilex.FactorsService")
-      .getFactorAssociatedExperiments(this.uri
-      );
-  }
-
   experimentStates: Array<ExperimentState> = [
     {
       code: "in-progress",
@@ -134,15 +133,6 @@ export default class ExperimentList extends Vue {
       label: "component.experiment.common.status.public"
     }
   ];
- 
-
-  getSpeciesName(uri: String): String {
-    if (this.speciesByUri.has(uri)) {
-      return this.speciesByUri.get(uri).name;
-    }
-    return null;
-  }
- 
 
   isEnded(experiment) {
     if (experiment.endDate) {
@@ -159,7 +149,7 @@ export default class ExperimentList extends Vue {
       sortable: true
     },
     {
-      key: "label",
+      key: "name",
       label: "component.common.name",
       sortable: true
     },

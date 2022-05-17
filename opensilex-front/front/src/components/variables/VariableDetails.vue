@@ -134,6 +134,7 @@ import {DataService} from "opensilex-core/api/data.service";
 import {ProjectsService} from "opensilex-core/api/projects.service";
 import {SpeciesService} from "opensilex-core/api/species.service";
 import {SpeciesDTO} from "opensilex-core/model/speciesDTO";
+import DTOConverter from "../../models/DTOConverter";
 
 @Component
 export default class VariableDetails extends Vue {
@@ -191,10 +192,9 @@ export default class VariableDetails extends Vue {
 
         // make a deep copy of the variable in order to not change the current dto
         // In case a field has been updated into the form without confirmation (by sending update to the server)
-        let variableDtoCopy = JSON.parse(JSON.stringify(this.variable));
-        if (variableDtoCopy.species && variableDtoCopy.species.uri) {
-          variableDtoCopy.species = variableDtoCopy.species.uri;
-        }
+        let variableDtoCopy: VariableDetailsDTO = DTOConverter.extractURIFromResourceProperties(
+            JSON.parse(JSON.stringify(this.variable)), ["species"]);
+
         this.variableForm.showEditForm(variableDtoCopy, countResult.response.result);
       }
     })

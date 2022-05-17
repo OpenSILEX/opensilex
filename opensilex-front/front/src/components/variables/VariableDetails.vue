@@ -95,11 +95,10 @@
             <b-col>
                 <opensilex-Card label="VariableDetails.advanced" icon="ik#ik-clipboard">
                     <template v-slot:body>
-                      <opensilex-UriView title="GermplasmList.speciesLabel"
-                                         :value="variable.species ? variable.species.name: undefined"
-                                         :uri="variable.species ? variable.species.uri : undefined"
-                                         :url="variable.species ? getSpeciesPageUrl(): undefined">
-                      </opensilex-UriView>
+                      <opensilex-UriListView
+                          label="GermplasmList.speciesLabel"
+                          :list="speciesList"
+                      ></opensilex-UriListView>
 
             <opensilex-StringView label="OntologyPropertyForm.data-type"
                                   :value="getDataTypeLabel(variable.datatype)"></opensilex-StringView>
@@ -132,6 +131,9 @@ import VariableForm from "./form/VariableForm.vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {DataService} from "opensilex-core/api/data.service";
+import {ProjectsService} from "opensilex-core/api/projects.service";
+import {SpeciesService} from "opensilex-core/api/species.service";
+import {SpeciesDTO} from "opensilex-core/model/speciesDTO";
 
 @Component
 export default class VariableDetails extends Vue {
@@ -143,6 +145,8 @@ export default class VariableDetails extends Vue {
   $i18n: any;
   service: VariablesService;
   dataService: DataService;
+
+  speciesList = [];
 
   get user() {
     return this.$store.state.user;
@@ -163,6 +167,7 @@ export default class VariableDetails extends Vue {
   created() {
     this.service = this.$opensilex.getService("opensilex.VariablesService");
     this.dataService = this.$opensilex.getService("opensilex-core.DataService");
+    this.loadSpecies();
   }
 
 
@@ -210,6 +215,39 @@ export default class VariableDetails extends Vue {
         });
   }
 
+  loadSpecies() {
+    let service: SpeciesService = this.$opensilex.getService(
+        "opensilex.SpeciesService"
+    );
+    this.speciesList = [];
+    if (this.variable.species && this.variable.species.length > 0) {
+      service
+          .getAllSpecies()
+          .then((http: HttpResponse<OpenSilexResponse<Array<SpeciesDTO>>>) => {
+            for (let i = 0; i < http.response.result.length; i++) {
+              if (
+                  this.variable.species.find(
+                      (species) => species == http.response.result[i].uri
+                  )
+              ) {
+                this.speciesList.push(http.response.result[i]);
+              }
+            }
+
+            this.speciesList = this.speciesList.map((item) => {
+              return {
+                uri: item.uri,
+                value: item.name,
+                to: {
+                  path: "/germplasm/details/" + encodeURIComponent(item.uri),
+                },
+              };
+            });
+          })
+          .catch(this.$opensilex.errorHandler);
+    }
+  }
+
   getCountDataPromise(uri) {
     return this.dataService.countData(
         undefined,
@@ -254,10 +292,6 @@ export default class VariableDetails extends Vue {
 
   getUnitPageUrl(): string {
     return this.getEncodedUrlPage(VariablesView.UNIT_TYPE, this.variable.unit.uri);
-  }
-
-  getSpeciesPageUrl(): string {
-    return this.$opensilex.getURL("germplasm/details/" + encodeURIComponent(this.variable.species.uri));
   }
 
 }

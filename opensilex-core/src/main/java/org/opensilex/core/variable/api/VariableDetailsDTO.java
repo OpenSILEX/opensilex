@@ -12,10 +12,16 @@ import java.net.URISyntaxException;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModelProperty;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 import org.opensilex.core.germplasm.api.GermplasmAPI;
 import org.opensilex.core.ontology.SKOSReferencesDTO;
 import org.opensilex.core.species.api.SpeciesDTO;
+import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.core.variable.api.entity.EntityGetDTO;
 import org.opensilex.core.variable.api.method.MethodGetDTO;
 import org.opensilex.core.variable.api.characteristic.CharacteristicGetDTO;
@@ -68,7 +74,7 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
     private String traitName;
 
     @JsonProperty("species")
-    private SpeciesDTO species;
+    private List<SpeciesDTO> species;
 
     @JsonProperty("time_interval")
     private String timeInterval;
@@ -102,7 +108,13 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
         this.alternativeName = model.getAlternativeName();
 
         if(model.getSpecies() != null){
-            this.species = SpeciesDTO.fromModel(model.getSpecies());
+            //model.getSpecies().stream().map(species -> SpeciesDTO.fromModel(species)).collect(Collectors.toList());
+
+            List<SpeciesDTO> dtos = new ArrayList<>();
+            for (SpeciesModel species : model.getSpecies()){
+                dtos.add(SpeciesDTO.fromModel(species));
+            }
+            this.species = dtos;
         }
 
         this.timeInterval = model.getTimeInterval();
@@ -233,14 +245,14 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
 
     @ValidURI
     @ApiModelProperty(notes = "Species associated with the variable", example = GermplasmAPI.GERMPLASM_EXAMPLE_SPECIES)
-    public SpeciesDTO getSpecies() {
+    public List<SpeciesDTO> getSpecies() {
         return species;
     }
 
-    public void setSpecies(SpeciesDTO species) {
+    public void setSpecies(List<SpeciesDTO> species) {
         this.species = species;
     }
-    
+
     public static VariableDetailsDTO fromModel(VariableModel model) {
         VariableDetailsDTO dto = new VariableDetailsDTO();
 
@@ -273,7 +285,11 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
         }
         
         if (model.getSpecies() != null) {
-            dto.setSpecies(SpeciesDTO.fromModel(model.getSpecies()));
+            List<SpeciesDTO> dtos = new ArrayList<>();
+            for (SpeciesModel species : model.getSpecies()){
+                dtos.add(SpeciesDTO.fromModel(species));
+            }
+            dto.setSpecies(dtos);
         }
         
         if (model.getTimeInterval() != null) {

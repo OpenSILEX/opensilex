@@ -91,7 +91,7 @@ public class VariableExportDTOClassic extends BaseVariableExportDTO<VariableMode
             throw new RuntimeException(e);
         }
         if(model.getSpecies() != null){
-            this.species = model.getSpecies().getUri();
+//            this.species = model.getSpecies().getUri();
         }
         
     }

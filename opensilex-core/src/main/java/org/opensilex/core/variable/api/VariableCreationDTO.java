@@ -6,10 +6,13 @@
 package org.opensilex.core.variable.api;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModelProperty;
+import org.apache.commons.collections4.CollectionUtils;
 import org.codehaus.plexus.util.StringUtils;
 import org.opensilex.core.germplasm.api.GermplasmAPI;
 import org.opensilex.core.ontology.SKOSReferencesDTO;
@@ -66,7 +69,7 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
     private URI unit;
 
     @JsonProperty("species")
-    private URI species;
+    private List<URI> species;
 
     @JsonProperty("time_interval")
     private String timeInterval;
@@ -208,11 +211,11 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
 
     @ValidURI
     @ApiModelProperty(notes = "URI of the species associated with the variable", example = GermplasmAPI.GERMPLASM_EXAMPLE_SPECIES)
-    public URI getSpecies() {
+    public List<URI> getSpecies() {
         return species;
     }
 
-    public void setSpecies(URI species) {
+    public void setSpecies(List<URI> species) {
         this.species = species;
     }
 
@@ -241,10 +244,15 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
         model.setMethod(new MethodModel(method));
         model.setUnit(new UnitModel(unit));
 
-        if(species != null){
-            SpeciesModel speciesModel = new SpeciesModel();
-            speciesModel.setUri(species);
-            model.setSpecies(speciesModel);
+        if (!CollectionUtils.isEmpty(species)){
+            List<SpeciesModel> speciesModelList = new ArrayList<>();
+            for(URI uri : species){
+                SpeciesModel speciesModel = new SpeciesModel();
+                speciesModel.setUri(uri);
+                speciesModelList.add(speciesModel);
+            };
+            model.setSpecies(speciesModelList);
+
         }
 
         if(trait != null){

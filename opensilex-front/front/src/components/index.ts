@@ -340,8 +340,6 @@ import ExperimentForm2 from './experiments/form/ExperimentForm2.vue';
 components["opensilex-ExperimentForm2"] = ExperimentForm2;
 import ExperimentDataVisuForm from './experiments/form/ExperimentDataVisuForm.vue';
 components["opensilex-ExperimentDataVisuForm"] = ExperimentDataVisuForm;
-import ExperimentVariableSelector from './experiments/form/ExperimentVariableSelector.vue';
-components["opensilex-ExperimentVariableSelector"] = ExperimentVariableSelector;
 import ExperimentList from './experiments/ExperimentList.vue';
 components["opensilex-ExperimentList"] = ExperimentList;
 import ExperimentListView from './experiments/ExperimentListView.vue';
@@ -490,18 +488,11 @@ import TraitForm from './variables/form/TraitForm.vue';
 components["opensilex-TraitForm"] = TraitForm;
 import VariableModalList from './variables/VariableModalList.vue';
 components["opensilex-VariableModalList"] = VariableModalList;
-import VariableSelector from './variables/views/VariableSelector.vue';
-components["opensilex-VariableSelector"] = VariableSelector;
-import UsedVariableSelector from './variables/views/UsedVariableSelector.vue';
-components["opensilex-UsedVariableSelector"] = UsedVariableSelector;
 import VariablePropertySelector from './variables/views/VariablePropertySelector.vue';
 components["opensilex-VariablePropertySelector"] = VariablePropertySelector;
 
-
-// import VariableSelectorWithFilter from './variables/views/VariableSelectorWithFilter.vue';
-// components["opensilex-VariableSelectorWithFilter"] = VariableSelectorWithFilter;
-// import UsedVariableSelectorWithFilter from './variables/views/UsedVariableSelectorWithFilter.vue';
-// components["opensilex-UsedVariableSelectorWithFilter"] = UsedVariableSelectorWithFilter;
+import VariableSelectorWithFilter from './variables/views/VariableSelectorWithFilter.vue';
+components["opensilex-VariableSelectorWithFilter"] = VariableSelectorWithFilter;
 
 // GroupVariables
 import GroupVariablesForm from './groupVariable/GroupVariablesForm.vue';

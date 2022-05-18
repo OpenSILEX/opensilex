@@ -5,12 +5,12 @@
   -->
 
 <template>
-  <opensilex-VariableSelector
+  <opensilex-VariableSelectorWithFilter
       :label="property.name"
       :variables.sync="internalValue"
-      :multiple="property.is_list"
+      :maximumSelectedRows="property.is_list ? undefined : 1"
       :required="property.is_required"
-  ></opensilex-VariableSelector>
+  ></opensilex-VariableSelectorWithFilter>
 </template>
 
 <script lang="ts">

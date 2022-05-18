@@ -42,7 +42,7 @@
               <!-- Variables -->
               <opensilex-FilterField  quarterWidth="true">
                 <opensilex-VariableSelectorWithFilter
-                  placeholder="VariableSelector.placeholder-multiple"
+                  placeholder="VariableSelectorWithFilter.placeholder-multiple"
                   :variables.sync="filter.variables"
                   :withAssociatedData="true"
                 ></opensilex-VariableSelectorWithFilter>

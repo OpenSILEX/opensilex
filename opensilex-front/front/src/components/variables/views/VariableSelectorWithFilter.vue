@@ -2,7 +2,7 @@
   <opensilex-SelectForm
     ref="variableSelector"
     modalComponent="opensilex-VariableModalList"
-    label="DataView.filter.variables"
+    :label="label"
     :placeholder="placeholder"
     :selected.sync="variablesURI"
     :experiment="experiment"
@@ -39,6 +39,9 @@ export default class VariableSelectorWithFilter extends Vue {
 
   @Prop()
   placeholder;
+
+  @Prop({default: "DataView.filter.variables"})
+  label;
 
   @Prop()
   required;
@@ -78,3 +81,19 @@ export default class VariableSelectorWithFilter extends Vue {
 
 <style scoped lang="scss">
 </style>
+
+<i18n>
+
+en:
+  VariableSelectorWithFilter:
+    placeholder : Select a variable
+    placeholder-multiple : Select one or more variables
+    filter-search-no-result : No variable found
+
+fr:
+  VariableSelectorWithFilter:
+    placeholder : Sélectionner une variable
+    placeholder-multiple : Sélectionner une ou plusieurs variables
+    filter-search-no-result : Aucune variable trouvée
+
+</i18n>

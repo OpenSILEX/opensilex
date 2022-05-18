@@ -28,7 +28,7 @@
 
     <!-- Variables -->
     <opensilex-VariableSelectorWithFilter
-      placeholder="VariableSelector.placeholder-multiple"
+      placeholder="VariableSelectorWithFilter.placeholder-multiple"
       :variables.sync="form.variables"
     ></opensilex-VariableSelectorWithFilter>
 

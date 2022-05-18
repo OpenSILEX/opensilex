@@ -48,7 +48,7 @@
         <b-row>
           <b-col cols="9">
             <opensilex-VariableSelectorWithFilter
-              placeholder="VariableSelector.placeholder-multiple"
+              placeholder="VariableSelectorWithFilter.placeholder-multiple"
               :variables.sync="variables"
             ></opensilex-VariableSelectorWithFilter>
 

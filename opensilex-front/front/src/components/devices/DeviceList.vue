@@ -25,10 +25,11 @@
                 </div>
 
                 <div class="col col-xl-3 col-sm-6 col-12">
-                    <opensilex-VariableSelector
-                        label="DeviceList.filter.variable"
-                        :variables.sync="filter.variable"
-                    ></opensilex-VariableSelector>
+                  <opensilex-VariableSelectorWithFilter
+                      placeholder="VariableSelectorWithFilter.placeholder"
+                      :variables.sync="filter.variable"
+                      maximumSelectedRows="1"
+                  ></opensilex-VariableSelectorWithFilter>
                 </div>
 
                 <div class="col col-xl-3 col-sm-6 col-12">

@@ -13,7 +13,7 @@
           <!-- Type  -->
           <opensilex-FilterField :halfWidth="true">
             <opensilex-VariableSelectorWithFilter
-              placeholder="VariableSelector.placeholder"
+              placeholder="VariableSelectorWithFilter.placeholder"
               :variables.sync="filter.variable"
               :withAssociatedData="true"
               :objects="[scientificObject]"

@@ -54,7 +54,7 @@
               <!-- Variables -->
               <opensilex-FilterField halfWidth="true">
                 <opensilex-VariableSelectorWithFilter
-                  placeholder="VariableSelector.placeholder-multiple"
+                  placeholder="VariableSelectorWithFilter.placeholder-multiple"
                   :variables.sync="filter.variables"
                   :experiment="[uri]"
                   :withAssociatedData="true"

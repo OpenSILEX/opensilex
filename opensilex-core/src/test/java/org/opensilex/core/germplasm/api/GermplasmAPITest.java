@@ -21,15 +21,22 @@ import javax.ws.rs.core.Response.Status;
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
 import static org.junit.Assert.assertFalse;
+
+import org.junit.Assert;
 import org.junit.Test;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.AbstractMongoIntegrationTest;
+import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.nosql.mongodb.metadata.MetaDataModel;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.utils.ListWithPagination;
 
 /**
  *
@@ -108,6 +115,58 @@ public class GermplasmAPITest extends AbstractMongoIntegrationTest {
         List<GermplasmGetAllDTO> germplasmList = germplasmListResponse.getResult();
 
         assertFalse(germplasmList.isEmpty());
+    }
+
+    /**
+     * Run this test at Dao level since the search method don't return attributes.
+     * For now the {@link GermplasmDAO#search(GermplasmSearchFilter, boolean)} with fetchMetada = true
+     * is only used into {@link GermplasmAPI#exportGermplasm(GermplasmSearchFilter)}.
+     *
+     */
+    @Test
+    public void testSearchWithMetadata() throws Exception {
+
+        GermplasmDAO dao = new GermplasmDAO(getSparqlService(),getMongoDBService());
+
+        // create two germplasm models with attributes
+        GermplasmModel model1 = new GermplasmModel();
+        model1.setLabel(new SPARQLLabel("germplasm1", ""));
+        model1.setType(URI.create(Oeso.Species.toString()));
+
+        Map<String,String> attributes = new HashMap<>();
+        attributes.put("p1","v1");
+        attributes.put("p2","v2");
+        model1.setMetadata(new MetaDataModel(attributes));
+
+        dao.create(model1);
+
+        GermplasmModel model2 = new GermplasmModel();
+        model2.setLabel(new SPARQLLabel("germplasm2", ""));
+        model2.setType(URI.create(Oeso.Species.toString()));
+
+        Map<String,String> attributes2 = new HashMap<>();
+        attributes2.put("p3","v3");
+        attributes2.put("p4","v4");
+        model2.setMetadata(new MetaDataModel(attributes2));
+
+        dao.create(model2);
+
+        // search models and ensure that metadata are OK for each model
+        ListWithPagination<GermplasmModel> models = dao.search(new GermplasmSearchFilter(),true);
+
+        GermplasmModel model1FromDb = models.getList().stream()
+                .filter(modelFromDb -> SPARQLDeserializers.compareURIs(modelFromDb.getUri(),model1.getUri()))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("testSearchWithMetadata"));
+
+        Assert.assertEquals(model1FromDb.getMetadata().getAttributes(),attributes);
+
+        GermplasmModel model2FromDb = models.getList().stream()
+                .filter(modelFromDb -> SPARQLDeserializers.compareURIs(modelFromDb.getUri(),model2.getUri()))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("testSearchWithMetadata"));
+
+        Assert.assertEquals(model2FromDb.getMetadata().getAttributes(),attributes2);
     }
 
     @Test

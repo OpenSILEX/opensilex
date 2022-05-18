@@ -66,7 +66,7 @@ public class ScientificObjectSearchDTO {
     @JsonProperty("page")
     protected Integer page;
 
-    @JsonProperty("page_sze")
+    @JsonProperty("page_size")
     protected Integer pageSize;
 
     public List<URI> getUris() {

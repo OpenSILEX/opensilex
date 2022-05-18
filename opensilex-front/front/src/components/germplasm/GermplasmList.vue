@@ -113,9 +113,18 @@
               @click="createDocument()"
             >{{$t('component.common.addDocument')}}</b-dropdown-item-button>
             <b-dropdown-item-button
-              @click="exportGermplasm()"
+              @click="exportCSV(false)"
           >{{$t('GermplasmList.export')}}</b-dropdown-item-button>
         </b-dropdown>
+
+          <opensilex-CreateButton
+              v-if="!noActions"
+              class="mb-2 mr-2"
+              @click="exportCSV(true)"
+              :disabled="tableRef.totalRow === 0"
+              label="ScientificObjectList.export-all"
+          ></opensilex-CreateButton>
+
       </template>
       <template v-slot:cell(name)="{data}">
         <opensilex-UriLink
@@ -163,6 +172,7 @@ import VueRouter from "vue-router";
 import { GermplasmService, ExperimentGetListDTO, ExperimentsService, SpeciesService, SpeciesDTO } from "opensilex-core/index";
 
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
+import {GermplasmSearchFilter} from "opensilex-core/model/germplasmSearchFilter";
 
 @Component
 export default class GermplasmList extends Vue {
@@ -202,8 +212,6 @@ export default class GermplasmList extends Vue {
   speciesByUri: Map<String, SpeciesDTO> = new Map<String, SpeciesDTO>();
   experimentsList = [];
 
-  exportPath = "/core/germplasm/export";
-
   filter = {
     rdf_type: undefined,
     name: undefined,
@@ -215,17 +223,6 @@ export default class GermplasmList extends Vue {
     metadataKey: undefined,
     metadataValue: undefined
   };
-
-  // exportFilter = {
-  //   rdf_type: undefined,
-  //   name: undefined,
-  //   species: undefined,
-  //   production_year: undefined,
-  //   institute: undefined,
-  //   experiment: undefined,
-  //   uri: undefined,
-  //   metadata: undefined
-  // };
 
   reset() {
     this.filter = {
@@ -239,16 +236,7 @@ export default class GermplasmList extends Vue {
       metadataKey: undefined,
       metadataValue: undefined
     };
-    // this.exportFilter = {
-    //   rdf_type: undefined,
-    //   name: undefined,
-    //   species: undefined,
-    //   production_year: undefined,
-    //   institute: undefined,
-    //   experiment: undefined,
-    //   uri: undefined,
-    //   metadata: undefined
-    // };
+
     this.refresh();
   }
 
@@ -331,16 +319,36 @@ export default class GermplasmList extends Vue {
     );
   }
 
-  exportGermplasm() {
-    let path = "/core/germplasm/export_by_uris";
+  exportCSV(exportAll: boolean) {
+    let path = "/core/germplasm/export";
     let today = new Date();
     let filename = "export_germplasm_" + today.getFullYear() + String(today.getMonth() + 1).padStart(2, '0') + String(today.getDate()).padStart(2, '0');
-    var exportList = []
-    for (let select of this.tableRef.getSelected()) {
-      exportList.push(select.uri);
+
+    let exportDto: GermplasmSearchFilter  = {
+        uri: this.filter.uri,
+        rdf_type: this.filter.rdf_type,
+        name: this.filter.name,
+        production_year: this.filter.production_year,
+        species: this.filter.species,
+        institute: this.filter.institute,
+        experiment: this.filter.experiment,
+        order_by: this.tableRef.getOrderBy(),
+        metadata: this.addMetadataFilter()
+    };
+
+    // export only selected URIS (+matching with filter)
+    if(! exportAll){
+      let objectURIs = [];
+      for (let select of this.tableRef.getSelected()) {
+        objectURIs.push(select.uri);
+      }
+      Object.assign(exportDto, {
+        uris: objectURIs
+      });
     }
+
     this.$opensilex
-     .downloadFilefromPostService(path, filename, "csv", {uris: exportList}, this.lang);
+     .downloadFilefromPostService(path, filename, "csv", exportDto, this.lang);
   }
 
 
@@ -410,17 +418,6 @@ export default class GermplasmList extends Vue {
     }
   }
 
-  // INFO: function used for web service exporting from search filters
-  // updateExportFilters() {
-  //   this.exportFilter.rdf_type = this.filter.rdf_type;
-  //   this.exportFilter.name = this.filter.name;
-  //   this.exportFilter.species = this.filter.species;
-  //   this.exportFilter.production_year = this.filter.production_year;
-  //   this.exportFilter.institute = this.filter.institute;
-  //   this.exportFilter.experiment = this.filter.experiment;
-  //   this.exportFilter.uri = this.filter.uri;
-  //   this.exportFilter.metadata = this.addMetadataFilter();
-  // }
     createDocument() {
     this.documentForm.showCreateForm();
   }

@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import javax.validation.constraints.NotNull;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
+import org.opensilex.nosql.mongodb.metadata.MetaDataModel;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.model.SPARQLLabel;
 
@@ -253,7 +254,8 @@ public class GermplasmCreationDTO {
         }        
         
         if (metadata != null ) {
-           model.setAttributes(metadata);
+           model.setMetadata(new MetaDataModel());
+           model.getMetadata().setAttributes(metadata);
         }
 
         if (synonyms != null) {

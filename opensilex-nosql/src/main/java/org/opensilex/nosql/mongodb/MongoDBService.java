@@ -17,17 +17,22 @@ import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import static com.mongodb.client.model.Filters.eq;
+
+import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.geojson.codecs.GeoJsonCodecProvider;
 import com.mongodb.client.result.DeleteResult;
 import java.net.URI;
 import java.util.*;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.Order;
+import org.bson.BsonDocument;
 import org.bson.Document;
 import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
+import org.bson.conversions.Bson;
 import org.opensilex.OpenSilexModuleNotFoundException;
 import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
@@ -204,7 +209,6 @@ public class MongoDBService extends BaseService {
     }
 
     public <T> List<T> findByURIs(Class<T> instanceClass, String collectionName, List<URI> uris) {
-        LOGGER.debug("MONGO FIND BY URIS - Collection : " + collectionName + " - uris : "  + uris.toString());
         MongoCollection<T> collection = db.getCollection(collectionName, instanceClass);
         Document listFilter = new Document();
         listFilter.append("$in", uris);
@@ -216,6 +220,20 @@ public class MongoDBService extends BaseService {
             instances.add(res);
         }
         return instances;
+    }
+
+    /**
+     *
+     * @param fieldName name of the field on which apply {@link Filters#in(String, Object[])}
+     * @param collection mongo collection
+     * @param uris {@link Stream} of URIS to pass to {@link Filters#in(String, Object[])}
+     * @param <T> {@link MongoModel} type
+     * @return a {@link FindIterable} of T models from mongodb. Returned model must have the fieldName attribute and the value for this attribute must be in uris
+     *
+     */
+    public <T extends MongoModel> FindIterable<T> findIterableByURIs(String fieldName, MongoCollection<T> collection, Stream<URI> uris){
+        Bson filter = Filters.in(fieldName, uris::iterator);
+        return collection.find(filter);
     }
 
     /**

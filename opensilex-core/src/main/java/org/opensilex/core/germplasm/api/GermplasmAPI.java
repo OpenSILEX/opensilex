@@ -9,7 +9,6 @@
  */
 package org.opensilex.core.germplasm.api;
 
-import org.opensilex.core.URIsListPostDTO;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -41,6 +40,7 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -54,7 +54,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.bson.Document;
+
 import org.opensilex.core.experiment.api.ExperimentGetListDTO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
@@ -102,7 +102,7 @@ public class GermplasmAPI {
     public static final String CREDENTIAL_GERMPLASM_DELETE_ID = "germplasm-delete";
     public static final String CREDENTIAL_GERMPLASM_DELETE_LABEL_KEY = "credential.default.delete";
 
-    public final String GERMPLASM_EXAMPLE_URI = "http://opensilex/set/experiments/ZA17";
+    public static final String GERMPLASM_EXAMPLE_URI = "http://opensilex/set/experiments/ZA17";
     public static final String GERMPLASM_EXAMPLE_TYPE = "http://www.opensilex.org/vocabulary/oeso#Variety";
     public static final String GERMPLASM_EXAMPLE_SPECIES = "http://www.phenome-fppn.fr/id/species/zeamays";
     protected static final String GERMPLASM_EXAMPLE_VARIETY = "";
@@ -199,7 +199,7 @@ public class GermplasmAPI {
                 germplasmDTO = completeDTO(germplasmDTO, germplasmDAO);
                 // create new germplasm
                 GermplasmModel model = germplasmDTO.newModel();
-                GermplasmModel germplasm = germplasmDAO.create(model, currentUser); 
+                GermplasmModel germplasm = germplasmDAO.create(model);
                 return new ObjectUriResponse(Response.Status.CREATED, germplasm.getUri()).getResponse();
             } catch (Exception e) {
                 return new ErrorResponse(e).getResponse();
@@ -269,10 +269,15 @@ public class GermplasmAPI {
         @ApiResponse(code = 404, message = "Germplasm not found (if any provided URIs is not found", response = ErrorDTO.class)
     })
     public Response getGermplasmsByURI(
-            @ApiParam(value = "Germplasms URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
+            @ApiParam(value = "Germplasms URIs", required = true) @QueryParam("uris") @NotNull @NotEmpty  List<URI> uris
     ) throws Exception {
         GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
-        List<GermplasmModel> models = germplasmDAO.getList(uris, currentUser.getLanguage(), false);
+
+        GermplasmSearchFilter filter = new GermplasmSearchFilter();
+        filter.setLang(currentUser.getLanguage());
+        filter.setUris(uris);
+
+        List<GermplasmModel> models = germplasmDAO.search(filter,false).getList();
 
         if (!models.isEmpty()) {
             List<GermplasmGetAllDTO> resultDTOList = new ArrayList<>(models.size());
@@ -401,34 +406,28 @@ public class GermplasmAPI {
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
-        // Search germplasm with germplasm DAO
-        GermplasmDAO dao = new GermplasmDAO(sparql, nosql);
-        
-        Document metadataFilter = null;
-        if (metadata != null) {
-            try {
-                metadataFilter = Document.parse(metadata);
-            } catch (Exception e) {
-                return new ErrorResponse(e).getResponse();                
-            }
-        }
 
-        
+         GermplasmSearchFilter searchFilter = new GermplasmSearchFilter()
+                 .setUri(uri)
+                 .setType(type)
+                 .setName(name)
+                 .setSpecies(species)
+                 .setVariety(variety)
+                 .setAccession(accession)
+                 .setInstitute(institute)
+                 .setProductionYear(productionYear)
+                 .setExperiment(experiment)
+                 .setMetadata(metadata);
+
+         searchFilter.setOrderByList(orderByList)
+                 .setPage(page)
+                 .setPageSize(pageSize)
+                 .setLang(currentUser.getLanguage());
+
+        GermplasmDAO dao = new GermplasmDAO(sparql, nosql);
+
         ListWithPagination<GermplasmModel> resultList = dao.search(
-                currentUser,
-                uri,
-                type,
-                name,
-                species,
-                variety,
-                accession,
-                institute,
-                productionYear,
-                experiment,
-                metadataFilter,
-                orderByList,
-                page,
-                pageSize
+               searchFilter,false
         );
 
         // Convert paginated list to DTO
@@ -440,24 +439,7 @@ public class GermplasmAPI {
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
 
-    /**
-     *
-     * @param uri
-     * @param type
-     * @param name
-     * @param code
-     * @param orderByList
-     * @param productionYear
-     * @param species
-     * @param accession
-     * @param variety
-     * @param experiment
-     * @param metadataParam
-     * @param institute
-     * @return
-     * @throws Exception
-     */
-    @GET
+    @POST
     @Path("export")
     @ApiOperation("export germplasm")
     @ApiProtected
@@ -468,56 +450,23 @@ public class GermplasmAPI {
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
     })
     public Response exportGermplasm(
-            @ApiParam(value = "Regex pattern for filtering list by uri", example = GERMPLASM_EXAMPLE_URI) @QueryParam("uri") String uri,
-            @ApiParam(value = "Search by type", example = GERMPLASM_EXAMPLE_TYPE) @QueryParam("rdf_type") URI type,
-            @ApiParam(value = "Regex pattern for filtering list by name and synonyms", example = ".*") @DefaultValue(".*") @QueryParam("name") String name,
-            @ApiParam(value = "Regex pattern for filtering list by code", example = ".*") @DefaultValue(".*") @QueryParam("code") String code,
-            @ApiParam(value = "Search by productionYear", example = GERMPLASM_EXAMPLE_PRODUCTION_YEAR) @QueryParam("production_year") Integer productionYear,
-            @ApiParam(value = "Search by species", example = GERMPLASM_EXAMPLE_SPECIES) @QueryParam("species") URI species,
-            @ApiParam(value = "Search by variety", example = GERMPLASM_EXAMPLE_VARIETY) @QueryParam("variety") URI variety,
-            @ApiParam(value = "Search by accession", example = GERMPLASM_EXAMPLE_ACCESSION) @QueryParam("accession") URI accession,
-            @ApiParam(value = "Search by institute", example = GERMPLASM_EXAMPLE_INSTITUTE) @QueryParam("institute") String institute,
-            @ApiParam(value = "Search by experiment") @QueryParam("experiment") URI experiment,
-            @ApiParam(value = "Search by metadata", example = GERMPLASM_EXAMPLE_METADATA) @QueryParam("metadata") String metadataParam,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc") @QueryParam("order_by") List<OrderBy> orderByList
+            @ApiParam("CSV export configuration") @Valid GermplasmSearchFilter searchFilter
     ) throws Exception {
-        
-        Document metadataFilter = null;
-        if (metadataParam != null) {
-            try {
-                metadataFilter = Document.parse(metadataParam);
-            } catch (Exception e) {
-                return new ErrorResponse(e).getResponse();                
-            }
-        }
 
-        // Search germplasm with germplasm DAO
         GermplasmDAO dao = new GermplasmDAO(sparql, nosql);
-        List<GermplasmModel> resultList = dao.searchForExport(
-                currentUser,
-                uri,
-                type,
-                name,
-                species,
-                variety,
-                accession,
-                institute,
-                productionYear,
-                experiment,
-                metadataFilter
-        );
-        
+        List<GermplasmModel> resultList = dao.search(searchFilter,true).getList();
+
         return buildCSV(resultList);
     }
     
     private Response buildCSV(List<GermplasmModel> germplasmList) throws IOException {
                 // Convert list to DTO
         List<GermplasmGetSingleDTO> resultDTOList = new ArrayList<>();
-        Set metadataKeys = new HashSet();
+        Set<String> metadataKeys = new HashSet<>();
         for (GermplasmModel germplasm : germplasmList) {
             GermplasmGetSingleDTO dto = GermplasmGetSingleDTO.fromModel(germplasm);
             resultDTOList.add(dto);
-            Map metadata = dto.getMetadata();
+            Map<String,String> metadata = dto.getMetadata();
             if (metadata != null) {
                  metadataKeys.addAll(metadata.keySet());
             }           
@@ -543,7 +492,7 @@ public class GermplasmAPI {
                         value = metadata.get(key.toString());
 
                     } catch (Exception e) {
-
+                        e.printStackTrace();
                     } finally {
                         if (value != null) {
                             objectNode.put(key.toString(), value.asText());
@@ -562,9 +511,7 @@ public class GermplasmAPI {
 
         Builder csvSchemaBuilder = CsvSchema.builder();
         JsonNode firstObject = arrayNode.elements().next();
-        firstObject.fieldNames().forEachRemaining(fieldName -> {
-            csvSchemaBuilder.addColumn(fieldName);
-        });
+        firstObject.fieldNames().forEachRemaining(csvSchemaBuilder::addColumn);
         CsvSchema csvSchema = csvSchemaBuilder.build().withHeader();
         StringWriter str = new StringWriter();
 
@@ -581,27 +528,7 @@ public class GermplasmAPI {
                 .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
                 .build();
     }
-    
-    
-    @POST
-    @Path("export_by_uris")
-    @ApiOperation("export germplasm by list of uris")
-    @ApiProtected
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces({MediaType.TEXT_PLAIN})
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return a csv file with germplasm list"),
-        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
-    })
-    public Response exportGermplasmByURIs(
-            @ApiParam(value = "List of germplasm URI", example = GERMPLASM_EXAMPLE_URI) URIsListPostDTO dto
-    ) throws Exception {
-        GermplasmDAO dao = new GermplasmDAO(sparql, nosql);
-        List<GermplasmModel> germplasmList = dao.getList(dto.getUris(), currentUser.getLanguage(), true);
-        
-        return buildCSV(germplasmList);
-        
-    }
+
 
     /**
      * @param germplasmDTO the germplasm to update

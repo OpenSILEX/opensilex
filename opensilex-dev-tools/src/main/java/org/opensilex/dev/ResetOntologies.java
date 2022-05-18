@@ -5,6 +5,11 @@
  */
 package org.opensilex.dev;
 
+import org.opensilex.OpenSilex;
+
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  *
  * @author vince
@@ -12,9 +17,13 @@ package org.opensilex.dev;
 public class ResetOntologies {
 
     public static void main(String[] args) throws Exception {
-        DevModule.run(new String[]{
-            "sparql",
-            "reset-ontologies"
-        });
+
+        Map<String, String> customArgs = new HashMap<>();
+        customArgs.put(OpenSilex.PROFILE_ID_ARG_KEY, OpenSilex.INTERNAL_OPERATIONS_PROFILE_ID);
+
+        DevModule.run(null, new String[]{
+                "sparql",
+                "reset-ontologies"
+        }, customArgs);
     }
 }

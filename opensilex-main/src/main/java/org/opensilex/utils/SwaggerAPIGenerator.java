@@ -2,7 +2,6 @@ package org.opensilex.utils;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import io.swagger.annotations.Api;
 import io.swagger.jaxrs.Reader;
 import io.swagger.jaxrs.config.SwaggerContextService;
@@ -207,7 +206,7 @@ public final class SwaggerAPIGenerator {
     public static OpenSilex getOpenSilex(Path baseDirectory) throws Exception {
         Map<String, String> args = new HashMap<String, String>() {
             {
-                put(OpenSilex.PROFILE_ID_ARG_KEY, OpenSilex.BUILD_PROFILE_ID);
+                put(OpenSilex.PROFILE_ID_ARG_KEY, OpenSilex.INTERNAL_OPERATIONS_PROFILE_ID);
 
                 // NOTE: uncomment this line to enable full debug during swagger API generation process
                 // put(OpenSilex.DEBUG_ARG_KEY, "true");

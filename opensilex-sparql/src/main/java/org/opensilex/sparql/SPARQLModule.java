@@ -7,7 +7,6 @@ package org.opensilex.sparql;
 
 import org.opensilex.OpenSilex;
 import org.opensilex.OpenSilexModuleNotFoundException;
-import org.opensilex.server.ServerModule;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.ontology.store.DefaultOntologyStore;
@@ -189,18 +188,18 @@ public class SPARQLModule extends OpenSilexModule {
         SPARQLConfig sparqlConfig = openSilex.getModuleConfig(SPARQLModule.class, SPARQLConfig.class);
 
         // don't load OntologyStore in case of build phase (ex : Swagger or maven) since no real RDF4J connection is set in this case
-        if (sparqlConfig.enableOntologyStore() && (openSilex.isDev() || openSilex.isProd())) {
-            Instant begin = Instant.now();
-
+        boolean useStore = (! openSilex.isReservedProfile() && ! openSilex.isTest() ) && sparqlConfig.enableOntologyStore();
+        if(useStore){
             ontologyStore = new DefaultOntologyStore(sparql, openSilex);
-            ontologyStore.load();
-
-            long durationMs = Duration.between(begin, Instant.now()).toMillis();
-            LOGGER.info(ONTOLOGY_STORE_LOAD_SUCCESS_MSG, durationMs);
-        } else {
+        }else{
             ontologyStore = new NoOntologyStore(new OntologyDAO(sparql));
         }
 
+        LOGGER.debug("Using {} OntologyStore implementation", ontologyStore.getClass().getSimpleName());
+        Instant begin = Instant.now();
+        ontologyStore.load();
+        long durationMs = Duration.between(begin, Instant.now()).toMillis();
+        LOGGER.debug(ONTOLOGY_STORE_LOAD_SUCCESS_MSG, durationMs);
     }
 
     public static OntologyStore getOntologyStoreInstance(){

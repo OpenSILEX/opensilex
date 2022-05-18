@@ -21,9 +21,9 @@ public class ResetSHACL {
     }
 
     public static void start(Path baseDirectory) throws Exception {
-        DevModule.run(new String[]{
+        DevModule.run(null,new String[]{
             "sparql",
             "shacl-enable"
-        });
+        },null);
     }
 }

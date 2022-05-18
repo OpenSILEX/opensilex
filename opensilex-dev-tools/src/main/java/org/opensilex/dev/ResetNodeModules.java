@@ -36,7 +36,11 @@ public class ResetNodeModules {
         if (DevModule.isWindows()) {
             nodeBin += ".exe";
         }
-        OpenSilex opensilex = DevModule.getOpenSilexDev(baseDirectory);
+
+        Map<String, String> customArgs = new HashMap<>();
+        customArgs.put(OpenSilex.PROFILE_ID_ARG_KEY, OpenSilex.INTERNAL_OPERATIONS_PROFILE_ID);
+
+        OpenSilex opensilex = DevModule.getOpenSilexDev(baseDirectory, customArgs);
 
         Set<String> moduleToReinstall = new HashSet<>();
         LOGGER.debug("Purge base node_modules folder");

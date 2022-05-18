@@ -15,7 +15,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import org.apache.commons.io.FileUtils;
 import org.opensilex.OpenSilex;
 import org.opensilex.OpenSilexModule;
@@ -43,7 +46,11 @@ public class ResetTypeScriptLib {
 
     public static void generate(Path baseDirectory) throws Exception {
 
-        opensilex = DevModule.getOpenSilexDev(baseDirectory);
+        Map<String, String> customArgs = new HashMap<>();
+        customArgs.put(OpenSilex.PROFILE_ID_ARG_KEY, OpenSilex.INTERNAL_OPERATIONS_PROFILE_ID);
+
+        opensilex = DevModule.getOpenSilexDev(baseDirectory,
+                customArgs);
 
         if (DevModule.isWindows()) {
             nodeBin += ".exe";

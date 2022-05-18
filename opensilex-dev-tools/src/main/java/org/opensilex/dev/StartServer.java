@@ -21,7 +21,7 @@ public class StartServer {
         DevModule.run(baseDirectory, new String[]{
             "server",
             "start"
-        });
+        },null);
     }
 
 }

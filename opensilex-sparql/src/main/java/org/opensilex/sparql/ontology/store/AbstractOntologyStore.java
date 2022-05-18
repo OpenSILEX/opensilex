@@ -126,7 +126,7 @@ public abstract class AbstractOntologyStore implements OntologyStore {
             OntologyStoreLoader storeLoader = new OntologyStoreLoader(sparql, languages);
             clear();
 
-            String loadingMsg = "{} {} {} loaded [OK] time: {} ms {}";
+            String loadingMsg = "{} {} loaded [OK] time: {} ms";
 
             // Initial classes loading
             Instant begin = Instant.now();

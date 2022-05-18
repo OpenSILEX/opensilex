@@ -90,9 +90,10 @@ public final class OpenSilex {
     public final static String DEV_PROFILE_ID = "dev";
 
     /**
-     * Maven/Swagger build profile identifier
+     * Special profile used when we need to run an OpenSILEX instance (Swagger/maven build, custom OpenSILEX command)
+     * without running the whole OpenSIELX server
      */
-    public final static String BUILD_PROFILE_ID = "build";
+    public final static String INTERNAL_OPERATIONS_PROFILE_ID = "internal_operations";
 
 
     /**
@@ -714,8 +715,8 @@ public final class OpenSilex {
      *
      * @return true if maven profile is build and false otherwise
      */
-    public boolean isBuild(){
-        return getProfileId().equals(BUILD_PROFILE_ID);
+    public boolean isReservedProfile(){
+        return getProfileId().equals(INTERNAL_OPERATIONS_PROFILE_ID);
     }
 
     /**

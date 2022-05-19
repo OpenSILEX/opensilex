@@ -288,7 +288,7 @@ export default class VariableList extends Vue {
         experiment: undefined,
         objects: undefined,
         devices: undefined,
-        species: undefined
+        species: []
     };
 
     @Ref("groupVariableSelection") readonly groupVariableSelection!: any;
@@ -334,7 +334,7 @@ export default class VariableList extends Vue {
             experiment: undefined,
             objects: undefined,
             devices: undefined,
-            species: undefined
+            species: []
         };
         this.refresh();
     }

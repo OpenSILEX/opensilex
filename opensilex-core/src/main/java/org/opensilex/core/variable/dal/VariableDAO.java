@@ -11,11 +11,15 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.Order;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.graph.Triple;
+import org.apache.jena.rdf.model.Property;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.data.dal.DataDAO;
+import org.opensilex.core.ontology.Oeso;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
@@ -262,6 +266,7 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
                     }
 
                     if(!CollectionUtils.isEmpty(species)){
+                        addOptional(select, VariableModel.URI_FIELD, Oeso.hasSpecies, VariableModel.SPECIES_FIELD_NAME);
                         // logical or -> filter ?species IN (:species_uri1 :species_uri2 )
                         select.addFilter(SPARQLQueryHelper.inURIFilter(VariableModel.SPECIES_FIELD_NAME,species));
 
@@ -276,6 +281,12 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
 
     public List<VariableModel> getList(List<URI> uris) throws Exception {
         return sparql.getListByURIs(VariableModel.class, uris, null);
+    }
+
+    private static void addOptional(SelectBuilder select, String subjectVar, Property property, String objectVar) {
+        WhereBuilder where = new WhereBuilder();
+        where.addWhere(new Triple(makeVar(subjectVar), property.asNode(), makeVar(objectVar)));
+        select.getWhereHandler().addOptional(where.getWhereHandler());
     }
 }
 

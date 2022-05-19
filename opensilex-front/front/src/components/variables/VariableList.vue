@@ -73,6 +73,15 @@
                             ></opensilex-VariableTimeIntervalSelector>
                         </opensilex-FilterField>
 
+                        <opensilex-FilterField>
+                          <opensilex-SpeciesSelector
+                              label="SpeciesSelector.select-one"
+                              placeholder="SpeciesSelector.select-one-placeholder"
+                              :multiple="true"
+                              :species.sync="filter.species"
+                          ></opensilex-SpeciesSelector>
+                        </opensilex-FilterField>
+
                     </template>
                 </opensilex-SearchFilterField>
 
@@ -278,7 +287,8 @@ export default class VariableList extends Vue {
         timeInterval: undefined,
         experiment: undefined,
         objects: undefined,
-        devices: undefined
+        devices: undefined,
+        species: undefined
     };
 
     @Ref("groupVariableSelection") readonly groupVariableSelection!: any;
@@ -323,7 +333,8 @@ export default class VariableList extends Vue {
             timeInterval: undefined,
             experiment: undefined,
             objects: undefined,
-            devices: undefined
+            devices: undefined,
+            species: undefined
         };
         this.refresh();
     }
@@ -360,6 +371,7 @@ export default class VariableList extends Vue {
             this.filter.group,
             this.filter.dataType,
             this.filter.timeInterval,
+            this.filter.species,
             this.withAssociatedData,
             this.experiment ? this.experiment : this.filter.experiment,
             this.objects ? this.objects : this.filter.objects,

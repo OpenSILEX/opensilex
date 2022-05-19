@@ -110,6 +110,7 @@ public class VariableModel extends BaseVariableModel<VariableModel> implements C
             property = "hasSpecies"
     )
     private List<SpeciesModel> species;
+    public static final String SPECIES_FIELD_NAME = "species";
 
     public String getAlternativeName() { return alternativeName; }
 

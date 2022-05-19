@@ -6,6 +6,7 @@
 package org.opensilex.core.variable.dal;
 
 import com.google.common.base.CaseFormat;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.Order;
@@ -176,6 +177,7 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
             URI group,
             URI dataType,
             String timeInterval,
+            List<URI> species,
             boolean withAssociatedData,
             List<URI> devices,
             List<URI> experiments,
@@ -257,6 +259,12 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
 
                     if (variableUriList != null) {
                         SPARQLQueryHelper.addWhereUriValues(select, SPARQLResourceModel.URI_FIELD, variableUriList);
+                    }
+
+                    if(!CollectionUtils.isEmpty(species)){
+                        // logical or -> filter ?species IN (:species_uri1 :species_uri2 )
+                        select.addFilter(SPARQLQueryHelper.inURIFilter(VariableModel.SPECIES_FIELD_NAME,species));
+
                     }
 
                 },

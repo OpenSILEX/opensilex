@@ -377,7 +377,7 @@ public class VariableAPI {
             csvSchemaBuilder.addColumn(fieldName);
         });
                         
-        CsvSchema csvSchema = csvSchemaBuilder.build().withHeader();
+        CsvSchema csvSchema = csvSchemaBuilder.build().withHeader().withArrayElementSeparator(" ");
         StringWriter str = new StringWriter();
 
         CsvMapper csvMapper = new CsvMapper();

@@ -245,7 +245,7 @@ export default class VariableDetails extends Vue {
 
   initDataTypes() {
     this.service.getDatatypes()
-    .then((http) => {     
+    .then((http) => {
       this.dataTypes = http.response.result;
     }).catch(this.$opensilex.errorHandler);
   }
@@ -257,9 +257,9 @@ export default class VariableDetails extends Vue {
       if(!this.dataTypes) {
         return undefined;
       }
-      let label = this.$t(this.dataTypes.find(item => item.uri === dataTypeUri).name);     
+      let label = this.$t(this.dataTypes.find(item => item.uri === dataTypeUri).name);
       return label.charAt(0).toUpperCase() + label.slice(1);
-    } 
+    }
   }
 
   getEncodedUrlPage(elementType: string, uri: string): string {

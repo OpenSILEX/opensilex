@@ -111,18 +111,22 @@
                     </template>
 
                     <template v-slot:cell(name)="{data}">
-                        <opensilex-UriLink
-                            v-if="noActions"
-                            :uri="data.item.uri"
-                            :value="data.item.name"
-                            :url="'/app/variable/details/'+ encodeURIComponent(data.item.uri)"
-                        ></opensilex-UriLink>
-                        <opensilex-UriLink
-                            v-else
-                            :uri="data.item.uri"
-                            :value="data.item.name"
-                            :to="{path: '/variable/details/'+ encodeURIComponent(data.item.uri)}"
-                        ></opensilex-UriLink>
+                        <span>
+                            <opensilex-UriLink
+                                v-if="noActions"
+                                :uri="data.item.uri"
+                                :value="data.item.name"
+                                :url="'/app/variable/details/'+ encodeURIComponent(data.item.uri)"
+                            ></opensilex-UriLink>
+                            <opensilex-UriLink
+                                v-else
+                                :uri="data.item.uri"
+                                :value="data.item.name"
+                                :to="{path: '/variable/details/'+ encodeURIComponent(data.item.uri)}"
+                            ></opensilex-UriLink>
+                        </span>
+                        <br>
+                        <span>{{data.item.alternative_name}}</span>
                     </template>
                     <template v-slot:row-details="{data}">
                         <div v-if="variableGroupsList[data.item.uri] && variableGroupsList[data.item.uri].length > 0">

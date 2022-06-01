@@ -7,6 +7,13 @@
                     <template v-slot:filters>
 
                         <opensilex-FilterField>
+                          <opensilex-ResourceSelector
+                              label="VariableView.entity"
+                              :entity.sync="filter.entity"
+                          ></opensilex-ResourceSelector>
+                        </opensilex-FilterField>
+
+                        <opensilex-FilterField>
                             <label>{{ $t("ExperimentList.filter-label") }}</label>
                             <opensilex-StringFilter
                                 :filter.sync="filter.name"

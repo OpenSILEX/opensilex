@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.core.variable.api.entity.EntityGetDTO;
+import org.opensilex.core.variable.api.logo.LogoGetDTO;
 import org.opensilex.core.variable.api.method.MethodGetDTO;
 import org.opensilex.core.variable.api.characteristic.CharacteristicGetDTO;
 import org.opensilex.core.variable.api.unit.UnitGetDTO;
@@ -50,6 +51,9 @@ public class VariableGetDTO {
 
     @JsonProperty("unit")
     private UnitGetDTO unit;
+
+    @JsonProperty("logo")
+    private LogoGetDTO logo;
 
     @ApiModelProperty(example = "http://opensilex.dev/set/variables/Plant_Height")
     public URI getUri() {
@@ -109,6 +113,12 @@ public class VariableGetDTO {
         this.unit = unit;
     }
 
+    public LogoGetDTO getLogo() { return logo; }
+
+    public void setLogo(LogoGetDTO logo) {
+        this.logo = logo;
+    }
+
 
     public static VariableGetDTO fromModel(VariableModel model) {
 
@@ -133,6 +143,9 @@ public class VariableGetDTO {
 
         UnitModel unit = model.getUnit();
         dto.setUnit(new UnitGetDTO(unit));
+
+        LogoModel logo = model.getLogo();
+        dto.setLogo(new LogoGetDTO(logo));
 
         return dto;
     }

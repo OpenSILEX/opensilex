@@ -6,12 +6,12 @@
                 <opensilex-SearchFilterField @search="refresh()" @clear="reset()" :showAdvancedSearch="true">
                     <template v-slot:filters>
 
-                        <opensilex-FilterField>
-                          <opensilex-ResourceSelector
-                              label="VariableView.entity"
-                              :entity.sync="filter.entity"
-                          ></opensilex-ResourceSelector>
-                        </opensilex-FilterField>
+                        <opensilex-ResourcesSelector
+                            label="ResourcesSelector.select-one"
+                            placeholder="ResourcesSelector.select-one-placeholder"
+                            :multiple="true"
+                            :species.sync="filter.resources"
+                        ></opensilex-ResourcesSelector>
 
                         <opensilex-FilterField>
                             <label>{{ $t("ExperimentList.filter-label") }}</label>
@@ -297,6 +297,7 @@ export default class VariableList extends Vue {
     devices;
 
     filter = {
+        resources: [],
         name: undefined,
         entity: undefined,
         entityOfInterest: undefined,

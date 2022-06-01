@@ -8,7 +8,6 @@ package org.opensilex.core.variable.dal;
 import org.apache.jena.vocabulary.SKOS;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.species.dal.SpeciesModel;
-import org.opensilex.core.variable.api.logo.LogoGetDTO;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.uri.generation.ClassURIGenerator;
@@ -84,14 +83,6 @@ public class VariableModel extends BaseVariableModel<VariableModel> implements C
     )
     private UnitModel unit;
     public static final String UNIT_FIELD_NAME = "unit";
-
-    @SPARQLProperty(
-            ontology = Oeso.class,
-            property = "hasLogo",
-            required = true
-    )
-    private LogoModel logo;
-    public static final String LOGO_FIELD_NAME = "logo";
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -172,10 +163,6 @@ public class VariableModel extends BaseVariableModel<VariableModel> implements C
     public void setUnit(UnitModel unit) {
         this.unit = unit;
     }
-
-    public LogoModel getLogo() { return logo; }
-
-    public void setLogo(LogoModel logo) {this.logo = logo;}
 
     public String getTimeInterval() {
         return timeInterval;

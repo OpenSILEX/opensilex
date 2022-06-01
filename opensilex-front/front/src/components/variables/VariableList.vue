@@ -10,7 +10,7 @@
                             label="ResourcesSelector.select-one"
                             placeholder="ResourcesSelector.select-one-placeholder"
                             :multiple="true"
-                            :species.sync="filter.resources"
+                            :resources.sync="filter.resources"
                         ></opensilex-ResourcesSelector>
 
                         <opensilex-FilterField>

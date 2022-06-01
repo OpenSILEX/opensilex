@@ -344,6 +344,7 @@ export default class VariableList extends Vue {
 
     reset() {
         this.filter = {
+            resources: [],
             name: undefined,
             entity: undefined,
             entityOfInterest: undefined,

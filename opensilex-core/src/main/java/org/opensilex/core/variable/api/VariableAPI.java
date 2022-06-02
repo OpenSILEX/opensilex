@@ -239,6 +239,9 @@ public class VariableAPI {
                 this.currentUser
         );
 
+        //rajouter fonction qui fait appel à l'API mais sur l'instance partagée
+        //mixer les deux en regardant lesquelles sont sur l'IRP ou sur l'instance locale (pb des uris, same as)
+
         // Convert paginated list to DTO
         ListWithPagination<VariableGetDTO> resultDTOList = variables.convert(
                 VariableGetDTO.class,

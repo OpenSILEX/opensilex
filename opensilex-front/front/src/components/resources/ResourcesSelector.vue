@@ -1,15 +1,36 @@
 <template>
-  <select v-model="selected">
-    <option disabled value="">Choisissez une ressource</option>
-    <option>Instance locale</option>
-    <option>Phenome</option>
-    <option>Vitioeno</option>
-  </select>
+  <opensilex-SelectForm
+      :label="label"
+      :selected.sync="resourcesURI"
+      :multiple="multiple"
+      :required="required"
+      :itemLoadingMethod="loadResources"
+      :conversionMethod="resourcesToSelectNode"
+      :placeholder="placeholder"
+      @clear="$emit('clear')"
+      @select="select"
+      @deselect="deselect"
+  ></opensilex-SelectForm>
 </template>
 
 <script>
-export default {
-  name: "ResourcesSelector"
+import {Prop, PropSync} from "vue-property-decorator";
+
+export default class ResourcesSelector extends Vue {
+  $opensilex: any;
+
+  @PropSync("resources")
+  resourcesURI;
+
+  @Prop()
+  label;
+
+  @Prop({default: false})
+  multiple;
+
+  @Prop({default: false})
+  required;
+
 }
 </script>
 

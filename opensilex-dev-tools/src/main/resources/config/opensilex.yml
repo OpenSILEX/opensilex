@@ -54,7 +54,10 @@ phisws:
 #                 userId : ""
 #                 userPassword : ""
 
-#core:
+core:
+    sharedResources:
+        - http://138.102.159.36:8083/app/  #phis ou emphasis ?
+        - http://138.102.159.10/resource/app/ #vigne
 #    enableLogs: true
 #server:
 #    pathPrefix: /sunagri
@@ -74,3 +77,6 @@ phisws:
 system:
     ignoredModules:
         org.opensilex.opensilex-mobile.MobileModule: opensilex-mobile.jar
+
+front:
+    geocodingService: Adresse

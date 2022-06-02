@@ -418,6 +418,10 @@ components["opensilex-SpeciesSelector"] = SpeciesSelector;
 import ProjectModalList from './projects/ProjectModalList.vue';
 components["opensilex-ProjectModalList"] = ProjectModalList;
 
+//Resources
+import ResourcesSelector from './resources/ResourcesSelector.vue';
+components["opensilex-ResourcesSelector"] = ResourcesSelector;
+
 // Scientific Object
 import ScientificObjectList from './scientificObjects/ScientificObjectList.vue';
 components["opensilex-ScientificObjectList"] = ScientificObjectList;

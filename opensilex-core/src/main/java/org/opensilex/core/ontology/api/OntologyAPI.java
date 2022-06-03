@@ -6,7 +6,9 @@
 package org.opensilex.core.ontology.api;
 
 import io.swagger.annotations.*;
+import org.opensilex.core.CoreModule;
 import org.opensilex.core.URIsListPostDTO;
+import org.opensilex.core.sharedResource.SharedResourcesDTO;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
@@ -59,6 +61,9 @@ public class OntologyAPI {
 
     @Inject
     private SPARQLService sparql;
+
+    @Inject
+    private CoreModule coreModule;
 
     public static final String PROPERTY_ALREADY_EXISTS_MSG = "A property with the same URI already exists";
     public static final String PROPERTY_NOT_FOUND_MSG = "Property not found";
@@ -540,6 +545,23 @@ public class OntologyAPI {
         List<NamedResourceDTO> dtoList = results.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
 
         return new SingleObjectResponse<>(dtoList).getResponse();
+    }
+
+    @GET
+    @Path("/shared_resources")
+    @ApiOperation("Return the list of existing shared resources")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return shared resources", response = SharedResourcesDTO.class,responseContainer = "List")
+    })
+    public Response fetchSharedResources(
+
+    ) throws Exception {
+
+        List<SharedResourcesDTO> sharedResourcesDTOS = coreModule.getSharedResources();
+        return new SingleObjectResponse<>(sharedResourcesDTOS).getResponse();
     }
 
     @POST

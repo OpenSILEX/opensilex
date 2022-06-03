@@ -9,7 +9,7 @@ import java.util.Map;
 public interface SharedResourcesItem {
 
     @ConfigDescription("Shared resources uri")
-    URI uri();
+    String uri();
 
     @ConfigDescription("Shared resources label")
     String label();

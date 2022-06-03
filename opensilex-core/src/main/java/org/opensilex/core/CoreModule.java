@@ -7,21 +7,26 @@ package org.opensilex.core;
 
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
+
 import java.net.URI;
 
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.OWL;
 import org.opensilex.OpenSilexModule;
 
+import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.jena.riot.Lang;
 import org.apache.jena.vocabulary.OA;
+import org.opensilex.core.config.SharedResourcesItem;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Time;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
+import org.opensilex.core.sharedResource.SharedResourcesDTO;
 import org.opensilex.core.variable.dal.InterestEntityModel;
 import org.opensilex.core.variable.dal.MethodModel;
 import org.opensilex.core.variablesGroup.dal.VariablesGroupModel;
@@ -64,13 +69,33 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
         List<String> list = APIExtension.super.getPackagesToScan();
 
         if (getConfig(CoreConfig.class).enableLogs()) {
-            list.add("org.opensilex.core.logs.filter"); 
+            list.add("org.opensilex.core.logs.filter");
         }
         if (getConfig(CoreConfig.class).metrics().enableMetrics()) {
-            list.add("org.opensilex.core.metrics.schedule"); 
-        } 
+            list.add("org.opensilex.core.metrics.schedule");
+        }
 
         return list;
+    }
+
+    public List<SharedResourcesDTO> getSharedResources() {
+        List<SharedResourcesDTO> listDTO = new ArrayList<>();
+        CoreConfig coreConfig = getConfig(CoreConfig.class);
+        List<SharedResourcesItem> list = coreConfig.sharedResources();
+
+        for (SharedResourcesItem sharedResource : list) {
+            SharedResourcesDTO sharedDTO = new SharedResourcesDTO();
+            try {
+                sharedDTO.setUri(new URI(sharedResource.uri()));
+                sharedDTO.setLabel(sharedResource.label());
+                listDTO.add(sharedDTO);
+            } catch (URISyntaxException e) {
+                LOGGER.warn("The uri " + sharedResource.uri() + " is not valid for this shared resource : " + sharedResource.label(), e);
+            }
+
+        }
+
+        return listDTO;
     }
 
     @Override
@@ -78,37 +103,37 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
         List<OntologyFileDefinition> list = SPARQLExtension.super.getOntologiesFiles();
         list.add(new OntologyFileDefinition(
                 "http://purl.obolibrary.org/obo/peco.owl",
-                ONTOLOGIES_DIRECTORY+"/peco_factors.owl",
+                ONTOLOGIES_DIRECTORY + "/peco_factors.owl",
                 Lang.RDFXML,
                 "peco"
         ));
         list.add(new OntologyFileDefinition(
                 OA.NS,
-                ONTOLOGIES_DIRECTORY+"/oa.rdf",
+                ONTOLOGIES_DIRECTORY + "/oa.rdf",
                 Lang.RDFXML,
                 "oa"
         ));
         list.add(new OntologyFileDefinition(
                 "http://www.opensilex.org/vocabulary/oeso#",
-                ONTOLOGIES_DIRECTORY+"/oeso-core.owl",
+                ONTOLOGIES_DIRECTORY + "/oeso-core.owl",
                 Lang.RDFXML,
                 "vocabulary"
         ));
         list.add(new OntologyFileDefinition(
                 "http://www.opensilex.org/vocabulary/oeev#",
-                ONTOLOGIES_DIRECTORY+"/oeev.owl",
+                ONTOLOGIES_DIRECTORY + "/oeev.owl",
                 Lang.RDFXML,
                 "oeev"
         ));
         list.add(new OntologyFileDefinition(
                 OWL.NAMESPACE,
-                ONTOLOGIES_DIRECTORY+"/owl2.ttl",
+                ONTOLOGIES_DIRECTORY + "/owl2.ttl",
                 Lang.TURTLE,
                 OWL.PREFIX
         ));
         list.add(new OntologyFileDefinition(
                 Time.NS,
-                ONTOLOGIES_DIRECTORY+"/time.ttl",
+                ONTOLOGIES_DIRECTORY + "/time.ttl",
                 Lang.TURTLE,
                 Time.PREFIX
         ));
@@ -125,7 +150,7 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
     public void setup() throws Exception {
         SPARQLService.addPrefix(Oeso.PREFIX, Oeso.NS);
         SPARQLService.addPrefix(Oeev.PREFIX, Oeev.NS);
-        SPARQLService.addPrefix(Time.PREFIX,Time.NS);
+        SPARQLService.addPrefix(Time.PREFIX, Time.NS);
         URIDeserializer.setPrefixes(SPARQLService.getPrefixMapping(), true);
         SPARQLDeserializers.registerDatatypeClass(Oeso.longString, String.class);
     }
@@ -161,9 +186,9 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
 
         LOGGER.info("Insert default provenance: " + provenance.getUri());
         try {
-           db.getCollection(ProvenanceDAO.PROVENANCE_COLLECTION_NAME, ProvenanceModel.class).insertOne(provenance); 
+            db.getCollection(ProvenanceDAO.PROVENANCE_COLLECTION_NAME, ProvenanceModel.class).insertOne(provenance);
         } catch (Exception e) {
-           LOGGER.warn("Couldn't create default provenance : " + e.getMessage());
+            LOGGER.warn("Couldn't create default provenance : " + e.getMessage());
         }
     }
 
@@ -174,14 +199,14 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
     private void insertDefaultVariablesGroup() throws Exception {
         SPARQLServiceFactory factory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
         SPARQLService sparql = factory.provide();
-        
+
         VariablesGroupModel variablesGroup = new VariablesGroupModel();
         variablesGroup.setName(DEFAULT_VARIABLE_GROUP_NAME);
         variablesGroup.setDescription(DEFAULT_VARIABLE_GROUP_DESCRIPTION);
-        
-        LOGGER.info("Insert default variables group: {}",variablesGroup.getUri());
+
+        LOGGER.info("Insert default variables group: {}", variablesGroup.getUri());
         try {
-           sparql.create(variablesGroup);
+            sparql.create(variablesGroup);
         } catch (Exception e) {
             throw new SPARQLException("Couldn't create default variables group : " + e.getMessage(), e);
         }
@@ -208,39 +233,39 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
             throw new SPARQLException("Couldn't create default method : " + e.getMessage(), e);
         }
     }
-    
+
     private void insertDefaultInterestEntities() throws Exception {
         SPARQLServiceFactory factory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
         SPARQLService sparql = factory.provide();
-        
+
         InterestEntityModel plot = new InterestEntityModel();
         InterestEntityModel plant = new InterestEntityModel();
         InterestEntityModel genotype = new InterestEntityModel();
         InterestEntityModel site = new InterestEntityModel();
         InterestEntityModel greenHouse = new InterestEntityModel();
         InterestEntityModel chamberGrowth = new InterestEntityModel();
-        
+
         String plotName = "Plot";
         String plantName = "Plant";
         String genotypeName = "Genotype";
         String siteName = "Site";
         String greenHouseName = "Green house";
         String chamberGrowthName = "Chamber growth";
-        
+
         plot.setName(plotName);
         plant.setName(plantName);
         genotype.setName(genotypeName);
         site.setName(siteName);
         greenHouse.setName(greenHouseName);
         chamberGrowth.setName(chamberGrowthName);
-        
+
         try {
-           sparql.create(plot);
-           sparql.create(plant);
-           sparql.create(genotype);
-           sparql.create(site);
-           sparql.create(greenHouse);
-           sparql.create(chamberGrowth);
+            sparql.create(plot);
+            sparql.create(plant);
+            sparql.create(genotype);
+            sparql.create(site);
+            sparql.create(greenHouse);
+            sparql.create(chamberGrowth);
         } catch (Exception e) {
             throw new SPARQLException("Couldn't create default entities of interest : " + e.getMessage(), e);
         }

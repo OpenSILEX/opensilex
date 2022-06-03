@@ -55,14 +55,14 @@ phisws:
 #                 userPassword : ""
 
 core:
+    enableLogs: true
     sharedResources:
-        - uri : http://138.102.159.36:8083/app/
+        - uri : http://138.102.159.36:8083/
           label : PHENOME
-        - uri : http://138.102.159.36:8082/app
+        - uri : http://138.102.159.36:8082/
           label : EPPN
-        - uri : http://138.102.159.10/resource/app/
+        - uri : http://138.102.159.10/resource/
           label : VitiOeno
-#    enableLogs: true
 #server:
 #    pathPrefix: /sunagri
 

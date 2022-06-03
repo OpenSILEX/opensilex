@@ -56,8 +56,12 @@ phisws:
 
 core:
     sharedResources:
-        - http://138.102.159.36:8083/app/  #phis ou emphasis ?
-        - http://138.102.159.10/resource/app/ #vigne
+        - uri : http://138.102.159.36:8083/app/
+          label : PHENOME
+        - uri : http://138.102.159.36:8082/app
+          label : EPPN
+        - uri : http://138.102.159.10/resource/app/
+          label : VitiOeno
 #    enableLogs: true
 #server:
 #    pathPrefix: /sunagri

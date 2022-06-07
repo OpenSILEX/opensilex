@@ -57,6 +57,8 @@ phisws:
 core:
     enableLogs: true
     sharedResources:
+        - uri : localhost:8080/
+          label : locale
         - uri : http://138.102.159.36:8083/
           label : PHENOME
         - uri : http://138.102.159.36:8082/

@@ -44,7 +44,7 @@ public class GeospatialDAOTest extends AbstractMongoIntegrationTest {
 
     @BeforeClass
     public static void initDAO() {
-        MongoDBService service = getOpensilex().getServiceInstance("mongodb", MongoDBService.class);
+        MongoDBService service = getOpensilex().getServiceInstance(MongoDBService.DEFAULT_SERVICE, MongoDBService.class);
         geospatialDAO = new GeospatialDAO(service);
     }
 

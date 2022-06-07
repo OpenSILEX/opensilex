@@ -51,6 +51,23 @@ public class UserModel extends SPARQLResourceModel implements Principal, ClassUR
 
         return anonymous;
     }
+    
+    public static UserModel getSystemUser() {
+        UserModel system = new UserModel();
+        system.setFirstName("System");
+        system.setLastName("System");
+        try {
+            system.setEmail(new InternetAddress("opensilex@gmail.com"));
+        } catch (AddressException ex) {
+            // can't happend
+        }
+        system.setUserProfiles(new ArrayList<>());
+        system.setAdmin(true);
+        system.setAnonymous(false);
+        system.setLocale(new Locale(OpenSilex.DEFAULT_LANGUAGE));
+
+        return system;
+    }
 
     @SPARQLProperty(
             ontology = FOAF.class,

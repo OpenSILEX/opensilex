@@ -121,7 +121,7 @@ public class AbstractMongoIntegrationTest extends AbstractSecurityIntegrationTes
 
     private void clearCollections(){
 
-        MongoDBService mongoDBService = getOpensilex().getServiceInstance("mongodb", MongoDBService.class);
+        MongoDBService mongoDBService = getOpensilex().getServiceInstance(MongoDBService.DEFAULT_SERVICE, MongoDBService.class);
         MongoDatabase mongoDb = mongoDBService.getDatabase();
 
         try{
@@ -136,7 +136,7 @@ public class AbstractMongoIntegrationTest extends AbstractSecurityIntegrationTes
     }
 
     protected MongoDBService getMongoDBService(){
-        return getOpensilex().getServiceInstance("mongodb", MongoDBService.class);
+        return getOpensilex().getServiceInstance(MongoDBService.DEFAULT_SERVICE, MongoDBService.class);
     }
 
 

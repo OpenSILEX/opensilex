@@ -340,6 +340,29 @@ public class ExperimentDAO {
         return userExperiments;
     }
     
+    /**
+     * Get only running experiments available for a selected user
+     * @param user current user
+     * @return List of current experiment that are not ended
+     * @throws Exception 
+     */
+    public Set<URI> getRunningUserExperiments(UserModel user) throws Exception {
+        String lang = user.getLanguage();
+        Set<URI> userExperiments = new HashSet<>(); 
+        
+        List<URI> xps = sparql.searchURIs(ExperimentModel.class, lang, (SelectBuilder select) -> {
+            appendUserExperimentsFilter(select, user); 
+            Var uriVar = makeVar(ExperimentModel.URI_FIELD);
+            Var endDateField = makeVar(ExperimentModel.END_DATE_FIELD);
+            Triple endDateTriple = new Triple(uriVar, Oeso.endDate.asNode(), endDateField);
+            select.addFilter(SPARQLQueryHelper.getExprFactory().notexists(new WhereBuilder().addWhere(endDateTriple))); 
+        });
+
+        userExperiments.addAll(xps);
+
+        return userExperiments;
+    }
+    
     public static void appendUserExperimentsFilter(SelectBuilder select, UserModel user) throws Exception {
         if (user == null || user.isAdmin()) {
             return;

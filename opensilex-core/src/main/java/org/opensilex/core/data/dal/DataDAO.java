@@ -370,7 +370,7 @@ public class DataDAO {
         return filter;
     }    
     
-    private void appendExperimentUserAccessFilter(Document filter, UserModel user, List<URI> experiments) throws Exception {
+    public void appendExperimentUserAccessFilter(Document filter, UserModel user, List<URI> experiments) throws Exception {
         String experimentField = "provenance.experiments";
         
         //user access

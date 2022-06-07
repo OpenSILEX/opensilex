@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0-rc+4] - 2022-XX-XX
+### Added or changed
+
+- Add metrics on experiments and system [metrics services configuration](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/installation/configuration/metrics.md).
 ## [1.0.0-rc+3] - 2022-05-05
 
 Be careful, updating to this new version need some manual operations to be done. See [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc+3.md).

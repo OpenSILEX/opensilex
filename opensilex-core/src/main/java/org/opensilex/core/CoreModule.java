@@ -11,11 +11,8 @@ import java.net.URI;
 
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.OWL;
-import org.opensilex.OpenSilex;
 import org.opensilex.OpenSilexModule;
 
-import java.time.Duration;
-import java.time.Instant;
 import java.util.List;
 
 import org.apache.jena.riot.Lang;
@@ -67,8 +64,11 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
         List<String> list = APIExtension.super.getPackagesToScan();
 
         if (getConfig(CoreConfig.class).enableLogs()) {
-            list.add("org.opensilex.core.logs.filter");
+            list.add("org.opensilex.core.logs.filter"); 
         }
+        if (getConfig(CoreConfig.class).metrics().enableMetrics()) {
+            list.add("org.opensilex.core.metrics.schedule"); 
+        } 
 
         return list;
     }

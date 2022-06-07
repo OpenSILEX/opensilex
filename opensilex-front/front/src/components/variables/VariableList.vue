@@ -5,22 +5,16 @@
 
                 <opensilex-SearchFilterField @search="refresh()" @clear="reset()" :showAdvancedSearch="true">
                     <template v-slot:filters>
-
-<!--                        <opensilex-FilterField>-->
-<!--                          <opensilex-ResourcesSelector-->
-<!--                              label="ResourcesSelector.select-one"-->
-<!--                              placeholder="ResourcesSelector.select-one-placeholder"-->
-<!--                              :multiple="true"-->
-<!--                              :resources.sync="filter.resources"-->
-<!--                          ></opensilex-ResourcesSelector>-->
-<!--                        </opensilex-FilterField>-->
-
-                        <opensilex-FilterField>
-                          <opensilex-EntitySelector
-                              label="VariableView.entity"
-                              :entity.sync="filter.entity"
-                          ></opensilex-EntitySelector>
-                        </opensilex-FilterField>
+                        <div>
+                          <opensilex-FilterField>
+                            <opensilex-SharedResourcesSelector
+                                label="component.sharedResources.label"
+                                placeholder="component.sharedResources.selector-placeholder"
+                                :multiple="true"
+                                :resources.sync="filter.resources"
+                            ></opensilex-SharedResourcesSelector>
+                          </opensilex-FilterField>
+                        </div>
 
                         <opensilex-FilterField>
                             <label>{{ $t("ExperimentList.filter-label") }}</label>

@@ -360,6 +360,10 @@
                 }
             }
         },
+        "sharedResources": {
+            "selector-placeholder":"Choisir des ressources",
+            "label": "Ressources"
+        },
         "experiment": {
             "uri": "URI de l'expérimentation",
             "uri-help": "Identifiant unique de l'expérimentation",

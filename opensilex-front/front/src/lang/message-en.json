@@ -360,6 +360,10 @@
                 }
             }
         },
+        "sharedResources": {
+            "selector-placeholder":"Select resources",
+            "label": "Resources"
+        },
         "experiment": {
             "uri-help": "Unique experiment identifier",
             "label-placeholder": "ZA17",

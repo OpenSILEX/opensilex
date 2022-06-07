@@ -556,7 +556,7 @@ public class OntologyAPI {
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Return shared resources", response = SharedResourcesDTO.class,responseContainer = "List")
     })
-    public Response fetchSharedResources(
+    public Response getAllSharedResources(
 
     ) throws Exception {
 

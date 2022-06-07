@@ -300,6 +300,10 @@ components["opensilex-OntologyObjectForm"] = OntologyObjectForm;
 import OntologyRelationsForm from './ontology/OntologyRelationsForm.vue'
 components["opensilex-OntologyRelationsForm"] = OntologyRelationsForm;
 
+//Resources
+import SharedResourcesSelector from './sharedResources/SharedResourcesSelector.vue';
+components["opensilex-SharedResourcesSelector"] = SharedResourcesSelector;
+
 import XSDBooleanInput from './ontology/XSDBooleanInput.vue'
 components["opensilex-XSDBooleanInput"] = XSDBooleanInput;
 import XSDBooleanView from './ontology/XSDBooleanView.vue'
@@ -417,10 +421,6 @@ import SpeciesSelector from './species/SpeciesSelector.vue';
 components["opensilex-SpeciesSelector"] = SpeciesSelector;
 import ProjectModalList from './projects/ProjectModalList.vue';
 components["opensilex-ProjectModalList"] = ProjectModalList;
-
-//Resources
-import ResourcesSelector from './resources/ResourcesSelector.vue';
-components["opensilex-ResourcesSelector"] = ResourcesSelector;
 
 // Scientific Object
 import ScientificObjectList from './scientificObjects/ScientificObjectList.vue';

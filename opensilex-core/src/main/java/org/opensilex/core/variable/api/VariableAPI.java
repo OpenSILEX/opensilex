@@ -5,6 +5,7 @@
 //******************************************************************************
 package org.opensilex.core.variable.api;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -12,8 +13,12 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import io.swagger.annotations.*;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.opensilex.core.URIsListPostDTO;
+import org.opensilex.core.ontology.api.OntologyAPI;
+import org.opensilex.core.scientificObject.api.ScientificObjectDetailDTO;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
@@ -34,21 +39,24 @@ import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 
 import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
-import java.io.StringWriter;
+import javax.ws.rs.core.UriBuilder;
+import java.io.*;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 @Api(VariableAPI.CREDENTIAL_VARIABLE_GROUP_ID)
 @Path(VariableAPI.PATH)
@@ -75,6 +83,9 @@ public class VariableAPI {
     private MongoDBService mongodb;
     @Inject
     private FileStorageService fs;
+
+    @Context
+    protected HttpServletRequest httpRequest;
 
 
     @CurrentUser
@@ -199,6 +210,7 @@ public class VariableAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchVariables(
+            @ApiParam(value = "Resources") @QueryParam("resources") List<URI> resources,
             @ApiParam(value = "Name regex pattern", example = "plant_height") @QueryParam("name") String namePattern,
             @ApiParam(value = "Entity filter") @QueryParam("entity") @ValidURI URI entity,
             @ApiParam(value = "Entity of interest filter") @QueryParam("entity_of_interest") @ValidURI URI interestEntity,
@@ -217,6 +229,35 @@ public class VariableAPI {
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
+
+        List<VariableGetDTO> resultDTOList = new ArrayList<>();
+
+        for (URI uri : resources){
+            if(Objects.equals(uri, new URI(OntologyAPI.LOCAL_RESOURCE)))
+            {
+                List<VariableGetDTO> resultDTO = new ArrayList<>();
+
+                VariableDAO dao = getDao();
+                ListWithPagination<VariableModel> variables = dao.search(
+                        namePattern,
+                        entity,
+                        interestEntity,
+                        characteristic,
+                        method,
+                        unit,
+                        group,
+                        dataType,
+                        timeInterval,
+                        species,
+                        withAssociatedData,
+                        devices,
+                        experiments,
+                        objects,
+                        orderByList,
+                        page,
+                        pageSize,
+                        this.currentUser
+                );
         VariableDAO dao = getDao();
         ListWithPagination<VariableModel> variables = dao.search(
                 namePattern,
@@ -239,16 +280,99 @@ public class VariableAPI {
                 this.currentUser
         );
 
-        //rajouter fonction qui fait appel à l'API mais sur l'instance partagée
+                // Convert paginated list to DTO
+                resultDTO = variables.convert(
+                        VariableGetDTO.class,
+                        VariableGetDTO::fromModel
+                ).getList();
+
+                System.out.println("local :" + resultDTO);
+
+                resultDTOList.addAll(resultDTO);
+
+            }else{
+
+                String queryString = httpRequest.getQueryString();
+                UriBuilder url = UriBuilder.fromUri(uri)
+                        .path(PATH);
+                for (Map.Entry<String, String[]> entry : httpRequest.getParameterMap().entrySet()){
+                    url.queryParam(entry.getKey(),entry.getValue());
+                }
+
+                //URL du service qui génère le token
+                URL urlToken = new URL(uri.toString() + "/security/authenticate");
+                //création de la connexion
+                HttpURLConnection connection = (HttpURLConnection) urlToken.openConnection();
+                //propriétés du service
+                connection.setDoOutput(true); // POST
+                connection.setRequestProperty("Accept", "application/json");
+                connection.setRequestProperty("Content-Type", "application/json");
+                //paramètres du service
+                String data = "{\"identifier\": \"admin@opensilex.org\", \"password\": \"admin\"}";
+                //
+                byte[] out = data.getBytes(StandardCharsets.UTF_8);
+                //envoi des paramètres en entrée
+                OutputStream stream = connection.getOutputStream();
+                stream.write(out);
+                //lecture de la réponse
+                BufferedReader in = new BufferedReader(
+                        new InputStreamReader(connection.getInputStream()));
+
+                String content = "";
+                String inputLine;
+                while ((inputLine = in.readLine()) != null)
+                    content+=inputLine;
+                in.close();
+                // conversion de la réponse string --> json
+                ObjectMapper mapper = new ObjectMapper();
+                JsonNode jsonResult = mapper.readTree(content);
+                //récupération du token
+                String token = "Bearer "+ jsonResult.get("result").get("token").asText();
+
+                System.out.println(token);
+                //arrêt de la connexion
+                connection.disconnect();
+
+                URL urlSearch = new URL(url.toString());
+
+                HttpURLConnection searchConnection = (HttpURLConnection) urlSearch.openConnection();
+
+                searchConnection.setRequestProperty("Accept", "application/json");
+                searchConnection.setRequestProperty("Authorization", token);
+
+                BufferedReader buff = new BufferedReader(
+                        new InputStreamReader(searchConnection.getInputStream()));
+
+                String contentSearch="";
+                String inputLineSearch;
+                while ((inputLineSearch = buff.readLine()) != null)
+                    contentSearch+=inputLineSearch;
+                buff.close();
+
+                ObjectMapper mapperSearch = new ObjectMapper();
+                JsonNode jsonResultSearch = mapperSearch.readTree(contentSearch);
+
+                SingleObjectResponse<List<VariableGetDTO>> getResponse = mapper.convertValue(jsonResultSearch, new TypeReference<SingleObjectResponse<List<VariableGetDTO>>>() {});
+                List<VariableGetDTO> dtoFromApi = getResponse.getResult();
+
+                resultDTOList.addAll(dtoFromApi);
+
+                System.out.println(jsonResultSearch.get("result"));
+                System.out.println("rp : " + dtoFromApi);
+
+                connection.disconnect();
+
+            }
+        }
+
+
         //mixer les deux en regardant lesquelles sont sur l'IRP ou sur l'instance locale (pb des uris, same as)
 
-        // Convert paginated list to DTO
-        ListWithPagination<VariableGetDTO> resultDTOList = variables.convert(
-                VariableGetDTO.class,
-                VariableGetDTO::fromModel
-        );
-        
-        return new PaginatedListResponse<>(resultDTOList).getResponse();
+
+        ListWithPagination<VariableGetDTO> resultDTOPaginatedList = new ListWithPagination<>(resultDTOList,page,pageSize, resultDTOList.size());
+
+        return new PaginatedListResponse<>(resultDTOPaginatedList).getResponse();
+
     }
     
     @GET

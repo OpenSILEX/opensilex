@@ -10,6 +10,7 @@
                             <opensilex-SharedResourcesSelector
                                 label="component.sharedResources.label"
                                 placeholder="component.sharedResources.selector-placeholder"
+                                @loaded="refresh"
                                 :multiple="true"
                                 :resources.sync="filter.resources"
                             ></opensilex-SharedResourcesSelector>
@@ -389,6 +390,7 @@ export default class VariableList extends Vue {
 
     searchVariablesWithAttribute(options) {
         return this.$service.searchVariables(
+            this.filter.resources,
             this.filter.name,
             this.filter.entity,
             this.filter.entityOfInterest,

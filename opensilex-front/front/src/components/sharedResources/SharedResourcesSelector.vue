@@ -5,6 +5,7 @@
         :selected.sync="resourcesURI"
         :multiple="multiple"
         :optionsLoadingMethod="loadSharedResources"
+        :itemLoadingMethod="loadSelectedResource"
         :conversionMethod="sharedResourcesToSelectNode"
         placeholder="component.sharedResources.selector-placeholder"
         @clear="$emit('clear')"
@@ -42,15 +43,22 @@ export default class SharedResourcesSelector extends Vue {
         .getService("opensilex.OntologyService")
         .getAllSharedResources()
         .then(
-            (http: HttpResponse<OpenSilexResponse<Array<SharedResourcesDTO>>>) =>
-                http.response.result
+            (http: HttpResponse<OpenSilexResponse<Array<SharedResourcesDTO>>>) => {
+              console.log("resourcesURI", this.resourcesURI);
+              console.log("resourcesURI", !this.resourcesURI);
+              if(!this.resourcesURI || this.resourcesURI.length === 0){
+                this.resourcesURI.push(http.response.result.find(resource => resource.isLocal).uri);
+              }
+              this.$emit("loaded");
+              return http.response.result;
+            }
         );
   }
 
   sharedResourcesToSelectNode(dto: SharedResourcesDTO) {
     return {
       id: dto.uri,
-      label: dto.label
+      label: this.$t(dto.label)
     };
   }
 

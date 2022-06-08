@@ -57,11 +57,9 @@ phisws:
 core:
     enableLogs: true
     sharedResources:
-        - uri : localhost:8080/
-          label : locale
-        - uri : http://138.102.159.36:8083/
+        - uri : http://138.102.159.36:8083/rest
           label : PHENOME
-        - uri : http://138.102.159.36:8082/
+        - uri : http://138.102.159.36:8082/rest
           label : EPPN
         - uri : http://138.102.159.10/resource/
           label : VitiOeno

@@ -362,7 +362,8 @@
         },
         "sharedResources": {
             "selector-placeholder":"Choisir des ressources",
-            "label": "Ressources"
+            "label": "Ressources",
+            "local-instance": "Ressource locale"
         },
         "experiment": {
             "uri": "URI de l'expérimentation",

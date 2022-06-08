@@ -362,7 +362,8 @@
         },
         "sharedResources": {
             "selector-placeholder":"Select resources",
-            "label": "Resources"
+            "label": "Resources",
+            "local-instance": "Local resource"
         },
         "experiment": {
             "uri-help": "Unique experiment identifier",

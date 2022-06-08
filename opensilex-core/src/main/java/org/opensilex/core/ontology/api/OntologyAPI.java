@@ -73,6 +73,8 @@ public class OntologyAPI {
 
     public static final String SUBCLASSES_OF_PATH = "subclasses_of";
 
+    public static final String LOCAL_RESOURCE = "http://localhost";
+
     @GET
     @Path(SUBCLASSES_OF_PATH)
     @ApiOperation("Search sub-classes tree of an RDF class")
@@ -560,7 +562,15 @@ public class OntologyAPI {
 
     ) throws Exception {
 
-        List<SharedResourcesDTO> sharedResourcesDTOS = coreModule.getSharedResources();
+        SharedResourcesDTO localInstance = new SharedResourcesDTO();
+        localInstance.setUri(new URI(LOCAL_RESOURCE));
+        localInstance.setLabel("component.sharedResources.local-instance");
+        localInstance.setLocal(true);
+
+        List<SharedResourcesDTO> sharedResourcesDTOS = new ArrayList<>();
+        sharedResourcesDTOS.add(localInstance);
+        sharedResourcesDTOS.addAll(coreModule.getSharedResources());
+
         return new SingleObjectResponse<>(sharedResourcesDTOS).getResponse();
     }
 

@@ -210,7 +210,7 @@ public class VariableAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchVariables(
-            @ApiParam(value = "Resources") @QueryParam("resources") List<URI> resources,
+            @ApiParam(value = "Resources") @QueryParam("resources") URI resource,
             @ApiParam(value = "Name regex pattern", example = "plant_height") @QueryParam("name") String namePattern,
             @ApiParam(value = "Entity filter") @QueryParam("entity") @ValidURI URI entity,
             @ApiParam(value = "Entity of interest filter") @QueryParam("entity_of_interest") @ValidURI URI interestEntity,
@@ -232,10 +232,8 @@ public class VariableAPI {
 
         List<VariableGetDTO> resultDTOList = new ArrayList<>();
 
-        for (URI uri : resources){
-            if(Objects.equals(uri, new URI(OntologyAPI.LOCAL_RESOURCE)))
-            {
-                List<VariableGetDTO> resultDTO = new ArrayList<>();
+        if (resource == null) {
+            List<VariableGetDTO> resultDTO = new ArrayList<>();
 
                 VariableDAO dao = getDao();
                 ListWithPagination<VariableModel> variables = dao.search(
@@ -258,112 +256,84 @@ public class VariableAPI {
                         pageSize,
                         this.currentUser
                 );
-        VariableDAO dao = getDao();
-        ListWithPagination<VariableModel> variables = dao.search(
-                namePattern,
-                entity,
-                interestEntity,
-                characteristic,
-                method,
-                unit,
-                group,
-                dataType,
-                timeInterval,
-                species,
-                withAssociatedData,
-                devices,
-                experiments,
-                objects,
-                orderByList,
-                page,
-                pageSize,
-                this.currentUser
-        );
 
-                // Convert paginated list to DTO
-                resultDTO = variables.convert(
-                        VariableGetDTO.class,
-                        VariableGetDTO::fromModel
-                ).getList();
+            // Convert paginated list to DTO
+            resultDTO = variables.convert(
+                    VariableGetDTO.class,
+                    VariableGetDTO::fromModel
+            ).getList();
 
-                System.out.println("local :" + resultDTO);
+            resultDTOList.addAll(resultDTO);
 
-                resultDTOList.addAll(resultDTO);
+        }else{
 
-            }else{
-
-                String queryString = httpRequest.getQueryString();
-                UriBuilder url = UriBuilder.fromUri(uri)
-                        .path(PATH);
-                for (Map.Entry<String, String[]> entry : httpRequest.getParameterMap().entrySet()){
-                    url.queryParam(entry.getKey(),entry.getValue());
-                }
-
-                //URL du service qui génère le token
-                URL urlToken = new URL(uri.toString() + "/security/authenticate");
-                //création de la connexion
-                HttpURLConnection connection = (HttpURLConnection) urlToken.openConnection();
-                //propriétés du service
-                connection.setDoOutput(true); // POST
-                connection.setRequestProperty("Accept", "application/json");
-                connection.setRequestProperty("Content-Type", "application/json");
-                //paramètres du service
-                String data = "{\"identifier\": \"admin@opensilex.org\", \"password\": \"admin\"}";
-                //
-                byte[] out = data.getBytes(StandardCharsets.UTF_8);
-                //envoi des paramètres en entrée
-                OutputStream stream = connection.getOutputStream();
-                stream.write(out);
-                //lecture de la réponse
-                BufferedReader in = new BufferedReader(
-                        new InputStreamReader(connection.getInputStream()));
-
-                String content = "";
-                String inputLine;
-                while ((inputLine = in.readLine()) != null)
-                    content+=inputLine;
-                in.close();
-                // conversion de la réponse string --> json
-                ObjectMapper mapper = new ObjectMapper();
-                JsonNode jsonResult = mapper.readTree(content);
-                //récupération du token
-                String token = "Bearer "+ jsonResult.get("result").get("token").asText();
-
-                System.out.println(token);
-                //arrêt de la connexion
-                connection.disconnect();
-
-                URL urlSearch = new URL(url.toString());
-
-                HttpURLConnection searchConnection = (HttpURLConnection) urlSearch.openConnection();
-
-                searchConnection.setRequestProperty("Accept", "application/json");
-                searchConnection.setRequestProperty("Authorization", token);
-
-                BufferedReader buff = new BufferedReader(
-                        new InputStreamReader(searchConnection.getInputStream()));
-
-                String contentSearch="";
-                String inputLineSearch;
-                while ((inputLineSearch = buff.readLine()) != null)
-                    contentSearch+=inputLineSearch;
-                buff.close();
-
-                ObjectMapper mapperSearch = new ObjectMapper();
-                JsonNode jsonResultSearch = mapperSearch.readTree(contentSearch);
-
-                SingleObjectResponse<List<VariableGetDTO>> getResponse = mapper.convertValue(jsonResultSearch, new TypeReference<SingleObjectResponse<List<VariableGetDTO>>>() {});
-                List<VariableGetDTO> dtoFromApi = getResponse.getResult();
-
-                resultDTOList.addAll(dtoFromApi);
-
-                System.out.println(jsonResultSearch.get("result"));
-                System.out.println("rp : " + dtoFromApi);
-
-                connection.disconnect();
-
+            String queryString = httpRequest.getQueryString();
+            UriBuilder url = UriBuilder.fromUri(resource)
+                    .path(PATH);
+            for (Map.Entry<String, String[]> entry : httpRequest.getParameterMap().entrySet()){
+                url.queryParam(entry.getKey(),entry.getValue());
             }
+
+            //URL du service qui génère le token
+            URL urlToken = new URL(resource.toString() + "/security/authenticate");
+            //création de la connexion
+            HttpURLConnection connection = (HttpURLConnection) urlToken.openConnection();
+            //propriétés du service
+            connection.setDoOutput(true); // POST
+            connection.setRequestProperty("Accept", "application/json");
+            connection.setRequestProperty("Content-Type", "application/json");
+            //paramètres du service
+            String data = "{\"identifier\": \"admin@opensilex.org\", \"password\": \"admin\"}";
+            //
+            byte[] out = data.getBytes(StandardCharsets.UTF_8);
+            //envoi des paramètres en entrée
+            OutputStream stream = connection.getOutputStream();
+            stream.write(out);
+            //lecture de la réponse
+            BufferedReader in = new BufferedReader(
+                    new InputStreamReader(connection.getInputStream()));
+
+            String content = "";
+            String inputLine;
+            while ((inputLine = in.readLine()) != null)
+                content+=inputLine;
+            in.close();
+            // conversion de la réponse string --> json
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode jsonResult = mapper.readTree(content);
+            //récupération du token
+            String token = "Bearer "+ jsonResult.get("result").get("token").asText();
+            //arrêt de la connexion
+            connection.disconnect();
+
+            URL urlSearch = new URL(url.toString());
+
+            HttpURLConnection searchConnection = (HttpURLConnection) urlSearch.openConnection();
+
+            searchConnection.setRequestProperty("Accept", "application/json");
+            searchConnection.setRequestProperty("Authorization", token);
+
+            BufferedReader buff = new BufferedReader(
+                    new InputStreamReader(searchConnection.getInputStream()));
+
+            String contentSearch="";
+            String inputLineSearch;
+            while ((inputLineSearch = buff.readLine()) != null)
+                contentSearch+=inputLineSearch;
+            buff.close();
+
+            ObjectMapper mapperSearch = new ObjectMapper();
+            JsonNode jsonResultSearch = mapperSearch.readTree(contentSearch);
+
+            SingleObjectResponse<List<VariableGetDTO>> getResponse = mapper.convertValue(jsonResultSearch, new TypeReference<SingleObjectResponse<List<VariableGetDTO>>>() {});
+            List<VariableGetDTO> dtoFromApi = getResponse.getResult();
+
+            resultDTOList.addAll(dtoFromApi);
+
+            connection.disconnect();
+
         }
+
 
 
         //mixer les deux en regardant lesquelles sont sur l'IRP ou sur l'instance locale (pb des uris, same as)

@@ -5,7 +5,6 @@
         :selected.sync="resourcesURI"
         :multiple="multiple"
         :optionsLoadingMethod="loadSharedResources"
-        :itemLoadingMethod="loadSelectedResource"
         :conversionMethod="sharedResourcesToSelectNode"
         placeholder="component.sharedResources.selector-placeholder"
         @clear="$emit('clear')"
@@ -38,18 +37,30 @@ export default class SharedResourcesSelector extends Vue {
   @Prop({default: false})
   multiple;
 
+  resourcesList:Array<SharedResourcesDTO>;
+
   loadSharedResources() {
     return this.$opensilex
         .getService("opensilex.OntologyService")
         .getAllSharedResources()
         .then(
             (http: HttpResponse<OpenSilexResponse<Array<SharedResourcesDTO>>>) => {
-              console.log("resourcesURI", this.resourcesURI);
-              console.log("resourcesURI", !this.resourcesURI);
-              if(!this.resourcesURI || this.resourcesURI.length === 0){
-                this.resourcesURI.push(http.response.result.find(resource => resource.isLocal).uri);
+              let localResourceDto;
+              let defaultSelectedDto;
+              for (let resource of http.response.result) {
+                if (resource.isLocal) {
+                  localResourceDto = resource;
+                }
+                if (resource.uri === this.resourcesURI) {
+                  defaultSelectedDto = resource;
+                }
               }
-              this.$emit("loaded");
+              if (!this.resourcesURI) {
+                this.resourcesURI = localResourceDto.uri;
+                defaultSelectedDto = localResourceDto;
+              }
+              this.$emit("loaded", defaultSelectedDto);
+              this.resourcesList = http.response.result;
               return http.response.result;
             }
         );
@@ -63,7 +74,11 @@ export default class SharedResourcesSelector extends Vue {
   }
 
   select(value) {
-    this.$emit("select", value);
+    for (let resourceDTO of this.resourcesList){
+      if (resourceDTO.uri === value.id){
+        this.$emit("select", resourceDTO);
+      }
+    }
   }
 
   deselect(value) {

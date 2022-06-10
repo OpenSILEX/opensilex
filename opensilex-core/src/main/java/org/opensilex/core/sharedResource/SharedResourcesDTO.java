@@ -12,6 +12,9 @@ public class SharedResourcesDTO {
     @JsonProperty("label")
     protected String label;
 
+    @JsonProperty("isLocal")
+    protected boolean isLocal;
+
 
     public URI getUri() {
         return uri;
@@ -27,4 +30,11 @@ public class SharedResourcesDTO {
 
     public void setLabel(String label) {this.label = label;}
 
+    public boolean getLocal() {
+        return isLocal;
+    }
+
+    public void setLocal(boolean local) {
+        isLocal = local;
+    }
 }

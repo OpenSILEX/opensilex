@@ -10,9 +10,10 @@
                             <opensilex-SharedResourcesSelector
                                 label="component.sharedResources.label"
                                 placeholder="component.sharedResources.selector-placeholder"
-                                @loaded="refresh"
-                                :multiple="true"
-                                :resources.sync="filter.resources"
+                                @loaded="onResourceSelectorLoaded"
+                                @select="onResourceSelected"
+                                :multiple="false"
+                                :resources.sync="filter.resource"
                             ></opensilex-SharedResourcesSelector>
                           </opensilex-FilterField>
                         </div>
@@ -248,6 +249,7 @@ import {
   VariablesService
 } from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
+import {SharedResourcesDTO} from "opensilex-core/model/sharedResourcesDTO";
 
 @Component
 export default class VariableList extends Vue {
@@ -256,6 +258,8 @@ export default class VariableList extends Vue {
     $store: any;
     $route: any;
     $i18n: any;
+
+    selectedResource:SharedResourcesDTO;
 
     get user() {
         return this.$store.state.user;
@@ -301,7 +305,7 @@ export default class VariableList extends Vue {
     devices;
 
     filter = {
-        resources: [],
+        resource: undefined,
         name: undefined,
         entity: undefined,
         entityOfInterest: undefined,
@@ -348,7 +352,7 @@ export default class VariableList extends Vue {
 
     reset() {
         this.filter = {
-            resources: [],
+            resource: undefined,
             name: undefined,
             entity: undefined,
             entityOfInterest: undefined,
@@ -388,9 +392,20 @@ export default class VariableList extends Vue {
         this.tableRef.onItemUnselected(row);
     }
 
+    onResourceSelected(dto:SharedResourcesDTO){
+      this.selectedResource = dto;
+    }
+
+    onResourceSelectorLoaded(defaultDtoSelected){
+      console.log("loaded", defaultDtoSelected);
+      this.selectedResource = defaultDtoSelected;
+      this.refresh();
+    }
+
     searchVariablesWithAttribute(options) {
+      console.log("search", this.selectedResource);
         return this.$service.searchVariables(
-            this.filter.resources,
+            !this.selectedResource || this.selectedResource.isLocal ? undefined : this.selectedResource.uri,
             this.filter.name,
             this.filter.entity,
             this.filter.entityOfInterest,

@@ -336,16 +336,19 @@ class SPARQLClassQueryBuilder {
 
     public <T extends SPARQLResourceModel> UpdateBuilder getCreateBuilder(Node graph, T instance, boolean blankNode, BiConsumer<UpdateBuilder, Node> createExtension) throws Exception {
         UpdateBuilder create = new UpdateBuilder();
-        Node uriNode = addCreateBuilder(graph, instance, create, blankNode,createExtension);
+        addCreateBuilder(graph, instance, create, blankNode,createExtension);
         return create;
     }
 
     public <T extends SPARQLResourceModel> Node addCreateBuilder(Node graph, T instance, UpdateBuilder create, boolean blankNode, BiConsumer<UpdateBuilder, Node> createExtension) throws Exception {
         Node uriNode = executeOnInstanceTriples(graph, instance, (Quad quad, Field field) -> {
+
             if (graph == null) {
                 create.addInsert(quad.asTriple());
-            } else {
+            } else if (quad.getGraph() != null) {  // use the graph specified during quad build
                 create.addInsert(quad);
+            } else {  // object/field has no default graph -> use input graph
+                create.addInsert(graph, quad.asTriple());
             }
         }, blankNode);
 
@@ -369,8 +372,10 @@ class SPARQLClassQueryBuilder {
         executeOnInstanceTriples(graph, instance, (Quad quad, Field field) -> {
             if (graph == null) {
                 delete.addDelete(quad.asTriple());
-            } else {
+            } else if (quad.getGraph() != null) {  // use the graph specified during quad build
                 delete.addDelete(quad);
+            } else {   // object/field has no default graph -> use input graph
+                delete.addDelete(graph, quad.asTriple());
             }
         }, false);
 

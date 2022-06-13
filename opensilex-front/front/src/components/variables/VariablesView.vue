@@ -45,6 +45,7 @@
                         @onEdit="showVariableEditForm" 
                         @onInteroperability="showVariableReferences"
                         @onDelete="deleteVariable"
+                        @onReset="refreshRouteName"
                     ></opensilex-VariableList>
                 </template>
             </opensilex-PageContent>
@@ -121,16 +122,17 @@
                         </template>
                     </opensilex-Card>
 
-                    <opensilex-Card v-if="!loadVariableList() && useGenericDetailsPage() && groupVariablesPage() && selected.variables != undefined" :label="$t('VariableView.type')" :selected="selected">
+                    <opensilex-Card v-if="!loadVariableList() && useGenericDetailsPage() && groupVariablesPage() && selected.variables != undefined" :label="$t('VariableView.type')" :selected="selected" icon="fa#vials">
                         <template v-slot:body>
 
                             <opensilex-TableView
                             v-if="groupVariablesPage() && selected.variables.length !== 0"
                             :items="selected.variables"
                             :fields="relationsFields"
-                            :globalFilterField="true">
+                            :globalFilterField="true"
+                            sortBy="name">
 
-                                <template v-slot:cell(uri)="{data}">
+                                <template v-slot:cell(name)="{data}">
                                     <opensilex-UriLink
                                     :uri="data.item.uri"
                                     :value="data.item.name"
@@ -140,16 +142,16 @@
 
                             </opensilex-TableView>
 
-                            <p v-else><strong>{{$t("GroupVariablesDetails.no-var-provided")}}</strong></p>
+                            <p v-else><strong>{{$t("VariableView.no-var-provided")}}</strong></p>
 
                         </template>
                     </opensilex-Card>
 
                     <opensilex-DocumentTabList
                         v-if="selected && selected.uri"
-                        v-show="! loadVariableList() && useGenericDetailsPage() && documentMethodPage()" 
+                        v-show="! loadVariableList() && useGenericDetailsPage() && (documentMethodPage() || groupVariablesPage())"  
                         :selected="selected"
-                        :uri="selected.uri"
+                        :uri="[selected.uri]"
                         :search=false
                     ></opensilex-DocumentTabList>
 
@@ -227,7 +229,7 @@ export default class VariablesView extends Vue {
 
     relationsFields: any[] = [
       {
-        key: "uri",
+        key: "name",
         label: "component.common.name",
         sortable: true,
       }
@@ -245,6 +247,13 @@ export default class VariablesView extends Vue {
         }else{
             let variableIdx = VariablesView.elementTypes.findIndex(elem => elem == VariablesView.VARIABLE_TYPE);
             this.updateType(variableIdx);
+        }
+    }
+
+    private refreshRouteName(){
+        if(this.$route.query.name) {
+            this.$route.query.name = undefined;
+            this.$opensilex.updateURLParameter("name", "");
         }
     }
 
@@ -535,6 +544,7 @@ en:
         add-unit: Add unit
         groupVariable: "Group of variables"
         add-groupVariable: Add a group of variables
+        no-var-provided: No variable provided
 
 fr:
     VariableView:
@@ -555,6 +565,7 @@ fr:
         add-unit: Ajouter une unité
         groupVariable: "Groupe de variables"
         add-groupVariable: Ajouter un groupe de variables
+        no-var-provided: Aucune variable associée
 
 </i18n>
 

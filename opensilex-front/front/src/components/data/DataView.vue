@@ -41,12 +41,11 @@
 
               <!-- Variables -->
               <opensilex-FilterField  quarterWidth="true">
-                <opensilex-UsedVariableSelector
-                  ref="varSelector"
-                  label="DataView.filter.variables"
-                  :multiple="true"
+                <opensilex-VariableSelectorWithFilter
+                  placeholder="VariableSelectorWithFilter.placeholder-multiple"
                   :variables.sync="filter.variables"
-                ></opensilex-UsedVariableSelector>
+                  :withAssociatedData="true"
+                ></opensilex-VariableSelectorWithFilter>
               </opensilex-FilterField>
             
               <!-- Experiments -->

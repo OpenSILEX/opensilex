@@ -29,6 +29,10 @@ public class OWLClassPropertyRestrictionDTO {
     @ApiModelProperty(value = "Domain URI", required = true, name = "domain", example = "vocabulary:ScientificObject")
     private URI domain;
 
+    @ValidURI
+    @NotNull
+    @JsonProperty("property")
+    @ApiModelProperty(value = "Property URI", required = true, name = "property", example = "vocabulary:hasGermplasm")
     private URI property;
 
     private boolean required;

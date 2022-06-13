@@ -129,11 +129,10 @@ public class RDF4JServiceFactory extends SPARQLServiceFactory {
     @Override
     public SPARQLService provide() {
         try {
-            SPARQLService service = getNewService();
-            return service;
+            return getNewService();
         } catch (Exception ex) {
             LOGGER.error("Error while opening RDF4J service connection instance", ex);
-            return null;
+            throw new RuntimeException(ex);
         }
     }
 

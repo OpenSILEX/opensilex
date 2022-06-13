@@ -23,7 +23,6 @@ public class RDFTypeTranslatedDTO extends RDFTypeDTO {
     protected Map<String, String> labelTranslations;
 
     @JsonProperty("comment_translations")
-    @NotEmpty
     protected Map<String, String> commentTranslations;
 
     public Map<String, String> getLabelTranslations() {
@@ -42,16 +41,18 @@ public class RDFTypeTranslatedDTO extends RDFTypeDTO {
         this.commentTranslations = commentTranslations;
     }
 
-    public static RDFTypeTranslatedDTO fromModel(RDFTypeTranslatedDTO dto, ClassModel model) {
-        RDFTypeDTO.fromModel(dto, model);
+    public RDFTypeTranslatedDTO(){
 
-        dto.setLabelTranslations(model.getLabel().getAllTranslations());
-        if (model.getComment() != null) {
-            dto.setCommentTranslations(model.getComment().getAllTranslations());
-        } else {
-            dto.setCommentTranslations(new HashMap<>());
-        }
-
-        return dto;
     }
+
+    public RDFTypeTranslatedDTO(ClassModel model){
+        super(model);
+        setLabelTranslations(model.getLabel().getAllTranslations());
+        if (model.getComment() != null) {
+            setCommentTranslations(model.getComment().getAllTranslations());
+        } else {
+            setCommentTranslations(new HashMap<>());
+        }
+    }
+
 }

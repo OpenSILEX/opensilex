@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0-rc+4] - 2022-06-13
+
+Warning : upgrading to this new version requires to update the ontologies. Please run the following command
+to make sure they are up-to-date :
+
+```shell
+# From the directory which contains your OpenSILEX executable .jar file
+java -jar opensilex.jar --CONFIG_FILE=<config_file> sparql reset-ontologies
+```
+
+### Added or changed
+
+- Add Device type and specifics properties management driven by ontologies: import template generation and driven forms.
+- The variable selector has been enhanced; variables are now selected through a modal form where they can be filtered by name, entity, characteristic, etc.
+- Variables can now be filtered by datatype and time interval.
+- When a groups of variables are created or Updated, there are a redirection on detail part of the group.
+- Associated experiments are now listed in the project description.
+
+
+### Fixed
+
+- Events can now be correctly filtered by end date (even if multiple events have the same end date).
+- Germplasm search and export have been optimized.
+- Fixed some variable bugs: filters, display of species, datatype and time interval translation.
+- Data exportation bug about  column offset.
+- Fix germplasm export: optimize search and export in order to avoid timeout interruption.
+- Improve specific properties management of scientific objects.
+- Fix bug on ResetOntologies for not completed classes, properties ou restrictions.
+
 ## [1.0.0-rc+3] - 2022-05-05
 
 Be careful, updating to this new version need some manual operations to be done. See [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc+3.md).
@@ -48,7 +77,7 @@ New installations don't need further action.
 - Fixed the creation of scientific objects with an associated facility (with the property "isHosted")
 - Optimized data import, changed data URI generation on import
 - Fixed error shown when opening an experiment hosted by at least one facility
-- Fixed "reset" button on project list filters 
+- Fixed "reset" button on project list filters
 - Fixed cookie management that could cause multiple problems; including "Request header too long" errors on requests
 - Variables can now correctly be sorted in the table view
 - Some visual and ergonomic changes

@@ -12,10 +12,10 @@ package org.opensilex.dev;
 public class DisplayConfig {
 
     public static void main(String[] args) throws Exception {
-        DevModule.run(new String[]{
+        DevModule.run(null,new String[]{
             "system",
             "full-config"
-        });
+        },null);
     }
 
 }

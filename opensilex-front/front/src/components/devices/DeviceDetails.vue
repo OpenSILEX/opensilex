@@ -50,7 +50,10 @@
 
     <opensilex-PageContent>
         <template v-slot>
-          <opensilex-DeviceDescription v-if="isDetailsTab()" :uri="uri"></opensilex-DeviceDescription>
+          <opensilex-DeviceDescription
+              v-if="isDetailsTab()"
+              :key="lang">
+          </opensilex-DeviceDescription>
 
          <opensilex-DeviceVisualizationTab
           v-else-if="isVisualizationTab()"
@@ -129,6 +132,10 @@
             return this.$store.state.credentials;
         }
 
+        get lang() {
+            return this.$store.getters.language;
+        }
+
         device: DeviceGetDTO = {
               uri: null,
               rdf_type: null,
@@ -141,7 +148,8 @@
               removal: null,
               relations: null,
               description: null
-            };
+        };
+
         created() {
           this.service = this.$opensilex.getService("opensilex.DevicesService");
           this.uri = decodeURIComponent(this.$route.params.uri);

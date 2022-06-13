@@ -20,11 +20,16 @@
           }"
           >{{ $t("component.common.details-label") }}
         </b-nav-item>
-        <!-- <b-nav-item
+        <b-nav-item
           :active="isExperimentTab()"
-          :to="{ path: '/factor/experiments/' + encodeURIComponent(uri) }"
+          :to="{
+            path: '/' +
+              encodeURIComponent(xpUri) +
+              '/factor/experiments/' +
+               encodeURIComponent(uri)
+          }"
           >{{ $t("component.common.details.experiment") }}
-        </b-nav-item> -->
+        </b-nav-item>
         <b-nav-item
           :active="isDocumentTab()"
           :to="{
@@ -72,7 +77,7 @@
         ></opensilex-FactorDetails>
         <opensilex-AssociatedExperiments
           v-else-if="isExperimentTab()"
-          :uri="uri"
+          :searchMethod="searchExperiments"
         ></opensilex-AssociatedExperiments>
         <opensilex-AnnotationList
           v-else-if="isAnnotationTab()"
@@ -202,6 +207,10 @@ export default class FactorView extends Vue {
     this.xpUri = decodeURIComponent(this.$route.params.xpUri);
 
     this.loadFactor(this.uri);
+  }
+
+  searchExperiments() {
+    return this.service.getFactorAssociatedExperiments(this.uri);
   }
 
   loadFactor(uri: string) {

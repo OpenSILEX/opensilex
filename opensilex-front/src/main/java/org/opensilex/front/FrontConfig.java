@@ -5,9 +5,10 @@
  */
 package org.opensilex.front;
 
-import java.util.List;
 import org.opensilex.config.ConfigDescription;
 import org.opensilex.front.config.CustomMenuItem;
+
+import java.util.List;
 
 /**
  *
@@ -73,4 +74,8 @@ public interface FrontConfig {
     )
     String geocodingService();
 
+    @ConfigDescription(
+            value = "Version label to display at the top of the app"
+    )
+    String versionLabel();
 }

@@ -15,18 +15,18 @@ import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.sparql.syntax.ElementOptional;
 import org.apache.jena.sparql.syntax.ElementTriplesBlock;
 import org.opensilex.OpenSilex;
-import org.opensilex.core.CoreModule;
-import org.opensilex.core.ontology.dal.cache.OntologyCache;
-import org.opensilex.core.ontology.dal.cache.OntologyCacheException;
+import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.ontology.dal.AbstractPropertyModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OwlRestrictionModel;
 import org.opensilex.sparql.ontology.dal.PropertyModel;
+import org.opensilex.sparql.ontology.store.OntologyStore;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
@@ -44,14 +44,16 @@ import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 /**
  * Class used to optimize the fetching of multiple {@link SPARQLModelRelation} for a List of T, by retrieving
  * all those relations in one SPARQL query.
- *
+ * <p>
  * This class build a SPARQL query which use the same WHERE clause as the initial SPARQL query.
  * Then the query is updated by adding a triple and a var corresponding to each data/object property which is defined into the ontology for
  * the T type.
- *
+ * <p>
  * Then, results from the new SPARQL query are linked to the initial T list, in order to update element of T.
  *
  * @param <T> : a type of {@link SPARQLModelRelation}
+ * @apiNote This implementation use {@link OntologyStore} in order to retrieve {@link ClassModel} and associated {@link OwlRestrictionModel}.
+ * These restriction are used to determine which properties will be fetched by the SPARQL query
  */
 public class SPARQLRelationFetcher<T extends SPARQLResourceModel> {
 
@@ -70,14 +72,13 @@ public class SPARQLRelationFetcher<T extends SPARQLResourceModel> {
     private final Map<URI, List<URI>> multiValuedPropertiesByType;
     private final Map<URI, List<String>> multiValuedPropertiesByTypeVarNames;
 
-
     private final Pattern specialCharsPattern;
 
-    public SPARQLRelationFetcher(SPARQLService sparql, Class<T> objectClass, Node graph, SelectBuilder initialSelect, List<T> results) throws URISyntaxException, SPARQLException, OntologyCacheException {
+    public SPARQLRelationFetcher(SPARQLService sparql, Class<T> objectClass, Node graph, SelectBuilder initialSelect, List<T> results) throws URISyntaxException, SPARQLException {
 
         this.sparql = sparql;
         SPARQLClassObjectMapper<T> mapper = sparql.getMapperIndex().getForClass(objectClass);
-        OntologyCache ontologyCache = CoreModule.getOntologyCacheInstance();
+        URI rootTypeURI = mapper.getClassAnalizer().getRdfTypeURI();
 
         this.graph = graph;
         this.graphUri = graph != null ? new URI(graph.getURI()) : null;
@@ -103,42 +104,59 @@ public class SPARQLRelationFetcher<T extends SPARQLResourceModel> {
 
         specialCharsPattern = Pattern.compile("[^A-Za-z0-9]");
 
+        // use a local Property cache, in order to minimize the number of extra call to OntologyStore.getProperty().
+        // Especially when multiple types share some property
+        Map<String, AbstractPropertyModel<?>> localPropertyCache = new PatriciaTrie<>();
+
         for (URI type : types) {
 
             // get class from OntologyCache and compute stream of data/object property
-            ClassModel classModel = ontologyCache.getClassModel(type, OpenSilex.DEFAULT_LANGUAGE);
-            Stream<PropertyModel> propertyStream = Stream.concat(
-                    classModel.getDatatypeProperties().values().stream(),
-                    classModel.getObjectProperties().values().stream()
-            );
+            ClassModel classModel = SPARQLModule.getOntologyStoreInstance().getClassModel(type, rootTypeURI, OpenSilex.DEFAULT_LANGUAGE);
 
-            // update properties set and type <-> properties index
-            propertyStream.forEach(property -> {
+            // use class restriction in order to determine which property must be fetched
+            Iterable<OwlRestrictionModel> restrictionIt = classModel.getRestrictionsByProperties()
+                    .values()
+                    .stream()
+                    ::iterator;
 
-                // use short uri (faster ?)
-                URI formattedPropertyUri = SPARQLDeserializers.formatURI(property.getUri());
+            for (OwlRestrictionModel restriction : restrictionIt) {
+                addPropertyModelToPropertiesIndexes(restriction, classModel, managedProperties, localPropertyCache);
+            }
+        }
+    }
 
-                // don't handle properties which are initially present into SPARQLModel (not managed by this class)
-                if (!managedProperties.contains(formattedPropertyUri)) {
+    private void addPropertyModelToPropertiesIndexes(OwlRestrictionModel restriction, ClassModel classModel, Set<URI> managedProperties, Map<String, AbstractPropertyModel<?>> localPropertyCache) throws SPARQLException {
 
-                    OwlRestrictionModel propertyRestriction = classModel.getRestrictions().get(formattedPropertyUri);
-                    if(propertyRestriction == null){
-                        throw new IllegalArgumentException("Property must have an associated OWL2 restriction in order to known if the property is multi-valued");
-                    }
+        // try to get AbstractPropertyModel from local index
+        AbstractPropertyModel<?> propertyModel = localPropertyCache.get(restriction.getOnProperty().toString());
 
-                    String propertyName = specialCharsPattern.matcher(property.getName()).replaceAll("_");
+        // if not present, then use global OntologyStore
+        if (propertyModel == null) {
+            propertyModel = SPARQLModule.getOntologyStoreInstance().getProperty(restriction.getOnProperty(), null, null, OpenSilex.DEFAULT_LANGUAGE);
+            localPropertyCache.put(restriction.getOnProperty().toString(), propertyModel);
 
-                    if (propertyRestriction.isList()) {
-                        typesMultiValuedProperties.add(property);
-                        multiValuedPropertiesByType.computeIfAbsent(classModel.getUri(),uri -> new ArrayList<>()).add(formattedPropertyUri);
-                        multiValuedPropertiesByTypeVarNames.computeIfAbsent(classModel.getUri(),uri -> new ArrayList<>()).add(propertyName);
-                    } else {
-                        typesMonoValuedProperties.add(property);
-                        monoValuedPropertiesByType.computeIfAbsent(classModel.getUri(),uri -> new ArrayList<>()).add(formattedPropertyUri);
-                        monoValuedPropertiesByTypeVarNames.computeIfAbsent(classModel.getUri(),uri -> new ArrayList<>()).add(propertyName);
-                    }
-                }
-            });
+            if (propertyModel == null) {
+                throw new SPARQLException("Unknown property URI " + restriction.getOnProperty());
+            }
+        }
+
+        // use short uri (faster ?)
+        URI formattedPropertyUri = SPARQLDeserializers.formatURI(propertyModel.getUri());
+
+        // don't handle properties which are initially present into SPARQLModel (not managed by this class)
+        if (!managedProperties.contains(formattedPropertyUri)) {
+
+            String propertyName = specialCharsPattern.matcher(propertyModel.getName()).replaceAll("_");
+
+            if (restriction.isList()) {
+                typesMultiValuedProperties.add(propertyModel);
+                multiValuedPropertiesByType.computeIfAbsent(classModel.getUri(), uri -> new ArrayList<>()).add(formattedPropertyUri);
+                multiValuedPropertiesByTypeVarNames.computeIfAbsent(classModel.getUri(), uri -> new ArrayList<>()).add(propertyName);
+            } else {
+                typesMonoValuedProperties.add(propertyModel);
+                monoValuedPropertiesByType.computeIfAbsent(classModel.getUri(), uri -> new ArrayList<>()).add(formattedPropertyUri);
+                monoValuedPropertiesByTypeVarNames.computeIfAbsent(classModel.getUri(), uri -> new ArrayList<>()).add(propertyName);
+            }
         }
     }
 
@@ -197,11 +215,11 @@ public class SPARQLRelationFetcher<T extends SPARQLResourceModel> {
             }
         }
 
-        if(propertyBoundednessOurExpr != null){
+        if (propertyBoundednessOurExpr != null) {
             innerGraphElemGroup.addElementFilter(new ElementFilter(propertyBoundednessOurExpr));
         }
 
-        if(! isMultiValued){
+        if (!isMultiValued) {
             return select;
         }
 
@@ -217,13 +235,13 @@ public class SPARQLRelationFetcher<T extends SPARQLResourceModel> {
         multivaluedSelect.getValuesHandler().addAll(select.getValuesHandler());
 
         // Add projection to the multivalued field with the GROUP_CONCAT aggregator
-        for(Var propertyVar : propertiesVars){
-            SPARQLQueryHelper.appendGroupConcatAggregator(multivaluedSelect,propertyVar,true);
+        for (Var propertyVar : propertiesVars) {
+            SPARQLQueryHelper.appendGroupConcatAggregator(multivaluedSelect, propertyVar, true);
         }
         return multivaluedSelect;
     }
 
-    private void updateProperties(Map<String,T> modelsByUris, SelectBuilder select, BiConsumer<SPARQLResult,T> resultToModelConsumer) throws SPARQLException {
+    private void updateProperties(Map<String, T> modelsByUris, SelectBuilder select, BiConsumer<SPARQLResult, T> resultToModelConsumer) throws SPARQLException {
 
         sparql.executeSelectQueryAsStream(select).forEach(result -> {
 
@@ -232,8 +250,8 @@ public class SPARQLRelationFetcher<T extends SPARQLResourceModel> {
             T initialModel = modelsByUris.get(rowUri);
 
             // ensure model is not null, since the query use a FILTER in case of no associated values
-            if(initialModel != null){
-                resultToModelConsumer.accept(result,initialModel);
+            if (initialModel != null) {
+                resultToModelConsumer.accept(result, initialModel);
             }
         });
     }
@@ -245,17 +263,17 @@ public class SPARQLRelationFetcher<T extends SPARQLResourceModel> {
         }
 
         // compute index between models and models URIs in order to associate in O(n) time complexity, the n results from selectWithMultivalued
-        Map<String,T> modelsByUris = new PatriciaTrie<>();
+        Map<String, T> modelsByUris = new PatriciaTrie<>();
         results.forEach(result ->
                 modelsByUris.put(URIDeserializer.formatURIAsStr(result.getUri().toString()), result)
         );
 
-        if(! typesMonoValuedProperties.isEmpty()){
-            updateProperties(modelsByUris,getRelationSelect(false),this::updateMonoValued);
+        if (!typesMonoValuedProperties.isEmpty()) {
+            updateProperties(modelsByUris, getRelationSelect(false), this::updateMonoValued);
         }
 
-        if(! typesMultiValuedProperties.isEmpty()){
-            updateProperties(modelsByUris,getRelationSelect(true),this::updateMultiValued);
+        if (!typesMultiValuedProperties.isEmpty()) {
+            updateProperties(modelsByUris, getRelationSelect(true), this::updateMultiValued);
         }
     }
 
@@ -288,7 +306,7 @@ public class SPARQLRelationFetcher<T extends SPARQLResourceModel> {
 
             if (!StringUtils.isEmpty(unparsedValue)) {
                 String[] values = unparsedValue.split(SPARQLQueryHelper.GROUP_CONCAT_SEPARATOR);
-                if(values.length > 0){
+                if (values.length > 0) {
 
                     URI propertyUri = typeProperties.get(i);
                     for (String value : values) {

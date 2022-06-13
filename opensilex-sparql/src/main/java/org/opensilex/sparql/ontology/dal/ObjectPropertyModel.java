@@ -6,11 +6,6 @@
  *
  ******************************************************************************/
 
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.opensilex.sparql.ontology.dal;
 
 import org.apache.jena.vocabulary.OWL2;
@@ -18,15 +13,14 @@ import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.sparql.annotations.SPARQLIgnore;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
-import org.opensilex.sparql.model.SPARQLLabel;
-import org.opensilex.sparql.model.SPARQLTreeModel;
 
 import java.net.URI;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 /**
- *
  * @author vmigot
  */
 @SPARQLResource(
@@ -34,24 +28,10 @@ import java.util.stream.Collectors;
         resource = "ObjectProperty",
         ignoreValidation = true
 )
-public class ObjectPropertyModel extends SPARQLTreeModel<ObjectPropertyModel> implements PropertyModel {
+public class ObjectPropertyModel extends AbstractPropertyModel<ObjectPropertyModel> {
 
     @SPARQLIgnore()
     protected String name;
-
-    @SPARQLProperty(
-            ontology = RDFS.class,
-            property = "label",
-            required = true
-    )
-    protected SPARQLLabel label;
-    public final static String LABEL_FIELD = "label";
-
-    @SPARQLProperty(
-            ontology = RDFS.class,
-            property = "comment"
-    )
-    protected SPARQLLabel comment;
 
     @SPARQLProperty(
             ontology = RDFS.class,
@@ -66,62 +46,28 @@ public class ObjectPropertyModel extends SPARQLTreeModel<ObjectPropertyModel> im
     )
     protected ObjectPropertyModel parent;
 
-    @SPARQLProperty(
-            ontology = RDFS.class,
-            property = "domain"
-    )
-    protected ClassModel domain;
-    public final static String DOMAIN_FIELD = "domain";
 
     @SPARQLProperty(
             ontology = RDFS.class,
             property = "range"
     )
     protected ClassModel range;
-    public final static String RANGE_FIELD = "range";
+    public static final String RANGE_FIELD = "range";
 
-    protected URI typeRestriction;
+    protected Set<ObjectPropertyModel> parents;
 
-    @Override
-    public String getName() {
-        if (name != null) {
-            return name;
-        }
-        SPARQLLabel slabel = getLabel();
-        if (slabel != null) {
-            return getLabel().getDefaultValue();
-        } else {
-            return getUri().toString();
-        }
+    public ObjectPropertyModel() {
+        children = new LinkedList<>();
+        setChildren(children);
+        parents = new HashSet<>();
     }
 
-    @Override
-    public void setName(String name) {
-        this.name = name;
+    public ObjectPropertyModel(ObjectPropertyModel other) {
+        this(other, true);
     }
 
-    public SPARQLLabel getLabel() {
-        return label;
-    }
+    public ObjectPropertyModel(ObjectPropertyModel other, boolean readChildren) {
 
-    public void setLabel(SPARQLLabel label) {
-        this.label = label;
-    }
-
-    public SPARQLLabel getComment() {
-        return comment;
-    }
-
-    public void setComment(SPARQLLabel comment) {
-        this.comment = comment;
-    }
-
-    public ClassModel getDomain() {
-        return domain;
-    }
-
-    public void setDomain(ClassModel domain) {
-        this.domain = domain;
     }
 
     public ClassModel getRange() {
@@ -132,40 +78,38 @@ public class ObjectPropertyModel extends SPARQLTreeModel<ObjectPropertyModel> im
         this.range = range;
     }
 
-    public URI getTypeRestriction() {
-        return typeRestriction;
+//    @Override
+//    public List<ObjectPropertyModel> getChildren() {
+//        return children;
+//    }
+//
+//    @Override
+//    public void setChildren(List<ObjectPropertyModel> children) {
+//        this.children = children;
+//    }
+//
+//    @Override
+//    public ObjectPropertyModel getParent() {
+//        return parent;
+//    }
+//
+//    @Override
+//    public void setParent(ObjectPropertyModel parent) {
+//        this.parent = parent;
+//    }
+
+    @Override
+    public Set<ObjectPropertyModel> getParents() {
+        return parents;
     }
 
-    public void setTypeRestriction(URI typeRestriction) {
-        this.typeRestriction = typeRestriction;
+    @Override
+    public void setParents(Set<ObjectPropertyModel> parents) {
+        this.parents = parents;
     }
 
-    public ObjectPropertyModel() {
+    @Override
+    public URI getRangeURI() {
+        return range == null ? null : range.getUri();
     }
-
-    public ObjectPropertyModel(ObjectPropertyModel other) {
-        this(other, true);
-    }
-
-    public ObjectPropertyModel(ObjectPropertyModel other, boolean readChildren) {
-        fromModel(other);
-        range = other.getRange();
-
-        if (readChildren && other.getChildren() != null) {
-            children = other.getChildren().stream()
-                    .map(child -> new ObjectPropertyModel(child, true))
-                    .collect(Collectors.toList());
-
-            children.forEach(child -> setParent(this));
-
-            // call super setter in order to ensure that {@link SPARQLTreeModel#children} field is set
-            setChildren(children);
-        }
-
-        if (other.getParent() != null) {
-            parent = new ObjectPropertyModel(other.getParent(), false);
-            setParent(parent);
-        }
-    }
-
 }

@@ -7,8 +7,8 @@
 package org.opensilex.mobile.dal;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.opensilex.core.csv.dal.CSVCell;
-import org.opensilex.core.csv.dal.error.CSVValidationModel;
+import org.opensilex.sparql.csv.CSVCell;
+import org.opensilex.sparql.csv.CSVValidationModel;
 
 import java.util.ArrayList;
 import java.util.Arrays;

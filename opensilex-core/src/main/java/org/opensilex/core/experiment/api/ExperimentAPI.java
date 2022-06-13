@@ -88,7 +88,7 @@ import org.opensilex.core.experiment.factor.api.FactorDetailsGetDTO;
 import org.opensilex.core.experiment.factor.dal.FactorDAO;
 import org.opensilex.core.experiment.factor.dal.FactorModel;
 import org.opensilex.core.experiment.utils.ImportDataIndex;
-import org.opensilex.core.csv.dal.CSVCell;
+import org.opensilex.sparql.csv.CSVCell;
 import org.opensilex.core.organisation.api.facitity.InfrastructureFacilityGetDTO;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
 import org.opensilex.core.provenance.api.ProvenanceAPI;
@@ -144,7 +144,7 @@ public class ExperimentAPI {
     public static final String CREDENTIAL_EXPERIMENT_DELETE_ID = "experiment-delete";
     public static final String CREDENTIAL_EXPERIMENT_DELETE_LABEL_KEY = "credential.default.delete";
 
-    public static final String EXPERIMENT_EXAMPLE_URI = "http://opensilex/set/experiments/ZA17";
+    public static final String EXPERIMENT_EXAMPLE_URI = "http://opensilex/experiment/id/ZA17";
     public static final String EXPERIMENT_API_VALUE = "Experiment URI";
 
 
@@ -438,7 +438,7 @@ public class ExperimentAPI {
         DataDAO dao = new DataDAO(nosql, sparql, fs);
         List<URI> experiments = new ArrayList<>();
         experiments.add(xpUri);
-        List<VariableModel> variables = dao.getUsedVariables(currentUser, experiments, objects, null);
+        List<VariableModel> variables = dao.getUsedVariables(currentUser, experiments, objects, null, null);
 
         List<NamedResourceDTO> dtoList = variables.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();

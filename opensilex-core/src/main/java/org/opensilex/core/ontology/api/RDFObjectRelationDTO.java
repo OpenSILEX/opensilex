@@ -10,6 +10,7 @@ import java.net.URISyntaxException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.model.SPARQLModelRelation;
+import org.opensilex.sparql.utils.Ontology;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -22,6 +23,8 @@ public class RDFObjectRelationDTO {
     private URI property;
 
     private String value;
+
+    private boolean isInverse;
 
     public URI getProperty() {
         return property;
@@ -37,6 +40,14 @@ public class RDFObjectRelationDTO {
 
     public void setValue(String value) {
         this.value = value;
+    }
+
+    public boolean isInverse() {
+        return isInverse;
+    }
+
+    public void setInverse(boolean inverse) {
+        isInverse = inverse;
     }
 
     public static RDFObjectRelationDTO getDTOFromModel(SPARQLModelRelation relation) {
@@ -58,7 +69,18 @@ public class RDFObjectRelationDTO {
             dto.setValue(relation.getValue());
         }
 
+        dto.setInverse(relation.getReverse());
+
         return dto;
     }
+
+    public SPARQLModelRelation toModel(){
+        SPARQLModelRelation relation = new SPARQLModelRelation();
+        relation.setValue(value);
+        relation.setProperty(Ontology.property(property));
+        return relation;
+    }
+
+
 
 }

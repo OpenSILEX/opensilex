@@ -6,20 +6,30 @@ import Vue from 'vue';
 import { VueCookies } from 'vue-cookies';
 import VueI18n from 'vue-i18n';
 import { Store } from 'vuex';
-import { ApiServiceBinder, FrontConfigDTO, IAPIConfiguration, ThemeConfigDTO } from '../lib';
+import {
+    ApiServiceBinder,
+    FrontConfigDTO,
+    IAPIConfiguration,
+    ThemeConfigDTO,
+    VueDataTypeDTO,
+    VueObjectTypeDTO
+} from '../lib';
 import IHttpClient from '../lib/IHttpClient';
 import Oeso from '../ontologies/Oeso';
 import Foaf from '../ontologies/Foaf';
 import Org from '../ontologies/Org';
 import Oeev from '../ontologies/Oeev';
+import Time from '../ontologies/Time';
+import Rdfs from '../ontologies/Rdfs';
 
 import { ModuleComponentDefinition } from './ModuleComponentDefinition';
 import OpenSilexHttpClient from './OpenSilexHttpClient';
 import { UploadFileBody } from './UploadFileBody';
 import { User } from './User';
 import {ResourceDagDTO} from "opensilex-core/model/resourceDagDTO";
-import {NamedResourceDTO} from "opensilex-security/model/namedResourceDTO";
 import {ServiceBinder} from "../services/ServiceBinder";
+import { OntologyService } from 'opensilex-core/index';
+import {data} from "browserslist";
 
 declare var $cookies: VueCookies;
 
@@ -59,6 +69,8 @@ export default class OpenSilexVuePlugin {
     public Foaf = Foaf;
     public Org = Org;
     public Oeev = Oeev;
+    public Time = Time;
+    public Rdfs = Rdfs;
 
     constructor(baseApi: string, store: Store<any>, i18n: VueI18n) {
         this.container = new Container();
@@ -431,12 +443,14 @@ export default class OpenSilexVuePlugin {
     private handleError(error, message?) {
         if (!message && !!error.response && !!error.response.result && !!error.response.result.translationKey) {
             message = this.$i18n.t(error.response.result.translationKey, error.response.result.translationValues);
+        }else if(error.response.result.message){
+            message = error.response.result.message;
         }
 
         this.enableLoader();
         switch (error.status) {
             case 400:
-                console.error("Constraint validation error", error);
+                console.error("Constraint validation error", message);
                 this.handleConstraintError(error, message);
                 break;
             case 401:
@@ -1124,11 +1138,11 @@ export default class OpenSilexVuePlugin {
             .catch(this.errorHandler);
     }
 
-    public datatypes = [];
-    private datatypesByURI = {};
+    public datatypes: Array<VueDataTypeDTO> = [];
+    private datatypesByURI: Map<string,VueDataTypeDTO> = new Map<string, VueDataTypeDTO>();
 
-    public getDatatype(uri) {
-        return this.datatypesByURI[uri];
+    public getDatatype(uri: string): VueDataTypeDTO {
+        return this.datatypesByURI.get(uri);
     }
 
     public loadDataTypes() {
@@ -1137,15 +1151,71 @@ export default class OpenSilexVuePlugin {
                 .getDataTypes()
                 .then((http) => {
                     this.datatypes = http.response.result;
-                    for (let i in this.datatypes) {
-                        let datatype = this.datatypes[i];
-                        this.datatypesByURI[datatype.uri] = datatype;
-                        this.datatypesByURI[datatype.short_uri] = datatype;
-                    }
+                    this.datatypesByURI = new Map<string, VueDataTypeDTO>();
+
+                    this.datatypes.forEach(dataType => {
+                        this.datatypesByURI.set(dataType.uri,dataType);
+                        this.datatypesByURI.set(dataType.short_uri,dataType);
+                    });
                     resolve(this.datatypes);
                 })
                 .catch(reject);
         });
+    }
+    public namespaces = {};
+
+    /**
+     * It returns a promise that will resolve to the list of namespaces
+     * @returns A promise that will return the namespaces.
+     */
+    public loadNameSpaces() {
+        return new Promise((resolve, reject) => {
+            this.getService<OntologyService>("opensilex.OntologyService")
+                .getNameSpace()
+                .then((http) => {                    
+                    this.namespaces = http.response.result;
+                    resolve(this.namespaces);
+                })
+                .catch(reject);
+        });
+    }
+
+    /**
+     * It takes a URI and returns a short URI
+     * @param {string} uri - The full URI of the resource.
+     * @returns The short uri
+     */
+    public getShortUri(uri: string) {         
+        for (let prefix in this.namespaces) {
+            if(uri.startsWith(this.namespaces[prefix])){           
+                return uri.replace(this.namespaces[prefix], prefix + ":");
+            }
+        }
+        return uri;
+    }
+    
+    /**
+     * It takes a URI and replaces the prefix with the full namespace
+     * @param {string} uri - The uri to be converted
+     * @returns The long URI of the given URI.
+     */
+    public getLongUri(uri: string) {
+        for(let prefix in this.namespaces) {
+            if(uri.startsWith(prefix)) {
+                return uri.replace(prefix + ":", this.namespaces[prefix]);
+            }
+        }
+        return uri;
+    }
+
+    /**
+     * > This function checks if two URIs are the same
+     * @param uri1 - The first URI to compare.
+     * @param uri2 - The URI to check against.
+     * @returns The short URI of the first URI is being compared to the short URI of the second URI.
+     */
+    public checkURIs(uri1, uri2) {
+        return this.getShortUri(uri1) === this.getShortUri(uri2);
     }
 
     public versionInfo: any = [];
@@ -1207,11 +1277,11 @@ export default class OpenSilexVuePlugin {
         });
     }
 
-    public objectTypes = [];
-    private objectTypesByURI = {};
+    public objectTypes: Array<VueObjectTypeDTO> = [];
+    private objectTypesByURI: Map<string,VueObjectTypeDTO> = new Map<string, VueObjectTypeDTO>();
 
-    public getObjectType(uri) {
-        return this.objectTypesByURI[uri];
+    public getObjectType(uri: string): VueObjectTypeDTO {
+        return this.objectTypesByURI.get(uri);
     }
 
     public loadObjectTypes() {
@@ -1220,11 +1290,13 @@ export default class OpenSilexVuePlugin {
                 .getObjectTypes()
                 .then((http) => {
                     this.objectTypes = http.response.result;
-                    for (let i in this.objectTypes) {
-                        let objectType = this.objectTypes[i];
-                        this.objectTypesByURI[objectType.uri] = objectType;
-                        this.objectTypesByURI[objectType.short_uri] = objectType;
-                    }
+                    this.objectTypesByURI = new Map<string, VueObjectTypeDTO>();
+
+                    this.objectTypes.forEach(objectType => {
+                        this.objectTypesByURI.set(objectType.uri,objectType);
+                        this.objectTypesByURI.set(objectType.short_uri,objectType);
+                    });
+
                     resolve(this.objectTypes);
                 })
                 .catch(reject);

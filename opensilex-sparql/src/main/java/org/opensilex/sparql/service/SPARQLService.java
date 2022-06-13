@@ -7,9 +7,11 @@ package org.opensilex.sparql.service;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.*;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Query;
 import org.apache.jena.rdf.model.Property;
@@ -24,6 +26,7 @@ import org.apache.jena.sparql.path.Path;
 import org.apache.jena.sparql.path.PathFactory;
 import org.apache.jena.sparql.syntax.ElementNamedGraph;
 import org.apache.jena.vocabulary.DCTerms;
+import org.apache.jena.vocabulary.OWL2;
 import org.apache.jena.vocabulary.RDF;
 import org.eclipse.rdf4j.model.vocabulary.FOAF;
 import org.eclipse.rdf4j.model.vocabulary.OWL;
@@ -31,11 +34,14 @@ import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.eclipse.rdf4j.model.vocabulary.XSD;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.opensilex.OpenSilex;
+import org.opensilex.OpenSilexModuleNotFoundException;
 import org.opensilex.service.BaseService;
 import org.opensilex.service.Service;
 import org.opensilex.service.ServiceDefaultDefinition;
+import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.*;
 import org.opensilex.sparql.mapping.SPARQLClassAnalyzer;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
@@ -70,6 +76,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
+import static org.opensilex.sparql.service.SPARQLQueryHelper.or;
 
 /**
  * Implementation of SPARQLService
@@ -81,18 +88,16 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
     public static final String DEFAULT_SPARQL_SERVICE = "sparql";
     private final SPARQLConnection connection;
-    private final OntologyDAO ontologyDao;
+    private OntologyDAO ontologyDao;
 
     public SPARQLService(SPARQLServiceConfig config) {
         super(config);
         this.connection = config.connection();
-        ontologyDao = new OntologyDAO(this);
     }
 
     public SPARQLService(SPARQLConnection connection) {
         super(null);
         this.connection = connection;
-        ontologyDao = new OntologyDAO(this);
     }
 
     public OntologyDAO getOntologyDao() {
@@ -114,6 +119,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         connection.setOpenSilex(getOpenSilex());
         connection.setMapperIndex(getMapperIndex());
         connection.setup();
+        ontologyDao = new OntologyDAO(this);
     }
 
     @Override
@@ -758,11 +764,13 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     public <T extends SPARQLResourceModel> SelectBuilder getSelectBuilder(SPARQLClassObjectMapper<T> mapper, Node graph, String language,
                                                                           ThrowingConsumer<SelectBuilder, Exception> filterHandler,
                                                                           Map<String, WhereHandler> customHandlerByFields,
-                                                                          Collection<OrderBy> orderByList, Integer offset, Integer limit) throws Exception {
+                                                                          final Collection<OrderBy> orderByList, Integer offset, Integer limit) throws Exception {
 
         SelectBuilder select = mapper.getSelectBuilder(graph, language, filterHandler, customHandlerByFields);
 
         if (orderByList != null) {
+
+            Collection<OrderBy> finalOrderByList = orderByList;
 
             OrderBy defaultOrderBy = SPARQLClassObjectMapper.DEFAULT_ORDER_BY;
             boolean useDefaultOrder = orderByList.stream().anyMatch(orderBy -> orderBy.getFieldName().equals(defaultOrderBy.getFieldName()));
@@ -770,10 +778,13 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             // add the default order in order to maintain a strict order in case where two results are equals according
             // orderByList. Else results can be non-deterministic since there are no guarantee or result order from triplestore
             if (!useDefaultOrder) {
-                orderByList.add(defaultOrderBy);
+
+                // copy initial list in order to not update/write initial list
+                finalOrderByList = new LinkedList<>(orderByList);
+                finalOrderByList.add(defaultOrderBy);
             }
 
-            for (OrderBy orderBy : orderByList) {
+            for (OrderBy orderBy : finalOrderByList) {
                 Expr fieldOrderExpr = mapper.getFieldOrderExpr(orderBy.getFieldName());
                 if (fieldOrderExpr != null) {
                     select.addOrderBy(fieldOrderExpr, orderBy.getOrder());
@@ -1230,14 +1241,14 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             throw new SPARQLInvalidModelException(String.format(NO_CLASS_MODEL_ERROR_MSG, instance.getClass().toString(), rootType.toString()));
         }
 
-        if(MapUtils.isEmpty(classModel.getRestrictions())){
+        if(MapUtils.isEmpty(classModel.getRestrictionsByProperties())){
             return;
         }
 
         Set<String> managedPropUris = mapper.getClassAnalizer().getManagedPropertiesUris();
 
         // compute the set of custom properties : all properties from ClassModel restrictions which are not already managed
-        Set<URI> customProperties = classModel.getRestrictions()
+        Set<URI> customProperties = classModel.getRestrictionsByProperties()
                 .values()
                 .stream()
                 .map(OwlRestrictionModel::getOnProperty)
@@ -1455,6 +1466,32 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         });
     }
 
+    public boolean existInstanceOf(URI classURI) throws SPARQLException {
+
+        Node classNode = NodeFactory.createURI(URIDeserializer.getExpandedURI(classURI));
+        Var type = makeVar("type");
+        Var instance = makeVar("instance");
+
+        AskBuilder askQuery = new AskBuilder()
+                .addWhere(classNode,RDF.type, OWL2.Class)
+                .addWhere(type,Ontology.subClassAny,classNode)
+                .addWhere(instance,RDF.type,type);
+
+        return executeAskQuery(askQuery);
+    }
+
+    public boolean anyPropertyValue(URI property) throws SPARQLException {
+
+        Node propertyNode = NodeFactory.createURI(URIDeserializer.getExpandedURI(property));
+        Var instance = makeVar("instance");
+        Var value = makeVar("value");
+
+        return executeAskQuery(new AskBuilder()
+                .addWhere(instance,propertyNode,value)
+        );
+    }
+
+
     public boolean uriExists(Node graph, URI uri) throws SPARQLException {
         AskBuilder askQuery = new AskBuilder();
         Var s = makeVar("s");
@@ -1578,16 +1615,57 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
     public static final String EXISTING_VAR = "existing";
 
-    public <T extends SPARQLResourceModel> SelectBuilder getUriListExistQuery(Class<T> objectClass, Collection<URI> uris) throws Exception {
+    /**
+     * @param type the rdf:type (if null/empty then the query only search if there exist an occurrence of <b>( ?uri a ?rdfType )</b> triple pattern for each URI
+     * @param uris the {@link Collection} of URI to check in {@link String} representation
+     * @return a {@link SelectBuilder} which when executed, indicate for each element of uris, if the element exist (TRUE/FALSE)
+     * as an instance of the type (or as any rdf:type if no type is provided)
+     *
+     * @apiNote The produced SPARQL query look likes
+     * <pre>
+     * {@code
+     * PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+     * SELECT  (EXISTS {
+     *         ?rdfType rdfs:subClassOf* :some_rdf_type.
+     *         ?uri  a  ?rdfType
+     *     } AS ?existing)
+     * WHERE{
+     *     VALUES ?uri {
+     *         :uri_1 :uri_2 :uri_n
+     *     }
+     * }
+     * }</pre>
+     */
+    public SelectBuilder getCheckUriListExistQuery(String type, Stream<String> uris, int streamSize) {
 
+        Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
+        Var typeVar = makeVar(SPARQLResourceModel.TYPE_FIELD);
+        Var existing = makeVar(SPARQLService.EXISTING_VAR);
+
+        WhereBuilder where = new WhereBuilder();
+        if (! StringUtils.isEmpty(type)) {
+            where.addWhere(typeVar, Ontology.subClassAny, NodeFactory.createURI(URIDeserializer.getExpandedURI(type)));
+        }
+        where.addWhere(uriVar, RDF.type, typeVar);
+
+        // add EXIST {} expression as var of SELECT
+        SelectBuilder select = new SelectBuilder()
+                .addVar(SPARQLQueryHelper.getExprFactory().exists(where), existing);
+
+        // append VALUES ?uri  :uri_1 ... :uri_n
+        SPARQLQueryHelper.addWhereUriStringValues(select, uriVar.getVarName(), uris, true, streamSize);
+
+        return select;
+    }
+
+    public <T extends SPARQLResourceModel> SelectBuilder getUriListExistQuery(Class<T> objectClass, Stream<URI> uris, int streamSize) throws Exception {
         Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
         Var existing = makeVar(EXISTING_VAR);
 
         SelectBuilder select = new SelectBuilder();
-        SPARQLQueryHelper.addWhereValues(select, uriVar.getVarName(), uris);
+        SPARQLQueryHelper.addWhereUriValues(select, uriVar.getVarName(), uris,streamSize);
 
-        WhereBuilder where = new WhereBuilder()
-                .addWhere(uriVar, makeVar("p"), makeVar("o"));
+        WhereBuilder where = new WhereBuilder();
 
         if (objectClass != null) {
             SPARQLClassObjectMapper<T> mapper = getMapperIndex().getForClass(objectClass);
@@ -1595,6 +1673,8 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             Resource typeDef = mapper.getRDFType();
             where.addWhere(typeVar, Ontology.subClassAny, typeDef)
                     .addWhere(uriVar, RDF.type, typeVar);
+        }else{
+            where.addWhere(uriVar, makeVar("p"), makeVar("o"));
         }
 
         Expr existExpr = SPARQLQueryHelper.getExprFactory().exists(where);
@@ -1602,6 +1682,11 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
         return select;
     }
+
+    public <T extends SPARQLResourceModel> SelectBuilder getUriListExistQuery(Class<T> objectClass, Collection<URI> uris) throws Exception {
+        return getUriListExistQuery(objectClass, uris.stream(), uris.size());
+    }
+
 
     /**
      * @param objectClass the models class
@@ -1797,6 +1882,14 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
     public URI getDefaultGenerationURI(Class<? extends SPARQLResourceModel> modelClass) throws SPARQLException {
         return getMapperIndex().getForClass(modelClass).getGenerationPrefixURI();
+    }
+
+    public URI getBaseURI() {
+        try{
+            return getOpenSilex().getModuleByClass(SPARQLModule.class).getBaseURI();
+        }catch (OpenSilexModuleNotFoundException e){
+            throw new RuntimeException(e);
+        }
     }
 
     public Var getURIFieldVar(Class<? extends SPARQLResourceModel> modelClass) throws SPARQLException {

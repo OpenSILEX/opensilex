@@ -18,12 +18,13 @@
                         @onCreate="refresh()"
                         @onUpdate="refresh()"
                         modalSize="lg"
+                        successMessage="OntologyClassView.the-type"
                         :icon="icon"
                     ></opensilex-ModalForm>
                 </div>
 
                 <opensilex-StringFilter
-                    :filter.sync="filter"
+                    :filter.sync="nameFilter"
                     @update="updateFilter()"
                     placeholder="OntologyClassView.search"
                 ></opensilex-StringFilter>
@@ -67,7 +68,7 @@ export default class OntologyClassView extends Vue {
     $store: Store<any>;
     vueJsOntologyService: VueJsOntologyExtensionService;
 
-    private filter: any = "";
+    private nameFilter: string = "";
 
     get user() {
         return this.$store.state.user;
@@ -110,7 +111,7 @@ export default class OntologyClassView extends Vue {
                 let form = http.response.result;
                 this.classForm.getFormRef().setParentTypes(this.classesTree.getTree());
                 this.classForm.showEditForm(form);
-            });
+            }).catch(this.$opensilex.errorHandler);
     }
 
     deleteRDFType(data) {
@@ -122,7 +123,7 @@ export default class OntologyClassView extends Vue {
 
                 this.selected = undefined;
                 this.refresh();
-            });
+            }).catch(this.$opensilex.errorHandler);
     }
 
     private langUnwatcher;
@@ -141,7 +142,7 @@ export default class OntologyClassView extends Vue {
     }
 
     refresh() {
-        this.classesTree.refresh(this.selected, this.filter);
+        this.classesTree.refresh(this.selected, this.nameFilter);
     }
 
 

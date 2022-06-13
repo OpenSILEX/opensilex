@@ -10,7 +10,7 @@ public class VueDevice implements VueOntologyObjectType {
 
     @Override
     public String getTypeUri() {
-        return Oeso.SensingDevice.getURI();
+        return Oeso.Device.getURI();
     }
 
     @Override
@@ -20,6 +20,6 @@ public class VueDevice implements VueOntologyObjectType {
 
     @Override
     public String getViewComponent() {
-        return "opensilex-DevicePropertyView";
+        return "opensilex-XSDUriView";
     }
 }

@@ -87,8 +87,8 @@ public class GermplasmGetSingleDTO extends GermplasmGetExportDTO {
             dto.setCode(model.getCode());
         }
 
-        if (model.getAttributes() != null) {
-            dto.setMetadata(model.getAttributes());
+        if (model.getMetadata() != null) {
+            dto.setMetadata(model.getMetadata().getAttributes());
         }
 
         if (model.getSynonyms() != null) {

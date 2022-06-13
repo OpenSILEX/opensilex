@@ -9,9 +9,9 @@ package org.opensilex.integration.test.security;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 
-import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
+
 import org.junit.After;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ws.rs.core.HttpHeaders;
+
 import org.junit.BeforeClass;
 import org.opensilex.OpenSilex;
 import org.opensilex.integration.test.AbstractIntegrationTest;
@@ -34,6 +35,8 @@ import org.opensilex.security.authentication.AuthenticationService;
 import org.opensilex.security.authentication.api.AuthenticationDTO;
 import org.opensilex.security.authentication.api.TokenGetDTO;
 import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.response.ResourceTreeDTO;
+import org.opensilex.sparql.response.ResourceTreeResponse;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
 import org.slf4j.Logger;
@@ -47,7 +50,7 @@ import static junit.framework.TestCase.assertEquals;
 
 /**
  * @author Vincent MIGOT
- *
+ * <p>
  * Abstract class used for Secure API testing
  */
 public abstract class AbstractSecurityIntegrationTest extends AbstractIntegrationTest {
@@ -148,7 +151,6 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
     }
 
     /**
-     *
      * Get {@link Response} from an {@link ApiProtected} POST service call.
      *
      * @param target the {@link WebTarget} on which POST the given entity
@@ -160,11 +162,10 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
         return appendToken(target).post(Entity.entity(entity, MediaType.APPLICATION_JSON_TYPE));
     }
 
-        /**
-     *
+    /**
      * Get {@link Response} from an {@link ApiProtected} POST service call.
      *
-     * @param target the {@link WebTarget} on which POST the given entity
+     * @param target    the {@link WebTarget} on which POST the given entity
      * @param multipart the data to POST on the given target
      * @return target invocation response.
      * @throws Exception in case of error during token retrieval
@@ -172,26 +173,24 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
     protected Response getJsonPostResponseMultipart(WebTarget target, MultiPart multipart) throws Exception {
         return appendToken(target.register(MultiPartFeature.class)).post(Entity.entity(multipart, MediaType.MULTIPART_FORM_DATA));
     }
-    
+
     /**
-     *
      * Get {@link Response} from an {@link ApiProtected} POST service call.
      *
      * @param target the {@link WebTarget} on which GET the given entity
      * @return target invocation response.
      * @throws Exception in case of error during token retrieval
      */
-    protected Response getJsonGetResponse(WebTarget target ) throws Exception {
+    protected Response getJsonGetResponse(WebTarget target) throws Exception {
         return appendToken(target).get();
     }
 
     /**
-     *
      * Get {@link Response} from an {@link ApiProtected} POST service call.
      *
      * @param target the {@link WebTarget} on which POST the given entity
      * @param entity the data to POST on the given target
-     * @param lang the translation language of the requested data
+     * @param lang   the translation language of the requested data
      * @return target invocation response.
      * @throws Exception in case of error during token retrieval
      */
@@ -203,10 +202,9 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
     }
 
     /**
-     *
      * Get {@link Response} from an {@link ApiProtected} PUT service call.
      *
-     * @param target the {@link WebTarget} on which PUT the given entity
+     * @param target    the {@link WebTarget} on which PUT the given entity
      * @param multipart the data to PUT on the given target
      * @return target invocation response.
      * @throws Exception in case of error during token retrieval
@@ -216,7 +214,6 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
     }
 
     /**
-     *
      * Get {@link Response} from an {@link ApiProtected} PUT service call.
      *
      * @param target the {@link WebTarget} on which PUT the given entity
@@ -229,38 +226,36 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
     }
 
     /**
-     *
      * Get {@link Response} from a {@link ApiProtected} GET{uri} service call.
      *
      * @param target the {@link WebTarget} on which get an entity with the given URI
-     * @param uri the URI of the resource to fetch from the given target.
+     * @param uri    the URI of the resource to fetch from the given target.
      * @return target invocation response.
      * @throws Exception in case of error during token retrieval
      */
     protected Response getJsonGetByUriResponse(WebTarget target, String uri) throws Exception {
         return appendToken(target.resolveTemplate("uri", uri)).get();
     }
+
     /**
-     *
      * Get {@link Response} from a {@link ApiProtected} GET{uri} service call.
      *
      * @param target the {@link WebTarget} on which get an entity with the given URI
-     * @param uri the URI of the resource to fetch from the given target.
+     * @param uri    the URI of the resource to fetch from the given target.
      * @return target invocation response with APPLICATION_OCTET_STREAM_TYPE {@link MediaType} as content
      * @throws Exception in case of error during token retrieval
      */
-    protected Response getOctetStreamByUriResponse(WebTarget target, String uri) throws Exception{
+    protected Response getOctetStreamByUriResponse(WebTarget target, String uri) throws Exception {
         return appendToken(target.resolveTemplate("uri", uri))
                 .accept(MediaType.APPLICATION_OCTET_STREAM_TYPE)
                 .get();
     }
 
     /**
-     *
      * Get {@link Response} from a {@link ApiProtected} DELETE{uri} service call.
      *
      * @param target the {@link WebTarget} on which DELETE the given uri
-     * @param uri the URI of the resource to DELETE
+     * @param uri    the URI of the resource to DELETE
      * @return target invocation response.
      * @throws Exception in case of error during token retrieval
      */
@@ -269,7 +264,6 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
     }
 
     /**
-     *
      * Get {@link Response} from a public DELETE service call.
      *
      * @param target the {@link WebTarget} on which DELETE some content
@@ -299,14 +293,15 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
 
     /**
      * Call the createPath with the given entity, check if has been created, delete it and then check that the resource has been deleted
+     *
      * @param getByUriPath the path to the service which allow to fetch an entity by it's URI
-     * @param createPath the path to the service which allow to create an entity
-     * @param deletePath the path to the service which allow to delete an entity
-     * @param entity the entity on which apply create, read and delete
+     * @param createPath   the path to the service which allow to create an entity
+     * @param deletePath   the path to the service which allow to delete an entity
+     * @param entity       the entity on which apply create, read and delete
      */
     protected void testCreateGetAndDelete(String createPath, String getByUriPath, String deletePath, Object entity) throws Exception {
 
-        final Response postResult = getJsonPostResponse(target(createPath),entity);
+        final Response postResult = getJsonPostResponse(target(createPath), entity);
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
 
         // ensure that the result is a well formed URI, else throw exception
@@ -326,24 +321,25 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
     /**
      * Call the createPath with the given entity list
      * then for each entity : check if entity has been created, delete it and then check that the resource has been deleted
+     *
      * @param getByUriPath the path to the service which allow to fetch an entity by it's URI
-     * @param createPath the path to the service which allow to create an entity
-     * @param deletePath the path to the service which allow to delete an entity
-     * @param entities the List of entity on which apply create, read and delete
+     * @param createPath   the path to the service which allow to create an entity
+     * @param deletePath   the path to the service which allow to delete an entity
+     * @param entities     the List of entity on which apply create, read and delete
      */
     protected void testCreateListGetAndDelete(String createPath, String getByUriPath, String deletePath, List<Object> entities) throws Exception {
 
-        final Response postResult = getJsonPostResponse(target(createPath),entities);
+        final Response postResult = getJsonPostResponse(target(createPath), entities);
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
 
         List<URI> uris = extractUriListFromPaginatedListResponse(postResult);
 
-        for(URI uri : uris){
-            Response getResult = getJsonGetByUriResponse(target(getByUriPath),  uri.toString());
+        for (URI uri : uris) {
+            Response getResult = getJsonGetByUriResponse(target(getByUriPath), uri.toString());
             assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
 
             // delete object and check if URI no longer exists
-            final Response delResult = getDeleteByUriResponse(target(deletePath),  uri.toString());
+            final Response delResult = getDeleteByUriResponse(target(deletePath), uri.toString());
             assertEquals(Response.Status.OK.getStatusCode(), delResult.getStatus());
 
             getResult = getJsonGetByUriResponse(target(getByUriPath), uri.toString());
@@ -353,11 +349,11 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
     }
 
 
-    protected <T> List<T> getResults(String searchPath, Integer page, Integer pageSize, Map<String, Object> searchCriterias, TypeReference<PaginatedListResponse<T>> typeReference) throws Exception {
-        if (searchCriterias == null) {
-            searchCriterias = new HashMap<>();
+    protected <T> List<T> getResults(String searchPath, Integer page, Integer pageSize, Map<String, Object> searchCriteria, TypeReference<PaginatedListResponse<T>> typeReference) throws Exception {
+        if (searchCriteria == null) {
+            searchCriteria = new HashMap<>();
         }
-        WebTarget searchTarget = appendSearchParams(target(searchPath), page, pageSize, searchCriterias);
+        WebTarget searchTarget = appendSearchParams(target(searchPath), page, pageSize, searchCriteria);
         final Response getResult = appendToken(searchTarget).get();
         assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
 
@@ -366,9 +362,21 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
         return responseList.getResult();
     }
 
-    protected <T> List<T> getResults(String searchPath, Map<String, Object> searchCriterias, TypeReference<PaginatedListResponse<T>> typeReference) throws Exception {
-      return this.getResults(searchPath,0,20,searchCriterias,typeReference);
+    protected <T> List<T> getResults(String searchPath, Map<String, Object> searchCriteria, TypeReference<PaginatedListResponse<T>> typeReference) throws Exception {
+        return this.getResults(searchPath, 0, 20, searchCriteria, typeReference);
+    }
 
+    protected List<ResourceTreeDTO> getTreeResults(String searchPath, Map<String, Object> searchCriteria) throws Exception {
+        if (searchCriteria == null) {
+            searchCriteria = new HashMap<>();
+        }
+        WebTarget searchTarget = appendQueryParams(target(searchPath), searchCriteria);
+        final Response getResult = appendToken(searchTarget).get();
+        assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
+
+        JsonNode node = getResult.readEntity(JsonNode.class);
+        return mapper.convertValue(node, new TypeReference<ResourceTreeResponse>() {
+        }).getResult();
     }
 
 }

@@ -16,6 +16,10 @@
                 <b-nav-item :active="isAnnotationTab()" :to="{ path: '/variables_group/annotations/' + encodeURIComponent(uri) }">
                     {{ $t("Annotation.list-title") }}
                 </b-nav-item>
+
+                <b-nav-item :active="isDocumentTab()" :to="{ path: '/variables_group/documents/' + encodeURIComponent(uri) }">
+                  {{ $t('component.project.documents') }}
+                </b-nav-item>
             </template>
         </opensilex-PageActions>
 
@@ -28,14 +32,19 @@
                 </opensilex-GroupVariablesDetails>
 
                 <opensilex-AnnotationList
-                        v-else-if="isAnnotationTab()"
-                        ref="annotationList"
-                        :target="uri"
-                        :displayTargetColumn="false"
-                        :enableActions="true"
-                        :modificationCredentialId="credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID"
-                        :deleteCredentialId="credentials.CREDENTIAL_VARIABLE_DELETE_ID">
+                  v-else-if="isAnnotationTab()"
+                  :target="uri"
+                  :displayTargetColumn="false"
+                  :enableActions="true"
+                  :modificationCredentialId="credentials.CREDENTIAL_ANNOTATION_MODIFICATION_ID"
+                  :deleteCredentialId="credentials.CREDENTIAL_VARIABLE_DELETE_ID">
                 </opensilex-AnnotationList>
+
+                <opensilex-DocumentTabList
+                  v-else-if="isDocumentTab()"
+                  :uri="uri"        
+                  :modificationCredentialId="credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID"
+                ></opensilex-DocumentTabList>
             </template>
         </opensilex-PageContent>
 
@@ -48,7 +57,6 @@ import Vue from "vue";
 import {VariablesService, VariablesGroupGetDTO} from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
 import GroupVariablesForm from './GroupVariablesForm.vue'
-import AnnotationList from "../annotations/list/AnnotationList.vue";
 
 @Component
 export default class GroupVariablesDescription extends Vue {
@@ -63,8 +71,6 @@ export default class GroupVariablesDescription extends Vue {
 
     variablesGroup: VariablesGroupGetDTO = GroupVariablesDescription.getEmptyDTO();
     uri: string;
-
-    @Ref("annotationList") readonly annotationList!: AnnotationList;
 
     get credentials() {
         return this.$store.state.credentials;
@@ -82,6 +88,10 @@ export default class GroupVariablesDescription extends Vue {
 
     isAnnotationTab(){
         return this.$route.path.startsWith("/variables_group/annotations/");
+    }
+
+    isDocumentTab() {
+      return this.$route.path.startsWith("/variables_group/documents/");
     }
 
     loadVariablesGroup(uri: string) {

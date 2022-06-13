@@ -7,15 +7,21 @@ package org.opensilex.core.variable.dal;
 
 import com.google.common.base.CaseFormat;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.jena.arq.querybuilder.ExprFactory;
+import org.apache.jena.arq.querybuilder.Order;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
+import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
+import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
@@ -25,16 +31,7 @@ import org.opensilex.utils.OrderBy;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import org.apache.jena.arq.querybuilder.ExprFactory;
-import org.apache.jena.arq.querybuilder.Order;
-import org.apache.jena.sparql.core.Var;
-import org.apache.jena.sparql.expr.Expr;
-import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
+import java.util.*;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
@@ -43,7 +40,7 @@ import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
  * @author rcolin
  */
 public class VariableDAO extends BaseVariableDAO<VariableModel> {
-    
+
     static Var entityLabelVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getObjectNameVarName(VariableModel.ENTITY_FIELD_NAME));
     static Var entityOfInterestLabelVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getObjectNameVarName(VariableModel.ENTITY_OF_INTEREST_FIELD_NAME));
     static Var characteristicLabelVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getObjectNameVarName(VariableModel.CHARACTERISTIC_FIELD_NAME));
@@ -103,7 +100,7 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
         }
         return super.update(instance);
     }
-    
+
     /*
         * Read each orderBy of orderByList and then :
         * <pre>
@@ -126,7 +123,7 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
             /* We need to map field fieldName to _field_name : which is the variable name returned by SPARQLClassObjectMapper.getObjectNameVarName.
                Else because of OrderBY snake_case to camelCase transformation, the direct mapping between orderBy field and SPARQLClassObjectMapper.getObjectNameVarName() result is broken
                #TODO : append a cleaner way to do it. Here the solution works only because we known how SPARQLClassObjectMapper.getObjectNameVarName() works */
-    
+
             String correspondingVarName = "_" + CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE, orderBy.getFieldName());
             Var correspondingVar = varsByVarName.get(correspondingVarName);
             if (correspondingVar == null) {
@@ -138,7 +135,7 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
         }
     }
 
-    
+
     /**
         * Search all variables with a name, a long name, an entity name,
         * an entity of interest name, a characteristic name, a method name, an unit name
@@ -177,10 +174,22 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
             URI method,
             URI unit,
             URI group,
+            URI dataType,
+            String timeInterval,
+            boolean withAssociatedData,
+            List<URI> devices,
+            List<URI> experiments,
+            List<URI> objects,
             List<OrderBy> orderByList,
             int page,
-            int pageSize) throws Exception {
-        
+            int pageSize,
+            UserModel user) throws Exception {
+
+        Set<URI> variableUriList = withAssociatedData ? dataDAO.getUsedVariablesByExpeSoDevice(user, experiments, objects, devices) : null;
+        if(variableUriList != null && variableUriList.isEmpty()) {
+            return new ListWithPagination(dataDAO.getUsedVariables(user, experiments, objects, null, devices));
+        }
+
         Map<Expr, Order> orderByExprMap = new HashMap<>();
         List<OrderBy> newOrderByList = new LinkedList<>();
         appendSpecificOrderBy(orderByList, orderByExprMap, newOrderByList);
@@ -188,12 +197,13 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
         return sparql.searchWithPagination(
                 VariableModel.class,
                 null,
+
                 (SelectBuilder select) -> {
                     ExprFactory exprFactory = select.getExprFactory();
                     Expr uriStrRegex = exprFactory.str(exprFactory.asVar(VariableModel.URI_FIELD));
-                    
+
                     if (!StringUtils.isEmpty(stringPattern)) {
-                        
+
                         // append string regex matching on entity, entity of interest, characteristic, method and unit name
                         Expr[] regexExprArray = varsByVarName.values().stream()
                         .map(var -> SPARQLQueryHelper.regexFilter(var.getVarName(), stringPattern))
@@ -209,7 +219,7 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
                         ));
 
                     }
-                    
+
                     // append specific(s) ORDER BY based on entity, entity of interest, characteristic, method and unit
                     orderByExprMap.forEach(select::addOrderBy);
 
@@ -236,6 +246,19 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
                     if (group != null) {
                         select.addWhere(SPARQLDeserializers.nodeURI(group), RDFS.member, makeVar(SPARQLResourceModel.URI_FIELD));
                     }
+                    
+                    if (dataType != null) {
+                        select.addFilter(SPARQLQueryHelper.eq(VariableModel.DATA_TYPE_FIELD_NAME, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(dataType.toString()))));
+                    }
+                    
+                    if (!StringUtils.isEmpty(timeInterval)) {
+                        select.addFilter(SPARQLQueryHelper.eq(VariableModel.TIME_INTERVAL_FIELD_NAME, timeInterval));
+                    }
+
+                    if (variableUriList != null) {
+                        SPARQLQueryHelper.addWhereUriValues(select, SPARQLResourceModel.URI_FIELD, variableUriList);
+                    }
+
                 },
                 orderByList,
                 page,

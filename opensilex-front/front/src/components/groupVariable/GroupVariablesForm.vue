@@ -27,14 +27,11 @@
     </opensilex-TextAreaForm>
 
     <!-- Variables -->
-    <opensilex-VariableSelector
-      ref="selectVariablesForm"
-      label="VariableView.title"
-      placeholder="VariableList.label-filter-placeholder"
-      :multiple="true"
+    <opensilex-VariableSelectorWithFilter
+      placeholder="VariableSelectorWithFilter.placeholder-multiple"
       :variables.sync="form.variables"
-      :required="false">
-    </opensilex-VariableSelector>
+    ></opensilex-VariableSelectorWithFilter>
+
   </ValidationObserver>
 </template>
 
@@ -57,7 +54,6 @@ export default class GroupVariablesForm extends Vue {
   uriGenerated;
 
   @Ref("validatorRef") readonly validatorRef!: any;
-  @Ref("selectVariablesForm") readonly selectVariablesForm!: any;
 
   get user() {
     return this.$store.state.user;
@@ -97,6 +93,7 @@ export default class GroupVariablesForm extends Vue {
         this.$opensilex.showSuccessToast(message);
         let uri = http.response.result;
         this.$emit("onCreate", uri);
+        this.$router.push({path: "/variables?elementType=VariableGroup&selected=" + encodeURIComponent(uri)});
       })
       .catch(error => {
         if (error.status == 409) {

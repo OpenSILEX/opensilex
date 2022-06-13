@@ -1,5 +1,6 @@
     <template>
         <opensilex-ModalForm
+            v-if="user.hasCredential(credentials.CREDENTIAL_EVENT_MODIFICATION_ID) && renderModalForm"
             ref="modalForm"
             modalSize="lg"
             :tutorial="false"
@@ -7,10 +8,12 @@
             createTitle="Event.add"
             editTitle="Event.edit"
             icon="ik#ik-activity"
-            :createAction="create"
-            :updateAction="update"
             :initForm="initForm"
             :successMessage="successMessage"
+            :createAction="create"
+            :updateAction="update"
+            @onCreate="$emit('onCreate', $event)"
+            @onUpdate="$emit('onUpdate', $event)"
         ></opensilex-ModalForm>
 
     </template>
@@ -36,6 +39,8 @@
     import MoveForm from "./MoveForm.vue";
     import {VueJsOntologyExtensionService, VueRDFTypeDTO} from "../../../lib";
     import moment from "moment-timezone";
+    import {EventGetDTO} from "opensilex-core/model/eventGetDTO";
+    import EventForm from "./EventForm.vue";
 
     @Component
     export default class EventModalForm extends Vue {
@@ -69,6 +74,7 @@
             return this.$store.state.credentials;
         }
 
+        renderModalForm: boolean = false;
         @Ref("modalForm") readonly modalForm!: ModalForm;
 
         created() {
@@ -77,55 +83,42 @@
         }
 
         showCreateForm() {
-            let eventForm = this.modalForm.getFormRef();
-            eventForm.resetTypeModel();
-            eventForm.setContext(this.context);
+            this.renderModalForm = true;
+            this.$nextTick(() => {
+                let form: EventForm = this.modalForm.getFormRef();
+                form.setContext(this.context);
 
-            this.modalForm.showCreateForm();
-        }
-
-        getEventPromise(isMove: boolean, uri: string, typeModel: VueRDFTypeDTO, reject): Promise<void | Promise<HttpResponse<OpenSilexResponse>>>{
-
-            let getEventPromise = isMove ?
-                this.service.getMoveEvent(uri) :
-                this.service.getEventDetails(uri);
-
-            return getEventPromise.then(http => {
-                let event = http.response.result;
-
-                if (isMove) {
-                    EventModalForm.convertMoveDtoToMoveForm(event);
-                }
-                EventModalForm.convertToMultiValuedRelations(event, typeModel);
-
-                this.modalForm.showEditForm(event);
-
-            }).catch(reject);
-        }
-
-        showEditForm(uri, type) {
-
-            let eventForm = this.modalForm.getFormRef();
-            eventForm.setBaseType(this.$opensilex.Oeev.EVENT_TYPE_URI);
-            eventForm.setContext(this.context);
-
-            let isMove = this.isMove(type, this.$opensilex.Oeev);
-
-            // first Promise : get type Model associated to event type
-            new Promise((resolve, reject) => {
-                this.vueOntologyService
-                    .getRDFTypeProperties(type, this.$opensilex.Oeev.EVENT_TYPE_URI)
-                    .then(http => {
-
-                        // second Promise : get event/move
-                        let getEventPromise =  this.getEventPromise(isMove, uri, http.response.result, reject);
-
-                        Promise.resolve(getEventPromise).then(() => {
-                            resolve(http);
-                        });
-
-                    }).catch(reject => this.$opensilex.errorHandler(reject));
+                this.modalForm.showCreateForm();
             });
+        }
+
+        showEditForm(uri: string, type: string) {
+
+            this.renderModalForm = true;
+            this.$nextTick(() => {
+
+                // determine if the event is a move or not since the called service differ
+                let isMove = this.isMove(type);
+
+                let eventPromise = isMove ?
+                    this.service.getMoveEvent(uri) :
+                    this.service.getEventDetails(uri);
+
+                eventPromise.then(http => {
+                    let dto = http.response.result;
+
+                    if (isMove) {
+                        EventModalForm.convertMoveDtoToMoveForm(dto);
+                    }
+
+                    let form: EventForm = this.modalForm.getFormRef();
+                    form.typeSwitch(dto.rdf_type,true);
+                    form.setContext(this.context);
+
+                    this.modalForm.showEditForm(dto);
+                })
+            });
+
         }
 
         convertDateTime(event){
@@ -141,7 +134,7 @@
                 event = this.convertDateTime(event);
             }
            
-            let isMove = this.isMove(event.rdf_type,this.$opensilex.Oeev);
+            let isMove = this.isMove(event.rdf_type);
             EventModalForm.convertFormToDto(event,isMove);
 
             let events = [event];
@@ -168,7 +161,7 @@
 
         update(event) {
 
-            let isMove = this.isMove(event.rdf_type,this.$opensilex.Oeev);
+            let isMove = this.isMove(event.rdf_type);
 
             EventModalForm.convertFormToDto(event,isMove);
 
@@ -217,49 +210,6 @@
             return this.$i18n.t("EventView.name");
         }
 
-        static getValuesByProperty(event: EventCreationDTO, typeModel: VueRDFTypeDTO) {
-            let valueByProperties = {};
-
-            event.relations.forEach(relation => {
-                let property = relation.property;
-
-                let propertyModel = typeModel.object_properties.find(propertyModel => propertyModel.property == property)
-                if(! propertyModel){
-                    propertyModel = typeModel.data_properties.find(propertyModel => propertyModel.property == property)
-                }
-
-                if(propertyModel.is_list){
-
-                    // create a new array if the relation is not already defined into map
-                    if(! valueByProperties[relation.property]){
-                        valueByProperties[relation.property] = [];
-                    }
-                    // append value into array
-                    valueByProperties[relation.property].push(relation.value);
-
-                }else{
-                    valueByProperties[relation.property] = relation.value
-                }
-            });
-
-            return valueByProperties;
-        }
-
-        static convertToMultiValuedRelations(event,typeModel){
-
-            // compute relations values (by grouping multivalued relation into an array)
-            let valueByProperties = EventModalForm.getValuesByProperty(event,typeModel);
-
-            event.relations = [];
-
-            for (const [property, value] of Object.entries(valueByProperties)) {
-                event.relations.push({
-                    property: property,
-                    value: value
-                })
-            }
-        }
-
         static convertMoveDtoToMoveForm(move){
 
             if (!move.targets_positions || move.targets_positions.length == 0) {
@@ -287,7 +237,6 @@
                 event.start = undefined;
             }
 
-            EventModalForm.convertToMonoValuedRelations(event);
         }
 
         static convertMoveFormToMoveDto(move){
@@ -322,47 +271,11 @@
             }
         }
 
-        static convertToMonoValuedRelations(event: EventCreationDTO){
-
-            if (event.relations) {
-                let newRelations = [];
-
-                for (let i in event.relations) {
-                    let relation = event.relations[i];
-
-                    if (relation.value != null) {
-
-                        // if the relation is multi-valued then decompose it into multiple mono-valued relation
-                        // since the service is waiting for an array of mono-valued relation
-
-                        if (Array.isArray(relation.value)) {
-                            for (let j in relation.value) {
-                                newRelations.push({
-                                    property: relation.property,
-                                    value: relation.value[j],
-                                });
-                            }
-                        }else{
-                            if(relation.value.length > 0){
-                                newRelations.push({
-                                    property: relation.property,
-                                    value: relation.value,
-                                });
-                            }
-
-                        }
-                    }
-                }
-
-                event.relations = newRelations;
-            }
-        }
-
-        isMove(type, oeev): boolean {
+        isMove(type): boolean {
             if (!type) {
                 return false;
             }
-            return (type == oeev.MOVE_TYPE_URI || type == oeev.MOVE_TYPE_PREFIXED_URI);
+            return this.$opensilex.Oeev.checkURIs(type, this.$opensilex.Oeev.MOVE_TYPE_URI);
         }
 
         static isPositionValid(position: PositionCreationDTO): boolean {

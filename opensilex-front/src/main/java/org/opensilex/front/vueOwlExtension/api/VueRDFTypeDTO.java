@@ -15,7 +15,9 @@ import org.opensilex.sparql.ontology.dal.ClassModel;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -53,18 +55,22 @@ public class VueRDFTypeDTO extends RDFTypeTranslatedDTO {
         this.icon = icon;
     }
 
-    public static VueRDFTypeDTO fromModel(VueRDFTypeDTO dto, ClassModel model, VueClassExtensionModel extClass) {
-        RDFTypeTranslatedDTO.fromModel(dto, model);
-
-        if (extClass != null) {
-            dto.setIsAbstract(extClass.getIsAbstractClass());
-            dto.setIcon(extClass.getIcon());
+    public VueRDFTypeDTO(ClassModel classModel, VueClassExtensionModel modelExt){
+        super(classModel);
+        if (modelExt != null) {
+            setIsAbstract(modelExt.getIsAbstractClass());
+            setIcon(modelExt.getIcon());
         } else {
-            dto.setIsAbstract(false);
+            setIsAbstract(false);
         }
-
-        return dto;
+        dataProperties = new ArrayList<>();
+        objectProperties = new ArrayList<>();
     }
+
+    public VueRDFTypeDTO(){
+
+    }
+
 
     public List<VueRDFTypePropertyDTO> getDataProperties() {
         return dataProperties;
@@ -90,7 +96,7 @@ public class VueRDFTypeDTO extends RDFTypeTranslatedDTO {
         this.propertiesOrder = propertiesOrder;
     }
 
-    public ClassModel getClassModel(String lang) throws URISyntaxException {
+    public ClassModel toModel(String lang) throws URISyntaxException {
 
         ClassModel model = new ClassModel();
         model.setUri(getUri());
@@ -105,19 +111,17 @@ public class VueRDFTypeDTO extends RDFTypeTranslatedDTO {
 
         SPARQLLabel sparqlComment = new SPARQLLabel();
         if(commentTranslations.containsKey(lang)){
-            sparqlLabel.setDefaultLang(lang);
-            sparqlLabel.setDefaultValue(commentTranslations.get(lang));
+            sparqlComment.setDefaultLang(lang);
+            sparqlComment.setDefaultValue(commentTranslations.get(lang));
         }
         sparqlComment.addAllTranslations(commentTranslations);
         model.setComment(sparqlComment);
 
-        ClassModel parentClass = new ClassModel();
-        if (getParent() == null) {
-            parentClass.setUri(new URI(OWL2.Class.getURI()));
-        } else {
+        if (getParent() != null ){
+            ClassModel parentClass = new ClassModel();
             parentClass.setUri(getParent());
+            model.setParent(parentClass);
         }
-        model.setParent(parentClass);
 
         return model;
     }
@@ -125,11 +129,9 @@ public class VueRDFTypeDTO extends RDFTypeTranslatedDTO {
     @JsonIgnore
     public VueClassExtensionModel getExtClassModel() {
         VueClassExtensionModel model = new VueClassExtensionModel();
-
         model.setUri(getUri());
         model.setIcon(getIcon());
         model.setIsAbstractClass(getIsAbstract());
-
         return model;
     }
 

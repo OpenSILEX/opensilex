@@ -123,11 +123,11 @@
       helpMessage="GermplasmForm.comment-help"
     ></opensilex-InputForm>
 
-    <opensilex-GermplasmAttributesTable
+    <opensilex-AttributesTable
       ref="germplasmAttributesTable"
       :editMode="editMode"
       :attributesArray='attributesArray'
-    ></opensilex-GermplasmAttributesTable>
+    ></opensilex-AttributesTable>
 
   </ValidationObserver>
 </template>
@@ -138,6 +138,7 @@ import Vue from "vue";
 // @ts-ignore
 import { GermplasmService } from "opensilex-core/index"; 
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
+import AttributesTable from "../common/forms/AttributesTable.vue";
 
 @Component
 export default class GermplasmForm extends Vue {
@@ -222,17 +223,8 @@ export default class GermplasmForm extends Vue {
       .catch(this.$opensilex.errorHandler);
   }
   
-  getAttributes(form) {
-    this.attributesArray = [];
-    if (form.metadata != null) {   
-      for (const property in form.metadata) {
-        let att = {
-          attribute: property,
-          value: form.metadata[property]
-        }
-        this.attributesArray.push(att);
-      } 
-    }
+  readAttributes(metadata: { [key: string]: string; }) {
+    AttributesTable.readAttributes(metadata,this.attributesArray);
   }
 
 }

@@ -92,7 +92,7 @@
                         >
                             <b-list-group-item
                                 v-for="element in customPropertyOrder"
-                                :key="element.property"
+                                :key="element.uri"
                             >{{ element.name }}
                             </b-list-group-item
                             >
@@ -125,8 +125,8 @@
 
                     <template v-slot:cell(property)="data">
                         <opensilex-UriLink
-                            :uri="data.item.property"
-                            :value="data.item.property"
+                            :uri="data.item.uri"
+                            :value="data.item.uri"
                         ></opensilex-UriLink>
                     </template>
 
@@ -156,7 +156,7 @@
                         <b-button-group size="sm">
                             <opensilex-DeleteButton
                                 v-if="!data.item.inherited && data.item.is_custom && user.isAdmin()"
-                                @click="deleteClassPropertyRestriction(data.item.property)"
+                                @click="deleteClassPropertyRestriction(data.item.uri)"
                                 label="OntologyClassDetail.deleteProperty"
                                 :small="true"
                             ></opensilex-DeleteButton>
@@ -172,6 +172,7 @@
                 editTitle="OntologyClassDetail.updateProperty"
                 @onCreate="$emit('onDetailChange')"
                 @onUpdate="$emit('onDetailChange')"
+                successMessage="OntologyClassView.the-type"
             ></opensilex-ModalForm>
         </div>
     </b-card>
@@ -182,6 +183,8 @@ import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
 import {OntologyService} from "opensilex-core/index";
+import {VueJsOntologyExtensionService, VueRDFTypePropertyDTO} from "../../lib";
+import OntologyClassPropertyForm from "./OntologyClassPropertyForm.vue";
 
 @Component
 export default class OntologyClassDetail extends Vue {
@@ -228,6 +231,7 @@ export default class OntologyClassDetail extends Vue {
     ];
 
     ontologyService: OntologyService;
+    vueOntologyService: VueJsOntologyExtensionService;
 
     customPropertyOrder = [];
 
@@ -235,31 +239,35 @@ export default class OntologyClassDetail extends Vue {
         this.ontologyService = this.$opensilex.getService(
             "opensilex-core.OntologyService"
         );
+        this.vueOntologyService = this.$opensilex.getService(
+            "opensilex-front.VueJsOntologyExtensionService"
+        );
     }
 
-    get properties() {
-        let allProps = this.selected.data_properties.concat(
+    get properties(): VueRDFTypePropertyDTO[] {
+        let allProps: VueRDFTypePropertyDTO[] = this.selected.data_properties.concat(
             this.selected.object_properties
         );
         let pOrder = this.selected.properties_order;
+
         allProps.sort((a, b) => {
-            if (a.property == b.property) {
+            if (a.uri == b.uri) {
                 return 0;
             }
 
-            if (a.property == "rdfs:label") {
+            if (a.uri == "rdfs:label") {
                 return -1;
             }
 
-            if (b.property == "rdfs:label") {
+            if (b.uri == "rdfs:label") {
                 return 1;
             }
 
-            let aIndex = pOrder.indexOf(a.property);
-            let bIndex = pOrder.indexOf(b.property);
+            let aIndex = pOrder.indexOf(a.uri);
+            let bIndex = pOrder.indexOf(b.uri);
             if (aIndex == -1) {
                 if (bIndex == -1) {
-                    return a.property.localeCompare(b.property);
+                    return a.uri.localeCompare(b.uri);
                 } else {
                     return -1;
                 }
@@ -271,23 +279,26 @@ export default class OntologyClassDetail extends Vue {
                 }
             }
         });
-        return allProps;
+
+      return allProps;
     }
 
     addProperty() {
-        this.ontologyService.getProperties(this.rdfType).then((http) => {
-            let formRef = this.classPropertyForm.getFormRef();
+        // get properties, only property which apply on this type
+      this.ontologyService.getLinkableProperties(this.selected.uri, this.rdfType).then((http) => {
+            let formRef: OntologyClassPropertyForm = this.classPropertyForm.getFormRef();
             formRef.setDomain(this.rdfType);
             formRef.setClassURI(this.selected.uri);
-            formRef.setProperties(http.response.result, this.properties);
+            formRef.setProperties(http.response.result);
             this.classPropertyForm.showCreateForm();
         });
     }
 
     deleteClassPropertyRestriction(propertyURI) {
-        this.ontologyService
-            .deleteClassPropertyRestriction(this.selected.uri, propertyURI)
+        this.ontologyService.deleteClassPropertyRestriction(this.selected.uri, propertyURI)
             .then(() => {
+                let message = propertyURI + " : " + this.$i18n.t("OntologyClassDetail.property-link-delete");
+                this.$opensilex.showSuccessToast(message);
                 this.$emit("onDetailChange");
             })
             .catch(this.$opensilex.errorHandler);
@@ -296,12 +307,11 @@ export default class OntologyClassDetail extends Vue {
     setPropertiesOrder() {
         let propertiesOrder = ["rdfs:label"];
         for (let p of this.customPropertyOrder) {
-            propertiesOrder.push(p.property);
+            propertiesOrder.push(p.uri);
         }
 
-        this.ontologyService = this.$opensilex
-            .getService("opensilex-front.VueJsOntologyExtensionService")
-            .setRDFTypePropertiesOrder(this.selected.uri, propertiesOrder)
+
+        this.vueOntologyService.setRDFTypePropertiesOrder(this.selected.uri, propertiesOrder)
             .then(() => {
                 this.setPropertiesOrderRef.hide();
                 this.$emit("onDetailChange");
@@ -311,7 +321,7 @@ export default class OntologyClassDetail extends Vue {
     startSetPropertiesOrder() {
         this.customPropertyOrder = [];
         for (let p of this.properties) {
-            if (p.property != "rdfs:label") {
+            if (p.uri != "rdfs:label") {
                 this.customPropertyOrder.push(p);
             }
         }
@@ -346,6 +356,7 @@ en:
         deleteProperty: Delete property
         setPropertiesOrderInfo: You can define properties display order by drag & drop them in the list below
         properties-help: "List of all properties which can apply on the selected type. Including inherited properties and properties which are not specific to the type (ex: name or description)"
+        property-link-delete: "The property has been deleted from type"
 fr:
     OntologyClassDetail:
         title: Détail du type d'objet
@@ -358,6 +369,7 @@ fr:
         addProperty: Ajouter une propriété au type
         add-property-help: Ajouter une propriété existante pour ce type
         deleteProperty: Supprimer la propriété
+        property-link-delete: "La propriété a été supprimée du type"
         setPropertiesOrderInfo: Vous pouvez définir l'ordre d'affichage des propriétés par glisser-déposer dans la liste ci-dessous
         properties-help: "Liste de toutes les propriétés qui peuvent s'appliquer au type selectionné. Y compris les propriétés héritées et les propriétés qui ne sont pas spécifiques au type (ex: nom ou description)"
 </i18n>

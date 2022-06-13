@@ -174,6 +174,7 @@ import { GermplasmGetSingleDTO, GermplasmUpdateDTO, GermplasmService } from "ope
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import AnnotationList from "../annotations/list/AnnotationList.vue";
 import DocumentTabList from "../documents/DocumentTabList.vue";
+import GermplasmForm from "./GermplasmForm.vue";
 
 
 @Component
@@ -318,7 +319,10 @@ export default class GermplasmDetails extends Vue {
 
   @Ref("germplasmForm") readonly germplasmForm!: any;
   updateGermplasm() {
-    this.germplasmForm.getFormRef().getAttributes(this.germplasm);
+
+    let form: GermplasmForm = this.germplasmForm.getFormRef();
+    form.readAttributes(this.germplasm.metadata);
+
     let updateDTO: GermplasmUpdateDTO = {
       uri: this.germplasm.uri,
       name: this.germplasm.name,

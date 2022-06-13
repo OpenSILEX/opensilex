@@ -5,13 +5,12 @@
  */
 package org.opensilex.front.vueOwlExtension.types;
 
-import java.net.URI;
 
 /**
- *
+ * A specialization of {@link VueOntologyType} used to handle primitives value
  * @author vmigot
  */
 public interface VueOntologyDataType extends VueOntologyType {
 
-    public String getLabelKey();
+    String getLabelKey();
 }

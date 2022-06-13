@@ -413,8 +413,10 @@ export default class EventList extends Vue {
     }
 
     isMove(event) {
-        return event.rdf_type == this.$opensilex.Oeev.MOVE_TYPE_URI
-            || event.rdf_type == this.$opensilex.Oeev.MOVE_TYPE_PREFIXED_URI;
+        if(! event || ! event.rdf_type){
+            return false;
+        }
+        return this.$opensilex.Oeev.checkURIs(event.rdf_type,this.$opensilex.Oeev.MOVE_TYPE_URI);
     }
 
     showEventView(event) {

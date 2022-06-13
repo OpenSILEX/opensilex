@@ -26,6 +26,7 @@ let ontologies = {
     HAS_REPLICATION: OESO_URI + "#hasReplication",
     HAS_VARIETY: OESO_URI + "#hasVariety",
     HAS_SPECIES: OESO_URI + "#hasSpecies",
+    HAS_GEOMETRY: OESO_URI + "#hasGeometry",
     IS_HOSTED: OESO_URI + "#isHosted",
     ENTITY_TYPE_URI: OESO_URI + "#Entity",
     QUALITY_TYPE_URI: OESO_URI + "#Quality",
@@ -45,6 +46,8 @@ let ontologies = {
     DATAFILE_TYPE_URI: OESO_URI + "#Datafile",
     FACTOR_CATEGORY_URI: OESO_URI + '#FactorCategory',
     MEASURES_PROP_URI: OESO_URI + "#measures",
+    VARIABLESGROUP_TYPE_URI: OESO_URI + "#VariablesGroup",
+
     getShortURI: getShortURI,
     checkURIs: checkURIs
 };

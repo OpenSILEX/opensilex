@@ -1,5 +1,10 @@
 <template>
-  <opensilex-FormField :rules="rules" :required="required" :label="label ||'component.common.type'">
+  <opensilex-FormField
+      :rules="rules"
+      :required="required"
+      :label="label ||'component.common.type'"
+      :helpMessage="helpMessage ||'component.common.type'"
+  >
     <!-- helpMessage="component.common.type.help-message" -->
     <template v-slot:field="field">
       <treeselect
@@ -13,7 +18,7 @@
         :flat="true"
         v-model="typeURI"
         :multiple="multiple"
-        @select="field.validator && field.validator.validate()"
+        @select="field.validator && field.validator.validate(); $emit('select',$event)"
         @close="field.validator && field.validator.validate()"
         @input="$emit('input', $event)"
       />
@@ -55,6 +60,9 @@ export default class TypeForm extends Vue {
   placeholder: string;
 
   @Prop()
+  helpMessage: string;
+
+  @Prop()
   required: boolean;
 
   @Prop()
@@ -62,7 +70,6 @@ export default class TypeForm extends Vue {
 
   @Prop({default: false})
   multiple: boolean;
-
 
   @Prop()
   rules: string | Function;

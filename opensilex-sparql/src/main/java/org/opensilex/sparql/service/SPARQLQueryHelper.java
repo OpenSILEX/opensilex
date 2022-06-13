@@ -281,7 +281,7 @@ public class SPARQLQueryHelper {
         addWhereUriValues(where,varName,values.stream(),values.size());
     }
 
-    public static void addWhereUriValues(WhereClause<?> where, String varName, Stream<URI> values, int size) {
+    public static void addWhereUriStringValues(WhereClause<?> where, String varName, Stream<String> values, boolean expandUri, int size) {
 
         if (size == 0){
             return;
@@ -291,10 +291,15 @@ public class SPARQLQueryHelper {
         Object[] nodes = new Node[size];
         AtomicInteger i = new AtomicInteger();
         values.forEach(uri -> {
-            nodes[i.getAndIncrement()] = SPARQLDeserializers.nodeURI(uri);
+            String expandedUri = expandUri ? URIDeserializer.getExpandedURI(uri) : uri;
+            nodes[i.getAndIncrement()] = NodeFactory.createURI(expandedUri);
         });
 
         where.addWhereValueVar(varName, nodes);
+    }
+
+    public static void addWhereUriValues(WhereClause<?> where, String varName, Stream<URI> values, int size) {
+        addWhereUriStringValues(where,varName,values.map(URI::toString),true,size);
     }
 
     /**
@@ -394,7 +399,7 @@ public class SPARQLQueryHelper {
         }
         return endDateExpr;
     }
-    
+
     /**
      * @param startDateVarName the name of the startDate variable , should not
      * be null if startDate is not null
@@ -438,7 +443,7 @@ public class SPARQLQueryHelper {
     public static Expr dateTimeRange(String startDateVarName, OffsetDateTime startDate, String endDateVarName, OffsetDateTime endDate) throws Exception {
         return dateRange(startDateVarName,startDate,endDateVarName,endDate,SPARQLDeserializers.getForClass(OffsetDateTime.class));
     }
-        
+
     /**
      * <pre>
      * INTERSECTION of interval( delimited by startDate / EndDate) AND the entity lifetime is not null
@@ -463,7 +468,7 @@ public class SPARQLQueryHelper {
         if (startDate == null || endDate == null) {
             return null;
         }
-        
+
         DateDeserializer dateDeserializer = new DateDeserializer();
         Node startVar = NodeFactory.createVariable(startDateVarName);
         Node endVar = NodeFactory.createVariable(endDateVarName);
@@ -477,13 +482,13 @@ public class SPARQLQueryHelper {
         Expr thirdExpr = exprFactory.and(exprFactory.le(startVar, dateDeserializer.getNode(endDate)), noEndDateExpr);
 
         return exprFactory.or(endDateExpr, thirdExpr);
-            
-        }
-       
-       
-    
-    
-       
+
+    }
+
+
+
+
+
     /**
      * <pre>
      * INTERSECTION of interval( delimited by startDate / EndDate) AND the EVENT lifetime is not null
@@ -497,16 +502,16 @@ public class SPARQLQueryHelper {
      * @param startDate the start  date filter
      * @param endDateVarName the name of the endDate variable corresponds to the end Event attribute
      * @param endDate the end date filter
-     * @return an Expr according the two given LocalDate and variable names null if startDate and endDate are both null 
+     * @return an Expr according the two given LocalDate and variable names null if startDate and endDate are both null
      * Ex:
      *  FILTER ( ( ( ! bound(?_start__timestamp) ) && ( ?_end__timestamp >= "2021-01-22T23:00:00Z"^^xsd:dateTime ) ) || ( bound(?_start__timestamp) && ( ?_end__timestamp >= "2021-01-22T23:00:00Z"^^xsd:dateTime ) ) )
      *
      */
     public static Expr eventsIntervalDateRange(String startDateVarName, OffsetDateTime startDate, String endDateVarName, OffsetDateTime endDate) throws SPARQLDeserializerNotFoundException, Exception {
         if (startDate == null && endDate == null) {
-              return null;
-          }
-            
+            return null;
+        }
+
         SPARQLDeserializer<?> dateDeserializer = SPARQLDeserializers.getForClass(OffsetDateTime.class);
         Node startVar = NodeFactory.createVariable(startDateVarName);
         Node endVar = NodeFactory.createVariable(endDateVarName);
@@ -519,9 +524,9 @@ public class SPARQLQueryHelper {
             Expr noInstantDateExpr = exprFactory.bound(startVar);
             Expr noInstantRangeExpr = exprFactory.le(startVar, dateDeserializer.getNode(endDate));
             Expr completeNoInstantExpr = exprFactory.and(noInstantDateExpr, noInstantRangeExpr);
-             
-           return exprFactory.or(completeInstantExpr, completeNoInstantExpr);
-        // No Event begin (instant Event) AND (endVar > startDate )    OR   Event begin AND ( startDate <endVar )    
+
+            return exprFactory.or(completeInstantExpr, completeNoInstantExpr);
+            // No Event begin (instant Event) AND (endVar > startDate )    OR   Event begin AND ( startDate <endVar )
         } else if(endDate == null){
             Expr instantDateExpr = exprFactory.not(exprFactory.bound(startVar));
             Expr instantRangeExpr = exprFactory.ge(endVar, dateDeserializer.getNode(startDate));
@@ -532,37 +537,37 @@ public class SPARQLQueryHelper {
             Expr completeNoInstantExpr = exprFactory.and(noInstantDateExpr, noInstantRangeExpr);
 
             return exprFactory.or(completeInstantExpr, completeNoInstantExpr);
-        // No Event begin (instant Event) AND ( startDate < endVar < endDate )    OR  Event begin AND ( endDate > startVar AND startDate < endVar   )    
+            // No Event begin (instant Event) AND ( startDate < endVar < endDate )    OR  Event begin AND ( endDate > startVar AND startDate < endVar   )
         } else {
-            
+
             Expr instantDateExpr = exprFactory.not(exprFactory.bound(startVar));
             Expr instantRangeExpr = exprFactory.and(exprFactory.le(endVar, dateDeserializer.getNode(endDate)), exprFactory.ge(endVar, dateDeserializer.getNode(startDate)));
             Expr completeInstantExpr = exprFactory.and(instantDateExpr, instantRangeExpr);
 
             Expr noInstantDateExpr = exprFactory.bound(startVar);
             Expr noInstantRangeExpr = exprFactory.and(exprFactory.le(startVar, dateDeserializer.getNode(endDate)), exprFactory.ge(endVar, dateDeserializer.getNode(startDate)));
-            
+
             Expr completeNoInstantExpr = exprFactory.and(noInstantDateExpr, noInstantRangeExpr);
 
             return exprFactory.or(completeInstantExpr, completeNoInstantExpr);
 
         }
-       
+
     }
-       
+
     /**
      * <pre>
      *    Append a Subject Property Object clause to the given select
      * </pre>
      *
-     * @param select the SelectBuilder to update  
-     * @param graph the graph to find 
+     * @param select the SelectBuilder to update
+     * @param graph the graph to find
      * @param subject the subject of the relation
      * @param property the property of the relation
      * @param value the object of the relation
-     * 
+     *
      */
-     
+
     public static void appendRelationFilter(SelectBuilder select, String graph, Node subject, Property property, Object value) throws Exception {
 
         Objects.requireNonNull(select);
@@ -581,7 +586,7 @@ public class SPARQLQueryHelper {
         Triple triple = new Triple(subject, property.asNode(), deserializer.getNode(value));
         elementGroup.addTriplePattern(triple);
     }
-    
+
 
     public static Var makeVar(Object o) {
         return Converters.makeVar(o);
@@ -634,9 +639,9 @@ public class SPARQLQueryHelper {
      *
      */
     public static void computeCustomOrderByList(List<OrderBy> initialOrderByList,
-            List<OrderBy> orderByListWithoutCustomOrders,
-            Map<Expr, Order> specificOrderMap,
-            Map<String, Function<String, Stream<Expr>>> specificExprMapping) {
+                                                List<OrderBy> orderByListWithoutCustomOrders,
+                                                Map<Expr, Order> specificOrderMap,
+                                                Map<String, Function<String, Stream<Expr>>> specificExprMapping) {
 
         Objects.requireNonNull(initialOrderByList);
         Objects.requireNonNull(orderByListWithoutCustomOrders);

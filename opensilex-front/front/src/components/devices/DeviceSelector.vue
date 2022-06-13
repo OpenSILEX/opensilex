@@ -40,7 +40,7 @@ export default class DeviceSelector extends Vue {
   deviceURIs;
 
   @Prop()
-  deviceType;
+  type: string;
 
   @Prop({default: false})
   multiple;
@@ -51,7 +51,7 @@ export default class DeviceSelector extends Vue {
   @Prop({default: "component.menu.devices"})
   label;
 
-  @Watch("deviceType")
+  @Watch("type")
   onTypeChange() {
     this.renderComponent = false;
     this.$nextTick(() => {
@@ -72,7 +72,7 @@ export default class DeviceSelector extends Vue {
   search(query, page, pageSize) {
 
     return this.$service.searchDevices(
-        this.deviceType, // rdf_type filter
+        this.type, // rdf_type filter
         true, // include_subtypes boolean
         query, // name filter
         undefined, // variable filter
@@ -128,7 +128,7 @@ en:
     no-results-text: No device found
 fr:
   DeviceSelector:
-    placeholder: Rechercher et sélectionner un ou plusieurs équipements
-    no-results-text: Aucun équipement trouvé
+    placeholder: Rechercher et sélectionner un ou plusieurs dispositif
+    no-results-text: Aucun dispositif trouvé
 
 </i18n>

@@ -980,7 +980,7 @@ fr:
         datatype-placeholder: Sélectionner un type de donnée
         dimension-values:
             unique: Enregistrement unique
-            milliseconde : Milliseconde
+            millisecond : Milliseconde
             second: Seconde
             minute: Minute
             hour: Heure

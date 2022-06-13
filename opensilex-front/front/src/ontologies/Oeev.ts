@@ -1,15 +1,26 @@
-let OEEV_URI = "http://www.opensilex.org/vocabulary/oeev#";
+let OEEV_URI = "http://www.opensilex.org/vocabulary/oeev";
 let MOVE =  "Move";
 let OEEV_PREFIX = "oeev";
 
+let getShortURI = (uri) => {
+    return uri.replace(OEEV_URI + "#", OEEV_PREFIX + ":")
+}
+
+let checkURIs = (uri1, uri2) => {
+    return getShortURI(uri1) == getShortURI(uri2);
+}
+
 let ontologies = {
     URI: OEEV_URI,
-    EVENT_TYPE_URI: OEEV_URI + "Event",
-    EVENT_TYPE_PREFIXED_URI: OEEV_PREFIX +":Event",
-    MOVE_TYPE_URI: OEEV_URI + MOVE,
-    MOVE_TYPE_PREFIXED_URI: OEEV_PREFIX +":" + MOVE,
+    EVENT_TYPE_URI: OEEV_URI + "#Event",
+    MOVE_TYPE_URI: OEEV_URI + "#Move",
 
     CONCERNS: OEEV_URI + "#concerns",
+    IS_INSTANT: OEEV_URI + "#isInstant",
+    FROM: OEEV_URI + "#from",
+    TO: OEEV_URI + "#to",
+    getShortURI,
+    checkURIs
 };
 
 

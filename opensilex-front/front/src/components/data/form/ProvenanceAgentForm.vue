@@ -36,7 +36,7 @@
             label="ProvenanceForm.agent"
             :value.sync="agent.uris"
             :multiple="true"
-            :deviceType.sync="agent.rdf_type"
+            :type="agent.rdf_type"
             helpMessage="ProvenanceForm.agent-help"
         ></opensilex-DeviceSelector>
       </div>

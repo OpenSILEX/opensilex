@@ -1,6 +1,6 @@
 <template>
     <opensilex-OntologyTypesView
-        :rdfType="$opensilex.Oeev.EVENT_TYPE_URI"
+        :rdfType="this.$opensilex.Oeev.getShortURI(this.$opensilex.Oeev.EVENT_TYPE_URI)"
         icon="ik#ik-settings"
         typeTitle="EventTypes.typeTitle"
         typeDescription="EventTypes.typeDescription"
@@ -15,11 +15,12 @@
 <script lang="ts">
 import {Component} from "vue-property-decorator";
 import Vue from "vue";
+import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 
 @Component
-    export default class EventTypes extends Vue {
-        $opensilex: any;
-    }
+export default class EventTypes extends Vue {
+    $opensilex: OpenSilexVuePlugin;
+}
 </script>
 
 <style scoped lang="scss">

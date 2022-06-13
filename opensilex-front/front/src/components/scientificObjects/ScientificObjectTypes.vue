@@ -1,6 +1,6 @@
 <template>
   <opensilex-OntologyTypesView
-    :rdfType="$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI"
+    :rdfType="this.$opensilex.Oeso.getShortURI(this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI)"
     icon="ik#ik-settings"
     typeTitle="ScientificObjectTypes.typeTitle"
     typeDescription="ScientificObjectTypes.typeDescription"
@@ -14,10 +14,11 @@
 <script lang="ts">
 import {Component} from "vue-property-decorator";
 import Vue from "vue";
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 
 @Component
 export default class ScientificObjectTypes extends Vue {
-  $opensilex: any;
+    $opensilex: OpenSilexVuePlugin;
 }
 </script>
 

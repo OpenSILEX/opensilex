@@ -1,6 +1,6 @@
 <template>
   <opensilex-OntologyTypesView
-    :rdfType="$opensilex.Oeso.FACILITY_TYPE_URI"
+    :rdfType="this.$opensilex.Oeso.getShortURI(this.$opensilex.Oeso.FACILITY_TYPE_URI)"
     icon="ik#ik-settings"
     typeTitle="FacilitiesTypes.typeTitle"
     typeDescription="FacilitiesTypes.typeDescription"
@@ -14,10 +14,11 @@
 <script lang="ts">
 import {Component} from "vue-property-decorator";
 import Vue from "vue";
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 
 @Component
 export default class FacilitiesTypes extends Vue {
-  $opensilex: any;
+    $opensilex: OpenSilexVuePlugin;
 }
 </script>
 

@@ -79,10 +79,6 @@
       </div>
 
       <div class="col col-xl-7">
-        <opensilex-AssociatedExperimentsList
-          :searchMethod="loadExperiments"
-        ></opensilex-AssociatedExperimentsList>
-
         <opensilex-Card label="component.common.contacts" icon="ik#ik-users">
           <template v-slot:body>
             <opensilex-UriListView
@@ -96,6 +92,10 @@
             ></opensilex-UriListView>
           </template>
         </opensilex-Card>
+        <opensilex-AssociatedExperimentsList
+            :searchMethod="loadExperiments"
+            :nameFilter.sync="experimentName"
+        ></opensilex-AssociatedExperimentsList>
       </div>
     </div>
   </div>
@@ -137,6 +137,7 @@ export default class ProjectDescription extends Vue {
   coordinatorsList = [];
   administrativeContactsList = [];
   relatedProjectsList = [];
+  experimentName = "";
   fields = [
     {
       key: "name",
@@ -204,7 +205,7 @@ export default class ProjectDescription extends Vue {
     return this.$opensilex
       .getService("opensilex.ExperimentsService")
       .searchExperiments(
-        undefined, // name
+        this.experimentName, // name
         undefined, // year
         undefined, // isEnded,
         undefined, // species,
@@ -377,14 +378,3 @@ export default class ProjectDescription extends Vue {
 
 <style  lang="scss">
 </style>
-
-<i18n>
-en:
-    ProjectDetails:
-        title: Detailled project view
-        advanced: Advanced informations
-fr:
-    ProjectDetails:
-        title: Vue détaillée du projet
-        advanced: Informations avancées
-</i18n>

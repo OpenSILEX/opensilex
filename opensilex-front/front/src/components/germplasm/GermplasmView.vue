@@ -54,6 +54,7 @@ import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 // @ts-ignore
 import { GermplasmService, GermplasmCreationDTO, GermplasmUpdateDTO, GermplasmGetSingleDTO } from "opensilex-core/index"
 import VueRouter from "vue-router";
+import GermplasmForm from "./GermplasmForm.vue";
 
 @Component
 export default class GermplasmView extends Vue {
@@ -92,7 +93,9 @@ export default class GermplasmView extends Vue {
     this.service
       .getGermplasm(uri)
       .then((http: HttpResponse<OpenSilexResponse<GermplasmGetSingleDTO>>) => {
-        this.germplasmForm.getFormRef().getAttributes(http.response.result);
+        let form: GermplasmForm = this.germplasmForm.getFormRef();
+        form.readAttributes(http.response.result.metadata);
+
         this.germplasmForm.showEditForm(http.response.result);
         
       })

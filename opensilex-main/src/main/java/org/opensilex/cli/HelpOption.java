@@ -25,10 +25,14 @@ import picocli.CommandLine.Option;
  */
 public class HelpOption {
 
+    public static final String HELP_COMMAND = "--help";
+    public static final String HELP_ALIAS_COMMAND = "-h";
+
+
     /**
      * Default help names and description.
      */
-    @Option(names = {"-h", "--help"}, usageHelp = true, description = "Display this help and exit")
+    @Option(names = {HELP_ALIAS_COMMAND, HELP_COMMAND}, usageHelp = true, description = "Display this help and exit")
     private boolean help;
 
     /**

@@ -67,6 +67,7 @@
             "geometry-help": "Coordonnées géospatiales au format WKT",
             "select-all" : "Sélectionner tout",
             "unselect-all" : "Désélectionner tout",
+            "example": "Exemple",
             "errors": {
                 "error-title": "Erreur",
                 "constraint-error": "Une erreur de validation s'est produite, merci de vérifier les données saisies.",
@@ -158,7 +159,11 @@
                 "logout": "Déconnexion"
             },
             "user-guide":"Guide d'utilisation",
-            "download-user-guide": "Télécharger Guide d'utilisation"
+            "download-user-guide": "Télécharger Guide d'utilisation",
+            "version-label": {
+                "develop": "Develop",
+                "release": "Release"
+            }
         },
         "menu": {
             "dashboard": "Tableau de bord",
@@ -203,7 +208,7 @@
             "configuration": "Administration",
             "scientificObjectTypes": "Types d'objets scientifiques",
             "facilitiesTypes": "Types d'installations environnementales",
-            "deviceTypes": "Types de capteurs",
+            "deviceTypes": "Types de dispositifs",
             "eventTypes": "Types d'évènements", 
             "factorCategoryTypes": "Catégories de facteurs",
             "scientific-organisation": "Organisation scientifique",
@@ -564,6 +569,21 @@
         },
         "facility": {
             "filter-placeholder": "Rechercher des installations environnementales..."
+        },
+        "custom-properties" : {
+            "linked-resources" : "Ressources liée(s)"
+        },
+        "ontology": {
+            "class" : {
+                "exception" : {
+                    "delete" : {
+                        "instance-exists" : "Une ou plusieurs ressources du type {class} existent. Vous devez les supprimer d'abord",
+                        "has-children" : "Le type {class} a plusieurs sous-types. Vous devez les supprimer d'abord",
+                        "has-data-properties" : "Le type {class} est relié à plusieurs propriétés literales. Vous devez les supprimer d'abord",
+                        "has-object-properties" : "Le type {class} est relié à plusieurs propriétés objets. Vous devez les supprimer d'abord"
+                    }
+                }
+            }
         }
     },
     "credential-groups": {
@@ -685,5 +705,14 @@
         "string": "texte court",
         "longstring": "texte long",
         "uri": "uri"
+    },
+    "datatype-example": {
+        "integer": "8611",
+        "decimal": "44.521",
+        "string": "Opensilex",
+        "uri": "http://opensilex.org/",
+        "date": "2022-01-01",
+        "datetime": "2022-01-01T00:00:00Z",
+        "boolean": "vrai ou faux"
     }
 }

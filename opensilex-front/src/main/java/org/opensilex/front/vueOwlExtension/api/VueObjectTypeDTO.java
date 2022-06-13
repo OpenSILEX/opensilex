@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
 import java.util.Map;
 import org.opensilex.core.ontology.api.RDFTypeDTO;
+import org.opensilex.core.ontology.api.RDFTypeTranslatedDTO;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
@@ -37,7 +38,7 @@ public class VueObjectTypeDTO {
     protected String name;
 
     @JsonProperty("rdf_type")
-    protected RDFTypeDTO rdfClass;
+    protected RDFTypeTranslatedDTO rdfClass;
 
     public URI getUri() {
         return uri;
@@ -83,11 +84,11 @@ public class VueObjectTypeDTO {
         this.name = name;
     }
 
-    public RDFTypeDTO getRdfClass() {
+    public RDFTypeTranslatedDTO getRdfClass() {
         return rdfClass;
     }
 
-    public void setRdfClass(RDFTypeDTO rdfClass) {
+    public void setRdfClass(RDFTypeTranslatedDTO rdfClass) {
         this.rdfClass = rdfClass;
     }
 

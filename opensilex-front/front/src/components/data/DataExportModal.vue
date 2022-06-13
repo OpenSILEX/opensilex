@@ -89,7 +89,7 @@ export default class DataExportModal extends Vue {
     let params = {
       start_date: this.filter.start_date,
       end_date: this.filter.end_date,
-      scientific_objects: this.filter.scientificObjects,
+      targets: this.filter.scientificObjects,
       experiments: this.filter.experiments,
       variables: this.filter.variables,
       provenances: [this.filter.provenance],

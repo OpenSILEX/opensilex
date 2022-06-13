@@ -41,7 +41,7 @@ public interface URIGenerator<T> {
         if (retryCount == 0) {
             return new URI(prefix + URI_SEPARATOR + path);
         }
-        return new URI(prefix + URI_SEPARATOR + path + retryCount);
+        return new URI(prefix + URI_SEPARATOR + path + URI_SEPARATOR+retryCount);
     }
 
     /**

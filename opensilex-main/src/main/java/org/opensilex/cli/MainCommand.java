@@ -8,10 +8,8 @@ package org.opensilex.cli;
 
 import java.io.File;
 import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-import java.util.ServiceLoader;
+import java.util.*;
+
 import org.opensilex.OpenSilex;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.OpenSilexSetup;
@@ -37,13 +35,16 @@ import picocli.CommandLine.Option;
 )
 public class MainCommand extends AbstractOpenSilexCommand implements IVersionProvider {
 
+    public static final String VERSION_COMMAND = "--version";
+    public static final String VERSION_ALIAS_COMMAND = "-V";
+
     /**
      * <pre>
      * Version flag option (automatically handled by the picocli library).
      * For details see: https://picocli.info/#_version_help
      * </pre>
      */
-    @Option(names = {"-V", "--version"}, versionHelp = true, description = "Print version information and exit.")
+    @Option(names = {VERSION_ALIAS_COMMAND, VERSION_COMMAND}, versionHelp = true, description = "Print version information and exit.")
     private boolean versionRequested;
 
     /**
@@ -64,29 +65,47 @@ public class MainCommand extends AbstractOpenSilexCommand implements IVersionPro
         // If no arguments assume help is requested
         args = setup.getRemainingArgs();
         for (String s : args) {
-            LOGGER.debug("CLI input parameters", s);
+            LOGGER.debug("CLI input parameters : {}", s);
         }
 
         if (args.length == 0) {
-            args = new String[]{"--help"};
+            args = new String[]{HelpOption.HELP_COMMAND};
         }
         
         CommandLine cli = getCLI(args, null);
 
         try {
-            // Avoid to start OpenSilex instance if only help is required
+            // Avoid to start OpenSilex instance if only help or some basic command is required
             CommandLine.ParseResult parsedArgs = cli.parseArgs(args);
 
-            boolean isHelp = false;
+            Set<String> noOpenSilexStartCommands = new HashSet<>();
+
+            // exclude help command
+            noOpenSilexStartCommands.add(HelpOption.HELP_COMMAND);
+            noOpenSilexStartCommands.add(HelpOption.HELP_ALIAS_COMMAND);
+
+            // exclude version command
+            noOpenSilexStartCommands.add(MainCommand.VERSION_COMMAND);
+            noOpenSilexStartCommands.add(MainCommand.VERSION_ALIAS_COMMAND);
+
+            // exclude git-commit command
+            noOpenSilexStartCommands.add(MainCommand.GIT_COMMIT_COMMAND);
+
+            // #TODO properly handle opensilex start/and profile by command
+
+            boolean launchOpenSilex = false;
             List<CommandLine> foundCommands = parsedArgs.asCommandLineList();
 
-            if (foundCommands.size() > 0) {
-                CommandLine commandToExcute = foundCommands.get(foundCommands.size() - 1);
-                isHelp = isHelp || commandToExcute.getCommandName().equals("help");
-                isHelp = isHelp || commandToExcute.getSubcommands().size() > 0;
+            if (!foundCommands.isEmpty()) {
+                CommandLine commandToExecute = foundCommands.get(foundCommands.size() - 1);
+
+                // run OpenSILEX if the command is not a special command or
+                // if no subcommands were found
+                launchOpenSilex = ! noOpenSilexStartCommands.contains(commandToExecute.getCommandName())
+                        || ! commandToExecute.getSubcommands().isEmpty();
             }
 
-            if (!isHelp) {
+            if (launchOpenSilex) {
                 instance.startup();
                 commands.forEach((OpenSilexCommand cmd) -> {
                     cmd.setOpenSilex(instance);
@@ -156,11 +175,13 @@ public class MainCommand extends AbstractOpenSilexCommand implements IVersionPro
         return versionList.toArray(versionListArray);
     }
 
+    public static final String GIT_COMMIT_COMMAND = "git-commit";
+
     /**
      * Display git commit number used for building this OpenSilex version.
      */
     @Command(
-            name = "git-commit",
+            name = GIT_COMMIT_COMMAND,
             header = "Display git commit",
             description = "Display git commit identifier used for building this OpenSilex version"
     )

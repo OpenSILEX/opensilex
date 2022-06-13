@@ -7,8 +7,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.locationtech.jts.io.ParseException;
 import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.ontology.Oeev;
-import org.opensilex.core.csv.dal.CSVCell;
-import org.opensilex.core.csv.dal.error.CSVValidationModel;
+import org.opensilex.sparql.csv.CSVCell;
+import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.security.authentication.NotFoundURIException;
@@ -276,7 +276,7 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
                 continue;
             }
 
-            OwlRestrictionModel propertyRestriction = classModel.getRestrictions().get(property);
+            OwlRestrictionModel propertyRestriction = classModel.getRestrictionsByProperties().get(property);
 
             boolean nullOrEmpty = StringUtils.isEmpty(propValue);
 
@@ -312,7 +312,7 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
             // compute the list of required property excluded from the custom properties list
             missedRequiredProperties = new LinkedList<>();
 
-            for (Map.Entry<URI, OwlRestrictionModel> entry : classModel.getRestrictions().entrySet()) {
+            for (Map.Entry<URI, OwlRestrictionModel> entry : classModel.getRestrictionsByProperties().entrySet()) {
 
                 URI property = entry.getKey();
 

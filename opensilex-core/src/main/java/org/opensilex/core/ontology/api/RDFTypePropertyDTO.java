@@ -8,10 +8,7 @@ package org.opensilex.core.ontology.api;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.opensilex.sparql.model.SPARQLLabel;
-import org.opensilex.sparql.ontology.dal.DatatypePropertyModel;
-import org.opensilex.sparql.ontology.dal.ObjectPropertyModel;
-import org.opensilex.sparql.ontology.dal.OwlRestrictionModel;
-import org.opensilex.sparql.ontology.dal.PropertyModel;
+import org.opensilex.sparql.ontology.dal.*;
 
 import java.net.URI;
 import java.util.Map;
@@ -157,7 +154,7 @@ public class RDFTypePropertyDTO {
         this.cardinality = cardinality;
     }
 
-    public static RDFTypePropertyDTO fromModel(PropertyModel property, OwlRestrictionModel restriction, boolean isLiteral) {
+    public static RDFTypePropertyDTO fromModel(AbstractPropertyModel<?> property, OwlRestrictionModel restriction, boolean isLiteral) {
         RDFTypePropertyDTO dto = new RDFTypePropertyDTO();
         dto.setUri(restriction.getOnProperty());
         dto.setName(property.getName());
@@ -170,9 +167,9 @@ public class RDFTypePropertyDTO {
 
         dto.setTypeRestriction(restriction.getSubjectURI());
 
-        dto.setMinCardinality(restriction.getMinCardinality());
-        dto.setMaxCardinality(restriction.getMaxCardinality());
-        dto.setCardinality(restriction.getCardinality());
+        dto.setMinCardinality(restriction.getMinQualifiedCardinality());
+        dto.setMaxCardinality(restriction.getMaxQualifiedCardinality());
+        dto.setCardinality(restriction.getQualifiedCardinality());
 
         return dto;
     }
@@ -203,29 +200,31 @@ public class RDFTypePropertyDTO {
 
         if (isList()) {
             if (isRequired()) {
-                restriction.setMinCardinality(1);
+                restriction.setMinQualifiedCardinality(1);
             } else {
-                restriction.setMinCardinality(0);
+                restriction.setMinQualifiedCardinality(0);
             }
         } else {
             if (isRequired()) {
-                restriction.setCardinality(1);
+                restriction.setQualifiedCardinality(1);
             } else {
-                restriction.setMaxCardinality(1);
-                restriction.setMinCardinality(0);
+                restriction.setMaxQualifiedCardinality(1);
+                restriction.setMinQualifiedCardinality(0);
             }
         }
 
+        // Literal -> use owl:onDataRange (property used for owl:DataTypeProperty)
         if (isLiteral()) {
             restriction.setOnDataRange(getTypeRestriction());
         } else {
+            // Object/Resource -> use owl:onClass (property used for owl:ObjectProperty)
             restriction.setOnClass(getTypeRestriction());
         }
 
         return restriction;
     }
 
-    private void getPropertyModel(PropertyModel property, String lang) {
+    private void getPropertyModel(AbstractPropertyModel<?> property, String lang) {
         property.setUri(getUri());
 
         SPARQLLabel sparqlLabel = new SPARQLLabel(getName(), lang);

@@ -48,7 +48,7 @@ public class StartServerWithFront {
 
         StartServerWithFront.baseDirectory = baseDirectory;
 
-        OpenSilex opensilex = DevModule.getOpenSilexDev(baseDirectory);
+        OpenSilex opensilex = DevModule.getOpenSilexDev(baseDirectory,null);
 
         Map<String, Process> moduleProcesses = new HashMap<>();
         Set<String> moduleToBuild = new HashSet<>();
@@ -87,10 +87,10 @@ public class StartServerWithFront {
 
         LOGGER.debug("start back server");
 
-        DevModule.run(new String[]{
+        DevModule.run(null,new String[]{
             "server",
             "start"
-        });
+        },null);
 
     }
 

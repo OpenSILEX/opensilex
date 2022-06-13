@@ -77,9 +77,6 @@ export default class VariableStructureList extends Vue {
         this.service = this.$opensilex.getService("opensilex-core.VariablesService");
 
         let query: any = this.$route.query;
-        if (query && query.name) {
-            this.nameFilter = decodeURIComponent(query.name);
-        }
         if (query && query.selected) {
             this.refresh(false,decodeURIComponent(query.selected));
         } else {

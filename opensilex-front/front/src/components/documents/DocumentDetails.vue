@@ -68,6 +68,11 @@
                   :to="{path: '/germplasm/details/'+ encodeURIComponent(target.uri)}"
                 ></opensilex-UriLink>
                 <opensilex-UriLink 
+                  :uri="target.uri" 
+                  v-else-if="target.rdf_types.includes($opensilex.Oeso.VARIABLESGROUP_TYPE_URI)"           
+                  :url="getVariableGroupPageUrl(target.uri)"
+                ></opensilex-UriLink>
+                <opensilex-UriLink 
                   :uri="target.uri"  
                   :value="target.uri"  
                   v-else  
@@ -186,6 +191,11 @@ export default class DocumentDetails extends Vue {
     this.loadDocument(this.uri);
 
   }
+  
+  getVariableGroupPageUrl(uri: string): string {
+    let shortUri = this.$opensilex.getShortUri(uri);   
+    return this.$opensilex.getURL("variables/?elementType=VariableGroup&selected=" + encodeURIComponent(shortUri));
+  }
 
   loadDocument(uri: string) {
     this.service
@@ -244,7 +254,7 @@ export default class DocumentDetails extends Vue {
   
   loadTargetsTypes() {
     let ontologyService = this.$opensilex.getService("opensilex.OntologyService");
-    let types = new Array(Oeso.GERMPLASM_TYPE_URI, Oeso.DEVICE_TYPE_URI, Oeso.PROJECT_TYPE_URI, Oeso.EXPERIMENT_TYPE_URI);
+    let types = new Array(Oeso.GERMPLASM_TYPE_URI, Oeso.DEVICE_TYPE_URI, Oeso.PROJECT_TYPE_URI, Oeso.EXPERIMENT_TYPE_URI, Oeso.VARIABLESGROUP_TYPE_URI);
     let body = {
       uris: this.document.targets
     }

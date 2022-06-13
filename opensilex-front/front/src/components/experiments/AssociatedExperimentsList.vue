@@ -1,5 +1,5 @@
 <template>
-  <opensilex-Card label="component.project.experiments" icon="ik#ik-layers">
+  <opensilex-Card label="AssociatedExperimentsList.relatedExperiments" icon="ik#ik-layers">
     
     <template v-slot:body>
       <b-form-group
@@ -30,8 +30,14 @@
         <template v-slot:cell(end_date)="{data}">
           <opensilex-DateView :value="data.item.end_date"></opensilex-DateView>
         </template>
-        <template v-slot:cell(description)="{data}">
-          <span>{{textReduce(data.item.description)}}</span>
+        <template v-slot:cell(species)="{data}">
+          <span class="species-list" v-if="data.item.species.length > 0">
+            <span :key="index" v-for="(uri, index) in data.item.species">
+              <span :title="uri">{{ getSpeciesName(uri) }}</span>
+              <span v-if="index + 1 < data.item.species.length">, </span>
+            </span>
+          </span>
+          <span v-else></span>
         </template>
         <template v-slot:cell(state)="{data}">
           <i
@@ -44,6 +50,11 @@
             class="ik ik-archive badge-icon badge-light"
             :title="$t('component.project.common.status.finished')"
           ></i>
+          <i
+              v-if="data.item.is_public"
+              class="ik ik-users badge-icon badge-info"
+              :title="$t('component.experiment.common.status.public')"
+          ></i>
         </template>
       </opensilex-TableAsyncView>
     </template>
@@ -54,6 +65,9 @@
 import { Component, Ref, Prop, PropSync } from "vue-property-decorator";
 import Vue from "vue";
 import moment from "moment";
+import {SpeciesService} from "opensilex-core/api/species.service";
+import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
+import {SpeciesDTO} from "opensilex-core/model/speciesDTO";
 
 @Component
 export default class AssociatedExperimentsList extends Vue {
@@ -75,8 +89,8 @@ export default class AssociatedExperimentsList extends Vue {
       label: "component.common.name"
     },
     {
-      key: "description",
-      label: "component.common.description"
+      key: "species",
+      label: "component.common.species"
     },
     {
       key: "start_date",
@@ -94,6 +108,33 @@ export default class AssociatedExperimentsList extends Vue {
     }
   ];
 
+  species = [];
+  speciesByUri: Map<String, SpeciesDTO> = new Map<String, SpeciesDTO>();
+
+  loadSpecies() {
+    let service: SpeciesService = this.$opensilex.getService(
+        "opensilex.SpeciesService"
+    );
+    service
+        .getAllSpecies()
+        .then((http: HttpResponse<OpenSilexResponse<Array<SpeciesDTO>>>) => {
+          this.species = [];
+          for (let i = 0; i < http.response.result.length; i++) {
+            this.speciesByUri.set(
+                http.response.result[i].uri,
+                http.response.result[i]
+            );
+            this.species.push({
+              id: http.response.result[i].uri,
+              label: http.response.result[i].name,
+            });
+          }
+          // force refresh of the table
+          this.tableRef.refresh();
+        })
+        .catch(this.$opensilex.errorHandler);
+  }
+
   isEnded(experiment) {
     if (experiment.end_date) {
       return moment(experiment.end_date, "YYYY-MM-DD").diff(moment()) < 0;
@@ -102,17 +143,19 @@ export default class AssociatedExperimentsList extends Vue {
     return false;
   }
 
-  textReduce(text) {
-    if (text !== null && text.length > 60) {
-      var shortname = text.substring(0, 60) + " ...";
-      return text.substring(0, 60) + " ...";
-    } else {
-      return text;
+  getSpeciesName(uri: String): String {
+    if (this.speciesByUri.has(uri)) {
+      return this.speciesByUri.get(uri).name;
     }
+    return "";
   }
 
   updateFilters() {
     this.tableRef.refresh();
+  }
+
+  created() {
+    this.loadSpecies();
   }
 
 }
@@ -120,15 +163,24 @@ export default class AssociatedExperimentsList extends Vue {
 
 
 <style scoped lang="scss">
+.species-list {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  display: inline-block;
+  max-width: 150px;
+}
 </style>
 
 <i18n>
 en:
   AssociatedExperimentsList:
     experimentNameFilter: Search on experiment name
+    relatedExperiments: Related Experiments
 
 fr:
   AssociatedExperimentsList:
     experimentNameFilter: Chercher sur le nom de l'expérimentation
+    relatedExperiments: Expérimentations Liées
 
 </i18n>

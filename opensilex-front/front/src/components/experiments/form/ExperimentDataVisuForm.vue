@@ -5,16 +5,15 @@
         <template v-slot:filters>
           <!-- Type -->
           <opensilex-FilterField :halfWidth="true">
-             <opensilex-UsedVariableSelector
-              label="ExperimentDataVisuForm.search.variable.label"
+            <opensilex-VariableSelectorWithFilter
+              placeholder="VariableSelectorWithFilter.placeholder"
               :variables.sync="filter.variable"
-              :multiple="false"
-              :experiment="selectedExperiment"
+              :withAssociatedData="true"
+              :experiment="[selectedExperiment]"
               :objects="scientificObjects"
-              :clearable="true"
-              :required="true"
-              @select="onSearch"
-            ></opensilex-UsedVariableSelector>
+              maximumSelectedRows="1"
+              @validate="onSearch"
+            ></opensilex-VariableSelectorWithFilter>
           </opensilex-FilterField>
           <opensilex-FilterField :halfWidth="true">
             <div class="row">
@@ -99,7 +98,7 @@ export default class ExperimentDataVisuForm extends Vue {
   @Ref("searchField") readonly searchField!: any;
   @Ref("provSelector") readonly provSelector!: any;
   filter = {
-    variable: undefined,
+    variable: [],
     startDate: undefined,
     endDate: undefined,
     provenance: undefined,
@@ -107,7 +106,7 @@ export default class ExperimentDataVisuForm extends Vue {
   };
 
   resetFilters() {
-    this.filter.variable = null;
+    this.filter.variable = [];
     this.filter.startDate = undefined;
     this.filter.endDate = undefined;
     this.filter.provenance = undefined;

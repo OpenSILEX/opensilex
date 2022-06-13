@@ -6,6 +6,9 @@
 package org.opensilex.dev;
 
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.opensilex.OpenSilex;
 import org.opensilex.security.SecurityModule;
 import org.slf4j.Logger;
@@ -25,7 +28,10 @@ public class Install {
 
     public static void install(boolean deleteFirst, Path baseDirectory) throws Exception {
 
-        OpenSilex opensilex = DevModule.getOpenSilexDev(baseDirectory);
+        Map<String, String> customArgs = new HashMap<>();
+        customArgs.put(OpenSilex.PROFILE_ID_ARG_KEY, OpenSilex.INTERNAL_OPERATIONS_PROFILE_ID);
+
+        OpenSilex opensilex = DevModule.getOpenSilexDev(baseDirectory, customArgs);
 
         LOGGER.info("Initialize Modules");
         opensilex.install(deleteFirst);

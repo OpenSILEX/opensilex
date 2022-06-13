@@ -227,7 +227,7 @@ table.b-table-selectable tbody tr.b-table-row-selected td span.checkbox:after {
 en :
   DataHelp:
     exceptedFormat: Expected format
-    objectId : Scientific object name / URI
+    objectId : Scientific_object
     title: Generate Data template
     required: "Required : yes"
     variables-associated : Experiment variables associated
@@ -278,7 +278,7 @@ en :
 fr :
   DataHelp:
     exceptedFormat: Format attendu
-    objectId: Objet scientifique Nom / URI
+    objectId: Objet scientifique
     title: Générer un gabarit de données
     required: "Requis : oui"
     variables-associated: Variables associées à l'expérimentation

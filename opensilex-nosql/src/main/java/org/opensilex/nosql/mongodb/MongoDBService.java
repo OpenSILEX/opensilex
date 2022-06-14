@@ -72,7 +72,7 @@ public class MongoDBService extends BaseService {
 
     @Override
     public void startup() throws OpenSilexModuleNotFoundException {
-        mongoClient = buildMongoDBClient();
+        mongoClient = buildMongoClient();
         generationPrefixURI = getGenerationPrefixURI();
         db = mongoClient.getDatabase(dbName);
     }
@@ -474,15 +474,15 @@ public class MongoDBService extends BaseService {
         this.update(newInstance,collection,"uri");
     }
 
-    public final MongoClient getMongoClient(){
-        return this.mongoClient;
+    private final MongoClient buildMongoClient() {
+        return buildMongoClient(getImplementedConfig());
     }
 
-    public final MongoClient buildMongoDBClient() {
-        return buildMongoDBClient(getImplementedConfig());
+    public MongoClient getMongoClient() {
+        return mongoClient;
     }
 
-    public static MongoClient buildMongoDBClient(MongoDBConfig cfg) {
+    public static MongoClient buildMongoClient(MongoDBConfig cfg) {
         String connectionString = "mongodb://";
 
         if (cfg.username() != null && cfg.password() != null && !cfg.username().isEmpty() && !cfg.password().isEmpty()) {

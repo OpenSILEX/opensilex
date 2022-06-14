@@ -81,11 +81,12 @@ public class GridFSConnection extends BaseService implements FileStorageConnecti
     public GridFSConfig getImplementedConfig() {
         return (GridFSConfig) this.getConfig(); 
     }
-
-    private void createFileSystemCollections(MongoDBConfig config){
-        MongoDatabase database = mongoClient.getDatabase(config.database());
-        gridFSBucket = GridFSBuckets.create(database);
-        createFilesIndexes(database);
+    
+    private void createFileSystemCollections(MongoDBConfig config){ 
+        MongoClient mongo = MongoDBService.buildMongoClient(config);
+        MongoDatabase database = mongo.getDatabase(config.database()); 
+        gridFSBucket = GridFSBuckets.create(database); 
+        createFilesIndexes(database);  
     }
 
     @Override

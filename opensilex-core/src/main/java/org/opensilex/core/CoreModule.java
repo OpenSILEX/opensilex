@@ -150,8 +150,7 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
 
         SPARQLConfig sparqlConfig = getOpenSilex().getModuleConfig(SPARQLModule.class, SPARQLConfig.class);
         MongoDBConfig config = getOpenSilex().loadConfigPath(MongoDBConfig.DEFAULT_CONFIG_PATH, MongoDBConfig.class);
-
-        MongoClient mongo = MongoDBService.buildMongoDBClient(config);
+        MongoClient mongo = MongoDBService.buildMongoClient(config);
         MongoDatabase db = mongo.getDatabase(config.database());
 
         ProvenanceModel provenance = new ProvenanceModel();

@@ -157,12 +157,23 @@ public class OwlRestrictionModel extends SPARQLResourceModel {
     }
 
     public boolean isList() {
+
+        // [0,*] cardinality -> list
+        if(getMinQualifiedCardinality() == null && getMaxQualifiedCardinality() == null){
+            return true;
+        }
+
+        // [n] with n > 1
         if (getQualifiedCardinality() != null) {
             return getQualifiedCardinality() > 1;
         }
+
+        // [?,n] with n > 1
         if (getMaxQualifiedCardinality() != null) {
             return getMaxQualifiedCardinality() > 1;
         }
+
+        // [2,?]
         if (getMinQualifiedCardinality() != null) {
             return getMinQualifiedCardinality() > 1 || getMaxQualifiedCardinality() == null;
         }

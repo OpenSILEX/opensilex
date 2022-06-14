@@ -204,6 +204,57 @@ public class OntologyAPITest extends AbstractSecurityIntegrationTest {
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), deleteResponse.getStatus());
     }
 
+    @Test
+    public void testDeleteClassWithDataPropertiesFail() throws Exception {
+
+        // create class
+        VueRDFTypeDTO dto = getTypeDto("testDeleteClassWithDataPropertiesFail", URI.create(Oeso.ScientificObject.toString()));
+        Response createResponse = getJsonPostResponse(target(rdfTypePath), dto);
+        assertEquals(Response.Status.CREATED.getStatusCode(), createResponse.getStatus());
+
+        // create data property
+        RDFPropertyDTO dataProperty = getPropertyDto("data_prop_to_delete", null, true, dto.getUri(), URI.create(XSD.integer.getURI()));
+        Response createDataPropertyResponse = getJsonPostResponse(target(createPropertyPath), dataProperty);
+        assertEquals(Response.Status.CREATED.getStatusCode(), createDataPropertyResponse.getStatus());
+
+        // delete class -> bad request
+        Response deleteResponse = getDeleteByUriResponse(target(deleteRdfTypePath), dto.getUri().toString());
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), deleteResponse.getStatus());
+
+        // ensure message is OK
+        JsonNode node = deleteResponse.readEntity(JsonNode.class);
+        ErrorResponse errorResponse = mapper.convertValue(node, new TypeReference<ErrorResponse>() {});
+        assertEquals(errorResponse.getResult().translationKey,"component.ontology.class.exception.delete.has-data-properties");
+    }
+
+    @Test
+    public void testDeleteClassWithObjectPropertiesFail() throws Exception {
+
+        // create class
+        VueRDFTypeDTO dto = getTypeDto("testDeleteClassWithObjectPropertiesFail", URI.create(Oeso.ScientificObject.toString()));
+        Response createResponse = getJsonPostResponse(target(rdfTypePath), dto);
+        assertEquals(Response.Status.CREATED.getStatusCode(), createResponse.getStatus());
+
+        // create range class
+        VueRDFTypeDTO range = getTypeDto("testDeleteClassWithObjectPropertiesFail-range", null);
+        Response createRangeResponse = getJsonPostResponse(target(rdfTypePath), range);
+        assertEquals(Response.Status.CREATED.getStatusCode(), createRangeResponse.getStatus());
+
+        // create object property
+        RDFPropertyDTO objectProperty = getPropertyDto("object_prop_to_delete", null, false, dto.getUri(), range.getUri());
+        Response createObjectPropertyResponse = getJsonPostResponse(target(createPropertyPath), objectProperty);
+        assertEquals(Response.Status.CREATED.getStatusCode(), createObjectPropertyResponse.getStatus());
+
+        // delete class -> bad request
+        Response deleteResponse = getDeleteByUriResponse(target(deleteRdfTypePath), dto.getUri().toString());
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), deleteResponse.getStatus());
+
+        // ensure message is OK
+        JsonNode node = deleteResponse.readEntity(JsonNode.class);
+        ErrorResponse errorResponse = mapper.convertValue(node, new TypeReference<ErrorResponse>() {});
+        assertEquals(errorResponse.getResult().translationKey,"component.ontology.class.exception.delete.has-object-properties");
+    }
+
     private RDFPropertyDTO getPropertyDto(String suffix, URI parent, boolean dataProperty, URI domain, URI range) {
 
         RDFPropertyDTO dto = new RDFPropertyDTO();
@@ -406,7 +457,6 @@ public class OntologyAPITest extends AbstractSecurityIntegrationTest {
         OntologyDAO dao = new OntologyDAO(getSparqlService());
         getSparqlService().clearGraph(dao.getCustomGraph().getURI());
         getSparqlService().clearGraph(ScientificObjectModel.class);
-
     }
 
 

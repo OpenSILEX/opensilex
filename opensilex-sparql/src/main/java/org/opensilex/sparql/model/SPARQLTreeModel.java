@@ -37,14 +37,20 @@ public abstract class SPARQLTreeModel<T extends SPARQLTreeModel<T>> extends SPAR
         this.children = children;
     }
 
-    public List<T> getNodes() {
+    public List<T> getNodes(boolean includeThis) {
         List<T> visitedList = new ArrayList<>();
-        visit(visitedList::add);
+        visit(visitedList::add,includeThis);
         return visitedList;
     }
 
     public void visit(Consumer<T> consumer){
-        consumer.accept((T) this);
+        visit(consumer,true);
+    }
+
+    public void visit(Consumer<T> consumer, boolean includeThis){
+        if(includeThis){
+            consumer.accept((T) this);
+        }
         if (getChildren() != null) {
             getChildren().forEach(
                     child -> child.visit(consumer)

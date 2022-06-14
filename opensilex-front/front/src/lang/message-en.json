@@ -160,7 +160,11 @@
                 "logout": "Logout"
             },
             "user-guide":"User Guide",
-            "download-user-guide": "Download User Guide"
+            "download-user-guide": "Download User Guide",
+            "version-label": {
+                "develop": "Develop",
+                "release": "Release"
+            }
         },
         "menu": {
             "dashboard": "Dashboard",
@@ -560,6 +564,21 @@
         },
         "facility": {
             "filter-placeholder": "Search facilities..."
+        },
+        "custom-properties" : {
+            "linked-resources" : "Linked resources"
+        },
+        "ontology": {
+            "class" : {
+                "exception" : {
+                    "delete" : {
+                        "instance-exists" : "Some objects are instance of {class}. You must delete them first",
+                        "has-children" : "The class {class} has child class. You must delete them first",
+                        "has-data-properties" : "The class {class} is concerned by some data-properties. You must delete them first",
+                        "has-object-properties" : "The class {class} is concerned by some object-properties. You must delete them first"
+                    }
+                }
+            }
         }
     },
     "credential-groups": {

@@ -23,7 +23,7 @@ public class SPARQLModelRelation {
     
     String value;
     
-    Boolean reverse;
+    boolean reverse;
 
     public URI getGraph() {
         return graph;
@@ -57,11 +57,11 @@ public class SPARQLModelRelation {
         this.value = value;
     }
 
-    public Boolean getReverse() {
+    public boolean getReverse() {
         return reverse;
     }
 
-    public void setReverse(Boolean reverse) {
+    public void setReverse(boolean reverse) {
         this.reverse = reverse;
     }
 

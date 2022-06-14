@@ -49,7 +49,7 @@ public class SPARQLTreeListModel<T extends SPARQLTreeModel<T>> {
     }
 
     public SPARQLTreeListModel(T rootModel, boolean excludeRoot, boolean addSelectionToTree) {
-        this(rootModel.getNodes(), rootModel.getUri(), excludeRoot, addSelectionToTree);
+        this(rootModel.getNodes(false), rootModel.getUri(), excludeRoot, addSelectionToTree);
     }
 
     public void listRoots(Consumer<T> handler) {

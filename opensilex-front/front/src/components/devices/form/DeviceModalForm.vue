@@ -63,9 +63,9 @@ export default class DeviceModalForm extends Vue {
                 // render form and pass device to form
                 this.renderModalForm = true;
                 this.$nextTick(() => {
-                    let deviceForm: DeviceForm = this.modalForm.getFormRef();
-                    deviceForm.setRelationsAndAttributes(device)
-                    deviceForm.typeSwitch(device.rdf_type, true);
+                    let form: DeviceForm = this.modalForm.getFormRef();
+                    form.readAttributes(device.metadata)
+                    form.typeSwitch(device.rdf_type, true);
                     this.modalForm.showEditForm(device);
                 });
             }).catch(this.$opensilex.errorHandler);

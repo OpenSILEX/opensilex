@@ -40,6 +40,7 @@
 <script lang="ts">
 import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
+import {VueRDFTypePropertyDTO} from "../../lib";
 
 @Component
 export default class ScientificObjectCSVTemplateGenerator extends Vue {
@@ -98,15 +99,13 @@ export default class ScientificObjectCSVTemplateGenerator extends Vue {
               )
               .then((http) => {
                 let properties = {};
-                for (let dataProp of http.response.result.data_properties) {
-                  let propURI = dataProp.property;
-                  properties[propURI] = dataProp;
-                }
+                http.response.result.data_properties.forEach((propertyDTO: VueRDFTypePropertyDTO) => {
+                  properties[propertyDTO.uri] = propertyDTO;
+                });
 
-                for (let objProp of http.response.result.object_properties) {
-                  let propURI = objProp.property;
-                  properties[propURI] = objProp;
-                }
+                http.response.result.object_properties.forEach((propertyDTO: VueRDFTypePropertyDTO) => {
+                  properties[propertyDTO.uri] = propertyDTO;
+                });
 
                 return {
                   uri: type,
@@ -126,7 +125,7 @@ export default class ScientificObjectCSVTemplateGenerator extends Vue {
             "vocabulary:isHosted",
             "vocabulary:isPartOf",
             "rdfs:comment",
-            "geometry",
+            "vocabulary:hasGeometry",
           ];
 
           let descriptionByHeaders = {

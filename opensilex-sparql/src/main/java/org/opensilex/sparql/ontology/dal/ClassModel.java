@@ -13,6 +13,7 @@ import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.sparql.annotations.SPARQLIgnore;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.VocabularyModel;
 
@@ -136,12 +137,23 @@ public class ClassModel extends VocabularyModel<ClassModel> {
         return getObjectProperties().containsKey(classURI);
     }
 
-    public boolean isInherited(OwlRestrictionModel restriction){
-        if(! restrictionsByProperties.containsKey(restriction.getUri())){
+    /**
+     *
+     * @param restriction restriction to check,
+     * @return true if the restriction is inherited from parent class, false else
+     *
+     * @apiNote
+     * <ul>
+     *     <li>Use {@link OwlRestrictionModel#getOnProperty()} to check if the restriction concerns this class</li>
+     *     <li>Use {@link OwlRestrictionModel#getDomain()}  to check if the restriction concerns only this class and it's descendant </li>
+     * </ul>
+     */
+    public boolean isInherited(OwlRestrictionModel restriction) {
+        if (!restrictionsByProperties.containsKey(restriction.getOnProperty())) {
             return false;
         }
         //  restriction is inherited if the restriction has a different domain than this Class URI
-        return ! uri.equals(restriction.getDomain());
+        return !SPARQLDeserializers.compareURIs(uri, restriction.getDomain().getUri());
     }
 
     public PropertyModel getDatatypeProperty(URI propertyURI) {
@@ -151,26 +163,6 @@ public class ClassModel extends VocabularyModel<ClassModel> {
     public PropertyModel getObjectProperty(URI propertyURI) {
         return getObjectProperties().get(propertyURI);
     }
-
-//    @Override
-//    public List<ClassModel> getChildren() {
-//        return children;
-//    }
-//
-//    @Override
-//    public void setChildren(List<ClassModel> children) {
-//        this.children = children;
-//    }
-//
-//    @Override
-//    public ClassModel getParent() {
-//        return parent;
-//    }
-//
-//    @Override
-//    public void setParent(ClassModel parent) {
-//        this.parent = parent;
-//    }
 
     public Set<ClassModel> getParents() {
         return parents;

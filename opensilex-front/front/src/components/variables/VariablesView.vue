@@ -45,6 +45,7 @@
                         @onEdit="showVariableEditForm" 
                         @onInteroperability="showVariableReferences"
                         @onDelete="deleteVariable"
+                        @onReset="refreshRouteName"
                     ></opensilex-VariableList>
                 </template>
             </opensilex-PageContent>
@@ -110,7 +111,7 @@
 
                 <div class="col-md-6">
                     <!-- Element details page -->
-                    <opensilex-VariableStructureDetails v-show="!loadVariableList() && useGenericDetailsPage()" :variableGroup="groupVariablesPage()" :selected="selected"></opensilex-VariableStructureDetails>
+                    <opensilex-VariableStructureDetails v-show="!loadVariableList() && useGenericDetailsPage()" :selected="selected"></opensilex-VariableStructureDetails>
                     <!-- Unit specialized details page -->
                     <opensilex-UnitDetails v-show="!loadVariableList() && !useGenericDetailsPage() && !groupVariablesPage()" :selected="selected"></opensilex-UnitDetails>
 
@@ -128,9 +129,10 @@
                             v-if="groupVariablesPage() && selected.variables.length !== 0"
                             :items="selected.variables"
                             :fields="relationsFields"
-                            :globalFilterField="true">
+                            :globalFilterField="true"
+                            sortBy="name">
 
-                                <template v-slot:cell(uri)="{data}">
+                                <template v-slot:cell(name)="{data}">
                                     <opensilex-UriLink
                                     :uri="data.item.uri"
                                     :value="data.item.name"
@@ -147,9 +149,9 @@
 
                     <opensilex-DocumentTabList
                         v-if="selected && selected.uri"
-                        v-show="! loadVariableList() && useGenericDetailsPage() && documentMethodPage()" 
+                        v-show="! loadVariableList() && useGenericDetailsPage() && (documentMethodPage() || groupVariablesPage())"  
                         :selected="selected"
-                        :uri="selected.uri"
+                        :uri="[selected.uri]"
                         :search=false
                     ></opensilex-DocumentTabList>
 
@@ -227,7 +229,7 @@ export default class VariablesView extends Vue {
 
     relationsFields: any[] = [
       {
-        key: "uri",
+        key: "name",
         label: "component.common.name",
         sortable: true,
       }
@@ -245,6 +247,13 @@ export default class VariablesView extends Vue {
         }else{
             let variableIdx = VariablesView.elementTypes.findIndex(elem => elem == VariablesView.VARIABLE_TYPE);
             this.updateType(variableIdx);
+        }
+    }
+
+    private refreshRouteName(){
+        if(this.$route.query.name) {
+            this.$route.query.name = undefined;
+            this.$opensilex.updateURLParameter("name", "");
         }
     }
 
@@ -457,7 +466,7 @@ export default class VariablesView extends Vue {
             let message = this.$i18n.t(form.name) + this.$i18n.t("component.common.success.creation-success-message");
             this.$opensilex.showSuccessToast(message);
             let uri = http.response.result;
-            this.$router.push({path: "/variables_group/details/" + encodeURIComponent(uri)});
+            this.refresh(uri);
       })
       .catch(error => {
         if (error.status == 409) {

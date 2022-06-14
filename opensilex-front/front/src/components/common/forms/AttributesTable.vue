@@ -2,7 +2,7 @@
   <b-row>
     <b-col>
       <h6 class="mb-3">
-        <strong>{{$t('GermplasmAttributesTable.title')}}</strong>
+        <strong>{{$t('AttributesTable.title')}}</strong>
       </h6>
       <b-row class="ml-2">
         <b-col md="4">
@@ -10,9 +10,9 @@
             class="mr-2"
             @click="addEmptyRow"
             variant="outline-primary"
-            label="GermplasmAttributesTable.add"
+            label="AttributesTable.add"
           ></opensilex-AddChildButton>
-          <span>{{$t('GermplasmAttributesTable.add')}}</span>
+          <span>{{$t('AttributesTable.add')}}</span>
         </b-col>
       </b-row>
       <b-row>
@@ -35,14 +35,12 @@
 import { Component, Prop, Ref, PropSync } from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
-import { GermplasmService } from "opensilex-core/index";
 
 @Component
-export default class GermplasmAttributesTable extends Vue {
+export default class AttributesTable extends Vue {
   $opensilex: any;
   $store: any;
   $i18n: any;
-  service: GermplasmService;
   langs: any = {
     fr: {
       //French language definition
@@ -98,7 +96,6 @@ export default class GermplasmAttributesTable extends Vue {
   ];
   
   created() {
-    this.service = this.$opensilex.getService("opensilex.GermplasmService");
   }
 
   private langUnwatcher;
@@ -154,7 +151,7 @@ export default class GermplasmAttributesTable extends Vue {
     }
   }
 
-  pushAttributes() {
+  pushAttributes(): { [key: string]: string; } {
     let attributes = {};
     
     let data = this.tabulatorRef.getInstance().getData();
@@ -167,6 +164,31 @@ export default class GermplasmAttributesTable extends Vue {
       
     }
     return attributes;
+  }
+
+  /**
+   * Read properties/value from metadata and create an object {attribute: string, value: string} into attributes
+   * @param metadata input metadata
+   * @param attributes output metadata. Attributes is reset and updated inside this function
+   */
+  static readAttributes(
+      metadata: { [key: string]: string; },
+      attributes: Array<{ attribute: string, value: string }>) {
+
+    let attributesArray = [];
+    if (metadata) {
+      for (const property in metadata) {
+        let att = {
+          attribute: property,
+          value: metadata[property]
+        }
+        attributesArray.push(att);
+      }
+    }
+
+    // use splice() and push() method to ensure Vue reactivity
+    attributes.splice(0);
+    attributes.push(... attributesArray);
   }
 
   changeTableLang(lang: string) {
@@ -183,14 +205,14 @@ export default class GermplasmAttributesTable extends Vue {
 <i18n>
 
 en:
-  GermplasmAttributesTable:
+  AttributesTable:
     title: Additional attributes
     add: Add an attribute
     attribute: Attribute
     
 
 fr:
-  GermplasmAttributesTable:
+  AttributesTable:
     title: Attributs supplémentaires
     add: Ajouter un attribut
     attribute: Attribut

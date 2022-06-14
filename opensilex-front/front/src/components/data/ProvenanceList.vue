@@ -52,7 +52,7 @@
             label="ProvenanceForm.agent"
             :value.sync="filter.agent"
             :multiple="false"
-            :deviceType="filter.agent_type"
+            :type="filter.agent_type"
           ></opensilex-DeviceSelector>
         </opensilex-FilterField>
 

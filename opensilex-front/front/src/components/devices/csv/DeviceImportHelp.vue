@@ -29,7 +29,6 @@
             <b-th class="uri-field">vocabulary:removal</b-th>
             <b-th class="uri-field">vocabulary:personInCharge</b-th>
 
-            <b-th class="uri-field">vocabulary:isPartOf</b-th>
             <b-th class="uri-field">uri:property...</b-th>
           </b-tr>
         </b-thead>
@@ -49,7 +48,6 @@
             <b-td>{{ $t("DeviceForm.removal-help") }}</b-td>
             <b-td>{{ $t("DeviceForm.person_in_charge-help") }}</b-td>
 
-            <b-td>{{ $t("DeviceImportHelp.isPartOf-help") }}</b-td>
             <b-td>{{ $t("DeviceImportHelp.properties-help") }}</b-td>
           </b-tr>
           <b-tr class="alert alert-info">
@@ -173,7 +171,6 @@ en :
     csv-decimal-separator: Decimal separator for numeric values must be
     alias: Device name
     type-help: "URI of the device type"
-    isPartOf-help: "Parent URI"
     comment-help: "Description"
     properties-help: "Custom properties for device type..."
     column-type-help: "Column data type: "
@@ -205,7 +202,6 @@ fr :
     csv-decimal-separator: Le séparateur décimal des valeurs numériques doit être
     alias: Nom de l'équipement
     type-help: "URI du type d'équipement"
-    isPartOf-help: "URI du parent"
     comment-help: "Description"
     properties-help: "Propriétés specifiques du type d'objet d'équipement..."
     column-type-help :  "Type de données colonne : "

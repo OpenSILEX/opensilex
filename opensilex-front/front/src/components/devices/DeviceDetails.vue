@@ -50,7 +50,10 @@
 
     <opensilex-PageContent>
         <template v-slot>
-          <opensilex-DeviceDescription v-if="isDetailsTab()"></opensilex-DeviceDescription>
+          <opensilex-DeviceDescription
+              v-if="isDetailsTab()"
+              :key="lang">
+          </opensilex-DeviceDescription>
 
          <opensilex-DeviceVisualizationTab
           v-else-if="isVisualizationTab()"
@@ -127,6 +130,10 @@
 
         get credentials() {
             return this.$store.state.credentials;
+        }
+
+        get lang() {
+            return this.$store.getters.language;
         }
 
         device: DeviceGetDTO = {

@@ -53,6 +53,7 @@ import {Store} from "vuex";
 import {RDFPropertyDTO} from "opensilex-core/model/rDFPropertyDTO";
 import {RDFPropertyGetDTO} from "opensilex-core/model/rDFPropertyGetDTO";
 import OntologyPropertyForm from "./OntologyPropertyForm.vue";
+import {ResourceTreeDTO} from "opensilex-core/model/resourceTreeDTO";
 
 @Component
 export default class OntologyPropertyView extends Vue {
@@ -135,8 +136,10 @@ export default class OntologyPropertyView extends Vue {
         });
     }
 
-    deleteProperty(data) {
-        this.ontologyService.deleteProperty(data.uri, data.rdf_type).then(() => {
+    deleteProperty(propertyDto: ResourceTreeDTO) {
+        this.ontologyService.deleteProperty(propertyDto.uri, propertyDto.rdf_type).then(() => {
+            let message = this.$i18n.t("OntologyPropertyView.the-property") + " " + propertyDto.uri + this.$i18n.t("component.common.success.delete-success-message");
+            this.$opensilex.showSuccessToast(message);
             this.refresh();
         }).catch(this.$opensilex.errorHandler);
     }

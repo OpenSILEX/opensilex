@@ -45,7 +45,7 @@
                     label="OntologyPropertyForm.data-type"
                     :required="true"
                     :selected.sync="form.range"
-                    :options="datatypes"
+                    :options="dataTypes"
                     helpMessage="OntologyPropertyForm.dataProperty-help"
                 ></opensilex-SelectForm>
 
@@ -64,7 +64,7 @@
                     :required="true"
                     :selected.sync="form.parent"
                     :options="availableParents"
-                    helpMessage="OntologyPropertyForm.inheritedType-help"
+                    helpMessage="OntologyPropertyForm.parent-help"
                 ></opensilex-SelectForm>
 
                 <opensilex-TypeForm
@@ -167,48 +167,52 @@ export default class OntologyPropertyForm extends Vue {
         };
     }
 
-    get datatypes() {
-        let datatypeOptions = [];
-        for (let i in this.$opensilex.datatypes) {
-            let label: any = this.$t(this.$opensilex.datatypes[i].label_key);
-            datatypeOptions.push({
-                id: this.$opensilex.datatypes[i].uri,
+    get dataTypes(): Array<{id: string, label: string}> {
+
+        let types: Array<{id: string, label: string}> = [];
+
+        this.$opensilex.datatypes.forEach(type => {
+            let label: any = this.$t(type.label_key);
+            types.push({
+                id: type.uri,
                 label: label.charAt(0).toUpperCase() + label.slice(1)
             });
-        }
-
-        datatypeOptions.sort((a, b) => {
-            let comparison = 0;
-            if (a.name > b.name) {
-                comparison = 1;
-            } else if (a.name < b.name) {
-                comparison = -1;
-            }
-            return comparison;
         });
 
-        return datatypeOptions;
+        this.sortTypesByLabel(types);
+        return types;
     }
 
-    get objectTypes() {
-        let objectTypeOptions = [];
-        for (let i in this.$opensilex.objectTypes) {
-            objectTypeOptions.push({
-                id: this.$opensilex.objectTypes[i].uri,
-                label: this.$opensilex.objectTypes[i].rdf_type.name
+    get objectTypes() : Array<{id: string, label: string}> {
+        let types: Array<{id: string, label: string}> = [];
+        this.$opensilex.objectTypes.forEach(type => {
+            // try to get translated name
+            let translatedLabel: string = type.rdf_type.name_translations[this.$store.getters.language];
+
+            // if no translation found, then use default name
+            if(! translatedLabel || translatedLabel.length == 0){
+                translatedLabel = type.rdf_type.name;
+            }
+            types.push({
+                id: type.uri,
+                label: translatedLabel
             });
-        }
-        objectTypeOptions.sort((a, b) => {
+        });
+
+        this.sortTypesByLabel(types);
+        return types;
+    }
+
+    sortTypesByLabel(types: Array<{id: string, label: string}>): void{
+        types.sort((a, b) => {
             let comparison = 0;
-            if (a.name > b.name) {
+            if (a.label > b.label) {
                 comparison = 1;
-            } else if (a.name < b.name) {
+            } else if (a.label < b.label) {
                 comparison = -1;
             }
             return comparison;
         });
-
-        return objectTypeOptions;
     }
 
     availableParents = [];
@@ -239,7 +243,7 @@ export default class OntologyPropertyForm extends Vue {
 
     private domain = null;
 
-    setDomain(domain) {
+    setDomain(domain: string) {
         this.domain = domain;
     }
 
@@ -308,17 +312,17 @@ en:
         objectProperty: Object property
         inheritedType: Type inherited from parent
         data-type: Data type
-        dataProperty-help: Property which relate individuals (e.g. device,scientific object, facility) to literal data (integer,deciaml,date,string,etc)
+        dataProperty-help: 'Property which relate resource (e.g. device,scientific object, facility) to literal data (integer,decimal,date,string,etc)'
         object-type: Object class
-        objectProperty-help: Property which relate individuals (e.g. device,scientific object, facility) to other individuals (e.g. device,scientific object, facility)
-        inheritedType-help: Use same property type (can be Data or Object) as the selected parent.
+        objectProperty-help: 'Property which relate resource (e.g. device,scientific object, facility) to other resource (e.g. device,scientific object, facility)'
+        parent-help: 'Parent'
         labelEN: English name
         labelFR: French name
         commentEN: English description
         commentFR: French description
-        property-already-exists: Property with same URI already exists
+        property-already-exists: 'Property with same URI already exists'
         domain: Domain
-        domain-help: Type concerned by the property. The property can be linked to the domain and on all domain descendant.
+        domain-help: 'Type concerned by the property. The property can be linked to the domain and on all domain descendant'
 
 fr:
     OntologyPropertyForm:
@@ -327,16 +331,16 @@ fr:
         objectProperty: Relation vers un objet
         inheritedType: Type hérité du parent
         data-type: Type de donnée
-        dataProperty-help: Property which relate individuals (e.g. device,scientific object, facility) to literal data (integer,deciaml,date,string,etc)
+        dataProperty-help: 'Propriété associant une valeur (nombre,date,chaîne de caractères, etc) à une ressource(ex: équipement, object scientifique, évenement) '
         object-type: Classe d'objet
-        objectProperty-help: Property which relate individuals (e.g. device,scientific object, facility) to other individuals
-        inheritedType-help: Use same property type (can be Data or Object) as the selected parent.
+        objectProperty-help: 'Propriété liant une ressource(ex: équipement, object scientifique, évenement) à une autre ressource'
+        parent-help: 'Parent'
         labelEN: Nom anglais
         labelFR: Nom français
         commentEN: Description anglaise
         commentFR: Description française
         property-already-exists: Une propriété existe déjà avec la même URI
         domain: Domaine
-        domain-help: Type concerné par la propriété. La propriété peut être liée au domaine choisi et a tous les descendant du domaine.
+        domain-help: 'Type concerné par la propriété. La propriété peut être liée au domaine choisi et à tous les descendants du domaine'
 
 </i18n>

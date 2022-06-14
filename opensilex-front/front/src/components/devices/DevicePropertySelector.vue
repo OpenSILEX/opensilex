@@ -5,6 +5,7 @@
       :value.sync="internalValue"
       :multiple="property.is_list"
       :required="property.is_required"
+      :type="property.target_property"
   ></opensilex-DeviceSelector>
 </template>
 

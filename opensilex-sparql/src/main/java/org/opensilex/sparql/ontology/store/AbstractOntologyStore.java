@@ -418,7 +418,7 @@ public abstract class AbstractOntologyStore implements OntologyStore {
         // compute a ClassModel which take care of parent and lang
         ClassModel finalModel = new ClassModel(model);
 
-        inheritFromSuperClasses(ancestorURI, finalModel,true,false,false);
+        inheritFromSuperClasses(ancestorURI, finalModel,true,true,true);
         handleLang(lang, finalModel);
         model.visit(descendant -> handleLang(lang, descendant));
         return finalModel;

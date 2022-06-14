@@ -92,18 +92,34 @@ public class VueOwlExtensionDAO {
         objectTypes = new ArrayList<>();
         typesByURI = new HashMap<>();
 
+        // maintain a tmp set in order to ensure uniqueness (according getTypeUri()) into data/object types
+        Set<String> uniquesTypes = new HashSet<>();
+
         ServiceLoader.load(VueOntologyType.class, OpenSilex.getClassLoader())
-                .forEach((type -> {
-                    if (!type.isDisabled()) {
-                        typesByURI.put(SPARQLDeserializers.getExpandedURI(type.getTypeUri()), type);
+                .forEach((ontologyType -> {
+                    if (!ontologyType.isDisabled()) {
+                        // associate the VueOntologyType to the type
+                        typesByURI.put(SPARQLDeserializers.getShortURI(ontologyType.getTypeUri()), ontologyType);
+
+                        // associate the VueOntologyType to all type aliases
+                        ontologyType.getTypeUriAliases().forEach(typeAlias -> typesByURI.put(
+                                SPARQLDeserializers.getShortURI(typeAlias),
+                                ontologyType
+                        ));
                     }
                 }));
 
         for (VueOntologyType ontologyType : typesByURI.values()) {
             if (ontologyType instanceof VueOntologyDataType) {
-                dataTypes.add((VueOntologyDataType) ontologyType);
+                if(! uniquesTypes.contains(ontologyType.getTypeUri())){
+                    dataTypes.add((VueOntologyDataType) ontologyType);
+                    uniquesTypes.add(ontologyType.getTypeUri());
+                }
             } else if (ontologyType instanceof VueOntologyObjectType) {
-                objectTypes.add((VueOntologyObjectType) ontologyType);
+                if(! uniquesTypes.contains(ontologyType.getTypeUri())){
+                    objectTypes.add((VueOntologyObjectType) ontologyType);
+                    uniquesTypes.add(ontologyType.getTypeUri());
+                }
             } else {
                 LOGGER.warn("Unexpected Vue ontology type (ignored): " + ontologyType.getClass().getCanonicalName());
             }
@@ -131,7 +147,8 @@ public class VueOwlExtensionDAO {
             buildTypeLists();
         }
 
-        return typesByURI.get(SPARQLDeserializers.getExpandedURI(uri));
+        // use same URI format as typesByURI
+        return typesByURI.get(SPARQLDeserializers.getShortURI(uri));
     }
 
     public void setPropertiesOrder(URI classURI, List<URI> propertiesURI, String lang) throws Exception {

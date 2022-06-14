@@ -65,6 +65,7 @@
 <script lang="ts">
 import { Component, Prop, Ref, Watch } from "vue-property-decorator";
 import Vue from "vue";
+import {VueRDFTypePropertyDTO} from "../../lib";
 
 @Component
 export default class ScientificObjectDetailMap extends Vue {
@@ -215,8 +216,8 @@ export default class ScientificObjectDetailMap extends Vue {
     let pOrder = this.classModel.properties_order;
 
     typeProperties.sort((a, b) => {
-      let aProp = a.definition.property;
-      let bProp = b.definition.property;
+      let aProp = a.definition.uri;
+      let bProp = b.definition.uri;
       if (aProp == bProp) {
         return 0;
       }
@@ -247,23 +248,23 @@ export default class ScientificObjectDetailMap extends Vue {
     });
   }
 
-  loadProperties(typeProperties, properties, valueByProperties) {
+  loadProperties(typeProperties: Array<{definition: VueRDFTypePropertyDTO,property}> , properties: Array<VueRDFTypePropertyDTO>, valueByProperties) {
     for (let i in properties) {
       let property = properties[i];
 
-      if (valueByProperties[property.property]) {
+      if (valueByProperties[property.uri]) {
         if (
           property.is_list &&
-          !Array.isArray(valueByProperties[property.property])
+          !Array.isArray(valueByProperties[property.uri])
         ) {
           typeProperties.push({
             definition: property,
-            property: [valueByProperties[property.property]],
+            property: [valueByProperties[property.uri]],
           });
         } else {
           typeProperties.push({
             definition: property,
-            property: valueByProperties[property.property],
+            property: valueByProperties[property.uri],
           });
         }
       }

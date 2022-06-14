@@ -68,10 +68,9 @@
                   :to="{path: '/germplasm/details/'+ encodeURIComponent(target.uri)}"
                 ></opensilex-UriLink>
                 <opensilex-UriLink 
-                  :uri="target.uri"  
-                  :value="target.uri"  
+                  :uri="target.uri" 
                   v-else-if="target.rdf_types.includes($opensilex.Oeso.VARIABLESGROUP_TYPE_URI)"           
-                  :to="{path: '/variables_group/details/'+ encodeURIComponent(target.uri)}"
+                  :url="getVariableGroupPageUrl(target.uri)"
                 ></opensilex-UriLink>
                 <opensilex-UriLink 
                   :uri="target.uri"  
@@ -191,6 +190,11 @@ export default class DocumentDetails extends Vue {
     this.uri = decodeURIComponent(this.$route.params.uri);   
     this.loadDocument(this.uri);
 
+  }
+  
+  getVariableGroupPageUrl(uri: string): string {
+    let shortUri = this.$opensilex.getShortUri(uri);   
+    return this.$opensilex.getURL("variables/?elementType=VariableGroup&selected=" + encodeURIComponent(shortUri));
   }
 
   loadDocument(uri: string) {

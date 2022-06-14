@@ -1,6 +1,7 @@
 package org.opensilex.sparql.ontology.store;
 
 import org.apache.jena.vocabulary.OWL2;
+import org.opensilex.server.exceptions.NotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
@@ -37,18 +38,17 @@ public class NoOntologyStore implements OntologyStore {
     public AbstractPropertyModel<?> getProperty(URI propertyURI, URI type, URI domain, String lang) throws SPARQLException {
 
         try {
-            Objects.requireNonNull(type);
-            if (SPARQLDeserializers.compareURIs(OWL2.DatatypeProperty.getURI(), type)) {
-                return ontologyDAO.getDataProperty(propertyURI, domain, lang);
-            } else if (SPARQLDeserializers.compareURIs(OWL2.ObjectProperty.getURI(), type)) {
-                return ontologyDAO.getObjectProperty(propertyURI, domain, lang);
-            } else {
-                throw new SPARQLException("Unknown property type : "+ type);
+            AbstractPropertyModel<?> propertyModel = ontologyDAO.getDataProperty(propertyURI, domain, lang);
+            if(propertyModel == null){
+                propertyModel = ontologyDAO.getObjectProperty(propertyURI, domain, lang);
+                if(propertyModel == null){
+                    throw new SPARQLException("URI not found : "+propertyURI);
+                }
             }
+            return propertyModel;
         } catch (Exception e) {
             throw new SPARQLException(e);
         }
-
     }
 
     @Override

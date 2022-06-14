@@ -67,7 +67,15 @@
           this.refresh();
             this.loadForm = true;
             this.$nextTick(() => {
-                this.variableForm.showEditForm(form);
+                let speciesUri;
+                if (form.species) {
+                    speciesUri = form.species.uri ? form.species.uri : form.species; 
+                } else {
+                    speciesUri = undefined;
+                }
+                let formCopy = JSON.parse(JSON.stringify(form));
+                formCopy.species = speciesUri;
+                this.variableForm.showEditForm(formCopy);
             });
         }
 

@@ -20,6 +20,6 @@ public class VueDevice implements VueOntologyObjectType {
 
     @Override
     public String getViewComponent() {
-        return "opensilex-DevicePropertyView";
+        return "opensilex-XSDUriView";
     }
 }

@@ -159,7 +159,11 @@
                 "logout": "Déconnexion"
             },
             "user-guide":"Guide d'utilisation",
-            "download-user-guide": "Télécharger Guide d'utilisation"
+            "download-user-guide": "Télécharger Guide d'utilisation",
+            "version-label": {
+                "develop": "Develop",
+                "release": "Release"
+            }
         },
         "menu": {
             "dashboard": "Tableau de bord",
@@ -565,6 +569,21 @@
         },
         "facility": {
             "filter-placeholder": "Rechercher des installations environnementales..."
+        },
+        "custom-properties" : {
+            "linked-resources" : "Ressources liée(s)"
+        },
+        "ontology": {
+            "class" : {
+                "exception" : {
+                    "delete" : {
+                        "instance-exists" : "Une ou plusieurs ressources du type {class} existent. Vous devez les supprimer d'abord",
+                        "has-children" : "Le type {class} a plusieurs sous-types. Vous devez les supprimer d'abord",
+                        "has-data-properties" : "Le type {class} est relié à plusieurs propriétés literales. Vous devez les supprimer d'abord",
+                        "has-object-properties" : "Le type {class} est relié à plusieurs propriétés objets. Vous devez les supprimer d'abord"
+                    }
+                }
+            }
         }
     },
     "credential-groups": {

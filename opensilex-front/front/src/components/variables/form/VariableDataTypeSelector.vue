@@ -19,7 +19,8 @@ import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
 @Component
 export default class VariableDataTypeSelector extends Vue {
     $opensilex: any;
-
+    $store: any;
+    
     @PropSync("datatype")
     dataTypeURI;
 
@@ -31,6 +32,13 @@ export default class VariableDataTypeSelector extends Vue {
 
     datatypes: Array<VariableDatatypeDTO> = [];
     datatypesNodes: Array<any> = [];
+
+    mounted() {
+        this.$store.watch(
+            () => this.$store.getters.language,
+            () => this.loadDatatypes()
+        );
+    }
 
     created(){
         this.loadDatatypes();

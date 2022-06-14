@@ -5,12 +5,21 @@
   -->
 
 <template>
-  <opensilex-VariableSelectorWithFilter
-      :label="property.name"
-      :variables.sync="internalValue"
-      :maximumSelectedRows="property.is_list ? undefined : 1"
-      :required="property.is_required"
-  ></opensilex-VariableSelectorWithFilter>
+
+<!--  <opensilex-VariableSelectorWithFilter-->
+<!--      :label="property.name"-->
+<!--      :variables.sync="internalValue"-->
+<!--      :maximumSelectedRows="property.is_list ? undefined : 1"-->
+<!--      :required="property.is_required"-->
+<!--  ></opensilex-VariableSelectorWithFilter>-->
+
+    <!-- Tmp usage of old VariableSelector, since VariableSelectorWithFilter don't display variables when loading form on edit-->
+    <opensilex-VariableSelector
+        :label="property.name"
+        :variables.sync="internalValue"
+        :multiple="property.is_list"
+        :required="property.is_required"
+    ></opensilex-VariableSelector>
 </template>
 
 <script lang="ts">

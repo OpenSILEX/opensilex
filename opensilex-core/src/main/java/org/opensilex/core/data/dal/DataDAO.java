@@ -723,10 +723,7 @@ public class DataDAO {
         }
         // static supplementary columns
         defaultColumns.add("Provenance");
-        for (int i=0; i<experiments.size(); i++) {
-           defaultColumns.add("Experiment URI"); 
-        }
-
+        defaultColumns.add("Experiment URI");
         defaultColumns.add("Target URI");
         defaultColumns.add("Provenance URI");
 

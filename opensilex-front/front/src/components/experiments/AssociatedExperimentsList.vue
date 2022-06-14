@@ -129,6 +129,8 @@ export default class AssociatedExperimentsList extends Vue {
               label: http.response.result[i].name,
             });
           }
+          // force refresh of the table
+          this.tableRef.refresh();
         })
         .catch(this.$opensilex.errorHandler);
   }

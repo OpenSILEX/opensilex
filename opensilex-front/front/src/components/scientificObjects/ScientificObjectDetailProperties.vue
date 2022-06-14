@@ -155,6 +155,8 @@
 <script lang="ts">
 import { Component, Prop, Ref, Watch } from "vue-property-decorator";
 import Vue from "vue";
+import {VueRDFTypePropertyDTO} from "../../lib";
+import {PositionGetDTO} from "../../../../../opensilex-core/front/src/lib";
 
 @Component
 export default class ScientificObjectDetailProperties extends Vue {
@@ -373,33 +375,35 @@ export default class ScientificObjectDetailProperties extends Vue {
     });
   }
 
-  loadProperties(typeProperties, properties, valueByProperties) {
-    for (let i in properties) {
-      let property = properties[i];
+  loadProperties(typeProperties: Array<{definition: VueRDFTypePropertyDTO,property}> , properties: Array<VueRDFTypePropertyDTO>, valueByProperties) {
 
-      if (valueByProperties[property.property]) {
-        if (
-          property.is_list &&
-          !Array.isArray(valueByProperties[property.property])
-        ) {
-          typeProperties.push({
-            definition: property,
-            property: [valueByProperties[property.property]],
-          });
-        } else {
-          typeProperties.push({
-            definition: property,
-            property: valueByProperties[property.property],
-          });
-        }
+      if(! properties){
+          return
       }
-    }
+      properties.forEach(property => {
+
+          if (valueByProperties[property.uri]) {
+              if (property.is_list && !Array.isArray(valueByProperties[property.uri])) {
+                  typeProperties.push({
+                      definition: property,
+                      property: [valueByProperties[property.uri]],
+                  });
+              } else {
+                  typeProperties.push({
+                      definition: property,
+                      property: valueByProperties[property.uri],
+                  });
+              }
+          }
+  })
   }
 
-  buildValueByProperties(relationArray, lastMove) {
-    let valueByProperties = {};
-    for (let i in relationArray) {
-      let relation = relationArray[i];
+  buildValueByProperties(ungroupedRelations: Array<{property,value}>, lastMove: PositionGetDTO) {
+
+    let groupedRelations = {};
+
+    for (let i in ungroupedRelations) {
+      let relation = ungroupedRelations[i];
       if (
         lastMove &&
         lastMove.to &&
@@ -409,22 +413,22 @@ export default class ScientificObjectDetailProperties extends Vue {
       }
 
       if (
-        valueByProperties[relation.property] &&
-        !Array.isArray(valueByProperties[relation.property])
+        groupedRelations[relation.property] &&
+        !Array.isArray(groupedRelations[relation.property])
       ) {
-        valueByProperties[relation.property] = [
-          valueByProperties[relation.property],
+        groupedRelations[relation.property] = [
+          groupedRelations[relation.property],
         ];
       }
 
-      if (Array.isArray(valueByProperties[relation.property])) {
-        valueByProperties[relation.property].push(relation.value);
+      if (Array.isArray(groupedRelations[relation.property])) {
+        groupedRelations[relation.property].push(relation.value);
       } else {
-        valueByProperties[relation.property] = relation.value;
+        groupedRelations[relation.property] = relation.value;
       }
     }
 
-    return valueByProperties;
+    return groupedRelations;
   }
 
   deleteScientificObject(uri) {

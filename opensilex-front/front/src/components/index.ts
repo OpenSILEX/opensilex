@@ -377,8 +377,8 @@ import GermplasmDetails from './germplasm/GermplasmDetails.vue';
 components["opensilex-GermplasmDetails"] = GermplasmDetails;
 import GermplasmModalList from './germplasm/GermplasmModalList.vue';
 components["opensilex-GermplasmModalList"] = GermplasmModalList;
-import GermplasmAttributesTable from './germplasm/GermplasmAttributesTable.vue';
-components["opensilex-GermplasmAttributesTable"] = GermplasmAttributesTable;
+import AttributesTable from './common/forms/AttributesTable.vue';
+components["opensilex-AttributesTable"] = AttributesTable;
 import GermplasmPropertyView from './germplasm/GermplasmPropertyView.vue';
 components["opensilex-GermplasmPropertyView"] = GermplasmPropertyView;
 import GermplasmPropertySelector from './germplasm/GermplasmPropertySelector.vue';
@@ -493,6 +493,8 @@ components["opensilex-VariablePropertySelector"] = VariablePropertySelector;
 
 import VariableSelectorWithFilter from './variables/views/VariableSelectorWithFilter.vue';
 components["opensilex-VariableSelectorWithFilter"] = VariableSelectorWithFilter;
+import VariableSelector from './variables/views/VariableSelector.vue';
+components["opensilex-VariableSelector"] = VariableSelector;
 
 // GroupVariables
 import GroupVariablesForm from './groupVariable/GroupVariablesForm.vue';
@@ -711,8 +713,6 @@ import DeviceCreate from './devices/DeviceCreate.vue';
 components["opensilex-DeviceCreate"] = DeviceCreate;
 import DeviceTable from './devices/DeviceTable.vue';
 components["opensilex-DeviceTable"] = DeviceTable;
-import DeviceAttributesTable from './devices/DeviceAttributesTable.vue';
-components["opensilex-DeviceAttributesTable"] = DeviceAttributesTable;
 import DeviceForm from './devices/form/DeviceForm.vue';
 components["opensilex-DeviceForm"] = DeviceForm;
 import DeviceModalForm from './devices/form/DeviceModalForm.vue';

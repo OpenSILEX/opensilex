@@ -1,6 +1,11 @@
 <template>
     <div>
         <div v-for="(relation, index) in typeRelations" v-bind:key="index">
+
+            <!--
+                Dynamic component(s) rending according internal relations
+                Additional prop can be added to these component by using v-bind
+            -->
             <component
                 :is="getInputComponent(relation.property)"
                 :property="relation.property"
@@ -8,7 +13,9 @@
                 :required="relation.property.is_required"
                 :multiple="relation.property.is_list"
                 :value.sync="relation.value"
+                :context="context"
                 @update:value="updateRelation($event,relation.property)"
+                v-bind="getCustomPropsForComponent(relation.property.uri)"
             ></component>
         </div>
     </div>
@@ -72,6 +79,36 @@ export default class OntologyRelationsForm extends Vue {
      */
     typeModel: VueRDFTypeDTO = null;
 
+    /**
+     * The model graph/context. Can be passed in some custom component has a "context" property
+     */
+    @Prop()
+    context: { experimentURI: string };
+
+
+    /**
+     * Function which can be applied on startup and on each type update.
+     * This function can be used when some specific logic on internalRelations need to be applied
+     *
+     * @param relation : relation object (property + value)
+     */
+    @Prop({
+        type: Function,
+        default: function (relation) {}
+    })
+    initHandler: { (relation: MultiValuedRDFObjectRelation): void };
+
+    /**
+     * Map used to pass some custom properties to some component associated to a custom property.
+     * Map key correspond to component id
+     *
+     * Map value correspond to :
+     *      - key : VueJS component prop associated to component
+     *      - value : VueJS component prop value
+     */
+    @Prop({default: () => new Map<string, Map<string, any>>()})
+    customComponentProps: Map<string, Map<string, any>>;
+
     created() {
         this.vueOntologyService = this.$opensilex.getService("opensilex.VueJsOntologyExtensionService");
         this.internalRelations = [];
@@ -91,6 +128,32 @@ export default class OntologyRelationsForm extends Vue {
             .filter(property => !this.excludedProperties.has(property.uri));
     }
 
+    /**
+     * @return an object with has custom prop as keys and custom value as values.
+     * Keys/Values are retrieved from {@link customComponentProps} if a key matching with property is found,
+     * else an empty object is returned.
+     *
+     * @param property URI of the property
+     */
+    getCustomPropsForComponent(property: string): any {
+        if (!this.customComponentProps || !this.customComponentProps.has(property)) {
+            return {};
+        }
+        let customAttributes = this.customComponentProps.get(property);
+        if (!customAttributes || customAttributes.size == 0) {
+            return {};
+        }
+        return Object.fromEntries(customAttributes);
+    }
+
+    /**
+     * Update {@link internalRelations} when the type change.
+     * A call to the {@link VueJsOntologyExtensionService#getRDFTypeProperties} API is done in order to retrieve class definition
+     * for the given type.
+     * @param type type URI
+     * @param initialLoad if true, then {@link internalRelations} are initialized according {@link relations}
+     *
+     */
     typeSwitch(type: string, initialLoad: boolean) {
 
         // only in create mode, since in update mode, the type can't be changed
@@ -114,7 +177,14 @@ export default class OntologyRelationsForm extends Vue {
                         }
                     }));
                 }
-            });
+
+                if (this.initHandler) {
+                    this.internalRelations.forEach(relation => {
+                        this.initHandler.apply(this, [relation]);
+                    });
+                }
+            //     // #TODO sort properties according typeModel order
+            }).catch(this.$opensilex.errorHandler);
     }
 
     getInputComponent(property: VueRDFTypePropertyDTO) {
@@ -169,7 +239,7 @@ export default class OntologyRelationsForm extends Vue {
      * then all values are grouped by property.
      * @param relations an Array of mono-valued (one value per property) relation
      */
-     toMultiValuedRelations(relations: Array<RDFObjectRelationDTO>): Array<MultiValuedRDFObjectRelation> {
+    toMultiValuedRelations(relations: Array<RDFObjectRelationDTO>): Array<MultiValuedRDFObjectRelation> {
 
         let valueByProperties = new Map<string, MultiValuedRDFObjectRelation>();
 

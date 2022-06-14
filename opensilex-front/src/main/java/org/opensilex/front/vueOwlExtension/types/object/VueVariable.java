@@ -7,10 +7,11 @@
 package org.opensilex.front.vueOwlExtension.types.object;
 
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.front.vueOwlExtension.types.VueOntologyObjectType;
 
-public class VueVariable extends VueFactorLevel {
+public class VueVariable implements VueOntologyObjectType {
+
     @Override
-
     public String getTypeUri() {
         return Oeso.Variable.getURI();
     }
@@ -20,4 +21,8 @@ public class VueVariable extends VueFactorLevel {
          return "opensilex-VariablePropertySelector";
     }
 
+    @Override
+    public String getViewComponent() {
+        return "opensilex-XSDUriView";
+    }
 }

@@ -8,13 +8,7 @@
         </template>
         <div>
             <!-- URI -->
-            <opensilex-UriView
-                v-if="variableGroup"
-                :uri="selected.uri"
-                :value="selected.uri"
-                :to="{path: '/variables_group/details/'+ encodeURIComponent(selected.uri)}"
-            ></opensilex-UriView>
-            <opensilex-UriView v-else :uri="selected.uri"></opensilex-UriView>
+            <opensilex-UriView :uri="selected.uri"></opensilex-UriView>
             <!-- Name -->
             <opensilex-TextView label="component.common.name" :value="selected.name"></opensilex-TextView>
             <!-- Description -->
@@ -30,11 +24,6 @@ import Vue from "vue";
 @Component
 export default class VariableStructureDetails extends Vue {
     $opensilex: any;
-
-    @Prop({
-        default: false
-    })
-    variableGroup: boolean;
 
     @Prop()
     selected;

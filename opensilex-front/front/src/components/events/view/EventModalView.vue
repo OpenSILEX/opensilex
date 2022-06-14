@@ -119,7 +119,7 @@
 
         buildPropertyMap() {
 
-            if(! this.eventType || this.eventType == this.$opensilex.Oeev.EVENT_TYPE_URI || this.eventType == this.$opensilex.Oeev.EVENT_TYPE_PREFIXED_URI) {
+            if(! this.eventType || this.$opensilex.Oeev.checkURIs(this.eventType,this.$opensilex.Oeev.EVENT_TYPE_URI)) {
                 return;
             }
 
@@ -166,7 +166,8 @@
             if (!this.event.rdf_type) {
                 return false;
             }
-            return (this.event.rdf_type == this.$opensilex.Oeev.MOVE_TYPE_URI || this.event.rdf_type == this.$opensilex.Oeev.MOVE_TYPE_PREFIXED_URI);
+
+          return this.$opensilex.Oeev.checkURIs(this.event.rdf_type,this.$opensilex.Oeev.MOVE_TYPE_URI)
         }
 
         hasRelations(event): boolean {

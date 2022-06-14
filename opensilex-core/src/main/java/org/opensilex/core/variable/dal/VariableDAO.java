@@ -252,7 +252,7 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
                     }
                     
                     if (!StringUtils.isEmpty(timeInterval)) {
-                        select.addFilter(SPARQLQueryHelper.regexFilter(VariableModel.TIME_INTERVAL_FIELD_NAME, timeInterval));
+                        select.addFilter(SPARQLQueryHelper.eq(VariableModel.TIME_INTERVAL_FIELD_NAME, timeInterval));
                     }
 
                     if (variableUriList != null) {

@@ -301,7 +301,7 @@ export default class PositionList extends Vue {
     }
 
     editEvent(uri) {
-        this.modalForm.showEditForm(uri, this.$opensilex.Oeev.MOVE_TYPE_PREFIXED_URI);
+        this.modalForm.showEditForm(uri, this.$opensilex.Oeev.MOVE_TYPE_URI);
     }
 
     getItemsToDisplay(targets) {

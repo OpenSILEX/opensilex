@@ -5,31 +5,39 @@
  */
 package org.opensilex.front.vueOwlExtension.types;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import org.opensilex.core.ontology.Oeso;
-import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import java.util.*;
 
 /**
+ * Interface used in order to dynamically associate some VueJs component with a type.
  *
  * @author vmigot
  */
 public interface VueOntologyType {
 
-    public String getTypeUri();
+    /**
+     * @return a String representation of the URI associated with this Vue
+     */
+    String getTypeUri();
 
-    public default List<String> getTypeUriAliases() {
-        return new ArrayList<>();
+    /**
+     * @return the {@link List} of all type(s) which can be handled with this VueOntologyType
+     * @apiNote This default implementation return {@link Collections#emptyList()}
+     */
+    default List<String> getTypeUriAliases() {
+        return Collections.emptyList();
     }
 
-    public String getInputComponent();
+    /**
+     * @return the id of the Vue component used for input
+     */
+    String getInputComponent();
 
-    public String getViewComponent();
+    /**
+     * @return the id of the Vue component used for view
+     */
+    String getViewComponent();
 
-
-    public default boolean isDisabled() {
+    default boolean isDisabled() {
         return false;
     }
 

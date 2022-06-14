@@ -12,10 +12,7 @@ import org.opensilex.config.ConfigManager;
 import org.opensilex.front.api.FrontConfigDTO;
 import org.opensilex.front.api.RouteDTO;
 import org.opensilex.front.api.UserFrontConfigDTO;
-import org.opensilex.front.config.FrontRoutingConfig;
-import org.opensilex.front.config.MenuItem;
-import org.opensilex.front.config.Route;
-import org.opensilex.front.config.UserConfigService;
+import org.opensilex.front.config.*;
 import org.opensilex.security.EmailConfig;
 import org.opensilex.security.OpenIDConfig;
 import org.opensilex.security.SecurityConfig;
@@ -112,6 +109,11 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
             config.setMenuComponent(frontConfig.menuComponent());
             config.setFooterComponent(frontConfig.footerComponent());
             config.setGeocodingService(frontConfig.geocodingService());
+            try {
+                config.setVersionLabel(VersionLabel.valueOf(frontConfig.versionLabel().toUpperCase()));
+            } catch (IllegalArgumentException ignored) {
+            }
+
 
             try {
                 AuthenticationService auth = getOpenSilex().getServiceInstance(AuthenticationService.DEFAULT_AUTHENTICATION_SERVICE, AuthenticationService.class);

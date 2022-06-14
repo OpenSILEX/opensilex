@@ -70,49 +70,21 @@
 
                                 <!-- Display custom properties (except variables, since they are displayed in another component) -->
                                 <opensilex-StringView
-                                    v-if="! isIsPartOfRelation(relation) && ! isVariableRelation(relation)"
+                                    v-if="! relation.inverse && ! isIsPartOfRelation(relation) && ! isVariableRelation(relation)"
                                     :label="getPropertyName(relation.property)"
                                     :value="relation.value"
                                 ></opensilex-StringView>
 
                                 <!-- is Part of -->
                                 <opensilex-UriView
-                                    v-else-if="isIsPartOfRelation(relation)"
+                                    v-else-if="! relation.inverse && isIsPartOfRelation(relation)"
                                     :title="getPropertyName(relation.property)"
                                     :uri="relation.value"
                                     :value="relation.value"
                                     :to="{ path: '/device/details/' + encodeURIComponent(relation.value) }"
                                 ></opensilex-UriView>
-
                             </div>
 
-                        </template>
-                    </opensilex-Card>
-
-                    <opensilex-Card
-                        label="DeviceDescription.additionalInfo"
-                        icon="ik#ik-clipboard"
-                        v-if="addInfo.length !== 0"
-                    >
-                        <template v-slot:body>
-                            <b-table
-                                ref="tableAtt"
-                                striped
-                                hover
-                                small
-                                responsive
-                                :fields="attributeFields"
-                                :items="addInfo"
-                            >
-                                <template v-slot:head(attribute)="data">{{
-                                    $t(data.label)
-                                    }}
-                                </template>
-                                <template v-slot:head(value)="data">{{
-                                    $t(data.label)
-                                    }}
-                                </template>
-                            </b-table>
                         </template>
                     </opensilex-Card>
                 </b-col>
@@ -148,15 +120,42 @@
                                 </p>
                             </template>
                         </opensilex-Card>
+
+                        <opensilex-Card
+                            label="DeviceDescription.additionalInfo"
+                            icon="ik#ik-clipboard"
+                            v-if="addInfo.length !== 0"
+                        >
+                            <template v-slot:body>
+                                <b-table
+                                    ref="tableAtt"
+                                    striped
+                                    hover
+                                    small
+                                    responsive
+                                    :fields="attributeFields"
+                                    :items="addInfo"
+                                >
+                                    <template v-slot:head(attribute)="data">{{
+                                        $t(data.label)
+                                        }}
+                                    </template>
+                                    <template v-slot:head(value)="data">{{
+                                        $t(data.label)
+                                        }}
+                                    </template>
+                                </b-table>
+                            </template>
+                        </opensilex-Card>
                     </b-row>
                 </b-col>
             </b-row>
         </opensilex-PageContent>
 
-      <opensilex-DeviceModalForm
-          ref="deviceForm"
-          @onUpdate="refresh()"
-      ></opensilex-DeviceModalForm>
+        <opensilex-DeviceModalForm
+            ref="deviceForm"
+            @onUpdate="refresh()"
+        ></opensilex-DeviceModalForm>
 
     </div>
 </template>
@@ -314,9 +313,9 @@ export default class DeviceDescription extends Vue {
         return relation.property == measures_prop || relation.property == this.$opensilex.Oeso.getShortURI(measures_prop);
     }
 
-    isIsPartOfRelation(relation: RDFObjectRelationDTO) : boolean {
-      const measures_prop = this.$opensilex.Oeso.IS_PART_OF;
-      return relation.property == measures_prop || relation.property == this.$opensilex.Oeso.getShortURI(measures_prop);
+    isIsPartOfRelation(relation: RDFObjectRelationDTO): boolean {
+        const measures_prop = this.$opensilex.Oeso.IS_PART_OF;
+        return relation.property == measures_prop || relation.property == this.$opensilex.Oeso.getShortURI(measures_prop);
     }
 
     getPropertyName(propertyUri: string) {
@@ -386,6 +385,7 @@ fr:
         attribute: Attribut
         value: Valeur
         no-var-provided: Aucune variable associée
+
 
 
 

@@ -14,6 +14,7 @@ import Vue from "vue";
 @Component
 export default class VariableTimeIntervalSelector extends Vue {
     $opensilex: any;
+    $store: any;
 
     @PropSync("timeinterval")
     timeIntervalURI;
@@ -23,14 +24,26 @@ export default class VariableTimeIntervalSelector extends Vue {
 
     periodList: Array<any> = [];
 
-    created(){
-        for(let period of ["millisecond","second","minute","hour","day","week","month","unique"]){
+    mounted() {
+        this.$store.watch(
+            () => this.$store.getters.language,
+            () => this.loadTimeInterval()
+        );
+    }
+
+    created() {
+        this.loadTimeInterval();
+    }
+
+    loadTimeInterval() {
+        let period = ["millisecond","second","minute","hour","day","week","month","unique"];
+        this.periodList = [];
+        for(let value of period){
             this.periodList.push({
-                id: this.$i18n.t("VariableForm.dimension-values." + period),
-                label: this.$i18n.t("VariableForm.dimension-values." + period)
+                id: value.charAt(0).toUpperCase() + value.slice(1),
+                label: this.$i18n.t("VariableForm.dimension-values." + value)
             })
         }
     }
-
 }
 </script>

@@ -250,11 +250,11 @@ export default class AreaForm extends Vue {
   }
 
   isMove(): boolean {
-    if (!this.form) {
+    if (!this.form || ! this.form.rdf_type) {
       return false;
     }
-    return this.form.rdf_type == this.$opensilex.Oeev.MOVE_TYPE_URI
-    || this.form.rdf_type == this.$opensilex.Oeev.MOVE_TYPE_PREFIXED_URI
+
+    return this.$opensilex.Oeev.checkURIs(this.form.rdf_type,this.$opensilex.Oeev.MOVE_TYPE_URI)
   }
 
   private getEventFromUri(uri) {

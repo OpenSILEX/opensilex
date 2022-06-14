@@ -330,6 +330,7 @@ export default class VariableList extends Vue {
             devices: undefined
         };
         this.refresh();
+        this.$emit("onReset");
     }
 
     refresh() {

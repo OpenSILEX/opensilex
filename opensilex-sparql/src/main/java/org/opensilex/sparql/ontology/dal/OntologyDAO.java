@@ -31,6 +31,7 @@ import org.apache.jena.vocabulary.OWL2;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.server.exceptions.NotFoundException;
+import org.opensilex.server.exceptions.displayable.DisplayableBadRequestException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -103,21 +104,53 @@ public final class OntologyDAO {
         sparql.update(customGraph, model);
     }
 
-    public void deleteClass(URI classURI) throws Exception {
+    private static final String CLASS_DELETION_KEY_PARAMETER = "class";
+    private static final String CLASS_DELETION_ERROR_KEY = "Class can't be deleted";
+
+    /**
+     *
+     * @param classURI URI of the class to delete
+     * @throws Exception If some unexpected error occurs during class deletion
+     * @throws DisplayableBadRequestException if class can't be deleted
+     *
+     * @apiNote There are several case when the class can't be deleted :
+     * <ul>
+     *     <li>If class has some instance</li>
+     *     <li>If class has some child class</li>
+     *     <li>If some data or object property have the class as domain</li>
+     * </ul>
+     */
+    public void deleteClass(URI classURI) throws Exception, DisplayableBadRequestException {
 
         // check that no instance is associated to class
         if (sparql.existInstanceOf(classURI)) {
-            throw new IllegalArgumentException("Some objects are instance of " + classURI + ". You must delete them thirst");
+            throw new DisplayableBadRequestException(CLASS_DELETION_ERROR_KEY,
+                    "component.ontology.class.exception.delete.instance-exists",
+                    Collections.singletonMap(CLASS_DELETION_KEY_PARAMETER,classURI.toString())
+            );
         }
         ClassModel model = getClassModel(classURI,null,null);
         if(! model.getChildren().isEmpty()){
-            throw new IllegalArgumentException("The class "+classURI+" has child class. You must delete them thirst");
+            throw new DisplayableBadRequestException(CLASS_DELETION_ERROR_KEY,
+                    "component.ontology.class.exception.delete.has-children",
+                    Collections.singletonMap(CLASS_DELETION_KEY_PARAMETER,classURI.toString())
+            );
         }
-        if(! model.getDatatypeProperties().isEmpty()){
-            throw new IllegalArgumentException("The class "+classURI+" is concerned by some data-properties. You must delete them thirst");
+
+        boolean hasDataPropertiesOnClass = searchDataProperties(classURI,null,null).getRootsCount() > 0;
+        if (hasDataPropertiesOnClass) {
+            throw new DisplayableBadRequestException(CLASS_DELETION_ERROR_KEY,
+                    "component.ontology.class.exception.delete.has-data-properties",
+                    Collections.singletonMap(CLASS_DELETION_KEY_PARAMETER,classURI.toString())
+            );
         }
-        if(! model.getObjectProperties().isEmpty()){
-            throw new IllegalArgumentException("The class "+classURI+" is concerned by some object-properties. You must delete them thirst");
+
+        boolean hasObjectPropertiesOnClass = searchObjectProperties(classURI,null,null).getRootsCount() > 0;
+        if(hasObjectPropertiesOnClass) {
+            throw new DisplayableBadRequestException(CLASS_DELETION_ERROR_KEY,
+                    "component.ontology.class.exception.delete.has-object-properties",
+                    Collections.singletonMap(CLASS_DELETION_KEY_PARAMETER,classURI.toString())
+            );
         }
 
         try{

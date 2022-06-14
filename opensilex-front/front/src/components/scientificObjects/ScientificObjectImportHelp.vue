@@ -18,7 +18,7 @@
             <b-th class="uri-field">vocabulary:hasFacility</b-th>
             <b-th class="uri-field">vocabulary:isPartOf</b-th>
             <b-th class="uri-field">rdfs:comment</b-th>
-            <b-th>geometry</b-th>
+            <b-th class="uri-field">vocabulary:hasGeometry</b-th>
             <b-th class="uri-field">uri:property...</b-th>
           </b-tr>
         </b-thead>

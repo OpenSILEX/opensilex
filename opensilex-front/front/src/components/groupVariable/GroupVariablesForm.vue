@@ -93,7 +93,7 @@ export default class GroupVariablesForm extends Vue {
         this.$opensilex.showSuccessToast(message);
         let uri = http.response.result;
         this.$emit("onCreate", uri);
-        this.$router.push({path: "/variables_group/details/" + encodeURIComponent(uri)});
+        this.$router.push({path: "/variables?elementType=VariableGroup&selected=" + encodeURIComponent(uri)});
       })
       .catch(error => {
         if (error.status == 409) {

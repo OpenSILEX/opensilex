@@ -163,6 +163,7 @@ export default class VariableDetails extends Vue {
   created() {
     this.service = this.$opensilex.getService("opensilex.VariablesService");
     this.dataService = this.$opensilex.getService("opensilex-core.DataService");
+    this.initDataTypes();
   }
 
 
@@ -224,12 +225,22 @@ export default class VariableDetails extends Vue {
         undefined);
   }
 
-  getDataTypeLabel(dataTypeUri: string): string {
+  dataTypes = [];
+
+  initDataTypes() {
+    this.service.getDatatypes()
+    .then((http) => {     
+      this.dataTypes = http.response.result;
+    }).catch(this.$opensilex.errorHandler);
+  }
+
+  getDataTypeLabel(dataTypeUri: string): any {
     if (!dataTypeUri) {
       return undefined;
-    }
-    let label = this.$t(this.$opensilex.getDatatype(dataTypeUri).label_key);
-    return label.charAt(0).toUpperCase() + label.slice(1)
+    } else {
+      let label = this.$t(this.dataTypes.find(item => item.uri === dataTypeUri).name);     
+      return label.charAt(0).toUpperCase() + label.slice(1);
+    } 
   }
 
   getEncodedUrlPage(elementType: string, uri: string): string {

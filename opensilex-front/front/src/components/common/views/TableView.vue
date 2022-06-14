@@ -35,6 +35,7 @@
         :filter="filter"
         :items="items"
         :per-page="pageSize"
+        :sort-by="sortBy"
         hover
         primary-key="uri"
         responsive
@@ -130,6 +131,9 @@ export default class TableView extends Vue {
     default: true
   })
   withPagination: boolean;
+
+  @Prop()
+  sortBy;
 
   filter: string = null;
 

@@ -41,6 +41,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 
@@ -558,6 +559,19 @@ public class OntologyAPI {
         List<URITypesModel> checkedURIsTypes = dao.checkURIsTypes(dto.getUris(), rdfTypes);
         List<URITypesDTO> dtoList = checkedURIsTypes.stream().map(URITypesDTO::fromModel).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();
+    }
+
+    @GET
+    @Path("/name_space")
+    @ApiOperation("Return namespaces")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return namespaces", response = String.class)
+    })
+    public Response getNameSpace() {
+        Map<String, String> nameSpaces = SPARQLService.getPrefixes();
+        return new SingleObjectResponse<>(nameSpaces).getResponse();
     }
 
     @PUT

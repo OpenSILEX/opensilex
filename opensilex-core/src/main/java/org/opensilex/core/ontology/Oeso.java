@@ -108,6 +108,8 @@ public class Oeso {
     public static final Property isHosted = Ontology.property(NS, "isHosted");
     public static final Property containsFacility = Ontology.property(NS, "containsFacility");
     public static final Property withinSite = Ontology.property(NS, "withinSite");
+    public static final Property hasGeometry = Ontology.property(NS, "hasGeometry");
+
 
     // ---- SPECIES ----
     // public static final Resource Species = Ontology.resource(NS, "Species");
@@ -137,6 +139,7 @@ public class Oeso {
     public static final Property fromInstitute = Ontology.property(NS, "fromInstitute");
     public static final Property hasProductionYear = Ontology.property(NS, "hasProductionYear");
     public static final Property hasGermplasm = Ontology.property(NS, "hasGermplasm");
+    public static final Property hasReplication = Ontology.property(NS, "hasReplication");
     public static final Property hasId = Ontology.property(NS, "hasId");
 
     // ---- SCIENTIFIC OBJECTS ----

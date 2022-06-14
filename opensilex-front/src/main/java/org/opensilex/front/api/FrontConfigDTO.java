@@ -7,6 +7,8 @@ package org.opensilex.front.api;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.opensilex.front.config.VersionLabel;
+
 import java.util.List;
 import javax.validation.constraints.NotNull;
 
@@ -48,6 +50,8 @@ public class FrontConfigDTO {
     Boolean activateResetPassword;
 
     String geocodingService;
+
+    VersionLabel versionLabel;
 
     @ApiModelProperty(value = "Application url path prefix", example = "app")
     public String getPathPrefix() {
@@ -171,5 +175,14 @@ public class FrontConfigDTO {
 
     public void setGeocodingService(String geocodingService) {
         this.geocodingService = geocodingService;
+    }
+
+    @ApiModelProperty(value = "Version label to use in the header")
+    public VersionLabel getVersionLabel() {
+        return versionLabel;
+    }
+
+    public void setVersionLabel(VersionLabel versionLabel) {
+        this.versionLabel = versionLabel;
     }
 }

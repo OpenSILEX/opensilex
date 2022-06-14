@@ -18,6 +18,17 @@
     <div class="container-fluid boxed-layout">
       <div class="d-flex justify-content-end">
         <div class="top-menu d-flex align-items-center">
+          <!--
+            Label to indicate the deployment version if needed (develop or release)
+            For development purposes only
+           -->
+          <div
+              v-if="versionLabel"
+              class="version-label-box"
+              v-bind:class="[versionLabelClass]"
+          >
+            {{ versionLabel }}
+          </div>
 
           <opensilex-HelpButton
             @click="$opensilex.getGuideFile()"
@@ -75,15 +86,15 @@
 </template>
 
 <script lang="ts">
-import { Component } from "vue-property-decorator";
+import {Component} from "vue-property-decorator";
 import Vue from "vue";
-import { User } from "../../models/User";
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 
 @Component
 export default class DefaultHeaderComponent extends Vue {
   $i18n: any;
   $store: any;
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
 
   /**
    * Return the current connected user
@@ -104,6 +115,29 @@ export default class DefaultHeaderComponent extends Vue {
    */
   get languages() {
     return Object.keys(this.$i18n.messages);
+  }
+
+  /**
+   * Gets the version label string
+   */
+  get versionLabel(): string {
+    if (!this.$opensilex.getConfig().versionLabel) {
+      return undefined;
+    }
+
+    return this.$t("component.header.version-label." + this.$opensilex.getConfig().versionLabel.toLowerCase())
+        .toString();
+  }
+
+  /**
+   * Gets the class to use for the version label
+   */
+  get versionLabelClass(): string {
+    if (!this.$opensilex.getConfig().versionLabel) {
+      return undefined;
+    }
+
+    return this.$opensilex.getConfig().versionLabel.toLowerCase();
   }
 
   /**
@@ -181,5 +215,22 @@ export default class DefaultHeaderComponent extends Vue {
 
 #menu-container {
   top: 60px!important;
+}
+
+.version-label-box {
+  margin: 0 10px;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-weight: bold;
+
+  &.develop {
+    background-color: #ff7800;
+    color: white;
+  }
+
+  &.release {
+    background-color: #cc338b;
+    color: white;
+  }
 }
 </style>

@@ -92,7 +92,7 @@
                         >
                             <b-list-group-item
                                 v-for="element in customPropertyOrder"
-                                :key="element.property"
+                                :key="element.uri"
                             >{{ element.name }}
                             </b-list-group-item
                             >
@@ -125,8 +125,8 @@
 
                     <template v-slot:cell(property)="data">
                         <opensilex-UriLink
-                            :uri="data.item.property"
-                            :value="data.item.property"
+                            :uri="data.item.uri"
+                            :value="data.item.uri"
                         ></opensilex-UriLink>
                     </template>
 
@@ -156,7 +156,7 @@
                         <b-button-group size="sm">
                             <opensilex-DeleteButton
                                 v-if="!data.item.inherited && data.item.is_custom && user.isAdmin()"
-                                @click="deleteClassPropertyRestriction(data.item.property)"
+                                @click="deleteClassPropertyRestriction(data.item.uri)"
                                 label="OntologyClassDetail.deleteProperty"
                                 :small="true"
                             ></opensilex-DeleteButton>
@@ -183,7 +183,7 @@ import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
 import {OntologyService} from "opensilex-core/index";
-import {VueRDFTypePropertyDTO} from "../../lib";
+import {VueJsOntologyExtensionService, VueRDFTypePropertyDTO} from "../../lib";
 import OntologyClassPropertyForm from "./OntologyClassPropertyForm.vue";
 
 @Component
@@ -231,12 +231,16 @@ export default class OntologyClassDetail extends Vue {
     ];
 
     ontologyService: OntologyService;
+    vueOntologyService: VueJsOntologyExtensionService;
 
     customPropertyOrder = [];
 
     created() {
         this.ontologyService = this.$opensilex.getService(
             "opensilex-core.OntologyService"
+        );
+        this.vueOntologyService = this.$opensilex.getService(
+            "opensilex-front.VueJsOntologyExtensionService"
         );
     }
 
@@ -280,7 +284,7 @@ export default class OntologyClassDetail extends Vue {
     }
 
     addProperty() {
-        // get properties, only property which apply on this type, and with a properly rdfs:range defined
+        // get properties, only property which apply on this type
       this.ontologyService.getLinkableProperties(this.selected.uri, this.rdfType).then((http) => {
             let formRef: OntologyClassPropertyForm = this.classPropertyForm.getFormRef();
             formRef.setDomain(this.rdfType);
@@ -291,9 +295,10 @@ export default class OntologyClassDetail extends Vue {
     }
 
     deleteClassPropertyRestriction(propertyURI) {
-        this.ontologyService
-            .deleteClassPropertyRestriction(this.selected.uri, propertyURI)
+        this.ontologyService.deleteClassPropertyRestriction(this.selected.uri, propertyURI)
             .then(() => {
+                let message = propertyURI + " : " + this.$i18n.t("OntologyClassDetail.property-link-delete");
+                this.$opensilex.showSuccessToast(message);
                 this.$emit("onDetailChange");
             })
             .catch(this.$opensilex.errorHandler);
@@ -306,9 +311,7 @@ export default class OntologyClassDetail extends Vue {
         }
 
 
-        this.ontologyService = this.$opensilex
-            .getService("opensilex-front.VueJsOntologyExtensionService")
-            .setRDFTypePropertiesOrder(this.selected.uri, propertiesOrder)
+        this.vueOntologyService.setRDFTypePropertiesOrder(this.selected.uri, propertiesOrder)
             .then(() => {
                 this.setPropertiesOrderRef.hide();
                 this.$emit("onDetailChange");
@@ -353,6 +356,7 @@ en:
         deleteProperty: Delete property
         setPropertiesOrderInfo: You can define properties display order by drag & drop them in the list below
         properties-help: "List of all properties which can apply on the selected type. Including inherited properties and properties which are not specific to the type (ex: name or description)"
+        property-link-delete: "The property has been deleted from type"
 fr:
     OntologyClassDetail:
         title: Détail du type d'objet
@@ -365,6 +369,7 @@ fr:
         addProperty: Ajouter une propriété au type
         add-property-help: Ajouter une propriété existante pour ce type
         deleteProperty: Supprimer la propriété
+        property-link-delete: "La propriété a été supprimée du type"
         setPropertiesOrderInfo: Vous pouvez définir l'ordre d'affichage des propriétés par glisser-déposer dans la liste ci-dessous
         properties-help: "Liste de toutes les propriétés qui peuvent s'appliquer au type selectionné. Y compris les propriétés héritées et les propriétés qui ne sont pas spécifiques au type (ex: nom ou description)"
 </i18n>

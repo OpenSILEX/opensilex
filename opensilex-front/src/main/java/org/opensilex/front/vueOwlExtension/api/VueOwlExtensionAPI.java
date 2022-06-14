@@ -6,7 +6,7 @@
 package org.opensilex.front.vueOwlExtension.api;
 
 import io.swagger.annotations.*;
-import org.opensilex.core.ontology.api.RDFTypeDTO;
+import org.opensilex.core.ontology.api.RDFTypeTranslatedDTO;
 import org.opensilex.front.vueOwlExtension.dal.VueClassExtensionModel;
 import org.opensilex.front.vueOwlExtension.dal.VueOwlExtensionDAO;
 import org.opensilex.front.vueOwlExtension.types.VueOntologyDataType;
@@ -245,7 +245,7 @@ public class VueOwlExtensionAPI {
             dto.setViewComponent(objectType.getViewComponent());
 
             ClassModel objectClass = ontologyStore.getClassModel(dto.getUri(), null, currentUser.getLanguage());
-            dto.setRdfClass(new RDFTypeDTO(objectClass));
+            dto.setRdfClass(new RDFTypeTranslatedDTO(objectClass));
             dto.setName(objectClass.getName());
             datatypeDTOs.add(dto);
         }

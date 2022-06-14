@@ -24,6 +24,8 @@ public class RDFObjectRelationDTO {
 
     private String value;
 
+    private boolean isInverse;
+
     public URI getProperty() {
         return property;
     }
@@ -38,6 +40,14 @@ public class RDFObjectRelationDTO {
 
     public void setValue(String value) {
         this.value = value;
+    }
+
+    public boolean isInverse() {
+        return isInverse;
+    }
+
+    public void setInverse(boolean inverse) {
+        isInverse = inverse;
     }
 
     public static RDFObjectRelationDTO getDTOFromModel(SPARQLModelRelation relation) {
@@ -58,6 +68,8 @@ public class RDFObjectRelationDTO {
         } else {
             dto.setValue(relation.getValue());
         }
+
+        dto.setInverse(relation.getReverse());
 
         return dto;
     }

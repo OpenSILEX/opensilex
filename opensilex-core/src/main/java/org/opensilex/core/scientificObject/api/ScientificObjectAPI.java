@@ -120,7 +120,6 @@ public class ScientificObjectAPI {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ScientificObjectAPI.class);
 
-    public static final String GEOMETRY_COLUMN_ID = "geometry";
     public static final String INVALID_GEOMETRY = "Invalid geometry (longitude must be between -180 and 180 and latitude must be between -90 and 90, no self-intersection, ...)";
 
     public static final String SCIENTIFIC_OBJECT_EXAMPLE_URI = "http://opensilex.org/id/Plot 12";
@@ -743,7 +742,7 @@ public class ScientificObjectAPI {
             graphURI = sparql.getDefaultGraphURI(ScientificObjectModel.class);
         }
         if (!errors.hasErrors()) {
-            Map<Integer, Geometry> geometries = (Map<Integer, Geometry>) errors.getObjectsMetadata().get(GEOMETRY_COLUMN_ID);
+            Map<Integer, Geometry> geometries = (Map<Integer, Geometry>) errors.getObjectsMetadata().get(Oeso.hasGeometry.toString());
             if (geometries != null && geometries.size() > 0) {
                 GeospatialDAO geoDAO = new GeospatialDAO(nosql);
 
@@ -872,7 +871,7 @@ public class ScientificObjectAPI {
             AbstractCsvDao.CSV_URI_KEY,
             AbstractCsvDao.CSV_TYPE_KEY,
             AbstractCsvDao.CSV_NAME_KEY,
-            GEOMETRY_COLUMN_ID
+            Oeso.hasGeometry.toString()
     ));
 
     @POST
@@ -925,7 +924,7 @@ public class ScientificObjectAPI {
             customColumns.add(Oeso.hasFactorLevel.toString());
             customColumns.add(Oeso.isHosted.toString());
         }
-        customColumns.add(GEOMETRY_COLUMN_ID);
+        customColumns.add(Oeso.hasGeometry.toString());
 
         // define how to write value for each selected column from header
         BiFunction<String, ScientificObjectModel, String> customValueGenerator = (columnID, value) -> {
@@ -962,7 +961,7 @@ public class ScientificObjectAPI {
                     return null;
                 }
             }
-            if (columnID.equals(GEOMETRY_COLUMN_ID)) {
+            if (columnID.equals(Oeso.hasGeometry.toString())) {
                 String uriString = value.getUri().toString();
                 if (geospatialMap.containsKey(uriString)) {
                     Geometry geo = geospatialMap.get(uriString);
@@ -992,9 +991,9 @@ public class ScientificObjectAPI {
                 (colId1, colId2) -> {
                     if (colId1.equals(colId2)) {
                         return 0;
-                    } else if (colId1.equals(GEOMETRY_COLUMN_ID)) {
+                    } else if (colId1.equals(Oeso.hasGeometry.toString())) {
                         return 1;
-                    } else if (colId2.equals(GEOMETRY_COLUMN_ID)) {
+                    } else if (colId2.equals(Oeso.hasGeometry.toString())) {
                         return -1;
                     } else {
                         return colId1.compareTo(colId2);
@@ -1112,10 +1111,10 @@ public class ScientificObjectAPI {
         }
 
         List<String> customColumns = new ArrayList<>();
-        customColumns.add(GEOMETRY_COLUMN_ID);
+        customColumns.add(Oeso.hasGeometry.toString());
 
         Map<Integer, Geometry> geometries = new HashMap<>();
-        customValidators.put(GEOMETRY_COLUMN_ID, (cell, csvErrors) -> {
+        customValidators.put(Oeso.hasGeometry.toString(), (cell, csvErrors) -> {
             String wktGeometry = cell.getValue();
             if (wktGeometry != null && !wktGeometry.isEmpty()) {
                 try {
@@ -1157,7 +1156,7 @@ public class ScientificObjectAPI {
                 }
             });
 
-            validationResult.addObjectMetadata(GEOMETRY_COLUMN_ID, geometries);
+            validationResult.addObjectMetadata(Oeso.hasGeometry.toString(), geometries);
         }
 
         try{

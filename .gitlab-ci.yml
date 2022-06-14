@@ -9,6 +9,7 @@ stages:
   - build
   - test
   - deploy
+  - release
 
 ########################
 ##GLOBAL VARIABLES
@@ -188,33 +189,37 @@ variables:
     reports:
       dotenv: deploy.env
 
-#################
-### DEFAULT BUILD
-#################
+##################
+### DEFAULT BUILDS
+##################
 
 opensilex-master:build:
   <<: *build_template_with_opensilex
   rules:
     - if: $CI_COMMIT_BRANCH == "master"
 
-opensilex-develop-release:build:
+opensilex-develop:build:
   <<: *build_template_with_opensilex
   rules:
-    - if: $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "release"
+    - if: $CI_COMMIT_BRANCH == "develop"
+
+opensilex-release:build:
+  <<: *build_template_with_opensilex
+  rules:
+    - if: $CI_COMMIT_BRANCH == "release"
 
 ##################################
 ### MERGE REQUESTS CHECK AND BUILD
 ##################################
 
 # Checks that the merge request is valid (target branch must not be master, except if the
-# source is the release or a hotfix branch)
+# source is a hotfix branch)
 # Merge requests marked with the Draft: keyword are also blocked
 # No pipeline is triggered for MR from the release branch, because the last release pipeline can be used instead.
 merge-request:check:
   stage: check
   script:
     - if [[ $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master" &&
-      $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME != "release" &&
       ! $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ ^hotfix\/.* ]]; then
     -   echo "Merging from $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME to master is forbidden"
     -   exit 1
@@ -256,30 +261,108 @@ trigger:sixtine:build:
   needs:
     - job: "opensilex-master:build"
 
-# Trigger pipeline for the deployment of either develop or release branches
-# - If a commit is pushed on branch release, then release is deployed
-# - If a commit is pushed on branch develop AND there is no release branch, then develop is deployed
+# Trigger pipeline for the deployment of the develop branch
+# - If there is no release branch, then develop is deployed
 # - Otherwise, nothing is deployed
-trigger:opensilex-develop-release:deploy:test:
+trigger:opensilex-develop:deploy:test:
   stage: deploy
   image: alpine
   script:
     - apk update
     - apk add git
     - apk add curl
-    - if [[ $CI_COMMIT_BRANCH == "release" ]]; then
-    -   echo 'Deploying release'
-    -   curl --request POST --form "variables[DEPLOY]=opensilex-release" --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$CI_COMMIT_SHA" --form "variables[OPENSILEX_APP_REVISION]=$OPENSILEX_APP_REVISION" https://forgemia.inra.fr/api/v4/projects/403/trigger/pipeline
-    - elif [[ -z $(git branch --list release) ]]; then
+    - if [[ -z $(git branch --list release) ]]; then
     -   echo 'Deploying develop'
     -   curl --request POST --form "variables[DEPLOY]=opensilex-develop" --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$CI_COMMIT_SHA" --form "variables[OPENSILEX_APP_REVISION]=$OPENSILEX_APP_REVISION" https://forgemia.inra.fr/api/v4/projects/403/trigger/pipeline
     - else
-    -   echo 'Nothing do deploy'
+    -   echo 'Branch release exists, cannot deploy develop'
     - fi
   rules:
-    - if: $CI_COMMIT_BRANCH == "develop" || $CI_COMMIT_BRANCH == "release"
+    - if: $CI_COMMIT_BRANCH == "develop"
   needs:
-    - job: "opensilex-develop-release:build"
+    - job: "opensilex-develop:build"
+
+# Trigger pipeline for the deployment of the release branch
+trigger:opensilex-release:deploy:test:
+  stage: deploy
+  image: alpine
+  script:
+    - apk update
+    - apk add curl
+    - echo 'Deploying release'
+    - curl --request POST --form "variables[DEPLOY]=opensilex-release" --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$CI_COMMIT_SHA" --form "variables[OPENSILEX_APP_REVISION]=$OPENSILEX_APP_REVISION" https://forgemia.inra.fr/api/v4/projects/403/trigger/pipeline
+  rules:
+    - if: $CI_COMMIT_BRANCH == "release"
+  needs:
+    - job: "opensilex-release:build"
+
+#################
+### CLOSE RELEASE
+#################
+
+opensilex-release:close:
+  stage: release
+  image: alpine
+  script:
+    - if [[ -z $RELEASE_TAG ]]; then
+    -   echo 'RELEASE_TAG must be set'
+    -   exit 1
+    - else
+    -   echo "Finishing release $RELEASE_TAG"
+    - fi
+    # Install packages git & curl
+    - apk update
+    - apk add git
+    - apk add curl
+    # Config & variables
+    - RELEASE_COMMIT_MESSAGE="Release $RELEASE_TAG"
+    - RELEASE_INTERMEDIATE_BRANCH="release-$RELEASE_TAG"
+    - git config user.name "OpenSILEX Team"
+    - git config user.email opensilex@gmail.com
+    - git remote set-url origin "https://oauth2:$GITLAB_USER_CI_PAT@forgemia.inra.fr/OpenSILEX/opensilex-dev.git"
+    # Fetch and unshallows the project
+    - git fetch origin --unshallow
+    # Remove local tags
+    - git tag -l | xargs git tag -d
+    - git fetch origin --tags
+    # Remove the local branches if necessary
+    - if git show-ref --quiet refs/heads/release; then
+    -   git branch -D release
+    - fi
+    - if git show-ref --quiet refs/heads/master; then
+    -   git branch -D master
+    - fi
+    - if git show-ref --quiet refs/heads/$RELEASE_INTERMEDIATE_BRANCH; then
+    -   git branch -D $RELEASE_INTERMEDIATE_BRANCH
+    - fi
+    # Create intermediate branch to avoir conflicts
+    - git checkout release
+    - git checkout -b $RELEASE_INTERMEDIATE_BRANCH
+    - git merge origin/master -s ours --no-edit
+    # Merge into master
+    - git checkout master
+    - git merge $RELEASE_INTERMEDIATE_BRANCH --squash
+    - git commit -m "$RELEASE_COMMIT_MESSAGE"
+    - git tag -a -m "$RELEASE_COMMIT_MESSAGE" "$RELEASE_TAG"
+    # Check that there is no diff between master and release now
+    - if ! git diff master release --exit-code; then
+    -   echo "Something went wrong with the merge; master and release should be the same but have differences"
+    -   exit 1
+    - fi
+    # Push master and the release tag
+    - git push -f origin master
+    - git push origin $RELEASE_TAG
+    # Trigger the merge request to develop
+    - >
+      curl -X POST -F "private_token=$JOB_API_TOKEN" -F "source_branch=release" 
+      -F "target_branch=develop" -F "title=[Release] Merge $RELEASE_TAG into develop" 
+      -F "remove_source_branch=true" -F "labels[]=finishing release"
+      https://forgemia.inra.fr/api/v4/projects/1675/merge_requests
+  rules:
+    - if: $CI_COMMIT_BRANCH == "release"
+  needs:
+    - job: "opensilex-release:build"
+  when: manual
 
 # Trigger pipeline for data-analysis module deployment
 #trigger:dataanalysis:deploy:test:

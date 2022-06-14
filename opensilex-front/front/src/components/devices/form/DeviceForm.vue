@@ -58,7 +58,7 @@
         <opensilex-InputForm
             :value.sync="form.serial_number"
             label="DeviceForm.serial_number"
-            type="number"
+            type="text"
             helpMessage="DeviceForm.serial_number-help"
         ></opensilex-InputForm>
 
@@ -89,10 +89,10 @@
         ></opensilex-OntologyRelationsForm>
 
         <!-- metadata -->
-        <!--    <opensilex-DeviceAttributesTable-->
-        <!--      ref="deviceAttributesTable"-->
-        <!--      :attributesArray='attributesArray'-->
-        <!--    ></opensilex-DeviceAttributesTable>-->
+        <opensilex-AttributesTable
+          ref="attributeTable"
+          :attributesArray='attributesArray'
+        ></opensilex-AttributesTable>
 
     </b-form>
 </template>
@@ -102,12 +102,10 @@ import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
 import {DevicesService} from "opensilex-core/index";
-import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
-import ModalForm from "../../common/forms/ModalForm.vue";
-import DeviceAttributesTable from "../DeviceAttributesTable.vue";
 import OntologyRelationsForm from "../../ontology/OntologyRelationsForm.vue";
 import {DeviceCreationDTO} from "opensilex-core/model/deviceCreationDTO";
+import AttributesTable from "../../common/forms/AttributesTable.vue";
 
 @Component
 export default class DeviceForm extends Vue {
@@ -129,7 +127,7 @@ export default class DeviceForm extends Vue {
 
     uriGenerated = true;
 
-    @Ref("deviceAttributesTable") readonly attTable!: DeviceAttributesTable;
+    @Ref("attributeTable") readonly attTable!: AttributesTable;
     @Ref("ontologyRelationsForm") readonly ontologyRelationsForm!: OntologyRelationsForm;
 
     @Prop()
@@ -172,13 +170,15 @@ export default class DeviceForm extends Vue {
     }
 
     create(form){
+        form.metadata = this.attTable.pushAttributes();
         return this.service.createDevice(false, form).then((http) => {
             form.uri = http.response.result;
             return form;
         }).catch(this.$opensilex.errorHandler);
     }
 
-    update(form) {
+    update(form: DeviceCreationDTO) {
+        form.metadata = this.attTable.pushAttributes();
         return this.service.updateDevice(form).then(() => {
             return form;
         }).catch(this.$opensilex.errorHandler);
@@ -186,17 +186,8 @@ export default class DeviceForm extends Vue {
 
     attributesArray = [];
 
-    setRelationsAndAttributes(form) {
-        this.attributesArray = [];
-        if (form.metadata != null) {
-            for (const property in form.metadata) {
-                let att = {
-                    attribute: property,
-                    value: form.metadata[property]
-                }
-                this.attributesArray.push(att);
-            }
-        }
+    readAttributes(metadata: { [key: string]: string; }) {
+        AttributesTable.readAttributes(metadata,this.attributesArray);
     }
 
     typeSwitch(type: string, initialLoad: boolean) {

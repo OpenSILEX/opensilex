@@ -698,7 +698,7 @@ public class ExperimentAPI {
 
         return prepareCSVExport;
     }
-
+    @Deprecated
     @POST
     @Path("{uri}/data/import")
     @ApiOperation(value = "Import a CSV file for the given experiment URI and scientific object type.")
@@ -782,7 +782,7 @@ public class ExperimentAPI {
         csvValidation.setDataErrors(validation);
         return new SingleObjectResponse<>(csvValidation).getResponse();
     }
-
+    @Deprecated
     @POST
     @Path("{uri}/data/import_validation")
     @ApiOperation(value = "Import a CSV file for the given experiment URI and scientific object type.")

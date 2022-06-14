@@ -392,20 +392,19 @@ export default class VariableList extends Vue {
         this.tableRef.onItemUnselected(row);
     }
 
-    onResourceSelected(dto:SharedResourcesDTO){
+    onResourceSelected(dto:SharedResourcesDTO){ // récup le dto de la sélection et l'ATTRIBUE à this selectedResource pour l'utiliser dans le filtre
       this.selectedResource = dto;
     }
 
-    onResourceSelectorLoaded(defaultDtoSelected){
-      console.log("loaded", defaultDtoSelected);
-      this.selectedResource = defaultDtoSelected;
-      this.refresh();
+    onResourceSelectorLoaded(dtoSelected){ // déclenché au chargement du filtre (une fois au début)
+      this.selectedResource = dtoSelected; // sert à récup le dto de la présélection au chargement ou rechargement, pour que le tableau au chagrement ait les bonnes variables correspondantes à la présélection
+      this.refresh();  // elle force le tableau de var à se rafraichir = faire req pour recup et afficher les varaibles (searchVariables en dessous)
     }
 
     searchVariablesWithAttribute(options) {
-      console.log("search", this.selectedResource);
         return this.$service.searchVariables(
-            !this.selectedResource || this.selectedResource.isLocal ? undefined : this.selectedResource.uri,
+            !this.selectedResource || this.selectedResource.isLocal ? undefined : this.selectedResource.uri, // auto sélection locale se fait après 1er appel
+            // si avant appel ou si locale --> undefined sinon on prend l'uri de la ressource sélectionnée
             this.filter.name,
             this.filter.entity,
             this.filter.entityOfInterest,

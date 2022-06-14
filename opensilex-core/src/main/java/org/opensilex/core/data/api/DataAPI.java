@@ -1286,7 +1286,7 @@ public class DataAPI {
             // Line 1
             String[] ids = csvReader.parseNext();
             Set<String> headers = Arrays.stream(ids).filter(Objects::nonNull).map(id -> id.toLowerCase(Locale.ENGLISH)).collect(Collectors.toSet());
-            if (!headers.contains(deviceHeader) && (!headers.contains(targetHeader) || !headers.contains(soHeader)) && !hasDevice) {
+            if (!headers.contains(deviceHeader) && !headers.contains(targetHeader) && !headers.contains(soHeader) && !hasDevice) {
                 csvValidation.addMissingHeaders(Arrays.asList(deviceHeader + " or " + targetHeader + " or " + soHeader));
             }  
             
@@ -1747,13 +1747,17 @@ public class DataAPI {
 
                             // check for duplicate data
                             URI targetUri = null;
+                            URI deviceUri = null;
                             if (target != null) {
                                 targetUri = target.getUri();
                             }
                             if (object != null) {
                                 targetUri = object.getUri();
                             }
-                            ImportDataIndex importDataIndex = new ImportDataIndex(parsedDateTimeMongo.getInstant(), varURI, provenance.getUri(), targetUri, device.getUri());
+                            if(device != null) {
+                                deviceUri = device.getUri();
+                            }
+                            ImportDataIndex importDataIndex = new ImportDataIndex(parsedDateTimeMongo.getInstant(), varURI, provenance.getUri(), targetUri, deviceUri);
                             if (!duplicateDataByIndex.contains(importDataIndex)) {
                                 duplicateDataByIndex.add(importDataIndex);
                             } else {

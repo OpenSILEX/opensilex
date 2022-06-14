@@ -26,9 +26,9 @@ public class OpenSilexBenchmarkRunner {
                 .timeUnit(TimeUnit.MILLISECONDS)
                 .mode(Mode.AverageTime)
                 .verbosity(VerboseMode.NORMAL)
-                .warmupIterations(2)
+                .warmupIterations(0)
                 .warmupTime(TimeValue.milliseconds(10))
-                .measurementIterations(5)
+                .measurementIterations(1)
                 .measurementTime(TimeValue.milliseconds(10))
                 .forks(debug ? 0 : 1)
                 .resultFormat(ResultFormatType.JSON);

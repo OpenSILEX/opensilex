@@ -46,10 +46,6 @@ public class AbstractOpenSilexBenchmark {
         sparql = openSilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class).provide();
         mongodb = openSilex.getServiceInstance(MongoDBService.DEFAULT_SERVICE, MongoDBService.class);
         fs = openSilex.getServiceInstance(FileStorageService.DEFAULT_FS_SERVICE, FileStorageService.class);
-
-        LOGGER.info("Register OpenSILEX SPARQLService [OK] : {}", sparql);
-        LOGGER.info("Register OpenSILEX MongoDBService [OK] : {}", mongodb);
-        LOGGER.info("Register OpenSILEX FileStorageService [OK] : {}", fs);
     }
 
 }

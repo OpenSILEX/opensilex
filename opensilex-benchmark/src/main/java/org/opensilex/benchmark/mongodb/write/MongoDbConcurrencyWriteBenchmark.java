@@ -25,6 +25,7 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.*;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * @author rcolin
@@ -34,39 +35,64 @@ import java.util.function.Function;
 @State(Scope.Benchmark)
 public class MongoDbConcurrencyWriteBenchmark extends AbstractOpenSilexBenchmark {
 
+    private abstract static class InsertTask implements Callable<Integer> {
+
+        private final int taskId;
+        protected final List<DataModel> models;
+        protected final MongoClient client;
+        protected final MongoCollection<DataModel> collection;
+
+        public InsertTask(int taskId, List<DataModel> models, MongoClient client, MongoCollection<DataModel> collection) {
+            this.taskId = taskId;
+            this.models = models;
+            this.client = client;
+            this.collection = collection;
+        }
+
+        abstract void insertModels() throws Exception;
+
+        @Override
+        public Integer call() throws Exception {
+            LOGGER.info("Running mongo insert task {} [IN-PROGRESS]", taskId);
+            Instant begin = Instant.now();
+
+            insertModels();
+
+            Duration duration = Duration.between(begin, Instant.now());
+            LOGGER.info("Mongo insert task {} [OK] time: {} ms", taskId, duration.toMillis());
+
+            return models.size();
+        }
+    }
+
     //    @Param({"1000","2000","5000","10000"})
-    @Param({"1000"})
+    @Param({"4096"})
     public int length;
-    public static final String LENGTH_JMH_PARAM = "length";
 
     //    @Param({"1","2","4","8"})
-    @Param({"1"})
+    @Param({"8"})
     public int concurrentWriteNb;
-    public static final String CONCURRENT_WRITE_NB_JMH_PARAM = "concurrentWriteNb";
 
     @Param({"true"})
     public boolean usePrefixes;
-    public static final String USE_PREFIXES_JMH_PARAM = "usePrefixes";
-
-    private DataDAO dataDAO;
 
     private Random random;
 
     @Param({"1000"})
     public int nbTarget;
-    public static final String NB_TARGET_JMH_PARAM = "nbTarget";
 
     private List<URI> targets;
 
     @Param({"100"})
     public int nbVariable;
-    public static final String NB_VARIABLE_JMH_PARAM = "nbVariable";
+
+    @Param({"true"})
+    public boolean submitTaskTogether;
 
     private List<URI> variables;
 
     @Param({"100"})
     public int nbProvenance;
-    public static final String NB_PROVENANCE_JMH_PARAM = "nbProvenance";
 
     private List<DataProvenanceModel> provenances;
 
@@ -80,7 +106,6 @@ public class MongoDbConcurrencyWriteBenchmark extends AbstractOpenSilexBenchmark
     @Setup(Level.Trial)
     public void setup() throws Exception {
         super.setup();
-        dataDAO = new DataDAO(mongodb, sparql, fs);
         random = new Random();
 
         PrefixMapping prefixMapping = SPARQLService.getPrefixMapping();
@@ -105,7 +130,7 @@ public class MongoDbConcurrencyWriteBenchmark extends AbstractOpenSilexBenchmark
         }
 
         mongoClient = mongodb.getMongoClient();
-        collection = mongodb.getDatabase().getCollection(DataDAO.DATA_COLLECTION_NAME,DataModel.class);
+        collection = mongodb.getDatabase().getCollection(DataDAO.DATA_COLLECTION_NAME, DataModel.class);
     }
 
     private URI createURI(String suffix) {
@@ -135,7 +160,7 @@ public class MongoDbConcurrencyWriteBenchmark extends AbstractOpenSilexBenchmark
         return models;
     }
 
-    private void testConcurrentWrite(Function<Integer, Callable<Integer>> taskFunction) throws InterruptedException, ExecutionException {
+    private void testConcurrentWrite(Function<Integer, Callable<Integer>> taskFunction) {
 
         // create tasks
         ExecutorService executorService = Executors.newFixedThreadPool(concurrentWriteNb);
@@ -147,7 +172,15 @@ public class MongoDbConcurrencyWriteBenchmark extends AbstractOpenSilexBenchmark
 
         // run tasks
         try {
-            List<Future<Integer>> futures = executorService.invokeAll(tasks);
+            List<Future<Integer>> futures;
+            if (submitTaskTogether) {
+                futures = executorService.invokeAll(tasks);
+            } else {
+                futures = tasks.stream()
+                        .map(executorService::submit)
+                        .collect(Collectors.toList());
+            }
+
             for (Future<Integer> future : futures) {
                 future.get();
             }
@@ -159,49 +192,41 @@ public class MongoDbConcurrencyWriteBenchmark extends AbstractOpenSilexBenchmark
 
     }
 
-//    @Benchmark
-    public void testConcurrentWriteWithDao() throws InterruptedException, ExecutionException {
-        Function<Integer, Callable<Integer>> taskFunction = (taskIndex) ->
-                () -> {
-                    LOGGER.info("Running mongo insert task {} [IN-PROGRESS]", taskIndex);
-                    Instant begin = Instant.now();
+    //    @Benchmark
+    public void testConcurrentWriteWithDao() {
 
-                    List<DataModel> models = getModels();
-                    DataDAO dao = new DataDAO(mongodb, sparql, fs);
-                    dao.createAll(models);
-
-                    Duration duration = Duration.between(begin, Instant.now());
-                    LOGGER.info("Mongo insert task {} [OK] time: {} ms", taskIndex, duration.toMillis());
-
-                    return models.size();
-                };
+        Function<Integer, Callable<Integer>> taskFunction = taskIndex -> new InsertTask(taskIndex, getModels(), mongoClient, collection) {
+            @Override
+            void insertModels() throws Exception {
+                DataDAO dao = new DataDAO(mongodb, sparql, fs);
+                dao.createAll(models);
+            }
+        };
 
         testConcurrentWrite(taskFunction);
     }
 
     @Benchmark
-    public void testConcurrentWriteWithSessionHandling() throws InterruptedException, ExecutionException {
-        Function<Integer, Callable<Integer>> taskFunction = (taskIndex) ->
-                () -> {
-                    LOGGER.info("Running mongo insert task {} [IN-PROGRESS]", taskIndex);
-                    Instant begin = Instant.now();
+    public void testConcurrentWriteWithSessionHandling() {
 
-                    ClientSession session = mongoClient.startSession();
-                    List<DataModel> models = getModels();
-                    session.startTransaction();
+        Function<Integer, Callable<Integer>> taskFunction = taskIndex -> new InsertTask(taskIndex, getModels(), mongoClient, collection) {
+            @Override
+            void insertModels() throws Exception {
 
-                    try{
-                        collection.insertMany(session,models);
-                        session.commitTransaction();
-                    }catch (Exception e){
-                        session.abortTransaction();
-                    }
+                ClientSession session = mongoClient.startSession();
+                List<DataModel> models = getModels();
+                session.startTransaction();
 
-                    Duration duration = Duration.between(begin, Instant.now());
-                    LOGGER.info("Mongo insert task {} [OK] time: {} ms", taskIndex, duration.toMillis());
-
-                    return models.size();
-                };
+                try {
+                    collection.insertMany(session, models);
+                    session.commitTransaction();
+                } catch (Exception e) {
+                    session.abortTransaction();
+                } finally {
+                    session.close();
+                }
+            }
+        };
 
         testConcurrentWrite(taskFunction);
     }
@@ -209,8 +234,6 @@ public class MongoDbConcurrencyWriteBenchmark extends AbstractOpenSilexBenchmark
 
     public static void main(String[] args) throws RunnerException {
         Options options = new OptionsBuilder()
-                .param(LENGTH_JMH_PARAM, String.valueOf(1000))
-                .param(CONCURRENT_WRITE_NB_JMH_PARAM, String.valueOf(4))
                 .param(CONFIG_PATH_JMH_PARAM, "/home/renaud/workspace/OpenSilex/opensilex-dev/opensilex-dev-tools/src/main/resources/config/opensilex.yml")
                 .build();
 

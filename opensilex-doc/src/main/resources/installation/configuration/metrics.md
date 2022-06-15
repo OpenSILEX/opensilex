@@ -20,10 +20,10 @@ Module-core configuration file for metrics key
 # ------------------------------------------------------------------------------
 # Configuration for module: CoreModule (CoreConfig)
 core:
-   # Activate access metrics (boolean)
-    enableMetrics: true
   # Metrics options (MetricsConfig)
   metrics:
+    # Activate access metrics (boolean)
+    enableMetrics: true
     # Metrics configs about system (SystemMetricsConfig)
     system:
       # First metrics for any time depending on is time unit (int)

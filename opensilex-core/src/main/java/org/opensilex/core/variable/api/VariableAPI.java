@@ -49,10 +49,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -266,9 +263,13 @@ public class VariableAPI {
             // liste des RP en dur (sauf vitioeno car connexion avec admin ne fonctionne pas
             List<String> listResources = Arrays.asList("http://138.102.159.36:8083/rest","http://138.102.159.36:8082/rest");
             // boucler sur chaque RP
-            for (String url : listResources) {
+
+            int compteur = 0;
+
+            for (String urlSharedResource : listResources) {
+
                 // connexion à la RP
-                URL urlToken = new URL(url + "/security/authenticate");
+                URL urlToken = new URL(urlSharedResource + "/security/authenticate");
                 HttpURLConnection connection = (HttpURLConnection) urlToken.openConnection();
                 connection.setDoOutput(true); // POST
                 connection.setRequestProperty("Accept", "application/json");
@@ -289,30 +290,48 @@ public class VariableAPI {
                 String token = "Bearer "+ jsonResult.get("result").get("token").asText();
                 connection.disconnect();
 
-                // utilisation service de recherche d'une variable avec l'uri
-                URL urlSearch = new URL(url);
-                HttpURLConnection searchConnection = (HttpURLConnection) urlSearch.openConnection();
-                searchConnection.setRequestProperty("Accept", "application/json");
-                searchConnection.setRequestProperty("Authorization", token);
-                BufferedReader buff = new BufferedReader(
-                        new InputStreamReader(searchConnection.getInputStream()));
-                String contentSearch="";
-                String inputLineSearch;
-                while ((inputLineSearch = buff.readLine()) != null)
-                    contentSearch+=inputLineSearch;
-                buff.close();
-                ObjectMapper mapperSearch = new ObjectMapper();
-                JsonNode jsonResultSearch = mapperSearch.readTree(contentSearch);
-                SingleObjectResponse<List<VariableGetDTO>> getResponse = mapper.convertValue(jsonResultSearch, new TypeReference<SingleObjectResponse<List<VariableGetDTO>>>() {});
-                List<VariableGetDTO> dtoFromApi = getResponse.getResult();
+                for (VariableGetDTO variableDto : listDTO) {
+                    String VariableURI = URLEncoder.encode(variableDto.getUri().toString(), StandardCharsets.UTF_8.name());
 
-                resultDTOList.addAll(dtoFromApi);
+                    // utilisation service de recherche d'une variable avec l'uri
+                    URL urlSearch = new URL(urlSharedResource + "/core/variables/" + VariableURI);
+                    HttpURLConnection searchConnection = (HttpURLConnection) urlSearch.openConnection();
+                    searchConnection.setRequestProperty("Accept", "application/json");
+                    searchConnection.setRequestProperty("Authorization", token);
 
-                connection.disconnect();
+                    int statut = searchConnection.getResponseCode();
+
+                    if (statut == 200){
+
+                        BufferedReader buff = new BufferedReader(
+                                new InputStreamReader(searchConnection.getInputStream()));
+                        String contentSearch="";
+                        String inputLineSearch;
+                        while ((inputLineSearch = buff.readLine()) != null)
+                            contentSearch+=inputLineSearch;
+                        buff.close();
+                        ObjectMapper mapperSearch = new ObjectMapper();
+                        JsonNode jsonResultSearch = mapperSearch.readTree(contentSearch);
+                        SingleObjectResponse<VariableDetailsDTO> getResponse = mapper.convertValue(jsonResultSearch, new TypeReference<SingleObjectResponse<VariableDetailsDTO>>() {});
+                        VariableDetailsDTO sharedVariableDetailsDto = getResponse.getResult();
+
+                        VariableGetDTO sharedVariableDto = VariableGetDTO.fromVariableDetailsDto(sharedVariableDetailsDto);
+
+                        sharedVariableDto.setOnShared(new URI(urlSharedResource));
+
+                        resultDTOList.add(sharedVariableDto);
+                    }else{
+                        if (compteur == 0){
+                            resultDTOList.add(variableDto);
+                        }
+                    }
+
+                    connection.disconnect();
+                }
+
+                compteur += 1;
+
             }
-            // pour chaque RP boucler les variables de la liste et ajouter l'URI dasn onShared si elle est sur la RP
-
-            resultDTOList.addAll(listDTO);
 
         }else{
 
@@ -373,6 +392,7 @@ public class VariableAPI {
             ObjectMapper mapperSearch = new ObjectMapper();
             JsonNode jsonResultSearch = mapperSearch.readTree(contentSearch);
 
+            // convertit le json de résultat en list de dto
             SingleObjectResponse<List<VariableGetDTO>> getResponse = mapper.convertValue(jsonResultSearch, new TypeReference<SingleObjectResponse<List<VariableGetDTO>>>() {});
             List<VariableGetDTO> dtoFromApi = getResponse.getResult();
 

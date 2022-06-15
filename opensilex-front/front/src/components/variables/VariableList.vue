@@ -165,7 +165,7 @@
                       </div>
                     </template>
                     <template v-slot:cell(share_logo)="{data}">
-                      <div v-if="data.item.entity.name == 'Feuille'">
+                      <div v-if="data.item.onShared != null">
                           <opensilex-Icon icon="fa#share-alt"/>
                       </div>
                     </template>

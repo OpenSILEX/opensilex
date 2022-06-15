@@ -145,8 +145,28 @@ public class VariableGetDTO {
         dto.setUnit(new UnitGetDTO(unit));
 
 //        URI onShared = model.getOnShared();
-//        dto.setOnShared(onShared);
+        dto.setOnShared(null);
 
         return dto;
+    }
+    public static VariableGetDTO fromVariableDetailsDto(VariableDetailsDTO detailsDto){
+        VariableGetDTO dto = new VariableGetDTO();
+        dto.setUri(detailsDto.getUri());
+        dto.setName(detailsDto.getName());
+        dto.setEntity(detailsDto.getEntity());
+
+        NamedResourceDTO<InterestEntityModel> entityOfInterest = detailsDto.getEntityOfInterest();
+        if(entityOfInterest != null){
+            dto.setEntityOfInterest(detailsDto.getEntityOfInterest());
+        }
+
+        dto.setCharacteristic(detailsDto.getCharacteristic());
+        dto.setMethod(detailsDto.getMethod());
+        dto.setUnit(detailsDto.getUnit());
+
+        dto.setOnShared(null);
+
+        return dto;
+
     }
 }

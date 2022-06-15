@@ -118,6 +118,7 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
         this.timeInterval = model.getTimeInterval();
         this.samplingInterval = model.getSamplingInterval();
 
+
         URI dataType = model.getDataType();
         try {
             this.dataType = new URI(SPARQLDeserializers.getExpandedURI(dataType));

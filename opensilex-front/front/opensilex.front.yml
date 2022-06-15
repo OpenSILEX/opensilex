@@ -176,6 +176,13 @@ menu:
           component: opensilex-EventTypes
           credentials:
             - vocabulary-access
+      - id: namespacesVocabulary
+        label: component.menu.namespaces
+        route:
+          path: /namespaces
+          component: opensilex-NamespacesView
+          credentials:
+            - vocabulary-access
 
   - id: configuration
     label: component.menu.configuration

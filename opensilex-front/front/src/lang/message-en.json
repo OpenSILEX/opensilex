@@ -211,6 +211,7 @@
             "deviceTypes": "Device object types",
             "eventTypes": "Event types",
             "factorCategoryTypes": "Factor categories",
+            "namespaces": "Namespaces",
             "scientific-organisation": "Scientific Organization",
             "devices": "Devices",
             "events" : "Events",

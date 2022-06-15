@@ -331,6 +331,10 @@ components["opensilex-XSDLongStringView"] = XSDLongStringView;
 import XSDNumberView from './ontology/XSDNumberView.vue'
 components["opensilex-XSDNumberView"] = XSDNumberView;
 
+// Namespaces
+import NamespacesView from './namespaces/NamespacesView.vue'
+components["opensilex-NamespacesView"] = NamespacesView;
+
 // Experiments
 import ExperimentForm from './experiments/form/ExperimentForm.vue';
 components["opensilex-ExperimentForm"] = ExperimentForm;

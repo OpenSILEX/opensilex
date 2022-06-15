@@ -211,6 +211,7 @@
             "deviceTypes": "Types de dispositifs",
             "eventTypes": "Types d'évènements", 
             "factorCategoryTypes": "Catégories de facteurs",
+            "namespaces": "Espaces de nom",
             "scientific-organisation": "Organisation scientifique",
             "devices": "Dispositifs",
             "events" : "Évènements",

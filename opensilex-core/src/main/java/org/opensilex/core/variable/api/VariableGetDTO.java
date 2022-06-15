@@ -23,7 +23,7 @@ import org.opensilex.sparql.response.NamedResourceDTO;
  * @author vidalmor
  */
 @JsonPropertyOrder({
-        "uri", "name", "entity", "entity_of_interest", "characteristic", "method", "unit", "onLocal", "onShared"
+        "uri", "name", "entity", "entity_of_interest", "characteristic", "method", "unit", "onShared"
 })
 public class VariableGetDTO {
 
@@ -51,11 +51,8 @@ public class VariableGetDTO {
     @JsonProperty("unit")
     private UnitGetDTO unit;
 
-    @JsonProperty("onLocal")
-    private boolean onLocal;
-
     @JsonProperty("onShared")
-    private boolean onShared;
+    private URI onShared;
 
     @ApiModelProperty(example = "http://opensilex.dev/set/variables/Plant_Height")
     public URI getUri() {
@@ -115,19 +112,11 @@ public class VariableGetDTO {
         this.unit = unit;
     }
 
-    public boolean getOnLocal() {
-        return onLocal;
-    }
-
-    public void setOnLocal(boolean onLocal) {
-        this.onLocal = onLocal;
-    }
-
-    public boolean getOnShared() {
+    public URI getOnShared() {
         return onShared;
     }
 
-    public void setOnShared(boolean onShared) {
+    public void setOnShared(URI onShared) {
         this.onShared = onShared;
     }
 
@@ -154,6 +143,9 @@ public class VariableGetDTO {
 
         UnitModel unit = model.getUnit();
         dto.setUnit(new UnitGetDTO(unit));
+
+//        URI onShared = model.getOnShared();
+//        dto.setOnShared(onShared);
 
         return dto;
     }

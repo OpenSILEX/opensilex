@@ -232,7 +232,7 @@ public class VariableAPI {
 
         List<VariableGetDTO> resultDTOList = new ArrayList<>();
 
-        if (resource == null) {
+        if (resource == null) { // si c'est en local
             List<VariableGetDTO> resultDTO = new ArrayList<>();
 
                 VariableDAO dao = getDao();
@@ -258,16 +258,64 @@ public class VariableAPI {
                 );
 
             // Convert paginated list to DTO
-            resultDTO = variables.convert(
+            List<VariableGetDTO> listDTO = variables.convert(
                     VariableGetDTO.class,
                     VariableGetDTO::fromModel
             ).getList();
 
-            resultDTOList.addAll(resultDTO);
+            // liste des RP en dur (sauf vitioeno car connexion avec admin ne fonctionne pas
+            List<String> listResources = Arrays.asList("http://138.102.159.36:8083/rest","http://138.102.159.36:8082/rest");
+            // boucler sur chaque RP
+            for (String url : listResources) {
+                // connexion à la RP
+                URL urlToken = new URL(url + "/security/authenticate");
+                HttpURLConnection connection = (HttpURLConnection) urlToken.openConnection();
+                connection.setDoOutput(true); // POST
+                connection.setRequestProperty("Accept", "application/json");
+                connection.setRequestProperty("Content-Type", "application/json");
+                String data = "{\"identifier\": \"admin@opensilex.org\", \"password\": \"admin\"}";
+                byte[] out = data.getBytes(StandardCharsets.UTF_8);
+                OutputStream stream = connection.getOutputStream();
+                stream.write(out);
+                BufferedReader in = new BufferedReader(
+                        new InputStreamReader(connection.getInputStream()));
+                String content = "";
+                String inputLine;
+                while ((inputLine = in.readLine()) != null)
+                    content+=inputLine;
+                in.close();
+                ObjectMapper mapper = new ObjectMapper();
+                JsonNode jsonResult = mapper.readTree(content);
+                String token = "Bearer "+ jsonResult.get("result").get("token").asText();
+                connection.disconnect();
+
+                // utilisation service de recherche d'une variable avec l'uri
+                URL urlSearch = new URL(url);
+                HttpURLConnection searchConnection = (HttpURLConnection) urlSearch.openConnection();
+                searchConnection.setRequestProperty("Accept", "application/json");
+                searchConnection.setRequestProperty("Authorization", token);
+                BufferedReader buff = new BufferedReader(
+                        new InputStreamReader(searchConnection.getInputStream()));
+                String contentSearch="";
+                String inputLineSearch;
+                while ((inputLineSearch = buff.readLine()) != null)
+                    contentSearch+=inputLineSearch;
+                buff.close();
+                ObjectMapper mapperSearch = new ObjectMapper();
+                JsonNode jsonResultSearch = mapperSearch.readTree(contentSearch);
+                SingleObjectResponse<List<VariableGetDTO>> getResponse = mapper.convertValue(jsonResultSearch, new TypeReference<SingleObjectResponse<List<VariableGetDTO>>>() {});
+                List<VariableGetDTO> dtoFromApi = getResponse.getResult();
+
+                resultDTOList.addAll(dtoFromApi);
+
+                connection.disconnect();
+            }
+            // pour chaque RP boucler les variables de la liste et ajouter l'URI dasn onShared si elle est sur la RP
+
+            resultDTOList.addAll(listDTO);
 
         }else{
 
-            String queryString = httpRequest.getQueryString();
             UriBuilder url = UriBuilder.fromUri(resource)
                     .path(PATH);
             for (Map.Entry<String, String[]> entry : httpRequest.getParameterMap().entrySet()){
@@ -333,11 +381,6 @@ public class VariableAPI {
             connection.disconnect();
 
         }
-
-
-
-        //mixer les deux en regardant lesquelles sont sur l'IRP ou sur l'instance locale (pb des uris, same as)
-
 
         ListWithPagination<VariableGetDTO> resultDTOPaginatedList = new ListWithPagination<>(resultDTOList,page,pageSize, resultDTOList.size());
 

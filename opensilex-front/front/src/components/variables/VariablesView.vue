@@ -534,8 +534,8 @@ en:
         add-variable: Add variable
         entity: Entity
         add-entity: Add entity
-        entityOfInterest: Entity of interest
-        add-entityOfInterest: Add entity of interest
+        entityOfInterest: Observation level
+        add-entityOfInterest: Add observation level
         characteristic: Characteristic
         add-characteristic: Add characteristic
         method: Method
@@ -555,8 +555,8 @@ fr:
         add-variable: Ajouter une variable
         entity: Entité
         add-entity: Ajouter une entité
-        entityOfInterest: Entité d'intérêt
-        add-entityOfInterest: Ajouter une entité d'intérêt
+        entityOfInterest: Niveau d'observation
+        add-entityOfInterest: Ajouter un niveau d'observation
         characteristic: Caractéristique
         add-characteristic: Ajouter une caractéristique
         method: Méthode

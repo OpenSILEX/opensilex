@@ -208,6 +208,7 @@ public class VariableAPI {
             @ApiParam(value = "Group filter") @QueryParam("group_of_variables") @ValidURI URI group,
             @ApiParam(value = "Data type filter") @QueryParam("data_type") @ValidURI URI dataType,
             @ApiParam(value = "Time interval filter") @QueryParam("time_interval") String timeInterval,
+            @ApiParam(value = "Species filter") @QueryParam("species") List<URI> species,
             @ApiParam(value = "Set this param to true to get associated data") @DefaultValue("false") @QueryParam("withAssociatedData") boolean withAssociatedData,
             @ApiParam(value = "Experiment filter") @QueryParam("experiments") List<URI> experiments,
             @ApiParam(value = "Scientific object filter") @QueryParam("scientific_objects") List<URI> objects,
@@ -227,10 +228,11 @@ public class VariableAPI {
                 group,
                 dataType,
                 timeInterval,
+                species,
                 withAssociatedData,
                 devices,
                 experiments,
-                objects,                
+                objects,
                 orderByList,
                 page,
                 pageSize,
@@ -377,7 +379,7 @@ public class VariableAPI {
             csvSchemaBuilder.addColumn(fieldName);
         });
                         
-        CsvSchema csvSchema = csvSchemaBuilder.build().withHeader();
+        CsvSchema csvSchema = csvSchemaBuilder.build().withHeader().withArrayElementSeparator(" ");
         StringWriter str = new StringWriter();
 
         CsvMapper csvMapper = new CsvMapper();
@@ -420,7 +422,7 @@ public class VariableAPI {
             csvSchemaBuilder.addColumn(fieldName);
         });
                         
-        CsvSchema csvSchema = csvSchemaBuilder.build().withHeader();
+        CsvSchema csvSchema = csvSchemaBuilder.build().withHeader().withArrayElementSeparator(" ");
         StringWriter str = new StringWriter();
 
         CsvMapper csvMapper = new CsvMapper();

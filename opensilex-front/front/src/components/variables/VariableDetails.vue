@@ -95,11 +95,10 @@
             <b-col>
                 <opensilex-Card label="VariableDetails.advanced" icon="ik#ik-clipboard">
                     <template v-slot:body>
-                      <opensilex-UriView title="GermplasmList.speciesLabel"
-                                         :value="variable.species ? variable.species.name: undefined"
-                                         :uri="variable.species ? variable.species.uri : undefined"
-                                         :url="variable.species ? getSpeciesPageUrl(): undefined">
-                      </opensilex-UriView>
+                      <opensilex-UriListView
+                          label="GermplasmList.speciesLabel"
+                          :list="speciesList"
+                      ></opensilex-UriListView>
 
             <opensilex-StringView label="OntologyPropertyForm.data-type"
                                   :value="getDataTypeLabel(variable.datatype)"></opensilex-StringView>
@@ -132,6 +131,10 @@ import VariableForm from "./form/VariableForm.vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {DataService} from "opensilex-core/api/data.service";
+import {ProjectsService} from "opensilex-core/api/projects.service";
+import {SpeciesService} from "opensilex-core/api/species.service";
+import {SpeciesDTO} from "opensilex-core/model/speciesDTO";
+import DTOConverter from "../../models/DTOConverter";
 
 @Component
 export default class VariableDetails extends Vue {
@@ -160,6 +163,22 @@ export default class VariableDetails extends Vue {
 
   @Ref("skosReferences") skosReferences!: ExternalReferencesModalForm;
 
+  get speciesList() {
+    if (!this.variable.species) {
+      return [];
+    }
+
+    return this.variable.species.map(species => {
+      return {
+        uri: species.uri,
+        value: species.name,
+        to: {
+          path: "/germplasm/details/" + encodeURIComponent(species.uri),
+        }
+      };
+    });
+  }
+
   created() {
     this.service = this.$opensilex.getService("opensilex.VariablesService");
     this.dataService = this.$opensilex.getService("opensilex-core.DataService");
@@ -174,10 +193,11 @@ export default class VariableDetails extends Vue {
 
         // make a deep copy of the variable in order to not change the current dto
         // In case a field has been updated into the form without confirmation (by sending update to the server)
-        let variableDtoCopy = JSON.parse(JSON.stringify(this.variable));
-        if (variableDtoCopy.species && variableDtoCopy.species.uri) {
-          variableDtoCopy.species = variableDtoCopy.species.uri;
-        }
+
+        // the fonction extractURIFromResourceProperties transforms the dto where species is a list of names and uris into a dto where species is only a list of uris
+        let variableDtoCopy: VariableDetailsDTO = DTOConverter.extractURIFromResourceProperties(
+            JSON.parse(JSON.stringify(this.variable)), ["species"]);
+
         this.variableForm.showEditForm(variableDtoCopy, countResult.response.result);
       }
     })
@@ -265,10 +285,6 @@ export default class VariableDetails extends Vue {
 
   getUnitPageUrl(): string {
     return this.getEncodedUrlPage(VariablesView.UNIT_TYPE, this.variable.unit.uri);
-  }
-
-  getSpeciesPageUrl(): string {
-    return this.$opensilex.getURL("germplasm/details/" + encodeURIComponent(this.variable.species.uri));
   }
 
 }

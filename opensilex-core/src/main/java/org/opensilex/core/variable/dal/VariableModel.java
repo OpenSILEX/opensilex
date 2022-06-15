@@ -13,6 +13,7 @@ import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.uri.generation.ClassURIGenerator;
 
 import java.net.URI;
+import java.util.List;
 
 
 @SPARQLResource(
@@ -108,7 +109,8 @@ public class VariableModel extends BaseVariableModel<VariableModel> implements C
             ontology = Oeso.class,
             property = "hasSpecies"
     )
-    private SpeciesModel species;
+    private List<SpeciesModel> species;
+    public static final String SPECIES_FIELD_NAME = "species";
 
     public String getAlternativeName() { return alternativeName; }
 
@@ -178,11 +180,11 @@ public class VariableModel extends BaseVariableModel<VariableModel> implements C
 
     public void setDataType(URI dataType) { this.dataType = dataType; }
 
-    public SpeciesModel getSpecies() {
+    public List<SpeciesModel> getSpecies() {
         return species;
     }
 
-    public void setSpecies(SpeciesModel species) {
+    public void setSpecies(List<SpeciesModel> species) {
         this.species = species;
     }
 

@@ -90,9 +90,9 @@
                 <!-- Species -->
                 <div class="col-lg-6" id="v-step-species">
                     <opensilex-SpeciesSelector
-                        label="SpeciesSelector.select-one"
-                        placeholder="SpeciesSelector.select-one-placeholder"
-                        :multiple="false"
+                        label="SpeciesSelector.select-multiple"
+                        placeholder="SpeciesSelector.select-multiple-placeholder"
+                        :multiple="true"
                         :species.sync="form.species"
                     ></opensilex-SpeciesSelector>
                 </div>
@@ -854,9 +854,9 @@ en:
         altName: Alternative name
         entity-help: "Observed entity or event. e.g : Leaf, canopy, wind"
         entity-placeholder: Search and select an entity
-        interestEntity-label: Entity of interest
+        interestEntity-label: Observation level
         interestEntity-help: "Optional, must be provided if its different from the observed entity. It's the entity level that is characterised. e.g : plot, plant, area, genotype..."
-        interestEntity-placeholder: Search and select an entity of interest
+        interestEntity-placeholder: Search and select an observation level
         characteristic-help: "Define what is measured/observed. e.g: temperature, infection level, weight, area"
         characteristic-placeholder: Search and select a characteristic
         method-placeholder: Search and select a method
@@ -944,9 +944,9 @@ fr:
         altName: Nom alternatif
         entity-help: "Entité observée ou évènement sur lequel porte la mesure/l'observation. ex : Feuille, canopée, vent"
         entity-placeholder: Rechercher et sélectionner une entité
-        interestEntity-label: Entité d'intérêt
+        interestEntity-label: Niveau d'observation
         interestEntity-help: "Optionnelle, doit être spécifiée si différente de l'entité observée. C'est le niveau d'entité qui est caractérisé. ex : parcelle, plante, zone, génotype..."
-        interestEntity-placeholder: Rechercher et sélectionner un entité d'intérêt
+        interestEntity-placeholder: Rechercher et sélectionner un niveau d'observation
         characteristic-help: "Ce qui est mesurée/observé. ex : Température, taux d'infection, masse, surface"
         characteristic-placeholder: Rechercher et sélectionner une caractéristique
         method-help: Définir comment la mesure/l'observation a été effectuée. Si vous ne voulez pas spécifier de méthode, veuillez sélectionner la méthode standard.

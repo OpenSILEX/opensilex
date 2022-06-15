@@ -132,16 +132,16 @@ en:
     InterestEntityForm:
         uri-help: "Uncheck this checkbox if you want to insert an entity of interest from an existing ontology or if you want to set a particular URI. Let it checked if you want to create a new entity of interest with an auto-generated URI"
         ontologies-help: "Click on one of these reference ontologies. If an entity of interest matches with the desired one, uncheck the checkbox 'URI' and copy the corresponding URI in the 'URI' field. Also copy the name to the 'Name' field."
-        name: The entity of interest
-        add: Add entity of interest
-        edit: Edit entity of interest
+        name: The observation level
+        add: Add an observation level
+        edit: Edit an observation level
         name-placeholder: Plot
 fr:
     InterestEntityForm:
         uri-help: "Décocher si vous souhaitez ajouter une entité à partir d'une ontologie existante ou si vous souhaitez spécifier une URI particulière. Laisser coché si vous souhaitez ajouter une entité avec une URI auto-générée"
         ontologies-help: "Cliquer sur une de ces ontologies de référence. Si une entité d'intérêt correspond à celle recherchée, décocher la checkbox 'URI' et copier l'URI correspondante dans le champ 'URI'. Copier aussi le nom de l'entité d'intérêt dans le champ 'Nom'."
-        name: L'entité d'intérêt
-        add: Ajouter une entité d'intérêt
-        edit: Éditer une entité d'intérêt
+        name: Le niveau d'observation
+        add: Ajouter un niveau d'observation
+        edit: Éditer un niveau d'observation
         name-placeholder: Parcelle
 </i18n>

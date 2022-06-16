@@ -303,23 +303,23 @@ public class VariableAPI {
 
                     if (statut == 200){
 
-                        BufferedReader buff = new BufferedReader(
-                                new InputStreamReader(searchConnection.getInputStream()));
-                        String contentSearch="";
-                        String inputLineSearch;
-                        while ((inputLineSearch = buff.readLine()) != null)
-                            contentSearch+=inputLineSearch;
-                        buff.close();
-                        ObjectMapper mapperSearch = new ObjectMapper();
-                        JsonNode jsonResultSearch = mapperSearch.readTree(contentSearch);
-                        SingleObjectResponse<VariableDetailsDTO> getResponse = mapper.convertValue(jsonResultSearch, new TypeReference<SingleObjectResponse<VariableDetailsDTO>>() {});
-                        VariableDetailsDTO sharedVariableDetailsDto = getResponse.getResult();
+//                        BufferedReader buff = new BufferedReader(
+//                                new InputStreamReader(searchConnection.getInputStream()));
+//                        String contentSearch="";
+//                        String inputLineSearch;
+//                        while ((inputLineSearch = buff.readLine()) != null)
+//                            contentSearch+=inputLineSearch;
+//                        buff.close();
+//                        ObjectMapper mapperSearch = new ObjectMapper();
+//                        JsonNode jsonResultSearch = mapperSearch.readTree(contentSearch);
+//                        SingleObjectResponse<VariableDetailsDTO> getResponse = mapper.convertValue(jsonResultSearch, new TypeReference<SingleObjectResponse<VariableDetailsDTO>>() {});
+//                        VariableDetailsDTO sharedVariableDetailsDto = getResponse.getResult();
 
-                        VariableGetDTO sharedVariableDto = VariableGetDTO.fromVariableDetailsDto(sharedVariableDetailsDto);
+//                        VariableGetDTO sharedVariableDto = VariableGetDTO.fromVariableDetailsDto(sharedVariableDetailsDto);
 
-                        sharedVariableDto.setOnShared(new URI(urlSharedResource));
+                        variableDto.setOnShared(new URI(urlSharedResource));
 
-                        resultDTOList.add(sharedVariableDto);
+                        resultDTOList.add(variableDto);
                     }else{
                         if (compteur == 0){
                             resultDTOList.add(variableDto);

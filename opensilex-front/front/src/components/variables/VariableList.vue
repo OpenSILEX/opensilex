@@ -159,11 +159,6 @@
                         </div>
                         <div v-else> {{ $t("VariableList.not-used-in-variablesGroup") }}</div>
                     </template>
-                    <template v-slot:cell(db_logo)="{data}">
-                      <div v-if="data.item.entity.name == 'Plante' || data.item.characteristic.name == 'Color'">
-                        <opensilex-Icon icon="fa#database" />
-                      </div>
-                    </template>
                     <template v-slot:cell(share_logo)="{data}">
                       <div v-if="data.item.onShared != null">
                           <opensilex-Icon icon="fa#share-alt"/>

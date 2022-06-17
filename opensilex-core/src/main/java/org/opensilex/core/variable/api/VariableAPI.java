@@ -94,6 +94,42 @@ public class VariableAPI {
         return new VariableDAO(sparql,mongodb,fs);
     }
 
+    private String getToken(String urlSharedResource)throws Exception {
+
+        //URL du service qui génère le token
+        URL urlToken = new URL(urlSharedResource + "/security/authenticate");
+        //création de la connexion
+        HttpURLConnection connection = (HttpURLConnection) urlToken.openConnection();
+        //propriétés du service
+        connection.setDoOutput(true); // POST
+        connection.setRequestProperty("Accept", "application/json");
+        connection.setRequestProperty("Content-Type", "application/json");
+        //paramètres du service
+        String data = "{\"identifier\": \"admin@opensilex.org\", \"password\": \"admin\"}";
+        //
+        byte[] out = data.getBytes(StandardCharsets.UTF_8);
+        //envoi des paramètres en entrée
+        OutputStream stream = connection.getOutputStream();
+        stream.write(out);
+        //lecture de la réponse
+        BufferedReader in = new BufferedReader(
+                new InputStreamReader(connection.getInputStream()));
+        String content = "";
+        String inputLine;
+        while ((inputLine = in.readLine()) != null)
+            content += inputLine;
+        in.close();
+        // conversion de la réponse string --> json
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode jsonResult = mapper.readTree(content);
+        //récupération du token
+        String token = "Bearer " + jsonResult.get("result").get("token").asText();
+
+        connection.disconnect();
+
+        return token;
+    }
+
     @POST
     @ApiOperation("Add a variable")
     @ApiProtected
@@ -145,28 +181,7 @@ public class VariableAPI {
             // liste des RP en dur (sauf vitioeno car connexion avec admin ne fonctionne pas
             List<String> listResources = Arrays.asList("http://138.102.159.36:8083/rest","http://138.102.159.36:8082/rest");
             for (String urlSharedResource : listResources) {
-                // connexion à la RP
-                URL urlToken = new URL(urlSharedResource + "/security/authenticate");
-                HttpURLConnection connection = (HttpURLConnection) urlToken.openConnection();
-                connection.setDoOutput(true); // POST
-                connection.setRequestProperty("Accept", "application/json");
-                connection.setRequestProperty("Content-Type", "application/json");
-                String data = "{\"identifier\": \"admin@opensilex.org\", \"password\": \"admin\"}";
-                byte[] out = data.getBytes(StandardCharsets.UTF_8);
-                OutputStream stream = connection.getOutputStream();
-                stream.write(out);
-                BufferedReader in = new BufferedReader(
-                        new InputStreamReader(connection.getInputStream()));
-                String content = "";
-                String inputLine;
-                while ((inputLine = in.readLine()) != null)
-                    content += inputLine;
-                in.close();
-                ObjectMapper mapper = new ObjectMapper();
-                JsonNode jsonResult = mapper.readTree(content);
-                String token = "Bearer " + jsonResult.get("result").get("token").asText();
-                connection.disconnect();
-
+                String token = getToken(urlSharedResource);
                 String VariableURI = URLEncoder.encode(uri.toString(), StandardCharsets.UTF_8.name());
 
                 // utilisation service de recherche d'une variable avec l'uri
@@ -176,7 +191,6 @@ public class VariableAPI {
                 searchConnection.setRequestProperty("Authorization", token);
 
                 int statut = searchConnection.getResponseCode();
-
                 if (statut == 200){
                     BufferedReader buff = new BufferedReader(
                             new InputStreamReader(searchConnection.getInputStream()));
@@ -187,14 +201,13 @@ public class VariableAPI {
                     buff.close();
                     ObjectMapper mapperSearch = new ObjectMapper();
                     JsonNode jsonResultSearch = mapperSearch.readTree(contentSearch);
-                    SingleObjectResponse<VariableDetailsDTO> getResponse = mapper.convertValue(jsonResultSearch, new TypeReference<SingleObjectResponse<VariableDetailsDTO>>() {});
+                    SingleObjectResponse<VariableDetailsDTO> getResponse = mapperSearch.convertValue(jsonResultSearch, new TypeReference<SingleObjectResponse<VariableDetailsDTO>>() {});
                     VariableDetailsDTO sharedVariableDetailsDto = getResponse.getResult();
 
                     return new SingleObjectResponse<>(sharedVariableDetailsDto).getResponse();
                 }
 
-                connection.disconnect();
-
+                searchConnection.disconnect();
 
             }
             throw new NotFoundURIException(uri);
@@ -326,27 +339,7 @@ public class VariableAPI {
 
             for (String urlSharedResource : listResources) {
 
-                // connexion à la RP
-                URL urlToken = new URL(urlSharedResource + "/security/authenticate");
-                HttpURLConnection connection = (HttpURLConnection) urlToken.openConnection();
-                connection.setDoOutput(true); // POST
-                connection.setRequestProperty("Accept", "application/json");
-                connection.setRequestProperty("Content-Type", "application/json");
-                String data = "{\"identifier\": \"admin@opensilex.org\", \"password\": \"admin\"}";
-                byte[] out = data.getBytes(StandardCharsets.UTF_8);
-                OutputStream stream = connection.getOutputStream();
-                stream.write(out);
-                BufferedReader in = new BufferedReader(
-                        new InputStreamReader(connection.getInputStream()));
-                String content = "";
-                String inputLine;
-                while ((inputLine = in.readLine()) != null)
-                    content+=inputLine;
-                in.close();
-                ObjectMapper mapper = new ObjectMapper();
-                JsonNode jsonResult = mapper.readTree(content);
-                String token = "Bearer "+ jsonResult.get("result").get("token").asText();
-                connection.disconnect();
+                String token = getToken(urlSharedResource);
 
                 for (VariableGetDTO variableDto : listDTO) {
                     String VariableURI = URLEncoder.encode(variableDto.getUri().toString(), StandardCharsets.UTF_8.name());
@@ -381,7 +374,7 @@ public class VariableAPI {
                         }
                     }
 
-                    connection.disconnect();
+                    searchConnection.disconnect();
                 }
 
                 compteur += 1;
@@ -396,37 +389,7 @@ public class VariableAPI {
                 url.queryParam(entry.getKey(),entry.getValue());
             }
 
-            //URL du service qui génère le token
-            URL urlToken = new URL(resource.toString() + "/security/authenticate");
-            //création de la connexion
-            HttpURLConnection connection = (HttpURLConnection) urlToken.openConnection();
-            //propriétés du service
-            connection.setDoOutput(true); // POST
-            connection.setRequestProperty("Accept", "application/json");
-            connection.setRequestProperty("Content-Type", "application/json");
-            //paramètres du service
-            String data = "{\"identifier\": \"admin@opensilex.org\", \"password\": \"admin\"}";
-            //
-            byte[] out = data.getBytes(StandardCharsets.UTF_8);
-            //envoi des paramètres en entrée
-            OutputStream stream = connection.getOutputStream();
-            stream.write(out);
-            //lecture de la réponse
-            BufferedReader in = new BufferedReader(
-                    new InputStreamReader(connection.getInputStream()));
-
-            String content = "";
-            String inputLine;
-            while ((inputLine = in.readLine()) != null)
-                content+=inputLine;
-            in.close();
-            // conversion de la réponse string --> json
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode jsonResult = mapper.readTree(content);
-            //récupération du token
-            String token = "Bearer "+ jsonResult.get("result").get("token").asText();
-            //arrêt de la connexion
-            connection.disconnect();
+            String token = getToken(resource.toString());
 
             URL urlSearch = new URL(url.toString());
 
@@ -448,7 +411,7 @@ public class VariableAPI {
             JsonNode jsonResultSearch = mapperSearch.readTree(contentSearch);
 
             // convertit le json de résultat en list de dto
-            SingleObjectResponse<List<VariableGetDTO>> getResponse = mapper.convertValue(jsonResultSearch, new TypeReference<SingleObjectResponse<List<VariableGetDTO>>>() {});
+            SingleObjectResponse<List<VariableGetDTO>> getResponse = mapperSearch.convertValue(jsonResultSearch, new TypeReference<SingleObjectResponse<List<VariableGetDTO>>>() {});
             List<VariableGetDTO> dtoFromApi = getResponse.getResult();
 
             for(VariableGetDTO sharedDto : dtoFromApi){
@@ -463,7 +426,7 @@ public class VariableAPI {
                 resultDTOList.add(sharedDto);
             }
 
-            connection.disconnect();
+            searchConnection.disconnect();
 
         }
 

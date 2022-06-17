@@ -94,6 +94,17 @@ public class VariableAPI {
         return new VariableDAO(sparql,mongodb,fs);
     }
 
+    private String readResponse(HttpURLConnection connection)throws Exception {
+        BufferedReader in = new BufferedReader(
+                new InputStreamReader(connection.getInputStream()));
+        String content = "";
+        String inputLine;
+        while ((inputLine = in.readLine()) != null)
+            content += inputLine;
+        in.close();
+        return content;
+    }
+
     private String getToken(String urlSharedResource)throws Exception {
 
         //URL du service qui génère le token
@@ -112,16 +123,9 @@ public class VariableAPI {
         OutputStream stream = connection.getOutputStream();
         stream.write(out);
         //lecture de la réponse
-        BufferedReader in = new BufferedReader(
-                new InputStreamReader(connection.getInputStream()));
-        String content = "";
-        String inputLine;
-        while ((inputLine = in.readLine()) != null)
-            content += inputLine;
-        in.close();
-        // conversion de la réponse string --> json
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode jsonResult = mapper.readTree(content);
+        String stringResponse = readResponse(connection);
+        ObjectMapper mapperSearch = new ObjectMapper();
+        JsonNode jsonResult = mapperSearch.readTree(stringResponse);
         //récupération du token
         String token = "Bearer " + jsonResult.get("result").get("token").asText();
 
@@ -192,15 +196,9 @@ public class VariableAPI {
 
                 int statut = searchConnection.getResponseCode();
                 if (statut == 200){
-                    BufferedReader buff = new BufferedReader(
-                            new InputStreamReader(searchConnection.getInputStream()));
-                    String contentSearch="";
-                    String inputLineSearch;
-                    while ((inputLineSearch = buff.readLine()) != null)
-                        contentSearch+=inputLineSearch;
-                    buff.close();
+                    String stringSearchResponse = readResponse(searchConnection);
                     ObjectMapper mapperSearch = new ObjectMapper();
-                    JsonNode jsonResultSearch = mapperSearch.readTree(contentSearch);
+                    JsonNode jsonResultSearch = mapperSearch.readTree(stringSearchResponse);
                     SingleObjectResponse<VariableDetailsDTO> getResponse = mapperSearch.convertValue(jsonResultSearch, new TypeReference<SingleObjectResponse<VariableDetailsDTO>>() {});
                     VariableDetailsDTO sharedVariableDetailsDto = getResponse.getResult();
 
@@ -299,7 +297,7 @@ public class VariableAPI {
     ) throws Exception {
 
         List<VariableGetDTO> resultDTOList = new ArrayList<>();
-
+        int totalVariables = 0;
         if (resource == null) { // si c'est en local
             List<VariableGetDTO> resultDTO = new ArrayList<>();
 
@@ -325,6 +323,7 @@ public class VariableAPI {
                         this.currentUser
                 );
 
+            totalVariables = variables.getTotal();
             // Convert paginated list to DTO
             List<VariableGetDTO> listDTO = variables.convert(
                     VariableGetDTO.class,
@@ -333,7 +332,6 @@ public class VariableAPI {
 
             // liste des RP en dur (sauf vitioeno car connexion avec admin ne fonctionne pas
             List<String> listResources = Arrays.asList("http://138.102.159.36:8083/rest","http://138.102.159.36:8082/rest");
-            // boucler sur chaque RP
 
             int compteur = 0;
 
@@ -353,19 +351,20 @@ public class VariableAPI {
                     int statut = searchConnection.getResponseCode();
 
                     if (statut == 200){
-                        variableDto.setOnShared(new URI(urlSharedResource));
+                        variableDto.setOnShared(urlSharedResource);
                         resultDTOList.add(variableDto);
 
 //                        List<SharedResourcesDTO> sharedResourcesDTOS = new ArrayList<>();
 //                        CoreModule coreModule = new CoreModule();
-//                        sharedResourcesDTOS.addAll(coreModule.getSharedResources());
+//                        List<SharedResourcesDTO> listDtoShared = coreModule.getSharedResources();
+//                        sharedResourcesDTOS.addAll(listDtoShared);
 //
 //                        for (SharedResourcesDTO dto : sharedResourcesDTOS){
 //                            if(new URI(urlSharedResource) == dto.getUri()){
 //                                variableDto.setOnShared(dto.getLabel());
 //                            }
 //                        }
-//
+
 //                        resultDTOList.add(variableDto);
 
                     }else{
@@ -392,32 +391,24 @@ public class VariableAPI {
             String token = getToken(resource.toString());
 
             URL urlSearch = new URL(url.toString());
-
             HttpURLConnection searchConnection = (HttpURLConnection) urlSearch.openConnection();
-
             searchConnection.setRequestProperty("Accept", "application/json");
             searchConnection.setRequestProperty("Authorization", token);
 
-            BufferedReader buff = new BufferedReader(
-                    new InputStreamReader(searchConnection.getInputStream()));
-
-            String contentSearch="";
-            String inputLineSearch;
-            while ((inputLineSearch = buff.readLine()) != null)
-                contentSearch+=inputLineSearch;
-            buff.close();
-
+            String stringSearchResponse = readResponse(searchConnection);
             ObjectMapper mapperSearch = new ObjectMapper();
-            JsonNode jsonResultSearch = mapperSearch.readTree(contentSearch);
+            JsonNode jsonResultSearch = mapperSearch.readTree(stringSearchResponse);
 
             // convertit le json de résultat en list de dto
             SingleObjectResponse<List<VariableGetDTO>> getResponse = mapperSearch.convertValue(jsonResultSearch, new TypeReference<SingleObjectResponse<List<VariableGetDTO>>>() {});
+
+            MetadataDTO metadata = getResponse.getMetadata();
             List<VariableGetDTO> dtoFromApi = getResponse.getResult();
 
             for(VariableGetDTO sharedDto : dtoFromApi){
 
                 URI sharedUriDto = sharedDto.getUri();
-
+                // recherche en local si la variable existe
                 VariableDAO dao = getDao();
                 VariableModel variable = dao.get(sharedUriDto);
                 if (variable != null) {
@@ -427,10 +418,11 @@ public class VariableAPI {
             }
 
             searchConnection.disconnect();
-
+            long totalCount = metadata.getPagination().getTotalCount();
+            totalVariables = (int)totalCount;
         }
 
-        ListWithPagination<VariableGetDTO> resultDTOPaginatedList = new ListWithPagination<>(resultDTOList,page,pageSize, resultDTOList.size());
+        ListWithPagination<VariableGetDTO> resultDTOPaginatedList = new ListWithPagination<>(resultDTOList,page,pageSize, totalVariables);
 
         return new PaginatedListResponse<>(resultDTOPaginatedList).getResponse();
 

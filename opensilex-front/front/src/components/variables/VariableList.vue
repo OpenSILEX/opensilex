@@ -159,9 +159,19 @@
                         </div>
                         <div v-else> {{ $t("VariableList.not-used-in-variablesGroup") }}</div>
                     </template>
+                    <template v-slot:cell(db_logo)="{data}">
+                      <div v-if="data.item.onLocal">
+                        <opensilex-Icon
+                            icon="fa#database"
+                        />
+                      </div>
+                    </template>
                     <template v-slot:cell(share_logo)="{data}">
                       <div v-if="data.item.onShared != null">
-                          <opensilex-Icon icon="fa#share-alt"/>
+                          <opensilex-Icon
+                              icon="fa#share-alt"
+                              :title="data.item.onShared"
+                          />
                       </div>
                     </template>
                     <template v-slot:cell(_entity_name)="{data}">{{ data.item.entity.name }}</template>
@@ -387,7 +397,7 @@ export default class VariableList extends Vue {
         this.tableRef.onItemUnselected(row);
     }
 
-    onResourceSelected(dto:SharedResourcesDTO){ // récup le dto de la sélection et l'ATTRIBUE à this selectedResource pour l'utiliser dans le filtre
+    onResourceSelected(dto:SharedResourcesDTO){ // récup le dto de la sélection et l'ATTRIBUE à this.selectedResource pour l'utiliser dans le filtre
       this.selectedResource = dto;
     }
 

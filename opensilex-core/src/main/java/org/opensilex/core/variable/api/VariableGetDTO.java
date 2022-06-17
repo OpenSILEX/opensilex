@@ -23,7 +23,7 @@ import org.opensilex.sparql.response.NamedResourceDTO;
  * @author vidalmor
  */
 @JsonPropertyOrder({
-        "uri", "name", "entity", "entity_of_interest", "characteristic", "method", "unit", "onShared"
+        "uri", "name", "entity", "entity_of_interest", "characteristic", "method", "unit", "onLocal", "onShared"
 })
 public class VariableGetDTO {
 
@@ -51,6 +51,8 @@ public class VariableGetDTO {
     @JsonProperty("unit")
     private UnitGetDTO unit;
 
+    @JsonProperty("onLocal")
+    private boolean onLocal;
     @JsonProperty("onShared")
     private URI onShared;
 
@@ -112,6 +114,13 @@ public class VariableGetDTO {
         this.unit = unit;
     }
 
+    public boolean getOnLocal() {
+        return onLocal;
+    }
+
+    public void setOnLocal(boolean onLocal) {
+        this.onLocal = onLocal;
+    }
     public URI getOnShared() {
         return onShared;
     }
@@ -147,26 +156,28 @@ public class VariableGetDTO {
 //        URI onShared = model.getOnShared();
         dto.setOnShared(null);
 
-        return dto;
-    }
-    public static VariableGetDTO fromVariableDetailsDto(VariableDetailsDTO detailsDto){
-        VariableGetDTO dto = new VariableGetDTO();
-        dto.setUri(detailsDto.getUri());
-        dto.setName(detailsDto.getName());
-        dto.setEntity(detailsDto.getEntity());
-
-        NamedResourceDTO<InterestEntityModel> entityOfInterest = detailsDto.getEntityOfInterest();
-        if(entityOfInterest != null){
-            dto.setEntityOfInterest(detailsDto.getEntityOfInterest());
-        }
-
-        dto.setCharacteristic(detailsDto.getCharacteristic());
-        dto.setMethod(detailsDto.getMethod());
-        dto.setUnit(detailsDto.getUnit());
-
-        dto.setOnShared(null);
+        dto.setOnLocal(false);
 
         return dto;
-
     }
+//    public static VariableGetDTO fromVariableDetailsDto(VariableDetailsDTO detailsDto){
+//        VariableGetDTO dto = new VariableGetDTO();
+//        dto.setUri(detailsDto.getUri());
+//        dto.setName(detailsDto.getName());
+//        dto.setEntity(detailsDto.getEntity());
+//
+//        NamedResourceDTO<InterestEntityModel> entityOfInterest = detailsDto.getEntityOfInterest();
+//        if(entityOfInterest != null){
+//            dto.setEntityOfInterest(detailsDto.getEntityOfInterest());
+//        }
+//
+//        dto.setCharacteristic(detailsDto.getCharacteristic());
+//        dto.setMethod(detailsDto.getMethod());
+//        dto.setUnit(detailsDto.getUnit());
+//
+//        dto.setOnShared(null);
+//
+//        return dto;
+//
+//    }
 }

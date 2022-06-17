@@ -16,9 +16,11 @@ import io.swagger.annotations.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
+import org.opensilex.core.CoreModule;
 import org.opensilex.core.URIsListPostDTO;
 import org.opensilex.core.ontology.api.OntologyAPI;
 import org.opensilex.core.scientificObject.api.ScientificObjectDetailDTO;
+import org.opensilex.core.sharedResource.SharedResourcesDTO;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
@@ -139,6 +141,62 @@ public class VariableAPI {
         VariableDAO dao = getDao();
         VariableModel variable = dao.get(uri);
         if (variable == null) {
+
+            // liste des RP en dur (sauf vitioeno car connexion avec admin ne fonctionne pas
+            List<String> listResources = Arrays.asList("http://138.102.159.36:8083/rest","http://138.102.159.36:8082/rest");
+            for (String urlSharedResource : listResources) {
+                // connexion à la RP
+                URL urlToken = new URL(urlSharedResource + "/security/authenticate");
+                HttpURLConnection connection = (HttpURLConnection) urlToken.openConnection();
+                connection.setDoOutput(true); // POST
+                connection.setRequestProperty("Accept", "application/json");
+                connection.setRequestProperty("Content-Type", "application/json");
+                String data = "{\"identifier\": \"admin@opensilex.org\", \"password\": \"admin\"}";
+                byte[] out = data.getBytes(StandardCharsets.UTF_8);
+                OutputStream stream = connection.getOutputStream();
+                stream.write(out);
+                BufferedReader in = new BufferedReader(
+                        new InputStreamReader(connection.getInputStream()));
+                String content = "";
+                String inputLine;
+                while ((inputLine = in.readLine()) != null)
+                    content += inputLine;
+                in.close();
+                ObjectMapper mapper = new ObjectMapper();
+                JsonNode jsonResult = mapper.readTree(content);
+                String token = "Bearer " + jsonResult.get("result").get("token").asText();
+                connection.disconnect();
+
+                String VariableURI = URLEncoder.encode(uri.toString(), StandardCharsets.UTF_8.name());
+
+                // utilisation service de recherche d'une variable avec l'uri
+                URL urlSearch = new URL(urlSharedResource + "/core/variables/" + VariableURI);
+                HttpURLConnection searchConnection = (HttpURLConnection) urlSearch.openConnection();
+                searchConnection.setRequestProperty("Accept", "application/json");
+                searchConnection.setRequestProperty("Authorization", token);
+
+                int statut = searchConnection.getResponseCode();
+
+                if (statut == 200){
+                    BufferedReader buff = new BufferedReader(
+                            new InputStreamReader(searchConnection.getInputStream()));
+                    String contentSearch="";
+                    String inputLineSearch;
+                    while ((inputLineSearch = buff.readLine()) != null)
+                        contentSearch+=inputLineSearch;
+                    buff.close();
+                    ObjectMapper mapperSearch = new ObjectMapper();
+                    JsonNode jsonResultSearch = mapperSearch.readTree(contentSearch);
+                    SingleObjectResponse<VariableDetailsDTO> getResponse = mapper.convertValue(jsonResultSearch, new TypeReference<SingleObjectResponse<VariableDetailsDTO>>() {});
+                    VariableDetailsDTO sharedVariableDetailsDto = getResponse.getResult();
+
+                    return new SingleObjectResponse<>(sharedVariableDetailsDto).getResponse();
+                }
+
+                connection.disconnect();
+
+
+            }
             throw new NotFoundURIException(uri);
         }
         return new SingleObjectResponse<>(new VariableDetailsDTO(variable)).getResponse();
@@ -302,24 +360,21 @@ public class VariableAPI {
                     int statut = searchConnection.getResponseCode();
 
                     if (statut == 200){
-
-//                        BufferedReader buff = new BufferedReader(
-//                                new InputStreamReader(searchConnection.getInputStream()));
-//                        String contentSearch="";
-//                        String inputLineSearch;
-//                        while ((inputLineSearch = buff.readLine()) != null)
-//                            contentSearch+=inputLineSearch;
-//                        buff.close();
-//                        ObjectMapper mapperSearch = new ObjectMapper();
-//                        JsonNode jsonResultSearch = mapperSearch.readTree(contentSearch);
-//                        SingleObjectResponse<VariableDetailsDTO> getResponse = mapper.convertValue(jsonResultSearch, new TypeReference<SingleObjectResponse<VariableDetailsDTO>>() {});
-//                        VariableDetailsDTO sharedVariableDetailsDto = getResponse.getResult();
-
-//                        VariableGetDTO sharedVariableDto = VariableGetDTO.fromVariableDetailsDto(sharedVariableDetailsDto);
-
                         variableDto.setOnShared(new URI(urlSharedResource));
-
                         resultDTOList.add(variableDto);
+
+//                        List<SharedResourcesDTO> sharedResourcesDTOS = new ArrayList<>();
+//                        CoreModule coreModule = new CoreModule();
+//                        sharedResourcesDTOS.addAll(coreModule.getSharedResources());
+//
+//                        for (SharedResourcesDTO dto : sharedResourcesDTOS){
+//                            if(new URI(urlSharedResource) == dto.getUri()){
+//                                variableDto.setOnShared(dto.getLabel());
+//                            }
+//                        }
+//
+//                        resultDTOList.add(variableDto);
+
                     }else{
                         if (compteur == 0){
                             resultDTOList.add(variableDto);
@@ -396,7 +451,17 @@ public class VariableAPI {
             SingleObjectResponse<List<VariableGetDTO>> getResponse = mapper.convertValue(jsonResultSearch, new TypeReference<SingleObjectResponse<List<VariableGetDTO>>>() {});
             List<VariableGetDTO> dtoFromApi = getResponse.getResult();
 
-            resultDTOList.addAll(dtoFromApi);
+            for(VariableGetDTO sharedDto : dtoFromApi){
+
+                URI sharedUriDto = sharedDto.getUri();
+
+                VariableDAO dao = getDao();
+                VariableModel variable = dao.get(sharedUriDto);
+                if (variable != null) {
+                    sharedDto.setOnLocal(true);
+                }
+                resultDTOList.add(sharedDto);
+            }
 
             connection.disconnect();
 

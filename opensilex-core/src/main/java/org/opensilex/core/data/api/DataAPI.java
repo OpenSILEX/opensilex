@@ -1692,80 +1692,84 @@ public class DataAPI {
                                     }
                                 }
                             }
-                            DataModel dataModel = new DataModel();
-                            DataProvenanceModel provenanceModel = new DataProvenanceModel();
-                            provenanceModel.setUri(provenance.getUri());
+                            if(validRow) {
+                                DataModel dataModel = new DataModel();
+                                DataProvenanceModel provenanceModel = new DataProvenanceModel();
+                                provenanceModel.setUri(provenance.getUri());
 
-                            if (!experiments.isEmpty()) {
-                                provenanceModel.setExperiments(experiments);
-                            }
-
-                            if (device != null) {
-                                ProvEntityModel agent = new ProvEntityModel();
-                                if (rootDeviceTypes == null) {
-                                    rootDeviceTypes = getRootDeviceTypes();
+                                if (!experiments.isEmpty()) {
+                                    provenanceModel.setExperiments(experiments);
                                 }
-                                URI rootType = rootDeviceTypes.get(device.getType());
-                                agent.setType(rootType);
-                                agent.setUri(device.getUri());
-                                agents.add(agent);
-                                provenanceModel.setProvWasAssociatedWith(agents);
 
-                            } else if (hasDevice) {
+                                if (device != null) {
+                                    ProvEntityModel agent = new ProvEntityModel();
+                                    if (rootDeviceTypes == null) {
+                                        rootDeviceTypes = getRootDeviceTypes();
+                                    }
+                                    URI rootType = rootDeviceTypes.get(device.getType());
+                                    agent.setType(rootType);
+                                    agent.setUri(device.getUri());
+                                    agents.add(agent);
+                                    provenanceModel.setProvWasAssociatedWith(agents);
 
-                                DeviceModel checkedDevice = variableCheckedProvDevice.get(variable);
-                                ProvEntityModel agent = new ProvEntityModel();
-                                if (rootDeviceTypes == null) {
-                                    rootDeviceTypes = getRootDeviceTypes();
+                                } else if (hasDevice) {
+
+                                    DeviceModel checkedDevice = variableCheckedProvDevice.get(variable);
+                                    ProvEntityModel agent = new ProvEntityModel();
+                                    if (rootDeviceTypes == null) {
+                                        rootDeviceTypes = getRootDeviceTypes();
+                                    }
+                                    URI rootType = rootDeviceTypes.get(checkedDevice.getType());
+                                    agent.setType(rootType);
+                                    agent.setUri(checkedDevice.getUri());
+                                    agents.add(agent);
+                                    provenanceModel.setProvWasAssociatedWith(agents);
+
                                 }
-                                URI rootType = rootDeviceTypes.get(checkedDevice.getType());
-                                agent.setType(rootType);
-                                agent.setUri(checkedDevice.getUri());
-                                agents.add(agent);
-                                provenanceModel.setProvWasAssociatedWith(agents);
 
-                            }
+                                dataModel.setDate(parsedDateTimeMongo.getInstant());
+                                dataModel.setOffset(parsedDateTimeMongo.getOffset());
+                                dataModel.setIsDateTime(parsedDateTimeMongo.getIsDateTime());
 
-                            dataModel.setDate(parsedDateTimeMongo.getInstant());
-                            dataModel.setOffset(parsedDateTimeMongo.getOffset());
-                            dataModel.setIsDateTime(parsedDateTimeMongo.getIsDateTime());
-
-                            if (object != null) {
-                                dataModel.setTarget(object.getUri());
-                            }
-                            if (target != null) {
-                                dataModel.setTarget(target.getUri());
-                            }
-                            dataModel.setProvenance(provenanceModel);
-                            dataModel.setVariable(varURI);
-                            dataModel.setValue(returnValidCSVDatum(varURI, values[colIndex].trim(), mapVariableUriDataType.get(varURI), rowIndex, colIndex, csvValidation));
-                            if (colIndex + 1 < values.length) {
-                                if (headerByIndex.get(colIndex + 1).equalsIgnoreCase(rawdataHeader) && values[colIndex + 1] != null) {
-                                    dataModel.setRawData(returnValidRawData(varURI, values[colIndex + 1].trim(), mapVariableUriDataType.get(varURI), rowIndex, colIndex + 1, csvValidation));
+                                if (object != null) {
+                                    dataModel.setTarget(object.getUri());
                                 }
+                                if (target != null) {
+                                    dataModel.setTarget(target.getUri());
+                                }
+                                dataModel.setProvenance(provenanceModel);
+                                dataModel.setVariable(varURI);
+                                dataModel.setValue(returnValidCSVDatum(varURI, values[colIndex].trim(), mapVariableUriDataType.get(varURI), rowIndex, colIndex, csvValidation));
+                                if (colIndex + 1 < values.length) {
+                                    if (headerByIndex.get(colIndex + 1).equalsIgnoreCase(rawdataHeader) && values[colIndex + 1] != null) {
+                                        dataModel.setRawData(returnValidRawData(varURI, values[colIndex + 1].trim(), mapVariableUriDataType.get(varURI), rowIndex, colIndex + 1, csvValidation));
+                                    }
+                                }
+
+                                // check for duplicate data
+                                URI targetUri = null;
+                                URI deviceUri = null;
+                                if (target != null) {
+                                    targetUri = target.getUri();
+                                }
+                                if (object != null) {
+                                    targetUri = object.getUri();
+                                }
+                                if(device != null) {
+                                    deviceUri = device.getUri();
+                                }
+                                ImportDataIndex importDataIndex = new ImportDataIndex(parsedDateTimeMongo.getInstant(), varURI, provenance.getUri(), targetUri, deviceUri);
+                                if (!duplicateDataByIndex.contains(importDataIndex)) {
+                                    duplicateDataByIndex.add(importDataIndex);
+                                } else {
+                                    String variableName = csvValidation.getHeadersLabels().get(colIndex) + '(' + csvValidation.getHeaders().get(colIndex) + ')';
+                                    CSVCell duplicateCell = new CSVCell(rowIndex, colIndex, values[colIndex].trim(), variableName);
+                                    csvValidation.addDuplicatedDataError(duplicateCell);
+                                }
+                                csvValidation.addData(dataModel, rowIndex);
+
                             }
 
-                            // check for duplicate data
-                            URI targetUri = null;
-                            URI deviceUri = null;
-                            if (target != null) {
-                                targetUri = target.getUri();
-                            }
-                            if (object != null) {
-                                targetUri = object.getUri();
-                            }
-                            if(device != null) {
-                                deviceUri = device.getUri();
-                            }
-                            ImportDataIndex importDataIndex = new ImportDataIndex(parsedDateTimeMongo.getInstant(), varURI, provenance.getUri(), targetUri, deviceUri);
-                            if (!duplicateDataByIndex.contains(importDataIndex)) {
-                                duplicateDataByIndex.add(importDataIndex);
-                            } else {
-                                String variableName = csvValidation.getHeadersLabels().get(colIndex) + '(' + csvValidation.getHeaders().get(colIndex) + ')';
-                                CSVCell duplicateCell = new CSVCell(rowIndex, colIndex, values[colIndex].trim(), variableName);
-                                csvValidation.addDuplicatedDataError(duplicateCell);
-                            }
-                            csvValidation.addData(dataModel, rowIndex);
                         }
                     }
                 }

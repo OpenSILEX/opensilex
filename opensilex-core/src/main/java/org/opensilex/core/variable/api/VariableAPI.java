@@ -15,6 +15,8 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import io.swagger.annotations.*;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.opensilex.core.URIsListPostDTO;
+import org.opensilex.core.sharedResource.SharedResourcesDTO;
+import org.opensilex.core.variable.api.sharedResource.SharedResourceDTO;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
@@ -372,7 +374,11 @@ public class VariableAPI {
                                 String urlRankResources = resultResources.get(rank).get("uri").asText();
 
                                 if (Objects.equals(urlRankResources, urlSharedResource)){
-                                    variableDto.setOnShared(resultResources.get(rank).get("label").asText());
+                                    String labelSharedResource = resultResources.get(rank).get("label").asText();
+                                    SharedResourceDTO sharedResourceDto = new SharedResourceDTO();
+                                    sharedResourceDto.setName(labelSharedResource);
+                                    sharedResourceDto.setUri(new URI(urlSharedResource));
+                                    variableDto.setOnShared(sharedResourceDto);
                                     break;
                                 }
                                 rank++;
@@ -392,6 +398,7 @@ public class VariableAPI {
 
             UriBuilder url = UriBuilder.fromUri(resource)
                     .path(PATH);
+            // récupère les paramètres de la requête pour les recopier dans l'appel au service de recherche de variables sur la RP sélectionnée
             for (Map.Entry<String, String[]> entry : httpRequest.getParameterMap().entrySet()){
                 url.queryParam(entry.getKey(),entry.getValue());
             }

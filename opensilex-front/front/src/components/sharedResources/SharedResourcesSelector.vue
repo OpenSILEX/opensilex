@@ -74,7 +74,7 @@ export default class SharedResourcesSelector extends Vue {
     };
   }
 
-  select(value) { // quand une valeur est sélectionnée --> notifiie dans variableList
+  select(value) { // quand une valeur est sélectionnée --> notifie dans variableList
     for (let resourceDTO of this.resourcesList){ // boucle sur toutes les ressources
       if (resourceDTO.uri === value.id){ // si l'uri de l'élément est le même que l'uri de la sélection
         this.$emit("select", resourceDTO); // valeur associée = dto sélectionné

@@ -54,7 +54,7 @@ public class VariableGetDTO {
     @JsonProperty("onLocal")
     private boolean onLocal;
     @JsonProperty("onShared")
-    private URI onShared;
+    private String onShared;
 
     @ApiModelProperty(example = "http://opensilex.dev/set/variables/Plant_Height")
     public URI getUri() {
@@ -121,11 +121,11 @@ public class VariableGetDTO {
     public void setOnLocal(boolean onLocal) {
         this.onLocal = onLocal;
     }
-    public URI getOnShared() {
+    public String getOnShared() {
         return onShared;
     }
 
-    public void setOnShared(URI onShared) {
+    public void setOnShared(String onShared) {
         this.onShared = onShared;
     }
 

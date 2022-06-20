@@ -67,14 +67,24 @@
           this.refresh();
             this.loadForm = true;
             this.$nextTick(() => {
-                let speciesUri;
+                let speciesList = [];
+                
                 if (form.species) {
-                    speciesUri = form.species.uri ? form.species.uri : form.species; 
+                    if(form.species[0].uri) {
+                        form.species.forEach(species => {
+                            speciesList.push(species.uri)
+                        });
+                    } else {
+                        form.species.forEach(species => {
+                            speciesList.push(species)
+                        });
+                    }
                 } else {
-                    speciesUri = undefined;
+                    speciesList = undefined;
                 }
+
                 let formCopy = JSON.parse(JSON.stringify(form));
-                formCopy.species = speciesUri;
+                formCopy.species = speciesList;
                 this.variableForm.showEditForm(formCopy);
             });
         }

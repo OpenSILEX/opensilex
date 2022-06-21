@@ -262,6 +262,11 @@ public class RDF4JConnection extends BaseService implements SPARQLConnection {
     }
 
     @Override
+    public boolean hasActiveTransaction() throws SPARQLException {
+        return rdf4JConnection.isActive();
+    }
+
+    @Override
     public void clearGraph(URI graph) throws SPARQLException {
         clearGraph(SimpleValueFactory.getInstance().createIRI(graph.toString()));
     }

@@ -294,6 +294,11 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     @Override
+    public boolean hasActiveTransaction() throws SPARQLException {
+        return connection.hasActiveTransaction();
+    }
+
+    @Override
     public void clearGraph(URI graph) throws SPARQLException {
         LOGGER.debug("SPARQL CLEAR GRAPH: " + graph);
         connection.clearGraph(graph);

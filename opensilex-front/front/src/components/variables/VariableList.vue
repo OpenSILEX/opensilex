@@ -144,7 +144,7 @@
                                 v-else
                                 :uri="data.item.uri"
                                 :value="data.item.name"
-                                :to="{path: '/variable/details/'+ encodeURIComponent(data.item.uri)}"
+                                :to="{path: '/variable/details/'+ encodeURIComponent(data.item.uri) + '?resource=' + filter.resource}"
                             ></opensilex-UriLink>
                         </span>
                         <br>

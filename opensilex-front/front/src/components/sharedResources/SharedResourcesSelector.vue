@@ -67,7 +67,7 @@ export default class SharedResourcesSelector extends Vue {
         );
   }
 
-  sharedResourcesToSelectNode(dto: SharedResourcesDTO) { // format renvoyé quand on sélectionne ?
+  sharedResourcesToSelectNode(dto: SharedResourcesDTO) { // format renvoyé quand on sélectionne
     return {
       id: dto.uri,
       label: this.$t(dto.label)

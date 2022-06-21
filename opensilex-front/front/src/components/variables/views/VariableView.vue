@@ -105,6 +105,7 @@ export default class VariableView extends Vue {
 
   variable: VariableDetailsDTO = VariableView.getEmptyDetailsDTO();
   uri: string;
+  resource: string;
 
   @Ref("annotationList") readonly annotationList!: AnnotationList;
 
@@ -119,7 +120,9 @@ export default class VariableView extends Vue {
   created() {
     this.service = this.$opensilex.getService("opensilex.VariablesService");
     this.uri = decodeURIComponent(this.$route.params.uri);
-    this.loadVariable(this.uri);
+    this.resource = decodeURIComponent(this.$route.query.resource) === "http://localhost" ? undefined : decodeURIComponent(this.$route.query.resource);
+    this.loadVariable(this.uri, this.resource);
+    console.log(this.resource);
   }
 
   isDetailsTab() {
@@ -134,15 +137,15 @@ export default class VariableView extends Vue {
     return this.$route.path.startsWith("/variable/visualization/");
   }
 
-  loadVariable(uri: string) {
-    this.service.getVariable(uri).then((http: HttpResponse<OpenSilexResponse<VariableDetailsDTO>>) => {
+  loadVariable(uri: string, resource: string) {
+    this.service.getVariable(uri, resource).then((http: HttpResponse<OpenSilexResponse<VariableDetailsDTO>>) => {
       this.variable = http.response.result;
     }).catch(this.$opensilex.errorHandler);
   }
 
   updateVariable(variable) {
     this.uri = variable.uri;
-    this.loadVariable(this.uri);
+    this.loadVariable(this.uri, undefined);
   }
 
 }

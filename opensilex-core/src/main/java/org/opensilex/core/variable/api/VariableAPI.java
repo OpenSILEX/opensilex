@@ -199,35 +199,36 @@ public class VariableAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response getVariable(
-            @ApiParam(value = "Variable URI", example = "http://opensilex.dev/set/variables/Plant_Height", required = true) @PathParam("uri") @NotNull URI uri
-//            @ApiParam(value = "Resource URI", example = "http://138.102.159.36:8083/rest",required = false) @QueryParam("resource") @DefaultValue(null) URI resource
+            @ApiParam(value = "Variable URI", example = "http://opensilex.dev/set/variables/Plant_Height", required = true) @PathParam("uri") @NotNull URI uri,
+            @ApiParam(value = "Resource URI", example = "http://138.102.159.36:8083/rest") @QueryParam("resource") URI resource
     ) throws Exception {
-        VariableDAO dao = getDao();
-        VariableModel variable = dao.get(uri);
-        if (variable == null) {
 
-            // liste des RP en dur (sauf vitioeno car connexion avec admin ne fonctionne pas
-            List<String> listResources = Arrays.asList("http://138.102.159.36:8083/rest","http://138.102.159.36:8082/rest");
-            for (String urlSharedResource : listResources) {
-                String token = getToken(urlSharedResource);
-                String VariableURI = URLEncoder.encode(uri.toString(), StandardCharsets.UTF_8.name());
-                // utilisation service de recherche d'une variable avec l'uri
-                String stringSearchResponse = connectionToService(urlSharedResource + "/core/variables/" + VariableURI, token);
-
-                if (stringSearchResponse != null) {
-                    ObjectMapper mapperSearch = new ObjectMapper();
-                    JsonNode jsonResultSearch = mapperSearch.readTree(stringSearchResponse);
-                    SingleObjectResponse<VariableDetailsDTO> getResponse = mapperSearch.convertValue(jsonResultSearch, new TypeReference<SingleObjectResponse<VariableDetailsDTO>>() {
-                    });
-                    VariableDetailsDTO sharedVariableDetailsDto = getResponse.getResult();
-
-                    return new SingleObjectResponse<>(sharedVariableDetailsDto).getResponse();
-                }
-
+        if(resource == null){
+            VariableDAO dao = getDao();
+            VariableModel variable = dao.get(uri);
+            if (variable == null) {
+                throw new NotFoundURIException(uri);
             }
-            throw new NotFoundURIException(uri);
+            return new SingleObjectResponse<>(new VariableDetailsDTO(variable)).getResponse();
+
+        }else{
+            String token = getToken(resource.toString());
+            String VariableURI = URLEncoder.encode(uri.toString(), StandardCharsets.UTF_8.name());
+            // utilisation service de recherche d'une variable avec l'uri
+            String stringSearchResponse = connectionToService(resource.toString() + "/core/variables/" + VariableURI, token);
+
+            if (stringSearchResponse == null) {
+                throw new NotFoundURIException(uri);
+            }else{
+                ObjectMapper mapperSearch = new ObjectMapper();
+                JsonNode jsonResultSearch = mapperSearch.readTree(stringSearchResponse);
+                SingleObjectResponse<VariableDetailsDTO> getResponse = mapperSearch.convertValue(jsonResultSearch, new TypeReference<SingleObjectResponse<VariableDetailsDTO>>() {
+                });
+                VariableDetailsDTO sharedVariableDetailsDto = getResponse.getResult();
+
+                return new SingleObjectResponse<>(sharedVariableDetailsDto).getResponse();
+            }
         }
-        return new SingleObjectResponse<>(new VariableDetailsDTO(variable)).getResponse();
     }
 
 
@@ -293,7 +294,7 @@ public class VariableAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchVariables(
-            @ApiParam(value = "Resources") @QueryParam("resources") URI resource,
+            @ApiParam(value = "Resource") @QueryParam("resource") URI resource,
             @ApiParam(value = "Name regex pattern", example = "plant_height") @QueryParam("name") String namePattern,
             @ApiParam(value = "Entity filter") @QueryParam("entity") @ValidURI URI entity,
             @ApiParam(value = "Entity of interest filter") @QueryParam("entity_of_interest") @ValidURI URI interestEntity,
@@ -662,5 +663,41 @@ public class VariableAPI {
         return buildCSVForDetailsExport(variableList);
         
     }
+
+//
+//    @POST
+//    @Path("/importOnLocal")
+//    @ApiOperation("Import the selected variables from the shared resources")
+//    @ApiProtected
+//    @Consumes(MediaType.APPLICATION_JSON)
+//    @Produces(MediaType.APPLICATION_JSON)
+//    @ApiResponses(value = {
+//            @ApiResponse(code = 200, message = "Import variables")
+//    })
+//    public Response importVariables(
+//            @ApiParam(value = "List of variable URI", required = true) List<URI> uris,
+//            @ApiParam(value = "Shared resource URI", example = "http://138.102.159.36:8083/rest", required = true) URI resource
+//    ) throws Exception {
+//
+//        String token = getToken(resource.toString());
+//
+//        for (URI uri : uris){
+//            String VariableURI = URLEncoder.encode(uri.toString(), StandardCharsets.UTF_8.name());
+//            JsonNode jsonResult = jsonResponseToService(resource + "/core/variables/" + VariableURI, token);
+//        }
+//        return new ObjectUriResponse(Response.Status.OK, resource).getResponse(); // à changer
+//    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
 

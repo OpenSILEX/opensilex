@@ -33,6 +33,7 @@ import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
 import org.bson.conversions.Bson;
 import org.opensilex.OpenSilexModuleNotFoundException;
+import org.opensilex.nosql.MongoInsertOptions;
 import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidUriListException;
@@ -41,8 +42,11 @@ import org.opensilex.nosql.mongodb.codec.URICodec;
 import org.opensilex.service.BaseService;
 import org.opensilex.service.ServiceDefaultDefinition;
 import org.opensilex.sparql.SPARQLModule;
+import org.opensilex.sparql.service.SPARQLConnection;
+import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
+import org.opensilex.utils.ThrowingConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,10 +68,13 @@ public class MongoDBService extends BaseService {
     private URI generationPrefixURI;
     private static String defaultTimezone;
 
+    private final MongoInserter mongoInserter;
+
     public MongoDBService(MongoDBConfig config) {
         super(config);
         dbName = config.database();
         defaultTimezone = config.timezone();
+        mongoInserter = new DefaultMongoInserter();
     }
 
     @Override
@@ -102,6 +109,10 @@ public class MongoDBService extends BaseService {
 
     public ClientSession getSession() {
         return this.session;
+    }
+
+    public ClientSession startSession(){
+        return this.mongoClient.startSession();
     }
 
     private int transactionLevel = 0;
@@ -171,8 +182,84 @@ public class MongoDBService extends BaseService {
             rollbackTransaction();
             throw exception;
         }
-
     }
+
+    public <T extends MongoModel> void createAll(MongoInsertOptions<T> insert) throws Exception {
+
+        for (T instance : insert.getModels()) {
+            if (instance.getUri() == null) {
+                generateUniqueUriIfNullOrValidateCurrent(
+                        instance,
+                        insert.isCheckUriExist(),
+                        insert.getUriGenerationPrefix(),
+                        insert.getCollection().toString());
+            }
+        }
+
+        mongoInserter.create(insert);
+    }
+
+    /**
+     * Handle operations on {@link SPARQLService} and on {@link MongoDBService} by handling
+     * transaction commit and rollback in case of error
+     * @param sparqlService the {@link SPARQLService} used to performs operations on triplestore
+     * @param mongoSession the {@link ClientSession} to use for transaction management with MongoDB
+     * @param mongoFunction custom MongoDB-based function/code to apply after transaction start and before transaction commit.
+     * @param sparqlFunction custom SPARQL based function/code to apply after transaction start and before transaction commit.
+     * @throws Exception if some Exception is encountered during mongoFunction or sparqlFunction applying, or with SPARQL or MongoDB driver.
+     * When encountered, this method ensure that any data inserted is rollback()
+     *
+     * @apiNote the mongo session is always closed ({@link ClientSession#close()}) at the end of method (with or without fail). So you should
+     * not reuse this session after <br><br>
+     *
+     * The following method are used for SPARQL transaction handling :
+     * <lu>
+     *     <li>{@link SPARQLService#startTransaction()}</li>
+     *     <li>{@link SPARQLService#hasActiveTransaction()}</li>
+     *     <li>{@link SPARQLService#commitTransaction()}</li>
+     *     <li>{@link SPARQLService#rollbackTransaction()}</li>
+     * </lu>
+     *
+     * <br> The following method are used for MongoDB transaction handling : <br>
+     * <lu>
+     *     <li>{@link ClientSession#startTransaction()}</li>
+     *     <li>{@link ClientSession#hasActiveTransaction()}</li>
+     *     <li>{@link ClientSession#commitTransaction()}</li>
+     *     <li>{@link ClientSession#abortTransaction()}</li>
+     * </lu>
+     */
+    public void multipleOperationsWithTransaction(
+            SPARQLService sparqlService,
+            ClientSession mongoSession,
+            ThrowingConsumer<ClientSession, Exception> mongoFunction,
+            ThrowingConsumer<SPARQLService, Exception> sparqlFunction
+    ) throws Exception {
+        try {
+            mongoSession.startTransaction();
+            sparqlService.startTransaction();
+            sparqlFunction.accept(sparqlService);
+            mongoFunction.accept(mongoSession);
+
+            if(mongoSession.hasActiveTransaction()){
+                mongoSession.commitTransaction();
+            }
+            if(sparqlService.hasActiveTransaction()){
+                sparqlService.commitTransaction();
+            }
+        }catch (Exception e){
+            if(mongoSession.hasActiveTransaction()){
+                mongoSession.abortTransaction();
+            }
+            if(sparqlService.hasActiveTransaction()){
+                sparqlService.rollbackTransaction();
+            }
+            throw e;
+        }finally {
+            mongoSession.close();
+        }
+    }
+
+
 
     /**
      *

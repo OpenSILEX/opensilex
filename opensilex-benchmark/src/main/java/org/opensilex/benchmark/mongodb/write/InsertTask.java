@@ -10,6 +10,8 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * @author rcolin
@@ -20,30 +22,35 @@ public abstract class InsertTask<T extends MongoModel> implements Callable<Integ
     protected static final Logger LOGGER = LoggerFactory.getLogger(InsertTask.class);
 
     private final int taskId;
-    protected final List<T> models;
+    protected final Supplier<List<T>> modelsGenerator;
     protected final MongoClient client;
     protected final MongoCollection<T> collection;
 
-    protected InsertTask(int taskId, List<T> models, MongoClient client, MongoCollection<T> collection) {
+    protected InsertTask(int taskId,Supplier<List<T>> modelsGenerator, MongoClient client, MongoCollection<T> collection) {
         this.taskId = taskId;
-        this.models = models;
+        this.modelsGenerator = modelsGenerator;
         this.client = client;
         this.collection = collection;
     }
 
-    abstract void insertModels() throws Exception;
+    abstract void insertModels(List<T> models) throws Exception;
 
     @Override
     public Integer call() throws Exception {
 
-        LOGGER.info("Running mongo insert task {}, length: {}, [IN-PROGRESS]", taskId, models.size());
+//        LOGGER.info("Running mongo insert task {}, length: {}, [IN-PROGRESS]", taskId, models.size());
         Instant begin = Instant.now();
 
-        insertModels();
+        List<T> models = modelsGenerator.get();
+        insertModels(models);
 
         Duration duration = Duration.between(begin, Instant.now());
-        LOGGER.info("Mongo insert task {} [OK] time: {} ms, length: {}", taskId, duration.toMillis(), models.size());
 
-        return models.size();
+        if(taskId % 10 == 0){
+            LOGGER.info("Mongo insert task {} [OK] time: {} ms, length: {}", taskId, duration.toMillis(), models.size());
+        }
+
+        models.clear();
+        return 0;
     }
 }

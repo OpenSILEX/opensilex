@@ -25,14 +25,15 @@ public class OpenSilexBenchmarkRunner {
 
         OptionsBuilder optionsBuilder = new OptionsBuilder();
 
-        optionsBuilder.timeout(TimeValue.minutes(30))
+        optionsBuilder.timeout(TimeValue.minutes(60))
                 .timeUnit(TimeUnit.MILLISECONDS)
                 .mode(Mode.AverageTime)
                 .verbosity(VerboseMode.NORMAL)
                 .warmupIterations(0)
                 .warmupTime(TimeValue.milliseconds(10))
                 .measurementIterations(1)
-                .measurementTime(TimeValue.milliseconds(10))
+//                .measurementTime(TimeValue.seconds(1))
+//                .measurementBatchSize(3)
                 .forks(debug ? 0 : 1)
                 .result("opensilex_"+ benchmarkClass.getSimpleName()+"_"+ Instant.now().getEpochSecond()+".csv")
                 .resultFormat(ResultFormatType.CSV);

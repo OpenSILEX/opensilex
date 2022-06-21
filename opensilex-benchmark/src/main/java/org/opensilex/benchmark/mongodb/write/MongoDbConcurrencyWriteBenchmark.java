@@ -3,7 +3,8 @@ package org.opensilex.benchmark.mongodb.write;
 import com.mongodb.client.ClientSession;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoCollection;
-import org.apache.jena.shared.PrefixMapping;
+import com.mongodb.client.model.IndexOptions;
+import com.mongodb.client.model.Indexes;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
@@ -13,9 +14,6 @@ import org.opensilex.benchmark.core.OpenSilexBenchmarkRunner;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.data.dal.DataProvenanceModel;
-import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.deserializer.URIDeserializer;
-import org.opensilex.sparql.service.SPARQLService;
 
 import java.net.URI;
 import java.time.Duration;
@@ -33,16 +31,16 @@ import java.util.stream.Collectors;
 @State(Scope.Benchmark)
 public class MongoDbConcurrencyWriteBenchmark extends AbstractOpenSilexBenchmark {
 
-    @Param({"20000"})
+    @Param({"10000"})
     public int transactionSize;
 
-    @Param({"8"})
+    @Param({"10"})
     public int concurrentWriteNb;
 
     @Param({"true"})
     public boolean usePrefixes;
 
-    @Param({"10"})
+    @Param({"5000"})
     public int taskNb;
 
     private Random random;
@@ -60,10 +58,10 @@ public class MongoDbConcurrencyWriteBenchmark extends AbstractOpenSilexBenchmark
 
     private List<URI> variables;
 
-    @Param({"100"})
+    @Param({"1000"})
     public int nbProvenance;
 
-    @Param({"false"})
+    @Param({"true"})
     public boolean withAllIndexes;
 
     private List<DataProvenanceModel> provenances;
@@ -99,6 +97,17 @@ public class MongoDbConcurrencyWriteBenchmark extends AbstractOpenSilexBenchmark
 
         mongoClient = mongodb.getMongoClient();
         collection = mongodb.getDatabase().getCollection(DataDAO.DATA_COLLECTION_NAME, DataModel.class);
+        buildIndexes();
+    }
+
+    void buildIndexes(){
+        if(! withAllIndexes){
+            return;
+        }
+        collection.createIndex(Indexes.ascending("variable", "provenance", "target", "date"), new IndexOptions().unique(true));
+        collection.createIndex(Indexes.ascending("variable", "target", "date"));
+        collection.createIndex(Indexes.compoundIndex(Arrays.asList(Indexes.ascending("variable"),Indexes.descending("date"))));
+        collection.createIndex(Indexes.ascending("date"));
     }
 
     private URI createURI(String suffix) {
@@ -106,7 +115,7 @@ public class MongoDbConcurrencyWriteBenchmark extends AbstractOpenSilexBenchmark
     }
 
     private List<DataModel> getModels() {
-        Instant batchInstant = Instant.now();
+        Instant batchInstant = Instant.now().plusNanos(random.nextLong());
         List<DataModel> models = new ArrayList<>(transactionSize);
 
         for (int i = 0; i < transactionSize; i++) {
@@ -130,7 +139,7 @@ public class MongoDbConcurrencyWriteBenchmark extends AbstractOpenSilexBenchmark
 
         // create tasks
         ExecutorService executorService = Executors.newFixedThreadPool(concurrentWriteNb);
-        List<Callable<Integer>> tasks = new ArrayList<>(concurrentWriteNb);
+        List<Callable<Integer>> tasks = new ArrayList<>(taskNb);
         for (int i = 1; i <= taskNb; i++) {
             Callable<Integer> task = taskFunction.apply(i);
             tasks.add(task);
@@ -167,11 +176,11 @@ public class MongoDbConcurrencyWriteBenchmark extends AbstractOpenSilexBenchmark
     //    @Benchmark
     public void testConcurrentWriteWithDao() throws ExecutionException, InterruptedException {
 
-        IntFunction<InsertTask<?>> taskFunction = (int taskIndex) -> new InsertTask<DataModel>(taskIndex, getModels(), mongoClient, collection) {
+        IntFunction<InsertTask<?>> taskFunction = (int taskIndex) -> new InsertTask<DataModel>(taskIndex, this::getModels, mongoClient, collection) {
             @Override
-            void insertModels() throws Exception {
+            void insertModels(List<DataModel> models) throws Exception {
                 DataDAO dao = new DataDAO(mongodb, sparql, fs);
-                dao.createAll(models);
+                dao.createAll(models,client.startSession());
             }
         };
 
@@ -181,12 +190,11 @@ public class MongoDbConcurrencyWriteBenchmark extends AbstractOpenSilexBenchmark
     @Benchmark
     public void testConcurrentWriteWithSessionHandling() throws ExecutionException, InterruptedException {
 
-        IntFunction<InsertTask<?>> taskFunction = (int taskIndex) -> new InsertTask<DataModel>(taskIndex, getModels(), mongoClient, collection) {
+        IntFunction<InsertTask<?>> taskFunction = (int taskIndex) -> new InsertTask<DataModel>(taskIndex, this::getModels, mongoClient, collection) {
             @Override
-            void insertModels() throws Exception {
+            void insertModels(List<DataModel> models) throws Exception {
 
                 ClientSession session = mongoClient.startSession();
-                List<DataModel> models = getModels();
                 session.startTransaction();
 
                 try {
@@ -210,6 +218,7 @@ public class MongoDbConcurrencyWriteBenchmark extends AbstractOpenSilexBenchmark
 
         Options options = new OptionsBuilder()
                 .param(CONFIG_PATH_JMH_PARAM, "/home/renaud/workspace/OpenSilex/opensilex-dev/opensilex-dev-tools/src/main/resources/config/opensilex.yml")
+                .jvmArgs("-Xmx2G","-Xms1G")
                 .build();
 
         OpenSilexBenchmarkRunner runner = new OpenSilexBenchmarkRunner(MongoDbConcurrencyWriteBenchmark.class, false, options);

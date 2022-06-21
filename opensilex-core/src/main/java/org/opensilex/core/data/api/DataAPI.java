@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoBulkWriteException;
 import com.mongodb.MongoCommandException;
 import com.mongodb.bulk.BulkWriteError;
+import com.mongodb.client.ClientSession;
 import com.mongodb.client.result.DeleteResult;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
@@ -33,6 +34,10 @@ import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.utils.ImportDataIndex;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.nosql.mongodb.DefaultMongoInserter;
+import org.opensilex.sparql.SPARQLModule;
+import org.opensilex.sparql.csv.CSVCell;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.core.provenance.api.ProvenanceAPI;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.AgentModel;
@@ -165,29 +170,32 @@ public class DataAPI {
             @ApiParam("Data description") @Valid @NotNull @NotEmpty List<DataCreationDTO> dtoList
     ) throws Exception {
         DataDAO dao = new DataDAO(nosql, sparql, fs);
-        List<DataModel> dataList = new ArrayList<>();
+
         try {
             if (dtoList.size() > SIZE_MAX) {
                 throw new NoSQLTooLargeSetException(SIZE_MAX, dtoList.size());
             }
 
+            final List<DataModel> dataList = new ArrayList<>(dtoList.size());
             for (DataCreationDTO dto : dtoList) {
-                DataModel model = dto.newModel();
-                dataList.add(model);
+                dataList.add(dto.newModel());
             }
-            
-            dataList = validData(dataList);
+            validData(dataList);
 
-            dataList = dao.createAll(dataList);
-            if(variablesToDevices.size() > 0) {
-               
-                DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
-                for (Map.Entry variablesToDevice : variablesToDevices.entrySet() ){
-                    
-                    deviceDAO.associateVariablesToDevice((DeviceModel) variablesToDevice.getKey(),(List<URI>)variablesToDevice.getValue(), user );
-                    
-                }
-            }
+            nosql.multipleOperationsWithTransaction(
+                    sparql,
+                    nosql.startSession(),
+                    (ClientSession session) -> dao.createAll(dataList, session),
+                    (SPARQLService sparqlService) -> {
+                        if (variablesToDevices.size() > 0) {
+
+                            DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
+                            for (Map.Entry<DeviceModel,List<URI>> entry : variablesToDevices.entrySet()) {
+                                deviceDAO.associateVariablesToDevice(entry.getKey(), entry.getValue(), user);
+                            }
+                        }
+                    }
+            );
             // do the  variable/device associations here ..
             
             List<URI> createdResources = new ArrayList<>();
@@ -1111,50 +1119,60 @@ public class DataAPI {
 
         validation.setInsertionStep(true);
         validation.setValidCSV(!validation.hasErrors()); 
-        validation.setNbLinesToImport(validation.getData().size()); 
+        validation.setNbLinesToImport(validation.getData().size());
 
-        if (validation.isValidCSV()) {
-            Instant start = Instant.now();
-            List<DataModel> data = new ArrayList<>(validation.getData().keySet());
-            try {
-                dao.createAll(data);
-                
-                if(!validation.getVariablesToDevices().isEmpty()){
-                    DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
-                    for (Map.Entry variablesToDevice : validation.getVariablesToDevices().entrySet() ){
-                        deviceDAO.associateVariablesToDevice((DeviceModel) variablesToDevice.getKey(),(List<URI>)variablesToDevice.getValue(), user );
-                    }
-                }
-                
-                validation.setNbLinesImported(data.size());
-            } catch (NoSQLTooLargeSetException ex) {
-                validation.setTooLargeDataset(true);
-
-            } catch (MongoBulkWriteException duplicateError) {
-                List<BulkWriteError> bulkErrors = duplicateError.getWriteErrors();
-                for (int i = 0; i < bulkErrors.size(); i++) {
-                    int index = bulkErrors.get(i).getIndex();
-                    DataModel dataModel = data.get(index);
-                    int variableIndex = validation.getHeaders().indexOf(dataModel.getVariable().toString());
-                    String variableName = validation.getHeadersLabels().get(variableIndex) + '(' + validation.getHeaders().get(variableIndex) + ')';
-                    CSVCell csvCell = new CSVCell(validation.getData().get(data.get(index)), validation.getHeaders().indexOf(dataModel.getVariable().toString()), dataModel.getValue().toString(), variableName);
-                    validation.addDuplicatedDataError(csvCell);
-                }
-            } catch (MongoCommandException e) {
-                CSVCell csvCell = new CSVCell(-1, -1, "Unknown value", "Unknown variable");
-                validation.addDuplicatedDataError(csvCell);
-            } catch (DataTypeException e) {
-                int indexOfVariable = validation.getHeaders().indexOf(e.getVariable().toString());
-                String variableName = validation.getHeadersLabels().get(indexOfVariable) + '(' + validation.getHeaders().get(indexOfVariable) + ')';
-                validation.addInvalidDataTypeError(new CSVCell(e.getDataIndex(), indexOfVariable, e.getValue().toString(), variableName));
-            }
-            Instant finish = Instant.now();
-            long timeElapsed = Duration.between(start, finish).toMillis();
-            LOGGER.debug("Insertion " + Long.toString(timeElapsed) + " milliseconds elapsed");
-            
-            validation.setValidCSV(!validation.hasErrors());
+        if(! validation.isValidCSV()){
+            csvValidation.setDataErrors(validation);
+            return new SingleObjectResponse<>(csvValidation).getResponse();
         }
-        csvValidation.setDataErrors(validation); 
+
+        Instant start = Instant.now();
+        List<DataModel> data = new ArrayList<>(validation.getData().keySet());
+        try {
+
+            nosql.multipleOperationsWithTransaction(
+                    sparql,
+                    nosql.startSession(),
+                    (ClientSession session) -> dao.createAll(data, session),
+                    (SPARQLService sparqlService) -> {
+                        if (!validation.getVariablesToDevices().isEmpty()) {
+                            DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
+
+                            for (Map.Entry<DeviceModel,List<URI>> entry : validation.getVariablesToDevices().entrySet()) {
+                                deviceDAO.associateVariablesToDevice(entry.getKey(), entry.getValue(), user);
+                            }
+                        }
+                    }
+            );
+
+            validation.setNbLinesImported(data.size());
+        } catch (NoSQLTooLargeSetException ex) {
+            validation.setTooLargeDataset(true);
+
+        } catch (MongoBulkWriteException duplicateError) {
+            List<BulkWriteError> bulkErrors = duplicateError.getWriteErrors();
+            for (int i = 0; i < bulkErrors.size(); i++) {
+                int index = bulkErrors.get(i).getIndex();
+                DataGetDTO fromModel = DataGetDTO.getDtoFromModel(data.get(index));
+                int variableIndex = validation.getHeaders().indexOf(fromModel.getVariable().toString());
+                String variableName = validation.getHeadersLabels().get(variableIndex) + '(' + validation.getHeaders().get(variableIndex) + ')';
+                CSVCell csvCell = new CSVCell(validation.getData().get(data.get(index)), validation.getHeaders().indexOf(fromModel.getVariable().toString()), fromModel.getValue().toString(), variableName);
+                validation.addDuplicatedDataError(csvCell);
+            }
+        } catch (MongoCommandException e) {
+            CSVCell csvCell = new CSVCell(-1, -1, "Unknown value", "Unknown variable");
+            validation.addDuplicatedDataError(csvCell);
+        } catch (DataTypeException e) {
+            int indexOfVariable = validation.getHeaders().indexOf(e.getVariable().toString());
+            String variableName = validation.getHeadersLabels().get(indexOfVariable) + '(' + validation.getHeaders().get(indexOfVariable) + ')';
+            validation.addInvalidDataTypeError(new CSVCell(e.getDataIndex(), indexOfVariable, e.getValue().toString(), variableName));
+        }
+        Instant finish = Instant.now();
+        long timeElapsed = Duration.between(start, finish).toMillis();
+        LOGGER.debug("Insertion " + Long.toString(timeElapsed) + " milliseconds elapsed");
+
+        validation.setValidCSV(!validation.hasErrors());
+        csvValidation.setDataErrors(validation);
         return new SingleObjectResponse<>(csvValidation).getResponse();
     }
     

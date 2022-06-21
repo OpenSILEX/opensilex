@@ -730,7 +730,7 @@ public class ExperimentAPI {
             Instant start = Instant.now();
             List<DataModel> data = new ArrayList<>(validation.getData().keySet());
             try {
-                dataDAO.createAll(data);
+                dataDAO.createAll(data, null);
                 validation.setNbLinesImported(data.size());
             } catch (NoSQLTooLargeSetException ex) {
                 validation.setTooLargeDataset(true);

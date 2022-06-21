@@ -6,6 +6,7 @@
 //******************************************************************************
 package org.opensilex.core.data.dal;
 
+import com.mongodb.client.ClientSession;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
@@ -19,7 +20,7 @@ import org.opensilex.core.data.api.DataGetDTO;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.utils.ExportDataIndex;
-import org.opensilex.core.ontology.Oeso;
+import org.opensilex.nosql.MongoInsertOptions;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
@@ -74,19 +75,23 @@ public class DataDAO {
     protected final SPARQLService sparql;
     protected final FileStorageService fs;
 
+
+    protected final MongoCollection<DataModel> dataCollection;
+    protected final MongoCollection<DataFileModel> dataFileCollection;
+
     private static final Logger LOGGER = LoggerFactory.getLogger(DataDAO.class);
         
     public DataDAO(MongoDBService nosql, SPARQLService sparql, FileStorageService fs) throws URISyntaxException {
         this.nosql = nosql;
         this.sparql = sparql;
         this.fs = fs;
+        this.dataCollection = nosql.getDatabase().getCollection(DATA_COLLECTION_NAME, DataModel.class);
+        this.dataFileCollection = nosql.getDatabase().getCollection(FILE_COLLECTION_NAME, DataFileModel.class);
     }
 
     public void createIndexes() {
         IndexOptions unicityOptions = new IndexOptions().unique(true);
-
-        MongoCollection dataCollection = nosql.getDatabase()
-                .getCollection(DATA_COLLECTION_NAME, DataModel.class);
+        
         dataCollection.createIndex(Indexes.ascending("uri"), unicityOptions);
         dataCollection.createIndex(Indexes.ascending("variable", "provenance", "target", "date"), unicityOptions);
         dataCollection.createIndex(Indexes.ascending("variable", "target", "date"));
@@ -94,14 +99,12 @@ public class DataDAO {
         dataCollection.createIndex(Indexes.ascending("date"));
         dataCollection.createIndex(Indexes.descending("date"));
 
-        MongoCollection fileCollection = nosql.getDatabase()
-                .getCollection(FILE_COLLECTION_NAME, DataModel.class);
-        fileCollection.createIndex(Indexes.ascending("uri"), unicityOptions);
-        fileCollection.createIndex(Indexes.ascending("path"), unicityOptions);
-        fileCollection.createIndex(Indexes.ascending("provenance", "target", "date"), unicityOptions);
-        fileCollection.createIndex(Indexes.ascending("target", "date"));
-        fileCollection.createIndex(Indexes.descending("date"));
-        fileCollection.createIndex(Indexes.ascending("date"));
+        dataFileCollection.createIndex(Indexes.ascending("uri"), unicityOptions);
+        dataFileCollection.createIndex(Indexes.ascending("path"), unicityOptions);
+        dataFileCollection.createIndex(Indexes.ascending("provenance", "target", "date"), unicityOptions);
+        dataFileCollection.createIndex(Indexes.ascending("target", "date"));
+        dataFileCollection.createIndex(Indexes.descending("date"));
+        dataFileCollection.createIndex(Indexes.ascending("date"));
     }
 
     public DataModel create(DataModel instance) throws Exception {
@@ -116,9 +119,15 @@ public class DataDAO {
         return instance;
     }
 
-    public List<DataModel> createAll(List<DataModel> instances) throws Exception {
-        createIndexes(); 
-        nosql.createAll(instances, DataModel.class, DATA_COLLECTION_NAME, DATA_PREFIX,false);
+    public List<DataModel> createAll(List<DataModel> instances, ClientSession session) throws Exception {
+        createIndexes();
+
+        MongoInsertOptions<DataModel> insert = new MongoInsertOptions<>(nosql.getMongoClient(), dataCollection, session, instances)
+                .setCheckUriExist(false)
+                .setUriGenerationPrefix(DATA_PREFIX);
+
+        nosql.createAll(insert);
+
         return instances;
     } 
 

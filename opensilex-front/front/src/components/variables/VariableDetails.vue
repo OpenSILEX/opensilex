@@ -134,7 +134,6 @@ import {DataService} from "opensilex-core/api/data.service";
 import {ProjectsService} from "opensilex-core/api/projects.service";
 import {SpeciesService} from "opensilex-core/api/species.service";
 import {SpeciesDTO} from "opensilex-core/model/speciesDTO";
-import DTOConverter from "../../models/DTOConverter";
 
 @Component
 export default class VariableDetails extends Vue {
@@ -194,10 +193,7 @@ export default class VariableDetails extends Vue {
         // make a deep copy of the variable in order to not change the current dto
         // In case a field has been updated into the form without confirmation (by sending update to the server)
 
-        // the fonction extractURIFromResourceProperties transforms the dto where species is a list of names and uris into a dto where species is only a list of uris
-        let variableDtoCopy: VariableDetailsDTO = DTOConverter.extractURIFromResourceProperties(
-            JSON.parse(JSON.stringify(this.variable)), ["species"]);
-
+        let variableDtoCopy = JSON.parse(JSON.stringify(this.variable));
         this.variableForm.showEditForm(variableDtoCopy, countResult.response.result);
       }
     })
@@ -258,6 +254,9 @@ export default class VariableDetails extends Vue {
     if (!dataTypeUri) {
       return undefined;
     } else {
+      if(!this.dataTypes) {
+        return undefined;
+      }
       let label = this.$t(this.dataTypes.find(item => item.uri === dataTypeUri).name);     
       return label.charAt(0).toUpperCase() + label.slice(1);
     } 

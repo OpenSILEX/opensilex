@@ -1,12 +1,17 @@
-package org.opensilex.nosql.mongodb;
+package org.opensilex.nosql.insert;
 
 import com.mongodb.client.ClientSession;
-import org.opensilex.nosql.MongoInsertOptions;
+import org.opensilex.nosql.mongodb.MongoDBConfig;
+import org.opensilex.nosql.mongodb.MongoModel;
 
 /**
  * @author rcolin
  */
-public class DefaultMongoInserter implements MongoInserter{
+public class DefaultMongoInserter extends AbstractMongoInserter {
+
+    public DefaultMongoInserter(MongoDBConfig config) {
+        super(config);
+    }
 
     @Override
     public <T extends MongoModel> void create(MongoInsertOptions<T> options) throws Exception {

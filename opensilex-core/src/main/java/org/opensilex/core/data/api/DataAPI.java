@@ -34,7 +34,6 @@ import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.utils.ImportDataIndex;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.nosql.mongodb.DefaultMongoInserter;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.csv.CSVCell;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;

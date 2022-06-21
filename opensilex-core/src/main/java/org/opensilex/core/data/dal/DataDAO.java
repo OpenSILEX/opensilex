@@ -20,7 +20,7 @@ import org.opensilex.core.data.api.DataGetDTO;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.utils.ExportDataIndex;
-import org.opensilex.nosql.MongoInsertOptions;
+import org.opensilex.nosql.insert.MongoInsertOptions;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
@@ -129,7 +129,11 @@ public class DataDAO {
         nosql.createAll(insert);
 
         return instances;
-    } 
+    }
+
+    public List<DataModel> createAll(List<DataModel> instances) throws Exception {
+        return this.createAll(instances,null);
+    }
 
     public List<DataFileModel> createAllFiles(List<DataFileModel> instances) throws Exception {
         createIndexes();

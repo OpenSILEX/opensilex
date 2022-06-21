@@ -63,4 +63,16 @@ public interface MongoDBConfig extends ServiceConfig {
             defaultString = "UTC"
     )
     String timezone();
+
+    @ConfigDescription(
+            value = "Max number of mongo document per transaction",
+            defaultInt = 10000
+    )
+    int maxTransactionSize();
+
+    @ConfigDescription(
+            value = "Maximum number of concurrent transaction",
+            defaultInt = 10
+    )
+    int maxConcurrentTransaction();
 }

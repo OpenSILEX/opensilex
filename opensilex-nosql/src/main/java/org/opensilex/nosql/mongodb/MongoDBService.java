@@ -22,9 +22,12 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.geojson.codecs.GeoJsonCodecProvider;
 import com.mongodb.client.result.DeleteResult;
 import java.net.URI;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Stream;
 
+import io.swagger.models.auth.In;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.Order;
 import org.bson.Document;
@@ -33,16 +36,17 @@ import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.codecs.pojo.PojoCodecProvider;
 import org.bson.conversions.Bson;
 import org.opensilex.OpenSilexModuleNotFoundException;
-import org.opensilex.nosql.MongoInsertOptions;
+import org.opensilex.nosql.insert.MongoInsertOptions;
 import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidUriListException;
+import org.opensilex.nosql.insert.DefaultMongoInserter;
+import org.opensilex.nosql.insert.MongoInserter;
 import org.opensilex.nosql.mongodb.codec.ObjectCodec;
 import org.opensilex.nosql.mongodb.codec.URICodec;
 import org.opensilex.service.BaseService;
 import org.opensilex.service.ServiceDefaultDefinition;
 import org.opensilex.sparql.SPARQLModule;
-import org.opensilex.sparql.service.SPARQLConnection;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
@@ -74,7 +78,7 @@ public class MongoDBService extends BaseService {
         super(config);
         dbName = config.database();
         defaultTimezone = config.timezone();
-        mongoInserter = new DefaultMongoInserter();
+        mongoInserter = new DefaultMongoInserter(config);
     }
 
     @Override
@@ -196,7 +200,10 @@ public class MongoDBService extends BaseService {
             }
         }
 
+        Instant start = Instant.now();
         mongoInserter.create(insert);
+        Duration duration = Duration.between(start, Instant.now());
+        LOGGER.info("Mongo insert [OK] collection: {}, duration: {} ms, length: {}", insert.getCollection(), duration.toMillis(), insert.getModels().size());
     }
 
     /**

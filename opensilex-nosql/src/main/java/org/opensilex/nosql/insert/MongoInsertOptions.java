@@ -1,4 +1,4 @@
-package org.opensilex.nosql;
+package org.opensilex.nosql.insert;
 
 import com.mongodb.client.ClientSession;
 import com.mongodb.client.MongoClient;

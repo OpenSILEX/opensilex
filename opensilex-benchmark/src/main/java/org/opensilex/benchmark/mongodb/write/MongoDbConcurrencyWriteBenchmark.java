@@ -31,16 +31,16 @@ import java.util.stream.Collectors;
 @State(Scope.Benchmark)
 public class MongoDbConcurrencyWriteBenchmark extends AbstractOpenSilexBenchmark {
 
-    @Param({"10000"})
+    @Param({"1000"})
     public int transactionSize;
 
-    @Param({"10"})
+    @Param({"1"})
     public int concurrentWriteNb;
 
     @Param({"true"})
     public boolean usePrefixes;
 
-    @Param({"5000"})
+    @Param({"10"})
     public int taskNb;
 
     private Random random;
@@ -173,14 +173,14 @@ public class MongoDbConcurrencyWriteBenchmark extends AbstractOpenSilexBenchmark
 
     }
 
-    //    @Benchmark
+    @Benchmark
     public void testConcurrentWriteWithDao() throws ExecutionException, InterruptedException {
 
         IntFunction<InsertTask<?>> taskFunction = (int taskIndex) -> new InsertTask<DataModel>(taskIndex, this::getModels, mongoClient, collection) {
             @Override
             void insertModels(List<DataModel> models) throws Exception {
                 DataDAO dao = new DataDAO(mongodb, sparql, fs);
-                dao.createAll(models,client.startSession());
+                dao.createAll(models);
             }
         };
 

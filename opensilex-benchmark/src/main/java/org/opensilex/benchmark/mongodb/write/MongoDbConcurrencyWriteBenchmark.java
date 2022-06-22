@@ -6,6 +6,7 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
 import org.openjdk.jmh.annotations.*;
+import org.openjdk.jmh.infra.Blackhole;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
@@ -34,7 +35,7 @@ public class MongoDbConcurrencyWriteBenchmark extends AbstractOpenSilexBenchmark
     @Param({"1000"})
     public int transactionSize;
 
-    @Param({"1"})
+    @Param({"4"})
     public int concurrentWriteNb;
 
     @Param({"true"})
@@ -61,7 +62,7 @@ public class MongoDbConcurrencyWriteBenchmark extends AbstractOpenSilexBenchmark
     @Param({"1000"})
     public int nbProvenance;
 
-    @Param({"true"})
+    @Param({"false"})
     public boolean withAllIndexes;
 
     private List<DataProvenanceModel> provenances;
@@ -144,6 +145,7 @@ public class MongoDbConcurrencyWriteBenchmark extends AbstractOpenSilexBenchmark
             Callable<Integer> task = taskFunction.apply(i);
             tasks.add(task);
         }
+        LOGGER.info("Preparing {} tasks with {} threads", tasks.size(),concurrentWriteNb);
 
         // run tasks
         try {
@@ -187,7 +189,7 @@ public class MongoDbConcurrencyWriteBenchmark extends AbstractOpenSilexBenchmark
         testConcurrentWrite(taskFunction);
     }
 
-    @Benchmark
+//    @Benchmark
     public void testConcurrentWriteWithSessionHandling() throws ExecutionException, InterruptedException {
 
         IntFunction<InsertTask<?>> taskFunction = (int taskIndex) -> new InsertTask<DataModel>(taskIndex, this::getModels, mongoClient, collection) {

@@ -32,7 +32,7 @@ public class OpenSilexBenchmarkRunner {
                 .warmupIterations(0)
                 .warmupTime(TimeValue.milliseconds(10))
                 .measurementIterations(1)
-//                .measurementTime(TimeValue.seconds(1))
+                .measurementTime(TimeValue.milliseconds(10))
 //                .measurementBatchSize(3)
                 .forks(debug ? 0 : 1)
                 .result("opensilex_"+ benchmarkClass.getSimpleName()+"_"+ Instant.now().getEpochSecond()+".csv")

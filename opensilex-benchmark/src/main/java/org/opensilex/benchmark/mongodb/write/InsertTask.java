@@ -38,17 +38,10 @@ public abstract class InsertTask<T extends MongoModel> implements Callable<Integ
     @Override
     public Integer call() throws Exception {
 
-//        LOGGER.info("Running mongo insert task {}, length: {}, [IN-PROGRESS]", taskId, models.size());
         Instant begin = Instant.now();
 
         List<T> models = modelsGenerator.get();
         insertModels(models);
-
-        Duration duration = Duration.between(begin, Instant.now());
-
-        if(taskId % 10 == 0){
-            LOGGER.info("Mongo insert task {} [OK] time: {} ms, length: {}", taskId, duration.toMillis(), models.size());
-        }
 
         models.clear();
         return 0;

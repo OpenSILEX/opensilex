@@ -93,6 +93,7 @@ public class MongoDBService extends BaseService {
         if (mongoClient != null) {
             mongoClient.close();
         }
+        mongoInserter.shutdown();
     }
 
     public URI getGenerationPrefixURI() throws OpenSilexModuleNotFoundException {
@@ -188,6 +189,14 @@ public class MongoDBService extends BaseService {
         }
     }
 
+    /**
+     *
+     * @param insert insert options
+     * @param <T> type of {@link MongoModel}
+     * @throws Exception if some Exception if encountered during insertion.
+     *
+     * @apiNote The insertion is delegated to the inner {@link MongoInserter} implementation.
+     */
     public <T extends MongoModel> void createAll(MongoInsertOptions<T> insert) throws Exception {
 
         for (T instance : insert.getModels()) {
@@ -196,7 +205,7 @@ public class MongoDBService extends BaseService {
                         instance,
                         insert.isCheckUriExist(),
                         insert.getUriGenerationPrefix(),
-                        insert.getCollection().toString());
+                        insert.getCollectionName());
             }
         }
 

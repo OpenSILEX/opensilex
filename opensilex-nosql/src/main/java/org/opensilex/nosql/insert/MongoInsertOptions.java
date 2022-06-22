@@ -107,6 +107,7 @@ public class MongoInsertOptions<T extends MongoModel> {
     }
 
     public MongoInsertOptions<T> setUriGenerationPrefix(String uriGenerationPrefix) {
+        Objects.requireNonNull(uriGenerationPrefix);
         this.uriGenerationPrefix = uriGenerationPrefix;
         return this;
     }

@@ -1,10 +1,7 @@
 package org.opensilex.benchmark.core;
 
 import org.apache.commons.lang3.StringUtils;
-import org.openjdk.jmh.annotations.Param;
-import org.openjdk.jmh.annotations.Scope;
-import org.openjdk.jmh.annotations.Setup;
-import org.openjdk.jmh.annotations.State;
+import org.openjdk.jmh.annotations.*;
 import org.opensilex.OpenSilex;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -46,6 +43,12 @@ public class AbstractOpenSilexBenchmark {
         sparql = openSilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class).provide();
         mongodb = openSilex.getServiceInstance(MongoDBService.DEFAULT_SERVICE, MongoDBService.class);
         fs = openSilex.getServiceInstance(FileStorageService.DEFAULT_FS_SERVICE, FileStorageService.class);
+    }
+
+    @TearDown(Level.Trial)
+    public void shutdown() throws Exception {
+        openSilex.shutdown();
+        LOGGER.info("OpenSILEX shutdown [OK]");
     }
 
 }

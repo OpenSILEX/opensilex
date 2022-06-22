@@ -8,14 +8,20 @@ import org.slf4j.LoggerFactory;
 import java.time.Duration;
 import java.time.Instant;
 
+/**
+ * Abstract {@link MongoInserter} which implements {@link #create(MongoInsertOptions)} by
+ * using transaction {@link #insertWithTransaction(MongoInsertOptions)} or not {@link #insertWithoutTransaction(MongoInsertOptions)}
+ *
+ * @author rcolin
+ */
 public abstract class AbstractMongoInserter implements MongoInserter{
 
     private final MongoDBConfig config;
-    private final Logger LOGGER;
+    private final Logger logger;
 
     protected AbstractMongoInserter(MongoDBConfig config){
         this.config = config;
-        LOGGER = LoggerFactory.getLogger(getClass());
+        logger = LoggerFactory.getLogger(getClass());
     }
 
     @Override
@@ -26,7 +32,7 @@ public abstract class AbstractMongoInserter implements MongoInserter{
     @Override
     public <T extends MongoModel> void create(MongoInsertOptions<T> insertOptions) throws Exception {
 
-        LOGGER.info("Mongo insert [IN-PROGRESS] collection: {}, length: {}", insertOptions.getCollectionName(), insertOptions.getModels().size());
+        logger.info("Mongo insert [IN-PROGRESS] collection: {}, length: {}", insertOptions.getCollectionName(), insertOptions.getModels().size());
         Instant start = Instant.now();
 
         if (insertOptions.useTransaction()) {
@@ -36,7 +42,7 @@ public abstract class AbstractMongoInserter implements MongoInserter{
         }
 
         Duration duration = Duration.between(start, Instant.now());
-        LOGGER.info("Mongo insert [OK] collection: {}, duration: {} ms, length: {}, insert_rate: {}/s",
+        logger.info("Mongo insert [OK] collection: {}, duration: {} ms, length: {}, insert_rate: {}/s",
                 insertOptions.getCollectionName(),
                 duration.toMillis(),
                 insertOptions.getModels().size(),
@@ -44,8 +50,22 @@ public abstract class AbstractMongoInserter implements MongoInserter{
         );
     }
 
+    /**
+     * Define how to insert models without handling transaction
+     * @param insertOptions insert options
+     * @param <T> the type of {@link MongoModel}
+     * @throws Exception if some Exception is encountered during insertion.
+     * In this case no transaction rollback and session closing are perform inside this method
+     */
     abstract <T extends MongoModel> void insertWithoutTransaction(MongoInsertOptions<T> insertOptions) throws Exception;
 
+    /**
+     * Define how to insert models by handling transaction
+     * @param insertOptions insert options
+     * @param <T> the type of {@link MongoModel}
+     * @throws Exception if some Exception is encountered during insertion.
+     * In this case transaction rollback and session closing are performed inside this method
+     */
     abstract <T extends MongoModel> void insertWithTransaction(MongoInsertOptions<T> insertOptions) throws Exception;
 
 }

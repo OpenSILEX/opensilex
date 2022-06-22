@@ -15,6 +15,10 @@ import org.opensilex.benchmark.core.OpenSilexBenchmarkRunner;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.data.dal.DataProvenanceModel;
+import org.opensilex.nosql.insert.DefaultMongoInserter;
+import org.opensilex.nosql.insert.MongoInsertOptions;
+import org.opensilex.nosql.insert.MongoInserter;
+import org.opensilex.nosql.insert.ThreadPoolBasedMongoInserter;
 
 import java.net.URI;
 import java.time.Duration;
@@ -32,16 +36,16 @@ import java.util.stream.Collectors;
 @State(Scope.Benchmark)
 public class MongoDbConcurrencyWriteBenchmark extends AbstractOpenSilexBenchmark {
 
-    @Param({"1000"})
+    @Param({"4096"})
     public int transactionSize;
 
-    @Param({"4"})
+    @Param({"8"})
     public int concurrentWriteNb;
 
     @Param({"true"})
     public boolean usePrefixes;
 
-    @Param({"10"})
+    @Param({"100"})
     public int taskNb;
 
     private Random random;
@@ -164,7 +168,11 @@ public class MongoDbConcurrencyWriteBenchmark extends AbstractOpenSilexBenchmark
             }
 
             Duration totalDuration = Duration.between(begin, Instant.now());
-            LOGGER.info("{} models inserted, time: {} ms", taskNb * transactionSize, totalDuration.toMillis());
+            LOGGER.info("Mongo insert [OK] duration: {} ms, length: {}, insert_rate: {}/s",
+                    taskNb * transactionSize,
+                    totalDuration.toMillis(),
+                    (taskNb * transactionSize * 1000L) / totalDuration.toMillis()
+            );
             executorService.shutdownNow();
 
         } catch (Exception e) {
@@ -172,10 +180,43 @@ public class MongoDbConcurrencyWriteBenchmark extends AbstractOpenSilexBenchmark
             executorService.shutdownNow();
             throw e;
         }
-
     }
 
     @Benchmark
+    public void testConcurrentWriteWithPoolInserter() throws ExecutionException, InterruptedException {
+
+        MongoInserter mongoInserter = new ThreadPoolBasedMongoInserter(mongodb.getImplementedConfig());
+
+        IntFunction<InsertTask<?>> taskFunction = (int taskIndex) -> new InsertTask<DataModel>(taskIndex, this::getModels, mongoClient, collection) {
+            @Override
+            void insertModels(List<DataModel> models) throws Exception {
+                MongoInsertOptions<DataModel> insertOptions = new MongoInsertOptions<>(mongoClient,collection,null,models);
+                mongoInserter.create(insertOptions);
+            }
+        };
+
+        testConcurrentWrite(taskFunction);
+        mongoInserter.shutdown();
+    }
+
+    @Benchmark
+    public void testConcurrentWriteWithDefaultInserter() throws ExecutionException, InterruptedException {
+
+        MongoInserter mongoInserter = new DefaultMongoInserter(mongodb.getImplementedConfig());
+
+        IntFunction<InsertTask<?>> taskFunction = (int taskIndex) -> new InsertTask<DataModel>(taskIndex, this::getModels, mongoClient, collection) {
+            @Override
+            void insertModels(List<DataModel> models) throws Exception {
+                MongoInsertOptions<DataModel> insertOptions = new MongoInsertOptions<>(mongoClient,collection,null,models);
+                mongoInserter.create(insertOptions);
+            }
+        };
+
+        testConcurrentWrite(taskFunction);
+        mongoInserter.shutdown();
+    }
+
+//    @Benchmark
     public void testConcurrentWriteWithDao() throws ExecutionException, InterruptedException {
 
         IntFunction<InsertTask<?>> taskFunction = (int taskIndex) -> new InsertTask<DataModel>(taskIndex, this::getModels, mongoClient, collection) {

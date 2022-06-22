@@ -5,6 +5,7 @@ import org.opensilex.nosql.mongodb.MongoModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -14,7 +15,7 @@ public class ThreadPoolBasedMongoInserter extends AbstractMongoInserter{
 
     private final ExecutorService executorService;
     protected static final Logger LOGGER = LoggerFactory.getLogger(ThreadPoolBasedMongoInserter.class);
-    private final MongoInserter delegatedInserter;
+    private final DefaultMongoInserter delegatedInserter;
 
     public ThreadPoolBasedMongoInserter(MongoDBConfig config) {
         super(config);
@@ -23,23 +24,17 @@ public class ThreadPoolBasedMongoInserter extends AbstractMongoInserter{
     }
 
     @Override
-    public <T extends MongoModel> void create(MongoInsertOptions<T> options) throws Exception {
-        
-        AtomicReference<Exception> e = new AtomicReference<>();
-        
-        Future<?> future = executorService.submit(() -> {
-            try {
-                delegatedInserter.create(options);
-            } catch (Exception e1) {
-                e.set(e1);
-            }
-        });
-
-        future.get();
-
-        if(e.get() != null){
-            throw e.get();
-        }
+    <T extends MongoModel> void insertWithoutTransaction(MongoInsertOptions<T> insertOptions) throws Exception {
+        insertWithPool(() -> delegatedInserter.insertWithoutTransaction(insertOptions));
     }
 
+    @Override
+    <T extends MongoModel> void insertWithTransaction(MongoInsertOptions<T> insertOptions) throws Exception {
+        executorService.submit(() -> delegatedInserter.insertWithTransaction(insertOptions));
+    }
+
+    void insertWithPool(Runnable task) throws ExecutionException, InterruptedException {
+            Future<?> future = executorService.submit(task);
+            future.get();
+    }
 }

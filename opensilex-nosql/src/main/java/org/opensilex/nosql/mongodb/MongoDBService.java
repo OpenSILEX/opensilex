@@ -200,10 +200,7 @@ public class MongoDBService extends BaseService {
             }
         }
 
-        Instant start = Instant.now();
         mongoInserter.create(insert);
-        Duration duration = Duration.between(start, Instant.now());
-        LOGGER.info("Mongo insert [OK] collection: {}, duration: {} ms, length: {}", insert.getCollection(), duration.toMillis(), insert.getModels().size());
     }
 
     /**
@@ -241,6 +238,9 @@ public class MongoDBService extends BaseService {
             ThrowingConsumer<ClientSession, Exception> mongoFunction,
             ThrowingConsumer<SPARQLService, Exception> sparqlFunction
     ) throws Exception {
+
+        Objects.requireNonNull(mongoSession);
+
         try {
             mongoSession.startTransaction();
             sparqlService.startTransaction();

@@ -18,10 +18,11 @@ import java.util.Objects;
 public class MongoInsertOptions<T extends MongoModel> {
 
     private final MongoCollection<T> collection;
+    private final String collectionName;
     private final ClientSession session;
     private final List<T> models;
 
-    private final boolean commitTransaction;
+    private final boolean useTransaction;
     private boolean checkUriExist;
     private String uriGenerationPrefix;
 
@@ -49,14 +50,15 @@ public class MongoInsertOptions<T extends MongoModel> {
         }
 
         this.collection = collection;
+        this.collectionName = collection.getNamespace().getCollectionName();
 
         // no session given, then consider the use of transaction with a new session
         if (session == null) {
             this.session = client.startSession();
-            this.commitTransaction = true;
+            this.useTransaction = true;
         } else {
             this.session = session;
-            this.commitTransaction = false;
+            this.useTransaction = false;
         }
         this.models = models;
         this.checkUriExist = true;
@@ -113,8 +115,11 @@ public class MongoInsertOptions<T extends MongoModel> {
      *
      * @return true if transaction must be handled, false else
      */
-    public boolean commitTransaction() {
-        return commitTransaction;
+    public boolean useTransaction() {
+        return useTransaction;
     }
 
+    public String getCollectionName() {
+        return collectionName;
+    }
 }

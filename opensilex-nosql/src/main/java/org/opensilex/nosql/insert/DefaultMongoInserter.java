@@ -14,17 +14,16 @@ public class DefaultMongoInserter extends AbstractMongoInserter {
     }
 
     @Override
-    public <T extends MongoModel> void create(MongoInsertOptions<T> options) throws Exception {
+    <T extends MongoModel> void insertWithoutTransaction(MongoInsertOptions<T> insertOptions) {
+        insertOptions.getCollection().insertMany(insertOptions.getSession(), insertOptions.getModels());
+    }
 
-        if(! options.commitTransaction()){
-            options.getCollection().insertMany(options.getSession(),options.getModels());
-            return;
-        }
-
-        ClientSession session = options.getSession();
+    @Override
+    <T extends MongoModel> void insertWithTransaction(MongoInsertOptions<T> insertOptions) {
+        ClientSession session = insertOptions.getSession();
         try {
             session.startTransaction();
-            options.getCollection().insertMany(session,options.getModels());
+            insertOptions.getCollection().insertMany(session, insertOptions.getModels());
 
             if(session.hasActiveTransaction()){
                 session.commitTransaction();

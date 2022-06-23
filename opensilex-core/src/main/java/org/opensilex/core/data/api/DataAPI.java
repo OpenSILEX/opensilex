@@ -183,14 +183,13 @@ public class DataAPI {
 
             nosql.multipleOperationsWithTransaction(
                     sparql,
-                    nosql.startSession(),
                     (ClientSession session) -> dao.createAll(dataList, session),
                     (SPARQLService sparqlService) -> {
                         if (variablesToDevices.size() > 0) {
 
                             DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
                             for (Map.Entry<DeviceModel,List<URI>> entry : variablesToDevices.entrySet()) {
-                                deviceDAO.associateVariablesToDevice(entry.getKey(), entry.getValue(), user);
+                                deviceDAO.associateVariablesToDevice(entry.getKey(), entry.getValue());
                             }
                         }
                     }
@@ -1131,14 +1130,13 @@ public class DataAPI {
 
             nosql.multipleOperationsWithTransaction(
                     sparql,
-                    nosql.startSession(),
                     (ClientSession session) -> dao.createAll(data, session),
                     (SPARQLService sparqlService) -> {
                         if (!validation.getVariablesToDevices().isEmpty()) {
                             DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
 
                             for (Map.Entry<DeviceModel,List<URI>> entry : validation.getVariablesToDevices().entrySet()) {
-                                deviceDAO.associateVariablesToDevice(entry.getKey(), entry.getValue(), user);
+                                deviceDAO.associateVariablesToDevice(entry.getKey(), entry.getValue());
                             }
                         }
                     }

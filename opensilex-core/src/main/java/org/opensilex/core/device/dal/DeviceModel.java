@@ -10,6 +10,8 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.nosql.mongodb.metadata.MetaDataModel;
+import org.opensilex.sparql.annotations.SPARQLIgnore;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLTreeModel;
@@ -80,8 +82,9 @@ public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
     )
     String description;
     public static final String COMMENT_FIELD = "description";
-    
-    Map<String, String> attributes;
+
+    @SPARQLIgnore
+    private MetaDataModel metadata;
     
     public String getBrand() {
         return brand;
@@ -138,13 +141,13 @@ public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
     public void setDescription(String description) {
         this.description = description;
     }
-    
-    public Map<String, String> getAttributes() {
-        return attributes;
+
+    public MetaDataModel getMetadata() {
+        return metadata;
     }
 
-    public void setAttributes(Map<String, String> attributes) {
-        this.attributes = attributes;
+    public void setMetadata(MetaDataModel metadata) {
+        this.metadata = metadata;
     }
 
     @Override

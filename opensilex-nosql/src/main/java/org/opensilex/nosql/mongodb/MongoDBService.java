@@ -22,12 +22,9 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.geojson.codecs.GeoJsonCodecProvider;
 import com.mongodb.client.result.DeleteResult;
 import java.net.URI;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.*;
 import java.util.stream.Stream;
 
-import io.swagger.models.auth.In;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.Order;
 import org.bson.Document;
@@ -216,7 +213,6 @@ public class MongoDBService extends BaseService {
      * Handle operations on {@link SPARQLService} and on {@link MongoDBService} by handling
      * transaction commit and rollback in case of error
      * @param sparqlService the {@link SPARQLService} used to performs operations on triplestore
-     * @param mongoSession the {@link ClientSession} to use for transaction management with MongoDB
      * @param mongoFunction custom MongoDB-based function/code to apply after transaction start and before transaction commit.
      * @param sparqlFunction custom SPARQL based function/code to apply after transaction start and before transaction commit.
      * @throws Exception if some Exception is encountered during mongoFunction or sparqlFunction applying, or with SPARQL or MongoDB driver.
@@ -244,7 +240,8 @@ public class MongoDBService extends BaseService {
     public void multipleOperationsWithTransaction(
             SPARQLService sparqlService,
             ThrowingConsumer<ClientSession, Exception> mongoFunction,
-            ThrowingConsumer<SPARQLService, Exception> sparqlFunction
+            ThrowingConsumer<SPARQLService, Exception> sparqlFunction,
+            boolean sparqlFirst
     ) throws Exception {
 
         ClientSession mongoSession = mongoClient.startSession();
@@ -252,8 +249,14 @@ public class MongoDBService extends BaseService {
         try {
             mongoSession.startTransaction();
             sparqlService.startTransaction();
-            sparqlFunction.accept(sparqlService);
-            mongoFunction.accept(mongoSession);
+
+            if(sparqlFirst){
+                sparqlFunction.accept(sparqlService);
+                mongoFunction.accept(mongoSession);
+            }else{
+                mongoFunction.accept(mongoSession);
+                sparqlFunction.accept(sparqlService);
+            }
 
             if(mongoSession.hasActiveTransaction()){
                 mongoSession.commitTransaction();

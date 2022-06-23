@@ -5,12 +5,9 @@
  */
 package org.opensilex.core.device.dal;
 
-import com.mongodb.client.ClientSession;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
-import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.lang3.BooleanUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
@@ -70,8 +67,8 @@ public class DeviceDAO {
     protected final SPARQLService sparql;
     protected final MongoDBService nosql;
     protected final FileStorageService fs;
-    protected final MongoCollection<MetaDataModel> deviceMetaDataCollection;
-    protected final Node graph;
+    protected final MongoCollection<MetaDataModel> metaDataCollection;
+    protected final Node defaultGraph;
 
     protected final MetaDataDao metaDataDao;
 
@@ -83,9 +80,9 @@ public class DeviceDAO {
         this.nosql = nosql;
         this.fs = fs;
 
-        graph = sparql.getDefaultGraph(DeviceModel.class);
-        metaDataDao = new MetaDataDao(nosql);
-        deviceMetaDataCollection = nosql.getDatabase().getCollection(ATTRIBUTES_COLLECTION_NAME, MetaDataModel.class);
+        defaultGraph = sparql.getDefaultGraph(DeviceModel.class);
+        metaDataDao = new MetaDataDao(nosql,sparql);
+        metaDataCollection = nosql.getDatabase().getCollection(ATTRIBUTES_COLLECTION_NAME, MetaDataModel.class);
     }
 
     public void initDevice(DeviceModel devModel, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws Exception {
@@ -115,21 +112,17 @@ public class DeviceDAO {
         attributeCollection.createIndex(Indexes.ascending(MongoModel.URI_FIELD), unicityOptions);
     }
     
-    public URI create(DeviceModel instance) throws Exception {
-
-        MetaDataModel newMetadata = instance.getMetadata();
-        if(newMetadata == null || MapUtils.isEmpty(newMetadata.getAttributes())){
-            sparql.create(instance);
-            return instance.getUri();
-        }
-
-        nosql.multipleOperationsWithTransaction(
-                sparql,
-                (ClientSession session) -> metaDataDao.create(deviceMetaDataCollection,session,newMetadata),
-                (SPARQLService sparqlService) -> sparql.create(instance)
+    public void create(DeviceModel model) throws Exception {
+        metaDataDao.create(
+                metaDataCollection,
+                (SPARQLService sparqlService) -> {
+                    sparqlService.create(model);
+                    if(model.getMetadata() != null){
+                        model.getMetadata().setUri(model.getUri());
+                    }
+                },
+                model.getMetadata()
         );
-
-        return instance.getUri();
     }
 
     public ListWithPagination<DeviceModel> search(DeviceSearchFilter filter) throws Exception {
@@ -198,7 +191,7 @@ public class DeviceDAO {
                         }
                         Node uriVar = NodeFactory.createVariable(SPARQLResourceModel.URI_FIELD);
                         if(variable != null) {
-                            SPARQLQueryHelper.appendRelationFilter(select,graph.getURI(), uriVar, Oeso.measures, variable);
+                            SPARQLQueryHelper.appendRelationFilter(select, defaultGraph.getURI(), uriVar, Oeso.measures, variable);
                         }
 
                         DateDeserializer dateDeserializer = new DateDeserializer();
@@ -336,8 +329,8 @@ public class DeviceDAO {
 
 
         //get metadata part from mongo
-        new MetaDataDao(nosql).getMetaDataAssociatedTo(
-                deviceMetaDataCollection, // filter in Device attribute collection
+        metaDataDao.getMetaDataAssociatedTo(
+                metaDataCollection, // filter in Device attribute collection
                 MongoModel.URI_FIELD, // use MetaData URI field
                 deviceList, // get Metadata associated with Device uris
                 DeviceModel::setMetadata // update Device metadata
@@ -396,40 +389,23 @@ public class DeviceDAO {
        update(device);
     }
 
-    public DeviceModel update(DeviceModel instance) throws Exception {
-        createIndexes();
-
-        MetaDataModel newMetadata = instance.getMetadata();
-        MetaDataModel oldMetadata = metaDataDao.getByUri(instance.getUri(),ATTRIBUTES_COLLECTION_NAME);
-
-        // no metadata (old and new)
-        if ((newMetadata == null || MapUtils.isEmpty(newMetadata.getAttributes())) && oldMetadata == null) {
-            sparql.deleteByURI(graph, instance.getUri());
-            sparql.create(instance);
-            return instance;
-        }
-
-        nosql.multipleOperationsWithTransaction(
-                sparql,
-                (ClientSession session) -> metaDataDao.update(
-                        deviceMetaDataCollection,
-                        session,
-                        newMetadata,
-                        oldMetadata,
-                        MongoModel.URI_FIELD
-                ),
-                (SPARQLService sparqlService) -> {
-                    sparql.deleteByURI(graph, instance.getUri());
-                    sparql.create(instance);
-                }
+    public DeviceModel update(DeviceModel model) throws Exception {
+        metaDataDao.update(
+                metaDataCollection,
+                (sparqlService) -> {
+                    sparql.deleteByURI(defaultGraph, model.getUri());
+                    sparql.create(model);
+                },
+                model.getMetadata(),
+                model.getUri()
         );
-        return instance;
+        return model;
     }
 
     public DeviceModel getDeviceByURI(URI deviceURI, UserModel currentUser) throws Exception {
         DeviceModel device = sparql.getByURI(DeviceModel.class, deviceURI, currentUser.getLanguage());
         if (device != null) {
-            metaDataDao.getMetaDataAssociatedTo(deviceMetaDataCollection,MongoModel.URI_FIELD,device,DeviceModel::setMetadata);
+            metaDataDao.getMetaDataAssociatedTo(metaDataCollection,MongoModel.URI_FIELD,device,DeviceModel::setMetadata);
         }
         return device;
     }
@@ -440,7 +416,7 @@ public class DeviceDAO {
             devices = sparql.getListByURIs(DeviceModel.class, devicesURI, currentUser.getLanguage());
         }
         if (devices != null) {
-            metaDataDao.getMetaDataAssociatedTo(deviceMetaDataCollection,MongoModel.URI_FIELD,devices,DeviceModel::setMetadata);
+            metaDataDao.getMetaDataAssociatedTo(metaDataCollection,MongoModel.URI_FIELD,devices,DeviceModel::setMetadata);
         }
         return devices;
     }

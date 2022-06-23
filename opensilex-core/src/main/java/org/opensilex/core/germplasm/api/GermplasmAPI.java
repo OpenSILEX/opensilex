@@ -151,8 +151,8 @@ public class GermplasmAPI {
                 germplasmDTO = completeDTO(germplasmDTO);
                 // create new germplasm
                 GermplasmModel model = germplasmDTO.newModel();
-                GermplasmModel germplasm = germplasmDAO.create(model);
-                return new ObjectUriResponse(Response.Status.CREATED, germplasm.getUri()).getResponse();
+                germplasmDAO.create(model);
+                return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
             } catch (Exception e) {
                 return new ErrorResponse(e).getResponse();
             }

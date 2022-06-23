@@ -40,8 +40,8 @@ public class DeviceGetDetailsDTO extends DeviceGetDTO{
     public void fromModel(DeviceModel model) {
         super.fromModel(model);
         
-        if (model.getAttributes() != null) {
-            setMetadata(model.getAttributes());
+        if (model.getMetadata() != null) {
+            setMetadata(model.getMetadata().getAttributes());
         }
     }
     

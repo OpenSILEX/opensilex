@@ -168,8 +168,8 @@ public class DeviceExportDTO extends RDFObjectDTO{
         }
         setRelations(relationsDTO);
         
-        if (model.getAttributes() != null) {
-            setMetadata(model.getAttributes());
+        if (model.getMetadata() != null) {
+            setMetadata(model.getMetadata().getAttributes());
         }
     }
     

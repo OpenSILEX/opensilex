@@ -12,7 +12,10 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.util.Map;
 import javax.validation.constraints.NotNull;
+
+import org.apache.commons.collections4.MapUtils;
 import org.opensilex.core.device.dal.DeviceModel;
+import org.opensilex.nosql.mongodb.metadata.MetaDataModel;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.server.rest.validation.DateFormat;
 import org.opensilex.server.rest.validation.Date;
@@ -97,8 +100,9 @@ public class DeviceCreationDTO extends DeviceDTO {
         
         model.setDescription(getDescription());
 
-        if (metadata != null ) {
-           model.setAttributes(metadata);
+        if (!MapUtils.isEmpty(metadata)) {
+            model.setMetadata(new MetaDataModel());
+            model.getMetadata().setAttributes(metadata);
         }
     }
     

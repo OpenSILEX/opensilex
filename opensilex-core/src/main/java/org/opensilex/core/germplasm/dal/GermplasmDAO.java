@@ -10,7 +10,6 @@ import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
@@ -67,7 +66,9 @@ public class GermplasmDAO {
     protected final SPARQLService sparql;
     protected final MongoDBService nosql;
     protected final Node defaultGraph;
-    protected final MongoCollection<MetaDataModel> attributeCollection;
+    protected final MongoCollection<MetaDataModel> metaDataCollection;
+
+    protected final MetaDataDao metaDataDao;
 
     public static final String ATTRIBUTES_COLLECTION_NAME = "germplasmAttribute";
 
@@ -79,46 +80,28 @@ public class GermplasmDAO {
         } catch (SPARQLException e) {
             throw new RuntimeException("Unexpected error when retrieving GermplasmModel default graph", e);
         }
-        attributeCollection = nosql.getDatabase().getCollection(ATTRIBUTES_COLLECTION_NAME, MetaDataModel.class);
-        attributeCollection.createIndex(Indexes.ascending(MongoModel.URI_FIELD), new IndexOptions().unique(true));
+        metaDataCollection = nosql.getDatabase().getCollection(ATTRIBUTES_COLLECTION_NAME, MetaDataModel.class);
+        metaDataCollection.createIndex(Indexes.ascending(MongoModel.URI_FIELD), new IndexOptions().unique(true));
+
+        metaDataDao = new MetaDataDao(nosql,sparql);
     }
 
     public MongoCollection<MetaDataModel> getAttributesCollection() {
-        return attributeCollection;
+        return metaDataCollection;
     }
 
     public GermplasmModel update(GermplasmModel model) throws Exception {
-        MetaDataModel storedAttributes = getStoredAttributes(model.getUri());
-        MetaDataModel attributeModel = model.getMetadata();
 
-        if (((attributeModel == null || MapUtils.isEmpty(attributeModel.getAttributes())) && storedAttributes == null)) {
-            sparql.update(model);
-        } else {
-            nosql.startTransaction();
-            sparql.startTransaction();
-            sparql.update(model);
-            try {
-                if (attributeModel != null && !MapUtils.isEmpty(attributeModel.getAttributes())) {
-                    attributeModel.setUri(model.getUri());
-                    if (storedAttributes != null) {
-                        nosql.update(attributeModel, MetaDataModel.class, ATTRIBUTES_COLLECTION_NAME);
-                    } else {
-                        nosql.create(attributeModel, MetaDataModel.class, ATTRIBUTES_COLLECTION_NAME, null);
-                    }
-                } else {
-                    // delete old attributes
-                    attributeCollection.findOneAndDelete(nosql.getSession(), eq(MongoModel.URI_FIELD, model.getUri()));
-                }
-                nosql.commitTransaction();
-                sparql.commitTransaction();
-            } catch (Exception ex) {
-                nosql.rollbackTransaction();
-                sparql.rollbackTransaction(ex);
-            }
-
-        }
+        metaDataDao.update(
+                metaDataCollection,
+                (sparqlService) -> {
+                    sparql.deleteByURI(defaultGraph, model.getUri());
+                    sparql.create(model);
+                },
+                model.getMetadata(),
+                model.getUri()
+        );
         return model;
-
     }
 
     public boolean labelExistsCaseSensitive(String label, URI rdfType) throws Exception {
@@ -130,26 +113,54 @@ public class GermplasmDAO {
         return sparql.executeAskQuery(askQuery);
     }
 
-    public GermplasmModel create(GermplasmModel model) throws Exception {
-        if (model.getMetadata() != null) {
-            nosql.startTransaction();
-            sparql.startTransaction();
-            try {
-                sparql.create(model);
-                model.getMetadata().setUri(model.getUri());
-                nosql.create(model.getMetadata(), MetaDataModel.class, ATTRIBUTES_COLLECTION_NAME, null);
-                nosql.commitTransaction();
-                sparql.commitTransaction();
-            } catch (Exception ex) {
-                nosql.rollbackTransaction();
-                sparql.rollbackTransaction(ex);
-            }
-        } else {
-            sparql.create(model);
+    public boolean labelExistsCaseSensitiveBySpecies(GermplasmCreationDTO germplasm) throws Exception {
+        AskBuilder askQuery = new AskBuilder()
+                .from(sparql.getDefaultGraph(GermplasmModel.class).toString())
+                .addWhere("?uri", RDF.type, SPARQLDeserializers.nodeURI(germplasm.getRdfType()))
+                .addWhere("?uri", RDFS.label, germplasm.getName());
+
+        if (germplasm.getSpecies() != null) {
+            askQuery.addWhere("?uri", Oeso.fromSpecies, SPARQLDeserializers.nodeURI(germplasm.getSpecies()));
+        } else if (germplasm.getVariety() != null) {
+            askQuery.addWhere("?uri", Oeso.fromVariety, SPARQLDeserializers.nodeURI(germplasm.getVariety()));
+        } else if (germplasm.getAccession() != null) {
+            askQuery.addWhere("?uri", Oeso.fromAccession, SPARQLDeserializers.nodeURI(germplasm.getAccession()));
         }
 
-        return model;
+        return sparql.executeAskQuery(askQuery);
+    }
 
+    private Set<String> getAllLabels(URI rdfType) {
+        HashSet<String> labels = new HashSet<>();
+
+        try {
+            SelectBuilder query = new SelectBuilder()
+                    .addVar("?label")
+                    .from(sparql.getDefaultGraph(GermplasmModel.class).toString())
+                    .addWhere("?uri", RDF.type, SPARQLDeserializers.nodeURI(rdfType))
+                    .addWhere("?uri", RDFS.label, "?label");
+
+            List<SPARQLResult> results = sparql.executeSelectQuery(query);
+
+            results.forEach(result -> labels.add(result.getStringValue("label").toLowerCase()));
+        } catch (SPARQLException error) {
+            throw new RuntimeException(error);
+        }
+
+        return labels;
+    }
+
+    public void create(GermplasmModel model) throws Exception {
+        metaDataDao.create(
+                metaDataCollection,
+                (SPARQLService sparqlService) -> {
+                    sparqlService.create(model);
+                    if(model.getMetadata() != null){
+                        model.getMetadata().setUri(model.getUri());
+                    }
+                },
+                model.getMetadata()
+        );
     }
 
     public GermplasmModel get(URI uri, UserModel user) throws Exception {
@@ -256,8 +267,8 @@ public class GermplasmDAO {
 
         if (fetchMetadata) {
             // get all Germplasm metadata with one query
-            new MetaDataDao(nosql).getMetaDataAssociatedTo(
-                    attributeCollection, // filter in Germplasm attribute collection
+            metaDataDao.getMetaDataAssociatedTo(
+                    metaDataCollection, // filter in Germplasm attribute collection
                     MongoModel.URI_FIELD, // use MetaData URI field
                     models.getList(), // get Metadata associated with Germplasm uris
                     GermplasmModel::setMetadata // update Germplasm metadata
@@ -270,9 +281,7 @@ public class GermplasmDAO {
         return sparql.searchURIs(
                 GermplasmModel.class,
                 lang,
-                (SelectBuilder select) -> {
-                    select.addFilter(SPARQLQueryHelper.inURIFilter(GermplasmModel.SPECIES_URI_SPARQL_VAR, species));
-                }
+                (SelectBuilder select) -> select.addFilter(SPARQLQueryHelper.inURIFilter(GermplasmModel.SPECIES_URI_SPARQL_VAR, species))
         );
     }
 
@@ -282,14 +291,14 @@ public class GermplasmDAO {
                 uri = NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(uri)).toString();
             } catch (Exception e) {
             } finally {
-                select.addFilter(SPARQLQueryHelper.regexFilterOnURI(GermplasmModel.URI_FIELD, uri, "i"));
+                select.addFilter(SPARQLQueryHelper.regexFilterOnURI(SPARQLResourceModel.URI_FIELD, uri, "i"));
             }
         }
     }
 
     private void appendUriFilter(SelectBuilder select, URI uri) {
         if (uri != null) {
-            select.addFilter(SPARQLQueryHelper.eq(GermplasmModel.URI_FIELD, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(uri.toString()))));
+            select.addFilter(SPARQLQueryHelper.eq(SPARQLResourceModel.URI_FIELD, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(uri.toString()))));
         }
     }
 
@@ -307,8 +316,8 @@ public class GermplasmDAO {
 
     private void appendRegexLabelAndSynonymFilter(SelectBuilder select, String label) {
         if (!StringUtils.isEmpty(label)) {
-            select.addOptional(new Triple(makeVar(GermplasmModel.URI_FIELD), SKOS.altLabel.asNode(), makeVar(GermplasmModel.SYNONYM_VAR)));
-            //select.getWhereHandler().getClause().addTriplePattern(new Triple(makeVar(GermplasmModel.URI_FIELD), SKOS.altLabel.asNode(), makeVar(GermplasmModel.SYNONYM_VAR)));
+            select.addOptional(new Triple(makeVar(SPARQLResourceModel.URI_FIELD), SKOS.altLabel.asNode(), makeVar(GermplasmModel.SYNONYM_VAR)));
+            //select.getWhereHandler().getClause().addTriplePattern(new Triple(makeVar(SPARQLResourceModel.URI_FIELD), SKOS.altLabel.asNode(), makeVar(GermplasmModel.SYNONYM_VAR)));
             select.addFilter(SPARQLQueryHelper.or(SPARQLQueryHelper.regexFilter(GermplasmModel.LABEL_FIELD, label), SPARQLQueryHelper.regexFilter(GermplasmModel.SYNONYM_VAR, label)));
         }
     }
@@ -317,7 +326,7 @@ public class GermplasmDAO {
         if (species != null) {
             select.addFilter(SPARQLQueryHelper.or(
                     SPARQLQueryHelper.eq(GermplasmModel.SPECIES_URI_SPARQL_VAR, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(species.toString()))),
-                    SPARQLQueryHelper.eq(GermplasmModel.URI_FIELD, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(species.toString())))
+                    SPARQLQueryHelper.eq(SPARQLResourceModel.URI_FIELD, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(species.toString())))
             ));
         }
     }
@@ -326,7 +335,7 @@ public class GermplasmDAO {
         if (variety != null) {
             select.addFilter(SPARQLQueryHelper.or(
                     SPARQLQueryHelper.eq(GermplasmModel.VARIETY_URI_SPARQL_VAR, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(variety.toString()))),
-                    SPARQLQueryHelper.eq(GermplasmModel.URI_FIELD, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(variety.toString())))
+                    SPARQLQueryHelper.eq(SPARQLResourceModel.URI_FIELD, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(variety.toString())))
             ));
         }
     }
@@ -335,7 +344,7 @@ public class GermplasmDAO {
         if (accession != null) {
             select.addFilter(SPARQLQueryHelper.or(
                     SPARQLQueryHelper.eq(GermplasmModel.ACCESSION_URI_SPARQL_VAR, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(accession.toString()))),
-                    SPARQLQueryHelper.eq(GermplasmModel.URI_FIELD, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(accession.toString())))
+                    SPARQLQueryHelper.eq(SPARQLResourceModel.URI_FIELD, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(accession.toString())))
             ));
         }
     }
@@ -492,21 +501,21 @@ public class GermplasmDAO {
     private Set<URI> filterURIsOnAttributes(Document metadata) {
         Document filter = new Document();
         if (metadata != null) {
-            for (String key : metadata.keySet()) {
+            metadata.forEach((key,value) -> {
                 Document regexFilter = new Document();
-                regexFilter.put("$regex", ".*" + Pattern.quote(metadata.get(key).toString()) + ".*");
+                regexFilter.put("$regex", ".*" + Pattern.quote(value.toString()) + ".*");
                 // Case ignore
                 regexFilter.put("$options", "i");
 
                 filter.put("attribute." + key, regexFilter);
-            }
+            });
         }
         return nosql.distinct(MongoModel.URI_FIELD, URI.class, ATTRIBUTES_COLLECTION_NAME, filter);
     }
 
     private void appendURIsFilter(SelectBuilder select, Set<URI> uris) {
         if (uris != null && !uris.isEmpty()) {
-            select.addFilter(SPARQLQueryHelper.inURIFilter(GermplasmModel.URI_FIELD, uris));
+            select.addFilter(SPARQLQueryHelper.inURIFilter(SPARQLResourceModel.URI_FIELD, uris));
         }
     }
 

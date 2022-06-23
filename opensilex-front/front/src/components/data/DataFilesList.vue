@@ -77,7 +77,6 @@ import { Prop, Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import { ProvenanceGetDTO, ResourceTreeDTO } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
-import Oeso from "../../ontologies/Oeso";
 
 @Component
 export default class DataFilesList extends Vue {
@@ -93,7 +92,7 @@ export default class DataFilesList extends Vue {
       return {
         start_date: null,
         end_date: null,
-        variables: [],
+        rdf_type: null,
         provenance: null,
         experiments: [],
         scientificObjects: []
@@ -282,7 +281,8 @@ export default class DataFilesList extends Vue {
   rdf_types = {};
   loadTypes() {
     this.$opensilex.getService("opensilex.OntologyService")
-    .getSubClassesOf(Oeso.DATAFILE_TYPE_URI, false)
+    .getSubClassesOf(
+        this.$opensilex.Oeso.DATAFILE_TYPE_URI, false)
     .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
       let parentType = http.response.result[0];
       let key = parentType.uri;
@@ -290,7 +290,7 @@ export default class DataFilesList extends Vue {
       for (let i = 0; i < parentType.children.length; i++) {   
         let key = parentType.children[i].uri;
         this.rdf_types[key] = parentType.children[i].name;
-        if (Oeso.checkURIs(key, Oeso.IMAGE_TYPE_URI)) {
+        if (this.$opensilex.Oeso.checkURIs(key, this.$opensilex.Oeso.IMAGE_TYPE_URI)) {
           let imageType = parentType.children[i];
           this.images_rdf_types.push(imageType.uri);
           for (let i = 0; i < imageType.children.length; i++) {

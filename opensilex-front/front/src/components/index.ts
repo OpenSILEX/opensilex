@@ -617,37 +617,13 @@ import DataList from './data/DataList.vue';
 components["opensilex-DataList"] = DataList;
 import DataFilesList from './data/DataFilesList.vue';
 components["opensilex-DataFilesList"] = DataFilesList;
+
+import DataFilesImagesList from './data/DataFilesImagesList.vue';
+components["opensilex-DataFilesImagesList"] = DataFilesImagesList;
 import DataExportModal from './data/DataExportModal.vue';
 components["opensilex-DataExportModal"] = DataExportModal;
 import DataImportForm from './data/form/DataImportForm.vue';
 components["opensilex-DataImportForm"] = DataImportForm;
-
-// PHIS
-//IMAGES
-// import ImageList from './phis/images/ImageList.vue';
-// components["opensilex-ImageList"] = ImageList;
-// import ImageView from './phis/images/ImageView.vue';
-// components["opensilex-ImageView"] = ImageView;
-// import ImageSearch from './phis/images/ImageSearch.vue';
-// components["opensilex-ImageSearch"] = ImageSearch;
-// import ImageGrid from './phis/images/viewComponents/ImageGrid.vue';
-// components["opensilex-ImageGrid"] = ImageGrid;
-// import ImageSingle from './phis/images/viewComponents/ImageSingle.vue';
-// components["opensilex-ImageSingle"] = ImageSingle;
-// import ImageCarousel from './phis/images/viewComponents/ImageCarousel.vue';
-// components["opensilex-ImageCarousel"] = ImageCarousel;
-// import SciObjectURISearch from './phis/images/searchComponents/SciObjectURISearch.vue';
-// components["opensilex-SciObjectURISearch"] = SciObjectURISearch;
-// import SciObjectAliasSearch from './phis/images/searchComponents/SciObjectAliasSearch.vue';
-// components["opensilex-SciObjectAliasSearch"] = SciObjectAliasSearch;
-// import ImageTypeSearch from './phis/images/searchComponents/ImageTypeSearch.vue';
-// components["opensilex-ImageTypeSearch"] = ImageTypeSearch;
-// import ExperimentSearch from './phis/images/searchComponents/ExperimentSearch.vue';
-// components["opensilex-ExperimentSearch"] = ExperimentSearch;
-// import SciObjectTypeSearch from './phis/images/searchComponents/SciObjectTypeSearch.vue';
-// components["opensilex-SciObjectTypeSearch"] = SciObjectTypeSearch;
-// import TimeSearch from './phis/images/searchComponents/TimeSearch.vue';
-// components["opensilex-TimeSearch"] = TimeSearch;
 
 // DOCUMENT
 import DocumentView from './documents/DocumentView.vue';
@@ -676,6 +652,12 @@ import DisplayInformationAboutItem from "./geometry/DisplayInformationAboutItem.
 components["opensilex-DisplayInformationAboutItem"] = DisplayInformationAboutItem;
 
 //VISUALIZATION
+
+import ImageGrid from './visualization/ImageGrid.vue';
+components["opensilex-ImageGrid"] = ImageGrid;
+import ImageSingle from './visualization/ImageSingle.vue';
+components["opensilex-ImageSingle"] = ImageSingle;
+
 import VisuView from './visualization/VisuView.vue';
 components["opensilex-VisuView"] = VisuView;
 import VisuGraphic from './visualization/VisuGraphic.vue';
@@ -686,10 +668,11 @@ import VisuForm from './visualization/VisuForm.vue';
 components["opensilex-VisuForm"] = VisuForm;
 import VisuImageGrid from './visualization/VisuImageGrid.vue';
 components["opensilex-VisuImageGrid"] = VisuImageGrid;
-import VisuImageCarousel from './visualization/VisuImageCarousel.vue';
-components["opensilex-VisuImageCarousel"] = VisuImageCarousel;
 import VisuImageSingle from './visualization/VisuImageSingle.vue';
 components["opensilex-VisuImageSingle"] = VisuImageSingle;
+import ImageLightBox from './visualization/ImageLightBox.vue';
+components["opensilex-ImageLightBox"] = ImageLightBox;
+
 
 import DataVisuGraphic from './visualization/DataVisuGraphic.vue';
 components["opensilex-DataVisuGraphic"] = DataVisuGraphic;

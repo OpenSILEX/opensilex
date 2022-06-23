@@ -1,12 +1,14 @@
 
 <template>
     <div class="row">
-      <phis2ws-ImageSingle
+      <opensilex-ImageSingle
         v-for="(image, index) in images"
         v-bind:key="index"
         :image="image"
         :index="index"
-      ></phis2ws-ImageSingle>
+        @click=" $emit('click', $event)"
+        @annotate=" $emit('annotate', $event)"
+      ></opensilex-ImageSingle>
     </div>
 </template>
 

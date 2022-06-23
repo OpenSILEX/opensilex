@@ -1101,8 +1101,7 @@ export default class OpenSilexVuePlugin {
     }
 
     viewImageFromGetService(servicePath: string) {
-        this.showLoader();
-
+        
         let url =
             this.baseApi +
             servicePath;
@@ -1125,14 +1124,11 @@ export default class OpenSilexVuePlugin {
         return promise
             .then(function (response) {
                 return response.blob();
-            })
-            .then((result) => {
+                
+            }).catch(this.errorHandler).then((result) => {
                 let file = result;
-
                 let blob = new Blob([file]);
-
                 let url = URL.createObjectURL(blob);
-                this.hideLoader()
                 return url;
             })
             .catch(this.errorHandler);

@@ -8,7 +8,6 @@
 
     <opensilex-PageContent>
       <template v-slot>
-
         <opensilex-SearchFilterField
           @search="refresh()"
           @clear="reset()"
@@ -16,14 +15,24 @@
           :showTitle="false"
         >
           <template v-slot:filters>
-
             <!-- Type -->
             <opensilex-FilterField quarterWidth="true">
               <opensilex-TypeForm
+                v-if="filter.imagesView"
+                :type.sync="filter.rdf_type"
+                :baseType="$opensilex.Oeso.IMAGE_TYPE_URI"
+                :ignoreRoot="false"
+                placeholder="ScientificObjectDataFiles.rdfType-placeholder"
+                key="imageTypeForm"
+              ></opensilex-TypeForm>
+
+              <opensilex-TypeForm
+                v-else
                 :type.sync="filter.rdf_type"
                 :baseType="$opensilex.Oeso.DATAFILE_TYPE_URI"
                 :ignoreRoot="false"
                 placeholder="ScientificObjectDataFiles.rdfType-placeholder"
+                key="datafileTypeForm"
               ></opensilex-TypeForm>
             </opensilex-FilterField>
 
@@ -36,26 +45,25 @@
                 @select="updateSOFilter"
                 @clear="updateSOFilter"
               ></opensilex-ExperimentSelector>
-            </opensilex-FilterField> 
+            </opensilex-FilterField>
 
-
-              <!-- Start Date -->
-              <opensilex-FilterField quarterWidth="true">
-                <opensilex-DateTimeForm
-                    :value.sync="filter.start_date"
-                    label="component.common.begin"
-                    name="startDate"
-                    :max-date="filter.end_date ? filter.end_date : undefined" 
-                ></opensilex-DateTimeForm>
+            <!-- Start Date -->
+            <opensilex-FilterField quarterWidth="true">
+              <opensilex-DateTimeForm
+                :value.sync="filter.start_date"
+                label="component.common.begin"
+                name="startDate"
+                :max-date="filter.end_date ? filter.end_date : undefined"
+              ></opensilex-DateTimeForm>
             </opensilex-FilterField>
 
             <!-- End Date -->
             <opensilex-FilterField quarterWidth="true">
               <opensilex-DateTimeForm
-                  :value.sync="filter.end_date"
-                  label="component.common.end"
-                  name="endDate"
-                  :min-date="filter.start_date ? filter.start_date : undefined"
+                :value.sync="filter.end_date"
+                label="component.common.end"
+                name="endDate"
+                :min-date="filter.start_date ? filter.start_date : undefined"
               ></opensilex-DateTimeForm>
             </opensilex-FilterField>
 
@@ -78,12 +86,8 @@
               ></opensilex-SelectForm>
             </opensilex-FilterField>
 
-
-          
-
             <!-- Provenance -->
             <opensilex-FilterField halfWidth="true">
-               
               <opensilex-DatafileProvenanceSelector
                 ref="provSelector"
                 :provenances.sync="filter.provenance"
@@ -95,9 +99,7 @@
                 :viewHandler="showProvenanceDetails"
                 :viewHandlerDetailsVisible="visibleDetails"
                 :key="refreshKey"
-            ></opensilex-DatafileProvenanceSelector>
-            
-
+              ></opensilex-DatafileProvenanceSelector>
               <b-collapse
                 v-if="selectedProvenance"
                 id="collapse-4"
@@ -110,26 +112,32 @@
               </b-collapse>
             </opensilex-FilterField>
 
+            <opensilex-FilterField>
+              <b-form-checkbox v-model="filter.imagesView" name="check-button" switch>
+              <b>Images view</b>
+              </b-form-checkbox>
+             </opensilex-FilterField>
+
           </template>
         </opensilex-SearchFilterField>
 
-        <opensilex-DataFilesList 
-          ref="datafilesList"
-          :filter="filter">
+        <opensilex-DataFilesImagesList ref="datafilesImagesList" v-if="filter.imagesView" :filter="filter">
+        </opensilex-DataFilesImagesList>
+
+        <opensilex-DataFilesList v-else ref="datafilesList" :filter="filter">
         </opensilex-DataFilesList>
+
       </template>
     </opensilex-PageContent>
-
   </div>
 </template>
 
 <script lang="ts">
-import { Prop, Component, Ref } from "vue-property-decorator";
+import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import { ProvenanceGetDTO, ResourceTreeDTO } from "opensilex-core/index";
-import {ScientificObjectNodeDTO} from "opensilex-core/model/scientificObjectNodeDTO";
-import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
-import Oeso from "../../ontologies/Oeso";
+import { ProvenanceGetDTO } from "../../../../../opensilex-core/front/src/lib";
+import HttpResponse from "../../lib/HttpResponse";
+import { OpenSilexResponse } from "../../../../../opensilex-core/front/src/lib/HttpResponse";
 
 @Component
 export default class DataFilesView extends Vue {
@@ -153,52 +161,52 @@ export default class DataFilesView extends Vue {
 
   @Ref("templateForm") readonly templateForm!: any;
   @Ref("datafilesList") readonly datafilesList!: any;
+  @Ref("datafilesImagesList") readonly datafilesImagesList!: any;
   @Ref("searchField") readonly searchField!: any;
   @Ref("provSelector") readonly provSelector!: any;
   @Ref("resultModal") readonly resultModal!: any;
   @Ref("soSelector") readonly soSelector!: any;
 
   filter = {
-    start_date: null,
-    end_date: null,
-    rdf_type: null,
-    provenance: null,
+    start_date: undefined,
+    end_date: undefined,
+    rdf_type: undefined,
+    provenance: undefined,
     experiments: [],
-    scientificObjects: []
+    scientificObjects: [],
+    imagesView: false
   };
 
   resetFilter() {
     this.filter = {
-      start_date: null,
-      end_date: null,
-      rdf_type: null,
-      provenance: null,
+      start_date: undefined,
+      end_date: undefined,
+      rdf_type: undefined,
+      provenance: undefined,
       experiments: [],
-      scientificObjects: []
+      scientificObjects: [],
+      imagesView: true
     };
   }
 
   soFilter = {
-      name: undefined,
-      experiment: undefined,
-      germplasm: undefined,
-      factorLevels: [],
-      types: [],
-      existenceDate: undefined,
-      creationDate: undefined,
-    };
-    
+    name: undefined,
+    experiment: undefined,
+    germplasm: undefined,
+    factorLevels: [],
+    types: [],
+    existenceDate: undefined,
+    creationDate: undefined,
+  };
 
   refreshSoSelector() {
     this.refreshProvComponent();
     this.soSelector.refreshModalSearch();
   }
 
-
-  refreshProvComponent(){
-    this.refreshKey += 1
+  refreshProvComponent() {
+    this.refreshKey += 1;
   }
-
 
   updateSOFilter() {
     this.soFilter.experiment = this.filter.experiments[0];
@@ -207,17 +215,18 @@ export default class DataFilesView extends Vue {
   }
 
   refresh() {
-    this.datafilesList.refresh();
+    if(this.filter.imagesView) {
+      this.datafilesImagesList.refresh();
+
+    } else {
+      this.datafilesList.refresh();
+    }
+   
   }
 
   reset() {
     this.resetFilter();
     this.refresh();
-  }
-
-  created() {
-    this.service = this.$opensilex.getService("opensilex.DataService");
-    this.loadTypes();
   }
 
   get getSelectedProv() {
@@ -248,39 +257,6 @@ export default class DataFilesView extends Vue {
       });
     }
   }
-
-  images_rdf_types = [];
-  rdf_types = {};
-  loadTypes() {
-    this.$opensilex.getService("opensilex.OntologyService")
-    .getSubClassesOf(Oeso.DATAFILE_TYPE_URI, false)
-    .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
-      let parentType = http.response.result[0];
-      let key = parentType.uri;
-      this.rdf_types[key] = parentType.name;
-      for (let i = 0; i < parentType.children.length; i++) {   
-        let key = parentType.children[i].uri;
-        this.rdf_types[key] = parentType.children[i].name;
-        if (Oeso.checkURIs(key, Oeso.IMAGE_TYPE_URI)) {
-          let imageType = parentType.children[i];
-          this.images_rdf_types.push(imageType.uri);
-          for (let i = 0; i < imageType.children.length; i++) {
-            let key = imageType.children[i].uri;
-            this.rdf_types[key] = imageType.children[i].name;
-            this.images_rdf_types.push(key);
-          }
-        } else {
-          let subType = parentType.children[i];
-          for (let i = 0; i < subType.children.length; i++) {
-            let key = subType.children[i].uri;
-            this.rdf_types[key] = subType.children[i].name;
-          }
-        }   
-      }
-    })
-    .catch(this.$opensilex.errorHandler);
-  }
-
 }
 </script>
 

@@ -185,7 +185,14 @@ Vue.use(VueLayers, {
 import ToggleButton from 'vue-js-toggle-button'
 Vue.use(ToggleButton);
 
-// Initialize i18n
+
+// Initialize EasyLighBox ->  https://github.com/XiongAmao/vue-easy-lightbox/tree/vue2.x
+
+import VueEasyLightbox from 'vue-easy-lightbox'
+// Method 1. via Vue.use
+Vue.use(VueEasyLightbox)
+
+// // Initialize i18n
 import VueI18n from 'vue-i18n'
 import en from './lang/message-en.json';
 import fr from './lang/message-fr.json';

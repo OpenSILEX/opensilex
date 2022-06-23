@@ -12,3 +12,5 @@ opensilex-doc/src/main/resources/generated/
 **/inrae-sixtine
 **/opensilex-data-analysis
 **/inrae-bigdatagrapes
+**/*.iml
+

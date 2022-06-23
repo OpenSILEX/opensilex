@@ -243,12 +243,11 @@ public class MongoDBService extends BaseService {
      */
     public void multipleOperationsWithTransaction(
             SPARQLService sparqlService,
-            ClientSession mongoSession,
             ThrowingConsumer<ClientSession, Exception> mongoFunction,
             ThrowingConsumer<SPARQLService, Exception> sparqlFunction
     ) throws Exception {
 
-        Objects.requireNonNull(mongoSession);
+        ClientSession mongoSession = mongoClient.startSession();
 
         try {
             mongoSession.startTransaction();

@@ -37,6 +37,15 @@
                 @change="change"
               ></b-form-checkbox-group>
             </b-form-group>
+
+            <b-form-group v-else :label="$t('DataTemplateForm.select-columns')" v-slot="{ ariaDescribedby }">
+              <b-form-checkbox-group
+                v-model="selectedColumns"
+                :options="expeOptions"
+                :aria-describedby="ariaDescribedby"
+              ></b-form-checkbox-group>
+            </b-form-group>
+
           </b-col>
           <b-col cols="7">
             <b-alert v-if="experiment==null"
@@ -97,6 +106,7 @@ export default class GenerateDataTemplateFrom extends Vue {
   readonly expColumn = "experiment";
   readonly targetColumn = "target";
   readonly deviceColumn = "device";
+  readonly soColumn = "scientific_object";
 
   @Prop()
   editMode;
@@ -107,6 +117,11 @@ export default class GenerateDataTemplateFrom extends Vue {
   options = [
     { text: this.expColumn, value: this.expColumn },
     { text: this.targetColumn, value: this.targetColumn },
+    { text: this.deviceColumn, value: this.deviceColumn }
+  ];
+
+
+  expeOptions = [
     { text: this.deviceColumn, value: this.deviceColumn }
   ];
 
@@ -204,7 +219,7 @@ export default class GenerateDataTemplateFrom extends Vue {
 
     //column object
     if (this.experiment != null) {
-      line1.push(this.$t("DataHelp.objectId"));
+      line1.push(this.soColumn);
       line2.push(this.$t("DataHelp.objectId-help")); 
       line3.push(
         this.$t("DataHelp.column-type-help")+
@@ -314,7 +329,7 @@ export default class GenerateDataTemplateFrom extends Vue {
         
         //column object
         if (this.experiment != null) {
-          line1.push(this.$t("DataHelp.objectId"));
+          line1.push(this.soColumn);
           line2.push(this.$t("DataHelp.objectId-help")); 
           line3.push(
             this.$t("DataHelp.column-type-help")+
@@ -407,13 +422,15 @@ export default class GenerateDataTemplateFrom extends Vue {
     if (this.selectedColumns.includes(this.targetColumn) || this.selectedColumns.includes(this.deviceColumn)) {
       this.validSelection = true;
     } else {
-      this.validSelection = false;
+      if(this.experiment != null) {
+        this.validSelection = false;
+      }
     }
   }
 
   shown() {
     this.validSelection = this.hasDeviceAgent;
-    this.requiredField = true;
+     this.requiredField = true; // due to the impact on the required field on the Form who encapsulte this form component
     this.selectedColumns = [];
   }
 

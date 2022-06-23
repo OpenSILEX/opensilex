@@ -492,7 +492,7 @@ public class ExperimentDAO {
             ExperimentModel.class,
             null,
             (SelectBuilder select) -> {
-                select.addFilter(SPARQLQueryHelper.eq(ExperimentModel.NAME_FIELD, name));
+                appendRegexLabelFilter(select, name);
             },
             null,
             0,

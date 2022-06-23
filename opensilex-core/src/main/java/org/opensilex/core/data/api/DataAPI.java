@@ -14,6 +14,7 @@ import com.mongodb.client.result.DeleteResult;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 import io.swagger.annotations.*;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.graph.Node;
@@ -28,33 +29,21 @@ import org.opensilex.core.device.api.DeviceAPI;
 import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.exception.*;
-import org.opensilex.core.exception.CSVDataTypeException;
-import org.opensilex.core.exception.DateMappingExceptionResponse;
-import org.opensilex.core.experiment.dal.ExperimentDAO;
-import org.opensilex.core.provenance.dal.ProvenanceDAO;
-import org.opensilex.core.provenance.dal.ProvenanceModel;
-import org.opensilex.core.variable.dal.VariableModel;
-import org.opensilex.fs.service.FileStorageService;
-import org.opensilex.core.exception.DataTypeException;
-import org.opensilex.core.exception.DateValidationException;
-import org.opensilex.core.exception.DeviceOrTargetToDataException;
-import org.opensilex.core.exception.DeviceProvenanceAmbiguityException;
-import org.opensilex.core.exception.DuplicateNameException;
-import org.opensilex.core.exception.NoVariableDataTypeException;
-import org.opensilex.core.exception.TimezoneAmbiguityException;
-import org.opensilex.core.exception.TimezoneException;
-import org.opensilex.core.exception.UnableToParseDateException;
 import org.opensilex.core.experiment.api.ExperimentAPI;
+import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.utils.ImportDataIndex;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.sparql.SPARQLModule;
-import org.opensilex.sparql.csv.CSVCell;
-import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.core.provenance.api.ProvenanceAPI;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.AgentModel;
+import org.opensilex.core.provenance.dal.ProvenanceDAO;
+import org.opensilex.core.provenance.dal.ProvenanceModel;
+import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
+import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.core.variable.dal.VariableDAO;
+import org.opensilex.core.variable.dal.VariableModel;
+import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidUriListException;
 import org.opensilex.nosql.exceptions.NoSQLTooLargeSetException;
@@ -69,12 +58,15 @@ import org.opensilex.server.exceptions.NotFoundException;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.server.rest.validation.ValidURI;
+import org.opensilex.sparql.SPARQLModule;
+import org.opensilex.sparql.csv.CSVCell;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.response.ResourceTreeDTO;
 import org.opensilex.sparql.service.SPARQLService;
@@ -104,6 +96,11 @@ import java.time.Instant;
 import java.time.zone.ZoneRulesException;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static java.lang.Float.NaN;
+import static org.opensilex.core.data.api.DataCreationDTO.NAN_VALUES;
+import static org.opensilex.core.data.api.DataCreationDTO.NA_VALUES;
+
 
 /**
  * @author sammy
@@ -1103,6 +1100,7 @@ public class DataAPI {
     @Produces(MediaType.APPLICATION_JSON)
     public Response importCSVData(
             @ApiParam(value = "Provenance URI", example = ProvenanceAPI.PROVENANCE_EXAMPLE_URI) @QueryParam("provenance") @NotNull @ValidURI URI provenance,
+            @ApiParam(value = ExperimentAPI.EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment")  @ValidURI URI experiment,
             @ApiParam(value = "File", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition) throws Exception {
         DataDAO dao = new DataDAO(nosql, sparql, fs);
@@ -1114,11 +1112,16 @@ public class DataAPI {
             provenanceModel = provDAO.get(provenance);
         } catch (NoSQLInvalidURIException e) {
             throw new NotFoundURIException("Provenance URI not found: ", provenance);
-        } 
+        }
+        // test exp
+        if(experiment != null) {
+            ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql);
+            xpDAO.validateExperimentAccess(experiment, user);
+        }
 
         DataCSVValidationModel validation;
         
-        validation = validateWholeCSV(provenanceModel, file, user);
+        validation = validateWholeCSV(provenanceModel, experiment, file, user);
 
         DataCSVValidationDTO csvValidation = new DataCSVValidationDTO();
 
@@ -1187,6 +1190,7 @@ public class DataAPI {
     @Produces(MediaType.APPLICATION_JSON)
     public Response validateCSV(
             @ApiParam(value = "Provenance URI", example = ProvenanceAPI.PROVENANCE_EXAMPLE_URI) @QueryParam("provenance") @NotNull @ValidURI URI provenance,
+            @ApiParam(value = ExperimentAPI.EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment")  @ValidURI URI experiment,
             @ApiParam(value = "File", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition) throws Exception {
 
@@ -1200,10 +1204,15 @@ public class DataAPI {
             throw new NotFoundURIException("Provenance URI not found: ", provenance);
         }
 
+        // test exp
+        if(experiment != null) {
+            ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql);
+            xpDAO.validateExperimentAccess(experiment, user);
+        }
         DataCSVValidationModel validation;
 
         Instant start = Instant.now();
-        validation = validateWholeCSV(provenanceModel, file, user);
+        validation = validateWholeCSV(provenanceModel, experiment, file, user);
         Instant finish = Instant.now();
         long timeElapsed = Duration.between(start, finish).toMillis();
         LOGGER.debug("Validation " + Long.toString(timeElapsed) + " milliseconds elapsed");
@@ -1223,8 +1232,9 @@ public class DataAPI {
     private final String dateHeader = "date";
     private final String deviceHeader = "device";
     private final String rawdataHeader = "raw_data";
+    private final String soHeader = "scientific_object";
     
-    private DataCSVValidationModel validateWholeCSV(ProvenanceModel provenance, InputStream file, UserModel currentUser) throws Exception {       
+    private DataCSVValidationModel validateWholeCSV(ProvenanceModel provenance, URI experiment, InputStream file, UserModel currentUser) throws Exception {
         DataCSVValidationModel csvValidation = new DataCSVValidationModel();
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
         Map<String, SPARQLNamedResourceModel> nameURITargets = new HashMap<>();
@@ -1235,6 +1245,12 @@ public class DataAPI {
         Map<String, ExperimentModel> nameURIExperiments = new HashMap<>();
         List<String> notExistingExperiments = new ArrayList<>();
         List<String> duplicatedExperiments = new ArrayList<>();
+
+
+        ScientificObjectDAO scientificObjectDAO = new ScientificObjectDAO(sparql, nosql);
+        Map<String, ScientificObjectModel> nameURIScientificObjectsInXp = new HashMap<>();
+        List<String> scientificObjectsNotInXp = new ArrayList<>();
+
         
         DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
         Map<String,DeviceModel> nameURIDevices = new HashMap<>();
@@ -1270,8 +1286,8 @@ public class DataAPI {
             // Line 1
             String[] ids = csvReader.parseNext();
             Set<String> headers = Arrays.stream(ids).filter(Objects::nonNull).map(id -> id.toLowerCase(Locale.ENGLISH)).collect(Collectors.toSet());
-            if (!headers.contains(deviceHeader) && !headers.contains(targetHeader) && !hasDevice) {
-                csvValidation.addMissingHeaders(Arrays.asList(deviceHeader + " or " + targetHeader));
+            if (!headers.contains(deviceHeader) && !headers.contains(targetHeader) && !headers.contains(soHeader) && !hasDevice) {
+                csvValidation.addMissingHeaders(Arrays.asList(deviceHeader + " or " + targetHeader + " or " + soHeader));
             }  
             
             // 1. check variables
@@ -1287,7 +1303,7 @@ public class DataAPI {
                     } else {                       
                     
                         if (header.equalsIgnoreCase(expHeader) || header.equalsIgnoreCase(targetHeader) 
-                            || header.equalsIgnoreCase(dateHeader) || header.equalsIgnoreCase(deviceHeader)
+                            || header.equalsIgnoreCase(dateHeader) || header.equalsIgnoreCase(deviceHeader) || header.equalsIgnoreCase(soHeader)
                             || header.equalsIgnoreCase(rawdataHeader)) {
                             headerByIndex.put(i, header);                            
                         
@@ -1335,6 +1351,7 @@ public class DataAPI {
                     try {
                         validateCSVRow = validateCSVRow(
                                 provenance,
+                                experiment,
                                 hasDevice,
                                 variableCheckedDevice,
                                 variableCheckedProvDevice,
@@ -1351,6 +1368,9 @@ public class DataAPI {
                                 notExistingTargets,
                                 duplicatedTargets,
                                 nameURITargets,
+                                scientificObjectDAO,
+                                nameURIScientificObjectsInXp,
+                                scientificObjectsNotInXp,
                                 deviceDAO,
                                 notExistingDevices,
                                 duplicatedDevices,
@@ -1379,7 +1399,8 @@ public class DataAPI {
     }
 
     private boolean validateCSVRow(
-            ProvenanceModel provenance, 
+            ProvenanceModel provenance,
+            URI experiment,
             Boolean hasDevice,
             Map<String, DeviceModel> variableCheckedDevice,
             Map<String,DeviceModel> variableCheckedProvDevice,
@@ -1396,6 +1417,9 @@ public class DataAPI {
             List<String> notExistingTargets,
             List<String> duplicatedTargets,
             Map<String, SPARQLNamedResourceModel> nameURITargets,
+            ScientificObjectDAO scientificObjectDAO,
+            Map<String, ScientificObjectModel> nameURIScientificObjects,
+            List<String> scientificObjectsNotInXp,
             DeviceDAO deviceDAO, 
             List<String> notExistingDevices,
             List<String> duplicatedDevices,
@@ -1415,9 +1439,14 @@ public class DataAPI {
         Boolean missingTargetOrDevice = false;
         int targetColIndex = 0;
         int deviceColIndex = 0;
-        
-        DeviceModel device = null; 
-        for (int colIndex = 0; colIndex < values.length; colIndex++) {  
+
+        DeviceModel device = null;
+        ScientificObjectModel object = null;
+        if( experiment != null) {
+            experiments.add(experiment);
+        }
+
+        for (int colIndex = 0; colIndex < values.length; colIndex++) {
             if (headerByIndex.get(colIndex).equalsIgnoreCase(expHeader)) {
                 //check experiment column
                 ExperimentModel exp = null;
@@ -1432,44 +1461,44 @@ public class DataAPI {
                             CSVCell cell = new CSVCell(rowIndex, colIndex, expNameOrUri, "EXPERIMENT_ID");
                             csvValidation.addDuplicateExperimentError(cell);
                             validRow = false;
-                            break;
-                        }
-                        
-                        if (!notExistingExperiments.contains(expNameOrUri)) {
+                        } else if (!notExistingExperiments.contains(expNameOrUri)) {
                             try {
                                 exp = getExperimentByNameOrURI(xpDAO, expNameOrUri);
+                                if (exp == null) {
+                                    if (!notExistingExperiments.contains(expNameOrUri)) {
+                                        notExistingExperiments.add(expNameOrUri);
+                                    }
+
+                                    CSVCell cell = new CSVCell(rowIndex, colIndex, expNameOrUri, "EXPERIMENT_ID");
+                                    csvValidation.addInvalidExperimentError(cell);
+                                    validRow = false;
+                                } else {
+                                    nameURIExperiments.put(expNameOrUri, exp);
+                                }
                             } catch (DuplicateNameException e) {
                                 CSVCell cell = new CSVCell(rowIndex, colIndex, expNameOrUri, "EXPERIMENT_ID");
                                 csvValidation.addDuplicateExperimentError(cell);
                                 duplicatedExperiments.add(expNameOrUri);
                                 validRow = false;
-                                break;
                             }
-                        }
-                        if (exp == null) {
-                            if (!notExistingExperiments.contains(expNameOrUri)) {
-                                notExistingExperiments.add(expNameOrUri);
-                            }
-                           
+                        } else {
                             CSVCell cell = new CSVCell(rowIndex, colIndex, expNameOrUri, "EXPERIMENT_ID");
                             csvValidation.addInvalidExperimentError(cell);
                             validRow = false;
-                            break;
-                        } else {
-                            nameURIExperiments.put(expNameOrUri, exp);
+
                         }
                     }
                 }
                 if (exp != null) {
                     experiments.add(exp.getUri());
                 }
-                
-            
+
+
             } else if (headerByIndex.get(colIndex).equalsIgnoreCase(targetHeader)) {
                 //check target column
-                String targetNameOrUri = values[colIndex];   
+                String targetNameOrUri = values[colIndex];
                 targetColIndex = colIndex;
-                
+
                 if (!StringUtils.isEmpty(targetNameOrUri)){
                     if (nameURITargets.containsKey(targetNameOrUri)) {
                         target = nameURITargets.get(targetNameOrUri);
@@ -1477,34 +1506,56 @@ public class DataAPI {
                         // test not in uri list
                         if (duplicatedTargets.contains(targetNameOrUri)) {
                             CSVCell cell = new CSVCell(rowIndex, colIndex, targetNameOrUri, "TARGET_ID");
-                            csvValidation.addDuplicateObjectError(cell);
+                            csvValidation.addDuplicateTargetError(cell);
                             validRow = false;
-                            break;
-                        }
-                        
-                        if (!notExistingTargets.contains(targetNameOrUri)) {
+                        } else if (!notExistingTargets.contains(targetNameOrUri)) {
                             try {
                                 target = getTargetByNameOrURI(ontologyDAO, targetNameOrUri);
+                                if (target == null) {
+                                    if (!notExistingTargets.contains(targetNameOrUri)) {
+                                        notExistingTargets.add(targetNameOrUri);
+                                    }
+
+                                    CSVCell cell = new CSVCell(rowIndex, colIndex, targetNameOrUri, "TARGET_ID");
+                                    csvValidation.addInvalidTargetError(cell);
+                                    validRow = false;
+                                } else {
+                                    nameURITargets.put(targetNameOrUri, target);
+                                }
                             } catch (DuplicateNameException e) {
                                 CSVCell cell = new CSVCell(rowIndex, colIndex, targetNameOrUri, "TARGET_ID");
-                                csvValidation.addDuplicateObjectError(cell);
+                                csvValidation.addDuplicateTargetError(cell);
                                 duplicatedTargets.add(targetNameOrUri);
                                 validRow = false;
-                                break;
-                            }                            
-                        }
-                        if (target == null) {
-                            if (!notExistingTargets.contains(targetNameOrUri)) {
-                               notExistingTargets.add(targetNameOrUri);   
                             }
-                           
-                            CSVCell cell = new CSVCell(rowIndex, colIndex, targetNameOrUri, "TARGET_ID");
-                            csvValidation.addInvalidObjectError(cell);
-                            validRow = false;
-                            break;
+
                         } else {
-                            nameURITargets.put(targetNameOrUri, target);
+                            CSVCell cell = new CSVCell(rowIndex, colIndex, targetNameOrUri, "TARGET_ID");
+                            csvValidation.addInvalidTargetError(cell);
+                            validRow = false;
                         }
+
+                    }
+                }
+
+            } else if (headerByIndex.get(colIndex).equalsIgnoreCase(soHeader)) {
+
+                String objectNameOrUri = values[colIndex];
+                // test in uri list
+                if (!StringUtils.isEmpty(objectNameOrUri) && nameURIScientificObjects.containsKey(objectNameOrUri)) {
+                    object = nameURIScientificObjects.get(objectNameOrUri);
+                } else {
+                    // test not in uri list
+                    if (!StringUtils.isEmpty(objectNameOrUri) && !scientificObjectsNotInXp.contains(objectNameOrUri)) {
+                        object = getObjectByNameOrURI(scientificObjectDAO, experiment, objectNameOrUri);
+                    }
+                    if (object == null) {
+                        scientificObjectsNotInXp.add(objectNameOrUri);
+                        CSVCell cell = new CSVCell(rowIndex, colIndex, objectNameOrUri, "OBJECT_ID");
+                        csvValidation.addInvalidObjectError(cell);
+                        validRow = false;
+                    } else {
+                        nameURIScientificObjects.put(objectNameOrUri, object);
                     }
                 }
 
@@ -1518,216 +1569,212 @@ public class DataAPI {
                     validRow = false;
                     break;
                 }
-            
+
             } else if (headerByIndex.get(colIndex).equalsIgnoreCase(deviceHeader)){
                 // check device column
                 String deviceNameOrUri = values[colIndex];
                 deviceColIndex = colIndex;
-                
+
                 // test in uri list
                 if (!StringUtils.isEmpty(deviceNameOrUri)) {
-                     if (nameURIDevices.containsKey(deviceNameOrUri)) {                    
-                        device = nameURIDevices.get(deviceNameOrUri);                    
+                    if (nameURIDevices.containsKey(deviceNameOrUri)) {
+                        device = nameURIDevices.get(deviceNameOrUri);
                     } else {
                         // test not in uri list
                         if (duplicatedDevices.contains(deviceNameOrUri)) {
                             CSVCell cell = new CSVCell(rowIndex, colIndex, deviceNameOrUri, "DEVICE_ID");
                             csvValidation.addDuplicateDeviceError(cell);
                             validRow = false;
-                            break;
-                        }
-                        
-                        if (!notExistingDevices.contains(deviceNameOrUri)) {
+                        } else if (!notExistingDevices.contains(deviceNameOrUri)) {
                             try {
                                 device = getDeviceByNameOrURI(deviceDAO, deviceNameOrUri);
+                                if (device == null) {
+                                    if (!notExistingDevices.contains(deviceNameOrUri)) {
+                                        notExistingDevices.add(deviceNameOrUri);
+                                    }
+                                    CSVCell cell = new CSVCell(rowIndex, colIndex, deviceNameOrUri, "DEVICE_ID");
+                                    csvValidation.addInvalidDeviceError(cell);
+                                    validRow = false;
+                                } else {
+                                    nameURIDevices.put(deviceNameOrUri, device);
+                                }
                             } catch (DuplicateNameException e) {
                                 CSVCell cell = new CSVCell(rowIndex, colIndex, deviceNameOrUri, "DEVICE_ID");
                                 csvValidation.addDuplicateDeviceError(cell);
                                 duplicatedDevices.add(deviceNameOrUri);
                                 validRow = false;
-                                break;
                             }
-                        }
-                        if (device == null) {
-                            if (!notExistingDevices.contains(deviceNameOrUri)) {
-                                notExistingDevices.add(deviceNameOrUri);
-                            }
+                        } else {
                             CSVCell cell = new CSVCell(rowIndex, colIndex, deviceNameOrUri, "DEVICE_ID");
                             csvValidation.addInvalidDeviceError(cell);
                             validRow = false;
-                            break;
-                        } else {
-                            nameURIDevices.put(deviceNameOrUri, device);                        
                         }
-                    }    
+
+                    }
                 }
-               
+
             } else if (!headerByIndex.get(colIndex).equalsIgnoreCase(rawdataHeader)) { // Variable/Value column
                 if (headerByIndex.containsKey(colIndex)) {
                     // If value is not blank and null
-                    if (!StringUtils.isEmpty(values[colIndex])){ 
-                       
-                        String variable = headerByIndex.get(colIndex);
-                        URI varURI = URI.create(variable);
-                        if (!hasDevice && device == null && target == null) {
-                            missingTargetOrDevice = true;
-                            validRow = false;
-                            break;      
-                        }
-                        if (device != null) {
-                            
-                            boolean variableIsChecked = variableCheckedDevice.containsKey(variable) && variableCheckedDevice.get(variable) == device ;
-                            if(!variableIsChecked){
-                                if (!variableIsAssociatedToDevice(device, varURI)) {
-                                    csvValidation.addVariableToDevice(device, varURI);
-                                }
-                                variableCheckedDevice.put(variable, device);
+                    if (!StringUtils.isEmpty(values[colIndex])) {
+                        if (validRow) {
+                            String variable = headerByIndex.get(colIndex);
+                            URI varURI = URI.create(variable);
+                            if (!hasDevice && device == null && target == null && object == null) {
+                                missingTargetOrDevice = true;
+                                validRow = false;
+                                break;
                             }
-                    
-                        } else if (hasDevice) {
-                            if (!checkedVariables.contains(variable)) { // do it one time but write the error on each row if there is one
-                                List<DeviceModel> devices = new ArrayList<>();
-                                List<DeviceModel> linkedDevice = new ArrayList<>();
-                                DeviceModel dev = null;
-                                for (AgentModel agent : provenance.getAgents()) {
-                                    if (agent.getRdfType() != null && deviceDAO.isDeviceType(agent.getRdfType())) {
-                                        dev = deviceDAO.getDeviceByURI(agent.getUri(), user);
-                                        if (dev != null) {
+                            if (device != null) {
+                                boolean variableIsChecked = variableCheckedDevice.containsKey(variable) && variableCheckedDevice.get(variable) == device;
+                                if (!variableIsChecked) {
+                                    if (!variableIsAssociatedToDevice(device, varURI)) {
+                                        csvValidation.addVariableToDevice(device, varURI);
+                                    }
+                                    variableCheckedDevice.put(variable, device);
+                                }
 
-                                            if (variableIsAssociatedToDevice(dev, varURI)) {
-                                                linkedDevice.add(dev) ;
+                            } else if (hasDevice) {
+                                if (!checkedVariables.contains(variable)) { // do it one time but write the error on each row if there is one
+                                    List<DeviceModel> devices = new ArrayList<>();
+                                    List<DeviceModel> linkedDevice = new ArrayList<>();
+                                    DeviceModel dev = null;
+                                    for (AgentModel agent : provenance.getAgents()) {
+                                        if (agent.getRdfType() != null && deviceDAO.isDeviceType(agent.getRdfType())) {
+                                            dev = deviceDAO.getDeviceByURI(agent.getUri(), user);
+                                            if (dev != null) {
+
+                                                if (variableIsAssociatedToDevice(dev, varURI)) {
+                                                    linkedDevice.add(dev);
+                                                }
+                                                devices.add(dev);
                                             }
-                                            devices.add(dev);
                                         }
                                     }
-                                }
-                                switch (linkedDevice.size()) {
-                                    case 0:
-                                        if (devices.size() > 1) {
-                                            //wich device to choose ?
-                                            CSVCell cell = new CSVCell(rowIndex, colIndex, provenance.getUri().toString(), "DEVICE_AMBIGUITY_ID");  // add specific exception
+                                    switch (linkedDevice.size()) {
+                                        case 0:
+                                            if (devices.size() > 1) {
+                                                //wich device to choose ?
+                                                CSVCell cell = new CSVCell(rowIndex, colIndex, provenance.getUri().toString(), "DEVICE_AMBIGUITY_ID");  // add specific exception
+                                                csvValidation.addDeviceChoiceAmbiguityError(cell);
+                                                validRow = false;
+                                                break;
+                                            } else {
+                                                if (!devices.isEmpty()) {
+                                                    csvValidation.addVariableToDevice(devices.get(0), varURI);
+                                                    variableCheckedProvDevice.put(variable, devices.get(0));
+                                                } else {
+                                                    if (target == null) {
+                                                        missingTargetOrDevice = true;
+                                                        validRow = false;
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                            break;
+                                        case 1:
+
+                                            variableCheckedProvDevice.put(variable, linkedDevice.get(0));
+                                            break;
+
+                                        default:
+                                            //witch device to choose ?
+                                            CSVCell cell = new CSVCell(rowIndex, colIndex, provenance.getUri().toString(), "DEVICE_AMBIGUITY_ID"); // add specific exception
                                             csvValidation.addDeviceChoiceAmbiguityError(cell);
                                             validRow = false;
-                                        } else {
-                                            if (!devices.isEmpty()) {
-                                                csvValidation.addVariableToDevice(devices.get(0), varURI);
-                                               
-                                                variableCheckedProvDevice.put(variable, devices.get(0));
-                                            } else {
-                                                if(target == null){
-                                                    missingTargetOrDevice = true;
-                                                    validRow = false;
-                                                }
-                                                
-                                            }
-
-                                        }
-                                        break;
-                                    case 1:
-
-                                        variableCheckedProvDevice.put(variable, linkedDevice.get(0));
-                                        break;
-                                        
-                                    default :
-                                        //witch device to choose ?
-                                        CSVCell cell = new CSVCell(rowIndex, colIndex, provenance.getUri().toString(), "DEVICE_AMBIGUITY_ID"); // add specific exception
+                                            break;
+                                    }
+                                    checkedVariables.add(variable);
+                                } else {
+                                    if (!variableCheckedProvDevice.containsKey(variable)) {
+                                        CSVCell cell = new CSVCell(rowIndex, colIndex, provenance.getUri().toString(), "DEVICE_AMBIGUITY_ID");  // add specific exception
                                         csvValidation.addDeviceChoiceAmbiguityError(cell);
-                                        validRow = false;
                                         break;
+                                    }
+                                }
+                            }
+                            if(validRow) {
+                                DataModel dataModel = new DataModel();
+                                DataProvenanceModel provenanceModel = new DataProvenanceModel();
+                                provenanceModel.setUri(provenance.getUri());
+
+                                if (!experiments.isEmpty()) {
+                                    provenanceModel.setExperiments(experiments);
+                                }
+
+                                if (device != null) {
+                                    ProvEntityModel agent = new ProvEntityModel();
+                                    if (rootDeviceTypes == null) {
+                                        rootDeviceTypes = getRootDeviceTypes();
+                                    }
+                                    URI rootType = rootDeviceTypes.get(device.getType());
+                                    agent.setType(rootType);
+                                    agent.setUri(device.getUri());
+                                    agents.add(agent);
+                                    provenanceModel.setProvWasAssociatedWith(agents);
+
+                                } else if (hasDevice) {
+
+                                    DeviceModel checkedDevice = variableCheckedProvDevice.get(variable);
+                                    ProvEntityModel agent = new ProvEntityModel();
+                                    if (rootDeviceTypes == null) {
+                                        rootDeviceTypes = getRootDeviceTypes();
+                                    }
+                                    URI rootType = rootDeviceTypes.get(checkedDevice.getType());
+                                    agent.setType(rootType);
+                                    agent.setUri(checkedDevice.getUri());
+                                    agents.add(agent);
+                                    provenanceModel.setProvWasAssociatedWith(agents);
 
                                 }
-                                checkedVariables.add(variable);
-                                
-                            
-                            } else {
-                                if(!variableCheckedProvDevice.containsKey(variable)){
-                                     CSVCell cell = new CSVCell(rowIndex, colIndex, provenance.getUri().toString(), "DEVICE_AMBIGUITY_ID");  // add specific exception
-                                     csvValidation.addDeviceChoiceAmbiguityError(cell);
-                                     validRow = false;
-                                     break;
+
+                                dataModel.setDate(parsedDateTimeMongo.getInstant());
+                                dataModel.setOffset(parsedDateTimeMongo.getOffset());
+                                dataModel.setIsDateTime(parsedDateTimeMongo.getIsDateTime());
+
+                                if (object != null) {
+                                    dataModel.setTarget(object.getUri());
                                 }
-                                
+                                if (target != null) {
+                                    dataModel.setTarget(target.getUri());
+                                }
+                                dataModel.setProvenance(provenanceModel);
+                                dataModel.setVariable(varURI);
+                                dataModel.setValue(returnValidCSVDatum(varURI, values[colIndex].trim(), mapVariableUriDataType.get(varURI), rowIndex, colIndex, csvValidation));
+                                if (colIndex + 1 < values.length) {
+                                    if (headerByIndex.get(colIndex + 1).equalsIgnoreCase(rawdataHeader) && values[colIndex + 1] != null) {
+                                        dataModel.setRawData(returnValidRawData(varURI, values[colIndex + 1].trim(), mapVariableUriDataType.get(varURI), rowIndex, colIndex + 1, csvValidation));
+                                    }
+                                }
+
+                                // check for duplicate data
+                                URI targetUri = null;
+                                URI deviceUri = null;
+                                if (target != null) {
+                                    targetUri = target.getUri();
+                                }
+                                if (object != null) {
+                                    targetUri = object.getUri();
+                                }
+                                if(device != null) {
+                                    deviceUri = device.getUri();
+                                }
+                                ImportDataIndex importDataIndex = new ImportDataIndex(parsedDateTimeMongo.getInstant(), varURI, provenance.getUri(), targetUri, deviceUri);
+                                if (!duplicateDataByIndex.contains(importDataIndex)) {
+                                    duplicateDataByIndex.add(importDataIndex);
+                                } else {
+                                    String variableName = csvValidation.getHeadersLabels().get(colIndex) + '(' + csvValidation.getHeaders().get(colIndex) + ')';
+                                    CSVCell duplicateCell = new CSVCell(rowIndex, colIndex, values[colIndex].trim(), variableName);
+                                    csvValidation.addDuplicatedDataError(duplicateCell);
+                                }
+                                csvValidation.addData(dataModel, rowIndex);
+
                             }
-                            
+
                         }
-                        
-                        if (validRow) {
-                            DataModel dataModel = new DataModel();
-                            DataProvenanceModel provenanceModel = new DataProvenanceModel();
-                            provenanceModel.setUri(provenance.getUri());
-                            
-                            if (!experiments.isEmpty()) {                    
-                                provenanceModel.setExperiments(experiments);
-                            }
-                            
-                            if (device != null) {
-                                ProvEntityModel agent = new ProvEntityModel();
-                                if (rootDeviceTypes == null) {
-                                    rootDeviceTypes = getRootDeviceTypes();
-                                }
-                                URI rootType = rootDeviceTypes.get(device.getType());
-                                agent.setType(rootType);
-                                agent.setUri(device.getUri());
-                                agents.add(agent);
-                                provenanceModel.setProvWasAssociatedWith(agents);
-                                
-                            } else if (hasDevice ) {
-                                
-                                DeviceModel checkedDevice = variableCheckedProvDevice.get(variable);
-                                ProvEntityModel agent = new ProvEntityModel();
-                                if (rootDeviceTypes == null) {
-                                    rootDeviceTypes = getRootDeviceTypes();
-                                }
-                                URI rootType = rootDeviceTypes.get(checkedDevice.getType());
-                                agent.setType(rootType);
-                                agent.setUri(checkedDevice.getUri());
-                                agents.add(agent);
-                                provenanceModel.setProvWasAssociatedWith(agents);
-                                
-                            }
-
-                            dataModel.setDate(parsedDateTimeMongo.getInstant());
-                            dataModel.setOffset(parsedDateTimeMongo.getOffset());
-                            dataModel.setIsDateTime(parsedDateTimeMongo.getIsDateTime());
-
-                            if (target != null) {
-                                dataModel.setTarget(target.getUri());
-                            }                        
-                            dataModel.setProvenance(provenanceModel);
-                            dataModel.setVariable(varURI);
-                            dataModel.setValue(ExperimentAPI.returnValidCSVDatum(varURI, values[colIndex].trim(), mapVariableUriDataType.get(varURI), rowIndex, colIndex, csvValidation));
-                            if (colIndex+1<values.length) {
-                                if (headerByIndex.get(colIndex+1).equalsIgnoreCase(rawdataHeader) && values[colIndex+1] != null) {
-                                    dataModel.setRawData(ExperimentAPI.returnValidRawData(varURI, values[colIndex+1].trim(), mapVariableUriDataType.get(varURI), rowIndex, colIndex+1, csvValidation));
-                                }
-                            }
-
-                            // check for duplicate data
-                            URI targetUri = null;
-                            if (target != null) {
-                                targetUri = target.getUri();
-                            }
-                            URI deviceUri = null;
-                            if (device !=null) {
-                                deviceUri = device.getUri();
-                            }
-                            ImportDataIndex importDataIndex = new ImportDataIndex(parsedDateTimeMongo.getInstant(),varURI, provenance.getUri(), targetUri, deviceUri);
-                            if (!duplicateDataByIndex.contains(importDataIndex)) { 
-                                duplicateDataByIndex.add(importDataIndex);
-                            } else {
-                                String variableName = csvValidation.getHeadersLabels().get(colIndex) + '(' + csvValidation.getHeaders().get(colIndex) + ')';
-                                CSVCell duplicateCell = new CSVCell(rowIndex, colIndex, values[colIndex].trim(), variableName);
-                                csvValidation.addDuplicatedDataError(duplicateCell);
-                            }   
-
-                            csvValidation.addData(dataModel,rowIndex);
-                        }
-                        
                     }
                 }
             }
-            
-            
         }
         
         if (missingTargetOrDevice) {
@@ -1740,6 +1787,245 @@ public class DataAPI {
         
         return validRow;
     }
+
+
+
+    private ExperimentModel getExperimentByNameOrURI(ExperimentDAO xpDAO, String expNameOrUri) throws Exception {
+        ExperimentModel exp = null;
+        if (URIDeserializer.validateURI(expNameOrUri)) {
+            URI expUri = URI.create(expNameOrUri);
+            try {
+                exp = xpDAO.get(expUri, user);
+            } catch (Exception ex) {
+
+            }
+        } else {
+            exp = xpDAO.getByName(expNameOrUri);
+        }
+        return exp;
+    }
+
+    private DeviceModel getDeviceByNameOrURI(DeviceDAO deviceDAO, String deviceNameOrUri) throws Exception {
+        DeviceModel device;
+        if (URIDeserializer.validateURI(deviceNameOrUri)) {
+            URI deviceURI = URI.create(deviceNameOrUri);
+            device = deviceDAO.getDeviceByURI(deviceURI, user);
+        } else {
+            try {
+                device = deviceDAO.getByName(deviceNameOrUri);
+            } catch (Exception ex) {
+                throw ex;
+            }
+
+        }
+        return device;
+    }
+
+    private SPARQLNamedResourceModel<?> getTargetByNameOrURI(OntologyDAO dao, String targetNameOrUri) throws Exception {
+        SPARQLNamedResourceModel<?> target = new SPARQLNamedResourceModel<>();
+        if (URIDeserializer.validateURI(targetNameOrUri)) {
+            URI targetUri = URI.create(targetNameOrUri);
+            if (sparql.executeAskQuery(new AskBuilder()
+                    .addWhere(SPARQLDeserializers.nodeURI(targetUri), RDFS.label, "?label")
+            )) {
+                target.setUri(targetUri);
+            } else {
+                target = null;
+            }
+        } else {
+            List<SPARQLNamedResourceModel> results = dao.getByName(targetNameOrUri);
+            if (results.size()>1) {
+                throw new DuplicateNameException(targetNameOrUri);
+            } else {
+                if(!results.isEmpty()) {
+                    target = results.get(0);
+                } else {
+                    target = null ;
+                }
+            }
+        }
+        return target;
+    }
+
+
+    private ScientificObjectModel getObjectByNameOrURI(ScientificObjectDAO scientificObjectDAO, URI contextUri, String nameOrUri) {
+        ScientificObjectModel object = null;
+        try {
+            object = testNameOrURI(scientificObjectDAO, contextUri, nameOrUri);
+        } catch (Exception ex) {
+        }
+        return object;
+    }
+
+    private ScientificObjectModel testNameOrURI(ScientificObjectDAO scientificObjectDAO, URI contextUri, String nameOrUri) throws Exception {
+        ScientificObjectModel object;
+        if (URIDeserializer.validateURI(nameOrUri)) {
+            URI objectUri = URI.create(nameOrUri);
+
+            object = scientificObjectDAO.getObjectByURI(objectUri,contextUri,null);
+        } else {
+            object = scientificObjectDAO.getByNameAndContext(nameOrUri, contextUri);
+        }
+
+        return object;
+    }
+
+
+    private Object returnValidCSVDatum(URI variable, Object value, URI dataType, int dataIndex, int colIndex, DataCSVValidationModel csvValidation) throws CSVDataTypeException {
+        String variableName = csvValidation.getHeadersLabels().get(colIndex) + '(' + csvValidation.getHeaders().get(colIndex) + ')';
+
+        if (Arrays.asList(NAN_VALUES).contains(value)) {
+            value = NaN;
+        } else if (Arrays.asList(NA_VALUES).contains(value)) {
+            return null;
+        }
+
+        if (dataType == null) {
+            return value;
+        } else {
+            if (dataType.toString().equals("xsd:integer")) {
+                try {
+                    return Integer.valueOf(value.toString());
+                } catch (NumberFormatException e) {
+                    CSVCell errorCell = new CSVCell(dataIndex, colIndex, value.toString(), variableName);
+                    throw new CSVDataTypeException(variable, value, dataType, dataIndex, errorCell);
+                }
+            }
+
+        }
+        if (dataType.toString().equals("xsd:decimal")) {
+            try {
+                return Double.valueOf(value.toString());
+            } catch (NumberFormatException e) {
+                CSVCell errorCell = new CSVCell(dataIndex, colIndex, value.toString(), variableName);
+                throw new CSVDataTypeException(variable, value, dataType, dataIndex, errorCell);
+            }
+        }
+        if (dataType.toString().equals("xsd:boolean")) {
+            Boolean toBooleanObject = BooleanUtils.toBooleanObject(value.toString());
+            if (Objects.equals(toBooleanObject, Boolean.FALSE) || Objects.equals(toBooleanObject, Boolean.TRUE)) {
+                return toBooleanObject;
+            } else {
+                CSVCell errorCell = new CSVCell(dataIndex, colIndex, value.toString(), variableName);
+                throw new CSVDataTypeException(variable, value, dataType, dataIndex, errorCell);
+            }
+        }
+
+        if (dataType.toString().equals("xsd:date")) {
+            if (value instanceof String && DataValidateUtils.isDate(value.toString())) {
+                return value;
+            } else {
+                CSVCell errorCell = new CSVCell(dataIndex, colIndex, value.toString(), variableName);
+                throw new CSVDataTypeException(variable, value, dataType, dataIndex, errorCell);
+            }
+        }
+        if (dataType.toString().equals("xsd:datetime")) {
+            if (value instanceof String && DataValidateUtils.isDateTime(value.toString())) {
+                return value;
+            } else {
+                CSVCell errorCell = new CSVCell(dataIndex, colIndex, value.toString(), variableName);
+                throw new CSVDataTypeException(variable, value, dataType, dataIndex, errorCell);
+            }
+        }
+        if (dataType.toString().equals("xsd:string")) {
+            if ((value instanceof String)) {
+                return value;
+            } else {
+                CSVCell errorCell = new CSVCell(dataIndex, colIndex, value.toString(), variableName);
+                throw new CSVDataTypeException(variable, value, dataType, dataIndex, errorCell);
+            }
+        }
+
+        return value;
+    }
+
+
+    private List<Object> returnValidRawData(URI variable, String rawDataCell, URI dataType, int dataIndex, int colIndex, DataCSVValidationModel csvValidation) throws CSVDataTypeException {
+        String variableName = csvValidation.getHeadersLabels().get(colIndex) + '(' + csvValidation.getHeaders().get(colIndex) + ')';
+        List<Object> formatedRawData = Arrays.asList(rawDataCell.split(","));
+        if (dataType == null) {
+            return Arrays.asList(rawDataCell.split(","));
+        } else {
+            if (dataType.toString().equals("xsd:integer")) {
+                try {
+                    List<Object> rawData = new ArrayList<>();
+                    for (Object val:formatedRawData) {
+                        rawData.add(Integer.valueOf(val.toString()));
+                    }
+                    return rawData;
+                } catch (NumberFormatException e) {
+                    CSVCell errorCell = new CSVCell(dataIndex, colIndex, rawDataCell, variableName);
+                    throw new CSVDataTypeException(variable, rawDataCell, dataType, dataIndex, errorCell);
+                }
+            }
+
+        }
+        if (dataType.toString().equals("xsd:decimal")) {
+            try {
+                List<Object> rawData = new ArrayList<>();
+                for (Object val:formatedRawData) {
+                    rawData.add(Double.valueOf(val.toString()));
+                }
+                return rawData;
+            } catch (NumberFormatException e) {
+                CSVCell errorCell = new CSVCell(dataIndex, colIndex, rawDataCell, variableName);
+                throw new CSVDataTypeException(variable, rawDataCell, dataType, dataIndex, errorCell);
+            }
+        }
+        if (dataType.toString().equals("xsd:boolean")) {
+            List<Object> rawData = new ArrayList<>();
+            for (Object val:formatedRawData) {
+                Boolean toBooleanObject = BooleanUtils.toBooleanObject(val.toString());
+                if (toBooleanObject != null) {
+                    rawData.add(toBooleanObject);
+                } else {
+                    CSVCell errorCell = new CSVCell(dataIndex, colIndex, rawDataCell, variableName);
+                    throw new CSVDataTypeException(variable, rawDataCell, dataType, dataIndex, errorCell);
+                }
+            }
+            return rawData;
+        }
+
+        if (dataType.toString().equals("xsd:date")) {
+            List<Object> rawData = new ArrayList<>();
+            for (Object val:formatedRawData) {
+                if (val instanceof String && DataValidateUtils.isDate(val.toString())) {
+                    rawData.add(val);
+                } else {
+                    CSVCell errorCell = new CSVCell(dataIndex, colIndex, rawDataCell, variableName);
+                    throw new CSVDataTypeException(variable, rawDataCell, dataType, dataIndex, errorCell);
+                }
+            }
+            return rawData;
+        }
+        if (dataType.toString().equals("xsd:datetime")) {
+            List<Object> rawData = new ArrayList<>();
+            for (Object val:formatedRawData) {
+                if (val instanceof String && DataValidateUtils.isDateTime(val.toString())) {
+                    rawData.add(val);
+                } else {
+                    CSVCell errorCell = new CSVCell(dataIndex, colIndex, rawDataCell, variableName);
+                    throw new CSVDataTypeException(variable, rawDataCell, dataType, dataIndex, errorCell);
+                }
+            }
+            return rawData;
+        }
+        if (dataType.toString().equals("xsd:string")) {
+            List<Object> rawData = new ArrayList<>();
+            for (Object val:formatedRawData) {
+                if (val instanceof String) {
+                    rawData.add(val);
+                } else {
+                    CSVCell errorCell = new CSVCell(dataIndex, colIndex, rawDataCell, variableName);
+                    throw new CSVDataTypeException(variable, rawDataCell, dataType, dataIndex, errorCell);
+                }
+            }
+            return rawData;
+        }
+
+        return new ArrayList<>();
+    }
+
 
     // Map who associate each type with its root type
     private Map<URI, URI> getRootDeviceTypes() throws URISyntaxException, Exception {
@@ -1767,50 +2053,6 @@ public class DataAPI {
                 childrenToRoot(child, map, agentRootType);
             }
         }
-    }
-
-    private ExperimentModel getExperimentByNameOrURI(ExperimentDAO xpDAO, String expNameOrUri) throws Exception {
-        ExperimentModel exp;
-        if (URIDeserializer.validateURI(expNameOrUri)) {
-            URI expUri = URI.create(expNameOrUri);
-            exp = xpDAO.get(expUri, user);
-        } else {
-            exp = xpDAO.getByName(expNameOrUri);         
-        }
-        return exp;
-    }
-
-    private DeviceModel getDeviceByNameOrURI(DeviceDAO deviceDAO, String deviceNameOrUri) throws Exception {
-        DeviceModel device;
-        if (URIDeserializer.validateURI(deviceNameOrUri)) {
-            URI deviceURI = URI.create(deviceNameOrUri);
-            device = deviceDAO.getDeviceByURI(deviceURI, user);
-        } else {
-            device = deviceDAO.getByName(deviceNameOrUri);
-        }
-        return device;
-    }
-    
-    private SPARQLNamedResourceModel<?> getTargetByNameOrURI(OntologyDAO dao, String targetNameOrUri) throws Exception {
-        SPARQLNamedResourceModel<?> target = new SPARQLNamedResourceModel<>();
-        if (URIDeserializer.validateURI(targetNameOrUri)) {
-            URI targetUri = URI.create(targetNameOrUri);
-            if (sparql.executeAskQuery(new AskBuilder()
-                    .addWhere(SPARQLDeserializers.nodeURI(targetUri), RDFS.label, "?label")
-                    )) {
-                target.setUri(targetUri);
-            } else {
-                target = null;
-            }
-        } else {
-            List<SPARQLNamedResourceModel> results = dao.getByName(targetNameOrUri);
-            if (results.size()>1) {
-                throw new DuplicateNameException(targetNameOrUri);
-            } else {
-                target = results.get(0);
-            }
-        }
-        return target;
     }
 
 }

@@ -6,10 +6,10 @@ PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 <http://aims.fao.org/aos/agrovoc/c_1066>  rdfs:label  "colza"@en    .
 <http://aims.fao.org/aos/agrovoc/c_1066>  rdfs:label  "colza"@fr    .
 <http://aims.fao.org/aos/agrovoc/c_1066>  rdfs:label  "Brassica napus"@la    .
-<http://aims.fao.org/aos/agrovoc/c_11456>  rdf:type  vocabulary:Species    .
-<http://aims.fao.org/aos/agrovoc/c_11456>  rdfs:label  "durum wheat"@en    .
-<http://aims.fao.org/aos/agrovoc/c_11456>  rdfs:label  "blé dur"@fr    .
-<http://aims.fao.org/aos/agrovoc/c_11456>  rdfs:label  "Triticum turgidum"@la    .
+<http://aims.fao.org/aos/agrovoc/c_7955>  rdf:type  vocabulary:Species    .
+<http://aims.fao.org/aos/agrovoc/c_7955>  rdfs:label  "durum wheat"@en    .
+<http://aims.fao.org/aos/agrovoc/c_7955>  rdfs:label  "blé dur"@fr    .
+<http://aims.fao.org/aos/agrovoc/c_7955>  rdfs:label  "Triticum turgidum"@la    .
 <http://aims.fao.org/aos/agrovoc/c_8504>  rdf:type  vocabulary:Species    .
 <http://aims.fao.org/aos/agrovoc/c_8504>  rdfs:label  "maize"@en    .
 <http://aims.fao.org/aos/agrovoc/c_8504>  rdfs:label  "maïs"@fr    .

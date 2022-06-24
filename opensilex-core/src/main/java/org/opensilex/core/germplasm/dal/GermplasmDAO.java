@@ -99,7 +99,7 @@ public class GermplasmDAO {
                     sparql.create(model);
                 },
                 model.getMetadata(),
-                model.getUri()
+                model
         );
         return model;
     }
@@ -155,11 +155,9 @@ public class GermplasmDAO {
                 metaDataCollection,
                 (SPARQLService sparqlService) -> {
                     sparqlService.create(model);
-                    if(model.getMetadata() != null){
-                        model.getMetadata().setUri(model.getUri());
-                    }
                 },
-                model.getMetadata()
+                model.getMetadata(),
+                model
         );
     }
 

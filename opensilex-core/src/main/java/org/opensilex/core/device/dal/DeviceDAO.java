@@ -115,13 +115,9 @@ public class DeviceDAO {
     public void create(DeviceModel model) throws Exception {
         metaDataDao.create(
                 metaDataCollection,
-                (SPARQLService sparqlService) -> {
-                    sparqlService.create(model);
-                    if(model.getMetadata() != null){
-                        model.getMetadata().setUri(model.getUri());
-                    }
-                },
-                model.getMetadata()
+                (SPARQLService sparqlService) -> sparqlService.create(model),
+                model.getMetadata(),
+                model
         );
     }
 
@@ -397,7 +393,7 @@ public class DeviceDAO {
                     sparql.create(model);
                 },
                 model.getMetadata(),
-                model.getUri()
+                model
         );
         return model;
     }

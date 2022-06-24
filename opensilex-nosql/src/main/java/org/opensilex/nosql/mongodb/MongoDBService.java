@@ -277,7 +277,15 @@ public class MongoDBService extends BaseService {
         }
     }
 
-
+    /**
+     * Call {@link #multipleOperationsWithTransaction(SPARQLService, ThrowingConsumer, ThrowingConsumer,boolean)} with sparql function evaluated first
+     */
+    public void multipleOperationsWithTransaction(
+            SPARQLService sparqlService,
+            ThrowingConsumer<ClientSession, Exception> mongoFunction,
+            ThrowingConsumer<SPARQLService, Exception> sparqlFunction) throws Exception {
+        multipleOperationsWithTransaction(sparqlService,mongoFunction,sparqlFunction,true);
+    }
 
     /**
      *

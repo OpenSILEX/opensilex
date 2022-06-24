@@ -37,10 +37,11 @@ import static com.mongodb.client.model.Filters.eq;
  * Moreover, for any write operations (update, create, delete), then the corresponding function can deal with lambda
  * in order to handle all the logic related to MetaData (check validity, nullity and non-emptiness, handle transaction) and by
  * letting the caller of these function, define which specific operation must be done.
- *
+ * <p>
  * E.g: DAO or API which call this DAO, can pass lambda function to define how to create a model which have metadata.
  * Since this operation is not the responsibility of this class, these it's defined by this class caller.
  * </p>
+ *
  * @author rcolin
  */
 public class MetaDataDao {
@@ -54,34 +55,41 @@ public class MetaDataDao {
     }
 
     /**
-     *
-     * @param metaDataCollection the collection on which insert a new {@link MetaDataModel} if not null or empty
+     * @param metaDataCollection   the collection on which insert a new {@link MetaDataModel} if not null or empty
      * @param sparqlCreateFunction Runnable which perform a create operations by using a {@link SPARQLService}
-     * @param newMetadata the metadata to insert
-     *
+     * @param newMetadata          the metadata to insert
+     * @param model {@link SPARQLResourceModel} on which metadata are associated.
      * @throws IllegalArgumentException if :
-     * <ul>
-     *     <li>metaDataCollection is null</li>
-     *     <li>sparqlCreateFunction is null</li>
-     * </ul>
-     *
-     * @apiNote The sparqlCreateFunction is always evaluated before performing {@link MetaDataModel} insert into mongodb
+     *                                  <ul>
+     *                                      <li>metaDataCollection is null</li>
+     *                                      <li>sparqlCreateFunction is null</li>
+     *                                  </ul>
+     * @apiNote The sparqlCreateFunction is always evaluated before performing {@link MetaDataModel} insert into mongodb.
      */
-    public void create(
+    public <T extends SPARQLResourceModel> void create(
             MongoCollection<MetaDataModel> metaDataCollection,
-            ThrowingConsumer<SPARQLService,Exception> sparqlCreateFunction,
-            MetaDataModel newMetadata
+            ThrowingConsumer<SPARQLService, Exception> sparqlCreateFunction,
+            MetaDataModel newMetadata,
+            T model
     ) throws Exception {
 
         Objects.requireNonNull(metaDataCollection);
         Objects.requireNonNull(sparqlCreateFunction);
 
-        if(newMetadata == null || MapUtils.isEmpty(newMetadata.getAttributes())){
+        if (newMetadata == null || MapUtils.isEmpty(newMetadata.getAttributes())) {
             sparqlCreateFunction.accept(sparql);
-        }else{
+        } else {
             mongodb.multipleOperationsWithTransaction(
                     sparql,
-                    (ClientSession session) -> metaDataCollection.insertOne(session,newMetadata),
+                    (ClientSession session) -> {
+                        if (newMetadata.getUri() == null) {
+
+                            // ensure that at this point, model URI is set or generated
+                            Objects.requireNonNull(model.getUri());
+                            newMetadata.setUri(model.getUri());
+                        }
+                        metaDataCollection.insertOne(session, newMetadata);
+                    },
                     sparqlCreateFunction,
                     true
             );
@@ -89,42 +97,41 @@ public class MetaDataDao {
     }
 
     /**
-     *
-     * @param metaDataCollection the collection on which update a new {@link MetaDataModel} if not null or empty
+     * @param metaDataCollection   the collection on which update a new {@link MetaDataModel} if not null or empty
      * @param sparqlUpdateFunction Consumer which perform a update operations by using a {@link SPARQLService}
-     * @param newMetadata the metadata to insert
-     * @param uri URI of the model which have metadata
-     *
+     * @param newMetadata          the metadata to insert
+     * @param model {@link SPARQLResourceModel} on which metadata are associated.
      * @throws IllegalArgumentException if :
-     * <ul>
-     *     <li>metaDataCollection is null</li>
-     *     <li>sparqlCreateFunction is null</li>
-     *     <li>uri is null</li>
-     * </ul>
+     *                                  <ul>
+     *                                      <li>metaDataCollection is null</li>
+     *                                      <li>sparqlCreateFunction is null</li>
+     *                                      <li>model URI is null</li>
+     *                                  </ul>
      */
-    public void update(MongoCollection<MetaDataModel> metaDataCollection,
-                       ThrowingConsumer<SPARQLService,Exception> sparqlUpdateFunction,
+    public <T extends SPARQLResourceModel> void update(MongoCollection<MetaDataModel> metaDataCollection,
+                       ThrowingConsumer<SPARQLService, Exception> sparqlUpdateFunction,
                        MetaDataModel newMetadata,
-                       URI uri
+                       T model
     ) throws Exception {
 
         Objects.requireNonNull(metaDataCollection);
         Objects.requireNonNull(sparqlUpdateFunction);
-        Objects.requireNonNull(uri);
+        Objects.requireNonNull(model.getUri());
 
-        MetaDataModel oldMetadata = metaDataCollection.find(eq(MongoModel.URI_FIELD, uri)).first();
+        MetaDataModel oldMetadata = metaDataCollection.find(eq(MongoModel.URI_FIELD, model.getUri())).first();
 
         // no metadata (old and new)
         if ((newMetadata == null || MapUtils.isEmpty(newMetadata.getAttributes())) && oldMetadata == null) {
             sparqlUpdateFunction.accept(sparql);
-        }else{
+        } else {
             mongodb.multipleOperationsWithTransaction(
                     sparql,
                     (ClientSession session) -> update(
                             metaDataCollection,
                             session,
                             newMetadata,
-                            oldMetadata
+                            oldMetadata,
+                            model.getUri()
                     ),
                     sparqlUpdateFunction,
                     true
@@ -137,17 +144,22 @@ public class MetaDataDao {
      * delete the old model
      *
      * @param metaDataCollection The MongoDB collection to update
-     * @param session the session object
-     * @param newModel The new model that will be saved in the mongo database.
-     * @param oldModel the old model that was in the mongo database
+     * @param session            the session object
+     * @param newModel           The new model that will be saved in the mongo database.
+     * @param oldModel           the old model that was in the mongo database
+     * @param uri                URI of the new/old {@link MetaDataModel}
      */
     private void update(MongoCollection<MetaDataModel> metaDataCollection,
-                       ClientSession session,
-                       MetaDataModel newModel,
-                       MetaDataModel oldModel
-                       ) {
+                        ClientSession session,
+                        MetaDataModel newModel,
+                        MetaDataModel oldModel,
+                        URI uri
+    ) {
 
-        if (newModel != null && ! MapUtils.isEmpty(newModel.getAttributes())) {
+        if (newModel != null && !MapUtils.isEmpty(newModel.getAttributes())) {
+
+            Objects.requireNonNull(uri);
+            newModel.setUri(uri);
 
             // replace existing old model by new model
             if (oldModel != null) {
@@ -163,17 +175,16 @@ public class MetaDataDao {
     }
 
     /**
-     *
      * @param collection collection which contains {@link MetaDataModel}
-     * @param idField name of the field on which filter models
-     * @param models list of models. This method use models URIS for filtering and then update models
-     * @param consumer Consumer which allow the function caller to determine how to use model and MetaDataModel
-     * @param <T> Type of {@link SPARQLResourceModel} for which we want to set {@link MetaDataModel}
+     * @param idField    name of the field on which filter models
+     * @param models     list of models. This method use models URIS for filtering and then update models
+     * @param consumer   Consumer which allow the function caller to determine how to use model and MetaDataModel
+     * @param <T>        Type of {@link SPARQLResourceModel} for which we want to set {@link MetaDataModel}
      */
     public <T extends SPARQLResourceModel> void getMetaDataAssociatedTo(MongoCollection<MetaDataModel> collection,
                                                                         String idField,
                                                                         Collection<T> models,
-                                                                        BiConsumer<T,MetaDataModel> consumer) {
+                                                                        BiConsumer<T, MetaDataModel> consumer) {
 
         FindIterable<MetaDataModel> attributesIt = mongodb.findIterableByURIs(
                 idField,
@@ -199,23 +210,23 @@ public class MetaDataDao {
     }
 
 
-     /**
-      * This function retrieves the metadata associated to a given resource and applies a consumer function to the
-      * resource and the metadata
-      *
-      * @param collection the MongoDB collection to query
-      * @param idField The field in the collection that is used to identify the document.
-      * @param model The model that you want to get the metadata for.
-      * @param consumer a function that takes a model and a metadata model and does something with them.
-      */
-     public <T extends SPARQLResourceModel> void getMetaDataAssociatedTo(MongoCollection<MetaDataModel> collection,
-                                                                          String idField,
-                                                                          T model,
-                                                                          BiConsumer<T,MetaDataModel> consumer) throws NoSQLInvalidURIException {
+    /**
+     * This function retrieves the metadata associated to a given resource and applies a consumer function to the
+     * resource and the metadata
+     *
+     * @param collection the MongoDB collection to query
+     * @param idField    The field in the collection that is used to identify the document.
+     * @param model      The model that you want to get the metadata for.
+     * @param consumer   a function that takes a model and a metadata model and does something with them.
+     */
+    public <T extends SPARQLResourceModel> void getMetaDataAssociatedTo(MongoCollection<MetaDataModel> collection,
+                                                                        String idField,
+                                                                        T model,
+                                                                        BiConsumer<T, MetaDataModel> consumer) throws NoSQLInvalidURIException {
 
-        MetaDataModel metaDataModel = mongodb.findByURI(collection,model.getUri(),idField);
-        if(metaDataModel != null){
-            consumer.accept(model,metaDataModel);
+        MetaDataModel metaDataModel = mongodb.findByURI(collection, model.getUri(), idField);
+        if (metaDataModel != null) {
+            consumer.accept(model, metaDataModel);
         }
 
     }

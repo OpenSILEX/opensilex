@@ -51,7 +51,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
 import static com.mongodb.client.model.Aggregates.*;
-import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Projections.computed;
 import static org.opensilex.core.experiment.dal.ExperimentDAO.appendUserExperimentsFilter;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
@@ -153,9 +152,7 @@ public class GermplasmDAO {
     public void create(GermplasmModel model) throws Exception {
         metaDataDao.create(
                 metaDataCollection,
-                (SPARQLService sparqlService) -> {
-                    sparqlService.create(model);
-                },
+                (SPARQLService sparqlService) -> sparqlService.create(model),
                 model.getMetadata(),
                 model
         );
@@ -372,23 +369,11 @@ public class GermplasmDAO {
     }
 
     public void delete(URI uri) throws Exception {
-        MetaDataModel attributes = getStoredAttributes(uri);
-        if (attributes != null) {
-            nosql.startTransaction();
-            sparql.startTransaction();
-            try {
-                sparql.delete(GermplasmModel.class, uri);
-                MongoCollection<MetaDataModel> collection = getAttributesCollection();
-                collection.findOneAndDelete(nosql.getSession(), eq("uri", uri));
-                nosql.commitTransaction();
-                sparql.commitTransaction();
-            } catch (Exception ex) {
-                nosql.rollbackTransaction();
-                sparql.rollbackTransaction(ex);
-            }
-        } else {
-            sparql.delete(GermplasmModel.class, uri);
-        }
+        metaDataDao.delete(
+                metaDataCollection,
+                (SPARQLService sparqlService) -> sparqlService.delete(GermplasmModel.class, uri),
+                uri
+        );
     }
 
     public boolean isLinkedToSth(GermplasmModel germplasm) throws SPARQLException {

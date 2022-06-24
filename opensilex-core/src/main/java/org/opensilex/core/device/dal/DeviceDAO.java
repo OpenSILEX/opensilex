@@ -55,7 +55,6 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.util.*;
 
-import static com.mongodb.client.model.Filters.eq;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
 /**
@@ -65,7 +64,7 @@ import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 public class DeviceDAO {
 
     protected final SPARQLService sparql;
-    protected final MongoDBService nosql;
+    protected final MongoDBService mongodb;
     protected final FileStorageService fs;
     protected final MongoCollection<MetaDataModel> metaDataCollection;
     protected final Node defaultGraph;
@@ -77,7 +76,7 @@ public class DeviceDAO {
 
     public DeviceDAO(SPARQLService sparql, MongoDBService nosql, FileStorageService fs) throws SPARQLException {
         this.sparql = sparql;
-        this.nosql = nosql;
+        this.mongodb = nosql;
         this.fs = fs;
 
         defaultGraph = sparql.getDefaultGraph(DeviceModel.class);
@@ -102,13 +101,13 @@ public class DeviceDAO {
     }
 
     public MongoCollection<DeviceAttributeModel> getAttributesCollection() {
-        return nosql.getDatabase().getCollection(ATTRIBUTES_COLLECTION_NAME, DeviceAttributeModel.class);
+        return mongodb.getDatabase().getCollection(ATTRIBUTES_COLLECTION_NAME, DeviceAttributeModel.class);
     }
 
     public void createIndexes() {
         IndexOptions unicityOptions = new IndexOptions().unique(true);
 
-        MongoCollection<DeviceModel> attributeCollection = nosql.getDatabase().getCollection(ATTRIBUTES_COLLECTION_NAME, DeviceModel.class);
+        MongoCollection<DeviceModel> attributeCollection = mongodb.getDatabase().getCollection(ATTRIBUTES_COLLECTION_NAME, DeviceModel.class);
         attributeCollection.createIndex(Indexes.ascending(MongoModel.URI_FIELD), unicityOptions);
     }
     
@@ -228,7 +227,7 @@ public class DeviceDAO {
         if (metadata != null) {
             metadata.forEach((key,value) -> filter.put("attribute." + key,value));
         }
-        return nosql.distinct(MongoModel.URI_FIELD, URI.class, ATTRIBUTES_COLLECTION_NAME, filter);
+        return mongodb.distinct(MongoModel.URI_FIELD, URI.class, ATTRIBUTES_COLLECTION_NAME, filter);
     }
 
     public List<DeviceModel> searchForExport(DeviceSearchFilter filter) throws Exception {
@@ -419,7 +418,7 @@ public class DeviceDAO {
 
     /**
      *
-     * @param deviceURI uri of device
+     * @param uri uri of device
      * @param currentUser current user
      * @throws ForbiddenURIAccessException if the device is linked to some existing data, datafile or provenance.
      * @throws Exception if some error is encountered during delete
@@ -428,39 +427,31 @@ public class DeviceDAO {
      * @see org.opensilex.core.data.dal.DataModel
      * @see org.opensilex.core.data.dal.DataFileModel
      */
-    public void delete(URI deviceURI, UserModel currentUser) throws Exception {
+    public void delete(URI uri, UserModel currentUser) throws Exception {
         
         // test if device in provenances
-        ProvenanceDAO provenanceDAO = new ProvenanceDAO(nosql, sparql);
-        int provCount = provenanceDAO.count(null, null, null, null, null, null, deviceURI);
+        ProvenanceDAO provenanceDAO = new ProvenanceDAO(mongodb, sparql);
+        int provCount = provenanceDAO.count(null, null, null, null, null, null, uri);
         if(provCount > 0) {
-            throw new ForbiddenURIAccessException(deviceURI, provCount+" provenance(s)");
+            throw new ForbiddenURIAccessException(uri, provCount+" provenance(s)");
         }
         
-        DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
-        int dataCount = dataDAO.count(currentUser, null, null, null, null, Collections.singletonList(deviceURI),null, null, null, null, null);
+        DataDAO dataDAO = new DataDAO(mongodb, sparql, fs);
+        int dataCount = dataDAO.count(currentUser, null, null, null, null, Collections.singletonList(uri),null, null, null, null, null);
         if(dataCount > 0){
-            throw new ForbiddenURIAccessException(deviceURI, dataCount+" data");
+            throw new ForbiddenURIAccessException(uri, dataCount+" data");
         }  
         
-        int dataFileCount = dataDAO.countFiles(currentUser, null, null, null, null, Collections.singletonList(deviceURI),null, null, null);
+        int dataFileCount = dataDAO.countFiles(currentUser, null, null, null, null, Collections.singletonList(uri),null, null, null);
         if(dataFileCount > 0){
-            throw new ForbiddenURIAccessException(deviceURI, dataFileCount+" datafile(s)");
-        }  
-        
-        nosql.startTransaction();
-        sparql.startTransaction();
-        sparql.delete(DeviceModel.class, deviceURI);
-        MongoCollection<DeviceAttributeModel> collection = getAttributesCollection();
-
-        try {
-            collection.findOneAndDelete(nosql.getSession(), eq(MongoModel.URI_FIELD, deviceURI));
-            nosql.commitTransaction();
-            sparql.commitTransaction();
-        } catch (Exception ex) {
-            nosql.rollbackTransaction();
-            sparql.rollbackTransaction(ex);
+            throw new ForbiddenURIAccessException(uri, dataFileCount+" datafile(s)");
         }
+
+        metaDataDao.delete(
+                metaDataCollection,
+                (SPARQLService sparqlService) -> sparqlService.delete(DeviceModel.class, uri),
+                uri
+        );
     }
 
     public List<VariableModel> getDeviceVariables(URI uri, String language) throws Exception {

@@ -96,6 +96,23 @@ public class MetaDataDao {
         }
     }
 
+    public <T extends SPARQLResourceModel> void delete(MongoCollection<MetaDataModel> metaDataCollection,
+                                                       ThrowingConsumer<SPARQLService, Exception> sparqlDeleteFunction,
+                                                      URI uri
+    ) throws Exception {
+        MetaDataModel metadata = get(metaDataCollection, uri, MongoModel.URI_FIELD);
+        if (metadata == null || MapUtils.isEmpty(metadata.getAttributes())) {
+            sparqlDeleteFunction.accept(sparql);
+        } else {
+            mongodb.multipleOperationsWithTransaction(
+                    sparql,
+                    (ClientSession session) -> metaDataCollection.findOneAndDelete(session, eq(MongoModel.URI_FIELD, uri)),
+                    sparqlDeleteFunction
+            );
+        }
+
+    }
+
     /**
      * @param metaDataCollection   the collection on which update a new {@link MetaDataModel} if not null or empty
      * @param sparqlUpdateFunction Consumer which perform a update operations by using a {@link SPARQLService}
@@ -228,8 +245,10 @@ public class MetaDataDao {
         if (metaDataModel != null) {
             consumer.accept(model, metaDataModel);
         }
-
     }
 
+    public MetaDataModel get(MongoCollection<MetaDataModel> collection,URI uri, String idField){
+        return collection.find(eq(idField, uri)).first();
+    }
 
 }

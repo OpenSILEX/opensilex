@@ -1,6 +1,6 @@
 package org.opensilex.core.event.dal.move;
 
-import com.mongodb.client.FindIterable;
+import com.mongodb.client.ClientSession;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
@@ -43,6 +43,7 @@ import org.opensilex.utils.OrderBy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.client.Client;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.OffsetDateTime;
@@ -82,53 +83,34 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
     @Override
     public MoveModel create(MoveModel model) throws Exception {
 
-        try {
             check(Collections.singletonList(model), true);
-
-            sparql.startTransaction();
-            sparql.create(eventGraph, model, false);
-
-            // insert move event in mongodb
             MoveEventNoSqlModel noSqlModel = model.getNoSqlModel();
-            if (noSqlModel != null) {
+
+            if(noSqlModel == null){
+                sparql.create(eventGraph, model, false);
+            }else{
 
                 String shortEventUri = URIDeserializer.getShortURI(model.getUri().toString());
                 noSqlModel.setUri(new URI(shortEventUri));
 
-                mongodb.startTransaction();
-                moveEventCollection.insertOne(noSqlModel);
-                mongodb.commitTransaction();
+                mongodb.multipleOperationsWithTransaction(
+                        sparql,
+                        (ClientSession session) -> {
+                            moveEventCollection.insertOne(session,noSqlModel);
+                        },(SPARQLService sparqlService) -> {
+                            sparql.create(eventGraph, model, false);
+                        });
             }
-
-            sparql.commitTransaction();
             return model;
-
-        } catch (Exception e) {
-            sparql.rollbackTransaction(e);
-            mongodb.rollbackTransaction();
-            throw e;
-        }
     }
 
     protected void create(Collection<MoveModel> models, List<MoveEventNoSqlModel> noSqlModels) throws Exception {
 
-        // insert sparql and noSql model streams
-        try {
-            sparql.startTransaction();
-            sparql.create(eventGraph, models, SPARQLService.DEFAULT_MAX_INSTANCE_PER_QUERY, false);
-
-            if (!noSqlModels.isEmpty()) {
-                mongodb.startTransaction();
-                moveEventCollection.insertMany(noSqlModels);
-                mongodb.commitTransaction();
-            }
-            sparql.commitTransaction();
-
-        } catch (Exception e) {
-            sparql.rollbackTransaction(e);
-            mongodb.rollbackTransaction();
-            throw e;
-        }
+        mongodb.multipleOperationsWithTransaction(
+                sparql,
+                (ClientSession session) -> mongodb.createAll(noSqlModels,MoveEventNoSqlModel.class,MOVE_COLLECTION_NAME,null,false),
+                (SPARQLService sparqlService) -> sparql.create(eventGraph, models, SPARQLService.DEFAULT_MAX_INSTANCE_PER_QUERY, false)
+        );
     }
 
 
@@ -304,46 +286,26 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
     public MoveModel update(MoveModel model) throws Exception {
 
         check(Collections.singletonList(model), false);
+        MoveEventNoSqlModel noSqlModel = model.getNoSqlModel();
 
-        try {
-            sparql.startTransaction();
+        if(noSqlModel == null){
             sparql.update(model);
-
-            MoveEventNoSqlModel noSqlModel = model.getNoSqlModel();
-            Bson idFilter = eq(MoveEventNoSqlModel.ID_FIELD, model.getUri());
-            boolean moveExistInMongo = moveEventCollection.find(idFilter).first() != null;
-
-            // the new move event has no data model in mongodb, so we need to delete the old if exists
-            if (noSqlModel == null) {
-                if (moveExistInMongo) {
-                    mongodb.startTransaction();
-                    moveEventCollection.deleteOne(idFilter);
-                    mongodb.commitTransaction();
-                }
-            } else {
-                noSqlModel.setUri(model.getUri());
-
-                // insert or update the mongodb data model
-                mongodb.startTransaction();
-                if (moveExistInMongo) {
-                    moveEventCollection.findOneAndReplace(idFilter, noSqlModel);
-                } else {
-                    moveEventCollection.insertOne(noSqlModel);
-                }
-                mongodb.commitTransaction();
-            }
-
-            sparql.commitTransaction();
-        } catch (Exception e) {
-            sparql.rollbackTransaction();
-            mongodb.rollbackTransaction();
-            throw e;
+            return model;
         }
-        return model;
+        mongodb.multipleOperationsWithTransaction(sparql,
+                (ClientSession session) -> {
+                    moveEventCollection.findOneAndReplace(session,eq(MoveEventNoSqlModel.ID_FIELD,model.getUri()),noSqlModel);
+                }
+                , (SPARQLService sparqlService) -> {
+                    sparql.update(model);
+                }
+        );
     }
 
     @Override
     public void delete(URI uri) throws Exception {
+
+
 
         try {
             sparql.startTransaction();

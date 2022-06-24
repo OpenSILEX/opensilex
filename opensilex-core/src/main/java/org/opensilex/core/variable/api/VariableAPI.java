@@ -16,9 +16,19 @@ import io.swagger.annotations.*;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.opensilex.core.URIsListPostDTO;
 import org.opensilex.core.sharedResource.SharedResourcesDTO;
+import org.opensilex.core.variable.api.characteristic.CharacteristicCreationDTO;
+import org.opensilex.core.variable.api.characteristic.CharacteristicDetailsDTO;
+import org.opensilex.core.variable.api.entity.EntityCreationDTO;
+import org.opensilex.core.variable.api.entity.EntityDetailsDTO;
+import org.opensilex.core.variable.api.entityOfInterest.InterestEntityCreationDTO;
+import org.opensilex.core.variable.api.entityOfInterest.InterestEntityDetailsDTO;
+import org.opensilex.core.variable.api.method.MethodCreationDTO;
+import org.opensilex.core.variable.api.method.MethodDetailsDTO;
+import org.opensilex.core.variable.api.sharedResource.ImportUrisDTO;
 import org.opensilex.core.variable.api.sharedResource.SharedResourceDTO;
-import org.opensilex.core.variable.dal.VariableDAO;
-import org.opensilex.core.variable.dal.VariableModel;
+import org.opensilex.core.variable.api.unit.UnitCreationDTO;
+import org.opensilex.core.variable.api.unit.UnitDetailsDTO;
+import org.opensilex.core.variable.dal.*;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.authentication.ApiCredential;
@@ -664,29 +674,193 @@ public class VariableAPI {
         
     }
 
-//
-//    @POST
-//    @Path("/importOnLocal")
-//    @ApiOperation("Import the selected variables from the shared resources")
-//    @ApiProtected
-//    @Consumes(MediaType.APPLICATION_JSON)
-//    @Produces(MediaType.APPLICATION_JSON)
-//    @ApiResponses(value = {
-//            @ApiResponse(code = 200, message = "Import variables")
-//    })
-//    public Response importVariables(
-//            @ApiParam(value = "List of variable URI", required = true) List<URI> uris,
-//            @ApiParam(value = "Shared resource URI", example = "http://138.102.159.36:8083/rest", required = true) URI resource
-//    ) throws Exception {
-//
-//        String token = getToken(resource.toString());
-//
-//        for (URI uri : uris){
-//            String VariableURI = URLEncoder.encode(uri.toString(), StandardCharsets.UTF_8.name());
-//            JsonNode jsonResult = jsonResponseToService(resource + "/core/variables/" + VariableURI, token);
-//        }
-//        return new ObjectUriResponse(Response.Status.OK, resource).getResponse(); // à changer
-//    }
+
+    @POST
+    @Path("import_on_local")
+    @ApiOperation("Import the selected variables from the shared resources")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Import variables")
+    })
+    public Response importVariables(
+//            @ApiParam(value = "Shared resource URI", example = "http://138.102.159.36:8083/rest", required = true) @QueryParam("resource_uri") URI resource,
+            @ApiParam(value = "List of variable URI", required = true) ImportUrisDTO dto
+    ) throws Exception {
+
+        List<URI> uris = dto.getUris();
+        List<URI> createdUris = new ArrayList<>();
+        List<VariableDetailsDTO> variablesList = new ArrayList<>();
+        URI resource = dto.getResource();
+
+        String token = getToken(resource.toString());
+        String urlService = resource.toString() + "/core/variables/by_uris?";
+        Boolean firstUri = true;
+
+        for (URI uri : uris){
+            if (firstUri == true){
+                urlService += "uris=" + URLEncoder.encode(uri.toString(), StandardCharsets.UTF_8.name());
+                firstUri = false;
+            }else{
+                urlService += "&uris=" + URLEncoder.encode(uri.toString(), StandardCharsets.UTF_8.name());
+            }
+            String stringResponse = connectionToService(urlService, token);
+            JsonNode jsonResult = null;
+            if (stringResponse != null) {
+                ObjectMapper mapper = new ObjectMapper();
+                jsonResult = mapper.readTree(stringResponse);
+
+                SingleObjectResponse<List<VariableDetailsDTO>> getResponse = mapper.convertValue(jsonResult, new TypeReference<SingleObjectResponse<List<VariableDetailsDTO>>>() {});
+                variablesList = getResponse.getResult();
+
+                // convertir en liste paginée et utiliser la fonction VariableCreationDTO.fromDetailsDto(VariableDetailsDTO detailsDto)
+
+                JsonNode result = jsonResult.get("result");
+                int rank = 0;
+                while (result.get(rank) != null){ // boucle sur chaque variable
+                    JsonNode variableJson = result.get(rank);
+
+                    // on convertit le detailDto en CreationDto pour chacune
+                    VariableCreationDTO variableDto = VariableCreationDTO.fromDetailsDto(variablesList.get(rank));
+
+                    try {
+                        URI shortUriEntity = createVariableElement(variableJson, resource, token, "entity", EntityModel.class, EntityCreationDTO.class);
+                        if (!Objects.equals(shortUriEntity, new URI(""))){
+                            createdUris.add(shortUriEntity);
+                        }
+
+                    } catch (SPARQLAlreadyExistingUriException duplicateUriException) {
+                        return new ErrorResponse(Response.Status.CONFLICT, "Entity already exists",duplicateUriException.getMessage()).getResponse();
+                    }
+
+                    try {
+                        URI shortUriInterestEntity = createVariableElement(variableJson, resource, token, "entity_of_interest", InterestEntityModel.class, InterestEntityCreationDTO.class);
+                        if (!Objects.equals(shortUriInterestEntity, new URI(""))){
+                            createdUris.add(shortUriInterestEntity);
+                        }
+
+                    } catch (SPARQLAlreadyExistingUriException duplicateUriException) {
+                        return new ErrorResponse(Response.Status.CONFLICT, "Entity of interest already exists",duplicateUriException.getMessage()).getResponse();
+                    }
+
+                    try {
+                        URI shortUriCharacteristic = createVariableElement(variableJson, resource, token, "characteristic", CharacteristicModel.class, CharacteristicCreationDTO.class);
+                        if (!Objects.equals(shortUriCharacteristic, new URI(""))){
+                            createdUris.add(shortUriCharacteristic);
+                        }
+
+                    } catch (SPARQLAlreadyExistingUriException duplicateUriException) {
+                        return new ErrorResponse(Response.Status.CONFLICT, "Characteristic already exists",duplicateUriException.getMessage()).getResponse();
+                    }
+
+                    try {
+                        URI shortUriMethod = createVariableElement(variableJson, resource, token, "method", MethodModel.class, MethodCreationDTO.class);
+                        if (!Objects.equals(shortUriMethod, new URI(""))){
+                            createdUris.add(shortUriMethod);
+                        }
+
+                    } catch (SPARQLAlreadyExistingUriException duplicateUriException) {
+                        return new ErrorResponse(Response.Status.CONFLICT, "Method already exists",duplicateUriException.getMessage()).getResponse();
+                    }
+
+                    try {
+                        URI shortUriUnit = createVariableElement(variableJson, resource, token, "unit", UnitModel.class, UnitCreationDTO.class);
+                        if (!Objects.equals(shortUriUnit, new URI(""))){
+                            createdUris.add(shortUriUnit);
+                        }
+
+                    } catch (SPARQLAlreadyExistingUriException duplicateUriException) {
+                        return new ErrorResponse(Response.Status.CONFLICT, "Unit already exists",duplicateUriException.getMessage()).getResponse();
+                    }
+
+                    try {
+                        VariableDAO dao = getDao();
+                        VariableModel model = variableDto.newModel();
+                        model.setCreator(currentUser.getUri());
+
+                        model = dao.create(model);
+                        URI shortUri = new URI(SPARQLDeserializers.getShortURI(model.getUri().toString()));
+                        createdUris.add(shortUri);
+
+                    } catch (SPARQLAlreadyExistingUriException duplicateUriException) {
+                        return new ErrorResponse(Response.Status.CONFLICT, "Variable already exists", duplicateUriException.getMessage()).getResponse();
+                    }
+
+                    rank++; // passage à la variable suivante
+                }
+            }
+        }
+        return new ObjectUriResponse(Response.Status.CREATED, createdUris).getResponse();
+    }
+
+    private <M extends BaseVariableModel<M>, D extends BaseVariableCreationDTO<M>> URI createVariableElement(JsonNode variableJson, URI resource, String token, String fieldName, Class<M> modelClass, Class<D> creationDtoClass)
+            throws Exception{
+
+        URI shortUri = new URI("");
+
+        JsonNode fieldUri = variableJson.get(fieldName).get("uri");
+        if (fieldUri != null){
+            String filedUriString = variableJson.get(fieldName).get("uri").asText();
+            BaseVariableDAO<M> dao = new BaseVariableDAO<>(modelClass, sparql);
+            M model = dao.get(new URI(filedUriString));
+
+            if (model == null) { // n'existe pas en local
+                // on renvoie toutes les infos enregistrées dans la resource pour le champ
+                JsonNode filedJsonResult;
+
+                String urlService = "";
+
+                if (Objects.equals(fieldName, "entity")){
+                    urlService += resource.toString() + "/core/entities/" + URLEncoder.encode(filedUriString, StandardCharsets.UTF_8.name());
+                    filedJsonResult = jsonResponseToService(urlService, token);
+                } else if (Objects.equals(fieldName, "entity_of_interest")) {
+                    urlService += resource.toString() + "/core/entities_of_interest/" + URLEncoder.encode(filedUriString, StandardCharsets.UTF_8.name());
+                    filedJsonResult = jsonResponseToService(urlService, token);
+                }else{
+                    urlService += resource.toString() + "/core/" + fieldName + "s/" + URLEncoder.encode(filedUriString, StandardCharsets.UTF_8.name());
+                    filedJsonResult = jsonResponseToService(urlService, token);
+                }
+
+                D fieldDto = creationDtoClass.getConstructor().newInstance(); // l'instanciation directe n'est pas possible car le type D n'est pas connu et extends d'une classe abstraite
+
+                // on les ajoute au CreationDto
+                // étape peut être supprimée s'il est possible de convertir le résultat directement en CreationDto
+                JsonNode result = filedJsonResult.get("result");
+
+                fieldDto.setUri(new URI(result.get("uri").asText()));
+                fieldDto.setName(result.get("name").asText());
+                fieldDto.setDescription(result.get("description").asText());
+
+                if (Objects.equals(creationDtoClass,UnitCreationDTO.class)){
+                    UnitCreationDTO unitCreationDTO = (UnitCreationDTO) fieldDto; // on fait un cast pour modifier le type de dto
+                    unitCreationDTO.setSymbol(result.get("symbol").asText());
+                    unitCreationDTO.setAlternativeSymbol(result.get("alternative_symbol").asText());
+                }
+
+                // ce sont des listes
+                // rendre générique si hamza rajoute des champs et regarder en fonction string ou liste !
+//                fieldDto.setExactMatch(filedJsonResult.get("description").asText());
+//                fieldDto.setCloseMatch(filedJsonResult.get("description").asText());
+//                fieldDto.setBroadMatch(filedJsonResult.get("description").asText());
+//                fieldDto.setNarrowMatch(filedJsonResult.get("description").asText());
+
+
+                // on utilise ensuite ce CreationDto pour enregistrer la variable
+
+                BaseVariableDAO<M> fieldDao = new BaseVariableDAO<>(modelClass, sparql);
+                M fieldModel = fieldDto.newModel();
+                fieldModel.setCreator(currentUser.getUri());
+
+                fieldDao.create(fieldModel);
+                shortUri = new URI(SPARQLDeserializers.getShortURI(fieldModel.getUri().toString()));
+
+
+            }
+        }
+        return shortUri;
+    }
+
 }
 
 

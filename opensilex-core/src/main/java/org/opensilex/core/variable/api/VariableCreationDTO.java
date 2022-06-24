@@ -16,12 +16,18 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.codehaus.plexus.util.StringUtils;
 import org.opensilex.core.germplasm.api.GermplasmAPI;
 import org.opensilex.core.ontology.SKOSReferencesDTO;
+import org.opensilex.core.species.api.SpeciesDTO;
 import org.opensilex.core.species.dal.SpeciesModel;
+import org.opensilex.core.variable.api.characteristic.CharacteristicGetDTO;
+import org.opensilex.core.variable.api.entity.EntityGetDTO;
+import org.opensilex.core.variable.api.method.MethodGetDTO;
+import org.opensilex.core.variable.api.unit.UnitGetDTO;
 import org.opensilex.core.variable.dal.*;
 import org.opensilex.server.rest.validation.ValidURI;
 
 import javax.validation.constraints.NotNull;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
+import org.opensilex.sparql.response.NamedResourceDTO;
 
 /**
  * @author vidalmor
@@ -289,6 +295,53 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
         }
         setSkosReferencesToModel(model);
         return model;
+    }
+
+
+    public static VariableCreationDTO fromDetailsDto(VariableDetailsDTO detailsDto) {
+        VariableCreationDTO dto = new VariableCreationDTO();
+
+        dto.setUri(detailsDto.getUri());
+        dto.setName(detailsDto.getName());
+        dto.setEntity(detailsDto.getEntity().getUri());
+        dto.setCharacteristic(detailsDto.getCharacteristic().getUri());
+        dto.setMethod(detailsDto.getMethod().getUri());
+        dto.setUnit(detailsDto.getUnit().getUri());
+        dto.setDataType(detailsDto.getDataType());
+
+        if (detailsDto.getAlternativeName() != null) {
+            dto.setAlternativeName(detailsDto.getAlternativeName());
+        }
+
+        if (detailsDto.getEntityOfInterest() != null) {
+            dto.setEntityOfInterest(detailsDto.getEntityOfInterest().getUri());
+        }
+
+        if (detailsDto.getDescription() != null) {
+            dto.setDescription(detailsDto.getDescription());
+        }
+
+        if (detailsDto.getTrait() != null) {
+            dto.setTrait(detailsDto.getTrait());
+            try {
+                dto.setTraitName(detailsDto.getTraitName());
+            } catch (Exception e) {
+            }
+        }
+
+        if (detailsDto.getSpecies() != null) {
+            dto.setSpecies(detailsDto.getSpecies().getUri());
+        }
+
+        if (detailsDto.getTimeInterval() != null) {
+            dto.setTimeInterval(detailsDto.getTimeInterval());
+        }
+
+        if (detailsDto.getSamplingInterval() != null) {
+            dto.setSamplingInterval(detailsDto.getSamplingInterval());
+        }
+
+        return dto;
     }
 
 }

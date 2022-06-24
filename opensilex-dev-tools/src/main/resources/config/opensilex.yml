@@ -61,7 +61,7 @@ core:
           label : PHENOME
         - uri : http://138.102.159.36:8082/rest
           label : EPPN
-        - uri : http://138.102.159.10/resource/
+        - uri : http://138.102.159.10/resource/rest
           label : VitiOeno
 #server:
 #    pathPrefix: /sunagri

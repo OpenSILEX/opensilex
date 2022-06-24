@@ -113,12 +113,6 @@ public class DataDAO {
         return instance;
     }
 
-    public DataFileModel createFile(DataFileModel instance) throws Exception {
-        createIndexes();
-        nosql.create(instance, DataFileModel.class, FILE_COLLECTION_NAME, FILE_PREFIX);
-        return instance;
-    }
-
     public List<DataModel> createAll(List<DataModel> instances, ClientSession session) throws Exception {
         createIndexes();
 
@@ -546,16 +540,15 @@ public class DataDAO {
         Path filePath = Paths.get(FS_FILE_PREFIX, filename);
         model.setPath(filePath.toString());
 
-        nosql.startTransaction();         
-        try {   
-            createFile(model);
-            fs.writeFile(FS_FILE_PREFIX, filePath, file);
-            nosql.commitTransaction();
-        } catch (Exception e) {
-            nosql.rollbackTransaction();
-            fs.deleteIfExists(FS_FILE_PREFIX, filePath);
-            throw e;
-        } 
+        nosql.operationWithTransaction(
+                (ClientSession session) -> {
+                    nosql.create(session,model,DataFileModel.class,DATA_COLLECTION_NAME,FILE_PREFIX);
+                    fs.writeFile(FS_FILE_PREFIX, filePath, file);
+                    return null;
+                }, (Exception e) -> {
+                    fs.deleteIfExists(FS_FILE_PREFIX, filePath);
+                }
+        );
 
     }
 

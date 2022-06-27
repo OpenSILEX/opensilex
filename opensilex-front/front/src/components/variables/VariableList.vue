@@ -127,7 +127,7 @@
                             @click="showCreateForm()">{{$t("VariableList.add-newGroupVariable")}}</b-dropdown-item-button>
                         <b-dropdown-item-button @click="classicExportVariables()">{{$t('VariableList.export-variables')}}</b-dropdown-item-button>
                         <b-dropdown-item-button @click="detailsExportVariables()">{{$t('VariableList.export-variables-details')}}</b-dropdown-item-button>
-                        <b-dropdown-item-button>{{$t('VariableList.import-variables-from-shared-resources')}}</b-dropdown-item-button>
+                        <b-dropdown-item-button @click="importVariablesOnLocal()">{{$t('VariableList.import-variables-from-shared-resources')}}</b-dropdown-item-button>
 
                         </b-dropdown>
                     </template>
@@ -256,6 +256,7 @@ import {
 } from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
 import {SharedResourcesDTO} from "opensilex-core/model/sharedResourcesDTO";
+import {ImportUrisDTO} from "opensilex-core/model/importUrisDTO";
 
 @Component
 export default class VariableList extends Vue {
@@ -443,6 +444,19 @@ export default class VariableList extends Vue {
 
         this.$opensilex.downloadFilefromPostService(path, filename, "csv", {uris: variablesURIs}, this.lang);
     }
+
+  importVariablesOnLocal() {
+
+    let variablesURIs = [];
+
+    for (let select of this.tableRef.getSelected()) {
+      variablesURIs.push(select.uri);
+    }
+
+    let form = {"variables":variablesURIs,"resource":this.selectedResource.uri};
+
+    this.$service.importVariables(form);
+  }
 
     detailsExportVariables() {
         let path = "/core/variables/export_details_by_uris";

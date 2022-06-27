@@ -1,4 +1,4 @@
-package org.opensilex.core.variable.api.sharedResource;
+package org.opensilex.core.sharedResource;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.opensilex.server.rest.validation.ValidURI;
@@ -8,7 +8,7 @@ import java.util.List;
 
 public class ImportUrisDTO {
 
-    @ValidURI
+    @JsonProperty("variables")
     protected List<URI> uris;
 
     @JsonProperty("resource")

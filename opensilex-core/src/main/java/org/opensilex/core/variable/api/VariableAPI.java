@@ -19,7 +19,7 @@ import org.opensilex.core.variable.api.characteristic.CharacteristicCreationDTO;
 import org.opensilex.core.variable.api.entity.EntityCreationDTO;
 import org.opensilex.core.variable.api.entityOfInterest.InterestEntityCreationDTO;
 import org.opensilex.core.variable.api.method.MethodCreationDTO;
-import org.opensilex.core.variable.api.sharedResource.ImportUrisDTO;
+import org.opensilex.core.sharedResource.ImportUrisDTO;
 import org.opensilex.core.variable.api.unit.UnitCreationDTO;
 import org.opensilex.core.variable.dal.*;
 import org.opensilex.fs.service.FileStorageService;
@@ -689,7 +689,7 @@ public class VariableAPI {
         Boolean firstUri = true;
 
         for (URI uri : uris){
-            if (firstUri == true){
+            if (firstUri){
                 urlService += "uris=" + URLEncoder.encode(uri.toString(), StandardCharsets.UTF_8.name());
                 firstUri = false;
             }else{

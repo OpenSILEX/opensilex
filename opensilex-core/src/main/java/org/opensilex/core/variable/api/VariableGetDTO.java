@@ -13,7 +13,6 @@ import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.core.variable.api.entity.EntityGetDTO;
 import org.opensilex.core.variable.api.method.MethodGetDTO;
 import org.opensilex.core.variable.api.characteristic.CharacteristicGetDTO;
-import org.opensilex.core.variable.api.sharedResource.SharedResourceDTO;
 import org.opensilex.core.variable.api.unit.UnitGetDTO;
 import org.opensilex.core.variable.dal.*;
 import org.opensilex.sparql.response.NamedResourceDTO;
@@ -54,7 +53,7 @@ public class VariableGetDTO {
     @JsonProperty("onLocal")
     private boolean onLocal;
     @JsonProperty("onShared")
-    private SharedResourceDTO onShared;
+    private String onShared;
 
     @ApiModelProperty(example = "http://opensilex.dev/set/variables/Plant_Height")
     public URI getUri() {
@@ -121,11 +120,11 @@ public class VariableGetDTO {
     public void setOnLocal(boolean onLocal) {
         this.onLocal = onLocal;
     }
-    public SharedResourceDTO getOnShared() {
+    public String getOnShared() {
         return onShared;
     }
 
-    public void setOnShared(SharedResourceDTO onShared) {
+    public void setOnShared(String onShared) {
         this.onShared = onShared;
     }
 

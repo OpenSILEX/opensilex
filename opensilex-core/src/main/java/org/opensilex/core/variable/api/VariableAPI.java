@@ -15,19 +15,12 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import io.swagger.annotations.*;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.opensilex.core.URIsListPostDTO;
-import org.opensilex.core.sharedResource.SharedResourcesDTO;
 import org.opensilex.core.variable.api.characteristic.CharacteristicCreationDTO;
-import org.opensilex.core.variable.api.characteristic.CharacteristicDetailsDTO;
 import org.opensilex.core.variable.api.entity.EntityCreationDTO;
-import org.opensilex.core.variable.api.entity.EntityDetailsDTO;
 import org.opensilex.core.variable.api.entityOfInterest.InterestEntityCreationDTO;
-import org.opensilex.core.variable.api.entityOfInterest.InterestEntityDetailsDTO;
 import org.opensilex.core.variable.api.method.MethodCreationDTO;
-import org.opensilex.core.variable.api.method.MethodDetailsDTO;
 import org.opensilex.core.variable.api.sharedResource.ImportUrisDTO;
-import org.opensilex.core.variable.api.sharedResource.SharedResourceDTO;
 import org.opensilex.core.variable.api.unit.UnitCreationDTO;
-import org.opensilex.core.variable.api.unit.UnitDetailsDTO;
 import org.opensilex.core.variable.dal.*;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -386,10 +379,7 @@ public class VariableAPI {
 
                                 if (Objects.equals(urlRankResources, urlSharedResource)){
                                     String labelSharedResource = resultResources.get(rank).get("label").asText();
-                                    SharedResourceDTO sharedResourceDto = new SharedResourceDTO();
-                                    sharedResourceDto.setName(labelSharedResource);
-                                    sharedResourceDto.setUri(new URI(urlSharedResource));
-                                    variableDto.setOnShared(sharedResourceDto);
+                                    variableDto.setOnShared(labelSharedResource);
                                     break;
                                 }
                                 rank++;

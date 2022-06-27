@@ -171,7 +171,7 @@
                       <div v-if="data.item.onShared != null">
                           <opensilex-Icon
                               icon="fa#share-alt"
-                              :title="data.item.onShared.name"
+                              :title="data.item.onShared"
                           />
                       </div>
                     </template>

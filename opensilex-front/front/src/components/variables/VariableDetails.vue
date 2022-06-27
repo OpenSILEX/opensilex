@@ -263,7 +263,13 @@ export default class VariableDetails extends Vue {
   }
 
   getEncodedUrlPage(elementType: string, uri: string): string {
-    return this.$opensilex.getURL("variables/?elementType=" + elementType + "&selected=" + encodeURIComponent(uri));
+    let resource = decodeURIComponent(this.$route.query.resource) === "http://localhost" ? undefined : decodeURIComponent(this.$route.query.resource)
+    if (resource == undefined){
+      return this.$opensilex.getURL("variables/?elementType=" + elementType + "&selected=" + encodeURIComponent(uri));
+    }else{
+      let newUrlResource = resource.replace('rest', 'app/');
+      return newUrlResource + "variables/?elementType=" + elementType + "&selected=" + encodeURIComponent(uri);
+    }
   }
 
   getEntityPageUrl(): string {

@@ -241,12 +241,10 @@ public class ConfigManager {
     ) throws IOException {
         try {
             String extensionId = id;
-            boolean buildExtension = false;
             if (baseConfigFile != null) {
                 if (baseConfigFile.exists() && baseConfigFile.isFile()) {
                     addSource(baseConfigFile);
                     extensionId = loadConfig("extend", String.class);
-                    buildExtension = true;
                     if (!OpenSilex.PROD_PROFILE_ID.equals(extensionId)
                             && !OpenSilex.DEV_PROFILE_ID.equals(extensionId)
                             && !OpenSilex.TEST_PROFILE_ID.equals(extensionId)) {
@@ -289,10 +287,6 @@ public class ConfigManager {
                 if (idConfig.exists() && idConfig.isFile()) {
                     addSource(idConfig);
                 }
-            }
-
-            if (buildExtension) {
-                addSource(baseConfigFile);
             }
 
             if (LOGGER.isDebugEnabled()) {

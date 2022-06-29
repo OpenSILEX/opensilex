@@ -214,14 +214,20 @@ opensilex-release:build:
 
 # Checks that the merge request is valid (target branch must not be master, except if the
 # source is a hotfix branch)
+# The merge request is considered from a hotfix branch if at least one of these conditions is valid :
+# - The branch name starts with "hotfix/"
+# - The merge request has the label "hotfix"
 # Merge requests marked with the Draft: keyword are also blocked
 # No pipeline is triggered for MR from the release branch, because the last release pipeline can be used instead.
 merge-request:check:
   stage: check
   script:
     - if [[ $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master" &&
-      ! $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ ^hotfix\/.* ]]; then
+      ! $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ ^hotfix\/.* &&
+      ! $CI_MERGE_REQUEST_LABELS =~ ^(.+,)*hotfix(,.+)*$ ]]; then
     -   echo "Merging from $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME to master is forbidden"
+    -   echo "Only a hotfix can be merged into master"
+    -   echo "To mark this merge request as a hotfix, please add the 'hotfix' label, or rename the branch as hotfix/$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME"
     -   exit 1
     - fi
   rules:

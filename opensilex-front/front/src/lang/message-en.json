@@ -363,7 +363,9 @@
         "sharedResources": {
             "selector-placeholder":"Select resources",
             "label": "Resources",
-            "local-instance": "Local resource"
+            "local-instance": "Local resource",
+            "variable-import-confirmation": "Do you really want to import the selected variables on your local instance ?",
+            "import": "import"
         },
         "experiment": {
             "uri-help": "Unique experiment identifier",

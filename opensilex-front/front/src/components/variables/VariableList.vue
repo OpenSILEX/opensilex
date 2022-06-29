@@ -447,15 +447,37 @@ export default class VariableList extends Vue {
 
   importVariablesOnLocal() {
 
-    let variablesURIs = [];
+    this.$bvModal
+        .msgBoxConfirm(
+            this.$t("component.sharedResources.variable-import-confirmation").toString(),
+            {
+              cancelTitle: this.$t("component.common.cancel").toString(),
+              okTitle: this.$t("component.sharedResources.import").toString(),
+              okVariant: "primary",
+              centered: true
+            }
+        )
+        .then(confirmation => {
+          if (confirmation) {
+            let variablesURIs = [];
 
-    for (let select of this.tableRef.getSelected()) {
-      variablesURIs.push(select.uri);
-    }
+            for (let select of this.tableRef.getSelected()) {
+              variablesURIs.push(select.uri);
+            }
 
-    let form = {"variables":variablesURIs,"resource":this.selectedResource.uri};
+            let form = {"variables":variablesURIs,"resource":this.selectedResource.uri};
 
-    this.$service.importVariables(form);
+            this.$service.importVariables(form).then(response => {
+              if (response.status === 201){
+                this.tableRef.refresh();
+              }
+            });
+          }
+        });
+
+
+
+
   }
 
     detailsExportVariables() {

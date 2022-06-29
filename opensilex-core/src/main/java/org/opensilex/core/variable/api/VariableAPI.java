@@ -714,54 +714,29 @@ public class VariableAPI {
                     // on convertit le detailDto en CreationDto pour chacune
                     VariableCreationDTO variableDto = VariableCreationDTO.fromDetailsDto(variablesList.get(rank));
 
-                    try {
-                        URI shortUriEntity = createVariableElement(variableJson, resource, token, "entity", EntityModel.class, EntityCreationDTO.class);
-                        if (!Objects.equals(shortUriEntity, new URI(""))){
-                            createdUris.add(shortUriEntity);
-                        }
-
-                    } catch (SPARQLAlreadyExistingUriException duplicateUriException) {
-                        return new ErrorResponse(Response.Status.CONFLICT, "Entity already exists",duplicateUriException.getMessage()).getResponse();
+                    URI shortUriEntity = createVariableElement(variableJson, resource, token, "entity", EntityModel.class, EntityCreationDTO.class);
+                    if (!Objects.equals(shortUriEntity, new URI(""))){
+                        createdUris.add(shortUriEntity);
                     }
 
-                    try {
-                        URI shortUriInterestEntity = createVariableElement(variableJson, resource, token, "entity_of_interest", InterestEntityModel.class, InterestEntityCreationDTO.class);
-                        if (!Objects.equals(shortUriInterestEntity, new URI(""))){
-                            createdUris.add(shortUriInterestEntity);
-                        }
-
-                    } catch (SPARQLAlreadyExistingUriException duplicateUriException) {
-                        return new ErrorResponse(Response.Status.CONFLICT, "Entity of interest already exists",duplicateUriException.getMessage()).getResponse();
+                    URI shortUriInterestEntity = createVariableElement(variableJson, resource, token, "entity_of_interest", InterestEntityModel.class, InterestEntityCreationDTO.class);
+                    if (!Objects.equals(shortUriInterestEntity, new URI(""))){
+                        createdUris.add(shortUriInterestEntity);
                     }
 
-                    try {
-                        URI shortUriCharacteristic = createVariableElement(variableJson, resource, token, "characteristic", CharacteristicModel.class, CharacteristicCreationDTO.class);
-                        if (!Objects.equals(shortUriCharacteristic, new URI(""))){
-                            createdUris.add(shortUriCharacteristic);
-                        }
-
-                    } catch (SPARQLAlreadyExistingUriException duplicateUriException) {
-                        return new ErrorResponse(Response.Status.CONFLICT, "Characteristic already exists",duplicateUriException.getMessage()).getResponse();
+                    URI shortUriCharacteristic = createVariableElement(variableJson, resource, token, "characteristic", CharacteristicModel.class, CharacteristicCreationDTO.class);
+                    if (!Objects.equals(shortUriCharacteristic, new URI(""))){
+                        createdUris.add(shortUriCharacteristic);
                     }
 
-                    try {
-                        URI shortUriMethod = createVariableElement(variableJson, resource, token, "method", MethodModel.class, MethodCreationDTO.class);
-                        if (!Objects.equals(shortUriMethod, new URI(""))){
-                            createdUris.add(shortUriMethod);
-                        }
-
-                    } catch (SPARQLAlreadyExistingUriException duplicateUriException) {
-                        return new ErrorResponse(Response.Status.CONFLICT, "Method already exists",duplicateUriException.getMessage()).getResponse();
+                    URI shortUriMethod = createVariableElement(variableJson, resource, token, "method", MethodModel.class, MethodCreationDTO.class);
+                    if (!Objects.equals(shortUriMethod, new URI(""))){
+                        createdUris.add(shortUriMethod);
                     }
 
-                    try {
-                        URI shortUriUnit = createVariableElement(variableJson, resource, token, "unit", UnitModel.class, UnitCreationDTO.class);
-                        if (!Objects.equals(shortUriUnit, new URI(""))){
-                            createdUris.add(shortUriUnit);
-                        }
-
-                    } catch (SPARQLAlreadyExistingUriException duplicateUriException) {
-                        return new ErrorResponse(Response.Status.CONFLICT, "Unit already exists",duplicateUriException.getMessage()).getResponse();
+                    URI shortUriUnit = createVariableElement(variableJson, resource, token, "unit", UnitModel.class, UnitCreationDTO.class);
+                    if (!Objects.equals(shortUriUnit, new URI(""))){
+                        createdUris.add(shortUriUnit);
                     }
 
                     try {

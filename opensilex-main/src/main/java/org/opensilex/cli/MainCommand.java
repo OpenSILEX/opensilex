@@ -60,7 +60,6 @@ public class MainCommand extends AbstractOpenSilexCommand implements IVersionPro
         
         LOGGER.debug("Create OpenSilex instance from command line");
         OpenSilexSetup setup = OpenSilex.createSetup(args, forceDebug);
-        OpenSilex instance = OpenSilex.createInstance(setup, false);
 
         // If no arguments assume help is requested
         args = setup.getRemainingArgs();
@@ -105,6 +104,19 @@ public class MainCommand extends AbstractOpenSilexCommand implements IVersionPro
                         || ! commandToExecute.getSubcommands().isEmpty();
             }
 
+            if (!runServer(foundCommands)) {
+                setup = new OpenSilexSetup(
+                        setup.getBaseDirectory(),
+                        OpenSilex.INTERNAL_OPERATIONS_PROFILE_ID,
+                        setup.getConfigFile(),
+                        setup.isDebug(),
+                        setup.isNoCache(),
+                        setup.getArgs(),
+                        setup.getCliArgsList()
+                );
+            }
+
+            OpenSilex instance = OpenSilex.createInstance(setup, false);
             if (launchOpenSilex) {
                 instance.startup();
                 commands.forEach((OpenSilexCommand cmd) -> {
@@ -116,6 +128,12 @@ public class MainCommand extends AbstractOpenSilexCommand implements IVersionPro
         }
 
         cli.execute(args);
+    }
+
+    private static boolean runServer(List<CommandLine> commands){
+        boolean isServer = commands.stream().anyMatch(command -> command.getCommand().getClass().equals(ServerCommands.class));
+        boolean isStart = commands.stream().anyMatch(command -> command.getCommandName().equals("start"));
+        return isServer && isStart;
     }
 
     /**

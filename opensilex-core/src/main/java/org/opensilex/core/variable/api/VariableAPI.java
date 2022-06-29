@@ -353,7 +353,7 @@ public class VariableAPI {
             ).getList();
 
             // liste des RP en dur (sauf vitioeno car connexion avec admin ne fonctionne pas
-            List<String> listResources = Arrays.asList("http://138.102.159.36:8083/rest","http://138.102.159.36:8082/rest");
+            List<String> listResources = Arrays.asList("http://138.102.159.36:8083/rest","http://138.102.159.36:8082/rest","http://138.102.159.10/resource/rest");
 
             int compteur = 0;
 
@@ -367,30 +367,42 @@ public class VariableAPI {
                     // utilisation service de recherche d'une variable avec l'uri
                     String ResponseSearchVariable = connectionToService(urlSharedResource + "/core/variables/" + VariableURI, token);
 
-                    if (ResponseSearchVariable != null){
-                        String tokenSearchResources = getToken("http://localhost:8666/rest");
-                        JsonNode jsonResultResources = jsonResponseToService("http://localhost:8666/rest/ontology/shared_resources", tokenSearchResources);
+                    if (ResponseSearchVariable != null) {
+                        String tokenSearchResources = getToken("http://138.102.159.37:8090/rest");
+                        JsonNode jsonResultResources = jsonResponseToService("http://138.102.159.37:8090/rest/ontology/shared_resources", tokenSearchResources);
 
-                        if (jsonResultResources != null){
+                        if (jsonResultResources != null) {
                             JsonNode resultResources = jsonResultResources.get("result");
                             int rank = 1;
-                            while (resultResources.get(rank) != null){
+                            while (resultResources.get(rank) != null) {
                                 String urlRankResources = resultResources.get(rank).get("uri").asText();
 
-                                if (Objects.equals(urlRankResources, urlSharedResource)){
+                                if (Objects.equals(urlRankResources, urlSharedResource)) {
                                     String labelSharedResource = resultResources.get(rank).get("label").asText();
-                                    variableDto.setOnShared(labelSharedResource);
-                                    break;
+                                    if (resultDTOList.stream().noneMatch(dto -> Objects.equals(dto.getUri(), variableDto.getUri()))) { // si le dto n'est pas encore dans la liste
+                                        variableDto.setOnShared(labelSharedResource);
+                                        resultDTOList.add(variableDto);
+                                        break;
+                                    }else{ // si le dto est déjà dans la liste
+                                        resultDTOList.stream().filter(dto -> Objects.equals(dto.getUri(), variableDto.getUri())).findFirst().get().setOnShared(labelSharedResource);
+                                    }
                                 }
                                 rank++;
                             }
                         }
-                        resultDTOList.add(variableDto);
+
                     }else{
-                        if (compteur == 0){
+                        if (resultDTOList.stream().noneMatch(dto -> Objects.equals(dto.getUri(), variableDto.getUri()))) { // si le dto n'est pas encore dans la liste
                             resultDTOList.add(variableDto);
                         }
+
                     }
+
+//                    }else{
+//                        if (compteur == 0){
+//                            resultDTOList.add(variableDto);
+//                        }
+//                    }
                 }
                 compteur += 1;
             }

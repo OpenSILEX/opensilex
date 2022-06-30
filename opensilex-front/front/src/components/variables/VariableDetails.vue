@@ -8,7 +8,7 @@
           <template v-slot:rightHeader>
 
             <opensilex-EditButton
-                v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
+                v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID) && displayLocalActions"
                 label="VariableDetails.edit" variant="outline-primary"
                 @click="showEditForm"
             ></opensilex-EditButton>
@@ -20,7 +20,7 @@
             ></opensilex-VariableCreate>
 
             <opensilex-InteroperabilityButton
-                v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
+                v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID) && displayLocalActions"
                 label="VariableDetails.edit-references"
                 @click="skosReferences.show()"
             ></opensilex-InteroperabilityButton>
@@ -33,7 +33,7 @@
             ></opensilex-ExternalReferencesModalForm>
 
             <opensilex-DeleteButton
-                v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_DELETE_ID)"
+                v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_DELETE_ID) && displayLocalActions"
                 @click="deleteVariable"
                 label="component.common.list.buttons.delete"
             ></opensilex-DeleteButton>
@@ -157,6 +157,8 @@ export default class VariableDetails extends Vue {
   @Prop({
     default: () => VariableForm.getEmptyForm()
   }) variable: VariableDetailsDTO;
+
+  @Prop() displayLocalActions: boolean;
 
   @Ref("variableForm") readonly variableForm!: VariableCreate;
 

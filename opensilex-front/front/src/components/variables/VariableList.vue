@@ -192,19 +192,19 @@
                                 :small="true"
                             ></opensilex-DetailButton>
                             <opensilex-EditButton
-                                v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
+                                v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID) && displayActions"
                                 @click="$emit('onEdit', data.item.uri)"
                                 label="component.common.list.buttons.update"
                                 :small="true"
                             ></opensilex-EditButton>
                             <opensilex-InteroperabilityButton
-                                v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
+                                v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID) && displayActions"
                                 :small="true"
                                 label="component.common.list.buttons.interoperability"
                                 @click="$emit('onInteroperability', data.item.uri)"
                             ></opensilex-InteroperabilityButton>
                             <opensilex-DeleteButton
-                                v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_DELETE_ID)"
+                                v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_DELETE_ID) && displayActions"
                                 @click="$emit('onDelete', data.item.uri)"
                                 label="component.common.list.buttons.delete"
                                 :small="true"
@@ -267,6 +267,7 @@ export default class VariableList extends Vue {
     $i18n: any;
 
     selectedResource:SharedResourcesDTO;
+    displayActions:boolean = true;
 
     get user() {
         return this.$store.state.user;
@@ -429,7 +430,10 @@ export default class VariableList extends Vue {
             options.orderBy,
             options.currentPage,
             options.pageSize
-        );
+        ).then(response => {
+          this.displayActions = !this.selectedResource || this.selectedResource.isLocal;
+          return response;
+        });
     }
 
     classicExportVariables() {

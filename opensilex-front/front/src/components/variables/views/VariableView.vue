@@ -31,6 +31,7 @@
         <opensilex-VariableDetails
             v-if="isDetailsTab()"
             :variable="variable"
+            :displayLocalActions="displayLocalActions"
             @onUpdate="updateVariable($event)"
         ></opensilex-VariableDetails>
 
@@ -104,6 +105,7 @@ export default class VariableView extends Vue {
 
 
   variable: VariableDetailsDTO = VariableView.getEmptyDetailsDTO();
+  displayLocalActions: boolean = true;
   uri: string;
   resource: string;
 
@@ -122,6 +124,7 @@ export default class VariableView extends Vue {
     this.uri = decodeURIComponent(this.$route.params.uri);
     let urlResource = decodeURIComponent(this.$route.query.resource);
     this.resource = (urlResource === "http://localhost" || urlResource === "undefined") ? undefined : urlResource;
+    this.displayLocalActions = (urlResource === "http://localhost" || urlResource === "undefined");
     console.log("ressource : ", urlResource);
     this.loadVariable(this.uri, this.resource);
     console.log(this.resource);

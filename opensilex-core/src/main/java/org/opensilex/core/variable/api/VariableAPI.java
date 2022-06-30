@@ -700,87 +700,89 @@ public class VariableAPI {
         String urlService = resource.toString() + "/core/variables/by_uris?";
         Boolean firstUri = true;
 
-        for (URI uri : uris){
-            if (firstUri){
+        for (URI uri : uris) {
+
+            if (firstUri) {
                 urlService += "uris=" + URLEncoder.encode(uri.toString(), StandardCharsets.UTF_8.name());
                 firstUri = false;
-            }else{
+            } else {
                 urlService += "&uris=" + URLEncoder.encode(uri.toString(), StandardCharsets.UTF_8.name());
             }
-            String stringResponse = connectionToService(urlService, token);
-            JsonNode jsonResult = null;
-            if (stringResponse != null) {
-                ObjectMapper mapper = new ObjectMapper();
-                jsonResult = mapper.readTree(stringResponse);
+        }
+        String stringResponse = connectionToService(urlService, token);
+        JsonNode jsonResult = null;
+        if (stringResponse != null) {
+            ObjectMapper mapper = new ObjectMapper();
+            jsonResult = mapper.readTree(stringResponse);
 
-                SingleObjectResponse<List<VariableDetailsDTO>> getResponse = mapper.convertValue(jsonResult, new TypeReference<SingleObjectResponse<List<VariableDetailsDTO>>>() {});
-                variablesList = getResponse.getResult();
+            SingleObjectResponse<List<VariableDetailsDTO>> getResponse = mapper.convertValue(jsonResult, new TypeReference<SingleObjectResponse<List<VariableDetailsDTO>>>() {});
+            variablesList = getResponse.getResult();
 
-                // convertir en liste paginée et utiliser la fonction VariableCreationDTO.fromDetailsDto(VariableDetailsDTO detailsDto)
+            // convertir en liste paginée et utiliser la fonction VariableCreationDTO.fromDetailsDto(VariableDetailsDTO detailsDto)
 
-                JsonNode result = jsonResult.get("result");
-                int rank = 0;
-                while (result.get(rank) != null){ // boucle sur chaque variable
-                    JsonNode variableJson = result.get(rank);
+            JsonNode result = jsonResult.get("result");
+            int rank = 0;
+            while (result.get(rank) != null){ // boucle sur chaque variable
+                JsonNode variableJson = result.get(rank);
 
-                    List<String> variableFieldsList = new ArrayList<>();
-                    variableJson.fieldNames().forEachRemaining((fieldName) -> variableFieldsList.add(fieldName));
+                List<String> variableFieldsList = new ArrayList<>();
+                variableJson.fieldNames().forEachRemaining((fieldName) -> variableFieldsList.add(fieldName));
 
-                    // on convertit le detailDto en CreationDto pour chacune
-                    VariableCreationDTO variableDto = VariableCreationDTO.fromDetailsDto(variablesList.get(rank));
+                // on convertit le detailDto en CreationDto pour chacune
+                VariableCreationDTO variableDto = VariableCreationDTO.fromDetailsDto(variablesList.get(rank));
 
-                    if (variableFieldsList.contains("entity")){
-                        URI shortUriEntity = createVariableElement(variableJson, resource, token, "entity", EntityModel.class, EntityCreationDTO.class);
-                        if (!Objects.equals(shortUriEntity, new URI(""))){
-                            createdUris.add(shortUriEntity);
-                        }
+                if (variableFieldsList.contains("entity")){
+                    URI shortUriEntity = createVariableElement(variableJson, resource, token, "entity", EntityModel.class, EntityCreationDTO.class);
+                    if (!Objects.equals(shortUriEntity, new URI(""))){
+                        createdUris.add(shortUriEntity);
                     }
-
-                    if (variableFieldsList.contains("entity_of_interest")) {
-                        URI shortUriInterestEntity = createVariableElement(variableJson, resource, token, "entity_of_interest", InterestEntityModel.class, InterestEntityCreationDTO.class);
-                        if (!Objects.equals(shortUriInterestEntity, new URI(""))) {
-                            createdUris.add(shortUriInterestEntity);
-                        }
-                    }
-
-                    if (variableFieldsList.contains("characteristic")){
-                        URI shortUriCharacteristic = createVariableElement(variableJson, resource, token, "characteristic", CharacteristicModel.class, CharacteristicCreationDTO.class);
-                        if (!Objects.equals(shortUriCharacteristic, new URI(""))){
-                            createdUris.add(shortUriCharacteristic);
-                        }
-                    }
-
-                    if (variableFieldsList.contains("method")){
-                        URI shortUriMethod = createVariableElement(variableJson, resource, token, "method", MethodModel.class, MethodCreationDTO.class);
-                        if (!Objects.equals(shortUriMethod, new URI(""))){
-                            createdUris.add(shortUriMethod);
-                        }
-                    }
-
-                    if (variableFieldsList.contains("unit")){
-                        URI shortUriUnit = createVariableElement(variableJson, resource, token, "unit", UnitModel.class, UnitCreationDTO.class);
-                        if (!Objects.equals(shortUriUnit, new URI(""))){
-                            createdUris.add(shortUriUnit);
-                        }
-                    }
-
-                    try {
-                        VariableDAO dao = getDao();
-                        VariableModel model = variableDto.newModel();
-                        model.setCreator(currentUser.getUri());
-
-                        model = dao.create(model);
-                        URI shortUri = new URI(SPARQLDeserializers.getShortURI(model.getUri().toString()));
-                        createdUris.add(shortUri);
-
-                    } catch (SPARQLAlreadyExistingUriException duplicateUriException) {
-                        return new ErrorResponse(Response.Status.CONFLICT, "Variable already exists", duplicateUriException.getMessage()).getResponse();
-                    }
-
-                    rank++; // passage à la variable suivante
                 }
+
+                if (variableFieldsList.contains("entity_of_interest")) {
+                    URI shortUriInterestEntity = createVariableElement(variableJson, resource, token, "entity_of_interest", InterestEntityModel.class, InterestEntityCreationDTO.class);
+                    if (!Objects.equals(shortUriInterestEntity, new URI(""))) {
+                        createdUris.add(shortUriInterestEntity);
+                    }
+                }
+
+                if (variableFieldsList.contains("characteristic")){
+                    URI shortUriCharacteristic = createVariableElement(variableJson, resource, token, "characteristic", CharacteristicModel.class, CharacteristicCreationDTO.class);
+                    if (!Objects.equals(shortUriCharacteristic, new URI(""))){
+                        createdUris.add(shortUriCharacteristic);
+                    }
+                }
+
+                if (variableFieldsList.contains("method")){
+                    URI shortUriMethod = createVariableElement(variableJson, resource, token, "method", MethodModel.class, MethodCreationDTO.class);
+                    if (!Objects.equals(shortUriMethod, new URI(""))){
+                        createdUris.add(shortUriMethod);
+                    }
+                }
+
+                if (variableFieldsList.contains("unit")){
+                    URI shortUriUnit = createVariableElement(variableJson, resource, token, "unit", UnitModel.class, UnitCreationDTO.class);
+                    if (!Objects.equals(shortUriUnit, new URI(""))){
+                        createdUris.add(shortUriUnit);
+                    }
+                }
+
+                try {
+                    VariableDAO dao = getDao();
+                    VariableModel model = variableDto.newModel();
+                    model.setCreator(currentUser.getUri());
+
+                    model = dao.create(model);
+                    URI shortUri = new URI(SPARQLDeserializers.getShortURI(model.getUri().toString()));
+                    createdUris.add(shortUri);
+
+                } catch (SPARQLAlreadyExistingUriException duplicateUriException) {
+                    return new ErrorResponse(Response.Status.CONFLICT, "Variable already exists", duplicateUriException.getMessage()).getResponse();
+                }
+
+                rank++; // passage à la variable suivante
             }
         }
+
         return new ObjectUriResponse(Response.Status.CREATED, createdUris).getResponse();
     }
 

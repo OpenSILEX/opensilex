@@ -723,32 +723,45 @@ public class VariableAPI {
                 while (result.get(rank) != null){ // boucle sur chaque variable
                     JsonNode variableJson = result.get(rank);
 
+                    List<String> variableFieldsList = new ArrayList<>();
+                    variableJson.fieldNames().forEachRemaining((fieldName) -> variableFieldsList.add(fieldName));
+
                     // on convertit le detailDto en CreationDto pour chacune
                     VariableCreationDTO variableDto = VariableCreationDTO.fromDetailsDto(variablesList.get(rank));
 
-                    URI shortUriEntity = createVariableElement(variableJson, resource, token, "entity", EntityModel.class, EntityCreationDTO.class);
-                    if (!Objects.equals(shortUriEntity, new URI(""))){
-                        createdUris.add(shortUriEntity);
+                    if (variableFieldsList.contains("entity")){
+                        URI shortUriEntity = createVariableElement(variableJson, resource, token, "entity", EntityModel.class, EntityCreationDTO.class);
+                        if (!Objects.equals(shortUriEntity, new URI(""))){
+                            createdUris.add(shortUriEntity);
+                        }
                     }
 
-                    URI shortUriInterestEntity = createVariableElement(variableJson, resource, token, "entity_of_interest", InterestEntityModel.class, InterestEntityCreationDTO.class);
-                    if (!Objects.equals(shortUriInterestEntity, new URI(""))){
-                        createdUris.add(shortUriInterestEntity);
+                    if (variableFieldsList.contains("entity_of_interest")) {
+                        URI shortUriInterestEntity = createVariableElement(variableJson, resource, token, "entity_of_interest", InterestEntityModel.class, InterestEntityCreationDTO.class);
+                        if (!Objects.equals(shortUriInterestEntity, new URI(""))) {
+                            createdUris.add(shortUriInterestEntity);
+                        }
                     }
 
-                    URI shortUriCharacteristic = createVariableElement(variableJson, resource, token, "characteristic", CharacteristicModel.class, CharacteristicCreationDTO.class);
-                    if (!Objects.equals(shortUriCharacteristic, new URI(""))){
-                        createdUris.add(shortUriCharacteristic);
+                    if (variableFieldsList.contains("characteristic")){
+                        URI shortUriCharacteristic = createVariableElement(variableJson, resource, token, "characteristic", CharacteristicModel.class, CharacteristicCreationDTO.class);
+                        if (!Objects.equals(shortUriCharacteristic, new URI(""))){
+                            createdUris.add(shortUriCharacteristic);
+                        }
                     }
 
-                    URI shortUriMethod = createVariableElement(variableJson, resource, token, "method", MethodModel.class, MethodCreationDTO.class);
-                    if (!Objects.equals(shortUriMethod, new URI(""))){
-                        createdUris.add(shortUriMethod);
+                    if (variableFieldsList.contains("method")){
+                        URI shortUriMethod = createVariableElement(variableJson, resource, token, "method", MethodModel.class, MethodCreationDTO.class);
+                        if (!Objects.equals(shortUriMethod, new URI(""))){
+                            createdUris.add(shortUriMethod);
+                        }
                     }
 
-                    URI shortUriUnit = createVariableElement(variableJson, resource, token, "unit", UnitModel.class, UnitCreationDTO.class);
-                    if (!Objects.equals(shortUriUnit, new URI(""))){
-                        createdUris.add(shortUriUnit);
+                    if (variableFieldsList.contains("unit")){
+                        URI shortUriUnit = createVariableElement(variableJson, resource, token, "unit", UnitModel.class, UnitCreationDTO.class);
+                        if (!Objects.equals(shortUriUnit, new URI(""))){
+                            createdUris.add(shortUriUnit);
+                        }
                     }
 
                     try {

@@ -120,7 +120,9 @@ export default class VariableView extends Vue {
   created() {
     this.service = this.$opensilex.getService("opensilex.VariablesService");
     this.uri = decodeURIComponent(this.$route.params.uri);
-    this.resource = decodeURIComponent(this.$route.query.resource) === "http://localhost" ? undefined : decodeURIComponent(this.$route.query.resource);
+    let urlResource = decodeURIComponent(this.$route.query.resource);
+    this.resource = (urlResource === "http://localhost" || urlResource === "undefined") ? undefined : urlResource;
+    console.log("ressource : ", urlResource);
     this.loadVariable(this.uri, this.resource);
     console.log(this.resource);
   }

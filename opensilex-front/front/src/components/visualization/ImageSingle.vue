@@ -13,7 +13,7 @@
         <b-card-text> {{ $t("ImageSingle.target") }} : {{ image.target }}</b-card-text>
         <b-card-text> {{ $t("ImageSingle.filename") }} : {{ image.filename }}</b-card-text>
 
-        <b-card-text v-if="image.metadata">Metadata: {{ image.metadata }}</b-card-text>
+        <b-card-text v-if="image.metadata">{{ $t("component.common.metadata") }}: {{ image.metadata }}</b-card-text>
         <div class="d-flex justify-content-between">
           <div
             @click="annotate"
@@ -31,27 +31,27 @@
             title="Detail"
             class="m-2"
           >
-            <opensilex-Icon v-if="!detailOpen" icon="ik#ik-plus" />
+            <opensilex-Icon v-if="!detailOpen" icon="fa#eye" />
             <opensilex-Icon v-else icon="ik#ik-minus" />
           </div>
         </div>
 
         <b-collapse :id="'collapse-' + index" class="mt-2">
-         <b-card-text>Provenance:</b-card-text>
+         <b-card-text>{{ $t("DataView.filter.provenance") }}:</b-card-text>
           <b-card-text>
-          URI: {{ image.provenance.uri }}
+            {{ $t("component.common.uri") }}: {{ image.provenance.uri }}
           </b-card-text>
             <b-card-text v-if="image.provenance.prov_used">
-          USED: {{ image.provenance.prov_used }}
+          {{ $t("ImageSingle.used") }}: {{ image.provenance.prov_used }}
           </b-card-text>
             <b-card-text v-if="image.provenance.prov_was_associated_with">
-          ASSOCIATED: {{ image.provenance.prov_was_associated_with }}
+          {{ $t("ImageSingle.associated") }}: {{ image.provenance.prov_was_associated_with }}
           </b-card-text>
             <b-card-text  v-if="image.provenance.settings">
-           SETTING: {{ image.provenance.settings }}
+          {{ $t("ImageSingle.setting") }}: {{ image.provenance.settings }}
           </b-card-text> 
             <b-card-text  v-if="image.provenance.experiments">
-           EXPERIMENT: {{ image.provenance.experiments }}
+          {{ $t("DataView.filter.experiments") }}: {{ image.provenance.experiments }}
           </b-card-text>
 
         </b-collapse>
@@ -65,11 +65,12 @@ import { Component, Prop } from "vue-property-decorator";
 
 import moment from "moment-timezone";
 import Vue from "vue";
+import {DataFileImageDTO} from "../data/DataFileImageDTO";
 
 @Component
 export default class ImageSingle extends Vue {
   @Prop()
-  image: any;
+  image: DataFileImageDTO;
 
   @Prop()
   index: number;
@@ -89,7 +90,7 @@ export default class ImageSingle extends Vue {
   created() {
     this.src = this.image.url;
     this.date = moment.parseZone(this.image.date).format("DD-MM-YYYY HH:mm:ss");
-    this.type= this.image.type.split(":")[1];
+    this.type = this.image.rdf_type.split(":")[1];
   }
 
   showImage() {
@@ -98,7 +99,6 @@ export default class ImageSingle extends Vue {
 
   annotate() {
   this.$emit("annotate",this.image.uri);
-    console.log(this.image.uri);
   }
 }
 </script>
@@ -128,14 +128,20 @@ img:hover {
 </style>
 
 <i18n>
-  fr: 
+  en:
     ImageSingle:
-      filename : Nom
-      target : Cible
+      filename: Name
+      target: Target
+      used: 'Used by'
+      associated: 'Associated to'
+      setting: 'Settings'
 
-  en: 
+  fr:
     ImageSingle:
-     filename : Name
-     target : Target
+      filename: Nom
+      target: Cible
+      used: 'Utilisée par'
+      associated: 'Asssociée à'
+      setting: 'Paramètres'
 </i18n>
 

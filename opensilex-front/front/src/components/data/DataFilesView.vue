@@ -138,6 +138,8 @@ import Vue from "vue";
 import { ProvenanceGetDTO } from "../../../../../opensilex-core/front/src/lib";
 import HttpResponse from "../../lib/HttpResponse";
 import { OpenSilexResponse } from "../../../../../opensilex-core/front/src/lib/HttpResponse";
+import DataFilesList from "./DataFilesList.vue";
+import DataFilesImagesList from "./DataFilesImagesList.vue";
 
 @Component
 export default class DataFilesView extends Vue {
@@ -160,8 +162,8 @@ export default class DataFilesView extends Vue {
   }
 
   @Ref("templateForm") readonly templateForm!: any;
-  @Ref("datafilesList") readonly datafilesList!: any;
-  @Ref("datafilesImagesList") readonly datafilesImagesList!: any;
+  @Ref("datafilesList") readonly datafilesList!: DataFilesList;
+  @Ref("datafilesImagesList") readonly datafilesImagesList!: DataFilesImagesList;
   @Ref("searchField") readonly searchField!: any;
   @Ref("provSelector") readonly provSelector!: any;
   @Ref("resultModal") readonly resultModal!: any;

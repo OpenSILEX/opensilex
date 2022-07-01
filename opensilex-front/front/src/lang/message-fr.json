@@ -68,6 +68,8 @@
             "select-all" : "Sélectionner tout",
             "unselect-all" : "Désélectionner tout",
             "example": "Exemple",
+            "loading" : "Chargement...",
+            "metadata": "Metadonnée(s)",
             "errors": {
                 "error-title": "Erreur",
                 "constraint-error": "Une erreur de validation s'est produite, merci de vérifier les données saisies.",

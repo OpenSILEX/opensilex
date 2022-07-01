@@ -15,11 +15,12 @@
 <script lang="ts">
 import { Component, Prop } from "vue-property-decorator";
 import Vue from "vue";
+import {DataFileImageDTO} from "../data/DataFileImageDTO";
 
 @Component
 export default class ImageGrid extends Vue {
   @Prop()
-  images: any;
+  images: Array<DataFileImageDTO>;
 }
 </script>
 

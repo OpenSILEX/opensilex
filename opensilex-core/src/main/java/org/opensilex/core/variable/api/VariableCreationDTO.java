@@ -86,11 +86,8 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
     @JsonProperty("datatype")
     private URI dataType;
 
-//    @JsonProperty("onLocal")
-//    private boolean onLocal;
-//
-//    @JsonProperty("onShared")
-//    private boolean onShared;
+    @JsonProperty("onShared")
+    private String onShared;
 
     @ValidURI
     @ApiModelProperty(example = "http://opensilex.dev/set/variables/Plant_Height")
@@ -231,21 +228,14 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
         this.species = species;
     }
 
-//    @ApiModelProperty(notes = "Indicates if the variable is local or not")
-//    public boolean getOnLocal() {return onLocal;}
-//
-//    public void setOnLocal(boolean onLocal) {
-//        this.onLocal = onLocal;
-//    }
-//
-//    @ApiModelProperty(notes = "Indicates if the variable is shared or not")
-//    public boolean getOnShared() {
-//        return onShared;
-//    }
-//
-//    public void setOnShared(boolean onShared) {
-//        this.onShared = onShared;
-//    }
+    @ApiModelProperty(notes = "Name of the shared resource where the variable comes from if it is a shared variable")
+    public String getOnShared() {
+        return onShared;
+    }
+
+    public void setOnShared(String onShared) {
+        this.onShared = onShared;
+    }
 
     public VariableModel newModel() {
         VariableModel model = new VariableModel();

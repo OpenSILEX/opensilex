@@ -346,65 +346,44 @@ public class VariableAPI {
             );
 
             totalVariables = variables.getTotal();
+
             // Convert paginated list to DTO
             List<VariableGetDTO> listDTO = variables.convert(
                     VariableGetDTO.class,
                     VariableGetDTO::fromModel
             ).getList();
 
-            // liste des RP en dur (sauf vitioeno car connexion avec admin ne fonctionne pas
-            List<String> listResources = Arrays.asList("http://138.102.159.36:8083/rest","http://138.102.159.36:8082/rest","http://138.102.159.10/resource/rest");
+            List<String> sharedResourcesUrisList = new ArrayList<>();
+            List<String> sharedResourcesNameList = new ArrayList<>();
 
-            int compteur = 0;
+            String tokenSearchResources = getToken("http://138.102.159.37:8090/rest");
+            JsonNode jsonResultResources = jsonResponseToService("http://138.102.159.37:8090/rest/ontology/shared_resources", tokenSearchResources);
 
-            for (String urlSharedResource : listResources) {
-
-                String token = getToken(urlSharedResource);
-
-                for (VariableGetDTO variableDto : listDTO) {
-                    String VariableURI = URLEncoder.encode(variableDto.getUri().toString(), StandardCharsets.UTF_8.name());
-
-                    // utilisation service de recherche d'une variable avec l'uri
-                    String ResponseSearchVariable = connectionToService(urlSharedResource + "/core/variables/" + VariableURI, token);
-
-                    if (ResponseSearchVariable != null) {
-                        String tokenSearchResources = getToken("http://138.102.159.37:8090/rest");
-                        JsonNode jsonResultResources = jsonResponseToService("http://138.102.159.37:8090/rest/ontology/shared_resources", tokenSearchResources);
-
-                        if (jsonResultResources != null) {
-                            JsonNode resultResources = jsonResultResources.get("result");
-                            int rank = 1;
-                            while (resultResources.get(rank) != null) {
-                                String urlRankResources = resultResources.get(rank).get("uri").asText();
-
-                                if (Objects.equals(urlRankResources, urlSharedResource)) {
-                                    String labelSharedResource = resultResources.get(rank).get("label").asText();
-                                    if (resultDTOList.stream().noneMatch(dto -> Objects.equals(dto.getUri(), variableDto.getUri()))) { // si le dto n'est pas encore dans la liste
-                                        variableDto.setOnShared(labelSharedResource);
-                                        resultDTOList.add(variableDto);
-                                        break;
-                                    }else{ // si le dto est déjà dans la liste
-                                        resultDTOList.stream().filter(dto -> Objects.equals(dto.getUri(), variableDto.getUri())).findFirst().get().setOnShared(labelSharedResource);
-                                    }
-                                }
-                                rank++;
-                            }
-                        }
-
-                    }else{
-                        if (resultDTOList.stream().noneMatch(dto -> Objects.equals(dto.getUri(), variableDto.getUri()))) { // si le dto n'est pas encore dans la liste
-                            resultDTOList.add(variableDto);
-                        }
-
-                    }
-
-//                    }else{
-//                        if (compteur == 0){
-//                            resultDTOList.add(variableDto);
-//                        }
-//                    }
+            if (jsonResultResources != null) {
+                JsonNode resultResources = jsonResultResources.get("result");
+                int rank = 1;
+                while (resultResources.get(rank) != null) {
+                    String resourceUriAtRank = resultResources.get(rank).get("uri").asText();
+                    String resourceNameAtRank = resultResources.get(rank).get("label").asText();
+                    sharedResourcesUrisList.add(resourceUriAtRank);
+                    sharedResourcesNameList.add(resourceNameAtRank);
+                    rank++;
                 }
-                compteur += 1;
+            }
+
+            for (VariableGetDTO variableDto : listDTO) {
+                String variableResourceUri = variableDto.getOnShared();
+                int rankList = 1;
+                boolean resourceFound = false;
+                while (rankList < sharedResourcesUrisList.size() && !resourceFound){
+                    if (Objects.equals(sharedResourcesUrisList.get(rankList), variableResourceUri)){
+                        variableDto.setOnShared(sharedResourcesNameList.get(rankList));
+                        resourceFound = true;
+                    }
+                    rankList += 1;
+                }
+
+                resultDTOList.add(variableDto);
             }
 
         }else{
@@ -687,7 +666,6 @@ public class VariableAPI {
             @ApiResponse(code = 200, message = "Import variables")
     })
     public Response importVariables(
-//            @ApiParam(value = "Shared resource URI", example = "http://138.102.159.36:8083/rest", required = true) @QueryParam("resource_uri") URI resource,
             @ApiParam(value = "List of variable URI", required = true) ImportUrisDTO dto
     ) throws Exception {
 
@@ -769,6 +747,9 @@ public class VariableAPI {
                 try {
                     VariableDAO dao = getDao();
                     VariableModel model = variableDto.newModel();
+//                    URI uriTest = new URI(SPARQLDeserializers.getExpandedURI(model.getUri()));
+//                    model.setUri(new URI(SPARQLDeserializers.getExpandedURI(model.getUri())));
+                    model.setOnShared(resource);
                     model.setCreator(currentUser.getUri());
 
                     model = dao.create(model);

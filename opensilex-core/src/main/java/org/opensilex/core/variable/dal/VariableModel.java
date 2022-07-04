@@ -112,17 +112,11 @@ public class VariableModel extends BaseVariableModel<VariableModel> implements C
     private List<SpeciesModel> species;
     public static final String SPECIES_FIELD_NAME = "species";
 
-//    @SPARQLProperty(
-//            ontology = Oeso.class,
-//            property = "hasOnLocal"
-//    )
-//    private boolean onLocal;
-//
-//    @SPARQLProperty(
-//            ontology = Oeso.class,
-//            property = "hasOnShared"
-//    )
-//    private boolean onShared;
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "fromSharedResource"
+    )
+    private URI onShared;
 
     public String getAlternativeName() { return alternativeName; }
 
@@ -200,19 +194,13 @@ public class VariableModel extends BaseVariableModel<VariableModel> implements C
         this.species = species;
     }
 
-//    public boolean getOnLocal() {return onLocal;}
-//
-//    public void setOnLocal(boolean onLocal) {
-//        this.onLocal = onLocal;
-//    }
-//
-//    public boolean getOnShared() {
-//        return onShared;
-//    }
-//
-//    public void setOnShared(boolean onShared) {
-//        this.onShared = onShared;
-//    }
+    public URI getOnShared() {
+        return onShared;
+    }
+
+    public void setOnShared(URI onShared) {
+        this.onShared = onShared;
+    }
 
 }
 

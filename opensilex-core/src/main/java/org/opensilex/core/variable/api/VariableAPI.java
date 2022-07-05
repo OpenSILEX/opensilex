@@ -14,7 +14,9 @@ import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import io.swagger.annotations.*;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
+import org.opensilex.core.CoreModule;
 import org.opensilex.core.URIsListPostDTO;
+import org.opensilex.core.sharedResource.SharedResourcesDTO;
 import org.opensilex.core.variable.api.characteristic.CharacteristicCreationDTO;
 import org.opensilex.core.variable.api.entity.EntityCreationDTO;
 import org.opensilex.core.variable.api.entityOfInterest.InterestEntityCreationDTO;
@@ -75,12 +77,18 @@ public class VariableAPI {
     public static final String CREDENTIAL_VARIABLE_DELETE_ID = "variable-delete";
     public static final String CREDENTIAL_VARIABLE_DELETE_LABEL_KEY = "credential.default.delete";
 
+    public static final String LOCAL_RESOURCE = "http://localhost";
+
+
     @Inject
     private SPARQLService sparql;
     @Inject
     private MongoDBService mongodb;
     @Inject
     private FileStorageService fs;
+
+    @Inject
+    private CoreModule coreModule;
 
     @Context
     protected HttpServletRequest httpRequest;
@@ -91,6 +99,22 @@ public class VariableAPI {
 
     private VariableDAO getDao() throws URISyntaxException {
         return new VariableDAO(sparql,mongodb,fs);
+    }
+
+    private List<SharedResourcesDTO> getAllSharedResources(
+
+    ) throws Exception {
+
+        SharedResourcesDTO localInstance = new SharedResourcesDTO();
+        localInstance.setUri(new URI(LOCAL_RESOURCE));
+        localInstance.setLabel("component.sharedResources.local-instance");
+        localInstance.setLocal(true);
+
+        List<SharedResourcesDTO> sharedResourcesDTOS = new ArrayList<>();
+        sharedResourcesDTOS.add(localInstance);
+        sharedResourcesDTOS.addAll(coreModule.getSharedResources());
+
+        return sharedResourcesDTOS;
     }
 
     private String readResponse(HttpURLConnection connection)throws Exception {
@@ -353,31 +377,15 @@ public class VariableAPI {
                     VariableGetDTO::fromModel
             ).getList();
 
-            List<String> sharedResourcesUrisList = new ArrayList<>();
-            List<String> sharedResourcesNameList = new ArrayList<>();
-
-            String tokenSearchResources = getToken("http://138.102.159.37:8090/rest");
-            JsonNode jsonResultResources = jsonResponseToService("http://138.102.159.37:8090/rest/ontology/shared_resources", tokenSearchResources);
-
-            if (jsonResultResources != null) {
-                JsonNode resultResources = jsonResultResources.get("result");
-                int rank = 1;
-                while (resultResources.get(rank) != null) {
-                    String resourceUriAtRank = resultResources.get(rank).get("uri").asText();
-                    String resourceNameAtRank = resultResources.get(rank).get("label").asText();
-                    sharedResourcesUrisList.add(resourceUriAtRank);
-                    sharedResourcesNameList.add(resourceNameAtRank);
-                    rank++;
-                }
-            }
+            List<SharedResourcesDTO> sharedResourcesDTOList = getAllSharedResources();
 
             for (VariableGetDTO variableDto : listDTO) {
                 String variableResourceUri = variableDto.getOnShared();
                 int rankList = 1;
                 boolean resourceFound = false;
-                while (rankList < sharedResourcesUrisList.size() && !resourceFound){
-                    if (Objects.equals(sharedResourcesUrisList.get(rankList), variableResourceUri)){
-                        variableDto.setOnShared(sharedResourcesNameList.get(rankList));
+                while (rankList < sharedResourcesDTOList.size() && !resourceFound){
+                    if (Objects.equals(sharedResourcesDTOList.get(rankList).getUri().toString(), variableResourceUri)){
+                        variableDto.setOnShared(sharedResourcesDTOList.get(rankList).getLabel());
                         resourceFound = true;
                     }
                     rankList += 1;
@@ -749,6 +757,9 @@ public class VariableAPI {
                     VariableModel model = variableDto.newModel();
 //                    URI uriTest = new URI(SPARQLDeserializers.getExpandedURI(model.getUri()));
 //                    model.setUri(new URI(SPARQLDeserializers.getExpandedURI(model.getUri())));
+//                    URI uriTestTranslation = prefixeTranslation("phenome","http://www.phenome-fppn.fr/",model.getUri());
+//                    model.setUri(uriTestTranslation);
+
                     model.setOnShared(resource);
                     model.setCreator(currentUser.getUri());
 
@@ -765,6 +776,13 @@ public class VariableAPI {
         }
 
         return new ObjectUriResponse(Response.Status.CREATED, createdUris).getResponse();
+    }
+
+    private URI prefixeTranslation(String prefixe, String prefixeMatch, URI uriToTranslate)
+            throws Exception{
+
+        URI longUri = new URI(prefixeMatch + uriToTranslate.toString().substring(prefixe.length()+1));
+        return longUri;
     }
 
     private <M extends BaseVariableModel<M>, D extends BaseVariableCreationDTO<M>> URI createVariableElement(JsonNode variableJson, URI resource, String token, String fieldName, Class<M> modelClass, Class<D> creationDtoClass)

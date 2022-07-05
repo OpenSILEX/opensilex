@@ -6,11 +6,7 @@
 //******************************************************************************
 package org.opensilex.brapi.api;
 
-import org.opensilex.brapi.model.ObservationUnitDTO;
-import org.opensilex.brapi.model.ObservationVariableDTO;
-import org.opensilex.brapi.model.StudyDetailsDTO;
-import org.opensilex.brapi.model.ObservationDTO;
-import org.opensilex.brapi.model.StudyDTO;
+import org.opensilex.brapi.model.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -19,10 +15,7 @@ import io.swagger.annotations.ApiResponses;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.validation.constraints.Min;
@@ -37,12 +30,14 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import org.apache.commons.lang3.StringUtils;
 import org.opensilex.brapi.BrapiPaginatedListResponse;
-import org.opensilex.brapi.model.Call;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
+import org.opensilex.core.germplasm.api.GermplasmSearchFilter;
+import org.opensilex.core.germplasm.dal.GermplasmDAO;
+import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.scientificObject.api.ScientificObjectSearchDTO;
 import org.opensilex.core.scientificObject.api.ScientificObjectNodeDTO;
@@ -55,6 +50,7 @@ import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLService;
@@ -202,6 +198,23 @@ public class StudiesAPI implements BrapiCall {
         ExperimentDAO dao = new ExperimentDAO(sparql, nosql);
         ExperimentModel model = dao.get(studyDbId, currentUser);
 
+        StudyDetailsDTO dto = StudyDetailsDTO.fromModel(model);
+        DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
+
+        Set<URI> varListURI = dataDAO.getUsedVariablesByExpeSoDevice(currentUser, new ArrayList<>(Collections.singleton(studyDbId)), null, null);
+
+        GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
+        GermplasmSearchFilter filter = new GermplasmSearchFilter();
+        filter.setExperiment(studyDbId);
+
+        List<GermplasmModel> listGermplasm = germplasmDAO.search(filter, false).getList();
+        List<URI> listUriGermplasm = new ArrayList<>();
+        for (GermplasmModel germplasm : listGermplasm) {
+            listUriGermplasm.add(germplasm.getUri());
+        }
+
+        dto.setVariables(varListURI);
+        dto.setGermplasm(listUriGermplasm);
         if (model != null) {
             return new SingleObjectResponse<>(StudyDetailsDTO.fromModel(model)).getResponse();
         } else {
@@ -255,7 +268,33 @@ public class StudiesAPI implements BrapiCall {
         ListWithPagination<ObservationVariableDTO> resultDTOList = variables.convert(ObservationVariableDTO.class, ObservationVariableDTO::fromModel);
         return new BrapiPaginatedListResponse<>(resultDTOList).getResponse();
     }
+    @GET
+    @Path("studies/{studyDbId}/germplasm")
+    @ApiOperation(value = "List all the germplasm in the study.", notes = "List all the germplasm in the study.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK", response = GermplasmDTO.class, responseContainer = "List")})
+    @ApiProtected
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getGermplasm(
+            @ApiParam(value = "studyDbId", required = true) @PathParam("studyDbId") @NotNull URI studyDbId,
+            @ApiParam(value = "pageSize") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize,
+            @ApiParam(value = "page") @QueryParam("page") @DefaultValue("0") @Min(0) int page
+    ) throws Exception {
 
+        GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
+        GermplasmSearchFilter filter = new GermplasmSearchFilter();
+        filter.setExperiment(studyDbId);
+        filter.setPage(page);
+        filter.setPageSize(pageSize);
+        ListWithPagination<GermplasmModel> listGermplasm = germplasmDAO.search(filter, false);
+
+        // Convert paginated list to DTO
+        ListWithPagination<GermplasmDTO> resultDTOList = listGermplasm.convert(
+                GermplasmDTO.class,
+                GermplasmDTO::fromModel
+        );
+        return new BrapiPaginatedListResponse<>(resultDTOList).getResponse();
+    }
     @GET
     @Path("studies/{studyDbId}/observationunits")
     @ApiOperation(value = "List all the observation units measured in the study.", notes = "List all the observation units measured in the study.")

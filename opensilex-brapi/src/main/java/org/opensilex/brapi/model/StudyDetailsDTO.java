@@ -6,9 +6,12 @@
 //******************************************************************************
 package org.opensilex.brapi.model;
 
+import java.net.URI;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+
 import org.opensilex.core.experiment.dal.ExperimentModel;
 
 /**
@@ -19,6 +22,7 @@ public class StudyDetailsDTO extends StudyDTO {
     private List<Contact> contacts;
     private List<DataLink> datalinks;
     private Location location;
+
 
     public List<Contact> getContacts() {
         return contacts;
@@ -43,7 +47,8 @@ public class StudyDetailsDTO extends StudyDTO {
     public void setLocation(Location location) {
         this.location = location;
     }
-    
+
+
     public static StudyDetailsDTO fromModel(ExperimentModel model) {
         StudyDetailsDTO study = new StudyDetailsDTO();
         if (model.getUri() != null) {

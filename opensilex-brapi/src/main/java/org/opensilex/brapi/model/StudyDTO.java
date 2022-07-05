@@ -6,10 +6,13 @@
 //******************************************************************************
 package org.opensilex.brapi.model;
 
+import java.net.URI;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
 import org.opensilex.core.experiment.dal.ExperimentModel;
 
 /**
@@ -35,7 +38,9 @@ public class StudyDTO {
     private String studyTypeDbId;
     private String studyTypeName;
     private String trialDbId;
-    private String trialName;  
+    private String trialName;
+    private Set<URI> varListURI;
+    private  List<URI> listUriGermplasm;
 
     public String getActive() {
         return active;
@@ -188,6 +193,18 @@ public class StudyDTO {
     public void setTrialName(String trialName) {
         this.trialName = trialName;
     }
+
+    public Set<URI> getVariables() {return varListURI;}
+
+    public void setVariables(Set<URI> varListURI) {
+        this.varListURI = varListURI;
+    }
+    public List<URI> getGermplasm() {return listUriGermplasm;}
+
+    public void setGermplasm(List<URI> listUriGermplasm) {
+        this.listUriGermplasm = listUriGermplasm;
+    }
+
     
     public static StudyDTO fromModel(ExperimentModel model) {
         StudyDTO study = new StudyDTO();

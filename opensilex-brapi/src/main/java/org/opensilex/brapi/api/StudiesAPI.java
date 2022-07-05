@@ -216,7 +216,7 @@ public class StudiesAPI implements BrapiCall {
         dto.setVariables(varListURI);
         dto.setGermplasm(listUriGermplasm);
         if (model != null) {
-            return new SingleObjectResponse<>(StudyDetailsDTO.fromModel(model)).getResponse();
+            return new SingleObjectResponse<>(dto).getResponse();
         } else {
             throw new NotFoundURIException(studyDbId);
         }

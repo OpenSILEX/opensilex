@@ -25,7 +25,7 @@ public class StudyDTO {
     private String commonCropName;
     private String documentationURL;
     private String endDate;
-    private String locationDbId;
+    private List<URI> locationDbId;
     private String locationName;
     private String name;
     private String programDbId;
@@ -82,11 +82,11 @@ public class StudyDTO {
         this.endDate = endDate;
     }
 
-    public String getLocationDbId() {
+    public List<URI> getLocationDbId() {
         return locationDbId;
     }
 
-    public void setLocationDbId(String locationDbId) {
+    public void setLocationDbId(List<URI> locationDbId) {
         this.locationDbId = locationDbId;
     }
 
@@ -234,7 +234,7 @@ public class StudyDTO {
         //season.setYear(model.getCampaign());
         seasons.add(season);
         study.setSeasons(seasons);
-        
+
         return study;
     }
 }

@@ -28,6 +28,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+
 import org.apache.commons.lang3.StringUtils;
 import org.opensilex.brapi.BrapiPaginatedListResponse;
 import org.opensilex.core.data.dal.DataDAO;
@@ -213,8 +215,16 @@ public class StudiesAPI implements BrapiCall {
             listUriGermplasm.add(germplasm.getUri());
         }
 
+        List<Location> locationDbId = Location.fromFacilities(model.getFacilities());
+        List<URI> locationURI = new ArrayList<>();
+        for (Location location : locationDbId){
+            locationURI.add(location.getLocationDbId());
+        }
+
         dto.setVariables(varListURI);
         dto.setGermplasm(listUriGermplasm);
+        dto.setLocationDbId(locationURI);
+
         if (model != null) {
             return new SingleObjectResponse<>(dto).getResponse();
         } else {
@@ -269,7 +279,7 @@ public class StudiesAPI implements BrapiCall {
         return new BrapiPaginatedListResponse<>(resultDTOList).getResponse();
     }
     @GET
-    @Path("studies/{studyDbId}/germplasm")
+    @Path("faidare/studies/{studyDbId}/germplasm")
     @ApiOperation(value = "List all the germplasm in the study.", notes = "List all the germplasm in the study.")
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "OK", response = GermplasmDTO.class, responseContainer = "List")})
@@ -336,5 +346,28 @@ public class StudiesAPI implements BrapiCall {
             return ObservationUnitDTO.fromModel(item, factors);
         });
         return new BrapiPaginatedListResponse<>(observations).getResponse();
+    }
+
+    @GET
+    @Path("faidare/studies/{studyDbId}/Location")
+    @ApiOperation(value = "List all the details of locations in the study.", notes = "List all Locations in the study.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK", response = Location.class, responseContainer = "List")})
+    @ApiProtected
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getLocation(
+            @ApiParam(value = "studyDbId", required = true) @PathParam("studyDbId") @NotNull URI studyDbId,
+            @ApiParam(value = "pageSize") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize,
+            @ApiParam(value = "page") @QueryParam("page") @DefaultValue("0") @Min(0) int page
+    ) throws Exception {
+
+        ExperimentDAO experimentDao = new ExperimentDAO(sparql,nosql);
+        ExperimentModel exp = experimentDao.get(studyDbId, currentUser);
+
+        List<Location> resultDTOList = Location.fromFacilities(exp.getFacilities());
+
+        ListWithPagination<Location> list = new ListWithPagination<>(resultDTOList,page,pageSize,resultDTOList.size());
+
+        return new BrapiPaginatedListResponse<>(list).getResponse();
     }
 }

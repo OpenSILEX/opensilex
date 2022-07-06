@@ -6,26 +6,31 @@
 //******************************************************************************
 package org.opensilex.brapi.model;
 
+import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
+
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 /**
  * @see Brapi documentation V1.3 https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3
  * @author Alice Boizet
  */
-class Location {
+public class Location {
     private String abbreviation;
     private Map additionalInfo;
-    private Double altitude;
+    private double altitude;
     private String countryCode;
     private String countryName;
     private String documentationURL;
     private String instituteAdress;
     private String instituteName;
-    private Double latitude;
-    private String locationDbId;
+    private double latitude;
+    private URI locationDbId;
     private String locationName;
     private String locationType;
-    private Double longitude;
+    private double longitude;
 
     public String getAbbreviation() {
         return abbreviation;
@@ -75,11 +80,11 @@ class Location {
         this.documentationURL = documentationURL;
     }
 
-    public String getInstituteAdress() {
+    public String getInstituteAddress() {
         return instituteAdress;
     }
 
-    public void setInstituteAdress(String instituteAdress) {
+    public void setInstituteAddress(String instituteAdress) {
         this.instituteAdress = instituteAdress;
     }
 
@@ -107,11 +112,11 @@ class Location {
         this.longitude = longitude;
     }
 
-    public String getLocationDbId() {
+    public URI getLocationDbId() {
         return locationDbId;
     }
 
-    public void setLocationDbId(String locationDbId) {
+    public void setLocationDbId(URI locationDbId) {
         this.locationDbId = locationDbId;
     }
 
@@ -128,7 +133,25 @@ class Location {
     }
 
     public void setLocationType(String locationType) {
-        this.locationName = locationType;
+        this.locationType = locationType;
     }
 
+    public static List<Location> fromFacilities(List<InfrastructureFacilityModel> facilities){
+        List<Location> location = new ArrayList<>() ;
+        for (InfrastructureFacilityModel infrastructure : facilities){
+            Location loc = new Location();
+            loc.setLocationDbId(infrastructure.getUri());
+
+            if(infrastructure.getAddress()!=null) {
+                loc.setInstituteAddress(infrastructure.getAddress().getStreetAddress());
+                loc.setCountryName(infrastructure.getAddress().getCountryName());
+            }
+
+            loc.setLocationName(infrastructure.getName());
+            loc.setLocationType(infrastructure.getTypeLabel().getDefaultValue());
+
+            location.add(loc);
+        }
+        return location;
+    }
 }

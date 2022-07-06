@@ -414,16 +414,16 @@ public class VariableAPI {
             MetadataDTO metadata = getResponse.getMetadata();
             List<VariableGetDTO> dtoFromApi = getResponse.getResult();
 
-            for(VariableGetDTO sharedDto : dtoFromApi){
+            for(VariableGetDTO variableDto : dtoFromApi){
 
-                URI sharedUriDto = sharedDto.getUri();
+                URI sharedUriDto = variableDto.getUri();
                 // recherche en local si la variable existe
                 VariableDAO dao = getDao();
                 VariableModel variable = dao.get(sharedUriDto);
                 if (variable != null) {
-                    sharedDto.setOnLocal(true);
+                    variableDto.setOnLocal(true);
                 }
-                resultDTOList.add(sharedDto);
+                resultDTOList.add(variableDto);
             }
 
             long totalCount = metadata.getPagination().getTotalCount();

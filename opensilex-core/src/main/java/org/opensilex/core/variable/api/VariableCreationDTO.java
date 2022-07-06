@@ -319,8 +319,12 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
             }
         }
 
-        if (detailsDto.getSpecies() != null) {
-            dto.setSpecies(detailsDto.getSpecies().getUri());
+        if (!CollectionUtils.isEmpty(detailsDto.getSpecies())) {
+            List<URI> speciesUriList = new ArrayList<>();
+            for (SpeciesDTO speciesDto : detailsDto.getSpecies()){
+                speciesUriList.add(speciesDto.getUri());
+            }
+            dto.setSpecies(speciesUriList);
         }
 
         if (detailsDto.getTimeInterval() != null) {

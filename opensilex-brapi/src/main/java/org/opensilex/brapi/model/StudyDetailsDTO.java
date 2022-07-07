@@ -21,7 +21,7 @@ import org.opensilex.core.experiment.dal.ExperimentModel;
 public class StudyDetailsDTO extends StudyDTO {
     private List<Contact> contacts;
     private List<DataLink> datalinks;
-    private Location location;
+    //private Location location;
 
 
     public List<Contact> getContacts() {
@@ -40,13 +40,13 @@ public class StudyDetailsDTO extends StudyDTO {
         this.datalinks = datalinks;
     }
 
-    public Location getLocation() {
+/*    public Location getLocation() {
         return location;
     }
 
     public void setLocation(Location location) {
         this.location = location;
-    }
+    }*/
 
 
     public static StudyDetailsDTO fromModel(ExperimentModel model) {
@@ -78,7 +78,12 @@ public class StudyDetailsDTO extends StudyDTO {
         //season.setYear(model.getCampaign());
         seasons.add(season);
         study.setSeasons(seasons);
-        
+
+        List<Contact> scienitifque = Contact.fromContact(model.getScientificSupervisors());
+        List<Contact> technicien = Contact.fromContact(model.getTechnicalSupervisors());
+        List<Contact> contact = new ArrayList<>(scienitifque);
+        contact.addAll(technicien);
+        study.setContacts(contact);
         return study;
     }
     

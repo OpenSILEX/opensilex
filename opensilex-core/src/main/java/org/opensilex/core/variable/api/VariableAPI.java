@@ -194,8 +194,6 @@ public class VariableAPI {
         }else{
             return null;
         }
-
-
     }
 
     private <M extends BaseVariableModel<M>, D extends BaseVariableCreationDTO<M>> URI createVariableElement(JsonNode variableJson, URI resource, String token, String fieldName, Class<M> modelClass, Class<D> creationDtoClass)
@@ -500,7 +498,12 @@ public class VariableAPI {
                 URI sharedVariableUri = variableDto.getUri();
                 // recherche en local si la variable existe
                 VariableDAO dao = getDao();
-                VariableModel variable = dao.get(prefixeTranslation(sharedVariableUri));
+                VariableModel variable;
+                if (prefixeTranslation(sharedVariableUri) != null){
+                    variable = dao.get(prefixeTranslation(sharedVariableUri));
+                }else{
+                    variable = dao.get(sharedVariableUri);
+                }
                 if (variable != null) {
                     variableDto.setOnLocal(true);
                 }

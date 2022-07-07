@@ -134,20 +134,20 @@ public class SPARQLModule extends OpenSilexModule {
 
     @Override
     public void install(boolean reset) throws Exception {
-        SPARQLConfig cfg = this.getConfig(SPARQLConfig.class);
-        SPARQLServiceFactory sparql = cfg.sparql();
-        if (reset) {
-            sparql.deleteRepository();
-        }
-        sparql.createRepository();
-        sparql = cfg.sparql();
 
-        SPARQLService sparqlService = sparql.provide();
+        SPARQLConfig sparqlConfig = this.getConfig(SPARQLConfig.class);
+        SPARQLServiceFactory sparqlFactory = sparqlConfig.sparql();
+        if (reset) {
+            sparqlFactory.deleteRepository();
+        }
+        sparqlFactory.createRepository();
+
+        SPARQLService sparqlService = sparqlFactory.provide();
 
         try {
             installOntologies(sparqlService, reset);
 
-            if (cfg.enableSHACL()) {
+            if (sparqlConfig.enableSHACL()) {
                 sparqlService.enableSHACL();
             } else {
                 sparqlService.disableSHACL();
@@ -160,7 +160,7 @@ public class SPARQLModule extends OpenSilexModule {
         catch (Exception ex) {
             LOGGER.error("Error while initializing SHACL", ex);
         } finally {
-            sparql.dispose(sparqlService);
+            sparqlFactory.dispose(sparqlService);
         }
 
     }

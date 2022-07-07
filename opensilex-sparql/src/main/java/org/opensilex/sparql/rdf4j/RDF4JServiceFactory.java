@@ -5,11 +5,8 @@
  */
 package org.opensilex.sparql.rdf4j;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.StringReader;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -38,6 +35,8 @@ import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.RDFParser;
 import org.eclipse.rdf4j.rio.Rio;
 import org.eclipse.rdf4j.rio.helpers.StatementCollector;
+import org.eclipse.rdf4j.sail.config.SailFactory;
+import org.eclipse.rdf4j.sail.config.SailRegistry;
 import org.opensilex.OpenSilex;
 import org.opensilex.service.ServiceDefaultDefinition;
 import org.opensilex.sparql.service.SPARQLService;
@@ -146,6 +145,41 @@ public class RDF4JServiceFactory extends SPARQLServiceFactory {
 
     }
 
+    /**
+     * @return the rdf4j repository creation template file
+     * @throws IOException if the file can't be read
+     */
+    protected File getRepositoryCreationTemplateFile() throws IOException {
+        // Read repository configuration file located in jar
+        File rdf4jApiJar = ClassUtils.getJarFile(RepositoryConfig.class);
+        return ClassUtils.getFileFromJar(rdf4jApiJar, "org/eclipse/rdf4j/repository/config/native-shacl.ttl");
+    }
+
+    /**
+     *
+     * @return a non-null {@link Map} which contains all repository custom properties and properties value.
+     * These settings override settings already present in the repository template file returned by {@link #getRepositoryCreationTemplateFile()}
+     * @see <a href="https://rdf4j.org/documentation/tools/repository-configuration/"> RDF4J repository configuration </a>
+     * @see <a href="https://rdf4j.org/documentation/reference/configuration/"> RDF4J repository configuration </a>
+     */
+    protected Map<String,String> getCustomRepositorySettings(){
+        Map<String,String> settings = new HashMap<>();
+
+        // Go to https://rdf4j.org/documentation/reference/configuration/ and search 'Native store indexes' for more details
+        settings.put(TRIPLE_INDEXES_PARAMETER, "spoc,posc,opsc");
+
+        return settings;
+    }
+
+    /** name of the template used in rdf4j to define the repository id */
+    protected static final String REPOSITORY_ID_TEMPLATE_PARAMETER = "Repository ID";
+
+    /** name of the template used in rdf4j to define the repository title */
+    protected static final String REPOSITORY_TITLE_TEMPLATE_PARAMETER = "Repository title";
+
+    // define default indexes used during query evaluation
+    protected static final String TRIPLE_INDEXES_PARAMETER = "Triple indexes";
+
     @Override
     public void createRepository() throws Exception {
         if (getImplementedConfig() != null) {
@@ -153,34 +187,27 @@ public class RDF4JServiceFactory extends SPARQLServiceFactory {
             RepositoryManager repositoryManager = RepositoryProvider.getRepositoryManager(getImplementedConfig().serverURI());
             repositoryManager.init();
 
-            // Read repository configuration file located in jar
-            File rdf4jApiJar = ClassUtils.getJarFile(RepositoryConfig.class);
-            File templateFile = ClassUtils.getFileFromJar(rdf4jApiJar, "org/eclipse/rdf4j/repository/config/native-shacl.ttl");
+            // read the repository template file
+            File templateFile = getRepositoryCreationTemplateFile();
             InputStream templateStream = new FileInputStream(templateFile);
             String template;
             try {
-                template = IOUtil.readString(new InputStreamReader(templateStream, "UTF-8"));
+                template = IOUtil.readString(new InputStreamReader(templateStream, StandardCharsets.UTF_8));
             } finally {
                 templateStream.close();
             }
             final ConfigTemplate configTemplate = new ConfigTemplate(template);
 
-            // This variable contains all keys parsed from template, use debugger to watch them.
-            // final Map<String, List<String>> variableMap = configTemplate.getVariableMap();
-            // Define repository template parameters
-            final Map<String, String> valueMap = new HashMap<String, String>() {
-                {
-                    put("Repository ID", getImplementedConfig().repository());
-                    put("Repository title", getImplementedConfig().repository());
-                    // Default template value write here for information
-                    put("Query Iteration Cache size", "10000");
-                    put("Triple indexes", "spoc,posc");
-                    // put("EvaluationStrategyFactory", "org.eclipse.rdf4j.query.algebra.evaluation.impl.StrictEvaluationStrategyFactory");
+            final Map<String, String> repositorySettings = new HashMap<>();
 
-                }
-            };
+            // define repository id and title
+            repositorySettings.put(REPOSITORY_ID_TEMPLATE_PARAMETER, getImplementedConfig().repository());
+            repositorySettings.put(REPOSITORY_TITLE_TEMPLATE_PARAMETER, getImplementedConfig().repository());
 
-            final String configString = configTemplate.render(valueMap);
+            // define settings for the RDF4J service implementation
+            repositorySettings.putAll(getCustomRepositorySettings());
+
+            final String configString = configTemplate.render(repositorySettings);
             final Model graph = new LinkedHashModel();
 
             final RDFParser rdfParser = Rio.createParser(RDFFormat.TURTLE, SimpleValueFactory.getInstance());
@@ -191,18 +218,35 @@ public class RDF4JServiceFactory extends SPARQLServiceFactory {
                     .subject(graph.filter(null, RDF.TYPE, RepositoryConfigSchema.REPOSITORY))
                     .orElseThrow(() -> new RepositoryConfigException("missing repository node"));
 
-            RepositoryRegistry registry = RepositoryRegistry.getInstance();
-            ServiceLoader<RepositoryFactory> services = ServiceLoader.load(RepositoryFactory.class, OpenSilex.getClassLoader());
-            services.forEach(action -> {
-                registry.add(action);
-            });
+            loadRDF4JServices();
 
             final RepositoryConfig repConfig = RepositoryConfig.create(graph, repositoryNode);
             repConfig.validate();
 
             repositoryManager.addRepositoryConfig(repConfig);
             repositoryManager.shutDown();
+            LOGGER.info("Repository created {}@{} [OK]", getImplementedConfig().serverURI(), getImplementedConfig().repository());
         }
+    }
+
+    /**
+     * Load all {@link RepositoryRegistry} and {@link SailRegistry} to ensure that repository creation will recognize all available services
+     */
+    private void loadRDF4JServices(){
+
+        // Load all RepositoryRegistry with ServiceLoader, needed to ensure that all RepositoryRegistry are available for repository creation
+        RepositoryRegistry repositoryRegistry = RepositoryRegistry.getInstance();
+        ServiceLoader<RepositoryFactory> services = ServiceLoader.load(RepositoryFactory.class, OpenSilex.getClassLoader());
+        services.forEach(repositoryRegistry::add);
+
+        repositoryRegistry.getAll().forEach(registry -> LOGGER.info("RepositoryRegistry : {}", registry.getRepositoryType()));
+
+        // Load all SailRegistry with ServiceLoader, needed to ensure that all SailRegistry are available for repository sail delegation
+        SailRegistry sailRegistry = SailRegistry.getInstance();
+        ServiceLoader<SailFactory> sails = ServiceLoader.load(SailFactory.class, OpenSilex.getClassLoader());
+        sails.forEach(sailRegistry::add);
+
+        sailRegistry.getAll().forEach(registry -> LOGGER.info("SailFactory : {}", registry.getSailType()));
     }
 
     @Override
@@ -213,7 +257,11 @@ public class RDF4JServiceFactory extends SPARQLServiceFactory {
             repositoryManager.init();
             repositoryManager.removeRepository(getImplementedConfig().repository());
             repositoryManager.shutDown();
+            LOGGER.info("Repository deleted {}@{} [OK]", getImplementedConfig().serverURI(), getImplementedConfig().repository());
         }
     }
 
+    public final Repository getRepository() {
+        return repository;
+    }
 }

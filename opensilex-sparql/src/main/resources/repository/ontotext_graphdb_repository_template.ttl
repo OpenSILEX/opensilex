@@ -1,0 +1,38 @@
+#
+# RDF4J configuration template for a GraphDB repository
+#
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+@prefix rep: <http://www.openrdf.org/config/repository#>.
+@prefix sr: <http://www.openrdf.org/config/repository/sail#>.
+@prefix sail: <http://www.openrdf.org/config/sail#>.
+@prefix graphdb: <http://www.ontotext.com/config/graphdb#>.
+@prefix owlim: <http://www.ontotext.com/trree/owlim#>.
+
+[] a rep:Repository ;
+   rep:repositoryID "{%Repository ID|opensilex-graph-db%}" ;
+   rdfs:label "{%Repository title|opensilex-graph-db%}" ;
+
+    rep:repositoryImpl [
+        rep:repositoryType "{%repository-type|graphdb:FreeSailRepository%}" ;
+        sr:sailImpl [
+            sail:sailType "{%sail-type|graphdb:FreeSail%}" ;
+            owlim:entity-index-size "10000000" ;
+            owlim:entity-id-size  "32" ;
+            owlim:ruleset "empty" ;
+            owlim:storage-folder "storage" ;
+
+            owlim:enable-context-index "true" ;
+
+            owlim:enablePredicateList "true" ;
+
+            owlim:in-memory-literal-properties "true" ;
+            owlim:enable-literal-index "true" ;
+
+            owlim:check-for-inconsistencies "false" ;
+            owlim:disable-sameAs  "true" ;
+            owlim:query-timeout  "{%query-timeout|120%}" ;
+            owlim:query-limit-results  "{%query-limit-results|100000%}" ;
+            owlim:throw-QueryEvaluationException-on-timeout "true" ;
+            owlim:read-only "false" ;
+        ]
+    ].

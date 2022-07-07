@@ -1,0 +1,15 @@
+ontologies:
+  baseURI: http://opensilex.dev/
+  baseURIAlias: test
+  sparql:
+    implementation: org.opensilex.sparql.rdf4j.RDF4JServiceFactory
+    config:
+      serverURI: http://localhost:8667/rdf4j-server/
+      repository: opensilex_rdf4j_install_test
+
+big-data:
+  mongodb:
+    config:
+      host: localhost
+      port: 8668
+      database: opensilex

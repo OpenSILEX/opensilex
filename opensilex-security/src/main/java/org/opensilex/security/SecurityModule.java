@@ -23,6 +23,7 @@ import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.authentication.injection.CurrentUserFactory;
 import org.opensilex.security.authentication.injection.CurrentUserResolver;
 import org.opensilex.security.extensions.LoginExtension;
+import org.opensilex.security.ontology.OesoSecurity;
 import org.opensilex.security.profile.dal.ProfileModel;
 import org.opensilex.security.user.dal.UserDAO;
 import org.opensilex.security.user.dal.UserModel;
@@ -153,10 +154,10 @@ public class SecurityModule extends OpenSilexModule implements APIExtension, Log
         List<OntologyFileDefinition> list = SPARQLExtension.super.getOntologiesFiles();
 
         list.add(new OntologyFileDefinition(
-                "http://www.opensilex.org/security#",
+                OesoSecurity.NS,
                 "ontologies/os-sec.owl",
                 Lang.RDFXML,
-                "os-sec"
+                OesoSecurity.PREFIX
         ));
 
         list.add(new OntologyFileDefinition(

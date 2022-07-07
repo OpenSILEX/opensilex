@@ -28,6 +28,7 @@ import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.ontology.dal.OwlRestrictionModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
@@ -144,11 +145,12 @@ public abstract class AbstractCsvDao<T extends SPARQLNamedResourceModel> impleme
                 Map<URI, Map<URI, Boolean>> checkedClassObjectURIs = new HashMap<>();
                 Map<URI, Integer> checkedURIs = new HashMap<>();
 
+                OntologyDAO ontologyDAO = new OntologyDAO(sparql);
                 while ((values = csvReader.parseNext()) != null) {
                     try {
                         URI rdfType = new URI(SPARQLDeserializers.getExpandedURI(values[typeIndex].trim()));
                         if (!typeRestrictions.containsKey(rdfType.toString())) {
-                            ClassModel model = sparql.getOntologyDao().getClassModel(rdfType, parentClass, lang);
+                            ClassModel model = ontologyDAO.getClassModel(rdfType, parentClass, lang);
 
                             Map<String, OwlRestrictionModel> restrictionsByID = new HashMap<>();
                             model.getRestrictionsByProperties().values().forEach(restriction -> {

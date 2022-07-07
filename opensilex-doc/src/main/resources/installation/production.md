@@ -89,8 +89,8 @@ You can also use this docker image: [eclipse/rdf4j-workbench](https://hub.docker
 
 Linux example command:
 
-```
-sudo docker run -d eclipse/rdf4j-workbench:amd64-3.4.4
+```bash
+sudo docker run -d eclipse/rdf4j-workbench
 ```
 
 ### GraphDB
@@ -103,8 +103,8 @@ You can also use this docker image: [ontotext/graphdb](https://hub.docker.com/r/
 
 Linux example command:
 
-```
-sudo docker run -d ontotext/graphdb:9.1.1-se
+```bash
+sudo docker run -d ontotext/graphdb
 ```
 
 # Installation
@@ -312,21 +312,50 @@ opensilex help
 
 ### Initialize your triplestore
 
-```
+```bash
 opensilex system install
 ```
 
 This instruction creates the repository (with the name defined in the configuration file). It also creates the default administrator and imports the ontologies.
 
-**N.B.** If your triplestore is graphDB, this instruction may not work. In this case, you can create your repository manually and run the following instructions to import the ontologies and create default administrator.
 
-- Import ontologies
+**GraphDB**
 
+If your want to use graphDB, you must update some part of your ```opensilex.yml``` config file as following : 
+
+```yml
+ontologies:
+  baseURI: http://opensilex.dev/
+  baseURIAlias: test
+  sparql:
+    implementation: org.opensilex.sparql.rdf4j.graphdb.OntotextGraphDBServiceFactory
+    config:
+      serverURI: http://localhost:7200
+      repository: opensilex
+      repositoryType: graphdb:FreeSailRepository
 ```
+
+Note the value for the setting ```repositoryType``` depends on your graphdb version (free, standard or entreprise).
+
+You can see the following links for more details about repository configuration :
+- https://graphdb.ontotext.com/documentation/9.11/standard/configuring-a-repository.html#configuration-parameters
+- https://graphdb.ontotext.com/documentation/9.11/enterprise/configuring-a-repository.html#configuration-parameters
+- https://graphdb.ontotext.com/documentation/9.11/free/configuring-a-repository.html#configuration-parameters
+
+Now you can run 
+
+```bash
+opensilex system install
+```
+
+
+**Import ontologies**
+
+```bash
 opensilex sparql reset-ontologies
 ```
 
-- Create default administrator
+**Create default administrator**
 
 This instruction creates a user "admin@opensilex.org" with the password "admin"
 

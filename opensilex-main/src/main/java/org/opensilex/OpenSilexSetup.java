@@ -63,7 +63,7 @@ public class OpenSilexSetup {
      * @param args
      * @param cliArgsList
      */
-    OpenSilexSetup(Path baseDirectory, String profileId, File configFile, boolean debug, boolean noCache, String[] args, List<Object> cliArgsList) {
+    public OpenSilexSetup(Path baseDirectory, String profileId, File configFile, boolean debug, boolean noCache, String[] args, List<Object> cliArgsList) {
         this.baseDirectory = baseDirectory;
         this.profileId = profileId;
         this.configFile = configFile;

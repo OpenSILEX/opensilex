@@ -88,7 +88,6 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
     public static final String DEFAULT_SPARQL_SERVICE = "sparql";
     private final SPARQLConnection connection;
-    private OntologyDAO ontologyDao;
 
     public SPARQLService(SPARQLServiceConfig config) {
         super(config);
@@ -100,9 +99,6 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         this.connection = connection;
     }
 
-    public OntologyDAO getOntologyDao() {
-        return ontologyDao;
-    }
 
     private String defaultLang = OpenSilex.DEFAULT_LANGUAGE;
 
@@ -119,7 +115,6 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         connection.setOpenSilex(getOpenSilex());
         connection.setMapperIndex(getMapperIndex());
         connection.setup();
-        ontologyDao = new OntologyDAO(this);
     }
 
     @Override
@@ -1236,7 +1231,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         URI rootType = analyzer.getRdfTypeURI();
         ClassModel classModel;
         try {
-            classModel = ontologyDao.getClassModel(instance.getType(), rootType, OpenSilex.DEFAULT_LANGUAGE);
+            classModel = new OntologyDAO(this).getClassModel(instance.getType(), rootType, OpenSilex.DEFAULT_LANGUAGE);
         } catch (SPARQLInvalidURIException e) {
             throw new SPARQLInvalidModelException(String.format(NO_CLASS_MODEL_ERROR_MSG, instance.getClass().toString(), rootType.toString()));
         }

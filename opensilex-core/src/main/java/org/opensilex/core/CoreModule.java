@@ -168,8 +168,8 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
     }
 
 
-    private static final String DEFAULT_VARIABLE_GROUP_NAME = "Environmental variables";
-    private static final String DEFAULT_VARIABLE_GROUP_DESCRIPTION = "This group is about environmental variables\"";
+    public static final String DEFAULT_VARIABLE_GROUP_NAME = "Environmental variables";
+    public static final String DEFAULT_VARIABLE_GROUP_DESCRIPTION = "This group is about environmental variables\"";
 
     private void insertDefaultVariablesGroup() throws Exception {
         SPARQLServiceFactory factory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);

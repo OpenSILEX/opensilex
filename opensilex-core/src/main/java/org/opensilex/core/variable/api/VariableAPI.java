@@ -184,6 +184,87 @@ public class VariableAPI {
         return token;
     }
 
+    private URI prefixeTranslation(URI uri) throws Exception {
+        Map<String, String> nameSpaces = SPARQLService.getPrefixes();
+        String prefixeUri = uri.getScheme();
+
+        if (nameSpaces.get(prefixeUri) != null){
+            URI translatedUri = new URI(uri.toString().replace(prefixeUri + ":",nameSpaces.get(prefixeUri)));
+            return translatedUri;
+        }else{
+            return null;
+        }
+
+
+    }
+
+    private <M extends BaseVariableModel<M>, D extends BaseVariableCreationDTO<M>> URI createVariableElement(JsonNode variableJson, URI resource, String token, String fieldName, Class<M> modelClass, Class<D> creationDtoClass)
+            throws Exception{
+
+        URI shortUri = new URI("");
+
+        JsonNode fieldUri = variableJson.get(fieldName).get("uri");
+        if (fieldUri != null){
+            String filedUriString = variableJson.get(fieldName).get("uri").asText();
+            BaseVariableDAO<M> dao = new BaseVariableDAO<>(modelClass, sparql);
+            M model = dao.get(new URI(filedUriString));
+
+            if (model == null) { // n'existe pas en local
+                // on renvoie toutes les infos enregistrées dans la resource pour le champ
+                JsonNode filedJsonResult;
+
+                String urlService = "";
+
+                if (Objects.equals(fieldName, "entity")){
+                    urlService += resource.toString() + "/core/entities/" + URLEncoder.encode(filedUriString, StandardCharsets.UTF_8.name());
+                    filedJsonResult = jsonResponseToService(urlService, token);
+                } else if (Objects.equals(fieldName, "entity_of_interest")) {
+                    urlService += resource.toString() + "/core/entities_of_interest/" + URLEncoder.encode(filedUriString, StandardCharsets.UTF_8.name());
+                    filedJsonResult = jsonResponseToService(urlService, token);
+                }else{
+                    urlService += resource.toString() + "/core/" + fieldName + "s/" + URLEncoder.encode(filedUriString, StandardCharsets.UTF_8.name());
+                    filedJsonResult = jsonResponseToService(urlService, token);
+                }
+
+                D fieldDto = creationDtoClass.getConstructor().newInstance(); // l'instanciation directe n'est pas possible car le type D n'est pas connu et extends d'une classe abstraite
+
+                // on les ajoute au CreationDto
+                // étape peut être supprimée s'il est possible de convertir le résultat directement en CreationDto
+                JsonNode result = filedJsonResult.get("result");
+
+                fieldDto.setUri(new URI(result.get("uri").asText()));
+                fieldDto.setName(result.get("name").asText());
+                fieldDto.setDescription(result.get("description").asText());
+
+                if (Objects.equals(creationDtoClass,UnitCreationDTO.class)){
+                    UnitCreationDTO unitCreationDTO = (UnitCreationDTO) fieldDto; // on fait un cast pour modifier le type de dto
+                    unitCreationDTO.setSymbol(result.get("symbol").asText());
+                    unitCreationDTO.setAlternativeSymbol(result.get("alternative_symbol").asText());
+                }
+
+                // ce sont des listes
+                // rendre générique si hamza rajoute des champs et regarder en fonction string ou liste !
+//                fieldDto.setExactMatch(filedJsonResult.get("description").asText());
+//                fieldDto.setCloseMatch(filedJsonResult.get("description").asText());
+//                fieldDto.setBroadMatch(filedJsonResult.get("description").asText());
+//                fieldDto.setNarrowMatch(filedJsonResult.get("description").asText());
+
+
+                // on utilise ensuite ce CreationDto pour enregistrer la variable
+
+                BaseVariableDAO<M> fieldDao = new BaseVariableDAO<>(modelClass, sparql);
+                M fieldModel = fieldDto.newModel();
+                fieldModel.setCreator(currentUser.getUri());
+
+                fieldDao.create(fieldModel);
+                shortUri = new URI(SPARQLDeserializers.getShortURI(fieldModel.getUri().toString()));
+
+
+            }
+        }
+        return shortUri;
+    }
+
     @POST
     @ApiOperation("Add a variable")
     @ApiProtected
@@ -416,10 +497,10 @@ public class VariableAPI {
 
             for(VariableGetDTO variableDto : dtoFromApi){
 
-                URI sharedUriDto = variableDto.getUri();
+                URI sharedVariableUri = variableDto.getUri();
                 // recherche en local si la variable existe
                 VariableDAO dao = getDao();
-                VariableModel variable = dao.get(sharedUriDto);
+                VariableModel variable = dao.get(prefixeTranslation(sharedVariableUri));
                 if (variable != null) {
                     variableDto.setOnLocal(true);
                 }
@@ -755,11 +836,11 @@ public class VariableAPI {
                 try {
                     VariableDAO dao = getDao();
                     VariableModel model = variableDto.newModel();
-//                    URI uriTest = new URI(SPARQLDeserializers.getExpandedURI(model.getUri()));
-//                    model.setUri(new URI(SPARQLDeserializers.getExpandedURI(model.getUri())));
-//                    URI uriTestTranslation = prefixeTranslation("phenome","http://www.phenome-fppn.fr/",model.getUri());
-//                    model.setUri(uriTestTranslation);
+                    URI translatedUri = prefixeTranslation(model.getUri());
 
+                    if (translatedUri != null){
+                        model.setUri(translatedUri);
+                    }
                     model.setOnShared(resource);
                     model.setCreator(currentUser.getUri());
 
@@ -777,81 +858,6 @@ public class VariableAPI {
 
         return new ObjectUriResponse(Response.Status.CREATED, createdUris).getResponse();
     }
-
-    private URI prefixeTranslation(String prefixe, String prefixeMatch, URI uriToTranslate)
-            throws Exception{
-
-        URI longUri = new URI(prefixeMatch + uriToTranslate.toString().substring(prefixe.length()+1));
-        return longUri;
-    }
-
-    private <M extends BaseVariableModel<M>, D extends BaseVariableCreationDTO<M>> URI createVariableElement(JsonNode variableJson, URI resource, String token, String fieldName, Class<M> modelClass, Class<D> creationDtoClass)
-            throws Exception{
-
-        URI shortUri = new URI("");
-
-        JsonNode fieldUri = variableJson.get(fieldName).get("uri");
-        if (fieldUri != null){
-            String filedUriString = variableJson.get(fieldName).get("uri").asText();
-            BaseVariableDAO<M> dao = new BaseVariableDAO<>(modelClass, sparql);
-            M model = dao.get(new URI(filedUriString));
-
-            if (model == null) { // n'existe pas en local
-                // on renvoie toutes les infos enregistrées dans la resource pour le champ
-                JsonNode filedJsonResult;
-
-                String urlService = "";
-
-                if (Objects.equals(fieldName, "entity")){
-                    urlService += resource.toString() + "/core/entities/" + URLEncoder.encode(filedUriString, StandardCharsets.UTF_8.name());
-                    filedJsonResult = jsonResponseToService(urlService, token);
-                } else if (Objects.equals(fieldName, "entity_of_interest")) {
-                    urlService += resource.toString() + "/core/entities_of_interest/" + URLEncoder.encode(filedUriString, StandardCharsets.UTF_8.name());
-                    filedJsonResult = jsonResponseToService(urlService, token);
-                }else{
-                    urlService += resource.toString() + "/core/" + fieldName + "s/" + URLEncoder.encode(filedUriString, StandardCharsets.UTF_8.name());
-                    filedJsonResult = jsonResponseToService(urlService, token);
-                }
-
-                D fieldDto = creationDtoClass.getConstructor().newInstance(); // l'instanciation directe n'est pas possible car le type D n'est pas connu et extends d'une classe abstraite
-
-                // on les ajoute au CreationDto
-                // étape peut être supprimée s'il est possible de convertir le résultat directement en CreationDto
-                JsonNode result = filedJsonResult.get("result");
-
-                fieldDto.setUri(new URI(result.get("uri").asText()));
-                fieldDto.setName(result.get("name").asText());
-                fieldDto.setDescription(result.get("description").asText());
-
-                if (Objects.equals(creationDtoClass,UnitCreationDTO.class)){
-                    UnitCreationDTO unitCreationDTO = (UnitCreationDTO) fieldDto; // on fait un cast pour modifier le type de dto
-                    unitCreationDTO.setSymbol(result.get("symbol").asText());
-                    unitCreationDTO.setAlternativeSymbol(result.get("alternative_symbol").asText());
-                }
-
-                // ce sont des listes
-                // rendre générique si hamza rajoute des champs et regarder en fonction string ou liste !
-//                fieldDto.setExactMatch(filedJsonResult.get("description").asText());
-//                fieldDto.setCloseMatch(filedJsonResult.get("description").asText());
-//                fieldDto.setBroadMatch(filedJsonResult.get("description").asText());
-//                fieldDto.setNarrowMatch(filedJsonResult.get("description").asText());
-
-
-                // on utilise ensuite ce CreationDto pour enregistrer la variable
-
-                BaseVariableDAO<M> fieldDao = new BaseVariableDAO<>(modelClass, sparql);
-                M fieldModel = fieldDto.newModel();
-                fieldModel.setCreator(currentUser.getUri());
-
-                fieldDao.create(fieldModel);
-                shortUri = new URI(SPARQLDeserializers.getShortURI(fieldModel.getUri().toString()));
-
-
-            }
-        }
-        return shortUri;
-    }
-
 }
 
 

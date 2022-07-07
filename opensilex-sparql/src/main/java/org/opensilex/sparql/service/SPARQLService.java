@@ -150,6 +150,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                 put("dc", DCTerms.NS);
                 put(OWL.PREFIX, OWL.NAMESPACE);
                 put(XSD.PREFIX, XSD.NAMESPACE);
+                put("phenome","http://www.phenome-fppn.fr/");
             }
         };
     }

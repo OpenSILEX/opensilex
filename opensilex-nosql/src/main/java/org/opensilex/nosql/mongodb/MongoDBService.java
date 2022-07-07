@@ -196,11 +196,8 @@ public class MongoDBService extends BaseService {
      * Handle operations on {@link SPARQLService} and on {@link MongoDBService} by handling
      * transaction commit and rollback in case of error
      * @param sparqlService the {@link SPARQLService} used to performs operations on triplestore
-     * @param mongoFunction custom MongoDB-based function/code to apply after transaction start and before transaction commit.
-     * @param sparqlFunction custom SPARQL based function/code to apply after transaction start and before transaction commit.
      * @throws Exception if some Exception is encountered during mongoFunction or sparqlFunction applying, or with SPARQL or MongoDB driver.
      * When encountered, this method ensure that any data inserted is rollback()
-     *
      * @apiNote the mongo session is always closed ({@link ClientSession#close()}) at the end of method (with or without fail). So you should
      * not reuse this session after <br><br>
      *
@@ -222,51 +219,80 @@ public class MongoDBService extends BaseService {
      */
     public void multipleOperationsWithTransaction(
             SPARQLService sparqlService,
-            ThrowingConsumer<ClientSession, Exception> mongoFunction,
-            ThrowingConsumer<SPARQLService, Exception> sparqlFunction,
-            boolean sparqlFirst
+            MultipleDataSourceOperation operation
     ) throws Exception {
 
-        ClientSession mongoSession = startSession();
-        try {
-            mongoSession.startTransaction();
-            sparqlService.startTransaction();
+        boolean useMongo = operation.useMongoDb();
+        boolean useSparql = operation.useSparql();
 
-            if(sparqlFirst){
-                sparqlFunction.accept(sparqlService);
-                mongoFunction.accept(mongoSession);
-            }else{
-                mongoFunction.accept(mongoSession);
-                sparqlFunction.accept(sparqlService);
+        ClientSession mongoSession = useMongo ? startSession(): null;
+        try {
+
+            if(useMongo){
+                mongoSession.startTransaction();
+            }
+            if(useSparql){
+                sparqlService.startTransaction();
             }
 
-            if(mongoSession.hasActiveTransaction()){
+            if(operation.isSparqlFirst()){
+                if(useSparql){
+                    for(ThrowingConsumer<SPARQLService, Exception> sparqlConsumer : operation.getSparqlConsumers()){
+                        sparqlConsumer.accept(sparqlService);
+                    }
+                }
+                if(useMongo){
+                    for(ThrowingConsumer<ClientSession, Exception> mongoConsumer : operation.getMongoConsumers()){
+                        mongoConsumer.accept(mongoSession);
+                    }
+                }
+            }else{
+                if(useMongo){
+                    for(ThrowingConsumer<ClientSession, Exception> mongoConsumer : operation.getMongoConsumers()){
+                        mongoConsumer.accept(mongoSession);
+                    }
+                }
+                if(useSparql){
+                    for(ThrowingConsumer<SPARQLService, Exception> sparqlConsumer : operation.getSparqlConsumers()){
+                        sparqlConsumer.accept(sparqlService);
+                    }
+                }
+            }
+
+            if(useMongo && mongoSession.hasActiveTransaction()){
                 mongoSession.commitTransaction();
             }
-            if(sparqlService.hasActiveTransaction()){
+            if(useSparql && sparqlService.hasActiveTransaction()){
                 sparqlService.commitTransaction();
             }
         }catch (Exception e){
-            if(mongoSession.hasActiveTransaction()){
+            if(useMongo && mongoSession.hasActiveTransaction()){
                 mongoSession.abortTransaction();
             }
-            if(sparqlService.hasActiveTransaction()){
+            if(useSparql && sparqlService.hasActiveTransaction()){
                 sparqlService.rollbackTransaction();
             }
             throw e;
         }finally {
-            mongoSession.close();
+            if(useMongo){
+                mongoSession.close();
+            }
         }
     }
 
     /**
-     * Call {@link #multipleOperationsWithTransaction(SPARQLService, ThrowingConsumer, ThrowingConsumer,boolean)} with sparql function evaluated first
+     * Call {@link #multipleOperationsWithTransaction(SPARQLService, MultipleDataSourceOperation)} with sparql function evaluated first
      */
     public void multipleOperationsWithTransaction(
             SPARQLService sparqlService,
             ThrowingConsumer<ClientSession, Exception> mongoFunction,
             ThrowingConsumer<SPARQLService, Exception> sparqlFunction) throws Exception {
-        multipleOperationsWithTransaction(sparqlService,mongoFunction,sparqlFunction,true);
+
+        multipleOperationsWithTransaction(sparqlService, new MultipleDataSourceOperation()
+                .addMongoConsumer(mongoFunction)
+                .addSparqlConsumer(sparqlFunction)
+                .setSparqlFirst(true)
+        );
     }
 
     /**

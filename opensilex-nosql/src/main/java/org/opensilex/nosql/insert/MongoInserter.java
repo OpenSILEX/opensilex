@@ -4,7 +4,7 @@ import org.opensilex.nosql.mongodb.MongoDBConfig;
 import org.opensilex.nosql.mongodb.MongoModel;
 
 /**
- * Interface which allow to define how to insert any {@link MongoModel}.
+ * Interface which allow to define how and which strategy applies, when inserting any {@link MongoModel}.
  * @author rcolin
  */
 public interface MongoInserter {

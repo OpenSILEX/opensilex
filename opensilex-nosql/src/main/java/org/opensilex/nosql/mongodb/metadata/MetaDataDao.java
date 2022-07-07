@@ -55,67 +55,36 @@ public class MetaDataDao {
     }
 
     /**
-     * @param metaDataCollection   the collection on which insert a new {@link MetaDataModel} if not null or empty
-     * @param sparqlCreateFunction Runnable which perform a create operations by using a {@link SPARQLService}
-     * @param newMetadata          the metadata to insert
-     * @param model {@link SPARQLResourceModel} on which metadata are associated.
+     * @param metaDataCollection the collection on which insert a new {@link MetaDataModel} if not null or empty
+     * @param newMetadata        the metadata to insert
+     * @param model              {@link SPARQLResourceModel} on which metadata are associated.
      * @throws IllegalArgumentException if :
      *                                  <ul>
      *                                      <li>metaDataCollection is null</li>
      *                                      <li>sparqlCreateFunction is null</li>
      *                                  </ul>
-     * @apiNote The sparqlCreateFunction is always evaluated before performing {@link MetaDataModel} insert into mongodb.
      */
-    public <T extends SPARQLResourceModel> void create(
-            MongoCollection<MetaDataModel> metaDataCollection,
-            ThrowingConsumer<SPARQLService, Exception> sparqlCreateFunction,
-            MetaDataModel newMetadata,
-            T model
-    ) throws Exception {
-
-        Objects.requireNonNull(metaDataCollection);
-        Objects.requireNonNull(sparqlCreateFunction);
+    public <T extends SPARQLResourceModel> ThrowingConsumer<ClientSession,Exception> getCreateConsumer(MongoCollection<MetaDataModel> metaDataCollection,
+                                                                           MetaDataModel newMetadata,
+                                                                           T model){
 
         if (newMetadata == null || MapUtils.isEmpty(newMetadata.getAttributes())) {
-            sparqlCreateFunction.accept(sparql);
-        } else {
-            mongodb.multipleOperationsWithTransaction(
-                    sparql,
-                    (ClientSession session) -> {
-                        if (newMetadata.getUri() == null) {
-
-                            // ensure that at this point, model URI is set or generated
-                            Objects.requireNonNull(model.getUri());
-                            newMetadata.setUri(model.getUri());
-                        }
-                        metaDataCollection.insertOne(session, newMetadata);
-                    },
-                    sparqlCreateFunction,
-                    true
-            );
+            return null;
         }
-    }
+        Objects.requireNonNull(metaDataCollection);
+        return (ClientSession session) -> {
+            if (newMetadata.getUri() == null) {
 
-    public <T extends SPARQLResourceModel> void delete(MongoCollection<MetaDataModel> metaDataCollection,
-                                                       ThrowingConsumer<SPARQLService, Exception> sparqlDeleteFunction,
-                                                      URI uri
-    ) throws Exception {
-        MetaDataModel metadata = get(metaDataCollection, uri, MongoModel.URI_FIELD);
-        if (metadata == null || MapUtils.isEmpty(metadata.getAttributes())) {
-            sparqlDeleteFunction.accept(sparql);
-        } else {
-            mongodb.multipleOperationsWithTransaction(
-                    sparql,
-                    (ClientSession session) -> metaDataCollection.findOneAndDelete(session, eq(MongoModel.URI_FIELD, uri)),
-                    sparqlDeleteFunction
-            );
-        }
-
+                // ensure that at this point, model URI is set or generated
+                Objects.requireNonNull(model.getUri());
+                newMetadata.setUri(model.getUri());
+            }
+            metaDataCollection.insertOne(session, newMetadata);
+        };
     }
 
     /**
      * @param metaDataCollection   the collection on which update a new {@link MetaDataModel} if not null or empty
-     * @param sparqlUpdateFunction Consumer which perform a update operations by using a {@link SPARQLService}
      * @param newMetadata          the metadata to insert
      * @param model {@link SPARQLResourceModel} on which metadata are associated.
      * @throws IllegalArgumentException if :
@@ -125,35 +94,46 @@ public class MetaDataDao {
      *                                      <li>model URI is null</li>
      *                                  </ul>
      */
-    public <T extends SPARQLResourceModel> void update(MongoCollection<MetaDataModel> metaDataCollection,
-                       ThrowingConsumer<SPARQLService, Exception> sparqlUpdateFunction,
-                       MetaDataModel newMetadata,
-                       T model
-    ) throws Exception {
+    public <T extends SPARQLResourceModel> ThrowingConsumer<ClientSession,Exception> getUpdateConsumer(MongoCollection<MetaDataModel> metaDataCollection,
+                                                                                                       MetaDataModel newMetadata,
+                                                                                                       T model){
 
         Objects.requireNonNull(metaDataCollection);
-        Objects.requireNonNull(sparqlUpdateFunction);
         Objects.requireNonNull(model.getUri());
 
         MetaDataModel oldMetadata = metaDataCollection.find(eq(MongoModel.URI_FIELD, model.getUri())).first();
 
         // no metadata (old and new)
         if ((newMetadata == null || MapUtils.isEmpty(newMetadata.getAttributes())) && oldMetadata == null) {
-            sparqlUpdateFunction.accept(sparql);
-        } else {
-            mongodb.multipleOperationsWithTransaction(
-                    sparql,
-                    (ClientSession session) -> update(
-                            metaDataCollection,
-                            session,
-                            newMetadata,
-                            oldMetadata,
-                            model.getUri()
-                    ),
-                    sparqlUpdateFunction,
-                    true
-            );
+            return null;
         }
+        return (ClientSession session) -> update(
+                metaDataCollection,
+                session,
+                newMetadata,
+                oldMetadata,
+                model.getUri()
+        );
+    }
+
+    /**
+     * @param metaDataCollection   the collection on which update a new {@link MetaDataModel} if not null or empty
+     * @param uri URI of the {@link MetaDataModel} to remove from metaDataCollection
+     * @throws IllegalArgumentException if :
+     *                                  <ul>
+     *                                      <li>metaDataCollection is null</li>
+     *                                      <li>sparqlCreateFunction is null</li>
+     *                                      <li>model URI is null</li>
+     *                                  </ul>
+     */
+    public <T extends SPARQLResourceModel> ThrowingConsumer<ClientSession,Exception> getDeleteConsumer(MongoCollection<MetaDataModel> metaDataCollection,
+                                                                                                       URI uri){
+
+        MetaDataModel metadata = get(metaDataCollection, uri, MongoModel.URI_FIELD);
+        if (metadata == null || MapUtils.isEmpty(metadata.getAttributes())) {
+           return null;
+        }
+        return (ClientSession session) -> metaDataCollection.findOneAndDelete(session, eq(MongoModel.URI_FIELD, uri));
     }
 
     /**

@@ -112,12 +112,25 @@ public class DeviceDAO {
     }
     
     public void create(DeviceModel model) throws Exception {
-        metaDataDao.create(
-                metaDataCollection,
-                (SPARQLService sparqlService) -> sparqlService.create(model),
-                model.getMetadata(),
-                model
+
+        mongodb.multipleOperationsWithTransaction(
+                sparql,
+                metaDataDao.getCreateConsumer(metaDataCollection, model.getMetadata(), model),
+                (SPARQLService sparqlService) -> sparqlService.create(model)
         );
+    }
+
+    public DeviceModel update(DeviceModel model) throws Exception {
+
+        mongodb.multipleOperationsWithTransaction(
+                sparql,
+                metaDataDao.getUpdateConsumer(metaDataCollection, model.getMetadata(), model),
+                (SPARQLService sparqlService) -> {
+                    sparql.deleteByURI(defaultGraph, model.getUri());
+                    sparql.create(model);
+                }
+        );
+        return model;
     }
 
     public ListWithPagination<DeviceModel> search(DeviceSearchFilter filter) throws Exception {
@@ -384,19 +397,6 @@ public class DeviceDAO {
        update(device);
     }
 
-    public DeviceModel update(DeviceModel model) throws Exception {
-        metaDataDao.update(
-                metaDataCollection,
-                (sparqlService) -> {
-                    sparql.deleteByURI(defaultGraph, model.getUri());
-                    sparql.create(model);
-                },
-                model.getMetadata(),
-                model
-        );
-        return model;
-    }
-
     public DeviceModel getDeviceByURI(URI deviceURI, UserModel currentUser) throws Exception {
         DeviceModel device = sparql.getByURI(DeviceModel.class, deviceURI, currentUser.getLanguage());
         if (device != null) {
@@ -447,11 +447,11 @@ public class DeviceDAO {
             throw new ForbiddenURIAccessException(uri, dataFileCount+" datafile(s)");
         }
 
-        metaDataDao.delete(
-                metaDataCollection,
-                (SPARQLService sparqlService) -> sparqlService.delete(DeviceModel.class, uri),
-                uri
+        mongodb.multipleOperationsWithTransaction(sparql,
+                metaDataDao.getDeleteConsumer(metaDataCollection,uri),
+                (SPARQLService sparqlService) -> sparqlService.delete(DeviceModel.class, uri)
         );
+
     }
 
     public List<VariableModel> getDeviceVariables(URI uri, String language) throws Exception {

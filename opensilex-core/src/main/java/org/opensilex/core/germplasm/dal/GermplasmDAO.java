@@ -39,7 +39,6 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
-import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
@@ -89,18 +88,33 @@ public class GermplasmDAO {
         return metaDataCollection;
     }
 
+    public void create(GermplasmModel model) throws Exception {
+
+        nosql.multipleOperationsWithTransaction(
+                sparql,
+                metaDataDao.getCreateConsumer(metaDataCollection, model.getMetadata(), model),
+                (SPARQLService sparqlService) -> sparqlService.create(model)
+        );
+    }
+
     public GermplasmModel update(GermplasmModel model) throws Exception {
 
-        metaDataDao.update(
-                metaDataCollection,
-                (sparqlService) -> {
+        nosql.multipleOperationsWithTransaction(
+                sparql,
+                metaDataDao.getUpdateConsumer(metaDataCollection, model.getMetadata(), model),
+                (SPARQLService sparqlService) -> {
                     sparql.deleteByURI(defaultGraph, model.getUri());
                     sparql.create(model);
-                },
-                model.getMetadata(),
-                model
+                }
         );
         return model;
+    }
+
+    public void delete(URI uri) throws Exception {
+        nosql.multipleOperationsWithTransaction(sparql,
+                metaDataDao.getDeleteConsumer(metaDataCollection,uri),
+                (SPARQLService sparqlService) -> sparqlService.delete(GermplasmModel.class, uri)
+        );
     }
 
     public boolean labelExistsCaseSensitive(String label, URI rdfType) throws Exception {
@@ -127,35 +141,6 @@ public class GermplasmDAO {
         }
 
         return sparql.executeAskQuery(askQuery);
-    }
-
-    private Set<String> getAllLabels(URI rdfType) {
-        HashSet<String> labels = new HashSet<>();
-
-        try {
-            SelectBuilder query = new SelectBuilder()
-                    .addVar("?label")
-                    .from(sparql.getDefaultGraph(GermplasmModel.class).toString())
-                    .addWhere("?uri", RDF.type, SPARQLDeserializers.nodeURI(rdfType))
-                    .addWhere("?uri", RDFS.label, "?label");
-
-            List<SPARQLResult> results = sparql.executeSelectQuery(query);
-
-            results.forEach(result -> labels.add(result.getStringValue("label").toLowerCase()));
-        } catch (SPARQLException error) {
-            throw new RuntimeException(error);
-        }
-
-        return labels;
-    }
-
-    public void create(GermplasmModel model) throws Exception {
-        metaDataDao.create(
-                metaDataCollection,
-                (SPARQLService sparqlService) -> sparqlService.create(model),
-                model.getMetadata(),
-                model
-        );
     }
 
     public GermplasmModel get(URI uri, UserModel user) throws Exception {
@@ -359,20 +344,6 @@ public class GermplasmDAO {
     public boolean isGermplasmType(URI rdfType) throws SPARQLException {
         return sparql.executeAskQuery(new AskBuilder()
                 .addWhere(SPARQLDeserializers.nodeURI(rdfType), Ontology.subClassAny, Oeso.Germplasm)
-        );
-    }
-
-    public boolean isPlantMaterialLot(URI rdfType) throws SPARQLException {
-        return sparql.executeAskQuery(new AskBuilder()
-                .addWhere(SPARQLDeserializers.nodeURI(rdfType), Ontology.subClassAny, Oeso.PlantMaterialLot)
-        );
-    }
-
-    public void delete(URI uri) throws Exception {
-        metaDataDao.delete(
-                metaDataCollection,
-                (SPARQLService sparqlService) -> sparqlService.delete(GermplasmModel.class, uri),
-                uri
         );
     }
 

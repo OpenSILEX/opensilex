@@ -34,7 +34,7 @@ public class MongoInsertOptions<T extends MongoModel> {
      *
      * @throws IllegalArgumentException if
      * <lu>
-     *     <li>client is null</li>
+     *     <li>client and session are null </li>
      *     <li>collection is null</li>
      *     <li>models is null or empty</li>
      * </lu>
@@ -43,7 +43,6 @@ public class MongoInsertOptions<T extends MongoModel> {
      */
     public MongoInsertOptions(MongoClient client, MongoCollection<T> collection, ClientSession session, List<T> models) {
 
-        Objects.requireNonNull(client);
         Objects.requireNonNull(collection);
         if (CollectionUtils.isEmpty(models)) {
             throw new IllegalArgumentException("Null or empty list : " + models);
@@ -54,6 +53,7 @@ public class MongoInsertOptions<T extends MongoModel> {
 
         // no session given, then consider the use of transaction with a new session
         if (session == null) {
+            Objects.requireNonNull(client);
             this.session = client.startSession();
             this.useTransaction = true;
         } else {

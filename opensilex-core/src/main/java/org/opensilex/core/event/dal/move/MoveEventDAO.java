@@ -27,8 +27,10 @@ import org.opensilex.core.event.dal.EventDAO;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Time;
-import org.opensilex.core.organisation.dal.facility.FacilityModel;
+import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
+import org.opensilex.nosql.insert.MongoInsertOptions;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.nosql.mongodb.MultipleDataSourceOperation;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -40,10 +42,8 @@ import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.opensilex.utils.ThrowingConsumer;
 
-import javax.ws.rs.client.Client;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.OffsetDateTime;
@@ -82,33 +82,34 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
 
     @Override
     public MoveModel create(MoveModel model) throws Exception {
-
-            check(Collections.singletonList(model), true);
-            MoveEventNoSqlModel noSqlModel = model.getNoSqlModel();
-
-            if(noSqlModel == null){
-                sparql.create(eventGraph, model, false);
-            }else{
-
-                String shortEventUri = URIDeserializer.getShortURI(model.getUri().toString());
-                noSqlModel.setUri(new URI(shortEventUri));
-
-                mongodb.multipleOperationsWithTransaction(
-                        sparql,
-                        (ClientSession session) -> {
-                            moveEventCollection.insertOne(session,noSqlModel);
-                        },(SPARQLService sparqlService) -> {
-                            sparql.create(eventGraph, model, false);
-                        });
-            }
-            return model;
+        create(Collections.singletonList(model));
+        return model;
     }
+
+    public void create(MoveModel model, MultipleDataSourceOperation operation){
+
+    }
+
 
     protected void create(Collection<MoveModel> models, List<MoveEventNoSqlModel> noSqlModels) throws Exception {
 
+        ThrowingConsumer<ClientSession, Exception> createAllConsumer = null;
+
+        if (!noSqlModels.isEmpty()) {
+            createAllConsumer = (ClientSession session) -> {
+                mongodb.createAll(new MongoInsertOptions<>(
+                                null,
+                                moveEventCollection,
+                                session,
+                                noSqlModels
+                        ).setCheckUriExist(false)
+                );
+            };
+        }
+
         mongodb.multipleOperationsWithTransaction(
                 sparql,
-                (ClientSession session) -> mongodb.createAll(noSqlModels,MoveEventNoSqlModel.class,MOVE_COLLECTION_NAME,null,false),
+                createAllConsumer,
                 (SPARQLService sparqlService) -> sparql.create(eventGraph, models, SPARQLService.DEFAULT_MAX_INSTANCE_PER_QUERY, false)
         );
     }
@@ -288,46 +289,36 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
         check(Collections.singletonList(model), false);
         MoveEventNoSqlModel noSqlModel = model.getNoSqlModel();
 
-        if(noSqlModel == null){
-            sparql.update(model);
-            return model;
-        }
-        mongodb.multipleOperationsWithTransaction(sparql,
-                (ClientSession session) -> {
-                    moveEventCollection.findOneAndReplace(session,eq(MoveEventNoSqlModel.ID_FIELD,model.getUri()),noSqlModel);
-                }
-                , (SPARQLService sparqlService) -> {
-                    sparql.update(model);
-                }
+        // update MoveEventNoSqlModel in mongodb, if exist
+        final ThrowingConsumer<ClientSession, Exception> updateConsumer = noSqlModel != null ?
+                (ClientSession session) -> moveEventCollection.findOneAndReplace(session, eq(MoveEventNoSqlModel.ID_FIELD, model.getUri()), noSqlModel)
+                : null;
+
+        mongodb.multipleOperationsWithTransaction(
+                sparql,
+                updateConsumer,
+                (SPARQLService sparqlService) -> sparql.update(model)
         );
+
+        return model;
     }
 
     @Override
     public void delete(URI uri) throws Exception {
 
+        // first check if the model exist
+        boolean moveExistInMongo = mongodb.uriExists(moveEventCollection, uri, MoveEventNoSqlModel.ID_FIELD);
 
+        // delete MoveEventNoSqlModel in mongodb, if exist
+        final ThrowingConsumer<ClientSession, Exception> deleteConsumer = moveExistInMongo ?
+                (ClientSession session) -> moveEventCollection.deleteOne(eq(MoveEventNoSqlModel.ID_FIELD, uri))
+                : null;
 
-        try {
-            sparql.startTransaction();
-            sparql.delete(MoveModel.class, uri);
-
-            // first check if the model exist
-            boolean moveExistInMongo = mongodb.uriExists(moveEventCollection, uri, MoveEventNoSqlModel.ID_FIELD);
-
-            // start the transaction for deleting, only if the model exist
-            if (moveExistInMongo) {
-                mongodb.startTransaction();
-                moveEventCollection.deleteOne(eq(MoveEventNoSqlModel.ID_FIELD, uri));
-                mongodb.commitTransaction();
-            }
-
-            sparql.commitTransaction();
-
-        } catch (Exception e) {
-            sparql.rollbackTransaction();
-            mongodb.rollbackTransaction();
-            throw e;
-        }
+        mongodb.multipleOperationsWithTransaction(
+                sparql,
+                deleteConsumer,
+                (SPARQLService sparql) -> sparql.delete(MoveModel.class, uri)
+        );
 
     }
 
@@ -489,15 +480,15 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
         Map<URI, URI> targetLastLocations = new HashMap<>();
 
         sparql.executeSelectQueryAsStream(outerSelect).forEach(
-            result -> {
-                String lastLocation = result.getStringValue(MoveModel.TO_FIELD);
-                if (lastLocation != null) {
-                    String target = result.getStringValue(MoveModel.TARGETS_FIELD);
-                    if (target != null) {
-                        targetLastLocations.put(URIDeserializer.formatURI(target), URIDeserializer.formatURI(lastLocation));
+                result -> {
+                    String lastLocation = result.getStringValue(MoveModel.TO_FIELD);
+                    if (lastLocation != null) {
+                        String target = result.getStringValue(MoveModel.TARGETS_FIELD);
+                        if (target != null) {
+                            targetLastLocations.put(URIDeserializer.formatURI(target), URIDeserializer.formatURI(lastLocation));
+                        }
                     }
-                }
-        });
+                });
         return targetLastLocations;
 
     }

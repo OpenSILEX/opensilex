@@ -335,6 +335,22 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
             dto.setSamplingInterval(detailsDto.getSamplingInterval());
         }
 
+        if (!CollectionUtils.isEmpty(detailsDto.getExactMatch())) {
+            dto.setExactMatch(detailsDto.getExactMatch());
+        }
+
+        if (!CollectionUtils.isEmpty(detailsDto.getCloseMatch())) {
+            dto.setCloseMatch(detailsDto.getCloseMatch());
+        }
+
+        if (!CollectionUtils.isEmpty(detailsDto.getBroadMatch())) {
+            dto.setBroadMatch(detailsDto.getBroadMatch());
+        }
+
+        if (!CollectionUtils.isEmpty(detailsDto.getNarrowMatch())) {
+            dto.setNarrowMatch(detailsDto.getNarrowMatch());
+        }
+
         return dto;
     }
 

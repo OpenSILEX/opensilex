@@ -101,15 +101,18 @@ public class VariableAPI {
         return new VariableDAO(sparql,mongodb,fs);
     }
 
+    /*Cette fonction permet de récupérer la liste des ressources partagées disponibles indiquées dans le fichier opensilex.yml*/
     private List<SharedResourcesDTO> getAllSharedResources(
 
     ) throws Exception {
 
+        //Création du dto de l'instance locale
         SharedResourcesDTO localInstance = new SharedResourcesDTO();
         localInstance.setUri(new URI(LOCAL_RESOURCE));
         localInstance.setLabel("component.sharedResources.local-instance");
         localInstance.setLocal(true);
 
+        // création de la liste des dtos de toutes les ressources disponibles
         List<SharedResourcesDTO> sharedResourcesDTOS = new ArrayList<>();
         sharedResourcesDTOS.add(localInstance);
         sharedResourcesDTOS.addAll(coreModule.getSharedResources());
@@ -117,44 +120,8 @@ public class VariableAPI {
         return sharedResourcesDTOS;
     }
 
-    private String readResponse(HttpURLConnection connection)throws Exception {
-        BufferedReader in = new BufferedReader(
-                new InputStreamReader(connection.getInputStream()));
-        String content = "";
-        String inputLine;
-        while ((inputLine = in.readLine()) != null)
-            content += inputLine;
-        in.close();
-        return content;
-    }
-
-    private String connectionToService(String urlService, String token)throws Exception {
-
-        URL url = new URL(urlService);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestProperty("Accept", "application/json");
-        connection.setRequestProperty("Authorization", token);
-
-        int statut = connection.getResponseCode();
-        if (statut == 200) {
-            String Response = readResponse(connection);
-            connection.disconnect();
-            return Response;
-        }
-        return null;
-    }
-
-    private JsonNode jsonResponseToService(String urlService, String token)throws Exception {
-
-        String Response = connectionToService(urlService,token);
-        if (Response != null) {
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode jsonResult = mapper.readTree(Response);
-            return jsonResult;
-        }
-        return null;
-    }
-
+    /*Cette fonction renvoie un token au format String en fonction de l'adresse de la ressource donnée en paramètre (ex : http://138.102.159.36:8083/rest)*/
+    /*La fonction utilise le compte admin pour se connecter (admin@opensilex.org / admin)*/
     private String getToken(String urlSharedResource)throws Exception {
 
         //URL du service qui génère le token
@@ -167,7 +134,6 @@ public class VariableAPI {
         connection.setRequestProperty("Content-Type", "application/json");
         //paramètres du service
         String data = "{\"identifier\": \"admin@opensilex.org\", \"password\": \"admin\"}";
-        //
         byte[] out = data.getBytes(StandardCharsets.UTF_8);
         //envoi des paramètres en entrée
         OutputStream stream = connection.getOutputStream();
@@ -176,15 +142,62 @@ public class VariableAPI {
         String stringResponse = readResponse(connection);
         ObjectMapper mapperSearch = new ObjectMapper();
         JsonNode jsonResult = mapperSearch.readTree(stringResponse);
-        //récupération du token
+        //récupération du token au format String
         String token = "Bearer " + jsonResult.get("result").get("token").asText();
 
         connection.disconnect();
-
         return token;
     }
 
+    /*Cette fonction renvoie la réponse (String) d'une connexion de type HttpURLConnection*/
+    private String readResponse(HttpURLConnection connection)throws Exception {
+        BufferedReader in = new BufferedReader(
+                new InputStreamReader(connection.getInputStream()));
+        String content = "";
+        String inputLine;
+        while ((inputLine = in.readLine()) != null)
+            content += inputLine;
+        in.close();
+        return content;
+    }
+
+    /*Cette fonction renvoie la réponse (String) d'un service (ex : http://138.102.159.36:8083/rest/ontology/shared_resources)*/
+    private String connectionToService(String urlService, String token)throws Exception {
+
+        // connexion au service
+        URL url = new URL(urlService);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestProperty("Accept", "application/json");
+        connection.setRequestProperty("Authorization", token);
+
+        // lecture de la réponse si la connexion a fonctionné
+        int statut = connection.getResponseCode();
+        if (statut == 200) {
+            String Response = readResponse(connection);
+            connection.disconnect();
+            return Response;
+        }
+        return null;
+    }
+
+    /*Cette fonction renvoie la réponse (JsonNode) d'un service (ex : http://138.102.159.36:8083/rest/ontology/shared_resources)*/
+    private JsonNode jsonResponseToService(String urlService, String token)throws Exception {
+
+        // récupération de la réponse du service au format String
+        String Response = connectionToService(urlService,token);
+        // conversion de la réponse en JsonNode
+        if (Response != null) {
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode jsonResult = mapper.readTree(Response);
+            return jsonResult;
+        }
+        return null;
+    }
+
+    /*Cette fonction convertit un uri court en uri long si le prefixe de cet uri court existe dans la liste des prefixes de la bdd*/
     private URI prefixeTranslation(URI uri) throws Exception {
+
+        // récupération des namespaces (indiqués dans la fonction getDefaultPrefixes() de SPARQLService.java)
         Map<String, String> nameSpaces = SPARQLService.getPrefixes();
         String prefixeUri = uri.getScheme();
 
@@ -196,6 +209,7 @@ public class VariableAPI {
         }
     }
 
+    /*Cette fonction permet d'enregistrer tous les champs (n'existant pas dans la bdd locale) d'une variable partagée au moment de sa récupération sur l'instance locale*/
     private <M extends BaseVariableModel<M>, D extends BaseVariableCreationDTO<M>> URI createVariableElement(JsonNode variableJson, URI resource, String token, String fieldName, Class<M> modelClass, Class<D> creationDtoClass)
             throws Exception{
 
@@ -204,15 +218,17 @@ public class VariableAPI {
         JsonNode fieldUri = variableJson.get(fieldName).get("uri");
         if (fieldUri != null){
             String filedUriString = variableJson.get(fieldName).get("uri").asText();
+
+            // vérification de l'existence du champ en local
             BaseVariableDAO<M> dao = new BaseVariableDAO<>(modelClass, sparql);
             M model = dao.get(new URI(filedUriString));
 
-            if (model == null) { // n'existe pas en local
-                // on renvoie toutes les infos enregistrées dans la resource pour le champ
+            // si le champ n'existe pas en local
+            if (model == null) {
                 JsonNode filedJsonResult;
-
                 String urlService = "";
 
+                // récupération des informations du champ dans la ressource partagée
                 if (Objects.equals(fieldName, "entity")){
                     urlService += resource.toString() + "/core/entities/" + URLEncoder.encode(filedUriString, StandardCharsets.UTF_8.name());
                     filedJsonResult = jsonResponseToService(urlService, token);
@@ -224,40 +240,69 @@ public class VariableAPI {
                     filedJsonResult = jsonResponseToService(urlService, token);
                 }
 
-                D fieldDto = creationDtoClass.getConstructor().newInstance(); // l'instanciation directe n'est pas possible car le type D n'est pas connu et extends d'une classe abstraite
+                // l'instanciation directe n'est pas possible car le type D n'est pas connu et hérite d'une classe abstraite
+                D fieldDto = creationDtoClass.getConstructor().newInstance();
 
-                // on les ajoute au CreationDto
-                // étape peut être supprimée s'il est possible de convertir le résultat directement en CreationDto
+                // Ajout des informations récupérées sur la ressource partagée dans le CreationDto
                 JsonNode result = filedJsonResult.get("result");
 
                 fieldDto.setUri(new URI(result.get("uri").asText()));
                 fieldDto.setName(result.get("name").asText());
                 fieldDto.setDescription(result.get("description").asText());
 
+                JsonNode jsonCloseMatch = result.get("close_match");
+                JsonNode jsonBroadMatch = result.get("broad_match");
+                JsonNode jsonExactMatch = result.get("exact_match");
+                JsonNode jsonNarrowMatch = result.get("narrow_match");
+
+                List<URI> listCloseMatch = new ArrayList<>();
+                List<URI> listBroadMatch = new ArrayList<>();
+                List<URI> listExactMatch = new ArrayList<>();
+                List<URI> listNarrowMatch = new ArrayList<>();
+
+                int rank = 0;
+                while (jsonCloseMatch.get(rank) != null || jsonBroadMatch.get(rank) != null || jsonExactMatch.get(rank) != null || jsonNarrowMatch.get(rank) != null){
+                    if (jsonCloseMatch.get(rank) != null){
+                        listCloseMatch.add(new URI(jsonCloseMatch.get(rank).asText()));
+                    }
+                    if (jsonBroadMatch.get(rank) != null){
+                        listBroadMatch.add(new URI(jsonBroadMatch.get(rank).asText()));
+                    }
+                    if (jsonExactMatch.get(rank) != null){
+                        listExactMatch.add(new URI(jsonExactMatch.get(rank).asText()));
+                    }
+                    if (jsonNarrowMatch.get(rank) != null){
+                        listNarrowMatch.add(new URI(jsonNarrowMatch.get(rank).asText()));
+                    }
+                    rank +=1;
+                }
+                if (!listCloseMatch.isEmpty()){
+                    fieldDto.setCloseMatch(listCloseMatch);
+                }
+                if (!listBroadMatch.isEmpty()){
+                    fieldDto.setBroadMatch(listBroadMatch);
+                }
+                if (!listExactMatch.isEmpty()){
+                    fieldDto.setExactMatch(listExactMatch);
+                }
+                if (!listNarrowMatch.isEmpty()){
+                    fieldDto.setNarrowMatch(listNarrowMatch);
+                }
+
+                // Cas particulier du champ Unit
                 if (Objects.equals(creationDtoClass,UnitCreationDTO.class)){
                     UnitCreationDTO unitCreationDTO = (UnitCreationDTO) fieldDto; // on fait un cast pour modifier le type de dto
                     unitCreationDTO.setSymbol(result.get("symbol").asText());
                     unitCreationDTO.setAlternativeSymbol(result.get("alternative_symbol").asText());
                 }
 
-                // ce sont des listes
-                // rendre générique si hamza rajoute des champs et regarder en fonction string ou liste !
-//                fieldDto.setExactMatch(filedJsonResult.get("description").asText());
-//                fieldDto.setCloseMatch(filedJsonResult.get("description").asText());
-//                fieldDto.setBroadMatch(filedJsonResult.get("description").asText());
-//                fieldDto.setNarrowMatch(filedJsonResult.get("description").asText());
-
-
                 // on utilise ensuite ce CreationDto pour enregistrer la variable
-
                 BaseVariableDAO<M> fieldDao = new BaseVariableDAO<>(modelClass, sparql);
                 M fieldModel = fieldDto.newModel();
                 fieldModel.setCreator(currentUser.getUri());
 
                 fieldDao.create(fieldModel);
                 shortUri = new URI(SPARQLDeserializers.getShortURI(fieldModel.getUri().toString()));
-
-
             }
         }
         return shortUri;
@@ -320,14 +365,16 @@ public class VariableAPI {
         }else{
             String token = getToken(resource.toString());
             String VariableURI = URLEncoder.encode(uri.toString(), StandardCharsets.UTF_8.name());
-            // utilisation service de recherche d'une variable avec l'uri
+            // utilisation du service de recherche d'une variable en fonction de son uri dans la ressource partagée choisie
             String stringSearchResponse = connectionToService(resource.toString() + "/core/variables/" + VariableURI, token);
 
+            // la variable n'existe pas dans la ressource
             if (stringSearchResponse == null) {
                 throw new NotFoundURIException(uri);
-            }else{
+            }else{  // la variable existe dans la ressource
                 ObjectMapper mapperSearch = new ObjectMapper();
                 JsonNode jsonResultSearch = mapperSearch.readTree(stringSearchResponse);
+                // conversion de la réponse en VariableDetailsDTO
                 SingleObjectResponse<VariableDetailsDTO> getResponse = mapperSearch.convertValue(jsonResultSearch, new TypeReference<SingleObjectResponse<VariableDetailsDTO>>() {
                 });
                 VariableDetailsDTO sharedVariableDetailsDto = getResponse.getResult();
@@ -423,9 +470,8 @@ public class VariableAPI {
         List<VariableGetDTO> resultDTOList = new ArrayList<>();
         int totalVariables = 0;
 
-        if (resource == null) { // si c'est en local
-            List<VariableGetDTO> resultDTO = new ArrayList<>();
-
+        // si la recherche se fait en local
+        if (resource == null) {
             VariableDAO dao = getDao();
             ListWithPagination<VariableModel> variables = dao.search(
                     namePattern,
@@ -450,12 +496,13 @@ public class VariableAPI {
 
             totalVariables = variables.getTotal();
 
-            // Convert paginated list to DTO
+            // récupération de la liste non paginée des dtos
             List<VariableGetDTO> listDTO = variables.convert(
                     VariableGetDTO.class,
                     VariableGetDTO::fromModel
             ).getList();
 
+            // recherche de correspondance de l'uri de la ressource partagée avec le label de cette ressource pour l'afficher au survol du logo "shared"
             List<SharedResourcesDTO> sharedResourcesDTOList = getAllSharedResources();
 
             for (VariableGetDTO variableDto : listDTO) {
@@ -477,26 +524,24 @@ public class VariableAPI {
 
             UriBuilder url = UriBuilder.fromUri(resource)
                     .path(PATH);
-            // récupère les paramètres de la requête pour les recopier dans l'appel au service de recherche de variables sur la RP sélectionnée
+            // récupération des paramètres de la requête pour les recopier dans l'appel au service de recherche de variables sur la RP sélectionnée
             for (Map.Entry<String, String[]> entry : httpRequest.getParameterMap().entrySet()){
                 url.queryParam(entry.getKey(),entry.getValue());
             }
 
+            // utilisation du service de recherche des variables sur la ressource partagée
             String token = getToken(resource.toString());
             String SearchResponse = connectionToService(url.toString(), token);
             ObjectMapper mapperSearch = new ObjectMapper();
             JsonNode jsonResultSearch = mapperSearch.readTree(SearchResponse);
 
-            // convertit le json de résultat en list de dto
+            // conversion du résultat en liste de dtos
             SingleObjectResponse<List<VariableGetDTO>> getResponse = mapperSearch.convertValue(jsonResultSearch, new TypeReference<SingleObjectResponse<List<VariableGetDTO>>>() {});
-
-            MetadataDTO metadata = getResponse.getMetadata();
             List<VariableGetDTO> dtoFromApi = getResponse.getResult();
 
+            // recherche en local si la variable existe pour afficher le logo "database"
             for(VariableGetDTO variableDto : dtoFromApi){
-
                 URI sharedVariableUri = variableDto.getUri();
-                // recherche en local si la variable existe
                 VariableDAO dao = getDao();
                 VariableModel variable;
                 if (prefixeTranslation(sharedVariableUri) != null){
@@ -510,6 +555,8 @@ public class VariableAPI {
                 resultDTOList.add(variableDto);
             }
 
+            // récupération du nombre total de variables pour la pagination
+            MetadataDTO metadata = getResponse.getMetadata();
             long totalCount = metadata.getPagination().getTotalCount();
             totalVariables = (int)totalCount;
         }
@@ -763,15 +810,15 @@ public class VariableAPI {
 
         List<URI> uris = dto.getUris();
         List<URI> createdUris = new ArrayList<>();
-        List<VariableDetailsDTO> variablesList = new ArrayList<>();
+        List<VariableDetailsDTO> variablesList;
         URI resource = dto.getResource();
 
+        // construction de l'adresse du service avec l'uri encodé de chaque variable
         String token = getToken(resource.toString());
         String urlService = resource.toString() + "/core/variables/by_uris?";
         Boolean firstUri = true;
 
         for (URI uri : uris) {
-
             if (firstUri) {
                 urlService += "uris=" + URLEncoder.encode(uri.toString(), StandardCharsets.UTF_8.name());
                 firstUri = false;
@@ -779,28 +826,28 @@ public class VariableAPI {
                 urlService += "&uris=" + URLEncoder.encode(uri.toString(), StandardCharsets.UTF_8.name());
             }
         }
+        // utilisation du service de recherche des variables en fonction de leur uri sur la ressource partagée
         String stringResponse = connectionToService(urlService, token);
-        JsonNode jsonResult = null;
+        JsonNode jsonResult;
         if (stringResponse != null) {
             ObjectMapper mapper = new ObjectMapper();
             jsonResult = mapper.readTree(stringResponse);
-
             SingleObjectResponse<List<VariableDetailsDTO>> getResponse = mapper.convertValue(jsonResult, new TypeReference<SingleObjectResponse<List<VariableDetailsDTO>>>() {});
             variablesList = getResponse.getResult();
 
-            // convertir en liste paginée et utiliser la fonction VariableCreationDTO.fromDetailsDto(VariableDetailsDTO detailsDto)
-
+            // conversion en liste paginée et utilisation de la fonction VariableCreationDTO.fromDetailsDto(VariableDetailsDTO detailsDto)
             JsonNode result = jsonResult.get("result");
             int rank = 0;
-            while (result.get(rank) != null){ // boucle sur chaque variable
+            // boucle sur chaque variable renvoyée par le service
+            while (result.get(rank) != null){
                 JsonNode variableJson = result.get(rank);
 
+                // récupération du nom de chaque champ de la variable
                 List<String> variableFieldsList = new ArrayList<>();
                 variableJson.fieldNames().forEachRemaining((fieldName) -> variableFieldsList.add(fieldName));
 
-                // on convertit le detailDto en CreationDto pour chacune
-                VariableCreationDTO variableDto = VariableCreationDTO.fromDetailsDto(variablesList.get(rank));
-
+                // pour chaque métadonnée constituant la variable (unit, method, entity, entity of interest, characteristic)
+                // on vérifie son existence en local et on la sauvegarde si elle n'existe pas en local
                 if (variableFieldsList.contains("entity")){
                     URI shortUriEntity = createVariableElement(variableJson, resource, token, "entity", EntityModel.class, EntityCreationDTO.class);
                     if (!Objects.equals(shortUriEntity, new URI(""))){
@@ -836,14 +883,22 @@ public class VariableAPI {
                     }
                 }
 
+                // conversion du DetailDto en CreationDto
+                VariableCreationDTO variableDto = VariableCreationDTO.fromDetailsDto(variablesList.get(rank));
+
                 try {
+                    // utilisation du CreationDto pour créer le model de la variable qui sera enregistrée
                     VariableDAO dao = getDao();
                     VariableModel model = variableDto.newModel();
-                    URI translatedUri = prefixeTranslation(model.getUri());
 
+                    URI translatedUri = prefixeTranslation(model.getUri());
                     if (translatedUri != null){
                         model.setUri(translatedUri);
                     }
+                    model.setExactMatch(variableDto.getExactMatch());
+                    model.setCloseMatch(variableDto.getCloseMatch());
+                    model.setBroadMatch(variableDto.getBroadMatch());
+                    model.setNarrowMatch(variableDto.getNarrowMatch());
                     model.setOnShared(resource);
                     model.setCreator(currentUser.getUri());
 

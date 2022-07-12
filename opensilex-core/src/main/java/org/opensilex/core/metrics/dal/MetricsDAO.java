@@ -21,6 +21,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.apache.jena.arq.querybuilder.Order;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.graph.Node;
@@ -33,8 +35,10 @@ import org.bson.Document;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
+import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.MongoModel;
@@ -72,20 +76,124 @@ public class MetricsDAO {
         metricsCollection.createIndex(Indexes.descending(GlobalSummaryModel.CREATION_DATE_FIELD));
     }
 
-    public ListWithPagination<ExperimentSummaryModel> getExperimentSummaries(List<URI> experimentURIs, Instant startInstant, Instant endInstant, int page, int pageSize) throws NoSQLInvalidURIException {
+    public ListWithPagination<ExperimentSummaryModel> getExperimentSummaries(List<URI> experimentURIs, Instant startInstant, Instant endInstant, int page, int pageSize, String currentLanguage) throws URISyntaxException, Exception {
         List<OrderBy> orderByList = Arrays.asList(new OrderBy(ExperimentSummaryModel.CREATION_DATE_FIELD, Order.DESCENDING));
         Document searchFilter = searchFilter(ExperimentSummaryModel.SUMMARY_TYPE, experimentURIs, startInstant, endInstant);
         ListWithPagination<ExperimentSummaryModel> searchWithPagination = nosql.searchWithPagination(ExperimentSummaryModel.class, METRICS_COLLECTION, searchFilter, orderByList, page, pageSize);
 
+        DataDAO dataDAO = new DataDAO( nosql,  sparql,  null);
+        List<VariableModel> usedVariables = dataDAO.getUsedVariables(null, experimentURIs, null, null, null);
+        
+        // TODO : Need to improve
+        HashMap<URI, String> variables = new HashMap<>();
+        for (VariableModel usedVariable : usedVariables) {
+             variables.put(usedVariable.getUri(), usedVariable.getName());
+        }
+        
+        // for each entry in metrics
+        searchWithPagination.getList().forEach(metric -> {
+            // get items uris
+            List<URI> scientificObjectsURIs = metric.getScientificObjectsByType().getItems().stream()
+                    .map(CountItemModel::getUri)
+                    .collect(Collectors.toList());
+            List<URI> germplasmsURIs = metric.getGermplasmByType().getItems().stream()
+                    .map(CountItemModel::getUri)
+                    .collect(Collectors.toList());
+            try {
+                HashMap<URI, String> scientificObjects = new HashMap<>();
+                for (URI scientificObjectURI : scientificObjectsURIs) {
+                    ClassModel scientificObjectType = SPARQLModule.getOntologyStoreInstance().getClassModel(scientificObjectURI, URI.create(Oeso.ScientificObject.getURI()), currentLanguage);
+                    scientificObjects.put(scientificObjectURI, scientificObjectType.getName());
+                }
+                for (CountItemModel item : metric.getScientificObjectsByType().getItems()) {
+                    item.setName(scientificObjects.get(item.getUri()));
+                }
+
+                HashMap<URI, String> germplasms = new HashMap<>();
+                for (URI germplasmURI : germplasmsURIs) {
+                    ClassModel germplasmType = SPARQLModule.getOntologyStoreInstance().getClassModel(germplasmURI, URI.create(Oeso.Germplasm.getURI()), currentLanguage);
+                    germplasms.put(germplasmURI, germplasmType.getName());
+                }
+                for (CountItemModel item : metric.getGermplasmByType().getItems()) {
+                    item.setName(germplasms.get(item.getUri()));
+                }
+                
+                for (CountItemModel item : metric.getDataByVariables().getItems()) {
+                    item.setName(variables.get(item.getUri()));
+                }
+                
+            }
+            catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
         return searchWithPagination;
 
     }
 
-    public ListWithPagination<SystemSummaryModel> getSystemSummary(Instant startInstant, Instant endInstant, int page, int pageSize) throws NoSQLInvalidURIException {
+    public ListWithPagination<SystemSummaryModel> getSystemSummary(Instant startInstant, Instant endInstant, int page, int pageSize, String currentLanguage) throws Exception {
         List<OrderBy> orderByList = Arrays.asList(new OrderBy(SystemSummaryModel.CREATION_DATE_FIELD, Order.DESCENDING));
         Document searchFilter = searchFilter(SystemSummaryModel.SUMMARY_TYPE, null, startInstant, endInstant);
         ListWithPagination<SystemSummaryModel> searchWithPagination = nosql.searchWithPagination(SystemSummaryModel.class, METRICS_COLLECTION, searchFilter, orderByList, page, pageSize);
 
+        DataDAO dataDAO = new DataDAO( nosql,  sparql,  null);
+        List<VariableModel> usedVariables = dataDAO.getUsedVariables(null, null, null, null, null);
+        
+        // TODO : Need to improve
+        HashMap<URI, String> variables = new HashMap<>();
+        for (VariableModel usedVariable : usedVariables) {
+             variables.put(usedVariable.getUri(), usedVariable.getName());
+        }
+        
+        // for each entry in metrics
+        searchWithPagination.getList().forEach(metric -> {
+            // get items uris
+            List<URI> deviceURIs = metric.getDeviceByType().getItems().stream()
+                    .map(CountItemModel::getUri)
+                    .collect(Collectors.toList());
+            List<URI> scientificObjectsURIs = metric.getScientificObjectsByType().getItems().stream()
+                    .map(CountItemModel::getUri)
+                    .collect(Collectors.toList());
+            List<URI> germplasmsURIs = metric.getGermplasmByType().getItems().stream()
+                    .map(CountItemModel::getUri)
+                    .collect(Collectors.toList());
+            try {
+                // map uri to its name
+                HashMap<URI, String> devices = new HashMap<>();
+                for (URI deviceURI : deviceURIs) {
+                    ClassModel deviceType = SPARQLModule.getOntologyStoreInstance().getClassModel(deviceURI,URI.create(Oeso.Device.getURI()),currentLanguage);
+                    devices.put(deviceURI, deviceType.getName());
+                }
+                // add name to metric entry
+                for (CountItemModel item : metric.getDeviceByType().getItems()) {
+                    item.setName(devices.get(item.getUri()));
+                }
+
+                HashMap<URI, String> scientificObjects = new HashMap<>();
+                for (URI scientificObjectURI : scientificObjectsURIs) {
+                    ClassModel scientificObjectType = SPARQLModule.getOntologyStoreInstance().getClassModel(scientificObjectURI,URI.create(Oeso.ScientificObject.getURI()),currentLanguage);
+                    scientificObjects.put(scientificObjectURI, scientificObjectType.getName());
+                }
+                for (CountItemModel item : metric.getScientificObjectsByType().getItems()) {
+                    item.setName(scientificObjects.get(item.getUri()));
+                }
+
+                HashMap<URI, String> germplasms = new HashMap<>();
+                for (URI germplasmURI : germplasmsURIs) {
+                    ClassModel germplasmType = SPARQLModule.getOntologyStoreInstance().getClassModel(germplasmURI,URI.create(Oeso.Germplasm.getURI()),currentLanguage);
+                    germplasms.put(germplasmURI, germplasmType.getName());
+                }
+                for (CountItemModel item : metric.getGermplasmByType().getItems()) {
+                    item.setName(germplasms.get(item.getUri()));
+                }
+                for (CountItemModel item : metric.getDataByVariables().getItems()) {
+                    item.setName(variables.get(item.getUri()));
+                }
+            }
+            catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
         return searchWithPagination;
 
     }
@@ -200,7 +308,6 @@ public class MetricsDAO {
         for (Document variableWithDataCount : variablesWithDataCount) {
             VariableModel variable = tmpVariable.get(new URI((String) variableWithDataCount.get("_id")));
             CountItemModel countItem = new CountItemModel();
-            countItem.setName(variable.getName());
             countItem.setUri(variable.getUri());
             countItem.setCount((Integer) variableWithDataCount.get("count"));
             countItem.setType(new URI(Oeso.Variable.getURI()));
@@ -254,7 +361,6 @@ public class MetricsDAO {
                 countItem.setUri(uri);
                 String label = row.getStringValue(varLabel.getVarName());
                 Integer uriCount = Integer.valueOf(row.getStringValue(varCount.getVarName()));
-                countItem.setName(label);
                 countItem.setCount(uriCount);
                 countItem.setType(new URI(OWL2.Class.getURI()));
                 types.addItem(countItem);

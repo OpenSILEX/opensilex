@@ -115,7 +115,7 @@ public class MetricsAPI {
         MetricsDAO metricsDao = new MetricsDAO(sparql, nosql);
         ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
         Set<URI> runningUserExperiments = experimentDAO.getRunningUserExperiments(currentUser);
-        ListWithPagination<ExperimentSummaryModel> experimentSummaries = metricsDao.getExperimentSummaries(new ArrayList<>(runningUserExperiments), startInstant, endInstant, page, pageSize);
+        ListWithPagination<ExperimentSummaryModel> experimentSummaries = metricsDao.getExperimentSummaries(new ArrayList<>(runningUserExperiments), startInstant, endInstant, page, pageSize, currentUser.getLanguage());
 
         // Convert paginated list to DTO
         ListWithPagination<MetricDTO> dtoList = experimentSummaries.convert(MetricDTO.class, MetricDTO::getDTOfromExperimentSummaryModel);
@@ -162,7 +162,7 @@ public class MetricsAPI {
         }
         
         MetricsDAO metricsDao = new MetricsDAO(sparql, nosql);
-        ListWithPagination<SystemSummaryModel> systemSummaries = metricsDao.getSystemSummary(startInstant, endInstant,page, pageSize);
+        ListWithPagination<SystemSummaryModel> systemSummaries = metricsDao.getSystemSummary(startInstant, endInstant,page, pageSize, currentUser.getLanguage());
 
         //  Convert paginated list to DTO
         ListWithPagination<MetricDTO> dtoList = systemSummaries.convert(MetricDTO.class, MetricDTO::getDTOfromSystemSummaryModel);
@@ -213,7 +213,7 @@ public class MetricsAPI {
 
         validateContextAccess(experimentURI);
         List<URI> experimentUri = Arrays.asList(experimentURI);
-        ListWithPagination<ExperimentSummaryModel> experimentSummaries = metricsDao.getExperimentSummaries(experimentUri, startInstant, endInstant, page, pageSize);
+        ListWithPagination<ExperimentSummaryModel> experimentSummaries = metricsDao.getExperimentSummaries(experimentUri, startInstant, endInstant, page, pageSize, currentUser.getLanguage());
         ExperimentSummaryModel experimentSummary = null;
         if (experimentSummaries != null && !experimentSummaries.getList().isEmpty()) {
             experimentSummary = experimentSummaries.getList().get(0);

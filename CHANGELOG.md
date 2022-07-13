@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
+## [1.0.0-rc+4.1] - 2022-07-13
+
+### Fixed
+
+- Fix opensilex install command
+- Install will now create a repository with graphdb triplestor
+
+
 ## [1.0.0-rc+4] - 2022-06-13
 
 Warning : upgrading to this new version requires to update the ontologies. Please run the following command

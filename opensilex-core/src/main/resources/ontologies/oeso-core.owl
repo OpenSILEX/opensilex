@@ -1107,6 +1107,14 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     </owl:Class>
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#OperatingProcedure -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#OperatingProcedure">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#TechnicalDocument"/>
+        <rdfs:label xml:lang="en">Operating Procedure</rdfs:label>
+        <rdfs:label xml:lang="fr">Mode Opératoire</rdfs:label>
+    </owl:Class>
+
 
     <!-- http://www.opensilex.org/vocabulary/oeso#ExperimentalUnit -->
 

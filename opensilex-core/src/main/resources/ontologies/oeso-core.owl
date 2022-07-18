@@ -1495,6 +1495,8 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Species">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
+        <rdfs:label xml:lang="en">Species</rdfs:label>
+        <rdfs:label xml:lang="fr">Espèce</rdfs:label>
     </owl:Class>
 
 

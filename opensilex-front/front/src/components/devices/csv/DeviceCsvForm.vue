@@ -27,8 +27,7 @@
             <template v-slot:generator>
                 <b-col cols="2">
                     <opensilex-Button
-                        variant="secondary"
-                        class="mr-2"
+                        class="mr-2 greenThemeColor"
                         :small="false"
                         @click="templateGenerator.show()"
                         icon
@@ -40,7 +39,6 @@
                     ></opensilex-DeviceCsvTemplateGenerator>
                 </b-col>
             </template>
-
         </opensilex-OntologyCsvImporter>
     </div>
 </template>

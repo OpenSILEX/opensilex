@@ -1,6 +1,20 @@
 <template>
   <div class="experimentDataVisuView">
-    <b-collapse v-model="showSearchComponent" class="mt-2">
+    <opensilex-PageContent class="pagecontent">
+
+      <!-- Toggle Sidebar--> 
+      <div class="searchMenuContainer"
+      v-on:click="SearchFiltersToggle = !SearchFiltersToggle"
+      :title="searchFiltersPannel()">
+        <div class="searchMenuIcon">
+          <i class="icon ik ik-search"></i>
+        </div>
+      </div>
+
+  <!-- FILTERS -->
+  <Transition>
+    <div v-show="SearchFiltersToggle">
+      <!--Form-->
       <opensilex-ExperimentDataVisuForm
         ref="experimentDataVisuForm"
         :selectedExperiment="selectedExperiment"
@@ -8,20 +22,22 @@
         @search="onSearch"
         @update="onUpdate"
       ></opensilex-ExperimentDataVisuForm>
-    </b-collapse>
+    </div>
+  </Transition>
 
     <div class="d-flex justify-content-center mb-3" v-if="!showGraphicComponent && initLoader">
       <b-spinner label="Loading..."></b-spinner>
     </div>
-    <b-collapse v-model="showGraphicComponent" class="mt-2">
-      <opensilex-DataVisuGraphic
-        v-if="showGraphicComponent"
-        ref="visuGraphic"
-        @addEventIsClicked="showEventForm"
-        @dataAnnotationIsClicked="showAnnotationForm"
-        @graphicCreated="$emit('graphicCreated')"
-      ></opensilex-DataVisuGraphic>
-    </b-collapse>
+
+    <!-- Graphic -->
+    <opensilex-DataVisuGraphic
+      v-if="showGraphicComponent"
+      ref="visuGraphic"
+      @addEventIsClicked="showEventForm"
+      @dataAnnotationIsClicked="showAnnotationForm"
+      @graphicCreated="$emit('graphicCreated')"
+      class="experimentDataVisuGraphic"
+    ></opensilex-DataVisuGraphic>
 
     <opensilex-AnnotationModalForm 
     ref="annotationModalForm"
@@ -37,6 +53,7 @@
       :context="{experimentURI: selectedExperiment}"
     ></opensilex-EventModalForm>
 
+    </opensilex-PageContent>
   </div>
 </template>
 
@@ -87,6 +104,12 @@ export default class ExperimentDataVisuView extends Vue {
     return this.selectedScientificObjects.map(so => {
       return so.uri;
     });
+  }
+
+    data(){
+    return {
+      SearchFiltersToggle : true,
+    }
   }
 
   private langUnwatcher;
@@ -454,6 +477,10 @@ export default class ExperimentDataVisuView extends Vue {
     var day = Highcharts.dateFormat("%Y-%m-%dT%H:%M:%S+0000", time);
     return day;
   }
+
+    searchFiltersPannel() {
+    return this.$t("searchfilter.label")
+  }
 }
 </script>
 
@@ -473,6 +500,12 @@ export default class ExperimentDataVisuView extends Vue {
 
 .experimentDataVisuView {
   min-height: 700px;
+  margin-top: 15px
+}
+
+.experimentDataVisuGraphic {
+  min-width: 100%;
+  max-width: 100vw;
 }
 </style>
 

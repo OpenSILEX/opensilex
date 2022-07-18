@@ -1,97 +1,87 @@
 <template>
+    <div>
+        <div class="pageActionsBtns">
+            <opensilex-CreateButton
+                v-if="user.hasCredential(modificationCredentialId)"
+                label="Annotation.add"
+                @click="annotationModalForm.showCreateForm([target])"
+                class="createButton greenThemeColor"
+            ></opensilex-CreateButton>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <opensilex-PageContent 
+                        v-if="renderComponent">
+                    <template v-slot>
 
-    <div class="row">
-        <div class="col col-xl-12">
+                        <opensilex-TableAsyncView
+                                ref="tableRef"
+                                :searchMethod="search"
+                                :fields="fields"
+                                :isSelectable="isSelectable"
+                        >
 
-            <div class="card">
-                <div class="card-header">
-                    <h3>
-                        <i class="ik ik-clipboard"></i>
-                        {{ $t('Annotation.list-title') }}
-                    </h3>
-                </div>
+                            <template v-slot:cell(created)="{data}">
+                                <opensilex-TextView
+                                        :value="new Date(data.item.created).toLocaleString()">
+                                </opensilex-TextView>
+                            </template>
 
-                <div class="card-body">
-                    <div class="button-zone">
-                        <opensilex-CreateButton
-                                v-if="user.hasCredential(modificationCredentialId)"
-                                label="Annotation.add"
-                                @click="annotationModalForm.showCreateForm([target])"
-                        ></opensilex-CreateButton>
-                    </div>
-                    <opensilex-PageContent 
-                           v-if="renderComponent">
+                            <template v-slot:cell(author)="{data}">
+                                <opensilex-TextView v-if="data.item.author"
+                                                        :value="getUserNames(data.item.author)">
+                                </opensilex-TextView>
+                            </template>
 
-                        <template v-slot>
+                            <template v-slot:cell(description)="{data}">
+                                <opensilex-TextView v-if="data.item.description" :value="data.item.description">
+                                </opensilex-TextView>
+                            </template>
 
-                            <opensilex-TableAsyncView
-                                    ref="tableRef"
-                                    :searchMethod="search"
-                                    :fields="fields"
-                                    :isSelectable="isSelectable"
-                            >
+                            <template v-slot:cell(motivation)="{data}">
+                                <opensilex-TextView v-if="data.item.motivation" :value="data.item.motivation.name">
+                                </opensilex-TextView>
+                            </template>
 
-                                <template v-slot:cell(created)="{data}">
-                                    <opensilex-TextView
-                                            :value="new Date(data.item.created).toLocaleString()">
-                                    </opensilex-TextView>
-                                </template>
+                            <template v-if="displayTargetColumn" v-slot:cell(targets)="{data}">
+                                <opensilex-TextView :value="data.item.targets[0]">
+                                </opensilex-TextView>
+                            </template>
 
-                                <template v-slot:cell(author)="{data}">
-                                    <opensilex-TextView v-if="data.item.author"
-                                                          :value="getUserNames(data.item.author)">
-                                    </opensilex-TextView>
-                                </template>
+                            <template v-slot:cell(uri)="{data}">
+                                <opensilex-UriLink :uri="data.item.uri" :value="data.item.uri">
+                                </opensilex-UriLink>
+                            </template>
 
-                                <template v-slot:cell(description)="{data}">
-                                    <opensilex-TextView v-if="data.item.description" :value="data.item.description">
-                                    </opensilex-TextView>
-                                </template>
-
-                                <template v-slot:cell(motivation)="{data}">
-                                    <opensilex-TextView v-if="data.item.motivation" :value="data.item.motivation.name">
-                                    </opensilex-TextView>
-                                </template>
-
-                                <template v-if="displayTargetColumn" v-slot:cell(targets)="{data}">
-                                    <opensilex-TextView :value="data.item.targets[0]">
-                                    </opensilex-TextView>
-                                </template>
-
-                                <template v-slot:cell(uri)="{data}">
-                                    <opensilex-UriLink :uri="data.item.uri" :value="data.item.uri">
-                                    </opensilex-UriLink>
-                                </template>
-
-                                <template v-slot:cell(actions)="{data}">
-                                    <b-button-group size="sm">
-                                        <opensilex-EditButton
-                                                v-if="! modificationCredentialId || user.hasCredential(modificationCredentialId)"
-                                                @click="editAnnotation(data.item)"
-                                                label="Annotation.edit"
-                                                :small="true"
-                                        ></opensilex-EditButton>
-                                        <opensilex-DeleteButton
-                                                v-if="! deleteCredentialId || user.hasCredential(deleteCredentialId)"
-                                                @click="deleteAnnotation(data.item.uri)"
-                                                label="Annotation.delete"
-                                                :small="true"
-                                        ></opensilex-DeleteButton>
-                                    </b-button-group>
-                                </template>
-                            </opensilex-TableAsyncView>
-                        </template>
-                    </opensilex-PageContent>
-
-                    <opensilex-AnnotationModalForm
-
-                            ref="annotationModalForm"
-                            @onCreate="refresh"
-                            @onUpdate="refresh"
-                    ></opensilex-AnnotationModalForm>
-                </div>
+                            <template v-slot:cell(actions)="{data}">
+                                <b-button-group size="sm">
+                                    <opensilex-EditButton
+                                            v-if="! modificationCredentialId || user.hasCredential(modificationCredentialId)"
+                                            @click="editAnnotation(data.item)"
+                                            label="Annotation.edit"
+                                            :small="true"
+                                    ></opensilex-EditButton>
+                                    <opensilex-DeleteButton
+                                            v-if="! deleteCredentialId || user.hasCredential(deleteCredentialId)"
+                                            @click="deleteAnnotation(data.item.uri)"
+                                            label="Annotation.delete"
+                                            :small="true"
+                                    ></opensilex-DeleteButton>
+                                </b-button-group>
+                            </template>
+                        </opensilex-TableAsyncView>
+                    </template>
+                </opensilex-PageContent>
             </div>
         </div>
+
+        <opensilex-AnnotationModalForm
+
+                ref="annotationModalForm"
+                @onCreate="refresh"
+                @onUpdate="refresh"
+        ></opensilex-AnnotationModalForm>
+   
     </div>
 </template>
 
@@ -317,6 +307,17 @@
 
     }
 </script>
+
+<style scoped lang="scss">
+.page {
+  margin-top : 20px;
+}
+   
+.pageActionsBtns {
+    margin-left: 10px;
+    margin-bottom: 10px
+}
+</style>
 
 
 <i18n>

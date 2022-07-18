@@ -1,13 +1,13 @@
 <template>
   <opensilex-Overlay :show="isSearching && !isGlobalLoaderVisible">
     <div class="card">
-      <div v-if="isSelectable && tableRef" class="card-header row clearfix">
-        <div class="col col-sm-12">
+      <div v-if="isSelectable && tableRef" class="card-header clearfix">
+        <div>
             <h3 class="d-inline mr-1">
               <opensilex-Icon :icon="iconNumberOfSelectedRow" class="title-icon" />
               {{$t(labelNumberOfSelectedRow)}}
             </h3>
-            <span v-if="!maximumSelectedRows" class="badge badge-pill badge-info">{{numberOfSelectedRows}}</span>
+            <span v-if="!maximumSelectedRows" class="badge badge-pill greenThemeColor">{{numberOfSelectedRows}}</span>
             <span v-else class="badge badge-pill badge-warning">{{numberOfSelectedRows}}/{{maximumSelectedRows}}</span>
             <slot name="selectableTableButtons" v-bind:numberOfSelectedRows="numberOfSelectedRows">></slot>
         </div>
@@ -475,8 +475,8 @@ table.b-table-selectable tbody tr td span.checkbox:before {
 
 table.b-table-selectable tbody tr.b-table-row-selected td span.checkbox:before {
   color: #fff;
-  border-color: #007bff;
-  background-color: #007bff;
+  border-color: #00A38D;
+  background-color: #00A38D;
 }
 
 table.b-table-selectable tbody tr.b-table-row-selected td span.checkbox:after {

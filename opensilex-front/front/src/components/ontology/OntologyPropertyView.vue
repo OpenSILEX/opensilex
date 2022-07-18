@@ -3,8 +3,14 @@
         <div class="col-md-6">
             <b-card>
                 <div class="button-zone">
-                    <opensilex-CreateButton v-if="user.isAdmin()" @click="showCreateForm()"
-                                            label="OntologyPropertyView.add"></opensilex-CreateButton>
+
+                    <opensilex-CreateButton
+                        v-if="user.isAdmin()"
+                        @click="showCreateForm()"
+                        label="OntologyPropertyView.add"
+                        class="createButton"
+                    ></opensilex-CreateButton>
+
                     <opensilex-ModalForm
                         ref="propertyForm"
                         component="opensilex-OntologyPropertyForm"
@@ -16,6 +22,8 @@
                         modalSize="lg"
                         successMessage="OntologyPropertyView.the-property"
                         :icon="icon"
+                        :title="propertiesTitle"
+                        :description="propertiesDescription"
                     ></opensilex-ModalForm>
                 </div>
 
@@ -78,6 +86,9 @@ export default class OntologyPropertyView extends Vue {
 
     @Prop()
     icon;
+
+    @Prop()
+    description;
 
     selected: RDFPropertyGetDTO = null;
 
@@ -155,6 +166,10 @@ export default class OntologyPropertyView extends Vue {
 </script>
 
 <style scoped lang="scss">
+.createButton{
+  margin-bottom: -10px;
+  margin-top: -10px
+}
 </style>
 
 

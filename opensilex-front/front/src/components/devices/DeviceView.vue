@@ -1,12 +1,7 @@
 <template>
     <div class="container-fluid">
-        <opensilex-PageHeader
-            icon="ik#ik-thermometer"
-            title="Device.title"
-            description="Device.description"
-        ></opensilex-PageHeader>
-
         <opensilex-PageActions
+            class= "pageActions"
             v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
         >
             <template v-slot>
@@ -14,11 +9,13 @@
                 <opensilex-CreateButton
                     label="Device.add"
                     @click="modalForm.showCreateForm()"
+                    class="createButton"
                 ></opensilex-CreateButton>
 
                 <opensilex-CreateButton
                     label="OntologyCsvImporter.import"
                     @click="showCsvForm"
+                    class="createButton"
                 ></opensilex-CreateButton>
 
                 <opensilex-DeviceModalForm
@@ -26,11 +23,11 @@
                     @onCreate="displayAfterCreation($event)"
                 ></opensilex-DeviceModalForm>
 
-                <opensilex-DeviceCsvForm
-                    v-if="renderCsvForm"
-                    ref="csvForm"
-                    @csvImported="deviceList.refresh()"
-                ></opensilex-DeviceCsvForm>
+                    <opensilex-DeviceCsvForm
+                        v-if="renderCsvForm"
+                        ref="csvForm"
+                        @csvImported="deviceList.refresh()"
+                    ></opensilex-DeviceCsvForm>
 
             </template>
         </opensilex-PageActions>
@@ -103,6 +100,13 @@ export default class DeviceView extends Vue {
 </script>
 
 <style scoped lang="scss">
+
+.createButton {
+  margin-bottom: 10px;
+  margin-top: -15px;
+  margin-left: 0;
+  margin-right: 5px;
+}
 </style>
 
 <i18n>

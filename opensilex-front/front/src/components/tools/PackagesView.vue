@@ -1,10 +1,5 @@
 <template>
   <div>
-    <opensilex-PageHeader
-      icon="ik#ik-layers"
-      title="PackagesView.title"
-      description="PackagesView.description"
-    ></opensilex-PageHeader>
     <opensilex-PageContent>
       <template v-slot>
         <h3></h3>

@@ -1,5 +1,6 @@
 <template>
   <b-modal ref="modalRef" size="xl" :static="true">
+
     <template v-slot:modal-title>
       <i class="ik ik-search mr-1"></i>
       {{ $t('component.project.filter-description') }}
@@ -11,14 +12,15 @@
         class="btn btn-secondary"
         v-on:click="hide(false)"
       >{{ $t('component.common.close') }}</button>
+      
       <button
         type="button"
-        class="btn btn-primary"
+        class="btn greenThemeColor"
         v-on:click="hide(true)"
       >{{ $t('component.common.validateSelection') }}</button>
     </template>
 
-    <div class="card">
+    <div>
       <opensilex-ProjectList 
         ref="projectSelection"
         :isSelectable="true"

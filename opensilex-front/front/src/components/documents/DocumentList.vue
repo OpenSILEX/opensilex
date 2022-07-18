@@ -1,50 +1,74 @@
 <template>
   <div>
     <opensilex-PageActions
-      v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
-    >
-      <template v-slot>
-        <opensilex-CreateButton @click="documentForm.showCreateForm()" label="DocumentView.add"></opensilex-CreateButton>
-      </template>
+      v-if="
+      user.hasCredential(
+        credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)
+        ">
+        <opensilex-CreateButton
+        @click="documentForm.showCreateForm()"
+        label="DocumentView.add"
+        class="createButton"
+        ></opensilex-CreateButton>
     </opensilex-PageActions>
 
+    <opensilex-PageContent
+      class="pagecontent"
+    >
+     <!-- Toggle Sidebar--> 
+      <div class="searchMenuContainer"
+      v-on:click="SearchFiltersToggle = !SearchFiltersToggle"
+      :title="searchFiltersPannel()">
+        <div class="searchMenuIcon">
+          <i class="icon ik ik-search"></i>
+        </div>
+      </div>
+
+    <!-- Filters -->
+    <Transition>
+      <div v-show="SearchFiltersToggle">
     <opensilex-SearchFilterField
       @search="refresh()"
       @clear="resetFilters()"
       withButton="false"
       :showAdvancedSearch="true"
+      class="searchFilterField"
     >
       <template v-slot:filters>
         <!-- title -->
-        <div class="col col-xl-12 col-sm-12 col-12">
+      <br><br>
+        <div>
           <opensilex-StringFilter
             :filter.sync="filter.multiple"
             placeholder="DocumentList.filter.searchAll-placeholder"
-          ></opensilex-StringFilter>
+            class="searchFilter"
+          ></opensilex-StringFilter><br>
         </div>
       </template>
 
       <template v-slot:advancedSearch>
         <!-- type -->
-        <div class="col col-xl-3 col-sm-6 col-12">
+        <div>
           <opensilex-TypeForm
             :type.sync="filter.rdf_type"
             :baseType="$opensilex.Oeso.DOCUMENT_TYPE_URI"
             placeholder="DocumentList.filter.type-placeholder"
+            class="searchFilter"
           ></opensilex-TypeForm>
         </div>
 
         <!-- title -->
-        <div class="col col-xl-3 col-sm-6 col-12">
+        <div>
           <label>{{$t('DocumentList.filter.title')}}</label>
           <opensilex-StringFilter
             :filter.sync="filter.title"
             placeholder="DocumentList.filter.title-placeholder"
-          ></opensilex-StringFilter>
+            class="searchFilter"
+          ></opensilex-StringFilter><br>
         </div>
 
         <!-- date -->   
-        <div class="col col-xl-3 col-sm-6 col-12">
+        <div>
           <label>{{$t('DocumentList.filter.date')}}</label>
             <opensilex-StringFilter
               :filter.sync="filter.date"
@@ -52,45 +76,52 @@
               type="number"
               min= "1900"
               max= "2900"
-            ></opensilex-StringFilter>
+              class="searchFilter"
+            ></opensilex-StringFilter><br>
         </div>
 
         <!-- targets -->
-        <div class="col col-xl-3 col-sm-6 col-12">
+        <div>
           <label>{{$t('DocumentList.filter.targets')}}</label>
           <opensilex-StringFilter
             :filter.sync="filter.targets"
             placeholder="DocumentList.filter.targets-placeholder"
-          ></opensilex-StringFilter>
+            class="searchFilter"
+          ></opensilex-StringFilter><br>
         </div>
 
         <!-- author -->
-        <div class="col col-xl-3 col-sm-6 col-12">
+        <div>
           <label>{{$t('DocumentList.filter.author')}}</label>
             <opensilex-InputForm
               :value.sync="filter.authors"
               placeholder="DocumentList.filter.author-placeholder"
+              class="searchFilter"
             ></opensilex-InputForm>
         </div>
 
         <!-- keywords -->
-        <div class="col col-xl-3 col-sm-6 col-12">
+        <div>
           <label>{{$t('DocumentList.filter.keywords')}}</label>
           <opensilex-InputForm
             :value.sync="filter.keywords"
             placeholder="DocumentList.filter.keywords-placeholder"
+            class="searchFilter"
           ></opensilex-InputForm>
         </div>  
         
         <!-- deprecated -->
-        <div class="col col-xl-3 col-sm-6 col-12">
+        <div>
           <opensilex-CheckboxForm
             label="DocumentList.filter.deprecated"
             :value.sync="filter.deprecated"
+            class="searchFilter"
           ></opensilex-CheckboxForm>
         </div>
       </template>
     </opensilex-SearchFilterField>
+      </div>
+    </Transition>
     <opensilex-TableAsyncView
       ref="tableRef"
       :searchMethod="searchDocuments"
@@ -162,7 +193,9 @@
       modalSize="lg"
       @onCreate="refreshOrRedirectAfterCreation"
       @onUpdate="refresh()"
-    ></opensilex-ModalForm>
+    >
+    </opensilex-ModalForm>
+        </opensilex-PageContent>
   </div>
 </template>
 
@@ -239,6 +272,12 @@ export default class DocumentList extends Vue {
   created() {
     this.service = this.$opensilex.getService("opensilex.DocumentsService");
     this.$opensilex.updateFiltersFromURL(this.$route.query, this.filter);
+  }
+
+    data(){
+    return {
+      SearchFiltersToggle : false,
+    }
   }
 
   fields = [
@@ -364,11 +403,24 @@ export default class DocumentList extends Vue {
   browseSource(source: string) {
     window.open(source);
   }
+  
+  searchFiltersPannel() {
+    return  this.$t("searchfilter.label")
+  }
 
 }
 </script>
 
 <style scoped lang="scss">
+
+.createButton{
+  margin-bottom: 10px;
+  margin-top: -15px;
+  margin-left: 0;
+}
+.searchFilterField * {
+  margin-left: 6px;
+}
 </style>
 
 <i18n>

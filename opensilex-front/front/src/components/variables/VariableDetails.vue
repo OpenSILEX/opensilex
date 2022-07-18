@@ -1,6 +1,6 @@
 <template>
 
-  <div>
+  <div class="page">
     <b-row>
       <b-col>
         <opensilex-Card label="component.common.description" icon="ik#ik-clipboard">
@@ -290,6 +290,10 @@ export default class VariableDetails extends Vue {
 </script>
 
 <style scoped lang="scss">
+
+.page {
+  margin-top : 20px;
+}
 </style>
 
 <i18n>

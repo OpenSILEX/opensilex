@@ -1,7 +1,7 @@
 <template>
   <opensilex-Button
     @click="$emit('click')"
-    variant="primary"
+    class="greenThemeColor"
     icon="ik#ik-plus"
     :small="small"
     :label="label"

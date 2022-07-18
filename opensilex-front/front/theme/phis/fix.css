@@ -228,3 +228,14 @@ table.asd__month-table td {
 table.b-table-selectable thead tr th:first-child {
     width: 45px;
 }
+
+
+@media (min-width: 200px) and (max-width: 1150px) {
+    .customized .header-top .top-menu .dropdown .dropdown-toggle {
+        height: 25px;
+        width: 25px;
+        font-size: 80%;
+        line-height: 5px;
+        padding: 5px;
+    }
+  }

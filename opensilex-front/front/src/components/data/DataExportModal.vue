@@ -2,10 +2,8 @@
   <b-modal
     ref="modal"
     :title="$t('DataExportModal.title')"
-    :ok-title="$t('DataExportModal.export')"
     no-close-on-backdrop
     no-close-on-esc
-    @ok="exportData()"
   >
     <template v-slot:modal-header>
       <b-row class="mt-1" style="width: 100%">
@@ -41,6 +39,20 @@
       </opensilex-FormField>
 
     </template>
+        <template v-slot:modal-footer>
+      <button
+        type="button"
+        class="btn btn-secondary"
+        v-on:click="hide(false)"
+      >{{ $t('component.common.close') }}</button>
+
+      <button
+        type="button"
+        class="btn greenThemeColor"
+        v-on:click="exportData()"
+      >{{ $t('DataExportModal.export') }}</button> 
+    </template>
+
   </b-modal>
 </template>
 

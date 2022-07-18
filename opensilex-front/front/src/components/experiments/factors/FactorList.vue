@@ -62,7 +62,6 @@
         $t(data.name)
       }}</template>
       <template v-slot:head(category)="{ data }">{{ $t(data.label) }}</template>
-
       <!-- <template v-slot:head(uri)="{data}">{{$t(data.label)}}</template> -->
       <template v-slot:head(actions)="{ data }">{{ $t(data.label) }}</template>
       <template v-slot:cell(name)="{ data }">

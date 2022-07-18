@@ -1,79 +1,113 @@
 <template>
-    <div>
-        <opensilex-SearchFilterField
-            @search="refresh()"
-            @clear="reset()"
-            withButton="false"
-            :showAdvancedSearch="true"
-        >
-            <template v-slot:filters>
-                <div class="col col-xl-3 col-sm-6 col-12">
-                    <label>{{ $t("DeviceList.filter.namePattern") }}</label>
-                    <opensilex-StringFilter
-                        :filter.sync="filter.name"
-                        placeholder="DeviceList.filter.namePattern-placeholder"
-                    ></opensilex-StringFilter>
-                </div>
+  <div>
+    <opensilex-PageContent
+      class="pagecontent"
+    >
+        <!-- Toggle Sidebar--> 
+        <div class="searchMenuContainer"
+            v-on:click="SearchFiltersToggle = !SearchFiltersToggle"
+            :title="searchFiltersPannel()">
+            <div class="searchMenuIcon">
+                <i class="icon ik ik-search"></i>
+            </div>
+        </div>
+      <!-- FILTERS -->
+      <Transition>
+        <div v-show="SearchFiltersToggle">
 
-                <div class="col col-xl-3 col-sm-6 col-12">
-                    <opensilex-TypeForm
-                        :type.sync="filter.rdf_type"
-                        :baseType="$opensilex.Oeso.DEVICE_TYPE_URI"
-                        :ignoreRoot="false"
-                        placeholder="DeviceList.filter.rdfTypes-placeholder"
-                    ></opensilex-TypeForm>
-                </div>
+    <opensilex-SearchFilterField
+      @search="refresh()"
+      @clear="reset()"
+      withButton="false"
+      :showAdvancedSearch="true"
+      class="searchFilterField"
+    >
+      <template v-slot:filters>
+      <!-- Name --> 
+        <div>
+          <label>{{ $t("DeviceList.filter.namePattern") }}</label>
+          <opensilex-StringFilter
+            :filter.sync="filter.name"
+            placeholder="DeviceList.filter.namePattern-placeholder"
+            class="searchFilter"
+          ></opensilex-StringFilter><br>
+        </div>
 
-                <div class="col col-xl-3 col-sm-6 col-12">
-                  <opensilex-VariableSelectorWithFilter
-                      placeholder="VariableSelectorWithFilter.placeholder"
-                      :variables.sync="filter.variable"
-                      maximumSelectedRows="1"
-                  ></opensilex-VariableSelectorWithFilter>
-                </div>
+      <!-- Type --> 
+        <div>
+          <opensilex-TypeForm
+            :type.sync="filter.rdf_type"
+            :baseType="$opensilex.Oeso.DEVICE_TYPE_URI"
+            placeholder="DeviceList.filter.rdfTypes-placeholder"
+            class="searchFilter"
+          ></opensilex-TypeForm>
+        </div>
 
-                <div class="col col-xl-3 col-sm-6 col-12">
-                    <label>{{ $t("DeviceList.filter.start_up") }}</label>
-                    <opensilex-StringFilter
-                        :filter.sync="filter.start_up"
-                        placeholder="DeviceList.filter.start_up-placeholder"
-                        type="number"
-                    ></opensilex-StringFilter>
-                </div>
+        <!-- Variables -->
+         <div>
+            <opensilex-VariableSelectorWithFilter
+              placeholder="VariableSelector.placeholder"
+              :variables.sync="filter.variable"
+              maximumSelectedRows="1"
+              class="searchFilter"
+            ></opensilex-VariableSelectorWithFilter>
+         </div>
 
-                <div class="col col-xl-3 col-sm-6 col-12">
-                    <label>{{ $t("DeviceList.filter.brand") }}</label>
-                    <opensilex-StringFilter
-                        :filter.sync="filter.brand"
-                        placeholder="DeviceList.filter.brand-placeholder"
-                    ></opensilex-StringFilter>
-                </div>
+        <!-- Start Up --> 
+        <div>
+          <label>{{ $t("DeviceList.filter.start_up") }}</label>
+          <opensilex-StringFilter
+            :filter.sync="filter.start_up"
+            placeholder="DeviceList.filter.start_up-placeholder"
+            type="number"
+            class="searchFilter"
+          ></opensilex-StringFilter><br>
+        </div>
 
-                <div class="col col-xl-3 col-sm-6 col-12">
-                    <label>{{ $t("DeviceList.filter.model") }}</label>
-                    <opensilex-StringFilter
-                        :filter.sync="filter.model"
-                        placeholder="DeviceList.filter.model-placeholder"
-                    ></opensilex-StringFilter>
-                </div>
-            </template>
-            <template v-slot:advancedSearch>
-                <div class="col col-xl-3 col-sm-6 col-12">
-                    <label>{{ $t("DeviceList.filter.metadataKey") }}</label>
-                    <opensilex-StringFilter
-                        :filter.sync="filter.metadataKey"
-                        placeholder="DeviceList.filter.metadataKey-placeholder"
-                    ></opensilex-StringFilter>
-                </div>
-                <div class="col col-xl-3 col-sm-6 col-12">
-                    <label>{{ $t("DeviceList.filter.metadataValue") }}</label>
-                    <opensilex-StringFilter
-                        :filter.sync="filter.metadataValue"
-                        placeholder="DeviceList.filter.metadataValue-placeholder"
-                    ></opensilex-StringFilter>
-                </div>
-            </template>
-        </opensilex-SearchFilterField>
+        <!-- Brand --> 
+        <div>
+          <label>{{ $t("DeviceList.filter.brand") }}</label>
+          <opensilex-StringFilter
+            :filter.sync="filter.brand"
+            placeholder="DeviceList.filter.brand-placeholder"
+            class="searchFilter"
+          ></opensilex-StringFilter><br>
+        </div>
+
+        <!-- Constructor model --> 
+        <div>
+          <label>{{ $t("DeviceList.filter.model") }}</label>
+          <opensilex-StringFilter
+            :filter.sync="filter.model"
+            placeholder="DeviceList.filter.model-placeholder"
+            class="searchFilter"
+          ></opensilex-StringFilter><br>
+        </div>
+      </template>
+      <template v-slot:advancedSearch>
+        <!-- Key --> 
+        <div>
+          <label>{{ $t("DeviceList.filter.metadataKey") }}</label>
+          <opensilex-StringFilter
+            :filter.sync="filter.metadataKey"
+            placeholder="DeviceList.filter.metadataKey-placeholder"
+            class="searchFilter"
+          ></opensilex-StringFilter>
+        </div>
+        <!-- Value --> 
+        <div>
+          <label>{{ $t("DeviceList.filter.metadataValue") }}</label>
+          <opensilex-StringFilter
+            :filter.sync="filter.metadataValue"
+            placeholder="DeviceList.filter.metadataValue-placeholder"
+            class="searchFilter"
+          ></opensilex-StringFilter>
+          <br>
+        </div>
+      </template>
+    </opensilex-SearchFilterField>
+        </div>
+      </Transition>
 
         <opensilex-TableAsyncView
             ref="tableRef"
@@ -183,6 +217,7 @@
             :targets="selectedUris"
             :isMove="true"
         ></opensilex-EventCsvForm>
+        </opensilex-PageContent>
     </div>
 </template>
 
@@ -238,6 +273,12 @@ export default class DeviceList extends Vue {
         metadataKey: undefined,
         metadataValue: undefined,
     };
+
+    data(){
+        return {
+            SearchFiltersToggle : false,
+        }
+    }
 
     exportFilter = {
         name: undefined,
@@ -502,6 +543,9 @@ export default class DeviceList extends Vue {
         this.exportFilter.model = this.filter.model;
         this.exportFilter.serial_number = undefined;
         this.exportFilter.metadata = this.addMetadataFilter();
+    }
+    searchFiltersPannel() {
+        return  this.$t("searchfilter.label")
     }
 }
 </script>

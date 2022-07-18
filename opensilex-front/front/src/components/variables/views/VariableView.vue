@@ -4,9 +4,10 @@
         icon="fa#sun"
         description="VariableView.type"
         :title="variable.name"
+        class="detail-element-header"
     ></opensilex-PageHeader>
 
-    <opensilex-PageActions :tabs="true" :returnButton="true">
+    <opensilex-PageActions :tabs="true" :returnButton="true" class="navigationTabs">
       <template v-slot>
         <b-nav-item
             :active="isDetailsTab()"
@@ -29,25 +30,26 @@
     <opensilex-PageContent>
       <template v-slot>
         <opensilex-VariableDetails
-            v-if="isDetailsTab()"
-            :variable="variable"
-            @onUpdate="updateVariable($event)"
+          v-if="isDetailsTab()"
+          :variable="variable"
+          @onUpdate="updateVariable($event)"
         ></opensilex-VariableDetails>
 
         <opensilex-AnnotationList
-                v-else-if="isAnnotationTab()"
-                ref="annotationList"
-                :target="uri"
-                :displayTargetColumn="false"
-                :enableActions="true"
-                :modificationCredentialId="credentials.CREDENTIAL_ANNOTATION_MODIFICATION_ID"
-                :deleteCredentialId="credentials.CREDENTIAL_ANNOTATION_DELETE_ID"
+        class="projectAnnotations"
+          v-else-if="isAnnotationTab()"
+          ref="annotationList"
+          :target="uri"
+          :displayTargetColumn="false"
+          :enableActions="true"
+          :modificationCredentialId="credentials.CREDENTIAL_ANNOTATION_MODIFICATION_ID"
+          :deleteCredentialId="credentials.CREDENTIAL_ANNOTATION_DELETE_ID"
         ></opensilex-AnnotationList>
 
         <opensilex-VariableVisualizationTab
-            v-else-if="isVisualizationTab()"
-            :variable="uri"
-            :modificationCredentialId="credentials.CREDENTIAL_DEVICE_MODIFICATION_ID"
+          v-else-if="isVisualizationTab()"
+          :variable="uri"
+          :modificationCredentialId="credentials.CREDENTIAL_DEVICE_MODIFICATION_ID"
         ></opensilex-VariableVisualizationTab>
       </template>
 
@@ -149,4 +151,7 @@ export default class VariableView extends Vue {
 </script>
 
 <style scoped lang="scss">
+.projectAnnotations{
+  margin-top: 18px; 
+}
 </style>

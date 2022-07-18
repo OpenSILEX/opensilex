@@ -120,7 +120,7 @@
           </template>
         </treeselect>
         <b-input-group-append v-if="isModalSearch">
-          <b-button variant="primary" @click="showModal">>></b-button>
+          <b-button class="createButton greenThemeColor" @click="showModal">>></b-button>
         </b-input-group-append>
         <b-input-group-append v-else-if="!actionHandler && viewHandler">
            <opensilex-DetailButton
@@ -129,10 +129,11 @@
             :detailVisible="viewHandlerDetailsVisible"
             :label="(viewHandlerDetailsVisible ? 'SelectorForm.hideDetails' : 'SelectorForm.showDetails')"
             :small="true"
+            class="greenThemeColor"
           ></opensilex-DetailButton>
         </b-input-group-append>
         <b-input-group-append v-else-if="actionHandler">
-          <b-button variant="primary" @click="actionHandler">+</b-button>
+          <b-button class="greenThemeColor" @click="actionHandler">+</b-button>
           <opensilex-DetailButton
             v-if="viewHandler"
             @click="viewHandler"
@@ -161,7 +162,9 @@
         @select="select(conversionMethod($event))"
         @unselect="deselect(conversionMethod($event))"
         @selectall="selectall"
+        class="isModalSearchComponent"
       ></component>
+
     </template>
   </opensilex-FormField>
 </template>
@@ -740,6 +743,10 @@ i.more-results-info {
   margin-left: 10px;
   margin-right: 10px;
 }
+.greenThemeColor {
+  color: #fff
+}
+
 </style>
 
 <i18n>

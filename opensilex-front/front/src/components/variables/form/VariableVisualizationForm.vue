@@ -1,17 +1,19 @@
 <template>
   <div>
-    <div class="card">
+    <div>
       <opensilex-SearchFilterField
           ref="searchField"
           :withButton="true"
           searchButtonLabel="component.common.search.visualize-button"
-          :showTitle="true"
+          :showTitle="false"
           @search="onSearch"
           @clear="clear"
           :showAdvancedSearch="true"
+          class="searchFilterField"
       >
         <template v-slot:filters>
-          <!-- Type -->
+          <!-- Device -->
+          <div>
           <opensilex-FilterField :halfWidth="true">
             <opensilex-VariableDevicesSelector
                 ref="devSelector"
@@ -21,30 +23,36 @@
                 :multiple="true"
                 :showURI="false"
                 @select="getTotalEventsCount"
+                class="searchFilter"
             ></opensilex-VariableDevicesSelector>
           </opensilex-FilterField>
+          </div>
 
+          <div>
           <opensilex-FilterField :halfWidth="true">
-            <div class="row">
-              <div class="col col-xl-6 col-md-6 col-sm-6 col-12">
+            <div>
+              <div>
                 <opensilex-DateTimeForm
                     :value.sync="filter.startDate"
                     label="component.common.begin"
                     @input="onDateChange"
                     @clear="onDateChange"
+                    class="searchFilter"
                 ></opensilex-DateTimeForm>
               </div>
-              <div class="col col-xl-6 col-md-6 col-sm-6 col-12">
+              <div>
                 <opensilex-DateTimeForm
                     :value.sync="filter.endDate"
                     label="component.common.end"
                     name="endDate"
                     @input="onDateChange"
                     @clear="onDateChange"
+                    class="searchFilter"
                 ></opensilex-DateTimeForm>
               </div>
             </div>
           </opensilex-FilterField>
+          </div>
 
           <opensilex-FilterField :halfWidth="true">
             <label>{{ $t("ScientificObjectVisualizationForm.show_events") }}</label>

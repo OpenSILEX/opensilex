@@ -1,20 +1,22 @@
 <template>
-  <div class="container-fluid">
-    <opensilex-PageActions>
-      <template v-slot>
-        <opensilex-HelpButton
-          @click="helpModal.show()"
-          label="component.common.help-button"
-        ></opensilex-HelpButton>
-        <opensilex-CreateButton
-          v-if="
-            user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID)
-          "
-          @click="factorForm.showCreateForm()"
-          label="component.factor.add-button"
-        ></opensilex-CreateButton>
-      </template>
+  <div>
+    <opensilex-PageActions class="pageActionsBtns">
+      <opensilex-HelpButton
+        @click="helpModal.show()"
+        label="component.common.help-button"
+        class="helpButton"
+      ></opensilex-HelpButton>
+
+      <opensilex-CreateButton
+        v-if="
+          user.hasCredential(credentials.CREDENTIAL_FACTOR_MODIFICATION_ID)
+        "
+        @click="factorForm.showCreateForm()"
+        label="component.factor.add-button"
+        class="createButton"
+      ></opensilex-CreateButton>
     </opensilex-PageActions>
+  
     <b-modal ref="helpModal" size="xl" hide-header ok-only>
       <opensilex-FactorsHelp></opensilex-FactorsHelp>
     </b-modal>
@@ -33,24 +35,31 @@
       @onCreate="showFactorDetails"
       @onUpdate="factorList.refresh()"
     ></opensilex-ModalForm>
+
     <opensilex-PageContent>
       <template v-slot>
-        <opensilex-FactorList
-          ref="factorList"
-          :experiment="uri"
-          @onEdit="editFactor"
-          @onDetails="showFactorDetails"
-          @onInteroperability="showSkosReferences"
-          @onDelete="deleteFactor"
-        ></opensilex-FactorList>
+        <div class="card">
+          <div class="card-body">
+            <opensilex-FactorList
+              ref="factorList"
+              :experiment="uri"
+              @onEdit="editFactor"
+              @onDetails="showFactorDetails"
+              @onInteroperability="showSkosReferences"
+              @onDelete="deleteFactor"
+            ></opensilex-FactorList>
+          </div>
+        </div>
       </template>
     </opensilex-PageContent>
+    
     <opensilex-ExternalReferencesModalForm
       ref="skosReferences"
       :references.sync="selectedFactor"
       @onUpdate="callUpdateFactorService"
     ></opensilex-ExternalReferencesModalForm>
   </div>
+ 
 </template>
 
 <script lang="ts">
@@ -224,6 +233,24 @@ export default class ExperimentFactors extends Vue {
 </script>
 
 <style scoped lang="scss">
+
+.pageActionsBtns {
+  margin-left: 10px;
+  margin-bottom: 10px
+}
+
+.helpButton {
+  margin-left: -5px;
+  color: #00A28C;
+  font-size: 1.2em;
+  border: none
+}
+  
+.helpButton:hover {
+  background-color: #00A28C;
+  color: #f1f1f1
+}
+
 </style>
 
 

@@ -4,7 +4,7 @@
       <div class="card">
         <div v-if="showTitle" class="card-header">
           <h3 class="mr-3">
-            <opensilex-Icon class="search-icon" icon="ik#ik-search" />
+            <opensilex-Icon class="search-icon" icon="ik#ik-search"/>
             {{ $t(label) }}
           </h3>
         </div>
@@ -75,7 +75,7 @@
                 :label="searchButtonLabel"
                 @click="validateAndSearch($event)"
                 icon="ik#ik-search"
-                variant="primary"
+                class="greenThemeColor createButton"
                 :small="false"
               ></opensilex-Button>
             </slot>
@@ -113,10 +113,15 @@ export default class SearchFilterField extends Vue {
   @Prop({ default: true })
   withButton: boolean;
 
+  @Prop({default: true })
+  withIcon: boolean;
+
   @Prop({
     default: false,
   })
-  showTitle;
+  
+  @Prop({ default: true })
+  showTitle: boolean;
 
   @Prop({
     default: false,

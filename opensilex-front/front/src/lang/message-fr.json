@@ -699,6 +699,9 @@
         "dateDiff" : "La date du champ {_field_} ne doit pas être antérieur à la date de début",
         "nameFiltered" : "Le {_field_} ne doit pas contenir -,+,=,<,>,=,?,/,*,&"
     },
+    "searchfilter": {
+        "label": "Filtres de recherche"
+    },
     "datatypes": {
         "boolean": "booléen",
         "number": "nombre entier",

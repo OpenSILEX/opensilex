@@ -2,7 +2,7 @@
   <b-card :title="$t('ProvenanceForm.agents')" bg-variant="light">
 
     <b-button v-if="! agents || agents.length < initialAgentTypes.length"
-              variant="primary"
+              class="greenThemeColor"
               @click="addAgent">
       {{ $t('ProvenanceForm.add-agent') }}
     </b-button>

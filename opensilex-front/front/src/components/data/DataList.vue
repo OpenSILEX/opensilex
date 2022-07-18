@@ -10,7 +10,7 @@
       <template v-slot:export>
         <b-button
           @click="exportModal.show()"
-          variant="secondary"
+          class="exportButton greenThemeColor"
         >export
         </b-button>
 
@@ -318,4 +318,7 @@ export default class DataList extends Vue {
 </script>
 
 <style scoped lang="scss">
+.exportButton {
+  margin-left: 15px;
+}
 </style>

@@ -4,45 +4,25 @@
       icon="fa#seedling"
       title="GermplasmCreate.title"
       description="GermplasmCreate.description"
+      class="detail-element-header"
     ></opensilex-PageHeader>
+
     <opensilex-PageActions :returnButton="true" >
       <opensilex-HelpButton
       @click="helpModal.show()"
       label="component.common.help-button"
+      class="helpButton"
       ></opensilex-HelpButton>
     </opensilex-PageActions>
 
     <opensilex-PageContent>
-      <!-- <opensilex-FilterField>    
-        <b-select
-          ref="germplasmType"
-          v-model="selectedType"
-          :options="germplasmTypes"
-          @change="refreshTable"
-        >
-          <template v-slot:first>
-            <b-form-select-option :value="null">{{$t('GermplasmCreate.select')}}</b-form-select-option>
-          </template>
-        </b-select>
-      </opensilex-FilterField> -->
       <opensilex-TypeForm
         :type.sync="selectedType"
         :baseType="$opensilex.Oeso.GERMPLASM_TYPE_URI"
         :placeholder="$t('GermplasmCreate.form-type-placeholder')"
         @update:type="refreshTable"
       ></opensilex-TypeForm>
-      <!-- <b-input-group class="mt-3 mb-3" size="sm">
-        <b-select
-          ref="germplasmType"
-          v-model="selected"
-          :options="germplasmTypes"
-          @change="refreshTable"
-        >
-          <template v-slot:first>
-            <b-form-select-option :value="null">{{$t('GermplasmCreate.select')}}</b-form-select-option>
-          </template>
-        </b-select>
-      </b-input-group> -->
+
       <opensilex-GermplasmTable v-if="selectedType" ref="germplasmTable" :germplasmType="selectedType" :key="tabulatorRefresh"></opensilex-GermplasmTable>
     </opensilex-PageContent>
     <b-modal ref="helpModal" size="xl" hide-header ok-only>
@@ -139,6 +119,19 @@ export default class GermplasmCreate extends Vue {
 </script>
 
 <style scoped lang="scss">
+
+.helpButton {
+  margin-left: 0px;
+  color: #00A28C;
+  font-size: 1.2em;
+  border: none;
+  margin-bottom: 10px;
+}
+  
+.helpButton:hover {
+  background-color: #00A28C;
+  color: #f1f1f1
+}
 </style>
 
 <i18n>

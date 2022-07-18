@@ -4,6 +4,7 @@
       icon="ik#ik-globe"
       :title="selected.name"
       :description="selected.rdf_type_name"
+      class="detail-element-header"
     ></opensilex-PageHeader>
     <opensilex-PageActions :tabs="false" :returnButton="true">
     </opensilex-PageActions>

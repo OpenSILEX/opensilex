@@ -23,29 +23,39 @@
                 <opensilex-Icon :icon="icon" class="icon-title" />
               </slot>
               <span v-if="editMode">{{ $t(editTitle) }}</span>
-              <span v-else>{{ $t(createTitle) }}</span>
-          
+              <span v-else>{{ $t(createTitle) }}</span>         
             </h4>
           </i>
         </b-col>
-        <b-col cols="1">
+
           <opensilex-HelpButton
-            v-if="tutorial && !editMode"
-              class="ml-2"
-              variant="outline-info"
+              v-if="tutorial && !editMode"
               label="component.tutorial.name"  
               @click="getFormRef().tutorial()"
+              class="helpButton"
           ></opensilex-HelpButton> 
-        </b-col>
-        <b-col cols="1">
+
         <!-- Emulate built in modal header close button action -->
-        <button type="button" class="close" @click="modalRef.hide()" data-dismiss="modal" aria-label="Close">
+        <button type="button" class="close col-1" @click="modalRef.hide()" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
-        </b-col>
       </b-row> 
     </template>
 
+    <template v-slot:modal-footer="footer">
+      <b-button
+          variant="secondary"
+          @click="footer.cancel()"
+      >
+        {{$t('component.common.cancel')}}
+      </b-button>
+      <b-button
+          class="greenThemeColor"
+          @click="footer.ok()"
+      >
+        {{$t('component.common.ok')}}
+      </b-button>
+    </template>
 
     <ValidationObserver ref="validatorRef">
         <component ref="componentRef" v-bind:is="component" :editMode="editMode" :form.sync="form" :disableValidation="disableValidation">
@@ -216,4 +226,34 @@ export default class ModalForm extends Vue {
 ::v-deep .full-screen-modal-form > .modal-dialog {
   max-width: 95%;
 }
+
+.close {
+  margin-top: -12px;
+  transition: 0.5s;
+  right: 5px;
+}
+.close:hover {
+  color: red;
+  transition: 0.5s
+}
+
+.helpButton {
+  margin-left: 25px;
+  color: #00A28C;
+  font-size: 1.2em;
+  border: none
+}
+  
+.helpButton:hover {
+  background-color: #00A28C;
+  color: #f1f1f1
+}
+
+@media (min-width: 200px) and (max-width: 993px) {
+  .helpButton {
+    margin-left: 0px;
+    margin-right: 15px;
+    }
+}
+
 </style>;

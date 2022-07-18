@@ -36,6 +36,7 @@
           </div>
         </div>
 
+        <!-- Image details on click -->
         <b-collapse :id="'collapse-' + index" class="mt-2">
          <b-card-text>{{ $t("DataView.filter.provenance") }}:</b-card-text>
           <b-card-text>

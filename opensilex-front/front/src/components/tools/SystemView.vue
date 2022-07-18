@@ -1,10 +1,5 @@
 <template>
   <div class="container-fluid">
-    <opensilex-PageHeader
-      icon="ik#ik-layers"
-      title="SystemView.title"
-      description="SystemView.title-description"
-    ></opensilex-PageHeader>
     <opensilex-PageContent>
       <template v-slot>
         <opensilex-Card icon="ik#ik-info" label="SystemView.details">

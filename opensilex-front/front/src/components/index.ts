@@ -462,7 +462,6 @@ components["opensilex-ScientificObjectModalListByExp"] = ScientificObjectModalLi
 import ScientificObjectView from './scientificObjects/ScientificObjectView.vue';
 components["opensilex-ScientificObjectView"] = ScientificObjectView;
 
-
 // Variables
 import VariableList from './variables/VariableList.vue';
 components["opensilex-VariableList"] = VariableList;

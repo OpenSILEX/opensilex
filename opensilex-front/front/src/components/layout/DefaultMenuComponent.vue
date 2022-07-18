@@ -1,5 +1,6 @@
 <template>
   <div>
+    <!-- Hamburger -->
     <div class="hamburger-container">
       <button
         class="hamburger hamburger--collapse"
@@ -12,6 +13,7 @@
         </span>
       </button>
     </div>
+      <!-- Sections menu -->
     <div class="app-sidebar">
       <div class="sidebar-content">
         <div class="nav-container">
@@ -30,7 +32,7 @@
               <a
                 v-if="item.hasChildren()"
                 href="#"
-                v-on:click="toogle(item, $event)"
+                v-on:click="toogle(item, $event);"
               >
                 <i class="ik" v-bind:class="getIcon(item)"></i>
                 <span>{{ $t(item.label) }}</span>
@@ -42,7 +44,8 @@
               <div
                 class="submenu-content"
                 v-bind:class="{ open: item.showChildren }"
-              >
+              > 
+                <span @click="toggleMenuOnSelect()">
                 <router-link
                   v-for="itemChild in item.children"
                   v-bind:key="itemChild.id"
@@ -53,8 +56,8 @@
                   class="menu-item"
                   :to="itemChild.route.path"
                 >
-                  {{ $t(itemChild.label) }}
-                </router-link>
+                 {{ $t(itemChild.label) }}
+                </router-link></span>
               </div>
             </div>
             <div li class="nav-item">
@@ -116,6 +119,13 @@ export default class DefaultMenuComponent extends Vue {
     this.$store.commit("toggleMenu");
   }
 
+  /*hide menu on category selected*/
+  toggleMenuOnSelect(): void {
+    if (document.body.clientWidth < 1040) {
+      this.$store.commit("toggleMenuOnSelect");
+    }
+  }
+
   toogle(item: Menu, event: MouseEvent): void {
     if (item.hasChildren()) {
       console.info("toogle menu, old value = " + item.showChildren);
@@ -146,7 +156,7 @@ export default class DefaultMenuComponent extends Vue {
   user-select: none;
   height: 60px;
   width: 60px;
-  left: 180px;
+  left: 0px;
   background-color: #00a38d;
 }
 
@@ -190,6 +200,16 @@ export default class DefaultMenuComponent extends Vue {
 .hamburger-inner,
 .hamburger-inner:after,
 .hamburger-inner:before {
-  width: 35px;
+  width: 41px;
+}
+
+@media (min-width: 250px) and (max-width: 1150px) {
+
+.hamburger-inner,
+.hamburger-inner:after,
+.hamburger-inner:before { 
+    width: 25px;
+
+  }
 }
 </style>

@@ -1,43 +1,69 @@
 <template>
-  <div>
+   <div class="container-fluid">
+      <opensilex-PageContent
+      class="pagecontent"
+    >
+
+           <!-- Toggle Sidebar--> 
+      <div class="searchMenuContainer"
+      v-on:click="SearchFiltersToggle = !SearchFiltersToggle"
+      :title="searchFiltersPannel()">
+        <div class="searchMenuIcon">
+          <i class="icon ik ik-search"></i>
+        </div>
+      </div>
+      <!-- FILTERS -->
+      <Transition>
+        <div v-show="SearchFiltersToggle">
+
     <opensilex-SearchFilterField
       @search="refresh()"
       @clear="reset()"
       label="DataView.filter.label"
       :showTitle="false"
+      class="searchFilterField"
     >
       <template v-slot:filters>
 
         <!-- Name -->
-        <opensilex-FilterField>
-          <label>{{$t('ProvenanceView.name')}}</label>
-          <opensilex-StringFilter
-            :filter.sync="filter.name"
-            placeholder="ProvenanceView.name-placeholder"
-          ></opensilex-StringFilter>
-        </opensilex-FilterField>
+        <div>
+          <opensilex-FilterField>
+            <label>{{$t('ProvenanceView.name')}}</label>
+            <opensilex-StringFilter
+              :filter.sync="filter.name"
+              placeholder="ProvenanceView.name-placeholder"
+              class="searchFilter"
+            ></opensilex-StringFilter>
+          </opensilex-FilterField> <br>
+        </div>
 
         <!-- activity type-->
-        <opensilex-FilterField>
-          <opensilex-TypeForm
-            :type.sync="filter.activity_type"
-            :baseType="Prov.ACTIVITY_TYPE_URI"
-            label="ProvenanceView.activity_type"
-            placeholder="ProvenanceView.activity_type-placeholder"
-          ></opensilex-TypeForm>
-        </opensilex-FilterField>
+        <div>
+          <opensilex-FilterField>
+            <opensilex-TypeForm
+              :type.sync="filter.activity_type"
+              :baseType="Prov.ACTIVITY_TYPE_URI"
+              label="ProvenanceView.activity_type"
+              placeholder="ProvenanceView.activity_type-placeholder"
+              class="searchFilter"
+            ></opensilex-TypeForm>
+          </opensilex-FilterField>
+        </div>
 
         <!-- Agent type-->
-        <opensilex-FilterField>
-          <opensilex-AgentTypeSelector
-            :multiple="false"
-            :selected.sync="filter.agent_type"
-            @clear="filter.agent = undefined"
-            @select="filter.agent = undefined"
-            :key="lang"
-          >
-          </opensilex-AgentTypeSelector>
-        </opensilex-FilterField>
+        <div>
+          <opensilex-FilterField>
+            <opensilex-AgentTypeSelector
+              :multiple="false"
+              :selected.sync="filter.agent_type"
+              @clear="filter.agent = undefined"
+              @select="filter.agent = undefined"
+              :key="lang"
+              class="searchFilter"
+            >
+            </opensilex-AgentTypeSelector>
+          </opensilex-FilterField>
+        </div>
 
         <opensilex-FilterField v-if="filter.agent_type === 'vocabulary:Operator'">
           <opensilex-UserSelector
@@ -58,6 +84,8 @@
 
       </template>
     </opensilex-SearchFilterField>
+        </div>
+      </Transition>
 
     <opensilex-TableAsyncView
       ref="tableRef"
@@ -130,6 +158,7 @@
       :initForm="initForm"
       icon="ik#ik-file-text"
     ></opensilex-ModalForm>
+      </opensilex-PageContent>
   </div>
 </template>
 
@@ -189,6 +218,12 @@ export default class ProvenanceList extends Vue {
     agent: undefined,
     operator: undefined
   };
+
+  data(){
+    return {
+      SearchFiltersToggle : false,
+    }
+  }
 
   resetFilter() {
     this.filter = {
@@ -333,11 +368,18 @@ export default class ProvenanceList extends Vue {
       })
       .catch(this.$opensilex.errorHandler);
   }
+  searchFiltersPannel() {
+    return  this.$t("searchfilter.label")
+  }
   
 }
 </script>
 
 <style scoped lang="scss">
+.pagecontent {
+  width: 102%;
+  margin-left : -12px;
+}
 </style>
 
 <i18n>

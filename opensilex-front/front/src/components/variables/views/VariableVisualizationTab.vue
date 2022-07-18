@@ -1,5 +1,23 @@
 <template>
-  <div ref="page">
+  <div ref="page" class="page">
+
+    <opensilex-PageContent class="pagecontent">
+
+      <!-- Toggle Sidebar--> 
+      <div class="searchMenuContainer"
+      v-on:click="SearchFiltersToggle = !SearchFiltersToggle"
+      :title="searchFiltersPannel()">
+        <div class="searchMenuIcon">
+          <i class="icon ik ik-search"></i>
+        </div>
+      </div>
+
+
+<!-- FILTERS -->
+      <Transition>
+        <div v-show="SearchFiltersToggle">
+
+    <!--Form-->
     <opensilex-VariableVisualizationForm
         ref="variableVisualizationForm"
         :variable="variable"
@@ -8,10 +26,14 @@
         @update="onUpdate"
     ></opensilex-VariableVisualizationForm>
 
+        </div>
+      </Transition>
+
     <div class="d-flex justify-content-center mb-3" v-if="!isGraphicLoaded">
       <b-spinner label="Loading..."></b-spinner>
     </div>
 
+    <!--Visualisation-->
     <opensilex-DataVisuGraphic
         v-if="isGraphicLoaded"
         ref="visuGraphic"
@@ -20,6 +42,7 @@
         :lWidth="true"
         @addEventIsClicked="showEventForm"
         @dataAnnotationIsClicked="showAnnotationForm"
+        class="VariableVisualisationGraphic"
     ></opensilex-DataVisuGraphic>
 
     <opensilex-AnnotationModalForm
@@ -33,6 +56,7 @@
         :eventCreatedTime="eventCreatedTime"
         @onCreate="onEventCreated"
     ></opensilex-EventModalForm>
+    </opensilex-PageContent>
   </div>
 </template>
 
@@ -70,6 +94,12 @@ export default class VariableVisualizationTab extends Vue {
 
   get credentials() {
     return this.$store.state.credentials;
+  }
+
+  data(){
+    return {
+      SearchFiltersToggle : true,
+    }
   }
 
   @Prop()
@@ -483,10 +513,22 @@ export default class VariableVisualizationTab extends Vue {
     var day = Highcharts.dateFormat("%Y-%m-%dT%H:%M:%S+0000", time);
     return day;
   }
+
+  searchFiltersPannel() {
+    return  this.$t("searchfilter.label")
+  }
 }
 </script>
 
 <style scoped lang="scss">
+.page {
+  margin-top : 20px;
+}
+
+.VariableVisualisationGraphic{
+  min-width: 100%;
+  max-width: 100vw;
+}
 </style>
 
 <i18n>

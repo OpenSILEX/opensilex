@@ -1,16 +1,11 @@
 <template>
   <div class="container-fluid">
-    <opensilex-PageHeader
-      icon="ik#ik-users"
-      title="component.menu.security.groups"
-      description="component.group.description"
-    ></opensilex-PageHeader>
-
-    <opensilex-PageActions v-if="user.hasCredential(credentials.CREDENTIAL_GROUP_MODIFICATION_ID)">
-      <template v-slot>
-        <opensilex-CreateButton @click="groupForm.showCreateForm()" label="component.group.add"></opensilex-CreateButton>
-      </template>
-    </opensilex-PageActions>
+    <opensilex-CreateButton
+      @click="groupForm.showCreateForm()"
+      label="component.group.add"
+      class="createButton"
+    >
+    </opensilex-CreateButton>
 
     <opensilex-PageContent>
       <template v-slot>
@@ -67,5 +62,11 @@ export default class GroupView extends Vue {
 </script>
 
 <style scoped lang="scss">
+
+.createButton{
+  margin-bottom: 10px;
+  margin-top: -15px
+}
+
 </style>
 

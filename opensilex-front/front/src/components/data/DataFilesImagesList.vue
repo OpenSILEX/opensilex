@@ -2,12 +2,14 @@
   <div>
     <div v-if="this.images.length === 0">{{ $t("DataFilesImagesList.no-file") }}</div>
 
+    <!-- Images list -->
     <opensilex-ImageGrid
         :images="images"
         @click="onImageClicked"
         @annotate="onImageAnnotate"
     ></opensilex-ImageGrid>
 
+    <!-- Enlarged image view -->
     <opensilex-ImageLightBox
         :key="key"
         ref="ImageLightBox"

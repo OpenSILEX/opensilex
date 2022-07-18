@@ -5,6 +5,7 @@
           :title="area.name"
           description="component.area.title"
           icon="fa#sun"
+          class="detail-element-header"
       ></opensilex-PageHeader>
 
       <opensilex-PageActions :returnButton="true" :tabs="true">

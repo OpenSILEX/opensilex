@@ -1,11 +1,5 @@
 <template>
   <div class="container-fluid">
-    <opensilex-PageHeader
-      icon="ik#ik-file-text"
-      title="DocumentView.title"
-      description="DocumentView.description"
-    ></opensilex-PageHeader>
-
     <opensilex-PageContent>
       <template v-slot>
         <opensilex-DocumentList
@@ -14,7 +8,6 @@
         ></opensilex-DocumentList>
       </template>
     </opensilex-PageContent>
-
   </div>
 </template>
 

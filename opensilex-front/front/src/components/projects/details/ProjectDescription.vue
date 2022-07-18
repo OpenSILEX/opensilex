@@ -3,6 +3,7 @@
     <opensilex-ProjectForm
       v-if="user.hasCredential(credentials.CREDENTIAL_PROJECT_MODIFICATION_ID)"
       ref="projectForm"
+      class="projectDescription"
       @onUpdate="loadProject()"
     ></opensilex-ProjectForm>
 

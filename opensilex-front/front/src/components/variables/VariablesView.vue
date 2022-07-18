@@ -1,11 +1,5 @@
 <template>
     <div class="container-fluid">
-        <opensilex-PageHeader
-            icon="fa#vials"
-            title="VariableView.title"
-            description="VariableView.description"
-        ></opensilex-PageHeader>
-
         <div>
             <opensilex-PageActions>
                 <div>
@@ -19,24 +13,30 @@
                         <b-tab :title="$t('VariableView.groupVariable')" @click="refreshSelected"></b-tab>
                     </b-tabs>
                 </div>
-
+                </opensilex-PageActions>
                 <div class="col-lg-5">
-                    <opensilex-HelpButton
+                    <opensilex-PageActions
+                    >
+                        <opensilex-HelpButton
                             @click="helpModal.show()"
                             label="component.common.help-button"
-                    ></opensilex-HelpButton>
-                    <b-modal ref="helpModal" size="xl" hide-header ok-only>
-                        <opensilex-VariableHelp v-if="elementType != 'VariableGroup'"></opensilex-VariableHelp>
-                        <opensilex-GroupVariablesHelp v-else></opensilex-GroupVariablesHelp>
-                    </b-modal>
+                            class="helpButton"
+                        ></opensilex-HelpButton>
+                        
+                        <b-modal ref="helpModal" size="xl" hide-header ok-only>
+                            <opensilex-VariableHelp v-if="elementType != 'VariableGroup'"></opensilex-VariableHelp>
+                            <opensilex-GroupVariablesHelp v-else></opensilex-GroupVariablesHelp>
+                        </b-modal>
 
-                    <opensilex-CreateButton
-                        v-show="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
-                        @click="showCreateForm"
-                        :label="buttonTitle"
-                    ></opensilex-CreateButton>
+                        <opensilex-CreateButton
+                            v-show="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
+                            @click="showCreateForm"
+                            :label="buttonTitle"
+                            class="createButton"
+                        ></opensilex-CreateButton>
+
+                    </opensilex-PageActions>
                 </div>
-            </opensilex-PageActions>
             <opensilex-PageContent
                 v-if="loadVariableList()" >
                 <template v-slot>
@@ -522,6 +522,24 @@ export default class VariablesView extends Vue {
 </script>
 
 <style scoped lang="scss">
+
+.createButton, .helpButton{
+  margin-bottom: 5px;
+  margin-top: -10px;
+  margin-left: -10px;
+  margin-right: 15px;
+}
+.helpButton {
+  margin-left: -15px;
+  color: #00A28C;
+  font-size: 1.2em;
+  border: none
+}
+  
+.helpButton:hover {
+  background-color: #00A28C;
+  color: #f1f1f1
+}
 </style>
 
 <i18n>

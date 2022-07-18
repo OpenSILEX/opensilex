@@ -1,19 +1,12 @@
 <template>
-  <div class="card">
-    <div class="card-header">
-      <h3>
-        <i class="ik ik-clipboard"></i>
-        {{ $t('DocumentTabList.documents') }}
-      </h3>
-    </div>
-
-    <div class="card-body">
-      <div class="button-zone">
-      <opensilex-CreateButton
-        v-if="user.hasCredential(modificationCredentialId)"
-        @click="createDocument()"
-        label="DocumentTabList.add"
-      ></opensilex-CreateButton>
+  <div>
+      <div class="pageActionsBtns">
+        <opensilex-CreateButton
+          v-if="user.hasCredential(modificationCredentialId)"
+          @click="createDocument()"
+          label="DocumentTabList.add"
+          class="createButton"
+        ></opensilex-CreateButton>
       </div>
 
       <opensilex-StringFilter
@@ -23,6 +16,8 @@
           placeholder="DocumentList.filter.title-placeholder"
       ></opensilex-StringFilter>
 
+        <div class="card">
+    <div class="card-body">
       <opensilex-PageContent
           v-if="renderComponent">
           <template v-slot>
@@ -88,6 +83,8 @@
                 </opensilex-TableAsyncView>
           </template>
       </opensilex-PageContent>
+    </div>
+        </div>
 
       <opensilex-ModalForm
         v-if="user.hasCredential(modificationCredentialId)"
@@ -101,7 +98,6 @@
         @onCreate="refresh()"
         @onUpdate="refresh()"
       ></opensilex-ModalForm>
-    </div>
   </div>
 </template>
 
@@ -338,6 +334,11 @@ export default class DocumentTabList extends Vue {
 </script>
 
 <style scoped lang="scss">
+
+.pageActionsBtns {
+    margin-left: 10px;
+    margin-bottom: 10px
+}
 </style>
 
 <i18n>

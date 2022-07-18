@@ -395,9 +395,8 @@
 
 .customized .header-top .top-menu .dropdown .dropdown-toggle {
     border-radius: 10px;
-    padding: 10px;
-    border: 1px solid #D8DDE5;
-    height: 30px;
+    padding: 1px;
+    height: 20px;
     line-height: 30px;
 }
 
@@ -515,4 +514,205 @@
 
 .advancedMultiSelectorModal .modal-body .card .card-header {
     border-bottom: 0;
+}
+
+.isModalSearchComponent .modal-body {
+    background-color: #F6F7FB;
+}
+
+/********************************
+* 
+********************************/
+
+.topbarBtnHelp {
+    padding:5px 12px 5px 12px;
+    margin-top: 1px;
+}
+
+.detail-element-header {
+    position: fixed;
+    top: 10px;
+    left: 255px;
+    z-index: 1100;
+    width: 56%;
+}
+.greenThemeColor {
+    background-color: #00A38D;
+    border-color: #00A38D;
+    color: #fff;
+}
+
+.greenThemeColor:hover {
+    background-color: #018371;
+    border-color:#018371;
+    color: #fff;
+}
+
+.createButton:hover {
+    background-color: #018371;
+    border-color:#018371;
+}
+.createButton:focus{
+    background-color: #007969;
+}
+
+.addChildButton {
+    color: #00A38D;
+    border-color: #00A38D;
+    margin-bottom: 5px;
+}
+.addChildButton:hover{
+    background-color: #00A38D;
+    border-color: #00A38D;
+    color: #f1f1f1
+}
+
+.page-header {
+    height: 20px
+}
+
+/* Tabs back-button*/
+
+.back-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-top: 4px;
+    padding-right: 3px;
+    padding-bottom: 4px;
+    padding-left: 8px;
+    height: 35px!important;
+    margin-left: 12px;
+    color: #00A28C;
+    font-size: 1.1em;
+}
+  
+.back-button:hover {
+    background-color: #00A28C;
+}
+
+.back-button-icon {
+font-size:130%;
+font-weight: bolder;
+color:  #00A28C;
+}
+  
+.back-button:hover .back-button-icon {
+    color : #fff;
+}
+  
+
+/********************************
+* SIDEBAR FILTERS
+********************************/
+
+.searchMenuIcon .ik-search{
+    font-size: 1.3em;
+    font-weight: 900;
+    -webkit-text-stroke: 1px #00A38D;
+    color:#00A38D;
+    /* margin-top: 5px */
+}
+
+.pagecontent {
+    display: flex;
+}
+
+.navigationTabs {
+    margin-bottom: -18px;
+}
+  
+.searchFilterField {
+    width: 360px;
+    border-radius: 15px;
+    margin-right: 25px;
+}
+
+.searchFilter {
+    width: 320px;
+}
+
+.searchMenuContainer {
+    cursor: pointer;
+    width: 25px;
+    height: 50px;
+    background-color:#FFFFFF;
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 15px 8px;
+    transition: 1s;
+    box-shadow: 0 2px 12px -3px rgba(0, 0, 0, 0.5);
+}
+  
+/* .searchMenuIcon:hover {
+    background-color: rgba(230, 228, 228, 0.568);
+    transition: 1s
+} */
+  
+.searchMenuIcon {
+    /* background-color: #F6F7FB; */
+    background-color:#FFFFFF;
+    font-size: 1.5em;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 5px;
+    border-radius: 8px 8px 0 0;
+}
+  
+.v-enter-active,
+.v-leave-active {
+    transition: opacity 0.5s ease;
+}
+  
+.v-enter,
+.v-leave-to {
+    opacity: 0;
+}
+
+.pageActionsBtns{
+    margin-left: -15px;
+    margin-top: 10px;
+}
+
+  .datafilesList, .experimentScientificObjectsList, .dataList {
+      width: 100%;
+  }
+
+/********************************
+* MEDIA QUERIES
+********************************/
+
+@media (min-width: 200px) and (max-width: 1150px) {
+    .customized .header-top .top-menu .dropdown .dropdown-toggle {
+        height: 25px;
+        width: 25px;
+        font-size: 80%;
+        line-height: 5px;
+        padding: 5px;
+    }
+}
+
+@media (min-width: 200px) and (max-width: 675px) {
+    .detail-element-header {
+        width: 42%;
+    }
+}
+
+/* search filters container switch to block form */
+@media (min-width: 200px) and (max-width: 1200px) {
+    .pagecontent {
+        display:block
+    }
+    .searchMenuContainer {
+        width: 45px;
+        height: 25px;
+        border-top-right-radius: 8px;
+    }
+
+    .searchMenuIcon .ik-search{
+        font-size: 1.1em;
+    }
+    .searchFilterField {
+        width: 100%;
+    }
 }

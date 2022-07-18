@@ -4,6 +4,7 @@
       icon="ik#ik-file-text"
       :title="document.title"
       description="DocumentDetails.title"
+      class="detail-element-header"
     ></opensilex-PageHeader>
 
     <opensilex-PageActions :returnButton="true" >   
@@ -107,7 +108,7 @@
               <div class="button-zone">
               <b-button 
                 @click="previewFile(document.uri, document.title, document.format)"
-              >{{ $t("DocumentDetails.preview") }}</b-button> 
+              >{{ $t("DocumentDetails.preview") }}</b-button> &nbsp;
               <b-button 
                 @click="loadFile(document.uri, document.title, document.format)"
               >{{ $t("DocumentDetails.download") }}</b-button> 

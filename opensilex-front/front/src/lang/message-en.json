@@ -726,6 +726,9 @@
             }
         }
     },
+    "searchfilter": {
+        "label": "Search filters"
+    },
     "datatypes": {
         "boolean": "boolean",
         "number": "integer number",

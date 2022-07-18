@@ -29,7 +29,7 @@
                     </b-col>
                 </b-row>
 
-                <b-button @click="csvExport" variant="outline-primary">
+                <b-button @click="csvExport" class="greenThemeColor">
                     {{ $t("OntologyCsvImporter.downloadTemplate") }}
                 </b-button>
             </ValidationObserver>

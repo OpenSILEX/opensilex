@@ -1,20 +1,43 @@
 <template>
   <div ref="page">
+
+    <opensilex-PageContent class="pagecontent">
+
+      <!-- Toggle Sidebar--> 
+      <div class="searchMenuContainer"
+      v-on:click="SearchFiltersToggle = !SearchFiltersToggle"
+      :title="searchFiltersPannel()">
+        <div class="searchMenuIcon">
+          <i class="icon ik ik-search"></i>
+        </div>
+      </div>
+
+
+  <!-- FILTERS -->
+  <Transition>
+    <div v-show="SearchFiltersToggle">
+
+      <!--Form-->
     <opensilex-ScientificObjectVisualizationForm
       ref="scientificObjectVisualizationForm"
       :scientificObject="scientificObject.uri"
       @search="onSearch"
     ></opensilex-ScientificObjectVisualizationForm>
 
+    </div>
+  </Transition>
+
     <div class="d-flex justify-content-center mb-3" v-if="!isGraphicLoaded">
       <b-spinner label="Loading..."></b-spinner>
     </div>
 
+    <!--Visualisation-->
     <opensilex-DataVisuGraphic
       v-if="isGraphicLoaded"
       ref="visuGraphic"
       @addEventIsClicked="showAddEventComponent"
       @dataAnnotationIsClicked="showAnnotationForm"
+      class="ScientificObjectVisualisationGraphic"
     ></opensilex-DataVisuGraphic>
 
     <opensilex-AnnotationModalForm 
@@ -28,6 +51,7 @@
       :eventCreatedTime="eventCreatedTime"
       @onCreate="onEventCreated"
     ></opensilex-EventModalForm>
+    </opensilex-PageContent>
   </div>
 </template>
 
@@ -49,6 +73,12 @@ export default class ScientificObjectVisualizationTab extends Vue {
 
   get user() {
     return this.$store.state.user;
+  }
+
+  data(){
+    return {
+      SearchFiltersToggle : true,
+    }
   }
 
   @Prop()
@@ -341,21 +371,6 @@ export default class ScientificObjectVisualizationTab extends Vue {
     }
   }
 
-  // addMetadataFilter() {
-  //   let metadata = undefined;
-  //   if (
-  //     this.form.metadataKey != undefined &&
-  //     this.form.metadataKey != "" &&
-  //     this.form.metadataValue != undefined &&
-  //     this.form.metadataValue != ""
-  //   ) {
-  //     metadata =
-  //       '{"' + this.form.metadataKey + '":"' + this.form.metadataValue + '"}';
-  //     return metadata;
-  //   }
-  // }
-
-  // keep only date/value/uriprovenance properties
   dataTransforme(data) {
     let toAdd,
       cleanData = [];
@@ -383,10 +398,19 @@ export default class ScientificObjectVisualizationTab extends Vue {
     var day = Highcharts.dateFormat("%Y-%m-%dT%H:%M:%S+0000", time);
     return day;
   }
+
+  searchFiltersPannel() {
+    return this.$t("searchfilter.label")
+  }
 }
 </script>
 
 <style scoped lang="scss">
+
+.ScientificObjectVisualisationGraphic {
+  min-width: 100%;
+  max-width: 100vw;
+}
 </style>
 
 <i18n>

@@ -1,45 +1,81 @@
 <template>
   <div>
-    <opensilex-SearchFilterField @clear="reset()" @search="refresh()">
+    <opensilex-PageContent
+      class="pagecontent"
+    >
+           <!-- Toggle Sidebar--> 
+      <div class="searchMenuContainer"
+      v-on:click="SearchFiltersToggle = !SearchFiltersToggle"
+      :title="searchFiltersPannel()">
+        <div class="searchMenuIcon">
+          <i class="ik ik-search"></i>
+        </div>
+      </div>
+        <!-- FILTERS -->
+      <Transition>
+        <div v-show="SearchFiltersToggle">
+    <opensilex-SearchFilterField
+    @clear="reset()"
+    @search="refresh()"
+    class="searchFilterField">
       <template v-slot:filters>
+
+        <!-- Name -->
+        <div>
         <opensilex-FilterField>
           <label for="name">{{ $t("component.common.name") }}</label>
           <opensilex-StringFilter
             id="name"
             :filter.sync="filter.name"
             placeholder="component.project.filter-label-placeholder"
+            class="searchFilter"
           ></opensilex-StringFilter>
-        </opensilex-FilterField>
+        </opensilex-FilterField><br>
+        </div>
 
+          <!-- Year -->
+        <div>
         <opensilex-FilterField>
           <label>{{ $t("component.common.year") }}</label>
           <opensilex-StringFilter
             placeholder="component.project.filter-year-placeholder"
             :filter.sync="filter.year"
             type="number"
+            class="searchFilter"
           ></opensilex-StringFilter>
-        </opensilex-FilterField>
+        </opensilex-FilterField><br>
+        </div>
 
+        <!-- Keyword -->
+        <div>
         <opensilex-FilterField>
           <label for="term">{{ $t("component.common.keyword") }}</label>
           <opensilex-StringFilter
             id="term"
             :filter.sync="filter.keyword"
             placeholder="component.project.filter-keywords-placeholder"
+            class="searchFilter"
           ></opensilex-StringFilter>
-        </opensilex-FilterField>
+        </opensilex-FilterField><br>
+        </div>
 
+        <!-- Financial Funding -->
+        <div>
         <opensilex-FilterField>
           <label for="financial">{{ $t("component.project.financialFunding") }}</label>
           <opensilex-StringFilter
             id="financial"
             :filter.sync="filter.financial"
             placeholder="component.project.filter-financial-placeholder"
+            class="searchFilter"
           ></opensilex-StringFilter>
-        </opensilex-FilterField>
+        </opensilex-FilterField><br>
+        </div>
         
       </template>
     </opensilex-SearchFilterField>
+            </div>
+        </Transition>
     <opensilex-TableAsyncView
       ref="tableRef"
       :searchMethod="loadData"
@@ -126,6 +162,7 @@
       :initForm="initForm"
       icon="ik#ik-file-text"
     ></opensilex-ModalForm>
+    </opensilex-PageContent>
   </div>
 </template>
 
@@ -189,6 +226,15 @@ export default class ProjectList extends Vue {
       financial: "",
     };
     this.refresh();
+  }
+  data(){
+    return {
+      SearchFiltersToggle : false,
+    }
+  }
+
+  searchFiltersPannel() {
+    return  this.$t("searchfilter.label")
   }
 
   created() {

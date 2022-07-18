@@ -1,17 +1,35 @@
 <template>
   <div>
-    <div class="card">
+    <div>
+         <opensilex-PageContent class="pagecontent">
+            <!-- Toggle Sidebar--> 
+      <div class="searchMenuContainer"
+      v-on:click="SearchFiltersToggle = !SearchFiltersToggle"
+      :title="searchFiltersPannel()">
+        <div class="searchMenuIcon">
+          <i class="icon ik ik-search"></i>
+        </div>
+      </div>
+
+
+       <!-- FILTERS -->
+      <Transition>
+        <div v-show="SearchFiltersToggle">
+
       <opensilex-SearchFilterField
         :withButton="true"
         searchButtonLabel="component.common.search.visualize-button"
-        :showTitle="true"
+        :showTitle="false"
         @search="onSearch"
         @clear="clear"
         :showAdvancedSearch="true"
+        class="searchFilterField"
       >
         <template v-slot:filters>
+
           <!-- Type -->
-          <opensilex-FilterField :halfWidth="true">
+          <div>
+         <opensilex-FilterField :halfWidth="true">
             <opensilex-VariableSelectorWithFilter
                 placeholder="VariableSelectorWithFilter.placeholder"
                 :variables.sync="filter.variable"
@@ -19,32 +37,40 @@
                 :withAssociatedData="true"
                 maximumSelectedRows="1"
                 :required="true"
+                class="searchFilter"
             ></opensilex-VariableSelectorWithFilter>
           </opensilex-FilterField>
+          </div>
 
+
+          <div>
           <opensilex-FilterField :halfWidth="true">
-            <div class="row">
-              <div class="col col-xl-6 col-md-6 col-sm-6 col-12">
+            <div>
+
                 <opensilex-DateTimeForm
                   :value.sync="filter.startDate"
                   label="component.common.begin"
                   name="startDate"
                   @input="getEvents"
                   @clear="getEvents"
+                  class="searchFilter"
                 ></opensilex-DateTimeForm>
-              </div>
-              <div class="col col-xl-6 col-md-6 col-sm-6 col-12">
+            </div>
+            <div>
                 <opensilex-DateTimeForm
                   :value.sync="filter.endDate"
                   label="component.common.end"
                   name="endDate"
                   @input="getEvents"
                   @clear="getEvents"
+                  class="searchFilter"
                 ></opensilex-DateTimeForm>
-              </div>
+           
             </div>
           </opensilex-FilterField>
+          </div>
 
+          <div>
           <opensilex-FilterField :halfWidth="true">
             <label>{{ $t("ScientificObjectVisualizationForm.show_events") }}</label>
             <b-form-checkbox v-model="filter.showEvents" switch>
@@ -52,6 +78,7 @@
               <b-badge v-else variant="light">{{eventsCount}}</b-badge>
             </b-form-checkbox>
           </opensilex-FilterField>
+          </div>
         </template>
 
         <template v-slot:advancedSearch>
@@ -66,6 +93,7 @@
               :viewHandlerDetailsVisible="visibleDetails"
               @select="loadProvenance"
               @clear="clearProvenance"
+              class="searchFilter"
             ></opensilex-DataProvenanceSelector>
           </opensilex-FilterField>
 
@@ -81,6 +109,9 @@
           </opensilex-FilterField>
         </template>
       </opensilex-SearchFilterField>
+        </div>
+      </Transition>
+         </opensilex-PageContent>
     </div>
   </div>
 </template>
@@ -134,6 +165,12 @@ export default class DeviceVisualizationForm extends Vue {
 
   public set eventsCount(eventsCount: string) {
     this.eventsCountValue = eventsCount;
+  }
+
+    data(){
+    return {
+      SearchFiltersToggle : true,
+    }
   }
 
   created() {
@@ -211,7 +248,12 @@ export default class DeviceVisualizationForm extends Vue {
   get getSelectedProv() {
     return this.selectedProvenance;
   }
+
+    searchFiltersPannel() {
+    return  this.$t("searchfilter.label")
+  }
 }
+
 </script>
 
 <style scoped lang="scss">

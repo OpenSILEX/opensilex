@@ -4,6 +4,7 @@
       icon="fa#seedling"
       :title="provenance.name"
       description="ProvenanceDetailsPage.title"
+      class="detail-element-header"
     ></opensilex-PageHeader>
 
     <opensilex-PageActions :tabs=true :returnButton="true">

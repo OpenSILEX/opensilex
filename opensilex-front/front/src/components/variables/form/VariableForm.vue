@@ -1,7 +1,7 @@
 <template>
     <div id="v-step-global">
         <ValidationObserver ref="validatorRef">
-
+            
             <opensilex-Tutorial
                 ref="variableTutorial"
                 :steps="tutorialSteps"
@@ -128,7 +128,7 @@
                         @click="showTraitForm()"
                         :small="false"
                         icon="fa#globe-americas"
-                        variant="primary"
+                        class="greenThemeColor"
                     ></opensilex-Button>
                 </div>
 

@@ -1,5 +1,5 @@
 <template>
-  <div v-if="selected && selected.uri" :class="{'embed-tabs': !globalView}">
+  <div v-if="selected && selected.uri" :class="{'ok embed-tabs': !globalView}">
     <opensilex-PageActions :returnButton="withReturnButton" :tabs="true">
       <b-nav-item
         :active="isDetailsTab"

@@ -1,16 +1,10 @@
 <template>
   <div class="container-fluid">
-    <opensilex-PageHeader
-      icon="ik#ik-user"
-      title="UserView.title"
-      description="UserView.description"
-    ></opensilex-PageHeader>
-
-    <opensilex-PageActions v-if="user.hasCredential(credentials.CREDENTIAL_USER_MODIFICATION_ID)">
-      <template v-slot>
-        <opensilex-CreateButton @click="userForm.showCreateForm()" label="UserView.create"></opensilex-CreateButton>
-      </template>
-    </opensilex-PageActions>
+    <opensilex-CreateButton
+      @click="userForm.showCreateForm()"
+      label="UserView.create"
+      class="createButton">
+    </opensilex-CreateButton>
 
     <opensilex-PageContent>
       <template v-slot>
@@ -61,6 +55,11 @@ export default class UserView extends Vue {
 </script>
 
 <style scoped lang="scss">
+
+.createButton{
+  margin-bottom: 10px;
+  margin-top: -15px
+}
 </style>
 
 <i18n>

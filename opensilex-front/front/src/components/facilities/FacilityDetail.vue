@@ -2,6 +2,7 @@
   <opensilex-Card
       icon="ik#ik-clipboard"
       :label="$t('component.common.description')"
+      class="facilityDetailComponent"
   >
     <template v-slot:rightHeader v-if="withActions">
       <b-button-group>
@@ -344,6 +345,11 @@ export default class FacilityDetail extends Vue {
 </script>
 
 <style scoped>
+      @media only screen and (min-width: 768px) {
+  .facilityDetailComponent {
+    margin-top: 30px;
+  }
+}
 
 </style>
 

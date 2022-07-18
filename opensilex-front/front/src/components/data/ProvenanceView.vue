@@ -1,20 +1,14 @@
 <template>
   <div class="container-fluid">
-    <opensilex-PageHeader
-      icon="ik#ik-bar-chart-line"
-      title="component.menu.data.provenance"
-      description="ProvenanceView.description"
-    ></opensilex-PageHeader>
-
-    <opensilex-PageActions>
-      <template v-slot>
         <opensilex-CreateButton
-            v-if="user.hasCredential(credentials.CREDENTIAL_PROVENANCE_MODIFICATION_ID)"
+          v-if="
+            user.hasCredential(
+              credentials.CREDENTIAL_PROVENANCE_MODIFICATION_ID)"
           @click="createProvenance()"
           label="ProvenanceView.add"
-        ></opensilex-CreateButton>
-      </template>
-    </opensilex-PageActions>
+          class="createButton"
+        >
+        </opensilex-CreateButton>
 
     <opensilex-ModalForm
       ref="provenanceForm"
@@ -169,6 +163,10 @@ export default class ProvenanceView extends Vue {
 
 
 <style scoped lang="scss">
+.createButton{
+  margin-bottom: 10px;
+  margin-top: -15px
+}
 </style>
 
 <i18n>

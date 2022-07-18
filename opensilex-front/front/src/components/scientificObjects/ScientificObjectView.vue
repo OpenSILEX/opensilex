@@ -1,122 +1,172 @@
 <template>
   <div class="container-fluid">
-    <opensilex-PageHeader
-      icon="ik#ik-target"
-      title="component.menu.scientificObjects"
-      description="ScientificObjectList.description"
-    ></opensilex-PageHeader>
 
     <opensilex-PageActions
-      v-if="
-        user.hasCredential(
-          credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID
-        )
-      "
+    v-if="
+    user.hasCredential(credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID)"
     >
+
       <opensilex-CreateButton
         @click="soForm.createScientificObject()"
         label="ExperimentScientificObjects.create-scientific-object"
+        class="createButton greenThemeColor"
       ></opensilex-CreateButton>
       <opensilex-ScientificObjectForm
         ref="soForm"
         @onUpdate="redirectToDetail"
         @onCreate="redirectToDetail"
       ></opensilex-ScientificObjectForm>
-      &nbsp;
+
       <opensilex-CreateButton
         @click="importForm.show()"
         label="OntologyCsvImporter.import"
+        class="createButton greenThemeColor"
       ></opensilex-CreateButton>
+
+
       <opensilex-ScientificObjectCSVImporter
         ref="importForm"
         @csvImported="refresh()"
       ></opensilex-ScientificObjectCSVImporter>
     </opensilex-PageActions>
-    
-    <opensilex-PageContent>
-      <opensilex-SearchFilterField
-        @search="soList.refresh()"
-        @clear="reset()"
-        searchButtonLabel="component.common.search.search-button"
-        :showAdvancedSearch="true"
+
+
+    <opensilex-PageContent
+      class="pagecontent"
+    >
+
+      <!-- Toggle Sidebar--> 
+      <div
+        class="searchMenuContainer"
+        v-on:click="SearchFiltersToggle = !SearchFiltersToggle"
+        :title="searchFiltersPannel()"
       >
-      <template v-slot:filters>
-        <!-- Name -->
-        <opensilex-FilterField>
-          <label for="name">{{ $t("component.common.name") }}</label>
-          <opensilex-StringFilter
-            id="name"
-            :filter.sync="filter.name"
-            placeholder="ScientificObjectList.name-placeholder"
-          ></opensilex-StringFilter>
-        </opensilex-FilterField>
-        <!-- Experiments -->
-        <opensilex-FilterField>
-          <opensilex-ExperimentSelector
-            label="GermplasmList.filter.experiment"
-            :multiple="false"
-            :experiments.sync="filter.experiment"
-          ></opensilex-ExperimentSelector>
-        </opensilex-FilterField>
+        <div class="searchMenuIcon">
+          <i class="icon ik ik-search"></i>
+        </div>
+      </div>
 
-        <opensilex-FilterField>
-          <label for="type">{{ $t("component.common.type") }}</label>
-          <opensilex-ScientificObjectTypeSelector
-            id="type"
-            :types.sync="filter.types"
-            :multiple="true"
-          ></opensilex-ScientificObjectTypeSelector>
-        </opensilex-FilterField>
-      </template>
+      <!-- FILTERS -->
+      <Transition>
+        <div v-show="SearchFiltersToggle">
 
-      <template v-slot:advancedSearch>
-        <!-- Germplasm -->
-        <opensilex-FilterField>
-          <opensilex-GermplasmSelector
-            :multiple="false"
-            :germplasm.sync="filter.germplasm"
-            :experiment="filter.experiment"
-          ></opensilex-GermplasmSelector>
-        </opensilex-FilterField>
-        <!-- Factors levels -->
-        <opensilex-FilterField>
-          <b-form-group>
-            <label for="factorLevels">
-              {{ $t("FactorLevelSelector.label") }}
-            </label>
-            <opensilex-FactorLevelSelector
-              id="factorLevels"
-              :factorLevels.sync="filter.factorLevels"
-              :multiple="true"
-              :required="false"
-            ></opensilex-FactorLevelSelector>
-          </b-form-group>
-        </opensilex-FilterField>
-        <!-- Exists -->
-        <opensilex-FilterField>
-          <opensilex-DateForm
-            :value.sync="filter.existenceDate"
-            label="ScientificObjectList.existenceDate"
-          ></opensilex-DateForm>
-        </opensilex-FilterField>
-        <!-- Created -->
-        <opensilex-FilterField>
-          <opensilex-DateForm
-            :value.sync="filter.creationDate"
-            label="ScientificObjectList.creationDate"
-          ></opensilex-DateForm>
-        </opensilex-FilterField>
-      </template>
-    </opensilex-SearchFilterField>
+          <opensilex-SearchFilterField
+            @search="soList.refresh()"
+            @clear="reset()"
+            searchButtonLabel="component.common.search.search-button"
+            :showAdvancedSearch="true"
+            class="searchFilterField"
+          >
+            <template v-slot:filters>
 
-    <opensilex-ScientificObjectList
-      ref="soList"
-      :searchFilter="filter"
-      @update="soForm.editScientificObject($event)"
-      @createDocument="createDocument"
-      @createEvents="createEvents"
-      @createMoves="createMoves"
-    ></opensilex-ScientificObjectList>
+              <!-- Name -->
+              <div>
+              <opensilex-FilterField>
+                <label for="name">{{ $t("component.common.name") }}</label>
+                <opensilex-StringFilter
+                  id="name"
+                  :filter.sync="filter.name"
+                  placeholder="ScientificObjectList.name-placeholder"
+                  class="searchFilter"
+                ></opensilex-StringFilter>
+                <br>
+              </opensilex-FilterField>
+              </div>
+        
+              <!-- Experiments --> 
+              <div>   
+              <opensilex-FilterField>
+                <opensilex-ExperimentSelector
+                  label="GermplasmList.filter.experiment"
+                  :multiple="false"
+                  :experiments.sync="filter.experiment"
+                  class="searchFilter"
+                ></opensilex-ExperimentSelector>
+              </opensilex-FilterField>
+              </div>
+
+              <!-- Types --> 
+              <div>
+              <opensilex-FilterField>
+                <label for="type">{{ $t("component.common.type") }}</label>
+                <opensilex-ScientificObjectTypeSelector
+                  id="type"
+                  :types.sync="filter.types"
+                  :multiple="true"
+                  class="searchFilter"
+                ></opensilex-ScientificObjectTypeSelector>
+              </opensilex-FilterField>
+              </div>
+            </template>
+
+            <template v-slot:advancedSearch>
+
+              <!-- Germplasm -->
+              <div>
+              <opensilex-FilterField>
+                <opensilex-GermplasmSelector
+                  :multiple="false"
+                  :germplasm.sync="filter.germplasm"
+                  :experiment="filter.experiment"
+                  class="searchFilter"
+                ></opensilex-GermplasmSelector>
+              </opensilex-FilterField>
+              </div>
+
+              <!-- Factors levels -->
+              <div>
+              <opensilex-FilterField>
+                <b-form-group>
+                  <label for="factorLevels">
+                    {{ $t("FactorLevelSelector.label") }}
+                  </label>
+                  <opensilex-FactorLevelSelector
+                    id="factorLevels"
+                    :factorLevels.sync="filter.factorLevels"
+                    :multiple="true"
+                    :required="false"
+                    class="searchFilter"
+                  ></opensilex-FactorLevelSelector>
+                </b-form-group>
+              </opensilex-FilterField>
+              </div>
+
+              <!-- Exists -->
+              <div>
+              <opensilex-FilterField>
+                <opensilex-DateForm
+                  :value.sync="filter.existenceDate"
+                  label="ScientificObjectList.existenceDate"
+                  class="searchFilter"
+                ></opensilex-DateForm>
+              </opensilex-FilterField>
+              </div>
+
+              <!-- Created -->
+              <div>
+              <opensilex-FilterField>
+                <opensilex-DateForm
+                  :value.sync="filter.creationDate"
+                  label="ScientificObjectList.creationDate"
+                  class="searchFilter"
+                ></opensilex-DateForm>
+              </opensilex-FilterField>
+              </div>
+            </template>
+          </opensilex-SearchFilterField>
+        </div>
+      </Transition>
+
+        <opensilex-ScientificObjectList
+          ref="soList"
+          :searchFilter="filter"
+          @update="soForm.editScientificObject($event)"
+          @createDocument="createDocument"
+          @createEvents="createEvents"
+          @createMoves="createMoves"
+          class="scientificObjectList"
+        ></opensilex-ScientificObjectList>  
+
     </opensilex-PageContent>
 
     <opensilex-ModalForm
@@ -171,7 +221,7 @@ export default class ScientificObjectView extends Vue {
   get credentials() {
     return this.$store.state.credentials;
   }
-
+  
   filter = {
     name: "",
     experiment: undefined,
@@ -181,6 +231,18 @@ export default class ScientificObjectView extends Vue {
     existenceDate: undefined,
     creationDate: undefined,
   };
+
+  data(){
+    return {
+      SearchFiltersToggle : false,
+    }
+  }
+  
+  searchFiltersPannel() {
+    return  this.$t("searchfilter.label")
+  }
+
+
 
   redirectToDetail(http) {
     this.$router.push({
@@ -251,4 +313,10 @@ export default class ScientificObjectView extends Vue {
 </script>
 
 <style scoped lang="scss">
+
+.createButton{
+  margin-bottom: 10px;
+  margin-top: -15px;
+  margin-right: 5px;
+}
 </style>

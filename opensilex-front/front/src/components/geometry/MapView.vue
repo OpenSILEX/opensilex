@@ -331,6 +331,8 @@
       </template>
     </b-sidebar>
 
+    <!-- Side Manage Menu -->
+
     <b-sidebar id="map-sidebar" visible no-header class="sidebar-content">
       <template #default="{ hide }">
         <div

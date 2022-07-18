@@ -1,16 +1,21 @@
 <template>
   <div>
-    <div class="card">
+    <div>
+
+      <!-- FILTERS -->
+
       <opensilex-SearchFilterField
         :withButton="true"
         searchButtonLabel="component.common.search.visualize-button"
-        :showTitle="true"
+        :showTitle="false"
         @search="onSearch"
         @clear="clear"
         :showAdvancedSearch="true"
+        class="searchFilterField"
       >
         <template v-slot:filters>
-          <!-- Type  -->
+          <!-- Variables -->
+          <div>
           <opensilex-FilterField :halfWidth="true">
             <opensilex-VariableSelectorWithFilter
               placeholder="VariableSelectorWithFilter.placeholder"
@@ -19,32 +24,37 @@
               :objects="[scientificObject]"
               maximumSelectedRows="1"
               :required="true"
+              class="searchFilter"
             ></opensilex-VariableSelectorWithFilter>
           </opensilex-FilterField>
+          </div>
 
+          <div>
           <opensilex-FilterField :halfWidth="true">
-            <div class="row">
-              <div class="col col-xl-6 col-md-6 col-sm-6 col-12">
+                <div>
                 <opensilex-DateTimeForm
                   :value.sync="filter.startDate"
                   label="component.common.begin"
                   name="startDate"
                   @input="getEvents"
                   @clear="getEvents"
+                  class="searchFilter"
                 ></opensilex-DateTimeForm>
               </div>
-              <div class="col col-xl-6 col-md-6 col-sm-6 col-12">
+              <div>
                 <opensilex-DateTimeForm
                   :value.sync="filter.endDate"
                   label="component.common.end"
                   name="endDate"
                   @input="getEvents"
                   @clear="getEvents"
+                  class="searchFilter"
                 ></opensilex-DateTimeForm>
               </div>
-            </div>
           </opensilex-FilterField>
+            </div>
 
+          <div>
           <opensilex-FilterField :halfWidth="true">
             <label>{{ $t("ScientificObjectVisualizationForm.show_events") }}</label>
             <b-form-checkbox v-model="filter.showEvents" switch>
@@ -52,7 +62,8 @@
                 v-if="countIsLoading" small   label="Busy"  ></b-spinner>
               <b-badge v-else variant="light">{{eventsCount}}</b-badge>
             </b-form-checkbox>
-          </opensilex-FilterField>
+          </opensilex-FilterField><br>
+          </div>
         </template>
 
         <template v-slot:advancedSearch>
@@ -67,6 +78,7 @@
               :viewHandlerDetailsVisible="visibleDetails"
               @select="loadProvenance"
               @clear="clearProvenance"
+              class="searchFilter"
             ></opensilex-DataProvenanceSelector>
           </opensilex-FilterField>
 
@@ -81,8 +93,8 @@
             </b-collapse>
           </opensilex-FilterField>
         </template>
-      </opensilex-SearchFilterField>
-    </div>
+      </opensilex-SearchFilterField>  
+    </div>  
   </div>
 </template>
 

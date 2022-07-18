@@ -5,10 +5,14 @@
         <div class="col-md-6">
             <b-card>
                 <div class="button-zone">
-                    <opensilex-CreateButton v-if="user.isAdmin()"
-                                            @click="showCreateForm()"
-                                            label="OntologyClassView.add">
+
+                    <opensilex-CreateButton
+                        v-if="user.isAdmin()"
+                        @click="showCreateForm()"
+                        label="OntologyClassView.add"
+                        class="createButton">
                     </opensilex-CreateButton>
+
                     <opensilex-ModalForm
                         ref="classForm"
                         component="opensilex-OntologyClassForm"
@@ -154,6 +158,16 @@ export default class OntologyClassView extends Vue {
 </script>
 
 <style scoped lang="scss">
+
+
+.header-plus {
+    margin-left: 90px;
+}
+.createButton{
+  margin-bottom: -10px;
+  margin-top: -10px
+}
+
 div.sticky {
     position: -webkit-sticky; /* Safari */
     position: sticky;

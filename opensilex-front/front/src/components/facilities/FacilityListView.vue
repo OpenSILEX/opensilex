@@ -1,10 +1,5 @@
 <template>
   <div class="container-fluid">
-    <opensilex-PageHeader
-        icon="ik#ik-globe"
-        title="component.menu.facilities"
-        :description="$t('FacilityListView.description')"
-    ></opensilex-PageHeader>
     <div class="row">
       <div class="col-md-6">
         <!-- Facilities -->
@@ -16,6 +11,7 @@
             :isSelectable="true"
             ref="facilitiesView"
             @facilitySelected="updateSelectedFacility"
+            :displayButtonOnTop="true"
         ></opensilex-FacilitiesView>
       </div>
       <div class="col-md-6">

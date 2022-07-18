@@ -4,6 +4,7 @@
                 icon="ik#ik-layers"
                 :title="name"
                 description="component.experiment.view.title"
+                class= "detail-element-header"
         ></opensilex-PageHeader>
 
         <opensilex-PageActions :tabs="true" :returnButton="true">

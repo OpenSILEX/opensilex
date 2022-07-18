@@ -105,6 +105,7 @@ $v-tour-background-color: #fff !important;
         previous : Previous
         finish : Finish
         label: Explain me by example
+        name: Form Tutorial
   fr:
     component:
       tutorial:
@@ -113,4 +114,5 @@ $v-tour-background-color: #fff !important;
         previous : Précédent
         finish : Fin
         label: Expliquez moi avec un exemple
+        name: Tutoriel du formulaire
 </i18n>

@@ -1,21 +1,22 @@
 <template>
-    <div class="card">
-        <opensilex-PageActions>
-
+    <div>
+        <opensilex-PageActions class="pageActions">
             <opensilex-CreateButton
                 v-if="user.hasCredential(modificationCredentialId)"
                 label="Move.add"
                 @click="showForm"
+                class="createButton"
             ></opensilex-CreateButton>
 
             <opensilex-CreateButton
                 v-if="user.hasCredential(modificationCredentialId)"
                 label="OntologyCsvImporter.import"
                 @click="showCsvForm"
+                class="createButton"
             ></opensilex-CreateButton>
-
         </opensilex-PageActions>
-
+    
+    <div class="card">
         <opensilex-PageContent v-if="renderComponent">
             <template v-slot>
                 <div class="card-body">
@@ -25,20 +26,19 @@
                         :fields="fields"
                         :isSelectable="isSelectable">
 
-
                         <template v-slot:cell(to)="{data}">
                             <opensilex-UriLink v-if="data.item.to"
-                                               :uri="data.item.event"
-                                               :value="data.item.to.name"
-                                               @click="showEventView(data.item)"
+                                :uri="data.item.event"
+                                :value="data.item.to.name"
+                                @click="showEventView(data.item)"
                             ></opensilex-UriLink>
                         </template>
 
                         <template v-slot:cell(coordinates)="{data}">
                             <opensilex-UriLink v-if="! data.item.to && data.item.position && data.item.position.point"
-                                               :uri="data.item.event"
-                                               :value="getGeometryView(data.item.position.point)"
-                                               @click="showEventView(data.item)"
+                                :uri="data.item.event"
+                                :value="getGeometryView(data.item.position.point)"
+                                @click="showEventView(data.item)"
                             ></opensilex-UriLink>
                             <opensilex-GeometryView
                                 v-else-if="data.item.position && data.item.position.point"
@@ -112,6 +112,7 @@
             :isMove="true"
         ></opensilex-EventCsvForm>
 
+    </div>
     </div>
 
 </template>
@@ -352,6 +353,14 @@ export default class PositionList extends Vue {
 
 
 <style scoped lang="scss">
+.createButton{
+    margin-left: 10px;
+    margin-top: 10px
+}
+.pageActions {
+    margin-bottom: 10px;
+    margin-left: -10px; 
+}
 </style>
 
 <i18n>

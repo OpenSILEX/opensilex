@@ -1,13 +1,7 @@
 <template>
   <div class="container-fluid">
-    <opensilex-PageHeader
-        icon="ik#ik-activity"
-        title="Event.list-title"
-        description="EventsView.description"
-        :isExperimentalFeature="false"
-    ></opensilex-PageHeader>
-
-    <opensilex-PageContent>
+    <opensilex-PageContent
+    class="eventsContent">
       <template v-slot>
         <opensilex-EventList
             ref="eventList"
@@ -60,6 +54,9 @@
 
 
 <style scoped lang="scss">
+.eventsContent {
+  margin-top: -25px;
+}
 </style>
 
 

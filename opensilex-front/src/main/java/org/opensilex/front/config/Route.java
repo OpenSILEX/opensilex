@@ -18,4 +18,13 @@ public interface Route {
 
     @ConfigDescription("Route required credentials list")
     public List<String> credentials();
+
+    @ConfigDescription("Icon of the section")
+    public String icon();
+
+    @ConfigDescription("Title of the section")
+    public String title();
+
+    @ConfigDescription("Description of the section")
+    public String description();
 }

@@ -1,83 +1,112 @@
 <template>
-  <div ref="page">
-    <div class="card">
-      <div class="card-body">
+  <div class="container-fluid">
+
+        <opensilex-PageContent class="pagecontent">
+      <!-- Toggle Sidebar--> 
+      <div class="searchMenuContainer"
+      v-on:click="SearchFiltersToggle = !SearchFiltersToggle"
+      :title="searchFiltersPannel()">
+        <div class="searchMenuIcon">
+          <i class="icon ik ik-search"></i>
+        </div>
+      </div>
+
+      <!-- FILTERS -->
+      <Transition>
+        <div v-show="SearchFiltersToggle">
+
         <opensilex-SearchFilterField
           ref="searchField"
           :withButton="true"
           @search="refresh()"
           @clear="clear()"
           :showAdvancedSearch="false"
+          class="searchFilterField"
         >
           <template v-slot:filters>
 
             <!-- Type -->
-          <opensilex-FilterField halfWidth="true">
-            <opensilex-TypeForm
-              :type.sync="filter.rdf_type"
-              :baseType="$opensilex.Oeso.DATAFILE_TYPE_URI"
-              :ignoreRoot="false"
-              placeholder="ScientificObjectDataFiles.rdfType-placeholder"
-            ></opensilex-TypeForm>
-          </opensilex-FilterField>
+            <div>
+              <opensilex-FilterField halfWidth="true">
+                <opensilex-TypeForm
+                  :type.sync="filter.rdf_type"
+                  :baseType="$opensilex.Oeso.DATAFILE_TYPE_URI"
+                  :ignoreRoot="false"
+                  placeholder="ScientificObjectDataFiles.rdfType-placeholder"
+                  class="searchFilter"
+                ></opensilex-TypeForm>
+              </opensilex-FilterField>
+            </div>
 
-          <!-- Experiments -->
-          <opensilex-FilterField halfWidth="true">
-            <opensilex-ExperimentSelector
-              label="DataView.filter.experiments"
-              :experiments.sync="filter.experiments"
-              :multiple="true"
-              @select="refreshComponents"
-              @clear="refreshComponents"
-            ></opensilex-ExperimentSelector>
-          </opensilex-FilterField>
+            <!-- Experiments -->
+            <div>
+              <opensilex-FilterField halfWidth="true">
+                <opensilex-ExperimentSelector
+                  label="DataView.filter.experiments"
+                  :experiments.sync="filter.experiments"
+                  :multiple="true"
+                  @select="refreshComponents"
+                  @clear="refreshComponents"
+                  class="searchFilter"
+                ></opensilex-ExperimentSelector>
+              </opensilex-FilterField>
+            </div>
 
-          <opensilex-FilterField>
             <!-- Start Date -->
-            <opensilex-DateTimeForm
-                :value.sync="filter.start_date"
-                label="component.common.begin"
-                name="startDate"
-                :max-date="filter.end_date ? filter.end_date : undefined" 
-            ></opensilex-DateTimeForm>
-          </opensilex-FilterField>
+            <div>
+              <opensilex-FilterField>
+                <opensilex-DateTimeForm
+                    :value.sync="filter.start_date"
+                    label="component.common.begin"
+                    name="startDate"
+                    :max-date="filter.end_date ? filter.end_date : undefined" 
+                    class="searchFilter"
+                ></opensilex-DateTimeForm>
+              </opensilex-FilterField>
+            </div>
 
-          <opensilex-FilterField>
             <!-- End Date -->
-            <opensilex-DateTimeForm
-                :value.sync="filter.end_date"
-                label="component.common.end"
-                name="endDate"
-                :min-date="filter.start_date ? filter.start_date : undefined"
-            ></opensilex-DateTimeForm>
-          </opensilex-FilterField>
+            <div>
+              <opensilex-FilterField>
+                <opensilex-DateTimeForm
+                    :value.sync="filter.end_date"
+                    label="component.common.end"
+                    name="endDate"
+                    :min-date="filter.start_date ? filter.start_date : undefined"
+                    class="searchFilter"
+                ></opensilex-DateTimeForm>
+              </opensilex-FilterField>
+            </div>
 
-          <!-- Provenance -->
-          <opensilex-FilterField halfWidth="true">
-            <opensilex-DatafileProvenanceSelector
-              ref="provSelector"
-              :provenances.sync="filter.provenance"
-              label="ExperimentData.provenance"
-              @select="loadProvenance"
-              :targets="[uri]"
-              :experiments="filter.experiments"
-              :multiple="false"
-              :viewHandler="showProvenanceDetails"
-              :viewHandlerDetailsVisible="visibleDetails"
-              :key="refreshKey"
-            ></opensilex-DatafileProvenanceSelector>
+            <!-- Provenance -->
+            <div>
+              <opensilex-FilterField halfWidth="true">
+                <opensilex-DatafileProvenanceSelector
+                  ref="provSelector"
+                  :provenances.sync="filter.provenance"
+                  label="ExperimentData.provenance"
+                  @select="loadProvenance"
+                  :targets="[uri]"
+                  :experiments="filter.experiments"
+                  :multiple="false"
+                  :viewHandler="showProvenanceDetails"
+                  :viewHandlerDetailsVisible="visibleDetails"
+                  :key="refreshKey"
+                  class="searchFilter"
+                ></opensilex-DatafileProvenanceSelector>
 
-            <b-collapse
-              v-if="selectedProvenance"
-              id="collapse-4"
-              v-model="visibleDetails"
-              class="mt-2"
-            >
-              <opensilex-ProvenanceDetails
-                :provenance="getSelectedProv"
-              ></opensilex-ProvenanceDetails>
-            </b-collapse>
-          </opensilex-FilterField>
+                <b-collapse
+                  v-if="selectedProvenance"
+                  id="collapse-4"
+                  v-model="visibleDetails"
+                  class="mt-2"
+                >
+                  <opensilex-ProvenanceDetails
+                    :provenance="getSelectedProv"
+                  ></opensilex-ProvenanceDetails>
+                </b-collapse>
+              </opensilex-FilterField>
+            </div>
 
           </template>            
 
@@ -97,13 +126,19 @@
           </template> -->
           
         </opensilex-SearchFilterField>
+        </div>
+      </Transition>
         
-        <opensilex-DataFilesList 
-          ref="datafilesList"
-          :filter="filter">
-        </opensilex-DataFilesList>
+      <div class="card">
+        <div class="card-body">
+          <opensilex-DataFilesList 
+            ref="datafilesList"
+            :filter="filter"
+            class="datafilesList">
+          </opensilex-DataFilesList>
+        </div>
       </div>
-    </div>
+    </opensilex-PageContent>
   </div>
 </template>
 
@@ -136,6 +171,12 @@ export default class ScientificObjectDataFiles extends Vue {
     experiments: [],
     scientificObjects: []
   };
+
+  data(){
+    return {
+      SearchFiltersToggle : false,
+    }
+  }
 
   refreshKey = 0;
 
@@ -270,12 +311,18 @@ export default class ScientificObjectDataFiles extends Vue {
     })
     .catch(this.$opensilex.errorHandler);
   }
-
+  
+  searchFiltersPannel() {
+    return  this.$t("searchfilter.label")
+  }
 
 }
 </script>
 
 <style scoped lang="scss">
+.card-body {
+  margin-bottom: -15px;
+}
 </style>
 
 <i18n>

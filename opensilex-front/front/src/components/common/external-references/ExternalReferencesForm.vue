@@ -93,7 +93,6 @@
                     <b-button
                             class="float-right"
                             @click="update"
-                            variant="primary"
                     >{{$t("component.skos.update")}}
                     </b-button>
                 </b-form-group>

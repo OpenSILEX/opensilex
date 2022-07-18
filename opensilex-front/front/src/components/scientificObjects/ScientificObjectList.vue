@@ -1,6 +1,7 @@
 <template>
-  <opensilex-PageContent>
-    <template v-slot>
+  <opensilex-PageContent
+  class="pagecontent">
+
       <opensilex-TableAsyncView
         ref="tableRef"
         :searchMethod="searchScientificObject"
@@ -123,7 +124,7 @@
           </b-button-group>
         </template>
       </opensilex-TableAsyncView>
-    </template>
+ 
   </opensilex-PageContent>
 </template>
 
@@ -303,6 +304,8 @@ export default class ScientificObjectList extends Vue {
 
   private objectDetails = {};
 
+ 
+
   loadObjectDetail(data) {
     if (!data.detailsShowing) {
       this.$opensilex.disableLoader();
@@ -393,7 +396,6 @@ export default class ScientificObjectList extends Vue {
   onItemUnselected(row) {
     this.tableRef.onItemUnselected(row);
   }
-  
 }
 </script>
 

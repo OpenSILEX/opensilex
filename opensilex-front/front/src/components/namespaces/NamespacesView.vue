@@ -1,7 +1,5 @@
 <template>
     <div class="container-fluid">
-        <opensilex-PageHeader icon="ik#ik-settings" title="component.menu.namespaces" description="Namespaces.description"></opensilex-PageHeader>
-
         <opensilex-PageContent>
             <template v-slot>
                 <opensilex-TableView

@@ -1,31 +1,40 @@
 <template>
   <div ref="page">
-    <opensilex-DeviceVisualizationForm
-      ref="deviceVisualizationForm"
-      :device="device"
-      @search="onSearch"
-    ></opensilex-DeviceVisualizationForm>
 
-    <div class="d-flex justify-content-center mb-3" v-if="!isGraphicLoaded">
-      <b-spinner label="Loading..."></b-spinner>
-    </div>
+    <opensilex-PageContent class="pagecontent">
 
-    <opensilex-DataVisuGraphic
-      v-if="isGraphicLoaded"
-      ref="visuGraphic"
-      :deviceType="false"
-      @addEventIsClicked="showAddEventComponent"
-      @dataAnnotationIsClicked="showAnnotationForm"
-    ></opensilex-DataVisuGraphic>
+        <!--Form-->
+        <opensilex-DeviceVisualizationForm
+          ref="deviceVisualizationForm"
+          :device="device"
+          @search="onSearch"
+        ></opensilex-DeviceVisualizationForm>
 
-    <opensilex-AnnotationModalForm ref="annotationModalForm" @onCreate="onAnnotationCreated"></opensilex-AnnotationModalForm>
 
-    <opensilex-EventModalForm
-      ref="eventsModalForm"
-      :target="target"
-      :eventCreatedTime="eventCreatedTime"
-      @onCreate="onEventCreated"
-    ></opensilex-EventModalForm>
+
+      <div class="d-flex justify-content-center mb-3" v-if="!isGraphicLoaded">
+        <b-spinner label="Loading..."></b-spinner>
+      </div>
+
+      <!--Visualisation-->
+      <opensilex-DataVisuGraphic
+        v-if="isGraphicLoaded"
+        ref="visuGraphic"
+        :deviceType="false"
+        @addEventIsClicked="showAddEventComponent"
+        @dataAnnotationIsClicked="showAnnotationForm"
+        class="DeviceVisualisationGraphic"
+      ></opensilex-DataVisuGraphic> 
+
+      <opensilex-AnnotationModalForm ref="annotationModalForm" @onCreate="onAnnotationCreated"></opensilex-AnnotationModalForm>
+
+      <opensilex-EventModalForm
+        ref="eventsModalForm"
+        :target="target"
+        :eventCreatedTime="eventCreatedTime"
+        @onCreate="onEventCreated"
+      ></opensilex-EventModalForm>
+    </opensilex-PageContent>
   </div>
 </template>
 
@@ -367,10 +376,16 @@ export default class DeviceVisualizationTab extends Vue {
     var day = Highcharts.dateFormat("%Y-%m-%dT%H:%M:%S+0000", time);
     return day;
   }
+
 }
 </script>
 
 <style scoped lang="scss">
+
+.DeviceVisualisationGraphic {
+  min-width: 100%;
+  max-width: 100vw;
+}
 </style>
 
 <i18n>

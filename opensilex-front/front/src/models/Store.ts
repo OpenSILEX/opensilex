@@ -64,7 +64,7 @@ let defaultConfig: FrontConfigDTO = {
   pathPrefix: "/",
   homeComponent: "opensilex-front-ToDoComponent",
   notFoundComponent: "opensilex-front-ToDoComponent",
-  headerComponent: "opensilex-front-ToDoComponent",
+  headerComponent: "opensilex-DefaultHeaderComponent",
   loginComponent: "opensilex-front-ToDoComponent",
   menuComponent: "opensilex-front-ToDoComponent",
   footerComponent: "opensilex-front-ToDoComponent",
@@ -264,6 +264,21 @@ let store = new Vuex.Store({
       }
     },
     toggleMenu(state) {
+      setTimeout(function() {
+        if (typeof(Event) === 'function') {
+          // modern browsers
+          window.dispatchEvent(new Event('resize'));
+        } else {
+          // for IE and other old browsers
+          // causes deprecation warning on modern browsers
+          var evt = window.document.createEvent('UIEvents'); 
+          evt.initUIEvent('resize', true, false, window, 0); 
+          window.dispatchEvent(evt);
+        }
+      }, 500); // trigger the resize event to resize Highcharts container
+      state.menuVisible = !state.menuVisible;
+    },
+    toggleMenuOnSelect(state) {
       setTimeout(function() {
         if (typeof(Event) === 'function') {
           // modern browsers

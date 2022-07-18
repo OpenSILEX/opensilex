@@ -1,5 +1,5 @@
 <template>
-  <div style="display: contents;">
+  <div class="infrastructureDetailComponent">
     <b-card v-if="selected">
       <template v-slot:header>
         <h3>
@@ -225,6 +225,12 @@ export default class InfrastructureDetail extends Vue {
 </script>
 
 <style scoped lang="scss">
+
+@media only screen and (min-width: 768px) {
+  .infrastructureDetailComponent {
+    margin-top: 30px;
+  }
+}
 </style>
 
 <i18n>

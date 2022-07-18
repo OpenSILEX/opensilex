@@ -1,27 +1,47 @@
 <template>
   <div ref="page">
-    <div class="card">
-      <div class="card-body">
+    <div>
+      <div>
+
+    <opensilex-PageContent class="pagecontent">
+      <!-- Toggle Sidebar--> 
+      <div class="searchMenuContainer"
+      v-on:click="SearchFiltersToggle = !SearchFiltersToggle"
+      :title="searchFiltersPannel()">
+        <div class="searchMenuIcon">
+          <i class="icon ik ik-search"></i>
+        </div>
+      </div>
+
+      <!-- FILTERS -->
+      <Transition>
+        <div v-show="SearchFiltersToggle">
+
           <opensilex-SearchFilterField
             ref="searchField"
             :withButton="true"
             @search="refresh()"
             @clear="clear()"
             :showAdvancedSearch="false"
+            class="searchFilterField"
           >
             <template v-slot:filters>
 
               <!-- Type -->
+              <div>
               <opensilex-FilterField>
                 <opensilex-TypeForm
                   :type.sync="filter.rdf_type"
                   :baseType="$opensilex.Oeso.DATAFILE_TYPE_URI"
                   :ignoreRoot="false"
                   placeholder="ScientificObjectDataFiles.rdfType-placeholder"
+                  class="searchFilter"
                 ></opensilex-TypeForm>
               </opensilex-FilterField>
+              </div>
 
               <!-- Experiments -->
+              <div>
               <opensilex-FilterField>
                 <opensilex-ExperimentSelector
                   label="DataView.filter.experiments"
@@ -29,10 +49,13 @@
                   :multiple="true"
                   @select="updateSOFilter"
                   @clear="updateSOFilter"
+                  class="searchFilter"
                 ></opensilex-ExperimentSelector>
               </opensilex-FilterField>
+              </div>
 
               <!-- Scientific objects -->
+              <div>
               <opensilex-FilterField halfWidth="true">
                 <opensilex-SelectForm
                   ref="soSelector"
@@ -48,28 +71,37 @@
                   @onValidate="refreshProvComponent"
                   @onClose="refreshProvComponent"
                   :limit="1"
+                  class="searchFilter"
                 ></opensilex-SelectForm>
               </opensilex-FilterField>
+              </div>
 
               <!-- Start Date -->
+              <div>
               <opensilex-FilterField>                
                 <opensilex-DateTimeForm
                   :value.sync="filter.start_date"
                   label="component.common.begin"
                   :max-date="filter.end_date ? filter.end_date : undefined" 
+                  class="searchFilter"
                 ></opensilex-DateTimeForm>
               </opensilex-FilterField>
+              </div>
 
               <!-- End Date -->
+              <div>
               <opensilex-FilterField>                
                 <opensilex-DateTimeForm
                   :value.sync="filter.end_date"
                   label="component.common.end"
                   :min-date="filter.start_date ? filter.start_date : undefined"
+                  class="searchFilter"
                 ></opensilex-DateTimeForm>
               </opensilex-FilterField>
+              </div>
 
               <!-- Provenance -->
+              <div>
               <opensilex-FilterField halfWidth="true">
                 <opensilex-DatafileProvenanceSelector
                   ref="provSelector"
@@ -83,6 +115,7 @@
                   :viewHandler="showProvenanceDetails"
                   :viewHandlerDetailsVisible="visibleDetails"
                   :key="refreshKey"
+                  class="searchFilter"
                 ></opensilex-DatafileProvenanceSelector>
                 <b-collapse
                   v-if="selectedProvenance"
@@ -95,6 +128,7 @@
                   ></opensilex-ProvenanceDetails>
                 </b-collapse>
               </opensilex-FilterField>
+              </div>
 
             </template>            
 
@@ -114,12 +148,17 @@
             </template> -->
             
           </opensilex-SearchFilterField>
-
+        </div>
+      </Transition>
+      
           <opensilex-DataFilesList 
           ref="datafilesList"
           :filter="filter"
-          :device="uri">
+          :device="uri"
+          class=datafilesList>
         </opensilex-DataFilesList>
+
+    </opensilex-PageContent>
       </div>
     </div>
   </div>
@@ -164,6 +203,12 @@ export default class DeviceDataFiles extends Vue {
       existenceDate: undefined,
       creationDate: undefined,
     };
+
+  data(){
+    return {
+      SearchFiltersToggle : false,
+    }
+  }
 
   @Prop()
   uri;
@@ -307,8 +352,15 @@ export default class DeviceDataFiles extends Vue {
   }
 
   
+  searchFiltersPannel() {
+    return  this.$t("searchfilter.label")
+  }
 }
 </script>
 
 <style scoped lang="scss">
+
+.card-body {
+  margin-bottom: -15px;
+}
 </style>

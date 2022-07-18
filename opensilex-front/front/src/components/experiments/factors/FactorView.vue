@@ -4,6 +4,7 @@
       icon="fa#sun"
       :title="factor.name"
       description="component.menu.experimentalDesign.factors"
+      class="detail-element-header"
     ></opensilex-PageHeader>
 
     <opensilex-PageActions :tabs="true" :returnButton="true">

@@ -16,10 +16,10 @@ file-system:
                     implementation: org.opensilex.fs.local.LocalFileSystemConnection
                     config:
                         basePath: ../../opensilex-data
-            #     irods:
-            #         implementation: org.opensilex.fs.irods.IrodsFileSystemConnection
-            #         config:
-            #             basePath: /FranceGrillesZone/home/fg-phenome/PHIS
+                #     irods:
+                #         implementation: org.opensilex.fs.irods.IrodsFileSystemConnection
+                #         config:
+                #             basePath: /FranceGrillesZone/home/fg-phenome/PHIS
                 gridfs:
                     implementation: org.opensilex.fs.gridfs.GridFSConnection
                     config:

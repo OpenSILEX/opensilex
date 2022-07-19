@@ -343,6 +343,7 @@
             targets: Concerne
             targets-help: Objet(s) concerné(s) sont "Dispositifs" et "Objets scientifiques"
             targets-example: "os-so:plant1"
+            target-help: URI de l'objet concerné par l'évènement (Doit exister).
             start: Début
             start-help: Début de l'événement, uniquement si celui-ci n'est pas instantané
             start-example: 2019-09-08T13:00:00+01:00"
@@ -357,5 +358,4 @@
             specific-properties: Propriétés spécifiques
             multiple-insert: événement(s) enregistré(s)
             move-multiple-insert: déplacement(s) enregistré(s)
-
     </i18n>

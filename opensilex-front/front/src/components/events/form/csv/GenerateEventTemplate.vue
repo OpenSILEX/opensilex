@@ -127,19 +127,23 @@ export default class GenerateEventTemplate extends Vue {
         for (let type of this.types) {
             let typePromise = ontoService.getRDFTypeProperties(type, this.$opensilex.Oeev.EVENT_TYPE_URI)
                 .then(http => {
-                    let properties = {};
-                    http.response.result.data_properties.forEach((propertyDTO: VueRDFTypePropertyDTO) => {
-                        properties[propertyDTO.uri] = propertyDTO;
-                    });
 
-                    http.response.result.object_properties.forEach((propertyDTO: VueRDFTypePropertyDTO) => {
-                        properties[propertyDTO.uri] = propertyDTO;
-                    });
-
-                    return {
+                    let result = {
                         uri: type,
-                        properties: properties,
-                    };
+                        dataProperties: new Map<string, VueRDFTypePropertyDTO>(),
+                        objectProperties: new Map<string, VueRDFTypePropertyDTO>(),
+                    }
+
+                    for (let property of http.response.result.data_properties) {
+                        let propURI = property.uri;
+                        result.dataProperties.set(propURI, property);
+                    }
+                    for (let property of http.response.result.object_properties) {
+                        let propURI = property.uri;
+                        result.objectProperties.set(propURI, property);
+                    }
+
+                    return result;
                 });
 
             promises.push(typePromise);
@@ -153,7 +157,13 @@ export default class GenerateEventTemplate extends Vue {
       let headers = ["uri", "rdfType", "isInstant", "start", "end", "targets", "description"];
 
       // list of properties URI to exclude from custom properties
-      let managedProperties = ["oeev:isInstant", "time:hasBeginning", "time:hasEnd", "oeev:concerns", "rdfs:comment"];
+      let managedProperties = [
+          this.$opensilex.Oeev.IS_INSTANT,
+          this.$opensilex.Time.HAS_BEGINNING,
+          this.$opensilex.Time.HAS_END,
+          this.$opensilex.Oeev.CONCERNS,
+          this.$opensilex.Rdfs.COMMENT
+      ];
 
       let headersDescription = [
             this.getPropertyDescription("Event.uri-help", false, "Event.uri-example"),
@@ -166,8 +176,10 @@ export default class GenerateEventTemplate extends Vue {
         ];
 
         if (this.isMove) {
+            managedProperties.push(this.$opensilex.Oeev.FROM, this.$opensilex.Oeev.TO);
 
             headers.push("from", "to", "coordinates", "x", "y", "z", "textualPosition");
+
             headersDescription.push(
                 this.getPropertyDescription("Position.from-help", false, "Position.from-placeholder"),
                 this.getPropertyDescription("Position.to-help", false, "Position.to-placeholder"),
@@ -180,20 +192,26 @@ export default class GenerateEventTemplate extends Vue {
         }
 
         // exclude managed properties -> ensure that no property is present twice into header
-        let visitedProperties = new Set(managedProperties);
+        let visitedProperties = new Set(managedProperties.map(property => this.$opensilex.getShortUri(property)));
 
         // for each type, add all non visited property header column and description
         for (let typeResult of typeModels) {
-            for (let propURI in typeResult.properties) {
-                if (!visitedProperties.has(propURI)) {
+
+            let propertyFunction = (propURI: string, property: VueRDFTypePropertyDTO) => {
+                if (!visitedProperties.has(this.$opensilex.getShortUri(propURI))) {
                     visitedProperties.add(propURI);
 
                     headers.push(propURI);
-
-                    let property = typeResult.properties[propURI];
                     headersDescription.push(this.getCustomPropertyDescription(property));
                 }
             }
+
+            typeResult.dataProperties.forEach((property, propURI) => {
+                propertyFunction(propURI, property);
+            });
+            typeResult.objectProperties.forEach((property, propURI) => {
+                propertyFunction(propURI, property);
+            });
         }
 
         let data = [headers, headersDescription];
@@ -203,38 +221,26 @@ export default class GenerateEventTemplate extends Vue {
         let endIndex = headers.indexOf("end");
         let targetIndex = headers.indexOf("targets");
 
-        if (this.targets.length > 0) {
+        // generate a row per target and per type
 
-            // Set a type if a type and only one has been selected.
-            let generatedType = typeModels && typeModels.length == 1 ? typeModels[0].uri : undefined;
+        // no target -> empty column
+        let generatedTargets = this.targets ? this.targets : [undefined];
 
-            // append row with pre-filled target column
-            this.targets.forEach(target => {
+        // no type -> empty column
+        let generatedTypes = typeModels ? typeModels.map(type => type.uri) : [undefined];
 
-                if (target && target.length > 0) {
-                    let row = new Array(headers.length).fill('');
-
-                    row[typeIndex] = generatedType;
-                    row[isInstantIndex] = "true";
-                    row[endIndex] = new Date().toISOString();
-                    row[targetIndex] = target;
-
-                    data.push(row);
-                }
-            });
-
-        // no target, append a row by type
-        } else if (typeModels && typeModels.length > 0) {
-            typeModels.forEach(typeModel => {
+        generatedTargets.forEach(generatedTarget => {
+            generatedTypes.forEach(generatedType => {
                 let row = new Array(headers.length).fill('');
 
-                row[typeIndex] = typeModel.uri;
+                row[typeIndex] = generatedType;
                 row[isInstantIndex] = "true";
                 row[endIndex] = new Date().toISOString();
+                row[targetIndex] = generatedTarget;
 
                 data.push(row);
             });
-        }
+        });
 
         return data;
     }

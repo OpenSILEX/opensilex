@@ -47,6 +47,12 @@ let ontologies = {
     FACTOR_CATEGORY_URI: OESO_URI + '#FactorCategory',
     MEASURES_PROP_URI: OESO_URI + "#measures",
     VARIABLESGROUP_TYPE_URI: OESO_URI + "#VariablesGroup",
+    HAS_MODEL: OESO_URI+"#hasModel",
+    HAS_BRAND: OESO_URI+"#hasBrand",
+    HAS_SERIAL_NUMBER: OESO_URI+"#hasSerialNumber",
+    PERSON_IN_CHARGE: OESO_URI+"#personInCharge",
+    START_UP: OESO_URI+"#startUp",
+    REMOVAL: OESO_URI+"#removal",
 
     getShortURI: getShortURI,
     checkURIs: checkURIs

@@ -41,7 +41,6 @@ public class SPARQLTreeListModel<T extends SPARQLTreeModel<T>> {
         if (addSelectionToTree) {
             selectionList.forEach(this::addTree);
         }
-
     }
 
     public SPARQLTreeListModel(Collection<T> selectionList, URI root, boolean excludeRoot) {
@@ -50,6 +49,10 @@ public class SPARQLTreeListModel<T extends SPARQLTreeModel<T>> {
 
     public SPARQLTreeListModel(T rootModel, boolean excludeRoot, boolean addSelectionToTree) {
         this(rootModel.getNodes(false), rootModel.getUri(), excludeRoot, addSelectionToTree);
+
+        if(! excludeRoot && getRootsCount() == 0){
+            addTree(rootModel);
+        }
     }
 
     public void listRoots(Consumer<T> handler) {

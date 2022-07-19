@@ -42,6 +42,19 @@
             </div>
         </div>
 
+      <div class="row">
+        <div class="col">
+          <!-- Comment -->
+          <opensilex-TextAreaForm
+              :value.sync="form.description"
+              label="component.common.description"
+              helpMessage="Event.description"
+              placeholder="Event.description"
+          >
+          </opensilex-TextAreaForm>
+        </div>
+      </div>
+
         <div class="row">
             <div class="col">
 
@@ -90,7 +103,7 @@
             :rdfType="this.form.rdf_type"
             :relations="this.form.relations"
             :excludedProperties="this.excludedProperties"
-            :baseType="this.$opensilex.Oeev.EVENT_TYPE_URI"
+            :baseType="this.baseType"
             :editMode="editMode"
             :context="context ? { experimentURI: context} : undefined"
         ></opensilex-OntologyRelationsForm>
@@ -155,14 +168,15 @@ export default class EventForm extends Vue {
         this.baseType = this.$opensilex.Oeev.EVENT_TYPE_URI;
 
         this.excludedProperties = new Set<string>([
-            this.$opensilex.Oeev.getShortURI(this.$opensilex.Oeev.CONCERNS),
-            this.$opensilex.Oeev.getShortURI(this.$opensilex.Oeev.IS_INSTANT),
-            this.$opensilex.Time.getShortURI(this.$opensilex.Time.HAS_BEGINNING),
-            this.$opensilex.Time.getShortURI(this.$opensilex.Time.HAS_END),
+            this.$opensilex.Oeev.CONCERNS,
+            this.$opensilex.Oeev.IS_INSTANT,
+            this.$opensilex.Time.HAS_BEGINNING,
+            this.$opensilex.Time.HAS_END,
+            this.$opensilex.Rdfs.COMMENT,
 
             // from/to properties to handle into MoveForm
-            this.$opensilex.Oeev.getShortURI(this.$opensilex.Oeev.FROM),
-            this.$opensilex.Oeev.getShortURI(this.$opensilex.Oeev.TO)
+            this.$opensilex.Oeev.FROM,
+            this.$opensilex.Oeev.TO
         ]);
     }
 

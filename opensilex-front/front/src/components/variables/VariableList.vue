@@ -151,29 +151,41 @@
                     :maximumSelectedRows="maximumSelectedRows"
                     labelNumberOfSelectedRow="VariableList.selected"
                     iconNumberOfSelectedRow="fa#vials"
+                    @refreshed="onRefreshed"
                     @select="$emit('select', $event)"
                     @unselect="$emit('unselect', $event)"
                     @selectall="$emit('selectall', $event)"
                     class="modalVariablesList">
 
-                    <template v-if="!noActions" v-slot:selectableTableButtons="{ numberOfSelectedRows }">
-                      <b-dropdown
-                        dropright
-                        class="mb-2 mr-2"
-                        :small="true"
-                        :disabled="numberOfSelectedRows == 0"
-                        text="actions">
+                    <template v-slot:selectableTableButtons="{ numberOfSelectedRows }">
+                        <b-dropdown
+                            dropright
+                            class="mb-2 mr-2"
+                            :small="true"
+                            :text="$t('VariableList.display')">
 
-                        <b-dropdown-item-button
-                            v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
-                            @click="addVariablesToGroups()">{{$t("VariableList.add-groupVariable")}}</b-dropdown-item-button>
-                        <b-dropdown-item-button
-                            v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
-                            @click="showCreateForm()">{{$t("VariableList.add-newGroupVariable")}}</b-dropdown-item-button>
-                        <b-dropdown-item-button @click="classicExportVariables()">{{$t('VariableList.export-variables')}}</b-dropdown-item-button>
-                        <b-dropdown-item-button @click="detailsExportVariables()">{{$t('VariableList.export-variables-details')}}</b-dropdown-item-button>
-
+                            <b-dropdown-item-button @click="clickOnlySelected()">{{ onlySelected ? $t('VariableList.selected-all') : $t('VariableList.selected-only')}}</b-dropdown-item-button>
+                            <b-dropdown-item-button @click="resetSelected()">{{$t('VariableList.resetSelected')}}</b-dropdown-item-button>
                         </b-dropdown>
+
+                        <b-dropdown
+                            v-if="!noActions"
+                            dropright
+                            class="mb-2 mr-2"
+                            :small="true"
+                            :disabled="numberOfSelectedRows == 0"
+                            text="actions">
+
+                            <b-dropdown-item-button
+                                v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
+                                @click="addVariablesToGroups()">{{$t("VariableList.add-groupVariable")}}</b-dropdown-item-button>
+                            <b-dropdown-item-button
+                                v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
+                                @click="showCreateForm()">{{$t("VariableList.add-newGroupVariable")}}</b-dropdown-item-button>
+                            <b-dropdown-item-button @click="classicExportVariables()">{{$t('VariableList.export-variables')}}</b-dropdown-item-button>
+                            <b-dropdown-item-button @click="detailsExportVariables()">{{$t('VariableList.export-variables-details')}}</b-dropdown-item-button>
+                        </b-dropdown>
+
                     </template>
 
                     <template v-slot:cell(name)="{data}">
@@ -356,6 +368,10 @@ export default class VariableList extends Vue {
     @Ref("groupVariableSelection") readonly groupVariableSelection!: any;
     @Ref("tableRef") readonly tableRef!: any;
 
+    get onlySelected() {
+        return this.tableRef.onlySelected;
+    }
+
     get lang() {
         return this.$store.state.lang;
     }
@@ -380,7 +396,13 @@ export default class VariableList extends Vue {
         this.groupVariablesForm.showCreateForm();
     }
 
+    clickOnlySelected() {
+        this.tableRef.clickOnlySelected();
+    }
 
+    resetSelected() {
+        this.tableRef.resetSelected();
+    }
 
     reset() {
         this.filter = {
@@ -410,16 +432,23 @@ export default class VariableList extends Vue {
   }
 
     refresh() {
-        this.tableRef.selectAll = false;
-        this.tableRef.onSelectAll();
         this.$opensilex.updateURLParameters(this.filter);
-
-        this.tableRef.refresh();
+        if(this.onlySelected) {
+            this.tableRef.onlySelected = false;
+            this.tableRef.refresh();
+        } else {
+            this.tableRef.refresh();
+        }
     }
 
-    refreshWithKeepingSelection() {
-        this.$opensilex.updateURLParameters(this.filter);
-        this.tableRef.refresh();
+    // fix the state of the button selectAll 
+    onRefreshed() {
+        let that = this;
+        setTimeout(function() {
+            if(that.tableRef.selectAll === true && that.tableRef.selectedItems.length !== that.tableRef.totalRow) {                    
+                that.tableRef.selectAll = false;
+            } 
+        }, 1);
     }
 
     getSelected() {
@@ -630,6 +659,10 @@ en:
         export-variables-details: Export detailed variable list
         variablesGroup: Variable used in one or many groups of variables
         not-used-in-variablesGroup: Variable not used in any group of variables
+        selected-only: Selection only
+        selected-all: All variables
+        resetSelected: Reset selection
+        display: Display
 fr:
     VariableList:
         name-placeholder: Entrer un nom de variable
@@ -643,6 +676,9 @@ fr:
         export-variables-details: Exporter la liste détaillée de variables
         variablesGroup: Variable utilisé dans un ou plusieurs groupe de variables
         not-used-in-variablesGroup: Variable n'est utilisé dans aucun groupe de variables
-
+        selected-only: Sélection seulement
+        selected-all: Toute la liste
+        resetSelected: Réinitialiser la sélection
+        display: Affichage
 
 </i18n>

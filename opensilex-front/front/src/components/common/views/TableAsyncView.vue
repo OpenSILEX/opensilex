@@ -9,7 +9,7 @@
             </h3>
             <span v-if="!maximumSelectedRows" class="badge badge-pill greenThemeColor">{{numberOfSelectedRows}}</span>
             <span v-else class="badge badge-pill badge-warning">{{numberOfSelectedRows}}/{{maximumSelectedRows}}</span>
-            <slot name="selectableTableButtons" v-bind:numberOfSelectedRows="numberOfSelectedRows">></slot>
+            <slot name="selectableTableButtons" v-bind:numberOfSelectedRows="numberOfSelectedRows"></slot>
         </div>
       </div>
 
@@ -166,7 +166,8 @@ export default class TableAsyncView extends Vue {
   sortDesc = false;
   isSearching = false;
   selectAll = false;
-
+  onlySelected: boolean = false; // false if you display all the elements, true if you display only the selected elements
+  
   @Prop({
     default: 10000
   })
@@ -262,9 +263,17 @@ export default class TableAsyncView extends Vue {
   }
 
    refresh() {
-    this.currentPage = 1;
-    this.pageSize=this.defaultPageSize;
-    this.tableRef.refresh();
+      this.currentPage = 1;
+      this.pageSize=this.defaultPageSize;
+      this.tableRef.refresh();
+  }
+
+  // function that reset the selected elements
+  resetSelected() {
+    this.onlySelected = false;
+    this.selectAll = false;
+    this.onSelectAll();
+    this.refresh();
   }
 
   update() {
@@ -320,6 +329,13 @@ export default class TableAsyncView extends Vue {
     }
   }
 
+  // function that display only the selected elements
+  clickOnlySelected(){
+    this.onlySelected = !this.onlySelected;
+    this.currentPage = 1;
+    this.tableRef.refresh();
+  }
+
   loadData() {
 
     let orderBy = this.getOrderBy();
@@ -344,22 +360,38 @@ export default class TableAsyncView extends Vue {
 
     this.$opensilex.disableLoader();
     this.isSearching = true;
-    return this.searchMethod({
-      orderBy: orderBy,
-      currentPage: this.currentPage - 1,
-      pageSize: this.pageSize
-    })
-      .then((http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
-        this.totalRow = http.response.metadata.pagination.totalCount;
-        this.pageSize = http.response.metadata.pagination.pageSize;
-        this.isSearching = false;
-        this.$opensilex.enableLoader();
-        return http.response.result;
+    // we handle the data loading when there is only the selected elements displayed
+    if(this.onlySelected) {
+      // totalRow is the number of selectedItems
+      this.totalRow = this.selectedItems.length;
+      // pageSize is the number of selectedItems or the defaultPageSize 
+      this.pageSize = this.selectedItems.length <= this.defaultPageSize ? this.selectedItems.length : this.defaultPageSize;
+      this.isSearching = false;
+      // Don't selectAll if there is no elements displayed  
+      if(this.pageSize > 0) {
+        this.selectAll = true;
+      }
+      this.$opensilex.enableLoader();
+      // We return the selectedItems in coherence with the pagination
+      return this.selectedItems.slice((this.currentPage - 1) * this.pageSize, this.pageSize * this.currentPage);
+    } else { // we handle the data loading when there is all elements displayed
+      return this.searchMethod({
+        orderBy: orderBy,
+        currentPage: this.currentPage - 1,
+        pageSize: this.$route.query.pageSize ? parseInt(this.$route.query.pageSize) : this.defaultPageSize
       })
-      .catch(error => {
-        this.isSearching = false;
-        this.$opensilex.errorHandler(error);
-      });
+        .then((http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
+          this.totalRow = http.response.metadata.pagination.totalCount;
+          this.pageSize = http.response.metadata.pagination.pageSize;
+          this.isSearching = false;
+          this.$opensilex.enableLoader();
+          return http.response.result;
+        })
+        .catch(error => {
+          this.isSearching = false;
+          this.$opensilex.errorHandler(error);
+        });
+    }
   }
 
   getCurrentItemLimit() : number {
@@ -381,7 +413,10 @@ export default class TableAsyncView extends Vue {
         });
       }
       else {
-        this.selectedItems = [];
+        // We don't want to reset the selectedItems when we do a selectAll
+        if(!this.selectedItems) {
+          this.selectedItems = [];
+        }
 
         let orderBy = [];
         if (this.sortBy) {
@@ -400,10 +435,18 @@ export default class TableAsyncView extends Vue {
         })
         .then((http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
         this.totalRow = http.response.metadata.pagination.totalCount;
-        this.selectedItems = http.response.result;
+        let concatItems = this.selectedItems;
+        // We check if the results of the searchMethod are already selected, if not we add them in the selectedItems      
+        http.response.result.forEach(elem => {
+          let index = concatItems.findIndex(obj => obj.uri === elem.uri);
+          if(index === -1) {
+            concatItems.push(elem);
+          }
+        });
+        this.selectedItems = concatItems;    
         this.numberOfSelectedRows = this.selectedItems.length;
         this.tableRef.selectAllRows();
-        this.$emit("selectall",this.selectedItems);
+        this.$emit("selectall", this.selectedItems);
         return this.selectedItems;
         }) 
       }

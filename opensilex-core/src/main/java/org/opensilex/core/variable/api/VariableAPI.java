@@ -829,12 +829,6 @@ public class VariableAPI {
                     urlService += "&uris=" + URLEncoder.encode(uri.toString(), StandardCharsets.UTF_8.name());
                 }
             }
-//            if (firstUri) {
-//                urlService += "uris=" + URLEncoder.encode(uri.toString(), StandardCharsets.UTF_8.name());
-//                firstUri = false;
-//            } else {
-//                urlService += "&uris=" + URLEncoder.encode(uri.toString(), StandardCharsets.UTF_8.name());
-//            }
         }
         // utilisation du service de recherche des variables en fonction de leur uri sur la ressource partagée
         String stringResponse = connectionToService(urlService, token);

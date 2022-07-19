@@ -309,13 +309,10 @@
 </script>
 
 <style scoped lang="scss">
-.page {
-  margin-top : 20px;
-}
-   
+ 
 .pageActionsBtns {
     margin-left: 10px;
-    margin-bottom: 10px
+    margin-bottom: 10px;
 }
 </style>
 

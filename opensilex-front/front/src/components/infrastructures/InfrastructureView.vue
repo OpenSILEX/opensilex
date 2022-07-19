@@ -13,6 +13,7 @@
         <opensilex-InfrastructureDetail
           :selected="selectedOrganization"
           @onUpdate="refreshTree"
+          class="infrastructureDetailComponent"
         ></opensilex-InfrastructureDetail>
         <!-- Site detail -->
         <opensilex-SiteDetail
@@ -134,7 +135,11 @@ export default class InfrastructureView extends Vue {
 
 
 <style scoped lang="scss">
-
+@media only screen and (min-width: 768px) {
+  .infrastructureDetailComponent {
+    margin-top: 30px;
+  }
+}
 </style>
 
 <i18n>

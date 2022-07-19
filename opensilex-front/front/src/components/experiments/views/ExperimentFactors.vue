@@ -236,19 +236,24 @@ export default class ExperimentFactors extends Vue {
 
 .pageActionsBtns {
   margin-left: 10px;
-  margin-bottom: 10px
+  margin-bottom: 10px;
 }
 
 .helpButton {
   margin-left: -5px;
   color: #00A28C;
   font-size: 1.2em;
-  border: none
+  border: none;
 }
   
 .helpButton:hover {
   background-color: #00A28C;
-  color: #f1f1f1
+  color: #f1f1f1;
+}
+
+
+.createButton {
+  margin-left: 5px;
 }
 
 </style>

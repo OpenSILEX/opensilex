@@ -57,7 +57,16 @@
             :search=false
         ></opensilex-DocumentTabList>
 
-        <template v-slot:modal-ok>{{$t('component.common.ok')}}</template>
+        <template v-slot:modal-footer>
+            <button
+                type="button"
+                class="btn greenThemeColor"
+                v-on:click="hide(false)"
+            >
+                {{ $t('component.common.ok') }}
+            </button>
+        </template>
+
 
     </b-modal>
 </template>

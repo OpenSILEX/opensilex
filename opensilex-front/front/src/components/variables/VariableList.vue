@@ -100,7 +100,8 @@
                                 ></opensilex-UnitSelector>
                             </opensilex-FilterField>
                             </div>
-
+                            
+                            <!-- Data type -->
                             <div>
                             <opensilex-FilterField>
                                 <opensilex-VariableDataTypeSelector
@@ -111,6 +112,7 @@
                             </opensilex-FilterField>
                             </div>
 
+                            <!-- Time interval -->
                             <div>
                             <opensilex-FilterField>
                                 <opensilex-VariableTimeIntervalSelector
@@ -118,6 +120,19 @@
                                     :timeinterval.sync="filter.timeInterval"   
                                     class="searchFilter" 
                                 ></opensilex-VariableTimeIntervalSelector>
+                            </opensilex-FilterField>
+                            </div>
+
+                            <!-- Species -->
+                            <div>
+                            <opensilex-FilterField>
+                                <opensilex-SpeciesSelector
+                                    label="SpeciesSelector.select-multiple"
+                                    placeholder="SpeciesSelector.select-multiple-placeholder"
+                                    :multiple="true"
+                                    :species.sync="filter.species"
+                                    class="searchFilter"
+                                ></opensilex-SpeciesSelector>
                             </opensilex-FilterField>
                             </div>
 

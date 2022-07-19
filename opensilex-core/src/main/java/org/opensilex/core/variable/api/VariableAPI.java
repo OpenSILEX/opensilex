@@ -17,6 +17,7 @@ import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.opensilex.core.CoreModule;
 import org.opensilex.core.URIsListPostDTO;
 import org.opensilex.core.sharedResource.SharedResourcesDTO;
+import org.opensilex.core.sharedResource.SharedResourcesFunctions;
 import org.opensilex.core.variable.api.characteristic.CharacteristicCreationDTO;
 import org.opensilex.core.variable.api.entity.EntityCreationDTO;
 import org.opensilex.core.variable.api.entityOfInterest.InterestEntityCreationDTO;
@@ -101,117 +102,11 @@ public class VariableAPI {
         return new VariableDAO(sparql,mongodb,fs);
     }
 
-    /*Cette fonction permet de récupérer la liste des ressources partagées disponibles indiquées dans le fichier opensilex.yml*/
-    private List<SharedResourcesDTO> getAllSharedResources(
-
-    ) throws Exception {
-
-        //Création du dto de l'instance locale
-        SharedResourcesDTO localInstance = new SharedResourcesDTO();
-        localInstance.setUri(new URI(LOCAL_RESOURCE));
-        localInstance.setLabel("component.sharedResources.local-instance");
-        localInstance.setLocal(true);
-
-        // création de la liste des dtos de toutes les ressources disponibles
-        List<SharedResourcesDTO> sharedResourcesDTOS = new ArrayList<>();
-        sharedResourcesDTOS.add(localInstance);
-        sharedResourcesDTOS.addAll(coreModule.getSharedResources());
-
-        return sharedResourcesDTOS;
-    }
-
-    /*Cette fonction renvoie un token au format String en fonction de l'adresse de la ressource donnée en paramètre (ex : http://138.102.159.36:8083/rest)*/
-    /*La fonction utilise le compte admin pour se connecter (admin@opensilex.org / admin)*/
-    private String getToken(String urlSharedResource)throws Exception {
-
-        //URL du service qui génère le token
-        URL urlToken = new URL(urlSharedResource + "/security/authenticate");
-        //création de la connexion
-        HttpURLConnection connection = (HttpURLConnection) urlToken.openConnection();
-        //propriétés du service
-        connection.setDoOutput(true); // POST
-        connection.setRequestProperty("Accept", "application/json");
-        connection.setRequestProperty("Content-Type", "application/json");
-        //paramètres du service
-        String data = "{\"identifier\": \"admin@opensilex.org\", \"password\": \"admin\"}";
-        byte[] out = data.getBytes(StandardCharsets.UTF_8);
-        //envoi des paramètres en entrée
-        OutputStream stream = connection.getOutputStream();
-        stream.write(out);
-        //lecture de la réponse
-        String stringResponse = readResponse(connection);
-        ObjectMapper mapperSearch = new ObjectMapper();
-        JsonNode jsonResult = mapperSearch.readTree(stringResponse);
-        //récupération du token au format String
-        String token = "Bearer " + jsonResult.get("result").get("token").asText();
-
-        connection.disconnect();
-        return token;
-    }
-
-    /*Cette fonction renvoie la réponse (String) d'une connexion de type HttpURLConnection*/
-    private String readResponse(HttpURLConnection connection)throws Exception {
-        BufferedReader in = new BufferedReader(
-                new InputStreamReader(connection.getInputStream()));
-        String content = "";
-        String inputLine;
-        while ((inputLine = in.readLine()) != null)
-            content += inputLine;
-        in.close();
-        return content;
-    }
-
-    /*Cette fonction renvoie la réponse (String) d'un service (ex : http://138.102.159.36:8083/rest/ontology/shared_resources)*/
-    private String connectionToService(String urlService, String token)throws Exception {
-
-        // connexion au service
-        URL url = new URL(urlService);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestProperty("Accept", "application/json");
-        connection.setRequestProperty("Authorization", token);
-
-        // lecture de la réponse si la connexion a fonctionné
-        int statut = connection.getResponseCode();
-        if (statut == 200) {
-            String Response = readResponse(connection);
-            connection.disconnect();
-            return Response;
-        }
-        return null;
-    }
-
-    /*Cette fonction renvoie la réponse (JsonNode) d'un service (ex : http://138.102.159.36:8083/rest/ontology/shared_resources)*/
-    private JsonNode jsonResponseToService(String urlService, String token)throws Exception {
-
-        // récupération de la réponse du service au format String
-        String Response = connectionToService(urlService,token);
-        // conversion de la réponse en JsonNode
-        if (Response != null) {
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode jsonResult = mapper.readTree(Response);
-            return jsonResult;
-        }
-        return null;
-    }
-
-    /*Cette fonction convertit un uri court en uri long si le prefixe de cet uri court existe dans la liste des prefixes de la bdd*/
-    private URI prefixeTranslation(URI uri) throws Exception {
-
-        // récupération des namespaces (indiqués dans la fonction getDefaultPrefixes() de SPARQLService.java)
-        Map<String, String> nameSpaces = SPARQLService.getPrefixes();
-        String prefixeUri = uri.getScheme();
-
-        if (nameSpaces.get(prefixeUri) != null){
-            URI translatedUri = new URI(uri.toString().replace(prefixeUri + ":",nameSpaces.get(prefixeUri)));
-            return translatedUri;
-        }else{
-            return null;
-        }
-    }
-
     /*Cette fonction permet d'enregistrer tous les champs (n'existant pas dans la bdd locale) d'une variable partagée au moment de sa récupération sur l'instance locale*/
     private <M extends BaseVariableModel<M>, D extends BaseVariableCreationDTO<M>> URI createVariableElement(JsonNode variableJson, URI resource, String token, String fieldName, Class<M> modelClass, Class<D> creationDtoClass)
             throws Exception{
+
+        SharedResourcesFunctions sharedResourcesFunctions = SharedResourcesFunctions.getInstance(coreModule);
 
         URI shortUri = new URI("");
 
@@ -231,13 +126,13 @@ public class VariableAPI {
                 // récupération des informations du champ dans la ressource partagée
                 if (Objects.equals(fieldName, "entity")){
                     urlService += resource.toString() + "/core/entities/" + URLEncoder.encode(filedUriString, StandardCharsets.UTF_8.name());
-                    filedJsonResult = jsonResponseToService(urlService, token);
+                    filedJsonResult = sharedResourcesFunctions.jsonResponseToService(urlService, token);
                 } else if (Objects.equals(fieldName, "entity_of_interest")) {
                     urlService += resource.toString() + "/core/entities_of_interest/" + URLEncoder.encode(filedUriString, StandardCharsets.UTF_8.name());
-                    filedJsonResult = jsonResponseToService(urlService, token);
+                    filedJsonResult = sharedResourcesFunctions.jsonResponseToService(urlService, token);
                 }else{
                     urlService += resource.toString() + "/core/" + fieldName + "s/" + URLEncoder.encode(filedUriString, StandardCharsets.UTF_8.name());
-                    filedJsonResult = jsonResponseToService(urlService, token);
+                    filedJsonResult = sharedResourcesFunctions.jsonResponseToService(urlService, token);
                 }
 
                 // l'instanciation directe n'est pas possible car le type D n'est pas connu et hérite d'une classe abstraite
@@ -363,10 +258,11 @@ public class VariableAPI {
             return new SingleObjectResponse<>(new VariableDetailsDTO(variable)).getResponse();
 
         }else{
-            String token = getToken(resource.toString());
+            SharedResourcesFunctions sharedResourcesFunctions = SharedResourcesFunctions.getInstance(coreModule);
+            String token = sharedResourcesFunctions.getToken(resource.toString());
             String VariableURI = URLEncoder.encode(uri.toString(), StandardCharsets.UTF_8.name());
             // utilisation du service de recherche d'une variable en fonction de son uri dans la ressource partagée choisie
-            String stringSearchResponse = connectionToService(resource.toString() + "/core/variables/" + VariableURI, token);
+            String stringSearchResponse = sharedResourcesFunctions.connectionToService(resource.toString() + "/core/variables/" + VariableURI, token);
 
             // la variable n'existe pas dans la ressource
             if (stringSearchResponse == null) {
@@ -467,6 +363,7 @@ public class VariableAPI {
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
 
+        SharedResourcesFunctions sharedResourcesFunctions = SharedResourcesFunctions.getInstance(coreModule);
         List<VariableGetDTO> resultDTOList = new ArrayList<>();
         int totalVariables = 0;
 
@@ -503,7 +400,7 @@ public class VariableAPI {
             ).getList();
 
             // recherche de correspondance de l'uri de la ressource partagée avec le label de cette ressource pour l'afficher au survol du logo "shared"
-            List<SharedResourcesDTO> sharedResourcesDTOList = getAllSharedResources();
+            List<SharedResourcesDTO> sharedResourcesDTOList = sharedResourcesFunctions.getAllSharedResources();
 
             for (VariableGetDTO variableDto : listDTO) {
                 String variableResourceUri = variableDto.getOnShared();
@@ -530,8 +427,8 @@ public class VariableAPI {
             }
 
             // utilisation du service de recherche des variables sur la ressource partagée
-            String token = getToken(resource.toString());
-            String SearchResponse = connectionToService(url.toString(), token);
+            String token = sharedResourcesFunctions.getToken(resource.toString());
+            String SearchResponse = sharedResourcesFunctions.connectionToService(url.toString(), token);
             ObjectMapper mapperSearch = new ObjectMapper();
             JsonNode jsonResultSearch = mapperSearch.readTree(SearchResponse);
 
@@ -544,8 +441,8 @@ public class VariableAPI {
                 URI sharedVariableUri = variableDto.getUri();
                 VariableDAO dao = getDao();
                 VariableModel variable;
-                if (prefixeTranslation(sharedVariableUri) != null){
-                    variable = dao.get(prefixeTranslation(sharedVariableUri));
+                if (sharedResourcesFunctions.prefixeTranslation(sharedVariableUri) != null){
+                    variable = dao.get(sharedResourcesFunctions.prefixeTranslation(sharedVariableUri));
                 }else{
                     variable = dao.get(sharedVariableUri);
                 }
@@ -808,13 +705,15 @@ public class VariableAPI {
             @ApiParam(value = "List of variable URI", required = true) ImportUrisDTO dto
     ) throws Exception {
 
+        SharedResourcesFunctions sharedResourcesFunctions = SharedResourcesFunctions.getInstance(coreModule);
+
         List<URI> uris = dto.getUris();
         List<URI> createdUris = new ArrayList<>();
         List<VariableDetailsDTO> variablesList;
         URI resource = dto.getResource();
 
         // construction de l'adresse du service avec l'uri encodé de chaque variable
-        String token = getToken(resource.toString());
+        String token = sharedResourcesFunctions.getToken(resource.toString());
         String urlService = resource.toString() + "/core/variables/by_uris?";
         Boolean firstUri = true;
 
@@ -831,7 +730,7 @@ public class VariableAPI {
             }
         }
         // utilisation du service de recherche des variables en fonction de leur uri sur la ressource partagée
-        String stringResponse = connectionToService(urlService, token);
+        String stringResponse = sharedResourcesFunctions.connectionToService(urlService, token);
         JsonNode jsonResult;
         if (stringResponse != null) {
             ObjectMapper mapper = new ObjectMapper();
@@ -894,7 +793,7 @@ public class VariableAPI {
                     VariableDAO dao = getDao();
                     VariableModel model = variableDto.newModel();
 
-                    URI translatedUri = prefixeTranslation(model.getUri());
+                    URI translatedUri = sharedResourcesFunctions.prefixeTranslation(model.getUri());
                     if (translatedUri != null){
                         model.setUri(translatedUri);
                     }

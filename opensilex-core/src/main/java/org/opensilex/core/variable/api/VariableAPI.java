@@ -819,12 +819,22 @@ public class VariableAPI {
         Boolean firstUri = true;
 
         for (URI uri : uris) {
-            if (firstUri) {
-                urlService += "uris=" + URLEncoder.encode(uri.toString(), StandardCharsets.UTF_8.name());
-                firstUri = false;
-            } else {
-                urlService += "&uris=" + URLEncoder.encode(uri.toString(), StandardCharsets.UTF_8.name());
+            VariableDAO dao = getDao();
+            VariableModel variable = dao.get(uri);
+            if (variable == null) { // la variable à importer n'existe pas déjà en local
+                if (firstUri) {
+                    urlService += "uris=" + URLEncoder.encode(uri.toString(), StandardCharsets.UTF_8.name());
+                    firstUri = false;
+                } else {
+                    urlService += "&uris=" + URLEncoder.encode(uri.toString(), StandardCharsets.UTF_8.name());
+                }
             }
+//            if (firstUri) {
+//                urlService += "uris=" + URLEncoder.encode(uri.toString(), StandardCharsets.UTF_8.name());
+//                firstUri = false;
+//            } else {
+//                urlService += "&uris=" + URLEncoder.encode(uri.toString(), StandardCharsets.UTF_8.name());
+//            }
         }
         // utilisation du service de recherche des variables en fonction de leur uri sur la ressource partagée
         String stringResponse = connectionToService(urlService, token);
@@ -835,7 +845,6 @@ public class VariableAPI {
             SingleObjectResponse<List<VariableDetailsDTO>> getResponse = mapper.convertValue(jsonResult, new TypeReference<SingleObjectResponse<List<VariableDetailsDTO>>>() {});
             variablesList = getResponse.getResult();
 
-            // conversion en liste paginée et utilisation de la fonction VariableCreationDTO.fromDetailsDto(VariableDetailsDTO detailsDto)
             JsonNode result = jsonResult.get("result");
             int rank = 0;
             // boucle sur chaque variable renvoyée par le service

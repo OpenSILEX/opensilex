@@ -22,8 +22,7 @@
 
 import {Component, Prop, PropSync, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
-import {DevicesService} from "opensilex-core/index";
-import {DeviceGetDTO} from "opensilex-core/model/deviceGetDTO";
+import {DeviceGetDTO, DevicesService} from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 
 

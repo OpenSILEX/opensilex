@@ -52,16 +52,12 @@
 <script lang="ts">
 import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
-import {OntologyService} from "opensilex-core/index";
+import {OntologyService, RDFPropertyDTO, RDFPropertyGetDTO, ResourceTreeDTO} from "opensilex-core/index";
 import OWL from "../../ontologies/OWL";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import OntologyPropertyTreeView from "./OntologyPropertyTreeView.vue";
 import {Store} from "vuex";
-import {RDFPropertyDTO} from "opensilex-core/model/rDFPropertyDTO";
-import {RDFPropertyGetDTO} from "opensilex-core/model/rDFPropertyGetDTO";
 import OntologyPropertyForm from "./OntologyPropertyForm.vue";
-import {ResourceTreeDTO} from "opensilex-core/model/resourceTreeDTO";
 
 @Component
 export default class OntologyPropertyView extends Vue {

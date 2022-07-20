@@ -51,7 +51,7 @@ import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import {OntologyService} from "opensilex-core/api/ontology.service";
 import Oeso from "../../../ontologies/Oeso";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
-import {RDFTypeDTO} from "opensilex-core/model/rDFTypeDTO";
+import { RDFTypeDTO } from 'opensilex-core/index';
 
 @Component
 export default class ProvenanceAgentForm extends Vue {

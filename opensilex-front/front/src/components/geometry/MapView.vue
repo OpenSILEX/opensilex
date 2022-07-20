@@ -647,26 +647,14 @@ import Point from "ol/geom/Point";
 import { platformModifierKeyOnly } from "ol/events/condition";
 import * as olExt from "vuelayers/lib/ol-ext";
 let shpwrite = require("shp-write");
-// @ts-ignore
-import { ScientificObjectNodeDTO } from "opensilex-core/index";
-// @ts-ignore
+import {AreaGetDTO, EventGetDTO, ObjectUriResponse, ResourceTreeDTO, ScientificObjectDetailDTO, ScientificObjectNodeDTO } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 import { transformExtent } from "vuelayers/src/ol-ext/proj";
-// @ts-ignore
-import { AreaGetDTO } from "opensilex-core/model/areaGetDTO";
-// @ts-ignore
-import { EventGetDTO } from "opensilex-core/model/eventGetDTO";
-// @ts-ignore
-import { ObjectUriResponse } from "opensilex-core/model/objectUriResponse";
-// @ts-ignore
-import { ResourceTreeDTO } from "opensilex-core/model/resourceTreeDTO";
 import { defaults, ScaleLine } from "ol/control";
 import Oeso from "../../ontologies/Oeso";
 import * as turf from "@turf/turf";
 import { jsPDF } from "jspdf";
 import { saveAs } from "file-saver";
-// @ts-ignore
-import { ScientificObjectDetailDTO } from "opensilex-core/model/scientificObjectDetailDTO";
 
 @Component
 export default class MapView extends Vue {

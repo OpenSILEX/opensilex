@@ -255,7 +255,6 @@ import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import ModalForm from "../../common/forms/ModalForm.vue";
 import Tutorial from "../../common/views/Tutorial.vue";
-// @ts-ignore
 import {
   CharacteristicCreationDTO,
   EntityCreationDTO,
@@ -263,13 +262,10 @@ import {
   MethodCreationDTO,
   NamedResourceDTO,
   UnitCreationDTO,
+  VariableDatatypeDTO,
   VariablesService
 } from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
-// @ts-ignore
-import {VariableDatatypeDTO} from "opensilex-core/model/variableDatatypeDTO";
-// @ts-ignore
-import {VariableCreationDTO} from "opensilex-core/model/variableCreationDTO";
 import {DataService} from "opensilex-core/api/data.service";
 import SelectForm from "../../common/forms/SelectForm.vue";
 
@@ -320,7 +316,6 @@ export default class VariableForm extends Vue {
     sampleList: Array<any> = [];
 
     @Ref("validatorRef") readonly validatorRef!: any;
-    //@Ref("groupVariablesTable") readonly varTable!: any;
 
     created() {
         this.service = this.$opensilex.getService("opensilex.VariablesService");

@@ -30,9 +30,9 @@ import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
 import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import {InfrastructureFacilityGetDTO} from "opensilex-core/model/infrastructureFacilityGetDTO";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
 import FacilitiesView from "./FacilitiesView.vue";
+import { InfrastructureFacilityGetDTO } from 'opensilex-core/index';
 
 @Component
 export default class FacilityListView extends Vue {

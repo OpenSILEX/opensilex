@@ -42,12 +42,8 @@
 <script lang="ts">
 import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import {InfrastructureGetDTO, OrganizationsService} from "opensilex-core/index";
-import {SiteGetDTO} from "opensilex-core/model/siteGetDTO";
+import {InfrastructureGetDTO, NamedResourceDTOInfrastructureFacilityModel, OrganizationsService, SiteGetDTO} from "opensilex-core/index";
 import Org from "../../ontologies/Org";
-import {
-  NamedResourceDTOInfrastructureFacilityModel
-} from "opensilex-core/model/namedResourceDTOInfrastructureFacilityModel";
 import InfrastructureTree from "./InfrastructureTree.vue";
 
 @Component

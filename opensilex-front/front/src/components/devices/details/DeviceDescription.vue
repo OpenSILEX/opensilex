@@ -164,9 +164,8 @@
 import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
-import {DevicesService, DeviceGetDetailsDTO} from "opensilex-core/index";
+import {DevicesService, DeviceGetDetailsDTO, RDFObjectRelationDTO} from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
-import {RDFObjectRelationDTO} from "opensilex-core/model/rDFObjectRelationDTO";
 import {VueJsOntologyExtensionService, VueRDFTypeDTO} from "../../../lib";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import ModalForm from "../../common/forms/ModalForm.vue";

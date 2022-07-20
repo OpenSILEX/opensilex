@@ -158,7 +158,7 @@ import {
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import AnnotationList from "../annotations/list/AnnotationList.vue";
 import DocumentTabList from "../documents/DocumentTabList.vue";
-import { UserGetDTO } from "opensilex-security/model/userGetDTO";
+import { UserGetDTO } from 'opensilex-security/index';
 
 
 @Component

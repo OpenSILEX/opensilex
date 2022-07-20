@@ -67,7 +67,7 @@ import Vue from "vue";
 import moment from "moment";
 import {SpeciesService} from "opensilex-core/api/species.service";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
-import {SpeciesDTO} from "opensilex-core/model/speciesDTO";
+import { SpeciesDTO } from 'opensilex-core/index';
 
 @Component
 export default class AssociatedExperimentsList extends Vue {

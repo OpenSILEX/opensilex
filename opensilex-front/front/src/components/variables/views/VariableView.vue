@@ -60,13 +60,11 @@
 <script lang="ts">
 import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
-import {VariableDetailsDTO} from "opensilex-core/model/variableDetailsDTO";
 import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
-// @ts-ignore
 import {VariablesService} from "opensilex-core/api/variables.service";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import AnnotationList from "../../annotations/list/AnnotationList.vue";
+import { VariableDetailsDTO } from 'opensilex-core/index';
 
 @Component
 export default class VariableView extends Vue {

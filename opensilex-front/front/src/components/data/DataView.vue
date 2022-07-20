@@ -188,7 +188,6 @@
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import { ProvenanceGetDTO } from "opensilex-core/index";
-import {ScientificObjectNodeDTO} from "opensilex-core/model/scientificObjectNodeDTO";
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 
 @Component

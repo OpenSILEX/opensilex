@@ -121,17 +121,15 @@
 </template>
 
 <script lang="ts">
-import {Component, Prop, Ref, Watch} from "vue-property-decorator";
+import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
-import {InfrastructureFacilityGetDTO} from "opensilex-core/model/infrastructureFacilityGetDTO";
 import {BTable} from "bootstrap-vue";
-import { NamedResourceDTOInfrastructureFacilityModel } from "opensilex-core/model/namedResourceDTOInfrastructureFacilityModel";
-import {InfrastructureFacilityCreationDTO} from "opensilex-core/model/infrastructureFacilityCreationDTO";
 import FacilityModalForm from "./FacilityModalForm.vue";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
-import {NamedResourceDTOInfrastructureModel} from "opensilex-core/model/namedResourceDTOInfrastructureModel";
-import {NamedResourceDTOSiteModel} from "opensilex-core/model/namedResourceDTOSiteModel";
+import {InfrastructureFacilityCreationDTO,
+  InfrastructureFacilityGetDTO,
+  NamedResourceDTOInfrastructureFacilityModel, NamedResourceDTOInfrastructureModel, NamedResourceDTOSiteModel } from 'opensilex-core/index';
 
 @Component
 export default class FacilitiesView extends Vue {

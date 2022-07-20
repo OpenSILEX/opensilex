@@ -61,9 +61,9 @@
 <script lang="ts">
 import {Component, Prop, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
-import {SiteCreationDTO} from "opensilex-core/model/siteCreationDTO";
 import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
 import InfrastructureSelector from "../InfrastructureSelector.vue";
+import { SiteCreationDTO } from 'opensilex-core/index';
 
 @Component
 export default class SiteForm extends Vue {

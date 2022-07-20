@@ -178,11 +178,8 @@
 <script lang="ts">
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
-import { ProvenanceGetDTO, VariableDetailsDTO } from "opensilex-core/index";
-// @ts-ignore
+import { ProvenanceGetDTO, ScientificObjectNodeDTO } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
-import { ScientificObjectNodeDTO } from "opensilex-core/model/scientificObjectNodeDTO";
 
 @Component
 export default class ExperimentData extends Vue {

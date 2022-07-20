@@ -74,10 +74,9 @@
 <script lang="ts">
     import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
     import Vue from "vue";
-    // @ts-ignore
-    import {EventDetailsDTO} from "opensilex-core/model/eventDetailsDTO";
     import {VueJsOntologyExtensionService, VueRDFTypeDTO} from "../../../lib";
     import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
+    import { EventDetailsDTO } from 'opensilex-core/index';
 
     @Component
     export default class EventModalView extends Vue {

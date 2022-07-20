@@ -122,9 +122,9 @@
 <script lang="ts">
 import Component from "vue-class-component";
 import Vue from "vue";
-import {InfrastructureFacilityGetDTO} from "opensilex-core/model/infrastructureFacilityGetDTO";
 import {Prop, Ref, Watch} from "vue-property-decorator";
 import DTOConverter from "../../models/DTOConverter";
+import { InfrastructureFacilityGetDTO } from 'opensilex-core/index';
 
 @Component
 export default class FacilityDetail extends Vue {

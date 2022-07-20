@@ -15,7 +15,7 @@
 import {Component, Prop, PropSync} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
-import {ResourceDagDTO} from "opensilex-core/model/resourceDagDTO";
+import { ResourceDagDTO } from 'opensilex-core/index';
 
 @Component
 export default class InfrastructureSelector extends Vue {

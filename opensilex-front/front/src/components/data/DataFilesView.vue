@@ -183,9 +183,7 @@ import HttpResponse from "../../lib/HttpResponse";
 import { OpenSilexResponse } from "../../../../../opensilex-core/front/src/lib/HttpResponse";
 import DataFilesList from "./DataFilesList.vue";
 import DataFilesImagesList from "./DataFilesImagesList.vue";
-import {ResourceTreeDTO} from "opensilex-core/model/resourceTreeDTO";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
-import {OntologyService} from "opensilex-core/api/ontology.service";
 import {DataService} from "opensilex-core/api/data.service";
 
 @Component

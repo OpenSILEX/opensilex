@@ -209,10 +209,9 @@ import { Component, Ref, Prop } from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
 // @ts-ignore
-import { GermplasmService, ExperimentGetListDTO, ExperimentsService, SpeciesService, SpeciesDTO } from "opensilex-core/index";
+import { GermplasmService, ExperimentGetListDTO, ExperimentsService, SpeciesService, SpeciesDTO, GermplasmSearchFilter } from "opensilex-core/index";
 
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
-import {GermplasmSearchFilter} from "opensilex-core/model/germplasmSearchFilter";
 
 @Component
 export default class GermplasmList extends Vue {

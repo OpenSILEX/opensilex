@@ -146,14 +146,10 @@
 import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
-import {InfrastructureGetDTO} from "opensilex-core/index";
-import {InfrastructureUpdateDTO} from "opensilex-core/model/infrastructureUpdateDTO";
+import {InfrastructureGetDTO, InfrastructureUpdateDTO, ResourceDagDTO, SiteGetDTO, SiteUpdateDTO} from "opensilex-core/index";
 import OpenSilexVuePlugin, {GenericTreeOption, TreeOption} from "../../models/OpenSilexVuePlugin";
-import {SiteGetDTO} from "opensilex-core/model/siteGetDTO";
 import ModalForm from "../common/forms/ModalForm.vue";
-import {SiteUpdateDTO} from "opensilex-core/model/siteUpdateDTO";
 import {DropdownButtonOption} from "../common/dropdown/Dropdown.vue";
-import {ResourceDagDTO} from "opensilex-core/model/resourceDagDTO";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
 import TreeView from "../common/views/TreeView.vue";
 import DTOConverter from "../../models/DTOConverter";

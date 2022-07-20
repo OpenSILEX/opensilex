@@ -19,8 +19,8 @@
 import {Component} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
-import {SiteGetDTO} from "opensilex-core/model/siteGetDTO";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
+import { SiteGetDTO } from 'opensilex-core/index';
 
 @Component
 export default class SiteView extends Vue {

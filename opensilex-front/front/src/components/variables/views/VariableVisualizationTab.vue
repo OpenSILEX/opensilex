@@ -65,19 +65,14 @@ import {Component, Ref, Prop} from "vue-property-decorator";
 import Vue from "vue";
 import moment from "moment-timezone";
 import Highcharts from "highcharts";
-// @ts-ignore
 import {
   DevicesService,
   DataGetDTO,
   EventsService,
   EventGetDTO,
 } from "opensilex-core/index";
-// @ts-ignore
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
-import VariableForm from "../form/VariableForm.vue";
-import {VariableDetailsDTO} from "opensilex-core/model/variableDetailsDTO";
 import {DataService} from "opensilex-core/api/data.service";
-import {DeviceGetDTO} from "opensilex-core/model/deviceGetDTO";
 
 @Component
 export default class VariableVisualizationTab extends Vue {

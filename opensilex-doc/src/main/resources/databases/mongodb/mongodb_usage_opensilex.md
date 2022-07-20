@@ -73,8 +73,10 @@ We can define the following compensation :
 - https://microservices.io/patterns/data/saga.html
 - https://stackoverflow.com/questions/171876/how-do-two-phase-commits-prevent-last-second-failure
 - https://developer.ibm.com/articles/use-saga-to-solve-distributed-transaction-management-problems-in-a-microservices-architecture/
-
+- https://www.baeldung.com/cs/saga-pattern-microservices
 
 # Architecture
 
+## MongoDB Insertion
 
+## Distributed transaction handling

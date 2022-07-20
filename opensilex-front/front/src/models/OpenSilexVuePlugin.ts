@@ -28,7 +28,7 @@ import { UploadFileBody } from './UploadFileBody';
 import { User } from './User';
 import {ResourceDagDTO} from "opensilex-core/model/resourceDagDTO";
 import {ServiceBinder} from "../services/ServiceBinder";
-import { OntologyService } from 'opensilex-core/index';
+import { OntologyService, VariableDatatypeDTO, VariablesService } from 'opensilex-core/index';
 import {data} from "browserslist";
 
 declare var $cookies: VueCookies;
@@ -1158,6 +1158,39 @@ export default class OpenSilexVuePlugin {
                 .catch(reject);
         });
     }
+
+    public variableDatatypes: Array<VariableDatatypeDTO> = [];
+
+
+    /**
+     * It takes a URI as input and returns the label of the variable datatype that corresponds to the URI
+     * @param {string} uri - the uri of the variable datatype
+     * @returns The label of the variable datatype.
+     */
+    public getVariableDatatypeLabel(uri: string): string {
+        if (!uri) {
+          return undefined;
+        }
+        let label = this.$i18n.t(this.variableDatatypes.find(elem => elem.uri === uri).name).toString();
+        return label.charAt(0).toUpperCase() + label.slice(1);
+    }
+    
+    /**
+     * It loads the variable data types from the server and stores them in the variableDatatypes variable
+     * @returns A promise that will resolve when the variable datatypes have been loaded.
+     */
+    public loadVariableDataTypes() {
+        return new Promise((resolve, reject) => {
+            this.getService<VariablesService>("opensilex.VariablesService")
+                .getDatatypes()
+                .then((http) => {
+                    this.variableDatatypes = http.response.result;
+                    resolve(this.variableDatatypes);
+                })
+                .catch(reject);
+        });
+    }
+
     public namespaces = {};
 
     /**

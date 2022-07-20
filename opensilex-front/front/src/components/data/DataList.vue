@@ -58,7 +58,7 @@
           <opensilex-DetailButton
               v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
               @click="showDataProvenanceDetailsModal(data.item)"
-              label="DataView.details"
+              label="DataView.list.details"
               :small="true"
           ></opensilex-DetailButton>
         </b-button-group>

@@ -371,7 +371,7 @@ export default class GenerateDataTemplateFrom extends Vue {
             } 
             line3.push(
               this.$t("DataHelp.column-type-help").toString() +
-              this.getDataTypeLabel(element.datatype)
+              this.$opensilex.getVariableDatatypeLabel(element.datatype)
             );
 
             //column raw_data
@@ -381,7 +381,7 @@ export default class GenerateDataTemplateFrom extends Vue {
               line3.push(
                 this.$t("DataHelp.column-type-help").toString() +
                 this.$t("DataTemplateForm.type-list") +
-                this.getDataTypeLabel(element.datatype));
+                this.$opensilex.getVariableDatatypeLabel(element.datatype));
             }
           }
           arrData = [line1, line2, line3];
@@ -410,6 +410,7 @@ export default class GenerateDataTemplateFrom extends Vue {
       label: dto.name,
     };
   }
+
   getDataTypeLabel(dataTypeUri: string): string {
     if (!dataTypeUri) {
       return undefined;
@@ -422,9 +423,7 @@ export default class GenerateDataTemplateFrom extends Vue {
     if (this.selectedColumns.includes(this.targetColumn) || this.selectedColumns.includes(this.deviceColumn)) {
       this.validSelection = true;
     } else {
-      if(this.experiment != null) {
-        this.validSelection = false;
-      }
+      this.validSelection = false;
     }
   }
 

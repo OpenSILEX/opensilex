@@ -604,6 +604,7 @@ $opensilex.loadModules([
                   $opensilex.loadVersionInfo(),
                   $opensilex.loadFactorCategories(),
                   $opensilex.loadDataTypes(),
+                  $opensilex.loadVariableDataTypes(),
                   $opensilex.loadNameSpaces(),
                   $opensilex.loadObjectTypes(),
                   $opensilex.loadComponentModules(modulesToLoad)

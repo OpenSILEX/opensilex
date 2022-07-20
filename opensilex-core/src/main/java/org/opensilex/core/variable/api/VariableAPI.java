@@ -288,7 +288,6 @@ public class VariableAPI {
     @GET
     @Path("datatypes")
     @ApiOperation(value = "Get variables datatypes")
-    @ApiProtected
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Return data types", response = VariableDatatypeDTO.class, responseContainer = "List")
     })

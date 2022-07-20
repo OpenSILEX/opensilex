@@ -18,7 +18,7 @@
 <script lang="ts">
     import {Component, Prop} from "vue-property-decorator";
     import Vue from "vue";
-    import {TargetPositionGetDTO} from "opensilex-core/model/targetPositionGetDTO";
+    import { TargetPositionGetDTO } from 'opensilex-core/index';
 
     @Component
     export default class PositionsView extends Vue {

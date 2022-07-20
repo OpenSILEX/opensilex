@@ -21,15 +21,16 @@
 import {Component, Prop, PropSync} from "vue-property-decorator";
 import Vue from "vue";
 import {
+  ScientificObjectNodeDTO,
     ScientificObjectsService
 } from "opensilex-core/index";
-import {ScientificObjectNodeDTO} from "opensilex-core/model/scientificObjectNodeDTO";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 
 @Component
 export default class ScientificObjectSelector extends Vue {
 
-    $opensilex: any;
+    $opensilex: OpenSilexVuePlugin;
     $service: ScientificObjectsService;
     $store: any;
 

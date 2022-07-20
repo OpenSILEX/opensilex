@@ -24,8 +24,7 @@
     import {Component, Prop} from "vue-property-decorator";
     import Vue from "vue";
     import PositionsView from "../../positions/view/PositionsView.vue";
-    // @ts-ignore
-    import {MoveDetailsDTO} from "opensilex-core/model/moveDetailsDTO";
+    import { MoveDetailsDTO } from 'opensilex-core/index';
 
     @Component
     export default class MoveView extends Vue {

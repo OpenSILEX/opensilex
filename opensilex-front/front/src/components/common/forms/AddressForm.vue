@@ -68,9 +68,9 @@
 <script lang="ts">
 import {Component, PropSync, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import {FacilityAddressDTO} from "opensilex-core/model/facilityAddressDTO";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import IGeocodingService, {GeocodingAddressResult} from "../../../services/geocoding/IGeocodingService";
+import { FacilityAddressDTO } from 'opensilex-core/index';
 
 const AUTOCOMPLETE_TIMEOUT_MS: number = 250;
 

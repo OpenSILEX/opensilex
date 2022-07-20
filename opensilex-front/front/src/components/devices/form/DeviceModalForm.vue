@@ -19,11 +19,10 @@ import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import ModalForm from "../../common/forms/ModalForm.vue";
-import {DeviceCreationDTO} from "opensilex-core/model/deviceCreationDTO";
 import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
-import {DeviceGetDetailsDTO} from "opensilex-core/model/deviceGetDetailsDTO";
 import DeviceForm from "./DeviceForm.vue";
 import {DevicesService} from "opensilex-core/api/devices.service";
+import {DeviceCreationDTO, DeviceGetDetailsDTO } from 'opensilex-core/index';
 
 @Component
 export default class DeviceModalForm extends Vue {

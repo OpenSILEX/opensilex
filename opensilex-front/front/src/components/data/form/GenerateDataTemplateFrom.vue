@@ -79,9 +79,7 @@
 <script lang="ts">
 import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
 import {VariableDatatypeDTO, VariableDetailsDTO, VariablesService} from "opensilex-core/index";
-// @ts-ignore
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 
 @Component

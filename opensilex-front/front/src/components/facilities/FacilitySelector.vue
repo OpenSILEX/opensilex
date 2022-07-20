@@ -22,8 +22,8 @@
     import { Component, Prop, PropSync } from "vue-property-decorator";
     import Vue from "vue";
     import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
-    import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
     import {OrganizationsService} from "opensilex-core/api/organizations.service";
+    import { NamedResourceDTO } from 'opensilex-core/index';
 
     @Component
     export default class FacilitySelector extends Vue {

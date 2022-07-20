@@ -100,11 +100,9 @@
 <script lang="ts">
 import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
-import {DevicesService} from "opensilex-core/index";
+import {DeviceCreationDTO, DevicesService} from "opensilex-core/index";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import OntologyRelationsForm from "../../ontology/OntologyRelationsForm.vue";
-import {DeviceCreationDTO} from "opensilex-core/model/deviceCreationDTO";
 import AttributesTable from "../../common/forms/AttributesTable.vue";
 
 @Component

@@ -82,7 +82,7 @@ import {Component, Prop, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
 import {OntologyService} from "opensilex-core/api/ontology.service";
 import {VueJsOntologyExtensionService} from "../../lib";
-import {InfrastructureFacilityCreationDTO} from "opensilex-core/model/infrastructureFacilityCreationDTO";
+import { InfrastructureFacilityCreationDTO } from 'opensilex-core/index';
 
 @Component
 export default class FacilityForm extends Vue {

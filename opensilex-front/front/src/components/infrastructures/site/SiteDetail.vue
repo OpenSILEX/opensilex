@@ -105,14 +105,14 @@
 import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
-import {SiteUpdateDTO} from "opensilex-core/model/siteUpdateDTO";
-import {SiteGetDTO} from "opensilex-core/model/siteGetDTO";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
 import DTOConverter from "../../../models/DTOConverter";
+import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
+import { SiteGetDTO, SiteUpdateDTO } from 'opensilex-core/index';
 
 @Component
 export default class SiteDetail extends Vue {
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
   organizationService: OrganizationsService;
 
   @Prop()

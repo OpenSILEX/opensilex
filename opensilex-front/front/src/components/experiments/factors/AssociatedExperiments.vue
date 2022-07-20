@@ -66,10 +66,9 @@ import copy from "copy-to-clipboard";
 import VueI18n from "vue-i18n";
 import moment from "moment";
 // @ts-ignore
-import { SpeciesDTO, SpeciesService } from "opensilex-core/index";
+import {ExperimentGetDTO, SpeciesDTO, SpeciesService } from "opensilex-core/index";
 // @ts-ignore
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
-import {ExperimentGetDTO} from "opensilex-core/model/experimentGetDTO";
 
 export class ExperimentState {
   code: String;

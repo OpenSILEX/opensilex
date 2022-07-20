@@ -26,10 +26,10 @@
 
 import {Component, Prop} from "vue-property-decorator";
 import Vue from "vue";
-import {RDFObjectRelationDTO} from "opensilex-core/model/rDFObjectRelationDTO";
 import {VueJsOntologyExtensionService, VueRDFTypeDTO, VueRDFTypePropertyDTO} from "../../lib";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {MultiValuedRDFObjectRelation} from "./models/MultiValuedRDFObjectRelation";
+import { RDFObjectRelationDTO } from 'opensilex-core/index';
 
 @Component
 /**

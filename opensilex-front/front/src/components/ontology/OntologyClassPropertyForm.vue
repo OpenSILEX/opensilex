@@ -55,8 +55,7 @@ import Vue from "vue";
 import OWL from "../../ontologies/OWL";
 // @ts-ignore
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
-import {VueRDFTypePropertyDTO} from "../../lib";
-import {ResourceTreeDTO} from "opensilex-core/model/resourceTreeDTO";
+import { ResourceTreeDTO } from 'opensilex-core/index';
 
 @Component
 export default class OntologyClassPropertyForm extends Vue {

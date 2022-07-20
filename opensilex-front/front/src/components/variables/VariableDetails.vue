@@ -125,15 +125,11 @@ import Vue from "vue";
 import ExternalReferencesModalForm from "../common/external-references/ExternalReferencesModalForm.vue";
 import VariablesView from "./VariablesView.vue";
 import VariableCreate from "./form/VariableCreate.vue";
-// @ts-ignore
 import {VariablesService, VariableDetailsDTO} from "opensilex-core/index";
 import VariableForm from "./form/VariableForm.vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {DataService} from "opensilex-core/api/data.service";
-import {ProjectsService} from "opensilex-core/api/projects.service";
-import {SpeciesService} from "opensilex-core/api/species.service";
-import {SpeciesDTO} from "opensilex-core/model/speciesDTO";
 
 @Component
 export default class VariableDetails extends Vue {

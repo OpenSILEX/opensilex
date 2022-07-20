@@ -118,8 +118,7 @@ import { User } from "../../models/User";
 import { TokenGetDTO, AuthenticationService } from "opensilex-security/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse";
 import { FrontConfigDTO } from "../../lib";
-import { SystemService } from "opensilex-core/index";
-import {VersionInfoDTO} from "opensilex-core/model/versionInfoDTO";
+import { SystemService, VersionInfoDTO } from "opensilex-core/index";
 
 @Component
 export default class DefaultLoginComponent extends Vue { 

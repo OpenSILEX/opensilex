@@ -26,21 +26,13 @@
     import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
     import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
     import {EventsService} from "opensilex-core/api/events.service";
-    // @ts-ignore
-    import {EventCreationDTO} from "opensilex-core/model/eventCreationDTO";
-    // @ts-ignore
-    import {ObjectUriResponse} from "opensilex-core/model/objectUriResponse";
 
     import PositionsView from "../../positions/view/PositionsView.vue";
-    // @ts-ignore
-    import {MoveCreationDTO} from "opensilex-core/model/moveCreationDTO";
-    // @ts-ignore
-    import {PositionCreationDTO} from "opensilex-core/model/positionCreationDTO";
     import MoveForm from "./MoveForm.vue";
-    import {VueJsOntologyExtensionService, VueRDFTypeDTO} from "../../../lib";
+    import {VueJsOntologyExtensionService} from "../../../lib";
     import moment from "moment-timezone";
-    import {EventGetDTO} from "opensilex-core/model/eventGetDTO";
     import EventForm from "./EventForm.vue";
+    import { EventCreationDTO, MoveCreationDTO, ObjectUriResponse, PositionCreationDTO } from 'opensilex-core/index';
 
     @Component
     export default class EventModalForm extends Vue {

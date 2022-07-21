@@ -842,6 +842,8 @@ test:alexia:deploy:
       when: on_success
   needs:
     - alexia:build
+  tags:
+    - stable
 
 ###################################
 ##  GUILHEM-TEST-SNAPSHOT-DEPLOYMENT

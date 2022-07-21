@@ -38,8 +38,8 @@
       @onCreate="germplasmList.refresh()"
       @onUpdate="germplasmList.refresh()"
     ></opensilex-ModalForm>
-    <b-modal ref="helpModal" size="xl" hide-header ok-only>
-      <opensilex-GermplasmHelp></opensilex-GermplasmHelp>
+    <b-modal ref="helpModal" size="xl" hide-header hide-footer>
+      <opensilex-GermplasmHelp @hideBtnIsClicked="hide()"></opensilex-GermplasmHelp>
     </b-modal>
   </div>
 </template>
@@ -116,7 +116,9 @@ export default class GermplasmView extends Vue {
       .catch(this.$opensilex.errorHandler);
   }
 
-
+  hide() {
+    this.helpModal.hide();
+  }
 }
 </script>
 

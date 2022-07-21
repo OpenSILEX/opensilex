@@ -4,23 +4,6 @@
     size="xl"
     :static="true"
   >
-  
-    <template v-slot:modal-footer>
-      <button
-        type="button"
-        class="btn btn-secondary"
-        v-on:click="hide(false)"
-      >{{ $t('component.common.close') }}</button>
-
-      <button
-        type="button"
-        class="btn greenThemeColor"
-        v-on:click="importCSV()"
-        :disabled="!csvFile || !!validationErrors"
-        :prevent="importCSV"
-      >{{ $t('component.common.ok') }}</button> 
-    </template>
-
     <template class="mt-1" v-slot:modal-header>
       <b-row class="mt-1" style="width: 100%">
         <b-col cols="11">
@@ -140,6 +123,21 @@
         </div>
       </ValidationObserver>
     </div>
+    <template v-slot:modal-footer>
+      <button
+        type="button"
+        class="btn btn-secondary"
+        v-on:click="hide(false)"
+      >{{ $t('component.common.close') }}</button>
+
+      <button
+        type="button"
+        class="btn greenThemeColor"
+        v-on:click="importCSV()"
+        :disabled="!csvFile || !!validationErrors"
+        :prevent="importCSV"
+      >{{ $t('component.common.ok') }}</button> 
+    </template>
   </b-modal>
 </template>
 

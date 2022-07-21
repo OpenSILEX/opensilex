@@ -7,7 +7,16 @@
         @hide="requiredField = false"
         @show="requiredField = true"
     >
-        <template v-slot:modal-ok>{{ $t("component.common.close") }}</template>
+
+        <template v-slot:modal-footer>
+      <button
+        type="button"
+        class="btn greenThemeColor"
+        v-on:click="hide(false)"
+      >{{ $t('component.common.close') }}</button>
+        </template>
+
+        <!-- <template v-slot:modal-ok>{{ $t("component.common.close") }}</template> -->
         <template v-slot:modal-title>{{ $t("ScientificObjectCSVTemplateGenerator.title") }}</template>
 
         <div>
@@ -29,7 +38,7 @@
                     </b-col>
                 </b-row>
 
-                <b-button @click="csvExport" variant="outline-primary">
+                <b-button @click="csvExport" class="greenThemeColor">
                     {{ $t("OntologyCsvImporter.downloadTemplate") }}
                 </b-button>
             </ValidationObserver>
@@ -74,6 +83,10 @@ export default class GenerateEventTemplate extends Vue {
 
     show() {
         this.soModalRef.show();
+    }
+
+    hide() {
+        this.soModalRef.hide();
     }
 
     validateTemplate() {

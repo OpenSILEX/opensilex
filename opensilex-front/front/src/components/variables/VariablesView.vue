@@ -23,9 +23,9 @@
                             class="helpButton"
                         ></opensilex-HelpButton>
                         
-                        <b-modal ref="helpModal" size="xl" hide-header ok-only>
-                            <opensilex-VariableHelp v-if="elementType != 'VariableGroup'"></opensilex-VariableHelp>
-                            <opensilex-GroupVariablesHelp v-else></opensilex-GroupVariablesHelp>
+                        <b-modal ref="helpModal" size="xl" hide-header hide-footer>
+                            <opensilex-VariableHelp v-if="elementType != 'VariableGroup'" @hideBtnIsClicked="hide()"></opensilex-VariableHelp>
+                            <opensilex-GroupVariablesHelp v-else @hideBtnIsClicked="hide()"></opensilex-GroupVariablesHelp>
                         </b-modal>
 
                         <opensilex-CreateButton
@@ -518,6 +518,9 @@ export default class VariablesView extends Vue {
         }).catch(this.$opensilex.errorHandler);
     }
 
+    hide() {
+        this.helpModal.hide();
+    }
 }
 </script>
 

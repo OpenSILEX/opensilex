@@ -30,7 +30,7 @@
 
     <div class="card">
       <div ref="header" class="card-header" v-if="chartOptions.length">
-        <opensilex-HelpButton :label="helpText" @click="helpModal.show()"></opensilex-HelpButton>
+        <opensilex-HelpButton :label="helpText" @click="helpModal.show()" class="dataVisuGraphicHelpButton"></opensilex-HelpButton>
 
         <div class="card-header-right mr-4">
           <b-dropdown right size="lg" variant="link" toggle-class="text-decoration-none" no-caret>
@@ -122,8 +122,8 @@
       </b-list-group>
     </b-card>
 
-    <b-modal size="lg" ref="helpModal" scrollable centered>
-      <opensilex-DataVisuHelp></opensilex-DataVisuHelp>
+    <b-modal size="lg" ref="helpModal" scrollable centered hide-footer>
+      <opensilex-DataVisuHelp @hideBtnIsClicked="hide()"></opensilex-DataVisuHelp>
     </b-modal>
   </div>
 </template>
@@ -810,12 +810,27 @@ export default class DataVisuGraphic extends Vue {
       });
     }
   }
+  hide() {
+    this.helpModal.hide();
+  }
 }
 </script>
 
 <style scoped lang="scss">
 .card-header {
   height: 60px;
+}
+
+.dataVisuGraphicHelpButton {
+  color: #00A38D;
+  border:none;
+  margin-bottom: 5px;
+}
+
+.dataVisuGraphicHelpButton:hover{
+  background-color: #00A38D;
+  border-color: #00A38D;
+  color: #f1f1f1
 }
 
 .contextMenu {

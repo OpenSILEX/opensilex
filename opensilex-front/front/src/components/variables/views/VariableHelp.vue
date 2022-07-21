@@ -1,9 +1,20 @@
 <template>
-    <div v-if="lang === 'fr'">
-        <VariableHelpFR></VariableHelpFR>
-    </div>
-    <div v-else>
-        <VariableHelpEN></VariableHelpEN>
+    <div>
+        <div v-if="lang === 'fr'">
+            <VariableHelpFR></VariableHelpFR>
+        </div>
+        <div v-else>
+            <VariableHelpEN></VariableHelpEN>
+        </div>
+        <div class="VariableHelpOkButton">
+            <button
+                type="button"
+                class="btn greenThemeColor"
+                v-on:click="hideBtnClick"
+            >
+                {{ $t('component.common.ok') }}
+            </button>
+        </div>
     </div>
 </template>
 
@@ -37,9 +48,17 @@
             return this.$store.state.credentials;
         }
         source = new Date().toLocaleTimeString();
+
+        hideBtnClick(){
+            this.$emit("hideBtnIsClicked");
+        }
     }
 </script>
 
 <style scoped lang="scss">
+.VariableHelpOkButton{
+    float: right;
+    height: 30px;
+}
 </style>
 

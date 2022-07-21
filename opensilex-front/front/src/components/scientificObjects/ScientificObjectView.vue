@@ -317,6 +317,6 @@ export default class ScientificObjectView extends Vue {
 .createButton{
   margin-bottom: 10px;
   margin-top: -15px;
-  margin-right: 5px;
+
 }
 </style>

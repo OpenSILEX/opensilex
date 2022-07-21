@@ -1,9 +1,20 @@
 <template>
-  <div v-if="lang === 'fr'">
-    <GermplasmHelpFR></GermplasmHelpFR>
-  </div>
-  <div v-else>
-    <GermplasmHelpEN></GermplasmHelpEN> 
+  <div>
+    <div v-if="lang === 'fr'">
+      <GermplasmHelpFR></GermplasmHelpFR>
+    </div>
+    <div v-else>
+      <GermplasmHelpEN></GermplasmHelpEN> 
+    </div>
+    <div class="GermplasmHelpOkButton">
+      <button
+        type="button"
+        class="btn greenThemeColor"
+        v-on:click="hideBtnClick"
+      >
+        {{ $t('component.common.ok') }}
+      </button>
+    </div>
   </div>
 </template>
 
@@ -37,9 +48,18 @@ export default class GermplasmHelp extends Vue {
     return this.$store.state.credentials;
   }
   source = new Date().toLocaleTimeString();
+
+  hideBtnClick(){
+    this.$emit("hideBtnIsClicked");
+  }
 }
 </script>
 
 <style scoped lang="scss">
+
+.GermplasmHelpOkButton {
+  float: right;
+  height: 30px;
+}
 </style>
 

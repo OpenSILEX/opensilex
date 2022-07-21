@@ -7,12 +7,11 @@
         @hide="requiredField = false"
         @show="requiredField = true"
     >
-        <template v-slot:modal-ok>{{ $t("component.common.close") }}</template>
+
         <template v-slot:modal-title>{{ $t("ScientificObjectCSVTemplateGenerator.title") }}</template>
 
         <div>
             <ValidationObserver ref="validatorRefTemplate">
-
                 <b-row>
                     <b-col cols="8">
                         <opensilex-TypeForm
@@ -34,6 +33,17 @@
                 </b-button>
             </ValidationObserver>
         </div>
+
+        <template v-slot:modal-footer>
+            <button
+                type="button"
+                class="btn greenThemeColor"
+                v-on:click="hide(false)"
+            >
+                {{ $t('component.common.close') }}
+            </button>
+        </template>
+
     </b-modal>
 </template>
 
@@ -80,6 +90,9 @@ export default class DeviceCsvTemplateGenerator extends Vue {
 
     show() {
         this.soModalRef.show();
+    }
+    hide() {
+        this.soModalRef.hide();
     }
 
     validateTemplate() {

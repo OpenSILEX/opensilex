@@ -17,8 +17,8 @@
       ></opensilex-CreateButton>
     </opensilex-PageActions>
   
-    <b-modal ref="helpModal" size="xl" hide-header ok-only>
-      <opensilex-FactorsHelp></opensilex-FactorsHelp>
+    <b-modal ref="helpModal" size="xl" hide-header hide-footer>
+      <opensilex-FactorsHelp @hideBtnIsClicked="hide()"></opensilex-FactorsHelp>
     </b-modal>
 
     <opensilex-ModalForm
@@ -228,6 +228,9 @@ export default class ExperimentFactors extends Vue {
 
   successMessage(factor) {
     return this.$i18n.t("component.factor.label") + " " + factor.name;
+  }
+  hide() {
+    this.helpModal.hide();
   }
 }
 </script>

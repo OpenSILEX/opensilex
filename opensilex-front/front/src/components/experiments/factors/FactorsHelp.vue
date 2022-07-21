@@ -1,10 +1,19 @@
 <template>
+<div>
   <div v-if="lang === 'fr'">
     <FactorHelpFR></FactorHelpFR>
   </div>
   <div v-else>
     <FactorHelpEN></FactorHelpEN> 
   </div>
+    <button
+      type="button"
+      class="btn greenThemeColor dataVisuHelpOkButton"
+      v-on:click="hideBtnClick"
+    >
+      {{ $t('component.common.ok') }}
+    </button>
+</div>
 </template>
 
 <script lang="ts">
@@ -36,9 +45,17 @@ export default class FactorsHelp extends Vue {
     return this.$store.state.credentials;
   }
   source = new Date().toLocaleTimeString();
+
+   hideBtnClick(){
+    this.$emit("hideBtnIsClicked");
+  }
 }
 </script>
 
 <style scoped lang="scss">
+.dataVisuHelpOkButton {
+  float:right;
+  height: 35px;
+}
 </style>
 

@@ -1,10 +1,21 @@
 <template> 
-      <div v-if="lang === 'fr'"  >
-        <DataVisuHelpFR></DataVisuHelpFR>
-      </div>
-      <div v-else >
-        <DataVisuHelpEN></DataVisuHelpEN>
-      </div>
+  <div>
+    <div v-if="lang === 'fr'"  >
+      <DataVisuHelpFR></DataVisuHelpFR>
+    </div>
+    <div v-else >
+      <DataVisuHelpEN></DataVisuHelpEN>
+    </div>
+    <div class="dataVisuHelpOkButton">
+    <button
+      type="button"
+      class="btn greenThemeColor"
+      v-on:click="hideBtnClick"
+    >
+      {{ $t('component.common.ok') }}
+    </button>
+    </div>
+  </div>
      
 </template>
 
@@ -38,9 +49,18 @@ export default class DataVisuHelp extends Vue {
     return this.$store.state.credentials;
   }
   source = new Date().toLocaleTimeString();
+
+  hideBtnClick(){
+    this.$emit("hideBtnIsClicked");
+  }
 }
 </script>
 
 <style scoped lang="scss">
+.dataVisuHelpOkButton {
+  float: right;
+  height: 50px;
+}
+
 </style>
 

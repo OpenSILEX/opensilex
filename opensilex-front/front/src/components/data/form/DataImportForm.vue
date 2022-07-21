@@ -81,9 +81,8 @@
           </b-col>
           <b-col cols="2">
             <opensilex-Button
-              variant="secondary"
               @click="templateForm.show()"
-              class="mr-2"
+              class="mr-2 greenThemeColor"
               :small="false"
               icon
               label="DataView.buttons.generate-template"

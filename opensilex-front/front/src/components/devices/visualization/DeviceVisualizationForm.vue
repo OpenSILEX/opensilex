@@ -167,7 +167,7 @@ export default class DeviceVisualizationForm extends Vue {
     this.eventsCountValue = eventsCount;
   }
 
-    data(){
+  data(){
     return {
       SearchFiltersToggle : true,
     }
@@ -249,7 +249,7 @@ export default class DeviceVisualizationForm extends Vue {
     return this.selectedProvenance;
   }
 
-    searchFiltersPannel() {
+  searchFiltersPannel() {
     return  this.$t("searchfilter.label")
   }
 }

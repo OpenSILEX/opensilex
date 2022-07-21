@@ -344,7 +344,7 @@ export default class VisuGraphic extends Vue {
             title: {
               text: this.variables[1].name
             },
-            height: "80%",
+            height: "80%", // 20% left for flag events
             lineWidth: 2,
             resize: {
               enabled: true

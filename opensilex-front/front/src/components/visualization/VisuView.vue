@@ -411,10 +411,10 @@ export default class VisuView extends Vue {
         dateWithoutUTC
       );
       let offset = moment.parseZone(element.date).format("Z");
-      toAdd = {
+      toAdd = { // one highchart point attributs
         provenanceUri: element.provenance.uri,
         x: dateWithoutUTC,
-        y: element.value,
+        y: element.value,     
         dataUri: element.uri,
         objectUri: concernedItem,
         offset: offset,

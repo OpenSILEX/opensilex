@@ -507,6 +507,16 @@ export default class ExperimentDataVisuView extends Vue {
   min-width: 100%;
   max-width: 100vw;
 }
+.visualizeBtn {
+ float:right;
+ border:none;
+ background: #00A28C;
+}
+.visualizeBtn:disabled,
+.visualizeBtn[disabled]{
+  background-color: #666666;
+  color: #F1F1F1;
+}
 </style>
 
 <i18n>

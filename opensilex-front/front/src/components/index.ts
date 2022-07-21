@@ -344,6 +344,8 @@ import ExperimentForm2 from './experiments/form/ExperimentForm2.vue';
 components["opensilex-ExperimentForm2"] = ExperimentForm2;
 import ExperimentDataVisuForm from './experiments/form/ExperimentDataVisuForm.vue';
 components["opensilex-ExperimentDataVisuForm"] = ExperimentDataVisuForm;
+import ExperimentDataVisualisationForm from './experiments/form/ExperimentDataVisualisationForm.vue';
+components["opensilex-ExperimentDataVisualisationForm"] = ExperimentDataVisualisationForm;
 import ExperimentList from './experiments/ExperimentList.vue';
 components["opensilex-ExperimentList"] = ExperimentList;
 import ExperimentListView from './experiments/ExperimentListView.vue';
@@ -358,12 +360,16 @@ import ExperimentData from './experiments/views/ExperimentData.vue';
 components["opensilex-ExperimentData"] = ExperimentData;
 import ExperimentDataVisuView from './experiments/views/ExperimentDataVisuView.vue';
 components["opensilex-ExperimentDataVisuView"] = ExperimentDataVisuView;
+import ExperimentDataVisualisationView from './experiments/views/ExperimentDataVisualisationView.vue';
+components["opensilex-ExperimentDataVisualisationView"] = ExperimentDataVisualisationView;
 import ExperimentModalList from './experiments/ExperimentModalList.vue';
 components["opensilex-ExperimentModalList"] = ExperimentModalList;
 import ExperimentSelector from './experiments/ExperimentSelector.vue';
 components["opensilex-ExperimentSelector"] = ExperimentSelector;
 import AssociatedExperimentsList from './experiments/AssociatedExperimentsList.vue';
 components["opensilex-AssociatedExperimentsList"] = AssociatedExperimentsList;
+import ExperimentDataVisualisation from './experiments/ExperimentDataVisualisation.vue';
+components["opensilex-ExperimentDataVisualisation"] = ExperimentDataVisualisation;
 
 
 // Germplasm
@@ -461,6 +467,8 @@ import ScientificObjectModalListByExp from './scientificObjects/ScientificObject
 components["opensilex-ScientificObjectModalListByExp"] = ScientificObjectModalListByExp;
 import ScientificObjectView from './scientificObjects/ScientificObjectView.vue';
 components["opensilex-ScientificObjectView"] = ScientificObjectView;
+import UsedScientificObjectSelector from './scientificObjects/views/UsedScientificObjectSelector.vue';
+components["opensilex-UsedScientificObjectSelector"] = UsedScientificObjectSelector;
 
 // Variables
 import VariableList from './variables/VariableList.vue';
@@ -675,6 +683,8 @@ components["opensilex-ImageLightBox"] = ImageLightBox;
 
 import DataVisuGraphic from './visualization/DataVisuGraphic.vue';
 components["opensilex-DataVisuGraphic"] = DataVisuGraphic;
+import DataVisualisationGraphic from './visualization/DataVisualisationGraphic.vue';
+components["opensilex-DataVisualisationGraphic"] = DataVisualisationGraphic;
 import DataVisuHelp from './visualization/DataVisuHelp.vue';
 components["opensilex-DataVisuHelp"] = DataVisuHelp;
 

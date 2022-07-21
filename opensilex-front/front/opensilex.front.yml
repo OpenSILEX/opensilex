@@ -311,6 +311,8 @@ routes:
     component: opensilex-ExperimentView
   - path: /experiment/data/:uri
     component: opensilex-ExperimentView
+  - path: /experiment/data-visualisation/:uri
+    component: opensilex-ExperimentView
   - path: /experiment/map/:uri
     component: opensilex-ExperimentView
   - path: /experiment/annotations/:uri

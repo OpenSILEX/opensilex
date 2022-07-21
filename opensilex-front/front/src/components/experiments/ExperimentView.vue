@@ -32,6 +32,12 @@
                 </b-nav-item
                 >
                 <b-nav-item
+                        :active="isDataVisualisation()"
+                        :to="{ path: '/experiment/data-visualisation/' + encodeURIComponent(uri) }"
+                >{{ $t("ExperimentView.data-visualisation") }}
+                </b-nav-item
+                >
+                <b-nav-item
                         :active="isMap()"
                         :to="{ path: '/experiment/map/' + encodeURIComponent(uri) }"
                 >{{ $t("ExperimentView.map") }}
@@ -72,6 +78,10 @@
                         v-else-if="isDataTab()"
                         :uri="uri"
                 ></opensilex-ExperimentData>
+                <opensilex-ExperimentDataVisualisation
+                        v-else-if="isDataVisualisation()"
+                        :uri="uri"
+                ></opensilex-ExperimentDataVisualisation>
 
                 <opensilex-MapView
                         v-else-if="isMap()"
@@ -163,6 +173,10 @@
             return this.$route.path.startsWith("/experiment/data/");
         }
 
+        isDataVisualisation() {
+            return this.$route.path.startsWith("/experiment/data-visualisation/");
+        }
+
         isDocumentTab() {
           return this.$route.path.startsWith("/experiment/document/");
         }
@@ -186,6 +200,7 @@ en:
         document: Documents
         factors: Factors
         map: Map
+        data-visualisation: Vizualisation
 fr:
     ExperimentView:
         details: Détail
@@ -194,4 +209,5 @@ fr:
         document: Documents
         factors: Facteurs
         map: Carte
+        data-visualisation: Visualisation
 </i18n>

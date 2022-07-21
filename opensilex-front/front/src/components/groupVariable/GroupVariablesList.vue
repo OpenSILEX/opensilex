@@ -73,6 +73,7 @@ export default class GroupVariablesList extends Vue {
       this.nameFilter,
       this.variables,
       options.orderBy,
+      undefined,
       options.currentPage,
       options.pageSize
     );

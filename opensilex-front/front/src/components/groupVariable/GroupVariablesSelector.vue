@@ -1,5 +1,6 @@
 <template>
   <opensilex-SelectForm
+      ref="selectForm"
     :label="label"
     :selected.sync="vgURI"
     :multiple="multiple"
@@ -16,7 +17,7 @@
 </template>
 
 <script lang="ts">
-import {Component, Prop, PropSync} from "vue-property-decorator";
+import {Component, Prop, PropSync, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
 import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
@@ -39,6 +40,17 @@ export default class GroupVariablesSelector extends Vue {
   @Prop()
   clearable;
 
+  @Prop()
+  resource;
+
+  @Ref("selectForm") readonly selectForm!: any;
+
+  @Watch("resource")
+  onResourceChange() {
+    console.log("test refresh");
+    this.selectForm.refresh();
+  }
+
   get placeholder() {
     return this.multiple
       ? "component.groupVariable.form.selector.placeholder-multiple"
@@ -47,7 +59,7 @@ export default class GroupVariablesSelector extends Vue {
 
   loadVariablesGroups(vg) {
     return this.$opensilex.getService("opensilex.VariablesService")
-      .getVariablesGroupByURIs(vg)
+      .getVariablesGroupByURIs(vg,(this.resource === "http://localhost") ? undefined : this.resource)
       .then((http: HttpResponse<OpenSilexResponse<VariablesGroupGetDTO>>) => {
         return http.response.result;
       })
@@ -56,7 +68,7 @@ export default class GroupVariablesSelector extends Vue {
 
   searchVariablesGroups(name) {
     return this.$opensilex.getService("opensilex.VariablesService")
-    .searchVariablesGroups(name, undefined, ["name=asc"], 0, 10)    
+    .searchVariablesGroups(name, undefined, ["name=asc"], (this.resource === "http://localhost") ? undefined : this.resource, 0, 10)
     .then((http: HttpResponse<OpenSilexResponse<Array<VariablesGroupGetDTO>>>) => {
         return http;
     });

@@ -1,6 +1,5 @@
 <template>
   <opensilex-SelectForm
-    ref="selectForm"
     :label="label"
     :selected.sync="speciesURI"
     :multiple="multiple"
@@ -11,11 +10,12 @@
     @clear="$emit('clear')"
     @select="select"
     @deselect="deselect"
+    :key="refreshKey"
   ></opensilex-SelectForm>
 </template>
 
 <script lang="ts">
-import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
+import {Component, Prop, PropSync, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
 import { SecurityService, UserGetDTO } from "opensilex-security/index";
@@ -30,6 +30,8 @@ export default class SpeciesSelector extends Vue {
   $store: any;
 
   service: SecurityService;
+
+  refreshKey = 0;
 
   @PropSync("species")
   speciesURI;
@@ -53,7 +55,13 @@ export default class SpeciesSelector extends Vue {
   @Prop()
   experimentURI;
 
-  @Ref("selectForm") readonly selectForm!: any;
+  @Prop()
+  resource;
+
+  @Watch("resource")
+  onResourceChange() {
+    this.refreshKey += 1;
+  }
 
   private langUnwatcher;
   mounted() {
@@ -73,7 +81,7 @@ export default class SpeciesSelector extends Vue {
     if (!this.experimentURI) {
       return this.$opensilex
         .getService("opensilex.SpeciesService")
-        .getAllSpecies()
+        .getAllSpecies((this.resource === "http://localhost") ? undefined : this.resource)
         .then(
           (http: HttpResponse<OpenSilexResponse<Array<SpeciesDTO>>>) =>
             http.response.result

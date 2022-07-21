@@ -1,6 +1,7 @@
 <template>
   <opensilex-SelectForm
-    :label="label"
+      ref="selectForm"
+      :label="label"
     :selected.sync="characteristicURI"
     :multiple="multiple"
     :searchMethod="searchCharacteristics"
@@ -16,7 +17,7 @@
 </template>
 
 <script lang="ts">
-import {Component, Prop, PropSync} from "vue-property-decorator";
+import {Component, Prop, PropSync, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
 import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
@@ -39,6 +40,16 @@ export default class CharacteristicSelector extends Vue {
   @Prop()
   clearable;
 
+  @Prop()
+  resource;
+
+  @Ref("selectForm") readonly selectForm!: any;
+
+  @Watch("resource")
+  onResourceChange() {
+    this.selectForm.refresh();
+  }
+
   get placeholder() {
     return this.multiple
       ? "component.characteristic.form.selector.placeholder-multiple"
@@ -47,7 +58,7 @@ export default class CharacteristicSelector extends Vue {
 
   loadCharacteristics(characteristics) {
     return this.$opensilex.getService("opensilex.VariablesService")
-      .getCharacteristicsByURIs(characteristics)
+      .getCharacteristicsByURIs(characteristics,(this.resource === "http://localhost") ? undefined : this.resource)
       .then((http: HttpResponse<OpenSilexResponse<CharacteristicGetDTO>>) => {
         return http.response.result;
       })
@@ -56,7 +67,7 @@ export default class CharacteristicSelector extends Vue {
 
   searchCharacteristics(name) {
     return this.$opensilex.getService("opensilex.VariablesService")
-    .searchCharacteristics(name, ["name=asc"], 0, 10)    
+    .searchCharacteristics(name, ["name=asc"], (this.resource === "http://localhost") ? undefined : this.resource, 0, 10)
     .then((http: HttpResponse<OpenSilexResponse<Array<CharacteristicGetDTO>>>) => {
         return http;
     });

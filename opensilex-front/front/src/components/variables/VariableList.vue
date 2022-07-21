@@ -30,6 +30,7 @@
                             <opensilex-EntitySelector
                                 label="VariableView.entity"
                                 :entity.sync="filter.entity"
+                                :resource="filter.resource"
                             ></opensilex-EntitySelector>
                         </opensilex-FilterField>
 
@@ -37,6 +38,7 @@
                             <opensilex-CharacteristicSelector
                                 label="VariableView.characteristic"
                                 :characteristic.sync="filter.characteristic"
+                                :resource="filter.resource"
                             ></opensilex-CharacteristicSelector>
                         </opensilex-FilterField>
 
@@ -44,6 +46,7 @@
                             <opensilex-GroupVariablesSelector
                                 label="VariableView.groupVariable"
                                 :variableGroup.sync="filter.group"
+                                :resource="filter.resource"
                             ></opensilex-GroupVariablesSelector>
                         </opensilex-FilterField>
 
@@ -54,6 +57,7 @@
                             <opensilex-InterestEntitySelector
                                 label="VariableForm.interestEntity-label"
                                 :interestEntity.sync="filter.entityOfInterest"
+                                :resource="filter.resource"
                             ></opensilex-InterestEntitySelector>
                         </opensilex-FilterField>
 
@@ -61,6 +65,7 @@
                             <opensilex-MethodSelector
                                 label="VariableView.method"
                                 :method.sync="filter.method"
+                                :resource="filter.resource"
                             ></opensilex-MethodSelector>
                         </opensilex-FilterField>
 
@@ -68,6 +73,7 @@
                             <opensilex-UnitSelector
                                 label="VariableView.unit"
                                 :unit.sync="filter.unit"
+                                :resource="filter.resource"
                             ></opensilex-UnitSelector>
                         </opensilex-FilterField>
 
@@ -81,7 +87,7 @@
                         <opensilex-FilterField>
                             <opensilex-VariableTimeIntervalSelector
                                 label="VariableForm.time-interval"
-                                :timeinterval.sync="filter.timeInterval"    
+                                :timeinterval.sync="filter.timeInterval"
                             ></opensilex-VariableTimeIntervalSelector>
                         </opensilex-FilterField>
 
@@ -91,6 +97,7 @@
                               placeholder="SpeciesSelector.select-multiple-placeholder"
                               :multiple="true"
                               :species.sync="filter.species"
+                              :resource="filter.resource"
                           ></opensilex-SpeciesSelector>
                         </opensilex-FilterField>
 
@@ -360,7 +367,7 @@ export default class VariableList extends Vue {
 
     reset() {
         this.filter = {
-            resource: undefined,
+            resource: this.filter.resource,
             name: undefined,
             entity: undefined,
             entityOfInterest: undefined,
@@ -402,6 +409,7 @@ export default class VariableList extends Vue {
 
     onResourceSelected(dto:SharedResourcesDTO){ // récup le dto de la sélection et l'ATTRIBUE à this.selectedResource pour l'utiliser dans le filtre
       this.selectedResource = dto;
+      this.reset();
     }
 
     onResourceSelectorLoaded(dtoSelected){ // déclenché au chargement du filtre (une fois au début)
@@ -506,7 +514,7 @@ export default class VariableList extends Vue {
     loadVariablesGroupFromVariable(data) {
         if (!data.detailsShowing) {
             this.$opensilex.disableLoader();
-            this.$service.searchVariablesGroups(undefined, data.item.uri, ["name=asc"], undefined, undefined)
+            this.$service.searchVariablesGroups(undefined, data.item.uri, ["name=asc"],undefined, undefined, undefined)
                 .then((http: any) => {
                     let listVariableGroups = [];
                     for (let variableGroup of http.response.result) {

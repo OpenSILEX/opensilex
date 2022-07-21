@@ -5,6 +5,9 @@
 //******************************************************************************
 package org.opensilex.core.variablesGroup.api;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -13,11 +16,15 @@ import io.swagger.annotations.ApiResponses;
 
 import java.net.URI;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -32,9 +39,15 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
 
+import org.opensilex.core.CoreModule;
+import org.opensilex.core.sharedResource.SharedResourcesFunctions;
+import org.opensilex.core.variable.api.entity.EntityDetailsDTO;
+import org.opensilex.core.variable.api.entity.EntityGetDTO;
 import org.opensilex.core.variablesGroup.dal.VariablesGroupDAO;
 import org.opensilex.core.variablesGroup.dal.VariablesGroupModel;
 import org.opensilex.core.variable.api.VariableAPI;
@@ -46,14 +59,11 @@ import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
 
-import org.opensilex.server.response.ErrorDTO;
-import org.opensilex.server.response.ErrorResponse;
-import org.opensilex.server.response.ObjectUriResponse;
-import org.opensilex.server.response.PaginatedListResponse;
-import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.server.response.*;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
+import org.opensilex.sparql.exceptions.SPARQLInvalidUriListException;
 import org.opensilex.sparql.service.SPARQLService;
 
 import org.opensilex.utils.ListWithPagination;
@@ -77,6 +87,12 @@ public class VariablesGroupAPI {
 
     @Inject
     private SPARQLService sparql;
+
+    @Inject
+    private CoreModule coreModule;
+
+    @Context
+    protected HttpServletRequest httpRequest;
     
     @POST
     @ApiOperation("Add a variables group")
@@ -120,23 +136,55 @@ public class VariablesGroupAPI {
             @ApiParam(value = "Regex pattern for filtering by name") @QueryParam("name") String name ,
             @ApiParam(value = "Variable URI") @QueryParam("variableUri") URI variableUri ,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @ApiParam(value = "Resource") @QueryParam("resource") URI resource,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
-        VariablesGroupDAO dao = new VariablesGroupDAO(sparql);
-        ListWithPagination<VariablesGroupModel> resultList = dao.search(
-                name,
-                variableUri,
-                orderByList,
-                page,
-                pageSize
-        );
 
-        ListWithPagination<VariablesGroupGetDTO> resultDTOList = resultList.convert(
-                VariablesGroupGetDTO.class,
-                VariablesGroupGetDTO::fromModel
-        );
-        return new PaginatedListResponse<>(resultDTOList).getResponse();
+        if (resource == null) {
+            VariablesGroupDAO dao = new VariablesGroupDAO(sparql);
+            ListWithPagination<VariablesGroupModel> resultList = dao.search(
+                    name,
+                    variableUri,
+                    orderByList,
+                    page,
+                    pageSize
+            );
+
+            ListWithPagination<VariablesGroupGetDTO> resultDTOList = resultList.convert(
+                    VariablesGroupGetDTO.class,
+                    VariablesGroupGetDTO::fromModel
+            );
+            return new PaginatedListResponse<>(resultDTOList).getResponse();
+        }else{
+            SharedResourcesFunctions sharedResourcesFunctions = SharedResourcesFunctions.getInstance(coreModule);
+
+            UriBuilder url = UriBuilder.fromUri(resource)
+                    .path(PATH);
+            // récupération des paramètres de la requête pour les recopier dans l'appel au service de recherche des groupes de variables sur la RP sélectionnée
+            for (Map.Entry<String, String[]> entry : httpRequest.getParameterMap().entrySet()){
+                url.queryParam(entry.getKey(),entry.getValue());
+            }
+
+            // utilisation du service de recherche des variables sur la ressource partagée
+            String token = sharedResourcesFunctions.getToken(resource.toString());
+            String SearchResponse = sharedResourcesFunctions.connectionToService(url.toString(), token);
+            ObjectMapper mapperSearch = new ObjectMapper();
+            JsonNode jsonResultSearch = mapperSearch.readTree(SearchResponse);
+
+            // conversion du résultat en liste de dtos
+            SingleObjectResponse<List<VariablesGroupGetDTO>> getResponse = mapperSearch.convertValue(jsonResultSearch, new TypeReference<SingleObjectResponse<List<VariablesGroupGetDTO>>>() {});
+            List<VariablesGroupGetDTO> dtoFromApi = getResponse.getResult();
+
+            // récupération du nombre total de variables pour la pagination
+            MetadataDTO metadata = getResponse.getMetadata();
+            long totalCount = metadata.getPagination().getTotalCount();
+            int totalVariablesGroups = (int)totalCount;
+
+            ListWithPagination<VariablesGroupGetDTO> resultDTOList = new ListWithPagination<>(dtoFromApi,page,pageSize, totalVariablesGroups);
+
+            return new PaginatedListResponse<>(resultDTOList).getResponse();
+        }
     }    
     
  
@@ -161,8 +209,7 @@ public class VariablesGroupAPI {
         return new SingleObjectResponse<>(VariablesGroupGetDTO.fromModel(model)).getResponse();
     }
     
-    
-    
+
     
     @GET
     @Path("by_uris")
@@ -175,17 +222,54 @@ public class VariablesGroupAPI {
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)    
-    public Response getVariablesGroupByURIs(@ApiParam(value = "Variables group URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris) throws Exception {
-        VariablesGroupDAO dao = new VariablesGroupDAO(sparql);
-        List<VariablesGroupModel> models = dao.getList(uris);
+    public Response getVariablesGroupByURIs(
+            @ApiParam(value = "Variables group URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris,
+            @ApiParam(value = "Resource") @QueryParam("resource") URI resource
+    ) throws Exception {
 
-        if (!models.isEmpty()) {
-            List<VariablesGroupGetDTO> resultDTOList = new ArrayList<>(models.size());
-            models.forEach(result -> resultDTOList.add(VariablesGroupGetDTO.fromModel(result)));
+        if (resource == null) {
+            VariablesGroupDAO dao = new VariablesGroupDAO(sparql);
+            List<VariablesGroupModel> models = dao.getList(uris);
 
-            return new PaginatedListResponse<>(resultDTOList).getResponse();
-        } else {
-            return new ErrorResponse(Response.Status.NOT_FOUND, "Variables group not found", "Unknown variables group URIs or variables URIs").getResponse();
+            if (!models.isEmpty()) {
+                List<VariablesGroupGetDTO> resultDTOList = new ArrayList<>(models.size());
+                models.forEach(result -> resultDTOList.add(VariablesGroupGetDTO.fromModel(result)));
+
+                return new PaginatedListResponse<>(resultDTOList).getResponse();
+            } else {
+                return new ErrorResponse(Response.Status.NOT_FOUND, "Variables group not found", "Unknown variables group URIs or variables URIs").getResponse();
+            }
+        }else{
+            SharedResourcesFunctions sharedResourcesFunctions = SharedResourcesFunctions.getInstance(coreModule);
+
+            // construction de l'adresse du service avec l'uri encodé de chaque variable
+            String token = sharedResourcesFunctions.getToken(resource.toString());
+            String urlService = resource.toString() + "/core/variables_group/by_uris?";
+            Boolean firstUri = true;
+
+            for (URI uri : uris) {
+                if (firstUri) {
+                    urlService += "uris=" + URLEncoder.encode(uri.toString(), StandardCharsets.UTF_8.name());
+                    firstUri = false;
+                } else {
+                    urlService += "&uris=" + URLEncoder.encode(uri.toString(), StandardCharsets.UTF_8.name());
+                }
+            }
+            List<VariablesGroupGetDTO> resultDTOList = new ArrayList<>();
+            // utilisation du service de recherche des variables en fonction de leur uri sur la ressource partagée
+            String stringResponse = sharedResourcesFunctions.connectionToService(urlService, token);
+            JsonNode jsonResult;
+            if (stringResponse != null) {
+                ObjectMapper mapper = new ObjectMapper();
+                jsonResult = mapper.readTree(stringResponse);
+                SingleObjectResponse<List<VariablesGroupGetDTO>> getResponse = mapper.convertValue(jsonResult, new TypeReference<SingleObjectResponse<List<VariablesGroupGetDTO>>>() {});
+                resultDTOList = getResponse.getResult();
+
+                return new PaginatedListResponse<>(resultDTOList).getResponse();
+
+            }else {
+                return new ErrorResponse(Response.Status.NOT_FOUND, "Variables group not found", "Unknown variables group URIs or variables URIs").getResponse();
+            }
         }
     }
    

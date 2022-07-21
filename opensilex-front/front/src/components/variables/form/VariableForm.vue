@@ -493,7 +493,7 @@ export default class VariableForm extends Vue {
     }
 
     searchEntities(name: string, page, pageSize){
-        return this.service.searchEntities(name, ["name=asc"], page, pageSize)
+        return this.service.searchEntities(name, ["name=asc"],undefined, page, pageSize)
             .then((http: HttpResponse<OpenSilexResponse<Array<NamedResourceDTO>>>) => {
                 return http;
             });
@@ -520,7 +520,7 @@ export default class VariableForm extends Vue {
     }
 
     searchInterestEntities(name: string, page, pageSize){
-        return this.service.searchInterestEntity(name, ["name=asc"], page, pageSize)
+        return this.service.searchInterestEntity(name, ["name=asc"], undefined, page, pageSize)
             .then((http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
                 return http;
             });
@@ -548,7 +548,7 @@ export default class VariableForm extends Vue {
     
     searchCharacteristics(name: string, page, pageSize){
         return this.service
-            .searchCharacteristics(name, ["name=asc"], page, pageSize)
+            .searchCharacteristics(name, ["name=asc"], undefined, page, pageSize)
             .then((http: HttpResponse<OpenSilexResponse<Array<NamedResourceDTO>>>) => {
                 return http;
             });
@@ -575,7 +575,7 @@ export default class VariableForm extends Vue {
 
     searchMethods(name: string, page, pageSize){
         return this.service
-            .searchMethods(name, ["name=asc"], page, pageSize)
+            .searchMethods(name, ["name=asc"], undefined, page, pageSize)
             .then((http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
                 return http;
             });
@@ -602,7 +602,7 @@ export default class VariableForm extends Vue {
 
     searchUnits(name: string ,page, pageSize){
         return this.service
-            .searchUnits(name, ["name=asc"], page,pageSize)
+            .searchUnits(name, ["name=asc"], undefined, page,pageSize)
             .then((http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
                 return http;
             });

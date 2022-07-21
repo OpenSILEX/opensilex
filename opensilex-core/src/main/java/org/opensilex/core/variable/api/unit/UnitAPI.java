@@ -5,8 +5,15 @@
 //******************************************************************************
 package org.opensilex.core.variable.api.unit;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.*;
+import org.opensilex.core.CoreModule;
+import org.opensilex.core.sharedResource.SharedResourcesFunctions;
 import org.opensilex.core.variable.api.VariableAPI;
+import org.opensilex.core.variable.api.entity.EntityDetailsDTO;
+import org.opensilex.core.variable.api.entity.EntityGetDTO;
 import org.opensilex.core.variable.dal.BaseVariableDAO;
 import org.opensilex.core.variable.dal.UnitModel;
 import org.opensilex.security.authentication.ApiCredential;
@@ -24,14 +31,21 @@ import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 
 import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.opensilex.core.variable.api.VariableAPI.*;
@@ -48,6 +62,12 @@ public class UnitAPI {
 
     @Inject
     private SPARQLService sparql;
+
+    @Inject
+    private CoreModule coreModule;
+
+    @Context
+    protected HttpServletRequest httpRequest;
 
     @CurrentUser
     UserModel currentUser;
@@ -117,23 +137,56 @@ public class UnitAPI {
         @ApiResponse(code = 404, message = "Unit not found (if any provided URIs is not found", response = ErrorDTO.class)
     })
     public Response getUnitsByURIs(
-            @ApiParam(value = "Units URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
+            @ApiParam(value = "Units URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris,
+            @ApiParam(value = "Resource") @QueryParam("resource") URI resource
     ) throws Exception {
-        
-        BaseVariableDAO<UnitModel> dao = new BaseVariableDAO<>(UnitModel.class, sparql);
 
-        try {
-            List<UnitDetailsDTO> resultDTOList = dao.getList(uris)
-                    .stream()
-                    .map(UnitDetailsDTO::new)
-                    .collect(Collectors.toList());
+        if (resource == null) {
+            BaseVariableDAO<UnitModel> dao = new BaseVariableDAO<>(UnitModel.class, sparql);
 
-            return new PaginatedListResponse<>(resultDTOList).getResponse();
+            try {
+                List<UnitDetailsDTO> resultDTOList = dao.getList(uris)
+                        .stream()
+                        .map(UnitDetailsDTO::new)
+                        .collect(Collectors.toList());
 
-        }catch (SPARQLInvalidUriListException e){
-            return new ErrorResponse(Response.Status.NOT_FOUND, "Units not found", e.getStrUris()).getResponse();
+                return new PaginatedListResponse<>(resultDTOList).getResponse();
+
+            } catch (SPARQLInvalidUriListException e) {
+                return new ErrorResponse(Response.Status.NOT_FOUND, "Units not found", e.getStrUris()).getResponse();
+            }
+        }else{
+                SharedResourcesFunctions sharedResourcesFunctions = SharedResourcesFunctions.getInstance(coreModule);
+
+                // construction de l'adresse du service avec l'uri encodé de chaque variable
+                String token = sharedResourcesFunctions.getToken(resource.toString());
+                String urlService = resource.toString() + "/core/units/by_uris?";
+                Boolean firstUri = true;
+
+                for (URI uri : uris) {
+                    if (firstUri) {
+                        urlService += "uris=" + URLEncoder.encode(uri.toString(), StandardCharsets.UTF_8.name());
+                        firstUri = false;
+                    } else {
+                        urlService += "&uris=" + URLEncoder.encode(uri.toString(), StandardCharsets.UTF_8.name());
+                    }
+                }
+                List<UnitDetailsDTO> resultDTOList = new ArrayList<>();
+                // utilisation du service de recherche des variables en fonction de leur uri sur la ressource partagée
+                String stringResponse = sharedResourcesFunctions.connectionToService(urlService, token);
+                JsonNode jsonResult;
+                if (stringResponse != null) {
+                    ObjectMapper mapper = new ObjectMapper();
+                    jsonResult = mapper.readTree(stringResponse);
+                    SingleObjectResponse<List<UnitDetailsDTO>> getResponse = mapper.convertValue(jsonResult, new TypeReference<SingleObjectResponse<List<UnitDetailsDTO>>>() {});
+                    resultDTOList = getResponse.getResult();
+
+                    return new PaginatedListResponse<>(resultDTOList).getResponse();
+
+                }else{
+                    return new ErrorResponse(Response.Status.NOT_FOUND, "Units not found", "Unknown unit URIs").getResponse();
+                }
         }
-
     }
     
     
@@ -195,21 +248,53 @@ public class UnitAPI {
     public Response searchUnits(
             @ApiParam(value = "Name (regex)", example = "Centimeter") @QueryParam("name") String namePattern ,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @ApiParam(value = "Resource") @QueryParam("resource") URI resource,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @Min(0) int pageSize
     ) throws Exception {
 
-        BaseVariableDAO<UnitModel> dao = new BaseVariableDAO<>(UnitModel.class, sparql);
-        ListWithPagination<UnitModel> resultList = dao.search(
-                namePattern,
-                orderByList,
-                page,
-                pageSize
-        );
+        if (resource == null) {
+            BaseVariableDAO<UnitModel> dao = new BaseVariableDAO<>(UnitModel.class, sparql);
+            ListWithPagination<UnitModel> resultList = dao.search(
+                    namePattern,
+                    orderByList,
+                    page,
+                    pageSize
+            );
 
-        ListWithPagination<UnitGetDTO> resultDTOList = resultList.convert(
-                UnitGetDTO.class,
-                UnitGetDTO::new
-        );
-        return new PaginatedListResponse<>(resultDTOList).getResponse();    }
+            ListWithPagination<UnitGetDTO> resultDTOList = resultList.convert(
+                    UnitGetDTO.class,
+                    UnitGetDTO::new
+            );
+            return new PaginatedListResponse<>(resultDTOList).getResponse();
+        }else{
+            SharedResourcesFunctions sharedResourcesFunctions = SharedResourcesFunctions.getInstance(coreModule);
+
+            UriBuilder url = UriBuilder.fromUri(resource)
+                    .path(PATH);
+            // récupération des paramètres de la requête pour les recopier dans l'appel au service de recherche d'unité sur la RP sélectionnée
+            for (Map.Entry<String, String[]> entry : httpRequest.getParameterMap().entrySet()){
+                url.queryParam(entry.getKey(),entry.getValue());
+            }
+
+            // utilisation du service de recherche des variables sur la ressource partagée
+            String token = sharedResourcesFunctions.getToken(resource.toString());
+            String SearchResponse = sharedResourcesFunctions.connectionToService(url.toString(), token);
+            ObjectMapper mapperSearch = new ObjectMapper();
+            JsonNode jsonResultSearch = mapperSearch.readTree(SearchResponse);
+
+            // conversion du résultat en liste de dtos
+            SingleObjectResponse<List<UnitGetDTO>> getResponse = mapperSearch.convertValue(jsonResultSearch, new TypeReference<SingleObjectResponse<List<UnitGetDTO>>>() {});
+            List<UnitGetDTO> dtoFromApi = getResponse.getResult();
+
+            // récupération du nombre total de variables pour la pagination
+            MetadataDTO metadata = getResponse.getMetadata();
+            long totalCount = metadata.getPagination().getTotalCount();
+            int totalUnits = (int)totalCount;
+
+            ListWithPagination<UnitGetDTO> resultDTOList = new ListWithPagination<>(dtoFromApi,page,pageSize, totalUnits);
+
+            return new PaginatedListResponse<>(resultDTOList).getResponse();
+        }
+    }
 }

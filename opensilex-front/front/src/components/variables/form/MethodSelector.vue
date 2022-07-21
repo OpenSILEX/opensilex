@@ -1,6 +1,7 @@
 <template>
   <opensilex-SelectForm
-    :label="label"
+      ref="selectForm"
+      :label="label"
     :selected.sync="methodURI"
     :multiple="multiple"
     :searchMethod="searchMethods"
@@ -16,7 +17,7 @@
 </template>
 
 <script lang="ts">
-import {Component, Prop, PropSync} from "vue-property-decorator";
+import {Component, Prop, PropSync, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
 import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
@@ -39,6 +40,16 @@ export default class MethodSelector extends Vue {
   @Prop()
   clearable;
 
+  @Prop()
+  resource;
+
+  @Ref("selectForm") readonly selectForm!: any;
+
+  @Watch("resource")
+  onResourceChange() {
+    this.selectForm.refresh();
+  }
+
   get placeholder() {
     return this.multiple
       ? "component.method.form.selector.placeholder-multiple"
@@ -47,7 +58,7 @@ export default class MethodSelector extends Vue {
 
   loadMethods(methods) {
     return this.$opensilex.getService("opensilex.VariablesService")
-      .getMethodsByURIs(methods)
+      .getMethodsByURIs(methods,(this.resource === "http://localhost") ? undefined : this.resource)
       .then((http: HttpResponse<OpenSilexResponse<MethodGetDTO>>) => {
         return http.response.result;
       })
@@ -56,7 +67,7 @@ export default class MethodSelector extends Vue {
 
   searchMethods(name) {
     return this.$opensilex.getService("opensilex.VariablesService")
-    .searchMethods(name, ["name=asc"], 0, 10)    
+    .searchMethods(name, ["name=asc"], (this.resource === "http://localhost") ? undefined : this.resource, 0, 10)
     .then((http: HttpResponse<OpenSilexResponse<Array<MethodGetDTO>>>) => {
         return http;
     });

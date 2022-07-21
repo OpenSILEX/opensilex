@@ -125,9 +125,7 @@ export default class VariableView extends Vue {
     let urlResource = decodeURIComponent(this.$route.query.resource);
     this.resource = (urlResource === "http://localhost" || urlResource === "undefined") ? undefined : urlResource;
     this.displayLocalActions = (urlResource === "http://localhost" || urlResource === "undefined");
-    console.log("ressource : ", urlResource);
     this.loadVariable(this.uri, this.resource);
-    console.log(this.resource);
   }
 
   isDetailsTab() {

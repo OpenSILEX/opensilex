@@ -65,6 +65,7 @@
           :search-nested="searchNested"
           :show-count="showCount"
           :limit="limit"
+          :key="refreshKey"
         >
           <template v-slot:option-label="{ node }">
             <slot name="option-label" v-bind:node="node">{{ node.label }}</slot>
@@ -106,6 +107,7 @@
           :search-nested="searchNested"
           :show-count="showCount"
           :limit="limit"
+          :key="refreshKey"
         >
           <template v-slot:option-label="{ node }">
             <slot name="option-label" v-bind:node="node">{{ node.label }}</slot>
@@ -224,6 +226,8 @@ export default class SelectForm extends Vue {
 
   @PropSync("filter")
   searchModalFilter;
+
+  refreshKey = 0;
 
   @Prop({
     type: Function,
@@ -629,23 +633,8 @@ export default class SelectForm extends Vue {
 
   debounceSearch;
 
-  refresh(){ 
-      this.$opensilex.disableLoader();
-         let query = ".*";
-       this
-        .searchMethod(query, 0, this.resultLimit)
-        .then((http) => {
-          let list = http.response.result;
-          this.totalCount = http.response.metadata.pagination.totalCount;
-          this.resultCount = list.length;
-          let nodeList = [];
-          list.forEach((item) => {
-            nodeList.push(this.conversionMethod(item));
-          });
-           this.$opensilex.enableLoader();
-        })
-        .catch(this.$opensilex.errorHandler);
- 
+  refresh(){
+           this.refreshKey += 1;
   }
 
   debounce(func, wait, immediate?): Function {
@@ -665,10 +654,6 @@ export default class SelectForm extends Vue {
   }
 
   selectedNodes;
-
-  setCurrentSelectedNodes(values) {
-    this.selectedNodes = values;
-  }
 
   showModal() {
     let searchModal: any = this.$refs.searchModal;

@@ -37,8 +37,7 @@ module.exports = {
             new webpack.DefinePlugin({
                 'APPLICATION_VERSION': JSON.stringify(require('./package.json').version),
             })
-        ],
-        devtool: 'source-map'
+        ]
     },
     chainWebpack: config => {
         config.module

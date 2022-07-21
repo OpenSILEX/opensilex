@@ -824,6 +824,8 @@ alexia:build:
   <<: *build_template_with_opensilex
   rules:
     - if: $CI_COMMIT_BRANCH == "alexia"
+  tags:
+    - stable
 
 test:alexia:deploy:
   <<: *deploy_opensilex_before_script

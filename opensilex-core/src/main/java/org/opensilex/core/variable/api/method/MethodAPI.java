@@ -162,7 +162,7 @@ public class MethodAPI {
         }else{
 
                 SharedResourcesFunctions sharedResourcesFunctions = SharedResourcesFunctions.getInstance(coreModule);
-                // construction de l'adresse du service avec l'uri encodé de chaque variable
+                // construction de l'adresse du service avec l'uri encodé de chaque méthode
                 String token = sharedResourcesFunctions.getToken(resource.toString());
                 String urlService = resource.toString() + "/core/methods/by_uris?";
                 Boolean firstUri = true;
@@ -176,7 +176,7 @@ public class MethodAPI {
                     }
                 }
                 List<MethodDetailsDTO> resultDTOList = new ArrayList<>();
-                // utilisation du service de recherche des variables en fonction de leur uri sur la ressource partagée
+                // utilisation du service de recherche des méthodes en fonction de leur uri sur la ressource partagée
                 String stringResponse = sharedResourcesFunctions.connectionToService(urlService, token);
                 JsonNode jsonResult;
                 if (stringResponse != null) {
@@ -278,12 +278,12 @@ public class MethodAPI {
 
             UriBuilder url = UriBuilder.fromUri(resource)
                     .path(PATH);
-            // récupération des paramètres de la requête pour les recopier dans l'appel au service de recherche de méthodes sur la RP sélectionnée
+            // récupération des paramètres de la requête pour les recopier dans l'appel au service de recherche des méthodes sur la RP sélectionnée
             for (Map.Entry<String, String[]> entry : httpRequest.getParameterMap().entrySet()){
                 url.queryParam(entry.getKey(),entry.getValue());
             }
 
-            // utilisation du service de recherche des variables sur la ressource partagée
+            // utilisation du service de recherche des méthodes sur la ressource partagée
             String token = sharedResourcesFunctions.getToken(resource.toString());
             String SearchResponse = sharedResourcesFunctions.connectionToService(url.toString(), token);
             ObjectMapper mapperSearch = new ObjectMapper();
@@ -293,7 +293,7 @@ public class MethodAPI {
             SingleObjectResponse<List<MethodGetDTO>> getResponse = mapperSearch.convertValue(jsonResultSearch, new TypeReference<SingleObjectResponse<List<MethodGetDTO>>>() {});
             List<MethodGetDTO> dtoFromApi = getResponse.getResult();
 
-            // récupération du nombre total de variables pour la pagination
+            // récupération du nombre total de méthodes pour la pagination
             MetadataDTO metadata = getResponse.getMetadata();
             long totalCount = metadata.getPagination().getTotalCount();
             int totalMethods = (int)totalCount;

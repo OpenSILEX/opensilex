@@ -82,7 +82,7 @@ public class SpeciesAPI {
             String urlService = resource.toString() + "/core/species";
 
             List<SpeciesDTO> resultDTOList = new ArrayList<>();
-            // utilisation du service de recherche des variables en fonction de leur uri sur la ressource partagée
+            // utilisation du service de recherche des espèces sur la ressource partagée
             String stringResponse = sharedResourcesFunctions.connectionToService(urlService, token);
             JsonNode jsonResult;
             if (stringResponse != null) {

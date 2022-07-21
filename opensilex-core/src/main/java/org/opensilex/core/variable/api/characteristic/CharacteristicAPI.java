@@ -160,7 +160,7 @@ public class CharacteristicAPI {
         }else{
                 SharedResourcesFunctions sharedResourcesFunctions = SharedResourcesFunctions.getInstance(coreModule);
 
-                // construction de l'adresse du service avec l'uri encodé de chaque variable
+                // construction de l'adresse du service avec l'uri encodé de chaque caractéristique
                 String token = sharedResourcesFunctions.getToken(resource.toString());
                 String urlService = resource.toString() + "/core/characteristics/by_uris?";
                 Boolean firstUri = true;
@@ -174,7 +174,7 @@ public class CharacteristicAPI {
                     }
                 }
                 List<CharacteristicDetailsDTO> resultDTOList = new ArrayList<>();
-                // utilisation du service de recherche des variables en fonction de leur uri sur la ressource partagée
+                // utilisation du service de recherche des caractéristiques en fonction de leur uri sur la ressource partagée
                 String stringResponse = sharedResourcesFunctions.connectionToService(urlService, token);
                 JsonNode jsonResult;
                 if (stringResponse != null) {
@@ -280,7 +280,7 @@ public class CharacteristicAPI {
                 url.queryParam(entry.getKey(),entry.getValue());
             }
 
-            // utilisation du service de recherche des variables sur la ressource partagée
+            // utilisation du service de recherche des caractéristiques sur la ressource partagée
             String token = sharedResourcesFunctions.getToken(resource.toString());
             String SearchResponse = sharedResourcesFunctions.connectionToService(url.toString(), token);
             ObjectMapper mapperSearch = new ObjectMapper();
@@ -290,7 +290,7 @@ public class CharacteristicAPI {
             SingleObjectResponse<List<CharacteristicGetDTO>> getResponse = mapperSearch.convertValue(jsonResultSearch, new TypeReference<SingleObjectResponse<List<CharacteristicGetDTO>>>() {});
             List<CharacteristicGetDTO> dtoFromApi = getResponse.getResult();
 
-            // récupération du nombre total de variables pour la pagination
+            // récupération du nombre total de caractéristiques pour la pagination
             MetadataDTO metadata = getResponse.getMetadata();
             long totalCount = metadata.getPagination().getTotalCount();
             int totalCharacteristics = (int)totalCount;

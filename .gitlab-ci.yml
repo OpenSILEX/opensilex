@@ -292,6 +292,8 @@ trigger:opensilex-develop:deploy:test:
     - if: $CI_COMMIT_BRANCH == "develop"
   needs:
     - job: "opensilex-develop:build"
+  tags:
+    - stable
 
 # Trigger pipeline for the deployment of the release branch
 trigger:opensilex-release:deploy:test:

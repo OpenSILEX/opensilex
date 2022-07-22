@@ -1,84 +1,53 @@
 package org.opensilex.nosql.datasource.saga;
 
 import com.mongodb.client.ClientSession;
-import org.opensilex.nosql.datasource.coordinator.AbstractDistributedCoordinator;
-import org.opensilex.nosql.datasource.operation.MongoOperation;
-import org.opensilex.nosql.datasource.operation.SparqlOperation;
-import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.nosql.datasource.coordinator.DefaultDataSourceCoordinator;
+import org.opensilex.nosql.datasource.operation.DataSourceOperation;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.utils.ThrowingConsumer;
 
-public abstract class SagaDistributedCoordinator extends AbstractDistributedCoordinator<MongoSagaOperation, SparqlSagaOperation> {
+import java.util.List;
+import java.util.Map;
 
-    public SagaDistributedCoordinator(SPARQLService sparql, MongoDBService mongodb) {
-        super(sparql, mongodb);
-    }
+public class SagaDistributedCoordinator extends DefaultDataSourceCoordinator<SagaDataSourceOperation<?>> {
 
-    private void prepareForCommit(boolean sparqlFirst, ClientSession mongoSession) throws Exception {
-        try{
-            if (sparqlFirst) {
-                for (SparqlOperation operation : getSparqlOperations()) {
-                    operation.accept(sparql);
-                }
-                for (MongoOperation operation : getMongoOperations()) {
-                    operation.accept(mongoSession);
-                }
-            } else {
-                for (MongoOperation operation : getMongoOperations()) {
-                    operation.accept(mongoSession);
-                }
-                for (SparqlOperation operation : getSparqlOperations()) {
-                    operation.accept(sparql);
-                }
-            }
-        }catch (Exception e){
-            // TODO property handle transaction rollback failure
-            if(sparql.hasActiveTransaction()){
-                sparql.rollbackTransaction();
-            }
-            if(mongoSession.hasActiveTransaction()){
-                mongoSession.abortTransaction();
-            }
-            mongoSession.close();
-            throw e;
-        }
-    }
-
-    private void commitOrCompensate(ClientSession mongoSession) throws Exception {
-        boolean sparqlCommitted = false;
-
-        try{
-            sparql.commitTransaction();
-            sparqlCommitted = true;
-
-            mongoSession.commitTransaction();
-        }catch (Exception e){
-
-            // TODO : property handled compensation retry
-            if(sparqlCommitted){
-                for(SparqlSagaOperation sparqlSagaOperation : getSparqlOperations()){
-                    sparqlSagaOperation.getCompensationAction().accept(sparql);
-                }
-            }
-            else{
-                sparql.rollbackTransaction();
-            }
-
-            // TODO property handle transaction rollback failure
-            mongoSession.abortTransaction();
-
-        }finally {
-            mongoSession.close();
-        }
+    public SagaDistributedCoordinator(SPARQLService sparql, ClientSession session) {
+        super(sparql, session);
     }
 
     @Override
-    public void run(boolean sparqlFirst) throws Exception {
-        ClientSession mongoSession = mongodb.startSession();
+    public <T> void addOperation(T unitOfWork, SagaDataSourceOperation<?> operation) {
+        super.addOperation(unitOfWork, operation);
+    }
 
-        sparql.startTransaction();
-        mongoSession.startTransaction();
+    @Override
+    protected void resolveCommitFail() {
 
-        prepareForCommit(sparqlFirst,mongoSession);
-        commitOrCompensate(mongoSession);
+        // loop over database
+
+        for (Map.Entry<Object, List<DataSourceOperation<?>>> entry : operationsByDatabase.entrySet()) {
+            List<DataSourceOperation<?>> operations = entry.getValue();
+
+            for(DataSourceOperation<?> operation : operations){
+                if(operation.getState().equals(DataSourceOperation.OPERATION_STATE.COMMITTED)){
+                    SagaDataSourceOperation<?> sagaOperation = (SagaDataSourceOperation<?>) operation;
+                    compensate(sagaOperation);
+                }
+            }
+        }
+        // for each ALREADY COMMITTED operation -> compensate them
+        super.resolveCommitFail();
+    }
+
+    protected void compensate(SagaDataSourceOperation sagaOperation){
+        ThrowingConsumer compensateAction = sagaOperation.getCompensationAction();
+        Object compensationContext = sagaOperation.getCompensationContext();
+
+        // #TODO try multiple times to resolve
+        try {
+            compensateAction.accept(compensationContext);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

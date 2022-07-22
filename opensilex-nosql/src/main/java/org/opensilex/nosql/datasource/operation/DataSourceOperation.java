@@ -1,13 +1,20 @@
 package org.opensilex.nosql.datasource.operation;
 
-public interface DataSourceOperation {
+import org.opensilex.utils.ThrowingConsumer;
 
-    enum OPERATION_STATE {
-        READY_TO_COMMIT,
-        COMMITTED
-    }
+public interface DataSourceOperation<T> extends ThrowingConsumer<T,Exception> {
+
+    long getId();
 
     void setState(OPERATION_STATE state);
 
     OPERATION_STATE getState();
+
+    enum OPERATION_STATE{
+        STARTED,
+        READY_FOR_COMMIT,
+        ROLLBACK,
+        COMMITTED
+    }
+
 }

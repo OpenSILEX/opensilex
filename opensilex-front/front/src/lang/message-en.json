@@ -93,7 +93,8 @@
                 "success-title": "Success",
                 "creation-success-message": " has been inserted",
                 "update-success-message": " has been updated",
-                "delete-success-message": "has been deleted"
+                "delete-success-message": "has been deleted",
+                "import-success-message": "{variablesCount} variables have been imported"
             },
             "details": {
                 "document": "Documents",
@@ -365,7 +366,9 @@
             "label": "Resources",
             "local-instance": "Local resource",
             "variable-import-confirmation": "Do you really want to import the selected variables on your local instance ?",
-            "import": "import"
+            "import": "import",
+            "local-variable-import-warning": " WARNING : {variablesCount} variable selected has already been imported. The import will have no effect on this variable.",
+            "locals-variables-import-warning": " WARNING : {variablesCount} variables selected have already been imported. The import will have no effect on these variables."
         },
         "experiment": {
             "uri-help": "Unique experiment identifier",

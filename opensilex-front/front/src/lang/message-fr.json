@@ -92,7 +92,8 @@
                 "success-title": "Succès",
                 "creation-success-message": " a été crée",
                 "update-success-message": " a été modifié(e)",
-                "delete-success-message": " a été supprimé(e)"
+                "delete-success-message": " a été supprimé(e)",
+                "import-success-message": "{variablesCount} variables ont bien été importées"
             },
             "details": {
                 "document": "Documents",
@@ -365,7 +366,9 @@
             "label": "Ressources",
             "local-instance": "Ressource locale",
             "variable-import-confirmation": "Voulez-vous vraiment importer les variables sélectionnées sur votre instance locale ?",
-            "import": "importer"
+            "import": "importer",
+            "local-variable-import-warning": " ATTENTION : {variablesCount} variable sélectionnée a déjà été importée. L'importation n'aura aucun effet sur cette variable.",
+            "locals-variables-import-warning": " ATTENTION : {variablesCount} variables sélectionnées ont déjà été importées. L'importation n'aura aucun effet sur ces variables."
         },
         "experiment": {
             "uri": "URI de l'expérimentation",

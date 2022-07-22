@@ -457,11 +457,27 @@ export default class VariableList extends Vue {
         this.$opensilex.downloadFilefromPostService(path, filename, "csv", {uris: variablesURIs}, this.lang);
     }
 
-  importVariablesOnLocal() {
+  localVariablesSelected(){
+    let localVariablesSelectedCount = 0;
 
+    for (let select of this.tableRef.getSelected()){
+      if (select.onLocal == true){
+        localVariablesSelectedCount +=1;
+      }
+    }
+
+    return localVariablesSelectedCount;
+  }
+
+  importVariablesOnLocal() {
     this.$bvModal
         .msgBoxConfirm(
-            this.$t("component.sharedResources.variable-import-confirmation").toString(),
+            this.$t("component.sharedResources.variable-import-confirmation").toString() +
+            (this.localVariablesSelected() == 0 ? "" : (
+                this.localVariablesSelected() == 1 ?
+                    this.$t("component.sharedResources.local-variable-import-warning",{variablesCount: this.localVariablesSelected()}).toString() :
+                    this.$t("component.sharedResources.locals-variables-import-warning",{variablesCount: this.localVariablesSelected()}).toString()
+            )),
             {
               cancelTitle: this.$t("component.common.cancel").toString(),
               okTitle: this.$t("component.sharedResources.import").toString(),
@@ -483,6 +499,11 @@ export default class VariableList extends Vue {
               if (response.status === 201){
                 this.tableRef.refresh();
               }
+              let variablesCount = response.response.metadata.datafiles.length;
+              let message = this.$i18n.t("component.common.success.import-success-message", {
+                variablesCount: variablesCount
+              });
+              this.$opensilex.showSuccessToast(message);
             });
           }
         });

@@ -496,12 +496,18 @@ export default class VariableList extends Vue {
             let form = {"variables":variablesURIs,"resource":this.selectedResource.uri};
 
             this.$service.importVariables(form).then(response => {
-              if (response.status === 201){
+              if (response.status === 200){
                 this.tableRef.refresh();
               }
-              let variablesCount = response.response.metadata.datafiles.length;
+              var resultJson = JSON.parse(JSON.stringify(response.response.result));
               let message = this.$i18n.t("component.common.success.import-success-message", {
-                variablesCount: variablesCount
+                variablesCount: resultJson.variableUris.length,
+                entitiesCount:resultJson.entityUris.length,
+                characteristicsCount:resultJson.characteristicUris.length,
+                methodsCount:resultJson.methodUris.length,
+                unitsCount:resultJson.unitUris.length,
+                interestEntityCount:resultJson.interestEntityUris.length
+
               });
               this.$opensilex.showSuccessToast(message);
             });

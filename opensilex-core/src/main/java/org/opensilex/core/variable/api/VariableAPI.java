@@ -708,7 +708,13 @@ public class VariableAPI {
         SharedResourcesFunctions sharedResourcesFunctions = SharedResourcesFunctions.getInstance(coreModule);
 
         List<URI> uris = dto.getUris();
-        List<URI> createdUris = new ArrayList<>();
+        List<URI> entityUris = new ArrayList<>();
+        List<URI> interestEntityUris = new ArrayList<>();
+        List<URI> characteristicUris = new ArrayList<>();
+        List<URI> methodUris = new ArrayList<>();
+        List<URI> unitUris = new ArrayList<>();
+        List<URI> variableUris = new ArrayList<>();
+        variablesImportResponseDTO resultDto = new variablesImportResponseDTO();
         List<VariableDetailsDTO> variablesList;
         URI resource = dto.getResource();
 
@@ -753,35 +759,35 @@ public class VariableAPI {
                 if (variableFieldsList.contains("entity")){
                     URI shortUriEntity = createVariableElement(variableJson, resource, token, "entity", EntityModel.class, EntityCreationDTO.class);
                     if (!Objects.equals(shortUriEntity, new URI(""))){
-                        createdUris.add(shortUriEntity);
+                        entityUris.add(shortUriEntity);
                     }
                 }
 
                 if (variableFieldsList.contains("entity_of_interest")) {
                     URI shortUriInterestEntity = createVariableElement(variableJson, resource, token, "entity_of_interest", InterestEntityModel.class, InterestEntityCreationDTO.class);
                     if (!Objects.equals(shortUriInterestEntity, new URI(""))) {
-                        createdUris.add(shortUriInterestEntity);
+                        interestEntityUris.add(shortUriInterestEntity);
                     }
                 }
 
                 if (variableFieldsList.contains("characteristic")){
                     URI shortUriCharacteristic = createVariableElement(variableJson, resource, token, "characteristic", CharacteristicModel.class, CharacteristicCreationDTO.class);
                     if (!Objects.equals(shortUriCharacteristic, new URI(""))){
-                        createdUris.add(shortUriCharacteristic);
+                        characteristicUris.add(shortUriCharacteristic);
                     }
                 }
 
                 if (variableFieldsList.contains("method")){
                     URI shortUriMethod = createVariableElement(variableJson, resource, token, "method", MethodModel.class, MethodCreationDTO.class);
                     if (!Objects.equals(shortUriMethod, new URI(""))){
-                        createdUris.add(shortUriMethod);
+                        methodUris.add(shortUriMethod);
                     }
                 }
 
                 if (variableFieldsList.contains("unit")){
                     URI shortUriUnit = createVariableElement(variableJson, resource, token, "unit", UnitModel.class, UnitCreationDTO.class);
                     if (!Objects.equals(shortUriUnit, new URI(""))){
-                        createdUris.add(shortUriUnit);
+                        unitUris.add(shortUriUnit);
                     }
                 }
 
@@ -806,7 +812,7 @@ public class VariableAPI {
 
                     model = dao.create(model);
                     URI shortUri = new URI(SPARQLDeserializers.getShortURI(model.getUri().toString()));
-                    createdUris.add(shortUri);
+                    variableUris.add(shortUri);
 
                 } catch (SPARQLAlreadyExistingUriException duplicateUriException) {
                     return new ErrorResponse(Response.Status.CONFLICT, "Variable already exists", duplicateUriException.getMessage()).getResponse();
@@ -816,7 +822,14 @@ public class VariableAPI {
             }
         }
 
-        return new ObjectUriResponse(Response.Status.CREATED, createdUris).getResponse();
+        resultDto.setEntityUris(entityUris);
+        resultDto.setInterestEntityUris(interestEntityUris);
+        resultDto.setCharacteristicUris(characteristicUris);
+        resultDto.setMethodUris(methodUris);
+        resultDto.setUnitUris(unitUris);
+        resultDto.setVariableUris(variableUris);
+
+        return new SingleObjectResponse<>(resultDto).getResponse();
     }
 }
 

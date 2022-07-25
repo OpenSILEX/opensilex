@@ -93,7 +93,7 @@
                 "creation-success-message": " a été crée",
                 "update-success-message": " a été modifié(e)",
                 "delete-success-message": " a été supprimé(e)",
-                "import-success-message": "{variablesCount} variables ont bien été importées (variables, entitées, caractéristiques, méthodes, unités ou niveaux d'observation)"
+                "import-success-message": "{variablesCount} variables, {entitiesCount} entitées, {variablesCount} caractéristiques, {variablesCount} méthodes, {variablesCount}unités, {variablesCount} niveaux d'observation ont bien été importées"
             },
             "details": {
                 "document": "Documents",

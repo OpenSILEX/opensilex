@@ -1,5 +1,7 @@
 <template>
   <div style="min-height:300px;">
+    
+    <!-- Context menu on data right click-->
     <b-list-group
       v-show="contextMenuShow"
       ref="contextMenu"
@@ -343,7 +345,7 @@ export default class DataVisualisationGraphic extends Vue {
           chart: {
             zoomType: "x",
             marginLeft: 80,
-            height: that.series.length > 8 ? 600 : 500,
+            height: that.series.length > 8 ? 650 : 500,
             type: that.lineType ? "line" : "scatter",
             events: {
               click: function(e) {
@@ -693,24 +695,33 @@ export default class DataVisualisationGraphic extends Vue {
   return yAxis;
 }
 
+  // on right click on datapoint from a graphic serie
   pointRightClick(e, graphic) {
     this.closeMenu();
     let chart = graphic.series.chart;
     chart.tooltip.hide();
+
+      // show context menu
     if (e.point.data && graphic.series) {
       this.contextMenuShow = true;
       let chartWidth = this.highchartsRef[0].chart.chartWidth;
 
       this.$nextTick(() => {
-          this.leftPosition = e.offsetX + 20;
-          this.topPosition = e.pageY - 260;
+        // wait to have the contextMenu Width
+        let menuWidth = this.contextMenu.clientWidth;
+
+        // define X/Y position for context menu,
+        // if possible, place it before the point, otherwise if exceeds graphic limit border place it after the point
+        if (e.chartX + menuWidth > chartWidth) {
+          this.leftPosition = e.pageX - menuWidth - 10;
+        } else {
+          this.leftPosition = e.pageX + 10;
+        }
+
+        this.topPosition = e.pageY;
       });
       this.selectedValue = e.point.y;
       this.selectedObject = e.point.objectUri ? e.point.objectUri : e.point.deviceUri;
-
-      if ( !this.selectedObject) {
-        this.selectedObject = e.point.data.target;
-      }
       this.selectedProvenance = e.point.provenanceUri;
       this.selectedData = e.point.data.uri;
 
@@ -719,6 +730,7 @@ export default class DataVisualisationGraphic extends Vue {
       this.selectedTimeToSend = e.point.dateWithOffset;
     }
   }
+  
   pointClick(e, graphic) {
     this.closeMenu();
     if (e.point.data && graphic.series) {

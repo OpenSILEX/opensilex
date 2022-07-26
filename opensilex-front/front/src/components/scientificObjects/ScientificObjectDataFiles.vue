@@ -1,5 +1,5 @@
 <template>
-  <div class="container-fluid">
+  <div>
 
         <opensilex-PageContent class="pagecontent">
       <!-- Toggle Sidebar--> 
@@ -80,7 +80,7 @@
 
             <!-- Provenance -->
             <div>
-              <opensilex-FilterField halfWidth="true">
+              <opensilex-FilterField>
                 <opensilex-DatafileProvenanceSelector
                   ref="provSelector"
                   :provenances.sync="filter.provenance"
@@ -323,6 +323,7 @@ export default class ScientificObjectDataFiles extends Vue {
 .card-body {
   margin-bottom: -15px;
 }
+
 </style>
 
 <i18n>

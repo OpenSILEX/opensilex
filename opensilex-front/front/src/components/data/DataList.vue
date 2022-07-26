@@ -6,20 +6,6 @@
       :fields="fields"
       defaultSortBy="date"
     >
-
-      <template v-slot:export>
-        <b-button
-          @click="exportModal.show()"
-          class="exportButton greenThemeColor"
-        >export
-        </b-button>
-
-        <opensilex-DataExportModal
-          ref="exportModal"
-          :filter="filter"
-        ></opensilex-DataExportModal>
-      </template>
-
       <template v-slot:cell(target)="{ data }">
         <opensilex-UriLink
           :uri="data.item.target"

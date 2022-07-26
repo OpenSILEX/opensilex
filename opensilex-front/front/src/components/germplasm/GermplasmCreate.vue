@@ -25,8 +25,8 @@
 
       <opensilex-GermplasmTable v-if="selectedType" ref="germplasmTable" :germplasmType="selectedType" :key="tabulatorRefresh"></opensilex-GermplasmTable>
     </opensilex-PageContent>
-    <b-modal ref="helpModal" size="xl" hide-header ok-only>
-      <opensilex-GermplasmHelp></opensilex-GermplasmHelp>
+    <b-modal ref="helpModal" size="xl" hide-header hide-footer>
+      <opensilex-GermplasmHelp @hideBtnIsClicked="hide()"></opensilex-GermplasmHelp>
     </b-modal>
   </div>
 </template>
@@ -114,6 +114,10 @@ export default class GermplasmCreate extends Vue {
     console.log(this.selectedType);    
     this.tabulatorRefresh++;
     germplasmTable.updateColumns();
+  }
+  
+  hide() {
+    this.helpModal.hide();
   }
 }
 </script>

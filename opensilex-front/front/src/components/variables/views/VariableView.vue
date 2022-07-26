@@ -152,4 +152,8 @@ export default class VariableView extends Vue {
 .projectAnnotations{
   margin-top: 18px; 
 }
+
+.navigationTabs {
+  margin-bottom: -9px
+}
 </style>

@@ -128,7 +128,7 @@
               <opensilex-Icon icon="ik#ik-target" class="title-icon" />
               {{ $t("ScientificObjectList.selected") }}
             </h3>&nbsp;
-            <span class="badge badge-pill badge-info">
+            <span class="badge badge-pill greenThemeColor">
               {{
               selectedObjects.length
               }}

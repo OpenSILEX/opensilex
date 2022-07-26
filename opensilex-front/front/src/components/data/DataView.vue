@@ -1,5 +1,6 @@
 <template>
   <div class="container-fluid">
+    <opensilex-PageActions>
         <opensilex-CreateButton
             v-if="user.hasCredential(
               credentials.CREDENTIAL_DATA_MODIFICATION_ID)"
@@ -8,6 +9,19 @@
           class="createButton greenThemeColor"
         >
         </opensilex-CreateButton>
+        <b-button
+          @click="exportModal.show()"
+          class="exportButton greenThemeColor createButton"
+        >
+          export
+        </b-button>
+    </opensilex-PageActions>
+
+
+    <opensilex-DataExportModal
+      ref="exportModal"
+      :filter="filter"
+    ></opensilex-DataExportModal>
 
     <opensilex-ModalForm
       ref="modalDataForm"
@@ -218,6 +232,7 @@ export default class DataView extends Vue {
   @Ref("resultModal") readonly resultModal!: any;
   @Ref("soSelector") readonly soSelector!: any;
   @Ref("varSelector") readonly varSelector!: any;
+   @Ref("exportModal") readonly exportModal!: any;
 
   filter = {
     start_date: null,

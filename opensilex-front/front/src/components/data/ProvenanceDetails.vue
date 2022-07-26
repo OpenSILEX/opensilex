@@ -120,9 +120,20 @@ export default class ProvenanceDetails extends Vue {
   margin-left: -15px;
   margin-right: 15px;
 }
+
 .ProvenanceDetailsVisible{
   width: auto;
   min-width: auto;
+  max-width: 340px;
+}
+
+@media screen and (min-width: 1200px) {
+  .ProvenanceDetailsVisible{
+    min-width: 340px;
+    max-width: 340px;
+    margin-left: -20px;
+    overflow: hidden;
+  }
 }
 </style>
 <i18n>

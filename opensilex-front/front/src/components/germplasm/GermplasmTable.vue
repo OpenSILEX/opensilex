@@ -29,13 +29,16 @@
     <b-input-group class="mt-2 mb-2" size="sm">
       <downloadCsv
         ref="downloadCsv"
-        class="btn btn-outline-primary mb-2 mr-2"
+        class="btn downloadTemplateBtn mb-2 mr-2"
         :data="jsonForTemplate"
         name="template.csv"
       >
         {{ $t("GermplasmTable.downloadTemplate") }}
       </downloadCsv>
-      <opensilex-CSVInputFile v-on:updated="uploaded"> </opensilex-CSVInputFile>
+      <opensilex-CSVInputFile
+        v-on:updated="uploaded"
+      >
+      </opensilex-CSVInputFile>
       <b-button
         class="mb-2 mr-2"
         @click="updateColumns"
@@ -64,9 +67,8 @@
 
     <b-input-group size="sm">
       <b-button
-        class="mb-2 mr-2"
+        class="mb-2 mr-2 greenThemeColor"
         @click="checkData()"
-        variant="primary"
         v-bind:disabled="disableCheck"
         >{{ $t("GermplasmTable.check") }}</b-button
       >
@@ -93,7 +95,7 @@
         {{ this.max }} {{ $t("GermplasmTable.progressTitle") }}
         <b-progress :max="max" show-progress animated>
           <b-progress-bar :value="progressValue" :max="max" variant="info">
-            <strong>Progress: {{ progressValue }} / {{ max }}</strong>
+            <strong> {{ $t("GermplasmTable.progressValue") }}  {{ progressValue }} / {{ max }}</strong>
           </b-progress-bar>
         </b-progress>
       </b-alert>
@@ -119,9 +121,8 @@
         >
         <b-button
           v-bind:disabled="disableCloseButton"
-          class="mb-2 mr-2"
+          class="mb-2 mr-2 greenThemeColor"
           @click="$bvModal.hide('progressModal')"
-          variant="primary"
           >{{ $t("GermplasmTable.close") }}</b-button
         >
       </template>
@@ -130,9 +131,9 @@
     <b-modal
       :no-close-on-backdrop="true"
       :no-close-on-esc="true"
-      @hide="addNewColumns"
       ref="newcolsModal"
       centered
+   
       :title="$t('GermplasmTable.newColumns')"
     >
       <b-form-group
@@ -151,6 +152,22 @@
           {{ column }}
         </b-form-checkbox>
       </b-form-group>
+
+      <b-button
+        type="button"
+        class="btn greenThemeColor loadCsvButton"
+        v-on:click="addNewColumns()"
+      >
+        {{ $t('component.common.ok') }}
+      </b-button>
+      <b-button
+        type="button"
+        class="btn loadCsvButton"
+        v-on:click="addNewColumnsCancel()"
+      >
+        {{ $t('component.common.cancel') }}
+      </b-button>
+
     </b-modal>
   </div>
 </template>
@@ -257,6 +274,11 @@ export default class GermplasmTable extends Vue {
     this.newcolsModal.show();
   }
 
+  addNewColumnsCancel() {
+    this.newcolsModal.hide();
+  }
+  
+
   addNewColumns() {
     this.colModal.hide();
     for (let col in this.newColumnsselected) {
@@ -275,6 +297,7 @@ export default class GermplasmTable extends Vue {
     }
     this.newColumns = [];
     this.newColumnsselected = [];
+    this.newcolsModal.hide();
   }
 
   updateColumns() {
@@ -986,6 +1009,11 @@ export default class GermplasmTable extends Vue {
 // .tabulator .tabulator-header .tabulator-row  {
 //   height: 30px;
 // }
+
+.loadCsvButton {
+  float: right;
+  margin-right: 10px;
+}
 </style>
 
 <i18n>
@@ -1008,6 +1036,7 @@ en:
     check : Check
     insert : Insert
     progressTitle: lines to scan
+    progressValue: Progress
     emptyMessage: The table is empty
     close: Close
     addRow: Add Row
@@ -1057,6 +1086,7 @@ fr:
     check : Valider
     insert : Insérer
     progressTitle: lignes à parcourir
+    progressValue: Progression
     emptyMessage: Le tableau est vide
     close : Fermer
     addRow: Ajouter ligne
@@ -1072,7 +1102,7 @@ fr:
     infoLot: Vous devez renseigner au moins l'espèce, la variété ou l'accession
     infoAccession: Vous devez renseigner l'espèce ou la variété
     help: Aide
-    infoMessageGermplReady: germplasm prêts à être insérer
+    infoMessageGermplReady: ressources génétiques prêtes à être insérer
     infoMessageErrors: erreurs
     infoMessageEmptyLines: lignes vides
     infoMessageGermplInserted: germplasm insérés

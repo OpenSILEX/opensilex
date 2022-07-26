@@ -6,7 +6,7 @@
       description="component.project.project"
     ></opensilex-PageHeader>
 
-    <opensilex-PageActions :tabs="true" :returnButton="true" class="navigationTabs">
+    <opensilex-PageActions :tabs="true" :returnButton="true" class="ProjectDetailsTabs">
       <template v-slot>
         <b-nav-item
           :active="isDetailsTab()"
@@ -116,6 +116,10 @@ export default class ProjectDetails extends Vue {
 <style lang="scss">
 .projectDescription, .projectAnnotations, .projectDocuments{
   margin-top: 18px; 
+}
+
+.ProjectDetailsTabs {
+  margin-bottom: -9px
 }
 </style>
 

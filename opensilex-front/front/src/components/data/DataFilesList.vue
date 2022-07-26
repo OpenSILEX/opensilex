@@ -15,7 +15,8 @@
               path:
                 '/scientific-objects/details/' +
                 encodeURIComponent(data.item.target),
-            }"
+            }
+            "
           ></opensilex-UriLink>
       </template>
 

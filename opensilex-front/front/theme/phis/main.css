@@ -520,6 +520,12 @@
     background-color: #F6F7FB;
 }
 
+.custom-checkbox .custom-control-input:checked ~ .custom-control-label::after ,
+.custom-control-input:checked ~ .custom-control-label::before {
+    color: #fff;
+    border-color: #00A38D;
+    background-color: #00A38D;
+}
 /********************************
 * 
 ********************************/
@@ -556,7 +562,7 @@
     background-color: #007969;
 }
 
-.addChildButton {
+.addChildButton, .DeviceImportHelpEyeIcon, .ScientificObjectImportHelpEyeIcon, .EventHelpTableViewHelpEyeIcon, .DataHelpTableViewHelpEyeIcon {
     color: #00A38D;
     border-color: #00A38D;
     margin-bottom: 5px;
@@ -571,7 +577,19 @@
     height: 20px
 }
 
-/* Tabs back-button*/
+.downloadTemplateBtn {
+    color: #00A38D;
+    border-color: #00A38D;
+}
+
+.downloadTemplateBtn:hover {
+    background-color: #00A38D;
+    color: #f1f1f1
+}
+
+/********************************
+* Tabs back-button
+********************************/
 
 .back-button {
     display: flex;
@@ -592,9 +610,9 @@
 }
 
 .back-button-icon {
-font-size:130%;
-font-weight: bolder;
-color:  #00A28C;
+    font-size:130%;
+    font-weight: bolder;
+    color:  #00A28C;
 }
   
 .back-button:hover .back-button-icon {
@@ -674,9 +692,9 @@ color:  #00A28C;
     margin-top: 10px;
 }
 
-  .datafilesList, .experimentScientificObjectsList, .dataList {
-      width: 100%;
-  }
+.datafilesList, .experimentScientificObjectsList, .dataList {
+    width: 100%;
+}
 
 /********************************
 * MEDIA QUERIES

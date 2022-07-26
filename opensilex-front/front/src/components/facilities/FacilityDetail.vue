@@ -235,7 +235,7 @@ export default class FacilityDetail extends Vue {
         .getService("opensilex.VueJsOntologyExtensionService")
         .getRDFTypeProperties(
             this.selected.rdf_type,
-            this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI
+            this.$opensilex.Oeso.FACILITY_TYPE_URI
         )
         .then((result) => {
           this.classModel = result.response.result;

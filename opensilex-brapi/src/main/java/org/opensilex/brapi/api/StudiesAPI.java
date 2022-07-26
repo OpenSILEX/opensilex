@@ -126,7 +126,7 @@ public class StudiesAPI implements BrapiCall {
     @Path("studies")
     @ApiOperation(value = "Retrieve studies information", notes = "Retrieve studies information")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve studies information", response = StudyDTO.class, responseContainer = "List")})
+        @ApiResponse(code = 200, message = "Retrieve studies information", response = StudyDTO.class)})
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
 
@@ -189,7 +189,7 @@ public class StudiesAPI implements BrapiCall {
     @Path("studies/{studyDbId}")
     @ApiOperation(value = "Retrieve study details", notes = "Retrieve study details")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve study details", response = StudyDetailsDTO.class, responseContainer = "List")})
+        @ApiResponse(code = 200, message = "Retrieve study details", response = StudyDetailsDTO.class)})
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
 
@@ -214,7 +214,7 @@ public class StudiesAPI implements BrapiCall {
     @Path("studies/{studyDbId}/observations")
     @ApiOperation(value = "Get the observations associated to a specific study", notes = "Get the observations associated to a specific study")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "OK", response = ObservationDTO.class, responseContainer = "List")})
+        @ApiResponse(code = 200, message = "OK", response = ObservationDTO.class)})
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getObservations(
@@ -240,7 +240,7 @@ public class StudiesAPI implements BrapiCall {
     @Path("studies/{studyDbId}/observationvariables")
     @ApiOperation(value = "List all the observation variables measured in the study.", notes = "List all the observation variables measured in the study.")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "OK", response = ObservationVariableDTO.class, responseContainer = "List")})
+        @ApiResponse(code = 200, message = "OK", response = ObservationVariableDTO.class)})
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getObservationVariables(
@@ -259,7 +259,7 @@ public class StudiesAPI implements BrapiCall {
     @Path("studies/{studyDbId}/observationunits")
     @ApiOperation(value = "List all the observation units measured in the study.", notes = "List all the observation units measured in the study.")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "OK", response = ObservationUnitDTO.class, responseContainer = "List")})
+        @ApiResponse(code = 200, message = "OK", response = ObservationUnitDTO.class)})
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getObservationUnits(

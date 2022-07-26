@@ -80,7 +80,7 @@ public class CallsAPI implements BrapiCall {
     @ApiOperation(value = "Check the available BrAPI calls",
             notes = "Check the available BrAPI calls")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve BrAPI calls", response = Call.class, responseContainer = "List")})
+        @ApiResponse(code = 200, message = "Retrieve BrAPI calls", response = Call.class)})
 
     @Produces(MediaType.APPLICATION_JSON)
     public Response getCalls(

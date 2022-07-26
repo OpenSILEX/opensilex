@@ -92,7 +92,7 @@ public class VariablesAPI implements BrapiCall {
     @ApiOperation(value = "Call to retrieve a list of observationVariables available in the system",
             notes = "retrieve variables information")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "retrieve variables information", response = ObservationVariableDTO.class, responseContainer = "List")})
+        @ApiResponse(code = 200, message = "retrieve variables information", response = ObservationVariableDTO.class)})
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getVariablesList(
@@ -125,7 +125,7 @@ public class VariablesAPI implements BrapiCall {
     @ApiOperation(value = "Retrieve variable details by id",
             notes = "Retrieve variable details by id")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve variable details by id", response = ObservationVariableDTO.class, responseContainer = "List")})
+        @ApiResponse(code = 200, message = "Retrieve variable details by id", response = ObservationVariableDTO.class)})
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getVariableDetails(

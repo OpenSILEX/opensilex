@@ -113,7 +113,7 @@ public class FaidareAPI implements BrapiCall {
     @Path("studies/{studyDbId}")
     @ApiOperation(value = "Retrieve study details", notes = "Retrieve study details")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Retrieve study details", response = StudyDetailsDTO.class, responseContainer = "List")})
+            @ApiResponse(code = 200, message = "Retrieve study details", response = StudyDetailsDTO.class)})
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
 
@@ -162,7 +162,7 @@ public class FaidareAPI implements BrapiCall {
     @Path("studies/{studyDbId}/observationvariables")
     @ApiOperation(value = "List all the observation variables measured in the study.", notes = "List all the observation variables measured in the study.")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK", response = ObservationVariableDTO.class, responseContainer = "List")})
+            @ApiResponse(code = 200, message = "OK", response = ObservationVariableDTO.class)})
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getObservationVariables(
@@ -182,7 +182,7 @@ public class FaidareAPI implements BrapiCall {
     @Path("studies/{studyDbId}/germplasm")
     @ApiOperation(value = "List all the germplasm in the study.", notes = "List all the germplasm in the study.")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK", response = GermplasmDTO.class, responseContainer = "List")})
+            @ApiResponse(code = 200, message = "OK", response = GermplasmDTO.class)})
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getGermplasm(
@@ -210,7 +210,7 @@ public class FaidareAPI implements BrapiCall {
     @Path("studies/{studyDbId}/Location")
     @ApiOperation(value = "List all the details of locations in the study.", notes = "List all Locations in the study.")
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "OK", response = Location.class, responseContainer = "List")})
+            @ApiResponse(code = 200, message = "OK", response = Location.class)})
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getLocation(

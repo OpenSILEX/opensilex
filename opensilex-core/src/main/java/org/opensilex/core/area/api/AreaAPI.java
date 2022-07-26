@@ -117,7 +117,7 @@ public class AreaAPI {
         GeospatialModel geospatialModel = new GeospatialModel();
         URI areaURI;
 
-        nosql.startTransaction();
+//        nosql.startTransaction();
         sparql.startTransaction();
         try {
             if (!areaDTO.isStructuralArea){
@@ -150,20 +150,20 @@ public class AreaAPI {
             geoDAO.create(geospatialModel);
 
             sparql.commitTransaction();
-            nosql.commitTransaction();
+//            nosql.commitTransaction();
 
             return new ObjectUriResponse(Response.Status.CREATED, areaURI).getResponse();
         } catch (MongoWriteException | CodecConfigurationException mongoException) {
             try {
                 sparql.rollbackTransaction(mongoException);
-                nosql.rollbackTransaction();
+//                nosql.rollbackTransaction();
             } catch (Exception e) {
                 return new ErrorResponse(Response.Status.BAD_REQUEST, INVALID_GEOMETRY, mongoException).getResponse();
             }
             throw mongoException;
         } catch (Exception ex) {
             sparql.rollbackTransaction(ex);
-            nosql.rollbackTransaction();
+//            nosql.rollbackTransaction();
             throw ex;
         }
     }
@@ -263,7 +263,7 @@ public class AreaAPI {
         GeospatialModel geospatialModel = new GeospatialModel();
         URI areaURI;
 
-        nosql.startTransaction();
+//        nosql.startTransaction();
         sparql.startTransaction();
         try {
             // Check if an event is linked to the area
@@ -308,20 +308,20 @@ public class AreaAPI {
             geoDAO.update(geospatialModel,areaURI,null);
 
             sparql.commitTransaction();
-            nosql.commitTransaction();
+//            nosql.commitTransaction();
 
             return new ObjectUriResponse(areaURI).getResponse();
         } catch (MongoWriteException | CodecConfigurationException mongoException) {
             try {
                 sparql.rollbackTransaction(mongoException);
-                nosql.rollbackTransaction();
+//                nosql.rollbackTransaction();
             } catch (Exception e) {
                 return new ErrorResponse(Response.Status.BAD_REQUEST, INVALID_GEOMETRY, mongoException).getResponse();
             }
             throw mongoException;
         } catch (Exception ex) {
             sparql.rollbackTransaction();
-            nosql.rollbackTransaction();
+//            nosql.rollbackTransaction();
             throw ex;
         }
     }
@@ -352,7 +352,7 @@ public class AreaAPI {
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
         EventDAO<EventModel> eventDAO= new EventDAO<>(sparql,nosql);
 
-        nosql.startTransaction();
+//        nosql.startTransaction();
         sparql.startTransaction();
         try {
             dao.delete(areaURI);
@@ -383,12 +383,12 @@ public class AreaAPI {
             }
 
             sparql.commitTransaction();
-            nosql.commitTransaction();
+//            nosql.commitTransaction();
 
             return new ObjectUriResponse(Response.Status.OK, areaURI).getResponse();
         } catch (Exception ex) {
             sparql.rollbackTransaction();
-            nosql.rollbackTransaction();
+//            nosql.rollbackTransaction();
             throw ex;
         }
     }

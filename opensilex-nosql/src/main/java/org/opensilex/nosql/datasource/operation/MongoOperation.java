@@ -3,6 +3,11 @@ package org.opensilex.nosql.datasource.operation;
 import com.mongodb.client.ClientSession;
 import org.opensilex.utils.ThrowingConsumer;
 
+/**
+ * @author rcolin
+ * Extension of {@link AbstractDataSourceOperation} which work with a {@link ClientSession}
+ * This session define the level of transaction atomicty for MongoDB based operation
+ */
 public class MongoOperation extends AbstractDataSourceOperation<ClientSession> {
 
     public MongoOperation(ThrowingConsumer<ClientSession, Exception> consumer) {

@@ -81,19 +81,19 @@ public class GraphAndCollectionMigration implements OpenSilexModuleUpdate {
             SPARQLConfig sparqlConfig = opensilex.getModuleConfig(SPARQLModule.class, SPARQLConfig.class);
 
             sparql.startTransaction();
-            mongodb.startTransaction();
+//            mongodb.startTransaction();
             executeSparqlMigration(sparql, sparqlConfig);
             executeMongoMigration(mongodb, mongoDBConfig);
 
             sparql.commitTransaction();
-            mongodb.commitTransaction();
+//            mongodb.commitTransaction();
             LOGGER.info("SPARQL graphs migration [OK]");
             LOGGER.info("MongoDB collections migration [OK]");
 
         } catch (Exception e) {
             try {
                 sparql.rollbackTransaction();
-                mongodb.rollbackTransaction();
+//                mongodb.rollbackTransaction();
                 throw new OpensilexModuleUpdateException(this,e);
             } catch (Exception e2) {
                 throw new OpensilexModuleUpdateException(this,e2);

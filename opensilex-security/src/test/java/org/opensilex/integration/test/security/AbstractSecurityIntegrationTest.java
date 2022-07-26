@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.net.URI;
 import java.util.ArrayList;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.junit.After;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
@@ -100,6 +101,10 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
      * @throws Exception in case of error happening during graph clear
      */
     public void clearGraphs(List<Class<? extends SPARQLResourceModel>> modelsToClear) throws Exception {
+        if(CollectionUtils.isEmpty(modelsToClear)){
+            return;
+        }
+
         SPARQLService sparqlService = getSparqlService();
         List<String> graphsToClean = new ArrayList<>(modelsToClear.size());
         for (Class<? extends SPARQLResourceModel> modelClass : modelsToClear) {

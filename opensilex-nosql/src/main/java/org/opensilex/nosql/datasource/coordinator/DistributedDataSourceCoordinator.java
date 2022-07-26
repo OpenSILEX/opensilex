@@ -11,7 +11,8 @@ public interface DistributedDataSourceCoordinator<O extends DataSourceOperation<
                                  ThrowingConsumer<T, Exception> start,
                                  ThrowingConsumer<T, Exception> commit,
                                  ThrowingConsumer<T, Exception> rollback,
-                                 ThrowingConsumer<T, Exception> close);
+                                 ThrowingConsumer<T, Exception> close,
+                                 String description);
 
     void run() throws Exception;
 

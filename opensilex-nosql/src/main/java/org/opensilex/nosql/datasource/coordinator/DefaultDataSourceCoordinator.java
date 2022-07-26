@@ -23,7 +23,8 @@ public class DefaultDataSourceCoordinator<O extends DataSourceOperation<?>> exte
                     }
                 },
                 (SPARQLService unitOfWork) -> {
-                }
+                },
+                SPARQLService.class.getSimpleName()+System.identityHashCode(sparql)
         );
 
         // register a MongoDB based database operation
@@ -40,7 +41,8 @@ public class DefaultDataSourceCoordinator<O extends DataSourceOperation<?>> exte
                         unitOfWork.abortTransaction();
                     }
                 },
-                (ClientSession::close)
+                (ClientSession::close),
+                ClientSession.class.getSimpleName()+System.identityHashCode(session)
         );
     }
 

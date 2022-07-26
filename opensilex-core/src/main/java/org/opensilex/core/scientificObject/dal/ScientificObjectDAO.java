@@ -779,22 +779,7 @@ public class ScientificObjectDAO {
 
         try {
             sparql.startTransaction();
-            nosql.startTransaction();
-
-            // experimental context + no URI set
-            if(! SPARQLDeserializers.compareURIs(defaultGraphNode.getURI(),contextURI) && objectURI == null) {
-
-                // generate a globally unique URI
-                // (by taking account of all OS into global graph, which also includes OS from any xp)
-                sparql.generateUniqueURI(defaultGraphNode, object, object, true);
-            }
-
-            // if URI is already set, the service will check that URI is unique inside the provided graph
-            // if the graph is global : check if OS is unique inside global graph
-            // if the graph is an experiment : check if OS is unique inside experiment graph
-
-            // if the graph is an experiment and the OS already exist into global graph -> OK, since here we consider
-            // that we reuse this OS inside the experiment, so no need to performs additional checking
+//            nosql.startTransaction();
             sparql.create(graphNode, object);
 
             MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
@@ -803,10 +788,10 @@ public class ScientificObjectDAO {
                 moveDAO.create(facilityMoveEvent);
             }
             sparql.deletePrimitives(SPARQLDeserializers.nodeURI(contextURI), object.getUri(), Oeso.isHosted);
-            nosql.commitTransaction();
+//            nosql.commitTransaction();
             sparql.commitTransaction();
         } catch (Exception ex) {
-            nosql.rollbackTransaction();
+//            nosql.rollbackTransaction();
             sparql.rollbackTransaction(ex);
         }
 
@@ -890,7 +875,7 @@ public class ScientificObjectDAO {
 
         try {
             sparql.startTransaction();
-            nosql.startTransaction();
+//            nosql.startTransaction();
             sparql.deleteByURI(graphNode, objectURI);
             sparql.create(graphNode, object);
             if (childrenURIs.size() > 0) {
@@ -939,9 +924,9 @@ public class ScientificObjectDAO {
             sparql.deletePrimitives(graphNode, objectURI, Oeso.isHosted);
 
             sparql.commitTransaction();
-            nosql.commitTransaction();
+//            nosql.commitTransaction();
         } catch (Exception ex) {
-            nosql.rollbackTransaction();
+//            nosql.rollbackTransaction();
             sparql.rollbackTransaction(ex);
 
         }

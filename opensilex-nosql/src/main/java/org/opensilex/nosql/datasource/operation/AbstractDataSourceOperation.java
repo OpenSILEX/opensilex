@@ -5,6 +5,14 @@ import org.opensilex.utils.ThrowingConsumer;
 import java.util.Objects;
 import java.util.Random;
 
+/**
+ * @author rcolin
+ * Abstract implementation of {@link DataSourceOperation} which handle id generation, state handling and wrap
+ * the ThrowingConsumer which is effectively executed
+ *
+ * @param <T> the type of object consumed by the operation, depend on the database on which the operation is executed.
+ *           This type of object can be seen as the level of transaction atomicity for a database
+ */
 public abstract class AbstractDataSourceOperation<T> implements DataSourceOperation<T> {
 
     private final long id;
@@ -13,7 +21,12 @@ public abstract class AbstractDataSourceOperation<T> implements DataSourceOperat
 
     private static final Random RANDOM = new Random(Double.doubleToLongBits(Math.random()));
 
-    public AbstractDataSourceOperation(ThrowingConsumer<T, Exception> consumer) {
+    /**
+     *
+     * @param consumer the {@link ThrowingConsumer} which is effectively executed
+     * @apiNote {@link #id} is generated with a random number generator
+     */
+    protected AbstractDataSourceOperation(ThrowingConsumer<T, Exception> consumer) {
 
         Objects.requireNonNull(consumer);
         this.consumer = consumer;

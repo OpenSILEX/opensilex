@@ -60,7 +60,7 @@ core:
         - uri : http://138.102.159.36:8083/rest
           label : PHENOME
         - uri : http://138.102.159.36:8082/rest
-          label : EPPN
+          label : EMPHASIS
         - uri : http://138.102.159.10/resource/rest
           label : VitiOeno
 #server:

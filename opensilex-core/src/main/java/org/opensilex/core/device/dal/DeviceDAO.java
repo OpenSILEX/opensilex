@@ -78,7 +78,7 @@ public class DeviceDAO {
 
         if (relations != null) {
             for (RDFObjectRelationDTO relation : relations) {
-                URI prop = relation.getProperty();
+                URI prop = SPARQLDeserializers.formatURI(relation.getProperty());
                 if (!ontologyDAO.validateObjectValue(sparql.getDefaultGraphURI(DeviceModel.class), model, prop, relation.getValue(), devModel)) {
                     throw new InvalidValueException("Invalid relation value for " + relation.getProperty().toString() + " => " + relation.getValue());
                 }

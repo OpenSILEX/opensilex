@@ -11,8 +11,10 @@ package org.opensilex.core.device.api;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.jena.vocabulary.XSD;
+import org.junit.Assert;
 import org.junit.Test;
 import org.opensilex.core.AbstractMongoIntegrationTest;
+import org.opensilex.core.CoreModule;
 import org.opensilex.core.data.api.DataAPI;
 import org.opensilex.core.data.api.DataCreationDTO;
 import org.opensilex.core.data.dal.DataDAO;
@@ -21,13 +23,17 @@ import org.opensilex.core.data.dal.ProvEntityModel;
 import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.provenance.api.ProvenanceAPI;
 import org.opensilex.core.provenance.api.ProvenanceCreationDTO;
 import org.opensilex.core.provenance.dal.AgentModel;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
+import org.opensilex.core.variable.api.VariableApiTest;
+import org.opensilex.core.variable.api.VariableCreationDTO;
 import org.opensilex.core.variable.dal.*;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLService;
@@ -37,6 +43,7 @@ import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.function.BiPredicate;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
@@ -229,6 +236,64 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
         ErrorResponse getResponse = mapper.convertValue(node, new TypeReference<ErrorResponse>() {});
         assertEquals(DeviceAPI.LINKED_DEVICE_ERROR,getResponse.getResult().title);
         assertTrue(getResponse.getResult().message.contains("provenance"));
+    }
+
+    @Test
+    public void testLinkWithVariablesOK() throws Exception {
+
+        // create variable and relation
+        VariableApiTest variableApiTest = new VariableApiTest();
+        VariableCreationDTO linkedVariable = variableApiTest.getCreationDto();
+        Response postVariableResponse = getJsonPostResponse(target(variableApiTest.createPath), variableApiTest.getCreationDto());
+        linkedVariable.setUri(extractUriFromResponse(postVariableResponse));
+
+        RDFObjectRelationDTO measuresRelation = new RDFObjectRelationDTO();
+        measuresRelation.setProperty(URI.create(Oeso.measures.toString()));
+        measuresRelation.setValue(linkedVariable.getUri().toString());
+
+        // create sensing device and link with variable
+        DeviceCreationDTO sensingDeviceDto = getCreationDto();
+        sensingDeviceDto.setName("sensing_device");
+        sensingDeviceDto.setType(URI.create(Oeso.SensingDevice.getURI()));
+        sensingDeviceDto.setRelations(Collections.singletonList(measuresRelation));
+
+        Response postSensingDeviceResponse = getJsonPostResponse(target(createPath),sensingDeviceDto);
+        assertEquals(Response.Status.CREATED.getStatusCode(), postSensingDeviceResponse.getStatus());
+        sensingDeviceDto.setUri(extractUriFromResponse(postSensingDeviceResponse));
+
+        // create software and link with variable
+        DeviceCreationDTO softwareDto = getCreationDto();
+        softwareDto.setType(URI.create(Oeso.Software.getURI()));
+        softwareDto.setName("software");
+        softwareDto.setRelations(Collections.singletonList(measuresRelation));
+
+        Response postSoftwareResponse = getJsonPostResponse(target(createPath),softwareDto);
+        assertEquals(Response.Status.CREATED.getStatusCode(), postSoftwareResponse.getStatus());
+        softwareDto.setUri(extractUriFromResponse(postSoftwareResponse));
+
+        // test retrieval with relations
+        BiPredicate<RDFObjectRelationDTO, DeviceGetDetailsDTO> findRelationPredicate = (relation, device) ->
+                SPARQLDeserializers.compareURIs(relation.getProperty().toString(), Oeso.measures.toString()) &&
+                SPARQLDeserializers.compareURIs(relation.getValue(), linkedVariable.getUri().toString()
+        );
+
+        // test on sensing device
+        Response getSensingDeviceResponse = getJsonGetByUriResponse(target(getByUriPath), sensingDeviceDto.getUri().toString());
+        SingleObjectResponse<DeviceGetDetailsDTO> getResponse = mapper.convertValue(
+                getSensingDeviceResponse.readEntity(JsonNode.class),
+                new TypeReference<SingleObjectResponse<DeviceGetDetailsDTO>>() {}
+        );
+        DeviceGetDetailsDTO sensingDeviceGetDTO = getResponse.getResult();
+        Assert.assertTrue(sensingDeviceGetDTO.getRelations().stream().anyMatch(relation -> findRelationPredicate.test(relation, sensingDeviceGetDTO)));
+
+        // test on software
+        Response getSoftwareDeviceResponse = getJsonGetByUriResponse(target(getByUriPath), softwareDto.getUri().toString());
+        getResponse = mapper.convertValue(
+                getSoftwareDeviceResponse.readEntity(JsonNode.class),
+                new TypeReference<SingleObjectResponse<DeviceGetDetailsDTO>>() {}
+        );
+        DeviceGetDetailsDTO softwareGetDTO = getResponse.getResult();
+        Assert.assertTrue(softwareGetDTO.getRelations().stream().anyMatch(relation -> findRelationPredicate.test(relation, softwareGetDTO)));
     }
 
     @Override

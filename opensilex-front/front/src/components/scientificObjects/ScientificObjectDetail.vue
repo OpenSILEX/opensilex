@@ -151,7 +151,7 @@ export default class ScientificObjectDetail extends Vue {
   }
 
   getPositionsColumnToDisplay() : Set<string>{
-      return this.globalView ? PositionList.getDefaultColumns() : new Set(['to', 'end', 'coordinates']) ;
+      return this.globalView ? PositionList.getDefaultColumns() : new Set(['to', 'end', 'coordinates','custom_coordinates','textual_position']) ;
   }
 
 

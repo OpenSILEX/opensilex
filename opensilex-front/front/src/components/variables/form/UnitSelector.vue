@@ -4,8 +4,6 @@
     :selected.sync="unitURI"
     :multiple="multiple"
     :searchMethod="searchUnits"
-    :itemLoadingMethod="loadUnits"
-    :conversionMethod="unitToSelectNode"
     :clearable="clearable"
     :placeholder="placeholder"
     noResultsText="component.unit.form.selector.filter-search-no-result"
@@ -45,28 +43,12 @@ export default class UnitSelector extends Vue {
       : "component.unit.form.selector.placeholder";
   }
 
-  loadUnits(units) {
-    return this.$opensilex.getService("opensilex.VariablesService")
-      .getUnitsByURIs(units)
-      .then((http: HttpResponse<OpenSilexResponse<UnitGetDTO>>) => {
-        return http.response.result;
-      })
-      .catch(this.$opensilex.errorHandler); 
-  }
-
   searchUnits(name) {
     return this.$opensilex.getService("opensilex.VariablesService")
     .searchUnits(name, ["name=asc"], 0, 10)    
     .then((http: HttpResponse<OpenSilexResponse<Array<UnitGetDTO>>>) => {
         return http;
     });
-  }
-
-  unitToSelectNode(dto) {
-    return {
-      id: dto.uri,
-      label: dto.name,
-    };
   }
 
   select(value) {

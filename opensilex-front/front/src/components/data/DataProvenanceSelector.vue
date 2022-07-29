@@ -5,7 +5,6 @@
     :selected.sync="provenancesURI"
     :multiple="multiple"
     :optionsLoadingMethod="loadProvenances"
-    :conversionMethod="provenancesToSelectNode"
     :placeholder="
       multiple
         ? 'component.data.form.selector.placeholder-multiple'
@@ -84,13 +83,6 @@ export default class DataProvenanceSelector extends Vue {
 
   refresh() {
     this.selectForm.refresh();
-  }
-
-  provenancesToSelectNode(dto: ProvenanceGetDTO) {
-    return {
-      id: dto.uri,
-      label: dto.name,
-    };
   }
   select(value) {
     this.$emit("select", value);

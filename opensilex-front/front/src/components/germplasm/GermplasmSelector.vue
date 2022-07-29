@@ -7,7 +7,6 @@
     :multiple="multiple"
     :required="required"
     :searchMethod="loadOptions"
-    :itemLoadingMethod="loadGermplasms"
     :conversionMethod="convertGermplasmDTO"
     :placeholder="placeholder"
     @clear="$emit('clear')"
@@ -60,16 +59,6 @@ export default class GermplasmSelector extends Vue {
   }
 
   @Ref("selectForm") readonly selectForm!: any;
-
-  loadGermplasms(germplasmURIs) {
-    return this.$opensilex
-      .getService("opensilex.GermplasmService")
-      .getGermplasmsByURI(germplasmURIs)
-      .then(
-        (http: HttpResponse<OpenSilexResponse<Array<GermplasmGetSingleDTO>>>) =>
-          http.response.result
-      );
-  }
 
   loadOptions(query, page, pageSize) {
     return this.$opensilex

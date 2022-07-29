@@ -4,8 +4,6 @@
     :selected.sync="methodURI"
     :multiple="multiple"
     :searchMethod="searchMethods"
-    :itemLoadingMethod="loadMethods"
-    :conversionMethod="methodToSelectNode"
     :clearable="clearable"
     :placeholder="placeholder"
     noResultsText="component.method.form.selector.filter-search-no-result"
@@ -45,28 +43,12 @@ export default class MethodSelector extends Vue {
       : "component.method.form.selector.placeholder";
   }
 
-  loadMethods(methods) {
-    return this.$opensilex.getService("opensilex.VariablesService")
-      .getMethodsByURIs(methods)
-      .then((http: HttpResponse<OpenSilexResponse<MethodGetDTO>>) => {
-        return http.response.result;
-      })
-      .catch(this.$opensilex.errorHandler); 
-  }
-
   searchMethods(name) {
     return this.$opensilex.getService("opensilex.VariablesService")
     .searchMethods(name, ["name=asc"], 0, 10)    
     .then((http: HttpResponse<OpenSilexResponse<Array<MethodGetDTO>>>) => {
         return http;
     });
-  }
-
-  methodToSelectNode(dto) {
-    return {
-      id: dto.uri,
-      label: dto.name,
-    };
   }
 
   select(value) {

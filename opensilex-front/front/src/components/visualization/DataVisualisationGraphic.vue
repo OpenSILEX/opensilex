@@ -122,8 +122,8 @@
     </b-card>
     <!-- Data informations on click on graphic point End-->
 
-    <b-modal size="lg" ref="helpModal" scrollable centered>
-      <opensilex-DataVisuHelp></opensilex-DataVisuHelp>
+    <b-modal size="lg" ref="helpModal" scrollable centered hide-footer>
+      <opensilex-DataVisuHelp @hideBtnIsClicked="hide()"></opensilex-DataVisuHelp>
     </b-modal>
   </div>
 </template>
@@ -997,6 +997,10 @@ export default class DataVisualisationGraphic extends Vue {
         }
       });
     }
+  }
+
+  hide() {
+    this.helpModal.hide();
   }
 }
 </script>

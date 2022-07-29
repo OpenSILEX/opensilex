@@ -2,9 +2,9 @@
   <div class="card">
     <b-modal
       ref="colModal"
+      hide-footer
       :title="$t('GermplasmTable.addColumn')"
       size="sm"
-      hide-footer
     >
       <b-form-input
         v-model="colName"
@@ -133,6 +133,7 @@
       :no-close-on-esc="true"
       ref="newcolsModal"
       centered
+      hide-footer
    
       :title="$t('GermplasmTable.newColumns')"
     >
@@ -1102,10 +1103,10 @@ fr:
     infoLot: Vous devez renseigner au moins l'espèce, la variété ou l'accession
     infoAccession: Vous devez renseigner l'espèce ou la variété
     help: Aide
-    infoMessageGermplReady: ressources génétiques prêtes à être insérer
+    infoMessageGermplReady: ressources génétiques prêtes à être insérées
     infoMessageErrors: erreurs
     infoMessageEmptyLines: lignes vides
-    infoMessageGermplInserted: germplasm insérés
+    infoMessageGermplInserted: ressources génétiques insérées
     infoProposeInsertion: N'oubliez pas de cliquer sur le bouton Insérer afin de finaliser l'insertion des ressources (bouton situé ci-dessous ou au-dessus du tableau)
     checkingStatusMessage: validé
     insertionStatusMessage: créé

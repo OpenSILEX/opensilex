@@ -2,6 +2,16 @@ package org.opensilex.nosql.datasource.operation;
 
 import org.opensilex.utils.ThrowingConsumer;
 
+/**
+ * Utility object used to define for a datasource, which operations apply for
+ * <li>start a transaction</li>
+ * <li>commit a transaction</li>
+ * <li>rollback a transaction</li>
+ * <li>close a transaction</li>
+ * @param <T> the type of datasource (depend on the driver used to access a database)
+ *
+ * @author rcolin
+ */
 public class LocalDataBase<T> {
 
     final T dataSource;

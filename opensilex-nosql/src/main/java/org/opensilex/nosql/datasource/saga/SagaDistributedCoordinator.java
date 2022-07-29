@@ -23,8 +23,8 @@ public class SagaDistributedCoordinator extends DefaultDataSourceCoordinator<Sag
     }
 
     @Override
-    public <T> void addOperation(T localDatabase, SagaDataSourceOperation<?> operation) {
-        super.addOperation(localDatabase, operation);
+    public <T> void addOperation(T dataSource, SagaDataSourceOperation<?> operation) {
+        super.addOperation(dataSource, operation);
     }
 
     @Override

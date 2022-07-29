@@ -4,11 +4,17 @@ import com.mongodb.client.ClientSession;
 import org.opensilex.nosql.datasource.operation.DataSourceOperation;
 import org.opensilex.sparql.service.SPARQLService;
 
+/**
+ * Default implementation of {@link DistributedDataSourceCoordinator} which can handle
+ * distributed transaction on an RDF and a MongoDB database
+ * @param <O>
+ */
 public class DefaultDataSourceCoordinator<O extends DataSourceOperation<?>> extends AbstractDistributedCoordinator<O> {
 
     public DefaultDataSourceCoordinator(SPARQLService sparql, ClientSession session) {
         super();
 
+        // register RDF database by using the SPARQLService
         registerDataSource(
                 sparql,
                 SPARQLService::startTransaction,
@@ -48,7 +54,7 @@ public class DefaultDataSourceCoordinator<O extends DataSourceOperation<?>> exte
 
     @Override
     protected void resolveCommitFail() {
-
+        throw new UnsupportedOperationException("this implementation has no mechanism to cancel a committed transaction");
     }
 
 }

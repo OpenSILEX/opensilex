@@ -26,11 +26,11 @@ public abstract class AbstractDistributedCoordinator<O extends DataSourceOperati
 
 
     @Override
-    public <T> void addOperation(T localDatabase, O operation) {
-        if (!localDatabases.containsKey(localDatabase)) {
-            throw new IllegalArgumentException("Unregistered unit of work " + localDatabase.getClass().getSimpleName() + " : " + localDatabase);
+    public <T> void addOperation(T dataSource, O operation) {
+        if (!localDatabases.containsKey(dataSource)) {
+            throw new IllegalArgumentException("Unregistered unit of work " + dataSource.getClass().getSimpleName() + " : " + dataSource);
         }
-        operationsByDatabase.computeIfAbsent(localDatabase, key -> new LinkedList<>()).add(operation);
+        operationsByDatabase.computeIfAbsent(dataSource, key -> new LinkedList<>()).add(operation);
     }
 
     @Override
@@ -82,7 +82,7 @@ public abstract class AbstractDistributedCoordinator<O extends DataSourceOperati
 
     abstract void resolveCommitFail();
 
-    <T> void prepareForCommit() throws Exception {
+    protected <T> void prepareForCommit() throws Exception {
 
         // loop over registered local databases
         for (Map.Entry<Object, List<DataSourceOperation<?>>> entry : operationsByDatabase.entrySet()) {

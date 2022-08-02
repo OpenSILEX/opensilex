@@ -2,7 +2,7 @@
   <div class="experimentDataVisuView">
     <opensilex-PageContent class="pagecontent">
 
-      <!-- Toggle Sidebar--> 
+      <!-- Toggle Sidebar-->
       <div class="searchMenuContainer"
       v-on:click="SearchFiltersToggle = !SearchFiltersToggle"
       :title="searchFiltersPannel()">
@@ -59,18 +59,11 @@
 
 <script lang="ts">
 import moment from "moment-timezone";
-import Highcharts from "highcharts";
-// @ts-ignore
-import {
-  DataService,
-  DataGetDTO,
-  EventsService,
-  EventGetDTO
-} from "opensilex-core/index";
-// @ts-ignore
-import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
-import { Component, Ref, Prop } from "vue-property-decorator";
+import {DataGetDTO, DataService, EventGetDTO, EventsService} from "opensilex-core/index";
+import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
+import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
+import HighchartsDataTransformer from "../../../models/HighchartsDataTransformer";
 
 @Component
 export default class ExperimentDataVisuView extends Vue {
@@ -417,7 +410,7 @@ export default class ExperimentDataVisuView extends Vue {
         const data = http.response.result as Array<DataGetDTO>;
         let dataLength = data.length;
         if (dataLength > 0) {
-          const cleanData = this.dataTransforme(data, concernedItem);
+          const cleanData = HighchartsDataTransformer.transformDataForHighcharts(data, {scientificObjectUri: concernedItem.uri});
           if (dataLength > 50000) {
             this.$opensilex.showInfoToast(
               this.$i18n.t("ExperimentDataVisuView.limitSizeMessageA") +
@@ -443,42 +436,7 @@ export default class ExperimentDataVisuView extends Vue {
       .catch(error => {});
   }
 
-  // keep only date/value/uriprovenance properties
-  dataTransforme(data, concernedItem) {
-    let toAdd,
-      cleanData = [];
-
-    data.forEach(element => {
-      let stringDateWithoutUTC =
-        moment.parseZone(element.date).format("YYYYMMDD HHmmss") + "+00:00";
-      let dateWithoutUTC = moment(stringDateWithoutUTC).valueOf();
-      let highchartsDate = Highcharts.dateFormat(
-        "%Y-%m-%dT%H:%M:%S",
-        dateWithoutUTC
-      );
-      let offset = moment.parseZone(element.date).format("Z");
-      toAdd = {
-        x: dateWithoutUTC,
-        y: element.value,
-        offset: offset,
-        dateWithOffset: highchartsDate + offset,
-        objectUri: concernedItem.uri,
-        provenanceUri: element.provenance.uri,
-        data: element
-      };
-      cleanData.push(toAdd);
-    });
-
-    return cleanData;
-  }
-
-  timestampToUTC(time) {
-    // var day = moment.unix(time).utc().format();
-    var day = Highcharts.dateFormat("%Y-%m-%dT%H:%M:%S+0000", time);
-    return day;
-  }
-
-    searchFiltersPannel() {
+  searchFiltersPannel() {
     return this.$t("searchfilter.label")
   }
 }

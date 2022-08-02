@@ -129,23 +129,37 @@
 </template>
 
 <script lang="ts">
-import { Component, Ref, Prop } from "vue-property-decorator";
+import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import {
-  DataService,
-  ProvenanceGetDTO,
-  AnnotationsService,
-  AnnotationGetDTO,
-  EventsService,
-  EventDetailsDTO
-} from "opensilex-core/index";
-import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
+import {AnnotationGetDTO, EventDetailsDTO, ProvenanceGetDTO} from "opensilex-core/index";
+import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import moment from "moment-timezone";
 import Highcharts from "highcharts";
 
 import ClickOutside from "vue-click-outside";
 import exportingInit from "highcharts/modules/exporting";
 import HighchartsCustomEvents from "highcharts-custom-events";
+
+/**
+ * Custom type for highcharts options. The event 'contextmenu', corresponding to the
+ * right-click of the mouse, is not defined as a typing by Highcharts (even though it works
+ * correctly), so we must specify it here.
+ */
+type HighchartsOptions = Highcharts.Options & {
+  plotOptions: {
+    series: {
+      events: {
+        contextmenu: (e: Event) => void
+      },
+      point: {
+        events: {
+          contextmenu: (e: Event) => void
+        }
+      }
+    }
+  }
+};
+
 HighchartsCustomEvents(Highcharts);
 exportingInit(Highcharts);
 
@@ -185,7 +199,7 @@ export default class DataVisuGraphic extends Vue {
     }
   };
   showEvents = false;
-  series = [];
+  series: Array<Highcharts.SeriesLineOptions> = [];
   private concernedItem;
   chartOptionsValues: any = [];
 
@@ -338,9 +352,10 @@ export default class DataVisuGraphic extends Vue {
     }
   }
 
-  get chartOptions() {
-    let that = this;
+  get chartOptions(): Array<HighchartsOptions> {
+    const that = this;
     let previousPoint;
+    let previousPointColor;
     if (this.series.length > 0) {
       return [
         {
@@ -357,14 +372,14 @@ export default class DataVisuGraphic extends Vue {
               },
               render: function() {
                 that.selectedPointsCount = 0;
-                this.series.forEach(element => {
+                that.series.forEach(serie => {
                   // limit download image
-                  if (element.points && element.name !== "Navigator 1") {
-                    that.selectedPointsCount += element.points.length;
+                  if (serie.data && serie.name !== "Navigator 1") {
+                    that.selectedPointsCount += serie.data.length;
                   }
                 });
-                this.detailEventShow = false;
-                this.detailDataShow = false;
+                that.detailEventShow = false;
+                that.detailDataShow = false;
                 that.$emit("graphicCreated");
               }
             }
@@ -372,7 +387,7 @@ export default class DataVisuGraphic extends Vue {
           title: {
             text: ""
           },
-          subTitle: {
+          subtitle: {
             text: ""
           },
           credits: { enabled: false },
@@ -396,9 +411,8 @@ export default class DataVisuGraphic extends Vue {
           },
           navigator: {
             //zoom navigator
-            enabled: this.deviceType ? true : false,
-            margin: 5,
-            y: -4
+            enabled: !!this.deviceType,
+            margin: 5
           },
           legend: {
             enabled: true,
@@ -426,9 +440,13 @@ export default class DataVisuGraphic extends Vue {
           tooltip: {
             useHTML: true,
             formatter: function(tooltip) {
-              if (this.point.y) {
+              const point = this.point as Highcharts.Point & {
+                data: any,
+                text: any
+              };
+              if (point.y) {
                 let date = moment
-                  .parseZone(this.point.data.date)
+                  .parseZone(point.data.date)
                   .format("DD-MM-YYYY HH:mm:ss");
                 return (
                   "" +
@@ -446,12 +464,12 @@ export default class DataVisuGraphic extends Vue {
               } else {
                 return (
                   "" +
-                  this.point.series.name +
+                  point.series.name +
                   " :" +
                   '<span style=" color:' +
-                  this.point.color +
+                  point.color +
                   '" ><b> ' +
-                  this.point.text +
+                  point.text +
                   "</b></span>" +
                   "<br/>Time:<b> " +
                   Highcharts.dateFormat("%d-%m-%Y %H:%M:%S", this.x) +
@@ -485,8 +503,7 @@ export default class DataVisuGraphic extends Vue {
                 states: {
                   hover: {
                     enabled: true
-                  },
-                  radius: 2
+                  }
                 }
               },
               states: {
@@ -511,10 +528,12 @@ export default class DataVisuGraphic extends Vue {
                     that.pointClick(e, this);
                     if (previousPoint)
                       previousPoint.update({
-                        color: previousPoint.originalColor
+                        color: previousPointColor
                       });
+                    // Keep the previous color to reset
+                    previousPointColor = this.color;
                     // Set this points color to black
-                    this.update({ color: "black", originalColor: this.color });
+                    this.update({ color: "black" });
                     // Make it our previous point
                     previousPoint = this;
                   },
@@ -553,7 +572,7 @@ export default class DataVisuGraphic extends Vue {
     //this.closeIntervalContextMenu();
   }
 
-  reload(series, variable, form) {
+  reload(series: Array<Highcharts.SeriesLineOptions>, variable, form) {
 
     if(form) {
       this.startDate = form.startDate;
@@ -650,10 +669,11 @@ export default class DataVisuGraphic extends Vue {
       this.selectedProvenance = e.point.provenanceUri;
       this.selectedData = e.point.data.uri;
 
-      this.selectedOffset = e.point.offset;
       this.selectedTime = e.point.data.date;
-      this.selectedTimeToSend = e.point.dateWithOffset;
-      // this.selectedTime = chart.xAxis[0].toValue(e.chartX, false);
+
+      let momentDate = moment(this.selectedTime);
+      this.selectedOffset = momentDate.format("Z");
+      this.selectedTimeToSend = momentDate.format("YYYY-MM-DDTHH:mm:ssZ");
     }
   }
   pointClick(e, graphic) {

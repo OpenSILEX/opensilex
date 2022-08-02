@@ -3,7 +3,7 @@
 
     <opensilex-PageContent class="pagecontent">
 
-      <!-- Toggle Sidebar--> 
+      <!-- Toggle Sidebar-->
       <div class="searchMenuContainer"
       v-on:click="SearchFiltersToggle = !SearchFiltersToggle"
       :title="searchFiltersPannel()">
@@ -67,6 +67,7 @@ import {
   EventGetDTO,
 } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
+import HighchartsDataTransformer from "../../models/HighchartsDataTransformer";
 @Component
 export default class ScientificObjectVisualizationTab extends Vue {
   $opensilex: any;
@@ -343,7 +344,7 @@ export default class ScientificObjectVisualizationTab extends Vue {
           const data = http.response.result as Array<DataGetDTO>;
           let dataLength = data.length;
           if (dataLength > 0) {
-            const cleanData = this.dataTransforme(data);
+            const cleanData = HighchartsDataTransformer.transformDataForHighcharts(data);
             if (dataLength > 50000) {
               this.$opensilex.showInfoToast(
                 this.$i18n.t(
@@ -369,34 +370,6 @@ export default class ScientificObjectVisualizationTab extends Vue {
     } else {
       return null;
     }
-  }
-
-  dataTransforme(data) {
-    let toAdd,
-      cleanData = [];
-
-    data.forEach(element => {
-      let stringDateWithoutUTC = moment.parseZone(element.date).format("YYYY-MM-DDTHH:mm:ss") + "+00:00";
-      let dateWithoutUTC = moment(stringDateWithoutUTC).valueOf();
-      let offset = moment.parseZone(element.date).format("Z");
-      let stringDate = moment.parseZone(element.date).format("YYYY-MM-DDTHH:mm:ss") + offset;
-      toAdd = {
-        x: dateWithoutUTC,
-        y: element.value,
-        offset: offset,
-        dateWithOffset: stringDate,
-        provenanceUri: element.provenance.uri,
-        data: element
-      };
-      cleanData.push(toAdd);
-    });
-    return cleanData;
-  }
-
-  timestampToUTC(time) {
-    // var day = moment.unix(time).utc().format();
-    var day = Highcharts.dateFormat("%Y-%m-%dT%H:%M:%S+0000", time);
-    return day;
   }
 
   searchFiltersPannel() {

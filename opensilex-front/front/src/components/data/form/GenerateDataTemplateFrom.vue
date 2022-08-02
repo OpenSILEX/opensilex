@@ -82,10 +82,12 @@ import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import {VariableDatatypeDTO, VariableDetailsDTO, VariablesService} from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
+import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
+import Xsd from "../../../ontologies/Xsd";
 
 @Component
 export default class GenerateDataTemplateFrom extends Vue {
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
   $store: any;
   $t: any;
   $i18n: any;
@@ -366,12 +368,16 @@ export default class GenerateDataTemplateFrom extends Vue {
             line1.push(element.uri);
             line2.push(element.name);
             if (element.datatype === undefined || element.datatype === null) {
-              element.datatype = "xsd:string";
-            } 
-            line3.push(
-              this.$t("DataHelp.column-type-help").toString() +
-              this.$opensilex.getVariableDatatypeLabel(element.datatype)
-            );
+              element.datatype = Xsd.STRING;
+            }
+            let variableHelp = this.$t("DataHelp.column-type-help").toString() +
+                this.$opensilex.getVariableDatatypeLabel(element.datatype);
+            if (this.$opensilex.checkURIs(element.datatype, Xsd.DATE)) {
+              variableHelp += " " + this.$t("DataTemplateForm.format-help.date");
+            } else if (this.$opensilex.checkURIs(element.datatype, Xsd.DATETIME)) {
+              variableHelp += " " + this.$t("DataTemplateForm.format-help.datetime");
+            }
+            line3.push(variableHelp);
 
             //column raw_data
             if (this.withRawData) {
@@ -391,23 +397,6 @@ export default class GenerateDataTemplateFrom extends Vue {
         });
       }
     });
-  }
-
-  loadMethods() {
-    let service = this.$opensilex.getService("opensilex.VariablesService");
-    return service
-      .searchMethods(undefined, undefined, 100, 0)
-      .then(
-        (http: HttpResponse<OpenSilexResponse<Array<any>>>) =>
-          http.response.result
-      );
-  }
-
-  dtoToSelectNode(dto) {
-    return {
-      id: dto.uri,
-      label: dto.name,
-    };
   }
 
   getDataTypeLabel(dataTypeUri: string): string {
@@ -447,6 +436,9 @@ en :
     target-device-required: The provenance you selected doesn't contain any device agent, so you must add the target or the device column
     example :
       column-data-type : "Column data type: "
+    format-help:
+      datetime: "(format: YYYY-MM-DDThh:mm:ssZ)"
+      date: "(format: YYYY-MM-DD)"
 fr :
   DataTemplateForm:
     help: Le bouton est désactivé si aucune variable n'est sélectionnée
@@ -458,5 +450,8 @@ fr :
     select-variables: Sélectionnez les variables dont vous avez besoin
     target-device-required: "La provenance sélectionnée ne contient pas de device, vous devez donc ajouter la colonne \"target\" ou \"device\""
     example :
-      column-data-type : "Type de données colonne : " 
+      column-data-type : "Type de données colonne : "
+    format-help:
+      datetime: "(format: AAAA-MM-JJThh:mm:ssZ)"
+      date: "(format: AAAA-MM-JJ)"
  </i18n>

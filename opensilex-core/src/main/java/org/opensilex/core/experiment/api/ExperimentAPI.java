@@ -13,65 +13,12 @@ import com.opencsv.CSVWriter;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 import io.swagger.annotations.*;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringWriter;
-import static java.lang.Float.NaN;
-import org.opensilex.core.experiment.dal.ExperimentDAO;
-import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.server.response.ErrorResponse;
-import org.opensilex.server.response.ObjectUriResponse;
-import org.opensilex.server.response.PaginatedListResponse;
-import org.opensilex.server.response.SingleObjectResponse;
-import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
-import org.opensilex.sparql.service.SPARQLService;
-import org.opensilex.utils.OrderBy;
-import org.opensilex.utils.ListWithPagination;
-
-import javax.inject.Inject;
-import javax.validation.Valid;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.zone.ZoneRulesException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-import javax.validation.constraints.Max;
-import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.Document;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.opensilex.core.data.api.DataAPI;
-import static org.opensilex.core.data.api.DataAPI.CREDENTIAL_DATA_MODIFICATION_ID;
-import static org.opensilex.core.data.api.DataAPI.CREDENTIAL_DATA_MODIFICATION_LABEL_KEY;
-import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_CONFIDENCE;
-import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_MAXIMAL_DATE;
-import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_METADATA;
-import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_MINIMAL_DATE;
-import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_OBJECTURI;
-import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_PROVENANCEURI;
-import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_TIMEZONE;
-import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_VARIABLEURI;
 import org.opensilex.core.data.api.DataCSVValidationDTO;
-import static org.opensilex.core.data.api.DataCreationDTO.NAN_VALUES;
-import static org.opensilex.core.data.api.DataCreationDTO.NA_VALUES;
 import org.opensilex.core.data.api.DataGetDTO;
 import org.opensilex.core.data.dal.DataCSVValidationModel;
 import org.opensilex.core.data.dal.DataDAO;
@@ -79,16 +26,13 @@ import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.data.dal.DataProvenanceModel;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.data.utils.ParsedDateTimeMongo;
-import org.opensilex.core.exception.CSVDataTypeException;
-import org.opensilex.core.exception.DataTypeException;
-import org.opensilex.core.exception.TimezoneAmbiguityException;
-import org.opensilex.core.exception.TimezoneException;
-import org.opensilex.core.exception.UnableToParseDateException;
+import org.opensilex.core.exception.*;
+import org.opensilex.core.experiment.dal.ExperimentDAO;
+import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.api.FactorDetailsGetDTO;
 import org.opensilex.core.experiment.factor.dal.FactorDAO;
 import org.opensilex.core.experiment.factor.dal.FactorModel;
 import org.opensilex.core.experiment.utils.ImportDataIndex;
-import org.opensilex.sparql.csv.CSVCell;
 import org.opensilex.core.organisation.api.facitity.InfrastructureFacilityGetDTO;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
 import org.opensilex.core.provenance.api.ProvenanceAPI;
@@ -112,13 +56,43 @@ import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
-import org.opensilex.server.response.ErrorDTO;
+import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.ValidURI;
+import org.opensilex.sparql.csv.CSVCell;
 import org.opensilex.sparql.deserializer.URIDeserializer;
+import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.response.NamedResourceDTO;
+import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ClassUtils;
+import org.opensilex.utils.ListWithPagination;
+import org.opensilex.utils.OrderBy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.inject.Inject;
+import javax.validation.Valid;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringWriter;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.zone.ZoneRulesException;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static org.opensilex.core.data.api.DataAPI.*;
 
 /**
  * @author Vincent MIGOT
@@ -551,7 +525,7 @@ public class ExperimentAPI {
                 pageSize
         );
 
-        ListWithPagination<DataGetDTO> resultDTOList = resultList.convert(DataGetDTO.class, DataGetDTO::getDtoFromModel);
+        ListWithPagination<DataGetDTO> resultDTOList = dao.modelListToDTO(resultList);
 
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
@@ -759,10 +733,10 @@ public class ExperimentAPI {
                 List<BulkWriteError> bulkErrors = duplicateError.getWriteErrors();
                 for (int i = 0; i < bulkErrors.size(); i++) {
                     int index = bulkErrors.get(i).getIndex();
-                    DataGetDTO fromModel = DataGetDTO.getDtoFromModel(data.get(index));
-                    int variableIndex = validation.getHeaders().indexOf(fromModel.getVariable().toString());
+                    DataModel dataModel = data.get(index);
+                    int variableIndex = validation.getHeaders().indexOf(dataModel.getVariable().toString());
                     String variableName = validation.getHeadersLabels().get(variableIndex) + '(' + validation.getHeaders().get(variableIndex) + ')';
-                    CSVCell csvCell = new CSVCell(validation.getData().get(data.get(index)), validation.getHeaders().indexOf(fromModel.getVariable().toString()), fromModel.getValue().toString(), variableName);
+                    CSVCell csvCell = new CSVCell(validation.getData().get(data.get(index)), validation.getHeaders().indexOf(dataModel.getVariable().toString()), dataModel.getValue().toString(), variableName);
                     validation.addDuplicatedDataError(csvCell);
                 }
             } catch (MongoCommandException e) {
@@ -997,12 +971,14 @@ public class ExperimentAPI {
 
                         URI varURI = URI.create(headerByIndex.get(colIndex));
                         dataModel.setVariable(varURI);
-                        dataModel.setValue(returnValidCSVDatum(varURI, values[colIndex].trim(), mapVariableUriDataType.get(varURI), rowIndex, colIndex, csvValidation));
-                            if (colIndex+1<values.length) {
-                                if (!headerByIndex.containsKey(colIndex+1) && values[colIndex+1] != null) {
-                                    dataModel.setRawData(returnValidRawData(varURI, values[colIndex+1].trim(), mapVariableUriDataType.get(varURI), rowIndex, colIndex+1, csvValidation));
-                                }
-                            }                        
+                        DataValidateUtils.checkAndConvertValue(dataModel, varURI, values[colIndex].trim(), mapVariableUriDataType.get(varURI), rowIndex, colIndex, csvValidation);
+
+                        if (colIndex+1<values.length) {
+                            if (!headerByIndex.containsKey(colIndex+1) && values[colIndex+1] != null) {
+                                dataModel.setRawData(DataValidateUtils.returnValidRawData(varURI, values[colIndex+1].trim(), mapVariableUriDataType.get(varURI), rowIndex, colIndex+1, csvValidation));
+                            }
+                        }
+
                         csvValidation.addData(dataModel, rowIndex);
                         // check for duplicate data
                         ImportDataIndex importDataIndex = new ImportDataIndex(parsedDateTimeMongo.getInstant(), varURI, experimentURI, object.getUri(), null);
@@ -1040,160 +1016,6 @@ public class ExperimentAPI {
             }
 
         return object;
-    }
-
-    public static List<Object> returnValidRawData(URI variable, String rawDataCell, URI dataType, int dataIndex, int colIndex, DataCSVValidationModel csvValidation) throws CSVDataTypeException {
-        String variableName = csvValidation.getHeadersLabels().get(colIndex) + '(' + csvValidation.getHeaders().get(colIndex) + ')';
-        List<Object> formatedRawData = Arrays.asList(rawDataCell.split(","));
-        if (dataType == null) {
-            return Arrays.asList(rawDataCell.split(","));
-        } else {
-            if (dataType.toString().equals("xsd:integer")) {
-                try {                    
-                    List<Object> rawData = new ArrayList<>();
-                    for (Object val:formatedRawData) {
-                        rawData.add(Integer.valueOf(val.toString()));
-                    }
-                    return rawData;
-                } catch (NumberFormatException e) {
-                    CSVCell errorCell = new CSVCell(dataIndex, colIndex, rawDataCell, variableName);
-                    throw new CSVDataTypeException(variable, rawDataCell, dataType, dataIndex, errorCell);
-                }
-            }
-
-        }
-        if (dataType.toString().equals("xsd:decimal")) {
-            try {
-                List<Object> rawData = new ArrayList<>();
-                for (Object val:formatedRawData) {
-                    rawData.add(Double.valueOf(val.toString()));
-                }
-                return rawData;
-            } catch (NumberFormatException e) {
-                CSVCell errorCell = new CSVCell(dataIndex, colIndex, rawDataCell, variableName);
-                throw new CSVDataTypeException(variable, rawDataCell, dataType, dataIndex, errorCell);
-            }
-        }
-        if (dataType.toString().equals("xsd:boolean")) {
-            List<Object> rawData = new ArrayList<>();
-            for (Object val:formatedRawData) {
-                Boolean toBooleanObject = BooleanUtils.toBooleanObject(val.toString());
-                if (toBooleanObject != null) {
-                    rawData.add(toBooleanObject);
-                } else {
-                    CSVCell errorCell = new CSVCell(dataIndex, colIndex, rawDataCell, variableName);
-                    throw new CSVDataTypeException(variable, rawDataCell, dataType, dataIndex, errorCell);                    
-                }
-            }
-            return rawData;
-        }
-
-        if (dataType.toString().equals("xsd:date")) {
-            List<Object> rawData = new ArrayList<>();
-            for (Object val:formatedRawData) {
-                if (val instanceof String && DataValidateUtils.isDate(val.toString())) {
-                    rawData.add(val);
-                } else {
-                    CSVCell errorCell = new CSVCell(dataIndex, colIndex, rawDataCell, variableName);
-                    throw new CSVDataTypeException(variable, rawDataCell, dataType, dataIndex, errorCell);                    
-                }
-            }
-            return rawData;
-        }
-        if (dataType.toString().equals("xsd:datetime")) {
-            List<Object> rawData = new ArrayList<>();
-            for (Object val:formatedRawData) {
-                if (val instanceof String && DataValidateUtils.isDateTime(val.toString())) {
-                    rawData.add(val);
-                } else {
-                    CSVCell errorCell = new CSVCell(dataIndex, colIndex, rawDataCell, variableName);
-                    throw new CSVDataTypeException(variable, rawDataCell, dataType, dataIndex, errorCell);                    
-                }
-            }
-            return rawData;
-        }
-        if (dataType.toString().equals("xsd:string")) {
-            List<Object> rawData = new ArrayList<>();
-            for (Object val:formatedRawData) {
-                if (val instanceof String) {
-                    rawData.add(val);
-                } else {
-                    CSVCell errorCell = new CSVCell(dataIndex, colIndex, rawDataCell, variableName);
-                    throw new CSVDataTypeException(variable, rawDataCell, dataType, dataIndex, errorCell);                    
-                }
-            }
-            return rawData;
-        }
-
-        return new ArrayList<>();
-    }
-    
-    public static Object returnValidCSVDatum(URI variable, Object value, URI dataType, int dataIndex, int colIndex, DataCSVValidationModel csvValidation) throws CSVDataTypeException {
-        String variableName = csvValidation.getHeadersLabels().get(colIndex) + '(' + csvValidation.getHeaders().get(colIndex) + ')';
-
-        if (Arrays.asList(NAN_VALUES).contains(value)) {
-            value = NaN;
-        } else if (Arrays.asList(NA_VALUES).contains(value)) {
-            return null;
-        }
-
-        if (dataType == null) {
-            return value;
-        } else {
-            if (dataType.toString().equals("xsd:integer")) {
-                try {
-                    return Integer.valueOf(value.toString());
-                } catch (NumberFormatException e) {
-                    CSVCell errorCell = new CSVCell(dataIndex, colIndex, value.toString(), variableName);
-                    throw new CSVDataTypeException(variable, value, dataType, dataIndex, errorCell);
-                }
-            }
-
-        }
-        if (dataType.toString().equals("xsd:decimal")) {
-            try {
-                return Double.valueOf(value.toString());
-            } catch (NumberFormatException e) {
-                CSVCell errorCell = new CSVCell(dataIndex, colIndex, value.toString(), variableName);
-                throw new CSVDataTypeException(variable, value, dataType, dataIndex, errorCell);
-            }
-        }
-        if (dataType.toString().equals("xsd:boolean")) {
-            Boolean toBooleanObject = BooleanUtils.toBooleanObject(value.toString());
-            if (Objects.equals(toBooleanObject, Boolean.FALSE) || Objects.equals(toBooleanObject, Boolean.TRUE)) {
-                return toBooleanObject;
-            } else {
-                CSVCell errorCell = new CSVCell(dataIndex, colIndex, value.toString(), variableName);
-                throw new CSVDataTypeException(variable, value, dataType, dataIndex, errorCell);
-            }
-        }
-
-        if (dataType.toString().equals("xsd:date")) {
-            if (value instanceof String && DataValidateUtils.isDate(value.toString())) {
-                return value;
-            } else {
-                CSVCell errorCell = new CSVCell(dataIndex, colIndex, value.toString(), variableName);
-                throw new CSVDataTypeException(variable, value, dataType, dataIndex, errorCell);
-            }
-        }
-        if (dataType.toString().equals("xsd:datetime")) {
-            if (value instanceof String && DataValidateUtils.isDateTime(value.toString())) {
-                return value;
-            } else {
-                CSVCell errorCell = new CSVCell(dataIndex, colIndex, value.toString(), variableName);
-                throw new CSVDataTypeException(variable, value, dataType, dataIndex, errorCell);
-            }
-        }
-        if (dataType.toString().equals("xsd:string")) {
-            if ((value instanceof String)) {
-                return value;
-            } else {
-                CSVCell errorCell = new CSVCell(dataIndex, colIndex, value.toString(), variableName);
-                throw new CSVDataTypeException(variable, value, dataType, dataIndex, errorCell);
-            }
-        }
-
-        return value;
     }
 
     /**

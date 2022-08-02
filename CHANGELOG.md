@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+Warning : upgrading to this new version may require manual operations. Please
+see the [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc+5.md).
+
+### Fixed
+
+- Variables associated with a variable of type "date" are now stored and exported correctly
 
 ## [1.0.0-rc+4.1] - 2022-07-13
 
@@ -14,7 +20,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix opensilex install command
 - Install will now create a repository with graphdb triplestor
-
 
 ## [1.0.0-rc+4] - 2022-06-13
 

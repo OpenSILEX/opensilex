@@ -54,7 +54,7 @@ public class DataCreationDTO {
     @ValidURI
     @NotNull
     @ApiModelProperty(value = "variable URI", example = DataAPI.DATA_EXAMPLE_VARIABLEURI, required = true)
-    private URI variable;   
+    private URI variable;
 
     @NotNull
     @ApiModelProperty(value = "can be decimal, integer, boolean, string or date", example = DataAPI.DATA_EXAMPLE_VALUE)

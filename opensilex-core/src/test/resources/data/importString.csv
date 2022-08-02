@@ -1,0 +1,5 @@
+target;Date;__STRING_VARIABLE__
+"Target (ex: scientific object) name or URI ";Acquisition date of the data (format: AAAA-MM-DDTHH:mm:ssZ or AAAA-MM-DD);string_variable
+Column data type: Short string;"Date
+Required : yes";Column data type: String
+__TARGET__;2022-07-12T14:05Z;Hello world !

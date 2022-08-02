@@ -1,0 +1,14 @@
+target;Date;__BOOLEAN_VARIABLE__
+"Target (ex: scientific object) name or URI ";Acquisition date of the data (format: AAAA-MM-DDTHH:mm:ssZ or AAAA-MM-DD);boolean_variable
+Column data type: Short string;"Date
+Required : yes";Column data type: Boolean
+__TARGET__;2022-07-12T14:05Z;true
+__TARGET__;2022-07-12T14:06Z;TRUE
+__TARGET__;2022-07-12T14:07Z;t
+__TARGET__;2022-07-12T14:08Z;yes
+__TARGET__;2022-07-12T14:09Z;y
+__TARGET__;2022-07-12T14:10Z;false
+__TARGET__;2022-07-12T14:11Z;FaLsE
+__TARGET__;2022-07-12T14:12Z;F
+__TARGET__;2022-07-12T14:13Z;nO
+__TARGET__;2022-07-12T14:14Z;N

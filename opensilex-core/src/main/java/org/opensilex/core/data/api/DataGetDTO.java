@@ -8,18 +8,18 @@ package org.opensilex.core.data.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
-import java.net.URI;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import javax.validation.constraints.NotNull;
+import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.server.rest.validation.DateFormat;
 import org.opensilex.server.rest.validation.ValidURI;
+import org.opensilex.utils.ListWithPagination;
+
+import javax.validation.constraints.NotNull;
+import java.net.URI;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  *
@@ -52,22 +52,70 @@ public class DataGetDTO extends DataCreationDTO {
             this.setDate(dtf.format(date));
         }        
     }
-    
-    public void fromModel(DataModel model) {
+
+    /**
+     * <p>
+     *     Sets the fields of the DataGetDTO according to the passed {@link DataModel}.
+     * </p>
+     * <p>
+     *     If the dateVariables argument is set, the method will check if it contains the variable associated with the
+     *     data. If this is the case, the value will be assumed to be a {@link ZonedDateTime} and will be converted to
+     *     a {@link LocalDate} to be displayed correctly.
+     * </p>
+     * <p>
+     *     The preferred way of performing this operation is by using {@link DataDAO#modelToDTO(DataModel)},
+     *     or {@link DataDAO#modelListToDTO(ListWithPagination)} in the case of a list.
+     * </p>
+     *
+     * @param model
+     * @param dateVariables
+     */
+    public void fromModel(DataModel model, Set<URI> dateVariables) {
         setUri(model.getUri());
         setTarget(model.getTarget());
         setVariable(model.getVariable());      
         setDate(model.getDate(), model.getOffset(), model.getIsDateTime());          
         setConfidence(model.getConfidence());
-        setValue(model.getValue());
+
+        if (Objects.nonNull(dateVariables) && dateVariables.contains(getVariable())) {
+            setValue(toLocalDate(model.getValue()));
+        } else {
+            setValue(model.getValue());
+        }
+
         setMetadata(model.getMetadata());   
         setProvenance(model.getProvenance());
         setRawData(model.getRawData());
     }
-    
-    public static DataGetDTO getDtoFromModel(DataModel model){
+
+    /**
+     * <p>
+     *     Creates a DataGetDTO from a DataModel.
+     * </p>
+     * <p>
+     *     If the dateVariables argument is set, the method will check if it contains the variable associated with the
+     *     data. If this is the case, the value will be assumed to be a {@link ZonedDateTime} and will be converted to
+     *     a {@link LocalDate} to be displayed correctly.
+     * </p>
+     * <p>
+     *     The preferred way of performing this operation is by using {@link DataDAO#modelToDTO(DataModel)},
+     *     or {@link DataDAO#modelListToDTO(ListWithPagination)} in the case of a list.
+     * </p>
+     *
+     * @param model
+     * @param dateVariables
+     * @return
+     */
+    public static DataGetDTO getDtoFromModel(DataModel model, Set<URI> dateVariables) {
         DataGetDTO dto = new DataGetDTO();
-        dto.fromModel(model);
+        dto.fromModel(model, dateVariables);
         return dto;
+    }
+
+    private Object toLocalDate(Object modelValue) {
+        if (modelValue instanceof ZonedDateTime) {
+            return ((ZonedDateTime) modelValue).toLocalDate();
+        }
+        return modelValue;
     }
 }

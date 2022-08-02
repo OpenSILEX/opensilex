@@ -671,7 +671,7 @@ public class DeviceAPI {
                 pageSize
         );
 
-        ListWithPagination<DataGetDTO> resultDTOList = resultList.convert(DataGetDTO.class, DataGetDTO::getDtoFromModel);
+        ListWithPagination<DataGetDTO> resultDTOList = dao.modelListToDTO(resultList);
 
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }

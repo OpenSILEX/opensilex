@@ -343,13 +343,21 @@ export default class VisuView extends Vue {
         undefined,
         0,
         1000000
-    )
-        .then((http: HttpResponse<OpenSilexResponse<Array<DataGetDTO>>>) => {
-          const data = http.response.result as Array<DataGetDTO>;
-          if (data.length > 0) {
-            const cleanData = this.dataTransforme(data, concernedItem);
-            if (withImages) {
-              return cleanData;
+      )
+      .then((http: HttpResponse<OpenSilexResponse<Array<DataGetDTO>>>) => {
+        const data = http.response.result as Array<DataGetDTO>;
+        if (data.length > 0) {
+          const cleanData = HighchartsDataTransformer.transformDataForHighcharts(data, {scientificObjectUri: concernedItem.uri});
+          if (withImages) {
+            return cleanData;
+          } else {
+            if (isSecondVariable) {
+              return {
+                name: concernedItem + "/" + variable.name, 
+                data: cleanData, 
+                visible: true,
+                yAxis: 1
+              };
             } else {
               if (isSecondVariable) {
                 return {
@@ -378,36 +386,6 @@ export default class VisuView extends Vue {
         })
         .catch(error => {
         });
-  }
-
-  // keep only date/value/uriprovenance properties
-  dataTransforme(data, concernedItem) {
-    let toAdd,
-        cleanData = [];
-    const orderedData = data.sort(
-        (a, b) => Date.parse(a.date) - Date.parse(b.date) //sort ascending
-    ); //has to be done on the data service
-    orderedData.forEach(element => {
-      let stringDateWithoutUTC =
-          moment.parseZone(element.date).format("YYYYMMDD HHmmss") + "+00:00";
-      let dateWithoutUTC = moment(stringDateWithoutUTC).valueOf();
-      let highchartsDate = Highcharts.dateFormat(
-          "%Y-%m-%dT%H:%M:%S",
-          dateWithoutUTC
-      );
-      let offset = moment.parseZone(element.date).format("Z");
-      toAdd = { // one highchart point attributs
-        provenanceUri: element.provenance.uri,
-        x: dateWithoutUTC,
-        y: element.value,     
-        dataUri: element.uri,
-        objectUri: concernedItem,
-        offset: offset,
-        dateWithOffset: highchartsDate + offset
-      };
-      cleanData.push(toAdd);
-    });
-    return cleanData;
   }
 
   buildImageSerie(concernedItem) {

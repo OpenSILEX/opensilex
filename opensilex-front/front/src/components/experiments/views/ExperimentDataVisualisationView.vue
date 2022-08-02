@@ -13,6 +13,7 @@
         :soFilter="soFilter"
         :showAllEvents.sync="showEvents"
         @search="onSearch"
+        @onValidateScientificObjects="onValidateScientificObjects"
       ></opensilex-ExperimentDataVisualisationForm>
 
       <div class="d-flex justify-content-center mb-3" v-if="!showGraphicComponent && initLoader">
@@ -68,12 +69,13 @@ import {
 // @ts-ignore
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 import { Component, Ref, Prop, PropSync } from "vue-property-decorator";
+import OpenSilexVuePlugin from '../../../models/OpenSilexVuePlugin'
 import Vue from "vue";
 
 @Component
 export default class ExperimentDataVisualisationView extends Vue {
   $route: any;
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
   dataService: DataService;
   eventsService: EventsService;
   VariablesService: VariablesService;
@@ -98,6 +100,7 @@ export default class ExperimentDataVisualisationView extends Vue {
   eventTypesColorArray = [];
   selectedObjects = [];
   selectedScientificObjects= [];
+  selectedScientificObjectsWithLabel: Array<{id: string, label: string}> = [];
   showEvents = false;
   multipleVariables = false;
   showDataVisuView = false;
@@ -159,6 +162,7 @@ export default class ExperimentDataVisualisationView extends Vue {
     this.eventsService = this.$opensilex.getService("opensilex.EventsService");
     this.$opensilex.disableLoader();
     this.selectedExperiment = decodeURIComponent(this.$route.params.uri);
+    this.VariablesService = this.$opensilex.getService("opensilex.VariablesService");
   }
 
     // when event is created or if this.ShowGraphicComponent is true:
@@ -230,8 +234,7 @@ export default class ExperimentDataVisualisationView extends Vue {
     }
     else {
 
-      this.$opensilex
-        .getService("opensilex.VariablesService")
+      this.VariablesService
         .getVariablesByURIs(this.selectedVariable)
         .then((http: HttpResponse<OpenSilexResponse>) => {
           this.selectedVariablesObjectsList = http.response.result;
@@ -292,7 +295,7 @@ export default class ExperimentDataVisualisationView extends Vue {
          this.visuGraphic.reload(series, this.selectedVariablesObjectsList, this.form, { showEvents:this.showEvents });
 
       // and scroll to graphic
-        let graphic = document.querySelector('.graphic');
+        let graphic = document.querySelector('.experimentDataVisualisationGraphic');
         graphic.scrollIntoView({
           behavior: 'smooth',
         });
@@ -301,13 +304,13 @@ export default class ExperimentDataVisualisationView extends Vue {
   }
   
   // build DataSeries with elements from each DataSerie
-  buildDataSeries(selectedVariable) {
+  buildDataSeries(selectedVariable: VariableDetailsDTO) {
     let series = [],
     serie;
     let promises = [],
     promise;
 
-    this.selectedScientificObjects.forEach((element, index) => {
+    this.selectedScientificObjectsWithLabel.forEach((element, index) => {
       promise = this.buildDataSerie(element, selectedVariable, index);
       promises.push(promise);
     });
@@ -323,14 +326,14 @@ export default class ExperimentDataVisualisationView extends Vue {
   }
 
   // Build each singular Dataserie on dataService.searchDataList format
-  buildDataSerie(concernedItem, selectedVariable: VariableDetailsDTO, index) {
+  buildDataSerie(concernedItem: {id: string, label: string}, selectedVariable: VariableDetailsDTO, index) {
     return this.dataService
       .searchDataList(
         this.form.startDate,
         this.form.endDate,
         undefined,
         [this.selectedExperiment],         // experiment
-        [concernedItem],                   // targets / os
+        [concernedItem.id],                   // targets / os
         [selectedVariable.uri],            // variables
         undefined,
         undefined,
@@ -354,32 +357,31 @@ export default class ExperimentDataVisualisationView extends Vue {
                 dataLength +
                 " " +
                 this.$i18n.t("ExperimentDataVisualisationView.limitSizeMessageB") +
-                concernedItem.name +
+                concernedItem.label +
                 this.$i18n.t("ExperimentDataVisualisationView.limitSizeMessageC")
             );
           }
-
             if (this.multipleVariables) {
               return {
-                  name: concernedItem.split("/")[2].toUpperCase() + "/" + selectedVariable.name,
+                  name: concernedItem.label + " / " + selectedVariable.name,
                   data: cleanData,
                   visible: true,
-                  color:this.eventTypesColorArray[concernedItem],
-                  legendColor: this.eventTypesColorArray[concernedItem],
+                  color:this.eventTypesColorArray[concernedItem.id],
+                  legendColor: this.eventTypesColorArray[concernedItem.id],
               }
             }
           else {
             return {
-                name: concernedItem.split("/")[2].toUpperCase(),
+                name: concernedItem.label,
                 data: cleanData,  
                 visible: true,
-                color:this.eventTypesColorArray[concernedItem],
-                legendColor: this.eventTypesColorArray[concernedItem]
+                color:this.eventTypesColorArray[concernedItem.id],
+                legendColor: this.eventTypesColorArray[concernedItem.id]
             };
           }
         }
       })
-      .catch(error => {});
+      .catch(this.$opensilex.errorHandler);
   }
 
   // keep only date/value/uriprovenance properties
@@ -401,7 +403,7 @@ export default class ExperimentDataVisualisationView extends Vue {
         y: element.value,
         offset: offset,
         dateWithOffset: highchartsDate + offset,
-        objectUri: concernedItem.uri,
+        objectUri: concernedItem.id,
         provenanceUri: element.provenance.uri,
         data: element
       };
@@ -418,8 +420,8 @@ export default class ExperimentDataVisualisationView extends Vue {
       let promises = [],
         promise;
 
-      this.selectedScientificObjects.forEach((os, index) => {
-        promise = this.buildEventsSerie(os);
+      this.selectedScientificObjectsWithLabel.forEach((element, index) => {
+        promise = this.buildEventsSerie(element);
         promises.push(promise);
       });
       return Promise.all(promises).then(values => {
@@ -436,7 +438,7 @@ export default class ExperimentDataVisualisationView extends Vue {
   }
 
   // Build each singular Eventsserie on eventsService.searchEvents format
-  buildEventsSerie(concernedItem) {
+  buildEventsSerie(concernedItem: {id: string, label: string}) {
     return this.eventsService
       .searchEvents(
         undefined,
@@ -446,7 +448,7 @@ export default class ExperimentDataVisualisationView extends Vue {
         this.form.endDate != undefined && this.form.endDate != ""
           ? this.form.endDate
           : undefined,
-        concernedItem,
+        concernedItem.id,
         undefined,
         undefined,
         0,
@@ -494,7 +496,7 @@ export default class ExperimentDataVisualisationView extends Vue {
             cleanEventsData.push(toAdd);
           });
 
-          let name = concernedItem.split("/")[2]
+          let name = concernedItem.label;
           return {
             type: "flags",
             allowOverlapX: false,
@@ -505,8 +507,8 @@ export default class ExperimentDataVisualisationView extends Vue {
             style: {
               color: "white"
             },
-            fillColor:this.eventTypesColorArray[concernedItem],
-            legendColor: this.eventTypesColorArray[concernedItem]          
+            fillColor:this.eventTypesColorArray[concernedItem.id],
+            legendColor: this.eventTypesColorArray[concernedItem.id]          
           };
         } else {
           return undefined;
@@ -517,7 +519,14 @@ export default class ExperimentDataVisualisationView extends Vue {
   timestampToUTC(time) {
     var day = Highcharts.dateFormat("%Y-%m-%dT%H:%M:%S+0000", time);
     return day;
-  }   
+  }  
+  
+  onValidateScientificObjects(scientificObjects) {
+    if (scientificObjects === undefined) {
+      return;
+    }
+    this.selectedScientificObjectsWithLabel = scientificObjects;
+  }
 }
 </script>
 

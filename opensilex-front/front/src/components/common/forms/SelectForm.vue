@@ -490,7 +490,7 @@ export default class SelectForm extends Vue {
 
     }
    
-    this.$emit("select", value);
+    this.$emit("select", value, this.selectedCopie);
   }
 
   deselect(item) {
@@ -518,7 +518,7 @@ export default class SelectForm extends Vue {
       }
       setTimeout(() => { // fix :  time to close the modal .
         this.selection = this.selectedCopie.map(value => value.id);
-        this.$emit('onValidate');
+        this.$emit('onValidate', this.selectedCopie);
       }, 400);
     
   }

@@ -14,6 +14,7 @@
         @select="$emit('select', $event)"
         @unselect="$emit('unselect', $event)"
         @selectall="$emit('selectall', $event)"
+        :maximumSelectedRows="maximumSelectedRows"
       >
         <template v-slot:selectableTableButtons="{ numberOfSelectedRows }">
           <b-dropdown
@@ -160,6 +161,9 @@ export default class ScientificObjectList extends Vue {
     default: false
   })
   noUpdateURL;
+
+  @Prop()
+  maximumSelectedRows: number;
 
   @PropSync("searchFilter", {
     default: () => {

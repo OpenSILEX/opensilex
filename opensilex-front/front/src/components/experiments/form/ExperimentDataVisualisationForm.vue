@@ -4,17 +4,16 @@
       <opensilex-PageContent class="pagecontent">
             <!-- Toggle Sidebar--> 
       <div class="searchMenuContainer"
-      v-on:click="SearchFiltersToggle = !SearchFiltersToggle"
+      v-on:click="searchFiltersToggle = !searchFiltersToggle"
       :title="searchFiltersPannel()">
         <div class="searchMenuIcon">
           <i class="ik ik-search"></i>
         </div>
       </div>
 
-
        <!-- FILTERS -->
       <Transition>
-        <div v-show="SearchFiltersToggle">
+        <div v-show="searchFiltersToggle">
 
       <opensilex-SearchFilterField
         ref="searchField"
@@ -37,8 +36,10 @@
                 :soFilter="soFilter"
                 :required="true"
                 :clear="refreshSoSelector"
+                :maximumSelectedRows="15"
                 @input="onUpdate"
                 @select="onSearch"
+                @onValidate="onValidateScientificObjects"
                 class="searchFilter"
               ></opensilex-UsedScientificObjectSelector>
             </opensilex-FilterField>
@@ -53,6 +54,8 @@
                 :variables.sync="selectedVariables"
                 :experiment="[selectedExperiment]"
                 :withAssociatedData="true"
+                :maximumSelectedRows="2"
+                :objects="scientificObjects"
                 :required="true"
                 ref="variableRef"
                 class="searchFilter"
@@ -148,6 +151,7 @@ import { EventGetDTO, ProvenanceGetDTO } from "opensilex-core/index";
 // @ts-ignore
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 import { ScientificObjectsService } from "opensilex-core/index";
+import ScientificObjectList from "../../scientificObjects/ScientificObjectList.vue";
 
 @Component
 export default class ExperimentDataVisualisationForm extends Vue {
@@ -215,11 +219,9 @@ export default class ExperimentDataVisualisationForm extends Vue {
 
   eventsCount = "";
 
-  data(){
-    return {
-      SearchFiltersToggle : true,
-    }
-  }
+ 
+    searchFiltersToggle = true;
+
 
   searchFiltersPannel() {
     return  this.$t("searchfilter.label")
@@ -238,6 +240,7 @@ export default class ExperimentDataVisualisationForm extends Vue {
   onSearch() {
     this.getTotalEventsCount();
     this.$emit("search", this.filter);
+    this.searchFiltersToggle = false;
   }
 
     //  search events on EventsService format
@@ -337,6 +340,11 @@ export default class ExperimentDataVisualisationForm extends Vue {
 @Watch("scientificObjectsURI")
   refreshVariablesSelector() {
     this.getTotalEventsCount();
+  }
+
+  onValidateScientificObjects(selection) {
+    this.variableRef.refreshVariableSelector();
+    this.$emit("onValidateScientificObjects", selection);
   }
 }
 </script>

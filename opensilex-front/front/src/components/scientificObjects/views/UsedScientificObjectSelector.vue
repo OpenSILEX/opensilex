@@ -7,6 +7,7 @@
       :selected.sync="scientificObjectsURI"
       :filter.sync="soFilter"
       :multiple="true"
+      :maximumSelectedItems="maximumSelectedRows"
       :clearable="true"
       :required="required"
       :isModalSearch="true"
@@ -54,7 +55,9 @@ export default class UsedScientificObjectSelector extends Vue {
   @Prop()
   modalComponent;
   @Prop()
-  soFilter
+  soFilter;
+  @Prop()
+  maximumSelectedRows: number;
 
   @Ref("soSelector") readonly soSelector!: any;
 
@@ -74,13 +77,13 @@ export default class UsedScientificObjectSelector extends Vue {
   
   refreshSoSelector() {
     this.soSelector.refreshModalSearch();
-    this.refreshProvComponent();
+    this.refreshProvComponent([]);
   }
 
-  refreshProvComponent() {
+  refreshProvComponent(selection) {
     this.refreshKey += 1;
-    this.$emit("onValidate");
-   }  
+    this.$emit("onValidate", selection);
+  }
 }
 </script>
 

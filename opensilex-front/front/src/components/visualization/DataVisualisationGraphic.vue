@@ -711,7 +711,7 @@ export default class DataVisualisationGraphic extends Vue {
         let menuWidth = this.contextMenu.clientWidth;
 
         // define X/Y position for context menu,
-        // if possible, place it before the point, otherwise if exceeds graphic limit border place it after the point
+        // if possible, place it before the point, otherwise if exceeds graphic limit border, place it after the point
         if (e.chartX + menuWidth > chartWidth) {
           this.leftPosition = e.pageX - menuWidth - 10;
         } else {
@@ -722,6 +722,11 @@ export default class DataVisualisationGraphic extends Vue {
       });
       this.selectedValue = e.point.y;
       this.selectedObject = e.point.objectUri ? e.point.objectUri : e.point.deviceUri;
+
+      if ( !this.selectedObject) {
+        this.selectedObject = e.point.data.target;
+      }
+      
       this.selectedProvenance = e.point.provenanceUri;
       this.selectedData = e.point.data.uri;
 

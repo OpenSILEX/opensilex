@@ -126,7 +126,7 @@
         @select="$emit('select', $event)"
         @unselect="$emit('unselect', $event)"
         @selectall="$emit('selectall', $event)"
-       
+        :maximumSelectedRows="maximumSelectedRows"
       >
       </opensilex-ScientificObjectList>
     </opensilex-PageContent>
@@ -146,11 +146,15 @@
 </template>
 
 <script lang="ts">
-import { Component } from "vue-property-decorator";
+import { Component, Prop } from "vue-property-decorator";
 import ScientificObjectModalList from "./ScientificObjectModalList.vue";
 
 @Component
 export default class ScientificObjectModalListByExp extends ScientificObjectModalList {
+
+
+  @Prop()
+  maximumSelectedRows: number;
  
   data(){
     return {

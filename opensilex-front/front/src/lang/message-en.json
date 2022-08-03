@@ -79,7 +79,10 @@
                 "unexpected-error": "An unexpected error occurred, please contact your local support.",
                 "unauthorized-error": "Your session expired, please login again.",
                 "form-step-errors": "Some field are required in order to go to the next step",
-                "uri-already-exists": "This URI already exists."
+                "uri-already-exists": "This URI already exists.",
+                "regex": {
+                    "invalid-regex" : "Invalid regex : {__regex__}. The following characters are forbidden : {__forbidden_characters__}"
+                }
             },
             "form-wizard": {
                 "external-ontologies": "(Optional) External ontologies references",

@@ -41,10 +41,10 @@ org.opensilex.migration.GraphAndCollectionMigration
 - To be resolvable, the `Class` must exist in one OpenSILEX module (embedded or custom module).
 
 
-| Date       | Name (id)                                                  | Description                                  | 
-|------------|---------------------------------------------------------|----------------------------------------------|
-| 2021/11/29 |<b>org.opensilex.migration.GraphAndCollectionMigration</b> | SPARQL graph and MongoDB collection renaming after URI generation update |  |
-|            |                                                         |                                              |                                                                          
+| Date       | Name (id)                                                          | Description                                                                          | Commit or TAG ID                         | 
+|------------|--------------------------------------------------------------------|--------------------------------------------------------------------------------------|------------------------------------------|
+| 2021/11/29 | <b>org.opensilex.migration.GraphAndCollectionMigration</b>         | SPARQL graph and MongoDB collection renaming after URI generation update             | 46a276118a6b8c47669997c7cb5ee4aca4524141 |  |
+| 2022/08/03 | <b>org.opensilex.migration.MongoCustomCoordinatesDataTypeUpdate</b> | Update custom coordinates datatype (`integer` -> `String`) into MongoDB **moves** collection |                                          |                                                                          
 
 # Descriptions
 
@@ -67,6 +67,20 @@ java -jar opensilex.jar --CONFIG_FILE=<config_file> system run-update org.opensi
 ```bash
 java -jar opensilex.jar --CONFIG_FILE=<config_file> sparql reset-ontologies
 ```
+
+
+## org.opensilex.migration.MongoCustomCoordinatesDataTypeUpdate
+
+### Description
+
+This update changes datatype of any existing `PositionModel` (stored into custom  the **moves** MongoDB collection), from `integer` to `String`
+
+### Usage
+
+```bash
+java -jar opensilex.jar --CONFIG_FILE=<config_file> system run-update org.opensilex.migration.MongoCustomCoordinatesDataTypeUpdate
+```
+
 
 # Create an update command (For developers)
 

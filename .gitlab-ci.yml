@@ -30,6 +30,7 @@ variables:
   MAVEN_CLI_OPTS: "--batch-mode --show-version -c"
   MAVEN_CACHE_FOLDER: "$CI_PROJECT_DIR/.m2/repository"
   MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
+  MAVEN_SKIP_TESTS: "false"
   # DEFAULT SERVER MAVEN VERSION
   MVN_VERSION: 3.6.3
   # DEFAULT SERVER JAVA VERSION
@@ -91,12 +92,14 @@ variables:
   stage: build
   image: maven:$MVN_VERSION-jdk-$JAVA_VERSION
   script:
-    - mvn clean install $MAVEN_CLI_OPTS -Drevision=$OPENSILEX_APP_REVISION
+    - mvn clean install $MAVEN_CLI_OPTS -Drevision=$OPENSILEX_APP_REVISION -DskipTests=$MAVEN_SKIP_TESTS
     - ls $OPENSILEX_BUILD_PATH/opensilex-release-$OPENSILEX_APP_REVISION
-    - mv $OPENSILEX_BUILD_PATH/opensilex-release-$OPENSILEX_APP_REVISION $OPENSILEX_APP_REVISION
+    - if [ -d "artifacts" ]; then rm -r artifacts; fi
+    - mkdir artifacts
+    - mv $OPENSILEX_BUILD_PATH/opensilex-release-$OPENSILEX_APP_REVISION artifacts/$OPENSILEX_APP_REVISION
   artifacts:
     paths:
-      - $OPENSILEX_APP_REVISION
+      - artifacts
     expire_in: "3 week"
 
 ########################
@@ -232,8 +235,6 @@ merge-request:check:
     - fi
   rules:
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event' && $CI_MERGE_REQUEST_TITLE !~ /^(Draft:|\[Draft\]|\(Draft\)).*/i && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME != "release"
-  tags: 
-    - stable
 
 # Builds the merge request
 merge-request:build:
@@ -242,8 +243,6 @@ merge-request:build:
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event' && $CI_MERGE_REQUEST_TITLE !~ /^(Draft:|\[Draft\]|\(Draft\)).*/i && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME != "release"
   needs:
     - job: "merge-request:check"
-  tags: 
-    - stable
 
 
 ####################
@@ -292,8 +291,6 @@ trigger:opensilex-develop:deploy:test:
     - if: $CI_COMMIT_BRANCH == "develop"
   needs:
     - job: "opensilex-develop:build"
-  tags:
-    - stable
 
 # Trigger pipeline for the deployment of the release branch
 trigger:opensilex-release:deploy:test:
@@ -494,8 +491,6 @@ demo:build:
   <<: *build_template_with_opensilex
   rules:
     - if: $CI_COMMIT_BRANCH == "demo"
-  tags:
-    - stable
 
 ###################################
 ##  MAX-TEST-SNAPSHOT-DEPLOYMENT

@@ -416,8 +416,11 @@ opensilex-release:publish:
     - git fetch origin --tags
     # Ceckout the release tag
     - git checkout $PUBLISH_RELEASE_TAG
-    - mvn clean install $MAVEN_CLI_OPTS -Drevision=$PUBLISH_RELEASE_TAG
+    - mvn clean install $MAVEN_CLI_OPTS -Drevision=$PUBLISH_RELEASE_TAG -DskipTests=true
     - ls
+    - ls opensilex-release
+    - ls opensilex-release/target
+    - ls -lh opensilex-release/target/opensilex-release-$PUBLISH_RELEASE_TAG
   rules:
     - if: $CI_COMMIT_BRANCH == "release-test"
   needs:
@@ -425,7 +428,7 @@ opensilex-release:publish:
       artifacts: true
   artifacts:
     paths:
-      - .
+      - opensilex-release
     expire_in: "3 day"
 
 

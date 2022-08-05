@@ -408,8 +408,14 @@ opensilex-release:publish:
     # Install package curl
     - apt-get update
     - apt-get install -y curl
-    - git checkout $PUBLISH_RELEASE_TAG
+    # Print info
     - ls
+    - git log -1
+    # Remove local tags & fetch them
+    - git tag -l | xargs git tag -d
+    - git fetch origin --tags
+    # Ceckout the release tag
+    - git checkout $PUBLISH_RELEASE_TAG
     - mvn clean install $MAVEN_CLI_OPTS -Drevision=$PUBLISH_RELEASE_TAG
     - ls
   rules:

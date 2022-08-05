@@ -207,7 +207,16 @@ opensilex-develop:build:
     - if: $CI_COMMIT_BRANCH == "develop"
 
 opensilex-release:build:
-  <<: *build_template_with_opensilex
+  stage: build
+  image: alpine
+  script:
+    - if [ -d "artifacts" ]; then rm -r artifacts; fi
+    - mkdir artifacts
+    - echo "test" >> artifacts/testfile
+  artifacts:
+    paths:
+      - artifacts
+    expire_in: "3 day"
   variables:
     MAVEN_SKIP_TESTS: "true"
   rules:
@@ -374,7 +383,7 @@ opensilex-release:close:
     - ls
     - ls artifacts
     # Transmit environment variable to next job
-    - echo "RELEASE_TAG=$RELEASE_TAG" >> opensilex-release:close.env
+    - echo "PUBLISH_RELEASE_TAG=$RELEASE_TAG" >> opensilex-release:close.env
     - 'cat opensilex-release:close.env'
   rules:
     - if: $CI_COMMIT_BRANCH == "release-test"
@@ -395,16 +404,16 @@ opensilex-release:publish:
   stage: release
   image: maven:$MVN_VERSION-jdk-$JAVA_VERSION
   script:
-    - if [[ -z $RELEASE_TAG ]]; then
-    -   echo 'RELEASE_TAG must be set'
+    - echo "$RELEASE_TAG, $PUBLISH_RELEASE_TAG"
+    - if [[ -z $PUBLISH_RELEASE_TAG ]]; then
+    -   echo 'PUBLISH_RELEASE_TAG must be set'
     -   exit 1
     - else
-    -   echo "Finishing release $RELEASE_TAG"
+    -   echo "Finishing release $PUBLISH_RELEASE_TAG"
     - fi
     # Install packages git & curl
     - apk update
     - apk add git curl
-    - git checkout $RELEASE_TAG
     - ls
     - ls artifacts
   rules:

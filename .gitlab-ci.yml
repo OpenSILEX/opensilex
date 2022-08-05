@@ -405,10 +405,9 @@ opensilex-release:publish:
     - else
     -   echo "Publishing release $PUBLISH_RELEASE_TAG"
     - fi
-    # Install packages git & curl
-    - apt update
-    - apt install git
-    - apt install curl
+    # Install package curl
+    - apt-get update
+    - apt-get install -y curl
     - git checkout $PUBLISH_RELEASE_TAG
     - ls
     - mvn clean install $MAVEN_CLI_OPTS -Drevision=$PUBLISH_RELEASE_TAG
@@ -418,6 +417,11 @@ opensilex-release:publish:
   needs:
     - job: "opensilex-release:close"
       artifacts: true
+  artifacts:
+    paths:
+      - .
+    expire_in: "3 day"
+
 
 # Trigger pipeline for data-analysis module deployment
 #trigger:dataanalysis:deploy:test:

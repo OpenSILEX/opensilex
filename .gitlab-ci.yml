@@ -414,13 +414,36 @@ opensilex-release:publish:
     # Remove local tags & fetch them
     - git tag -l | xargs git tag -d
     - git fetch origin --tags
-    # Ceckout the release tag
+    # Checkout the release tag
     - git checkout $PUBLISH_RELEASE_TAG
     - mvn clean install $MAVEN_CLI_OPTS -Drevision=$PUBLISH_RELEASE_TAG -DskipTests=true
     - ls
     - ls opensilex-release
     - ls opensilex-release/target
     - ls -lh opensilex-release/target/opensilex-release-$PUBLISH_RELEASE_TAG
+    # Extract release description from changelog
+    - echo "Try to extract the release description from changelog..."
+    - RELEASE_DESCRIPTION=$(sed -n  "/^## \[${PUBLISH_RELEASE_TAG}\]/,/^## /p" CHANGELOG.md | head -n -1 | jq -Rsa .)
+    - if [[ "$RELEASE_DESCRIPTION" == '""' ]]; then
+    -   echo "Missing release description for tag $PUBLISH_RELEASE_TAG in the changelog. Please change it later in the Github repository."
+    -   RELEASE_DESCRIPTION="\"# [$PUBLISH_RELEASE_TAG] - $(date --iso-8601)\n\nMissing release notes\n\""
+    - fi
+    # Variables for the request
+    - AUTHORIZATION="$GITHUB_API_ACCOUNT:GITHUB_API_TOKEN"
+    - 'ACCEPTS_HEADER="Accept: application/vnd.github+json"'
+    # JSON payload of the query
+    - 'CREATE_QUERY_PAYLOAD="{\"tag_name\":\"$PUBLISH_RELEASE_TAG\",\"name\":\"$PUBLISH_RELEASE_TAG\",\"body\":$RELEASE_DESCRIPTION}"'
+    # Query for creating the release
+    - 'echo "\"curl -u \"$AUTHORIZATION\" -X POST -H \"$ACCEPTS_HEADER\" -d \"$CREATE_QUERY_PAYLOAD\" https://api.github.com/repos/OpenSILEX/opensilex/releases"'
+    - CREATE_RESPONSE=$(curl -u "$AUTHORIZATION" -X POST -H "$ACCEPTS_HEADER" -d "$CREATE_QUERY_PAYLOAD" https://api.github.com/repos/OpenSILEX/opensilex/releases)
+    # Extract the asset upload URL from the response
+    - UPLOAD_URL=$(echo $CREATE_RESPONSE | jq -r .upload_url | sed -e "s/{.*}/\?name=${FILENAME}/g")
+    # Asset file
+    - FILENAME=opensilex-release-$PUBLISH_RELEASE_TAG.zip
+    - FILEPATH=opensilex-release/target/$FILENAME
+    # Upload the asset file
+    - 'echo "curl -u \"$AUTHORIZATION\" -X POST -H \"$ACCEPTS_HEADER\" -H "Content-Type: application/zip" -T \"$FILEPATH\" \"$UPLOAD_URL\""'
+    - 'curl -u "$AUTHORIZATION" -X POST -H "$ACCEPTS_HEADER" -H "Content-Type: application/zip" -T "$FILEPATH" "$UPLOAD_URL"'
   rules:
     - if: $CI_COMMIT_BRANCH == "release-test"
   needs:

@@ -374,11 +374,11 @@ opensilex-release:close:
     - git push -f origin master-test
     - git push origin $RELEASE_TAG
     # Trigger the merge request to develop
-    - >
-      curl -X POST -F "private_token=$JOB_API_TOKEN" -F "source_branch=release-test" 
-      -F "target_branch=develop" -F "title=[Release] Merge $RELEASE_TAG into develop" 
-      -F "remove_source_branch=true" -F "labels[]=finishing release"
-      https://forgemia.inra.fr/api/v4/projects/1675/merge_requests
+#    - >
+#      curl -X POST -F "private_token=$JOB_API_TOKEN" -F "source_branch=release-test"
+#      -F "target_branch=develop" -F "title=[Release] Merge $RELEASE_TAG into develop"
+#      -F "remove_source_branch=true" -F "labels[]=finishing release"
+#      https://forgemia.inra.fr/api/v4/projects/1675/merge_requests
     # Transmit release tag variable to next job (name must be different)
     - echo "PUBLISH_RELEASE_TAG=$RELEASE_TAG" >> opensilex-release:close.env
   rules:
@@ -397,7 +397,7 @@ opensilex-release:close:
 
 opensilex-release:publish:
   stage: release
-  image: maven:$MVN_VERSION-jdk-$JAVA_VERSION-alpine
+  image: maven:$MVN_VERSION-jdk-$JAVA_VERSION
   script:
     - if [[ -z $PUBLISH_RELEASE_TAG ]]; then
     -   echo 'PUBLISH_RELEASE_TAG must be set'
@@ -406,8 +406,9 @@ opensilex-release:publish:
     -   echo "Publishing release $PUBLISH_RELEASE_TAG"
     - fi
     # Install packages git & curl
-    - apk update
-    - apk add git curl
+    - apt update
+    - apt install git
+    - apt install curl
     - git checkout $PUBLISH_RELEASE_TAG
     - ls
     - mvn clean install $MAVEN_CLI_OPTS -Drevision=$PUBLISH_RELEASE_TAG

@@ -1,7 +1,8 @@
 
 export interface Image{
     imageUri:string,
-    uri:string,
+    src:string,
+    title:string,
     type:string,
     date:string,
     objectUri:string,

@@ -1,51 +1,71 @@
 <template>
   <div>
     <opensilex-VisuImageGrid
-      ref="visuImageGrid"
-      :key="key"
-      :images="images"
-      @imageIsHovered=" $emit('imageIsHovered', $event)"
-      @imageIsUnHovered=" $emit('imageIsUnHovered', $event)"
-      @imageIsDeleted="$emit('imageIsDeleted', $event)"
-      @imageIsClicked="onImageIsClicked"
+        ref="visuImageGrid"
+        :key="key"
+        :images="images"
+        @imageIsHovered=" $emit('imageIsHovered', $event)"
+        @imageIsUnHovered=" $emit('imageIsUnHovered', $event)"
+        @imageIsDeleted="$emit('imageIsDeleted', $event)"
+        @onImageAnnotate="$emit('onImageAnnotate', $event)"
+        @onImageDetails="$emit('onImageDetails', $event)"
+        @imageIsClicked="onImageIsClicked"
     ></opensilex-VisuImageGrid>
-    <b-modal id="modal-center" v-model="show" hide-footer centered no-fade size="sm">
-      <b-carousel
-        ref="myCarousel"
-        id="carousel-1"
-        v-model="slide"
-        :interval="0"
-        controls
-        indicators
-        background="#ababab"
-        style="text-shadow: 1px 1px 2px #333;"
-      >
-        <b-carousel-slide v-for="(image, index) in images" v-bind:key="index" :img-src="image.uri">
-          <p>{{getObjectType(image)}}</p>
-          <p v-if="image.objectAlias">{{image.objectAlias}}</p>
-          <p v-if="!image.objectAlias">{{image.objectUri}}</p>
-          <p>{{formatedDate(image.date)}}</p>
-        </b-carousel-slide>
-      </b-carousel>
+    <vue-easy-lightbox
+        :visible="show"
+        :imgs="images"
+        :index="slide"
+        @hide="handleHide"
+    ></vue-easy-lightbox>
+
+    <b-modal :title="$t('Annotation.image')" id="modal-center" v-model="showAnnotationsModal" hide-footer centered
+             no-fade size="lg">
+      <b-card>
+        <b-list-group>
+          <b-list-group-item
+              v-for="(annotation, index) in annotations"
+              href="#"
+              class="flex-column align-items-start"
+              v-bind:key="index"
+          >
+            <div class="d-flex w-100 justify-content-between">
+              <h5 class="mb-1">{{ annotation.motivation.name }}</h5>
+              <small class="text-muted">{{ annotation.created }}</small>
+            </div>
+
+            <p class="mb-1">{{ annotation.description }}</p>
+
+            <small class="text-muted">{{ annotation.author }}</small>
+          </b-list-group-item>
+        </b-list-group>
+      </b-card>
     </b-modal>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Ref } from "vue-property-decorator";
+import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
+import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
+import {AnnotationGetDTO} from "opensilex-core/model/annotationGetDTO";
+import {AnnotationsService} from "opensilex-core/api/annotations.service";
 
 @Component
 export default class VisuImages extends Vue {
+  $opensilex: any;
+  annotationService: AnnotationsService;
   key = 0; // fix VisuImageGrid reload
   images = [];
+  imagesUri = [];
   image: any;
   slide = 0;
   show: boolean = false;
+  showAnnotationsModal: boolean = false;
   showImages: boolean = true;
   objectType: string = "";
   objectUri: string = "";
   formatedDateValue: string = "";
+  annotations: Array<AnnotationGetDTO> = [];
 
   @Ref("visuImageGrid") readonly visuImageGrid!: any;
 
@@ -59,16 +79,53 @@ export default class VisuImages extends Vue {
 
   onImageIsDeleted(index) {
     this.deleteImage(index);
+    this.imagesUri.splice(index, 1)
+  }
+
+  created() {
+    this.annotationService = this.$opensilex.getService("opensilex.AnnotationsService");
+  }
+
+  getAnnotations(uri: string) {
+    return this.annotationService
+        .searchAnnotations(undefined, uri, undefined, undefined, undefined, 0, 0)
+        .then(
+            (http: HttpResponse<OpenSilexResponse<Array<AnnotationGetDTO>>>) => {
+              const annotations = http.response.result as Array<AnnotationGetDTO>;
+              this.annotations = annotations;
+            }
+        );
+  }
+
+  showAnnotations(dataUri) {
+    this.getAnnotations(dataUri);
+  }
+
+  onImageDetails(index) {
+    this.showAnnotationsModal = true;
+    this.showAnnotations(index);
   }
 
   onImageIsClicked(index) {
     this.slide = index;
-    this.image = this.images[index].uri;
+    this.image = this.images[index].url;
     this.show = true;
+
+  }
+
+  handleHide() {
+    this.show = false
   }
 
   addImage(image) {
-    this.images.push(image);
+    if (this.images && this.imagesUri.includes(image.imageUri)) {
+      return null;
+    } else {
+      this.images.push(image);
+      this.imagesUri.push(image.imageUri);
+
+    }
+
   }
 
   deleteImage(index) {
@@ -79,32 +136,20 @@ export default class VisuImages extends Vue {
   }
 
   getObjectType(image) {
-    return image.objectType.split("#")[1];
+    return image.type.split(":")[1];
   }
 
-  formatedDate(date) {
-    const newDate = new Date(date);
-    const options = {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit"
-    };
-    return newDate.toLocaleDateString("fr-FR", options);
-  }
 }
 </script>
 
 
-
-
-<style scoped >
+<style scoped>
 div >>> .carousel-control-prev-icon,
 div >>> .carousel-control-next-icon {
   width: 80px;
   height: 80px;
 }
+
 div >>> .modal-body {
   padding: 0 !important;
 }
@@ -135,46 +180,48 @@ div >>> .modal-body {
   height: 40%;
   display: inline-block;
   background: -moz-linear-gradient(
-    top,
-    rgba(0, 0, 0, 0) 0%,
-    rgba(0, 0, 0, 0.65) 100%
+      top,
+      rgba(0, 0, 0, 0) 0%,
+      rgba(0, 0, 0, 0.65) 100%
   ); /* FF3.6+ */
   background: -webkit-gradient(
-    linear,
-    left top,
-    left bottom,
-    color-stop(0%, rgba(0, 0, 0, 0.65)),
-    color-stop(100%, rgba(0, 0, 0, 0))
+      linear,
+      left top,
+      left bottom,
+      color-stop(0%, rgba(0, 0, 0, 0.65)),
+      color-stop(100%, rgba(0, 0, 0, 0))
   ); /* Chrome,Safari4+ */
   background: -webkit-linear-gradient(
-    top,
-    rgba(0, 0, 0, 0) 0%,
-    rgba(0, 0, 0, 0.65) 100%
+      top,
+      rgba(0, 0, 0, 0) 0%,
+      rgba(0, 0, 0, 0.65) 100%
   ); /* Chrome10+,Safari5.1+ */
   background: -o-linear-gradient(
-    top,
-    rgba(0, 0, 0, 0) 0%,
-    rgba(0, 0, 0, 0.65) 100%
+      top,
+      rgba(0, 0, 0, 0) 0%,
+      rgba(0, 0, 0, 0.65) 100%
   ); /* Opera 11.10+ */
   background: -ms-linear-gradient(
-    top,
-    rgba(0, 0, 0, 0) 0%,
-    rgba(0, 0, 0, 0.65) 100%
+      top,
+      rgba(0, 0, 0, 0) 0%,
+      rgba(0, 0, 0, 0.65) 100%
   ); /* IE10+ */
   background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0) 0%,
-    rgba(0, 0, 0, 0.65) 100%
+      to bottom,
+      rgba(0, 0, 0, 0) 0%,
+      rgba(0, 0, 0, 0.65) 100%
   ); /* W3C */
-  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#a6000000', endColorstr='#00000000',GradientType=0 ); /* IE6-9 */
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#a6000000', endColorstr='#00000000', GradientType=0); /* IE6-9 */
 }
 
 p {
   margin-bottom: 0px;
 }
+
 .row {
   margin-left: 0px;
 }
+
 .images {
   margin: 0;
   padding: 0;

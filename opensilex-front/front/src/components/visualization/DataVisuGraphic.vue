@@ -1,16 +1,16 @@
 <template>
   <div style="min-height:300px;">
     <b-list-group
-      v-show="contextMenuShow"
-      ref="contextMenu"
-      class="contextMenu"
-      :style="{ top: topPosition + 'px', left:leftPosition + 'px' }"
+        v-show="contextMenuShow"
+        ref="contextMenu"
+        class="contextMenu"
+        :style="{ top: topPosition + 'px', left:leftPosition + 'px' }"
     >
       <b-list-group-item href="#" @click="addEventClick">{{ $t("DataVisuGraphic.addEvent") }}</b-list-group-item>
 
       <b-list-group-item
-        href="#"
-        @click="dataAnnotationClick"
+          href="#"
+          @click="dataAnnotationClick"
       >{{ $t("DataVisuGraphic.dataAnnotation") }}</b-list-group-item>
     </b-list-group>
 
@@ -63,11 +63,11 @@
 
       <div v-click-outside="closeMenu" @click="closeContextMenu" class="card-body p-0">
         <highcharts
-          v-for="(options, index) in chartOptions"
-          :options="options"
-          v-bind:key="index"
-          :constructor-type="'stockChart'"
-          ref="highcharts"
+            v-for="(options, index) in chartOptions"
+            :options="options"
+            v-bind:key="index"
+            :constructor-type="'stockChart'"
+            ref="highcharts"
         ></highcharts>
       </div>
     </div>
@@ -78,7 +78,7 @@
 
     <b-card v-if="detailEventShow ">
       <b-card-text
-        v-if="event.rdf_type_name"
+          v-if="event.rdf_type_name"
       >{{ $t("component.common.type") }}: {{event.rdf_type_name}}</b-card-text>
 
       <b-card-text v-else>{{ $t("component.common.type") }}:{{event.rdf_type}}</b-card-text>
@@ -87,7 +87,7 @@
       <b-card-text v-else>{{ $t("component.common.begin") }}: {{event.end}}</b-card-text>
       <b-card-text v-if="event.start">{{ $t("component.common.end") }}: {{event.end}}</b-card-text>
       <b-card-text
-        v-if="event.description"
+          v-if="event.description"
       >{{ $t("component.common.description") }}: {{event.description}}</b-card-text>
 
       <b-card-text>{{ $t("component.common.creator") }}: {{event.author}}</b-card-text>
@@ -105,10 +105,10 @@
     <b-card title="Annotation" v-if="detailDataShow ">
       <b-list-group>
         <b-list-group-item
-          v-for="(annotation, index) in annotations"
-          href="#"
-          class="flex-column align-items-start"
-          v-bind:key="index"
+            v-for="(annotation, index) in annotations"
+            href="#"
+            class="flex-column align-items-start"
+            v-bind:key="index"
         >
           <div class="d-flex w-100 justify-content-between">
             <h5 class="mb-1">{{annotation.motivation.name}}</h5>
@@ -250,9 +250,9 @@ export default class DataVisuGraphic extends Vue {
 
   created() {
     Highcharts.wrap(Highcharts.Legend.prototype, "colorizeItem", function(
-      proceed,
-      item,
-      visible
+        proceed,
+        item,
+        visible
     ) {
       var color = item.color;
       item.color = item.options.legendColor;
@@ -268,34 +268,33 @@ export default class DataVisuGraphic extends Vue {
   private langUnwatcher;
   mounted() {
     this.langUnwatcher = this.$store.watch(
-      () => this.$store.getters.language,
-      lang => {
-        this.langOptionChanges(lang);
-      }
+        () => this.$store.getters.language,
+        lang => {
+          this.langOptionChanges(lang);
+        }
     );
 
     let lang = this.$store.getters.language;
     this.langOptionChanges(lang);
   }
 
- beforeDestroy() {
+  beforeDestroy() {
     this.langUnwatcher();
   }
 
   getEventDetail(uri) {
     return this.$opensilex
-      .getService("opensilex.EventsService")
-      .getEventDetails(uri)
-      .then((http: HttpResponse<OpenSilexResponse<EventDetailsDTO>>) => {
-        return http.response.result;
-      });
+        .getService("opensilex.EventsService")
+        .getEventDetails(uri)
+        .then((http: HttpResponse<OpenSilexResponse<EventDetailsDTO>>) => {
+          return http.response.result;
+        });
   }
 
   showEventDetail(uri) {
     this.detailDataLoad = true;
 
     this.getEventDetail(uri).then(event => {
-      console.log(event);
       this.event = event;
       this.detailDataLoad = false;
       this.detailDataShow = false;
@@ -305,50 +304,50 @@ export default class DataVisuGraphic extends Vue {
 
   getAnnotations(uri) {
     return this.$opensilex
-      .getService("opensilex.AnnotationsService")
-      .searchAnnotations(undefined, uri, undefined, undefined, undefined, 0, 0)
-      .then(
-        (http: HttpResponse<OpenSilexResponse<Array<AnnotationGetDTO>>>) => {
-          const annotations = http.response.result as Array<AnnotationGetDTO>;
-          return annotations;
-        }
-      );
+        .getService("opensilex.AnnotationsService")
+        .searchAnnotations(undefined, uri, undefined, undefined, undefined, 0, 0)
+        .then(
+            (http: HttpResponse<OpenSilexResponse<Array<AnnotationGetDTO>>>) => {
+              const annotations = http.response.result as Array<AnnotationGetDTO>;
+              return annotations;
+            }
+        );
   }
 
   showAnnotations(dataUri) {
     this.getAnnotations(dataUri)
-      .then(annotations => {
-        this.annotations = annotations;
-      })
-      .catch(error => {
-        this.$opensilex.errorHandler(error);
-      });
+        .then(annotations => {
+          this.annotations = annotations;
+        })
+        .catch(error => {
+          this.$opensilex.errorHandler(error);
+        });
   }
 
   getProvenance(uri) {
     return this.$opensilex
-      .getService("opensilex.DataService")
-      .getProvenance(uri)
-      .then((http: HttpResponse<OpenSilexResponse<ProvenanceGetDTO>>) => {
-        return http.response.result;
-      });
+        .getService("opensilex.DataService")
+        .getProvenance(uri)
+        .then((http: HttpResponse<OpenSilexResponse<ProvenanceGetDTO>>) => {
+          return http.response.result;
+        });
   }
 
   showProvenanceDetailComponent(value) {
     if (value.provenance != undefined && value.provenance != null) {
       this.detailDataLoad = true;
       this.getProvenance(value.provenance)
-        .then(provenance => {
-          value.provenance = provenance;
-          this.data = JSON.stringify(value.data, null, 2);
-          this.provenance = JSON.stringify(value.provenance, null, 2);
-          this.detailEventShow = false;
-          this.detailDataLoad = false;
-          this.detailDataShow = true;
-        })
-        .catch(error => {
-          this.$opensilex.errorHandler(error);
-        });
+          .then(provenance => {
+            value.provenance = provenance;
+            this.data = JSON.stringify(value.data, null, 2);
+            this.provenance = JSON.stringify(value.provenance, null, 2);
+            this.detailEventShow = false;
+            this.detailDataLoad = false;
+            this.detailDataShow = true;
+          })
+          .catch(error => {
+            this.$opensilex.errorHandler(error);
+          });
     }
   }
 
@@ -446,34 +445,34 @@ export default class DataVisuGraphic extends Vue {
               };
               if (point.y) {
                 let date = moment
-                  .parseZone(point.data.date)
-                  .format("DD-MM-YYYY HH:mm:ss");
+                    .parseZone(point.data.date)
+                    .format("DD-MM-YYYY HH:mm:ss");
                 return (
-                  "" +
-                  this.point.series.name +
-                  " :" +
-                  '<span style=" color:' +
-                  this.point.color +
-                  '" ><b> ' +
-                  this.point.y +
-                  "</b></span>" +
-                  "<br/>Time:<b> " +
-                  date +
-                  "</b> "
+                    "" +
+                    this.point.series.name +
+                    " :" +
+                    '<span style=" color:' +
+                    this.point.color +
+                    '" ><b> ' +
+                    this.point.y +
+                    "</b></span>" +
+                    "<br/>Time:<b> " +
+                    date +
+                    "</b> "
                 );
               } else {
                 return (
-                  "" +
-                  point.series.name +
-                  " :" +
-                  '<span style=" color:' +
-                  point.color +
-                  '" ><b> ' +
-                  point.text +
-                  "</b></span>" +
-                  "<br/>Time:<b> " +
-                  Highcharts.dateFormat("%d-%m-%Y %H:%M:%S", this.x) +
-                  "</b> "
+                    "" +
+                    point.series.name +
+                    " :" +
+                    '<span style=" color:' +
+                    point.color +
+                    '" ><b> ' +
+                    point.text +
+                    "</b></span>" +
+                    "<br/>Time:<b> " +
+                    Highcharts.dateFormat("%d-%m-%Y %H:%M:%S", this.x) +
+                    "</b> "
                 );
               }
             },
@@ -540,7 +539,7 @@ export default class DataVisuGraphic extends Vue {
                   contextmenu: function(e) {
                     e.preventDefault();
                     that.activateContextMenuShow ?
-                    that.pointRightClick(e, this) : '';
+                        that.pointRightClick(e, this) : '';
                   }
                 }
               }
@@ -578,14 +577,14 @@ export default class DataVisuGraphic extends Vue {
       this.startDate = form.startDate;
       this.endDate = form.endDate;
     }
-    
+
     if(form && form.showEvents) {
       this.showEvents = form.showEvents;
     }
-   
+
     this.detailDataShow = false;
     this.detailEventShow = false;
-    
+
     this.variable = variable;
     if (series.length > 0) {
       this.yAxis = this.buildYAxis(this.showEvents);
@@ -605,8 +604,8 @@ export default class DataVisuGraphic extends Vue {
           },
           title: {
             text: this.variable
-              ? this.variable.name + " (" + this.variable.unit.name + ")"
-              : ""
+                ? this.variable.name + " (" + this.variable.unit.name + ")"
+                : ""
           },
           height: "80%",
           lineWidth: 2,
@@ -636,8 +635,8 @@ export default class DataVisuGraphic extends Vue {
         },
         title: {
           text: this.variable
-            ? this.variable.name + " (" + this.variable.unit.name + ")"
-            : ""
+              ? this.variable.name + " (" + this.variable.unit.name + ")"
+              : ""
         }
       };
     }
@@ -732,7 +731,7 @@ export default class DataVisuGraphic extends Vue {
       this.highchartsRef[0].chart.exportChart({ type: "image/jpg" });
     } else {
       this.$opensilex.showInfoToast(
-        "Too much points : " +
+          "Too much points : " +
           this.selectedPointsCount +
           " Must be < 1500 points"
       );
@@ -833,6 +832,18 @@ export default class DataVisuGraphic extends Vue {
   hide() {
     this.helpModal.hide();
   }
+
+  onImageIsHovered(indexes) {
+    var chart = this.highchartsRef[0].chart;
+    chart.series[indexes.serie].data[indexes.point].setState("hover");
+    chart.tooltip.refresh(chart.series[indexes.serie].data[indexes.point]);
+  }
+
+  onImageIsUnHovered(indexes) {
+    var chart = this.highchartsRef[0].chart;
+    chart.series[indexes.serie].data[indexes.point].setState();
+    chart.tooltip.hide();
+  }
 }
 </script>
 
@@ -872,27 +883,27 @@ export default class DataVisuGraphic extends Vue {
 
 
 <i18n>
-  fr: 
-    DataVisuGraphic:
-      provenanceDetail : Details de la provenance
-      dataAnnotation : Annoter la donnée 
-      scientificObjectAnnotation : Ajouter une annotation à l' objet scientifique 
-      addEvent : Ajouter un evenement
-      scatterPlotView : Mode nuage de points
-      chartLineView : Mode courbe
-      fullscreen : Plein ecran
-      download : Télecharger l'image
-      rightClick : click droit sur un point pour ajouter un evénement ou une annotation
+fr:
+  DataVisuGraphic:
+    provenanceDetail : Details de la provenance
+    dataAnnotation : Annoter la donnée
+    scientificObjectAnnotation : Ajouter une annotation à l' objet scientifique
+    addEvent : Ajouter un evenement
+    scatterPlotView : Mode nuage de points
+    chartLineView : Mode courbe
+    fullscreen : Plein ecran
+    download : Télecharger l'image
+    rightClick : click droit sur un point pour ajouter un evénement ou une annotation
 
-  en: 
-    DataVisuGraphic:
-      provenanceDetail : Provenance detail
-      dataAnnotation : Annotate data
-      scientificObjectAnnotation : Add scientific object's annotation 
-      addEvent : Add an event
-      scatterPlotView : Scatter plot view
-      chartLineView : Chart line view
-      fullscreen : Fullscreen
-      download : Download image 
-      rightClick : right click on a point to add event or annotation
+en:
+  DataVisuGraphic:
+    provenanceDetail : Provenance detail
+    dataAnnotation : Annotate data
+    scientificObjectAnnotation : Add scientific object's annotation
+    addEvent : Add an event
+    scatterPlotView : Scatter plot view
+    chartLineView : Chart line view
+    fullscreen : Fullscreen
+    download : Download image
+    rightClick : right click on a point to add event or annotation
 </i18n>

@@ -1,54 +1,39 @@
 <template>
-  <div  @click="clickEvent">
- 
+  <div @click="clickEvent">
+
     <b-collapse v-model="showSearchComponent" class="mt-2">
-      <opensilex-VisuForm :selectedExperiment="selectedExperiment" @search="onSearch" ></opensilex-VisuForm>
+      <opensilex-VisuForm
+          :selectedExperiment="selectedExperiment"
+          :selectedScientificObjects="selectedScientificObjects"
+          @search="onSearch"
+      ></opensilex-VisuForm>
     </b-collapse>
 
     <b-collapse v-model="showGraphicComponent" class="mt-2">
 
-      <opensilex-VisuImages 
-      ref="visuImages"
-       v-if="showImages"
-      @imageIsHovered="onImageIsHovered"
-      @imageIsUnHovered=" onImageIsUnHovered"
-         ></opensilex-VisuImages>
+      <opensilex-VisuImages
+          ref="visuImages"
+          v-if="showImages"
+          @imageIsHovered="onImageIsHovered"
+          @imageIsUnHovered=" onImageIsUnHovered"
+      ></opensilex-VisuImages>
 
       <opensilex-VisuGraphic
-        v-if="showGraphicComponent"
-        ref="visuGraphic"
-        :showEvents="showEvents"
-        @search="showSearchComponent=!showSearchComponent;showGraphicComponent=!showGraphicComponent;"
+          v-if="showGraphicComponent"
+          ref="visuGraphic"
+          :showEvents="showEvents"
+          @search="showSearchComponent=!showSearchComponent;showGraphicComponent=!showGraphicComponent;"
       ></opensilex-VisuGraphic>
-      
+
     </b-collapse>
 
-   <!--  <opensilex-ProvenanceView></opensilex-ProvenanceView>
-
-    <opensilex-ModalForm
-      v-if="showEventFormComponent"
-      ref="addEventForm"
-      component="opensilex-AddEventForm"
-      editTitle="VisuView.eventUpdate"
-      icon="ik#ik-flag"
-      @onUpdate="onEventCreate()"
-    ></opensilex-ModalForm>
-
-    <opensilex-ModalForm
-      ref="addAnnotationForm"
-      component="opensilex-AddAnnotationForm"
-      editTitle="VisuView.annotationUpdate"
-      icon="ik#ik-flag"
-    ></opensilex-ModalForm> -->
-
-    
   </div>
 </template>
 
 <script lang="ts">
 import moment from "moment-timezone";
 import Highcharts from "highcharts";
-import { Image } from "./image";
+import {Image} from "./image";
 import {
   DataService,
   DataFileGetDTO,
@@ -58,8 +43,8 @@ import {
   EventsService,
   EventGetDTO
 } from "opensilex-core/index";
-import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
-import { Component, Ref, Prop } from "vue-property-decorator";
+import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
+import {Component, Ref, Prop} from "vue-property-decorator";
 import Vue from "vue";
 import HighchartsDataTransformer from "../../models/HighchartsDataTransformer";
 
@@ -68,14 +53,14 @@ export default class VisuView extends Vue {
   $route: any;
   $opensilex: any;
   dataService: DataService;
-   eventsService: EventsService; 
+  eventsService: EventsService;
   ontologyService: OntologyService;
   form;
   multipleVariables = false;
   chartOptionsValue: any;
-/* 
-  @Ref("addEventForm") readonly addEventForm!: any;
-  @Ref("addAnnotationForm") readonly addAnnotationForm!: any; */
+  /*
+    @Ref("addEventForm") readonly addEventForm!: any;
+    @Ref("addAnnotationForm") readonly addAnnotationForm!: any; */
   @Ref("visuGraphic") readonly visuGraphic!: any;
   @Ref("visuImages") readonly visuImages!: any;
   thumbnails = [];
@@ -83,7 +68,6 @@ export default class VisuView extends Vue {
   showImages = true;
   showSearchComponent: boolean = true;
   showGraphicComponent: boolean = false;
-  /* showEventFormComponent: boolean = false; */
 
   selectedExperiment;
 
@@ -92,35 +76,35 @@ export default class VisuView extends Vue {
 
   created() {
     this.dataService = this.$opensilex.getService("opensilex.DataService");
-   /*  this.eventsService = this.$opensilex.getService("opensilex.EventsService");
-    */
+    /*  this.eventsService = this.$opensilex.getService("opensilex.EventsService");
+     */
     this.$opensilex.disableLoader();
-   /*  this.showEventFormComponent = true; */
+    /*  this.showEventFormComponent = true; */
     this.selectedExperiment = decodeURIComponent(this.$route.params.uri);
   }
 
   clickEvent() {
-    if(this.visuGraphic){
-        this.visuGraphic.closeContextMenu();
+    if (this.visuGraphic) {
+      this.visuGraphic.closeContextMenu();
     }
   }
 
-  onImageIsHovered(indexes){
-     if(this.visuGraphic){
-        this.visuGraphic.onImageIsHovered(indexes);
+  onImageIsHovered(indexes) {
+    if (this.visuGraphic) {
+      this.visuGraphic.onImageIsHovered(indexes);
     }
   }
 
-  onImageIsUnHovered(indexes){
-     if(this.visuGraphic){
-        this.visuGraphic.onImageIsUnHovered(indexes);
+  onImageIsUnHovered(indexes) {
+    if (this.visuGraphic) {
+      this.visuGraphic.onImageIsUnHovered(indexes);
     }
   }
 
   onEventCreate() {
     this.loadSeries();
   }
-  
+
   onSearch(form) {
     this.form = form;
     this.multipleVariables = this.form.variable.length > 1 ? true : false;
@@ -144,12 +128,12 @@ export default class VisuView extends Vue {
     const series = [];
     let serie;
     this.dataService = this.$opensilex.getService("opensilex.DataService");
-   this.eventsService = this.$opensilex.getService("opensilex.EventsService");
- 
-  /*   if (this.form.showEvents) {
-      promise = this.buildEventSeries();
-      promises.push(promise);
-    } */
+    this.eventsService = this.$opensilex.getService("opensilex.EventsService");
+
+    /*   if (this.form.showEvents) {
+        promise = this.buildEventSeries();
+        promises.push(promise);
+      } */
     if (this.multipleVariables) {
       promise = this.buildSeriesMultipleVariables();
     } else {
@@ -178,9 +162,9 @@ export default class VisuView extends Vue {
       });
       if (series.length > 0) {
         this.visuGraphic.reload(
-          series,
-          this.form.variable,
-          this.multipleVariables
+            series,
+            this.form.variable,
+            this.multipleVariables
         );
       }
     });
@@ -189,9 +173,9 @@ export default class VisuView extends Vue {
 
   buildSeriesMultipleVariables() {
     let series = [],
-      serie;
+        serie;
     let promises = [],
-      promise;
+        promise;
 
     if (this.form.showImages) {
       promise = this.buildDataAndImagesSeries(this.form.variable[0]);
@@ -219,9 +203,9 @@ export default class VisuView extends Vue {
 
   buildDataAndImagesSeries(variable) {
     let series = [],
-      serie;
+        serie;
     let promises = [],
-      promise;
+        promise;
     this.form.concernedItems.forEach((element, index) => {
       promise = this.buildDataAndImagesSerie(element, index, variable);
       promises.push(promise);
@@ -238,9 +222,9 @@ export default class VisuView extends Vue {
 
   buildDataAndImagesSerie(concernedItem, index, variable) {
     let series = [],
-      serie;
+        serie;
     let promises = [],
-      promise;
+        promise;
     promise = this.buildDataSerie(concernedItem, variable, false, true);
     promises.push(promise);
     promise = this.buildImageSerie(concernedItem);
@@ -283,15 +267,15 @@ export default class VisuView extends Vue {
                     imageIndex: e.target.index,
                     serieIndex: e.target.series.index
                   };
-                  if( this.visuImages){
-                     this.visuImages.onImagePointMouseEnter(toSend);
+                  if (this.visuImages) {
+                    this.visuImages.onImagePointMouseEnter(toSend);
                   }
                   e.preventDefault();
                   return false;
                 },
                 mouseOut: e => {
-                   if( this.visuImages){
-                     this.visuImages.onImagePointMouseOut();
+                  if (this.visuImages) {
+                    this.visuImages.onImagePointMouseOut();
                   }
                   e.preventDefault();
                   return false;
@@ -325,9 +309,9 @@ export default class VisuView extends Vue {
 
   buidDataSeries(variable, isSecondVariable) {
     let series = [],
-      serie;
+        serie;
     let promises = [],
-      promise;
+        promise;
     this.form.concernedItems.forEach((element, index) => {
       promise = this.buildDataSerie(element, variable, isSecondVariable, false);
       promises.push(promise);
@@ -343,7 +327,7 @@ export default class VisuView extends Vue {
   }
 
   buildDataSerie(concernedItem, variable, isSecondVariable, withImages) {
-  
+
     return this.dataService.searchDataList(
         this.form.startDate,
         this.form.endDate,
@@ -359,73 +343,103 @@ export default class VisuView extends Vue {
         undefined,
         0,
         1000000
-      )
-      .then((http: HttpResponse<OpenSilexResponse<Array<DataGetDTO>>>) => {
-        const data = http.response.result as Array<DataGetDTO>;
-        if (data.length > 0) {
-          const cleanData = HighchartsDataTransformer.transformDataForHighcharts(data, {scientificObjectUri: concernedItem.uri});
-          if (withImages) {
-            return cleanData;
-          } else {
-            if (isSecondVariable) {
-              return {
-                name: concernedItem + "/" + variable.name, 
-                data: cleanData, 
-                visible: true,
-                yAxis: 1
-              };
+    )
+        .then((http: HttpResponse<OpenSilexResponse<Array<DataGetDTO>>>) => {
+          const data = http.response.result as Array<DataGetDTO>;
+          if (data.length > 0) {
+            const cleanData = this.dataTransforme(data, concernedItem);
+            if (withImages) {
+              return cleanData;
             } else {
-              if (this.multipleVariables) {
+              if (isSecondVariable) {
                 return {
                   name: concernedItem + "/" + variable.name,
                   data: cleanData,
-                  visible: true
+                  visible: true,
+                  yAxis: 1
                 };
               } else {
-                return {
-                  name: concernedItem,
-                  data: cleanData,
-                  visible: true
-                };
+                if (this.multipleVariables) {
+                  return {
+                    name: concernedItem + "/" + variable.name,
+                    data: cleanData,
+                    visible: true
+                  };
+                } else {
+                  return {
+                    name: concernedItem,
+                    data: cleanData,
+                    visible: true
+                  };
+                }
               }
             }
           }
-        }
-      })
-      .catch(error => {
-      });
+        })
+        .catch(error => {
+        });
+  }
+
+  // keep only date/value/uriprovenance properties
+  dataTransforme(data, concernedItem) {
+    let toAdd,
+        cleanData = [];
+    const orderedData = data.sort(
+        (a, b) => Date.parse(a.date) - Date.parse(b.date) //sort ascending
+    ); //has to be done on the data service
+    orderedData.forEach(element => {
+      let stringDateWithoutUTC =
+          moment.parseZone(element.date).format("YYYYMMDD HHmmss") + "+00:00";
+      let dateWithoutUTC = moment(stringDateWithoutUTC).valueOf();
+      let highchartsDate = Highcharts.dateFormat(
+          "%Y-%m-%dT%H:%M:%S",
+          dateWithoutUTC
+      );
+      let offset = moment.parseZone(element.date).format("Z");
+      toAdd = { // one highchart point attributs
+        provenanceUri: element.provenance.uri,
+        x: dateWithoutUTC,
+        y: element.value,     
+        dataUri: element.uri,
+        objectUri: concernedItem,
+        offset: offset,
+        dateWithOffset: highchartsDate + offset
+      };
+      cleanData.push(toAdd);
+    });
+    return cleanData;
   }
 
   buildImageSerie(concernedItem) {
     return this.dataService
-      .getDataFileDescriptionsBySearch(
-        "http://www.opensilex.org/vocabulary/oeso#Image",
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        concernedItem,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        0,
-        5000
-      )
-      .then((http: HttpResponse<OpenSilexResponse<Array<DataFileGetDTO>>>) => {
-        const result = http.response.result as Array<DataFileGetDTO>;
-        const cleanImageData = this.cleanImageData(result, concernedItem);
-        return cleanImageData;
-      })
-      .catch(error => {
-      });
+        .getDataFileDescriptionsBySearch(
+            this.$opensilex.Oeso.IMAGE_TYPE_URI,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            concernedItem,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            0,
+            5000
+        )
+        .then((http: HttpResponse<OpenSilexResponse<Array<DataFileGetDTO>>>) => {
+          const result = http.response.result as Array<DataFileGetDTO>;
+          const cleanImageData = this.cleanImageData(result, concernedItem);
+          return cleanImageData;
+        })
+        .catch(error => {
+        });
   }
 
   cleanImageData(data, concernedItem) {
     const cleanImageData = [];
     this.distinctDates(data).forEach(element => {
-        let stringDateWithoutUTC =
-        moment.parseZone(element).format("YYYYMMDD HHmmss") + "+00:00";
+      let stringDateWithoutUTC =
+          moment.parseZone(element).format("YYYYMMDD HHmmss") + "+00:00";
       let dateWithoutUTC = moment(stringDateWithoutUTC).valueOf();
       cleanImageData.push({
         x: dateWithoutUTC,
@@ -441,9 +455,9 @@ export default class VisuView extends Vue {
   // extract  array with  distinct dates ( some images can have same date)
   distinctDates(imageData) {
     var flags = [],
-      distinctData = [],
-      l = imageData.length,
-      i;
+        distinctData = [],
+        l = imageData.length,
+        i;
     for (i = 0; i < l; i++) {
       if (flags[imageData[i].date]) continue;
       flags[imageData[i].date] = true;
@@ -456,43 +470,45 @@ export default class VisuView extends Vue {
     const time = point.date;/* 
     const utcTimeStart = this.timestampToUTC(time);
     const utcTimeEnd = this.timestampToUTC(time+1000); */
-    const endTime= moment(time).add(1, 's').format();
+    const endTime = moment(time).add(1, 's').format();
     return this.dataService
-      .getDataFileDescriptionsBySearch(
-        "http://www.opensilex.org/vocabulary/oeso#Image",
-        time,
-        undefined,
-        null,
-        undefined,
-        point.concernedItem,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        0,
-        100
-      )
-      .then((http: HttpResponse<OpenSilexResponse<Array<DataFileGetDTO>>>) => {
-        const result = http.response.result as any;
-        if (result && result.length > 0) {
+        .getDataFileDescriptionsBySearch(
+            this.$opensilex.Oeso.IMAGE_TYPE_URI,
+            time,
+            undefined,
+            null,
+            undefined,
+            point.concernedItem,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            0,
+            100
+        )
+        .then((http: HttpResponse<OpenSilexResponse<Array<DataFileGetDTO>>>) => {
+          const result = http.response.result as any;
+          if (result && result.length > 0) {
 
-          const data = result as Array<DataFileGetDTO>;
-          this.imagesFilter(data, point);
-        }
-      })
-      .catch(error => {
-        console.log(error);
-      });
+            const data = result as Array<DataFileGetDTO>;
+            this.imagesFilter(data, point);
+          }
+        })
+        .catch(error => {
+          console.log(error);
+        });
   }
+
   imagesFilter(data: Array<DataFileGetDTO>, point: any) {
     data.forEach(element => {
       const image: Image = {
         imageUri: element.uri,
-        uri:
-          this.$opensilex.getBaseAPI() +
-          "/data/file/thumbnail" +
-          encodeURIComponent(element.uri) +
-          "?scaledHeight=800",
+        src:
+            this.$opensilex.getBaseAPI() +
+            "/data/file/thumbnail" +
+            encodeURIComponent(element.uri) +
+            "?scaledHeight=800",
+        title: this.formatedDate(element.date),
         type: element.rdf_type,
         objectUri: element.target,
         date: element.date,
@@ -506,9 +522,9 @@ export default class VisuView extends Vue {
 
   buildEventSeries() {
     let series = [],
-      serie;
+        serie;
     let promises = [],
-      promise;
+        promise;
     this.form.concernedItems.forEach((element, index) => {
       promise = this.buildEventSerie(element, index);
       promises.push(promise);
@@ -525,97 +541,109 @@ export default class VisuView extends Vue {
 
   buildEventSerie(concernedItem, index) {
     return this.eventsService
-    .searchEvents(undefined, undefined, undefined, concernedItem, undefined, undefined,0, 100000)
-      .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-        const eventsData = http.response.result.data as Array<EventGetDTO>;
-        if (eventsData.length > 0) {
-          const cleanEventsData = [];
-          let convertedDate, toAdd, label;
+        .searchEvents(undefined, undefined, undefined, concernedItem, undefined, undefined, 0, 100000)
+        .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+          const eventsData = http.response.result.data as Array<EventGetDTO>;
+          if (eventsData.length > 0) {
+            const cleanEventsData = [];
+            let convertedDate, toAdd, label;
 
-          let eventTypesColorArray = [];
-          const colorPalette = [
-            "#ca6434 ",
-            "#427775",
-            "#f2dc7c",
-            "#0f839c",
-            "#a45354",
-            "#d3b0ae",
-            "#774e42",
-            "#776942",
-            "#5c4277",
-            "#34a0ca",
-            "#9334ca",
-            "#caaf34"
-          ];
-          let index = 0;
-          eventsData.forEach(element => {
-            if (!eventTypesColorArray[element.rdf_type_name]) {
-              eventTypesColorArray[element.rdf_type_name] = colorPalette[index];
-              index++;
-              if (index === 12) {
-                index = 0;
+            let eventTypesColorArray = [];
+            const colorPalette = [
+              "#ca6434 ",
+              "#427775",
+              "#f2dc7c",
+              "#0f839c",
+              "#a45354",
+              "#d3b0ae",
+              "#774e42",
+              "#776942",
+              "#5c4277",
+              "#34a0ca",
+              "#9334ca",
+              "#caaf34"
+            ];
+            let index = 0;
+            eventsData.forEach(element => {
+              if (!eventTypesColorArray[element.rdf_type_name]) {
+                eventTypesColorArray[element.rdf_type_name] = colorPalette[index];
+                index++;
+                if (index === 12) {
+                  index = 0;
+                }
               }
+
+              convertedDate = moment.utc(element.start).valueOf();
+              label = element.rdf_type_name;
+              toAdd = {
+                x: convertedDate,
+                title: label,
+                text: label,
+                eventUri: element.uri,
+                fillColor: eventTypesColorArray[element.rdf_type_name]
+              };
+              cleanEventsData.push(toAdd);
+            });
+            let yAxis;
+            if (this.multipleVariables) {
+              yAxis = 2;
+            } else {
+              yAxis = 1;
             }
-
-            convertedDate = moment.utc(element.start).valueOf();
-            label = element.rdf_type_name;
-            toAdd = {
-              x: convertedDate,
-              title: label,
-              text: label,
-              eventUri: element.uri,
-              fillColor: eventTypesColorArray[element.rdf_type_name]
-            };
-            cleanEventsData.push(toAdd);
-          });
-          let yAxis;
-          if (this.multipleVariables) {
-            yAxis = 2;
+            if (this.form.concernedItems.length > 1) {
+              return {
+                type: "flags",
+                allowOverlapX: true,
+                name: "Events-" + concernedItem,
+                lineWidth: 1,
+                yAxis: yAxis,
+                y: -20,
+                data: cleanEventsData,
+                style: {
+                  // text style
+                  color: "white"
+                }
+              };
+            } else {
+              return {
+                type: "flags",
+                allowOverlapX: true,
+                name: "Events",
+                lineWidth: 1,
+                yAxis: yAxis,
+                y: -20,
+                data: cleanEventsData,
+                style: {
+                  // text style
+                  color: "white"
+                }
+              };
+            }
           } else {
-            yAxis = 1;
+            return undefined;
           }
-          if (this.form.concernedItems.length > 1) {
-            return {
-              type: "flags",
-              allowOverlapX: true,
-              name: "Events-" + concernedItem,
-              lineWidth: 1,
-              yAxis: yAxis,
-              y: -20,
-              data: cleanEventsData,
-              style: {
-                // text style
-                color: "white"
-              }
-            };
-          } else {
-            return {
-              type: "flags",
-              allowOverlapX: true,
-              name: "Events",
-              lineWidth: 1,
-              yAxis: yAxis,
-              y: -20,
-              data: cleanEventsData,
-              style: {
-                // text style
-                color: "white"
-              }
-            };
-          }
-        } else {
-          return undefined;
-        }
-      })
-      .catch(error => {
-        console.log(error);
-      });
+        })
+        .catch(error => {
+          console.log(error);
+        });
   }
- 
+
   timestampToUTC(time) {
     // var day = moment.unix(time).utc().format();
     var day = Highcharts.dateFormat("%Y-%m-%dT%H:%M:%S+0000", time);
     return day;
+  }
+
+  formatedDate(date) {
+    const newDate = new Date(date);
+    const options = {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit"
+    };
+    return newDate.toLocaleDateString("fr-FR", options);
   }
 }
 </script>
@@ -630,6 +658,7 @@ export default class VisuView extends Vue {
 .fade {
   transition: opacity 0.3s linear !important;
 }
+
 .collapsing {
   transition: height 0.8s ease !important;
 }

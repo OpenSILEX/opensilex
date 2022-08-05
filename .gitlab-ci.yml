@@ -408,6 +408,7 @@ opensilex-release:publish:
     # Install package curl
     - apt-get update
     - apt-get install -y curl
+    - apt-get install -y jq
     # Print info
     - ls
     - git log -1

@@ -370,10 +370,21 @@ opensilex-release:close:
       -F "target_branch=develop" -F "title=[Release] Merge $RELEASE_TAG into develop" 
       -F "remove_source_branch=true" -F "labels[]=finishing release"
       https://forgemia.inra.fr/api/v4/projects/1675/merge_requests
+    #TODO remove this / test if artifacts are present
+    - ls
+    - ls artifacts
+    # Transmit environment variable to next job
+    - echo "RELEASE_TAG=$RELEASE_TAG" >> opensilex-release:close.env
+    - 'cat opensilex-release:close.env'
   rules:
     - if: $CI_COMMIT_BRANCH == "release-test"
+  artifacts:
+    reports:
+      dotenv:
+        - "opensilex-release:close.env"
   needs:
     - job: "opensilex-release:build"
+      artifacts: true
   when: manual
 
 ############################
@@ -400,6 +411,7 @@ opensilex-release:publish:
     - if: $CI_COMMIT_BRANCH == "release-test"
   needs:
     - job: "opensilex-release:close"
+      artifacts: true
 
 # Trigger pipeline for data-analysis module deployment
 #trigger:dataanalysis:deploy:test:

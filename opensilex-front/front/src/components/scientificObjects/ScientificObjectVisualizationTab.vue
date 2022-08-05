@@ -9,14 +9,6 @@
               @search="onSearch"
           ></opensilex-ScientificObjectVisualizationForm>
 
-      <!-- Toggle Sidebar-->
-      <div class="searchMenuContainer"
-      v-on:click="SearchFiltersToggle = !SearchFiltersToggle"
-      :title="searchFiltersPannel()">
-        <div class="searchMenuIcon">
-          <i class="icon ik ik-search"></i>
-        </div>
-      </div>
 
       <div class="d-flex justify-content-center mb-3" v-if="!isGraphicLoaded">
         <b-spinner label="Loading..."></b-spinner>
@@ -66,8 +58,12 @@ import {
   EventsService,
   EventGetDTO,
 } from "opensilex-core/index";
-import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
-import HighchartsDataTransformer from "../../models/HighchartsDataTransformer";
+import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
+import {DataFileGetDTO} from "opensilex-core/model/dataFileGetDTO";
+import {Image} from "../visualization/image";
+import * as http from "http";
+import {VariablesService} from "opensilex-core/api/variables.service";
+
 @Component
 export default class ScientificObjectVisualizationTab extends Vue {
   $opensilex: any;
@@ -336,44 +332,46 @@ export default class ScientificObjectVisualizationTab extends Vue {
   buildDataSerie() {
     if (this.form) {
       return this.dataService
-        .searchDataList(
-          this.form.startDate != undefined && this.form.startDate != ""
-            ? this.form.startDate
-            : undefined,
-          this.form.endDate != undefined && this.form.endDate != ""
-            ? this.form.endDate
-            : undefined,
-          undefined,
-          undefined,
-          [this.scientificObject.uri],
-          [this.form.variable],
-          undefined,
-          undefined,
-          undefined,
-          this.form.provenance ? [this.form.provenance] : undefined,
-          undefined, //this.addMetadataFilter(),
-          ["date=asc"],
-          0,
-          50000
-        )
-        .then((http: HttpResponse<OpenSilexResponse<Array<DataGetDTO>>>) => {
-          const data = http.response.result as Array<DataGetDTO>;
-          let dataLength = data.length;
-          if (dataLength > 0) {
-            const cleanData = HighchartsDataTransformer.transformDataForHighcharts(data);
-            if (dataLength > 50000) {
-              this.$opensilex.showInfoToast(
-                this.$i18n.t(
-                  "ScientificObjectVisualizationTab.limitSizeMessageA"
-                ) +
-                  " " +
-                  dataLength +
-                  " " +
-                  this.$i18n.t(
-                    "ScientificObjectVisualizationTab.limitSizeMessageB"
-                  )
-              );
-            }
+          .searchDataList(
+              this.form.startDate != undefined && this.form.startDate != ""
+                  ? this.form.startDate
+                  : undefined,
+              this.form.endDate != undefined && this.form.endDate != ""
+                  ? this.form.endDate
+                  : undefined,
+              undefined,
+              undefined,
+              [this.scientificObject.uri],
+              [this.form.variable],
+              undefined,
+              undefined,
+              undefined,
+              this.form.provenance ? [this.form.provenance] : undefined,
+              undefined, //this.addMetadataFilter(),
+              ["date=asc"],
+              0,
+              50000
+          )
+          .then((http: HttpResponse<OpenSilexResponse<Array<DataGetDTO>>>) => {
+            const data = http.response.result as Array<DataGetDTO>;
+
+            let dataLength = data.length;
+            if (dataLength > 0) {
+              const cleanData = this.dataTransforme(data);
+              if (dataLength > 50000) {
+                this.$opensilex.showInfoToast(
+                    this.$i18n.t(
+                        "ScientificObjectVisualizationTab.limitSizeMessageA"
+                    ) +
+                    " " +
+                    dataLength +
+                    " " +
+                    this.$i18n.t(
+                        "ScientificObjectVisualizationTab.limitSizeMessageB"
+                    )
+                );
+              }
+              const dataAndImage = [];
 
               const dataSerie = {
                 name: this.scientificObject.name,
@@ -443,8 +441,104 @@ export default class ScientificObjectVisualizationTab extends Vue {
     }
   }
 
-  searchFiltersPannel() {
-    return this.$t("searchfilter.label")
+
+  onImagePointClick(point) {
+    return this.dataService
+        .getDataFileDescription(
+            point.concernedItem
+        )
+        .then((http: HttpResponse<OpenSilexResponse<DataFileGetDTO>>) => {
+          const result = http.response.result as any;
+          if (result) {
+            const data = result as DataFileGetDTO;
+            this.imagesFilter(data, point);
+          }
+        })
+        .catch(error => {
+          console.log(error)
+        });
+  }
+
+
+  imagesFilter(element: DataFileGetDTO, point: any) {
+    let path = "/core/datafiles/" + encodeURIComponent(element.uri) + "/thumbnail?scaled_width=640&scaled_height=320";
+    let promise = this.$opensilex.viewImageFromGetService(path);
+    promise.then((result) => {
+      const image: Image = {
+        imageUri: element.uri,
+        src: result,
+        title: this.formatedDate(element.date),
+        type: element.rdf_type,
+        objectUri: element.target,
+        date: element.date,
+        provenanceUri: element.provenance.uri,
+        imageIndex: point.imageIndex,
+        serieIndex: point.serieIndex
+      };
+      this.visuImages.addImage(image);
+    })
+  }
+
+  onImageIsDeleted(indexes) {
+    this.visuImages.onImageIsDeleted(indexes);
+  }
+
+  onImageDetails(indexes) {
+    this.visuImages.onImageDetails(indexes);
+  }
+
+  // keep only date/value/uriprovenance properties
+  dataTransforme(data) {
+    let toAdd,
+        imageToAdd,
+        cleanData = [],
+        cleanImage = [];
+
+    data.forEach(element => {
+      let stringDateWithoutUTC = moment.parseZone(element.date).format("YYYY-MM-DDTHH:mm:ss") + "+00:00";
+      let dateWithoutUTC = moment(stringDateWithoutUTC).valueOf();
+      let offset = moment.parseZone(element.date).format("Z");
+      let stringDate = moment.parseZone(element.date).format("YYYY-MM-DDTHH:mm:ss") + offset;
+      if (element.provenance.prov_used) {
+        imageToAdd = {
+          x: dateWithoutUTC,
+          y: element.value,
+          date: stringDate,
+          title: "I",
+          prov_used: element.provenance.prov_used,
+          data: element
+        };
+        cleanImage.push(imageToAdd);
+      }
+      toAdd = {
+        x: dateWithoutUTC,
+        y: element.value,
+        offset: offset,
+        dateWithOffset: stringDate,
+        provenanceUri: element.provenance.uri,
+        data: element
+      };
+      cleanData.push(toAdd);
+    });
+    return [cleanData, cleanImage];
+  }
+
+  timestampToUTC(time) {
+    // var day = moment.unix(time).utc().format();
+    var day = Highcharts.dateFormat("%Y-%m-%dT%H:%M:%S+0000", time);
+    return day;
+  }
+
+  formatedDate(date) {
+    const newDate = new Date(date);
+    const options = {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit"
+    };
+    return newDate.toLocaleDateString("fr-FR", options);
   }
 }
 </script>

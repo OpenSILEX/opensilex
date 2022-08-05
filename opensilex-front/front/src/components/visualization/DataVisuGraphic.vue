@@ -445,8 +445,8 @@ export default class DataVisuGraphic extends Vue {
               };
               if (point.y) {
                 let date = moment
-                  .parseZone(point.data.date)
-                  .format("DD-MM-YYYY HH:mm:ss");
+                    .parseZone(point.data.date)
+                    .format("DD-MM-YYYY HH:mm:ss");
                 return (
                     "" +
                     this.point.series.name +
@@ -462,17 +462,17 @@ export default class DataVisuGraphic extends Vue {
                 );
               } else {
                 return (
-                  "" +
-                  point.series.name +
-                  " :" +
-                  '<span style=" color:' +
-                  point.color +
-                  '" ><b> ' +
-                  point.text +
-                  "</b></span>" +
-                  "<br/>Time:<b> " +
-                  Highcharts.dateFormat("%d-%m-%Y %H:%M:%S", this.x) +
-                  "</b> "
+                    "" +
+                    point.series.name +
+                    " :" +
+                    '<span style=" color:' +
+                    point.color +
+                    '" ><b> ' +
+                    point.text +
+                    "</b></span>" +
+                    "<br/>Time:<b> " +
+                    Highcharts.dateFormat("%d-%m-%Y %H:%M:%S", this.x) +
+                    "</b> "
                 );
               }
             },

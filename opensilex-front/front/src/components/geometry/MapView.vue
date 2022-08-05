@@ -515,6 +515,7 @@
       icon="fa#sun"
       modalSize="m"
       @onCreate="showFiltersDetails"
+      successMessage="Filter.created"
     ></opensilex-ModalForm>
     {{ $t("MapView.Legend") }}:
     <span id="OS">{{ $t("MapView.LegendSO") }}</span>
@@ -1497,7 +1498,7 @@ export default class MapView extends Vue {
     });
 
     // clear selection when drawing a new box and when clicking on the map
-    dragBox.on("boxStart", () => {
+    dragBox.on("boxstart", () => {
       this.selectedFeatures = [];
     });
   }
@@ -2389,6 +2390,7 @@ en:
   Filter:
     add: Creation of the filter
     update: Update Filter
+    created: The filter
   ScientificObjects:
     title: Scientific object
     update: Scientific object has been updated
@@ -2443,6 +2445,7 @@ fr:
   Filter:
     add: Création d'un filtre
     update: Mise à jour du filtre
+    created: Le filtre
   ScientificObjects:
     title: Objet scientifique
     update: L'objet scientifique a été mis à jour

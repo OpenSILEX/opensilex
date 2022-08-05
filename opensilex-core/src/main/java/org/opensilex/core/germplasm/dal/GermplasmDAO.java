@@ -266,8 +266,7 @@ public class GermplasmDAO {
                     appendProductionYearFilter(select, searchFilter.getProductionYear());
                     appendURIsFilter(select, filteredUris);
 
-                    ElementGroup germplasmGraphElem = SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(rootElementGroup, defaultGraph);
-                    appendExperimentFilter(select, finalExperiment, germplasmGraphElem);
+                    appendExperimentFilter(select, finalExperiment);
 
                     initialSelect.set(select);
                 },
@@ -506,20 +505,17 @@ public class GermplasmDAO {
         }
     }
 
-    private void appendExperimentFilter(SelectBuilder select, URI xpUri, ElementGroup germplasmGraphElem) throws SPARQLException {
+    private void appendExperimentFilter(SelectBuilder select, URI xpUri) throws SPARQLException {
         if (xpUri != null) {
+            Var scientificObjectVar = makeVar("scientificObject");
+            Var rdfTypeVar = makeVar("scientificObjectType");
+            Var germplasmVar = makeVar("uri");
 
-            // search into global experiment graph, which species are associated to this xp
-            Node xpGlobalGraphNode = sparql.getDefaultGraph(ExperimentModel.class);
-            Node xpNode = SPARQLDeserializers.nodeURI(xpUri);
-            Node hasSpecies = SPARQLDeserializers.nodeURI(Oeso.hasSpecies);
-            Var speciesVar = makeVar("species");
-            select.addGraph(xpGlobalGraphNode, xpNode, hasSpecies, speciesVar);
-
-            // join xp species to germplasm associated to these species
-            Var germplasmVar = makeVar(SPARQLResourceModel.URI_FIELD);
-            Node fromSpecies = SPARQLDeserializers.nodeURI(Oeso.fromSpecies);
-            germplasmGraphElem.addTriplePattern(new Triple(germplasmVar, fromSpecies, speciesVar));
+            WhereBuilder whereInExperiment = new WhereBuilder();
+            whereInExperiment.addWhere(scientificObjectVar, RDF.type.asNode(), rdfTypeVar);
+            whereInExperiment.addWhere(scientificObjectVar, Oeso.hasGermplasm.asNode(), germplasmVar);
+            select.addGraph(SPARQLDeserializers.nodeURI(xpUri), whereInExperiment);
+            select.addWhere(rdfTypeVar, Ontology.subClassAny, Oeso.ScientificObject.asNode());
         }
     }
 

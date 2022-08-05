@@ -114,19 +114,19 @@ public class MoveEventCsvImporter extends AbstractEventCsvImporter<MoveModel> {
             try{
                 String x = row[colIndex.getAndIncrement()];
                 if(!StringUtils.isEmpty(x)){
-                    position.setX(Integer.parseInt(x));
+                    position.setX(x);
                     anyMoveFieldNonNull = true;
                 }
 
                 String y = row[colIndex.getAndIncrement()];
                 if(!StringUtils.isEmpty(y)){
-                    position.setY(Integer.parseInt(y));
+                    position.setY(y);
                     anyMoveFieldNonNull = true;
                 }
 
                 String z = row[colIndex.getAndIncrement()];
                 if(!StringUtils.isEmpty(z)){
-                    position.setZ(Integer.parseInt(z));
+                    position.setZ(z);
                     anyMoveFieldNonNull = true;
                 }
 

@@ -11,9 +11,9 @@ public class PositionModel {
     public static final String TEXTUAL_POSITION_FIELD = "textualPosition";
 
     private Point coordinates;
-    private Integer x;
-    private Integer y;
-    private Integer z;
+    private String x;
+    private String y;
+    private String z;
     private String textualPosition;
 
     public Point getCoordinates() {
@@ -24,27 +24,27 @@ public class PositionModel {
         this.coordinates = coordinates;
     }
 
-    public Integer getX() {
+    public String getX() {
         return x;
     }
 
-    public void setX(Integer x) {
+    public void setX(String x) {
         this.x = x;
     }
 
-    public Integer getY() {
+    public String getY() {
         return y;
     }
 
-    public void setY(Integer y) {
+    public void setY(String y) {
         this.y = y;
     }
 
-    public Integer getZ() {
+    public String getZ() {
         return z;
     }
 
-    public void setZ(Integer z) {
+    public void setZ(String z) {
         this.z = z;
     }
 

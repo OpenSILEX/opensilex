@@ -431,11 +431,11 @@ opensilex-release:publish:
     - 'echo "\"curl -u \"$AUTHORIZATION\" -X POST -H \"$ACCEPTS_HEADER\" -d \"$CREATE_QUERY_PAYLOAD\" https://api.github.com/repos/OpenSILEX/opensilex/releases"'
     - CREATE_RESPONSE=$(curl -u "$AUTHORIZATION" -X POST -H "$ACCEPTS_HEADER" -d "$CREATE_QUERY_PAYLOAD" https://api.github.com/repos/OpenSILEX/opensilex/releases)
     - echo $CREATE_RESPONSE
-    # Extract the asset upload URL from the response
-    - UPLOAD_URL=$(echo $CREATE_RESPONSE | jq -r .upload_url | sed -e "s/{.*}/\?name=${FILENAME}/g")
     # Asset file
     - FILENAME=opensilex-release-$PUBLISH_RELEASE_TAG.zip
     - FILEPATH=opensilex-release/target/$FILENAME
+    # Extract the asset upload URL from the response
+    - UPLOAD_URL=$(echo $CREATE_RESPONSE | jq -r .upload_url | sed -e "s/{.*}/\?name=${FILENAME}/g")
     # Upload the asset file
     - 'echo "curl -u \"$AUTHORIZATION\" -X POST -H \"$ACCEPTS_HEADER\" -H "Content-Type: application/zip" -T \"$FILEPATH\" \"$UPLOAD_URL\""'
     - 'curl -u "$AUTHORIZATION" -X POST -H "$ACCEPTS_HEADER" -H "Content-Type: application/zip" -T "$FILEPATH" "$UPLOAD_URL"'

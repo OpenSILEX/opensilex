@@ -329,7 +329,7 @@ opensilex-release:close:
     -   echo 'RELEASE_TAG must be set'
     -   exit 1
     - else
-    -   echo "Finishing release $RELEASE_TAG"
+    -   echo "Closing release $RELEASE_TAG"
     - fi
     # Install packages git & curl
     - apk update
@@ -379,12 +379,8 @@ opensilex-release:close:
       -F "target_branch=develop" -F "title=[Release] Merge $RELEASE_TAG into develop" 
       -F "remove_source_branch=true" -F "labels[]=finishing release"
       https://forgemia.inra.fr/api/v4/projects/1675/merge_requests
-    #TODO remove this / test if artifacts are present
-    - ls
-    - ls artifacts
-    # Transmit environment variable to next job
+    # Transmit release tag variable to next job (name must be different)
     - echo "PUBLISH_RELEASE_TAG=$RELEASE_TAG" >> opensilex-release:close.env
-    - 'cat opensilex-release:close.env'
   rules:
     - if: $CI_COMMIT_BRANCH == "release-test"
   artifacts:
@@ -393,7 +389,6 @@ opensilex-release:close:
         - "opensilex-release:close.env"
   needs:
     - job: "opensilex-release:build"
-      artifacts: true
   when: manual
 
 ############################
@@ -402,20 +397,21 @@ opensilex-release:close:
 
 opensilex-release:publish:
   stage: release
-  image: maven:$MVN_VERSION-jdk-$JAVA_VERSION
+  image: maven:$MVN_VERSION-jdk-$JAVA_VERSION-alpine
   script:
-    - echo "$RELEASE_TAG, $PUBLISH_RELEASE_TAG"
     - if [[ -z $PUBLISH_RELEASE_TAG ]]; then
     -   echo 'PUBLISH_RELEASE_TAG must be set'
     -   exit 1
     - else
-    -   echo "Finishing release $PUBLISH_RELEASE_TAG"
+    -   echo "Publishing release $PUBLISH_RELEASE_TAG"
     - fi
     # Install packages git & curl
     - apk update
     - apk add git curl
+    - git checkout $PUBLISH_RELEASE_TAG
     - ls
-    - ls artifacts
+    - mvn clean install $MAVEN_CLI_OPTS -Drevision=$PUBLISH_RELEASE_TAG
+    - ls
   rules:
     - if: $CI_COMMIT_BRANCH == "release-test"
   needs:

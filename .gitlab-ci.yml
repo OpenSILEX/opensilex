@@ -208,8 +208,10 @@ opensilex-develop:build:
 
 opensilex-release:build:
   <<: *build_template_with_opensilex
+  variables:
+    MAVEN_SKIP_TESTS: "true"
   rules:
-    - if: $CI_COMMIT_BRANCH == "release"
+    - if: $CI_COMMIT_BRANCH == "release-test"
 
 ##################################
 ### MERGE REQUESTS CHECK AND BUILD
@@ -311,7 +313,7 @@ trigger:opensilex-release:deploy:test:
 #################
 
 opensilex-release:close:
-  stage: release
+  stage: deploy
   image: alpine
   script:
     - if [[ -z $RELEASE_TAG ]]; then
@@ -336,43 +338,68 @@ opensilex-release:close:
     - git tag -l | xargs git tag -d
     - git fetch origin --tags
     # Remove the local branches if necessary
-    - if git show-ref --quiet refs/heads/release; then
-    -   git branch -D release
+    - if git show-ref --quiet refs/heads/release-test; then
+    -   git branch -D release-test
     - fi
-    - if git show-ref --quiet refs/heads/master; then
-    -   git branch -D master
+    - if git show-ref --quiet refs/heads/master-test; then
+    -   git branch -D master-test
     - fi
     - if git show-ref --quiet refs/heads/$RELEASE_INTERMEDIATE_BRANCH; then
     -   git branch -D $RELEASE_INTERMEDIATE_BRANCH
     - fi
     # Create intermediate branch to avoir conflicts
-    - git checkout release
+    - git checkout release-test
     - git checkout -b $RELEASE_INTERMEDIATE_BRANCH
-    - git merge origin/master -s ours --no-edit
+    - git merge origin/master-test -s ours --no-edit
     # Merge into master
-    - git checkout master
+    - git checkout master-test
     - git merge $RELEASE_INTERMEDIATE_BRANCH --squash
     - git commit -m "$RELEASE_COMMIT_MESSAGE"
     - git tag -a -m "$RELEASE_COMMIT_MESSAGE" "$RELEASE_TAG"
     # Check that there is no diff between master and release now
-    - if ! git diff master release --exit-code; then
+    - if ! git diff master-test release-test --exit-code; then
     -   echo "Something went wrong with the merge; master and release should be the same but have differences"
     -   exit 1
     - fi
     # Push master and the release tag
-    - git push -f origin master
+    - git push -f origin master-test
     - git push origin $RELEASE_TAG
     # Trigger the merge request to develop
     - >
-      curl -X POST -F "private_token=$JOB_API_TOKEN" -F "source_branch=release" 
+      curl -X POST -F "private_token=$JOB_API_TOKEN" -F "source_branch=release-test" 
       -F "target_branch=develop" -F "title=[Release] Merge $RELEASE_TAG into develop" 
       -F "remove_source_branch=true" -F "labels[]=finishing release"
       https://forgemia.inra.fr/api/v4/projects/1675/merge_requests
   rules:
-    - if: $CI_COMMIT_BRANCH == "release"
+    - if: $CI_COMMIT_BRANCH == "release-test"
   needs:
     - job: "opensilex-release:build"
   when: manual
+
+############################
+## PUBLISH RELEASE TO GITHUB
+############################
+
+opensilex-release:publish:
+  stage: release
+  image: maven:$MVN_VERSION-jdk-$JAVA_VERSION
+  script:
+    - if [[ -z $RELEASE_TAG ]]; then
+    -   echo 'RELEASE_TAG must be set'
+    -   exit 1
+    - else
+    -   echo "Finishing release $RELEASE_TAG"
+    - fi
+    # Install packages git & curl
+    - apk update
+    - apk add git curl
+    - git checkout $RELEASE_TAG
+    - ls
+    - ls artifacts
+  rules:
+    - if: $CI_COMMIT_BRANCH == "release-test"
+  needs:
+    - job: "opensilex-release:close"
 
 # Trigger pipeline for data-analysis module deployment
 #trigger:dataanalysis:deploy:test:

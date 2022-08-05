@@ -1,19 +1,25 @@
 package org.opensilex.core.scientificObject.dal;
 
+import org.apache.jena.graph.NodeFactory;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
+import org.opensilex.core.ontology.Oeso;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.OpenSilexTestEnvironment;
 
 import java.net.URI;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.Assert.*;
 
@@ -25,7 +31,6 @@ public class ScientificObjectDaoTest {
 
     private static OpenSilexTestEnvironment openSilexTestEnv;
     private static ScientificObjectModel s1, s2,s3;
-    private static List<FactorLevelModel> factorLevels;
     private static ScientificObjectDAO dao;
 
     private static ScientificObjectModel getModel(int i){
@@ -109,4 +114,51 @@ public class ScientificObjectDaoTest {
                 .map(factor -> SPARQLDeserializers.formatURI(factor.getUri())).collect(Collectors.toSet());
         assertEquals(expectedFactorUris,actualFactorUris);
     }
+
+
+    @Test
+    public void testIsInvolvedIntoAnyExperiment() throws Exception {
+
+        SPARQLService sparql = openSilexTestEnv.getSparql();
+        ExperimentModel xp = new ExperimentModel();
+        xp.setStartDate(LocalDate.now());
+        xp.setObjective("testIsInvolvedIntoAnyExperiment");
+        xp.setName("testIsInvolvedIntoAnyExperiment");
+        sparql.create(xp);
+
+        // create in xp and into global
+        ScientificObjectModel modelWithXp = new ScientificObjectModel();
+        modelWithXp.setName("testIsInvolvedIntoAnyExperiment_modelWithXp");
+        sparql.create(sparql.getDefaultGraph(ScientificObjectModel.class),modelWithXp);
+        sparql.create(NodeFactory.createURI(xp.getUri().toString()), modelWithXp);
+
+        // create into global only
+        ScientificObjectModel globalModel = new ScientificObjectModel();
+        globalModel.setName("testIsInvolvedIntoAnyExperiment_model_global");
+        sparql.create(sparql.getDefaultGraph(ScientificObjectModel.class),globalModel);
+
+        Assert.assertTrue(dao.isInvolvedIntoAnyExperiment(Stream.of(modelWithXp.getUri()),1));
+        Assert.assertFalse(dao.isInvolvedIntoAnyExperiment(Stream.of(globalModel.getUri()),1));
+        Assert.assertTrue(dao.isInvolvedIntoAnyExperiment(Stream.of(modelWithXp.getUri(), globalModel.getUri()), 2));
+    }
+    @Test
+    public void testHasChildren() throws Exception{
+
+        SPARQLService sparql = openSilexTestEnv.getSparql();
+        URI globalGraph = sparql.getDefaultGraphURI(ScientificObjectModel.class);
+
+        ScientificObjectModel parent = new ScientificObjectModel();
+        parent.setName("testHasChildren_parent");
+        sparql.create(parent);
+
+        ScientificObjectModel child1 = new ScientificObjectModel();
+        child1.setName("testHasChildren_child1");
+        child1.addRelation(null, URI.create(Oeso.isPartOf.getURI()), URI.class, parent.getUri().toString());
+        sparql.create(child1);
+
+        Assert.assertTrue(dao.hasChildren(globalGraph,Stream.of(parent.getUri()),1));
+        Assert.assertFalse(dao.hasChildren(globalGraph,Stream.of(child1.getUri()),1));
+        Assert.assertTrue(dao.hasChildren(globalGraph,Stream.of(parent.getUri(), child1.getUri()),2));
+    }
+
 }

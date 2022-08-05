@@ -41,6 +41,7 @@ import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.sparql.deserializer.DateDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapperIndex;
@@ -84,14 +85,17 @@ public class ScientificObjectDAO {
     public static final String NON_UNIQUE_NAME_INTO_GRAPH_ERROR_MSG = "Object name <%s> must be unique onto the graph <%s>. %s has the same name";
     public static final String NON_UNIQUE_NAME_ERROR_MSG = "Object name <%s> must be unique. %s has the same name";
 
-    private final URI defaultGraph;
+    private final URI defaultGraphURI;
+    private final Node defaultGraphNode;
+
 
     public ScientificObjectDAO(SPARQLService sparql, MongoDBService nosql) {
         this.sparql = sparql;
         this.nosql = nosql;
 
         try{
-            defaultGraph = sparql.getDefaultGraphURI(ScientificObjectModel.class);
+            defaultGraphURI = sparql.getDefaultGraphURI(ScientificObjectModel.class);
+            defaultGraphNode = sparql.getDefaultGraph(ScientificObjectModel.class);
         }catch (SPARQLException e){
             throw new RuntimeException(e);
         }
@@ -590,7 +594,7 @@ public class ScientificObjectDAO {
     private void checkUniqueNameByGraph(URI objectGraph, String objectName, URI objectUri, boolean create) throws DuplicateNameException, SPARQLException {
 
         // unique name restriction only apply on some experiment graph
-        if(SPARQLDeserializers.compareURIs(objectGraph, defaultGraph)){
+        if(SPARQLDeserializers.compareURIs(objectGraph, defaultGraphURI)){
             return;
         }
 
@@ -687,6 +691,7 @@ public class ScientificObjectDAO {
         Node graphNode = SPARQLDeserializers.nodeURI(contextURI);
 
         ScientificObjectModel object = initObject(contextURI, experiment, soType, name, relations, currentUser);
+        object.setUri(objectURI);
 
         try {
             sparql.startTransaction();
@@ -888,8 +893,100 @@ public class ScientificObjectDAO {
         return resultList;
     }
 
+    /**
+     *
+     * @param objects URIs of the scientific object to check
+     * @param nbObject number of scientific object (used to pass to {@link SPARQLQueryHelper#addWhereUriValues(WhereClause, String, Stream, int)}
+     * @return true if any of the object from objects are involved into any experiment, false else
+     * @throws SPARQLException if SPARQL query evaluation fail
+     *
+     * @apiNote Example of generated SPARQL query
+     *
+     * <pre>
+     * ASK WHERE {
+     *      ?type rdfs:subClassOf* vocabulary:ScientificObject
+     *      GRAPH ?graph {
+     *          ?uri a ?type.
+     *      }
+     *      FILTER (?graph != <http://www.phenome-fppn.fr/set/scientific-object>)
+     *      VALUES ?uri {  test:so1 test:so2  }
+     * }
+     * </pre>
+     *
+     */
+    public boolean isInvolvedIntoAnyExperiment(Stream<URI> objects, int nbObject) throws SPARQLException {
+
+        Var uriVar = makeVar("uri");
+        Var graphVar = makeVar("graph");
+        Var typeVar = makeVar("type");
+
+        ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
+
+        AskBuilder ask = new AskBuilder()
+                .addWhere(typeVar, Ontology.subClassAny, Oeso.ScientificObject)
+                .addGraph(graphVar, uriVar, RDF.type, typeVar)
+                .addFilter(exprFactory.not(exprFactory.eq(graphVar, defaultGraphNode)));
+
+        SPARQLQueryHelper.addWhereUriValues(ask, uriVar.getVarName(), objects, nbObject);
+        return sparql.executeAskQuery(ask);
+    }
+
+    /**
+     *
+     * @param graph URI of the experiment in which we search if objects have children. Must not be null, since objects relations (except name and type) are only
+     * handled into experimental context
+     * @param objects URIs of the scientific object to check
+     * @param nbObject number of scientific object (used to pass to {@link SPARQLQueryHelper#addWhereUriValues(WhereClause, String, Stream, int)}
+     * @return true if any of the object from objects are involved has a children, false else
+     * @throws SPARQLException if SPARQL query evaluation fail
+     * @throws IllegalArgumentException if graph is null
+     * @apiNote Example of generated SPARQL query
+     *
+     * <pre>
+     * ASK WHERE {
+     *      ?type rdfs:subClassOf* vocabulary:ScientificObject
+     *      GRAPH test:experiment_graph {
+     *          ?uri a ?type.
+     *          ?children vocabulary:isPartOf ?uri
+     *      }
+     *      VALUES ?uri {  test:so1 test:so2  }
+     * }
+     * </pre>
+     *
+     */
+    public boolean hasChildren(URI graph, Stream<URI> objects, int nbObject) throws SPARQLException {
+
+        Objects.requireNonNull(graph);
+
+        Var uriVar = makeVar("uri");
+        Node graphNode = NodeFactory.createURI(URIDeserializer.getExpandedURI(graph.toString()));
+        Var typeVar = makeVar("type");
+        Var childVar = makeVar("children");
+
+        AskBuilder ask = new AskBuilder()
+                .addWhere(typeVar, Ontology.subClassAny, Oeso.ScientificObject)
+                .addGraph(graphNode, new WhereBuilder()
+                        .addWhere(uriVar, RDF.type, typeVar)
+                        .addWhere(childVar, Oeso.isPartOf, uriVar));
+
+        SPARQLQueryHelper.addWhereUriValues(ask, uriVar.getVarName(), objects, nbObject);
+        return sparql.executeAskQuery(ask);
+    }
+
+    /**
+     * Remove an OS from a graph
+     * @param xpURI URI of the experiment in which the object is located. If null then the objectURI is deleted from the global os graph
+     * @param objectURI URI of the object to delete
+     * @throws Exception if some error is encountered during suppression of the object from the triplestore
+     * @throws IllegalArgumentException if objectURI is null
+     */
     public void delete(URI xpURI, URI objectURI) throws Exception {
-        sparql.deleteByURI(SPARQLDeserializers.nodeURI(xpURI), objectURI);
+        Objects.requireNonNull(objectURI);
+        if(xpURI == null){
+            sparql.deleteByURI(defaultGraphNode,objectURI);
+        }else{
+            sparql.deleteByURI(SPARQLDeserializers.nodeURI(xpURI), objectURI);
+        }
     }
 
     /**

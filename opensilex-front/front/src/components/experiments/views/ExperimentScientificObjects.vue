@@ -311,15 +311,15 @@
 <script lang="ts">
 import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
 import { ScientificObjectsService } from "opensilex-core/index";
 import ScientificObjectDetail from "../../scientificObjects/ScientificObjectDetail.vue";
 import EventCsvForm from "../../events/form/csv/EventCsvForm.vue";
 import TreeViewAsync from "../../common/views/TreeViewAsync.vue";
 import {User} from "../../../models/User";
+import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 @Component
 export default class ExperimentScientificObjects extends Vue {
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
   $route: any;
   $store: any;
   $t: any;
@@ -518,27 +518,6 @@ export default class ExperimentScientificObjects extends Vue {
         page,
         pageSize
     );
-    // )
-    //     .then(http => {
-    //       let childrenNodes = [];
-    //       for (let i in http.response.result) {
-    //         let soDTO = http.response.result[i];
-    //
-    //         let soNode = {
-    //           title: soDTO.name,
-    //           data: soDTO,
-    //           isLeaf: [],
-    //           children: [],
-    //           isExpanded: true,
-    //           isSelected: false,
-    //           isDraggable: false,
-    //           isSelectable: true
-    //         };
-    //         childrenNodes.push(soNode);
-    //       }
-    //
-    //       root.children = childrenNodes;
-    //     });
   }
 
   searchMethod(nodeURI, page, pageSize) {
@@ -627,15 +606,14 @@ export default class ExperimentScientificObjects extends Vue {
   }
 
   public deleteScientificObject(node: any) {
-    this.soService
-      .deleteScientificObject(node.data.uri, this.uri)
+    this.soService.deleteScientificObject(node.data.uri, this.uri)
       .then(http => {
         if (this.selected.uri == http.response.result) {
           this.selected = null;
           this.soTree.refresh();
           this.refreshTypeSelectorComponent();
         }
-      });
+      }).catch(this.$opensilex.errorHandler);
   }
 
   exportCSV(exportAll: boolean) {

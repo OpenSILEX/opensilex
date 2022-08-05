@@ -429,8 +429,6 @@ import ScientificObjectList from './scientificObjects/ScientificObjectList.vue';
 components["opensilex-ScientificObjectList"] = ScientificObjectList;
 import ScientificObjectPropertyList from './scientificObjects/ScientificObjectPropertyList.vue';
 components["opensilex-ScientificObjectPropertyList"] = ScientificObjectPropertyList;
-import ScientificObjectPropertyConfiguration from './scientificObjects/ScientificObjectPropertyConfiguration.vue';
-components["opensilex-ScientificObjectPropertyConfiguration"] = ScientificObjectPropertyConfiguration;
 import ScientificObjectForm from './scientificObjects/ScientificObjectForm.vue';
 components["opensilex-ScientificObjectForm"] = ScientificObjectForm;
 import ScientificObjectDetail from './scientificObjects/ScientificObjectDetail.vue';

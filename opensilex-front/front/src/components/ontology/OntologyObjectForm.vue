@@ -31,7 +31,7 @@
 
         <!-- Custom properties -->
         <opensilex-OntologyRelationsForm
-            v-if="baseType"
+            v-if="baseType && loadCustomProperties"
             ref="ontologyRelationsForm"
             :rdfType="this.form.rdf_type"
             :relations="this.form.relations"
@@ -100,9 +100,11 @@ export default class OntologyObjectForm extends Vue {
 
     setBaseType(baseType) {
         this.baseType = baseType;
-        this.$nextTick(() => {
-            this.ontologyRelationsForm.typeSwitch(baseType, true);
-        })
+        if (this.ontologyRelationsForm) {
+            this.$nextTick(() => {
+                this.ontologyRelationsForm.typeSwitch(baseType, true);
+            })
+        }
     }
 
     context: string = "";
@@ -127,7 +129,9 @@ export default class OntologyObjectForm extends Vue {
     baseType = null;
 
     typeSwitch(type: string, initialLoad: boolean) {
-        this.ontologyRelationsForm.typeSwitch(type, initialLoad);
+        if(this.ontologyRelationsForm){
+            this.ontologyRelationsForm.typeSwitch(type, initialLoad);
+        }
     }
 
     setExcludedProperties(excludedProperties: Set<string>) {
@@ -136,6 +140,12 @@ export default class OntologyObjectForm extends Vue {
 
     setCustomComponentProps(customComponentProps: Map<string, Map<string, any>>){
         this.customComponentProps = customComponentProps;
+    }
+
+    loadCustomProperties: boolean = true;
+
+    setLoadCustomProperties(loadCustomProperties: boolean){
+        this.loadCustomProperties = loadCustomProperties;
     }
 
 }

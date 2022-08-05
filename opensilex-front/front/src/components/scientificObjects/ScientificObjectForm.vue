@@ -24,7 +24,6 @@
 <script lang="ts">
 import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
 import {ScientificObjectsService} from "opensilex-core/index";
 import OntologyObjectForm from "../ontology/OntologyObjectForm.vue";
 import ModalForm from "../common/forms/ModalForm.vue";
@@ -63,9 +62,14 @@ export default class ScientificObjectForm extends Vue {
             Rdfs.getShortURI(Rdfs.LABEL) // let OntologyObjectForm handle rdfs:label by default
         ]);
 
-        form.setContext(this.getExperimentURI())
+        let xp: string = this.getExperimentURI();
+        form.setContext(xp)
         form.setBaseType(this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI);
         form.setExcludedProperties(excludedProperties);
+
+        if(! xp){
+          form.setLoadCustomProperties(false);
+        }
     }
 
     excludeCurrentURIFromParentSelector(objectURI: string, form: OntologyObjectForm){

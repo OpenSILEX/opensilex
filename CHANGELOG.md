@@ -10,16 +10,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Warning : upgrading to this new version may require manual operations. Please
 see the [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc+5.md).
 
+### Added or changed
+- Prevent deletion of OS in case of associated experiment, children, data or datafile 
 ### Fixed
-
 - Variables associated with a variable of type "date" are now stored and exported correctly
+- Better error handling in case of Invalid character when evaluating a SPARQL REGEX
+- Fix URI generation when providing a URI on OS creation
 
 ## [1.0.0-rc+4.1] - 2022-07-13
 
 ### Fixed
 
 - Fix opensilex install command
-- Install will now create a repository with graphdb triplestor
+- Install will now create a repository with graphdb triplestore
 
 ## [1.0.0-rc+4] - 2022-06-13
 

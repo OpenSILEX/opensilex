@@ -468,6 +468,16 @@
                 "variables-sensors-factors": "Variables, facteurs et capteurs"
             }
         },
+        "scientificObjects": {
+            "error" : {
+                "delete" : {
+                    "associated-data" : "L'objet scientifique {scientific_object} ne peut être supprimé car il y a des données associées. Vous devez les supprimer d'abord",
+                    "associated-data-files" : "L'objet scientifique {scientific_object} ne peut être supprimé car il y a des fichiers de données associés. Vous devez les supprimer d'abord",
+                    "used-in-experiment" :"L'objet scientifique {scientific_object} ne peut être supprimé car il est utilisé dans une expérience. Vous devez supprimer l'objet de l'expérience d'abord",
+                    "has-child" :"L'objet scientifique {scientific_object} ne peut être supprimé car il cet objet a des enfants. Vous devez les supprimer d'abord (ça peut paraitre cruel mais il le faut)"
+                }
+            }
+        },
         "skos": {
             "uri": "URI de référence",
             "uri-help": "Identifiant du concept référencé",

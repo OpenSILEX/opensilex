@@ -57,13 +57,14 @@ import org.opensilex.server.rest.validation.DateFormatters;
  * @author Alice Boizet
  */
 public class DataAPITest extends AbstractMongoIntegrationTest {
-    protected String path = "/core/data";
+    public static final String path = "/core/data";
 
     protected String uriPath = path + "/{uri}";
     protected String searchPath = path;
     protected String createPath = path;
     protected String importPath = path + "/import";
-    protected String createListPath = path;
+
+    public static final String createListPath = path;
     protected String updatePath = path;
     protected String deletePath = path + "/{uri}";
 

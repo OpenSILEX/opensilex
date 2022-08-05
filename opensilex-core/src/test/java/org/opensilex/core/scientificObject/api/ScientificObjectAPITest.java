@@ -15,18 +15,35 @@ import com.mongodb.client.model.geojson.Position;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.riot.Lang;
+import org.glassfish.jersey.media.multipart.FormDataMultiPart;
+import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.AbstractMongoIntegrationTest;
+import org.opensilex.core.data.DataAPITest;
+import org.opensilex.core.data.DataFileAPITest;
+import org.opensilex.core.data.api.DataCreationDTO;
+import org.opensilex.core.data.api.DataFileCreationDTO;
+import org.opensilex.core.data.dal.DataDAO;
+import org.opensilex.core.data.dal.DataProvenanceModel;
 import org.opensilex.core.experiment.api.ExperimentAPITest;
 import org.opensilex.core.experiment.api.ExperimentGetDTO;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.germplasm.api.GermplasmAPITest;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
+import org.opensilex.core.provenance.api.ProvenanceAPITest;
+import org.opensilex.core.provenance.api.ProvenanceCreationDTO;
+import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
+import org.opensilex.core.variable.api.VariableApiTest;
+import org.opensilex.core.variable.api.VariableCreationDTO;
+import org.opensilex.core.variable.dal.VariableModel;
+import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -34,16 +51,19 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLService;
 
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
+import java.io.File;
+import java.io.OutputStream;
 import java.net.URI;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.time.LocalDate;
+import java.util.*;
 
+import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM_TYPE;
 import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
@@ -68,6 +88,9 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
     private URI experiment;
     private URI speciesUri;
 
+    @Rule
+    public TemporaryFolder tmpFolder = new TemporaryFolder();
+
     @Before
     public void beforeTest() throws Exception {
         final Response postResultXP = getJsonPostResponse(target(ExperimentAPITest.createPath), ExperimentAPITest.getCreationDTO());
@@ -75,7 +98,7 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
         final Response postResultGermplasm = getJsonPostResponse(target(GermplasmAPITest.createPath), GermplasmAPITest.getCreationSpeciesDTO());
         assertEquals(Status.CREATED.getStatusCode(), postResultGermplasm.getStatus());
 
-        // ensure that the result is a well formed URI, else throw exception
+        // ensure that the result is a well-formed URI, else throw exception
         experiment = extractUriFromResponse(postResultXP);
         speciesUri = extractUriFromResponse(postResultGermplasm);
         final Response getResultXP = getJsonGetByUriResponse(target(ExperimentAPITest.uriPath), experiment.toString());
@@ -104,12 +127,17 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
 
     @Override
     protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {
-        return Collections.singletonList(ScientificObjectModel.class);
+        return Arrays.asList(ScientificObjectModel.class, VariableModel.class);
     }
 
     @Override
     protected List<String> getCollectionsToClearNames() {
-        return Collections.singletonList(GeospatialDAO.GEOSPATIAL_COLLECTION_NAME);
+        return Arrays.asList(
+                GeospatialDAO.GEOSPATIAL_COLLECTION_NAME,
+                DataDAO.DATA_COLLECTION_NAME,
+                DataDAO.FILE_COLLECTION_NAME,
+                ProvenanceDAO.PROVENANCE_COLLECTION_NAME
+        );
     }
 
     protected ScientificObjectCreationDTO getCreationDTO(boolean withGeometry, boolean globalOs, boolean withGermplasm) throws Exception {
@@ -174,7 +202,6 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
      * This test needs the "hasGermplasm" restriction on scientific objects to work, thus the ontology
      * "germplasmRestriction" is added.
      *
-     * @throws Exception
      */
     @Test
     public void testCreateAndDeleteWithGermplasmWithRestriction() throws Exception {
@@ -211,7 +238,6 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
      * Tests that creating a scientific object with a germplasm fails when the "hasGermplasm" restriction is not present
      * in the ontology
      *
-     * @throws Exception
      */
     @Test
     public void testCreateWithGermplasmWithoutRestrictionShouldFail() throws Exception {
@@ -311,7 +337,7 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
 
         // create the so
         ScientificObjectCreationDTO soDTO = getCreationDTO(false);
-        final Response postResult = getJsonPostResponse(target(createPath), soDTO);
+        getJsonPostResponse(target(createPath), soDTO);
 
         final Response updateResult = getJsonPutResponse(target(updatePath), soDTO);
         assertEquals(Status.BAD_REQUEST.getStatusCode(), updateResult.getStatus());
@@ -366,11 +392,13 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
         getDeleteByUriTarget = getDeleteByUriTarget.resolveTemplate("uri", uri);
         getDeleteByUriTarget = getDeleteByUriTarget.queryParam("experiment", experiment.toString());
 
-        final Response delResult = appendToken(getDeleteByUriTarget).delete();
-        assertEquals(Status.OK.getStatusCode(), delResult.getStatus());
+        try(final Response delResult = appendToken(getDeleteByUriTarget).delete()){
+            assertEquals(Status.OK.getStatusCode(), delResult.getStatus());
 
-        final Response getResult = getResponse(uri);
-        assertEquals(Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
+            final Response getResult = getResponse(uri);
+            assertEquals(Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
+        }
+
     }
 
     @Test
@@ -470,4 +498,183 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
     public void testSearchScientificObjectsWithGeometryListByUrisWithoutGeometry() throws Exception {
         testSearchScientificObjectsWithGeometryListByUris(false);
     }
+
+    @Test
+    public void testDeleteWithChildrenFail() throws Exception {
+        // create parent
+        ScientificObjectCreationDTO parentDto = getCreationDTO(false,false,false);
+        Response postResult = getJsonPostResponse(target(createPath), parentDto);
+        parentDto.setUri(extractUriFromResponse(postResult));
+
+        // create child with link with parent
+        ScientificObjectCreationDTO childDto = getCreationDTO(false,false,false);
+        RDFObjectRelationDTO partOfRelation = new RDFObjectRelationDTO();
+        partOfRelation.setProperty(URI.create(Oeso.isPartOf.getURI()));
+        partOfRelation.setValue(parentDto.getUri().toString());
+        childDto.setRelations(Collections.singletonList(partOfRelation));
+
+        postResult = getJsonPostResponse(target(createPath), childDto);
+        childDto.setUri(extractUriFromResponse(postResult));
+
+        // ensure delete is a fail -> try to delete OS in a experiment but the OS has child
+        try(final Response deleteResponse = appendToken(target(deletePath)
+                .resolveTemplate("uri", parentDto.getUri())
+                .queryParam("experiment",experiment)).delete()){
+
+            assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), deleteResponse.getStatus());
+
+            JsonNode node = deleteResponse.readEntity(JsonNode.class);
+            ErrorResponse errorResponse = mapper.convertValue(node, new TypeReference<ErrorResponse>() {});
+            assertEquals("Scientific object can't be deleted : object has child", errorResponse.getResult().message);
+        }
+
+    }
+
+    @Test
+    public void testGlobalDeleteWhenOsIsInExperimentFail() throws Exception {
+
+        ScientificObjectCreationDTO dto = getCreationDTO(false,false,false);
+        Response postResult = getJsonPostResponse(target(createPath), dto);
+        dto.setUri(extractUriFromResponse(postResult));
+
+        // ensure delete is a fail -> try to delete OS globally but the OS is involved into an experiment
+
+        try(final Response deleteResponse  = appendToken(target(deletePath)
+                .resolveTemplate("uri", dto.getUri()))
+                .delete()){
+
+            assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), deleteResponse.getStatus());
+            JsonNode node = deleteResponse.readEntity(JsonNode.class);
+            ErrorResponse errorResponse = mapper.convertValue(node, new TypeReference<ErrorResponse>() {});
+            assertEquals("Scientific object can't be deleted : object is used into an experiment", errorResponse.getResult().message);
+        }
+    }
+
+    private void testDeleteFail(boolean globalOs, URI objectURI, String expectedErrorMsg) throws Exception {
+
+        // ensure delete is a fail -> try to delete OS with associated data
+        WebTarget deleteTarget  = target(deletePath)
+                .resolveTemplate("uri", objectURI);
+
+        // if the OS has an experiment, then delete from xp fail because of associated data
+        if(! globalOs){
+            deleteTarget = deleteTarget.queryParam("experiment",experiment);
+        }
+
+        try(Response deleteResponse = appendToken(deleteTarget).delete()){
+            assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), deleteResponse.getStatus());
+
+            JsonNode node = deleteResponse.readEntity(JsonNode.class);
+            ErrorResponse errorResponse = mapper.convertValue(node, new TypeReference<ErrorResponse>() {});
+            assertEquals(expectedErrorMsg, errorResponse.getResult().message);
+        }
+
+    }
+
+    private void testOsDeleteFailWhenAssociatedDataFile(boolean globalOs) throws Exception {
+
+        // create provenance
+        ProvenanceCreationDTO provenance = new ProvenanceCreationDTO();
+        provenance.setName("testOsDeleteFailWhenAssociatedDataFile");
+        Response postProvenanceResponse = getJsonPostResponse(target(new ProvenanceAPITest().createPath), provenance);
+        provenance.setUri(extractUriFromResponse(postProvenanceResponse));
+
+        // create OS
+        ScientificObjectCreationDTO scientificObject = getCreationDTO(false, globalOs, false);
+        Response postResult = getJsonPostResponse(target(createPath), scientificObject);
+        scientificObject.setUri(extractUriFromResponse(postResult));
+
+        // create data provenance
+        DataProvenanceModel dataProvenance = new DataProvenanceModel();
+        dataProvenance.setUri(provenance.getUri());
+        if(! globalOs){
+            dataProvenance.setExperiments(Collections.singletonList(experiment));
+        }else{
+            dataProvenance.setExperiments(Collections.emptyList());
+        }
+
+        //  create data file
+        DataFileCreationDTO dataFile = new DataFileCreationDTO();
+        dataFile.setTarget(scientificObject.getUri());
+        dataFile.setDate(LocalDate.now().toString());
+        dataFile.setRdfType(URI.create(Oeso.Datafile.getURI()));
+        dataFile.setProvenance(dataProvenance);
+
+        // create tmp text file
+        File file = tmpFolder.newFile("testOsDeleteFailWhenAssociatedDataFile");
+        try (OutputStream outputStream = Files.newOutputStream(file.toPath())) {
+            outputStream.write("test_data_file".getBytes());
+        }
+        FileDataBodyPart fileDataBodyPart = new FileDataBodyPart("file", file, APPLICATION_OCTET_STREAM_TYPE);
+
+        try(FormDataMultiPart multiPart = new FormDataMultiPart()){
+            multiPart.field("description", dataFile, MediaType.APPLICATION_JSON_TYPE).bodyPart(fileDataBodyPart);
+            final Response postDataFileResult = getJsonPostResponseMultipart(target(DataFileAPITest.createPath), multiPart);
+            dataFile.setUri(extractUriFromResponse(postDataFileResult));
+        }
+
+        testDeleteFail(globalOs,scientificObject.getUri(),"Scientific object can't be deleted : object has associated data files");
+    }
+
+    private void testOsDeleteFailWhenAssociatedData(boolean globalOs) throws Exception {
+
+        // create provenance
+        ProvenanceCreationDTO provenance = new ProvenanceCreationDTO();
+        provenance.setName("testOsDeleteFailWhenAssociatedData");
+        Response postProvenanceResponse = getJsonPostResponse(target(new ProvenanceAPITest().createPath), provenance);
+        provenance.setUri(extractUriFromResponse(postProvenanceResponse));
+
+        // create variable
+        VariableApiTest variableApiTest = new VariableApiTest();
+        VariableCreationDTO variable = variableApiTest.getCreationDto();
+        Response postVariableResponse = getJsonPostResponse(target(variableApiTest.createPath), variableApiTest.getCreationDto());
+        variable.setUri(extractUriFromResponse(postVariableResponse));
+
+        // create OS
+        ScientificObjectCreationDTO scientificObject = getCreationDTO(false, globalOs, false);
+        Response postResult = getJsonPostResponse(target(createPath), scientificObject);
+        scientificObject.setUri(extractUriFromResponse(postResult));
+
+        // create associated data
+        DataCreationDTO data = new DataCreationDTO();
+        data.setValue(50);
+        data.setTarget(scientificObject.getUri());
+        data.setDate(LocalDate.now().toString());
+        data.setVariable(variable.getUri());
+
+        // create data provenance
+        DataProvenanceModel dataProvenance = new DataProvenanceModel();
+        dataProvenance.setUri(provenance.getUri());
+        if(! globalOs){
+            dataProvenance.setExperiments(Collections.singletonList(experiment));
+        }else{
+            dataProvenance.setExperiments(Collections.emptyList());
+        }
+        data.setProvenance(dataProvenance);
+        Response postDataResponse = getJsonPostResponse(target(DataAPITest.createListPath),Collections.singletonList(data));
+        data.setUri(extractUriFromResponse(postDataResponse));
+
+        testDeleteFail(globalOs,scientificObject.getUri(),"Scientific object can't be deleted : object has associated data");
+    }
+    @Test
+    public void testOsDeleteFailWhenDataAssociated() throws Exception {
+       testOsDeleteFailWhenAssociatedData(true);
+    }
+
+    @Test
+    public void testOsDeleteFailWhenDataFilesAssociated() throws Exception {
+        testOsDeleteFailWhenAssociatedDataFile(true);
+    }
+
+    @Test
+    public void testOsDeleteFailWhenDataAssociatedWithinExperiment() throws Exception {
+        testOsDeleteFailWhenAssociatedData(false);
+    }
+
+    @Test
+    public void testOsDeleteFailWhenDataFilesAssociatedWithinExperiment() throws Exception {
+        testOsDeleteFailWhenAssociatedDataFile(false);
+    }
+
+
 }

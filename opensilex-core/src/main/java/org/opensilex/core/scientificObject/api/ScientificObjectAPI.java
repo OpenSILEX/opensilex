@@ -25,6 +25,7 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.locationtech.jts.io.ParseException;
 import org.opensilex.core.csv.api.CSVValidationDTO;
 import org.opensilex.core.csv.dal.AbstractCsvDao;
+import org.opensilex.server.exceptions.displayable.DisplayableBadRequestException;
 import org.opensilex.sparql.csv.CSVCell;
 import org.opensilex.core.csv.dal.CsvDao;
 import org.opensilex.core.csv.dal.DefaultCsvDao;
@@ -96,6 +97,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 /**
@@ -633,6 +635,14 @@ public class ScientificObjectAPI {
         }
     }
 
+    private static final String DELETE_ERROR_TITLE ="Scientific object can't be deleted";
+
+    /**
+     * Name of the parameter used into translate-key about scientific object deletion error.
+     * This key is related to message-en.yml and message-fr.yml translation files (located in opensilex-front)
+     */
+    private static final String DELETE_ERROR_KEY_PARAMETER ="scientific_object";
+
     @DELETE
     @Path("{uri}")
     @ApiOperation("Delete a scientific object")
@@ -645,6 +655,7 @@ public class ScientificObjectAPI {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Scientific object deleted", response = ObjectUriResponse.class),
+            @ApiResponse(code = 400, message = DELETE_ERROR_TITLE+ " (If object is involved into an experiment or if associated to any data)", response = ErrorDTO.class),
             @ApiResponse(code = 404, message = "Scientific object URI not found", response = ErrorResponse.class)
     })
     public Response deleteScientificObject(
@@ -656,22 +667,65 @@ public class ScientificObjectAPI {
 
         validateContextAccess(contextURI);
 
-        ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
+        ScientificObjectDAO scientificObjectDAO = new ScientificObjectDAO(sparql, nosql);
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
         ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
+        DataDAO dataDAO = new DataDAO(nosql,sparql,null);
 
         nosql.startTransaction();
         sparql.startTransaction();
         try {
-            if (contextURI == null) {
-                sparql.deleteByURI(sparql.getDefaultGraph(ScientificObjectModel.class), objectURI);
-            } else {
-                dao.delete(contextURI, objectURI);
+            List<URI> xpList;
+            List<URI> osList = Collections.singletonList(objectURI);
+            boolean global = contextURI == null;
 
-                //update Exp species
+            if (global) {
+                // global OS suppression -> ensure that the OS is not used into any experiment
+                if (scientificObjectDAO.isInvolvedIntoAnyExperiment(osList.stream(), osList.size())) {
+                    throw new DisplayableBadRequestException(DELETE_ERROR_TITLE+" : object is used into an experiment",
+                            "component.scientificObjects.error.delete.used-in-experiment",
+                            Collections.singletonMap(DELETE_ERROR_KEY_PARAMETER,objectURI.toString())
+                    );
+                }
+                // set empty list to pass to DataDao count and countFiles
+                xpList = Collections.emptyList();
+            }else{
+                // check that the OS has no children
+                if (scientificObjectDAO.hasChildren(contextURI, osList.stream(), osList.size())) {
+                    throw new DisplayableBadRequestException(DELETE_ERROR_TITLE+" : object has child",
+                            "component.scientificObjects.error.delete.has-child",
+                            Collections.singletonMap(DELETE_ERROR_KEY_PARAMETER,objectURI.toString())
+                    );
+                }
+                // set list composed of the experiment, to pass to DataDao count and countFiles
+                xpList = Collections.singletonList(contextURI);
+            }
+
+            // check that no data are associated (dao handle empty or not list)
+            int dataCount = dataDAO.count(null,xpList, osList,null,null,null,null,null,null,null,null);
+            if(dataCount > 0){
+                throw new DisplayableBadRequestException(DELETE_ERROR_TITLE+" : object has associated data",
+                        "component.scientificObjects.error.delete.associated-data",
+                        Collections.singletonMap(DELETE_ERROR_KEY_PARAMETER, objectURI.toString())
+                );
+            }
+
+            // check that no data file are associated (dao handle empty or not list)
+            int dataFileCount = dataDAO.countFiles(null,null,xpList,osList,null,null,null,null,null);
+            if(dataFileCount > 0){
+                throw new DisplayableBadRequestException(DELETE_ERROR_TITLE+" : object has associated data files",
+                        "component.scientificObjects.error.delete.associated-data-files",
+                        Collections.singletonMap(DELETE_ERROR_KEY_PARAMETER, objectURI.toString())
+                );
+            }
+
+            // delete OS and OS geometry (dao handle null or not null contextURI)
+            scientificObjectDAO.delete(contextURI,objectURI);
+            geoDAO.delete(objectURI, contextURI);
+
+            if(!global){
                 experimentDAO.updateExperimentSpeciesFromScientificObjects(contextURI);
             }
-            geoDAO.delete(objectURI, contextURI);
 
             sparql.commitTransaction();
             nosql.commitTransaction();

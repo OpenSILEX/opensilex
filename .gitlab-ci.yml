@@ -156,14 +156,14 @@ variables:
     - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@forgemia.inra.fr/OpenSILEX/opensilex-dev-tools.git --branch master $CI_PROJECT_DIR/opensilex-dev-tools
     - ls $CI_PROJECT_DIR/opensilex-dev-tools
     # Directory details
-    - ls $CI_PROJECT_DIR/$OPENSILEX_APP_REVISION
+    - ls $CI_PROJECT_DIR/artifacts/$OPENSILEX_APP_REVISION
     - echo "Create directory ${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}"
     - echo "Create directory ${RSYNC_INSTANCES_DATA_PATH}/${REMOTE_SERVER_RSYNC_DIR}"
     - echo "Create directory ${RSYNC_INSTANCES_LOGS_PATH}"
     - echo "Create directory ${RSYNC_INSTANCES_LOGS_ARCHIVED}"
     - ssh -i ${HOME}/.ssh/id_rsa -p22 $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP "mkdir -p $RSYNC_INSTANCES_BIN_PATH/$REMOTE_SERVER_RSYNC_DIR; mkdir -p $RSYNC_INSTANCES_LOGS_PATH; mkdir -p $RSYNC_INSTANCES_LOGS_ARCHIVED; mkdir -p $RSYNC_INSTANCES_DATA_PATH/$REMOTE_SERVER_RSYNC_DIR;"
     - echo "Upload files"
-    - rsync -arzv -e "ssh  -i ${HOME}/.ssh/id_rsa" $RSYNC_INSTANCES_OPTIONS  $CI_PROJECT_DIR/$OPENSILEX_APP_REVISION/* $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP:$RSYNC_INSTANCES_BIN_PATH/$REMOTE_SERVER_RSYNC_DIR
+    - rsync -arzv -e "ssh -i ${HOME}/.ssh/id_rsa" $RSYNC_INSTANCES_OPTIONS $CI_PROJECT_DIR/artifacts/$OPENSILEX_APP_REVISION/* $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP:$RSYNC_INSTANCES_BIN_PATH/$REMOTE_SERVER_RSYNC_DIR
     - ls $CI_PROJECT_DIR/opensilex-dev-tools/$CONFIGS_FILES_DIR_PATH
     - echo "scp -i ${HOME}/.ssh/id_rsa -o 'StrictHostKeyChecking no' $CI_PROJECT_DIR/opensilex-dev-tools/$CONFIGS_FILES_DIR_PATH/* ${REMOTE_SERVER_RSYNC_ACCOUNT}@${REMOTE_SERVER_IP}:${RSYNC_INSTANCES_BIN_PATH}/${REMOTE_SERVER_RSYNC_DIR}"
     - scp -i ${HOME}/.ssh/id_rsa -o "StrictHostKeyChecking no" $CI_PROJECT_DIR/opensilex-dev-tools/$CONFIGS_FILES_DIR_PATH/* $REMOTE_SERVER_RSYNC_ACCOUNT@$REMOTE_SERVER_IP:$RSYNC_INSTANCES_BIN_PATH/$REMOTE_SERVER_RSYNC_DIR

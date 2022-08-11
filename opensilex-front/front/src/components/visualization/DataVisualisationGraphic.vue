@@ -468,7 +468,7 @@ export default class DataVisualisationGraphic extends Vue {
             line: {
               marker: {
                 enabled: true,
-                symbol: "circle",
+                symbol: "triangle",
                 radius: 3
               }
             },

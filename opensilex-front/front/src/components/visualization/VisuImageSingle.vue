@@ -158,34 +158,8 @@ export default class VisuImageSingle extends Vue {
   }
 
   mounted() {
-    //this.getObjectAlias();
   }
 
-  /*  getObjectAlias() {
-    let service: ScientificObjectsService = this.$opensilex.getService(
-      "opensilex.ScientificObjectsService"
-    );
-    const result = service
-      .getScientificObjectsBySearch(
-        1,
-        0,
-        this.image.objectUri,
-        undefined,
-        undefined,
-        undefined
-      )
-      .then(
-        (http: HttpResponse<OpenSilexResponse<Array<ScientificObjectDTO>>>) => {
-          const res = http.response.result as any;
-          this.image.objectAlias = res.data[0].label;
-          this.objectAlias = res.data[0].label;
-        }
-      )
-      .catch(error => {
-        console.log(error);
-      });
-  }
- */
   formatedDate(date) {
     const newDate = new Date(date);
     const options = {

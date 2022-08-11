@@ -240,13 +240,6 @@ export default class DataVisuGraphic extends Vue {
   annotations = [];
   event: any = null;
 
-  // created(){
-  //   Highcharts.setOptions({
-  //     time: {
-  //       useUTC: false
-  //     }
-  //   });
-  // }
 
   created() {
     Highcharts.wrap(Highcharts.Legend.prototype, "colorizeItem", function(
@@ -467,7 +460,7 @@ export default class DataVisuGraphic extends Vue {
                     " :" +
                     '<span style=" color:' +
                     point.color +
-                    '" ><b> ' +
+                    '" ><b>' +
                     point.text +
                     "</b></span>" +
                     "<br/>Time:<b> " +

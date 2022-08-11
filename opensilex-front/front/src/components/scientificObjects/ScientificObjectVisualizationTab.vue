@@ -381,8 +381,8 @@ export default class ScientificObjectVisualizationTab extends Vue {
               };
               dataAndImage.push(dataSerie)
 
-
               if (cleanData[1].length > 0) {
+                console.log('Hello ', cleanData[1])
                 const imageSerie = {
                   type: 'flags',
                   name: 'Image/' + this.scientificObject.name,
@@ -392,6 +392,7 @@ export default class ScientificObjectVisualizationTab extends Vue {
                   height: 8,
                   shape: 'circlepin',
                   lineWidth: 1,
+                  color: null,
                   point: {
                     events: {
                       stickyTracking: false,
@@ -506,7 +507,8 @@ export default class ScientificObjectVisualizationTab extends Vue {
           date: stringDate,
           title: "I",
           prov_used: element.provenance.prov_used,
-          data: element
+          data: element,
+          imageURI: element.provenance.prov_used[0].uri
         };
         cleanImage.push(imageToAdd);
       }

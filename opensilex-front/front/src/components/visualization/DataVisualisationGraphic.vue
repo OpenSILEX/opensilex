@@ -408,7 +408,7 @@ export default class DataVisualisationGraphic extends Vue {
 
           xAxis: {
             type: "datetime",
-            title: { text: "time" },
+            title: { text: (this.$t('DataVisualisationGraphic.modalDate')) },
             min: this.getStartDate? moment(this.getStartDate).toDate().getTime(): undefined,
             max: this.getEndDate? moment(this.getEndDate).toDate().getTime(): undefined,
             labels: {
@@ -631,7 +631,7 @@ export default class DataVisualisationGraphic extends Vue {
             x: -3,
           },
           title: {
-            text: "Events"
+            text: (this.$t('DataVisualisationGraphic.events'))
           },
           style: {
             color: Highcharts.getOptions().colors[1],
@@ -1052,13 +1052,16 @@ export default class DataVisualisationGraphic extends Vue {
     DataVisualisationGraphic:
       provenanceDetail : Details de la provenance
       dataAnnotation : Annoter la donnée 
-      scientificObjectAnnotation : Ajouter une annotation à l' objet scientifique 
+      scientificObjectAnnotation : Ajouter une annotation à l'objet scientifique 
       addEvent : Ajouter un evenement
       scatterPlotView : Mode nuage de points
       chartLineView : Mode courbe
       fullscreen : Plein ecran
       download : Télecharger l'image
-      rightClick : click droit sur un point pour ajouter un evénement ou une annotation
+      rightClick : Faire un click droit sur un point pour ajouter un evenement ou une annotation
+      events: Evenements
+      modalDate: Temps
+
 
   en: 
     DataVisualisationGraphic:
@@ -1070,5 +1073,7 @@ export default class DataVisualisationGraphic extends Vue {
       chartLineView : Chart line view
       fullscreen : Fullscreen
       download : Download image 
-      rightClick : right click on a point to add event or annotation
+      rightClick : Right click on a point to add event or annotation
+      events: Events
+      modalDate: Time
 </i18n>

@@ -283,12 +283,6 @@ export default class ExperimentDataVisualisationView extends Vue {
         }
       }
 
-      if (values[0]) {
-        values[0].forEach(serie => {
-          series.push(serie);
-        });
-      }
-
       this.showGraphicComponent = true;
       // reload only when all datas are loaded
       this.$nextTick(() => {
@@ -500,7 +494,7 @@ export default class ExperimentDataVisualisationView extends Vue {
           return {
             type: "flags",
             allowOverlapX: false,
-            name: "Events -> "+ name,
+            name: (this.$t('ExperimentDataVisualisationView.events')) + " -> " + name,
             lineWidth: 1,
             yAxis: 2,
             data: cleanEventsData,
@@ -554,6 +548,7 @@ en:
         limitSizeMessageB : "data for "
         limitSizeMessageC : " .Only the 50 000 first data are displayed."
         selectedSOLimitSize: "The selection has too many lines for this feature, refine your search, maximum= 15 scientific objects and 2 variables."
+        events: "Events"
      
 fr:
     ExperimentDataVisualisationView:
@@ -563,6 +558,7 @@ fr:
         limitSizeMessageB : "données pour "
         limitSizeMessageC : ".Seules les 50 000 premières valeurs sont affichées. "
         selectedSOLimitSize: "La selection comporte trop de lignes pour cette fonctionnalité, affinez votre recherche, maximum= 15 objets scientifiques et 2 variables."
+        events: "Evenements"
 
 </i18n>
 

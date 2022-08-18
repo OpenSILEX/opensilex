@@ -1,6 +1,6 @@
 
 <template>
-<div class="row">
+<div class="row" style="height: 150px">
    <ul  class="images" >
     <opensilex-VisuImageSingle
       v-for="(image, index) in images"
@@ -13,6 +13,7 @@
       @imageIsDeleted="$emit('imageIsDeleted', $event)"
       @onImageAnnotate="$emit('onImageAnnotate', $event)"
       @onImageDetails="$emit('onImageDetails', $event)"
+      @onAnnotationDetails="$emit('onAnnotationDetails', $event)"
       @imageIsClicked="$emit('imageIsClicked',$event)"
 
     ></opensilex-VisuImageSingle>

@@ -1,49 +1,50 @@
 <template>
   <div ref="page">
-      <!-- FILTERS -->
+    <!-- FILTERS -->
 
-          <!--Form-->
-          <opensilex-ScientificObjectVisualizationForm
-              ref="scientificObjectVisualizationForm"
-              :scientificObject="scientificObject.uri"
-              @search="onSearch"
-          ></opensilex-ScientificObjectVisualizationForm>
-
-
-      <div class="d-flex justify-content-center mb-3" v-if="!isGraphicLoaded">
-        <b-spinner label="Loading..."></b-spinner>
-      </div>
-
-      <opensilex-VisuImages
-          ref="visuImages"
-          v-if="showImages"
-          @imageIsHovered="onImageIsHovered"
-          @imageIsUnHovered=" onImageIsUnHovered"
-          @imageIsDeleted=" onImageIsDeleted"
-          @onImageAnnotate=" showAnnotationForm"
-          @onImageDetails=" onImageDetails"
-      ></opensilex-VisuImages>
-
-      <opensilex-DataVisuGraphic
-          v-if="isGraphicLoaded"
-          ref="visuGraphic"
-          :selectedScientificObjects="scientificObject.uri"
-          @addEventIsClicked="showAddEventComponent"
-          @dataAnnotationIsClicked="showAnnotationForm"
-      ></opensilex-DataVisuGraphic>
+    <!--Form-->
+    <opensilex-ScientificObjectVisualizationForm
+        ref="scientificObjectVisualizationForm"
+        :scientificObject="scientificObject.uri"
+        @search="onSearch"
+    ></opensilex-ScientificObjectVisualizationForm>
 
 
-      <opensilex-AnnotationModalForm
-          ref="annotationModalForm"
-          @onCreate="onAnnotationCreated"
-      ></opensilex-AnnotationModalForm>
+    <div class="d-flex justify-content-center mb-3" v-if="!isGraphicLoaded">
+      <b-spinner label="Loading..."></b-spinner>
+    </div>
 
-      <opensilex-EventModalForm
-          ref="eventsModalForm"
-          :target="target"
-          :eventCreatedTime="eventCreatedTime"
-          @onCreate="onEventCreated"
-      ></opensilex-EventModalForm>
+    <opensilex-VisuImages
+        ref="visuImages"
+        v-if="showImages"
+        @imageIsHovered="onImageIsHovered"
+        @imageIsUnHovered=" onImageIsUnHovered"
+        @imageIsDeleted=" onImageIsDeleted"
+        @onImageAnnotate=" showAnnotationForm"
+        @onImageDetails=" onImageDetails"
+        @onAnnotationDetails=" onAnnotationDetails"
+    ></opensilex-VisuImages>
+
+    <opensilex-DataVisuGraphic
+        v-if="isGraphicLoaded"
+        ref="visuGraphic"
+        :selectedScientificObjects="scientificObject.uri"
+        @addEventIsClicked="showAddEventComponent"
+        @dataAnnotationIsClicked="showAnnotationForm"
+    ></opensilex-DataVisuGraphic>
+
+
+    <opensilex-AnnotationModalForm
+        ref="annotationModalForm"
+        @onCreate="onAnnotationCreated"
+    ></opensilex-AnnotationModalForm>
+
+    <opensilex-EventModalForm
+        ref="eventsModalForm"
+        :target="target"
+        :eventCreatedTime="eventCreatedTime"
+        @onCreate="onEventCreated"
+    ></opensilex-EventModalForm>
   </div>
 </template>
 
@@ -63,11 +64,14 @@ import {DataFileGetDTO} from "opensilex-core/model/dataFileGetDTO";
 import {Image} from "../visualization/image";
 import * as http from "http";
 import {VariablesService} from "opensilex-core/api/variables.service";
+import {AnnotationGetDTO} from "opensilex-core/model/annotationGetDTO";
+import {AnnotationsService} from "opensilex-core/api/annotations.service";
 
 @Component
 export default class ScientificObjectVisualizationTab extends Vue {
   $opensilex: any;
   variablesService: VariablesService;
+  annotationService: AnnotationsService;
 
   get user() {
     return this.$store.state.user;
@@ -98,9 +102,11 @@ export default class ScientificObjectVisualizationTab extends Vue {
   @Ref("scientificObjectVisualizationForm")
   readonly scientificObjectVisualizationForm!: any;
   showImages = true;
+  annotations: Array<AnnotationGetDTO> = [];
 
   created() {
     this.dataService = this.$opensilex.getService("opensilex.DataService");
+    this.annotationService = this.$opensilex.getService("opensilex.AnnotationsService");
     this.eventsService = this.$opensilex.getService("opensilex.EventsService");
     this.variablesService = this.$opensilex.getService("opensilex.VariablesService");
   }
@@ -358,6 +364,7 @@ export default class ScientificObjectVisualizationTab extends Vue {
             let dataLength = data.length;
             if (dataLength > 0) {
               const cleanData = this.dataTransforme(data);
+              console.log('Hi ', cleanData)
               if (dataLength > 50000) {
                 this.$opensilex.showInfoToast(
                     this.$i18n.t(
@@ -382,7 +389,6 @@ export default class ScientificObjectVisualizationTab extends Vue {
               dataAndImage.push(dataSerie)
 
               if (cleanData[1].length > 0) {
-                console.log('Hello ', cleanData[1])
                 const imageSerie = {
                   type: 'flags',
                   name: 'Image/' + this.scientificObject.name,
@@ -488,6 +494,10 @@ export default class ScientificObjectVisualizationTab extends Vue {
     this.visuImages.onImageDetails(indexes);
   }
 
+  onAnnotationDetails(indexes) {
+    this.visuImages.onAnnotationDetails(indexes);
+  }
+
   // keep only date/value/uriprovenance properties
   dataTransforme(data) {
     let toAdd,
@@ -496,32 +506,41 @@ export default class ScientificObjectVisualizationTab extends Vue {
         cleanImage = [];
 
     data.forEach(element => {
-      let stringDateWithoutUTC = moment.parseZone(element.date).format("YYYY-MM-DDTHH:mm:ss") + "+00:00";
-      let dateWithoutUTC = moment(stringDateWithoutUTC).valueOf();
-      let offset = moment.parseZone(element.date).format("Z");
-      let stringDate = moment.parseZone(element.date).format("YYYY-MM-DDTHH:mm:ss") + offset;
-      if (element.provenance.prov_used) {
-        imageToAdd = {
-          x: dateWithoutUTC,
-          y: element.value,
-          date: stringDate,
-          title: "I",
-          prov_used: element.provenance.prov_used,
-          data: element,
-          imageURI: element.provenance.prov_used[0].uri
-        };
-        cleanImage.push(imageToAdd);
-      }
-      toAdd = {
-        x: dateWithoutUTC,
-        y: element.value,
-        offset: offset,
-        dateWithOffset: stringDate,
-        provenanceUri: element.provenance.uri,
-        data: element
-      };
-      cleanData.push(toAdd);
-    });
+          let stringDateWithoutUTC = moment.parseZone(element.date).format("YYYY-MM-DDTHH:mm:ss") + "+00:00";
+          let dateWithoutUTC = moment(stringDateWithoutUTC).valueOf();
+          let offset = moment.parseZone(element.date).format("Z");
+          let stringDate = moment.parseZone(element.date).format("YYYY-MM-DDTHH:mm:ss") + offset;
+          if (element.provenance.prov_used) {
+            /*var annotatedImage = this.getAnnotations(element.provenance.prov_used[0].uri)
+            annotatedImage.then(res => {
+              console.log(res)
+            })*/
+            imageToAdd = {
+              x: dateWithoutUTC,
+              y: element.value,
+              date: stringDate,
+              title: "I",
+              prov_used: element.provenance.prov_used,
+              data: element,
+              imageURI: element.provenance.prov_used[0].uri,
+              color: element.color
+            }
+
+            cleanImage.push(imageToAdd);
+          }
+
+          toAdd = {
+            x: dateWithoutUTC,
+            y: element.value,
+            offset: offset,
+            dateWithOffset: stringDate,
+            provenanceUri: element.provenance.uri,
+            data: element
+          };
+          cleanData.push(toAdd);
+        }
+    )
+    ;
     return [cleanData, cleanImage];
   }
 
@@ -542,6 +561,18 @@ export default class ScientificObjectVisualizationTab extends Vue {
     };
     return newDate.toLocaleDateString("fr-FR", options);
   }
+
+  getAnnotations(uri: string) {
+    return this.annotationService
+        .searchAnnotations(undefined, uri, undefined, undefined, undefined, 0, 0)
+        .then(
+            (http: HttpResponse<OpenSilexResponse<Array<AnnotationGetDTO>>>) => {
+              const annotations = http.response.result as Array<AnnotationGetDTO>;
+              return annotations;
+            }
+        );
+  }
+
 }
 </script>
 

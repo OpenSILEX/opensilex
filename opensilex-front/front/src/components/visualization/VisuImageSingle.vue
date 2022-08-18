@@ -19,7 +19,9 @@
             </a>
           </template>
           <b-dropdown-item href="#" @click="imageDetails">{{ $t("VisuImageSingle.details") }}</b-dropdown-item>
-          <b-dropdown-item href="#" @click="imageAnnotate">{{
+          <b-dropdown-item href="#" @click="annotationDetails">{{ $t("VisuImageSingle.annotation-details") }}</b-dropdown-item>
+          <b-dropdown-item href="#" @click="imageAnnotate">
+            {{
               $i18n.t("VisuImageSingle.annotate-image")
             }}
           </b-dropdown-item>
@@ -107,6 +109,10 @@ export default class VisuImageSingle extends Vue {
 
   imageDetails() {
     this.$emit("onImageDetails", this.image.imageUri);
+  }
+
+  annotationDetails() {
+    this.$emit("onAnnotationDetails", this.image.imageUri);
   }
 
   imageAnnotate() {
@@ -222,11 +228,13 @@ img {
 en:
   VisuImageSingle:
     details: Image details
+    annotation-details: Annotation details
     annotate-image: Annotate image
     hide-image: Hide image
 fr:
   VisuImageSingle:
     details: Détails de l'image
+    annotation-details: Détails de l'annotation
     annotate-image: Annoter l'image
     hide-image: Masquer l'image
 </i18n>

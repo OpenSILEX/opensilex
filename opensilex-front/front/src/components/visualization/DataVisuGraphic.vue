@@ -478,7 +478,8 @@ export default class DataVisuGraphic extends Vue {
               marker: {
                 enabled: true,
                 symbol: "circle",
-                radius: 3
+                radius: 3,
+                fillColor: '#fff004'
               }
             },
 

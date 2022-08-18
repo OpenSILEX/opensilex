@@ -58,7 +58,6 @@
           ></opensilex-DetailButton>
           </b-button-group>
         </template>
-
     </opensilex-TableAsyncView>
 
     <opensilex-DataProvenanceModalView 

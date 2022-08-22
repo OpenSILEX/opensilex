@@ -70,6 +70,7 @@ import {AnnotationsService} from "opensilex-core/api/annotations.service";
 @Component
 export default class ScientificObjectVisualizationTab extends Vue {
   $opensilex: any;
+  annotationData: any;
   variablesService: VariablesService;
   annotationService: AnnotationsService;
 
@@ -364,7 +365,6 @@ export default class ScientificObjectVisualizationTab extends Vue {
             let dataLength = data.length;
             if (dataLength > 0) {
               const cleanData = this.dataTransforme(data);
-              console.log('Hi ', cleanData)
               if (dataLength > 50000) {
                 this.$opensilex.showInfoToast(
                     this.$i18n.t(
@@ -511,10 +511,6 @@ export default class ScientificObjectVisualizationTab extends Vue {
           let offset = moment.parseZone(element.date).format("Z");
           let stringDate = moment.parseZone(element.date).format("YYYY-MM-DDTHH:mm:ss") + offset;
           if (element.provenance.prov_used) {
-            /*var annotatedImage = this.getAnnotations(element.provenance.prov_used[0].uri)
-            annotatedImage.then(res => {
-              console.log(res)
-            })*/
             imageToAdd = {
               x: dateWithoutUTC,
               y: element.value,
@@ -523,10 +519,11 @@ export default class ScientificObjectVisualizationTab extends Vue {
               prov_used: element.provenance.prov_used,
               data: element,
               imageURI: element.provenance.prov_used[0].uri,
-              color: element.color
+              // color: "#FFF004"
             }
 
             cleanImage.push(imageToAdd);
+
           }
 
           toAdd = {

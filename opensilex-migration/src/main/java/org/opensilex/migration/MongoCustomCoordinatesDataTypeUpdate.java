@@ -2,6 +2,7 @@ package org.opensilex.migration;
 
 import com.mongodb.client.ClientSession;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.model.Filters;
 import com.mongodb.client.result.UpdateResult;
 import org.apache.jena.atlas.json.JSON;
 import org.bson.Document;
@@ -35,7 +36,6 @@ import java.util.Objects;
 public class MongoCustomCoordinatesDataTypeUpdate extends AbstractOpenSilexModuleUpdate {
 
     private static final String POSITION_PATH = "targetPositions.position.";
-
     @Override
     public String getDescription() {
         return "Update custom coordinates datatype (`integer` -> `String`) into MongoDB moves collection";
@@ -48,45 +48,31 @@ public class MongoCustomCoordinatesDataTypeUpdate extends AbstractOpenSilexModul
 
     /**
      *
-     * The following update will be executed on mongo server
+     * The following update will be executed on mongo server for each x,y and z fields :
+     *
      * <pre>
      * {@code
-     * db.move.updateMany({},
+     * db.move.updateMany({"targetPositions.position.x" : {$exists : true},
      * [
      *   {
      *     $set: {
      *       "targetPositions.position.x": {
      *         $toString: {
      *           $arrayElemAt: [
-     *             "$targetPositions.position.x",
+     *             "targetPositions.position.x",
      *             0
      *           ]
      *         }
-     *       },
-     *       "targetPositions.position.y": {
-     *         $toString: {
-     *           $arrayElemAt: [
-     *             "$targetPositions.position.y",
-     *             0
-     *           ]
-     *         }
-     *       },
-     *       "targetPositions.position.z": {
-     *         $toString: {
-     *           $arrayElemAt: [
-     *             "$targetPositions.position.z",
-     *             0
-     *           ]
-     *         }
-     *       },
-     *
+     *       }
      *     }
      *   }
      * ])
+     *
      * }
      * </pre>
      * @see <a href="https://www.mongodb.com/docs/manual/reference/method/db.collection.updateMany/">MongoDB : array update</a>
      */
+    @Override
     public void execute() throws OpensilexModuleUpdateException {
 
         Objects.requireNonNull(opensilex);
@@ -107,24 +93,31 @@ public class MongoCustomCoordinatesDataTypeUpdate extends AbstractOpenSilexModul
             return;
         }
 
-
         MongoCollection<?> moveCollection = mongodb.getDatabase().getCollection(MoveEventDAO.MOVE_COLLECTION_NAME);
 
         // use a session in order to handle transaction
         // required since an update which apply on multiple document must be executed
-        ClientSession session = mongodb.getMongoDBClient().startSession();
+        ClientSession session = mongodb.getMongoClient().startSession();
 
         try{
             session.startTransaction();
 
-            Bson update = getUpdateBson();
-            logger.info("Applying update : \n{}", JSON.parse(update.toBsonDocument().toString()).toString());
+            // apply the update on each field, to ensure to be able to filtering each document according old field value
+            String[] fields = {"x","y","z"};
+            for(String fieldName : fields){
 
-            // perform the update on all document from move collection and commit the update
-            UpdateResult updateResult = moveCollection.updateMany(session, new Document(), Collections.singletonList(update));
+                // don't update position with a not defined field
+                Bson filter = Filters.exists(POSITION_PATH + fieldName,true);
+                Bson update = getUpdateBson(fieldName);
+
+                logger.info("Applying update : \n{}", JSON.parse(update.toBsonDocument().toString()).toString());
+
+                // perform the update on all document from move collection and commit the update
+                UpdateResult updateResult = moveCollection.updateMany(session, filter, Collections.singletonList(update));
+                logger.info("{}", updateResult);
+            }
+
             session.commitTransaction();
-
-            logger.info("{}", updateResult);
 
         }catch (Exception e1) {
             try {
@@ -142,28 +135,24 @@ public class MongoCustomCoordinatesDataTypeUpdate extends AbstractOpenSilexModul
 
     }
 
-
     /**
      * @return The JSON update document
      * @see <a href="https://www.mongodb.com/docs/manual/reference/operator/update/positional/">MongoDB : array update</a>
      * @see <a href="https://www.mongodb.com/docs/manual/reference/operator/aggregation/toString/">MongoDB : toString operator</a>
      * @see <a href="https://www.mongodb.com/docs/manual/reference/operator/aggregation/arrayElemAt/#mongodb-expression-exp.-arrayElemAt/">MongoDB : get element of array</a>
      */
-    private static Bson getUpdateBson(){
+    private static Bson getUpdateBson(String fieldName){
 
         Document updates = new Document();
 
         // add an update expression for each fields
-        String[] fields = {"x", "y", "z"};
-        for(String positionField : fields){
-            String fieldPath = "$targetPositions.position." + positionField;
+        String fieldPath = POSITION_PATH + fieldName;
 
-            // get String representation of the old attribute value
-            Document positionTypeChange = new Document("$toString",
-                    new Document("$arrayElemAt", Arrays.asList("$"+fieldPath, 0))
-            );
-            updates.append(fieldPath, positionTypeChange);
-        }
+        // get String representation of the old attribute value
+        Document positionTypeChange = new Document("$toString",
+                new Document("$arrayElemAt", Arrays.asList("$" + fieldPath, 0))
+        );
+        updates.append(fieldPath, positionTypeChange);
 
         return new Document("$set", updates);
     }

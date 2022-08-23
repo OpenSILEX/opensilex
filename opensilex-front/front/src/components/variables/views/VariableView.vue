@@ -24,6 +24,11 @@
             :to="{ path: '/variable/visualization/' + encodeURIComponent(uri) }"
         >{{ $t('VariableDetails.visualization') }}
         </b-nav-item>
+        <b-nav-item
+            :active="isDocumentTab()"
+            :to="{ path: '/variable/documents/' + encodeURIComponent(uri) }"
+        >{{ $t('component.project.documents') }}
+        </b-nav-item>
 
       </template>
     </opensilex-PageActions>
@@ -51,6 +56,12 @@
           :variable="uri"
           :modificationCredentialId="credentials.CREDENTIAL_DEVICE_MODIFICATION_ID"
         ></opensilex-VariableVisualizationTab>
+
+        <opensilex-DocumentTabList
+          v-else-if="isDocumentTab()"
+          :uri="uri"        
+          :modificationCredentialId="credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID"
+        ></opensilex-DocumentTabList>
       </template>
 
     </opensilex-PageContent>
@@ -132,6 +143,10 @@ export default class VariableView extends Vue {
 
   isVisualizationTab() {
     return this.$route.path.startsWith("/variable/visualization/");
+  }
+
+  isDocumentTab() {
+    return this.$route.path.startsWith("/variable/documents/");
   }
 
   loadVariable(uri: string) {

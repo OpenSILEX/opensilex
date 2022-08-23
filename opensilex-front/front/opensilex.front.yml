@@ -347,6 +347,8 @@ routes:
     component: opensilex-VariableView
   - path: /variable/visualization/:uri
     component: opensilex-VariableView
+  - path: /variable/documents/:uri
+    component: opensilex-VariableView
 
   - path: /variables_group/details/:uri
     component: opensilex-GroupVariablesDescription

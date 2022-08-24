@@ -80,9 +80,11 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
 
     public List<SharedResourcesDTO> getSharedResources() {
         List<SharedResourcesDTO> listDTO = new ArrayList<>();
+        // récupération de la liste des ressources dans la configuration
         CoreConfig coreConfig = getConfig(CoreConfig.class);
         List<SharedResourcesItem> list = coreConfig.sharedResources();
 
+        // création de la liste des dtos avec la liste obtenue précédemment
         for (SharedResourcesItem sharedResource : list) {
             SharedResourcesDTO sharedDTO = new SharedResourcesDTO();
             try {

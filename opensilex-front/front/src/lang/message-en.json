@@ -94,7 +94,7 @@
                 "creation-success-message": " has been inserted",
                 "update-success-message": " has been updated",
                 "delete-success-message": "has been deleted",
-                "import-success-message": "{variablesCount} variables, {entitiesCount} entities, {characteristicsCount} characteristics, {methodsCount} methods, {unitsCount} units, {interestEntityCount} observation levels have been imported"
+                "import-success-message": "{variablesCount} variables, {entitiesCount} entities, {characteristicsCount} characteristics, {methodsCount} methods, {unitsCount} units, {interestEntityCount} observation levels have been imported."
             },
             "details": {
                 "document": "Documents",

@@ -554,6 +554,8 @@ hamza:build:
   <<: *build_template_with_opensilex
   rules:
     - if: $CI_COMMIT_BRANCH == "hamza"
+  tags:
+    - stable
 
 test:hamza:deploy:
   <<: *deploy_opensilex_before_script
@@ -570,6 +572,8 @@ test:hamza:deploy:
   rules:
     - if: $CI_COMMIT_BRANCH == "hamza"
       when: on_success
+  tags:
+    - stable
   needs:
     - hamza:build
 

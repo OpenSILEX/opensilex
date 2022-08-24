@@ -22,7 +22,7 @@
         :showAdvancedSearch="true"
         class="searchFilterField visualizeBtn"
         @search="onSearch"
-
+        @clear="resetFilters"
       >
         <template v-slot:filters>
 
@@ -34,8 +34,8 @@
                 placeholder="DataView.filter.scientificObjects-placeholder"
                 :scientificObjects.sync="scientificObjectsURI"
                 :soFilter="soFilter"
+                :experiment="selectedExperiment"
                 :required="true"
-                :clear="refreshSoSelector"
                 :maximumSelectedRows="15"
                 @input="onUpdate"
                 @select="onSearch"
@@ -184,6 +184,11 @@ export default class ExperimentDataVisualisationForm extends Vue {
     this.filter.provenance = undefined;
     this.filter.showEvents = false;
     this.filterProvenanceLabel = null;
+    
+    // those filters are not handled as the others
+    this.scientificObjectsURI = [];
+    this.selectedVariables = [];
+
   }
 
   @Prop()

@@ -12,7 +12,7 @@
       :required="required"
       :isModalSearch="true"
       :limit="1"
-      @clear="refreshSoSelector"
+      @clear="reset"
       @onValidate="refreshProvComponent"
       @onClose="refreshProvComponent"
   ></opensilex-SelectForm>
@@ -75,7 +75,16 @@ export default class UsedScientificObjectSelector extends Vue {
     this.$emit("deselect", value);
   }
   
-  refreshSoSelector() {
+  reset() {
+    this.soFilter = {
+      name: "",
+      experiment: this.experiment,
+      germplasm: undefined,
+      factorLevels: [],
+      types: [],
+      existenceDate: undefined,
+      creationDate: undefined
+    }
     this.soSelector.refreshModalSearch();
     this.refreshProvComponent([]);
   }

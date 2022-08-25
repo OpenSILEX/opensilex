@@ -51,7 +51,6 @@ public abstract class AbstractDistributedCoordinator<O extends DataSourceOperati
             LocalDataBase<T> localDatabase = (LocalDataBase<T>) entry.getValue();
             T datasource = localDatabase.getDataSource();
 
-            LOGGER.debug("\t[{}] on database {} [START]", actionMsg, localDatabase.getDescription());
             action.apply(localDatabase).accept(datasource);
             LOGGER.debug("\t[{}] on database {} [OK]", actionMsg, localDatabase.getDescription());
 
@@ -91,7 +90,6 @@ public abstract class AbstractDistributedCoordinator<O extends DataSourceOperati
 
             LocalDataBase<T> localDataBase = (LocalDataBase<T>) this.localDatabases.get(dataSource);
 
-            LOGGER.debug("\t\t{} operation(s) on database {} [START]", operations.size(), localDataBase.getDescription());
             // execute each operation on local database
             for (DataSourceOperation<?> operation : operations) {
                 DataSourceOperation<T> castedOperation = (DataSourceOperation<T>) operation;

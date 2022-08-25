@@ -115,7 +115,7 @@ public class DeviceDAO {
     public void create(DeviceModel model) throws Exception {
 
         new DefaultDataSourceCoordinator<>(sparql, mongodb.startSession())
-                .addMongoOperation(clientSession -> metaDataDao.getCreateConsumer(metaDataCollection,model.getMetadata(),model))
+                .addMongoOperation(metaDataDao.getCreateConsumer(metaDataCollection,model.getMetadata(),model))
                 .addSparqlOperation(sparqlService -> sparqlService.create(model))
                 .run();
     }
@@ -123,7 +123,7 @@ public class DeviceDAO {
     public DeviceModel update(DeviceModel model) throws Exception {
 
         new DefaultDataSourceCoordinator<>(sparql, mongodb.startSession())
-                .addMongoOperation(clientSession -> metaDataDao.getUpdateConsumer(metaDataCollection,model.getMetadata(),model))
+                .addMongoOperation(metaDataDao.getUpdateConsumer(metaDataCollection,model.getMetadata(),model))
                 .addSparqlOperation(sparqlService -> {
                     sparqlService.deleteByURI(defaultGraph, model.getUri());
                     sparqlService.create(model);
@@ -447,7 +447,7 @@ public class DeviceDAO {
         }
 
         new DefaultDataSourceCoordinator<>(sparql, mongodb.startSession())
-                .addMongoOperation(clientSession -> metaDataDao.getDeleteConsumer(metaDataCollection,uri))
+                .addMongoOperation(metaDataDao.getDeleteConsumer(metaDataCollection,uri))
                 .addSparqlOperation(sparqlService -> sparqlService.delete(DeviceModel.class, uri))
                 .run();
     }

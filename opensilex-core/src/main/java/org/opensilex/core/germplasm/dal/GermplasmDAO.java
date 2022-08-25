@@ -91,7 +91,7 @@ public class GermplasmDAO {
     public void create(GermplasmModel model) throws Exception {
 
         new DefaultDataSourceCoordinator<>(sparql, nosql.startSession())
-                .addMongoOperation(clientSession -> metaDataDao.getCreateConsumer(metaDataCollection,model.getMetadata(),model))
+                .addMongoOperation(metaDataDao.getCreateConsumer(metaDataCollection,model.getMetadata(),model))
                 .addSparqlOperation(sparqlService -> sparqlService.create(model))
                 .run();
     }
@@ -99,7 +99,7 @@ public class GermplasmDAO {
     public GermplasmModel update(GermplasmModel model) throws Exception {
 
         new DefaultDataSourceCoordinator<>(sparql, nosql.startSession())
-                .addMongoOperation(clientSession -> metaDataDao.getUpdateConsumer(metaDataCollection,model.getMetadata(),model))
+                .addMongoOperation(metaDataDao.getUpdateConsumer(metaDataCollection,model.getMetadata(),model))
                 .addSparqlOperation(sparqlService -> {
                     sparqlService.deleteByURI(defaultGraph, model.getUri());
                     sparqlService.create(model);
@@ -110,7 +110,7 @@ public class GermplasmDAO {
 
     public void delete(URI uri) throws Exception {
         new DefaultDataSourceCoordinator<>(sparql, nosql.startSession())
-                .addMongoOperation(clientSession -> metaDataDao.getDeleteConsumer(metaDataCollection,uri))
+                .addMongoOperation(metaDataDao.getDeleteConsumer(metaDataCollection,uri))
                 .addSparqlOperation(sparqlService -> sparqlService.delete(GermplasmModel.class, uri))
                 .run();
     }

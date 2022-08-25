@@ -108,6 +108,22 @@ public class VariableAPI {
 
         SharedResourcesFunctions sharedResourcesFunctions = SharedResourcesFunctions.getInstance(coreModule);
 
+        // recherche de correspondance de l'uri de la ressource partagée avec le label de cette ressource pour l'afficher dans le nom de la métadonnée enregistrée
+        List<SharedResourcesDTO> sharedResourcesDTOList = sharedResourcesFunctions.getAllSharedResources();
+
+        String resourceName = "";
+
+        int rankList = 1;
+        boolean resourceFound = false;
+        while (rankList < sharedResourcesDTOList.size() && !resourceFound){
+            if (Objects.equals(sharedResourcesDTOList.get(rankList).getUri(), resource)){
+
+                resourceName = sharedResourcesDTOList.get(rankList).getLabel();
+                resourceFound = true;
+            }
+            rankList += 1;
+        }
+
         URI shortUri = new URI("");
 
         JsonNode fieldUri = variableJson.get(fieldName).get("uri");
@@ -142,7 +158,7 @@ public class VariableAPI {
                 JsonNode result = filedJsonResult.get("result");
 
                 fieldDto.setUri(new URI(result.get("uri").asText()));
-                fieldDto.setName(result.get("name").asText());
+                fieldDto.setName(result.get("name").asText() + " ( " + resourceName + ")");
                 fieldDto.setDescription(result.get("description").asText());
 
                 JsonNode jsonCloseMatch = result.get("close_match");

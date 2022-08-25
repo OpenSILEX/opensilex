@@ -2,7 +2,10 @@ package org.opensilex.nosql.datasource.coordinator;
 
 import com.mongodb.client.ClientSession;
 import org.opensilex.nosql.datasource.operation.DataSourceOperation;
+import org.opensilex.nosql.datasource.operation.MongoOperation;
+import org.opensilex.nosql.datasource.operation.SparqlOperation;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.utils.ThrowingConsumer;
 
 /**
  * Default implementation of {@link DistributedDataSourceCoordinator} which can handle
@@ -11,8 +14,14 @@ import org.opensilex.sparql.service.SPARQLService;
  */
 public class DefaultDataSourceCoordinator<O extends DataSourceOperation<?>> extends AbstractDistributedCoordinator<O> {
 
+    private final SPARQLService sparql;
+    private final ClientSession session;
+
     public DefaultDataSourceCoordinator(SPARQLService sparql, ClientSession session) {
         super();
+
+        this.sparql = sparql;
+        this.session = session;
 
         // register RDF database by using the SPARQLService
         registerDataSource(
@@ -55,6 +64,16 @@ public class DefaultDataSourceCoordinator<O extends DataSourceOperation<?>> exte
     @Override
     protected void resolveCommitFail() {
         throw new UnsupportedOperationException("this implementation has no mechanism to cancel a committed transaction");
+    }
+
+    public DefaultDataSourceCoordinator<O> addSparqlOperation(ThrowingConsumer<SPARQLService,Exception> consumer){
+       this.addOperation(sparql, (O) new SparqlOperation(consumer::accept));
+       return this;
+    }
+
+    public DefaultDataSourceCoordinator<O> addMongoOperation(ThrowingConsumer<ClientSession,Exception> consumer){
+        this.addOperation(session, (O) new MongoOperation(consumer::accept));
+        return this;
     }
 
 }

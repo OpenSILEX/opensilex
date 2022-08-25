@@ -1,6 +1,5 @@
 package org.opensilex.core.event.dal.move;
 
-import com.mongodb.client.ClientSession;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
@@ -28,9 +27,9 @@ import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Time;
 import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
+import org.opensilex.nosql.datasource.coordinator.DefaultDataSourceCoordinator;
 import org.opensilex.nosql.insert.MongoInsertOptions;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.nosql.mongodb.MultipleDataSourceOperation;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -42,7 +41,6 @@ import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
-import org.opensilex.utils.ThrowingConsumer;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -86,32 +84,25 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
         return model;
     }
 
-    public void create(MoveModel model, MultipleDataSourceOperation operation){
-
-    }
-
-
     protected void create(Collection<MoveModel> models, List<MoveEventNoSqlModel> noSqlModels) throws Exception {
 
-        ThrowingConsumer<ClientSession, Exception> createAllConsumer = null;
-
-        if (!noSqlModels.isEmpty()) {
-            createAllConsumer = (ClientSession session) -> {
-                mongodb.createAll(new MongoInsertOptions<>(
-                                null,
-                                moveEventCollection,
-                                session,
-                                noSqlModels
-                        ).setCheckUriExist(false)
-                );
-            };
+        if(CollectionUtils.isEmpty(noSqlModels)){
+            sparql.create(eventGraph,models,SPARQLService.DEFAULT_MAX_INSTANCE_PER_QUERY,false);
+            return;
         }
 
-        mongodb.multipleOperationsWithTransaction(
-                sparql,
-                createAllConsumer,
-                (SPARQLService sparqlService) -> sparql.create(eventGraph, models, SPARQLService.DEFAULT_MAX_INSTANCE_PER_QUERY, false)
-        );
+        new DefaultDataSourceCoordinator<>(sparql, mongodb.startSession())
+                .addMongoOperation(clientSession -> mongodb.createAll(new MongoInsertOptions<>(
+                                null,
+                                moveEventCollection,
+                                clientSession,
+                                noSqlModels
+                        ).setCheckUriExist(false))
+                )
+                .addSparqlOperation(sparqlService ->
+                        sparql.create(eventGraph, models, SPARQLService.DEFAULT_MAX_INSTANCE_PER_QUERY, false)
+                )
+                .run();
     }
 
 
@@ -290,15 +281,16 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
         MoveEventNoSqlModel noSqlModel = model.getNoSqlModel();
 
         // update MoveEventNoSqlModel in mongodb, if exist
-        final ThrowingConsumer<ClientSession, Exception> updateConsumer = noSqlModel != null ?
-                (ClientSession session) -> moveEventCollection.findOneAndReplace(session, eq(MoveEventNoSqlModel.ID_FIELD, model.getUri()), noSqlModel)
-                : null;
-
-        mongodb.multipleOperationsWithTransaction(
-                sparql,
-                updateConsumer,
-                (SPARQLService sparqlService) -> sparql.update(model)
-        );
+        new DefaultDataSourceCoordinator<>(sparql, mongodb.startSession())
+                .addSparqlOperation(sparqlService -> sparqlService.update(model))
+                .addMongoOperation(clientSession -> {
+                        if (noSqlModel == null) {
+                            moveEventCollection.deleteOne(clientSession, eq(MoveEventNoSqlModel.ID_FIELD, model.getUri()));
+                        } else {
+                            moveEventCollection.findOneAndReplace(clientSession, eq(MoveEventNoSqlModel.ID_FIELD, model.getUri()), noSqlModel);
+                        }
+                    }
+                ).run();
 
         return model;
     }
@@ -306,20 +298,10 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
     @Override
     public void delete(URI uri) throws Exception {
 
-        // first check if the model exist
-        boolean moveExistInMongo = mongodb.uriExists(moveEventCollection, uri, MoveEventNoSqlModel.ID_FIELD);
-
-        // delete MoveEventNoSqlModel in mongodb, if exist
-        final ThrowingConsumer<ClientSession, Exception> deleteConsumer = moveExistInMongo ?
-                (ClientSession session) -> moveEventCollection.deleteOne(eq(MoveEventNoSqlModel.ID_FIELD, uri))
-                : null;
-
-        mongodb.multipleOperationsWithTransaction(
-                sparql,
-                deleteConsumer,
-                (SPARQLService sparql) -> sparql.delete(MoveModel.class, uri)
-        );
-
+        new DefaultDataSourceCoordinator<>(sparql, mongodb.startSession())
+                .addSparqlOperation(sparqlService -> sparqlService.delete(MoveModel.class,uri))
+                .addMongoOperation(clientSession -> moveEventCollection.deleteOne(eq(MoveEventNoSqlModel.ID_FIELD, uri)))
+                .run();
     }
 
     /**

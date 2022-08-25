@@ -8,6 +8,7 @@
  ******************************************************************************/
 package org.opensilex.migration;
 
+import com.mongodb.client.ClientSession;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
@@ -81,7 +82,7 @@ public class DataRectifyDateWithoutTimeValues implements OpenSilexModuleUpdate {
         // Get data collection name
         String dataCollectionName = DataDAO.DATA_COLLECTION_NAME;
 
-        mongodb.startTransaction();
+        ClientSession session = mongodb.startSession();
 
         try {
             // First, search all variables which have the "date" type
@@ -142,14 +143,16 @@ public class DataRectifyDateWithoutTimeValues implements OpenSilexModuleUpdate {
             LOGGER.debug("Number of matches: {}", result.getMatchedCount());
             LOGGER.debug("Number of updated documents: {}", result.getModifiedCount());
 
-            mongodb.commitTransaction();
+            session.commitTransaction();
         } catch (Exception e1) {
             try {
-                mongodb.rollbackTransaction();
+                session.abortTransaction();
             } catch (Exception e2) {
                 throw new OpensilexModuleUpdateException(e2.getMessage(), e2);
             }
             throw new OpensilexModuleUpdateException(e1.getMessage(), e1);
+        }finally {
+            session.close();
         }
     }
 }

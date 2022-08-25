@@ -18,7 +18,6 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.core.Var;
-import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.SKOS;
@@ -27,6 +26,7 @@ import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.germplasm.api.GermplasmCreationDTO;
 import org.opensilex.core.germplasm.api.GermplasmSearchFilter;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.nosql.datasource.coordinator.DefaultDataSourceCoordinator;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.metadata.MetaDataDao;
 import org.opensilex.nosql.mongodb.metadata.MetaDataModel;
@@ -90,40 +90,29 @@ public class GermplasmDAO {
 
     public void create(GermplasmModel model) throws Exception {
 
-        nosql.multipleOperationsWithTransaction(
-                sparql,
-                metaDataDao.getCreateConsumer(metaDataCollection, model.getMetadata(), model),
-                (SPARQLService sparqlService) -> sparqlService.create(model)
-        );
+        new DefaultDataSourceCoordinator<>(sparql, nosql.startSession())
+                .addMongoOperation(clientSession -> metaDataDao.getCreateConsumer(metaDataCollection,model.getMetadata(),model))
+                .addSparqlOperation(sparqlService -> sparqlService.create(model))
+                .run();
     }
 
     public GermplasmModel update(GermplasmModel model) throws Exception {
 
-        nosql.multipleOperationsWithTransaction(
-                sparql,
-                metaDataDao.getUpdateConsumer(metaDataCollection, model.getMetadata(), model),
-                (SPARQLService sparqlService) -> {
-                    sparql.deleteByURI(defaultGraph, model.getUri());
-                    sparql.create(model);
-                }
-        );
+        new DefaultDataSourceCoordinator<>(sparql, nosql.startSession())
+                .addMongoOperation(clientSession -> metaDataDao.getUpdateConsumer(metaDataCollection,model.getMetadata(),model))
+                .addSparqlOperation(sparqlService -> {
+                    sparqlService.deleteByURI(defaultGraph, model.getUri());
+                    sparqlService.create(model);
+                })
+                .run();
         return model;
     }
 
     public void delete(URI uri) throws Exception {
-        nosql.multipleOperationsWithTransaction(sparql,
-                metaDataDao.getDeleteConsumer(metaDataCollection,uri),
-                (SPARQLService sparqlService) -> sparqlService.delete(GermplasmModel.class, uri)
-        );
-    }
-
-    public boolean labelExistsCaseSensitive(String label, URI rdfType) throws Exception {
-        AskBuilder askQuery = new AskBuilder()
-                .from(sparql.getDefaultGraph(GermplasmModel.class).toString())
-                .addWhere("?uri", RDF.type, SPARQLDeserializers.nodeURI(rdfType))
-                .addWhere("?uri", RDFS.label, label);
-
-        return sparql.executeAskQuery(askQuery);
+        new DefaultDataSourceCoordinator<>(sparql, nosql.startSession())
+                .addMongoOperation(clientSession -> metaDataDao.getDeleteConsumer(metaDataCollection,uri))
+                .addSparqlOperation(sparqlService -> sparqlService.delete(GermplasmModel.class, uri))
+                .run();
     }
 
     public boolean labelExistsCaseSensitiveBySpecies(GermplasmCreationDTO germplasm) throws Exception {
@@ -206,8 +195,6 @@ public class GermplasmDAO {
                 searchFilter.getLang(),
                 (SelectBuilder select) -> {
 
-                    ElementGroup rootElementGroup = select.getWhereHandler().getClause();
-
                     appendRegexUriFilter(select, searchFilter.getUri());
                     appendRdfTypeFilter(select, searchFilter.getType());
                     appendRegexLabelAndSynonymFilter(select, searchFilter.getName());
@@ -255,14 +242,6 @@ public class GermplasmDAO {
             );
         }
         return models;
-    }
-
-    public List<URI> getGermplasmURIsBySpecies(List<URI> species, String lang) throws Exception {
-        return sparql.searchURIs(
-                GermplasmModel.class,
-                lang,
-                (SelectBuilder select) -> select.addFilter(SPARQLQueryHelper.inURIFilter(GermplasmModel.SPECIES_URI_SPARQL_VAR, species))
-        );
     }
 
     private void appendRegexUriFilter(SelectBuilder select, String uri) {
@@ -429,7 +408,7 @@ public class GermplasmDAO {
         }
     }
 
-    private void appendExperimentFilter(SelectBuilder select, URI xpUri) throws SPARQLException {
+    private void appendExperimentFilter(SelectBuilder select, URI xpUri) {
         if (xpUri != null) {
             Var scientificObjectVar = makeVar("scientificObject");
             Var rdfTypeVar = makeVar("scientificObjectType");

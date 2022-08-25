@@ -10,7 +10,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoBulkWriteException;
 import com.mongodb.MongoCommandException;
 import com.mongodb.bulk.BulkWriteError;
-import com.mongodb.client.ClientSession;
 import com.mongodb.client.result.DeleteResult;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
@@ -34,6 +33,7 @@ import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.utils.ImportDataIndex;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.nosql.datasource.coordinator.DefaultDataSourceCoordinator;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.csv.CSVCell;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
@@ -61,16 +61,12 @@ import org.opensilex.server.exceptions.NotFoundException;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.server.rest.validation.ValidURI;
-import org.opensilex.sparql.SPARQLModule;
-import org.opensilex.sparql.csv.CSVCell;
-import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
-import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.response.ResourceTreeDTO;
 import org.opensilex.sparql.service.SPARQLService;
@@ -155,6 +151,25 @@ public class DataAPI {
     @CurrentUser
     UserModel user;
 
+    private void createAll(DataDAO dao, List<DataModel> dataList, Map<DeviceModel, List<URI>> variablesDevices) throws Exception {
+        if (variablesToDevices.isEmpty()) {
+            dao.createAll(dataList, null);
+        } else {
+            DefaultDataSourceCoordinator<?> coordinator = new DefaultDataSourceCoordinator<>(sparql, nosql.startSession());
+
+            coordinator.addSparqlOperation(sparqlService -> {
+                DeviceDAO deviceDAO = new DeviceDAO(sparqlService, nosql, fs);
+
+                // do the  variable/device associations here ..
+                for (Map.Entry<DeviceModel, List<URI>> entry : variablesDevices.entrySet()) {
+                    deviceDAO.associateVariablesToDevice(entry.getKey(), entry.getValue());
+                }
+            });
+            coordinator.addMongoOperation(mongoSession -> dao.createAll(dataList, mongoSession));
+            coordinator.run();
+        }
+    }
+
     @POST
     @ApiProtected
     @ApiOperation("Add data")
@@ -180,22 +195,8 @@ public class DataAPI {
                 dataList.add(dto.newModel());
             }
             validData(dataList);
+            createAll(dao, dataList, variablesToDevices);
 
-            nosql.multipleOperationsWithTransaction(
-                    sparql,
-                    (ClientSession session) -> dao.createAll(dataList, session),
-                    (SPARQLService sparqlService) -> {
-                        if (variablesToDevices.size() > 0) {
-
-                            DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
-                            for (Map.Entry<DeviceModel,List<URI>> entry : variablesToDevices.entrySet()) {
-                                deviceDAO.associateVariablesToDevice(entry.getKey(), entry.getValue());
-                            }
-                        }
-                    }
-            );
-            // do the  variable/device associations here ..
-            
             List<URI> createdResources = new ArrayList<>();
             for (DataModel data : dataList) {
                 createdResources.add(data.getUri());
@@ -1125,24 +1126,10 @@ public class DataAPI {
         }
 
         Instant start = Instant.now();
-        List<DataModel> data = new ArrayList<>(validation.getData().keySet());
+        List<DataModel> models = new ArrayList<>(validation.getData().keySet());
         try {
-
-            nosql.multipleOperationsWithTransaction(
-                    sparql,
-                    (ClientSession session) -> dao.createAll(data, session),
-                    (SPARQLService sparqlService) -> {
-                        if (!validation.getVariablesToDevices().isEmpty()) {
-                            DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
-
-                            for (Map.Entry<DeviceModel,List<URI>> entry : validation.getVariablesToDevices().entrySet()) {
-                                deviceDAO.associateVariablesToDevice(entry.getKey(), entry.getValue());
-                            }
-                        }
-                    }
-            );
-
-            validation.setNbLinesImported(data.size());
+            createAll(dao, models, validation.getVariablesToDevices());
+            validation.setNbLinesImported(models.size());
         } catch (NoSQLTooLargeSetException ex) {
             validation.setTooLargeDataset(true);
 
@@ -1150,10 +1137,10 @@ public class DataAPI {
             List<BulkWriteError> bulkErrors = duplicateError.getWriteErrors();
             for (int i = 0; i < bulkErrors.size(); i++) {
                 int index = bulkErrors.get(i).getIndex();
-                DataGetDTO fromModel = DataGetDTO.getDtoFromModel(data.get(index));
+                DataGetDTO fromModel = DataGetDTO.getDtoFromModel(models.get(index), Collections.emptySet());
                 int variableIndex = validation.getHeaders().indexOf(fromModel.getVariable().toString());
                 String variableName = validation.getHeadersLabels().get(variableIndex) + '(' + validation.getHeaders().get(variableIndex) + ')';
-                CSVCell csvCell = new CSVCell(validation.getData().get(data.get(index)), validation.getHeaders().indexOf(fromModel.getVariable().toString()), fromModel.getValue().toString(), variableName);
+                CSVCell csvCell = new CSVCell(validation.getData().get(models.get(index)), validation.getHeaders().indexOf(fromModel.getVariable().toString()), fromModel.getValue().toString(), variableName);
                 validation.addDuplicatedDataError(csvCell);
             }
         } catch (MongoCommandException e) {

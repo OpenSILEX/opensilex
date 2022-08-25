@@ -281,21 +281,6 @@ public class MongoDBService extends BaseService {
     }
 
     /**
-     * Call {@link #multipleOperationsWithTransaction(SPARQLService, MultipleDataSourceOperation)} with sparql function evaluated first
-     */
-    public void multipleOperationsWithTransaction(
-            SPARQLService sparqlService,
-            ThrowingConsumer<ClientSession, Exception> mongoFunction,
-            ThrowingConsumer<SPARQLService, Exception> sparqlFunction) throws Exception {
-
-        multipleOperationsWithTransaction(sparqlService, new MultipleDataSourceOperation()
-                .addMongoConsumer(mongoFunction)
-                .addSparqlConsumer(sparqlFunction)
-                .setSparqlFirst(true)
-        );
-    }
-
-    /**
      *
      * @param instanceClass the instance class
      * @param collectionName the name of collection on which find the instance

@@ -26,6 +26,7 @@ import org.opensilex.core.event.dal.move.PositionModel;
 import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
+import org.opensilex.nosql.datasource.coordinator.DefaultDataSourceCoordinator;
 import org.opensilex.nosql.mongodb.metadata.MetaDataDao;
 import org.opensilex.nosql.mongodb.metadata.MetaDataModel;
 import org.opensilex.sparql.model.SPARQLModelRelation;
@@ -113,23 +114,21 @@ public class DeviceDAO {
     
     public void create(DeviceModel model) throws Exception {
 
-        mongodb.multipleOperationsWithTransaction(
-                sparql,
-                metaDataDao.getCreateConsumer(metaDataCollection, model.getMetadata(), model),
-                (SPARQLService sparqlService) -> sparqlService.create(model)
-        );
+        new DefaultDataSourceCoordinator<>(sparql, mongodb.startSession())
+                .addMongoOperation(clientSession -> metaDataDao.getCreateConsumer(metaDataCollection,model.getMetadata(),model))
+                .addSparqlOperation(sparqlService -> sparqlService.create(model))
+                .run();
     }
 
     public DeviceModel update(DeviceModel model) throws Exception {
 
-        mongodb.multipleOperationsWithTransaction(
-                sparql,
-                metaDataDao.getUpdateConsumer(metaDataCollection, model.getMetadata(), model),
-                (SPARQLService sparqlService) -> {
-                    sparql.deleteByURI(defaultGraph, model.getUri());
-                    sparql.create(model);
-                }
-        );
+        new DefaultDataSourceCoordinator<>(sparql, mongodb.startSession())
+                .addMongoOperation(clientSession -> metaDataDao.getUpdateConsumer(metaDataCollection,model.getMetadata(),model))
+                .addSparqlOperation(sparqlService -> {
+                    sparqlService.deleteByURI(defaultGraph, model.getUri());
+                    sparqlService.create(model);
+                })
+                .run();
         return model;
     }
 
@@ -447,11 +446,10 @@ public class DeviceDAO {
             throw new ForbiddenURIAccessException(uri, dataFileCount+" datafile(s)");
         }
 
-        mongodb.multipleOperationsWithTransaction(sparql,
-                metaDataDao.getDeleteConsumer(metaDataCollection,uri),
-                (SPARQLService sparqlService) -> sparqlService.delete(DeviceModel.class, uri)
-        );
-
+        new DefaultDataSourceCoordinator<>(sparql, mongodb.startSession())
+                .addMongoOperation(clientSession -> metaDataDao.getDeleteConsumer(metaDataCollection,uri))
+                .addSparqlOperation(sparqlService -> sparqlService.delete(DeviceModel.class, uri))
+                .run();
     }
 
     public List<VariableModel> getDeviceVariables(URI uri, String language) throws Exception {

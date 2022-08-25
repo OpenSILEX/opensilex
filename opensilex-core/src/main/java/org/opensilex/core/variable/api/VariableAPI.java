@@ -14,6 +14,7 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import io.swagger.annotations.*;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.opensilex.core.URIsListPostDTO;
+import org.opensilex.core.variable.dal.ModerationActionModel;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.core.variable.dal.VariableSearchFilter;
@@ -50,6 +51,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 @Api(VariableAPI.CREDENTIAL_VARIABLE_GROUP_ID)
 @Path(VariableAPI.PATH)
@@ -84,6 +86,7 @@ public class VariableAPI {
     private VariableDAO getDao() throws URISyntaxException {
         return new VariableDAO(sparql,mongodb,fs);
     }
+
 
     @POST
     @ApiOperation("Add a variable")
@@ -162,6 +165,87 @@ public class VariableAPI {
         return new ObjectUriResponse(Response.Status.OK,shortUri).getResponse();
     }
 
+    @PUT
+    @Path("moderation")
+    @ApiOperation("Add variable moderation actions")
+    @ApiProtected
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Variable updated", response = ObjectUriResponse.class),
+            @ApiResponse(code = 404, message = "Unknown variable URI", response = ErrorResponse.class)
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response addVariableModerationAction(
+            @ApiParam(value = "Variable URI", example = "http://opensilex.dev/set/variables/Plant_Height", required = true) @QueryParam("uri") @NotNull URI uri,
+            @ApiParam(value = "Moderation action type", example = "Validated declaration", required = true) @QueryParam("moderation_action_type") @NotNull String moderationActionType
+    ) throws Exception {
+        VariableDAO dao = getDao();
+        VariableModel variable = dao.get(uri);
+
+        ModerationActionModel moderationAction = new ModerationActionModel();
+        moderationAction.setDate(LocalDate.now());
+        moderationAction.setModerator(currentUser);
+        moderationAction.setModerationActionType(moderationActionType); // "Validated declaration", "Commented declaration", "Validated declaration" ou "Commented declaration"
+
+        List<ModerationActionModel> moderationList = variable.getModerationAction();
+        moderationList.add(moderationAction);
+        dao.update(variable);
+
+        URI shortUri = new URI(SPARQLDeserializers.getShortURI(variable.getUri().toString()));
+        return new ObjectUriResponse(Response.Status.OK,shortUri).getResponse();
+    }
+
+    @GET
+    @Path("moderation/{uri}")
+    @ApiOperation("Get variable moderation actions")
+    @ApiProtected
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Variable retrieved", response = VariableDetailsDTO.class),
+            @ApiResponse(code = 404, message = "Unknown variable URI", response = ErrorResponse.class)
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getVariableModerationAction(
+            @ApiParam(value = "Variable URI", example = "http://opensilex.dev/set/variables/Plant_Height", required = true) @PathParam("uri") @NotNull URI uri
+    ) throws Exception {
+        List<ModerationActionDTO> moderationDTOList = new ArrayList<>();
+        VariableDAO dao = getDao();
+        VariableModel variable = dao.get(uri);
+
+        if (variable == null) {
+            throw new NotFoundURIException(uri);
+        }
+
+        variable.getModerationAction();
+        for (ModerationActionModel moderationActionModel : variable.getModerationAction()) {
+            moderationDTOList.add(ModerationActionDTO.fromModel(moderationActionModel));
+        }
+        return new PaginatedListResponse<>(moderationDTOList).getResponse();
+    }
+
+    @DELETE
+    @Path("moderation/{uri}")
+    @ApiOperation("Delete a variable moderation action")
+    @ApiProtected
+    @ApiCredential(
+            credentialId = CREDENTIAL_VARIABLE_DELETE_ID,
+            credentialLabelKey = CREDENTIAL_VARIABLE_DELETE_LABEL_KEY
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Moderation action deleted", response = ObjectUriResponse.class),
+            @ApiResponse(code = 404, message = "Unknown moderation action URI", response = ErrorResponse.class)
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response deleteVariableModerationAction(
+            @ApiParam(value = "Moderation action URI", required = true) @PathParam("uri") @NotNull URI uri
+    ) throws Exception {
+        VariableDAO dao = getDao();
+        dao.deleteModerationAction(uri);
+        return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
+    }
+
+
     @DELETE
     @Path("{uri}")
     @ApiOperation("Delete a variable")
@@ -214,6 +298,7 @@ public class VariableAPI {
             @ApiParam(value = "Experiment filter") @QueryParam("experiments") List<URI> experiments,
             @ApiParam(value = "Scientific object filter") @QueryParam("scientific_objects") List<URI> objects,
             @ApiParam(value = "Device filter") @QueryParam("devices") List<URI> devices,
+            @ApiParam(value = "IsValidated filter") @QueryParam("isValidated") Boolean isValidated,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
@@ -235,6 +320,7 @@ public class VariableAPI {
                 .setDevices(devices)
                 .setExperiments(experiments)
                 .setObjects(objects)
+                .setIsValidated(isValidated)
                 .setUserModel(currentUser);
 
         filter.setPage(page)
@@ -247,7 +333,7 @@ public class VariableAPI {
                 VariableGetDTO.class,
                 VariableGetDTO::fromModel
         );
-        
+
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
     

@@ -28,6 +28,8 @@ public class VariableSearchFilter extends SparqlSearchFilter {
     private List<URI> experiments;
     private List<URI> objects;
 
+    private Boolean isValidated;
+
     private UserModel userModel;
 
     private boolean fetchSpecies;
@@ -160,6 +162,13 @@ public class VariableSearchFilter extends SparqlSearchFilter {
 
     public VariableSearchFilter setObjects(List<URI> objects) {
         this.objects = objects;
+        return this;
+    }
+
+    public Boolean getIsValidated() {return isValidated;}
+
+    public VariableSearchFilter setIsValidated(Boolean isValidated) {
+        this.isValidated = isValidated;
         return this;
     }
 

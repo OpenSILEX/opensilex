@@ -93,9 +93,13 @@
             "delete-confirmation": "Cette action est définitive, merci de confirmer la suppression.",
             "success": {
                 "success-title": "Succès",
-                "creation-success-message": " a été crée",
+                "creation-success-message": " a été créé(e)",
                 "update-success-message": " a été modifié(e)",
-                "delete-success-message": " a été supprimé(e)"
+                "delete-success-message": " a été supprimé(e)",
+                "validated-moderation-action": "La variable a bien été validée."
+            },
+            "moderation": {
+                "list-to-moderate": "À modérer : "
             },
             "details": {
                 "document": "Documents",

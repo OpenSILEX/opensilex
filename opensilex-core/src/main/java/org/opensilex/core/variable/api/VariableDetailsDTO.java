@@ -15,8 +15,7 @@ import io.swagger.annotations.ApiModelProperty;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Objects;
 
 import org.opensilex.core.germplasm.api.GermplasmAPI;
 import org.opensilex.core.ontology.SKOSReferencesDTO;
@@ -85,7 +84,13 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
 
     @JsonProperty("datatype")
     private URI dataType;
-    
+
+    @JsonProperty("isValidated")
+    private Boolean isValidated;
+
+    @JsonProperty("moderation")
+    private List<ModerationActionDTO> moderation;
+
     public VariableDetailsDTO(VariableModel model) {
         super(model);
 
@@ -128,6 +133,19 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
 
         trait = model.getTraitUri();
         traitName = model.getTraitName();
+
+        if(model.getModerationAction() != null){
+            List<ModerationActionDTO> moderationDtos = new ArrayList<>();
+            for (ModerationActionModel moderationActionModel : model.getModerationAction()) {
+                if (Objects.equals(moderationActionModel.getModerationActionType(), VariableModel.VALIDATED_DECLARATION_FIELD_NAME)) {
+                    this.isValidated = true;
+                }
+
+                moderationDtos.add(ModerationActionDTO.fromModel(moderationActionModel));
+            }
+            this.moderation = moderationDtos;
+        }
+
     }
 
     public VariableDetailsDTO() {
@@ -250,6 +268,15 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
 
     public void setSpecies(List<SpeciesDTO> species) {
         this.species = species;
+    }
+
+    @ApiModelProperty(notes = "Define if the variable has been validated by a moderator")
+    public Boolean getIsValidated() {
+        return isValidated;
+    }
+
+    public void setIsValidated(Boolean isValidated) {
+        this.isValidated = isValidated;
     }
 
 }

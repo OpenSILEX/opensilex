@@ -7,8 +7,12 @@ package org.opensilex.core.variable.api.entity;
 
 import io.swagger.annotations.*;
 import org.opensilex.core.variable.api.VariableAPI;
+import org.opensilex.core.variable.api.VariableDetailsDTO;
+import org.opensilex.core.variable.api.VariableGetDTO;
 import org.opensilex.core.variable.dal.BaseVariableDAO;
 import org.opensilex.core.variable.dal.EntityModel;
+import org.opensilex.core.variable.dal.VariableDAO;
+import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
@@ -31,7 +35,9 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static org.opensilex.core.variable.api.VariableAPI.*;
@@ -51,6 +57,23 @@ public class EntityAPI {
 
     @CurrentUser
     UserModel currentUser;
+
+    public static int levenshteinDistance(String x, String y) {
+        if (x.isEmpty()) {
+            return y.length();
+        }
+
+        if (y.isEmpty()) {
+            return x.length();
+        }
+
+        int substitution = levenshteinDistance(x.substring(1), y.substring(1))
+                + (x.charAt(0) == y.charAt(0) ? 0 : 1);
+        int insertion = levenshteinDistance(x, y.substring(1)) + 1;
+        int deletion = levenshteinDistance(x.substring(1), y) + 1;
+
+        return Math.min(Math.min(substitution, insertion),deletion);
+    }
 
     @POST
     @ApiOperation("Add an entity")
@@ -213,5 +236,76 @@ public class EntityAPI {
                 EntityGetDTO::new
         );
         return new PaginatedListResponse<>(resultDTOList).getResponse();
+    }
+
+
+    @GET
+    @Path("duplicates/{uri}")
+    @ApiOperation("Get entity duplicates")
+    @ApiProtected
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Entity retrieved", response = VariableDetailsDTO.class),
+            @ApiResponse(code = 404, message = "Unknown entity URI", response = ErrorResponse.class)
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getEntityDuplicates(
+            @ApiParam(value = "Entity URI", example = "http://purl.obolibrary.org/obo/ENVO_00002005", required = true) @PathParam("uri") @NotNull URI uri,
+            @ApiParam(value = "Sensitivity", example = "2", required = true) @QueryParam("sensitivity") @Min(0) int sensitivity
+    ) throws Exception {
+        BaseVariableDAO<EntityModel> dao = new BaseVariableDAO<>(EntityModel.class, sparql);
+        EntityModel model = dao.get(uri);
+        List<EntityDuplicatesDTO> resultDTOList = new ArrayList<>();
+
+        if (model != null) {
+
+            // récupération du nom de l'entité en entrée
+            String entityName = model.getName().toLowerCase();
+
+            BaseVariableDAO<EntityModel> entityDao = new BaseVariableDAO<>(EntityModel.class, sparql);
+            // recherche de toutes les entités de la base de données
+            List<EntityModel> resultList = entityDao.searchWithoutPagination(
+                    null
+            );
+
+            for(EntityModel entity : resultList) {
+                String entityNameI = entity.getName().toLowerCase();
+                int firstParenthesis = 0;
+                int lastParenthesis = 0;
+                for(int j = 0 ; j < entityNameI.length() ; j++){
+                    if(entityNameI.charAt(j)  == '('){
+                        firstParenthesis = j;
+                    }
+                    if(entityNameI.charAt(j)  == ')'){
+                        lastParenthesis = j;
+                    }
+                }
+                if(firstParenthesis != 0 && lastParenthesis != 0){
+                    entityNameI = entityNameI.substring(0,firstParenthesis-1);
+                }
+
+                int levenshteinDistance = levenshteinDistance(entityNameI,entityName);
+
+                // si le nom est proche ou contient le nom entier de la métadonnée en entrée
+                if(levenshteinDistance <= sensitivity){
+                    EntityDuplicatesDTO entityDto = new EntityDuplicatesDTO(entity);
+                    entityDto.setLevenshtein(levenshteinDistance);
+                    resultDTOList.add(entityDto);
+                }else{
+                    if(entityNameI.contains(entityName)){
+                        EntityDuplicatesDTO entityDto = new EntityDuplicatesDTO(entity);
+                        entityDto.setContainedIn(true);
+                        resultDTOList.add(entityDto);
+                    }
+                }
+
+            }
+
+            ListWithPagination<EntityDuplicatesDTO> paginatedDTOList = new ListWithPagination<>(resultDTOList);
+
+            return new PaginatedListResponse<>(paginatedDTOList).getResponse();
+        } else {
+            throw new NotFoundURIException(uri);
+        }
     }
 }

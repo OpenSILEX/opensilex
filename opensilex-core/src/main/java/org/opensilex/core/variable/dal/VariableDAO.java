@@ -19,6 +19,8 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.lang.sparql_11.ParseException;
 import org.apache.jena.vocabulary.RDF;
+import org.apache.jena.sparql.path.P_Link;
+import org.apache.jena.sparql.path.P_Seq;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.ontology.Oeso;
@@ -384,14 +386,29 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
 
         if(!CollectionUtils.isEmpty(filter.getSpecies())){
             //  add ?uri vocabulary:hasSpecies ?species
-            select.addWhere(makeVar(SPARQLResourceModel.URI_FIELD),Oeso.hasSpecies,makeVar(VariableModel.SPECIES_FIELD_NAME));
+            select.addWhere(makeVar(VariableModel.URI_FIELD),Oeso.hasSpecies,makeVar(VariableModel.SPECIES_FIELD_NAME));
 
             // logical or -> filter ?species IN (:species_uri1 :species_uri2 )
             select.addFilter(SPARQLQueryHelper.inURIFilter(VariableModel.SPECIES_FIELD_NAME,filter.getSpecies()));
 
         }
 
+        // isValidated = true --> variable validée, a au moins une "Validated declaration" dans ses ModerationActionType
+        // isValidated = false --> variable non validée, n'a pas de "Validated declaration" dans ses ModerationActionType
 
+        if (filter.getIsValidated() != null) {
+            WhereBuilder whereModerationActionType = new WhereBuilder();
+            whereModerationActionType.addWhere(makeVar(VariableModel.URI_FIELD), new P_Seq(new P_Link(Oeso.hasModerationAction.asNode()), new P_Link(Oeso.hasModerationActionType.asNode())), VariableModel.VALIDATED_DECLARATION_FIELD_NAME);
+            if (filter.getIsValidated()) { // variables validées
+                select.addFilter(exprFactory.exists(whereModerationActionType));
+            } else { // variables non validées
+                select.addFilter(exprFactory.notexists(whereModerationActionType));
+            }
+        }
+    }
+
+    public void deleteModerationAction(URI instanceURI) throws Exception {
+        sparql.delete(ModerationActionModel.class, instanceURI);
     }
 }
 

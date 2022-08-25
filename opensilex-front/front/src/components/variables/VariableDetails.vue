@@ -41,8 +41,16 @@
           </template>
 
                     <template v-slot:body>
+                      <span class="uri">
                         <opensilex-UriView v-if="variable && variable.uri" :uri="variable.uri"
                         ></opensilex-UriView>
+                        <span class="logo">
+                          <div v-if="variable.isValidated">
+                            <opensilex-Icon icon="fa#check-circle" />
+                          </div>
+                        </span>
+                      </span>
+
                         <opensilex-StringView label="component.common.name"
                                               :value="variable.name"></opensilex-StringView>
                         <opensilex-StringView label="VariableForm.altName"
@@ -265,6 +273,17 @@ export default class VariableDetails extends Vue {
 
 <style scoped lang="scss">
 
+.uri{
+  display: inline;
+  display: flex;
+}
+
+.logo{
+  position: absolute;
+  right: 30px;
+}
+
+
 .page {
   margin-top : 20px;
 }
@@ -283,6 +302,7 @@ en:
     edit: Edit variable
     edit-references: Edit references
     visualization: Device associated Data Visualization
+    moderation: Moderation
 fr:
   VariableDetails:
     title: Vue détaillée de la variable
@@ -295,4 +315,5 @@ fr:
     edit: Editer la variable
     edit-references: Editer les références
     visualization: Visualisation des données associées à un instrument
+    moderation: Modération
 </i18n>

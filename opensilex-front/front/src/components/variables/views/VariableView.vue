@@ -29,6 +29,11 @@
             :to="{ path: '/variable/documents/' + encodeURIComponent(uri) }"
         >{{ $t('component.project.documents') }}
         </b-nav-item>
+        <b-nav-item
+            :active="isModerationTab()"
+            :to="{ path: '/variable/moderation/' + encodeURIComponent(uri) }"
+        >{{ $t('VariableDetails.moderation') }}
+        </b-nav-item>
 
       </template>
     </opensilex-PageActions>
@@ -59,12 +64,21 @@
 
         <opensilex-DocumentTabList
           v-else-if="isDocumentTab()"
-          :uri="uri"        
+          :uri="uri"
           :modificationCredentialId="credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID"
         ></opensilex-DocumentTabList>
+
+        <opensilex-VariableModerationTab
+            v-else-if="isModerationTab()"
+            :variable="uri"
+        ></opensilex-VariableModerationTab>
       </template>
 
     </opensilex-PageContent>
+
+    <opensilex-VariableValidation
+        ref="validationForm"
+    ></opensilex-VariableValidation>
   </div>
 </template>
 
@@ -76,6 +90,8 @@ import {VariablesService} from "opensilex-core/api/variables.service";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import AnnotationList from "../../annotations/list/AnnotationList.vue";
 import { VariableDetailsDTO } from 'opensilex-core/index';
+import EntityCreate from "../form/EntityCreate.vue";
+import VariableValidation from "../form/VariableValidation.vue";
 
 @Component
 export default class VariableView extends Vue {
@@ -89,29 +105,35 @@ export default class VariableView extends Vue {
   $t: any;
   $i18n: any;
 
-        static getEmptyDetailsDTO() : VariableDetailsDTO{
-            return {
-                uri: undefined,
-                alternative_name: undefined,
-                name: undefined,
-                entity: undefined,
-                entity_of_interest: undefined,
-                characteristic: undefined,
-                description: undefined,
-                time_interval: undefined,
-                sampling_interval: undefined,
-                datatype: undefined,
-                trait: undefined,
-                trait_name: undefined,
-                method: undefined,
-                unit: undefined,
-                exact_match: [],
-                close_match: [],
-                broad_match: [],
-                narrow_match: [],
-                species: undefined
-            };
-        }
+  @Ref("validationForm") readonly validationForm!: VariableValidation;
+
+  static getEmptyDetailsDTO() : VariableDetailsDTO{
+      return {
+          uri: undefined,
+          alternative_name: undefined,
+          name: undefined,
+          entity: undefined,
+          entity_of_interest: undefined,
+          characteristic: undefined,
+          description: undefined,
+          time_interval: undefined,
+          sampling_interval: undefined,
+          datatype: undefined,
+          trait: undefined,
+          trait_name: undefined,
+          method: undefined,
+          unit: undefined,
+          exact_match: [],
+          close_match: [],
+          broad_match: [],
+          narrow_match: [],
+          species: undefined
+      };
+  }
+
+  private getForm() {
+    return this.validationForm;
+  }
 
 
   variable: VariableDetailsDTO = VariableView.getEmptyDetailsDTO();
@@ -121,6 +143,10 @@ export default class VariableView extends Vue {
 
   get user() {
     return this.$store.state.user;
+  }
+
+  showValidationForm(){
+    this.getForm().showValidationForm();
   }
 
   get credentials() {
@@ -149,6 +175,10 @@ export default class VariableView extends Vue {
     return this.$route.path.startsWith("/variable/documents/");
   }
 
+  isModerationTab() {
+    return this.$route.path.startsWith("/variable/moderation/");
+  }
+
   loadVariable(uri: string) {
     this.service.getVariable(uri).then((http: HttpResponse<OpenSilexResponse<VariableDetailsDTO>>) => {
       this.variable = http.response.result;
@@ -165,7 +195,7 @@ export default class VariableView extends Vue {
 
 <style scoped lang="scss">
 .projectAnnotations{
-  margin-top: 18px; 
+  margin-top: 18px;
 }
 
 .navigationTabs {

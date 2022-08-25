@@ -281,7 +281,6 @@ menu:
           component: opensilex-SystemView
           credentials:
             - is-admin
-          component: opensilex-SystemView 
           icon: ik#ik-layers
           title: SystemView.title
           description: SystemView.title-description
@@ -348,6 +347,8 @@ routes:
   - path: /variable/visualization/:uri
     component: opensilex-VariableView
   - path: /variable/documents/:uri
+    component: opensilex-VariableView
+  - path: /variable/moderation/:uri
     component: opensilex-VariableView
 
   - path: /variables_group/details/:uri

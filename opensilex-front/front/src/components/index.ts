@@ -504,6 +504,10 @@ import VariableSelectorWithFilter from './variables/views/VariableSelectorWithFi
 components["opensilex-VariableSelectorWithFilter"] = VariableSelectorWithFilter;
 import VariableSelector from './variables/views/VariableSelector.vue';
 components["opensilex-VariableSelector"] = VariableSelector;
+import VariableModerationTab from './variables/views/VariableModerationTab.vue';
+components["opensilex-VariableModerationTab"] = VariableModerationTab;
+import VariableValidation from './variables/form/VariableValidation.vue';
+components["opensilex-VariableValidation"] = VariableValidation;
 
 // GroupVariables
 import GroupVariablesForm from './groupVariable/GroupVariablesForm.vue';

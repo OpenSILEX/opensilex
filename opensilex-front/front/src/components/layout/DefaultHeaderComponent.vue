@@ -114,7 +114,7 @@
 
             <!--language button -->
             <b-dropdown
-              id="langDropdown" 
+              id="langDropdown"
               :title="`language - ${this.language}`"
               variant="link"
               right
@@ -131,6 +131,32 @@
                 >{{ $t("component.header.language." + item) }}
               </b-dropdown-item>
             </b-dropdown>
+
+          <b-dropdown
+              id="notifDropdown"
+              :title="user.getEmail()"
+              variant="link"
+              right
+          >
+            <template v-slot:button-content>
+              <opensilex-Icon
+                  icon="fa#bell"
+              />
+            </template>
+
+            <b-dropdown-item
+                v-for="item in variableList"
+                :key="`${item.uri}`"
+            >
+              <span>{{ $t("component.common.moderation.list-to-moderate") }}</span>
+              <opensilex-UriLink
+                  :value="item.name"
+                  :to="{
+            path: '/variable/details/' + encodeURIComponent(item.uri),
+          }"
+              ></opensilex-UriLink>
+            </b-dropdown-item>
+          </b-dropdown>
 
             <!-- user button-->
             <b-dropdown
@@ -161,17 +187,25 @@ import Vue from "vue";
 import { User } from "../../models/User";
 import { Menu } from "../../models/Menu";
 
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+import {VariablesService} from "opensilex-core/api/variables.service";
+import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
+import {VariablesGroupGetDTO} from "opensilex-core/model/variablesGroupGetDTO";
+import {VariableGetDTO} from "opensilex-core/model/variableGetDTO";
 
 @Component
 export default class DefaultHeaderComponent extends Vue {
   $i18n: any;
   $store: any;
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
+  $service: VariablesService;
   $route: any;
   $t: any;
   icon: any;
   title: any;
   description: any;
+
+  variableList: Array<VariableGetDTO> = [];
 
   /**
    * Return the current connected user
@@ -234,6 +268,37 @@ export default class DefaultHeaderComponent extends Vue {
   }
 
   /**
+   * Return all validated variables
+   */
+  loadValidatedVariables() {
+     return this.$service.searchVariables(
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        false,
+        undefined,
+        undefined,
+        undefined,
+        false,
+        ["uri=asc"],
+        0,
+        20
+    ).then((http: HttpResponse<OpenSilexResponse<Array<VariableGetDTO>>>) => {
+       let list = http.response.result;
+       list.forEach((item) => {
+         this.variableList.push(item);
+       });
+     }).catch(this.$opensilex.errorHandler);
+  }
+
+  /**
    * Gets the version label string
    */
   get versionLabel(): string {
@@ -282,8 +347,10 @@ export default class DefaultHeaderComponent extends Vue {
 
   width;
   created() {
+    this.$service = this.$opensilex.getService("opensilex.VariablesService");
     window.addEventListener("resize", this.handleResize);
     this.handleResize();
+    this.loadValidatedVariables();
   }
 
   beforeDestroy() {
@@ -356,7 +423,7 @@ export default class DefaultHeaderComponent extends Vue {
   justify-content: center;
   align-items: center;
   box-shadow: 0 2px 12px -3px rgba(0, 0, 0, 0.5);
-  background-color: #00a38d; 
+  background-color: #00a38d;
 }
 
 .header-title{
@@ -556,7 +623,7 @@ export default class DefaultHeaderComponent extends Vue {
   }
 }
 @media (min-width: 250px) and (max-width: 1150px) {
-  .topbarBtnHelp { 
+  .topbarBtnHelp {
     height: 25px;
     width: 25px;
     font-size: 85%;

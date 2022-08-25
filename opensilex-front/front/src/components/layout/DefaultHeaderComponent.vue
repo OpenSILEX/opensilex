@@ -58,6 +58,25 @@
           </b-dropdown>
 
           <b-dropdown
+              id="notifDropdown"
+              :title="user.getEmail()"
+              variant="link"
+              right
+          >
+            <template v-slot:button-content>
+
+            </template>
+
+            <b-dropdown-item
+                v-for="item in languages"
+                :key="`language-${item}`"
+                href="#"
+                @click.prevent="setLanguage(item)"
+            >{{ $t("component.header.language." + item) }}</b-dropdown-item
+            >
+          </b-dropdown>
+
+          <b-dropdown
             v-if="user.isLoggedIn()"
             id="userDropdown"
             :title="user.getEmail()"

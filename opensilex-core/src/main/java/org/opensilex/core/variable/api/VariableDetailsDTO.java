@@ -15,13 +15,12 @@ import io.swagger.annotations.ApiModelProperty;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.opensilex.core.germplasm.api.GermplasmAPI;
 import org.opensilex.core.ontology.SKOSReferencesDTO;
 import org.opensilex.core.species.api.SpeciesDTO;
 import org.opensilex.core.species.dal.SpeciesModel;
+import org.opensilex.core.variable.api.dimension.DimensionDetailsDTO;
 import org.opensilex.core.variable.api.entity.EntityGetDTO;
 import org.opensilex.core.variable.api.entityOfInterest.InterestEntityGetDTO;
 import org.opensilex.core.variable.api.method.MethodGetDTO;
@@ -40,8 +39,8 @@ import org.opensilex.sparql.response.NamedResourceDTO;
 
 @JsonPropertyOrder({
         "uri", "name", "alternative_name", "description",
-        "entity", "entity_of_interest","characteristic", "trait", "trait_name", "method", "unit",
-        "species","time_interval", "sampling_interval", "datatype",
+        "entity", "entity_of_interest", "characteristic", "trait", "trait_name", "method", "unit",
+        "isMultidimensional", "dimensions", "species", "time_interval", "sampling_interval", "datatype",
         SKOSReferencesDTO.EXACT_MATCH_JSON_PROPERTY,
         SKOSReferencesDTO.CLOSE_MATCH_JSON_PROPERTY,
         SKOSReferencesDTO.BROAD_MATCH_JSON_PROPERTY,
@@ -55,7 +54,7 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
 
     @JsonProperty("entity")
     private EntityGetDTO entity;
-    
+
     @JsonProperty("entity_of_interest")
     private InterestEntityGetDTO entityOfInterest;
     
@@ -67,6 +66,12 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
 
     @JsonProperty("unit")
     private UnitGetDTO unit;
+
+    @JsonProperty("isMultidimensional")
+    private boolean isMultidimensional;
+
+    @JsonProperty("dimensions")
+    private List<DimensionDetailsDTO> dimensions;
 
     @JsonProperty("trait")
     private URI trait;
@@ -85,18 +90,22 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
 
     @JsonProperty("datatype")
     private URI dataType;
-    
+
     public VariableDetailsDTO(VariableModel model) {
         super(model);
 
+        if (model.getIsMultidimensional() != null) {
+            this.isMultidimensional = model.getIsMultidimensional();
+        }
+
         EntityModel entity = model.getEntity();
         this.entity = new EntityGetDTO(entity);
-        
+
         InterestEntityModel entityOfInterest = model.getEntityOfInterest();
         if(entityOfInterest != null){
             this.entityOfInterest = new InterestEntityGetDTO(entityOfInterest);
         }
-        
+
         CharacteristicModel characteristic = model.getCharacteristic();
         this.characteristic = new CharacteristicGetDTO(characteristic);
 
@@ -105,6 +114,14 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
 
         UnitModel unit = model.getUnit();
         this.unit = new UnitGetDTO(unit);
+
+        if (model.getDimensions() != null) {
+            List<DimensionDetailsDTO> dimensions = new ArrayList<>();
+            for (DimensionModel dim : model.getDimensions()) {
+                dimensions.add(new DimensionDetailsDTO(dim));
+            }
+            this.dimensions = dimensions;
+        }
 
         this.alternativeName = model.getAlternativeName();
 
@@ -120,10 +137,12 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
         this.samplingInterval = model.getSamplingInterval();
 
         URI dataType = model.getDataType();
-        try {
-            this.dataType = new URI(SPARQLDeserializers.getExpandedURI(dataType));
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
+        if (dataType != null) {
+            try {
+                this.dataType = new URI(SPARQLDeserializers.getExpandedURI(dataType));
+            } catch (URISyntaxException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         trait = model.getTraitUri();
@@ -171,7 +190,7 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
     public void setEntityOfInterest(InterestEntityGetDTO  entityOfInterest){
         this.entityOfInterest = entityOfInterest;
     }
-    
+
     public CharacteristicGetDTO getCharacteristic() {
         return characteristic;
     }
@@ -252,5 +271,21 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
         this.species = species;
     }
 
-}
+    @ApiModelProperty(example = "false")
+    public boolean getIsMultidimensional() {
+        return isMultidimensional;
+    }
 
+    public void setIsMultidimensional(boolean multidimensional) {
+        isMultidimensional = multidimensional;
+    }
+
+    public List<DimensionDetailsDTO> getDimensions() {
+        return dimensions;
+    }
+
+    public void setDimensions(List<DimensionDetailsDTO> dimensions) {
+        this.dimensions = dimensions;
+    }
+
+}

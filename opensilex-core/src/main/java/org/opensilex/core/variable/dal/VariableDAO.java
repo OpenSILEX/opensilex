@@ -6,7 +6,7 @@
 package org.opensilex.core.variable.dal;
 
 import com.google.common.base.CaseFormat;
-import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.Order;
@@ -49,11 +49,11 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
     static Var unitLabelVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getObjectNameVarName(VariableModel.UNIT_FIELD_NAME));
 
     /**
-        * Contains the pre-computed list of SPARQL variables which could be used in order to filter or
-        * entity, entity of interest, characteristic, method or unit name.
-        * <p>
-        * This {@link Map} is indexed by the variables names
-    */
+     * Contains the pre-computed list of SPARQL variables which could be used in order to filter or
+     * entity, entity of interest, characteristic, method or unit name.
+     * <p>
+     * This {@link Map} is indexed by the variables names
+     */
     static Map<String, Var> varsByVarName;
     static {
         varsByVarName = new HashMap<>();
@@ -87,35 +87,54 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
     @Override
     public VariableModel update(VariableModel instance) throws Exception {
 
+        // get the variable before the update
         VariableModel oldInstance = sparql.loadByURI(VariableModel.class, instance.getUri(), null, null);
+
+        // check if the variable exist
         if (oldInstance == null) {
             throw new SPARQLInvalidURIException(instance.getUri());
         }
 
-        // if the datatype has changed, check that they are no linked data
-        if (!SPARQLDeserializers.compareURIs(oldInstance.getDataType(), instance.getDataType())) {
-            int linkedDataNb = getLinkedDataNb(instance.getUri());
-            if (linkedDataNb > 0) {
-                throw new ForbiddenURIAccessException(instance.getUri(), "Variable datatype can't be updated. " + linkedDataNb + " linked data");
+        // check if the old instance has the same state (multidimensional) as the new
+        if (oldInstance.getIsMultidimensional() != instance.getIsMultidimensional()) {
+            throw new ForbiddenURIAccessException(instance.getUri(), "Variable state can't be changed");
+        }
+
+        if (!instance.getIsMultidimensional()) {
+            // if the datatype has changed, check that they are no linked data
+            if (!SPARQLDeserializers.compareURIs(oldInstance.getDataType(), instance.getDataType())) {
+                int linkedDataNb = getLinkedDataNb(instance.getUri());
+                if (linkedDataNb > 0) {
+                    throw new ForbiddenURIAccessException(instance.getUri(), "Variable datatype can't be updated. " + linkedDataNb + " linked data");
+                }
+            }
+        } else {
+            // if the datatype of the dimensions has changed, check that the variable is not linked to data
+            if (!oldInstance.getDimensions().equals(instance.getDimensions())) {
+                int linkedDataNb = getLinkedDataNb(instance.getUri());
+                if (linkedDataNb > 0) {
+                    throw new ForbiddenURIAccessException(instance.getUri(), "Variable dimensions can't be updated. " + linkedDataNb + " linked data");
+                }
             }
         }
+
         return super.update(instance);
     }
 
     /*
-        * Read each orderBy of orderByList and then :
-        * <pre>
-        *     - Append an ORDER BY {@link Expr} into the orderByExprList if the given orderBy field name
-        *     is one of {@link #varsByVarName}
-        *     - Else append the given orderBy into the unmatchingOrderByList
-        * </pre>
-        *
-        * @param orderByList           the initial {@link OrderBy} list to read
-        * @param orderByExprMap        the new list of ORDER BY {@link Expr}.
-        *                              An {@link Expr} is created for each {@link OrderBy} which have a field name present in {@link #varsByVarName}
-        * @param unmatchingOrderByList the new  list of {@link OrderBy} which doesn't have a field name present in {@link #varsByVarName}
-        * @see OrderBy#getFieldName()
-    */
+     * Read each orderBy of orderByList and then :
+     * <pre>
+     *     - Append an ORDER BY {@link Expr} into the orderByExprList if the given orderBy field name
+     *     is one of {@link #varsByVarName}
+     *     - Else append the given orderBy into the unmatchingOrderByList
+     * </pre>
+     *
+     * @param orderByList           the initial {@link OrderBy} list to read
+     * @param orderByExprMap        the new list of ORDER BY {@link Expr}.
+     *                              An {@link Expr} is created for each {@link OrderBy} which have a field name present in {@link #varsByVarName}
+     * @param unmatchingOrderByList the new  list of {@link OrderBy} which doesn't have a field name present in {@link #varsByVarName}
+     * @see OrderBy#getFieldName()
+     */
     private void appendSpecificOrderBy(List<OrderBy> orderByList, Map<Expr, Order> orderByExprMap, List<OrderBy> unmatchingOrderByList) {
 
         ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
@@ -267,4 +286,3 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
         }
     }
 }
-

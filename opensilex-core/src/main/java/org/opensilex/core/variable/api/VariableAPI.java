@@ -211,9 +211,11 @@ public class VariableAPI {
             @ApiParam(value = "Time interval filter") @QueryParam("time_interval") String timeInterval,
             @ApiParam(value = "Species filter") @QueryParam("species") List<URI> species,
             @ApiParam(value = "Set this param to true to get associated data") @DefaultValue("false") @QueryParam("withAssociatedData") boolean withAssociatedData,
+            @ApiParam(value = "Set this param to true to get multidimensional variables") @QueryParam("isMultidimensional") Boolean isMultidimensional,
             @ApiParam(value = "Experiment filter") @QueryParam("experiments") List<URI> experiments,
             @ApiParam(value = "Scientific object filter") @QueryParam("scientific_objects") List<URI> objects,
             @ApiParam(value = "Device filter") @QueryParam("devices") List<URI> devices,
+            @ApiParam(value = "Dimensions filter") @QueryParam("dimensions") List<URI> dimensions,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
@@ -472,4 +474,3 @@ public class VariableAPI {
         
     }
 }
-

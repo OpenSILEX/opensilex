@@ -15,9 +15,11 @@ import java.util.List;
 
 import org.opensilex.core.germplasm.api.GermplasmAPI;
 import org.opensilex.core.species.dal.SpeciesModel;
+import org.opensilex.core.variable.dal.DimensionModel;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.response.NamedResourceDTO;
 
 /**
  *
@@ -25,33 +27,35 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
  */
 
 @JsonPropertyOrder({
-        "uri", "name", "alternativeName", "description", "dataType", "species", "timeInterval", "samplingInterval",
+        "uri", "name", "alternativeName", "description", "isMultidimensional", "dataType", "species", "timeInterval", "samplingInterval",
         "entityURI", "entityName", "entityOfInterestURI", "entityOfInterestName",
-        "characteristicURI", "characteristicName", "methodURI", "methodName", "unitURI", "unitName"
+        "characteristicURI", "characteristicName", "methodURI", "methodName", "unitURI", "unitName", "dimensions"
 })
 
 public class VariableExportDTOClassic extends BaseVariableExportDTO<VariableModel>{
-    
+
     private String alternativeName;
 
+    private boolean isMultidimensional;
+
     private URI entity_uri;
-    
+
     private String entity_label;
-    
+
     private URI entity_of_interest_uri;
-    
+
     private String entity_of_interest_label;
-    
+
     private URI characteristic_uri;
-    
+
     private String characteristic_label;
-        
+
     private URI method_uri;
-    
-    private String method_label; 
-    
+
+    private String method_label;
+
     private URI unit_uri;
-    
+
     private String unit_label;
 
     private String timeInterval;
@@ -59,14 +63,21 @@ public class VariableExportDTOClassic extends BaseVariableExportDTO<VariableMode
     private String samplingInterval;
 
     private URI dataType;
-    
+
     private List<URI> species;
-    
+
+    private List<URI> dimensions;
+
     public VariableExportDTOClassic(VariableModel model) {
         super(model);
-        
+
+        if (model.getIsMultidimensional() != null) {
+            this.isMultidimensional = model.getIsMultidimensional();
+        } else {
+            this.isMultidimensional = false;
+        }
         this.alternativeName = model.getAlternativeName();
-        
+
         this.entity_uri = model.getEntity().getUri();
         this.entity_label = model.getEntity().getName();
 
@@ -74,26 +85,37 @@ public class VariableExportDTOClassic extends BaseVariableExportDTO<VariableMode
             this.entity_of_interest_uri = model.getEntityOfInterest().getUri();
             this.entity_of_interest_label = model.getEntityOfInterest().getName();
         }
-        
+
         this.characteristic_uri = model.getCharacteristic().getUri();
         this.characteristic_label = model.getCharacteristic().getName();
 
         this.method_uri = model.getMethod().getUri();
         this.method_label = model.getMethod().getName();
-        
+
         this.unit_uri = model.getUnit().getUri();
         this.unit_label = model.getUnit().getName();
 
+        if (model.getDimensions() != null) {
+            List<URI> dimensions = new ArrayList<>();
+            for (DimensionModel dim : model.getDimensions()) {
+                dimensions.add(dim.getUri());
+            }
+            this.dimensions = dimensions;
+        }
+
         this.timeInterval = model.getTimeInterval();
-        
+
         this.samplingInterval = model.getSamplingInterval();
 
-        URI dataType = model.getDataType();
-        try {
-            this.dataType = new URI(SPARQLDeserializers.getExpandedURI(dataType));
-        } catch (URISyntaxException e) {
-            throw new RuntimeException(e);
+        if (!isMultidimensional) {
+            URI dataType = model.getDataType();
+            try {
+                this.dataType = new URI(SPARQLDeserializers.getExpandedURI(dataType));
+            } catch (URISyntaxException e) {
+                throw new RuntimeException(e);
+            }
         }
+
         if(model.getSpecies() != null){
             List<URI> uris = new ArrayList<>();
             for(SpeciesModel species : model.getSpecies()){
@@ -101,12 +123,12 @@ public class VariableExportDTOClassic extends BaseVariableExportDTO<VariableMode
             }
             this.species = uris;
         }
-        
+
     }
 
     public VariableExportDTOClassic() {
     }
-    
+
     @Override
     @ApiModelProperty(example = "http://opensilex.dev/set/variables/Plant_Height")
     public URI getUri() {
@@ -133,87 +155,87 @@ public class VariableExportDTOClassic extends BaseVariableExportDTO<VariableMode
     public String getDescription() {
         return this.description;
     }
-    
+
     public URI getEntityURI(){
         return this.entity_uri;
     }
-    
+
     public void setEntityURI(URI entityURI){
         this.entity_uri = entityURI;
     }
-    
+
     public String getEntityName(){
         return this.entity_label;
     }
-    
+
     public void setEntityName(String entityLabel){
         this.entity_label = entityLabel;
     }
-    
+
     public URI getEntityOfInterestURI(){
         return this.entity_of_interest_uri;
     }
-    
+
     public void setEntityOfInterestURI(URI entityOfInterestURI){
         this.entity_of_interest_uri = entityOfInterestURI;
     }
-    
+
     public String getEntityOfInterestName(){
         return this.entity_of_interest_label;
     }
-    
+
     public void setEntityOfInterestName(String entityOfInterestLabel){
         this.entity_of_interest_label = entityOfInterestLabel;
     }
-    
+
     public URI getCharacteristicURI(){
         return this.characteristic_uri;
     }
-    
+
     public void setCharacteristicURI(URI characteristicURI){
         this.characteristic_uri = characteristicURI;
     }
-    
+
     public String getCharacteristicName(){
         return this.characteristic_label;
     }
-    
+
     public void setCharacteristicName(String characteristicLabel){
         this.characteristic_label = characteristicLabel;
     }
-    
+
     public URI getMethodURI(){
         return this.method_uri;
     }
-    
+
     public void setMethodURI(URI methodURI){
         this.method_uri = methodURI;
     }
-    
+
     public String getMethodName(){
         return this.method_label;
     }
-    
+
     public void setMethodName(String methodLabel){
         this.method_label = methodLabel;
     }
-    
+
     public URI getUnitURI(){
         return this.unit_uri;
     }
-    
+
     public void setUnitURI(URI unitURI){
         this.unit_uri = unitURI;
     }
-    
+
     public String getUnitName(){
         return this.unit_label;
     }
-    
+
     public void setUnitName(String unitLabel){
         this.unit_label = unitLabel;
     }
-    
+
     @ApiModelProperty(notes = "Define the time between two data recording", example = "minutes")
     public String getTimeInterval() {
         return this.timeInterval;
@@ -240,7 +262,7 @@ public class VariableExportDTOClassic extends BaseVariableExportDTO<VariableMode
     public void setDataType(URI dataType) {
         this.dataType = dataType;
     }
-    
+
     @ValidURI
     @ApiModelProperty(notes = "Species associated with the variable", example = GermplasmAPI.GERMPLASM_EXAMPLE_SPECIES)
     public List<URI> getSpecies() {
@@ -250,9 +272,17 @@ public class VariableExportDTOClassic extends BaseVariableExportDTO<VariableMode
     public void setSpecies(List<URI> species) {
         this.species = species;
     }
-    
+
+    public boolean getIsMultidimensional() {
+        return isMultidimensional;
+    }
+
+    public List<URI> getDimensions() {
+        return dimensions;
+    }
+
     public static VariableExportDTOClassic fromModel(VariableModel model){
-        VariableExportDTOClassic dto = new VariableExportDTOClassic(model);       
-        return dto;        
+        VariableExportDTOClassic dto = new VariableExportDTOClassic(model);
+        return dto;
     }
 }

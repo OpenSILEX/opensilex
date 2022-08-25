@@ -6,16 +6,18 @@
 package org.opensilex.core.variable.api;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModelProperty;
+import org.opensilex.core.variable.api.dimension.DimensionGetDTO;
 import org.opensilex.core.variable.api.entity.EntityGetDTO;
 import org.opensilex.core.variable.api.method.MethodGetDTO;
 import org.opensilex.core.variable.api.characteristic.CharacteristicGetDTO;
 import org.opensilex.core.variable.api.unit.UnitGetDTO;
 import org.opensilex.core.variable.dal.*;
-import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.response.NamedResourceDTO;
 
 /**
@@ -23,7 +25,7 @@ import org.opensilex.sparql.response.NamedResourceDTO;
  * @author vidalmor
  */
 @JsonPropertyOrder({
-        "uri", "name", "alternative_name", "entity", "entity_of_interest", "characteristic", "method", "unit"
+        "uri", "name", "alternative_name", "entity", "entity_of_interest", "characteristic", "method", "unit", "isMultidimensional", "dimensions"
 })
 public class VariableGetDTO {
 
@@ -50,6 +52,12 @@ public class VariableGetDTO {
 
     @JsonProperty("unit")
     private UnitGetDTO unit;
+
+    @JsonProperty("isMultidimensional")
+    private boolean isMultidimensional;
+
+    @JsonProperty("dimensions")
+    private List<DimensionGetDTO> dimensions;
 
     @ApiModelProperty(example = "http://opensilex.dev/set/variables/Plant_Height")
     public URI getUri() {
@@ -109,6 +117,22 @@ public class VariableGetDTO {
         this.unit = unit;
     }
 
+    @ApiModelProperty(example = "false")
+    public boolean getIsMultidimensional() {
+        return isMultidimensional;
+    }
+
+    public void setIsMultidimensional(boolean multidimensional) {
+        isMultidimensional = multidimensional;
+    }
+
+    public List<DimensionGetDTO> getDimensions() {
+        return dimensions;
+    }
+
+    public void setDimensions(List<DimensionGetDTO> dimensions) {
+        this.dimensions = dimensions;
+    }
 
     public static VariableGetDTO fromModel(VariableModel model) {
 
@@ -116,6 +140,10 @@ public class VariableGetDTO {
         dto.setUri(model.getUri());
         dto.setName(model.getName());
         dto.setAlternativeName(model.getAlternativeName());
+
+        if (model.getIsMultidimensional() != null) {
+            dto.setIsMultidimensional(model.getIsMultidimensional());
+        }
 
         EntityModel entity = model.getEntity();
         dto.setEntity(new EntityGetDTO(entity));
@@ -133,6 +161,14 @@ public class VariableGetDTO {
 
         UnitModel unit = model.getUnit();
         dto.setUnit(new UnitGetDTO(unit));
+
+        if(model.getDimensions() != null){
+            List<DimensionGetDTO> dimensions = new ArrayList<>();
+            for (DimensionModel dim : model.getDimensions()) {
+                dimensions.add(new DimensionGetDTO(dim));
+            }
+            dto.setDimensions(dimensions);
+        }
 
         return dto;
     }

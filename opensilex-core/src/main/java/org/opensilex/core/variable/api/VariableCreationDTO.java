@@ -17,6 +17,7 @@ import org.codehaus.plexus.util.StringUtils;
 import org.opensilex.core.germplasm.api.GermplasmAPI;
 import org.opensilex.core.ontology.SKOSReferencesDTO;
 import org.opensilex.core.species.dal.SpeciesModel;
+import org.opensilex.core.variable.api.validation.VariableCreateConstraint;
 import org.opensilex.core.variable.dal.*;
 import org.opensilex.server.rest.validation.ValidURI;
 
@@ -27,11 +28,12 @@ import org.opensilex.sparql.model.SPARQLNamedResourceModel;
  * @author vidalmor
  */
 @JsonPropertyOrder({
-    "uri", "name", "alternative_name", "description",
-    "entity", "entity_of_interest","characteristic", "trait", "trait_name", "method", "unit",
-    "species","datatype","time_interval", "sampling_interval",
-    "exact_match","close_match","broader","narrower"
+        "uri", "name", "alternative_name", "description",
+        "entity", "entity_of_interest","characteristic", "trait", "trait_name", "method", "unit",
+        "isMultidimensional", "dimensions", "species","datatype","time_interval", "sampling_interval",
+        "exact_match","close_match","broader","narrower"
 })
+@VariableCreateConstraint
 public class VariableCreationDTO extends SKOSReferencesDTO {
 
     @JsonProperty("uri")
@@ -49,7 +51,7 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
 
     @JsonProperty("entity")
     private URI entity;
-    
+
     @JsonProperty("entity_of_interest")
     private URI entityOfInterest;
 
@@ -67,6 +69,12 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
 
     @JsonProperty("unit")
     private URI unit;
+
+    @JsonProperty("isMultidimensional")
+    private boolean isMultidimensional;
+
+    @JsonProperty("dimensions")
+    private List<URI> dimensions;
 
     @JsonProperty("species")
     private List<URI> species;
@@ -139,7 +147,7 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
     public void setEntityOfInterest(URI entityOfInterest) {
         this.entityOfInterest = entityOfInterest;
     }
-    
+
     @ValidURI
     @NotNull
     @ApiModelProperty(example = "http://opensilex.dev/set/variables/characteristic/Height", required = true)
@@ -150,7 +158,7 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
     public void setCharacteristic(URI characteristic) {
         this.characteristic = characteristic;
     }
-    
+
     @ValidURI
     @NotNull
     @ApiModelProperty(example = "http://opensilex.dev/set/variables/method/Estimation")
@@ -193,7 +201,6 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
     }
 
     @ValidURI
-    @NotNull
     @ApiModelProperty(notes = "XSD type of the data associated with the variable", example = "http://www.w3.org/2001/XMLSchema#integer")
     public URI getDataType() { return dataType; }
 
@@ -219,10 +226,28 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
         this.species = species;
     }
 
+    @ApiModelProperty(example = "false")
+    public boolean getIsMultidimensional() {
+        return isMultidimensional;
+    }
+
+    public void setIsMultidimensional(boolean multidimensional) {
+        isMultidimensional = multidimensional;
+    }
+
+    public List<URI> getDimensions() {
+        return dimensions;
+    }
+
+    public void setDimensions(List<URI> dimensions) {
+        this.dimensions = dimensions;
+    }
+
     public VariableModel newModel() {
         VariableModel model = new VariableModel();
         model.setUri(uri);
         model.setName(name);
+        model.setIsMultidimensional(isMultidimensional);
 
         if(!StringUtils.isEmpty(alternativeName)){
             model.setAlternativeName(alternativeName);
@@ -230,17 +255,30 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
         if(!StringUtils.isEmpty(description)){
             model.setDescription(description);
         }
-        model.setDataType(dataType);
+
+        if(dataType != null) {
+            model.setDataType(dataType);
+        }
+
+        if (!CollectionUtils.isEmpty(dimensions)) {
+            List<DimensionModel> dimensionsList = new ArrayList<>();
+            for(URI uri : dimensions){
+                DimensionModel dimensionModel = new DimensionModel();
+                dimensionModel.setUri(uri);
+                dimensionsList.add(dimensionModel);
+            };
+            model.setDimensions(dimensionsList);
+        }
 
         model.setEntity(new EntityModel(entity));
-        
+
         if(entityOfInterest != null){
             InterestEntityModel entityOfInterest2 = new InterestEntityModel();
             entityOfInterest2.setUri(entityOfInterest);
-            model.setEntityOfInterest(entityOfInterest2);            
+            model.setEntityOfInterest(entityOfInterest2);
         }
-        
-        model.setCharacteristic(new CharacteristicModel(characteristic));       
+
+        model.setCharacteristic(new CharacteristicModel(characteristic));
         model.setMethod(new MethodModel(method));
         model.setUnit(new UnitModel(unit));
 

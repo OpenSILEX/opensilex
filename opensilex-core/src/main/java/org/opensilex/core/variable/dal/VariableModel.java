@@ -31,6 +31,14 @@ public class VariableModel extends BaseVariableModel<VariableModel> implements C
             property = "altLabel"
     )
     private String alternativeName;
+
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "isMultidimensional"
+    )
+    private Boolean isMultidimensional;
+    public static final String MULTIDIMENSIONAL_FIELD = "isMultidimensional";
+
     public static final String ALTERNATIVE_NAME_FIELD_NAME = "alternativeName";
 
     @SPARQLProperty(
@@ -40,14 +48,14 @@ public class VariableModel extends BaseVariableModel<VariableModel> implements C
     )
     private EntityModel entity;
     public static final String ENTITY_FIELD_NAME = "entity";
-    
+
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasEntityOfInterest"
     )
     private InterestEntityModel entityOfInterest;
     public static final String ENTITY_OF_INTEREST_FIELD_NAME = "entityOfInterest";
-            
+
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasCharacteristic",
@@ -92,25 +100,31 @@ public class VariableModel extends BaseVariableModel<VariableModel> implements C
     public static final String TIME_INTERVAL_FIELD_NAME = "timeInterval";
 
     @SPARQLProperty(
-        ontology = Oeso.class,
-        property = "hasSamplingInterval"
+            ontology = Oeso.class,
+            property = "hasSamplingInterval"
     )
     private String samplingInterval;
 
     @SPARQLProperty(
             ontology = Oeso.class,
-            property = "hasDataType",
-            required = true
+            property = "hasDataType"
     )
     private URI dataType;
     public static final String DATA_TYPE_FIELD_NAME = "dataType";
-    
+
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasSpecies"
     )
     private List<SpeciesModel> species;
     public static final String SPECIES_FIELD_NAME = "species";
+
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "hasDimensions"
+    )
+    private List<DimensionModel> dimensions;
+    public static final String DIMENSIONS_FIELD_NAME = "dimensions";
 
     public String getAlternativeName() { return alternativeName; }
 
@@ -123,15 +137,15 @@ public class VariableModel extends BaseVariableModel<VariableModel> implements C
     public void setEntity(EntityModel entity) {
         this.entity = entity;
     }
-    
+
     public InterestEntityModel getEntityOfInterest(){
         return entityOfInterest;
     }
-    
+
     public void setEntityOfInterest(InterestEntityModel entityOfInterest){
         this.entityOfInterest = entityOfInterest;
     }
-    
+
     public CharacteristicModel getCharacteristic() {
         return characteristic;
     }
@@ -188,5 +202,19 @@ public class VariableModel extends BaseVariableModel<VariableModel> implements C
         this.species = species;
     }
 
-}
+    public Boolean getIsMultidimensional() {
+        return this.isMultidimensional;
+    }
 
+    public void setIsMultidimensional(Boolean multidimensional) {
+        this.isMultidimensional = multidimensional;
+    }
+
+    public List<DimensionModel> getDimensions() {
+        return dimensions;
+    }
+
+    public void setDimensions(List<DimensionModel> dimensions) {
+        this.dimensions = dimensions;
+    }
+}

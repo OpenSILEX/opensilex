@@ -855,7 +855,16 @@ public class DataDAO {
                         if (dataGetDTO.getValue() == null){
                             csvRow.set(variableUriIndex.get(dataGetDTO.getVariable()), null);
                         } else {
-                            csvRow.set(variableUriIndex.get(dataGetDTO.getVariable()), dataGetDTO.getValue().toString());
+                            if (dataGetDTO.getValue() instanceof List) {
+                                String strToAdd = "";
+                                for (DataValueModel dimension : (List<DataValueModel>) dataGetDTO.getValue()) {
+                                    strToAdd += dimension.getValue().toString() + ";";
+                                }
+                                String strWithoutLastchar = strToAdd.substring(0, strToAdd.length() - 1);
+                                csvRow.set(variableUriIndex.get(dataGetDTO.getVariable()), strWithoutLastchar);
+                            } else {
+                                csvRow.set(variableUriIndex.get(dataGetDTO.getVariable()), dataGetDTO.getValue().toString());
+                            }
                         }
                         
                         // raw data
@@ -891,6 +900,16 @@ public class DataDAO {
             return new ErrorResponse(Response.Status.BAD_REQUEST, e.getMessage(), e).getResponse();
 
         }
+    }
+
+    private int nbValueToAddToCsv(List<DataModel> list) {
+        int result = 1;
+        for (DataModel data : list) {
+            if (data.getMultiValues() != null && data.getMultiValues().size() > result) {
+                result = data.getMultiValues().size();
+            }
+        }
+        return result;
     }
 
     public Response prepareCSVLongExportResponse(List<DataModel> resultList, UserModel user, boolean withRawData) throws Exception {
@@ -939,6 +958,10 @@ public class DataDAO {
         defaultColumns.add("Method");
         defaultColumns.add("Unit");
         defaultColumns.add("Value");
+        int nbBlankCaseToAdd = this.nbValueToAddToCsv(resultList) - 1;
+        for (int i = 0; i < nbBlankCaseToAdd; i++) {
+            defaultColumns.add("");
+        }
         if (withRawData) {
             defaultColumns.add("Raw data");
         }        
@@ -1044,7 +1067,20 @@ public class DataDAO {
                         if(dataGetDTO.getValue() == null){
                             csvRow.add(null);
                         }else{
-                            csvRow.add(dataGetDTO.getValue().toString());
+                            if (dataGetDTO.getValue() instanceof List) {
+                                List<DataValueModel> listValue = (List<DataValueModel>) dataGetDTO.getValue();
+                                for (DataValueModel dimension : listValue) {
+                                    csvRow.add(dimension.getValue().toString());
+                                }
+                                for (int i = 0; i < nbBlankCaseToAdd + 1 - listValue.size(); i++) {
+                                    csvRow.add("");
+                                }
+                            } else {
+                                csvRow.add(dataGetDTO.getValue().toString());
+                                for (int i = 0; i < nbBlankCaseToAdd; i++) {
+                                    csvRow.add("");
+                                }
+                            }
                         }
                         
                         // rawData

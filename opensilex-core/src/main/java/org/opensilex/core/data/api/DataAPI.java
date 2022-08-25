@@ -14,6 +14,7 @@ import com.mongodb.client.result.DeleteResult;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 import io.swagger.annotations.*;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.graph.Node;
@@ -40,6 +41,8 @@ import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
+import org.opensilex.core.variable.dal.BaseVariableDAO;
+import org.opensilex.core.variable.dal.DimensionModel;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
@@ -47,10 +50,7 @@ import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidUriListException;
 import org.opensilex.nosql.exceptions.NoSQLTooLargeSetException;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.security.authentication.ApiCredential;
-import org.opensilex.security.authentication.ApiCredentialGroup;
-import org.opensilex.security.authentication.ApiProtected;
-import org.opensilex.security.authentication.NotFoundURIException;
+import org.opensilex.security.authentication.*;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.exceptions.NotFoundException;
@@ -571,18 +571,49 @@ public class DataAPI {
             DataValidateUtils.checkAndConvertValue(data, variableUri, value, dataType);
         }
     }
-    
-    
-    /** 
-     * First check in the data provenance if there is a device 
+
+    /**
+     * check that values of dimensions are coherent with the multidimensional variable
+     *
+     * @param data
+     * @param variableAssociatedToData
+     * @param listFromDTO
+     * @throws ForbiddenURIAccessException
+     */
+    private void checkValuesOfMultidimensionalVariables(DataModel data, VariableModel variableAssociatedToData, List<DataValueModel> listFromDTO) throws ForbiddenURIAccessException, NoVariableDataTypeException, VariableDimensionsException, DataTypeException, CSVDataTypeException {
+        if (variableAssociatedToData.getIsMultidimensional()) {
+            if (CollectionUtils.isEmpty(listFromDTO) || listFromDTO.size() < 2) {
+                throw new ForbiddenURIAccessException(data.getUri(), "Not enough values");
+            }
+            if (listFromDTO.size() != variableAssociatedToData.getDimensions().size()) {
+                throw new ForbiddenURIAccessException(data.getUri(), "The number of values doesn't correspond with the number of dimensions of the variable");
+            }
+            List<URI> dimensionsFromDTO = new ArrayList<>();
+            List<URI> dimensionFromVariable = new ArrayList<>();
+            listFromDTO.forEach(value -> dimensionsFromDTO.add(value.getDimension()));
+            variableAssociatedToData.getDimensions().forEach(dimension -> dimensionFromVariable.add(dimension.getUri()));
+            if (!dimensionFromVariable.containsAll(dimensionsFromDTO)) {
+                throw new ForbiddenURIAccessException(data.getUri(), "The dimensions don't correspond with the variable's ");
+            }
+            for (int i = 0; i < listFromDTO.size(); i++) {
+                DataValidateUtils.checkAndConvertValue(data, variableAssociatedToData.getDimensions().get(i).getUri(), listFromDTO.get(i).getValue(), variableAssociatedToData.getDimensions().get(i).getDataType());
+                /*if (!DataValidateUtils.checkTypeCoherence(variableAssociatedToData.getDimensions().get(i).getDataType(), listFromDTO.get(i).getValue())) {
+                    throw new ForbiddenURIAccessException(data.getUri(), "The datatype of the dimensions don't correspond with the variable's ");
+                }*/
+            }
+        }
+    }
+
+    /**
+     * First check in the data provenance if there is a device
      * Then check in the provenance and fill the data provenance with the device
      * If no device and no target return an exception
      *
      * @param provDAO
      * @param data
-     * @param hasTarget 
-     * @param variableCheckedDevice 
-     * @param provenanceToDevice 
+     * @param hasTarget
+     * @param variableCheckedDevice
+     * @param provenanceToDevice
 
      * @throws Exception
      */
@@ -814,12 +845,21 @@ public class DataAPI {
                 VariableModel variable = null;
                 URI variableURI = data.getVariable();
                 if (!variableURIs.containsKey(variableURI)) {
-                    variable = variableDAO.get(variableURI);  
+                    variable = variableDAO.get(variableURI);
                     if (variable == null) {
                         notFoundedVariableURIs.add(variableURI);
                     } else {
-                        if (variable.getDataType() == null) {
-                            throw new NoVariableDataTypeException(variableURI);
+                        if (variable.getIsMultidimensional()) {
+                            if (CollectionUtils.isEmpty(variable.getDimensions()) || data.getValue() != null) {
+                                throw new NoVariableDimensionsException(variableURI);
+                            }
+                        } else {
+                            if (variable.getDataType() == null) {
+                                throw new NoVariableDataTypeException(variableURI);
+                            }
+                            if (data.getMultiValues() != null) {
+                                throw new VariableDimensionsException(variableURI);
+                            }
                         }
                         variableURIs.put(variableURI, variable);
                     }
@@ -827,8 +867,12 @@ public class DataAPI {
                     variable = variableURIs.get(variableURI);
                     
                 }
-                if(!notFoundedVariableURIs.contains(variableURI)) {
-                    setDataValidValue(variable, data);
+                if(!notFoundedVariableURIs.contains(variableURI)) {                  
+                    if (variable.getIsMultidimensional()) {
+                        checkValuesOfMultidimensionalVariables(data, variable, data.getMultiValues());
+                    } else {
+                        setDataValidValue(variable, data);
+                    }
                     dataIndex++;
                 }
                 
@@ -1335,7 +1379,8 @@ public class DataAPI {
                 csvValidation.setHeadersLabelsFromArray(headersLabels);
 
                 // Line 3
-                csvReader.parseNext();
+                List<String> dataTypeLabels = changeOnlyDimensionInTab(csvReader.parseNext());
+
                 // Line 4
                 int nbError = 0;
                 boolean validateCSVRow = false;
@@ -1348,7 +1393,8 @@ public class DataAPI {
                                 variableCheckedDevice,
                                 variableCheckedProvDevice,
                                 checkedVariables,
-                                values, 
+                                values,
+                                dataTypeLabels,
                                 rowIndex, 
                                 csvValidation, 
                                 headerByIndex, 
@@ -1390,6 +1436,27 @@ public class DataAPI {
         return csvValidation;
     }
 
+    /**
+     * This function will be use in validateWholeCSV to browse in the array which represents the third line
+     * We want to have only the uri of the dimensions (if there is any) and not the entire cell of the line
+     * 
+     * @param tab the array of strings that contains the column names
+     * @return A list of strings
+     */
+    private List<String> changeOnlyDimensionInTab(String[] tab) {
+        List<String> res = new ArrayList<>();
+        if (tab.length > 0) {
+            for (String col : tab) {
+                if (col.startsWith("Dimension:")) {
+                    res.add(col.split("Dimension:")[1].trim().split("\n")[0]);
+                } else {
+                    res.add(col);
+                }
+            }
+        }
+        return res;
+    }
+
     private boolean validateCSVRow(
             ProvenanceModel provenance,
             URI experiment,
@@ -1397,7 +1464,8 @@ public class DataAPI {
             Map<String, DeviceModel> variableCheckedDevice,
             Map<String,DeviceModel> variableCheckedProvDevice,
             List<String> checkedVariables,
-            String[] values, 
+            String[] values,
+            List<String> dataTypeLabels,
             int rowIndex, 
             DataCSVValidationModel csvValidation, 
             Map<Integer, String> headerByIndex, 
@@ -1421,7 +1489,7 @@ public class DataAPI {
         throws CSVDataTypeException, TimezoneAmbiguityException, TimezoneException, URISyntaxException, Exception {
         
         boolean validRow = true;
-
+        BaseVariableDAO<DimensionModel> dimDAO = new BaseVariableDAO<>(DimensionModel.class, sparql);
         ParsedDateTimeMongo parsedDateTimeMongo = null;
         
         List<ProvEntityModel> agents = new ArrayList<>();
@@ -1686,82 +1754,109 @@ public class DataAPI {
                                 }
                             }
                             if(validRow) {
-                                DataModel dataModel = new DataModel();
-                                DataProvenanceModel provenanceModel = new DataProvenanceModel();
-                                provenanceModel.setUri(provenance.getUri());
 
-                                if (!experiments.isEmpty()) {
-                                    provenanceModel.setExperiments(experiments);
-                                }
+                                DataModel dataModel = checkIfVariableIsContainedInDataList(csvValidation.getData(), varURI);
+                                // variable classic
+                                if (dataModel == null) {
+                                    dataModel = new DataModel();
+                                    DataProvenanceModel provenanceModel = new DataProvenanceModel();
+                                    provenanceModel.setUri(provenance.getUri());
 
-                                if (device != null) {
-                                    ProvEntityModel agent = new ProvEntityModel();
-                                    if (rootDeviceTypes == null) {
-                                        rootDeviceTypes = getRootDeviceTypes();
+                                    if (!experiments.isEmpty()) {
+                                        provenanceModel.setExperiments(experiments);
                                     }
-                                    URI rootType = rootDeviceTypes.get(device.getType());
-                                    agent.setType(rootType);
-                                    agent.setUri(device.getUri());
-                                    agents.add(agent);
-                                    provenanceModel.setProvWasAssociatedWith(agents);
 
-                                } else if (hasDevice) {
+                                    if (device != null) {
+                                        ProvEntityModel agent = new ProvEntityModel();
+                                        if (rootDeviceTypes == null) {
+                                            rootDeviceTypes = getRootDeviceTypes();
+                                        }
+                                        URI rootType = rootDeviceTypes.get(device.getType());
+                                        agent.setType(rootType);
+                                        agent.setUri(device.getUri());
+                                        agents.add(agent);
+                                        provenanceModel.setProvWasAssociatedWith(agents);
 
-                                    DeviceModel checkedDevice = variableCheckedProvDevice.get(variable);
-                                    ProvEntityModel agent = new ProvEntityModel();
-                                    if (rootDeviceTypes == null) {
-                                        rootDeviceTypes = getRootDeviceTypes();
+                                    } else if (hasDevice) {
+
+                                        DeviceModel checkedDevice = variableCheckedProvDevice.get(variable);
+                                        ProvEntityModel agent = new ProvEntityModel();
+                                        if (rootDeviceTypes == null) {
+                                            rootDeviceTypes = getRootDeviceTypes();
+                                        }
+                                        URI rootType = rootDeviceTypes.get(checkedDevice.getType());
+                                        agent.setType(rootType);
+                                        agent.setUri(checkedDevice.getUri());
+                                        agents.add(agent);
+                                        provenanceModel.setProvWasAssociatedWith(agents);
+
                                     }
-                                    URI rootType = rootDeviceTypes.get(checkedDevice.getType());
-                                    agent.setType(rootType);
-                                    agent.setUri(checkedDevice.getUri());
-                                    agents.add(agent);
-                                    provenanceModel.setProvWasAssociatedWith(agents);
 
-                                }
+                                    dataModel.setDate(parsedDateTimeMongo.getInstant());
+                                    dataModel.setOffset(parsedDateTimeMongo.getOffset());
+                                    dataModel.setIsDateTime(parsedDateTimeMongo.getIsDateTime());
 
-                                dataModel.setDate(parsedDateTimeMongo.getInstant());
-                                dataModel.setOffset(parsedDateTimeMongo.getOffset());
-                                dataModel.setIsDateTime(parsedDateTimeMongo.getIsDateTime());
-
-                                if (object != null) {
-                                    dataModel.setTarget(object.getUri());
-                                }
-                                if (target != null) {
-                                    dataModel.setTarget(target.getUri());
-                                }
-                                dataModel.setProvenance(provenanceModel);
-                                dataModel.setVariable(varURI);
-                                DataValidateUtils.checkAndConvertValue(dataModel, varURI, values[colIndex].trim(), mapVariableUriDataType.get(varURI), rowIndex, colIndex, csvValidation);
-
-                                if (colIndex + 1 < values.length) {
-                                    if (headerByIndex.get(colIndex + 1).equalsIgnoreCase(rawdataHeader) && values[colIndex + 1] != null) {
-                                        dataModel.setRawData(DataValidateUtils.returnValidRawData(varURI, values[colIndex + 1].trim(), mapVariableUriDataType.get(varURI), rowIndex, colIndex + 1, csvValidation));
+                                    if (object != null) {
+                                        dataModel.setTarget(object.getUri());
                                     }
-                                }
+                                    if (target != null) {
+                                        dataModel.setTarget(target.getUri());
+                                    }
+                                    dataModel.setProvenance(provenanceModel);
+                                    dataModel.setVariable(varURI);
+            
+                                    
+                                    // variable classic
+                                    if (mapVariableUriDataType.get(varURI) != null) {
+                                        DataValidateUtils.checkAndConvertValue(dataModel, varURI, values[colIndex].trim(), mapVariableUriDataType.get(varURI), rowIndex, colIndex, csvValidation);
+                                        if (colIndex + 1 < values.length) {
+                                            if (headerByIndex.get(colIndex + 1).equalsIgnoreCase(rawdataHeader) && values[colIndex + 1] != null) {
+                                                dataModel.setRawData(DataValidateUtils.returnValidRawData(varURI, values[colIndex + 1].trim(), mapVariableUriDataType.get(varURI), rowIndex, colIndex + 1, csvValidation));
+                                            }
+                                        }
+                                    } else { // variable multi
+                                        dataModel.setMultiValues(new ArrayList<>());
+                                        URI dimURI = URI.create(dataTypeLabels.get(colIndex));
+                                        DimensionModel dimModel = dimDAO.get(dimURI);
+                                        URI dataType = dimModel.getDataType();
+                                        dataModel.getMultiValues().add(new DataValueModel(dimURI, DataValidateUtils.returnValidCSVDatum(dimURI, values[colIndex].trim(), dataType, rowIndex, colIndex, csvValidation).toString()));
+                                    }
 
-                                // check for duplicate data
-                                URI targetUri = null;
-                                URI deviceUri = null;
-                                if (target != null) {
-                                    targetUri = target.getUri();
-                                }
-                                if (object != null) {
-                                    targetUri = object.getUri();
-                                }
-                                if(device != null) {
-                                    deviceUri = device.getUri();
-                                }
-                                ImportDataIndex importDataIndex = new ImportDataIndex(parsedDateTimeMongo.getInstant(), varURI, provenance.getUri(), targetUri, deviceUri);
-                                if (!duplicateDataByIndex.contains(importDataIndex)) {
-                                    duplicateDataByIndex.add(importDataIndex);
+                                    if (colIndex + 1 < values.length) {
+                                        if (headerByIndex.get(colIndex + 1).equalsIgnoreCase(rawdataHeader) && values[colIndex + 1] != null) {
+                                            dataModel.setRawData(DataValidateUtils.returnValidRawData(varURI, values[colIndex + 1].trim(), mapVariableUriDataType.get(varURI), rowIndex, colIndex + 1, csvValidation));
+                                        }
+                                    }
+
+                                    // check for duplicate data
+                                    URI targetUri = null;
+                                    URI deviceUri = null;
+                                    if (target != null) {
+                                        targetUri = target.getUri();
+                                    }
+                                    if (object != null) {
+                                        targetUri = object.getUri();
+                                    }
+                                    if(device != null) {
+                                        deviceUri = device.getUri();
+                                    }
+                                    ImportDataIndex importDataIndex = new ImportDataIndex(parsedDateTimeMongo.getInstant(), varURI, provenance.getUri(), targetUri, deviceUri);
+                                    if (!duplicateDataByIndex.contains(importDataIndex)) {
+                                        duplicateDataByIndex.add(importDataIndex);
+                                    } else {
+                                        String variableName = csvValidation.getHeadersLabels().get(colIndex) + '(' + csvValidation.getHeaders().get(colIndex) + ')';
+                                        CSVCell duplicateCell = new CSVCell(rowIndex, colIndex, values[colIndex].trim(), variableName);
+                                        csvValidation.addDuplicatedDataError(duplicateCell);
+                                    }
                                 } else {
-                                    String variableName = csvValidation.getHeadersLabels().get(colIndex) + '(' + csvValidation.getHeaders().get(colIndex) + ')';
-                                    CSVCell duplicateCell = new CSVCell(rowIndex, colIndex, values[colIndex].trim(), variableName);
-                                    csvValidation.addDuplicatedDataError(duplicateCell);
+                                    if (mapVariableUriDataType.get(varURI) == null) {
+                                        URI dimURI = URI.create(dataTypeLabels.get(colIndex));
+                                        DimensionModel dimModel = dimDAO.get(dimURI);
+                                        URI dataType = dimModel.getDataType();
+                                        dataModel.getMultiValues().add(new DataValueModel(dimURI, DataValidateUtils.returnValidCSVDatum(dimURI, values[colIndex].trim(), dataType, rowIndex, colIndex, csvValidation).toString()));
+                                    }
                                 }
                                 csvValidation.addData(dataModel, rowIndex);
-
                             }
 
                         }
@@ -1781,7 +1876,20 @@ public class DataAPI {
         return validRow;
     }
 
-
+    /**
+     * It checks if a variable is contained in a list of data models
+     * 
+     * @param map a map of DataModel objects and their frequencies
+     * @param variable the variable to be checked
+     * @return The data model that contains the variable.
+     */
+    private DataModel checkIfVariableIsContainedInDataList(Map<DataModel, Integer> map, URI variable) {
+        if (map.isEmpty()) return null;
+        for (DataModel data : map.keySet()) {
+            if (data.getVariable().equals(variable)) return data;
+        }
+        return null;
+    }
 
     private ExperimentModel getExperimentByNameOrURI(ExperimentDAO xpDAO, String expNameOrUri) throws Exception {
         ExperimentModel exp = null;

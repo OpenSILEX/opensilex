@@ -11,7 +11,9 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModelProperty;
 import static java.lang.Double.NaN;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
@@ -19,6 +21,7 @@ import javax.validation.constraints.NotNull;
 import org.bson.Document;
 import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.data.dal.DataProvenanceModel;
+import org.opensilex.core.data.dal.DataValueModel;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.data.utils.ParsedDateTimeMongo;
 import org.opensilex.core.exception.TimezoneAmbiguityException;
@@ -174,17 +177,33 @@ public class DataCreationDTO {
             model.setOffset(parsedDateTimeMongo.getOffset());
             model.setIsDateTime(parsedDateTimeMongo.getIsDateTime());
         }
-        
-        if (getValue() instanceof String) {
-            if (Arrays.asList(NA_VALUES).contains(getValue())) {
+
+        if (getValue() instanceof List) {
+            List<DataValueModel> listOfValue = new ArrayList<>();
+            DataValueModel.fromLinkedHashMap((List<LinkedHashMap>) getValue()).forEach(dataValue -> {
+                if (dataValue.getValue() instanceof String) {
+                    if (Arrays.asList(NA_VALUES).contains(dataValue.getValue())) {
+                        listOfValue.add(new DataValueModel(dataValue.getDimension(), null));
+                    } else if (Arrays.asList(NAN_VALUES).contains(dataValue.getValue())) {
+                        listOfValue.add(new DataValueModel(dataValue.getDimension(), NaN));
+                    } else {
+                        listOfValue.add(new DataValueModel(dataValue.getDimension(), dataValue.getValue()));
+                    }
+                } else {
+                    listOfValue.add(new DataValueModel(dataValue.getDimension(), dataValue.getValue()));
+                }
+            });
+            model.setMultiValues(listOfValue);
+        } else if (getValue() instanceof String) {
+            if (Arrays.asList(NA_VALUES).contains(value)) {
                 model.setValue(null);
-            } else if (Arrays.asList(NAN_VALUES).contains(getValue())) {
+            } else if (Arrays.asList(NAN_VALUES).contains(value)) {
                 model.setValue(NaN);
             } else {
-                model.setValue(getValue());
-            }            
+                model.setValue(value);
+            }
         } else {
-            model.setValue(getValue());
+            model.setValue(value);
         }       
         
         if (getRawData() != null) {

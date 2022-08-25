@@ -76,13 +76,15 @@ public class DataGetDTO extends DataCreationDTO {
         setVariable(model.getVariable());      
         setDate(model.getDate(), model.getOffset(), model.getIsDateTime());          
         setConfidence(model.getConfidence());
-
-        if (Objects.nonNull(dateVariables) && dateVariables.contains(getVariable())) {
-            setValue(toLocalDate(model.getValue()));
+        if (model.getMultiValues() != null) {
+            setValue(model.getMultiValues());
         } else {
-            setValue(model.getValue());
+            if (Objects.nonNull(dateVariables) && dateVariables.contains(getVariable())) {
+                setValue(toLocalDate(model.getValue()));
+            } else {
+                setValue(model.getValue());
+            }
         }
-
         setMetadata(model.getMetadata());   
         setProvenance(model.getProvenance());
         setRawData(model.getRawData());

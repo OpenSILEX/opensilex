@@ -344,7 +344,7 @@ public class DataValidateUtils {
      * @return The value field converted to the correct Java type
      * @throws CSVDataTypeException If the value is invalid
      */
-    private static Object returnValidCSVDatum(URI variable, Object value, URI dataType, Integer dataIndex,
+    public static Object returnValidCSVDatum(URI variable, Object value, URI dataType, Integer dataIndex,
                                               Integer colIndex, DataCSVValidationModel csvValidation)
             throws CSVDataTypeException, DataTypeException {
         // Special values

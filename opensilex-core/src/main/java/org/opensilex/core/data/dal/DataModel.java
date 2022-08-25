@@ -42,6 +42,9 @@ public class DataModel extends MongoModel {
     private Object value;
     public static final String VALUE_FIELD = "value";
     
+
+    private List<DataValueModel> multiValues;
+
     private List<Object> rawData;
     
     private Float confidence = null;
@@ -98,6 +101,14 @@ public class DataModel extends MongoModel {
 
     public Object getValue() {
         return value;
+    }
+
+    public List<DataValueModel> getMultiValues() {
+        return multiValues;
+    }
+
+    public void setMultiValues(List<DataValueModel> multiValues) {
+        this.multiValues = multiValues;
     }
 
     public void setValue(Object value) {

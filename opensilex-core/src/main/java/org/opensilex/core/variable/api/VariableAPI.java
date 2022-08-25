@@ -158,7 +158,7 @@ public class VariableAPI {
                 JsonNode result = filedJsonResult.get("result");
 
                 fieldDto.setUri(new URI(result.get("uri").asText()));
-                fieldDto.setName(result.get("name").asText() + " ( " + resourceName + ")");
+                fieldDto.setName(result.get("name").asText() + " (" + resourceName + ")");
                 fieldDto.setDescription(result.get("description").asText());
 
                 JsonNode jsonCloseMatch = result.get("close_match");

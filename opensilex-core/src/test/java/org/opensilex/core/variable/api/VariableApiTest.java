@@ -10,6 +10,7 @@ import org.opensilex.core.germplasm.api.GermplasmCreationDTO;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.species.dal.SpeciesModel;
+import org.opensilex.core.variable.api.dimension.DimensionCreationDTO;
 import org.opensilex.core.variable.api.entity.EntityCreationDTO;
 import org.opensilex.core.variable.dal.*;
 import org.opensilex.server.response.PaginatedListResponse;
@@ -42,6 +43,9 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
     private GermplasmCreationDTO germplasm;
     private EntityCreationDTO entity;
 
+    private DimensionCreationDTO dimension1;
+    private DimensionCreationDTO dimension2;
+
     @Before
     public void beforeTest() throws Exception {
 
@@ -56,6 +60,15 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
         final Response postGermplasmResult = getJsonPostResponse(target(GermplasmAPITest.createPath), germplasm);
         assertEquals(Response.Status.CREATED.getStatusCode(), postGermplasmResult.getStatus());
         germplasm.setUri(extractUriFromResponse(postGermplasmResult));
+
+        // create dimension and ensure that creation was OK
+        dimension1 = DimensionApiTest.getCreationDto();
+        Response postDimensionResult = getJsonPostResponse(target(DimensionApiTest.createPath), dimension1);
+        assertEquals(Response.Status.CREATED.getStatusCode(), postDimensionResult.getStatus());
+
+        dimension2 = DimensionApiTest.getCreationDto();
+        postDimensionResult = getJsonPostResponse(target(DimensionApiTest.createPath), dimension2);
+        assertEquals(Response.Status.CREATED.getStatusCode(), postDimensionResult.getStatus());
     }
 
     public VariableCreationDTO getCreationDto() throws Exception {
@@ -99,8 +112,30 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
         variableDto.setTraitName("dry matter digestibility");
         variableDto.setTimeInterval("minutes");
         variableDto.setDataType(new URI("xsd:decimal"));
+        variableDto.setIsMultidimensional(false);
 
         return variableDto;
+    }
+
+    public VariableCreationDTO getCreationDtoMulti() throws Exception {
+        SPARQLService service = getSparqlService();
+
+        VariableCreationDTO dto = this.getCreationDto();
+        dto.setDataType(null);
+        dto.setIsMultidimensional(true);
+
+        DimensionModel dim1 = new DimensionModel();
+        dim1.setName("dim1");
+        dim1.setDataType(URI.create("http://www.w3.org/2001/XMLSchema#integer"));
+        service.create(dim1);
+
+        DimensionModel dim2 = new DimensionModel();
+        dim2.setName("dim2");
+        dim2.setDataType(URI.create("http://www.w3.org/2001/XMLSchema#integer"));
+        service.create(dim2);
+
+        dto.setDimensions(Arrays.asList(dim1.getUri(), dim2.getUri()));
+        return dto;
     }
 
     @Test
@@ -118,14 +153,34 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
         Response postResult = getJsonPostResponse(target(createPath), dto);
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), postResult.getStatus());
 
-        dto = getCreationDto();
+        VariableCreationDTO getCreationDto = getCreationDto();
+
+        dto = getCreationDto;
         dto.setUnit(null);
 
+        postResult = getJsonPostResponse(target(createPath), dto);
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), postResult.getStatus());
 
-        dto = getCreationDto();
-        dto.setEntity(null);
+        dto = getCreationDto;
         dto.setCharacteristic(null);
+
+        postResult = getJsonPostResponse(target(createPath), dto);
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), postResult.getStatus());
+
+        dto = getCreationDto;
+        dto.setMethod(null);
+
+        postResult = getJsonPostResponse(target(createPath), dto);
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), postResult.getStatus());
+
+        dto = getCreationDto;
+        dto.setUnit(null);
+
+        postResult = getJsonPostResponse(target(createPath), dto);
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), postResult.getStatus());
+
+        dto = getCreationDto;
+        dto.setDataType(null);
 
         postResult = getJsonPostResponse(target(createPath), dto);
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), postResult.getStatus());
@@ -200,6 +255,7 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
         // check that the object has been updated
         assertEquals(dto.getName(), dtoFromApi.getName());
         assertEquals(dto.getDescription(), dtoFromApi.getDescription());
+        assertEquals(dto.getIsMultidimensional(), dtoFromApi.getIsMultidimensional());
         assertTrue(SPARQLDeserializers.compareURIs(dto.getEntity(), dtoFromApi.getEntity().getUri()));
         assertTrue(SPARQLDeserializers.compareURIs(dto.getTrait(), dtoFromApi.getTrait()));
     }
@@ -232,6 +288,79 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
         assertTrue(SPARQLDeserializers.compareURIs(creationDTO.getCharacteristic(), dtoFromDb.getCharacteristic().getUri()));
         assertTrue(SPARQLDeserializers.compareURIs(creationDTO.getMethod(), dtoFromDb.getMethod().getUri()));
         assertTrue(SPARQLDeserializers.compareURIs(creationDTO.getUnit(), dtoFromDb.getUnit().getUri()));
+    }
+
+    @Test
+    /**
+     * Test that the variable creation is OK with existing valid dimensions
+     */
+    public void testCreateWithDimensionsOK() throws Exception {
+        VariableCreationDTO dto = getCreationDtoMulti();
+
+        Response postResult = getJsonPostResponse(target(createPath), dto);
+        assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
+    }
+
+    @Test
+    /**
+     * Test that the variable creation fail if the provided dimensions are unknown
+     */
+    public void testCreateFailWithUnknownDimensions() throws Exception {
+
+        // create variable with unknown dimensions
+        VariableCreationDTO dto = getCreationDtoMulti();
+        dto.setDimensions(Arrays.asList(URI.create("test:unknown_dimension_1"), URI.create("test:unknown_dimension_2")));
+
+        Response postResult = getJsonPostResponse(target(createPath), dto);
+        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), postResult.getStatus());
+    }
+
+    @Test
+    /**
+     * Test that the variable creation fail if the provided dimensions are not enough
+     */
+    public void testCreateFailWithoutEnoughDimensions() throws Exception {
+
+        VariableCreationDTO dto = getCreationDtoMulti();
+        URI dim1 = dto.getDimensions().get(0);
+
+        // create variable with only one dimension
+        dto.setDimensions(Arrays.asList(dim1));
+        Response postResult = getJsonPostResponse(target(createPath), dto);
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), postResult.getStatus());
+
+        // create variable with two same dimensions
+        dto.setDimensions(Arrays.asList(dim1, dim1));
+        postResult = getJsonPostResponse(target(createPath), dto);
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), postResult.getStatus());
+
+        // create variable with empty dimensions
+        dto.setDimensions(new ArrayList<>());
+        postResult = getJsonPostResponse(target(createPath), dto);
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), postResult.getStatus());
+
+        // create variable with null dimensions
+        dto.setDimensions(null);
+        postResult = getJsonPostResponse(target(createPath), dto);
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), postResult.getStatus());
+    }
+
+    @Test
+    /**
+     * Test that the variable creation fail if dimensions AND datatype are provided
+     */
+    public void testCreateFailWithDimensionsAndDatatype() throws Exception {
+        VariableCreationDTO dto = getCreationDtoMulti();
+        dto.setDataType(URI.create("xsd:decimal"));
+
+        // try with isMultidimensional true
+        Response postVariable = getJsonPostResponse(target(createPath), dto);
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), postVariable.getStatus());
+
+        // try with isMultidimensional false
+        dto.setIsMultidimensional(false);
+        postVariable = getJsonPostResponse(target(createPath), dto);
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), postVariable.getStatus());
     }
 
     private final static URI GERMPLASM_URI_1 = URI.create("test:species_testCreateWithSpeciesOK_1");

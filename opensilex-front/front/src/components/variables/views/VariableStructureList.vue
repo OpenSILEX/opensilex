@@ -13,9 +13,7 @@
                 <span class="item-icon">
                     <opensilex-Icon :icon="$opensilex.getRDFIcon(node.data.rdf_type)"/>
                 </span>&nbsp;
-                <!-- <strong v-if="node.data.selected">{{ node.title }}</strong> -->
                 <strong v-if="node.data.selected">{{ node.data.variables ? node.title + ' ' + $tc('VariableStructureList.variable', node.data.variables.length, { count: node.data.variables.length }) : node.title }}</strong>
-                <!-- <span v-if="!node.data.selected">{{ node.title }}</span> -->
                 <span v-if="!node.data.selected">{{ node.data.variables ? node.title + ' ' + $tc('VariableStructureList.variable', node.data.variables.length, { count: node.data.variables.length }) : node.title }}</span>
             </template>
 
@@ -115,6 +113,9 @@ export default class VariableStructureList extends Vue {
             }
             case VariablesView.UNIT_TYPE: {
                 return this.service.searchUnits(nameFilter,orderBy);
+            }
+            case VariablesView.DIMENSION_TYPE: {
+                return this.service.searchDimensions(nameFilter,orderBy);
             }
             case VariablesView.GROUP_VARIABLE_TYPE: {
                 return this.service.searchVariablesGroups(nameFilter, undefined, orderBy);
@@ -220,6 +221,9 @@ export default class VariableStructureList extends Vue {
             case VariablesView.UNIT_TYPE: {
                 return this.service.getUnit(uri);
             }
+            case VariablesView.DIMENSION_TYPE: {
+                return this.service.getDimension(uri);
+            }
             case VariablesView.GROUP_VARIABLE_TYPE: {
                 return this.service.getVariablesGroup(uri);
             }   
@@ -311,4 +315,3 @@ fr:
     EntityList:
         filter-placeholder: Rechercher des élements par nom
 </i18n>
-

@@ -578,6 +578,17 @@ components["opensilex-UnitDetails"] = UnitDetails;
 import UnitSelector from './variables/form/UnitSelector.vue';
 components["opensilex-UnitSelector"] = UnitSelector;
 
+// Dimension
+import DimensionForm from './variables/form/DimensionForm.vue';
+components["opensilex-DimensionForm"] = DimensionForm;
+import DimensionCreate from './variables/form/DimensionCreate.vue';
+components["opensilex-DimensionCreate"] = DimensionCreate;
+import DimensionExternalReferencesForm from './variables/form/DimensionExternalReferencesForm.vue';
+components["opensilex-DimensionExternalReferencesForm"] = DimensionExternalReferencesForm;
+import DimensionDetails from './variables/views/DimensionDetails.vue';
+components["opensilex-DimensionDetails"] = DimensionDetails;
+import DimensionSelector from './variables/form/DimensionSelector.vue';
+components["opensilex-DimensionSelector"] = DimensionSelector;
 
 // Data
 import DataView from './data/DataView.vue';

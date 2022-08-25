@@ -8,7 +8,7 @@
         :itemLoadingMethod="load"
         :conversionMethod="variableToSelectNode"
         :clearable="clearable"
-        :placeholder="placeholder"
+        :placeholder="getPlaceholder"
         :required="required"
         :defaultSelectedValue="defaultSelectedValue"
         noResultsText="VariableSelector.filter-search-no-result"
@@ -51,16 +51,21 @@ export default class VariableSelector extends Vue {
     @Prop()
     clearable;
 
+    @Prop()
+    placeholder;
+
     filterLabel = "";
 
     created() {
         this.service = this.$opensilex.getService("opensilex.VariablesService");
     }
 
-    get placeholder() {
-        return this.multiple
-            ? "VariableSelector.placeholder-multiple"
-            : "VariableSelector.placeholder";
+    get getPlaceholder() {
+        if(!this.placeholder) {
+            return this.multiple ? "VariableSelector.placeholder-multiple" : "VariableSelector.placeholder";
+        } else {
+            return this.placeholder;
+        }
     }
 
     searchVariables(query, page, pageSize) {
@@ -71,20 +76,22 @@ export default class VariableSelector extends Vue {
         }
 
         return this.service.searchVariables(
-            this.filterLabel,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
+            this.filterLabel, //name
+            undefined, //entity
+            undefined, //entityInterest
+            undefined, //characteristic
+            undefined, //method
+            undefined, //unit
+            undefined, //groupVariable
+            undefined, //datatype
+            undefined, //timeinterval
+            undefined, //species
+            undefined, //withAssociatedData
+            false, //isMultidimensional
+            undefined, //experiments
+            undefined, //objects
+            undefined, //devices
+            undefined, //dimensions
             ["name=asc"],
             page,
             pageSize

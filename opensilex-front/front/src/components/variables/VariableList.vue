@@ -125,7 +125,7 @@
                                     ></opensilex-VariableTimeIntervalSelector>
                                 </opensilex-FilterField>
                             </div>
-
+                            
                             <!-- Species -->
                             <div>
                                 <opensilex-FilterField>
@@ -137,6 +137,31 @@
                                         class="searchFilter"
                                     ></opensilex-SpeciesSelector>
                                 </opensilex-FilterField>
+                            </div>
+
+                            <!-- Dimensions -->
+                            <div>
+                            <opensilex-FilterField>
+                                <opensilex-DimensionSelector
+                                    label="VariableForm.dimensions"
+                                    placeholder="DimensionSelector.placeholder-multiple"
+                                    :multiple="true"
+                                    :dimensions.sync="filter.dimensions"
+                                    class="searchFilter"
+                                ></opensilex-DimensionSelector>
+                            </opensilex-FilterField>
+                            </div>
+
+                            <!-- Multidimensional -->
+                            <div>
+                            <opensilex-FilterField>
+                                <opensilex-CheckboxForm
+                                    v-if="isMultidimensional !== false"
+                                    label="VariableList.multidimensional"
+                                    :value.sync="filter.isMultidimensional"
+                                    class="searchFilter"
+                                ></opensilex-CheckboxForm>
+                            </opensilex-FilterField>
                             </div>
 
                         </template>
@@ -211,14 +236,14 @@
                     </template>
                     
                     <template v-slot:row-details="{data}">
-                        <div v-if="variableGroupsList[data.item.uri] && variableGroupsList[data.item.uri].length > 0">
-                            <div>{{ $t("VariableList.variablesGroup") }}:</div>
+                        <div v-if="data.item.dimensions && data.item.dimensions.length > 0">
+                            <div>{{ $t("VariableList.dimensions") }}:</div>
                             <ul>
-                                <li v-for="(vg, index) in variableGroupsList[data.item.uri]" :key="index">{{vg.name}}
+                                <li v-for="(dim, index) in data.item.dimensions" :key="index">{{dim.name}}
                                 </li>
                             </ul>
                         </div>
-                        <div v-else> {{ $t("VariableList.not-used-in-variablesGroup") }}</div>
+                        <div v-else> {{ $t("VariableList.not-multidimensional") }}</div>
                     </template>
                     <template v-slot:cell(_entity_name)="{data}">{{ data.item.entity.name }}</template>
                     <template v-slot:cell(_interest_entity_name)="{data}">
@@ -231,7 +256,7 @@
                     <template v-if="!noActions" v-slot:cell(actions)="{data}">
                         <b-button-group size="sm">
                             <opensilex-DetailButton
-                                @click="loadVariablesGroupFromVariable(data)"
+                                @click="data.toggleDetails()"
                                 label="component.common.details-label"
                                 :detailVisible="data.detailsShowing"
                                 :small="true"
@@ -347,6 +372,9 @@ export default class VariableList extends Vue {
     withAssociatedData: boolean; // affiche les variables associées aux datas uniquement
 
     @Prop()
+    isMultidimensional: boolean; // affiche les variables multidimensionnelles uniquement si true
+
+    @Prop()
     experiment;
 
     @Prop()
@@ -365,9 +393,11 @@ export default class VariableList extends Vue {
         group: undefined,
         dataType: undefined,
         timeInterval: undefined,
+        isMultidimensional: undefined,
         experiment: undefined,
         objects: undefined,
         devices: undefined,
+        dimensions: [],
         species: []
     };
 
@@ -433,9 +463,11 @@ export default class VariableList extends Vue {
             group: undefined,
             dataType: undefined,
             timeInterval: undefined,
+            isMultidimensional: undefined,
             experiment: undefined,
             objects: undefined,
             devices: undefined,
+            dimensions: [],
             species: []
         };
         this.refresh();
@@ -490,9 +522,11 @@ export default class VariableList extends Vue {
             this.filter.timeInterval,
             this.filter.species,
             this.withAssociatedData,
+            this.isMultidimensional == undefined ? this.filter.isMultidimensional : this.isMultidimensional,
             this.experiment ? this.experiment : this.filter.experiment,
             this.objects ? this.objects : this.filter.objects,
             this.devices ? this.devices : this.filter.devices,
+            this.filter.dimensions,
             options.orderBy,
             options.currentPage,
             options.pageSize
@@ -527,30 +561,6 @@ export default class VariableList extends Vue {
 
     addVariablesToGroups() {
         this.groupVariableSelection.show();
-    }
-
-    private variableGroupsList = {};
-
-    loadVariablesGroupFromVariable(data) {
-        if (!data.detailsShowing) {
-            this.$opensilex.disableLoader();
-            this.$service.searchVariablesGroups(undefined, data.item.uri, ["name=asc"], undefined, undefined)
-                .then((http: any) => {
-                    let listVariableGroups = [];
-                    for (let variableGroup of http.response.result) {
-                        listVariableGroups.push({
-                            uri: variableGroup.uri,
-                            name: variableGroup.name,
-                        });
-                    }
-                    this.variableGroupsList[data.item.uri] = listVariableGroups;
-                    data.toggleDetails();
-                    this.$opensilex.enableLoader();
-                })
-                .catch(this.$opensilex.errorHandler);
-        } else {
-            data.toggleDetails();
-        }
     }
 
     editGroupVariable(variableGroup) {
@@ -706,6 +716,10 @@ en:
         selected-all: All variables
         resetSelected: Reset selection
         display: Display
+        multidimensional: Multidimensional
+        multidimensional-title: Enable this option to create a multidimensional variable
+        dimensions: Dimensions of the multidimensional variable
+        not-multidimensional: Variable is not multidimensional
 fr:
     VariableList:
         name-placeholder: Entrer un nom de variable
@@ -723,5 +737,9 @@ fr:
         selected-all: Toute la liste
         resetSelected: Réinitialiser la sélection
         display: Affichage
+        multidimensional: Multidimensionnelle
+        multidimensional-title: Activer pour créer une variable multidimensionnelles
+        dimensions: Dimensions de la variable multidimensionnelle
+        not-multidimensional: Variable n'est pas multidimensionnelle
 
 </i18n>

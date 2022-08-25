@@ -151,6 +151,7 @@
         :maximumSelectedRows="maximumSelectedItems"
         :searchFilter.sync="searchModalFilter"
         :withAssociatedData="withAssociatedData"
+        :isMultidimensional="isMultidimensional"
         :experiment="experiment"
         :objects="objects"
         :devices="devices"
@@ -319,6 +320,9 @@ export default class SelectForm extends Vue {
   // props for variableSelectorWithFilter
   @Prop()
   withAssociatedData;
+
+  @Prop()
+  isMultidimensional;
 
   @Prop()
   experiment;

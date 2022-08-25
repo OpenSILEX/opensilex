@@ -13,6 +13,7 @@
     :multiple="true"
     :maximumSelectedItems="maximumSelectedRows"
     :withAssociatedData="withAssociatedData"
+    :isMultidimensional="isMultidimensional"
     :limit="1"
     @clear="refreshVariableSelector"
     @select="select"
@@ -48,6 +49,9 @@ export default class VariableSelectorWithFilter extends Vue {
 
   @Prop()
   withAssociatedData: boolean;
+
+  @Prop()
+  isMultidimensional: boolean;
 
   @Prop()
   experiment;

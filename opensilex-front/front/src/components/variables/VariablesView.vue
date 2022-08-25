@@ -10,6 +10,7 @@
                         <b-tab :title="$t('VariableView.characteristic')" @click="refreshSelected"></b-tab>
                         <b-tab :title="$t('VariableView.method')" @click="refreshSelected"></b-tab>
                         <b-tab :title="$t('VariableView.unit')" @click="refreshSelected"></b-tab>
+                        <b-tab :title="$t('VariableView.dimension')" @click="refreshSelected"></b-tab>
                         <b-tab :title="$t('VariableView.groupVariable')" @click="refreshSelected"></b-tab>
                     </b-tabs>
                 </div>
@@ -78,6 +79,10 @@
                 ref="unitForm" @onCreate="refresh($event.uri)" @onUpdate="refresh($event.uri)"
             ></opensilex-UnitCreate>
 
+            <opensilex-DimensionCreate
+                ref="dimensionForm" @onCreate="refresh($event.uri)" @onUpdate="refresh($event.uri)"
+            ></opensilex-DimensionCreate>
+
             <opensilex-ModalForm
                 v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID) && loadGroupForm"
                 ref="groupVariablesForm"
@@ -111,9 +116,11 @@
 
                 <div class="col-md-6">
                     <!-- Element details page -->
-                    <opensilex-VariableStructureDetails v-show="!loadVariableList() && useGenericDetailsPage()" :selected="selected"></opensilex-VariableStructureDetails>
+                    <opensilex-VariableStructureDetails v-show="!loadVariableList() && useGenericDetailsPage() && !dimensionPage()" :selected="selected"></opensilex-VariableStructureDetails>
                     <!-- Unit specialized details page -->
                     <opensilex-UnitDetails v-show="!loadVariableList() && !useGenericDetailsPage() && !groupVariablesPage()" :selected="selected"></opensilex-UnitDetails>
+                    <!-- Dimension specialized details page -->
+                    <opensilex-DimensionDetails v-show="dimensionPage()" :selected="selected"></opensilex-DimensionDetails>
 
                     <opensilex-Card
                         v-show="!groupVariablesPage() && !loadVariableList()" label="component.skos.ontologies-references-label" icon="ik#ik-clipboard">
@@ -169,6 +176,7 @@ import VariableStructureList from "./views/VariableStructureList.vue";
 import EntityCreate from "./form/EntityCreate.vue";
 import InterestEntityCreate from "./form/InterestEntityCreate.vue";
 import UnitCreate from "./form/UnitCreate.vue";
+import DimensionCreate from "./form/DimensionCreate.vue";
 import VariableCreate from "./form/VariableCreate.vue";
 import VariableList from "./VariableList.vue";
 import ExternalReferencesModalForm from "../common/external-references/ExternalReferencesModalForm.vue";
@@ -199,6 +207,7 @@ export default class VariablesView extends Vue {
     static CHARACTERISTIC_TYPE: string = "Characteristic";
     static METHOD_TYPE: string = "Method";
     static UNIT_TYPE:  string = "Unit";
+    static DIMENSION_TYPE: string = "Dimension";
     static GROUP_VARIABLE_TYPE: string = "VariableGroup";
 
     static elementTypes = [
@@ -208,6 +217,7 @@ export default class VariablesView extends Vue {
         VariablesView.CHARACTERISTIC_TYPE,
         VariablesView.METHOD_TYPE,
         VariablesView.UNIT_TYPE,
+        VariablesView.DIMENSION_TYPE,
         VariablesView.GROUP_VARIABLE_TYPE
     ]
 
@@ -223,6 +233,7 @@ export default class VariablesView extends Vue {
      */
     loadGroupForm: boolean = false;
     @Ref("groupVariablesForm") readonly groupVariablesForm!: ModalForm;
+    @Ref("dimensionForm") readonly dimensionForm!: DimensionCreate;
 
     @Ref("skosReferences") skosReferences!: ExternalReferencesModalForm;
 
@@ -302,6 +313,10 @@ export default class VariablesView extends Vue {
         return this.elementType == VariablesView.METHOD_TYPE;
     }
 
+    private dimensionPage() : boolean{
+        return this.elementType == VariablesView.DIMENSION_TYPE;
+    }
+
     private groupVariablesPage() : boolean{
         return this.elementType == 'VariableGroup';
     }
@@ -368,6 +383,9 @@ export default class VariablesView extends Vue {
             case VariablesView.UNIT_TYPE: {
                 return this.unitForm;
             }
+            case VariablesView.DIMENSION_TYPE: {
+                return this.dimensionForm;
+            }
             case VariablesView.GROUP_VARIABLE_TYPE: {
                 return this.groupVariablesForm;
             }
@@ -396,6 +414,9 @@ export default class VariablesView extends Vue {
             }
             case VariablesView.UNIT_TYPE: {
                 return "add-unit";
+            }
+            case VariablesView.DIMENSION_TYPE: {
+                return "add-dimension";
             }
             case VariablesView.GROUP_VARIABLE_TYPE: {
                 return "add-groupVariable"
@@ -584,6 +605,8 @@ en:
         add-method: Add method
         unit: "Unit/Scale"
         add-unit: Add unit
+        dimension: Dimension
+        add-dimension: Add a dimension
         groupVariable: "Group of variables"
         add-groupVariable: Add a group of variables
         no-var-provided: No variable provided
@@ -605,9 +628,10 @@ fr:
         add-method: Ajouter une méthode
         unit: "Unité/Echelle"
         add-unit: Ajouter une unité
+        dimension: Dimension
+        add-dimension: Ajouter une dimension
         groupVariable: "Groupe de variables"
         add-groupVariable: Ajouter un groupe de variables
         no-var-provided: Aucune variable associée
 
 </i18n>
-

@@ -78,6 +78,27 @@
                                            :value="variable.unit.name" :uri="variable.unit.uri"
                                            :url="getUnitPageUrl()">
                         </opensilex-UriView>
+                        <opensilex-TableView
+                          v-if="dimensions.length !== 0"
+                          :items="dimensions"
+                          :fields="relationsFields"
+                          :globalFilterField="true"
+                          sortBy="name"
+                        >
+                          <template v-slot:cell(name)="{ data }">
+                            <opensilex-UriLink
+                              :uri="data.item.uri"
+                              :value="data.item.name"
+                              :url="getDimensionPageUrl(data.item.uri)"
+                            ></opensilex-UriLink>
+                          </template>
+                          <template v-slot:cell(datatype)="{ data }">
+                            <span class="capitalize-first-letter">{{
+                              $opensilex.getVariableDatatypeLabel(data.item.datatype)
+                            }}</span>
+                          </template>
+                        </opensilex-TableView>
+
                     </template>
                 </opensilex-Card>
             </b-col>
@@ -99,7 +120,8 @@
                           label="GermplasmList.speciesLabel"
                           :list="speciesList"
                       ></opensilex-UriListView>
-
+            <opensilex-StringView label="VariableList.multidimensional"
+                                  :value="variable.isMultidimensional"></opensilex-StringView>
             <opensilex-StringView label="OntologyPropertyForm.data-type"
                                   :value="$opensilex.getVariableDatatypeLabel(variable.datatype)"></opensilex-StringView>
             <opensilex-StringView label="VariableForm.time-interval"
@@ -172,6 +194,14 @@ export default class VariableDetails extends Vue {
         }
       };
     });
+  }
+
+  get dimensions() {
+    if(!this.variable.dimensions) {
+      return [];
+    }
+
+    return this.variable.dimensions;
   }
 
   created() {
@@ -260,6 +290,22 @@ export default class VariableDetails extends Vue {
     return this.getEncodedUrlPage(VariablesView.UNIT_TYPE, this.variable.unit.uri);
   }
 
+  getDimensionPageUrl(uri): string {
+    return this.getEncodedUrlPage(VariablesView.DIMENSION_TYPE, uri);
+  }
+
+  relationsFields: any[] = [
+    {
+      key: "name",
+      label: "component.common.name",
+      sortable: true
+    },
+    {
+      key: "datatype",
+      label: "OntologyPropertyForm.data-type",
+      sortable: true
+    }
+  ];
 }
 </script>
 

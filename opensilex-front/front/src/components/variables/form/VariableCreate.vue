@@ -69,7 +69,7 @@
             this.loadForm = true;
             this.$nextTick(() => {
                 // the fonction extractURIFromResourceProperties transforms the dto where species is a list of names and uris into a dto where species is only a list of uris
-                let formCopy: VariableDetailsDTO = DTOConverter.extractURIFromResourceProperties(form, ["species"]);
+                let formCopy: VariableDetailsDTO = DTOConverter.extractURIFromResourceProperties(form, ["species", "dimensions"])
                 this.variableForm.showEditForm(formCopy);
             });
         }
@@ -81,9 +81,13 @@
         }
 
         create(variable) {
-
-            if(variable.dataType && variable.dataType.uri){
-                variable.dataType = variable.dataType.uri
+            if(variable.isMultidimensional) {
+                variable.datatype = undefined;
+            } else {
+                variable.dimensions = undefined;
+                if(variable.dataType && variable.dataType.uri){
+                    variable.dataType = variable.dataType.uri
+                }
             }
             this.service.createVariable(variable).then((http: HttpResponse<OpenSilexResponse<ObjectUriResponse>>) => {
                 let message = this.$i18n.t("VariableForm.variable") + " " + variable.name + " " + this.$i18n.t("component.common.success.creation-success-message");
@@ -91,15 +95,15 @@
                 variable.uri =  http.response.result.toString();
                 this.$emit("onCreate",variable);
             }).catch((error) => {
-              if (error.status == 409) {
+                if (error.status == 409) {
                     this.$opensilex.errorHandler(error,"Variable "+variable.uri+" : "+this.$i18n.t("VariableForm.already-exist"));
                 } else {
-                  if (error.response.result) {
-                      this.$opensilex.errorHandler(error, error.response.result.message);
-                  }else {
-                      this.$opensilex.errorHandler(error);
-                  }
-              }
+                    if (error.response.result) {
+                        this.$opensilex.errorHandler(error, error.response.result.message);
+                    } else {
+                        this.$opensilex.showErrorToast(error.response[0].message)
+                    }
+                }
             });
         }
 
@@ -112,7 +116,6 @@
                 return undefined;
             }
             let formattedVariable = JSON.parse(JSON.stringify(variable));
-
             if(formattedVariable.datatype && formattedVariable.datatype.uri){
                 formattedVariable.datatype = formattedVariable.datatype.uri
             }
@@ -134,13 +137,18 @@
             if(formattedVariable.species && formattedVariable.species.uri){
                 formattedVariable.species = formattedVariable.species.uri;
             }
-
+            
             return formattedVariable;
         }
 
         update(variable) {
+            if(variable.isMultidimensional) {
+                variable.datatype = undefined;
+            } else {
+                variable.dimensions = undefined;
+            }
             let formattedVariable = VariableCreate.formatVariableBeforeUpdate(variable);
-
+            
             this.service.updateVariable(formattedVariable).then(() => {
                 let message = this.$i18n.t("VariableForm.variable") + " " + variable.name + " " + this.$i18n.t("component.common.success.update-success-message");
                 this.$opensilex.showSuccessToast(message);

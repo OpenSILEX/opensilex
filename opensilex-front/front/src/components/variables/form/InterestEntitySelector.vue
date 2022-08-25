@@ -70,9 +70,9 @@ en:
     interestEntity: 
         form:
           selector:
-            placeholder : Select one entity of interest
-            placeholder-multiple : Select one or more entities of interest
-            filter-search-no-result : No entities of interest found
+            placeholder : Select one observation level
+            placeholder-multiple : Select one or more observation levels
+            filter-search-no-result : No observation level found
     
             
 fr:
@@ -80,8 +80,8 @@ fr:
     interestEntity: 
         form: 
           selector:
-            placeholder : Sélectionner une entité d'intérêt
-            placeholder-multiple : Sélectionner une ou plusieurs entités d'intérêt
-            filter-search-no-result : Aucune entité d'intérêt trouvée
+            placeholder : Sélectionner un niveau d'observation
+            placeholder-multiple : Sélectionner un ou plusieurs niveaux d'observation
+            filter-search-no-result : Aucun niveau d'observation trouvé
 
 </i18n>

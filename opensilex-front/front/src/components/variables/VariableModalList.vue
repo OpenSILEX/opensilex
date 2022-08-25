@@ -27,6 +27,7 @@
         :pageSize="5"
         :maximumSelectedRows="maximumSelectedRows"
         :withAssociatedData="withAssociatedData"
+        :isMultidimensional="isMultidimensional"
         :experiment="experiment"
         :objects="objects"
         :devices="devices"
@@ -53,6 +54,9 @@ export default class VariableModalList extends Vue {
 
   @Prop()
   withAssociatedData;
+
+  @Prop()
+  isMultidimensional;
 
   @Prop()
   experiment;

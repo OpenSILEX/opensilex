@@ -191,11 +191,11 @@
                     ></opensilex-InputForm>
                 </div>
 
-                <!-- DataType -->
-                <div class="col-lg-6" id="v-step-datatype">
+                <!-- DataType / Dimensions-->
+                <div class="col-lg-6" id="v-step-datatype" v-show="!form.isMultidimensional">
                     <opensilex-SelectForm
                         label="OntologyPropertyForm.data-type"
-                        :required="true"
+                        :required="!form.isMultidimensional"
                         :disabled="hasLinkedData"
                         :selected.sync="form.datatype"
                         :options="datatypesNodes"
@@ -204,9 +204,29 @@
                         placeholder="VariableForm.datatype-placeholder"
                     ></opensilex-SelectForm>
                 </div>
+                <div class="col-lg-6" id="v-step-datatype" v-show="form.isMultidimensional">
+                    <opensilex-SelectForm
+                        ref="dimensionSelectForm"
+                        label="VariableForm.dimensions"
+                        :disabled="hasLinkedData"
+                        :selected.sync="form.dimensions"
+                        :multiple="true"
+                        :required="form.isMultidimensional"
+                        :searchMethod="searchDimensions"
+                        :itemLoadingMethod="loadDimensions"
+                        :conversionMethod="objectToSelectNode"
+                        placeholder="VariableForm.multidimensional.placeholder"
+                        :actionHandler="showDimensionCreateForm"
+                        noResultsText="VariableForm.multidimensional.no-dimension"
+                    ></opensilex-SelectForm>
+                    <opensilex-DimensionCreate
+                        ref="dimensionForm"
+                        @onCreate="setLoadedDimension">
+                    </opensilex-DimensionCreate>
+                </div>
 
                 <!-- time-interval -->
-                <div class="col-lg-6" id="v-step-time-interval">
+                <!-- <div class="col-lg-6" id="v-step-time-interval">
                     <opensilex-SelectForm
                         label="VariableForm.time-interval"
                         :selected.sync="form.time_interval"
@@ -215,13 +235,20 @@
                         placeholder="VariableForm.time-interval-placeholder"
                         helpMessage="VariableForm.time-interval-help"
                     ></opensilex-SelectForm>
+                </div> -->
+
+                <!-- isMultidimensional -->
+                <div class="col-lg-6">
+                    <opensilex-CheckboxForm
+                        :value.sync="form.isMultidimensional"
+                        :disabled="editMode"
+                        label="VariableList.multidimensional"
+                        title="VariableList.multidimensional-title"
+                    ></opensilex-CheckboxForm>
                 </div>
 
-                <!-- div d'occupation d'espace permettant de mieux positionner le prochain composant -->
-                <div class="col-lg-6"></div>
-
                 <!-- sample/distance-interval -->
-                <div class="col-lg-6" id="v-step-sampling-interval">
+                <!-- <div class="col-lg-6" id="v-step-sampling-interval">
                     <opensilex-SelectForm
                         label="VariableForm.sampling-interval"
                         :selected.sync="form.sampling_interval"
@@ -230,21 +257,13 @@
                         placeholder="VariableForm.sampling-interval-placeholder"
                         helpMessage="VariableForm.sampling-interval-help"
                     ></opensilex-SelectForm>
-                </div>
+                </div> -->
 
                 <!-- description -->
                 <div class="col-xl-12" id="v-step-description">
                     <opensilex-TextAreaForm :value.sync="form.description" label="component.common.description">
                     </opensilex-TextAreaForm>
                 </div>
-                
-                <!-- variables groups-->
-                <!-- <div class="col-xl-12">
-                    <opensilex-GroupVariablesTable
-                        ref="groupVariablesTable"
-                        :variablesGroupArray="variablesGroupArray"
-                    ></opensilex-GroupVariablesTable>
-                </div> -->
             </div>
         </ValidationObserver>
     </div>
@@ -263,6 +282,7 @@ import {
   NamedResourceDTO,
   UnitCreationDTO,
   VariableDatatypeDTO,
+  DimensionCreationDTO,
   VariablesService
 } from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
@@ -297,12 +317,14 @@ export default class VariableForm extends Vue {
     @Ref("characteristicSelectForm") characteristicSelectForm!: any;
     @Ref("methodSelectForm") methodSelectForm!: any;
     @Ref("unitSelectForm") unitSelectForm!: any;
+    @Ref("dimensionSelectForm") dimensionSelectForm!: any;
 
     @Ref("entityForm") readonly entityForm!: any;
     @Ref("interestEntityForm") readonly interestEntityForm!: any;
     @Ref("characteristicForm") readonly characteristicForm!: any;
     @Ref("methodForm") readonly methodForm!: any;
     @Ref("unitForm") readonly unitForm!: any;
+    @Ref("dimensionForm") readonly dimensionForm!: any;
 
     @Ref("traitForm") readonly traitForm!: ModalForm;
 
@@ -364,18 +386,6 @@ export default class VariableForm extends Vue {
         }
         return "";
     }
-
-    // variablesGroupArray = [];
-    // setVariablesGroups(form) {
-    //     this.variablesGroupArray = [];
-    //     if (form.relations != null) {  
-    //         form.variablesGroup.forEach(variablesGroup => {
-    //             if(variablesGroup.uri != null){
-    //                 this.variablesGroupArray.push(variablesGroup);
-    //             }
-    //         })        
-    //     }
-    // }
 
     selectedEntityName;
     selectedCharacteristicName;
@@ -449,6 +459,10 @@ export default class VariableForm extends Vue {
         this.unitForm.showCreateForm();
     }
 
+    showDimensionCreateForm() {
+        this.dimensionForm.showCreateForm();
+    }
+
     showTraitForm(){
         if(this.editMode){
             this.traitForm.showEditForm(this.getEmptyTraitForm());
@@ -468,6 +482,8 @@ export default class VariableForm extends Vue {
         description: undefined,
         time_interval: undefined,
         sampling_interval: undefined,
+        isMultidimensional: undefined,
+        dimensions: [],
         datatype: undefined,
         trait: undefined,
         trait_name: undefined,
@@ -479,7 +495,6 @@ export default class VariableForm extends Vue {
         narrow_match: [],
         species: undefined,
         linked_data_nb: 0
-//        variablesGroup: []
       };
     }
 
@@ -619,6 +634,28 @@ export default class VariableForm extends Vue {
     setLoadedUnit(created: UnitCreationDTO) {
         this.form.unit = created.uri;
         this.unitSelectForm.select({id: created.uri, label: created.name});
+    }
+
+    searchDimensions(name: string ,page, pageSize){
+        return this.service
+            .searchDimensions(name, ["name=asc"], page,pageSize)
+            .then((http: HttpResponse<OpenSilexResponse<Array<any>>>) => {
+                return http;
+            });
+    }
+
+    loadDimensions(uris: Array<any>) {
+        if(!uris){
+            return undefined;
+        }
+        return this.service.getDimensionsByURIs(uris).then(http =>
+            http.response.result
+        );
+    }
+
+    setLoadedDimension(created: DimensionCreationDTO) {
+        this.form.dimensions.push(created.uri);
+        this.dimensionSelectForm.select({id: created.uri, label: created.name});
     }
 
     objectToSelectNode(dto) {
@@ -883,6 +920,10 @@ en:
         trait-button-help: Add a trait (entity and characteristic) already existing in an ontology
         datatype-help: Format of data recorded for this variable. (Can't be updated while they are some data linked to this variable).
         datatype-placeholder: Select a datatype
+        dimensions: Dimensions
+        multidimensional:
+            placeholder: Select at least two dimensions
+            filter-search-no-result : No dimensions found
         dimension-values:
             unique: Unique measurement
             millisecond : Millisecond
@@ -973,6 +1014,10 @@ fr:
         trait-button-help: Ajouter un trait (entité et caractéristique) existant déjà dans une ontologie
         datatype-help: Format des données enregistrées pour cette variable. (Ne peut être mis à jour si des données sont liées à cette variable).
         datatype-placeholder: Sélectionner un type de donnée
+        dimensions: Dimensions
+        multidimensional:
+            placeholder: Sélectionner au moins deux dimensions
+            filter-search-no-result : Aucune dimension trouvée
         dimension-values:
             unique: Enregistrement unique
             millisecond : Milliseconde

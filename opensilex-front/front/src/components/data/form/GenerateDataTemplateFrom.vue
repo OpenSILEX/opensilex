@@ -365,28 +365,47 @@ export default class GenerateDataTemplateFrom extends Vue {
           for (let element of http.response.result) {
 
             //column variable
-            line1.push(element.uri);
-            line2.push(element.name);
-            if (element.datatype === undefined || element.datatype === null) {
-              element.datatype = Xsd.STRING;
+            if (element.isMultidimensional && element.dimensions.length >= 2) {
+              for (let i in element.dimensions) {
+                line1.push(element.uri);
+                line2.push(element.name);
+                let dimension = element.dimensions[i];
+                let variableHelp = this.$t("DataHelp.column-type-help").toString() +
+                this.$opensilex.getVariableDatatypeLabel(dimension.datatype);
+                if (this.$opensilex.checkURIs(dimension.datatype, Xsd.DATE)) {
+                  variableHelp += " " + this.$t("DataTemplateForm.format-help.date");
+                } else if (this.$opensilex.checkURIs(dimension.datatype, Xsd.DATETIME)) {
+                  variableHelp += " " + this.$t("DataTemplateForm.format-help.datetime");
+                }
+                line3.push(this.$t("DataHelp.column-variable-multi-help").toString() +
+                dimension.uri + "\n" + this.$t("DataHelp.column-type-help").toString() + variableHelp);
+              }
+            } else {
+              line1.push(element.uri);
+              line2.push(element.name);
+              if (element.datatype === undefined || element.datatype === null) {
+                element.datatype = Xsd.STRING;
+              }
+              let variableHelp = this.$t("DataHelp.column-type-help").toString() +
+              this.$opensilex.getVariableDatatypeLabel(element.datatype);
+              if (this.$opensilex.checkURIs(element.datatype, Xsd.DATE)) {
+                variableHelp += " " + this.$t("DataTemplateForm.format-help.date");
+              } else if (this.$opensilex.checkURIs(element.datatype, Xsd.DATETIME)) {
+                variableHelp += " " + this.$t("DataTemplateForm.format-help.datetime");
+              }
+              line3.push(variableHelp);
             }
-            let variableHelp = this.$t("DataHelp.column-type-help").toString() +
-                this.$opensilex.getVariableDatatypeLabel(element.datatype);
-            if (this.$opensilex.checkURIs(element.datatype, Xsd.DATE)) {
-              variableHelp += " " + this.$t("DataTemplateForm.format-help.date");
-            } else if (this.$opensilex.checkURIs(element.datatype, Xsd.DATETIME)) {
-              variableHelp += " " + this.$t("DataTemplateForm.format-help.datetime");
-            }
-            line3.push(variableHelp);
 
             //column raw_data
             if (this.withRawData) {
               line1.push("raw_data");
               line2.push(this.$t("DataTemplateForm.raw-data"));
-              line3.push(
-                this.$t("DataHelp.column-type-help").toString() +
-                this.$t("DataTemplateForm.type-list") +
-                this.$opensilex.getVariableDatatypeLabel(element.datatype));
+              if (element.datatype) {
+                line3.push(
+                  this.$t("DataHelp.column-type-help").toString() +
+                  this.$t("DataTemplateForm.type-list") +
+                  this.$opensilex.getVariableDatatypeLabel(element.datatype));
+              }
             }
           }
           arrData = [line1, line2, line3];

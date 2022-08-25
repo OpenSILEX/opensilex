@@ -239,6 +239,7 @@ en :
     first-variable : "First Variable"
     other-variables : "Other variables, 1 per column...."
     column-type-help: "Column data type: "
+    column-variable-multi-help: "Dimension: "
     variable-data-help: Value of the variable (real number, text ou date)
     columns: CSV Files columns 
     file-rules: CSV editing rules
@@ -290,6 +291,7 @@ fr :
     other-variables : "Autres variables (1 par colonne) ..."
     date-help: "Date d'acquisition des données (format ISO 8601: AAAA-MM-JJTHH:mm:ssZ. Ex: 2020-09-21T00:00:00+0100)"
     column-type-help :  "Type de données colonne : "
+    column-variable-multi-help: "Dimension: "
     variable-data-help: Variable value (Real number, text or Date)
     columns: Colonnes du fichier CSV
     file-rules: Règles d'édition du CSV

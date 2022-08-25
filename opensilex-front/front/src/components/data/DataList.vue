@@ -28,6 +28,23 @@
         ></opensilex-UriLink>
       </template>
 
+      <template v-slot:cell(value)="{ data }">
+        <span v-if="Array.isArray(data.item.value)">
+          <span :key="index" v-for="(dto, index) in data.item.value">
+            <opensilex-UriLink
+              :uri="dto.dimension"
+              :value="dto.dimension"
+              :url="getDimensionPageUrl(dto.dimension)"
+            ></opensilex-UriLink>
+            {{dto.value}}
+            <br>
+          </span>
+        </span>
+        <span v-else>
+          <opensilex-TextView :value="data.item.value"></opensilex-TextView>
+        </span>
+      </template>
+
       <template v-slot:cell(provenance)="{ data }">
         <opensilex-UriLink
           :uri="data.item.provenance.uri"
@@ -44,7 +61,7 @@
           <opensilex-DetailButton
               v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
               @click="showDataProvenanceDetailsModal(data.item)"
-              label="DataView.list.details"
+              label="DataView.details"
               :small="true"
           ></opensilex-DetailButton>
         </b-button-group>
@@ -61,6 +78,7 @@
 <script lang="ts">
 import { Prop, Component, Ref, PropSync } from "vue-property-decorator";
 import Vue from "vue";
+import VariablesView from "../variables/VariablesView.vue";
 import { ProvenanceGetDTO } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 
@@ -153,6 +171,10 @@ export default class DataList extends Vue {
 
   get getSelectedProv() {
     return this.selectedProvenance;
+  }
+
+  getDimensionPageUrl(uri: string): string {
+    return this.$opensilex.getURL("variables/?elementType=" + VariablesView.DIMENSION_TYPE + "&selected=" + encodeURIComponent(uri));
   }
 
   showProvenanceDetails() {

@@ -40,7 +40,7 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
     public String getByUriPath = path + "/{uri}";
     public String createPath = path;
     public String updatePath = path ;
-    public String deletePath = path+ "/{uri}";
+    public String deletePath = EventAPI.PATH+ "/{uri}";
 
     public String positionPath = PositionAPI.PATH;
     public String getPositionPath = positionPath + "/{uri}";

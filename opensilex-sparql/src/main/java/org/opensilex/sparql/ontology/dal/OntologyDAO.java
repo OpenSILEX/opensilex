@@ -919,8 +919,8 @@ public final class OntologyDAO {
         return resultList;
     }
 
-    public SPARQLResourceModel getRdfType(URI uri, String language) throws Exception {
-        return sparql.getByURI(SPARQLResourceModel.class, uri, language);
+    public List<URI> getRdfTypes(URI uri) throws Exception {
+        return sparql.searchPrimitives(null,uri,RDF.type,URI.class);
     }
 
     public List<URITypesModel> checkURIsTypes(List<URI> uris, List<URI> rdfTypes) throws Exception {

@@ -333,7 +333,15 @@ public class EventAPI {
     public Response deleteEvent(
             @ApiParam(value = "Event URI", example = "http://opensilex.dev/events/deplacement/1865162374", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        EventDAO dao = new EventDAO(sparql, nosql);
+        List<URI> types = new OntologyDAO(sparql).getRdfTypes(uri);
+        if(CollectionUtils.isEmpty(types)){
+            throw new NotFoundURIException(uri);
+        }
+
+        final EventDAO<?> dao = SPARQLDeserializers.compareURIs(types.get(0), Oeev.Move.toString()) ?
+                new MoveEventDAO(sparql, nosql) :
+                new EventDAO<>(sparql, nosql);
+
         dao.delete(uri);
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
@@ -633,28 +641,6 @@ public class EventAPI {
 
         MoveDetailsDTO dto = new MoveDetailsDTO(model);
         return new SingleObjectResponse<>(dto).getResponse();
-    }
-
-    @DELETE
-    @Path(MOVE_PATH_PREFIX + "/{uri}")
-    @ApiOperation("Delete a move event")
-    @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_EVENT_DELETE_ID,
-            credentialLabelKey = CREDENTIAL_EVENT_DELETE_LABEL_KEY
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Move deleted", response = ObjectUriResponse.class),
-            @ApiResponse(code = 404, message = "Move URI not found", response = ErrorResponse.class)
-    })
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response deleteMoveEvent(
-            @ApiParam(value = "Event URI", example = "http://opensilex.dev/events/deplacement/1865162374", required = true) @PathParam("uri") @NotNull URI uri
-    ) throws Exception {
-        MoveEventDAO dao = new MoveEventDAO(sparql, nosql);
-        dao.delete(uri);
-        return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
 
     @GET

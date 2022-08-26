@@ -64,7 +64,9 @@
               right
           >
             <template v-slot:button-content>
-
+              <opensilex-Icon
+                  icon="fa#bell"
+              />
             </template>
 
             <b-dropdown-item

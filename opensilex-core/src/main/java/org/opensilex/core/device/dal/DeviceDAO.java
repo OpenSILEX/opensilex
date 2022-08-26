@@ -19,21 +19,15 @@ import org.apache.jena.sparql.core.TriplePath;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.vocabulary.RDFS;
 import org.bson.Document;
-import org.opensilex.core.data.dal.DataDAO;
-import org.opensilex.core.event.dal.move.MoveEventDAO;
-import org.opensilex.core.event.dal.move.MoveModel;
-import org.opensilex.core.event.dal.move.PositionModel;
 import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
-import org.opensilex.nosql.datasource.coordinator.DefaultDataSourceCoordinator;
 import org.opensilex.nosql.mongodb.metadata.MetaDataDao;
 import org.opensilex.nosql.mongodb.metadata.MetaDataModel;
 import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
-import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -101,8 +95,8 @@ public class DeviceDAO {
         devModel.addRelation(sparql.getDefaultGraphURI(DeviceModel.class), new URI(RDFS.label.getURI()), String.class, devModel.getName());
     }
 
-    public MongoCollection<DeviceAttributeModel> getAttributesCollection() {
-        return mongodb.getDatabase().getCollection(ATTRIBUTES_COLLECTION_NAME, DeviceAttributeModel.class);
+    public MongoCollection<MetaDataModel> getAttributesCollection() {
+        return mongodb.getDatabase().getCollection(ATTRIBUTES_COLLECTION_NAME, MetaDataModel.class);
     }
 
     public void createIndexes() {
@@ -113,22 +107,12 @@ public class DeviceDAO {
     }
     
     public void create(DeviceModel model) throws Exception {
-
-        new DefaultDataSourceCoordinator<>(sparql, mongodb.startSession())
-                .addMongoOperation(metaDataDao.getCreateConsumer(metaDataCollection,model.getMetadata(),model))
-                .addSparqlOperation(sparqlService -> sparqlService.create(model))
-                .run();
+        sparql.create(model);
     }
 
     public DeviceModel update(DeviceModel model) throws Exception {
-
-        new DefaultDataSourceCoordinator<>(sparql, mongodb.startSession())
-                .addMongoOperation(metaDataDao.getUpdateConsumer(metaDataCollection,model.getMetadata(),model))
-                .addSparqlOperation(sparqlService -> {
-                    sparqlService.deleteByURI(defaultGraph, model.getUri());
-                    sparqlService.create(model);
-                })
-                .run();
+        sparql.deleteByURI(defaultGraph, model.getUri());
+        sparql.create(model);
         return model;
     }
 
@@ -418,7 +402,6 @@ public class DeviceDAO {
     /**
      *
      * @param uri uri of device
-     * @param currentUser current user
      * @throws ForbiddenURIAccessException if the device is linked to some existing data, datafile or provenance.
      * @throws Exception if some error is encountered during delete
      *
@@ -426,30 +409,8 @@ public class DeviceDAO {
      * @see org.opensilex.core.data.dal.DataModel
      * @see org.opensilex.core.data.dal.DataFileModel
      */
-    public void delete(URI uri, UserModel currentUser) throws Exception {
-        
-        // test if device in provenances
-        ProvenanceDAO provenanceDAO = new ProvenanceDAO(mongodb, sparql);
-        int provCount = provenanceDAO.count(null, null, null, null, null, null, uri);
-        if(provCount > 0) {
-            throw new ForbiddenURIAccessException(uri, provCount+" provenance(s)");
-        }
-        
-        DataDAO dataDAO = new DataDAO(mongodb, sparql, fs);
-        int dataCount = dataDAO.count(currentUser, null, null, null, null, Collections.singletonList(uri),null, null, null, null, null);
-        if(dataCount > 0){
-            throw new ForbiddenURIAccessException(uri, dataCount+" data");
-        }  
-        
-        int dataFileCount = dataDAO.countFiles(currentUser, null, null, null, null, Collections.singletonList(uri),null, null, null);
-        if(dataFileCount > 0){
-            throw new ForbiddenURIAccessException(uri, dataFileCount+" datafile(s)");
-        }
-
-        new DefaultDataSourceCoordinator<>(sparql, mongodb.startSession())
-                .addMongoOperation(metaDataDao.getDeleteConsumer(metaDataCollection,uri))
-                .addSparqlOperation(sparqlService -> sparqlService.delete(DeviceModel.class, uri))
-                .run();
+    public void delete(URI uri) throws Exception {
+        sparql.delete(DeviceModel.class,uri);
     }
 
     public List<VariableModel> getDeviceVariables(URI uri, String language) throws Exception {

@@ -27,10 +27,9 @@ import org.opensilex.core.device.dal.DeviceSearchFilter;
 import org.opensilex.core.exception.UnableToParseDateException;
 import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
-import org.opensilex.core.organisation.api.facility.FacilityGetDTO;
-import org.opensilex.core.organisation.dal.facility.FacilityModel;
-import org.opensilex.core.scientificObject.api.ScientificObjectCsvDescriptionDTO;
-import org.opensilex.sparql.csv.CsvImporter;
+import org.opensilex.core.provenance.dal.ProvenanceDAO;
+import org.opensilex.nosql.datasource.coordinator.DefaultDataSourceCoordinator;
+import org.opensilex.nosql.mongodb.metadata.MetaDataDao;
 import org.opensilex.sparql.csv.DefaultCsvImporter;
 import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
@@ -149,7 +148,20 @@ public class DeviceAPI {
                 DeviceModel model = new DeviceModel();
                 deviceDTO.toModel(model);
                 deviceDAO.initDevice(model, deviceDTO.getRelations(), currentUser);
-                deviceDAO.create(model);
+
+                // device and associated metadata
+                if(MetaDataDao.hasMetaData(model.getMetadata())){
+                    MetaDataDao metaDataDao = new MetaDataDao(nosql,sparql);
+
+                    new DefaultDataSourceCoordinator<>(sparql, nosql.startSession())
+                            .addSparqlOperation(sparqlService -> deviceDAO.create(model))
+                            .addMongoOperation(metaDataDao.getCreateConsumer(deviceDAO.getAttributesCollection(),model.getMetadata(),model))
+                            .run();
+                }else{
+                    // device
+                    deviceDAO.create(model);
+                }
+
                 return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
             } catch (SPARQLAlreadyExistingUriException ex) {
                 return new ErrorResponse(
@@ -319,11 +331,22 @@ public class DeviceAPI {
             @Valid DeviceCreationDTO dto
     ) throws Exception {
         DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
-        DeviceModel deviceModel = dto.newModel();
+        DeviceModel model = dto.newModel();
+        
+        deviceDAO.initDevice(model, dto.getRelations(), currentUser);
 
-        deviceDAO.initDevice(deviceModel, dto.getRelations(), currentUser);
-        deviceDAO.update(deviceModel);
-        return new ObjectUriResponse(Response.Status.OK, deviceModel.getUri()).getResponse();
+        if(MetaDataDao.hasMetaData(model.getMetadata())){
+            MetaDataDao metaDataDao = new MetaDataDao(nosql,sparql);
+
+            new DefaultDataSourceCoordinator<>(sparql, nosql.startSession())
+                    .addSparqlOperation(sparqlService -> deviceDAO.update(model))
+                    .addMongoOperation(metaDataDao.getUpdateConsumer(deviceDAO.getAttributesCollection(),model.getMetadata(),model))
+                    .run();
+        }else{
+            deviceDAO.update(model);
+        }
+
+        return new ObjectUriResponse(Response.Status.OK, model.getUri()).getResponse();
     }
 
     @DELETE
@@ -348,7 +371,29 @@ public class DeviceAPI {
         DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
 
         try {
-            dao.delete(uri, currentUser);
+            // test if device in provenances
+            ProvenanceDAO provenanceDAO = new ProvenanceDAO(nosql, sparql);
+            int provCount = provenanceDAO.count(null, null, null, null, null, null, uri);
+            if(provCount > 0) {
+                throw new ForbiddenURIAccessException(uri, provCount+" provenance(s)");
+            }
+
+            DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
+            int dataCount = dataDAO.count(currentUser, null, null, null, null, Collections.singletonList(uri),null, null, null, null, null);
+            if(dataCount > 0){
+                throw new ForbiddenURIAccessException(uri, dataCount+" data");
+            }
+
+            int dataFileCount = dataDAO.countFiles(currentUser, null, null, null, null, Collections.singletonList(uri),null, null, null);
+            if(dataFileCount > 0){
+                throw new ForbiddenURIAccessException(uri, dataFileCount+" datafile(s)");
+            }
+
+            new DefaultDataSourceCoordinator<>(sparql, nosql.startSession())
+                    .addMongoOperation(new MetaDataDao(nosql,sparql).getDeleteConsumer(dao.getAttributesCollection(),uri))
+                    .addSparqlOperation(sparqlService -> sparqlService.delete(DeviceModel.class, uri))
+                    .run();
+
             return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
 
         } catch (ForbiddenURIAccessException e) {

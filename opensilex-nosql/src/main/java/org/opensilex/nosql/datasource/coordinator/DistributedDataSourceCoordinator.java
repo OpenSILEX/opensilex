@@ -20,6 +20,8 @@ public interface DistributedDataSourceCoordinator<O extends DataSourceOperation<
      * @param <T> the kind of datasource on which applying a local transaction.
      * This object depends of the driver/API used to perform operation on a database.
      * Ex:  Connection for a JDBC database, {@link com.mongodb.client.ClientSession} for a MongoDB database
+     *
+     * @apiNote The order or operation registering must be handled
      * @throws IllegalArgumentException if dataSource has not been already registered by calling {@link #registerDataSource(Object, ThrowingConsumer, ThrowingConsumer, ThrowingConsumer, ThrowingConsumer, String)}
      */
     <T> void addOperation(T dataSource, O operation) throws IllegalArgumentException;

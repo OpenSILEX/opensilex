@@ -15,13 +15,13 @@ public abstract class AbstractDistributedCoordinator<O extends DataSourceOperati
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractDistributedCoordinator.class);
 
-    protected final Map<Object, LocalDataBase<?>> localDatabases;
+    protected final LinkedHashMap<Object, LocalDataBase<?>> localDatabases;
 
-    protected final Map<Object, List<DataSourceOperation<?>>> operationsByDatabase;
+    protected final LinkedHashMap<Object, List<DataSourceOperation<?>>> operationsByDatabase;
 
     protected AbstractDistributedCoordinator() {
-        operationsByDatabase = new HashMap<>();
-        localDatabases = new HashMap<>();
+        operationsByDatabase = new LinkedHashMap<>();
+        localDatabases = new LinkedHashMap<>();
     }
 
 

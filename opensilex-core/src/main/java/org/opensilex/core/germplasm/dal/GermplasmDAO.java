@@ -6,6 +6,7 @@
 //******************************************************************************
 package org.opensilex.core.germplasm.dal;
 
+import com.mongodb.client.ClientSession;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
@@ -50,6 +51,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
 import static com.mongodb.client.model.Aggregates.*;
+import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Projections.computed;
 import static org.opensilex.core.experiment.dal.ExperimentDAO.appendUserExperimentsFilter;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
@@ -90,27 +92,39 @@ public class GermplasmDAO {
 
     public void create(GermplasmModel model) throws Exception {
 
-        new DefaultDataSourceCoordinator<>(sparql, nosql.startSession())
-                .addMongoOperation(metaDataDao.getCreateConsumer(metaDataCollection,model.getMetadata(),model))
-                .addSparqlOperation(sparqlService -> sparqlService.create(model))
-                .run();
+        if(MetaDataDao.hasMetaData(model.getMetadata())){
+            new DefaultDataSourceCoordinator<>(sparql, nosql.startSession())
+                    .addMongoOperation(metaDataDao.getCreateConsumer(metaDataCollection,model.getMetadata(),model))
+                    .addSparqlOperation(sparqlService -> sparqlService.create(model))
+                    .run();
+        }
+        else{
+            sparql.create(model);
+        }
     }
 
     public GermplasmModel update(GermplasmModel model) throws Exception {
 
-        new DefaultDataSourceCoordinator<>(sparql, nosql.startSession())
-                .addMongoOperation(metaDataDao.getUpdateConsumer(metaDataCollection,model.getMetadata(),model))
-                .addSparqlOperation(sparqlService -> {
-                    sparqlService.deleteByURI(defaultGraph, model.getUri());
-                    sparqlService.create(model);
-                })
-                .run();
+        if(MetaDataDao.hasMetaData(model.getMetadata())){
+            
+            new DefaultDataSourceCoordinator<>(sparql, nosql.startSession())
+                    .addMongoOperation(metaDataDao.getUpdateConsumer(metaDataCollection,model.getMetadata(),model))
+                    .addSparqlOperation(sparqlService -> {
+                        sparqlService.deleteByURI(defaultGraph, model.getUri());
+                        sparqlService.create(model);
+                    })
+                    .run();
+        }
+        else{
+            sparql.deleteByURI(defaultGraph, model.getUri());
+            sparql.create(model);
+        }
         return model;
     }
 
     public void delete(URI uri) throws Exception {
         new DefaultDataSourceCoordinator<>(sparql, nosql.startSession())
-                .addMongoOperation(metaDataDao.getDeleteConsumer(metaDataCollection,uri))
+                .addMongoOperation((ClientSession session) -> metaDataCollection.findOneAndDelete(session, eq(MongoModel.URI_FIELD, uri)))
                 .addSparqlOperation(sparqlService -> sparqlService.delete(GermplasmModel.class, uri))
                 .run();
     }

@@ -68,9 +68,6 @@ public class MetaDataDao {
                                                                            MetaDataModel newMetadata,
                                                                            T model){
 
-        if (newMetadata == null || MapUtils.isEmpty(newMetadata.getAttributes())) {
-            return null;
-        }
         Objects.requireNonNull(metaDataCollection);
         return (ClientSession session) -> {
             if (newMetadata.getUri() == null) {
@@ -81,6 +78,10 @@ public class MetaDataDao {
             }
             metaDataCollection.insertOne(session, newMetadata);
         };
+    }
+
+    public static boolean hasMetaData(MetaDataModel metaDataModel){
+        return metaDataModel != null && ! MapUtils.isEmpty(metaDataModel.getAttributes());
     }
 
     /**
@@ -103,10 +104,6 @@ public class MetaDataDao {
 
         MetaDataModel oldMetadata = metaDataCollection.find(eq(MongoModel.URI_FIELD, model.getUri())).first();
 
-        // no metadata (old and new)
-        if ((newMetadata == null || MapUtils.isEmpty(newMetadata.getAttributes())) && oldMetadata == null) {
-            return null;
-        }
         return (ClientSession session) -> update(
                 metaDataCollection,
                 session,
@@ -128,11 +125,6 @@ public class MetaDataDao {
      */
     public <T extends SPARQLResourceModel> ThrowingConsumer<ClientSession,Exception> getDeleteConsumer(MongoCollection<MetaDataModel> metaDataCollection,
                                                                                                        URI uri){
-
-        MetaDataModel metadata = get(metaDataCollection, uri, MongoModel.URI_FIELD);
-        if (metadata == null || MapUtils.isEmpty(metadata.getAttributes())) {
-           return null;
-        }
         return (ClientSession session) -> metaDataCollection.findOneAndDelete(session, eq(MongoModel.URI_FIELD, uri));
     }
 

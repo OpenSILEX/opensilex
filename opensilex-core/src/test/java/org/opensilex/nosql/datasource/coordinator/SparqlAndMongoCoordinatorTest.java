@@ -12,9 +12,6 @@ import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.nosql.datasource.operation.DataSourceOperation;
 import org.opensilex.nosql.datasource.operation.MongoOperation;
 import org.opensilex.nosql.datasource.operation.SparqlOperation;
-import org.opensilex.nosql.datasource.saga.MongoSagaOperation;
-import org.opensilex.nosql.datasource.saga.SagaDistributedCoordinator;
-import org.opensilex.nosql.datasource.saga.SparqlSagaOperation;
 import org.opensilex.nosql.models.MongoTestModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
@@ -136,6 +133,7 @@ public class SparqlAndMongoCoordinatorTest extends AbstractMongoIntegrationTest 
     }
 
 //    @Test
+    /*
     public void testInsertSaga() throws Exception {
 
         SPARQLService sparql = getSparqlService();
@@ -160,6 +158,8 @@ public class SparqlAndMongoCoordinatorTest extends AbstractMongoIntegrationTest 
 
         coordinator.run();
     }
+    */
+
 
     @Override
     protected List<String> getCollectionsToClearNames() {

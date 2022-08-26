@@ -91,42 +91,17 @@ public class GermplasmDAO {
     }
 
     public void create(GermplasmModel model) throws Exception {
-
-        if(MetaDataDao.hasMetaData(model.getMetadata())){
-            new DefaultDataSourceCoordinator<>(sparql, nosql.startSession())
-                    .addMongoOperation(metaDataDao.getCreateConsumer(metaDataCollection,model.getMetadata(),model))
-                    .addSparqlOperation(sparqlService -> sparqlService.create(model))
-                    .run();
-        }
-        else{
-            sparql.create(model);
-        }
+        sparql.create(model);
     }
 
     public GermplasmModel update(GermplasmModel model) throws Exception {
-
-        if(MetaDataDao.hasMetaData(model.getMetadata())){
-            
-            new DefaultDataSourceCoordinator<>(sparql, nosql.startSession())
-                    .addMongoOperation(metaDataDao.getUpdateConsumer(metaDataCollection,model.getMetadata(),model))
-                    .addSparqlOperation(sparqlService -> {
-                        sparqlService.deleteByURI(defaultGraph, model.getUri());
-                        sparqlService.create(model);
-                    })
-                    .run();
-        }
-        else{
-            sparql.deleteByURI(defaultGraph, model.getUri());
-            sparql.create(model);
-        }
+        sparql.deleteByURI(defaultGraph, model.getUri());
+        sparql.create(model);
         return model;
     }
 
     public void delete(URI uri) throws Exception {
-        new DefaultDataSourceCoordinator<>(sparql, nosql.startSession())
-                .addMongoOperation((ClientSession session) -> metaDataCollection.findOneAndDelete(session, eq(MongoModel.URI_FIELD, uri)))
-                .addSparqlOperation(sparqlService -> sparqlService.delete(GermplasmModel.class, uri))
-                .run();
+        sparql.delete(GermplasmModel.class,uri);
     }
 
     public boolean labelExistsCaseSensitiveBySpecies(GermplasmCreationDTO germplasm) throws Exception {

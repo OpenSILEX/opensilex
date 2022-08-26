@@ -25,6 +25,7 @@ import static org.junit.Assert.assertFalse;
 import org.junit.Assert;
 import org.junit.Test;
 import org.opensilex.core.AbstractMongoIntegrationTest;
+import org.opensilex.core.device.api.DeviceCreationDTO;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
@@ -128,40 +129,43 @@ public class GermplasmAPITest extends AbstractMongoIntegrationTest {
         GermplasmDAO dao = new GermplasmDAO(getSparqlService(),getMongoDBService());
 
         // create two germplasm models with attributes
-        GermplasmModel model1 = new GermplasmModel();
-        model1.setLabel(new SPARQLLabel("germplasm1", ""));
-        model1.setType(URI.create(Oeso.Species.toString()));
+        GermplasmCreationDTO dto1 = new GermplasmCreationDTO();
+        dto1.setName("germplasm1");
+        dto1.setRdfType(URI.create(Oeso.Species.toString()));
 
         Map<String,String> attributes = new HashMap<>();
         attributes.put("p1","v1");
         attributes.put("p2","v2");
-        model1.setMetadata(new MetaDataModel(attributes));
+        dto1.setMetadata(attributes);
 
-        dao.create(model1);
+        // run test through API in order to handle device and metadata, create and get URI
+        dto1.setUri(extractUriFromResponse(getJsonPostResponse(target(createPath),dto1)));
 
-        GermplasmModel model2 = new GermplasmModel();
-        model2.setLabel(new SPARQLLabel("germplasm2", ""));
-        model2.setType(URI.create(Oeso.Species.toString()));
+        GermplasmCreationDTO dto2 = new GermplasmCreationDTO();
+
+        dto2.setName("germplasm2");
+        dto2.setRdfType(URI.create(Oeso.Species.toString()));
 
         Map<String,String> attributes2 = new HashMap<>();
         attributes2.put("p3","v3");
         attributes2.put("p4","v4");
-        model2.setMetadata(new MetaDataModel(attributes2));
+        dto2.setMetadata(attributes2);
 
-        dao.create(model2);
+        // run test through API in order to handle device and metadata
+        dto2.setUri(extractUriFromResponse(getJsonPostResponse(target(createPath),dto2)));
 
         // search models and ensure that metadata are OK for each model
         ListWithPagination<GermplasmModel> models = dao.search(new GermplasmSearchFilter(),true);
 
         GermplasmModel model1FromDb = models.getList().stream()
-                .filter(modelFromDb -> SPARQLDeserializers.compareURIs(modelFromDb.getUri(),model1.getUri()))
+                .filter(modelFromDb -> SPARQLDeserializers.compareURIs(modelFromDb.getUri(),dto1.getUri()))
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("testSearchWithMetadata"));
 
         Assert.assertEquals(model1FromDb.getMetadata().getAttributes(),attributes);
 
         GermplasmModel model2FromDb = models.getList().stream()
-                .filter(modelFromDb -> SPARQLDeserializers.compareURIs(modelFromDb.getUri(),model2.getUri()))
+                .filter(modelFromDb -> SPARQLDeserializers.compareURIs(modelFromDb.getUri(),dto2.getUri()))
                 .findFirst()
                 .orElseThrow(() -> new RuntimeException("testSearchWithMetadata"));
 

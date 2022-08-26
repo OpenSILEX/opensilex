@@ -19,13 +19,52 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema.Builder;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import io.swagger.annotations.*;
+import com.mongodb.client.ClientSession;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.net.URI;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import javax.inject.Inject;
+import javax.validation.Valid;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
 import org.opensilex.core.experiment.api.ExperimentGetListDTO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.nosql.datasource.coordinator.DefaultDataSourceCoordinator;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.nosql.mongodb.MongoModel;
+import org.opensilex.nosql.mongodb.metadata.MetaDataDao;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
@@ -56,6 +95,8 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+
+import static com.mongodb.client.model.Filters.eq;
 
 /**
  *
@@ -151,7 +192,17 @@ public class GermplasmAPI {
                 germplasmDTO = completeDTO(germplasmDTO);
                 // create new germplasm
                 GermplasmModel model = germplasmDTO.newModel();
-                germplasmDAO.create(model);
+
+                // germplasm and associated metadata
+                if(MetaDataDao.hasMetaData(model.getMetadata())){
+                    new DefaultDataSourceCoordinator<>(sparql, nosql.startSession())
+                            .addSparqlOperation(sparqlService -> germplasmDAO.create(model))
+                            .addMongoOperation(new MetaDataDao(nosql,sparql).getCreateConsumer(germplasmDAO.getAttributesCollection(),model.getMetadata(),model))
+                            .run();
+                }else{
+                    germplasmDAO.create(model);
+                }
+
                 return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
             } catch (Exception e) {
                 return new ErrorResponse(e).getResponse();
@@ -507,7 +558,17 @@ public class GermplasmAPI {
             germplasmDTO = completeDTO(germplasmDTO);
 
             GermplasmModel model = germplasmDTO.newModel();
-            germplasmDAO.update(model);
+            if(MetaDataDao.hasMetaData(model.getMetadata())){
+
+                new DefaultDataSourceCoordinator<>(sparql, nosql.startSession())
+                        .addMongoOperation(new MetaDataDao(nosql,sparql).getUpdateConsumer(germplasmDAO.getAttributesCollection(),model.getMetadata(),model))
+                        .addSparqlOperation(sparqlService -> germplasmDAO.update(model))
+                        .run();
+            }
+            else{
+                germplasmDAO.update(model);
+            }
+
             return new ObjectUriResponse(Response.Status.OK, model.getUri()).getResponse();
 
         } catch (SPARQLInvalidURIException e) {
@@ -543,8 +604,12 @@ public class GermplasmAPI {
                     "The germplasm is linked to another germplasm or a scientific object or an experiment",
                     "You can't delete a germplasm linked to another object"
             ).getResponse();
-        } else {        
-            dao.delete(uri);
+        } else {
+
+            new DefaultDataSourceCoordinator<>(sparql, nosql.startSession())
+                    .addMongoOperation((ClientSession session) -> new MetaDataDao(nosql, sparql).getDeleteConsumer(dao.getAttributesCollection(), uri))
+                    .addSparqlOperation(sparqlService ->dao.delete(uri))
+                    .run();
             return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
         }
 

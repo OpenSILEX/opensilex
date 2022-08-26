@@ -151,14 +151,12 @@ public class DeviceAPI {
 
                 // device and associated metadata
                 if(MetaDataDao.hasMetaData(model.getMetadata())){
-                    MetaDataDao metaDataDao = new MetaDataDao(nosql,sparql);
 
                     new DefaultDataSourceCoordinator<>(sparql, nosql.startSession())
                             .addSparqlOperation(sparqlService -> deviceDAO.create(model))
-                            .addMongoOperation(metaDataDao.getCreateConsumer(deviceDAO.getAttributesCollection(),model.getMetadata(),model))
+                            .addMongoOperation(new MetaDataDao(nosql,sparql).getCreateConsumer(deviceDAO.getAttributesCollection(),model.getMetadata(),model))
                             .run();
                 }else{
-                    // device
                     deviceDAO.create(model);
                 }
 

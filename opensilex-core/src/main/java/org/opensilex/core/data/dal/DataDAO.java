@@ -543,12 +543,10 @@ public class DataDAO {
 
         nosql.operationWithTransaction(
                 (ClientSession session) -> {
-                    nosql.create(session,model,DataFileModel.class,DATA_COLLECTION_NAME,FILE_PREFIX);
+                    nosql.create(session,model,DataFileModel.class,FILE_COLLECTION_NAME,FILE_PREFIX);
                     fs.writeFile(FS_FILE_PREFIX, filePath, file);
-                    return null;
-                }, (Exception e) -> {
-                    fs.deleteIfExists(FS_FILE_PREFIX, filePath);
-                }
+                    return model;
+                }, (Exception e) -> fs.deleteIfExists(FS_FILE_PREFIX, filePath)
         );
 
     }

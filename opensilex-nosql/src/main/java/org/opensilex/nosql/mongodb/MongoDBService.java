@@ -46,10 +46,8 @@ import org.opensilex.nosql.mongodb.codec.URICodec;
 import org.opensilex.service.BaseService;
 import org.opensilex.service.ServiceDefaultDefinition;
 import org.opensilex.sparql.SPARQLModule;
-import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
-import org.opensilex.utils.ThrowingConsumer;
 import org.opensilex.utils.ThrowingFunction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,10 +57,10 @@ import javax.ws.rs.core.UriBuilder;
 @ServiceDefaultDefinition(config = MongoDBConfig.class)
 public class MongoDBService extends BaseService {
 
-    public final static String DEFAULT_SERVICE = "mongodb";
+    public static final String DEFAULT_SERVICE = "mongodb";
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(MongoDBService.class);
-    private final String URI_FIELD = "uri";
+    private static final Logger LOGGER = LoggerFactory.getLogger(MongoDBService.class);
+    private static final String URI_FIELD = "uri";
 
     private final String dbName;
     private MongoClient mongoClient;
@@ -177,8 +175,11 @@ public class MongoDBService extends BaseService {
         ClientSession session = startSession();
         session.startTransaction();
 
+        T result;
         try{
-            return mongoFunction.apply(session);
+            result =  mongoFunction.apply(session);
+            session.commitTransaction();
+            return result;
         }catch (Exception e){
             if(session.hasActiveTransaction()){
                 session.abortTransaction();

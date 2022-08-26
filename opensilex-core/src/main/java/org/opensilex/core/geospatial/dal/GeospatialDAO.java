@@ -11,6 +11,7 @@ package org.opensilex.core.geospatial.dal;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.MongoWriteException;
+import com.mongodb.client.ClientSession;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -179,6 +180,11 @@ public class GeospatialDAO {
         Document filter = getFilter(uri, graph);
 
         geometryCollection.deleteOne(filter);
+    }
+
+    public void delete(URI uri, URI graph, ClientSession session) {
+        Document filter = getFilter(uri, graph);
+        geometryCollection.deleteOne(session,filter);
     }
 
     private ListWithPagination<GeospatialModel> getGeospatialModelListWithPagination(Integer page, Integer pageSize, FindIterable<GeospatialModel> geospatialFindIterable) {

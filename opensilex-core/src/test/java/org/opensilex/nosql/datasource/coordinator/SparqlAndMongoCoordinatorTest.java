@@ -74,6 +74,7 @@ public class SparqlAndMongoCoordinatorTest extends AbstractMongoIntegrationTest 
 
         SPARQLService sparql = getSparqlService();
         MongoDBService mongoDB = getMongoDBService();
+        sparql.clearGraph(testGraph.toString());
 
         Assert.assertEquals(0, sparql.count(testGraph, SPARQLNamedResourceModel.class));
         Assert.assertEquals(0,mongoDB.count(MongoTestModel.class,MONGO_COLLECTION_NAME,new Document()));
@@ -159,7 +160,6 @@ public class SparqlAndMongoCoordinatorTest extends AbstractMongoIntegrationTest 
         coordinator.run();
     }
     */
-
 
     @Override
     protected List<String> getCollectionsToClearNames() {

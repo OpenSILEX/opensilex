@@ -1,6 +1,5 @@
 package org.opensilex.core.variable.dal;
 
-import org.opensilex.OpenSilex;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.service.SparqlSearchFilter;
 
@@ -29,13 +28,6 @@ public class VariableSearchFilter extends SparqlSearchFilter {
     private List<URI> objects;
 
     private UserModel userModel;
-
-    private boolean fetchSpecies;
-
-    public VariableSearchFilter() {
-        super();
-        this.fetchSpecies = false;
-    }
 
     public String getNamePattern() {
         return namePattern;
@@ -169,15 +161,6 @@ public class VariableSearchFilter extends SparqlSearchFilter {
 
     public VariableSearchFilter setUserModel(UserModel userModel) {
         this.userModel = userModel;
-        return this;
-    }
-
-    public boolean isFetchSpecies() {
-        return fetchSpecies;
-    }
-
-    public VariableSearchFilter setFetchSpecies(boolean fetchSpecies) {
-        this.fetchSpecies = fetchSpecies;
         return this;
     }
 }

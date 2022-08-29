@@ -12,8 +12,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.Order;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
-import org.apache.jena.arq.querybuilder.WhereBuilder;
-import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
@@ -28,7 +26,6 @@ import org.opensilex.core.variablesGroup.dal.VariablesGroupModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
-import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
@@ -190,7 +187,7 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
         List<OrderBy> newOrderByList = new LinkedList<>();
         appendSpecificOrderBy(filter.getOrderByList(), orderByExprMap, newOrderByList);
 
-        ListWithPagination<VariableModel> listWithPagination =  sparql.searchWithPagination(
+        return sparql.searchWithPagination(
                 defaultGraph,
                 VariableModel.class,
                 filter.getLang(),
@@ -219,100 +216,6 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
 
         fetchSpecies(models,lang);
         return models;
-    }
-
-    /**
-     *
-     * Fetch variables species with one SPARQL query
-     * @param models variables
-     * @param lang Language code, used to determine associated the translated label of the associated species
-     *
-     * @throws SPARQLException if SPARQL query evaluation fail
-     *
-     * @apiNote Example of generated SPARQL query
-     *
-     * <pre>
-     * SELECT ?species  ?species_name
-     * (GROUP_CONCAT(DISTINCT ?variable ; separator=',') AS ?variable__opensilex__concat)  WHERE {
-     *
-     *      GRAPH test:variables{
-     *          ?variable a vocabulary:Variable .
-    *           ?variable vocabulary:hasSpecies ?species
-     *      }
-     *      GRAPH test:germplasm {
-     *          ?species rdfs:label ?species_name .
-     *          FILTER langMatches(lang(?species_name), "en")
-     *      }
-     *      VALUES ?variable_group {  test:variable1 test:variable2  }
-     * }  GROUP BY ?species ?species_name
-     * </pre>
-     *
-     * #TODO : extract this method by developping a many-to-many relationship fetcher
-     */
-    public void fetchSpecies(List<VariableModel> models, String lang) throws SPARQLException, ParseException {
-
-        if(models.isEmpty()){
-            return;
-        }
-
-        Map<String, Integer> modelsIndexes = new PatriciaTrie<>();
-        for (int i = 0; i < models.size(); i++) {
-            VariableModel model = models.get(i);
-            modelsIndexes.put(URIDeserializer.formatURIAsStr(model.getUri().toString()), i);
-            model.setSpecies(new LinkedList<>());
-        }
-
-        Stream<URI> uris = models.stream().map(SPARQLResourceModel::getUri);
-
-        Var variableVar = makeVar("variable");
-        Var speciesVar = makeVar("species");
-        Var speciesNameVar = makeVar("species_name");
-        Node speciesGraph = sparql.getDefaultGraph(SpeciesModel.class);
-
-        SelectBuilder query = new SelectBuilder()
-                .addVar(speciesVar)
-                .addVar(speciesNameVar)
-                .addGraph(defaultGraph, new WhereBuilder()
-                        .addWhere(variableVar, RDF.type, Oeso.Variable)
-                        .addWhere(variableVar,Oeso.hasSpecies, speciesVar))
-                .addGraph(speciesGraph, new WhereBuilder()
-                        .addWhere(speciesVar, RDFS.label, speciesNameVar)
-                        .addFilter(SPARQLQueryHelper.langFilter(speciesNameVar,lang == null ? OpenSilex.DEFAULT_LANGUAGE : lang))
-                )
-                .addGroupBy(speciesVar)
-                .addGroupBy(speciesNameVar);
-
-        // aggregate groups with variables
-        SPARQLQueryHelper.appendGroupConcatAggregator(query, variableVar, true);
-
-        SPARQLQueryHelper.addWhereUriValues(query, variableVar.getVarName(), uris, models.size());
-
-        // retrieve variable class from Ontology
-        URI speciesClass = URIDeserializer.formatURI(Oeso.Species.getURI());
-        ClassModel speciesClassModel = SPARQLModule.getOntologyStoreInstance().getClassModel(speciesClass, null, lang);
-
-        // read variables
-        Stream<SPARQLResult> results = sparql.executeSelectQueryAsStream(query);
-        results.forEach(result -> {
-
-            SpeciesModel nestedModel = new SpeciesModel();
-            nestedModel.setUri(URIDeserializer.formatURI(result.getStringValue(speciesVar.getVarName())));
-            nestedModel.setLabel(new SPARQLLabel(result.getStringValue(speciesNameVar.getVarName()), lang));
-            nestedModel.setType(speciesClass);
-            nestedModel.setTypeLabel(speciesClassModel.getLabel());
-
-            // get groups associated to the variable
-            String joiningColumn = result.getStringValue(SPARQLQueryHelper.getConcatVarName(variableVar.getVarName()));
-            String[] foreignKeys = joiningColumn.split(SPARQLQueryHelper.GROUP_CONCAT_SEPARATOR);
-
-            for (String key : foreignKeys) {
-                String shortKey = URIDeserializer.formatURIAsStr(key);
-                Integer groupIdx = modelsIndexes.get(shortKey);
-                VariableModel variable = models.get(groupIdx);
-                variable.getSpecies().add(nestedModel);
-            }
-        });
-
     }
 
     /**
@@ -391,8 +294,6 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
             select.addFilter(SPARQLQueryHelper.inURIFilter(VariableModel.SPECIES_FIELD_NAME,filter.getSpecies()));
 
         }
-
-
     }
 }
 

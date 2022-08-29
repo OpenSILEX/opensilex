@@ -281,7 +281,7 @@ trigger:opensilex-develop:deploy:test:
     - apk update
     - apk add git
     - apk add curl
-    - if [[ -z $(git branch --list release) ]]; then
+    - if ! git ls-remote --exit-code --heads origin release; then
     -   echo 'Deploying develop'
     -   curl --request POST --form "variables[DEPLOY]=opensilex-develop" --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$CI_COMMIT_SHA" --form "variables[OPENSILEX_APP_REVISION]=$OPENSILEX_APP_REVISION" https://forgemia.inra.fr/api/v4/projects/403/trigger/pipeline
     - else

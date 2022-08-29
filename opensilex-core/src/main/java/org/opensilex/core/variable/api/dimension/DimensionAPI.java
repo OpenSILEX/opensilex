@@ -154,7 +154,8 @@ public class DimensionAPI {
                 namePattern,
                 orderByList,
                 page,
-                pageSize
+                pageSize,
+                currentUser.getLanguage()
         );
 
         ListWithPagination<DimensionGetDTO> resultDTOList = resultList.convert(

@@ -204,7 +204,8 @@ public class EntityAPI {
                 namePattern,
                 orderByList,
                 page,
-                pageSize
+                pageSize,
+                currentUser.getLanguage()
         );
 
         ListWithPagination<EntityGetDTO> resultDTOList = resultList.convert(

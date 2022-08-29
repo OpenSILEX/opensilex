@@ -23,6 +23,7 @@ import org.opensilex.core.ontology.SKOSReferencesDTO;
 import org.opensilex.core.species.api.SpeciesDTO;
 import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.core.variable.api.entity.EntityGetDTO;
+import org.opensilex.core.variable.api.entityOfInterest.InterestEntityGetDTO;
 import org.opensilex.core.variable.api.method.MethodGetDTO;
 import org.opensilex.core.variable.api.characteristic.CharacteristicGetDTO;
 import org.opensilex.core.variable.api.unit.UnitGetDTO;
@@ -56,7 +57,7 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
     private EntityGetDTO entity;
     
     @JsonProperty("entity_of_interest")
-    private NamedResourceDTO<InterestEntityModel> entityOfInterest;
+    private InterestEntityGetDTO entityOfInterest;
     
     @JsonProperty("characteristic")
     private CharacteristicGetDTO characteristic;
@@ -93,7 +94,7 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
         
         InterestEntityModel entityOfInterest = model.getEntityOfInterest();
         if(entityOfInterest != null){
-            this.entityOfInterest = NamedResourceDTO.getDTOFromModel(entityOfInterest);
+            this.entityOfInterest = new InterestEntityGetDTO(entityOfInterest);
         }
         
         CharacteristicModel characteristic = model.getCharacteristic();
@@ -165,9 +166,9 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
         this.entity = entity;
     }
     
-    public NamedResourceDTO<InterestEntityModel> getEntityOfInterest() { return entityOfInterest; }
+    public InterestEntityGetDTO getEntityOfInterest() { return entityOfInterest; }
     
-    public void setEntityOfInterest(NamedResourceDTO<InterestEntityModel>  entityOfInterest){
+    public void setEntityOfInterest(InterestEntityGetDTO  entityOfInterest){
         this.entityOfInterest = entityOfInterest;
     }
     

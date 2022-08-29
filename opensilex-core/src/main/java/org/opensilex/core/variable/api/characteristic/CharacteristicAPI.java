@@ -206,7 +206,8 @@ public class CharacteristicAPI {
                 namePattern,
                 orderByList,
                 page,
-                pageSize
+                pageSize,
+                currentUser.getLanguage()
         );
 
         ListWithPagination<CharacteristicGetDTO> resultDTOList = resultList.convert(

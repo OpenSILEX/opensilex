@@ -16,6 +16,7 @@ import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.opensilex.core.URIsListPostDTO;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
+import org.opensilex.core.variable.dal.VariableSearchFilter;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.authentication.ApiCredential;
@@ -218,29 +219,31 @@ public class VariableAPI {
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         VariableDAO dao = getDao();
-        ListWithPagination<VariableModel> variables = dao.search(
-                namePattern,
-                entity,
-                interestEntity,
-                characteristic,
-                method,
-                unit,
-                group,
-                dataType,
-                timeInterval,
-                species,
-                withAssociatedData,
-                devices,
-                experiments,
-                objects,
-                orderByList,
-                page,
-                pageSize,
-                this.currentUser
-        );
+
+        VariableSearchFilter filter = new VariableSearchFilter()
+                .setNamePattern(namePattern)
+                .setEntity(entity)
+                .setInterestEntity(interestEntity)
+                .setCharacteristic(characteristic)
+                .setMethod(method)
+                .setUnit(unit)
+                .setGroup(group)
+                .setDataType(dataType)
+                .setTimeInterval(timeInterval)
+                .setSpecies(species)
+                .setWithAssociatedData(withAssociatedData)
+                .setDevices(devices)
+                .setExperiments(experiments)
+                .setObjects(objects)
+                .setUserModel(currentUser);
+
+        filter.setPage(page)
+                .setPageSize(pageSize)
+                .setLang(currentUser.getLanguage())
+                .setOrderByList(orderByList);
 
         // Convert paginated list to DTO
-        ListWithPagination<VariableGetDTO> resultDTOList = variables.convert(
+        ListWithPagination<VariableGetDTO> resultDTOList = dao.search(filter).convert(
                 VariableGetDTO.class,
                 VariableGetDTO::fromModel
         );
@@ -275,7 +278,8 @@ public class VariableAPI {
                 namePattern,
                 orderByList,
                 page,
-                pageSize
+                pageSize,
+                currentUser.getLanguage()
         );
 
         ListWithPagination<VariableDetailsDTO> resultDTOList = resultList.convert(
@@ -329,13 +333,11 @@ public class VariableAPI {
             @ApiParam(value = "Variables URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
     ) throws Exception {
         VariableDAO dao = getDao();
-        List<VariableModel> models = dao.getList(uris);
+        List<VariableModel> models = dao.getList(uris, currentUser.getLanguage());
 
         if (!models.isEmpty()) {
             List<VariableDetailsDTO> resultDTOList = new ArrayList<>(models.size());
-            models.forEach(result -> {
-                resultDTOList.add(new VariableDetailsDTO(result));
-            });
+            models.forEach(result -> resultDTOList.add(new VariableDetailsDTO(result)));
 
             return new PaginatedListResponse<>(resultDTOList).getResponse();
         } else {
@@ -374,9 +376,7 @@ public class VariableAPI {
 
         CsvSchema.Builder csvSchemaBuilder = CsvSchema.builder();
         JsonNode firstObject = arrayNode.elements().next();
-        firstObject.fieldNames().forEachRemaining(fieldName -> {
-            csvSchemaBuilder.addColumn(fieldName);
-        });
+        firstObject.fieldNames().forEachRemaining(csvSchemaBuilder::addColumn);
                         
         CsvSchema csvSchema = csvSchemaBuilder.build().withHeader().withArrayElementSeparator(" ");
         StringWriter str = new StringWriter();
@@ -417,9 +417,7 @@ public class VariableAPI {
 
         CsvSchema.Builder csvSchemaBuilder = CsvSchema.builder();
         JsonNode firstObject = arrayNode.elements().next();
-        firstObject.fieldNames().forEachRemaining(fieldName -> {
-            csvSchemaBuilder.addColumn(fieldName);
-        });
+        firstObject.fieldNames().forEachRemaining(csvSchemaBuilder::addColumn);
                         
         CsvSchema csvSchema = csvSchemaBuilder.build().withHeader().withArrayElementSeparator(" ");
         StringWriter str = new StringWriter();

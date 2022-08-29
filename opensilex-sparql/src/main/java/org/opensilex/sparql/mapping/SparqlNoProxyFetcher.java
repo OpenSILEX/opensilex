@@ -1,11 +1,14 @@
 package org.opensilex.sparql.mapping;
 
+import org.apache.commons.collections4.trie.PatriciaTrie;
 import org.apache.commons.lang3.StringUtils;
+import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 
@@ -13,6 +16,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URI;
+import java.util.Map;
 
 /**
  * @author rcolin
@@ -37,11 +41,22 @@ public class SparqlNoProxyFetcher<T extends SPARQLResourceModel> implements Spar
     private final Constructor<T> constructor;
     private final SPARQLClassObjectMapperIndex mapperIndex;
     private final SPARQLClassAnalyzer classAnalyzer;
+    private Map<String,ClassModel> classesCache;
 
     public SparqlNoProxyFetcher(Class<T> objectClass, SPARQLService sparql) throws Exception {
         this.constructor = objectClass.getConstructor();
         this.mapperIndex = sparql.getMapperIndex();
         this.classAnalyzer = mapperIndex.getForClass(objectClass).getClassAnalizer();
+        classesCache = new PatriciaTrie<>();
+    }
+
+    private ClassModel getClassModel(URI classURI) throws Exception {
+        ClassModel model = classesCache.get(classURI.toString());
+        if (model == null) {
+            model = SPARQLModule.getOntologyStoreInstance().getClassModel(classURI, null, null);
+            classesCache.put(classURI.toString(), model);
+        }
+        return model;
     }
 
     @Override
@@ -49,13 +64,12 @@ public class SparqlNoProxyFetcher<T extends SPARQLResourceModel> implements Spar
 
         String realTypeLabel = result.getStringValue(classAnalyzer.getTypeLabelFieldName());
         if (!StringUtils.isEmpty(realTypeLabel)) {
-            SPARQLLabel typeLabel = new SPARQLLabel();
-            typeLabel.setDefaultValue(realTypeLabel);
-            typeLabel.setDefaultLang(lang);
+            SPARQLLabel typeLabel = new SPARQLLabel(realTypeLabel,lang);
             instance.setTypeLabel(typeLabel);
         }
     }
 
+    @Override
     public void setLabelProperties(T instance, SPARQLResult result, String lang) throws Exception {
 
         for (Field field : classAnalyzer.getLabelPropertyFields()) {
@@ -63,10 +77,7 @@ public class SparqlNoProxyFetcher<T extends SPARQLResourceModel> implements Spar
             String value = result.getStringValue(field.getName());
 
             if (!StringUtils.isEmpty(value)) {
-                SPARQLLabel label = new SPARQLLabel();
-                label.setDefaultValue(value);
-                label.setDefaultLang(lang);
-
+                SPARQLLabel label = new SPARQLLabel(value,lang);
                 Method setter = classAnalyzer.getSetterFromField(field);
                 setter.invoke(instance, label);
             }
@@ -74,6 +85,7 @@ public class SparqlNoProxyFetcher<T extends SPARQLResourceModel> implements Spar
         }
     }
 
+    @Override
     public void setDataProperties(T instance, SPARQLResult result, String lang) throws Exception {
 
         for (Field field : classAnalyzer.getDataPropertyFields()) {
@@ -91,6 +103,7 @@ public class SparqlNoProxyFetcher<T extends SPARQLResourceModel> implements Spar
         }
     }
 
+    @Override
     public void setObjectProperties(T model, SPARQLResult result, String lang) throws Exception {
 
         for (Field field : classAnalyzer.getObjectPropertyFields()) {
@@ -128,17 +141,21 @@ public class SparqlNoProxyFetcher<T extends SPARQLResourceModel> implements Spar
         // set nested object type
         nestedObject.setType(mapperIndex.getForClass(fieldType).getClassAnalizer().getRdfTypeURI());
 
+        // set nested object type label
+        ClassModel nestedObjectClass = getClassModel(nestedObject.getType());
+        nestedObject.setTypeLabel(nestedObjectClass.getLabel());
+
         return nestedObject;
     }
 
 
     @Override
-    public void setDataListProperties(T instance, SPARQLResult result, String lang) throws Exception {
+    public void setDataListProperties(T instance, SPARQLResult result, String lang) {
 
     }
 
     @Override
-    public void setObjectListProperties(T model, SPARQLResult result, String lang) throws Exception {
+    public void setObjectListProperties(T model, SPARQLResult result, String lang) {
 
     }
 

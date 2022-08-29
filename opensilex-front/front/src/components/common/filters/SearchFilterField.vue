@@ -20,7 +20,7 @@
         <div class="card" v-if="showAdvancedSearch">
           <div
             class="card-header sub-header advanceSearchBlock"
-            v-on:click="toogleAdvancedSearch($event)"
+            v-on:click="toggleAdvancedSearch($event)"
           >
             <!-- <i v-if="!advancedSearchOpen" class="ik minimize-card ik-plus"></i>
           <i v-if="advancedSearchOpen" class="ik minimize-card ik-minus"></i>
@@ -90,9 +90,6 @@
 import {
   Component,
   Prop,
-  Model,
-  Provide,
-  PropSync,
   Ref,
 } from "vue-property-decorator";
 import Vue from "vue";
@@ -130,8 +127,9 @@ export default class SearchFilterField extends Vue {
 
   advancedSearchOpen = false;
 
-  toogleAdvancedSearch() {
+  toggleAdvancedSearch($event) {
     this.advancedSearchOpen = !this.advancedSearchOpen;
+    this.$emit("toggleAdvancedSearch",$event);
   }
 
   validateAndSearch($event) {

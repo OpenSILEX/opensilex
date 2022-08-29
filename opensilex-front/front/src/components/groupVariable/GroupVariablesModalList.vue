@@ -15,7 +15,7 @@
     </template>
 
     <div class="card">
-      <opensilex-GroupVariablesList
+      <opensilex-GroupVariablesList v-if="loadList"
         ref="groupVariableSelection"
         :maximumSelectedRows="maximumSelectedRows"
         iconNumberOfSelectedRow="ik#ik-globe"
@@ -33,6 +33,8 @@ export default class GroupVariablesModalList extends Vue {
   @Prop()
   maximumSelectedRows;
 
+  loadList: boolean = false;
+
   @Ref("groupVariableSelection") readonly groupVariableSelection!: any;
 
   unSelect(row) {
@@ -40,8 +42,11 @@ export default class GroupVariablesModalList extends Vue {
   }
 
   show() {
-    let modalRef: any = this.$refs.modalRef;
-    modalRef.show();
+      this.loadList = true;
+      this.$nextTick(() => {
+          let modalRef: any = this.$refs.modalRef;
+          modalRef.show();
+      });
   }
 
   hide(validate: boolean) {

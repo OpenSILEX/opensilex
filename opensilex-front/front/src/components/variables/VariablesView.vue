@@ -79,7 +79,7 @@
             ></opensilex-UnitCreate>
 
             <opensilex-ModalForm
-                v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
+                v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID) && loadGroupForm"
                 ref="groupVariablesForm"
                 modalSize="lg"
                 :tutorial="false"
@@ -176,6 +176,7 @@ import ExternalReferencesModalForm from "../common/external-references/ExternalR
 import { VariablesService, DataService } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+import ModalForm from "../common/forms/ModalForm.vue";
 
 
 @Component
@@ -216,7 +217,12 @@ export default class VariablesView extends Vue {
     @Ref("characteristicForm") readonly characteristicForm!: any;
     @Ref("methodForm") readonly methodForm!: any;
     @Ref("unitForm") readonly unitForm!: UnitCreate;
-    @Ref("groupVariablesForm") readonly groupVariablesForm!: any;
+
+    /**
+     * Lazy loading of modal group form, this ensures to not load nested variable selected which trigger an API call
+     */
+    loadGroupForm: boolean = false;
+    @Ref("groupVariablesForm") readonly groupVariablesForm!: ModalForm;
 
     @Ref("skosReferences") skosReferences!: ExternalReferencesModalForm;
 
@@ -402,7 +408,16 @@ export default class VariablesView extends Vue {
 
 
     showCreateForm(){
-        this.getForm().showCreateForm();
+
+        // ensure that the group form component is loaded
+        if(this.elementType == VariablesView.GROUP_VARIABLE_TYPE){
+            this.loadGroupForm = true;
+            this.$nextTick(() => {
+                this.getForm().showCreateForm();
+            })
+        }else{
+            this.getForm().showCreateForm();
+        }
     }
 
     formatVariablesGroup(dto : any) {
@@ -415,8 +430,14 @@ export default class VariablesView extends Vue {
 
     showEditForm(dto : any){
         if (this.elementType == VariablesView.GROUP_VARIABLE_TYPE) {
-            let formatVariableGroup = this.formatVariablesGroup(dto);
-            this.getForm().showEditForm(formatVariableGroup);
+
+            // ensure that the group form component is loaded
+            this.loadGroupForm = true;
+            this.$nextTick(() => {
+
+                let formatVariableGroup = this.formatVariablesGroup(dto);
+                this.getForm().showEditForm(formatVariableGroup);
+            });
         }
         else{
             this.getForm().showEditForm(dto);

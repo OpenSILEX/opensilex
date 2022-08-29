@@ -11,10 +11,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.Order;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
-import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.NodeFactory;
-import org.apache.jena.graph.Triple;
-import org.apache.jena.rdf.model.Property;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.vocabulary.RDFS;
@@ -23,7 +20,6 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
-import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
@@ -158,10 +154,6 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
         * <p>
         * You can use them into the orderByList
         *
-        * @param stringPattern the string pattern to search
-        * @param orderByList   the {@link List} of {@link OrderBy} to apply on query
-        * @param page          the current page
-        * @param pageSize      the maximum page size
         * @return the list of {@link VariableModel} founds
         * @see VariableModel#getName()
         * @see VariableModel#getAlternativeName()
@@ -171,118 +163,108 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
         * @see MethodModel#getName()
         * @see UnitModel#getName
     */
-    public ListWithPagination<VariableModel> search(
-            String stringPattern,
-            URI entity,
-            URI interestEntity,
-            URI characteristic,
-            URI method,
-            URI unit,
-            URI group,
-            URI dataType,
-            String timeInterval,
-            List<URI> species,
-            boolean withAssociatedData,
-            List<URI> devices,
-            List<URI> experiments,
-            List<URI> objects,
-            List<OrderBy> orderByList,
-            int page,
-            int pageSize,
-            UserModel user) throws Exception {
+    public ListWithPagination<VariableModel> search(VariableSearchFilter filter) throws Exception {
 
-        Set<URI> variableUriList = withAssociatedData ? dataDAO.getUsedVariablesByExpeSoDevice(user, experiments, objects, devices) : null;
+        Set<URI> variableUriList = filter.isWithAssociatedData() ? dataDAO.getUsedVariablesByExpeSoDevice(filter.getUserModel(), filter.getExperiments(), filter.getObjects(), filter.getDevices()) : null;
         if(variableUriList != null && variableUriList.isEmpty()) {
-            return new ListWithPagination(dataDAO.getUsedVariables(user, experiments, objects, null, devices));
+            return new ListWithPagination<>(dataDAO.getUsedVariables(filter.getUserModel(), filter.getExperiments(), filter.getObjects(), null,  filter.getDevices()));
         }
+        filter.setIncludedUris(variableUriList);
 
         Map<Expr, Order> orderByExprMap = new HashMap<>();
         List<OrderBy> newOrderByList = new LinkedList<>();
-        appendSpecificOrderBy(orderByList, orderByExprMap, newOrderByList);
+        appendSpecificOrderBy(filter.getOrderByList(), orderByExprMap, newOrderByList);
 
         return sparql.searchWithPagination(
+                defaultGraph,
                 VariableModel.class,
-                null,
+                filter.getLang(),
 
-                (SelectBuilder select) -> {
-                    ExprFactory exprFactory = select.getExprFactory();
-                    Expr uriStrRegex = exprFactory.str(exprFactory.asVar(VariableModel.URI_FIELD));
-
-                    if (!StringUtils.isEmpty(stringPattern)) {
-
-                        // append string regex matching on entity, entity of interest, characteristic, method and unit name
-                        Expr[] regexExprArray = varsByVarName.values().stream()
-                        .map(var -> SPARQLQueryHelper.regexFilter(var.getVarName(), stringPattern))
-                        .toArray(Expr[]::new);
-
-                        // set the string regex filter on entity, entity of interest, characteristic, method, unit  name,long name and URI
-                        select.addFilter(
-                            SPARQLQueryHelper.or(
-                                regexExprArray,
-                                SPARQLQueryHelper.regexFilter(SPARQLNamedResourceModel.NAME_FIELD, stringPattern),
-                                SPARQLQueryHelper.regexFilter(VariableModel.ALTERNATIVE_NAME_FIELD_NAME, stringPattern),
-                                SPARQLQueryHelper.regexFilter(uriStrRegex, stringPattern, null)
-                        ));
-
-                    }
-
-                    // append specific(s) ORDER BY based on entity, entity of interest, characteristic, method and unit
-                    orderByExprMap.forEach(select::addOrderBy);
-
-                    if (entity != null) {
-                        select.addFilter(SPARQLQueryHelper.eq(VariableModel.ENTITY_FIELD_NAME, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(entity.toString()))));
-                    }
-
-                    if (interestEntity != null) {
-                        select.addFilter(SPARQLQueryHelper.eq(VariableModel.ENTITY_OF_INTEREST_FIELD_NAME, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(interestEntity.toString()))));
-                    }
-
-                    if (characteristic != null) {
-                        select.addFilter(SPARQLQueryHelper.eq(VariableModel.CHARACTERISTIC_FIELD_NAME, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(characteristic.toString()))));
-                    }
-
-                    if (method != null) {
-                        select.addFilter(SPARQLQueryHelper.eq(VariableModel.METHOD_FIELD_NAME, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(method.toString()))));
-                    }
-
-                    if (unit != null) {
-                        select.addFilter(SPARQLQueryHelper.eq(VariableModel.UNIT_FIELD_NAME, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(unit.toString()))));
-                    }
-
-                    if (group != null) {
-                        select.addWhere(SPARQLDeserializers.nodeURI(group), RDFS.member, makeVar(SPARQLResourceModel.URI_FIELD));
-                    }
-                    
-                    if (dataType != null) {
-                        select.addFilter(SPARQLQueryHelper.eq(VariableModel.DATA_TYPE_FIELD_NAME, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(dataType.toString()))));
-                    }
-                    
-                    if (!StringUtils.isEmpty(timeInterval)) {
-                        select.addFilter(SPARQLQueryHelper.eq(VariableModel.TIME_INTERVAL_FIELD_NAME, timeInterval));
-                    }
-
-                    if (variableUriList != null) {
-                        SPARQLQueryHelper.addWhereUriValues(select, SPARQLResourceModel.URI_FIELD, variableUriList);
-                    }
-
-                    if(!CollectionUtils.isEmpty(species)){
-                        //  add ?uri vocabulary:hasSpecies ?species
-                        select.addWhere(makeVar(VariableModel.URI_FIELD),Oeso.hasSpecies,makeVar(VariableModel.SPECIES_FIELD_NAME));
-
-                        // logical or -> filter ?species IN (:species_uri1 :species_uri2 )
-                        select.addFilter(SPARQLQueryHelper.inURIFilter(VariableModel.SPECIES_FIELD_NAME,species));
-
-                    }
-
-                },
-                orderByList,
-                page,
-                pageSize
+                (SelectBuilder select) -> addFilter(select,filter,orderByExprMap),
+                Collections.emptyMap(),
+                result -> fetcher.getInstance(result, filter.getUserModel().getLanguage()),
+                filter.getOrderByList(),
+                filter.getPage(),
+                filter.getPageSize()
         );
     }
 
-    public List<VariableModel> getList(List<URI> uris) throws Exception {
-        return sparql.getListByURIs(VariableModel.class, uris, null);
+    /**
+     * Update the given SPARQL query by applying filter
+     * @param select SPARQL query builder
+     * @param filter Filter object
+     * @param orderByExprMap map which contains custom order for entity, entity of interest, characteristic, method and unit
+     */
+    private void addFilter(SelectBuilder select, VariableSearchFilter filter, Map<Expr, Order> orderByExprMap) throws Exception {
+
+        ExprFactory exprFactory = select.getExprFactory();
+        Expr uriStrRegex = exprFactory.str(exprFactory.asVar(SPARQLResourceModel.URI_FIELD));
+
+        if (!StringUtils.isEmpty(filter.getNamePattern())) {
+
+            // append string regex matching on entity, entity of interest, characteristic, method and unit name
+            Expr[] regexExprArray = varsByVarName.values().stream()
+                    .map(nameVariable -> SPARQLQueryHelper.regexFilter(nameVariable.getVarName(), filter.getNamePattern()))
+                    .toArray(Expr[]::new);
+
+            // set the string regex filter on entity, entity of interest, characteristic, method, unit  name,long name and URI
+            select.addFilter(
+                    SPARQLQueryHelper.or(
+                            regexExprArray,
+                            SPARQLQueryHelper.regexFilter(SPARQLNamedResourceModel.NAME_FIELD, filter.getNamePattern()),
+                            SPARQLQueryHelper.regexFilter(VariableModel.ALTERNATIVE_NAME_FIELD_NAME, filter.getNamePattern()),
+                            SPARQLQueryHelper.regexFilter(uriStrRegex, filter.getNamePattern(), null)
+                    ));
+
+        }
+
+        // append specific(s) ORDER BY based on entity, entity of interest, characteristic, method and unit
+        orderByExprMap.forEach(select::addOrderBy);
+
+        if (filter.getEntity() != null) {
+            select.addFilter(SPARQLQueryHelper.eq(VariableModel.ENTITY_FIELD_NAME, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(filter.getEntity().toString()))));
+        }
+
+        if (filter.getInterestEntity() != null) {
+            select.addFilter(SPARQLQueryHelper.eq(VariableModel.ENTITY_OF_INTEREST_FIELD_NAME, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(filter.getInterestEntity().toString()))));
+        }
+
+        if (filter.getCharacteristic() != null) {
+            select.addFilter(SPARQLQueryHelper.eq(VariableModel.CHARACTERISTIC_FIELD_NAME, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(filter.getCharacteristic().toString()))));
+        }
+
+        if (filter.getMethod() != null) {
+            select.addFilter(SPARQLQueryHelper.eq(VariableModel.METHOD_FIELD_NAME, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(filter.getMethod().toString()))));
+        }
+
+        if (filter.getUnit() != null) {
+            select.addFilter(SPARQLQueryHelper.eq(VariableModel.UNIT_FIELD_NAME, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(filter.getUnit().toString()))));
+        }
+
+        if (filter.getGroup() != null) {
+            select.addWhere(SPARQLDeserializers.nodeURI(filter.getGroup()), RDFS.member, makeVar(SPARQLResourceModel.URI_FIELD));
+        }
+
+        if (filter.getDataType() != null) {
+            select.addFilter(SPARQLQueryHelper.eq(VariableModel.DATA_TYPE_FIELD_NAME, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(filter.getDataType().toString()))));
+        }
+
+        if (!StringUtils.isEmpty(filter.getTimeInterval())) {
+            select.addFilter(SPARQLQueryHelper.eq(VariableModel.TIME_INTERVAL_FIELD_NAME, filter.getTimeInterval()));
+        }
+
+        if (filter.getIncludedUris() != null) {
+            SPARQLQueryHelper.addWhereUriValues(select, SPARQLResourceModel.URI_FIELD, filter.getIncludedUris());
+        }
+
+        if(!CollectionUtils.isEmpty(filter.getSpecies())){
+            //  add ?uri vocabulary:hasSpecies ?species
+            select.addWhere(makeVar(SPARQLResourceModel.URI_FIELD),Oeso.hasSpecies,makeVar(VariableModel.SPECIES_FIELD_NAME));
+
+            // logical or -> filter ?species IN (:species_uri1 :species_uri2 )
+            select.addFilter(SPARQLQueryHelper.inURIFilter(VariableModel.SPECIES_FIELD_NAME,filter.getSpecies()));
+
+        }
     }
 }
 

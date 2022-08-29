@@ -204,7 +204,8 @@ public class UnitAPI {
                 namePattern,
                 orderByList,
                 page,
-                pageSize
+                pageSize,
+                currentUser.getLanguage()
         );
 
         ListWithPagination<UnitGetDTO> resultDTOList = resultList.convert(

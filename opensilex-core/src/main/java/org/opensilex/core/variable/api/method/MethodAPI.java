@@ -209,7 +209,8 @@ public class MethodAPI {
                 namePattern,
                 orderByList,
                 page,
-                pageSize
+                pageSize,
+                currentUser.getLanguage()
         );
 
         ListWithPagination<MethodGetDTO> resultDTOList = resultList.convert(

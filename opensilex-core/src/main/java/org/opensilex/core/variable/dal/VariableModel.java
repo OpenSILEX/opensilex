@@ -112,6 +112,12 @@ public class VariableModel extends BaseVariableModel<VariableModel> implements C
     private List<SpeciesModel> species;
     public static final String SPECIES_FIELD_NAME = "species";
 
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "hasModerationAction"
+    )
+    private List<ModerationActionModel> moderationAction;
+
     public String getAlternativeName() { return alternativeName; }
 
     public void setAlternativeName(String alternativeName) { this.alternativeName = alternativeName; }
@@ -186,6 +192,14 @@ public class VariableModel extends BaseVariableModel<VariableModel> implements C
 
     public void setSpecies(List<SpeciesModel> species) {
         this.species = species;
+    }
+
+    public List<ModerationActionModel> getModerationAction() {
+        return moderationAction;
+    }
+
+    public void setModerationAction(List<ModerationActionModel> moderationAction) {
+        this.moderationAction = moderationAction;
     }
 
 }

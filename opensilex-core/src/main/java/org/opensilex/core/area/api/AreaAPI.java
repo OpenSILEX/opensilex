@@ -19,9 +19,7 @@ import org.opensilex.core.area.dal.AreaDAO;
 import org.opensilex.core.area.dal.AreaModel;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
-import org.opensilex.core.event.dal.EventDAO;
-import org.opensilex.core.event.dal.EventModel;
-import org.opensilex.core.ontology.Oeev;
+import org.opensilex.nosql.datasource.coordinator.DefaultDataSourceCoordinator;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
@@ -263,67 +261,23 @@ public class AreaAPI {
         GeospatialModel geospatialModel = new GeospatialModel();
         URI areaURI;
 
-//        nosql.startTransaction();
-        sparql.startTransaction();
-        try {
-            // Check if an event is linked to the area
-            ListWithPagination<EventModel> eventList = eventDAO.search(
-                    areaDTO.getUri().toString(),
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    currentUser.getLanguage(),
-                    null,
-                    null,
-                    null
-            );
+        URI uri = areaDTO.getUri();
 
-             if(!areaDTO.isStructuralArea){
-                //RdfType for area and geospatial is equal temporal area
-                URI temporalArea = new URI(Oeso.TemporalArea.toString());
-                areaURI = dao.update(areaDTO.getUri(), areaDTO.getName(), temporalArea , areaDTO.getDescription(), currentUser.getUri());
-                geospatialModel.setRdfType(temporalArea);
+        // use coordinator in order to handle Area on SPARQL and Geospatial on MongoDB
+        new DefaultDataSourceCoordinator<>(sparql, nosql.startSession())
+                .addSparqlOperation(sparqlService -> dao.update(uri, areaDTO.getName(), areaDTO.getRdfType(), areaDTO.getDescription(), currentUser.getUri()))
+                .addMongoOperation(session -> {
 
-                 //If linked event exist, update it
-                 switch (eventList.getList().size()){
-                     case 1:
-                         areaDTO.event.setUri(eventList.getList().get(0).getUri());
-                         areaDTO.event.setTargets(Arrays.asList(areaURI));
-                         eventDAO.update(areaDTO.event.toModel());
-                         break;
-                    case 0: throw new IllegalArgumentException("No event to update for this area : " + areaURI);
-                    default: throw new IllegalArgumentException("More than 1 event for this area : " + areaURI);
-                 }
-            }
-            else {
-                 areaURI = dao.update(areaDTO.getUri(), areaDTO.getName(), areaDTO.getRdfType(), areaDTO.getDescription(), currentUser.getUri());
-                 geospatialModel.setRdfType(areaDTO.getRdfType());
-            }
-            geospatialModel.setUri(areaURI);
-            geospatialModel.setGeometry(geoJsonToGeometry(areaDTO.getGeometry()));
-            geospatialModel.setName(areaDTO.getName());
-            geoDAO.update(geospatialModel,areaURI,null);
+                    GeospatialModel geospatialModel = new GeospatialModel();
+                    geospatialModel.setUri(uri);
+                    geospatialModel.setName(areaDTO.getName());
+                    geospatialModel.setRdfType(areaDTO.getRdfType());
+                    geospatialModel.setGeometry(geoJsonToGeometry(areaDTO.getGeometry()));
+                    geoDAO.update(geospatialModel, areaDTO.getUri(), null, session);
+                })
+                .run();
 
-            sparql.commitTransaction();
-//            nosql.commitTransaction();
-
-            return new ObjectUriResponse(areaURI).getResponse();
-        } catch (MongoWriteException | CodecConfigurationException mongoException) {
-            try {
-                sparql.rollbackTransaction(mongoException);
-//                nosql.rollbackTransaction();
-            } catch (Exception e) {
-                return new ErrorResponse(Response.Status.BAD_REQUEST, INVALID_GEOMETRY, mongoException).getResponse();
-            }
-            throw mongoException;
-        } catch (Exception ex) {
-            sparql.rollbackTransaction();
-//            nosql.rollbackTransaction();
-            throw ex;
-        }
+        return new ObjectUriResponse(uri).getResponse();
     }
 
     /**
@@ -352,45 +306,12 @@ public class AreaAPI {
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
         EventDAO<EventModel> eventDAO= new EventDAO<>(sparql,nosql);
 
-//        nosql.startTransaction();
-        sparql.startTransaction();
-        try {
-            dao.delete(areaURI);
-            geoDAO.delete(areaURI, null);
+        new DefaultDataSourceCoordinator<>(sparql, nosql.startSession())
+                .addSparqlOperation(sparqlService -> dao.delete(areaURI))
+                .addMongoOperation(session -> geoDAO.delete(areaURI,null,session))
+                .run();
 
-            //search if an event is linked
-            ListWithPagination<EventModel> eventList = eventDAO.search(
-                    areaURI.toString(),
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    currentUser.getLanguage(),
-                    null,
-                    null,
-                    null
-            );
-
-            //If linked event exist, delete it
-            switch (eventList.getList().size()){
-                case 1:
-                    eventDAO.delete(eventList.getList().get(0).getUri());
-                    break;
-                case 0: break;
-                default: throw new IllegalArgumentException("More than 1 event for this area : " + areaURI);
-            }
-
-            sparql.commitTransaction();
-//            nosql.commitTransaction();
-
-            return new ObjectUriResponse(Response.Status.OK, areaURI).getResponse();
-        } catch (Exception ex) {
-            sparql.rollbackTransaction();
-//            nosql.rollbackTransaction();
-            throw ex;
-        }
+        return new ObjectUriResponse(Response.Status.OK, areaURI).getResponse();
     }
 
     /**

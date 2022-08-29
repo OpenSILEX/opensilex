@@ -159,15 +159,26 @@ public class GeospatialDAO {
         geometryCollection.createIndex(Indexes.geo2dsphere(GeospatialModel.GEOMETRY_FIELD));
     }
 
-    public GeospatialModel update(GeospatialModel geospatial, URI uri, URI graph) throws MongoWriteException {
+    /**
+     *
+     * @param geospatial
+     * @param uri
+     * @param graph
+     * @param session
+     * @return
+     * @throws MongoWriteException
+     */
+    public GeospatialModel update(GeospatialModel geospatial, URI uri, URI graph, ClientSession session) throws MongoWriteException {
         if (geospatial.getGeometry() != null) {
             Document filter = getFilter(uri, graph);
 
             // the verification of the existence of the URI is done by mongoDB thanks to the uri_1_graph_1 index.
-            return geometryCollection.findOneAndReplace(filter, geospatial, new FindOneAndReplaceOptions().upsert(true));
+            return geometryCollection.findOneAndReplace(session, filter, geospatial, new FindOneAndReplaceOptions().upsert(true));
         }
         return geospatial;
     }
+
+
 
     private Document getFilter(URI uri, URI graph) {
         if (graph != null) {

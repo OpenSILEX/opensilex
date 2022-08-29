@@ -64,6 +64,12 @@ public class MetaDataDao {
         metaDataCollection.insertOne(session, newMetadata);
     }
 
+    /**
+     *
+     * @param metaDataModel the model to check
+     * @return true if metadata are not null and have attributes, false else
+     * @see MetaDataModel#getAttributes()
+     */
     public static boolean hasMetaData(MetaDataModel metaDataModel){
         return metaDataModel != null && ! MapUtils.isEmpty(metaDataModel.getAttributes());
     }
@@ -177,6 +183,13 @@ public class MetaDataDao {
         }
     }
 
+    /**
+     *
+     * @param collection the Mongo collection in which metadata are searched
+     * @param uri URI of the {@link MetaDataModel}
+     * @param idField name of the id field of the {@link MetaDataModel}
+     * @return the {@link MetaDataModel} from the given collection if found, null else
+     */
     public MetaDataModel get(MongoCollection<MetaDataModel> collection,URI uri, String idField){
         return collection.find(eq(idField, uri)).first();
     }

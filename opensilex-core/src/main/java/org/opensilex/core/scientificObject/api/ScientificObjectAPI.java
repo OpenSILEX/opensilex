@@ -752,7 +752,6 @@ public class ScientificObjectAPI {
                             update.addInsert(graphNode, soNode, RDFS.label, object.getName());
                             hasUpdateItem = true;
                         }
-
                     }
 
                     if (hasUpdateItem) {

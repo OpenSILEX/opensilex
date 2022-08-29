@@ -75,7 +75,7 @@ public class DeviceDAO {
         this.fs = fs;
 
         defaultGraph = sparql.getDefaultGraph(DeviceModel.class);
-        metaDataDao = new MetaDataDao(nosql,sparql);
+        metaDataDao = new MetaDataDao(nosql);
         metaDataCollection = nosql.getDatabase().getCollection(ATTRIBUTES_COLLECTION_NAME, MetaDataModel.class);
     }
 

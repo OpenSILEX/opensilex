@@ -83,7 +83,7 @@ public class GermplasmDAO {
         metaDataCollection = nosql.getDatabase().getCollection(ATTRIBUTES_COLLECTION_NAME, MetaDataModel.class);
         metaDataCollection.createIndex(Indexes.ascending(MongoModel.URI_FIELD), new IndexOptions().unique(true));
 
-        metaDataDao = new MetaDataDao(nosql,sparql);
+        metaDataDao = new MetaDataDao(nosql);
     }
 
     public MongoCollection<MetaDataModel> getAttributesCollection() {

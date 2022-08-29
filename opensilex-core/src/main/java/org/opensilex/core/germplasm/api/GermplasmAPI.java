@@ -63,7 +63,6 @@ import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.nosql.datasource.coordinator.DefaultDataSourceCoordinator;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.nosql.mongodb.metadata.MetaDataDao;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
@@ -97,6 +96,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static com.mongodb.client.model.Filters.eq;
+import static com.mongodb.client.model.Filters.mod;
 
 /**
  *
@@ -197,7 +197,7 @@ public class GermplasmAPI {
                 if(MetaDataDao.hasMetaData(model.getMetadata())){
                     new DefaultDataSourceCoordinator<>(sparql, nosql.startSession())
                             .addSparqlOperation(sparqlService -> germplasmDAO.create(model))
-                            .addMongoOperation(new MetaDataDao(nosql,sparql).getCreateConsumer(germplasmDAO.getAttributesCollection(),model.getMetadata(),model))
+                            .addMongoOperation(session -> new MetaDataDao(nosql).create(germplasmDAO.getAttributesCollection(),model.getMetadata(),model.getUri(),session))
                             .run();
                 }else{
                     germplasmDAO.create(model);
@@ -561,7 +561,7 @@ public class GermplasmAPI {
             if(MetaDataDao.hasMetaData(model.getMetadata())){
 
                 new DefaultDataSourceCoordinator<>(sparql, nosql.startSession())
-                        .addMongoOperation(new MetaDataDao(nosql,sparql).getUpdateConsumer(germplasmDAO.getAttributesCollection(),model.getMetadata(),model))
+                        .addMongoOperation(session -> new MetaDataDao(nosql).update(germplasmDAO.getAttributesCollection(), model.getMetadata(), model.getUri(), session))
                         .addSparqlOperation(sparqlService -> germplasmDAO.update(model))
                         .run();
             }
@@ -606,10 +606,12 @@ public class GermplasmAPI {
             ).getResponse();
         } else {
 
+            // delete germplasm and associated metadata
             new DefaultDataSourceCoordinator<>(sparql, nosql.startSession())
-                    .addMongoOperation((ClientSession session) -> new MetaDataDao(nosql, sparql).getDeleteConsumer(dao.getAttributesCollection(), uri))
                     .addSparqlOperation(sparqlService ->dao.delete(uri))
+                    .addMongoOperation((ClientSession session) -> new MetaDataDao(nosql).delete(dao.getAttributesCollection(), uri, session))
                     .run();
+
             return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
         }
 

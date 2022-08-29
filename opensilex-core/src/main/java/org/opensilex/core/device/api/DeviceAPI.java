@@ -152,9 +152,10 @@ public class DeviceAPI {
                 // device and associated metadata
                 if(MetaDataDao.hasMetaData(model.getMetadata())){
 
+                    // use coordinator in order to auto handle transaction/rollback when dealing with SPARQL and MongoDB databases
                     new DefaultDataSourceCoordinator<>(sparql, nosql.startSession())
                             .addSparqlOperation(sparqlService -> deviceDAO.create(model))
-                            .addMongoOperation(new MetaDataDao(nosql,sparql).getCreateConsumer(deviceDAO.getAttributesCollection(),model.getMetadata(),model))
+                            .addMongoOperation(session -> new MetaDataDao(nosql).create(deviceDAO.getAttributesCollection(),model.getMetadata(),model.getUri(),session))
                             .run();
                 }else{
                     deviceDAO.create(model);
@@ -297,9 +298,7 @@ public class DeviceAPI {
 
         if (!models.isEmpty()) {
             List<DeviceGetDTO> resultDTOList = new ArrayList<>(models.size());
-            models.forEach(model -> {
-                resultDTOList.add(DeviceGetDTO.getDTOFromModel(model));
-            });
+            models.forEach(model -> resultDTOList.add(DeviceGetDTO.getDTOFromModel(model)));
 
             return new PaginatedListResponse<>(resultDTOList).getResponse();
         } else {
@@ -334,11 +333,11 @@ public class DeviceAPI {
         deviceDAO.initDevice(model, dto.getRelations(), currentUser);
 
         if(MetaDataDao.hasMetaData(model.getMetadata())){
-            MetaDataDao metaDataDao = new MetaDataDao(nosql,sparql);
+            MetaDataDao metaDataDao = new MetaDataDao(nosql);
 
             new DefaultDataSourceCoordinator<>(sparql, nosql.startSession())
                     .addSparqlOperation(sparqlService -> deviceDAO.update(model))
-                    .addMongoOperation(metaDataDao.getUpdateConsumer(deviceDAO.getAttributesCollection(),model.getMetadata(),model))
+                    .addMongoOperation(session -> metaDataDao.update(deviceDAO.getAttributesCollection(), model.getMetadata(), model.getUri(), session))
                     .run();
         }else{
             deviceDAO.update(model);
@@ -387,9 +386,10 @@ public class DeviceAPI {
                 throw new ForbiddenURIAccessException(uri, dataFileCount+" datafile(s)");
             }
 
+            // delete device and associated metadata
             new DefaultDataSourceCoordinator<>(sparql, nosql.startSession())
-                    .addMongoOperation(new MetaDataDao(nosql,sparql).getDeleteConsumer(dao.getAttributesCollection(),uri))
                     .addSparqlOperation(sparqlService -> sparqlService.delete(DeviceModel.class, uri))
+                    .addMongoOperation(session -> new MetaDataDao(nosql).delete(dao.getAttributesCollection(), uri, session))
                     .run();
 
             return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
@@ -526,18 +526,18 @@ public class DeviceAPI {
     private Response buildCSV(List<DeviceModel> devices) throws Exception {
         // Convert list to DTO
         List<DeviceExportDTO> resultDTOList = new ArrayList<>();
-        Set metadataKeys = new HashSet();
-        Map<URI,Integer> relationsUsed = new HashMap();
+        Set<String> metadataKeys = new HashSet<>();
+        Map<URI,Integer> relationsUsed = new HashMap<>();
         for (DeviceModel device : devices) {
             DeviceExportDTO dto = DeviceExportDTO.getDTOFromModel(device);
             resultDTOList.add(dto);
-            Map metadata = dto.getMetadata();
+            Map<String,String> metadata = dto.getMetadata();
             if (metadata != null) {
                 metadataKeys.addAll(metadata.keySet());
             }
 
             List<RDFObjectRelationDTO> relations = dto.getRelations();
-            Map<URI,Integer> relationsUsed_local = new HashMap();
+            Map<URI,Integer> relationsUsed_local = new HashMap<>();
             for(RDFObjectRelationDTO relation : relations){
                 URI prop = relation.getProperty();
                 if(relationsUsed_local.containsKey(prop)){
@@ -593,8 +593,8 @@ public class DeviceAPI {
                         objectNode.putNull(prop.toString()+"_"+i);
                     }
                 }
-
-                Map<String,Integer> relationsUsed_local = new HashMap();
+                
+                Map<String,Integer> relationsUsed_local = new HashMap<>();
                 for(JsonNode relation : relations){
                     property = relation.get("property");
                     if(relationsUsed_local.containsKey(property.asText())){

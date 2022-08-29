@@ -692,13 +692,16 @@ public class ScientificObjectAPI {
             );
         }
 
+        // use coordinator in order to auto handle transaction/rollback when dealing with SPARQL and MongoDB databases
         DefaultDataSourceCoordinator<?> coordinator = new DefaultDataSourceCoordinator<>(sparql, nosql.startSession())
                 .addSparqlOperation(sparqlService -> scientificObjectDAO.delete(contextURI, objectURI))
                 .addMongoOperation(clientSession -> geoDAO.delete(objectURI, contextURI, clientSession));
 
+        // append operation on SPARQL : species update
         if (!global) {
             coordinator.addSparqlOperation(sparqlService -> experimentDAO.updateExperimentSpeciesFromScientificObjects(contextURI));
         }
+        // run operations
         coordinator.run();
 
         return new ObjectUriResponse(Response.Status.OK, objectURI).getResponse();

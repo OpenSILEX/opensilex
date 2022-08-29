@@ -10,8 +10,6 @@ import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.sparql.service.SPARQLService;
-import org.opensilex.utils.ThrowingConsumer;
 
 import java.net.URI;
 import java.util.Collection;
@@ -33,51 +31,37 @@ import static com.mongodb.client.model.Filters.eq;
  * So, unlike in other Dao, {@link MetaDataModel} are not stored into a single collection.
  * </p>
  *
- * <p>
- * Moreover, for any write operations (update, create, delete), then the corresponding function can deal with lambda
- * in order to handle all the logic related to MetaData (check validity, nullity and non-emptiness, handle transaction) and by
- * letting the caller of these function, define which specific operation must be done.
- * <p>
- * E.g: DAO or API which call this DAO, can pass lambda function to define how to create a model which have metadata.
- * Since this operation is not the responsibility of this class, these it's defined by this class caller.
- * </p>
  *
  * @author rcolin
  */
 public class MetaDataDao {
 
     private final MongoDBService mongodb;
-    private final SPARQLService sparql;
 
-    public MetaDataDao(MongoDBService mongodb, SPARQLService sparql) {
+    public MetaDataDao(MongoDBService mongodb) {
         this.mongodb = mongodb;
-        this.sparql = sparql;
     }
 
+
     /**
-     * @param metaDataCollection the collection on which insert a new {@link MetaDataModel} if not null or empty
-     * @param newMetadata        the metadata to insert
-     * @param model              {@link SPARQLResourceModel} on which metadata are associated.
-     * @throws IllegalArgumentException if :
-     *                                  <ul>
-     *                                      <li>metaDataCollection is null</li>
-     *                                      <li>sparqlCreateFunction is null</li>
-     *                                  </ul>
+     * Create metadata into the given collection
+     * @param metaDataCollection metadata collection name
+     * @param newMetadata new model
+     * @param uri uri of the new model
+     * @param session Mongo session for transaction handling
      */
-    public <T extends SPARQLResourceModel> ThrowingConsumer<ClientSession,Exception> getCreateConsumer(MongoCollection<MetaDataModel> metaDataCollection,
-                                                                           MetaDataModel newMetadata,
-                                                                           T model){
+    public void create(
+            MongoCollection<MetaDataModel> metaDataCollection,
+            MetaDataModel newMetadata,
+            URI uri,
+            ClientSession session
+    ) {
 
-        Objects.requireNonNull(metaDataCollection);
-        return (ClientSession session) -> {
-            if (newMetadata.getUri() == null) {
+        Objects.requireNonNull(uri);
 
-                // ensure that at this point, model URI is set or generated
-                Objects.requireNonNull(model.getUri());
-                newMetadata.setUri(model.getUri());
-            }
-            metaDataCollection.insertOne(session, newMetadata);
-        };
+        // ensure that at this point, model URI is set or generated
+        newMetadata.setUri(uri);
+        metaDataCollection.insertOne(session, newMetadata);
     }
 
     public static boolean hasMetaData(MetaDataModel metaDataModel){
@@ -85,82 +69,56 @@ public class MetaDataDao {
     }
 
     /**
-     * @param metaDataCollection   the collection on which update a new {@link MetaDataModel} if not null or empty
-     * @param newMetadata          the metadata to insert
-     * @param model {@link SPARQLResourceModel} on which metadata are associated.
-     * @throws IllegalArgumentException if :
-     *                                  <ul>
-     *                                      <li>metaDataCollection is null</li>
-     *                                      <li>sparqlCreateFunction is null</li>
-     *                                      <li>model URI is null</li>
-     *                                  </ul>
-     */
-    public <T extends SPARQLResourceModel> ThrowingConsumer<ClientSession,Exception> getUpdateConsumer(MongoCollection<MetaDataModel> metaDataCollection,
-                                                                                                       MetaDataModel newMetadata,
-                                                                                                       T model){
-
-        Objects.requireNonNull(metaDataCollection);
-        Objects.requireNonNull(model.getUri());
-
-        MetaDataModel oldMetadata = metaDataCollection.find(eq(MongoModel.URI_FIELD, model.getUri())).first();
-
-        return (ClientSession session) -> update(
-                metaDataCollection,
-                session,
-                newMetadata,
-                oldMetadata,
-                model.getUri()
-        );
-    }
-
-    /**
-     * @param metaDataCollection   the collection on which update a new {@link MetaDataModel} if not null or empty
-     * @param uri URI of the {@link MetaDataModel} to remove from metaDataCollection
-     * @throws IllegalArgumentException if :
-     *                                  <ul>
-     *                                      <li>metaDataCollection is null</li>
-     *                                      <li>sparqlCreateFunction is null</li>
-     *                                      <li>model URI is null</li>
-     *                                  </ul>
-     */
-    public <T extends SPARQLResourceModel> ThrowingConsumer<ClientSession,Exception> getDeleteConsumer(MongoCollection<MetaDataModel> metaDataCollection,
-                                                                                                       URI uri){
-        return (ClientSession session) -> metaDataCollection.findOneAndDelete(session, eq(MongoModel.URI_FIELD, uri));
-    }
-
-    /**
      * If the new model is not empty, then replace the old model with the new model. If the new model is empty, then
      * delete the old model
+     * @param metaDataCollection   the collection on which update a new {@link MetaDataModel} if not null or empty
+     * @param newMetadata          the metadata to insert/to update
+     * @param uri uri of the new model
+     * @param session Mongo session for transaction handling
      *
-     * @param metaDataCollection The MongoDB collection to update
-     * @param session            the session object
-     * @param newModel           The new model that will be saved in the mongo database.
-     * @param oldModel           the old model that was in the mongo database
-     * @param uri                URI of the new/old {@link MetaDataModel}
+     * @throws IllegalArgumentException if :
+     *                                  <ul>
+     *                                      <li>metaDataCollection is null</li>
+=     *                                      <li>model URI is null</li>
+     *                                  </ul>
      */
-    private void update(MongoCollection<MetaDataModel> metaDataCollection,
-                        ClientSession session,
-                        MetaDataModel newModel,
-                        MetaDataModel oldModel,
-                        URI uri
-    ) {
+    public void update(MongoCollection<MetaDataModel> metaDataCollection,
+                       MetaDataModel newMetadata,
+                       URI uri,
+                       ClientSession session) {
 
-        if (newModel != null && !MapUtils.isEmpty(newModel.getAttributes())) {
+        Objects.requireNonNull(metaDataCollection);
+        Objects.requireNonNull(uri);
 
-            Objects.requireNonNull(uri);
-            newModel.setUri(uri);
+        MetaDataModel oldMetadata = metaDataCollection.find(eq(MongoModel.URI_FIELD,uri)).first();
+
+        if (newMetadata != null && !MapUtils.isEmpty(newMetadata.getAttributes())) {
 
             // replace existing old model by new model
-            if (oldModel != null) {
-                metaDataCollection.findOneAndReplace(session, eq(MongoModel.URI_FIELD, oldModel.getUri()), newModel);
+            if (oldMetadata != null) {
+                metaDataCollection.findOneAndReplace(session, eq(MongoModel.URI_FIELD, uri), newMetadata);
             } else {
                 // create new model
-                metaDataCollection.insertOne(session, newModel);
+                metaDataCollection.insertOne(session, newMetadata);
             }
         } else {
             // delete old model
-            metaDataCollection.findOneAndDelete(session, eq(MongoModel.URI_FIELD, oldModel.getUri()));
+            metaDataCollection.findOneAndDelete(session, eq(MongoModel.URI_FIELD, uri));
         }
+
+    }
+
+
+    /**
+     * delete a metadata model from the given collection
+     * @param metaDataCollection metadata collection name
+     * @param uri uri of the metadata model to delete
+     * @param session Mongo session for transaction handling
+     */
+    public void delete(MongoCollection<MetaDataModel> metaDataCollection,
+                                                       URI uri,
+                                                       ClientSession session) {
+        metaDataCollection.findOneAndDelete(session, eq(MongoModel.URI_FIELD, uri));
     }
 
     /**

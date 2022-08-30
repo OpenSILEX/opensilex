@@ -179,7 +179,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     public boolean executeAskQuery(AskBuilder ask) throws SPARQLException {
         addPrefixes(ask);
         if (LOGGER.isDebugEnabled()) {
-//            LOGGER.debug("SPARQL ASK\n" + ask.buildString());
+            LOGGER.debug("SPARQL ASK\n" + ask.buildString());
         }
         return connection.executeAskQuery(ask);
     }
@@ -223,7 +223,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     public List<SPARQLResult> executeSelectQuery(SelectBuilder select, Consumer<SPARQLResult> resultHandler) throws SPARQLException {
         addPrefixes(select);
         if (LOGGER.isDebugEnabled()) {
-//            LOGGER.debug("SPARQL SELECT\n" + select.buildString());
+            LOGGER.debug("SPARQL SELECT\n" + select.buildString());
         }
         return connection.executeSelectQuery(select, resultHandler);
     }
@@ -232,7 +232,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     public Stream<SPARQLResult> executeSelectQueryAsStream(SelectBuilder select) throws SPARQLException {
         addPrefixes(select);
         if (LOGGER.isDebugEnabled()) {
-//            LOGGER.debug("SPARQL SELECT\n" + select.buildString());
+            LOGGER.debug("SPARQL SELECT\n" + select.buildString());
         }
         return connection.executeSelectQueryAsStream(select);
     }
@@ -265,7 +265,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     @Override
     public void startTransaction() throws SPARQLException {
         if (transactionLevel == 0) {
-//            LOGGER.debug("SPARQL TRANSACTION START");
+            LOGGER.debug("SPARQL TRANSACTION START");
             connection.startTransaction();
         }
         transactionLevel++;
@@ -275,7 +275,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     public void commitTransaction() throws SPARQLException {
         transactionLevel--;
         if (transactionLevel == 0) {
-//            LOGGER.debug("SPARQL TRANSACTION COMMIT");
+            LOGGER.debug("SPARQL TRANSACTION COMMIT");
             connection.commitTransaction();
         }
     }
@@ -2157,31 +2157,13 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                 clearGraph(graph);
             }
             commitTransaction();
-        } catch (Exception e){
-            if(hasActiveTransaction()){
-                rollbackTransaction(e);
-            }
+        } finally {
+            rollbackTransaction();
         }
     }
 
     public void clearGraph(Class<? extends SPARQLResourceModel> resourceClass) throws Exception {
         clearGraph(getMapperIndex().getForClass(resourceClass).getDefaultGraphURI());
-    }
-
-    public <T> void insertPrimitives(Node graph, URI uri, Property property, List<T> values, Class<T> valuesType) throws Exception {
-        if (values.size() > 0) {
-
-            UpdateBuilder update = new UpdateBuilder();
-            Node nodeUri = SPARQLDeserializers.nodeURI(uri);
-            SPARQLDeserializer<T> deserializer = SPARQLDeserializers.getForClass(valuesType);
-
-            for (T value : values) {
-
-                update.addInsert(new Quad(graph, nodeUri, property.asNode(), deserializer.getNode(value)));
-            }
-
-            executeUpdateQuery(update);
-        }
     }
 
     public void deletePrimitives(Node graph, URI uri, Property property) throws Exception {

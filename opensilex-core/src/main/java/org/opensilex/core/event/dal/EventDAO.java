@@ -130,11 +130,6 @@ public class EventDAO<T extends EventModel> {
         timeDeserializer = (DateTimeDeserializer) SPARQLDeserializers.getForClass(OffsetDateTime.class);
     }
 
-    public T create(T model) throws Exception {
-        sparql.create(eventGraph, model, false);
-        return model;
-    }
-
     public List<T> create(List<T> models) throws Exception {
         check(models, true);
         sparql.create(eventGraph, models, SPARQLService.DEFAULT_MAX_INSTANCE_PER_QUERY, false);

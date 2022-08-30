@@ -771,29 +771,12 @@ public class ScientificObjectDAO {
         Objects.requireNonNull(contextURI);
 
         checkUniqueNameByGraph(contextURI,name,null,true);
-
         Node graphNode = SPARQLDeserializers.nodeURI(contextURI);
 
         ScientificObjectModel object = initObject(contextURI, experiment, soType, name, relations, currentUser);
         object.setUri(objectURI);
 
-        try {
-            sparql.startTransaction();
-//            nosql.startTransaction();
-            sparql.create(graphNode, object);
-
-            MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
-            MoveModel facilityMoveEvent = new MoveModel();
-            if (fillFacilityMoveEvent(facilityMoveEvent, object)) {
-                moveDAO.create(facilityMoveEvent);
-            }
-            sparql.deletePrimitives(SPARQLDeserializers.nodeURI(contextURI), object.getUri(), Oeso.isHosted);
-//            nosql.commitTransaction();
-            sparql.commitTransaction();
-        } catch (Exception ex) {
-//            nosql.rollbackTransaction();
-            sparql.rollbackTransaction(ex);
-        }
+        sparql.create(graphNode, object);
 
         return object;
     }
@@ -848,11 +831,11 @@ public class ScientificObjectDAO {
      * @return the URI of the created object
      * @throws DuplicateNameException if some object with the same name exist into the given graph
      */
-    public URI update(URI contextURI, URI soType, URI objectURI, String name, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws Exception, DuplicateNameException {
+    public ScientificObjectModel update(URI contextURI, URI soType, URI objectURI, String name, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws Exception, DuplicateNameException {
 
-        checkUniqueNameByGraph(contextURI,name,objectURI,false);
+        checkUniqueNameByGraph(contextURI, name, objectURI, false);
 
-        SPARQLResourceModel object = initObject(contextURI, null, soType, name, relations, currentUser);
+        ScientificObjectModel object = initObject(contextURI, null, soType, name, relations, currentUser);
         object.setUri(objectURI);
 
         Node graphNode = SPARQLDeserializers.nodeURI(contextURI);
@@ -861,77 +844,15 @@ public class ScientificObjectDAO {
                 graphNode,
                 ScientificObjectModel.class,
                 currentUser.getLanguage(),
-                (select) -> {
-                    select.addWhere(makeVar(SPARQLResourceModel.URI_FIELD), Oeso.isPartOf, SPARQLDeserializers.nodeURI(objectURI));
-                });
+                select -> select.addWhere(makeVar(SPARQLResourceModel.URI_FIELD), Oeso.isPartOf, SPARQLDeserializers.nodeURI(objectURI))
+        );
 
-        boolean hasFacilityURI = false;
-        for (SPARQLModelRelation relation : object.getRelations()) {
-            if (SPARQLDeserializers.compareURIs(relation.getProperty().getURI(), Oeso.isHosted.getURI())) {
-                hasFacilityURI = true;
-                break;
-            }
+        sparql.deleteByURI(graphNode, objectURI);
+        sparql.create(graphNode, object);
+        if (!childrenURIs.isEmpty()) {
+            sparql.insertPrimitive(graphNode, childrenURIs, Oeso.isPartOf, objectURI);
         }
-
-        try {
-            sparql.startTransaction();
-//            nosql.startTransaction();
-            sparql.deleteByURI(graphNode, objectURI);
-            sparql.create(graphNode, object);
-            if (childrenURIs.size() > 0) {
-                sparql.insertPrimitive(graphNode, childrenURIs, Oeso.isPartOf, objectURI);
-            }
-
-            MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
-            MoveModel event = moveDAO.getLastMoveEvent(objectURI);
-
-            if (hasFacilityURI) {
-                if (event != null) {
-                    fillFacilityMoveEvent(event, object);
-                    moveDAO.update(event);
-                } else {
-                    event = new MoveModel();
-                    if (fillFacilityMoveEvent(event, object)) {
-                        moveDAO.create(event);
-                    }
-                }
-            } else {
-                if (event != null) {
-                    List<URI> newTargets = new ArrayList<>();
-                    for (URI item : event.getTargets()) {
-                        if (!SPARQLDeserializers.compareURIs(item, objectURI)) {
-                            newTargets.add(item);
-                        }
-                    }
-                    if (newTargets.size() == 0) {
-                        moveDAO.delete(event.getUri());
-                    } else {
-                        event.setTargets(newTargets);
-
-                        if (event.getNoSqlModel() != null) {
-                            List<TargetPositionModel> newTargetsPositions = new ArrayList<>();
-                            for (TargetPositionModel position : event.getNoSqlModel().getTargetPositions()) {
-                                if (!SPARQLDeserializers.compareURIs(position.getTarget(), objectURI)) {
-                                    newTargetsPositions.add(position);
-                                }
-                            }
-                            event.getNoSqlModel().setTargetPositions(newTargetsPositions);
-                        }
-                        moveDAO.update(event);
-                    }
-                }
-            }
-            sparql.deletePrimitives(graphNode, objectURI, Oeso.isHosted);
-
-            sparql.commitTransaction();
-//            nosql.commitTransaction();
-        } catch (Exception ex) {
-//            nosql.rollbackTransaction();
-            sparql.rollbackTransaction(ex);
-
-        }
-
-        return object.getUri();
+        return object;
     }
 
     private ScientificObjectModel initObject(URI contextURI, ExperimentModel xp, URI soType, String name, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws Exception {

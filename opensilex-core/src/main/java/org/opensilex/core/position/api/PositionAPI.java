@@ -75,7 +75,7 @@ public class PositionAPI {
             @ApiParam(value = "Time : match position at the given time", example = "2019-09-08T12:00:00+01:00") @QueryParam("time") @ValidOffsetDateTime String time
     ) throws Exception {
 
-        MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
+        MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql, null);
 
         MoveModel model = moveDAO.getLastMoveAfter(
                 uri,
@@ -113,7 +113,7 @@ public class PositionAPI {
             @ApiParam(value = "Page size") @QueryParam("page_size") int pageSize
     ) throws Exception {
 
-        MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
+        MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql,null);
 
         MoveModel moveEvent = moveDAO.getLastMoveAfter(target, null);
 

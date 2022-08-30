@@ -190,7 +190,7 @@ public class GeospatialDAOTest extends AbstractMongoIntegrationTest {
         geospatial.setGraph(newGraph);
         geospatial.setGeometry(new Point(new Position(4.9716721, 43.6)));
 
-        geospatialDAO.update(geospatial, oldUri, oldGraph);
+        geospatialDAO.update(geospatial, oldUri, oldGraph, getMongoDBService().startSession());
         verificationOfCorrectInsertion(geospatial.getGeometry(), newUri, geospatial.getRdfType(), newGraph);
 
         // we check that the old geometries are not in the database

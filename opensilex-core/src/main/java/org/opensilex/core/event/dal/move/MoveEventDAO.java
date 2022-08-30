@@ -66,22 +66,16 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
     private static final TriplePath lastEndTimeStampMatchingTriple = new TriplePath(new Triple(endInstantVar, Time.inXSDDateTimeStamp.asNode(), lastEndTimeStampVar));
 
     private final MongoCollection<MoveEventNoSqlModel> moveEventCollection;
+    private final DefaultDataSourceCoordinator<?> coordinator;
 
-    protected final static Logger LOGGER = LoggerFactory.getLogger(GeospatialDAO.class);
-
-    public MoveEventDAO(SPARQLService sparql, MongoDBService mongodb) throws SPARQLException, SPARQLDeserializerNotFoundException {
+    public MoveEventDAO(SPARQLService sparql, MongoDBService mongodb, DefaultDataSourceCoordinator<?> coordinator) throws SPARQLException, SPARQLDeserializerNotFoundException {
         super(sparql, mongodb);
         this.moveEventCollection = mongodb.getDatabase().getCollection(MOVE_COLLECTION_NAME, MoveEventNoSqlModel.class);
+        this.coordinator = coordinator;
     }
 
     public final MongoCollection<MoveEventNoSqlModel> getMoveEventCollection() {
         return moveEventCollection;
-    }
-
-    @Override
-    public MoveModel create(MoveModel model) throws Exception {
-        create(Collections.singletonList(model));
-        return model;
     }
 
     protected void create(Collection<MoveModel> models, List<MoveEventNoSqlModel> noSqlModels) throws Exception {
@@ -91,27 +85,19 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
             return;
         }
 
-        new DefaultDataSourceCoordinator<>(sparql, mongodb.startSession())
+      coordinator.addSparqlOperation(sparqlService ->
+                        sparql.create(eventGraph, models, SPARQLService.DEFAULT_MAX_INSTANCE_PER_QUERY, false)
+                )
                 .addMongoOperation(clientSession -> mongodb.createAll(new MongoInsertOptions<>(
                                 null,
                                 moveEventCollection,
                                 clientSession,
                                 noSqlModels
                         ).setCheckUriExist(false))
-                )
-                .addSparqlOperation(sparqlService ->
-                        sparql.create(eventGraph, models, SPARQLService.DEFAULT_MAX_INSTANCE_PER_QUERY, false)
-                )
-                .run();
+                );
     }
 
 
-    /**
-     * @param models
-     * @return
-     * @throws Exception
-     */
-    @Override
     public List<MoveModel> create(List<MoveModel> models) throws Exception {
 
         List<MoveEventNoSqlModel> noSqlModels = new ArrayList<>();
@@ -281,8 +267,7 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
         MoveEventNoSqlModel noSqlModel = model.getNoSqlModel();
 
         // update MoveEventNoSqlModel in mongodb, if exist
-        new DefaultDataSourceCoordinator<>(sparql, mongodb.startSession())
-                .addSparqlOperation(sparqlService -> sparqlService.update(model))
+        coordinator.addSparqlOperation(sparqlService -> sparqlService.update(model))
                 .addMongoOperation(clientSession -> {
                         if (noSqlModel == null) {
                             moveEventCollection.deleteOne(clientSession, eq(MoveEventNoSqlModel.ID_FIELD, model.getUri()));
@@ -290,7 +275,7 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
                             moveEventCollection.findOneAndReplace(clientSession, eq(MoveEventNoSqlModel.ID_FIELD, model.getUri()), noSqlModel);
                         }
                     }
-                ).run();
+                );
 
         return model;
     }
@@ -298,10 +283,8 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
     @Override
     public void delete(URI uri) throws Exception {
 
-        new DefaultDataSourceCoordinator<>(sparql, mongodb.startSession())
-                .addSparqlOperation(sparqlService -> sparqlService.delete(MoveModel.class,uri))
-                .addMongoOperation(clientSession -> moveEventCollection.deleteOne(eq(MoveEventNoSqlModel.ID_FIELD, uri)))
-                .run();
+        coordinator.addSparqlOperation(sparqlService -> sparqlService.delete(MoveModel.class,uri))
+                .addMongoOperation(clientSession -> moveEventCollection.deleteOne(eq(MoveEventNoSqlModel.ID_FIELD, uri)));
     }
 
     /**

@@ -29,19 +29,16 @@ public class GeospatialModel extends MongoModel {
 
     Geometry geometry;
 
-    public static final String GEOMETRY_FIELD = "geometry";
+    public GeospatialModel(){
 
-    public static final String RDF_TYPE_FIELD = "rdfType";
-
-    public GeospatialModel() {
     }
 
-    public GeospatialModel(SPARQLNamedResourceModel<?> model, URI graph, Geometry geometry) {
-        this.uri = model.getUri();
-        this.name = model.getName();
-        this.rdfType = model.getType();
-        this.graph = graph;
-        this.geometry = geometry;
+    public GeospatialModel(SPARQLNamedResourceModel<?> object, URI graph, Geometry geometry) {
+        setUri(object.getUri());
+        setName(object.getName());
+        setRdfType(object.getType());
+        setGraph(graph);
+        setGeometry(geometry);
     }
 
     public URI getGraph() {
@@ -75,4 +72,5 @@ public class GeospatialModel extends MongoModel {
     public void setGeometry(Geometry geometry) {
         this.geometry = geometry;
     }
+
 }

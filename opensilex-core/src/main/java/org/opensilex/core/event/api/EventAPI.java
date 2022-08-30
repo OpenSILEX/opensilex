@@ -24,6 +24,7 @@ import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
+import org.opensilex.nosql.datasource.coordinator.DefaultDataSourceCoordinator;
 import org.opensilex.sparql.csv.CSVCell;
 import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
@@ -338,11 +339,14 @@ public class EventAPI {
             throw new NotFoundURIException(uri);
         }
 
-        final EventDAO<?> dao = SPARQLDeserializers.compareURIs(types.get(0), Oeev.Move.toString()) ?
-                new MoveEventDAO(sparql, nosql) :
-                new EventDAO<>(sparql, nosql);
-
-        dao.delete(uri);
+        // move
+        if( SPARQLDeserializers.compareURIs(types.get(0), Oeev.Move.toString())){
+            DefaultDataSourceCoordinator<?> coordinator = new DefaultDataSourceCoordinator<>(sparql, nosql.startSession());
+            new MoveEventDAO(sparql,nosql,coordinator).delete(uri);
+            coordinator.run();
+        }else{
+            new EventDAO<>(sparql, nosql).delete(uri);
+        }
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
 
@@ -463,10 +467,13 @@ public class EventAPI {
     @Produces(MediaType.APPLICATION_JSON)
     public Response createMoves(@Valid @NotNull List<MoveCreationDTO> dtoList) throws Exception {
         try {
-            MoveEventDAO dao = new MoveEventDAO(sparql, nosql);
+
+            DefaultDataSourceCoordinator<?> coordinator = new DefaultDataSourceCoordinator<>(sparql, nosql.startSession());
+            MoveEventDAO dao = new MoveEventDAO(sparql, nosql,coordinator);
 
             List<MoveModel> models = (List<MoveModel>)(List<?>) getEventModels(dtoList, dao.getGraph());
             dao.create(models);
+            coordinator.run();
 
             List<URI> createdUris = models.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList());;
             return new PaginatedListResponse<>(Response.Status.CREATED,createdUris).getResponse();
@@ -548,10 +555,10 @@ public class EventAPI {
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition
     ) throws Exception {
 
-        MoveEventDAO dao = new MoveEventDAO(sparql,nosql);
+        MoveEventDAO dao = new MoveEventDAO(sparql,nosql,new DefaultDataSourceCoordinator<>(sparql,nosql.startSession()));
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
 
-        AbstractEventCsvImporter<MoveModel> csvImporter = new MoveEventCsvImporter(sparql,ontologyDAO,file,currentUser);
+        AbstractEventCsvImporter<MoveModel> csvImporter = new MoveEventCsvImporter(sparql, ontologyDAO, file, currentUser);
 
         return buildCsvResponse(csvImporter,dao).getResponse();
     }
@@ -603,7 +610,8 @@ public class EventAPI {
             @ApiParam("Event description") @Valid @NotNull MoveUpdateDTO dto
     ) throws Exception {
 
-        MoveEventDAO dao = new MoveEventDAO(sparql, nosql);
+        DefaultDataSourceCoordinator<?> coordinator = new DefaultDataSourceCoordinator<>(sparql, nosql.startSession());
+        MoveEventDAO dao = new MoveEventDAO(sparql, nosql, coordinator);
         MoveModel model = dto.toModel();
         model.setCreator(currentUser.getUri());
 
@@ -616,6 +624,8 @@ public class EventAPI {
         }
 
         dao.update(model);
+        coordinator.run();
+
         return new ObjectUriResponse(Response.Status.OK, dto.getUri()).getResponse();
     }
 
@@ -632,7 +642,7 @@ public class EventAPI {
     public Response getMoveEvent(
             @ApiParam(value = "Move URI", example = "http://opensilex.dev/events/1865162374", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        MoveEventDAO dao = new MoveEventDAO(sparql, nosql);
+        MoveEventDAO dao = new MoveEventDAO(sparql, nosql,null);
 
         MoveModel model = dao.getMoveEventByURI(uri, currentUser);
         if (model == null) {

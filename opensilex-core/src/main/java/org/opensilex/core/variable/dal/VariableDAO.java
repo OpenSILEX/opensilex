@@ -290,7 +290,9 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
             select.addFilter(SPARQLQueryHelper.inURIFilter(VariableModel.DIMENSIONS_FIELD_NAME, filter.getDimensions()));
         }
 
-        select.addFilter(SPARQLQueryHelper.eq(VariableModel.MULTIDIMENSIONAL_FIELD, filter.getIsMultidimensional()));
+        if (filter.getIsMultidimensional() != null) {
+            select.addFilter(SPARQLQueryHelper.eq(VariableModel.MULTIDIMENSIONAL_FIELD, filter.getIsMultidimensional()));
+        }
 
     }
 }

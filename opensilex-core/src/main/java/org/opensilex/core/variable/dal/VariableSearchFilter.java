@@ -27,7 +27,7 @@ public class VariableSearchFilter extends SparqlSearchFilter {
     private List<URI> experiments;
     private List<URI> objects;
 
-    private boolean isMultidimensional;
+    private Boolean isMultidimensional;
 
     private List<URI> dimensions;
     private UserModel userModel;
@@ -167,11 +167,11 @@ public class VariableSearchFilter extends SparqlSearchFilter {
         return this;
     }
 
-    public boolean getIsMultidimensional() {
+    public Boolean getIsMultidimensional() {
         return isMultidimensional;
     }
 
-    public VariableSearchFilter setIsMultidimensional(boolean multidimensional) {
+    public VariableSearchFilter setIsMultidimensional(Boolean multidimensional) {
         isMultidimensional = multidimensional;
         return this;
     }

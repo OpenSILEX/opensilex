@@ -27,6 +27,9 @@ public class VariableSearchFilter extends SparqlSearchFilter {
     private List<URI> experiments;
     private List<URI> objects;
 
+    private boolean isMultidimensional;
+
+    private List<URI> dimensions;
     private UserModel userModel;
 
     public String getNamePattern() {
@@ -161,6 +164,24 @@ public class VariableSearchFilter extends SparqlSearchFilter {
 
     public VariableSearchFilter setUserModel(UserModel userModel) {
         this.userModel = userModel;
+        return this;
+    }
+
+    public boolean getIsMultidimensional() {
+        return isMultidimensional;
+    }
+
+    public VariableSearchFilter setIsMultidimensional(boolean multidimensional) {
+        isMultidimensional = multidimensional;
+        return this;
+    }
+
+    public List<URI> getDimensions() {
+        return dimensions;
+    }
+
+    public VariableSearchFilter setDimensions(List<URI> dimensions) {
+        this.dimensions = dimensions;
         return this;
     }
 }

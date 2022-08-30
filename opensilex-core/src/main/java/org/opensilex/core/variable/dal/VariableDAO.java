@@ -284,5 +284,13 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
             select.addFilter(SPARQLQueryHelper.inURIFilter(VariableModel.SPECIES_FIELD_NAME,filter.getSpecies()));
 
         }
+
+        if(!CollectionUtils.isEmpty(filter.getDimensions())){
+            select.addWhere(makeVar(VariableModel.URI_FIELD), Oeso.hasDimensions, makeVar(VariableModel.DIMENSIONS_FIELD_NAME));
+            select.addFilter(SPARQLQueryHelper.inURIFilter(VariableModel.DIMENSIONS_FIELD_NAME, filter.getDimensions()));
+        }
+
+        select.addFilter(SPARQLQueryHelper.eq(VariableModel.MULTIDIMENSIONAL_FIELD, filter.getIsMultidimensional()));
+
     }
 }

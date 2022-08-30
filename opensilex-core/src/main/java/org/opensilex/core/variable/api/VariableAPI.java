@@ -237,6 +237,8 @@ public class VariableAPI {
                 .setDevices(devices)
                 .setExperiments(experiments)
                 .setObjects(objects)
+                .setIsMultidimensional(isMultidimensional)
+                .setDimensions(dimensions)
                 .setUserModel(currentUser);
 
         filter.setPage(page)

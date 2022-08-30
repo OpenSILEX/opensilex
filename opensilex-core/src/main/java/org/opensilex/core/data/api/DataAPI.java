@@ -1798,6 +1798,35 @@ public class DataAPI {
         return validRow;
     }
 
+    /**
+     * It creates a data model for a valid row
+     * 
+     * @param provenance the provenance model
+     * @param experiments a list of experiment URIs
+     * @param device the device that was found in the CSV file
+     * @param agents a list of ProvEntityModel objects, which are used to represent the device that was
+     * used to collect the data.
+     * @param hasDevice true if the device is specified in the CSV file, false if it's not
+     * @param variableCheckedProvDevice a map of variable name to device model
+     * @param variable the variable name
+     * @param classicVar true if the variable is classic, false if it's multidimensional
+     * @param parsedDateTimeMongo a ParsedDateTimeMongo object that contains the date and time of the
+     * data point
+     * @param object the scientific object
+     * @param target the target of the data (e.g. a sensor)
+     * @param varURI the URI of the variable
+     * @param mapVariableUriDataType a map of variable URIs to their data types
+     * @param values the values of the current row
+     * @param colIndex the index of the column in the CSV file
+     * @param rowIndex the row index of the current row in the CSV file
+     * @param csvValidation the object that will contain the errors and warnings
+     * @param headerByIndex a map of the header index to the header name
+     * @param dataTypeLabels a list of the data type labels
+     * @param dimDAO a DAO for the DimensionModel
+     * @param duplicateDataByIndex a list of ImportDataIndex objects that are used to check for
+     * duplicate data.
+     * @return A DataModel object
+     */
     private DataModel createDataModelForValidRow(ProvenanceModel provenance, List<URI> experiments, DeviceModel device, List<ProvEntityModel> agents,
                                                  Boolean hasDevice, Map<String, DeviceModel> variableCheckedProvDevice, String variable, Boolean classicVar,
                                                  ParsedDateTimeMongo parsedDateTimeMongo, ScientificObjectModel object, SPARQLNamedResourceModel target, URI varURI,

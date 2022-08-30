@@ -414,7 +414,7 @@ OESO</rdfs:label>
 
     <!-- http://www.opensilex.org/vocabulary/oeso#hasModerator -->
 
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasModerator">
+    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasModerator">
         <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#ModerationAction"/>
         <rdfs:range rdf:resource="http://xmlns.com/foaf/0.1/Agent"/>
     </owl:DatatypeProperty>

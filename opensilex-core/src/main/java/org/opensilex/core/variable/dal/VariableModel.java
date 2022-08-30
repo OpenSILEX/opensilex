@@ -25,6 +25,7 @@ import java.util.List;
 public class VariableModel extends BaseVariableModel<VariableModel> implements ClassURIGenerator<VariableModel> {
 
     public static final String GRAPH = "variable";
+    public static final String VALIDATED_DECLARATION_FIELD_NAME = "Validated declaration";
 
     @SPARQLProperty(
             ontology = SKOS.class,
@@ -117,6 +118,8 @@ public class VariableModel extends BaseVariableModel<VariableModel> implements C
             property = "hasModerationAction"
     )
     private List<ModerationActionModel> moderationAction;
+
+    public static final String MODERATION_ACTION_FIELD_NAME = "moderationAction";
 
     public String getAlternativeName() { return alternativeName; }
 

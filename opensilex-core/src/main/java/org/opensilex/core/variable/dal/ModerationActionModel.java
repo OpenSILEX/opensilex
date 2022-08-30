@@ -5,6 +5,7 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 
 import java.time.LocalDate;
 
@@ -13,12 +14,12 @@ import java.time.LocalDate;
         resource = "ModerationAction",
         graph = VariableModel.GRAPH
 )
-public class ModerationActionModel {
+public class ModerationActionModel extends SPARQLResourceModel {
     @SPARQLProperty(
             ontology = DCTerms.class,
-            property = "dateAccepted"
+            property = "date"
     )
-    private LocalDate dateAccepted;
+    private LocalDate date;
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -32,12 +33,14 @@ public class ModerationActionModel {
     )
     private String moderationActionType;
 
-    public LocalDate getDateAccepted() {
-        return dateAccepted;
+    public static final String MODERATION_ACTION_TYPE_FIELD_NAME = "moderationActionType";
+
+    public LocalDate getDate() {
+        return date;
     }
 
-    public void setDateAccepted(LocalDate dateAccepted) {
-        this.dateAccepted = dateAccepted;
+    public void setDate(LocalDate date) {
+        this.date = date;
     }
 
     public UserModel getModerator() {

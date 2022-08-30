@@ -6,6 +6,7 @@
 package org.opensilex.core.variable.api;
 
 import java.net.URI;
+import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -50,6 +51,9 @@ public class VariableGetDTO {
 
     @JsonProperty("unit")
     private UnitGetDTO unit;
+
+    @JsonProperty("isValidated")
+    private boolean isValidated;
 
     @ApiModelProperty(example = "http://opensilex.dev/set/variables/Plant_Height")
     public URI getUri() {
@@ -109,6 +113,13 @@ public class VariableGetDTO {
         this.unit = unit;
     }
 
+    public boolean getIsValidated() {
+        return isValidated;
+    }
+
+    public void setIsValidated(boolean validated) {
+        isValidated = validated;
+    }
 
     public static VariableGetDTO fromModel(VariableModel model) {
 
@@ -133,6 +144,15 @@ public class VariableGetDTO {
 
         UnitModel unit = model.getUnit();
         dto.setUnit(new UnitGetDTO(unit));
+
+        if(model.getModerationAction() != null){
+            for (ModerationActionModel moderationActionModel : model.getModerationAction()) {
+                if (Objects.equals(moderationActionModel.getModerationActionType(), VariableModel.VALIDATED_DECLARATION_FIELD_NAME)) {
+                    dto.setIsValidated(true);
+                    break;
+                }
+            }
+        }
 
         return dto;
     }

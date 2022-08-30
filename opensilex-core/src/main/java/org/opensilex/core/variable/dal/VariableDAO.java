@@ -13,10 +13,10 @@ import org.apache.jena.arq.querybuilder.Order;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.NodeFactory;
-import org.apache.jena.graph.Triple;
-import org.apache.jena.rdf.model.Property;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.path.P_Link;
+import org.apache.jena.sparql.path.P_Seq;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.ontology.Oeso;
@@ -186,6 +186,7 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
             List<URI> devices,
             List<URI> experiments,
             List<URI> objects,
+            Boolean isValidated,
             List<OrderBy> orderByList,
             int page,
             int pageSize,
@@ -265,6 +266,7 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
                         SPARQLQueryHelper.addWhereUriValues(select, SPARQLResourceModel.URI_FIELD, variableUriList);
                     }
 
+
                     if(!CollectionUtils.isEmpty(species)){
                         //  add ?uri vocabulary:hasSpecies ?species
                         select.addWhere(makeVar(VariableModel.URI_FIELD),Oeso.hasSpecies,makeVar(VariableModel.SPECIES_FIELD_NAME));
@@ -274,6 +276,15 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
 
                     }
 
+                    if (isValidated != null) {
+                        WhereBuilder whereModerationActionType = new WhereBuilder();
+                        whereModerationActionType.addWhere(makeVar(VariableModel.URI_FIELD), new P_Seq(new P_Link(Oeso.hasModerationAction.asNode()), new P_Link(Oeso.hasModerationActionType.asNode())), VariableModel.VALIDATED_DECLARATION_FIELD_NAME);
+                        if (isValidated) {
+                            select.addFilter(exprFactory.exists(whereModerationActionType));
+                        } else {
+                            select.addFilter(exprFactory.notexists(whereModerationActionType));
+                        }
+                    }
                 },
                 orderByList,
                 page,

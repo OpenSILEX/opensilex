@@ -154,6 +154,7 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
         model.setUnit(unit);
         model.setDataType(new URI(XSD.integer.getURI()));
         model.setName(name);
+        model.setIsMultidimensional(false);
         return model;
     }
 

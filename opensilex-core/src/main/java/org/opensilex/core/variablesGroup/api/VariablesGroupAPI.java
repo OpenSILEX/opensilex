@@ -15,6 +15,7 @@ import java.net.URI;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
@@ -54,6 +55,8 @@ import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
+import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 
 import org.opensilex.utils.ListWithPagination;
@@ -129,7 +132,8 @@ public class VariablesGroupAPI {
                 variableUri,
                 orderByList,
                 page,
-                pageSize
+                pageSize,
+                currentUser.getLanguage()
         );
 
         ListWithPagination<VariablesGroupGetDTO> resultDTOList = resultList.convert(

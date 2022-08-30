@@ -374,9 +374,18 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
 
-    /**
-     *  @throws SPARQLInvalidUriListException if any URI from uris could not be loaded
+    /*
+     *
+     * @param graph object location
+     * @param objectClass object class
+     * @param uris object URIs
+     * @param lang
+     * @param resultHandler function used to convert SPARQL results in a custom way (can be null)
+     * @return a non-null list containing all object which match uris
+     * @param <T> object class/type
+     * @throws SPARQLInvalidUriListException if any URI from uris could not be loaded
      */
+
     public <T extends SPARQLResourceModel> List<T> getListByURIs(Node graph, Class<T> objectClass, Collection<URI> uris, String lang,
                                                                  ThrowingFunction<SPARQLResult, T, Exception> resultHandler
     ) throws Exception {
@@ -389,8 +398,21 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             lang = getDefaultLang();
         }
 
-        SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(objectClass);
-        return mapper.createInstanceList(graph, uris, lang, this);
+        // default fetching behavior
+        if(resultHandler == null){
+            SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(objectClass);
+            return mapper.createInstanceList(graph, uris, lang, this);
+        }
+
+        // custom result handler -> just load by uris and convert with the given handler
+        return this.loadListByURIs(
+                graph,
+                objectClass,
+                uris,
+                lang,
+                resultHandler,
+                Collections.emptyMap()
+        );
     }
 
 

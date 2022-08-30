@@ -5,7 +5,8 @@
             <template>
             <!-- Toggle Sidebar--> 
                 <div class="searchMenuContainer"
-                v-on:click="SearchFiltersToggle = !SearchFiltersToggle"
+
+                v-on:click="toggleFilter()"
                 :title="searchFiltersPannel()">
                     <div class="searchMenuIcon">
                     <i class="ik ik-search"></i>
@@ -13,10 +14,13 @@
                 </div>
                 <!-- FILTERS -->
                 <Transition>
-                    <div v-show="SearchFiltersToggle">
+
+                    <!-- Conditional display of filter and conditional rendering of advanced filters -->
+                    <div v-show="toggleSearchFilters">
                         <opensilex-SearchFilterField
                         @clear="reset()"
                         @search="refresh()"
+                        @toggleAdvancedSearch="loadAdvancedFilter"
                         :showAdvancedSearch="true"
                         class="searchFilterField">
 
@@ -36,7 +40,7 @@
                             <!-- Entity -->
                             <div>
                                 <opensilex-FilterField>
-                                    <opensilex-EntitySelector
+                                    <opensilex-EntitySelector v-if="loadSearchFilters"
                                         label="VariableView.entity"
                                         :entity.sync="filter.entity"
                                         class="searchFilter"
@@ -47,7 +51,7 @@
                             <!-- Characteristic -->
                             <div>
                                 <opensilex-FilterField>
-                                    <opensilex-CharacteristicSelector
+                                    <opensilex-CharacteristicSelector v-if="loadSearchFilters"
                                         label="VariableView.characteristic"
                                         :characteristic.sync="filter.characteristic"
                                         class="searchFilter"
@@ -58,7 +62,7 @@
                             <!-- Group of variables -->
                             <div>
                                 <opensilex-FilterField>
-                                    <opensilex-GroupVariablesSelector
+                                    <opensilex-GroupVariablesSelector v-if="loadSearchFilters"
                                         label="VariableView.groupVariable"
                                         :variableGroup.sync="filter.group"
                                         class="searchFilter"
@@ -70,70 +74,69 @@
                         <template v-slot:advancedSearch>
                             <!-- Entity of interest -->
                             <div>
-                            <opensilex-FilterField>
-                                <opensilex-InterestEntitySelector
-                                    label="VariableForm.interestEntity-label"
-                                    :interestEntity.sync="filter.entityOfInterest"
-                                    class="searchFilter"
-                                ></opensilex-InterestEntitySelector>
-                            </opensilex-FilterField>
+                                <opensilex-FilterField>
+                                    <opensilex-InterestEntitySelector v-if="loadAdvancedSearchFilters"
+                                        label="VariableForm.interestEntity-label"
+                                        :interestEntity.sync="filter.entityOfInterest"
+                                        class="searchFilter"
+                                    ></opensilex-InterestEntitySelector>
+                                </opensilex-FilterField>
                             </div>
 
                             <!-- Method -->
                             <div>
-                            <opensilex-FilterField>
-                                <opensilex-MethodSelector
-                                    label="VariableView.method"
-                                    :method.sync="filter.method"
-                                    class="searchFilter"
-                                ></opensilex-MethodSelector>
-                            </opensilex-FilterField>
+                                <opensilex-FilterField>
+                                    <opensilex-MethodSelector v-if="loadAdvancedSearchFilters"
+                                        label="VariableView.method"
+                                        :method.sync="filter.method"
+                                        class="searchFilter"
+                                    ></opensilex-MethodSelector>
+                                </opensilex-FilterField>
                             </div>
 
                             <!-- Unit/Scale -->
                             <div>
-                            <opensilex-FilterField>
-                                <opensilex-UnitSelector
-                                    label="VariableView.unit"
-                                    :unit.sync="filter.unit"
-                                    class="searchFilter"
-                                ></opensilex-UnitSelector>
-                            </opensilex-FilterField>
+                                <opensilex-FilterField>
+                                    <opensilex-UnitSelector  v-if="loadAdvancedSearchFilters"
+                                        label="VariableView.unit"
+                                        :unit.sync="filter.unit"
+                                        class="searchFilter"
+                                    ></opensilex-UnitSelector>
+                                </opensilex-FilterField>
                             </div>
-                            
-                            <!-- Data type -->
+                            <!-- Data type-->
                             <div>
-                            <opensilex-FilterField>
-                                <opensilex-VariableDataTypeSelector
-                                    label="OntologyPropertyForm.data-type"
-                                    :datatype.sync="filter.dataType"
-                                    class="searchFilter"
-                                ></opensilex-VariableDataTypeSelector>
-                            </opensilex-FilterField>
+                                <opensilex-FilterField>
+                                    <opensilex-VariableDataTypeSelector  v-if="loadAdvancedSearchFilters"
+                                        label="OntologyPropertyForm.data-type"
+                                        :datatype.sync="filter.dataType"
+                                        class="searchFilter"
+                                    ></opensilex-VariableDataTypeSelector>
+                                </opensilex-FilterField>
                             </div>
 
                             <!-- Time interval -->
                             <div>
-                            <opensilex-FilterField>
-                                <opensilex-VariableTimeIntervalSelector
-                                    label="VariableForm.time-interval"
-                                    :timeinterval.sync="filter.timeInterval"   
-                                    class="searchFilter" 
-                                ></opensilex-VariableTimeIntervalSelector>
-                            </opensilex-FilterField>
+                                <opensilex-FilterField>
+                                    <opensilex-VariableTimeIntervalSelector  v-if="loadAdvancedSearchFilters"
+                                        label="VariableForm.time-interval"
+                                        :timeinterval.sync="filter.timeInterval"
+                                        class="searchFilter"
+                                    ></opensilex-VariableTimeIntervalSelector>
+                                </opensilex-FilterField>
                             </div>
 
                             <!-- Species -->
                             <div>
-                            <opensilex-FilterField>
-                                <opensilex-SpeciesSelector
-                                    label="SpeciesSelector.select-multiple"
-                                    placeholder="SpeciesSelector.select-multiple-placeholder"
-                                    :multiple="true"
-                                    :species.sync="filter.species"
-                                    class="searchFilter"
-                                ></opensilex-SpeciesSelector>
-                            </opensilex-FilterField>
+                                <opensilex-FilterField>
+                                    <opensilex-SpeciesSelector  v-if="loadAdvancedSearchFilters"
+                                        label="SpeciesSelector.select-multiple"
+                                        placeholder="SpeciesSelector.select-multiple-placeholder"
+                                        :multiple="true"
+                                        :species.sync="filter.species"
+                                        class="searchFilter"
+                                    ></opensilex-SpeciesSelector>
+                                </opensilex-FilterField>
                             </div>
 
                         </template>
@@ -189,7 +192,7 @@
                     </template>
 
                     <template v-slot:cell(name)="{data}">
-                        <span class="lowSize" v-bind:class="{ variablesCheckboxMarginHighSize: SearchFiltersToggle }">
+                        <span class="lowSize" v-bind:class="{ variablesCheckboxMarginHighSize: toggleSearchFilters }">
                             <opensilex-UriLink
                                 v-if="noActions"
                                 :uri="data.item.uri"
@@ -204,7 +207,7 @@
                             ></opensilex-UriLink>
                         </span >
                         <br>
-                        <span class="lowSize" v-bind:class="{ variablesCheckboxMarginHighSize: SearchFiltersToggle }">{{data.item.alternative_name}}</span>
+                        <span class="lowSize" v-bind:class="{ variablesCheckboxMarginHighSize: toggleSearchFilters }">{{data.item.alternative_name}}</span>
                     </template>
                     
                     <template v-slot:row-details="{data}">
@@ -256,7 +259,7 @@
                 </opensilex-TableAsyncView>
 
                 <opensilex-ModalForm
-                    v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID) && !noActions"
+                    v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID) && !noActions && loadGroupVariablesForm"
                     ref="groupVariablesForm"
                     modalSize="lg"
                     @onCreate="refresh($event)"
@@ -284,7 +287,7 @@
 </template>
 
 <script lang="ts">
-import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
+import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
 import {
@@ -297,10 +300,13 @@ import {
   VariablesService
 } from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
+import ModalForm from "../common/forms/ModalForm.vue";
+import GroupVariablesModalList from '../groupVariable/GroupVariablesModalList.vue';
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 
 @Component
 export default class VariableList extends Vue {
-    $opensilex: any;
+    $opensilex: OpenSilexVuePlugin;
     $service: VariablesService;
     $store: any;
     $route: any;
@@ -339,7 +345,7 @@ export default class VariableList extends Vue {
         default: false
     })
     withAssociatedData: boolean; // affiche les variables associées aux datas uniquement
-    
+
     @Prop()
     experiment;
 
@@ -365,7 +371,7 @@ export default class VariableList extends Vue {
         species: []
     };
 
-    @Ref("groupVariableSelection") readonly groupVariableSelection!: any;
+    @Ref("groupVariableSelection") readonly groupVariableSelection!: GroupVariablesModalList;
     @Ref("tableRef") readonly tableRef!: any;
 
     get onlySelected() {
@@ -374,6 +380,12 @@ export default class VariableList extends Vue {
 
     get lang() {
         return this.$store.state.lang;
+    }
+
+    created() {
+        this.$opensilex.updateFiltersFromURL(this.$route.query, this.filter);
+        this.$opensilex.disableLoader();
+        this.$service = this.$opensilex.getService("opensilex.VariablesService");
     }
 
     initForm() {
@@ -390,10 +402,16 @@ export default class VariableList extends Vue {
         };
     }
 
-    @Ref("groupVariablesForm") readonly groupVariablesForm!: any;
+    loadGroupVariablesForm: boolean = false;
+    @Ref("groupVariablesForm") readonly groupVariablesForm!: ModalForm;
 
     showCreateForm() {
-        this.groupVariablesForm.showCreateForm();
+
+        // lazy loading of form
+        this.loadGroupVariablesForm = true;
+        this.$nextTick(() => {
+            this.groupVariablesForm.showCreateForm();
+        });
     }
 
     clickOnlySelected() {
@@ -427,7 +445,7 @@ export default class VariableList extends Vue {
 
   data(){
     return {
-      SearchFiltersToggle : false,
+        SearchFiltersToggle : false,
     }
   }
 
@@ -570,12 +588,6 @@ export default class VariableList extends Vue {
             .catch(this.$opensilex.errorHandler);
     }
 
-    created() {
-        this.$opensilex.updateFiltersFromURL(this.$route.query, this.filter);
-        this.$opensilex.disableLoader();
-        this.$service = this.$opensilex.getService("opensilex.VariablesService");
-    }
-
     get fields() {
         let tableFields = [
             {
@@ -620,9 +632,40 @@ export default class VariableList extends Vue {
         return tableFields;
     }
 
-        searchFiltersPannel() {
-    return  this.$t("searchfilter.label")
-  }
+    searchFiltersPannel() {
+        return  this.$t("searchfilter.label")
+    }
+
+    toggleSearchFilters: boolean = false;
+    loadSearchFilters: boolean = false;
+
+    /**
+     * Show or hide the search filter (v-show) on the filter div
+     * Trigger render of search filters selector (v-if).
+     * This ensures that API methods corresponding with the selector are not executed
+     * at the render of this component but only at the first toggle of the filter
+     *
+     */
+    toggleFilter(){
+        this.toggleSearchFilters = ! this.toggleSearchFilters;
+        if(! this.loadSearchFilters){
+            this.loadSearchFilters = true;
+        }
+    }
+
+    loadAdvancedSearchFilters: boolean = false;
+
+    /**
+     * Show or hide the advanced search filter (v-show) on the filter div
+     * Trigger render of advanced search filters selector (v-if)
+     * This ensures that API methods corresponding with the selector are not executed
+     * at the render of this component but only at the first toggle of the advanced filter
+     */
+    loadAdvancedFilter(){
+        if(! this.loadAdvancedSearchFilters){
+            this.loadAdvancedSearchFilters = true;
+        }
+    }
 }
 </script>
 

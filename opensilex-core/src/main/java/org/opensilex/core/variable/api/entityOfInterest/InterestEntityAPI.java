@@ -226,7 +226,8 @@ public class InterestEntityAPI {
                 namePattern,
                 orderByList,
                 page,
-                pageSize
+                pageSize,
+                currentUser.getLanguage()
         );
 
         ListWithPagination<InterestEntityGetDTO> resultDTOList = resultList.convert(

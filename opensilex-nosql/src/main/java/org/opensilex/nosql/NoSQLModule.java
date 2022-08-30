@@ -51,7 +51,7 @@ public class NoSQLModule extends OpenSilexModule {
     @Override
     public void check() throws Exception {
         MongoDBConfig config = getOpenSilex().loadConfigPath(MongoDBConfig.DEFAULT_CONFIG_PATH, MongoDBConfig.class);
-        MongoClient mongo = MongoDBService.buildMongoDBClient(config);
+        MongoClient mongo = MongoDBService.buildMongoClient(config);
         MongoDatabase db = mongo.getDatabase(config.database());
 
         MongoCollection<Document> c = db.getCollection("test");
@@ -80,7 +80,7 @@ public class NoSQLModule extends OpenSilexModule {
     public void initMongo(boolean reset) throws Exception {
         MongoDBConfig config = getOpenSilex().loadConfigPath(MongoDBConfig.DEFAULT_CONFIG_PATH, MongoDBConfig.class);
 
-        try(MongoClient mongo = MongoDBService.buildMongoDBClient(config)){
+        try(MongoClient mongo = MongoDBService.buildMongoClient(config)){
 
             LOGGER.info("Install with parameters : Reset :" + reset + ", Db : " + config.database());
             if (reset) {

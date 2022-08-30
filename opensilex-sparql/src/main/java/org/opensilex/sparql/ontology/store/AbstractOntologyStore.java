@@ -134,7 +134,7 @@ public abstract class AbstractOntologyStore implements OntologyStore {
             long elapsedMs = Duration.between(begin, Instant.now()).toMillis();
 
             int nbInserted = modelsByUris.size();
-            LOGGER.debug(loadingMsg, nbInserted, "classes", elapsedMs);
+            LOGGER.info(loadingMsg, nbInserted, "classes", elapsedMs);
 
             // Initial properties loading
             begin = Instant.now();
@@ -144,14 +144,14 @@ public abstract class AbstractOntologyStore implements OntologyStore {
             elapsedMs = Duration.between(begin, Instant.now()).toMillis();
 
             nbInserted = modelsByUris.size() - nbInserted;
-            LOGGER.debug(loadingMsg, nbInserted, "properties", elapsedMs);
+            LOGGER.info(loadingMsg, nbInserted, "properties", elapsedMs);
 
             // Initial OWL restrictions loading
             begin = Instant.now();
             List<OwlRestrictionModel> restrictions = storeLoader.getRestrictions();
             linkRestrictions(restrictions);
             elapsedMs = Duration.between(begin, Instant.now()).toMillis();
-            LOGGER.debug(loadingMsg, restrictions.size(), "restrictions", elapsedMs);
+            LOGGER.info(loadingMsg, restrictions.size(), "restrictions", elapsedMs);
 
         } catch (Exception e) {
             throw new SPARQLException(e);
@@ -246,7 +246,7 @@ public abstract class AbstractOntologyStore implements OntologyStore {
             // replace partial domain ClassModel by full ClassModel
             ClassModel domain = property.getDomain();
             if (domain == null || domain.getUri() == null) {
-//               //  LOGGER.warn("NULL rdfs:domain for property {}", property.getUri());
+                LOGGER.warn("NULL rdfs:domain for property {}", property.getUri());
             } else {
 
                 ClassModel existingDomain = getClassModel(domain.getUri());
@@ -263,7 +263,7 @@ public abstract class AbstractOntologyStore implements OntologyStore {
 
             URI rangeURI = property.getRangeURI();
             if (rangeURI == null) {
-               //  LOGGER.warn("NULL range for property {}", property.getUri());
+                LOGGER.warn("NULL range for property {}", property.getUri());
             } else if (property instanceof ObjectPropertyModel) {
 
                 // replace partial range ClassModel by full ClassModel
@@ -276,7 +276,7 @@ public abstract class AbstractOntologyStore implements OntologyStore {
     private void linkDataProperty(OwlRestrictionModel restriction, ClassModel restrictedClass, DatatypePropertyModel property) {
 
         if (restriction.getOnDataRange() == null) {
-           //  LOGGER.warn("NULL owl:onDataRange for restriction {} on property {}", restriction.getUri(), property.getUri());
+            LOGGER.warn("NULL owl:onDataRange for restriction {} on property {}", restriction.getUri(), property.getUri());
         } else {
             restrictedClass.getRestrictionsByProperties().put(restriction.getOnProperty(), restriction);
         }
@@ -284,7 +284,7 @@ public abstract class AbstractOntologyStore implements OntologyStore {
 
     private void linkObjectProperty(OwlRestrictionModel restriction, ClassModel restrictedClass, ObjectPropertyModel property)  {
         if (restriction.getOnClass() == null) {
-           //  LOGGER.warn("NULL owl:onClass for restriction {} on property {}", restriction.getUri(), property.getUri());
+            LOGGER.warn("NULL owl:onClass for restriction {} on property {}", restriction.getUri(), property.getUri());
         } else {
             restrictedClass.getRestrictionsByProperties().put(restriction.getOnProperty(), restriction);
         }

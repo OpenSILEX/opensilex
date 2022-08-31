@@ -160,6 +160,8 @@
                                     label="VariableList.multidimensional"
                                     :value.sync="filter.isMultidimensional"
                                     class="searchFilter"
+                                    :uncheckedValue="null"
+                                    @input="onInput"
                                 ></opensilex-CheckboxForm>
                             </opensilex-FilterField>
                             </div>
@@ -470,6 +472,7 @@ export default class VariableList extends Vue {
             dimensions: [],
             species: []
         };
+        this.onInput();
         this.refresh();
         this.$emit("onReset");
     }
@@ -507,6 +510,12 @@ export default class VariableList extends Vue {
 
     onItemUnselected(row) {
         this.tableRef.onItemUnselected(row);
+    }
+
+    onInput() {
+        if(this.filter.isMultidimensional === null) {
+            this.filter.isMultidimensional = undefined;
+        }
     }
 
     searchVariablesWithAttribute(options) {

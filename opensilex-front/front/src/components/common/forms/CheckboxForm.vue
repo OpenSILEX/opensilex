@@ -12,8 +12,9 @@
         :value="true"
         :disabled="disabled"
         :required="required"
-        :unchecked-value="false"
+        :unchecked-value="uncheckedValue"
         switches
+        @input="$emit('input')"
       >{{$t(title)}}</b-form-checkbox>
     </template>
   </opensilex-FormField>
@@ -53,6 +54,11 @@ export default class CheckboxForm extends Vue {
 
   @Prop()
   rules: string | Function;
+
+  @Prop({
+    default: false
+  })
+  uncheckedValue: boolean;
 }
 </script>
 

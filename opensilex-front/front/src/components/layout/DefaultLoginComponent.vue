@@ -73,8 +73,13 @@
                       class="error-message alert alert-danger"
                     >{{ errors[0] }}</div>
                   </ValidationProvider>
-                </b-form-group> 
-                 <a href="forgot-password" v-if="isResetPassword()"><span>{{$t('LoginComponent.forgotPassword')}}</span></a>
+                </b-form-group>
+                <a
+                    v-if="isResetPassword()"
+                    :href="resetPasswordPath"
+                >
+                  <span>{{ $t('LoginComponent.forgotPassword') }}</span>
+                </a>
                 <div class="sign-btn text-center">
                   <b-button
                     type="submit"
@@ -111,21 +116,22 @@
 </template>
 
 <script lang="ts">
-import { Component, Ref } from "vue-property-decorator";
+import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
-import { User } from "../../models/User";
-import { TokenGetDTO, AuthenticationService } from "opensilex-security/index";
-import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse";
-import { FrontConfigDTO } from "../../lib";
-import { SystemService, VersionInfoDTO } from "opensilex-core/index";
+import {User} from "../../models/User";
+import {AuthenticationService, TokenGetDTO} from "opensilex-security/index";
+import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
+import {FrontConfigDTO} from "../../lib";
+import {SystemService, VersionInfoDTO} from "opensilex-core/index";
+import VueRouter from "vue-router";
 
 @Component
 export default class DefaultLoginComponent extends Vue { 
   service: SystemService;
   versionInfo: VersionInfoDTO = {};
   $store: any;
-  $router: any;
+  $router: VueRouter;
   $t: any;
 
   get form() {
@@ -188,9 +194,13 @@ export default class DefaultLoginComponent extends Vue {
     }
   }
 
-  isResetPassword(){
+  isResetPassword() {
     let opensilexConfig: FrontConfigDTO = this.$opensilex.getConfig();
     return opensilexConfig.activateResetPassword;
+  }
+
+  get resetPasswordPath() {
+    return this.$router.resolve("/forgot-password").href;
   }
 
   $opensilex: OpenSilexVuePlugin;
@@ -276,7 +286,7 @@ en:
   LoginComponent:
     selectLoginMethod: Select login method
     passwordConnectionTitle: Connect with password
-    forgotPassword: Forgot password ?
+    forgotPassword: Forgot your password ?
 fr:
   LoginComponent:
     selectLoginMethod: Choisir la méthode de connexion

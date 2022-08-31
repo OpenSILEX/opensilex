@@ -11,11 +11,15 @@ Warning : upgrading to this new version may require manual operations. Please
 see the [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc+5.md).
 
 ### Added or changed
+
 - Prevent deletion of OS in case of associated experiment, children, data or datafile 
+
 ### Fixed
+
 - Variables associated with a variable of type "date" are now stored and exported correctly
 - Better error handling in case of Invalid character when evaluating a SPARQL REGEX
 - Fix URI generation when providing a URI on OS creation
+- Link for "reset password" in the login page now always redirect to the correct page
 
 ## [1.0.0-rc+4.1] - 2022-07-13
 

@@ -33,7 +33,7 @@
         "jwt-decode": "3.1.2",
         "luxon": "^1.26.0",
         "moment": "^2.29.1",
-        "moment-timezone": "^0.5.34",
+        "moment-timezone": "^0.5.35",
         "preval.macro": "5.0.0",
         "sass-loader": "10.1.1",
         "shp-write": "git+https://github.com/Mitix-EPI/shp-write.git",

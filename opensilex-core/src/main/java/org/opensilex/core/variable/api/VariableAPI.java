@@ -337,7 +337,7 @@ public class VariableAPI {
             @ApiParam(value = "Variables URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
     ) throws Exception {
         VariableDAO dao = getDao();
-        List<VariableModel> models = dao.getList(uris, currentUser.getLanguage());
+        List<VariableModel> models = dao.getList(uris);
 
         if (!models.isEmpty()) {
             List<VariableDetailsDTO> resultDTOList = new ArrayList<>(models.size());

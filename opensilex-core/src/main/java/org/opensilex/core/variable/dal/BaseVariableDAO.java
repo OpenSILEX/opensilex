@@ -101,6 +101,6 @@ public class BaseVariableDAO<T extends SPARQLNamedResourceModel<T>> {
      *  @throws SPARQLInvalidUriListException if any URI from uris could not be loaded
      */
     public List<T> getList(List<URI> uris) throws Exception {
-        return getList(uris,null);
+        return sparql.getListByURIs(objectClass, uris, null);
     }
 }

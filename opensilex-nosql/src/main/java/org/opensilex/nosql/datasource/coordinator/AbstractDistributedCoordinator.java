@@ -4,7 +4,6 @@ import org.opensilex.nosql.datasource.operation.CompoundOperation;
 import org.opensilex.nosql.datasource.operation.DataSourceOperation;
 import org.opensilex.nosql.datasource.operation.DataSourceOperation.OPERATION_STATE;
 import org.opensilex.nosql.datasource.operation.LocalTransaction;
-import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ThrowingConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +16,7 @@ import java.util.function.Function;
  */
 public abstract class AbstractDistributedCoordinator implements DistributedDataSourceCoordinator {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AbstractDistributedCoordinator.class);
+    protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractDistributedCoordinator.class);
 
     /**
      *
@@ -48,7 +47,6 @@ public abstract class AbstractDistributedCoordinator implements DistributedDataS
         Object dataSource = operation.getDataSource();
         Objects.requireNonNull(dataSource);
 
-        //
         if(operation instanceof CompoundOperation){
             this.addMixedOperation((CompoundOperation) operation);
             return;
@@ -87,7 +85,11 @@ public abstract class AbstractDistributedCoordinator implements DistributedDataS
      * @param <T>
      * @throws Exception
      */
-    private <T> void performsActionsOnEachDatabase(Function<LocalTransaction<?>, ThrowingConsumer<T, Exception>> action, OPERATION_STATE state, String actionMsg) throws Exception {
+    private <T> void performsActionsOnEachDatabase(
+            Function<LocalTransaction<?>,
+            ThrowingConsumer<T, Exception>> action,
+            OPERATION_STATE state,
+            String actionMsg) throws Exception {
 
         for (Map.Entry<Object, LocalTransaction<?>> entry : localDatabases.entrySet()) {
             LocalTransaction<T> localDatabase = (LocalTransaction<T>) entry.getValue();
@@ -97,7 +99,13 @@ public abstract class AbstractDistributedCoordinator implements DistributedDataS
             LOGGER.debug("\t[{}] on database {} [OK]", actionMsg, localDatabase.getDescription());
 
             if (state != null) {
-                operationsByDatabase.get(datasource).forEach(operation -> operation.setState(state));
+                List<DataSourceOperation<?>> dataSourceOperations = operationsByDatabase.get(datasource);
+
+                // some data sources can be registered without being effectively used
+                // because it can depend on the execution flow of previous operations
+                if( dataSourceOperations != null){
+                    dataSourceOperations.forEach(operation -> operation.setState(state));
+                }
             }
         }
     }
@@ -206,6 +214,7 @@ public abstract class AbstractDistributedCoordinator implements DistributedDataS
         try {
             prepareForCommit();
         } catch (Exception e) {
+            LOGGER.error(e.getMessage());
             rollback();
             throw e;
         }
@@ -214,6 +223,7 @@ public abstract class AbstractDistributedCoordinator implements DistributedDataS
             commit();
             close();
         } catch (Exception e) {
+            LOGGER.error(e.getMessage());
             close();
             resolveCommitFail();
             throw e;

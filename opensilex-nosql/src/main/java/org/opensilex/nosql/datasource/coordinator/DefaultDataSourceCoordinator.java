@@ -61,16 +61,16 @@ public class DefaultDataSourceCoordinator extends AbstractDistributedCoordinator
 
     @Override
     protected void resolveCommitFail() {
-        throw new UnsupportedOperationException("this implementation has no mechanism to cancel a committed transaction");
+        LOGGER.warn("this implementation has no mechanism to cancel a committed transaction");
     }
 
     public DefaultDataSourceCoordinator addSparqlOperation(ThrowingConsumer<SPARQLService,Exception> consumer){
-       this.addOperation(new SparqlOperation(sparql,consumer::accept));
+       this.addOperation(new SparqlOperation(sparql, consumer));
        return this;
     }
 
     public DefaultDataSourceCoordinator addMongoOperation(ThrowingConsumer<ClientSession,Exception> consumer){
-        this.addOperation( new MongoOperation(session,consumer::accept));
+        this.addOperation( new MongoOperation(session, consumer));
         return this;
     }
 

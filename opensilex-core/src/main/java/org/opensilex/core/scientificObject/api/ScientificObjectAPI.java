@@ -565,16 +565,16 @@ public class ScientificObjectAPI {
     public Response updateScientificObject(
             @ApiParam(value = "Scientific object description", required = true)
             @NotNull
-            @Valid ScientificObjectUpdateDTO descriptionDto
+            @Valid ScientificObjectUpdateDTO dto
     ) throws Exception {
 
-        validateContextAccess(descriptionDto.getExperiment());
-        boolean hasExperiment = descriptionDto.getExperiment() == null;
+        validateContextAccess(dto.getExperiment());
+        boolean hasExperiment = dto.getExperiment() == null;
 
-        final URI contextURI = descriptionDto.getExperiment() == null ? sparql.getDefaultGraphURI(ScientificObjectModel.class) : descriptionDto.getExperiment();
+        final URI contextURI = dto.getExperiment() == null ? sparql.getDefaultGraphURI(ScientificObjectModel.class) : dto.getExperiment();
 
-        URI type = descriptionDto.getType();
-        URI uri = descriptionDto.getUri();
+        URI type = dto.getType();
+        URI uri = dto.getUri();
 
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
 
@@ -584,12 +584,27 @@ public class ScientificObjectAPI {
 
         AtomicReference<ScientificObjectModel> modelReference = new AtomicReference<>();
         coordinator.addSparqlOperation(sparqlService -> {
-            ScientificObjectModel model = dao.update(contextURI, type, descriptionDto.getUri(), descriptionDto.getName(), descriptionDto.getRelations(), currentUser);
+            ScientificObjectModel model = dao.update(contextURI, type, dto.getUri(), dto.getName(), dto.getRelations(), currentUser);
             modelReference.set(model);
         });
 
-        updateAssociatedMoves(contextURI,modelReference.get(),coordinator);
-        updateAssociatedGeometry(contextURI,modelReference.get(),descriptionDto.getGeometry(),coordinator);
+        coordinator.addMixedOperation(new CompoundOperation(
+                coordinator,
+                coordinator1 -> updateAssociatedMoves(contextURI,modelReference.get(),coordinator),
+                true
+        ));
+
+        // handle geometry, update geometry or delete old geometry
+        coordinator.addMongoOperation(session -> {
+            GeospatialDAO geoDAO = new GeospatialDAO(nosql);
+            ScientificObjectModel model = modelReference.get();
+            if(dto.getGeometry() != null){
+                GeospatialModel geospatialModel = new GeospatialModel(model, contextURI, GeospatialDAO.geoJsonToGeometry(dto.getGeometry()));
+                geoDAO.update(geospatialModel, model.getUri(), contextURI, session);
+            }else{
+                geoDAO.delete(model.getUri(), contextURI, session);
+            }
+        });
 
         // update experiment species
         if(hasExperiment){

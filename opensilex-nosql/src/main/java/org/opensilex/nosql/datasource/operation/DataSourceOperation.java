@@ -10,7 +10,7 @@ import org.opensilex.utils.ThrowingConsumer;
  * Extends the {@link ThrowingConsumer} interface by adding concepts of identifier and state
  * @param <T> the type of object consumed by the operation, depend on the database on which the operation is executed
  */
-public interface DataSourceOperation<T> extends ThrowingConsumer<T,Exception> {
+public interface DataSourceOperation<T>{
 
     /**
      * @return the identifier of the operation
@@ -32,4 +32,7 @@ public interface DataSourceOperation<T> extends ThrowingConsumer<T,Exception> {
         COMMITTED
     }
 
+    void run() throws Exception;
+
+    T getDataSource();
 }

@@ -1,6 +1,5 @@
 package org.opensilex.nosql.datasource.operation;
 
-import com.mongodb.client.ClientSession;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ThrowingConsumer;
 
@@ -10,8 +9,8 @@ import org.opensilex.utils.ThrowingConsumer;
  */
 public class SparqlOperation extends AbstractDataSourceOperation<SPARQLService> {
 
-    public SparqlOperation(ThrowingConsumer<SPARQLService, Exception> consumer) {
-        super(consumer);
+    public SparqlOperation(SPARQLService sparql, ThrowingConsumer<SPARQLService, Exception> consumer) {
+        super(sparql,consumer);
     }
 
 

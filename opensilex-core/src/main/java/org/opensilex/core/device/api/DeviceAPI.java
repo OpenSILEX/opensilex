@@ -153,7 +153,7 @@ public class DeviceAPI {
                 if(MetaDataDao.hasMetaData(model.getMetadata())){
 
                     // use coordinator in order to auto handle transaction/rollback when dealing with SPARQL and MongoDB databases
-                    new DefaultDataSourceCoordinator<>(sparql, nosql.startSession())
+                    new DefaultDataSourceCoordinator(sparql, nosql.startSession())
                             .addSparqlOperation(sparqlService -> deviceDAO.create(model))
                             .addMongoOperation(session -> new MetaDataDao(nosql).create(deviceDAO.getAttributesCollection(),model.getMetadata(),model.getUri(),session))
                             .run();
@@ -335,7 +335,7 @@ public class DeviceAPI {
         if(MetaDataDao.hasMetaData(model.getMetadata())){
             MetaDataDao metaDataDao = new MetaDataDao(nosql);
 
-            new DefaultDataSourceCoordinator<>(sparql, nosql.startSession())
+            new DefaultDataSourceCoordinator(sparql, nosql.startSession())
                     .addSparqlOperation(sparqlService -> deviceDAO.update(model))
                     .addMongoOperation(session -> metaDataDao.update(deviceDAO.getAttributesCollection(), model.getMetadata(), model.getUri(), session))
                     .run();
@@ -387,7 +387,7 @@ public class DeviceAPI {
             }
 
             // delete device and associated metadata
-            new DefaultDataSourceCoordinator<>(sparql, nosql.startSession())
+            new DefaultDataSourceCoordinator(sparql, nosql.startSession())
                     .addSparqlOperation(sparqlService -> sparqlService.delete(DeviceModel.class, uri))
                     .addMongoOperation(session -> new MetaDataDao(nosql).delete(dao.getAttributesCollection(), uri, session))
                     .run();

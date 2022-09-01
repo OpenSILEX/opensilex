@@ -784,10 +784,9 @@ public class ScientificObjectDAO {
     public static boolean fillFacilityMoveEvent(MoveModel facilityMoveEvent, SPARQLResourceModel object) throws Exception {
         List<URI> targets = new ArrayList<>();
         targets.add(object.getUri());
+
         facilityMoveEvent.setTargets(targets);
-
         facilityMoveEvent.setCreator(object.getCreator());
-
         facilityMoveEvent.setIsInstant(true);
 
         boolean hasFacility = false;

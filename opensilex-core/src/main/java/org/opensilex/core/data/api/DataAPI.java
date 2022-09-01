@@ -155,7 +155,7 @@ public class DataAPI {
         if (variablesToDevices.isEmpty()) {
             dao.createAll(dataList, null);
         } else {
-            DefaultDataSourceCoordinator<?> coordinator = new DefaultDataSourceCoordinator<>(sparql, nosql.startSession());
+            DefaultDataSourceCoordinator  coordinator = new DefaultDataSourceCoordinator(sparql, nosql.startSession());
 
             coordinator.addSparqlOperation(sparqlService -> {
                 DeviceDAO deviceDAO = new DeviceDAO(sparqlService, nosql, fs);

@@ -15,6 +15,7 @@ import java.util.Random;
  */
 public abstract class AbstractDataSourceOperation<T> implements DataSourceOperation<T> {
 
+    private final T dataSource;
     private final long id;
     private OPERATION_STATE state;
     private final ThrowingConsumer<T,Exception> consumer;
@@ -26,18 +27,20 @@ public abstract class AbstractDataSourceOperation<T> implements DataSourceOperat
      * @param consumer the {@link ThrowingConsumer} which is effectively executed
      * @apiNote {@link #id} is generated with a random number generator
      */
-    protected AbstractDataSourceOperation(ThrowingConsumer<T, Exception> consumer) {
+    protected AbstractDataSourceOperation(T dataSource, ThrowingConsumer<T, Exception> consumer) {
 
         Objects.requireNonNull(consumer);
+        Objects.requireNonNull(dataSource);
+
+        this.dataSource = dataSource;
         this.consumer = consumer;
         this.id = RANDOM.nextLong();
         state = OPERATION_STATE.STARTED;
-
     }
 
     @Override
-    public void accept(T t) throws Exception {
-        consumer.accept(t);
+    public void run() throws Exception {
+        consumer.accept(dataSource);
     }
 
     @Override
@@ -53,5 +56,10 @@ public abstract class AbstractDataSourceOperation<T> implements DataSourceOperat
     @Override
     public void setState(OPERATION_STATE state) {
         this.state = state;
+    }
+
+    @Override
+    public T getDataSource() {
+        return dataSource;
     }
 }

@@ -43,6 +43,7 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static org.opensilex.core.geospatial.dal.GeospatialDAO.geoJsonToGeometry;
@@ -109,61 +110,29 @@ public class AreaAPI {
     public Response createArea(
             @ApiParam("Area description") @NotNull @Valid AreaCreationDTO areaDTO
     ) throws Exception {
-        AreaDAO dao = new AreaDAO(sparql);
-        GeospatialDAO geoDAO = new GeospatialDAO(nosql);
-        EventDAO<EventModel> eventDAO= new EventDAO<>(sparql,nosql);
-        GeospatialModel geospatialModel = new GeospatialModel();
-        URI areaURI;
 
-//        nosql.startTransaction();
-        sparql.startTransaction();
-        try {
-            if (!areaDTO.isStructuralArea){
+        AtomicReference<URI> areaURI = new AtomicReference<>();
+        new DefaultDataSourceCoordinator(sparql, nosql.startSession())
+                .addSparqlOperation(sparqlService -> {
+                    AreaDAO dao = new AreaDAO(sparqlService);
 
-                //RdfType for area and geospatial is equal temporal area
-                URI temporalArea = new URI(Oeso.TemporalArea.toString());
+                    // create Area and get URI if it was generated during creation
+                    areaURI.set(dao.create(dto.getUri(), dto.getName(), dto.getRdfType(), dto.getDescription(), currentUser.getUri()));
+                })
+                .addMongoOperation(session -> {
+                    GeospatialDAO geoDAO = new GeospatialDAO(nosql);
 
-                areaURI = dao.create(areaDTO.getUri(), areaDTO.getName(), temporalArea, areaDTO.getDescription(), currentUser.getUri());
-                geospatialModel.setRdfType(temporalArea);
+                    GeospatialModel geospatialModel = new GeospatialModel();
+                    geospatialModel.setUri(areaURI.get());
+                    geospatialModel.setName(dto.getName());
+                    geospatialModel.setRdfType(dto.getRdfType());
+                    geospatialModel.setGeometry(geoJsonToGeometry(dto.getGeometry()));
 
-                //TODO : when the eventForm is used in the area context, the rdftype "move" is disabled because don't make sense (temporary until creation of specific service)
-                //Move is a specific service distinct from the event, not linked
-                if(SPARQLDeserializers.compareURIs(areaDTO.getRdfType(), Oeev.Move.getURI())){
-                    throw new IllegalArgumentException("The rdf Type 'Move' in the context Area is not managed");
-                }
-                else{
-                    //Create an event with the rdfType from event
-                    areaDTO.event.setTargets(Arrays.asList(areaURI));
-                    eventDAO.create(areaDTO.event.toModel());
-                }
-            }
-            else{
-                areaURI = dao.create(areaDTO.getUri(), areaDTO.getName(),areaDTO.getRdfType(), areaDTO.getDescription(), currentUser.getUri());
-                geospatialModel.setRdfType(areaDTO.getRdfType());
-            }
+                    geoDAO.create(geospatialModel,session);
+                })
+                .run();
 
-            geospatialModel.setUri(areaURI);
-            geospatialModel.setName(areaDTO.getName());
-            geospatialModel.setGeometry(geoJsonToGeometry(areaDTO.getGeometry()));
-            geoDAO.create(geospatialModel);
-
-            sparql.commitTransaction();
-//            nosql.commitTransaction();
-
-            return new ObjectUriResponse(Response.Status.CREATED, areaURI).getResponse();
-        } catch (MongoWriteException | CodecConfigurationException mongoException) {
-            try {
-                sparql.rollbackTransaction(mongoException);
-//                nosql.rollbackTransaction();
-            } catch (Exception e) {
-                return new ErrorResponse(Response.Status.BAD_REQUEST, INVALID_GEOMETRY, mongoException).getResponse();
-            }
-            throw mongoException;
-        } catch (Exception ex) {
-            sparql.rollbackTransaction(ex);
-//            nosql.rollbackTransaction();
-            throw ex;
-        }
+        return new ObjectUriResponse(Response.Status.CREATED, areaURI.get()).getResponse();
     }
 
     /**
@@ -264,7 +233,7 @@ public class AreaAPI {
         URI uri = areaDTO.getUri();
 
         // use coordinator in order to handle Area on SPARQL and Geospatial on MongoDB
-        new DefaultDataSourceCoordinator<>(sparql, nosql.startSession())
+        new DefaultDataSourceCoordinator(sparql, nosql.startSession())
                 .addSparqlOperation(sparqlService -> dao.update(uri, areaDTO.getName(), areaDTO.getRdfType(), areaDTO.getDescription(), currentUser.getUri()))
                 .addMongoOperation(session -> {
 
@@ -306,7 +275,7 @@ public class AreaAPI {
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
         EventDAO<EventModel> eventDAO= new EventDAO<>(sparql,nosql);
 
-        new DefaultDataSourceCoordinator<>(sparql, nosql.startSession())
+        new DefaultDataSourceCoordinator(sparql, nosql.startSession())
                 .addSparqlOperation(sparqlService -> dao.delete(areaURI))
                 .addMongoOperation(session -> geoDAO.delete(areaURI,null,session))
                 .run();

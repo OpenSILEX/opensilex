@@ -12,9 +12,9 @@ import org.opensilex.utils.ThrowingConsumer;
  *
  * @author rcolin
  */
-public class LocalDataBase<T> {
+public class LocalTransaction<T> {
 
-    final T dataSource;
+    final T localDatabase;
     final ThrowingConsumer<T, Exception> commitAction;
     final ThrowingConsumer<T, Exception> startAction;
     final ThrowingConsumer<T, Exception> rollbackAction;
@@ -22,8 +22,8 @@ public class LocalDataBase<T> {
 
     final String description;
 
-    public LocalDataBase(T unitOfWork, ThrowingConsumer<T, Exception> commitAction, ThrowingConsumer<T, Exception> startAction, ThrowingConsumer<T, Exception> rollbackAction, ThrowingConsumer<T, Exception> closeAction, String description) {
-        this.dataSource = unitOfWork;
+    public LocalTransaction(T localDatabase, ThrowingConsumer<T, Exception> commitAction, ThrowingConsumer<T, Exception> startAction, ThrowingConsumer<T, Exception> rollbackAction, ThrowingConsumer<T, Exception> closeAction, String description) {
+        this.localDatabase = localDatabase;
         this.commitAction = commitAction;
         this.startAction = startAction;
         this.rollbackAction = rollbackAction;
@@ -31,8 +31,8 @@ public class LocalDataBase<T> {
         this.description = description;
     }
 
-    public T getDataSource() {
-        return dataSource;
+    public T getLocalDatabase() {
+        return localDatabase;
     }
 
     public ThrowingConsumer<T, Exception> getCommitAction() {

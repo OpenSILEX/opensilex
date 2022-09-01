@@ -341,7 +341,7 @@ public class EventAPI {
 
         // move
         if( SPARQLDeserializers.compareURIs(types.get(0), Oeev.Move.toString())){
-            DefaultDataSourceCoordinator<?> coordinator = new DefaultDataSourceCoordinator<>(sparql, nosql.startSession());
+            DefaultDataSourceCoordinator  coordinator = new DefaultDataSourceCoordinator(sparql, nosql.startSession());
             new MoveEventDAO(sparql,nosql,coordinator).delete(uri);
             coordinator.run();
         }else{
@@ -468,7 +468,7 @@ public class EventAPI {
     public Response createMoves(@Valid @NotNull List<MoveCreationDTO> dtoList) throws Exception {
         try {
 
-            DefaultDataSourceCoordinator<?> coordinator = new DefaultDataSourceCoordinator<>(sparql, nosql.startSession());
+            DefaultDataSourceCoordinator  coordinator = new DefaultDataSourceCoordinator(sparql, nosql.startSession());
             MoveEventDAO dao = new MoveEventDAO(sparql, nosql,coordinator);
 
             List<MoveModel> models = (List<MoveModel>)(List<?>) getEventModels(dtoList, dao.getGraph());
@@ -555,11 +555,13 @@ public class EventAPI {
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition
     ) throws Exception {
 
-        MoveEventDAO dao = new MoveEventDAO(sparql,nosql,new DefaultDataSourceCoordinator<>(sparql,nosql.startSession()));
-        OntologyDAO ontologyDAO = new OntologyDAO(sparql);
+        DefaultDataSourceCoordinator coordinator = new DefaultDataSourceCoordinator(sparql,nosql.startSession());
+        MoveEventDAO dao = new MoveEventDAO(sparql,nosql,coordinator);
 
+        OntologyDAO ontologyDAO = new OntologyDAO(sparql);
         AbstractEventCsvImporter<MoveModel> csvImporter = new MoveEventCsvImporter(sparql, ontologyDAO, file, currentUser);
 
+        // #TODO ensure that move is created and pass coordinator if needed
         return buildCsvResponse(csvImporter,dao).getResponse();
     }
 
@@ -610,7 +612,7 @@ public class EventAPI {
             @ApiParam("Event description") @Valid @NotNull MoveUpdateDTO dto
     ) throws Exception {
 
-        DefaultDataSourceCoordinator<?> coordinator = new DefaultDataSourceCoordinator<>(sparql, nosql.startSession());
+        DefaultDataSourceCoordinator  coordinator = new DefaultDataSourceCoordinator(sparql, nosql.startSession());
         MoveEventDAO dao = new MoveEventDAO(sparql, nosql, coordinator);
         MoveModel model = dto.toModel();
         model.setCreator(currentUser.getUri());

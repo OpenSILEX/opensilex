@@ -1,8 +1,10 @@
 package org.opensilex.nosql.datasource.coordinator;
 
+import org.opensilex.nosql.datasource.operation.CompoundOperation;
 import org.opensilex.nosql.datasource.operation.DataSourceOperation;
 import org.opensilex.nosql.datasource.operation.DataSourceOperation.OPERATION_STATE;
-import org.opensilex.nosql.datasource.operation.LocalDataBase;
+import org.opensilex.nosql.datasource.operation.LocalTransaction;
+import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ThrowingConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,27 +12,68 @@ import org.slf4j.LoggerFactory;
 import java.util.*;
 import java.util.function.Function;
 
-public abstract class AbstractDistributedCoordinator<O extends DataSourceOperation<?>>
-        implements DistributedDataSourceCoordinator<O> {
+/**
+ *
+ */
+public abstract class AbstractDistributedCoordinator implements DistributedDataSourceCoordinator {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractDistributedCoordinator.class);
 
-    protected final LinkedHashMap<Object, LocalDataBase<?>> localDatabases;
+    /**
+     *
+     */
+    protected final Map<Object, LocalTransaction<?>> localDatabases;
 
-    protected final LinkedHashMap<Object, List<DataSourceOperation<?>>> operationsByDatabase;
+    /**
+     *
+     */
+    protected final Map<Object, List<DataSourceOperation<?>>> operationsByDatabase;
+
+    /**
+     *
+     */
+    protected final LinkedList<DataSourceOperation<?>> operationsExecutionOrder;
 
     protected AbstractDistributedCoordinator() {
-        operationsByDatabase = new LinkedHashMap<>();
-        localDatabases = new LinkedHashMap<>();
+        operationsByDatabase = new HashMap<>();
+        localDatabases = new HashMap<>();
+        operationsExecutionOrder = new LinkedList<>();
+
+        registerDataSource(
+                this,
+                AbstractDistributedCoordinator::start,
+                AbstractDistributedCoordinator::commit,
+                AbstractDistributedCoordinator::rollback,
+                AbstractDistributedCoordinator::close,
+                SPARQLService.class.getSimpleName() + System.identityHashCode(this)
+        );
     }
 
 
     @Override
-    public <T> void addOperation(T dataSource, O operation) {
+    public void addOperation(DataSourceOperation<?> operation) {
+        Objects.requireNonNull(operation);
+
+        Object dataSource = operation.getDataSource();
+        Objects.requireNonNull(dataSource);
+
+        //
+        if(operation instanceof CompoundOperation){
+            this.addMixedOperation((CompoundOperation) operation);
+            return;
+        }
+
         if (!localDatabases.containsKey(dataSource)) {
             throw new IllegalArgumentException("Unregistered unit of work " + dataSource.getClass().getSimpleName() + " : " + dataSource);
         }
         operationsByDatabase.computeIfAbsent(dataSource, key -> new LinkedList<>()).add(operation);
+        operationsExecutionOrder.add(operation);
+    }
+
+    @Override
+    public void addMixedOperation(CompoundOperation operation) {
+         Objects.requireNonNull(operation);
+         operationsExecutionOrder.add(operation);
     }
 
     @Override
@@ -41,15 +84,23 @@ public abstract class AbstractDistributedCoordinator<O extends DataSourceOperati
                                        ThrowingConsumer<T, Exception> close,
                                        String description
     ) {
-        localDatabases.put(localDatabase, new LocalDataBase<>(localDatabase, start, commit, rollback, close, description));
+        localDatabases.put(localDatabase, new LocalTransaction<>(localDatabase, start, commit, rollback, close, description));
         LOGGER.debug("Registering local database : {}", localDatabase);
     }
 
-    private <T> void performsActionsOnEachDatabase(Function<LocalDataBase<?>, ThrowingConsumer<T, Exception>> action, OPERATION_STATE state, String actionMsg) throws Exception {
+    /**
+     *
+     * @param action
+     * @param state
+     * @param actionMsg
+     * @param <T>
+     * @throws Exception
+     */
+    private <T> void performsActionsOnEachDatabase(Function<LocalTransaction<?>, ThrowingConsumer<T, Exception>> action, OPERATION_STATE state, String actionMsg) throws Exception {
 
-        for (Map.Entry<Object, LocalDataBase<?>> entry : localDatabases.entrySet()) {
-            LocalDataBase<T> localDatabase = (LocalDataBase<T>) entry.getValue();
-            T datasource = localDatabase.getDataSource();
+        for (Map.Entry<Object, LocalTransaction<?>> entry : localDatabases.entrySet()) {
+            LocalTransaction<T> localDatabase = (LocalTransaction<T>) entry.getValue();
+            T datasource = localDatabase.getLocalDatabase();
 
             action.apply(localDatabase).accept(datasource);
             LOGGER.debug("\t[{}] on database {} [OK]", actionMsg, localDatabase.getDescription());
@@ -60,42 +111,101 @@ public abstract class AbstractDistributedCoordinator<O extends DataSourceOperati
         }
     }
 
+    /**
+     *
+     * @throws Exception
+     */
     protected void start() throws Exception {
-        performsActionsOnEachDatabase(LocalDataBase::getStartAction, null,"TRANSACTION_START");
+        performsActionsOnEachDatabase(LocalTransaction::getStartAction, null,"TRANSACTION_START");
 
     }
 
+
+    /**
+     *
+     * @throws Exception
+     */
     protected void commit() throws Exception {
-        performsActionsOnEachDatabase(LocalDataBase::getCommitAction, OPERATION_STATE.COMMITTED,"TRANSACTION_COMMIT");
+        performsActionsOnEachDatabase(LocalTransaction::getCommitAction, OPERATION_STATE.COMMITTED,"TRANSACTION_COMMIT");
 
     }
 
+    /**
+     *
+     * @throws Exception
+     */
     protected void rollback() throws Exception {
-        performsActionsOnEachDatabase(LocalDataBase::getRollbackAction, OPERATION_STATE.ROLLBACK,"TRANSACTION_ROLLBACK");
+        performsActionsOnEachDatabase(LocalTransaction::getRollbackAction, OPERATION_STATE.ROLLBACK,"TRANSACTION_ROLLBACK");
     }
 
+    /**
+     *
+     * @throws Exception
+     */
     protected void close() throws Exception {
-        performsActionsOnEachDatabase(LocalDataBase::getCloseAction, null,"TRANSACTION_CLOSE");
+        performsActionsOnEachDatabase(LocalTransaction::getCloseAction, null,"TRANSACTION_CLOSE");
     }
 
 
+    /**
+     *
+     */
     abstract void resolveCommitFail();
 
-    protected <T> void prepareForCommit() throws Exception {
+    /**
+     *
+     * @throws Exception
+     */
+    protected void prepareForCommit() throws Exception {
 
-        // loop over registered local databases
-        for (Map.Entry<Object, List<DataSourceOperation<?>>> entry : operationsByDatabase.entrySet()) {
-            T dataSource = (T) entry.getKey();
-            List<DataSourceOperation<?>> operations = entry.getValue();
+        while(! operationsExecutionOrder.isEmpty()){
+            DataSourceOperation<?> operation = operationsExecutionOrder.pop();
 
-            LocalDataBase<T> localDataBase = (LocalDataBase<T>) this.localDatabases.get(dataSource);
+            int oldSize = operationsExecutionOrder.size();
+            operation.run();
 
-            // execute each operation on local database
-            for (DataSourceOperation<?> operation : operations) {
-                DataSourceOperation<T> castedOperation = (DataSourceOperation<T>) operation;
-                castedOperation.accept(dataSource);
+            if(operation instanceof CompoundOperation){
+                handleCompoundOperation(oldSize, (CompoundOperation) operation);
             }
-            LOGGER.debug("\t\t{} operation(s) on database {} [OK]", operations.size(), localDataBase.getDescription());
+        }
+    }
+
+    /**
+     *
+     * @param oldSize
+     * @param operation
+     */
+    private void handleCompoundOperation(int oldSize, CompoundOperation operation){
+
+        int newSize = operationsExecutionOrder.size();
+        int newOperationNb = oldSize - newSize;
+
+        if(newOperationNb < 0){
+            // should never have happened, since operation which access to the coordinator only access to addOperation() method, not to the internal operations list
+            throw new IllegalStateException("Fatal error, the previous operation has deleted incoming operation");
+        }
+
+        // no new operation were registered during the compound operation execution
+        if(newOperationNb == 0){
+            return;
+        }
+
+        // the operations can be evaluated after, so just continue the operation execution flow
+        if(! operation.nestedOperationAreEvaluatedNow()){
+            return;
+        }
+
+        //the compound operation has triggered the add of other simple operation at the end of the queue/list
+        //in the case of nestedOperationAreEvaluatedNow() is true, then these operations must be evaluated just after, so we need to update the order of execution
+
+        // Ex: if the current order is [ o1, o2, o3, o4 ] and considering that [o3,o4] were triggered by the CompoundOperation
+        // then the desired order is [ o3, o4, o1, o2]
+
+        // execution order is read from the end, and each operation are inserted in beginning,
+        // so nested/triggered operation are well executed in FIFO order
+        for (int i = 0; i < newOperationNb; i++) {
+            DataSourceOperation<?> newRegisteredOperation = operationsExecutionOrder.removeLast();
+            operationsExecutionOrder.addFirst(newRegisteredOperation);
         }
     }
 
@@ -115,15 +225,9 @@ public abstract class AbstractDistributedCoordinator<O extends DataSourceOperati
             close();
         } catch (Exception e) {
             close();
-            try{
-                resolveCommitFail();
-            }catch (Exception e2){
-                LOGGER.error("Error during commit fail resolving: {}", e2.getMessage());
-                throw e2;
-            }
+            resolveCommitFail();
             throw e;
         }
     }
-
 
 }

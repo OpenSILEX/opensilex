@@ -66,9 +66,9 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
     private static final TriplePath lastEndTimeStampMatchingTriple = new TriplePath(new Triple(endInstantVar, Time.inXSDDateTimeStamp.asNode(), lastEndTimeStampVar));
 
     private final MongoCollection<MoveEventNoSqlModel> moveEventCollection;
-    private final DefaultDataSourceCoordinator<?> coordinator;
+    private final DefaultDataSourceCoordinator coordinator;
 
-    public MoveEventDAO(SPARQLService sparql, MongoDBService mongodb, DefaultDataSourceCoordinator<?> coordinator) throws SPARQLException, SPARQLDeserializerNotFoundException {
+    public MoveEventDAO(SPARQLService sparql, MongoDBService mongodb, DefaultDataSourceCoordinator coordinator) throws SPARQLException, SPARQLDeserializerNotFoundException {
         super(sparql, mongodb);
         this.moveEventCollection = mongodb.getDatabase().getCollection(MOVE_COLLECTION_NAME, MoveEventNoSqlModel.class);
         this.coordinator = coordinator;

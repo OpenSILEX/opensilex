@@ -195,7 +195,7 @@ public class GermplasmAPI {
 
                 // germplasm and associated metadata
                 if(MetaDataDao.hasMetaData(model.getMetadata())){
-                    new DefaultDataSourceCoordinator<>(sparql, nosql.startSession())
+                    new DefaultDataSourceCoordinator(sparql, nosql.startSession())
                             .addSparqlOperation(sparqlService -> germplasmDAO.create(model))
                             .addMongoOperation(session -> new MetaDataDao(nosql).create(germplasmDAO.getAttributesCollection(),model.getMetadata(),model.getUri(),session))
                             .run();
@@ -560,7 +560,7 @@ public class GermplasmAPI {
             GermplasmModel model = germplasmDTO.newModel();
             if(MetaDataDao.hasMetaData(model.getMetadata())){
 
-                new DefaultDataSourceCoordinator<>(sparql, nosql.startSession())
+                new DefaultDataSourceCoordinator(sparql, nosql.startSession())
                         .addMongoOperation(session -> new MetaDataDao(nosql).update(germplasmDAO.getAttributesCollection(), model.getMetadata(), model.getUri(), session))
                         .addSparqlOperation(sparqlService -> germplasmDAO.update(model))
                         .run();
@@ -607,7 +607,7 @@ public class GermplasmAPI {
         } else {
 
             // delete germplasm and associated metadata
-            new DefaultDataSourceCoordinator<>(sparql, nosql.startSession())
+            new DefaultDataSourceCoordinator(sparql, nosql.startSession())
                     .addSparqlOperation(sparqlService ->dao.delete(uri))
                     .addMongoOperation((ClientSession session) -> new MetaDataDao(nosql).delete(dao.getAttributesCollection(), uri, session))
                     .run();

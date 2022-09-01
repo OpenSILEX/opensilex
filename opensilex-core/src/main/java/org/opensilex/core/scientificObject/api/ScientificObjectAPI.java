@@ -24,6 +24,7 @@ import org.opensilex.core.csv.api.CSVValidationDTO;
 import org.opensilex.core.csv.dal.AbstractCsvDao;
 import org.opensilex.core.event.dal.move.TargetPositionModel;
 import org.opensilex.nosql.datasource.coordinator.DefaultDataSourceCoordinator;
+import org.opensilex.nosql.datasource.operation.CompoundOperation;
 import org.opensilex.server.exceptions.displayable.DisplayableBadRequestException;
 import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.core.data.dal.DataDAO;
@@ -50,11 +51,8 @@ import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.Date;
 import org.opensilex.server.rest.validation.DateFormat;
 import org.opensilex.server.rest.validation.ValidURI;
-import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
-import org.opensilex.sparql.exceptions.SPARQLException;
-import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
@@ -498,13 +496,15 @@ public class ScientificObjectAPI {
         // use AtomicReference in order to be able to use the ScientificObjectModel into lambda (for SPARQL and Mongo operations)
         AtomicReference<ScientificObjectModel> model = new AtomicReference<>();
 
-        DefaultDataSourceCoordinator<?> coordinator = new DefaultDataSourceCoordinator<>(sparql, nosql.startSession());
+        DefaultDataSourceCoordinator coordinator = new DefaultDataSourceCoordinator(sparql, nosql.startSession());
 
+        // create object
         coordinator.addSparqlOperation(sparqlService -> {
-                    ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
+                    ScientificObjectDAO dao = new ScientificObjectDAO(sparqlService, nosql);
                     model.set(dao.create(contextURI, experiment, soType, descriptionDto.getUri(), descriptionDto.getName(), descriptionDto.getRelations(), currentUser));
         });
 
+        // copy it into global OS graph
         coordinator.addSparqlOperation(sparqlService -> {
             Node graphNode = SPARQLDeserializers.nodeURI(globalScientificObjectGraph);
             if (hasExperiment && !sparql.uriExists(graphNode, model.get().getUri())) {
@@ -517,23 +517,31 @@ public class ScientificObjectAPI {
             }
         });
 
+        // update xp species
         if (experiment != null) {
             coordinator.addSparqlOperation(sparqlService ->  experimentDAO.updateExperimentSpeciesFromScientificObjects(contextURI));
         }
 
+        // set OS geometry
         if (descriptionDto.getGeometry() != null) {
             coordinator.addMongoOperation(session -> {
                 GeospatialModel geospatialModel = new GeospatialModel(model.get(),contextURI,GeospatialDAO.geoJsonToGeometry(descriptionDto.getGeometry()));
-                geoDAO.create(geospatialModel);
+                geoDAO.create(geospatialModel,session);
             });
         }
 
-        // moves
-        MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql, coordinator);
-        MoveModel facilityMoveEvent = new MoveModel();
-        if (ScientificObjectDAO.fillFacilityMoveEvent(facilityMoveEvent, model.get())) {
-            moveDAO.create(Collections.singletonList(facilityMoveEvent));
-        }
+        coordinator.addMixedOperation(new CompoundOperation(
+                coordinator,
+                coordinator1 -> {
+                    MoveModel facilityMoveEvent = new MoveModel();
+                    if(ScientificObjectDAO.fillFacilityMoveEvent(facilityMoveEvent, model.get())){
+                        // #TODO avoid cast
+                        new MoveEventDAO(sparql, nosql, (DefaultDataSourceCoordinator) coordinator1).create(Collections.singletonList(facilityMoveEvent));
+                    }
+                },
+                true
+        ));
+
         coordinator.addSparqlOperation(sparqlService -> sparqlService.deletePrimitives(SPARQLDeserializers.nodeURI(contextURI), model.get().getUri(), Oeso.isHosted));
 
         coordinator.run();
@@ -572,7 +580,7 @@ public class ScientificObjectAPI {
 
 
         // update model
-        DefaultDataSourceCoordinator<?> coordinator = new DefaultDataSourceCoordinator<>(sparql, nosql.startSession());
+        DefaultDataSourceCoordinator  coordinator = new DefaultDataSourceCoordinator(sparql, nosql.startSession());
 
         AtomicReference<ScientificObjectModel> modelReference = new AtomicReference<>();
         coordinator.addSparqlOperation(sparqlService -> {
@@ -593,7 +601,7 @@ public class ScientificObjectAPI {
         return new ObjectUriResponse(uri).getResponse();
     }
 
-    void updateAssociatedMoves(URI graph, ScientificObjectModel model, DefaultDataSourceCoordinator<?> coordinator) throws Exception {
+    void updateAssociatedMoves(URI graph, ScientificObjectModel model, DefaultDataSourceCoordinator coordinator) throws Exception {
 
         MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql,coordinator);
 
@@ -651,7 +659,7 @@ public class ScientificObjectAPI {
         coordinator.addSparqlOperation(sparqlService ->  sparqlService.deletePrimitives(SPARQLDeserializers.nodeURI(graph), model.getUri(), Oeso.isHosted));
     }
 
-    void updateAssociatedGeometry(URI graph, ScientificObjectModel model, GeoJsonObject geometry, DefaultDataSourceCoordinator<?> coordinator){
+    void updateAssociatedGeometry(URI graph, ScientificObjectModel model, GeoJsonObject geometry, DefaultDataSourceCoordinator coordinator){
 
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
 
@@ -750,7 +758,7 @@ public class ScientificObjectAPI {
         }
 
         // use coordinator in order to auto handle transaction/rollback when dealing with SPARQL and MongoDB databases
-        DefaultDataSourceCoordinator<?> coordinator = new DefaultDataSourceCoordinator<>(sparql, nosql.startSession())
+        DefaultDataSourceCoordinator  coordinator = new DefaultDataSourceCoordinator(sparql, nosql.startSession())
                 .addSparqlOperation(sparqlService -> scientificObjectDAO.delete(contextURI, objectURI))
                 .addMongoOperation(clientSession -> geoDAO.delete(objectURI, contextURI, clientSession));
 
@@ -817,7 +825,7 @@ public class ScientificObjectAPI {
         boolean insertIntoSomeXp = contextURI != null;
         final URI graphURI = insertIntoSomeXp ? contextURI : globalGraph;
 
-        DefaultDataSourceCoordinator<?> coordinator = new DefaultDataSourceCoordinator<>(sparql, nosql.startSession());
+        DefaultDataSourceCoordinator  coordinator = new DefaultDataSourceCoordinator(sparql, nosql.startSession());
 
         List<SPARQLNamedResourceModel> objects = errors.getObjects();
 

@@ -133,13 +133,22 @@ public class GeospatialDAO {
         return writer.write(geom);
     }
 
-    public GeospatialModel create(GeospatialModel instanceGeospatial) throws MongoWriteException {
-        if (instanceGeospatial.getGeometry() != null) {
+    public GeospatialModel create(GeospatialModel model) throws MongoWriteException {
+        return create(model,null);
+    }
+
+    public GeospatialModel create(GeospatialModel model, ClientSession session) throws MongoWriteException {
+        if (model.getGeometry() != null) {
             // the verification of the existence of the URI is done by mongoDB thanks to the uri_1_graph_1 index.
-            geometryCollection.insertOne(instanceGeospatial);
+            addIndex();
+            if (session != null) {
+                geometryCollection.insertOne(session, model);
+            } else {
+                geometryCollection.insertOne(model);
+            }
         }
 
-        return instanceGeospatial;
+        return model;
     }
 
     public GeospatialModel getGeometryByURI(URI uri, URI graph) {

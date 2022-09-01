@@ -2,6 +2,7 @@ package org.opensilex.nosql.datasource.operation;
 
 import com.mongodb.client.ClientSession;
 import org.opensilex.utils.ThrowingConsumer;
+import org.simplejavamail.api.internal.clisupport.model.Cli;
 
 /**
  * @author rcolin
@@ -10,7 +11,7 @@ import org.opensilex.utils.ThrowingConsumer;
  */
 public class MongoOperation extends AbstractDataSourceOperation<ClientSession> {
 
-    public MongoOperation(ThrowingConsumer<ClientSession, Exception> consumer) {
-        super(consumer);
+    public MongoOperation(ClientSession session, ThrowingConsumer<ClientSession, Exception> consumer) {
+        super(session,consumer);
     }
 }

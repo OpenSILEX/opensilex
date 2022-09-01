@@ -317,6 +317,7 @@ import EventCsvForm from "../../events/form/csv/EventCsvForm.vue";
 import TreeViewAsync from "../../common/views/TreeViewAsync.vue";
 import {User} from "../../../models/User";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
+import ScientificObjectForm from "../../scientificObjects/ScientificObjectForm.vue";
 @Component
 export default class ExperimentScientificObjects extends Vue {
   $opensilex: OpenSilexVuePlugin;
@@ -341,7 +342,7 @@ export default class ExperimentScientificObjects extends Vue {
   }
 
   
-  @Ref("soForm") readonly soForm!: any;
+  @Ref("soForm") readonly soForm!: ScientificObjectForm;
   @Ref("soTree") readonly soTree!: TreeViewAsync;
   @Ref("importForm") readonly importForm!: any;
   @Ref("documentForm") readonly documentForm!: any;

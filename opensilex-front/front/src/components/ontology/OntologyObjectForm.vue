@@ -100,11 +100,12 @@ export default class OntologyObjectForm extends Vue {
 
     setBaseType(baseType) {
         this.baseType = baseType;
-        if (this.ontologyRelationsForm) {
-            this.$nextTick(() => {
-                this.ontologyRelationsForm.typeSwitch(baseType, true);
-            })
-        }
+        // ontologyReleationsForm exists only after baseType has been set, so we wait the next tick
+        this.$nextTick(() => {
+            if (this.ontologyRelationsForm) {
+              this.ontologyRelationsForm.typeSwitch(baseType, true);
+            }
+        });
     }
 
     context: string = "";

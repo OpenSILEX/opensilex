@@ -20,6 +20,7 @@ see the [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/op
 - Better error handling in case of Invalid character when evaluating a SPARQL REGEX
 - Fix URI generation when providing a URI on OS creation
 - Link for "reset password" in the login page now always redirect to the correct page
+- Fixed a problem with a "germplasm" field when editing a scientific object
 
 ## [1.0.0-rc+4.1] - 2022-07-13
 

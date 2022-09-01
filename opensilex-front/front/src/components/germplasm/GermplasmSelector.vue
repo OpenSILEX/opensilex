@@ -6,7 +6,8 @@
     :selected.sync="germplasmURI"
     :multiple="multiple"
     :required="required"
-    :searchMethod="loadOptions"
+    :searchMethod="search"
+    :itemLoadingMethod="load"
     :conversionMethod="convertGermplasmDTO"
     :placeholder="placeholder"
     @clear="$emit('clear')"
@@ -16,21 +17,19 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
+import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
-import { SecurityService } from "opensilex-security/index";
-// @ts-ignore
-import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse";
-// @ts-ignore
-import { GermplasmGetSingleDTO } from "opensilex-core/index";
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+import {GermplasmService} from "opensilex-core/api/germplasm.service";
+import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
+import {GermplasmGetAllDTO} from "opensilex-core/model/germplasmGetAllDTO";
 
 @Component
 export default class GermplasmSelector extends Vue {
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
   $store: any;
 
-  service: SecurityService;
+  $service: GermplasmService;
 
   @PropSync("germplasm")
   germplasmURI;
@@ -54,15 +53,18 @@ export default class GermplasmSelector extends Vue {
   @Prop()
   experiment;
 
+  created() {
+    this.$service = this.$opensilex.getService("opensilex.GermplasmService");
+  }
+
   get lang() {
     return this.$store.getters.language;
   }
 
   @Ref("selectForm") readonly selectForm!: any;
 
-  loadOptions(query, page, pageSize) {
-    return this.$opensilex
-      .getService("opensilex.GermplasmService")
+  search(query, page, pageSize) {
+    return this.$service
       .searchGermplasm(
         undefined, //uri?: string
         undefined, //type?: string
@@ -79,6 +81,19 @@ export default class GermplasmSelector extends Vue {
         page, //page?: number
         pageSize //pageSize?
       );
+  }
+
+  /**
+   * Method to load initial options
+   *
+   * @param uris URIs of initial options to load
+   */
+  load(uris: Array<string>) {
+    return this.$service
+        .getGermplasmsByURI(uris)
+        .then((http: HttpResponse<OpenSilexResponse<Array<GermplasmGetAllDTO>>>) => {
+          return http.response.result;
+        }).catch(this.$opensilex.errorHandler);
   }
 
   convertGermplasmDTO(germplasm) {

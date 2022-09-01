@@ -85,7 +85,10 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
     private URI dataType;
 
     @JsonProperty("isValidated")
-    private boolean isValidated;
+    private Boolean isValidated;
+
+    @JsonProperty("moderation")
+    private List<ModerationActionDTO> moderation;
 
     public VariableDetailsDTO(VariableModel model) {
         super(model);
@@ -131,16 +134,17 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
         traitName = model.getTraitName();
 
         if(model.getModerationAction() != null){
-            int counter = 0;
-            boolean validatedDeclarationFound = false;
-            while (counter < model.getModerationAction().size() && validatedDeclarationFound == false){
-                if (Objects.equals(model.getModerationAction().get(counter).getModerationActionType(), VariableModel.VALIDATED_DECLARATION_FIELD_NAME)){
+            List<ModerationActionDTO> moderationDtos = new ArrayList<>();
+            for (ModerationActionModel moderationActionModel : model.getModerationAction()) {
+                if (Objects.equals(moderationActionModel.getModerationActionType(), VariableModel.VALIDATED_DECLARATION_FIELD_NAME)) {
                     this.isValidated = true;
-                    validatedDeclarationFound = true;
                 }
-                counter += 1;
+
+                moderationDtos.add(ModerationActionDTO.fromModel(moderationActionModel));
             }
+            this.moderation = moderationDtos;
         }
+
     }
 
     public VariableDetailsDTO() {
@@ -266,11 +270,11 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
     }
 
     @ApiModelProperty(notes = "Define if the variable has been validated by a moderator")
-    public boolean getIsValidated() {
+    public Boolean getIsValidated() {
         return isValidated;
     }
 
-    public void setIsValidated(boolean isValidated) {
+    public void setIsValidated(Boolean isValidated) {
         this.isValidated = isValidated;
     }
 

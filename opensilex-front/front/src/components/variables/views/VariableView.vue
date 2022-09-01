@@ -23,6 +23,11 @@
             :to="{ path: '/variable/visualization/' + encodeURIComponent(uri) }"
         >{{ $t('VariableDetails.visualization') }}
         </b-nav-item>
+        <b-nav-item
+            :active="isModerationTab()"
+            :to="{ path: '/variable/moderation/' + encodeURIComponent(uri) }"
+        >{{ $t('VariableDetails.moderation') }}
+        </b-nav-item>
 
       </template>
     </opensilex-PageActions>
@@ -49,6 +54,11 @@
             :variable="uri"
             :modificationCredentialId="credentials.CREDENTIAL_DEVICE_MODIFICATION_ID"
         ></opensilex-VariableVisualizationTab>
+
+        <opensilex-VariableModerationTab
+            v-else-if="isModerationTab()"
+            :variable="uri"
+        ></opensilex-VariableModerationTab>
       </template>
 
     </opensilex-PageContent>
@@ -132,6 +142,10 @@ export default class VariableView extends Vue {
 
   isVisualizationTab() {
     return this.$route.path.startsWith("/variable/visualization/");
+  }
+
+  isModerationTab() {
+    return this.$route.path.startsWith("/variable/moderation/");
   }
 
   loadVariable(uri: string) {

@@ -53,7 +53,7 @@ public class VariableGetDTO {
     private UnitGetDTO unit;
 
     @JsonProperty("isValidated")
-    private boolean isValidated;
+    private Boolean isValidated;
 
     @ApiModelProperty(example = "http://opensilex.dev/set/variables/Plant_Height")
     public URI getUri() {
@@ -113,11 +113,11 @@ public class VariableGetDTO {
         this.unit = unit;
     }
 
-    public boolean getIsValidated() {
+    public Boolean getIsValidated() {
         return isValidated;
     }
 
-    public void setIsValidated(boolean validated) {
+    public void setIsValidated(Boolean validated) {
         isValidated = validated;
     }
 

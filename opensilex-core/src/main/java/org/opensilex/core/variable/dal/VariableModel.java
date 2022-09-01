@@ -26,6 +26,9 @@ public class VariableModel extends BaseVariableModel<VariableModel> implements C
 
     public static final String GRAPH = "variable";
     public static final String VALIDATED_DECLARATION_FIELD_NAME = "Validated declaration";
+    public static final String COMMENTED_DECLARATION_FIELD_NAME = "Commented declaration";
+    public static final String VALIDATED_MODIFICATION_FIELD_NAME = "Validated modification";
+    public static final String COMMENTED_MODIFICATION_FIELD_NAME = "Commented modification";
 
     @SPARQLProperty(
             ontology = SKOS.class,

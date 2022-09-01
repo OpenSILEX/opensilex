@@ -50,6 +50,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 @Api(VariableAPI.CREDENTIAL_VARIABLE_GROUP_ID)
 @Path(VariableAPI.PATH)
@@ -190,6 +191,34 @@ public class VariableAPI {
 
         URI shortUri = new URI(SPARQLDeserializers.getShortURI(variable.getUri().toString()));
         return new ObjectUriResponse(Response.Status.OK,shortUri).getResponse();
+    }
+
+    @GET
+    @Path("moderation/{uri}")
+    @ApiOperation("Get variable moderation actions")
+    @ApiProtected
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Variable retrieved", response = VariableDetailsDTO.class),
+            @ApiResponse(code = 404, message = "Unknown variable URI", response = ErrorResponse.class)
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getVariableModerationAction(
+            @ApiParam(value = "Variable URI", example = "http://opensilex.dev/set/variables/Plant_Height", required = true) @PathParam("uri") @NotNull URI uri
+    ) throws Exception {
+        List<ModerationActionDTO> moderationDTOList = new ArrayList<>();
+        VariableDAO dao = getDao();
+        VariableModel variable = dao.get(uri);
+
+        if (variable == null) {
+            throw new NotFoundURIException(uri);
+        }
+
+        variable.getModerationAction();
+        for (ModerationActionModel moderationActionModel : variable.getModerationAction()) {
+            moderationDTOList.add(ModerationActionDTO.fromModel(moderationActionModel));
+        }
+        return new PaginatedListResponse<>(moderationDTOList).getResponse();
     }
 
     @DELETE

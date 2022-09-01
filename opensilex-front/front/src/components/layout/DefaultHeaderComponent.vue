@@ -70,11 +70,11 @@
             </template>
 
             <b-dropdown-item
-                v-for="item in languages"
-                :key="`language-${item}`"
+                v-for="item in variableList"
+                :key="`${item}`"
                 href="#"
-                @click.prevent="setLanguage(item)"
-            >{{ $t("component.header.language." + item) }}</b-dropdown-item
+                @click.prevent="'/app/variable/details/'+ encodeURIComponent(item)"
+            >{{ 'La variable "' + item + '" a été créée.' }}</b-dropdown-item
             >
           </b-dropdown>
 
@@ -110,12 +110,19 @@
 import {Component} from "vue-property-decorator";
 import Vue from "vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+import {VariablesService} from "opensilex-core/api/variables.service";
+import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
+import {VariablesGroupGetDTO} from "opensilex-core/model/variablesGroupGetDTO";
+import {VariableGetDTO} from "opensilex-core/model/variableGetDTO";
 
 @Component
 export default class DefaultHeaderComponent extends Vue {
   $i18n: any;
   $store: any;
   $opensilex: OpenSilexVuePlugin;
+  $service: VariablesService;
+
+  variableList: Array<string> = [];
 
   /**
    * Return the current connected user
@@ -136,6 +143,41 @@ export default class DefaultHeaderComponent extends Vue {
    */
   get languages() {
     return Object.keys(this.$i18n.messages);
+  }
+
+  /**
+   * Return all validated variables
+   */
+  loadValidatedVariables() {
+     return this.$service.searchVariables(
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        false,
+        undefined,
+        undefined,
+        undefined,
+        false,
+        ["uri=asc"],
+        0,
+        20
+    ).then((http: HttpResponse<OpenSilexResponse<Array<VariableGetDTO>>>) => {
+       let list = http.response.result;
+       // let listUri = [];
+       // let listVariablesName = [];
+       list.forEach((item) => {
+         this.variableList.push(item.name);
+         // listUri.push(item.uri);
+         // listVariablesName.push(item.name);
+       });
+     }).catch(this.$opensilex.errorHandler);
   }
 
   /**
@@ -178,8 +220,10 @@ export default class DefaultHeaderComponent extends Vue {
 
   width;
   created() {
+    this.$service = this.$opensilex.getService("opensilex.VariablesService");
     window.addEventListener("resize", this.handleResize);
     this.handleResize();
+    this.loadValidatedVariables();
   }
 
   beforeDestroy() {

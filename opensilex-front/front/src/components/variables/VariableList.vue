@@ -147,6 +147,11 @@
                         </div>
                         <div v-else> {{ $t("VariableList.not-used-in-variablesGroup") }}</div>
                     </template>
+                    <template v-slot:cell(validation_logo)="{data}">
+                      <div v-if="data.item.isValidated">
+                        <opensilex-Icon icon="fa#check-circle" />
+                      </div>
+                    </template>
                     <template v-slot:cell(_entity_name)="{data}">{{ data.item.entity.name }}</template>
                     <template v-slot:cell(_interest_entity_name)="{data}">
                         {{ data.item.entity_of_interest ? data.item.entity_of_interest.name : "" }}
@@ -381,6 +386,7 @@ export default class VariableList extends Vue {
             this.experiment ? this.experiment : this.filter.experiment,
             this.objects ? this.objects : this.filter.objects,
             this.devices ? this.devices : this.filter.devices,
+            undefined,
             options.orderBy,
             options.currentPage,
             options.pageSize
@@ -488,6 +494,11 @@ export default class VariableList extends Vue {
                 key: "name",
                 label: "component.common.name",
                 sortable: true
+            },
+            {
+              key: "validation_logo",
+              label: "",
+              sortable: false
             },
             {
                 key: "_entity_name",

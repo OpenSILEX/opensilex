@@ -41,6 +41,20 @@
           </template>
 
                     <template v-slot:body>
+                      <b-row>
+                        <b-col></b-col>
+                        <b-col></b-col>
+                        <b-col></b-col>
+                        <b-col></b-col>
+                        <b-col></b-col>
+                        <b-col></b-col>
+                        <b-col></b-col>
+                        <b-col>
+                          <div v-if="variable.isValidated">
+                            <opensilex-Icon icon="fa#check-circle" />
+                          </div>
+                        </b-col>
+                      </b-row>
                         <opensilex-UriView v-if="variable && variable.uri" :uri="variable.uri"
                         ></opensilex-UriView>
                         <opensilex-StringView label="component.common.name"
@@ -305,6 +319,7 @@ en:
     edit: Edit variable
     edit-references: Edit references
     visualization: Device associated Data Visualization
+    moderation: Moderation
 fr:
   VariableDetails:
     title: Vue détaillée de la variable
@@ -317,4 +332,5 @@ fr:
     edit: Editer la variable
     edit-references: Editer les références
     visualization: Visualisation des données associées à un instrument
+    moderation: Modération
 </i18n>

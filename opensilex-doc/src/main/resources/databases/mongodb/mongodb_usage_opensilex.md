@@ -75,8 +75,40 @@ We can define the following compensation :
 - https://developer.ibm.com/articles/use-saga-to-solve-distributed-transaction-management-problems-in-a-microservices-architecture/
 - https://www.baeldung.com/cs/saga-pattern-microservices
 
-# Architecture
+# Conception and Implementation
 
 ## MongoDB Insertion
 
 ## Distributed transaction handling
+
+## Example of use
+
+```java
+public class TestDistributedTransaction {
+    
+    public void distributedTransactionExample() {
+
+        // access to SPARQL and Mongo Databases
+        SPARQLService sparql = getSparqlService();
+        MongoDBService mongoDB = getMongoDBService();
+
+        // object which allow to atomically handle transaction with MongoDB
+        ClientSession mongoSession = mongoDB.startSession();
+
+        DefaultDataSourceCoordinator<DataSourceOperation<?>> coordinator = new DefaultDataSourceCoordinator<>(sparql, mongoSession);
+
+        // operation on mongo -> write models
+        coordinator.addOperation(mongoSession, new MongoOperation((session) ->
+                testCollection.insertMany(session, mongoModels))
+        );
+
+        // operation on sparql -> write models
+        coordinator.addOperation(sparql, new SparqlOperation((service) ->
+                service.create(testGraph, sparqlModels))
+        );
+
+        // run both operations, transaction are handled for the session and the SPARQLService
+        coordinator.run();
+    }
+}
+```

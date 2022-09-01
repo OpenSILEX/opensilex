@@ -38,15 +38,6 @@ public abstract class AbstractDistributedCoordinator implements DistributedDataS
         operationsByDatabase = new HashMap<>();
         localDatabases = new HashMap<>();
         operationsExecutionOrder = new LinkedList<>();
-
-        registerDataSource(
-                this,
-                AbstractDistributedCoordinator::start,
-                AbstractDistributedCoordinator::commit,
-                AbstractDistributedCoordinator::rollback,
-                AbstractDistributedCoordinator::close,
-                SPARQLService.class.getSimpleName() + System.identityHashCode(this)
-        );
     }
 
 
@@ -117,7 +108,6 @@ public abstract class AbstractDistributedCoordinator implements DistributedDataS
      */
     protected void start() throws Exception {
         performsActionsOnEachDatabase(LocalTransaction::getStartAction, null,"TRANSACTION_START");
-
     }
 
 
@@ -159,7 +149,7 @@ public abstract class AbstractDistributedCoordinator implements DistributedDataS
     protected void prepareForCommit() throws Exception {
 
         while(! operationsExecutionOrder.isEmpty()){
-            DataSourceOperation<?> operation = operationsExecutionOrder.pop();
+            DataSourceOperation<?> operation = operationsExecutionOrder.removeFirst();
 
             int oldSize = operationsExecutionOrder.size();
             operation.run();
@@ -178,7 +168,7 @@ public abstract class AbstractDistributedCoordinator implements DistributedDataS
     private void handleCompoundOperation(int oldSize, CompoundOperation operation){
 
         int newSize = operationsExecutionOrder.size();
-        int newOperationNb = oldSize - newSize;
+        int newOperationNb = newSize - oldSize;
 
         if(newOperationNb < 0){
             // should never have happened, since operation which access to the coordinator only access to addOperation() method, not to the internal operations list

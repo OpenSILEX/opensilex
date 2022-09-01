@@ -21,6 +21,9 @@ import org.opensilex.sparql.service.SPARQLService;
 import javax.ws.rs.core.UriBuilder;
 import java.util.*;
 
+/**
+ * @author rcolin
+ */
 public class SparqlAndMongoCoordinatorTest extends AbstractMongoIntegrationTest {
 
 
@@ -71,8 +74,8 @@ public class SparqlAndMongoCoordinatorTest extends AbstractMongoIntegrationTest 
 
         SPARQLService sparql = getSparqlService();
         MongoDBService mongoDB = getMongoDBService();
-        sparql.clearGraph(testGraph.toString());
 
+        sparql.clearGraph(testGraph.toString());
         Assert.assertEquals(0, sparql.count(testGraph, SPARQLNamedResourceModel.class));
         Assert.assertEquals(0, mongoDB.count(MongoTestModel.class, MONGO_COLLECTION_NAME, new Document()));
 
@@ -97,6 +100,7 @@ public class SparqlAndMongoCoordinatorTest extends AbstractMongoIntegrationTest 
         SPARQLService sparql = getSparqlService();
         MongoDBService mongoDB = getMongoDBService();
 
+        sparql.clearGraph(testGraph.toString());
         Assert.assertEquals(0, sparql.count(testGraph, SPARQLNamedResourceModel.class));
         Assert.assertEquals(0, mongoDB.count(MongoTestModel.class, MONGO_COLLECTION_NAME, new Document()));
 
@@ -160,12 +164,11 @@ public class SparqlAndMongoCoordinatorTest extends AbstractMongoIntegrationTest 
         SPARQLService sparql = getSparqlService();
         MongoDBService mongoDB = getMongoDBService();
 
-        List<Integer> executionOrder = new ArrayList<>();
-
         sparql.clearGraph(testGraph.toString());
-
         Assert.assertEquals(0, sparql.count(testGraph, SPARQLNamedResourceModel.class));
         Assert.assertEquals(0, mongoDB.count(MongoTestModel.class, MONGO_COLLECTION_NAME, new Document()));
+
+        List<Integer> executionOrder = new ArrayList<>();
 
         ClientSession mongoSession = mongoDB.startSession();
         DefaultDataSourceCoordinator coordinator = new DefaultDataSourceCoordinator(sparql, mongoSession);
@@ -190,7 +193,11 @@ public class SparqlAndMongoCoordinatorTest extends AbstractMongoIntegrationTest 
             executionOrder.add(4);
         }));
 
+        coordinator.run();
+
         Assert.assertEquals(Arrays.asList(1, 2, 3, 4), executionOrder);
+        Assert.assertEquals(200, sparql.count(testGraph, SPARQLNamedResourceModel.class));
+        Assert.assertEquals(200, mongoDB.count(MongoTestModel.class, MONGO_COLLECTION_NAME, new Document()));
     }
 
     @Test
@@ -199,12 +206,11 @@ public class SparqlAndMongoCoordinatorTest extends AbstractMongoIntegrationTest 
         SPARQLService sparql = getSparqlService();
         MongoDBService mongoDB = getMongoDBService();
 
-        List<Integer> executionOrder = new ArrayList<>();
-
         sparql.clearGraph(testGraph.toString());
-
         Assert.assertEquals(0, sparql.count(testGraph, SPARQLNamedResourceModel.class));
         Assert.assertEquals(0, mongoDB.count(MongoTestModel.class, MONGO_COLLECTION_NAME, new Document()));
+
+        List<Integer> executionOrder = new ArrayList<>();
 
         ClientSession mongoSession = mongoDB.startSession();
         DefaultDataSourceCoordinator coordinator = new DefaultDataSourceCoordinator(sparql, mongoSession);
@@ -222,8 +228,8 @@ public class SparqlAndMongoCoordinatorTest extends AbstractMongoIntegrationTest 
                         executionOrder.add(2);
                     }));
 
-                    coordinator1.addOperation(new MongoOperation(mongoSession, (session) -> {
-                        testCollection.insertMany(session, getMongoModels(100));
+                    coordinator1.addOperation(new SparqlOperation(sparql, (service) -> {
+                        service.create(testGraph, getSparqlModels(100, 0));
                         executionOrder.add(3);
                     }));
                 },
@@ -236,7 +242,10 @@ public class SparqlAndMongoCoordinatorTest extends AbstractMongoIntegrationTest 
             executionOrder.add(4);
         }));
 
+        coordinator.run();
         Assert.assertEquals(Arrays.asList(1, 2, 3, 4), executionOrder);
+        Assert.assertEquals(200, sparql.count(testGraph, SPARQLNamedResourceModel.class));
+        Assert.assertEquals(200, mongoDB.count(MongoTestModel.class, MONGO_COLLECTION_NAME, new Document()));
     }
 
     @Test
@@ -248,7 +257,6 @@ public class SparqlAndMongoCoordinatorTest extends AbstractMongoIntegrationTest 
         List<Integer> executionOrder = new ArrayList<>();
 
         sparql.clearGraph(testGraph.toString());
-
         Assert.assertEquals(0, sparql.count(testGraph, SPARQLNamedResourceModel.class));
         Assert.assertEquals(0, mongoDB.count(MongoTestModel.class, MONGO_COLLECTION_NAME, new Document()));
 
@@ -268,12 +276,12 @@ public class SparqlAndMongoCoordinatorTest extends AbstractMongoIntegrationTest 
                         executionOrder.add(3);
                     }));
 
-                    coordinator1.addOperation(new MongoOperation(mongoSession, (session) -> {
-                        testCollection.insertMany(session, getMongoModels(100));
+                    coordinator1.addOperation(new SparqlOperation(sparql, (service) -> {
+                        service.create(testGraph, getSparqlModels(100, 0));
                         executionOrder.add(4);
                     }));
                 },
-                true
+                false
         );
         coordinator.addMixedOperation(compoundOperation);
 
@@ -282,7 +290,10 @@ public class SparqlAndMongoCoordinatorTest extends AbstractMongoIntegrationTest 
             executionOrder.add(2);
         }));
 
+        coordinator.run();
         Assert.assertEquals(Arrays.asList(1, 2, 3, 4), executionOrder);
+        Assert.assertEquals(200, sparql.count(testGraph, SPARQLNamedResourceModel.class));
+        Assert.assertEquals(200, mongoDB.count(MongoTestModel.class, MONGO_COLLECTION_NAME, new Document()));
     }
 
     @Override

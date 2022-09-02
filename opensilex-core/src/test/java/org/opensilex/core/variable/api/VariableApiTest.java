@@ -2,6 +2,7 @@ package org.opensilex.core.variable.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.Sets;
 import org.junit.Before;
 import org.junit.Test;
 import org.opensilex.core.AbstractMongoIntegrationTest;
@@ -9,9 +10,11 @@ import org.opensilex.core.germplasm.api.GermplasmAPITest;
 import org.opensilex.core.germplasm.api.GermplasmCreationDTO;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.species.api.SpeciesDTO;
 import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.core.variable.api.entity.EntityCreationDTO;
 import org.opensilex.core.variable.dal.*;
+import org.opensilex.core.variablesGroup.api.VariablesGroupCreationDTO;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -21,6 +24,7 @@ import org.opensilex.sparql.service.SPARQLService;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
@@ -263,6 +267,22 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
 
         Response postResult = getJsonPostResponse(target(createPath), dto);
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
+
+        Response getResult = getJsonGetByUriResponse(target(getByUriPath), dto.getUri().toString());
+
+        // try to deserialize object and check if the fields value are the same
+        JsonNode node = getResult.readEntity(JsonNode.class);
+        SingleObjectResponse<VariableDetailsDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<VariableDetailsDTO>>() {
+        });
+        VariableDetailsDTO dtoFromDb = getResponse.getResult();
+
+        assertEquals(
+                Sets.newHashSet(
+                        SPARQLDeserializers.formatURI(species1.getUri()),
+                        SPARQLDeserializers.formatURI(species2.getUri())),
+                dtoFromDb.getSpecies().stream().map(speciesDTO -> SPARQLDeserializers.formatURI(speciesDTO.getUri())).collect(Collectors.toSet())
+        );
+
     }
 
     @Test

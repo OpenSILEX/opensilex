@@ -284,13 +284,7 @@ public class VariableAPI {
                 .setLang(currentUser.getLanguage());
 
         VariableDAO dao = getDao();
-        ListWithPagination<VariableModel> resultList = dao.search(
-                namePattern,
-                orderByList,
-                page,
-                pageSize,
-                currentUser.getLanguage()
-        );
+        ListWithPagination<VariableModel> resultList = dao.search(filter);
 
         ListWithPagination<VariableDetailsDTO> resultDTOList = resultList.convert(
                 VariableDetailsDTO.class,

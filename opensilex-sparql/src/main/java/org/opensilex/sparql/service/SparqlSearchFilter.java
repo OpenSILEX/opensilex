@@ -7,6 +7,7 @@ import org.opensilex.utils.OrderBy;
 
 import java.net.URI;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -22,6 +23,14 @@ public abstract class SparqlSearchFilter {
 
     @JsonIgnore
     protected String lang;
+
+    protected SparqlSearchFilter() {
+        this.lang = OpenSilex.DEFAULT_LANGUAGE;
+        this.page = 0;
+        this.pageSize = 20;
+        this.orderByList = Collections.emptyList();
+        this.includedUris = Collections.emptyList();
+    }
 
     public Collection<URI> getIncludedUris() {
         return includedUris;

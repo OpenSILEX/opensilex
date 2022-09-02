@@ -35,7 +35,6 @@ public abstract class AbstractDataSourceOperation<T> implements DataSourceOperat
         this.dataSource = dataSource;
         this.consumer = consumer;
         this.id = RANDOM.nextLong();
-        state = OPERATION_STATE.STARTED;
     }
 
     @Override

@@ -24,7 +24,7 @@ import org.opensilex.core.csv.api.CSVValidationDTO;
 import org.opensilex.core.csv.dal.AbstractCsvDao;
 import org.opensilex.core.event.dal.move.TargetPositionModel;
 import org.opensilex.nosql.datasource.coordinator.DefaultDataSourceCoordinator;
-import org.opensilex.nosql.datasource.operation.CompoundOperation;
+import org.opensilex.nosql.datasource.coordinator.CompoundOperation;
 import org.opensilex.server.exceptions.displayable.DisplayableBadRequestException;
 import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.core.data.dal.DataDAO;

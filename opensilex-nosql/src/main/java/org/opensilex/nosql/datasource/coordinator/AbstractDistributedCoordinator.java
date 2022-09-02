@@ -1,6 +1,5 @@
 package org.opensilex.nosql.datasource.coordinator;
 
-import org.opensilex.nosql.datasource.operation.CompoundOperation;
 import org.opensilex.nosql.datasource.operation.DataSourceOperation;
 import org.opensilex.nosql.datasource.operation.DataSourceOperation.OPERATION_STATE;
 import org.opensilex.nosql.datasource.operation.LocalTransaction;
@@ -47,11 +46,6 @@ public abstract class AbstractDistributedCoordinator implements DistributedDataS
         Object dataSource = operation.getDataSource();
         Objects.requireNonNull(dataSource);
 
-        if(operation instanceof CompoundOperation){
-            this.addMixedOperation((CompoundOperation) operation);
-            return;
-        }
-
         if (!localDatabases.containsKey(dataSource)) {
             throw new IllegalArgumentException("Unregistered unit of work " + dataSource.getClass().getSimpleName() + " : " + dataSource);
         }
@@ -60,9 +54,9 @@ public abstract class AbstractDistributedCoordinator implements DistributedDataS
     }
 
     @Override
-    public void addMixedOperation(CompoundOperation operation) {
-         Objects.requireNonNull(operation);
-         operationsExecutionOrder.add(operation);
+    public void addMixedOperation(ThrowingConsumer<DistributedDataSourceCoordinator, Exception> consumer, boolean nestedOperationAreEvaluatedNow) {
+        Objects.requireNonNull(consumer);
+        operationsExecutionOrder.add(new CompoundOperation(this, consumer, nestedOperationAreEvaluatedNow));
     }
 
     @Override
@@ -74,20 +68,18 @@ public abstract class AbstractDistributedCoordinator implements DistributedDataS
                                        String description
     ) {
         localDatabases.put(localDatabase, new LocalTransaction<>(localDatabase, start, commit, rollback, close, description));
-        LOGGER.debug("Registering local database : {}", localDatabase);
     }
 
     /**
+     * Utility method used for updating state on each registered database
+     * @param transactionAction the function to execution of a data-source for updating its transaction state
+     * @param state the state of operation after data-source state change
+     * @param actionMsg a message which describe the operation (for the purpose of logging)
+     * @param <T> the type of datasource
      *
-     * @param action
-     * @param state
-     * @param actionMsg
-     * @param <T>
-     * @throws Exception
      */
     private <T> void performsActionsOnEachDatabase(
-            Function<LocalTransaction<?>,
-            ThrowingConsumer<T, Exception>> action,
+            Function<LocalTransaction<?>, ThrowingConsumer<T, Exception>> transactionAction,
             OPERATION_STATE state,
             String actionMsg) throws Exception {
 
@@ -95,15 +87,16 @@ public abstract class AbstractDistributedCoordinator implements DistributedDataS
             LocalTransaction<T> localDatabase = (LocalTransaction<T>) entry.getValue();
             T datasource = localDatabase.getLocalDatabase();
 
-            action.apply(localDatabase).accept(datasource);
+            transactionAction.apply(localDatabase).accept(datasource);
             LOGGER.debug("\t[{}] on database {} [OK]", actionMsg, localDatabase.getDescription());
 
             if (state != null) {
                 List<DataSourceOperation<?>> dataSourceOperations = operationsByDatabase.get(datasource);
 
                 // some data sources can be registered without being effectively used
-                // because it can depend on the execution flow of previous operations
-                if( dataSourceOperations != null){
+                // because it can depend on the execution flow of previous operations'
+                // ex : the execution of the operation B depends on the result of A
+                if (dataSourceOperations != null) {
                     dataSourceOperations.forEach(operation -> operation.setState(state));
                 }
             }
@@ -111,85 +104,97 @@ public abstract class AbstractDistributedCoordinator implements DistributedDataS
     }
 
     /**
-     *
-     * @throws Exception
+     * Start transaction of each registered data-source
+     * @throws Exception if some error where encountered during some transactions start
      */
-    protected void start() throws Exception {
-        performsActionsOnEachDatabase(LocalTransaction::getStartAction, null,"TRANSACTION_START");
+    protected void startTransactions() throws Exception {
+        performsActionsOnEachDatabase(LocalTransaction::getStartAction, OPERATION_STATE.STARTED, "TRANSACTION_START");
     }
 
 
     /**
-     *
-     * @throws Exception
+     * Commit transaction of each registered data-source
+     * @throws Exception if some error where encountered during some transactions commit
      */
-    protected void commit() throws Exception {
-        performsActionsOnEachDatabase(LocalTransaction::getCommitAction, OPERATION_STATE.COMMITTED,"TRANSACTION_COMMIT");
+    protected void commitTransactions() throws Exception {
+        performsActionsOnEachDatabase(LocalTransaction::getCommitAction, OPERATION_STATE.COMMITTED, "TRANSACTION_COMMIT");
 
     }
 
     /**
-     *
-     * @throws Exception
+     * Rollback transaction of each registered data-source
+     * @throws Exception if some error where encountered during some transactions rollback
      */
-    protected void rollback() throws Exception {
-        performsActionsOnEachDatabase(LocalTransaction::getRollbackAction, OPERATION_STATE.ROLLBACK,"TRANSACTION_ROLLBACK");
+    protected void rollbackTransactions() throws Exception {
+        performsActionsOnEachDatabase(LocalTransaction::getRollbackAction, OPERATION_STATE.ROLLBACK, "TRANSACTION_ROLLBACK");
     }
 
     /**
-     *
-     * @throws Exception
+     * Close transaction of each registered data-source
+     * @throws Exception if some error where encountered during some transactions close
      */
-    protected void close() throws Exception {
-        performsActionsOnEachDatabase(LocalTransaction::getCloseAction, null,"TRANSACTION_CLOSE");
+    protected void closeTransactions() throws Exception {
+        performsActionsOnEachDatabase(LocalTransaction::getCloseAction, null, "TRANSACTION_CLOSE");
     }
 
 
     /**
+     * Define how to cancel changes after that some database have already committed changes
      *
      */
     abstract void resolveCommitFail();
 
     /**
-     *
-     * @throws Exception
+     * Execute each registered operation on theirs corresponding datasource
+     * @throws Exception if some error is encountered during datasource write operation
      */
     protected void prepareForCommit() throws Exception {
 
-        while(! operationsExecutionOrder.isEmpty()){
+        // read operations as a queue
+        while (!operationsExecutionOrder.isEmpty()) {
             DataSourceOperation<?> operation = operationsExecutionOrder.removeFirst();
 
+            // determine old size in order to be able to known if the operation
+            // has triggered the further execution of other operation
             int oldSize = operationsExecutionOrder.size();
+
             operation.run();
 
-            if(operation instanceof CompoundOperation){
+            // if the operation is Compound, then it's susceptible to have
+            // triggered the further execution of other operation
+            if (operation instanceof CompoundOperation) {
                 handleCompoundOperation(oldSize, (CompoundOperation) operation);
             }
         }
     }
 
     /**
+     * <pre>
+     * Re-order execution flow if <b>operation</b> has triggered other operation and if
+     * it's specified that these operations must be evaluated just now.
+     * This information depends on {@link CompoundOperation#nestedOperationAreEvaluatedNow()}
+     * </pre>
      *
-     * @param oldSize
-     * @param operation
+     * @param oldSize number of pending operation before execution of <b>operation</b>
+     * @param operation the compound operation which may have triggered other operation executions
      */
-    private void handleCompoundOperation(int oldSize, CompoundOperation operation){
+    private void handleCompoundOperation(int oldSize, CompoundOperation operation) {
 
         int newSize = operationsExecutionOrder.size();
         int newOperationNb = newSize - oldSize;
 
-        if(newOperationNb < 0){
+        if (newOperationNb < 0) {
             // should never have happened, since operation which access to the coordinator only access to addOperation() method, not to the internal operations list
             throw new IllegalStateException("Fatal error, the previous operation has deleted incoming operation");
         }
 
         // no new operation were registered during the compound operation execution
-        if(newOperationNb == 0){
+        if (newOperationNb == 0) {
             return;
         }
 
         // the operations can be evaluated after, so just continue the operation execution flow
-        if(! operation.nestedOperationAreEvaluatedNow()){
+        if (!operation.nestedOperationAreEvaluatedNow()) {
             return;
         }
 
@@ -209,22 +214,27 @@ public abstract class AbstractDistributedCoordinator implements DistributedDataS
 
     @Override
     public void run() throws Exception {
-        start();
 
         try {
-            prepareForCommit();
-        } catch (Exception e) {
-            LOGGER.error(e.getMessage());
-            rollback();
+            startTransactions();
+        }catch (Exception e){
+            closeTransactions();
             throw e;
         }
 
         try {
-            commit();
-            close();
+            prepareForCommit();
         } catch (Exception e) {
-            LOGGER.error(e.getMessage());
-            close();
+            rollbackTransactions();
+            closeTransactions();
+            throw e;
+        }
+
+        try {
+            commitTransactions();
+            closeTransactions();
+        } catch (Exception e) {
+            closeTransactions();
             resolveCommitFail();
             throw e;
         }

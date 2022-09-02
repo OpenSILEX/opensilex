@@ -9,7 +9,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.opensilex.core.AbstractMongoIntegrationTest;
-import org.opensilex.nosql.datasource.operation.CompoundOperation;
 import org.opensilex.nosql.datasource.operation.MongoOperation;
 import org.opensilex.nosql.datasource.operation.SparqlOperation;
 import org.opensilex.nosql.models.MongoTestModel;

@@ -4,10 +4,10 @@ import org.opensilex.utils.ThrowingConsumer;
 
 /**
  * Utility object used to define for a datasource, which operations apply for
- * <li>start a transaction</li>
- * <li>commit a transaction</li>
- * <li>rollback a transaction</li>
- * <li>close a transaction</li>
+ * <li>start a transaction : {@link #startAction}</li>
+ * <li>commit a transaction : {@link #commitAction}</li>
+ * <li>rollback a transaction : {@link #rollbackAction}</li>
+ * <li>close a transaction : {@link #closeAction}</li>
  * @param <T> the type of datasource (depend on the driver used to access a database)
  *
  * @author rcolin

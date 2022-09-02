@@ -1,6 +1,7 @@
 package org.opensilex.nosql.insert;
 
 import com.mongodb.client.ClientSession;
+import com.mongodb.client.MongoClient;
 import org.opensilex.nosql.mongodb.MongoDBConfig;
 import org.opensilex.nosql.mongodb.MongoModel;
 
@@ -9,17 +10,17 @@ import org.opensilex.nosql.mongodb.MongoModel;
  */
 public class DefaultMongoInserter extends AbstractMongoInserter {
 
-    public DefaultMongoInserter(MongoDBConfig config) {
-        super(config);
+    public DefaultMongoInserter(MongoClient mongoClient, MongoDBConfig config) {
+        super(mongoClient, config);
     }
 
     @Override
-    <T extends MongoModel> void insertWithoutTransaction(MongoInsertOptions<T> insertOptions) {
+    protected <T extends MongoModel> void insertWithoutTransaction(MongoInsertOptions<T> insertOptions) {
         insertOptions.getCollection().insertMany(insertOptions.getSession(), insertOptions.getModels());
     }
 
     @Override
-    <T extends MongoModel> void insertWithTransaction(MongoInsertOptions<T> insertOptions) {
+    protected <T extends MongoModel> void insertWithTransaction(MongoInsertOptions<T> insertOptions) {
         ClientSession session = insertOptions.getSession();
         try {
             session.startTransaction();

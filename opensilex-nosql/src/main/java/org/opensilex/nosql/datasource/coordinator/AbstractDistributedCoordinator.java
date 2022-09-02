@@ -11,24 +11,26 @@ import java.util.*;
 import java.util.function.Function;
 
 /**
- *
+ * @author rcolin
  */
 public abstract class AbstractDistributedCoordinator implements DistributedDataSourceCoordinator {
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(AbstractDistributedCoordinator.class);
 
     /**
-     *
+     * Mapping between the effective database transaction object (eg: session (MongoDB), connection (JDBC), SPARQLService(rdf4J) and
+     * definition of how to handle transaction for this database
      */
     protected final Map<Object, LocalTransaction<?>> localDatabases;
 
     /**
-     *
+     * Mapping between database transaction object and all operation associated with this object
      */
     protected final Map<Object, List<DataSourceOperation<?>>> operationsByDatabase;
 
     /**
-     *
+     * List of operation to execute by respecting operation registering order
+     * LinkedList is used since we can consider the operation order as a queue
      */
     protected final LinkedList<DataSourceOperation<?>> operationsExecutionOrder;
 
@@ -67,6 +69,13 @@ public abstract class AbstractDistributedCoordinator implements DistributedDataS
                                        ThrowingConsumer<T, Exception> close,
                                        String description
     ) {
+
+        Objects.requireNonNull(localDatabase);
+        Objects.requireNonNull(start);
+        Objects.requireNonNull(commit);
+        Objects.requireNonNull(rollback);
+        Objects.requireNonNull(close);
+
         localDatabases.put(localDatabase, new LocalTransaction<>(localDatabase, start, commit, rollback, close, description));
     }
 
@@ -184,7 +193,8 @@ public abstract class AbstractDistributedCoordinator implements DistributedDataS
         int newOperationNb = newSize - oldSize;
 
         if (newOperationNb < 0) {
-            // should never have happened, since operation which access to the coordinator only access to addOperation() method, not to the internal operations list
+            // should never have happened, since operation which access to the coordinator only access to addOperation() method,
+            // not to the internal operations list, so they can't delete operations
             throw new IllegalStateException("Fatal error, the previous operation has deleted incoming operation");
         }
 

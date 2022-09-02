@@ -219,8 +219,7 @@ public class SparqlAndMongoCoordinatorTest extends AbstractMongoIntegrationTest 
             executionOrder.add(1);
         }));
 
-        CompoundOperation compoundOperation = new CompoundOperation(
-                coordinator,
+        coordinator.addMixedOperation(
                 coordinator1 -> {
                     coordinator1.addOperation(new MongoOperation(mongoSession, (session) -> {
                         testCollection.insertMany(session, getMongoModels(100));
@@ -234,7 +233,6 @@ public class SparqlAndMongoCoordinatorTest extends AbstractMongoIntegrationTest 
                 },
                 true
         );
-        coordinator.addMixedOperation(compoundOperation);
 
         coordinator.addOperation(new SparqlOperation(sparql, (service) -> {
             service.create(testGraph, getSparqlModels(100, 0));
@@ -267,8 +265,7 @@ public class SparqlAndMongoCoordinatorTest extends AbstractMongoIntegrationTest 
             executionOrder.add(1);
         }));
 
-        CompoundOperation compoundOperation = new CompoundOperation(
-                coordinator,
+        coordinator.addMixedOperation(
                 coordinator1 -> {
                     coordinator1.addOperation(new MongoOperation(mongoSession, (session) -> {
                         testCollection.insertMany(session, getMongoModels(100));
@@ -282,7 +279,6 @@ public class SparqlAndMongoCoordinatorTest extends AbstractMongoIntegrationTest 
                 },
                 false
         );
-        coordinator.addMixedOperation(compoundOperation);
 
         coordinator.addOperation(new SparqlOperation(sparql, (service) -> {
             service.create(testGraph, getSparqlModels(100, 0));

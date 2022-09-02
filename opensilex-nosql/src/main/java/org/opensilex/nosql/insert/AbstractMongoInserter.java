@@ -1,5 +1,6 @@
 package org.opensilex.nosql.insert;
 
+import com.mongodb.client.MongoClient;
 import org.opensilex.nosql.mongodb.MongoDBConfig;
 import org.opensilex.nosql.mongodb.MongoModel;
 import org.slf4j.Logger;
@@ -17,10 +18,12 @@ import java.time.Instant;
 public abstract class AbstractMongoInserter implements MongoInserter{
 
     private final MongoDBConfig config;
+    private final MongoClient mongoClient;
     private final Logger logger;
 
-    protected AbstractMongoInserter(MongoDBConfig config){
+    protected AbstractMongoInserter(MongoClient mongoClient, MongoDBConfig config){
         this.config = config;
+        this.mongoClient = mongoClient;
         logger = LoggerFactory.getLogger(getClass());
     }
 
@@ -35,9 +38,13 @@ public abstract class AbstractMongoInserter implements MongoInserter{
         logger.info("Mongo insert [IN-PROGRESS] collection: {}, length: {}", insertOptions.getCollectionName(), insertOptions.getModels().size());
         Instant start = Instant.now();
 
-        if (insertOptions.useTransaction()) {
+        // no session given, then consider the use of transaction with a new generated session
+        if (insertOptions.getSession() == null) {
+            insertOptions.setSession(mongoClient.startSession());
             insertWithTransaction(insertOptions);
         } else {
+            // a session was provided, so this class will not handle exception
+            // we consider that transaction are handled out of here
             insertWithoutTransaction(insertOptions);
         }
 
@@ -55,9 +62,9 @@ public abstract class AbstractMongoInserter implements MongoInserter{
      * @param insertOptions insert options
      * @param <T> the type of {@link MongoModel}
      * @throws Exception if some Exception is encountered during insertion.
-     * In this case no transaction rollback and session closing are perform inside this method
+     * In this case no transaction rollback and session closing are performed inside this method
      */
-    abstract <T extends MongoModel> void insertWithoutTransaction(MongoInsertOptions<T> insertOptions) throws Exception;
+    protected abstract <T extends MongoModel> void insertWithoutTransaction(MongoInsertOptions<T> insertOptions) throws Exception;
 
     /**
      * Define how to insert models by handling transaction
@@ -66,6 +73,6 @@ public abstract class AbstractMongoInserter implements MongoInserter{
      * @throws Exception if some Exception is encountered during insertion.
      * In this case transaction rollback and session closing are performed inside this method
      */
-    abstract <T extends MongoModel> void insertWithTransaction(MongoInsertOptions<T> insertOptions) throws Exception;
+    protected abstract <T extends MongoModel> void insertWithTransaction(MongoInsertOptions<T> insertOptions) throws Exception;
 
 }

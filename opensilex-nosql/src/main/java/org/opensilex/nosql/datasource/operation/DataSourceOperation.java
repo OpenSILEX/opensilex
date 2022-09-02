@@ -32,7 +32,22 @@ public interface DataSourceOperation<T>{
         COMMITTED
     }
 
+    /**
+     * Execute the operation on the data-source returned by {{@link #getDataSource()}}
+     * @throws Exception if an error is encountered during operation execution
+     */
     void run() throws Exception;
 
+    /**
+     *
+     * @return the datasource on which the operation must be executed
+     */
     T getDataSource();
+
+    /**
+     *
+     * @return the effective operation which must be executed
+     */
+    ThrowingConsumer<T, Exception> getConsumer();
+
 }

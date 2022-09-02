@@ -117,7 +117,7 @@ public class DataDAO {
     public List<DataModel> createAll(List<DataModel> instances, ClientSession session) throws Exception {
         createIndexes();
 
-        MongoInsertOptions<DataModel> insert = new MongoInsertOptions<>(nosql.getMongoClient(), dataCollection, session, instances)
+        MongoInsertOptions<DataModel> insert = new MongoInsertOptions<>(dataCollection, session, instances)
                 .setCheckUriExist(false)
                 .setUriGenerationPrefix(DATA_PREFIX);
 

@@ -68,18 +68,28 @@ public class MongoDBService extends BaseService {
     private URI generationPrefixURI;
     private static String defaultTimezone;
 
-    private final MongoInserter mongoInserter;
+    private MongoInserter mongoInserter;
 
     public MongoDBService(MongoDBConfig config) {
         super(config);
         dbName = config.database();
         defaultTimezone = config.timezone();
-        mongoInserter = new DefaultMongoInserter(config);
+    }
+
+    MongoInserter getOrCreateMongoInserter(){
+        if(mongoInserter == null){
+            Objects.requireNonNull(mongoClient);
+            mongoInserter = new DefaultMongoInserter(mongoClient, getImplementedConfig());
+        }
+        return mongoInserter;
     }
 
     @Override
     public void startup() throws OpenSilexModuleNotFoundException {
         mongoClient = buildMongoClient();
+
+        // ensure that the inserter is created just after that the mongoClient is available
+        getOrCreateMongoInserter();
         generationPrefixURI = getGenerationPrefixURI();
         db = mongoClient.getDatabase(dbName);
     }
@@ -89,7 +99,10 @@ public class MongoDBService extends BaseService {
         if (mongoClient != null) {
             mongoClient.close();
         }
-        mongoInserter.shutdown();
+
+        if(mongoInserter != null){
+            mongoInserter.shutdown();
+        }
     }
 
     public URI getGenerationPrefixURI() throws OpenSilexModuleNotFoundException {
@@ -119,7 +132,6 @@ public class MongoDBService extends BaseService {
     public <T extends MongoModel> void create(ClientSession session, T instance, Class<T> instanceClass, String collectionName, String uriGenerationPrefix) throws Exception {
         this.createAll(
                 new MongoInsertOptions<>(
-                        mongoClient,
                         db.getCollection(collectionName, instanceClass),
                         session,
                         Collections.singletonList(instance)
@@ -131,7 +143,6 @@ public class MongoDBService extends BaseService {
 
         MongoCollection<T> collection = db.getCollection(collectionName, instanceClass);
         createAll(new MongoInsertOptions<>(
-                        mongoClient,
                         collection,
                         null,
                         instances
@@ -159,8 +170,7 @@ public class MongoDBService extends BaseService {
                         insert.getCollectionName());
             }
         }
-
-        mongoInserter.create(insert);
+        getOrCreateMongoInserter().create(insert);
     }
 
     public <T> T operationWithTransaction(

@@ -27,6 +27,7 @@ import org.opensilex.utils.ThrowingConsumer;
  * - <b>Run the pipeline</b>
  *      - {@link #run()}
  * </pre>
+ *
  * @author rcolin
  */
 public interface DistributedDataSourceCoordinator
@@ -78,6 +79,8 @@ public interface DistributedDataSourceCoordinator
      * @throws Exception if an Exception has been throw during the execution of an operation.
      * The implementation must take the responsibility to properly handle data state on each started/committed transaction before
      * rethrowing the inner Exception
+     *
+     * @apiNote operations are executed in FIFO order considering the {@link #addOperation(DataSourceOperation)} method call order
      */
     void run() throws Exception;
 

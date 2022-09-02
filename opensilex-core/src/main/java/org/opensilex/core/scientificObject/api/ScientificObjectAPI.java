@@ -530,17 +530,16 @@ public class ScientificObjectAPI {
             });
         }
 
-        coordinator.addMixedOperation(new CompoundOperation(
-                coordinator,
+        coordinator.addMixedOperation(
                 coordinator1 -> {
                     MoveModel facilityMoveEvent = new MoveModel();
-                    if(ScientificObjectDAO.fillFacilityMoveEvent(facilityMoveEvent, model.get())){
+                    if (ScientificObjectDAO.fillFacilityMoveEvent(facilityMoveEvent, model.get())) {
                         // #TODO avoid cast
                         new MoveEventDAO(sparql, nosql, (DefaultDataSourceCoordinator) coordinator1).create(Collections.singletonList(facilityMoveEvent));
                     }
                 },
                 true
-        ));
+        );
 
         coordinator.addSparqlOperation(sparqlService -> sparqlService.deletePrimitives(SPARQLDeserializers.nodeURI(contextURI), model.get().getUri(), Oeso.isHosted));
 
@@ -587,11 +586,10 @@ public class ScientificObjectAPI {
             modelReference.set(model);
         });
 
-        coordinator.addMixedOperation(new CompoundOperation(
-                coordinator,
-                coordinator1 -> updateAssociatedMoves(contextURI,modelReference.get(),coordinator),
+        coordinator.addMixedOperation(
+                coordinator1 -> updateAssociatedMoves(contextURI, modelReference.get(), (DefaultDataSourceCoordinator) coordinator1),
                 true
-        ));
+        );
 
         // handle geometry, update geometry or delete old geometry
         coordinator.addMongoOperation(session -> {

@@ -89,7 +89,6 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
                         sparql.create(eventGraph, models, SPARQLService.DEFAULT_MAX_INSTANCE_PER_QUERY, false)
                 )
                 .addMongoOperation(clientSession -> mongodb.createAll(new MongoInsertOptions<>(
-                                null,
                                 moveEventCollection,
                                 clientSession,
                                 noSqlModels

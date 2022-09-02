@@ -61,4 +61,9 @@ public abstract class AbstractDataSourceOperation<T> implements DataSourceOperat
     public T getDataSource() {
         return dataSource;
     }
+
+    @Override
+    public ThrowingConsumer<T, Exception> getConsumer() {
+        return consumer;
+    }
 }

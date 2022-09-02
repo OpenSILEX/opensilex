@@ -1,5 +1,6 @@
 package org.opensilex.nosql.insert;
 
+import com.mongodb.client.MongoClient;
 import org.opensilex.nosql.mongodb.MongoDBConfig;
 import org.opensilex.nosql.mongodb.MongoModel;
 
@@ -14,26 +15,26 @@ import java.util.concurrent.Future;
  * @author rcolin
  *
  * @apiNote This implementation delegate insertion and transaction logic to the {@link DefaultMongoInserter}.
- * It's just encapsulate these operations by using {@link ExecutorService}
+ * It's just encapsulate these operations by using {@link ExecutorService} in order to improve concurrency
  */
 public class ThreadPoolBasedMongoInserter extends AbstractMongoInserter {
 
     private final ExecutorService executorService;
     private final DefaultMongoInserter delegatedInserter;
 
-    public ThreadPoolBasedMongoInserter(MongoDBConfig config) {
-        super(config);
+    public ThreadPoolBasedMongoInserter(MongoClient mongoClient, MongoDBConfig config) {
+        super(mongoClient, config);
         executorService = Executors.newFixedThreadPool(config.maxConcurrentTransaction());
-        delegatedInserter = new DefaultMongoInserter(config);
+        delegatedInserter = new DefaultMongoInserter(mongoClient, config);
     }
 
     @Override
-    <T extends MongoModel> void insertWithoutTransaction(MongoInsertOptions<T> insertOptions) throws Exception {
+    protected <T extends MongoModel> void insertWithoutTransaction(MongoInsertOptions<T> insertOptions) throws Exception {
         insertWithPool(() -> delegatedInserter.insertWithoutTransaction(insertOptions));
     }
 
     @Override
-    <T extends MongoModel> void insertWithTransaction(MongoInsertOptions<T> insertOptions) throws Exception {
+    protected <T extends MongoModel> void insertWithTransaction(MongoInsertOptions<T> insertOptions) throws Exception {
         insertWithPool(() -> delegatedInserter.insertWithTransaction(insertOptions));
     }
 

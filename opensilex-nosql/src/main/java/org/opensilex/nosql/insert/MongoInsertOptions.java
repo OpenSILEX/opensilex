@@ -19,15 +19,13 @@ public class MongoInsertOptions<T extends MongoModel> {
 
     private final MongoCollection<T> collection;
     private final String collectionName;
-    private final ClientSession session;
+    private ClientSession session;
     private final List<T> models;
 
-    private final boolean useTransaction;
     private boolean checkUriExist;
     private String uriGenerationPrefix;
 
     /**
-     * @param client {@link MongoClient} used to generate new {@link ClientSession}, in case where session is null
      * @param collection the {@link MongoCollection} in which models must be inserted
      * @param session the {@link ClientSession} used to perform insertion.
      * @param models the list of models to insert.
@@ -41,28 +39,21 @@ public class MongoInsertOptions<T extends MongoModel> {
      *
      * @see MongoClient#startSession()
      */
-    public MongoInsertOptions(MongoClient client, MongoCollection<T> collection, ClientSession session, List<T> models) {
+    public MongoInsertOptions(MongoCollection<T> collection, ClientSession session, List<T> models) {
 
         Objects.requireNonNull(collection);
+
         if (CollectionUtils.isEmpty(models)) {
             throw new IllegalArgumentException("Null or empty list : " + models);
         }
 
         this.collection = collection;
         this.collectionName = collection.getNamespace().getCollectionName();
-
-        // no session given, then consider the use of transaction with a new session
-        if (session == null) {
-            Objects.requireNonNull(client);
-            this.session = client.startSession();
-            this.useTransaction = true;
-        } else {
-            this.session = session;
-            this.useTransaction = false;
-        }
         this.models = models;
         this.checkUriExist = true;
         this.uriGenerationPrefix = "";
+
+        this.session = session;
     }
 
     /**
@@ -83,12 +74,15 @@ public class MongoInsertOptions<T extends MongoModel> {
 
     /**
      *
-     * @return the the list of {@link MongoModel} to insert.
+     * @return the list of {@link MongoModel} to insert.
      */
     public List<T> getModels() {
         return models;
     }
 
+    /**
+     * @return if URI uniqueness of models must be checked or not
+     */
     public boolean isCheckUriExist() {
         return checkUriExist;
     }
@@ -99,7 +93,6 @@ public class MongoInsertOptions<T extends MongoModel> {
     }
 
     /**
-     *
      * @return the prefix used for URI generation of {@link MongoModel} from {@link #getModels()}
      */
     public String getUriGenerationPrefix() {
@@ -112,14 +105,14 @@ public class MongoInsertOptions<T extends MongoModel> {
         return this;
     }
 
-    /**
-     *
-     * @return true if transaction must be handled, false else
-     */
-    public boolean useTransaction() {
-        return useTransaction;
+    public MongoInsertOptions<T> setSession(ClientSession session) {
+        this.session = session;
+        return this;
     }
 
+    /**
+     * @return the name of the collection on which insert {{@link #getModels()}}
+     */
     public String getCollectionName() {
         return collectionName;
     }

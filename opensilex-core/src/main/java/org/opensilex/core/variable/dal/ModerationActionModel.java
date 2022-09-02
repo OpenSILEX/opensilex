@@ -1,20 +1,23 @@
 package org.opensilex.core.variable.dal;
 
 import org.apache.jena.vocabulary.DCTerms;
+import org.opensilex.core.address.dal.AddressModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.uri.generation.ClassURIGenerator;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 @SPARQLResource(
         ontology = Oeso.class,
         resource = "ModerationAction",
         graph = VariableModel.GRAPH
 )
-public class ModerationActionModel extends SPARQLResourceModel {
+public class ModerationActionModel extends SPARQLResourceModel implements ClassURIGenerator<ModerationActionModel>  {
     @SPARQLProperty(
             ontology = DCTerms.class,
             property = "date"
@@ -59,4 +62,11 @@ public class ModerationActionModel extends SPARQLResourceModel {
         this.moderationActionType = moderationActionType;
     }
 
+    @Override
+    public String[] getInstancePathSegments(ModerationActionModel instance) {
+        return new String[] {
+                "moderation",
+                UUID.randomUUID().toString()
+        };
+    }
 }

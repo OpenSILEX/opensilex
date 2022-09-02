@@ -29,6 +29,12 @@
         >{{ $t('VariableDetails.moderation') }}
         </b-nav-item>
 
+        <opensilex-CreateButton
+            v-show="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
+            @click="showValidationForm"
+            :label="'Valider la variable'"
+        ></opensilex-CreateButton>
+
       </template>
     </opensilex-PageActions>
     <opensilex-PageContent>
@@ -62,6 +68,10 @@
       </template>
 
     </opensilex-PageContent>
+
+    <opensilex-VariableValidation
+        ref="validationForm"
+    ></opensilex-VariableValidation>
   </div>
 </template>
 
@@ -75,6 +85,8 @@ import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
 import {VariablesService} from "opensilex-core/api/variables.service";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import AnnotationList from "../../annotations/list/AnnotationList.vue";
+import EntityCreate from "../form/EntityCreate.vue";
+import VariableValidation from "../form/VariableValidation.vue";
 
 @Component
 export default class VariableView extends Vue {
@@ -88,29 +100,35 @@ export default class VariableView extends Vue {
   $t: any;
   $i18n: any;
 
-        static getEmptyDetailsDTO() : VariableDetailsDTO{
-            return {
-                uri: undefined,
-                alternative_name: undefined,
-                name: undefined,
-                entity: undefined,
-                entity_of_interest: undefined,
-                characteristic: undefined,
-                description: undefined,
-                time_interval: undefined,
-                sampling_interval: undefined,
-                datatype: undefined,
-                trait: undefined,
-                trait_name: undefined,
-                method: undefined,
-                unit: undefined,
-                exact_match: [],
-                close_match: [],
-                broad_match: [],
-                narrow_match: [],
-                species: undefined
-            };
-        }
+  @Ref("validationForm") readonly validationForm!: VariableValidation;
+
+  static getEmptyDetailsDTO() : VariableDetailsDTO{
+      return {
+          uri: undefined,
+          alternative_name: undefined,
+          name: undefined,
+          entity: undefined,
+          entity_of_interest: undefined,
+          characteristic: undefined,
+          description: undefined,
+          time_interval: undefined,
+          sampling_interval: undefined,
+          datatype: undefined,
+          trait: undefined,
+          trait_name: undefined,
+          method: undefined,
+          unit: undefined,
+          exact_match: [],
+          close_match: [],
+          broad_match: [],
+          narrow_match: [],
+          species: undefined
+      };
+  }
+
+  private getForm() {
+    return this.validationForm;
+  }
 
 
   variable: VariableDetailsDTO = VariableView.getEmptyDetailsDTO();
@@ -120,6 +138,10 @@ export default class VariableView extends Vue {
 
   get user() {
     return this.$store.state.user;
+  }
+
+  showValidationForm(){
+    this.getForm().showValidationForm();
   }
 
   get credentials() {

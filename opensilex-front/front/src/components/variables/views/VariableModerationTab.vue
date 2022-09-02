@@ -171,6 +171,9 @@ export default class VariableModerationTab extends Vue {
   @Prop()
   target;
 
+  @Prop()
+  variable;
+
   @Watch("target")
   onTargetChange() {
     this.renderComponent = false;
@@ -208,7 +211,7 @@ export default class VariableModerationTab extends Vue {
 
   search() {
 
-    return this.$service.getVariableModerationAction("dev:id/variable/air_acidity_actinothermicindex_10cm_daily_measurement_centimetres_carres");
+    return this.$service.getVariableModerationAction(this.variable);
   }
 
   static newFilter() {

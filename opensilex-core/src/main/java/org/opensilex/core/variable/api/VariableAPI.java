@@ -273,14 +273,18 @@ public class VariableAPI {
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
+
+        VariableSearchFilter filter = new VariableSearchFilter()
+                .setNamePattern(namePattern)
+                .setFetchSpecies(true);
+
+        filter.setOrderByList(orderByList)
+                .setPage(page)
+                .setPageSize(pageSize)
+                .setLang(currentUser.getLanguage());
+
         VariableDAO dao = getDao();
-        ListWithPagination<VariableModel> resultList = dao.search(
-                namePattern,
-                orderByList,
-                page,
-                pageSize,
-                currentUser.getLanguage()
-        );
+        ListWithPagination<VariableModel> resultList = dao.search(filter);
 
         ListWithPagination<VariableDetailsDTO> resultDTOList = resultList.convert(
                 VariableDetailsDTO.class,

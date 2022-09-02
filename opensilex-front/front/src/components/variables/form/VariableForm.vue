@@ -35,6 +35,7 @@
                         helpMessage="VariableForm.entity-help"
                         @select="updateEntity"
                         :actionHandler="showEntityCreateForm"
+                        :disabled="editMode"
                     ></opensilex-SelectForm>
                     <opensilex-EntityCreate
                         ref="entityForm"
@@ -57,6 +58,7 @@
                         noResultsText="VariableForm.no-interestEntity"
                         helpMessage="VariableForm.interestEntity-help"
                         :actionHandler="showInterestEntityCreateForm"
+                        :disabled="editMode"
                     ></opensilex-SelectForm>
                     <opensilex-InterestEntityCreate
                         ref="interestEntityForm"
@@ -80,6 +82,7 @@
                         helpMessage="VariableForm.characteristic-help"
                         @select="updateCharacteristic"
                         :actionHandler="showCharacteristicCreateForm"
+                        :disabled="editMode"
                     ></opensilex-SelectForm>
                     <opensilex-CharacteristicModalForm
                         ref="characteristicForm"
@@ -113,6 +116,7 @@
                         @select="updateMethod"
                         :actionHandler="showMethodCreateForm"
                         noResultsText="VariableForm.no-method"
+                        :disabled="editMode"
                     ></opensilex-SelectForm>
                     <opensilex-MethodCreate
                         ref="methodForm"
@@ -161,6 +165,7 @@
                         @select="updateUnit"
                         :actionHandler="showUnitCreateForm"
                         noResultsText="VariableForm.no-unit"
+                        :disabled="editMode"
                     ></opensilex-SelectForm>
                     <opensilex-UnitCreate
                         ref="unitForm"
@@ -478,6 +483,7 @@ export default class VariableForm extends Vue {
         broad_match: [],
         narrow_match: [],
         species: undefined,
+        onShared: undefined,
         linked_data_nb: 0
 //        variablesGroup: []
       };

@@ -569,15 +569,14 @@ public class ScientificObjectAPI {
     ) throws Exception {
 
         validateContextAccess(dto.getExperiment());
-        boolean hasExperiment = dto.getExperiment() == null;
+        boolean hasExperiment = dto.getExperiment() != null;
 
-        final URI contextURI = dto.getExperiment() == null ? sparql.getDefaultGraphURI(ScientificObjectModel.class) : dto.getExperiment();
+        final URI contextURI = hasExperiment ? dto.getExperiment() : sparql.getDefaultGraphURI(ScientificObjectModel.class);
 
         URI type = dto.getType();
         URI uri = dto.getUri();
 
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
-
 
         // update model
         DefaultDataSourceCoordinator  coordinator = new DefaultDataSourceCoordinator(sparql, nosql.startSession());

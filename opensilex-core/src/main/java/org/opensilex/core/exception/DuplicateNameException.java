@@ -12,7 +12,7 @@ import java.net.URI;
  *
  * @author Alice Boizet
  */
-public class DuplicateNameException extends Exception {
+public class DuplicateNameException extends IllegalArgumentException {
 
     String name;
 

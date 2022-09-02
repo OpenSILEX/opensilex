@@ -14,6 +14,7 @@ let ontologies = {
     URI: OEEV_URI,
     EVENT_TYPE_URI: OEEV_URI + "#Event",
     MOVE_TYPE_URI: OEEV_URI + "#Move",
+    CALIBRATION_TYPE_URI: OEEV_URI + "#Calibration",
 
     CONCERNS: OEEV_URI + "#concerns",
     IS_INSTANT: OEEV_URI + "#isInstant",

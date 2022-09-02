@@ -12,7 +12,7 @@ see the [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/op
 
 ### Added or changed
 
-- **Web client** : Major aesthetics and ergonomics improvement (`9f4eaf90`)
+- **Web client** : Major aesthetics and ergonomics improvement `9f4eaf90` 9f4eaf90
 - **Web client** : Visualisation of pictures associated to data (`45166d2b`)
 - **Web client** : Visualisation of experiment data from scientific object and variables(`c924d260`) (`aecfd721`)
 - **Web client** : New tab with associated document into variable details page (`ab7b6bb0`)

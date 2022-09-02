@@ -1,5 +1,5 @@
 <template>
-  <opensilex-StringView label="component.geometry">
+  <opensilex-StringView :label="label">
     <div class="static-field">
       <b-badge
           :title="$t('component.copyGeometryWKT')"
@@ -33,6 +33,10 @@ import copy from "copy-to-clipboard";
 export default class GeometryCopy extends Vue {
   @Prop()
   value: string;
+  @Prop({
+    default: 'component.geometry',
+  })
+  label: string;
 
   $opensilex: any;
   $t: any;

@@ -6,7 +6,7 @@
       :fields="fields"
       defaultSortBy="name"
     >
-
+      <!--Target -->
       <template v-slot:cell(target)="{ data }">
           <opensilex-UriLink
             :uri="data.item.target"
@@ -20,44 +20,39 @@
           ></opensilex-UriLink>
       </template>
 
+       <!-- Type -->
+       <template v-slot:cell(rdfType)="{ data }">
+          <div>{{ rdf_types[data.item.rdf_type] }}</div>
+        </template>
+
+      <!-- Provenance -->
       <template v-slot:cell(provenance)="{ data }">
-        <!-- <opensilex-UriLink
-          :uri="data.item.provenance.uri"
-          :value="provenances[data.item.provenance.uri]"
-          :to="{
-            path: '/provenances/details/' +
-              encodeURIComponent(data.item.provenance.uri),
-          }"
-        ></opensilex-UriLink> -->
         <opensilex-UriLink
           :uri="data.item.provenance.uri"
           :value="provenances[data.item.provenance.uri]"
         ></opensilex-UriLink>
       </template>
 
-       <template v-slot:cell(type)="{ data }">
-          <div>{{ rdf_types[data.item.rdf_type] }}</div>
-        </template>
-
-        <template v-slot:cell(actions)="{data}">
-          <b-button-group size="sm">
-            <opensilex-Button
-              :disabled="!images_rdf_types.includes(data.item.rdf_type)"
-              component="opensilex-DocumentDetails"
-              @click="showImage(data.item)"
-              label="ScientificObjectDataFiles.displayImage"
-              :small="true"
-              icon= "fa#image"
-              variant="outline-info"
-            ></opensilex-Button>
-            <opensilex-DetailButton
-              v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
-              @click="showDataProvenanceDetailsModal(data.item)"
-              label="DataFilesView.details"
-              :small="true"
-          ></opensilex-DetailButton>
-          </b-button-group>
-        </template>
+      <!-- Actions -->
+      <template v-slot:cell(actions)="{data}">
+        <b-button-group size="sm">
+          <opensilex-Button
+            :disabled="!images_rdf_types.includes(data.item.rdf_type)"
+            component="opensilex-DocumentDetails"
+            @click="showImage(data.item)"
+            label="ScientificObjectDataFiles.displayImage"
+            :small="true"
+            icon= "fa#image"
+            variant="outline-info"
+          ></opensilex-Button>
+          <opensilex-DetailButton
+            v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
+            @click="showDataProvenanceDetailsModal(data.item)"
+            label="DataFilesView.details"
+            :small="true"
+        ></opensilex-DetailButton>
+        </b-button-group>
+      </template>
 
     </opensilex-TableAsyncView>
 
@@ -119,7 +114,7 @@ export default class DataFilesList extends Vue {
   @Ref("imageModal") readonly imageModal!: any;
 
   get fields() {
-    let tableFields: any = [
+    let fields: any = [
       {
         key: "target",
         label: "DataView.list.object",
@@ -130,7 +125,7 @@ export default class DataFilesList extends Vue {
         sortable: true,
       },
       {
-        key: "type",
+        key: "rdfType",
         label: "ScientificObjectDataFiles.rdfType",
         sortable: true,
       },
@@ -145,7 +140,7 @@ export default class DataFilesList extends Vue {
       }
     ];
 
-    return tableFields;
+    return fields;
   }
 
   refresh() {
@@ -204,7 +199,7 @@ export default class DataFilesList extends Vue {
           this.filter.devices, //devices
           provUris, // provenances
           undefined, // metadata
-          undefined, // order_by
+          options.orderBy, // order_by
           options.currentPage,
           options.pageSize,
           this.filter.scientificObjects, // scientific_object

@@ -489,6 +489,17 @@
                 "variables-sensors-factors": "Variables, factors and sensors"
             }
         },
+        "germplasms": {
+            "errors": {
+                "duplicateUri": "Duplicate URI: {uri}",
+                "duplicateLabel": "Duplicate label: {label}",
+                "wrongRdfType": "rdfType doesn't exist in the ontology: {rdfType}",
+                "unknownSpecies": "The given species doesn't exist in the database: {unknownSpecies}",
+                "unknownVariety": "The given variety doesn't exist in the database: {unknownVariety}",
+                "unknownAccession": "The given accession doesn't exist in the database: {unknownAccession}",
+                "missingAttribute": "Missing required field : {message}"
+            }
+        },
         "scientificObjects": {
             "error" : {
                 "delete" : {

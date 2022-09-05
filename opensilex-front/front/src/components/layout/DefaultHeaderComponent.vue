@@ -74,7 +74,7 @@
                 :key="`${item}`"
                 href="#"
                 @click.prevent="'/app/variable/details/'+ encodeURIComponent(item)"
-            >{{ 'La variable "' + item + '" a été créée.' }}</b-dropdown-item
+            >{{ 'A modérer : "' + item + '".' }}</b-dropdown-item
             >
           </b-dropdown>
 

@@ -63,15 +63,9 @@
 
                 <template v-slot:cell(actions)="{data}">
                   <b-button-group size="sm">
-                    <opensilex-EditButton
-                        v-if="! modificationCredentialId || user.hasCredential(modificationCredentialId)"
-                        @click="editAnnotation(data.item)"
-                        label="Moderation.edit"
-                        :small="true"
-                    ></opensilex-EditButton>
                     <opensilex-DeleteButton
                         v-if="! deleteCredentialId || user.hasCredential(deleteCredentialId)"
-                        @click="deleteAnnotation(data.item.uri)"
+                        @click="deleteModeration(data.item.uri)"
                         label="Moderation.delete"
                         :small="true"
                     ></opensilex-DeleteButton>
@@ -81,12 +75,6 @@
             </template>
           </opensilex-PageContent>
 
-          <opensilex-AnnotationModalForm
-
-              ref="annotationModalForm"
-              @onCreate="refresh"
-              @onUpdate="refresh"
-          ></opensilex-AnnotationModalForm>
         </div>
       </div>
     </div>
@@ -210,7 +198,6 @@ export default class VariableModerationTab extends Vue {
   }
 
   search() {
-
     return this.$service.getVariableModerationAction(this.variable);
   }
 
@@ -221,11 +208,6 @@ export default class VariableModerationTab extends Vue {
       created: undefined,
       author: undefined
     };
-  }
-
-  editAnnotation(annotation){
-    let copy = JSON.parse(JSON.stringify(annotation));
-    //this.annotationModalForm.showEditForm(copy);
   }
 
   get fields() {
@@ -262,15 +244,15 @@ export default class VariableModerationTab extends Vue {
     return tableFields;
   }
 
-  deleteAnnotation(uri: string) {
-    // this.$service.deleteVariable(uri).then(() => {
-    //   this.$nextTick(() => {
-    //     this.refresh();
-    //   });
-    //   let message = this.$i18n.t("Moderation.name") + " " + uri + " " + this.$i18n.t("component.common.success.delete-success-message");
-    //   this.$opensilex.showSuccessToast(message);
-    //   this.$emit("onDelete", uri);
-    // }).catch(this.$opensilex.errorHandler);
+  deleteModeration(uri: string) {
+    this.$service.deleteVariableModerationAction(uri).then(() => {
+      this.$nextTick(() => {
+        this.refresh();
+      });
+      let message = this.$i18n.t("Moderation.name") + " " + uri + " " + this.$i18n.t("component.common.success.delete-success-message");
+      this.$opensilex.showSuccessToast(message);
+      this.$emit("onDelete", uri);
+    }).catch(this.$opensilex.errorHandler);
   }
 
 }

@@ -10,9 +10,17 @@ import java.time.LocalDate;
 
 public class ModerationActionDTO {
 
+    protected URI uri;
+
     protected LocalDate date;
     protected UserModel moderator;
     protected String moderationActionType;
+
+    public URI getUri() {return uri;}
+
+    public ModerationActionDTO setUri(URI uri) {
+        this.uri = uri;
+        return this;}
 
     public LocalDate getDate() {
         return date;
@@ -45,6 +53,7 @@ public class ModerationActionDTO {
 
     public static ModerationActionDTO fromModel(ModerationActionModel model) {
         return new ModerationActionDTO()
+                .setUri(model.getUri())
                 .setDate(model.getDate())
                 .setModerator(model.getModerator())
                 .setModerationActionType(model.getModerationActionType());

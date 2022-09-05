@@ -222,6 +222,28 @@ public class VariableAPI {
     }
 
     @DELETE
+    @Path("moderation/{uri}")
+    @ApiOperation("Delete a variable moderation action")
+    @ApiProtected
+    @ApiCredential(
+            credentialId = CREDENTIAL_VARIABLE_DELETE_ID,
+            credentialLabelKey = CREDENTIAL_VARIABLE_DELETE_LABEL_KEY
+    )
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Moderation action deleted", response = ObjectUriResponse.class),
+            @ApiResponse(code = 404, message = "Unknown moderation action URI", response = ErrorResponse.class)
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response deleteVariableModerationAction(
+            @ApiParam(value = "Moderation action URI", required = true) @PathParam("uri") @NotNull URI uri
+    ) throws Exception {
+        VariableDAO dao = getDao();
+        dao.deleteModerationAction(uri);
+        return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
+    }
+
+    @DELETE
     @Path("{uri}")
     @ApiOperation("Delete a variable")
     @ApiProtected

@@ -295,5 +295,9 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
     public List<VariableModel> getList(List<URI> uris) throws Exception {
         return sparql.getListByURIs(VariableModel.class, uris, null);
     }
+
+    public void deleteModerationAction(URI instanceURI) throws Exception {
+        sparql.delete(ModerationActionModel.class, instanceURI);
+    }
 }
 

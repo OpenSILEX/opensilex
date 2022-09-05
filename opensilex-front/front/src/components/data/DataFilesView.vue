@@ -144,9 +144,10 @@
               </opensilex-FilterField>
             </div>
 
+            <!-- Images -->
             <opensilex-FilterField>
               <b-form-checkbox v-model="filter.imagesView" name="check-button" switch>
-              <b>Images view</b>
+              <b> {{ $t("DataFilesView.imagesView") }}</b>
               </b-form-checkbox>
              </opensilex-FilterField>
 
@@ -233,7 +234,7 @@ export default class DataFilesView extends Vue {
       provenance: undefined,
       experiments: [],
       scientificObjects: [],
-      imagesView: true
+      imagesView: false
     };
   }
 
@@ -269,18 +270,28 @@ export default class DataFilesView extends Vue {
   }
 
   refresh() {
+    if (this.filter.start_date === ""){
+          this.filter.start_date = undefined;
+        }
+        if (this.filter.end_date === ""){
+          this.filter.end_date = undefined;
+        }
     if(this.filter.imagesView) {
       this.datafilesImagesList.refresh();
-
     } else {
       this.datafilesList.refresh();
     }
-   
   }
 
   reset() {
     this.resetFilter();
     this.refresh();
+    if (this.filter.start_date === ""){
+      this.filter.start_date = undefined;
+    }
+    if (this.filter.end_date === ""){
+      this.filter.end_date = undefined;
+    }
   }
 
   get getSelectedProv() {
@@ -332,9 +343,11 @@ en:
   DataFilesView:
     description: View datafiles
     details: view datafile metadata
+    imagesView: Images view
 
 fr:
   DataFilesView:
     description: Voir les fichiers de données
     details: Voir les métadonnées du fichier
+    imagesView: Visualisation des images
 </i18n>

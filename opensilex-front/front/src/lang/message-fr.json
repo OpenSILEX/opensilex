@@ -468,6 +468,17 @@
                 "variables-sensors-factors": "Variables, facteurs et capteurs"
             }
         },
+        "germplasms": {
+            "errors": {
+                "duplicateUri": "URI en double : {uri}",
+                "duplicateLabel": "Label en double : {label}",
+                "wrongRdfType": "Le rdfType n'existe pas dans l'ontologie : {rdfType}",
+                "unknownSpecies": "L'espèce donnée n'existe pas dans la base de données : {unknownSpecies}",
+                "unknownVariety": "La variete donnée n'existe pas dans la base de données : {unknownVariety}",
+                "unknownAccession": "L'accession donnée n'existe pas dans la base de données : {unknownAccession}",
+                "missingAttribute": "Champ necessaire manquant : {message}"
+            }
+        },
         "scientificObjects": {
             "error" : {
                 "delete" : {

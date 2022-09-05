@@ -81,6 +81,13 @@ export default class DataFilesImagesList extends Vue {
     this.initScroll();
     this.service = this.$opensilex.getService("opensilex.DataService");
     this.$opensilex.updateFiltersFromURL(this.$route.query, this.filter);
+
+    if (this.filter.start_date === ""){
+      this.filter.start_date = undefined;
+    }
+    if (this.filter.end_date === ""){
+      this.filter.end_date = undefined;
+    }
     this.loadImages();
   }
 
@@ -112,12 +119,25 @@ export default class DataFilesImagesList extends Vue {
   }
 
   refresh() {
+        if (this.filter.start_date === ""){
+          this.filter.start_date = undefined;
+        }
+        if (this.filter.end_date === ""){
+          this.filter.end_date = undefined;
+        }
+
     this.showScrollSpinner = true;
     this.currentPage = 0;
     this.loadImages();
   }
 
   reload() {
+        if (this.filter.start_date === ""){
+          this.filter.start_date = undefined;
+        }
+        if (this.filter.end_date === ""){
+          this.filter.end_date = undefined;
+        }
     this.showScrollSpinner = true;
     this.currentPage++;
     this.loadImages();

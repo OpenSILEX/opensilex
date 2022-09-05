@@ -19,42 +19,7 @@ import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema.Builder;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-import java.io.IOException;
-import java.io.StringWriter;
-import java.net.URI;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-import javax.inject.Inject;
-import javax.validation.Valid;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
+import io.swagger.annotations.*;
 import org.opensilex.core.experiment.api.ExperimentGetListDTO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
@@ -67,18 +32,31 @@ import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
-import org.opensilex.server.response.ErrorDTO;
-import org.opensilex.server.response.ErrorResponse;
-import org.opensilex.server.response.ObjectUriResponse;
-import org.opensilex.server.response.PaginatedListResponse;
-import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.server.response.*;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
 import org.opensilex.sparql.service.SPARQLService;
-import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
+import org.opensilex.utils.OrderBy;
+
+import javax.inject.Inject;
+import javax.validation.Valid;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.net.URI;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -612,7 +590,11 @@ public class GermplasmAPI {
                 return new ErrorResponse(
                         Response.Status.CONFLICT,
                         "Germplasm URI already exists",
-                        "Duplicated URI: " + germplasmDTO.getUri()
+                        "Duplicated URI: " + germplasmDTO.getUri(),
+                        "component.germplasms.errors.duplicateUri",
+                        new HashMap<String, String>() {{
+                            put("uri", germplasmDTO.getUri().toString());
+                        }}
                 );
             }
 
@@ -624,7 +606,11 @@ public class GermplasmAPI {
                 return new ErrorResponse(
                         Response.Status.CONFLICT,
                         "Germplasm label already exists for this species",
-                        "Duplicated label: " + germplasmDTO.getName()
+                        "Duplicated label: " + germplasmDTO.getName(),
+                        "component.germplasms.errors.duplicateLabel",
+                        new HashMap<String, String>() {{
+                            put("label", germplasmDTO.getName());
+                        }}
                 );
             }
         }
@@ -637,7 +623,11 @@ public class GermplasmAPI {
             return new ErrorResponse(
                     Response.Status.BAD_REQUEST,
                     "rdfType doesn't exist in the ontology",
-                    "wrong rdfType: " + germplasmDTO.getRdfType().toString()
+                    "wrong rdfType: " + germplasmDTO.getRdfType().toString(),
+                    "component.germplasms.errors.wrongRdfType",
+                    new HashMap<String, String>() {{
+                        put("rdfType", germplasmDTO.getRdfType().toString());
+                    }}
             );
         }
 
@@ -647,7 +637,11 @@ public class GermplasmAPI {
                 return new ErrorResponse(
                         Response.Status.BAD_REQUEST,
                         "The given species doesn't exist in the database",
-                        "unknown species : " + germplasmDTO.getSpecies().toString()
+                        "unknown species : " + germplasmDTO.getSpecies().toString(),
+                        "component.germplasms.errors.unknownSpecies",
+                        new HashMap<String, String>() {{
+                            put("unknownSpecies", germplasmDTO.getSpecies().toString());
+                        }}
                 );
             }
         }
@@ -657,7 +651,11 @@ public class GermplasmAPI {
                 return new ErrorResponse(
                         Response.Status.BAD_REQUEST,
                         "The given variety doesn't exist in the database",
-                        "unknown variety : " + germplasmDTO.getVariety().toString()
+                        "unknown variety : " + germplasmDTO.getVariety().toString(),
+                        "component.germplasms.errors.unknownVariety",
+                        new HashMap<String, String>() {{
+                            put("unknownVariety", germplasmDTO.getVariety().toString());
+                        }}
                 );
             }
         }
@@ -667,7 +665,11 @@ public class GermplasmAPI {
                 return new ErrorResponse(
                         Response.Status.BAD_REQUEST,
                         "The given accession doesn't exist in the database",
-                        "unknown accession : " + germplasmDTO.getAccession().toString()
+                        "unknown accession : " + germplasmDTO.getAccession().toString(),
+                        "component.germplasms.errors.unknownAccession",
+                        new HashMap<String, String>() {{
+                            put("unknownAccession", germplasmDTO.getAccession().toString());
+                        }}
                 );
             }
         }
@@ -695,11 +697,16 @@ public class GermplasmAPI {
         }
 
         if (missingLink) {
+            final String finalMessage = message;
             // Return error response 409 - CONFLICT if link fromSpecies, fromVariety or fromAccession is missing
             return new ErrorResponse(
                     Response.Status.BAD_REQUEST,
                     "missing attribute",
-                    "you have to fill " + message
+                    "you have to fill " + finalMessage,
+                    "component.germplasms.errors.missingAttribute",
+                    new HashMap<String, String>() {{
+                        put("message", finalMessage);
+                    }}
             );
         }
 

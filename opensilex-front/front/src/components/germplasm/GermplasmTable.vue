@@ -847,10 +847,13 @@ export default class GermplasmTable extends Vue {
           })
           .catch((error) => {
             let errorMessage: string;
-            let errorMessage2: string;
             let failure = true;
             try {
-              errorMessage = error.response.result.message;
+              if (error.response.result.translationKey) {
+                errorMessage = this.$t(error.response.result.translationKey, error.response.result.translationValues);
+              } else {
+                errorMessage = error.response.result.message;
+              }
               failure = false;
             } catch (e1) {
               failure = true;
@@ -861,7 +864,7 @@ export default class GermplasmTable extends Vue {
                 errorMessage =
                   error.response.metadata.status[0].exception.details;
               } catch (e2) {
-                errorMessage = "uncatched error";
+                errorMessage = this.$t("component.common.errors.unexpected-error");
               }
             }
 

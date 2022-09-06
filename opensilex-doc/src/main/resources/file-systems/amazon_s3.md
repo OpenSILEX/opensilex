@@ -8,18 +8,26 @@ for OpenSILEX
 
 # Conception
 
+## Bucket management 
+
+OpenSILEX handle one bucket per S3 connection and can manage folders inside this bucket.
+
+
 ## Authentication
 
 ## Configuration
 
-- `endpoint` : 
-- `region` : 
-- `bucket` : 
+- `endpoint` :
+- `region` :
+- `bucket` :
 
 
-## Bucket management 
+## Reading and writing on a bucket
 
-OpenSILEX handle one bucket per S3 connection and can manage folders inside this bucket.
+## Performances
+
+## Logging and monitoring
+
 
 # How to use
 

@@ -292,6 +292,12 @@
             <version>2.17.267</version>
         </dependency>
 
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>s3-transfer-manager</artifactId>
+            <version>2.17.16-PREVIEW</version>
+        </dependency>
+
         <!--Logger-->
         <dependency>
             <groupId>ch.qos.logback</groupId>

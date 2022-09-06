@@ -115,3 +115,5 @@ irods:
 - **Using credentials** : https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/credentials.html
 - **API Javadoc** : https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/services/s3/S3Client.html
 - **Bucket and folders** : https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-folders.html
+- **Transfer Manager** : https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/transfer-manager.html
+- **Transfer Manager** : https://github.com/aws/aws-sdk-java-v2/tree/master/services-custom/s3-transfer-manager

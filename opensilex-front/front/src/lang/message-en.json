@@ -94,7 +94,7 @@
                 "creation-success-message": " has been inserted",
                 "update-success-message": " has been updated",
                 "delete-success-message": "has been deleted",
-                "import-success-message": "{variablesCount} variables, {entitiesCount} entities, {characteristicsCount} characteristics, {methodsCount} methods, {unitsCount} units, {interestEntityCount} observation levels have been imported."
+                "import-success-message": "{variablesCount} variables, {entitiesCount} entities, {characteristicsCount} characteristics, {methodsCount} methods, {unitsCount} units, {interestEntityCount} entity of interest have been imported."
             },
             "details": {
                 "document": "Documents",
@@ -362,9 +362,9 @@
             }
         },
         "sharedResources": {
-            "selector-placeholder":"Select resources",
-            "label": "Resources",
-            "local-instance": "Local resource",
+            "selector-placeholder":"Select a source",
+            "label": "Sources",
+            "local-instance": "Local source",
             "variable-import-confirmation": "Do you really want to import the selected variables on your local instance ?",
             "import": "import",
             "local-variable-import-warning": " WARNING : {variablesCount} variable selected has already been imported. The import will have no effect on this variable.",

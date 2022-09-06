@@ -70,8 +70,8 @@
                 <opensilex-DateTimeForm
                   :value.sync="filter.startDate"
                   label="component.common.begin"
-                  @input="onDateChange"
-                  @clear="onDateChange"
+                  @input="onUpdate"
+                  @clear="onUpdate"
                   class="searchFilter"
                 ></opensilex-DateTimeForm>
               </div>
@@ -81,8 +81,8 @@
                 <opensilex-DateTimeForm
                   :value.sync="filter.endDate"
                   label="component.common.end"
-                  @input="onDateChange"
-                  @clear="onDateChange"
+                  @input="onUpdate"
+                  @clear="onUpdate"
                   class="searchFilter"
                 ></opensilex-DateTimeForm>
               </div>
@@ -212,8 +212,6 @@ export default class ExperimentDataVisualisationForm extends Vue {
   @PropSync("showAllEvents")
   showEvents;
 
-  
-
   get startDate() {
     return this.filter.startDate
   }
@@ -230,11 +228,6 @@ export default class ExperimentDataVisualisationForm extends Vue {
 
   searchFiltersPannel() {
     return  this.$t("searchfilter.label")
-  }
-
-  onDateChange(){
-    this.getTotalEventsCount();
-    this.onUpdate();
   }
 
   onUpdate() {

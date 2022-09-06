@@ -9,7 +9,6 @@ import org.opensilex.service.Service;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 

@@ -61,12 +61,12 @@ public class GridFSConnectionTest extends AbstractMongoIntegrationTest {
     public static void afterClass() throws Exception{
         gridFSConnection.shutdown();
 
-        // bypass private access of static field GridFSConnection.mongoClient
-        Field mongoClientField = GridFSConnection.class.getDeclaredField("mongoClient");
+        // bypass private access of static field GridFSConnection.MONGO_CLIENT_INSTANCE
+        Field mongoClientField = GridFSConnection.class.getDeclaredField("MONGO_CLIENT_INSTANCE");
         mongoClientField.setAccessible(true);
 
         // ensure that the client has been closed, if so then access to any method should throw an IllegalStateException
-        MongoClient mongoClient = (MongoClient) mongoClientField.get(gridFSConnection);
+        MongoClient mongoClient = (MongoClient) mongoClientField.get(null);
         Assert.assertThrows(IllegalStateException.class, mongoClient::startSession);
 
         if(openSilex != null){

@@ -16,7 +16,7 @@ public interface S3FsConfig extends ServiceConfig {
     @ConfigDescription(
             value = "opensilex"
     )
-    String bucketName();
+    String bucket();
 
     @ConfigDescription(
             value = "eu-west-3"

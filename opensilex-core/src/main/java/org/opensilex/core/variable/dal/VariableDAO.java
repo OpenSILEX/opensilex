@@ -277,7 +277,7 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
                         .addWhere(variableVar,Oeso.hasSpecies, speciesVar))
                 .addGraph(speciesGraph, new WhereBuilder()
                         .addWhere(speciesVar, RDFS.label, speciesNameVar)
-                        .addFilter(SPARQLQueryHelper.langFilter(speciesNameVar,lang))
+                        .addFilter(SPARQLQueryHelper.langFilter(speciesNameVar,lang == null ? OpenSilex.DEFAULT_LANGUAGE : lang))
                 )
                 .addGroupBy(speciesVar)
                 .addGroupBy(speciesNameVar);

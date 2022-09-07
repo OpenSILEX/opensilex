@@ -515,7 +515,7 @@ public final class OpenSilex {
         };
         Runtime.getRuntime().addShutdownHook(shutdownHook);
 
-        LOGGER.debug("Current expanded configuration:" + getExpandedYAMLConfig());
+//        LOGGER.debug("Current expanded configuration:" + getExpandedYAMLConfig());
 
         LOGGER.debug("Initialize modules");
         for (OpenSilexModule module : getModules()) {

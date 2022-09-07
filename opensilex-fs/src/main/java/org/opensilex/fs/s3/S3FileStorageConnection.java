@@ -19,9 +19,14 @@ import software.amazon.awssdk.transfer.s3.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.Duration;
+import java.time.Instant;
 
 /**
  * Amazon S3 file-system implementation
@@ -97,11 +102,11 @@ public class S3FileStorageConnection extends BaseService implements FileStorageC
         return (S3FsConfig) super.getConfig();
     }
 
-    private S3Client initClientAndRegion(S3FsConfig config) throws URISyntaxException {
+    private S3Client initClientAndRegion(S3FsConfig config) {
        return S3Client.builder()
                 .region(region)
                 .credentialsProvider(getCredentialsProvider())
-                .endpointOverride(new URI(config.endpoint()))
+                .endpointOverride(URI.create(config.endpoint()))
                 .build();
     }
 
@@ -124,31 +129,59 @@ public class S3FileStorageConnection extends BaseService implements FileStorageC
         }
     }
 
-    private S3TransferManager getTransferManager(S3FsConfig config){
+    private S3TransferManager getTransferManager(S3FsConfig config) {
         return S3TransferManager.builder()
                 .s3ClientConfiguration(builder -> builder
-                        .endpointOverride(URI.create(config.endpoint()))
                         .region(region)
                         .credentialsProvider(getCredentialsProvider())
+                        .endpointOverride(URI.create(config.endpoint()))
+                        .targetThroughputInGbps(1.0)
+                        .minimumPartSizeInBytes(1024L*1024L)
                 ).build();
     }
 
 
-
     @Override
     public byte[] readFileAsByteArray(Path filePath) throws IOException {
+
         String fileKey = filePath.toString();
 
-        // performs non-blocking download with key and bucket
-        Download<ResponseBytes<GetObjectResponse>> download =  transferManager.download(builder -> builder
-                .getObjectRequest(requestBuilder -> setKeyAndBucket(requestBuilder, fileKey))
-                .responseTransformer(AsyncResponseTransformer.toBytes()));
+        Instant begin = Instant.now();
 
-        // block until download completion
-        CompletedDownload<ResponseBytes<GetObjectResponse>> completedDownload = download.completionFuture().join();
+        byte[] data = s3Client.getObjectAsBytes(GetObjectRequest
+                .builder()
+                .key(fileKey)
+                .bucket(getConfig().bucket())
+                .build()).asByteArrayUnsafe();
 
-        // return asByteArrayUnsafe() instead of asByteArray() since this last method performs an Array copy of content
-        return completedDownload.result().asByteArrayUnsafe();
+        long durationMs = Duration.between(begin,Instant.now()).toMillis();
+        LOGGER.info("readFileAsByteArray {}, size: {}",durationMs,data.length);
+
+        begin = Instant.now();
+        Path tmpFile = Paths.get("download");
+        FileDownload download = transferManager.downloadFile(b -> b.getObjectRequest(r -> r
+                        .key(fileKey)
+                        .bucket(getConfig().bucket()))
+                .destination(tmpFile));
+        download.completionFuture().join();
+
+        byte[] data2 = Files.readAllBytes(tmpFile);
+        durationMs = Duration.between(begin,Instant.now()).toMillis();
+        LOGGER.info("readFileAsByteArray2 {} size: {}",durationMs,data2.length);
+
+
+//        // performs non-blocking download with key and bucket
+//        Download<ResponseBytes<GetObjectResponse>> download =  transferManager.download(builder -> builder
+//                .getObjectRequest(requestBuilder -> setKeyAndBucket(requestBuilder, fileKey))
+//                .responseTransformer(AsyncResponseTransformer.toBytes()));
+//
+//        // block until download completion
+//        CompletedDownload<ResponseBytes<GetObjectResponse>> completedDownload = download.completionFuture().join();
+//
+//        // return asByteArrayUnsafe() instead of asByteArray() since this last method performs an Array copy of content
+//        return completedDownload.result().asByteArrayUnsafe();
+
+        return null;
     }
 
     private void setKeyAndBucket(GetObjectRequest.Builder requestBuilder, String fileKey){
@@ -174,7 +207,6 @@ public class S3FileStorageConnection extends BaseService implements FileStorageC
 
         String fileKey = filePath.toString();
 
-        // performs non-upload download with key and bucket
         FileUpload upload = transferManager.uploadFile(builder -> builder
                 .source(file.toPath())
                 .putObjectRequest(requestBuilder -> setKeyAndBucket(requestBuilder, fileKey)));

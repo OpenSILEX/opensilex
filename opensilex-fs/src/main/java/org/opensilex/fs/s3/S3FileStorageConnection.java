@@ -4,8 +4,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.opensilex.fs.service.FileStorageConnection;
 import org.opensilex.service.BaseService;
 import org.opensilex.service.ServiceDefaultDefinition;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
 import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.core.async.AsyncRequestBody;
 import software.amazon.awssdk.core.async.AsyncResponseTransformer;
@@ -27,6 +30,8 @@ import java.nio.file.Path;
  */
 @ServiceDefaultDefinition(config = S3FsConfig.class)
 public class S3FileStorageConnection extends BaseService implements FileStorageConnection {
+
+    public static final Logger LOGGER =  LoggerFactory.getLogger(S3FileStorageConnection.class);
 
     /**
      * Thread-safe S3 client
@@ -65,6 +70,8 @@ public class S3FileStorageConnection extends BaseService implements FileStorageC
 
         s3Client = initClientAndRegion(config);
         transferManager = getTransferManager(config);
+        LOGGER.info("S3FileStorageConnection init [OK]");
+
         createBucketIfNotExists();
     }
 
@@ -74,16 +81,16 @@ public class S3FileStorageConnection extends BaseService implements FileStorageC
      *
      * @apiNote
      * <pre>
-     * Explicitly set the Credentials provider, here we use a provider which look for environment variables
-     * in order to retrieve <b>access_key_id</b> and <b>secret_access_key</b>
-     *
-     * Setting the provider reduce startup time and is more explicit
+     * Explicitly set the Credentials provider reduce startup time and is more explicit
      * - <a href="https://rules.sonarsource.com/java/RSPEC-6242/">Sonar RSPEC-6242</a>
-     * - <a href="https://aws.amazon.com/fr/blogs/developer/tuning-the-aws-java-sdk-2-x-to-reduce-startup-time/">S3 credentials</a>
+     * - <a href="https://aws.amazon.com/fr/blogs/developer/tuning-the-aws-java-sdk-2-x-to-reduce-startup-time/">Client startup optimization</a>
      * </pre>
+     *
+     * @see <a href="https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/credentials.html">S3 credentials</a>
      */
     private AwsCredentialsProvider getCredentialsProvider(){
-        return EnvironmentVariableCredentialsProvider.create();
+        return ProfileCredentialsProvider.create();
+//        return EnvironmentVariableCredentialsProvider.create();
     }
 
     @Override
@@ -113,6 +120,8 @@ public class S3FileStorageConnection extends BaseService implements FileStorageC
                     .createBucketConfiguration(builder -> builder.locationConstraint(region.id()))
                     .bucket(getConfig().bucket())
                     .build());
+
+            LOGGER.info("{} bucket has been created [OK]", getConfig().bucket());
         }
     }
 

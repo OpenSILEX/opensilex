@@ -7,7 +7,6 @@ import org.opensilex.service.ServiceDefaultDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
-import software.amazon.awssdk.auth.credentials.EnvironmentVariableCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
 import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.core.async.AsyncRequestBody;
@@ -229,5 +228,15 @@ public class S3FileStorageConnection extends BaseService implements FileStorageC
     @Override
     public Path getAbsolutePath(Path filePath) throws IOException {
         return filePath;
+    }
+
+    @Override
+    public void shutdown() throws Exception {
+       if(s3Client != null){
+           s3Client.close();
+       }
+       if(transferManager != null){
+           transferManager.close();
+       }
     }
 }

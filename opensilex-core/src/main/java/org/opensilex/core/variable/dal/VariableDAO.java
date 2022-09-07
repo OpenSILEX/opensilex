@@ -20,6 +20,7 @@ import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.lang.sparql_11.ParseException;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
+import org.opensilex.OpenSilex;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.species.dal.SpeciesModel;
@@ -276,7 +277,7 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
                         .addWhere(variableVar,Oeso.hasSpecies, speciesVar))
                 .addGraph(speciesGraph, new WhereBuilder()
                         .addWhere(speciesVar, RDFS.label, speciesNameVar)
-                        .addFilter(SPARQLQueryHelper.langFilter(speciesNameVar,lang))
+                        .addFilter(SPARQLQueryHelper.langFilter(speciesNameVar,lang == null ? OpenSilex.DEFAULT_LANGUAGE : lang))
                 )
                 .addGroupBy(speciesVar)
                 .addGroupBy(speciesNameVar);

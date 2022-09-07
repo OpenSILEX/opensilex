@@ -45,8 +45,14 @@ public class S3FileStorageConnection extends BaseService implements FileStorageC
 
     /**
      *
-     * @param config
-     * @throws IllegalArgumentException if the {@link S3FsConfig#region()} is invalid
+     * @param config S3 config
+     * @throws IllegalArgumentException in the following cases :
+     * <ul>
+     *     <li>the {@link S3FsConfig#region()} is unknown from {@link Region} enums</li>
+     *     <li>the {@link S3FsConfig#bucket()} is null or empty</li>
+     * </ul>
+     * @throws URISyntaxException if the {@link S3FsConfig#endpoint()} can't be parsed as an {@link URI}
+     *
      */
     public S3FileStorageConnection(S3FsConfig config) throws URISyntaxException {
         super(config);
@@ -58,8 +64,26 @@ public class S3FileStorageConnection extends BaseService implements FileStorageC
         }
 
         s3Client = initClientAndRegion(config);
-        createBucketIfNotExists();
         transferManager = getTransferManager(config);
+        createBucketIfNotExists();
+    }
+
+    /**
+     *
+     * @return the credentials' provider to use for S3 connection
+     *
+     * @apiNote
+     * <pre>
+     * Explicitly set the Credentials provider, here we use a provider which look for environment variables
+     * in order to retrieve <b>access_key_id</b> and <b>secret_access_key</b>
+     *
+     * Setting the provider reduce startup time and is more explicit
+     * - <a href="https://rules.sonarsource.com/java/RSPEC-6242/">Sonar RSPEC-6242</a>
+     * - <a href="https://aws.amazon.com/fr/blogs/developer/tuning-the-aws-java-sdk-2-x-to-reduce-startup-time/">S3 credentials</a>
+     * </pre>
+     */
+    private AwsCredentialsProvider getCredentialsProvider(){
+        return EnvironmentVariableCredentialsProvider.create();
     }
 
     @Override
@@ -67,23 +91,10 @@ public class S3FileStorageConnection extends BaseService implements FileStorageC
         return (S3FsConfig) super.getConfig();
     }
 
-    /**
-     *
-     * @param config S3 config
-     *
-     * @throws URISyntaxException if the {@link S3FsConfig#endpoint()} can't be parsed as an {@link URI}
-      */
     private S3Client initClientAndRegion(S3FsConfig config) throws URISyntaxException {
-
-        // Explicitly set the Credentials provider, here we use a provider which look for environment variables in order to retrieve access_key_id and secret_access_key
-        // Setting the provider reduce startup time and is more explicit
-        // https://rules.sonarsource.com/java/RSPEC-6242/ or https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/credentials.html
-        AwsCredentialsProvider credentialsProvider = EnvironmentVariableCredentialsProvider.create();
-
-       // build the client
        return S3Client.builder()
                 .region(region)
-                .credentialsProvider(credentialsProvider)
+                .credentialsProvider(getCredentialsProvider())
                 .endpointOverride(new URI(config.endpoint()))
                 .build();
     }
@@ -107,11 +118,11 @@ public class S3FileStorageConnection extends BaseService implements FileStorageC
 
     private S3TransferManager getTransferManager(S3FsConfig config){
         return S3TransferManager.builder()
-                .s3ClientConfiguration(builder ->
-                        builder.endpointOverride(URI.create(config.endpoint()))
-                                .region(region)
-                                .credentialsProvider(EnvironmentVariableCredentialsProvider.create()))
-                .build();
+                .s3ClientConfiguration(builder -> builder
+                        .endpointOverride(URI.create(config.endpoint()))
+                        .region(region)
+                        .credentialsProvider(getCredentialsProvider())
+                ).build();
     }
 
 

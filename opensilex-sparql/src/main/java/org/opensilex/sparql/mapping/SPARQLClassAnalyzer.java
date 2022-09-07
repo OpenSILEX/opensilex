@@ -148,7 +148,7 @@ public final class SPARQLClassAnalyzer {
             throw new SPARQLInvalidClassDefinitionException(objectClass, "Technical error while reading annotation: " + SPARQLResource.class.getCanonicalName(), ex);
         }
 
-        LOGGER.debug("Process fields annotations");
+        // LOGGER.debug("Process fields annotations");
         relatedModelsFields = new HashMap<>();
 
         Map<String, Field> fieldMapping = new HashMap<>();

@@ -80,7 +80,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     public static final String DEFAULT_GRAPH_KEYWORD = "set";
 
     protected SPARQLClassObjectMapper(Class<T> objectClass, URI baseGraphURI, URI generationPrefixURI, SPARQLClassObjectMapperIndex mapperIndex) {
-        LOGGER.debug("Initialize SPARQL ressource class object mapper for: " + objectClass.getName());
+//        LOGGER.debug("Initialize SPARQL ressource class object mapper for: " + objectClass.getName());
         this.objectClass = objectClass;
         this.mapperIndex = mapperIndex;
         this.baseGraphURI = baseGraphURI;

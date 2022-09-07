@@ -1,4 +1,5 @@
 <template>
+  <opensilex-Overlay :show="isSearching && !isGlobalLoaderVisible">
   <sl-vue-tree
     ref="asyncTree"
     v-model="nodeList"
@@ -57,6 +58,7 @@
       <span ref="load" v-else>{{ $t("TreeViewAsync.loading-more") }}</span>
     </template>
   </sl-vue-tree>
+  </opensilex-Overlay>
 </template>
 
 <script lang="ts">
@@ -68,7 +70,13 @@ import Vue from "vue";
 export default class TreeViewAsync extends Vue {
   nodeList: any = [];
 
+  isSearching : boolean = false;
+
   @Ref("asyncTree") readonly asyncTree!: any;
+
+  get isGlobalLoaderVisible() {
+    return this.$store.state.loaderVisible;
+  }
 
   @Prop()
   noButtons: boolean;
@@ -160,16 +168,19 @@ export default class TreeViewAsync extends Vue {
   }
 
   refresh() {
+    this.isSearching = true;
     this.loadedRoots = [];
     if (this.searchMethodRoot) {
       this.searchMethodRoot(0, this.pageSize).then((http) => {
         this.nodeList = [];
         this.updateTreeNodes(http);
+         this.isSearching = false;
       });
     } else {
       this.searchMethod(undefined, 0, this.pageSize).then((http) => {
         this.nodeList = [];
         this.updateTreeNodes(http);
+          this.isSearching = false;
       });
     }
   }

@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Web client** : Visualisation of experiment data from scientific object and variables c924d260 -> aecfd721
 - **Web client** : New tab with associated document into variable details page -> ab7b6bb0
 - **Web client** : Variables selection and contextual actions into variable search page -> da82201c
+- **Web client**:  Add loader on scientific object tree view loading -> cf864292
 - **API/Web client** : A software (Device) can be linked to a variable -> 8d8cfb43
 - **API** : Prevent deletion of OS in case of associated experiment, children, data or datafile  -> e17caea7
 - **API** : When storing position for a move, we now use a String representation of x,y,z fields instead of 
@@ -43,6 +44,7 @@ a previous Integer representation -> 9b3a4a27.
 - **API** : Better error handling in case of Invalid character when evaluating a SPARQL REGEX -> 326be84c
 - **API** : Fix URI generation when providing a URI on OS creation -> e17caea7
 - **API** : Optimize search and loading for entities, characteristics, methods, units, variables and variable groups -> b00c53ba
+- **API** : Fix deletion and existence checking for gridfs file-system connection -> e1034199
 
 ## [1.0.0-rc+4.1] - 2022-07-13
 

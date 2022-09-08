@@ -47,6 +47,8 @@ public class S3TransferManagerStorageConnection extends S3FileStorageConnection{
                         .region(region)
                         .credentialsProvider(getCredentialsProvider())
                         .endpointOverride(URI.create(config.endpoint()))
+                        .targetThroughputInGbps(getConfig().targetThroughputInGbps())
+                        .minimumPartSizeInBytes(getConfig().minimumPartSizeInBytes())
                 ).build();
     }
 

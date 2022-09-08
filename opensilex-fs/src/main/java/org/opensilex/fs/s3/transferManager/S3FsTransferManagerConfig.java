@@ -1,5 +1,6 @@
 package org.opensilex.fs.s3.transferManager;
 
+import org.opensilex.config.ConfigDescription;
 import org.opensilex.fs.s3.S3FsConfig;
 import software.amazon.awssdk.transfer.s3.S3ClientConfiguration;
 
@@ -12,22 +13,24 @@ public interface S3FsTransferManagerConfig extends S3FsConfig {
     /**
      * @return the optional minimum part size for transfer parts
      *
-     * @see S3ClientConfiguration#minimumPartSizeInBytes()
+     * @see S3ClientConfiguration.Builder#minimumPartSizeInBytes
      */
-    double minimumPartSizeInBytes();
+    @ConfigDescription(
+            value = "8000000L",
+            defaultLong = 8000000L
+    )
+    long minimumPartSizeInBytes();
 
     /**
      * @return the optional target throughput
      *
-     * @see S3ClientConfiguration#targetThroughputInGbps()
+     * @see S3ClientConfiguration.Builder#targetThroughputInGbps
      */
+    @ConfigDescription(
+            value = "5.0",
+            defaultDouble = 5.0
+    )
     double targetThroughputInGbps();
 
-    /**
-     * @return the maximum number of concurrent Amazon S3 transfer requests (must be strictly positive)
-     *
-     * @see S3ClientConfiguration#maxConcurrency()
-     */
-    int maxConcurrency();
 }
 

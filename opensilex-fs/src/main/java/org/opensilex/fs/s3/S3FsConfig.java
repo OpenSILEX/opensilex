@@ -46,8 +46,7 @@ public interface S3FsConfig extends ServiceConfig {
      * @see  software.amazon.awssdk.transfer.s3.S3ClientConfiguration.Builder#credentialsProvider(AwsCredentialsProvider)
      */
     @ConfigDescription(
-            value = "false",
-            defaultBoolean = false
+            value = "false"
     )
     boolean useDefaultCredentialsProvider();
 }

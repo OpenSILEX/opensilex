@@ -22,5 +22,12 @@ public interface S3FsTransferManagerConfig extends S3FsConfig {
      * @see S3ClientConfiguration#targetThroughputInGbps()
      */
     double targetThroughputInGbps();
+
+    /**
+     * @return the maximum number of concurrent Amazon S3 transfer requests (must be strictly positive)
+     *
+     * @see S3ClientConfiguration#maxConcurrency()
+     */
+    int maxConcurrency();
 }
 

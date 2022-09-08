@@ -124,7 +124,9 @@ byte[] fileContent = s3FsConnection.readFileAsByteArray(dataFilePath);
 - `region` : S3 region code 
 - `bucket` : S3 bucket name
 - `useDefaultCredentialsProvider` : Indicate if we let S3 determine the credentials method or if the OpenSILEX
-preferred credentials method must be used (Credential profiles file at the default location : `~/.aws/credentials `). 
+preferred credentials method must be used (Use shared credentials anc configs file). 
+
+See _credentials_ in developers links for more details
 
 ### Transfer Manager
 
@@ -132,6 +134,8 @@ preferred credentials method must be used (Credential profiles file at the defau
 
 - `minimumPartSizeInBytes` : minimum part size for file transfer parts
 - `targetThroughputInGbps` : target throughput
+
+See _client configuration_ in developers links for more details
 
 ### Notes
 **Client sharing:**  If multiple connection share the same endpoint and region, then the `S3FileStorageConnection`
@@ -224,7 +228,9 @@ file-system:
 - [developer-guide](https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/)
 - [s3-objects](https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/examples-s3-objects.html)
 - [credentials](https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/credentials.html)
-- [transfer-manager](https://github.com/aws/aws-sdk-java-v2/tree/master/services-custom/s3-transfer-manager)
+- [transfer-manager](https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/transfer/s3/S3TransferManager.html)
+- [transfer-manager-examples](https://github.com/aws/aws-sdk-java-v2/tree/master/services-custom/s3-transfer-manager)
+- [client configuration](https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/transfer/s3/S3ClientConfiguration.html)
 
 ## Users/Administrators
 - [endpoints-region-quotas](https://docs.aws.amazon.com/general/latest/gr/s3.html)

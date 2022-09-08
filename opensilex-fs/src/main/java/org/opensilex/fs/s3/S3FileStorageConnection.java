@@ -58,7 +58,8 @@ public class S3FileStorageConnection extends BaseService implements FileStorageC
             throw new IllegalArgumentException("Null or empty bucket()) for S3 config");
         }
 
-        s3Client = initClientAndRegion(config);
+        // call ClientStore in order to get a unique shared client by (endpoint,region)
+        s3Client = S3ClientStore.getInstance().getOrCreateClient(config, S3FileStorageConnection::initClientAndRegion);
         LOGGER.info("S3FileStorageConnection init [OK]");
 
         createBucketIfNotExists();
@@ -79,9 +80,9 @@ public class S3FileStorageConnection extends BaseService implements FileStorageC
      *
      * @see <a href="https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/credentials.html">S3 credentials</a>
      */
-    protected AwsCredentialsProvider getCredentialsProvider(){
+    protected static AwsCredentialsProvider getCredentialsProvider(S3FsConfig config){
 
-        if(getConfig().useDefaultCredentialsProvider()){
+        if(config.useDefaultCredentialsProvider()){
             return DefaultCredentialsProvider.create();
         }
         return ProfileCredentialsProvider.create();
@@ -92,10 +93,10 @@ public class S3FileStorageConnection extends BaseService implements FileStorageC
         return (S3FsConfig) super.getConfig();
     }
 
-    private S3Client initClientAndRegion(S3FsConfig config) {
+    private static S3Client initClientAndRegion(S3FsConfig config) {
        return S3Client.builder()
-                .region(region)
-                .credentialsProvider(getCredentialsProvider())
+                .region(Region.of(config.region()))
+                .credentialsProvider(S3FileStorageConnection.getCredentialsProvider(config))
                 .endpointOverride(URI.create(config.endpoint()))
                 .build();
     }
@@ -185,8 +186,6 @@ public class S3FileStorageConnection extends BaseService implements FileStorageC
 
     @Override
     public void shutdown() throws Exception {
-       if(s3Client != null){
-           s3Client.close();
-       }
+        S3ClientStore.getInstance().closeClient(getConfig());
     }
 }

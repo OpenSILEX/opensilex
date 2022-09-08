@@ -37,6 +37,8 @@ s3_endpoint:
 
 ### Multiple endpoint <-> multiple bucket
 
+OpenSILEX can several endpoint, if multiple S3 connection are provided as configuration
+
 ```yaml
 s3_endpoint1:
     datafile-bucket:
@@ -124,7 +126,7 @@ byte[] fileContent = s3FsConnection.readFileAsByteArray(dataFilePath);
 - `region` : S3 region code 
 - `bucket` : S3 bucket name
 - `useDefaultCredentialsProvider` : Indicate if we let S3 determine the credentials method or if the OpenSILEX
-preferred credentials method must be used (Use shared credentials anc configs file). 
+preferred credentials method must be used (Use shared credentials and configs file). 
 
 See _credentials_ in developers links for more details
 

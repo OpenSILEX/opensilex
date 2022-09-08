@@ -1,0 +1,30 @@
+ontologies:
+    baseURI: http://opensilex.dev/
+    baseURIAlias: test
+    sparql:
+        implementation: org.opensilex.sparql.rdf4j.RDF4JInMemoryServiceFactory
+        config:
+            serverURI: http://localhost:8667/rdf4j-server/
+            repository: opensilex
+
+file-system:
+    fs:
+        config:
+            customPath:
+                datafile/: s3_datafile
+                documents/: s3_document
+
+            connections:
+                s3_datafile:
+                    implementation: org.opensilex.fs.s3.S3FileStorageConnection
+                    config:
+                        endpoint: s3-website.eu-west-3.amazonaws.com # same endpoint
+                        region: eu-west-3
+                        bucket: opensilex-datafile-bucket # datafile bucket
+
+                s3_document:
+                    implementation: org.opensilex.fs.s3.S3FileStorageConnection
+                    config:
+                        endpoint: s3-website.eu-west-3.amazonaws.com # same endpoint
+                        region: eu-west-3
+                        bucket: opensilex-document-bucket  # document bucket

@@ -4,6 +4,7 @@ import org.opensilex.fs.s3.S3FileStorageConnection;
 import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.core.async.AsyncRequestBody;
 import software.amazon.awssdk.core.async.AsyncResponseTransformer;
+import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 import software.amazon.awssdk.transfer.s3.*;
 
@@ -18,11 +19,10 @@ import java.nio.file.Path;
  * for file upload/download
  *
  * @author rcolin
- *
  * @see <a href=" https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/transfer-manager.html">transfer-manager SDK</a>
  * @see S3TransferManager
  */
-public class S3TransferManagerStorageConnection extends S3FileStorageConnection{
+public class S3TransferManagerStorageConnection extends S3FileStorageConnection {
 
     /**
      * High level S3 file upload/download manager
@@ -32,7 +32,7 @@ public class S3TransferManagerStorageConnection extends S3FileStorageConnection{
     public S3TransferManagerStorageConnection(S3FsTransferManagerConfig config) throws URISyntaxException {
         super(config);
 
-        transferManager = getTransferManager(config);
+        transferManager = S3TransferManagerStorageConnection.getTransferManager(config, region);
         LOGGER.info("S3TransferManager init [OK]");
     }
 
@@ -41,14 +41,14 @@ public class S3TransferManagerStorageConnection extends S3FileStorageConnection{
         return (S3FsTransferManagerConfig) super.getConfig();
     }
 
-    private S3TransferManager getTransferManager(S3FsTransferManagerConfig config) {
+    private static S3TransferManager getTransferManager(S3FsTransferManagerConfig config, Region region) {
         return S3TransferManager.builder()
                 .s3ClientConfiguration(builder -> builder
                         .region(region)
-                        .credentialsProvider(getCredentialsProvider())
+                        .credentialsProvider(S3FileStorageConnection.getCredentialsProvider(config))
                         .endpointOverride(URI.create(config.endpoint()))
-                        .targetThroughputInGbps(getConfig().targetThroughputInGbps())
-                        .minimumPartSizeInBytes(getConfig().minimumPartSizeInBytes())
+                        .targetThroughputInGbps(config.targetThroughputInGbps())
+                        .minimumPartSizeInBytes(config.minimumPartSizeInBytes())
                 ).build();
     }
 
@@ -57,15 +57,15 @@ public class S3TransferManagerStorageConnection extends S3FileStorageConnection{
 
         String fileKey = filePath.toString();
 
-//        // performs non-blocking download with key and bucket
-        Download<ResponseBytes<GetObjectResponse>> download =  transferManager.download(builder -> builder
+        // performs non-blocking download with key and bucket
+        Download<ResponseBytes<GetObjectResponse>> download = transferManager.download(builder -> builder
                 .getObjectRequest(requestBuilder -> setKeyAndBucket(requestBuilder, fileKey))
                 .responseTransformer(AsyncResponseTransformer.toBytes()));
-//
-//        // block until download completion
+
+        // block until download completion
         CompletedDownload<ResponseBytes<GetObjectResponse>> completedDownload = download.completionFuture().join();
-//
-//        // return asByteArrayUnsafe() instead of asByteArray() since this last method performs an Array copy of content
+
+        // return asByteArrayUnsafe() instead of asByteArray() since this last method performs an Array copy of content
         return completedDownload.result().asByteArrayUnsafe();
     }
 
@@ -73,7 +73,7 @@ public class S3TransferManagerStorageConnection extends S3FileStorageConnection{
     public void writeFile(Path filePath, String content) throws IOException {
         String fileKey = filePath.toString();
 
-        // performs non-blocking upload with key and bucket
+        // performs non-blocking file content upload with key and bucket
         Upload upload = transferManager.upload(builder -> builder
                 .requestBody(AsyncRequestBody.fromString(content))
                 .putObjectRequest(requestBuilder -> setKeyAndBucket(requestBuilder, fileKey)));
@@ -87,6 +87,7 @@ public class S3TransferManagerStorageConnection extends S3FileStorageConnection{
 
         String fileKey = filePath.toString();
 
+        // performs non-blocking file upload with key and bucket
         FileUpload upload = transferManager.uploadFile(builder -> builder
                 .source(file.toPath())
                 .putObjectRequest(requestBuilder -> setKeyAndBucket(requestBuilder, fileKey)));
@@ -99,7 +100,7 @@ public class S3TransferManagerStorageConnection extends S3FileStorageConnection{
     @Override
     public void shutdown() throws Exception {
         super.shutdown();
-        if(transferManager != null){
+        if (transferManager != null) {
             transferManager.close();
         }
     }

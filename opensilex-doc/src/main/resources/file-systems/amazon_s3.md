@@ -9,63 +9,137 @@
 
 ## Bucket and file management 
 
-OpenSILEX handle one bucket per S3 connection and can manage folders inside this bucket.
+OpenSILEX can organize S3 connection on two way 
+
+### One endpoint <-> One bucket
+
+OpenSILEX can use a single S3 connection which use a single bucket.
+Into this bucket, multiple files types can be stored : documents, datafile
+
+```yaml
+s3_endpoint:
+    opensilex-bucket:
+        datafile/aHR0cDovL3d3dy5waGVub21l
+        document/fd45fdpf5df1fd14df4fd14d
+```
+
+### One endpoint <-> multiple bucket
+
+OpenSILEX can manage multiple S3 bucket for a single endpoint
+
+```yaml
+s3_endpoint:
+    datafile-bucket:
+        datafile/aHR0cDovL3d3dy5waGVub21l
+    document-bucket:
+      document/fd45fdpf5df1fd14df4fd14d
+```
+
+### Multiple endpoint <-> multiple bucket
+
+```yaml
+s3_endpoint1:
+    datafile-bucket:
+        datafile/aHR0cDovL3d3dy5waGVub21l
+    
+s3_endpoint2:    
+    document-bucket:
+      document/fd45fdpf5df1fd14df4fd14d
+```
+
+## Upload/Download on a bucket
+
+![s3_fs_uml_config_diagramm.png](s3_fs_uml_config_diagramm.png)
 
 ### Upload
 
-Uploading a datafile with : 
+Considering the upload of a datafile with : 
 - `http://www.phenome-fppn.fr/id/file/1661036401.fcf0933a40d6bc61bbdb89d625c44ec1` : URI of the datafile
 - `datafile/aHR0cDovL3d3dy5waGVub21l`: file path generated from datafile URI
 
-**Java file service usage**
+**Upload file :** 
 
 ```java
-fs.writeFile("datafile","datafile/aHR0cDovL3d3dy5waGVub21l",file);
+File fileToUpload; // file from API
+Path dataFilePath = Paths.get("datafile/aHR0cDovL3d3dy5waGVub21l"); // path for a datafile
+s3FsConnection.writeFile(dataFilePath,fileToUpload);
 ```
 
-**S3 storage overview** 
+**Upload file content :**
 
-```yaml
-s3:
-    opensilex-bucket:
-        datafile/aHR0cDovL3d3dy5waGVub21l
+```java
+String fileContent; // file content from API
+Path dataFilePath = Paths.get("datafile/aHR0cDovL3d3dy5waGVub21l"); // path for a datafile
+s3FsConnection.writeFile(dataFilePath,fileContent);
 ```
 
-### Declaration
+### Declaring existing file
 
-Declaring an existing datafile with : 
+Considering the declaration of an existing datafile with : 
 - `datafile/sub_directory/LWZwcG4uZnIvaWQvZmlsZS8x` : relative path of the existing datafile
 - `/datafile/sub_directory/LWZwcG4uZnIvaWQvZmlsZS8x` : absolute path of the existing datafile
 
-The S3 connection has no notion of base/root path, so calling `S3FileStorageConnection.getAbsolutePath(path)`
-will just return `path`
+Here it's just need to check if the specified file exists or not
 
-**Java file service usage**
+**Check file existence**
 
 ```java
-fs.exists("datafile","datafile/sub_directory/LWZwcG4uZnIvaWQvZmlsZS8x");
-fs.exists("datafile","/datafile/sub_directory/LWZwcG4uZnIvaWQvZmlsZS8x");
+Path dataFilePath = Paths.get("datafile/aHR0cDovL3d3dy5waGVub21l"); // path for a datafile
+boolean fileExists = s3FsConnection.exists(dataFilePath);
+
+Path absoluteFilePath = Paths.get("/datafile/aHR0cDovL3d3dy5waGVub21l"); // absolute path for a datafile
+fileExists =  s3FsConnection.exists(absoluteFilePath);
 ```
 
-**S3 storage overview**
+**_Note_** : The S3 connection has no notion of base/root path, so calling `S3FileStorageConnection.getAbsolutePath(path)`
+will just return `path`
 
-```yaml
-s3:
-    opensilex-bucket:
-        datafile/sub_directory/LWZwcG4uZnIvaWQvZmlsZS8x       
+### Download file
+
+Considering the download of a datafile with :
+- `http://www.phenome-fppn.fr/id/file/1661036401.fcf0933a40d6bc61bbdb89d625c44ec1` : URI of the datafile
+- `datafile/aHR0cDovL3d3dy5waGVub21l`: file path generated from datafile URI
+
+**Read file**
+
+```java
+Path dataFilePath = Paths.get("datafile/aHR0cDovL3d3dy5waGVub21l"); // path for a datafile
+byte[] fileContent = s3FsConnection.readFileAsByteArray(dataFilePath);
 ```
 
 ## Authentication
 
+
+
 ## Configuration
 
-- `endpoint` :
-- `region` :
-- `bucket` :
-- `crendentialProvider : `
+<img alt="s3_config_uml_class_diagramm.png" height="50%" src="s3_config_uml_config_diagramm.png" width="50%"/>
 
+### S3 Client
 
-## Reading and writing on a bucket
+`S3FsConfig` : Settings which apply on S3 storage configuration
+
+- `endpoint` : S3 endpoint URL
+- `region` : S3 region code 
+- `bucket` : S3 bucket name
+- `useDefaultCredentialsProvider` : Indicate if we let S3 determine the credentials method or if the OpenSILEX
+preferred credentials method must be used (Credential profiles file at the default location : `~/.aws/credentials `). 
+
+### Transfer Manager
+
+`S3FsTransferManagerConfig` : Specific settings when using S3 Transfer Manager : 
+
+- `minimumPartSizeInBytes` : minimum part size for file transfer parts
+- `targetThroughputInGbps` : target throughput
+
+### Notes
+**Client sharing:**  If multiple connection share the same endpoint and region, then the `S3FileStorageConnection`
+can reuse the same `S3Client` :
+- This ensures to not re-create multiple `S3Client` which can be costly
+- `S3Client` is thread-safe and can so be shared by multiple `S3FileStorageConnection` safely
+- In this case it's only during read/write that each `S3FileStorageConnection` will need a different bucket setting,
+  but with the same client.
+
 
 ## Performances
 
@@ -74,7 +148,7 @@ s3:
 
 # How to use
 
-## Single file system
+### One endpoint <-> One bucket
 
 ```yaml
 file-system:
@@ -87,42 +161,69 @@ file-system:
                     config:
                         endpoint: s3-website.eu-west-3.amazonaws.com
                         region: eu-west-3
-                        bucket: opensilex-bucket
+                        bucket: opensilex-bucket # global bucket for datafile and document management
 ```
 
-
-## Multiple file-systems
+### One endpoint <-> multiple bucket
 
 ```yaml
 file-system:
     fs:
         config:
             customPath:
-                datafile/: irods
-                documents/: S3    
+                datafile/: s3_datafile
+                documents/: s3_document 
                 
             connections:
-                S3:
+                s3_datafile:
                     implementation: org.opensilex.fs.s3.S3FileStorageConnection
                     config:
-                        endpoint: s3-website.eu-west-3.amazonaws.com
+                        endpoint: s3-website.eu-west-3.amazonaws.com # same endpoint
                         region: eu-west-3
-                        bucket: opensilex-bucket
-                irods:
-                    implementation: org.opensilex.fs.irods.IrodsFileSystemConnection
+                        bucket: opensilex-datafile-bucket # datafile bucket
+                        
+                s3_document:
+                    implementation: org.opensilex.fs.s3.S3FileStorageConnection
                     config:
-                        basePath: /opensilex/
+                      endpoint: s3-website.eu-west-3.amazonaws.com # same endpoint
+                      region: eu-west-3
+                      bucket: opensilex-document-bucket  # document bucket
+```
+
+### Multiple endpoint <-> Multiple bucket
+
+```yaml
+file-system:
+    fs:
+        config:
+            customPath:
+                datafile/: s3_datafile
+                documents/: s3_document 
+                
+            connections:
+                s3_datafile:
+                    implementation: org.opensilex.fs.s3.S3FileStorageConnection
+                    config:
+                        endpoint: s3-website.eu-west-3.amazonaws.com # endpoint 1
+                        region: eu-west-3
+                        bucket: opensilex-datafile-bucket # datafile bucket
+                        
+                s3_document:
+                    implementation: org.opensilex.fs.s3.S3FileStorageConnection
+                    config:
+                      endpoint: s3-website.eu-west-2.amazonaws.com # endpoint 2
+                      region: eu-west-2
+                      bucket: opensilex-document-bucket  # document bucket
 ```
 
 ## Authentication
-
 
 # Links
 
 ## Developers
 
-- **https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/**
-- **https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/examples-s3-objects.html**
+- **Developer-guide** : https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/
+- **Read/Write object** : https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/examples-s3-objects.html
 - **API Javadoc** : https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/services/s3/S3Client.html
 - **Using credentials** : https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/credentials.html
 - **Transfer Manager** : https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/transfer-manager.html

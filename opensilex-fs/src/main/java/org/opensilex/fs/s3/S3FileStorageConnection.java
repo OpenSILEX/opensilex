@@ -6,8 +6,7 @@ import org.opensilex.service.BaseService;
 import org.opensilex.service.ServiceDefaultDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
-import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
+import software.amazon.awssdk.auth.credentials.*;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
@@ -27,7 +26,7 @@ import java.nio.file.Path;
 @ServiceDefaultDefinition(config = S3FsConfig.class)
 public class S3FileStorageConnection extends BaseService implements FileStorageConnection {
 
-    public static final Logger LOGGER =  LoggerFactory.getLogger(S3FileStorageConnection.class);
+    protected static final Logger LOGGER =  LoggerFactory.getLogger(S3FileStorageConnection.class);
 
     /**
      * Thread-safe S3 client
@@ -67,7 +66,9 @@ public class S3FileStorageConnection extends BaseService implements FileStorageC
 
     /**
      *
-     * @return the credentials' provider to use for S3 connection
+     * @return the credentials' provider to use for S3 connection.
+     * If {@link S3FsConfig#useDefaultCredentialsProvider()} if true, then return a new {@link DefaultCredentialsProvider},
+     * return a new {@link ProfileCredentialsProvider} else.
      *
      * @apiNote
      * <pre>
@@ -79,6 +80,10 @@ public class S3FileStorageConnection extends BaseService implements FileStorageC
      * @see <a href="https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/credentials.html">S3 credentials</a>
      */
     protected AwsCredentialsProvider getCredentialsProvider(){
+
+        if(getConfig().useDefaultCredentialsProvider()){
+            return DefaultCredentialsProvider.create();
+        }
         return ProfileCredentialsProvider.create();
     }
 
@@ -150,21 +155,15 @@ public class S3FileStorageConnection extends BaseService implements FileStorageC
 
     @Override
     public void createDirectories(Path directoryPath) {
-
         String directoryKey = directoryPath.toString();
-
-        s3Client.putObject(
-                builder -> setKeyAndBucket(builder, directoryKey),
-                RequestBody.empty()
-        );
-
+        s3Client.putObject(builder -> setKeyAndBucket(builder, directoryKey), RequestBody.empty());
     }
 
     @Override
     public boolean exist(Path filePath) throws IOException {
         String fileKey = filePath.toString();
 
-        // performs a HEAD object (no retrieval of object himself)
+        // performs a HEAD object (no retrieval of object himself -> less I/O)
         try{
             s3Client.headObject(builder -> setKeyAndBucket(builder,fileKey));
             return true;

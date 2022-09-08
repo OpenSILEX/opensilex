@@ -1,5 +1,6 @@
-package org.opensilex.fs.s3;
+package org.opensilex.fs.s3.transferManager;
 
+import org.opensilex.fs.s3.S3FileStorageConnection;
 import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.core.async.AsyncRequestBody;
 import software.amazon.awssdk.core.async.AsyncResponseTransformer;
@@ -12,28 +13,40 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 
-public class S3TransfertManagerStorageConnection extends S3FileStorageConnection{
+/**
+ * Specialization of {@link S3FileStorageConnection} which use the high-level S3 Transfer Manager library
+ * for file upload/download
+ *
+ * @author rcolin
+ *
+ * @see <a href=" https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/transfer-manager.html">transfer-manager SDK</a>
+ * @see S3TransferManager
+ */
+public class S3TransferManagerStorageConnection extends S3FileStorageConnection{
 
     /**
      * High level S3 file upload/download manager
      */
     private final S3TransferManager transferManager;
 
-    public S3TransfertManagerStorageConnection(S3FsConfig config) throws URISyntaxException {
+    public S3TransferManagerStorageConnection(S3FsTransferManagerConfig config) throws URISyntaxException {
         super(config);
 
         transferManager = getTransferManager(config);
-//        LOGGER.info("S3TransferManager init [OK]");
+        LOGGER.info("S3TransferManager init [OK]");
     }
 
-    private S3TransferManager getTransferManager(S3FsConfig config) {
+    @Override
+    public S3FsTransferManagerConfig getConfig() {
+        return (S3FsTransferManagerConfig) super.getConfig();
+    }
+
+    private S3TransferManager getTransferManager(S3FsTransferManagerConfig config) {
         return S3TransferManager.builder()
                 .s3ClientConfiguration(builder -> builder
                         .region(region)
                         .credentialsProvider(getCredentialsProvider())
                         .endpointOverride(URI.create(config.endpoint()))
-//                        .targetThroughputInGbps(1.0)
-//                        .minimumPartSizeInBytes(1024L*1024L)
                 ).build();
     }
 

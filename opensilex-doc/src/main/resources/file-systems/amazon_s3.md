@@ -148,8 +148,40 @@ can reuse the same `S3Client` :
 
 ## Performances
 
-## Logging and monitoring
+### Benchmark protocol
 
+**Client configuration :** 
+- **CPU** : i7-8650U CPU @ 1.90GHz × 8
+- **RAM** : 16GO DDR4
+- **SSD** : NVMe 512GB
+- **OS** : Ubuntu 18.04.6LTS
+- **Amazon SDK**: v2.17.267
+- **Java** : OpenJDK 11.0.1
+- **Network** : max net speed ? 
+
+**Dataset**
+- **Little** : high number of call (1000) with small file (372KB) -> **372 MB** of bandwidth
+- **Middle** : medium number of call (500) with medium file (2.3MB) -> **1.15 GB** of bandwidth
+- **Big** : small number of call (50) with big file (22.6MB) -> **1.13 GB** of bandwidth
+
+**Connections**
+- **S3FileStorageConnection** : basic S3 connection
+- **S3TransferManagerStorageConnection** : optimized connection for file upload/download
+
+**Run mode**:
+- **Single** : upload/download file one by one
+- **Concurrent** : parallel file upload/download
+
+### Results
+
+| Dataset | Connection                         | Upload | Download | Upload (parallel) | Download (parallel) |
+|---------|------------------------------------|--------|----------|-------------------|---------------------|
+| little  | S3FileStorageConnection            |        |          |                   |                     |
+| middle  | S3FileStorageConnection            |        |          |                   |                     |
+| big     | S3FileStorageConnection            |        |          |                   |                     |
+| little  | S3TransferManagerStorageConnection |        |          |                   |                     |
+| middle  | S3TransferManagerStorageConnection |        |          |                   |                     |
+| big     | S3TransferManagerStorageConnection |        |          |                   |                     |
 
 # How to use
 

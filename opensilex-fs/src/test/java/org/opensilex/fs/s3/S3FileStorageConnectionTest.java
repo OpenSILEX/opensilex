@@ -1,15 +1,10 @@
 package org.opensilex.fs.s3;
 
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.opensilex.OpenSilex;
 import org.opensilex.fs.service.FileStorageService;
-import software.amazon.awssdk.services.s3.S3Client;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -24,6 +19,14 @@ public class S3FileStorageConnectionTest {
     private static OpenSilex openSilex;
     private static S3FileStorageConnection connection;
 
+    /**
+     * Path to test config. You should edit with correct endpoint/region and bucket before running this test.
+     * Moreover, you should ensure that authentication is OK.
+     *
+     * By default, the {@link S3FileStorageConnection}
+     * will use a {@link software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider}.
+     */
+    private static final Path CONFIG_PATH = Paths.get("src","test","resources","s3","opensilex_s3_fs_config.yml");
     private static final Path LITTLE_IMG = Paths.get("src", "test", "resources", "files","greenhouse.jpg");
     private static final Path MIDDLE_IMG =  Paths.get("src", "test", "resources", "files","hemispheric.jpg");
     private static final Path BIG_IMG =  Paths.get("src", "test", "resources", "files","vine.jpg");
@@ -35,7 +38,7 @@ public class S3FileStorageConnectionTest {
         // define an OpenSILEX config with use grids as filesystem
         Map<String, String> args = new HashMap<>();
         args.put(OpenSilex.PROFILE_ID_ARG_KEY, OpenSilex.TEST_PROFILE_ID);
-        args.put(OpenSilex.CONFIG_FILE_ARG_KEY, MIDDLE_IMG.toAbsolutePath().toString());
+        args.put(OpenSilex.CONFIG_FILE_ARG_KEY,CONFIG_PATH.toAbsolutePath().toString());
 
         // initialize OpenSILEX with this config
         openSilex = OpenSilex.createInstance(args);
@@ -60,6 +63,7 @@ public class S3FileStorageConnectionTest {
     }
 
     @Test
+    @Ignore("Need real S3 config for run")
     public void writeFile() throws IOException {
         for(Path filePath : getPaths()){
 
@@ -80,6 +84,7 @@ public class S3FileStorageConnectionTest {
     }
 
     @Test
+    @Ignore("Need real S3 config for run")
     public void WriteFileContent() throws IOException {
         for(Path filePath : getPaths()){
 
@@ -100,6 +105,7 @@ public class S3FileStorageConnectionTest {
     }
 
     @Test
+    @Ignore("Need real S3 config for run")
     public void createDirectories() throws IOException {
 
         // create directory and check existence
@@ -110,7 +116,6 @@ public class S3FileStorageConnectionTest {
         // delete directory and check it no longer exist
         connection.delete(directoryPath);
         Assert.assertFalse(connection.exist(directoryPath));
-
     }
 
 }

@@ -121,6 +121,8 @@ file-system:
 
 ## Developers
 
+- **https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/**
+- **https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/examples-s3-objects.html**
 - **API Javadoc** : https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/services/s3/S3Client.html
 - **Using credentials** : https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/credentials.html
 - **Transfer Manager** : https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/transfer-manager.html

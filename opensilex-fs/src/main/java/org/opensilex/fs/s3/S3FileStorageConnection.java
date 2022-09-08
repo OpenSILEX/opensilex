@@ -8,25 +8,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
-import software.amazon.awssdk.core.ResponseBytes;
-import software.amazon.awssdk.core.async.AsyncRequestBody;
-import software.amazon.awssdk.core.async.AsyncResponseTransformer;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
-import software.amazon.awssdk.transfer.s3.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.Files;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.Duration;
-import java.time.Instant;
 
 /**
  * Amazon S3 file-system implementation
@@ -45,12 +37,7 @@ public class S3FileStorageConnection extends BaseService implements FileStorageC
     /**
      * Specific region used for the endpoint
      */
-    private final Region region;
-
-    /**
-     * High level S3 file upload/download manager
-     */
-    private final S3TransferManager transferManager;
+    protected final Region region;
 
     /**
      *
@@ -73,7 +60,6 @@ public class S3FileStorageConnection extends BaseService implements FileStorageC
         }
 
         s3Client = initClientAndRegion(config);
-        transferManager = getTransferManager(config);
         LOGGER.info("S3FileStorageConnection init [OK]");
 
         createBucketIfNotExists();
@@ -92,9 +78,8 @@ public class S3FileStorageConnection extends BaseService implements FileStorageC
      *
      * @see <a href="https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/credentials.html">S3 credentials</a>
      */
-    private AwsCredentialsProvider getCredentialsProvider(){
+    protected AwsCredentialsProvider getCredentialsProvider(){
         return ProfileCredentialsProvider.create();
-//        return EnvironmentVariableCredentialsProvider.create();
     }
 
     @Override
@@ -128,97 +113,40 @@ public class S3FileStorageConnection extends BaseService implements FileStorageC
             LOGGER.info("{} bucket has been created [OK]", getConfig().bucket());
         }
     }
-
-    private S3TransferManager getTransferManager(S3FsConfig config) {
-        return S3TransferManager.builder()
-                .s3ClientConfiguration(builder -> builder
-                        .region(region)
-                        .credentialsProvider(getCredentialsProvider())
-                        .endpointOverride(URI.create(config.endpoint()))
-                        .targetThroughputInGbps(1.0)
-                        .minimumPartSizeInBytes(1024L*1024L)
-                ).build();
+    protected void setKeyAndBucket(GetObjectRequest.Builder requestBuilder, String fileKey){
+        requestBuilder.key(fileKey).bucket(getConfig().bucket());
     }
 
+    protected void setKeyAndBucket(PutObjectRequest.Builder requestBuilder, String fileKey){
+        requestBuilder.bucket(getConfig().bucket()).key(fileKey);
+    }
+
+    protected void setKeyAndBucket(HeadObjectRequest.Builder requestBuilder, String fileKey){
+        requestBuilder.bucket(getConfig().bucket()).key(fileKey);
+    }
+
+    protected void setKeyAndBucket(DeleteObjectRequest.Builder requestBuilder, String fileKey){
+        requestBuilder.bucket(getConfig().bucket()).key(fileKey);
+    }
 
     @Override
     public byte[] readFileAsByteArray(Path filePath) throws IOException {
-
         String fileKey = filePath.toString();
-
-        Instant begin = Instant.now();
-
-        byte[] data = s3Client.getObjectAsBytes(GetObjectRequest
-                .builder()
-                .key(fileKey)
-                .bucket(getConfig().bucket())
-                .build()).asByteArrayUnsafe();
-
-        long durationMs = Duration.between(begin,Instant.now()).toMillis();
-        LOGGER.info("readFileAsByteArray {}, size: {}",durationMs,data.length);
-
-        begin = Instant.now();
-        Path tmpFile = Paths.get("download");
-        FileDownload download = transferManager.downloadFile(b -> b.getObjectRequest(r -> r
-                        .key(fileKey)
-                        .bucket(getConfig().bucket()))
-                .destination(tmpFile));
-        download.completionFuture().join();
-
-        byte[] data2 = Files.readAllBytes(tmpFile);
-        durationMs = Duration.between(begin,Instant.now()).toMillis();
-        LOGGER.info("readFileAsByteArray2 {} size: {}",durationMs,data2.length);
-
-
-//        // performs non-blocking download with key and bucket
-//        Download<ResponseBytes<GetObjectResponse>> download =  transferManager.download(builder -> builder
-//                .getObjectRequest(requestBuilder -> setKeyAndBucket(requestBuilder, fileKey))
-//                .responseTransformer(AsyncResponseTransformer.toBytes()));
-//
-//        // block until download completion
-//        CompletedDownload<ResponseBytes<GetObjectResponse>> completedDownload = download.completionFuture().join();
-//
-//        // return asByteArrayUnsafe() instead of asByteArray() since this last method performs an Array copy of content
-//        return completedDownload.result().asByteArrayUnsafe();
-
-        return null;
+        return s3Client.getObjectAsBytes(builder -> setKeyAndBucket(builder, fileKey)).asByteArrayUnsafe();
     }
-
-    private void setKeyAndBucket(GetObjectRequest.Builder requestBuilder, String fileKey){
-         requestBuilder.key(fileKey).bucket(getConfig().bucket());
-    }
-
 
     @Override
     public void writeFile(Path filePath, String content) throws IOException {
         String fileKey = filePath.toString();
-
-        // performs non-blocking upload with key and bucket
-        Upload upload = transferManager.upload(builder -> builder
-                .requestBody(AsyncRequestBody.fromString(content))
-                .putObjectRequest(requestBuilder -> setKeyAndBucket(requestBuilder, fileKey)));
-
-        // wait for content upload completion
-        upload.completionFuture().join();
+        s3Client.putObject(builder -> setKeyAndBucket(builder, fileKey), RequestBody.fromString(content, StandardCharsets.UTF_8));
     }
 
     @Override
     public void writeFile(Path filePath, File file) throws IOException {
-
         String fileKey = filePath.toString();
-
-        FileUpload upload = transferManager.uploadFile(builder -> builder
-                .source(file.toPath())
-                .putObjectRequest(requestBuilder -> setKeyAndBucket(requestBuilder, fileKey)));
-
-        // wait for file upload completion
-        upload.completionFuture().join();
+        s3Client.putObject(builder -> setKeyAndBucket(builder, fileKey), RequestBody.fromFile(file));
     }
 
-    private void setKeyAndBucket(PutObjectRequest.Builder requestBuilder, String fileKey){
-        requestBuilder.bucket(getConfig().bucket())
-                .key(fileKey);
-    }
 
     @Override
     public void createDirectories(Path directoryPath) {
@@ -238,9 +166,7 @@ public class S3FileStorageConnection extends BaseService implements FileStorageC
 
         // performs a HEAD object (no retrieval of object himself)
         try{
-            s3Client.headObject(builder -> builder
-                    .bucket(getConfig().bucket())
-                    .key(fileKey));
+            s3Client.headObject(builder -> setKeyAndBucket(builder,fileKey));
             return true;
         }catch (NoSuchKeyException e){
             return false;
@@ -249,12 +175,8 @@ public class S3FileStorageConnection extends BaseService implements FileStorageC
 
     @Override
     public void delete(Path filePath) throws IOException {
-
         String fileKey = filePath.toString();
-
-        s3Client.deleteObject(builder -> builder
-                .bucket(getConfig().bucket())
-                .key(fileKey));
+        s3Client.deleteObject(builder -> setKeyAndBucket(builder,fileKey));
     }
 
     @Override
@@ -266,9 +188,6 @@ public class S3FileStorageConnection extends BaseService implements FileStorageC
     public void shutdown() throws Exception {
        if(s3Client != null){
            s3Client.close();
-       }
-       if(transferManager != null){
-           transferManager.close();
        }
     }
 }

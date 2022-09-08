@@ -9,8 +9,7 @@
 
 ## Bucket and file management 
 
-OpenSILEX can organize S3 connection on two way 
-
+OpenSILEX can handle S3 connection by different way (see **_How to use_** for configuration)
 ### One endpoint <-> One bucket
 
 OpenSILEX can use a single S3 connection which use a single bucket.
@@ -22,6 +21,7 @@ s3_endpoint:
         datafile/aHR0cDovL3d3dy5waGVub21l
         document/fd45fdpf5df1fd14df4fd14d
 ```
+
 
 ### One endpoint <-> multiple bucket
 
@@ -49,7 +49,7 @@ s3_endpoint2:
 
 ## Upload/Download on a bucket
 
-![s3_fs_uml_config_diagramm.png](s3_fs_uml_config_diagramm.png)
+![S3 fs connection class diagram](s3_fs_uml_class_diagramm.png)
 
 ### Upload
 
@@ -113,7 +113,8 @@ byte[] fileContent = s3FsConnection.readFileAsByteArray(dataFilePath);
 
 ## Configuration
 
-<img alt="s3_config_uml_class_diagramm.png" height="50%" src="s3_config_uml_config_diagramm.png" width="50%"/>
+
+<img alt="s3_config_uml_class_diagramm.png" src="s3_config_uml_class_diagramm.png" width="50%"/>
 
 ### S3 Client
 
@@ -216,20 +217,16 @@ file-system:
                       bucket: opensilex-document-bucket  # document bucket
 ```
 
-## Authentication
-
 # Links
 
 ## Developers
 
-- **Developer-guide** : https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/
-- **Read/Write object** : https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/examples-s3-objects.html
-- **API Javadoc** : https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/services/s3/S3Client.html
-- **Using credentials** : https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/credentials.html
-- **Transfer Manager** : https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/transfer-manager.html
-- **Transfer Manager** : https://github.com/aws/aws-sdk-java-v2/tree/master/services-custom/s3-transfer-manager
+- [developer-guide](https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/)
+- [s3-objects](https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/examples-s3-objects.html)
+- [credentials](https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/credentials.html)
+- [transfer-manager](https://github.com/aws/aws-sdk-java-v2/tree/master/services-custom/s3-transfer-manager)
 
 ## Users/Administrators
-- **Endpoints, region and quotas** : https://docs.aws.amazon.com/general/latest/gr/s3.html
-- **Bucket and folders** : https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-folders.html
-- **Credentials files** : https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html
+- [endpoints-region-quotas](https://docs.aws.amazon.com/general/latest/gr/s3.html)
+- [s3-folders](https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-folders.html)
+- [configuration-and-credentials](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html)

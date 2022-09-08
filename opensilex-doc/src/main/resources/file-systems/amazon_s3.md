@@ -113,7 +113,9 @@ byte[] fileContent = s3FsConnection.readFileAsByteArray(dataFilePath);
 
 ## Configuration
 
-![s3_config_uml_class_diagramm](s3_config_uml_class_diagramm.png)
+
+<img alt="s3_config_uml_class_diagramm.png" src="s3_config_uml_class_diagramm.png" width="50%"/>
+
 ### S3 Client
 
 `S3FsConfig` : Settings which apply on S3 storage configuration
@@ -132,7 +134,6 @@ See _credentials_ in developers links for more details
 
 - `minimumPartSizeInBytes` : minimum part size for file transfer parts
 - `targetThroughputInGbps` : target throughput
-- `maxConcurrency` : maximum parallel upload/download request number
 
 See _client configuration_ in developers links for more details
 

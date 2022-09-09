@@ -1,22 +1,41 @@
 # S3 storage with OpenSILEX
+
 - **Description**: Conception, implementation and usage of an Amazon S3 storage as file-system connection
   for OpenSILEX
 - **Author** : Renaud COLIN (INRAE MISTEA)
 - **Date** : 06/10/2022
 - **Tags**: `[S3, Amazon, FileSystem]`
 
+
+- [Conception](#conception)
+  - [Bucket and file management ](#bucket-and-file-management)
+  - [Upload/Download file](#uploaddownload-file)
+  - [Authentication](#authentication)
+  - [Configuration](#configuration)
+- [Performances](#performances)
+  - [Protocol](#benchmark-protocol)
+  - [Results](#results)
+- [How to use](#how-to-use)
+  - [One endpoint <-> One bucket](#one-endpoint---one-bucket)
+  - [One endpoint <-> Multiple bucket](#one-endpoint---multiple-bucket) 
+  - [Multiple endpoint <-> Multiple bucket](#multiple-endpoint---multiple-bucket)
+  - [Credentials configuration](#use-a-credential-method-different-from-the-credential-file-method)
+- [Links](#links)
+  - [Developers](#developers)
+  - [Users and admin](#usersadministrators)
+
 # Conception
 
 ## Bucket and file management 
+This section describes how OpenSILEX can handle S3 connection and manage storage by different way (see **_How to use_** for configuration)
 
-OpenSILEX can handle S3 connection by different way (see **_How to use_** for configuration)
 ### One endpoint <-> One bucket
 
 OpenSILEX can use a single S3 connection which use a single bucket.
 Into this bucket, multiple files types can be stored : documents, datafile
 
 ```yaml
-s3_endpoint:
+s3-website.eu-west-2.amazonaws.com:
     opensilex-bucket:
         datafile/aHR0cDovL3d3dy5waGVub21l
         document/fd45fdpf5df1fd14df4fd14d
@@ -28,7 +47,7 @@ s3_endpoint:
 OpenSILEX can manage multiple S3 bucket for a single endpoint
 
 ```yaml
-s3_endpoint:
+s3-website.eu-west-2.amazonaws.com:
     datafile-bucket:
         datafile/aHR0cDovL3d3dy5waGVub21l
     document-bucket:
@@ -40,18 +59,27 @@ s3_endpoint:
 OpenSILEX can several endpoint, if multiple S3 connection are provided as configuration
 
 ```yaml
-s3_endpoint1:
+s3-website.eu-west-2.amazonaws.com:
     datafile-bucket:
         datafile/aHR0cDovL3d3dy5waGVub21l
     
-s3_endpoint2:    
+s3-website.eu-west-3.amazonaws.com:   
     document-bucket:
       document/fd45fdpf5df1fd14df4fd14d
 ```
 
-## Upload/Download on a bucket
+## Upload/Download file
 
 ![S3 fs connection class diagram](s3_fs_uml_class_diagramm.png)
+
+Two `FileStoreConnection` are implemented for the access of a S3 storage :
+- `S3FileStorageConnection` : Basic implementation of S3 storage access
+- `S3TransferManagerStorageConnection` : Specialization which use the high level `TransferManager` library.
+This one has high level file manipulation functionalities (file upload/download, directory upload), enhanced throughput and performance, and provides
+progress view of files operations. 
+
+Following sections describe succinctly the possible uses cases of file connection
+and some connection code examples.
 
 ### Upload
 
@@ -67,6 +95,7 @@ Path dataFilePath = Paths.get("datafile/aHR0cDovL3d3dy5waGVub21l"); // path for 
 s3FsConnection.writeFile(dataFilePath,fileToUpload);
 ```
 
+
 **Upload file content :**
 
 ```java
@@ -75,13 +104,16 @@ Path dataFilePath = Paths.get("datafile/aHR0cDovL3d3dy5waGVub21l"); // path for 
 s3FsConnection.writeFile(dataFilePath,fileContent);
 ```
 
+An object (a file here) with the key `datafile/aHR0cDovL3d3dy5waGVub21l` will be inserted
+into the bucket used by the datafile connection.
+
 ### Declaring existing file
 
-Considering the declaration of an existing datafile with : 
-- `datafile/sub_directory/LWZwcG4uZnIvaWQvZmlsZS8x` : relative path of the existing datafile
+Considering the declaration of an existing datafile from a S3 bucket with : 
+- `datafile/sub_directory/LWZwcG4uZnIvaWQvZmlsZS8x` : relative path of the existing datafile (key of file into bucket)
 - `/datafile/sub_directory/LWZwcG4uZnIvaWQvZmlsZS8x` : absolute path of the existing datafile
 
-Here it's just need to check if the specified file exists or not
+For already uploaded file declaration, it's just needed to check if the specified file exists or not
 
 **Check file existence**
 
@@ -100,7 +132,9 @@ will just return `path`
 
 Considering the download of a datafile with :
 - `http://www.phenome-fppn.fr/id/file/1661036401.fcf0933a40d6bc61bbdb89d625c44ec1` : URI of the datafile
-- `datafile/aHR0cDovL3d3dy5waGVub21l`: file path generated from datafile URI
+- `datafile/aHR0cDovL3d3dy5waGVub21l`: file path generated from datafile URI (key of file into bucket)
+
+File is just downloaded from S3 bucket with the corresponding path/key. 
 
 **Read file**
 
@@ -122,6 +156,7 @@ Set this setting if you must use a credential method different from shared crede
 
 ## Configuration
 
+Two configurations are available depending on the chosen S3 file store implementation
 
 <img alt="s3_config_uml_class_diagramm.png" src="s3_config_uml_class_diagramm.png" width="50%"/>
 
@@ -154,10 +189,9 @@ can reuse the same `S3Client` :
 - In this case it's only during read/write that each `S3FileStorageConnection` will need a different bucket setting,
   but with the same client.
 
+# Performances
 
-## Performances
-
-### Benchmark protocol
+## Benchmark protocol
 
 **Client configuration :** 
 - **CPU** : i7-8650U CPU @ 1.90GHz × 8
@@ -181,7 +215,7 @@ can reuse the same `S3Client` :
 - **Single** : upload/download file one by one
 - **Concurrent** : parallel file upload/download
 
-### Results
+## Results
 
 | Dataset | Connection                         | Upload | Download | Upload (parallel) | Download (parallel) |
 |---------|------------------------------------|--------|----------|-------------------|---------------------|
@@ -262,10 +296,26 @@ file-system:
                       bucket: opensilex-document-bucket  # document bucket
 ```
 
+### Use a credential method different from the credential file method
+
+```yaml
+file-system:
+    fs:
+        config:
+            defaultFS: S3      
+            connections:
+                S3:
+                    implementation: org.opensilex.fs.s3.S3FileStorageConnection
+                    config:
+                        endpoint: s3-website.eu-west-3.amazonaws.com
+                        region: eu-west-3
+                        bucket: opensilex-bucket # global bucket for datafile and document management
+                        useDefaultCredentialsProvider: true
+```
+
 # Links
 
 ## Developers
-
 
 - [developer-guide](https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/)
 - [s3-objects](https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/examples-s3-objects.html)
@@ -278,5 +328,5 @@ file-system:
 - [endpoints-region-quotas](https://docs.aws.amazon.com/general/latest/gr/s3.html)
 - [s3-folders](https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-folders.html)
 - [configuration-and-credentials](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html)
-- [credentials-files] (https://docs.aws.amazon.com/sdkref/latest/guide/creds-config-files.html)
-- [credentilas-files-format] (https://docs.aws.amazon.com/sdkref/latest/guide/file-format.html)
+- [credentials-files](https://docs.aws.amazon.com/sdkref/latest/guide/creds-config-files.html)
+- [credentilas-files-format](https://docs.aws.amazon.com/sdkref/latest/guide/file-format.html)

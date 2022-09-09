@@ -13,6 +13,7 @@
   - [Upload/Download file](#uploaddownload-file)
   - [Authentication](#authentication)
   - [Configuration](#configuration)
+  - [S3 client usage](#s3-client-usage)
 - [Performances](#performances)
   - [Protocol](#benchmark-protocol)
   - [Results](#results)
@@ -184,7 +185,9 @@ See _credentials_ in developers links for more details
 
 See _client configuration_ in developers links for more details
 
-### Notes
+
+## S3 Client usage
+
 **Client sharing:**  If multiple connection share the same endpoint and region, then the `S3FileStorageConnection`
 can reuse the same `S3Client` :
 - This ensures to not re-create multiple `S3Client` which can be costly

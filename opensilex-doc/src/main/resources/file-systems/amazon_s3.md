@@ -6,6 +6,7 @@
 - **Date** : 06/10/2022
 - **Tags**: `[S3, Amazon, FileSystem]`
 
+<hr>
 
 - [Conception](#conception)
   - [Bucket and file management ](#bucket-and-file-management)
@@ -23,6 +24,8 @@
 - [Links](#links)
   - [Developers](#developers)
   - [Users and admin](#usersadministrators)
+
+<hr>
 
 # Conception
 
@@ -189,6 +192,8 @@ can reuse the same `S3Client` :
 - In this case it's only during read/write that each `S3FileStorageConnection` will need a different bucket setting,
   but with the same client.
 
+<hr>
+
 # Performances
 
 ## Benchmark protocol
@@ -225,6 +230,8 @@ can reuse the same `S3Client` :
 | little  | S3TransferManagerStorageConnection |        |          |                   |                     |
 | middle  | S3TransferManagerStorageConnection |        |          |                   |                     |
 | big     | S3TransferManagerStorageConnection |        |          |                   |                     |
+
+<hr>
 
 # How to use
 
@@ -312,6 +319,8 @@ file-system:
                         bucket: opensilex-bucket # global bucket for datafile and document management
                         useDefaultCredentialsProvider: true
 ```
+
+<hr>
 
 # Links
 

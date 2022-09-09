@@ -15,8 +15,8 @@ import java.util.function.Function;
 public class S3ClientStore {
     private static S3ClientStore INSTANCE;
 
-    private Map<Pair<String, Region>, S3Client> s3ClientByLocation;
-    private Map<Pair<String, Region>, Boolean> clientHasBeenClosed;
+    private final Map<Pair<String, Region>, S3Client> s3ClientByLocation;
+    private final Map<Pair<String, Region>, Boolean> clientHasBeenClosed;
 
     private S3ClientStore(){
         s3ClientByLocation = new HashMap<>();

@@ -111,7 +111,14 @@ byte[] fileContent = s3FsConnection.readFileAsByteArray(dataFilePath);
 
 ## Authentication
 
+Several authentication method are provided for S3 ([credentials](https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/credentials.html))
 
+By default, OpenSILEX rely on credentials file stored in `$HOME/.aws/credentials` with `aws_access_key_id` and `aws_secret_access_key` and 
+use the [ProfileCredentialsProvider](https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/auth/credentials/ProfileCredentialsProvider.html).
+
+If the `useDefaultCredentialsProvider` is set to `true` in your configuration,
+then OpenSILEX will let Amazon SDK search for any available credentials (see [credentials retrieval order](https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/credentials.html)).
+Set this setting if you must use a credential method different from shared credentials file.
 
 ## Configuration
 
@@ -259,6 +266,7 @@ file-system:
 
 ## Developers
 
+
 - [developer-guide](https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/)
 - [s3-objects](https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/examples-s3-objects.html)
 - [credentials](https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/credentials.html)
@@ -270,3 +278,5 @@ file-system:
 - [endpoints-region-quotas](https://docs.aws.amazon.com/general/latest/gr/s3.html)
 - [s3-folders](https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-folders.html)
 - [configuration-and-credentials](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html)
+- [credentials-files] (https://docs.aws.amazon.com/sdkref/latest/guide/creds-config-files.html)
+- [credentilas-files-format] (https://docs.aws.amazon.com/sdkref/latest/guide/file-format.html)

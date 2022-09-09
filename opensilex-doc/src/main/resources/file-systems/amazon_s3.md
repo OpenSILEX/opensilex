@@ -45,7 +45,6 @@ s3-website.eu-west-2.amazonaws.com:
         document/fd45fdpf5df1fd14df4fd14d
 ```
 
-
 ### One endpoint <-> multiple bucket
 
 OpenSILEX can manage multiple S3 bucket for a single endpoint
@@ -98,7 +97,6 @@ File fileToUpload; // file from API
 Path dataFilePath = Paths.get("datafile/aHR0cDovL3d3dy5waGVub21l"); // path for a datafile
 s3FsConnection.writeFile(dataFilePath,fileToUpload);
 ```
-
 
 **Upload file content :**
 
@@ -184,7 +182,6 @@ See _credentials_ in developers links for more details
 - `targetThroughputInGbps` : target throughput
 
 See _client configuration_ in developers links for more details
-
 
 ## S3 Client usage
 

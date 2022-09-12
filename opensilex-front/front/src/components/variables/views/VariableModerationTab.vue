@@ -8,6 +8,57 @@
             <i class="ik ik-clipboard"></i>
             {{ $t('VariableDetails.moderation') }}
           </h3>
+
+          <b-row>
+            <b-col></b-col>
+            <b-col></b-col>
+            <b-col></b-col>
+            <b-col></b-col>
+            <b-col></b-col>
+            <b-col></b-col>
+            <b-col></b-col>
+            <b-col></b-col>
+            <b-col></b-col>
+            <b-col></b-col>
+            <b-col></b-col>
+            <b-col></b-col>
+            <b-col></b-col>
+            <b-col></b-col>
+            <b-col></b-col>
+            <b-col></b-col>
+            <b-col></b-col>
+            <b-col></b-col>
+            <b-col></b-col>
+            <b-col></b-col>
+            <b-col></b-col>
+            <b-col></b-col>
+            <b-col></b-col>
+            <b-col></b-col>
+            <b-col></b-col>
+            <b-col></b-col>
+            <b-col></b-col>
+            <b-col></b-col>
+            <b-col></b-col>
+            <b-col></b-col>
+            <b-col></b-col>
+            <b-col></b-col>
+            <b-col></b-col>
+            <b-col></b-col>
+            <b-col></b-col>
+            <b-col></b-col>
+            <b-col></b-col>
+            <b-col></b-col>
+            <b-col></b-col>
+            <b-col>
+              <opensilex-CreateButton
+                  v-show="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
+                  @click="showValidationForm"
+                  :label="'Valider la variable'"
+              ></opensilex-CreateButton>
+            </b-col>
+          </b-row>
+
+
         </div>
 
         <div class="card-body">
@@ -52,7 +103,7 @@
                 </template>
 
                 <template v-slot:cell(comment)="{data}">
-                  <opensilex-TextView v-if="data" :value="'test'">
+                  <opensilex-TextView v-if="data" :value="''">
                   </opensilex-TextView>
                 </template>
 

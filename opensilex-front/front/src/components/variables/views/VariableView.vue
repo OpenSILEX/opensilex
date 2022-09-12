@@ -29,12 +29,6 @@
         >{{ $t('VariableDetails.moderation') }}
         </b-nav-item>
 
-        <opensilex-CreateButton
-            v-show="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
-            @click="showValidationForm"
-            :label="'Valider la variable'"
-        ></opensilex-CreateButton>
-
       </template>
     </opensilex-PageActions>
     <opensilex-PageContent>

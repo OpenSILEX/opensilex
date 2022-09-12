@@ -52,7 +52,7 @@
             <b-col>
               <opensilex-CreateButton
                   v-show="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
-                  @click="showValidationForm"
+                  @click="validate()"
                   :label="'Valider la variable'"
               ></opensilex-CreateButton>
             </b-col>
@@ -202,6 +202,16 @@ export default class VariableModerationTab extends Vue {
 
   refresh() {
     this.tableRef.refresh();
+  }
+
+  validate(){
+    this.$service.addVariableModerationAction(this.variable,"Validated declaration").then(response => {
+      if (response.status === 200){
+        this.tableRef.refresh();
+      }
+      let message = this.$i18n.t("component.common.success.validated-moderation-action");
+      this.$opensilex.showSuccessToast(message);
+    })
   }
 
   @Prop({default: VariableModerationTab.newFilter})

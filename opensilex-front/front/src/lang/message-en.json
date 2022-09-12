@@ -93,7 +93,8 @@
                 "success-title": "Success",
                 "creation-success-message": " has been inserted",
                 "update-success-message": " has been updated",
-                "delete-success-message": "has been deleted"
+                "delete-success-message": "has been deleted",
+                "validated-moderation-action": "The variable has been validated."
             },
             "details": {
                 "document": "Documents",

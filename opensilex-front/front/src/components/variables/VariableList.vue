@@ -675,7 +675,7 @@ en:
         add-newGroupVariable: Add to a new group of variables
         export-variables: Export variable list
         export-variables-details: Export detailed variable list
-        import-variables-from-shared-resources: Import from the shared resource
+        import-variables-from-shared-resources: Import from the shared source
         variablesGroup: Variable used in one or many groups of variables
         not-used-in-variablesGroup: Variable not used in any group of variables
 fr:
@@ -689,7 +689,7 @@ fr:
         add-newGroupVariable: Ajouter à un nouveau groupe de variables
         export-variables: Exporter la liste de variables
         export-variables-details: Exporter la liste détaillée de variables
-        import-variables-from-shared-resources: Importer depuis la ressource partagée
+        import-variables-from-shared-resources: Importer depuis la source partagée
         variablesGroup: Variable utilisé dans un ou plusieurs groupe de variables
         not-used-in-variablesGroup: Variable n'est utilisé dans aucun groupe de variables
 

@@ -21,7 +21,7 @@
       <template v-slot:cell(variable)="{ data }">
         <opensilex-UriLink
           :uri="data.item.variable"
-          :value="variables[data.item.variable]"
+          :value="getVariableName(data.item.variable)"
           :to="{
             path: '/variable/details/' + encodeURIComponent(data.item.variable),
           }"
@@ -63,12 +63,18 @@ import { Prop, Component, Ref, PropSync } from "vue-property-decorator";
 import Vue from "vue";
 import { ProvenanceGetDTO } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+import {DataService} from "opensilex-core/api/data.service";
+import {OntologyService} from "opensilex-core/api/ontology.service";
+import {VariablesService} from "opensilex-core/api/variables.service";
 
 @Component
 export default class DataList extends Vue {
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
   $store: any;
-  service: any;
+  dataService: DataService;
+  ontologyService: OntologyService;
+  variablesService: VariablesService;
   disabled = false;
 
   visibleDetails: boolean = false;
@@ -139,6 +145,10 @@ export default class DataList extends Vue {
     return tableFields;
   }
 
+  getVariableName(variableUri: string): string {
+    return this.variableNames[this.$opensilex.getLongUri(variableUri)];
+  }
+
   refresh() {    
     this.tableRef.refresh();
     this.$nextTick(() => {
@@ -147,7 +157,9 @@ export default class DataList extends Vue {
   }
 
   created() {
-    this.service = this.$opensilex.getService("opensilex.DataService");
+    this.dataService = this.$opensilex.getService("opensilex.DataService");
+    this.ontologyService = this.$opensilex.getService("opensilex.OntologyService");
+    this.variablesService = this.$opensilex.getService("opensilex.VariablesService");
     this.$opensilex.updateFiltersFromURL(this.$route.query, this.filter);
   }
 
@@ -163,8 +175,7 @@ export default class DataList extends Vue {
 
   getProvenance(uri) {
     if (uri != undefined && uri != null) {
-      return this.$opensilex
-        .getService("opensilex.DataService")
+      return this.dataService
         .getProvenance(uri)
         .then((http: HttpResponse<OpenSilexResponse<ProvenanceGetDTO>>) => {
           return http.response.result;
@@ -194,7 +205,7 @@ export default class DataList extends Vue {
   }
 
   objects = {};
-  variables = {};
+  variableNames = {};
   provenances = {};
 
   searchDataList(options) {
@@ -204,7 +215,7 @@ export default class DataList extends Vue {
     }
     
     return new Promise((resolve, reject) => {
-      this.service.getDataListByTargets(
+      this.dataService.getDataListByTargets(
         this.$opensilex.prepareGetParameter(this.filter.start_date), // start_date
         this.$opensilex.prepareGetParameter(this.filter.end_date), // end_date
         undefined, // timezone,
@@ -247,8 +258,7 @@ export default class DataList extends Vue {
           }
           
           if (objectsToLoad.length > 0) {
-            let promiseObject = this.$opensilex
-              .getService("opensilex.OntologyService")
+            let promiseObject = this.ontologyService
               .getURILabelsList(objectsToLoad)
               .then((httpObj) => {
                 for (let j in httpObj.response.result) {
@@ -262,13 +272,12 @@ export default class DataList extends Vue {
           }
 
           if (variablesToLoad.length > 0) {
-            let promiseVariable = this.$opensilex
-              .getService("opensilex.VariablesService")
+            let promiseVariable = this.variablesService
               .getVariablesByURIs(variablesToLoad)
               .then((httpObj) => {
                 for (let j in httpObj.response.result) {
                   let variable = httpObj.response.result[j];
-                  this.variables[variable.uri] = variable.name;
+                  this.variableNames[this.$opensilex.getLongUri(variable.uri)] = variable.name;
                 }
               })
               .catch(reject);
@@ -276,8 +285,7 @@ export default class DataList extends Vue {
           }
 
           if (provenancesToLoad.length > 0) {
-            let promiseProvenance = this.$opensilex
-              .getService("opensilex.DataService")
+            let promiseProvenance = this.dataService
               .getProvenancesByURIs(provenancesToLoad)
               .then((httpObj) => {
                 for (let j in httpObj.response.result) {

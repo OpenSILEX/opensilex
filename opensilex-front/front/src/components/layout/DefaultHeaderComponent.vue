@@ -71,10 +71,9 @@
 
             <b-dropdown-item
                 v-for="item in variableList"
-                :key="`${item}`"
-                href="#"
-                @click.prevent="'/app/variable/details/'+ encodeURIComponent(item)"
-            >{{ 'A modérer : "' + item + '".' }}</b-dropdown-item
+                :key="`${item.uri}`"
+                :href="'/app/variable/details/'+ encodeURIComponent(item.uri)"
+            >{{ 'A modérer : "' + item.name + '".' }}</b-dropdown-item
             >
           </b-dropdown>
 
@@ -122,7 +121,7 @@ export default class DefaultHeaderComponent extends Vue {
   $opensilex: OpenSilexVuePlugin;
   $service: VariablesService;
 
-  variableList: Array<string> = [];
+  variableList: Array<VariableGetDTO> = [];
 
   /**
    * Return the current connected user
@@ -173,7 +172,7 @@ export default class DefaultHeaderComponent extends Vue {
        // let listUri = [];
        // let listVariablesName = [];
        list.forEach((item) => {
-         this.variableList.push(item.name);
+         this.variableList.push(item);
          // listUri.push(item.uri);
          // listVariablesName.push(item.name);
        });

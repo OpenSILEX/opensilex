@@ -685,6 +685,7 @@ public class ScientificObjectDAO {
      * @throws DuplicateNameException if some object with the same name exist into the given graph
      */
     public ScientificObjectModel create(URI contextURI, ExperimentModel experiment, URI soType, URI objectURI, String name, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws DuplicateNameException, Exception {
+        Objects.requireNonNull(contextURI);
 
         checkUniqueNameByGraph(contextURI,name,null,true);
 
@@ -696,6 +697,21 @@ public class ScientificObjectDAO {
         try {
             sparql.startTransaction();
             nosql.startTransaction();
+
+            // experimental context + no URI set
+            if(! SPARQLDeserializers.compareURIs(defaultGraphNode.getURI(),contextURI) && objectURI == null) {
+
+                // generate a globally unique URI
+                // (by taking account of all OS into global graph, which also includes OS from any xp)
+                sparql.generateUniqueURI(defaultGraphNode, object, object, true);
+            }
+
+            // if URI is already set, the service will check that URI is unique inside the provided graph
+            // if the graph is global : check if OS is unique inside global graph
+            // if the graph is an experiment : check if OS is unique inside experiment graph
+
+            // if the graph is an experiment and the OS already exist into global graph -> OK, since here we consider
+            // that we reuse this OS inside the experiment, so no need to performs additional checking
             sparql.create(graphNode, object);
 
             MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);

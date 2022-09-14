@@ -1,0 +1,50 @@
+@startuml
+'https://plantuml.com/activity-diagram-beta
+
+!$CONFLICT  = "Conflicts within experiment graph ?"
+!$CONFLICT_GLOBAL  = "Conflicts in global graph ?"
+!$GENERATE_URI = "generate uris"
+!$URI_ARE_SET = "URIs are set ?"
+!$OK = "#palegreen:OK"
+!$ERROR = "#red:Error"
+
+start
+
+if (Insert within experiment) then (yes)
+    partition "experimental context" {
+        if ($URI_ARE_SET) then (yes)
+              if ($CONFLICT) then (yes)
+                 $ERROR;
+                stop
+              else (no)
+                  $OK;
+                  stop;
+              endif
+            else (no)
+                repeat
+                    :$GENERATE_URI;
+                repeat while ($CONFLICT_GLOBAL)
+                $OK;
+                stop;
+            endif
+    }
+else (no)
+     partition "global context" {
+        if ($URI_ARE_SET) then (yes)
+            if ($CONFLICT_GLOBAL) then (yes)
+                $ERROR;
+                stop
+            else (no)
+                $OK;
+                stop;
+            endif
+        else (no)
+            repeat
+               :$GENERATE_URI;
+            repeat while ($CONFLICT_GLOBAL)
+            $OK;
+            stop;
+        endif
+     }
+endif
+@enduml

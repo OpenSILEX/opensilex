@@ -1,9 +1,7 @@
 package org.opensilex.fs.s3;
 
-import com.mongodb.client.gridfs.GridFSBucket;
 import org.junit.*;
 import org.opensilex.OpenSilex;
-import org.opensilex.fs.gridfs.GridFSConnection;
 import org.opensilex.fs.service.FileStorageService;
 import software.amazon.awssdk.services.s3.S3Client;
 

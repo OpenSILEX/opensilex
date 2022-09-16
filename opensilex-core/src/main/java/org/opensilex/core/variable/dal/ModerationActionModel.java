@@ -37,6 +37,8 @@ public class ModerationActionModel extends SPARQLResourceModel implements ClassU
     private String moderationActionType;
 
     public static final String MODERATION_ACTION_TYPE_FIELD_NAME = "moderationActionType";
+    // peut valoir "Validated declaration", "Commented declaration", "Validated modification" ou "Commented modification"
+
 
     public LocalDate getDate() {
         return date;

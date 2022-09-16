@@ -276,12 +276,15 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
 
                     }
 
+                    // isValidated = true --> variable validée, a au moins une "Validated declaration" dans ses ModerationActionType
+                    // isValidated = false --> variable non validée, n'a pas de "Validated declaration" dans ses ModerationActionType
+
                     if (isValidated != null) {
                         WhereBuilder whereModerationActionType = new WhereBuilder();
                         whereModerationActionType.addWhere(makeVar(VariableModel.URI_FIELD), new P_Seq(new P_Link(Oeso.hasModerationAction.asNode()), new P_Link(Oeso.hasModerationActionType.asNode())), VariableModel.VALIDATED_DECLARATION_FIELD_NAME);
-                        if (isValidated) {
+                        if (isValidated) { // variables validées
                             select.addFilter(exprFactory.exists(whereModerationActionType));
-                        } else {
+                        } else { // variables non validées
                             select.addFilter(exprFactory.notexists(whereModerationActionType));
                         }
                     }

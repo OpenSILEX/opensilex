@@ -200,7 +200,7 @@ public class VariableAPI {
         ModerationActionModel moderationAction = new ModerationActionModel();
         moderationAction.setDate(LocalDate.now());
         moderationAction.setModerator(currentUser);
-        moderationAction.setModerationActionType(moderationActionType);
+        moderationAction.setModerationActionType(moderationActionType); // "Validated declaration", "Commented declaration", "Validated declaration" ou "Commented declaration"
 
         List<ModerationActionModel> moderationList = variable.getModerationAction();
         moderationList.add(moderationAction);

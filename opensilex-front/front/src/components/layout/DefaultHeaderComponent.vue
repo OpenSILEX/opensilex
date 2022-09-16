@@ -72,9 +72,15 @@
             <b-dropdown-item
                 v-for="item in variableList"
                 :key="`${item.uri}`"
-                :href="'/app/variable/details/'+ encodeURIComponent(item.uri)"
-            >{{ 'A modérer : "' + item.name + '".' }}</b-dropdown-item
             >
+              <span>{{ $t("component.common.moderation.list-to-moderate") }}</span>
+              <opensilex-UriLink
+                :value="item.name"
+                :to="{
+            path: '/variable/details/' + encodeURIComponent(item.uri),
+          }"
+            ></opensilex-UriLink>
+            </b-dropdown-item>
           </b-dropdown>
 
           <b-dropdown

@@ -41,22 +41,16 @@
           </template>
 
                     <template v-slot:body>
-                      <b-row>
-                        <b-col></b-col>
-                        <b-col></b-col>
-                        <b-col></b-col>
-                        <b-col></b-col>
-                        <b-col></b-col>
-                        <b-col></b-col>
-                        <b-col></b-col>
-                        <b-col>
+                      <span class="uri">
+                        <opensilex-UriView v-if="variable && variable.uri" :uri="variable.uri"
+                        ></opensilex-UriView>
+                        <span class="logo">
                           <div v-if="variable.isValidated">
                             <opensilex-Icon icon="fa#check-circle" />
                           </div>
-                        </b-col>
-                      </b-row>
-                        <opensilex-UriView v-if="variable && variable.uri" :uri="variable.uri"
-                        ></opensilex-UriView>
+                        </span>
+                      </span>
+
                         <opensilex-StringView label="component.common.name"
                                               :value="variable.name"></opensilex-StringView>
                         <opensilex-StringView label="VariableForm.altName"
@@ -304,6 +298,17 @@ export default class VariableDetails extends Vue {
 </script>
 
 <style scoped lang="scss">
+
+.uri{
+  display: inline;
+  display: flex;
+}
+
+.logo{
+  position: absolute;
+  right: 30px;
+}
+
 </style>
 
 <i18n>

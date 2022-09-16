@@ -4,61 +4,19 @@
 
       <div class="card">
         <div class="card-header">
-          <h3>
-            <i class="ik ik-clipboard"></i>
-            {{ $t('VariableDetails.moderation') }}
-          </h3>
-
-          <b-row>
-            <b-col></b-col>
-            <b-col></b-col>
-            <b-col></b-col>
-            <b-col></b-col>
-            <b-col></b-col>
-            <b-col></b-col>
-            <b-col></b-col>
-            <b-col></b-col>
-            <b-col></b-col>
-            <b-col></b-col>
-            <b-col></b-col>
-            <b-col></b-col>
-            <b-col></b-col>
-            <b-col></b-col>
-            <b-col></b-col>
-            <b-col></b-col>
-            <b-col></b-col>
-            <b-col></b-col>
-            <b-col></b-col>
-            <b-col></b-col>
-            <b-col></b-col>
-            <b-col></b-col>
-            <b-col></b-col>
-            <b-col></b-col>
-            <b-col></b-col>
-            <b-col></b-col>
-            <b-col></b-col>
-            <b-col></b-col>
-            <b-col></b-col>
-            <b-col></b-col>
-            <b-col></b-col>
-            <b-col></b-col>
-            <b-col></b-col>
-            <b-col></b-col>
-            <b-col></b-col>
-            <b-col></b-col>
-            <b-col></b-col>
-            <b-col></b-col>
-            <b-col></b-col>
-            <b-col>
+          <span class="moderation-title">
+            <h3>
+              <i class="ik ik-clipboard"></i>
+              {{ $t('VariableDetails.moderation') }}
+            </h3>
+            <span class="validation-button">
               <opensilex-CreateButton
                   v-show="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
                   @click="validate()"
                   :label="'Valider la variable'"
               ></opensilex-CreateButton>
-            </b-col>
-          </b-row>
-
-
+            </span>
+          </span>
         </div>
 
         <div class="card-body">
@@ -318,6 +276,22 @@ export default class VariableModerationTab extends Vue {
 
 }
 </script>
+
+<style scoped lang="scss">
+
+.moderation-title{
+  display: inline;
+  display: flex;
+}
+
+.validation-button{
+  position: absolute;
+  right: 30px;
+}
+
+</style>
+
+
 
 
 <i18n>

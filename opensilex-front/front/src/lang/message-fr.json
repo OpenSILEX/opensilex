@@ -95,6 +95,9 @@
                 "delete-success-message": " a été supprimé(e)",
                 "validated-moderation-action": "La variable a bien été validée."
             },
+            "moderation": {
+                "list-to-moderate": "À modérer : "
+            },
             "details": {
                 "document": "Documents",
                 "experiment": "Expérimentations associées"

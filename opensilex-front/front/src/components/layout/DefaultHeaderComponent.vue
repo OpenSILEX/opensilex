@@ -175,12 +175,8 @@ export default class DefaultHeaderComponent extends Vue {
         20
     ).then((http: HttpResponse<OpenSilexResponse<Array<VariableGetDTO>>>) => {
        let list = http.response.result;
-       // let listUri = [];
-       // let listVariablesName = [];
        list.forEach((item) => {
          this.variableList.push(item);
-         // listUri.push(item.uri);
-         // listVariablesName.push(item.name);
        });
      }).catch(this.$opensilex.errorHandler);
   }

@@ -86,22 +86,6 @@ public class VariableAPI {
         return new VariableDAO(sparql,mongodb,fs);
     }
 
-    public static int levenshteinDistance(String x, String y) {
-        if (x.isEmpty()) {
-            return y.length();
-        }
-
-        if (y.isEmpty()) {
-            return x.length();
-        }
-
-        int substitution = levenshteinDistance(x.substring(1), y.substring(1))
-                + (x.charAt(0) == y.charAt(0) ? 0 : 1);
-        int insertion = levenshteinDistance(x, y.substring(1)) + 1;
-        int deletion = levenshteinDistance(x.substring(1), y) + 1;
-
-        return Math.min(Math.min(substitution, insertion),deletion);
-    }
 
     @POST
     @ApiOperation("Add a variable")
@@ -260,6 +244,7 @@ public class VariableAPI {
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
 
+
     @DELETE
     @Path("{uri}")
     @ApiOperation("Delete a variable")
@@ -319,7 +304,7 @@ public class VariableAPI {
     ) throws Exception {
         VariableDAO dao = getDao();
         ListWithPagination<VariableModel> variables = dao.search(
-                null,
+                namePattern,
                 entity,
                 interestEntity,
                 characteristic,

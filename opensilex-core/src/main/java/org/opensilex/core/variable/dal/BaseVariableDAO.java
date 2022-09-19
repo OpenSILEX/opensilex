@@ -65,6 +65,19 @@ public class BaseVariableDAO<T extends SPARQLNamedResourceModel<T>> {
         );
     }
 
+    public List<T> searchWithoutPagination(String labelPattern) throws Exception {
+        Expr labelFilter = SPARQLQueryHelper.regexFilter(SPARQLNamedResourceModel.NAME_FIELD, labelPattern);
+        return sparql.search(
+                objectClass,
+                null,
+                (SelectBuilder select) -> {
+                    if (labelFilter != null) {
+                        select.addFilter(labelFilter);
+                    }
+                }
+        );
+    }
+
     /**
      *  @throws SPARQLInvalidUriListException if any URI from uris could not be loaded
      */

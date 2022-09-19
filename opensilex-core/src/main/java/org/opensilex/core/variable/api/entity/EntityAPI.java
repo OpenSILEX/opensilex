@@ -7,8 +7,12 @@ package org.opensilex.core.variable.api.entity;
 
 import io.swagger.annotations.*;
 import org.opensilex.core.variable.api.VariableAPI;
+import org.opensilex.core.variable.api.VariableDetailsDTO;
+import org.opensilex.core.variable.api.VariableGetDTO;
 import org.opensilex.core.variable.dal.BaseVariableDAO;
 import org.opensilex.core.variable.dal.EntityModel;
+import org.opensilex.core.variable.dal.VariableDAO;
+import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
@@ -31,7 +35,9 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static org.opensilex.core.variable.api.VariableAPI.*;
@@ -51,6 +57,23 @@ public class EntityAPI {
 
     @CurrentUser
     UserModel currentUser;
+
+    public static int levenshteinDistance(String x, String y) {
+        if (x.isEmpty()) {
+            return y.length();
+        }
+
+        if (y.isEmpty()) {
+            return x.length();
+        }
+
+        int substitution = levenshteinDistance(x.substring(1), y.substring(1))
+                + (x.charAt(0) == y.charAt(0) ? 0 : 1);
+        int insertion = levenshteinDistance(x, y.substring(1)) + 1;
+        int deletion = levenshteinDistance(x.substring(1), y) + 1;
+
+        return Math.min(Math.min(substitution, insertion),deletion);
+    }
 
     @POST
     @ApiOperation("Add an entity")
@@ -212,5 +235,53 @@ public class EntityAPI {
                 EntityGetDTO::new
         );
         return new PaginatedListResponse<>(resultDTOList).getResponse();
+    }
+
+
+    @GET
+    @Path("duplicates/{uri}")
+    @ApiOperation("Get entity duplicates")
+    @ApiProtected
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Entity retrieved", response = VariableDetailsDTO.class),
+            @ApiResponse(code = 404, message = "Unknown entity URI", response = ErrorResponse.class)
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getEntityDuplicates(
+            @ApiParam(value = "Entity URI", example = "http://purl.obolibrary.org/obo/ENVO_00002005", required = true) @PathParam("uri") @NotNull URI uri
+    ) throws Exception {
+        BaseVariableDAO<EntityModel> dao = new BaseVariableDAO<>(EntityModel.class, sparql);
+        EntityModel model = dao.get(uri);
+        List<EntityGetDTO> resultDTOList = new ArrayList<>();
+
+        if (model != null) {
+            String entityName = model.getName();
+
+            BaseVariableDAO<EntityModel> entityDao = new BaseVariableDAO<>(EntityModel.class, sparql);
+            List<EntityModel> resultList = entityDao.searchWithoutPagination(
+                    null
+            );
+
+            for(int i=0; i < resultList.size(); i++){
+
+                String entityNameIndex = resultList.get(i).getName();
+                int levenshteinDistance = levenshteinDistance(entityNameIndex,entityName);
+
+                if(levenshteinDistance < 3){
+                    EntityGetDTO entityDto = new EntityGetDTO(resultList.get(i));
+                    resultDTOList.add(entityDto);
+                }
+            }
+
+            ListWithPagination<EntityGetDTO> paginatedDTOList = new ListWithPagination<>(resultDTOList);
+
+            return new PaginatedListResponse<>(paginatedDTOList).getResponse();
+        } else {
+            throw new NotFoundURIException(uri);
+        }
+
+
+
     }
 }

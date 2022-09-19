@@ -15,8 +15,6 @@ import software.amazon.awssdk.services.s3.model.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
 /**
@@ -46,10 +44,9 @@ public class S3FileStorageConnection extends BaseService implements FileStorageC
      *     <li>the {@link S3FsConfig#region()} is unknown from {@link Region} enums</li>
      *     <li>the {@link S3FsConfig#bucket()} is null or empty</li>
      * </ul>
-     * @throws URISyntaxException if the {@link S3FsConfig#endpoint()} can't be parsed as an {@link URI}
      *
      */
-    public S3FileStorageConnection(S3FsConfig config) throws URISyntaxException {
+    public S3FileStorageConnection(S3FsConfig config) {
         super(config);
 
         region = Region.of(config.region());
@@ -59,7 +56,7 @@ public class S3FileStorageConnection extends BaseService implements FileStorageC
         }
 
         // call ClientStore in order to get a unique shared client by (endpoint,region)
-        s3Client = S3ClientStore.getInstance().getOrCreateClient(config, S3FileStorageConnection::initClientAndRegion);
+        s3Client = initClientAndRegion(config);
         LOGGER.info("S3FileStorageConnection init [OK]");
 
         createBucketIfNotExists();
@@ -142,9 +139,9 @@ public class S3FileStorageConnection extends BaseService implements FileStorageC
     }
 
     @Override
-    public void writeFile(Path filePath, String content) throws IOException {
+    public void writeFile(Path filePath, byte[] content) throws IOException {
         String fileKey = filePath.toString();
-        s3Client.putObject(builder -> setKeyAndBucket(builder, fileKey), RequestBody.fromString(content, StandardCharsets.UTF_8));
+        s3Client.putObject(builder -> setKeyAndBucket(builder, fileKey), RequestBody.fromBytes(content));
     }
 
     @Override
@@ -186,6 +183,6 @@ public class S3FileStorageConnection extends BaseService implements FileStorageC
 
     @Override
     public void shutdown() throws Exception {
-        S3ClientStore.getInstance().closeClient(getConfig());
+        s3Client.close();
     }
 }

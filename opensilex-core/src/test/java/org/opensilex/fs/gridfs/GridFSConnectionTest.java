@@ -17,7 +17,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -127,8 +126,8 @@ public class GridFSConnectionTest extends AbstractMongoIntegrationTest {
     }
 
     @Test
-    public void writeFileAsString() throws IOException {
-        String content = new String(Files.readAllBytes(filePath), StandardCharsets.UTF_8);
+    public void writeFileContent() throws IOException {
+        byte[] content = Files.readAllBytes(filePath);
         gridFSConnection.writeFile(filePath,content);
 
         // do a search on each file and ensure that a file has been created

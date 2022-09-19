@@ -208,9 +208,9 @@ can reuse the same `S3Client` :
 - **Network** : max net speed ? 
 
 **Dataset**
-- **Little** : high number of call (1000) with small file (372KB) -> **372 MB** of bandwidth
-- **Middle** : medium number of call (500) with medium file (2.3MB) -> **1.15 GB** of bandwidth
-- **Big** : small number of call (50) with big file (22.6MB) -> **1.13 GB** of bandwidth
+- **Little** : high number of call (998) with small file -> **269 MB** of bandwidth
+- **Middle** : medium number of call (100) with medium file -> **517MB** of bandwidth
+- **Big** : small number of call (10) with big file -> **989 MB** of bandwidth
 
 **Connections**
 - **S3FileStorageConnection** : basic S3 connection

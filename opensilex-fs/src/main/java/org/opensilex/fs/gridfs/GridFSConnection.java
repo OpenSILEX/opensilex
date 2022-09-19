@@ -122,16 +122,13 @@ public class GridFSConnection extends BaseService implements FileStorageConnecti
 
 
     @Override
-    public void writeFile(Path filePath, String content) throws IOException {
-
-        byte[] data = content.getBytes(StandardCharsets.UTF_8);
+    public void writeFile(Path filePath, byte[] content) throws IOException {
 
         GridFSUploadOptions options = getWriteOptions(filePath);
-
         try ( GridFSUploadStream uploadStream = gridFSBucket.openUploadStream(filePath.getFileName().toString(), options)) {
 
             // file content is wrote after GridFSUploadStream.close() method
-            uploadStream.write(data);
+            uploadStream.write(content);
         } 
     }
 

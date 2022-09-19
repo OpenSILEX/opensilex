@@ -17,7 +17,6 @@ import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.logs.dal.LogsDAO;
-import org.opensilex.mobile.dal.FormDAO;
 import org.opensilex.nosql.mongodb.MongoDBConfig;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.sparql.SPARQLConfig;
@@ -152,7 +151,6 @@ public class GraphAndCollectionMigration implements OpenSilexModuleUpdate {
         Map<String, String> oldToNewCollectionNames = new HashMap<>();
         oldToNewCollectionNames.put("germplasmAttributes", GermplasmDAO.ATTRIBUTES_COLLECTION_NAME);
         oldToNewCollectionNames.put("devicesAttributes", DeviceDAO.ATTRIBUTES_COLLECTION_NAME);
-        oldToNewCollectionNames.put("forms", FormDAO.FORM_COLLECTION_NAME);
         oldToNewCollectionNames.put("logs", LogsDAO.LOGS_COLLECTION_NAME);
         oldToNewCollectionNames.put("Moves", MoveEventDAO.MOVE_COLLECTION_NAME);
 

@@ -52,6 +52,23 @@ public class EntityAPI {
     @CurrentUser
     UserModel currentUser;
 
+    public static int levenshteinDistance(String x, String y) {
+        if (x.isEmpty()) {
+            return y.length();
+        }
+
+        if (y.isEmpty()) {
+            return x.length();
+        }
+
+        int substitution = levenshteinDistance(x.substring(1), y.substring(1))
+                + (x.charAt(0) == y.charAt(0) ? 0 : 1);
+        int insertion = levenshteinDistance(x, y.substring(1)) + 1;
+        int deletion = levenshteinDistance(x.substring(1), y) + 1;
+
+        return Math.min(Math.min(substitution, insertion),deletion);
+    }
+
     @POST
     @ApiOperation("Add an entity")
     @ApiProtected

@@ -319,6 +319,27 @@ file-system:
                         bucket: opensilex-bucket # global bucket for datafile and document management
                         useDefaultCredentialsProvider: true
 ```
+### Use the S3 transfer manager based implementation (more optimized)
+
+**Note:** Due to an issue on S3 transfer manager API (`software.amazon.awssdk.s3-transfer-manager` version`2.17.276-PREVIEW`)
+
+The use of this implementation will result to an error (see https://github.com/aws/aws-sdk-java-v2/issues/3350 for more technical details)
+
+```yaml
+file-system:
+    fs:
+        config:
+            defaultFS: S3      
+            connections:
+                S3:
+                  implementation: org.opensilex.fs.s3.transferManager.S3TransferManagerStorageConnection
+                  config:
+                    endpoint: https://s3.datacloud.helsinki.fi
+                    region: eu-west-3
+                    bucket: 2022-phis-test
+                    minimumPartSizeInBytes: 8000000
+                    targetThroughputInGbps: 5.0
+```
 
 <hr>
 

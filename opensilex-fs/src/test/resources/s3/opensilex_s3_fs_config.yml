@@ -10,11 +10,22 @@ ontologies:
 file-system:
     fs:
         config:
-            defaultFS: S3
             connections:
-                S3:
+                s3:
                     implementation: org.opensilex.fs.s3.S3FileStorageConnection
                     config:
                         endpoint: s3-website.eu-west-3.amazonaws.com
                         region: eu-west-2
                         bucket: opensilex-bucket
+##
+                s3_transfer_manager:
+                    implementation: org.opensilex.fs.s3.transferManager.S3TransferManagerStorageConnection
+                    config:
+                        endpoint: s3-website.eu-west-3.amazonaws.com
+                        region: eu-west-2
+                        bucket: opensilex-bucket
+
+            customPath:
+                connection1: s3
+                connection2: s3_transfer_manager
+            defaultFS: s3

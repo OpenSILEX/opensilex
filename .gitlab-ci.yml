@@ -812,6 +812,12 @@ test:emilie:deploy:
   needs:
     - emilie:build
 
+# Test notifications sur emphasis shared
+notifications:build:
+  <<: *build_template_with_opensilex
+  rules:
+    - if: $CI_COMMIT_BRANCH == "notifications"
+
 # ##########################################
 # ##  BUILD & DEPLOY FOR PARTNERS TEAMS
 # ##########################################

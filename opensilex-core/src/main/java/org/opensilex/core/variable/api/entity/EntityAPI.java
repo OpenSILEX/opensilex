@@ -249,39 +249,62 @@ public class EntityAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response getEntityDuplicates(
-            @ApiParam(value = "Entity URI", example = "http://purl.obolibrary.org/obo/ENVO_00002005", required = true) @PathParam("uri") @NotNull URI uri
+            @ApiParam(value = "Entity URI", example = "http://purl.obolibrary.org/obo/ENVO_00002005", required = true) @PathParam("uri") @NotNull URI uri,
+            @ApiParam(value = "Sensitivity", example = "3", required = true) @QueryParam("sensitivity") @Min(0) int sensitivity
     ) throws Exception {
         BaseVariableDAO<EntityModel> dao = new BaseVariableDAO<>(EntityModel.class, sparql);
         EntityModel model = dao.get(uri);
-        List<EntityGetDTO> resultDTOList = new ArrayList<>();
+        List<EntityDuplicatesDTO> resultDTOList = new ArrayList<>();
 
         if (model != null) {
-            String entityName = model.getName();
+
+            // récupération du nom de l'entité en entrée
+            String entityName = model.getName().toLowerCase();
 
             BaseVariableDAO<EntityModel> entityDao = new BaseVariableDAO<>(EntityModel.class, sparql);
+            // recherche de toutes les entités de la base de données
             List<EntityModel> resultList = entityDao.searchWithoutPagination(
                     null
             );
 
-            for(int i=0; i < resultList.size(); i++){
-
-                String entityNameIndex = resultList.get(i).getName();
-                int levenshteinDistance = levenshteinDistance(entityNameIndex,entityName);
-
-                if(levenshteinDistance < 3){
-                    EntityGetDTO entityDto = new EntityGetDTO(resultList.get(i));
-                    resultDTOList.add(entityDto);
+            for(EntityModel entity : resultList) {
+                String entityNameI = entity.getName().toLowerCase();
+                int firstParenthesis = 0;
+                int lastParenthesis = 0;
+                for(int j = 0 ; j < entityNameI.length() ; j++){
+                    if(entityNameI.charAt(j)  == '('){
+                        firstParenthesis = j;
+                    }
+                    if(entityNameI.charAt(j)  == ')'){
+                        lastParenthesis = j;
+                    }
                 }
+                if(firstParenthesis != 0 && lastParenthesis != 0){
+                    entityNameI = entityNameI.substring(0,firstParenthesis-1);
+                }
+
+                int levenshteinDistance = levenshteinDistance(entityNameI,entityName);
+
+                // si le nom est proche ou contient le nom entier de la métadonnée en entrée
+                if(levenshteinDistance < sensitivity){
+                    EntityDuplicatesDTO entityDto = new EntityDuplicatesDTO(entity);
+                    entityDto.setLevenshtein(levenshteinDistance);
+                    resultDTOList.add(entityDto);
+                }else{
+                    if(entityNameI.contains(entityName)){
+                        EntityDuplicatesDTO entityDto = new EntityDuplicatesDTO(entity);
+                        entityDto.setContainedIn(true);
+                        resultDTOList.add(entityDto);
+                    }
+                }
+
             }
 
-            ListWithPagination<EntityGetDTO> paginatedDTOList = new ListWithPagination<>(resultDTOList);
+            ListWithPagination<EntityDuplicatesDTO> paginatedDTOList = new ListWithPagination<>(resultDTOList);
 
             return new PaginatedListResponse<>(paginatedDTOList).getResponse();
         } else {
             throw new NotFoundURIException(uri);
         }
-
-
-
     }
 }

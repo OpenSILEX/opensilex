@@ -645,14 +645,7 @@ public class ScientificObjectDAO {
      */
     public void checkUniqueNameByGraph(List<ScientificObjectModel> objects, URI objectGraph) throws DuplicateNameListException, SPARQLException {
 
-
         Objects.requireNonNull(objectGraph);
-
-        // unique name restriction only apply on some experiment graph
-        if(SPARQLDeserializers.compareURIs(objectGraph, defaultGraphURI)){
-            return;
-        }
-
         if(CollectionUtils.isEmpty(objects)){
             throw new IllegalArgumentException("objects is null or empty");
         }
@@ -918,7 +911,7 @@ public class ScientificObjectDAO {
 
     private ScientificObjectModel initObject(URI contextURI, ExperimentModel xp, URI soType, String name, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws Exception {
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
-        ClassModel model = ontologyDAO.getClassModel(soType, new URI(Oeso.ScientificObject.getURI()), currentUser.getLanguage());
+        ClassModel model = SPARQLModule.getOntologyStoreInstance().getClassModel(soType, new URI(Oeso.ScientificObject.getURI()), currentUser.getLanguage());
 
         ScientificObjectModel object = new ScientificObjectModel();
         object.setType(soType);

@@ -828,7 +828,7 @@ test:emilie:deploy:
 notifications:build:
   <<: *build_template_with_opensilex
   rules:
-    - if: $CI_COMMIT_BRANCH == "notifications"
+    - if: $CI_COMMIT_BRANCH == "notifications-rebase"
 
 # ##########################################
 # ##  BUILD & DEPLOY FOR PARTNERS TEAMS

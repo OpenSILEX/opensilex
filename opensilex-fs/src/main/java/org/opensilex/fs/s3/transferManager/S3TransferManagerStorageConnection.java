@@ -18,10 +18,13 @@ import java.nio.file.Path;
  * Specialization of {@link S3FileStorageConnection} which use the high-level S3 Transfer Manager library
  * for file upload/download
  *
-
+ * @apiNote Do not use this implementation for the moment, since there are issues
+ * when using the {@link S3TransferManager} with an HTTPS endpoint.
+ * We can't read/write the bucket since the S3 API seem not be able to connect.
+ *
  * @see <a href="https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/transfer-manager.html">transfer-manager SDK</a>
- * @see S3TransferManager
  * @see <a href="https://github.com/aws/aws-sdk-java-v2/issues/3350">Issue on HTTPS usage</a>
+ * @see S3TransferManager
  *
  * @author rcolin
  */

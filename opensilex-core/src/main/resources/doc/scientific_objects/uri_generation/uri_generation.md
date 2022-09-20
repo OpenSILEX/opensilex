@@ -21,7 +21,7 @@ The UML activity diagram just below describe the process of URI handling in expe
 
 ![uri_generation.png](uri_generation.png "OS URI generation : UML activity diagramm")
 
-## Experimental context
+## Experimental context (Insertion within an experiment)
 
 - **If URI are set** 
   - check that OS are unique from experiment graph
@@ -74,9 +74,10 @@ test:set/scientific-objects:
 The following insertion will result to error 
 - os with URI `test:id/scientific_object/os1` inside `test:id/experiment/xp1` experiment (this URI already exist into experiment)
 
-## Global context
+## Global context  (Insertion outside any experiment)
+
 - **If URI are set**
-  - check that OS are unique from global graph
+  - Check that OS URIs are unique inside global graph, else it's a duplicate error
 - **If URI are not set** :
   - Generate URI while there are unique according any declared OS.
 

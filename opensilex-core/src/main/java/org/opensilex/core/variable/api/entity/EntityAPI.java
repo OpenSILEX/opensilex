@@ -250,7 +250,7 @@ public class EntityAPI {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getEntityDuplicates(
             @ApiParam(value = "Entity URI", example = "http://purl.obolibrary.org/obo/ENVO_00002005", required = true) @PathParam("uri") @NotNull URI uri,
-            @ApiParam(value = "Sensitivity", example = "3", required = true) @QueryParam("sensitivity") @Min(0) int sensitivity
+            @ApiParam(value = "Sensitivity", example = "2", required = true) @QueryParam("sensitivity") @Min(0) int sensitivity
     ) throws Exception {
         BaseVariableDAO<EntityModel> dao = new BaseVariableDAO<>(EntityModel.class, sparql);
         EntityModel model = dao.get(uri);
@@ -286,7 +286,7 @@ public class EntityAPI {
                 int levenshteinDistance = levenshteinDistance(entityNameI,entityName);
 
                 // si le nom est proche ou contient le nom entier de la métadonnée en entrée
-                if(levenshteinDistance < sensitivity){
+                if(levenshteinDistance <= sensitivity){
                     EntityDuplicatesDTO entityDto = new EntityDuplicatesDTO(entity);
                     entityDto.setLevenshtein(levenshteinDistance);
                     resultDTOList.add(entityDto);

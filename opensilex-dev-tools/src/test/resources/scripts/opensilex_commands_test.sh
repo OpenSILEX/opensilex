@@ -1,5 +1,5 @@
 # Title : OPENSILEX_CMD_commands_test.sh
-# Description : Script used to test commands with a OpenSILEX jar archive
+# Description : Script used to test workflow of commands with a OpenSILEX jar archive
 # Date : 20/09/2022
 # Authors : Renaud COLIN, Guilhem HEINRICH
 
@@ -32,26 +32,29 @@ cd "$OPENSILEX_HOME" || exit;
 # (display input config + default config values)
 $OPENSILEX_CMD system full-config "$OPENSILEX_CONFIG" || exit;
 
+# Display information about last commit
+$OPENSILEX_CMD git-commit || exit;
+
 # System install -> create RDF4J repository and MongoDB database
-$OPENSILEX_CMD system install "$OPENSILEX_CONFIG" || exit;
+$OPENSILEX_CMD system install "$OPENSILEX_CONFIG" --DEBUG || exit;
 
 # Create the default admin user (use default login/password in no input was provided for this script)
-$OPENSILEX_CMD user add --admin --email="$DEFAULT_ADMIN_LOGIN" --password="$DEFAULT_ADMIN_PWD" "$OPENSILEX_CONFIG" || exit;
+$OPENSILEX_CMD user add --admin --email="$DEFAULT_ADMIN_LOGIN" --password="$DEFAULT_ADMIN_PWD" "$OPENSILEX_CONFIG" --DEBUG || exit;
 
 # Ensure that all ontologies are up to date
 # (this is ok after install, but here we want to ensure that command is OK)
-$OPENSILEX_CMD sparql reset-ontologies "$OPENSILEX_CONFIG"  || exit;
+$OPENSILEX_CMD sparql reset-ontologies "$OPENSILEX_CONFIG"  --DEBUG || exit;
 
 # Check that RDF4J repository and MongoDB database creation, test RDF4J ontologies integrity
 # and ensure that at least one user with password exists in RDF4J
-$OPENSILEX_CMD system check "$OPENSILEX_CONFIG"  || exit;
+$OPENSILEX_CMD system check "$OPENSILEX_CONFIG"  --DEBUG || exit;
 
 # Run server on port 8081 with DEBUG in background
-$OPENSILEX_CMD server start --port=8081 --adminPort=4081 --DEBUG "$OPENSILEX_CONFIG" &
+$OPENSILEX_CMD server start --host=localhost --port=8081 --adminPort=4081 --DEBUG "$OPENSILEX_CONFIG" &
 
-# Sleep 1m until the server is well started
-# "sleep 1m"
+# Sleep 2m until the server is well started
+sleep 2m;
 
-# Stop server on port 8081 with DEBUG
-$OPENSILEX_CMD server stop --port=8081 --adminPort=4081 --DEBUG "$OPENSILEX_CONFIG" || exit;
+# Stop server on port 4081 with DEBUG
+$OPENSILEX_CMD server stop --host=localhost --adminPort=4081 --DEBUG "$OPENSILEX_CONFIG" || exit;
 

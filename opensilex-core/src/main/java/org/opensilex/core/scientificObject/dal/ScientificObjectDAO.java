@@ -645,7 +645,14 @@ public class ScientificObjectDAO {
      */
     public void checkUniqueNameByGraph(List<ScientificObjectModel> objects, URI objectGraph) throws DuplicateNameListException, SPARQLException {
 
+
         Objects.requireNonNull(objectGraph);
+
+        // unique name restriction only apply on some experiment graph
+        if(SPARQLDeserializers.compareURIs(objectGraph, defaultGraphURI)){
+            return;
+        }
+
         if(CollectionUtils.isEmpty(objects)){
             throw new IllegalArgumentException("objects is null or empty");
         }

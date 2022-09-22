@@ -23,6 +23,8 @@ import org.apache.jena.sparql.lang.sparql_11.ParseException;
 import org.apache.jena.sparql.syntax.Element;
 import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.sparql.syntax.ElementNamedGraph;
+import org.opensilex.server.exceptions.displayable.DisplayableBadRequestException;
+import org.opensilex.server.exceptions.displayable.DisplayableResponseException;
 import org.opensilex.sparql.deserializer.*;
 
 import java.time.LocalDate;
@@ -35,6 +37,8 @@ import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Property;
 
 import org.opensilex.utils.OrderBy;
+
+import javax.ws.rs.core.Response;
 
 /**
  * @author Vincent MIGOT
@@ -58,7 +62,25 @@ public class SPARQLQueryHelper {
         return regexFilter(exprFactory.str(exprFactory.asVar(varName)),regexPattern,null);
     }
 
-    public static Expr regexFilter(Expr expr, String regexPattern, String regexFlag) {
+    private static final String FORBIDDEN_SPARQL_REGEX_CHARACTERS = String.join(
+            " , ",
+            "(", ")", "[", "{", "\\", "*", "+"
+    );
+
+    /**
+     *
+     * @param varExpr Expr of the SPARQL variable on which the regex apply
+     * @param regexPattern REGEX pattern
+     * @param regexFlag the interpretation of the regular expression ( if null then the "i" flag is applied by default -> case-insensitive mode)
+     * @throws DisplayableBadRequestException if regexPattern is not a valid SPARQL regex
+     * @return an {@link Expr} which contains a REGEX filter on the provided SPARQL variable. Return null if regex pattern is null or empty
+     *
+     * @see <a href="https://www.w3.org/TR/rdf-sparql-query/#funcex-regex">SPARQL REGEX documentation</a>
+     * @see <a href="https://www.w3.org/TR/xpath-functions/#regex-syntax">REGEX syntax</a>
+     * @see <a href="https://www.w3.org/TR/xpath-functions/#flags">REGEX flags</a>
+     *
+     */
+    public static Expr regexFilter(Expr varExpr, String regexPattern, String regexFlag) {
         if (StringUtils.isEmpty(regexPattern)) {
             return null;
         }
@@ -66,7 +88,26 @@ public class SPARQLQueryHelper {
         if (regexFlag == null) {
             regexFlag = "i";
         }
-        return new E_Regex(expr, regexPattern, regexFlag);
+
+        try{
+            return new E_Regex(varExpr, regexPattern, regexFlag);
+        }catch (ExprEvalException e){
+
+            // Error which occurs with some regex not handled into SPARQL, wrap it with a more comprehensive error msg
+            // the translations are defined into message-en/message-fr files (opensilex-front)
+
+            Map<String,String> translationValues = new HashMap<>();
+            translationValues.put("__regex__",regexPattern);
+            translationValues.put("__forbidden_characters__", FORBIDDEN_SPARQL_REGEX_CHARACTERS);
+
+            throw new DisplayableResponseException(
+                    e.getMessage(),
+                    Response.Status.BAD_REQUEST,
+                    "Invalid REGEX",
+                    "component.common.errors.regex.invalid-regex",
+                    translationValues
+            );
+        }
     }
 
     public static Expr regexFilter(String varName, String regexPattern, String regexFlag) {

@@ -421,12 +421,12 @@ OESO</rdfs:label>
     <!-- http://www.opensilex.org/vocabulary/oeso#measures -->
 
     <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#measures">
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#SensingDevice"/>
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
         <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#Variable"/>
         <rdfs:label xml:lang="en">measures</rdfs:label>
         <rdfs:label xml:lang="fr">mesure</rdfs:label>
-        <rdfs:comment xml:lang="en">Variable measured by the sensor</rdfs:comment>
-        <rdfs:comment xml:lang="fr">Variable mesurée par le capteur</rdfs:comment>
+        <rdfs:comment xml:lang="en">Variable measured by the device</rdfs:comment>
+        <rdfs:comment xml:lang="fr">Variable mesurée par le dispositif</rdfs:comment>
     </owl:ObjectProperty>
 
 
@@ -1107,6 +1107,14 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
     </owl:Class>
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#OperatingProcedure -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#OperatingProcedure">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#TechnicalDocument"/>
+        <rdfs:label xml:lang="en">Operating Procedure</rdfs:label>
+        <rdfs:label xml:lang="fr">Mode Opératoire</rdfs:label>
+    </owl:Class>
+
 
     <!-- http://www.opensilex.org/vocabulary/oeso#ExperimentalUnit -->
 
@@ -1469,6 +1477,12 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
         <rdfs:label xml:lang="fr">Logiciel</rdfs:label>
         <rdfs:label xml:lang="en">Software</rdfs:label>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#measures"/>
+                <owl:onClass rdf:resource="http://www.opensilex.org/vocabulary/oeso#Variable"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
     </owl:Class>
 
 
@@ -1487,6 +1501,8 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Species">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
+        <rdfs:label xml:lang="en">Species</rdfs:label>
+        <rdfs:label xml:lang="fr">Espèce</rdfs:label>
     </owl:Class>
 
 

@@ -27,7 +27,6 @@ import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.Order;
-import org.bson.BsonDocument;
 import org.bson.Document;
 import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
@@ -73,7 +72,7 @@ public class MongoDBService extends BaseService {
 
     @Override
     public void startup() throws OpenSilexModuleNotFoundException {
-        mongoClient = getMongoDBClient();
+        mongoClient = buildMongoDBClient();
         generationPrefixURI = getGenerationPrefixURI();
         db = mongoClient.getDatabase(dbName);
     }
@@ -475,11 +474,15 @@ public class MongoDBService extends BaseService {
         this.update(newInstance,collection,"uri");
     }
 
-    public final MongoClient getMongoDBClient() {
-        return getMongoDBClient(getImplementedConfig());
+    public final MongoClient getMongoClient(){
+        return this.mongoClient;
     }
 
-    public static MongoClient getMongoDBClient(MongoDBConfig cfg) {
+    public final MongoClient buildMongoDBClient() {
+        return buildMongoDBClient(getImplementedConfig());
+    }
+
+    public static MongoClient buildMongoDBClient(MongoDBConfig cfg) {
         String connectionString = "mongodb://";
 
         if (cfg.username() != null && cfg.password() != null && !cfg.username().isEmpty() && !cfg.password().isEmpty()) {

@@ -109,12 +109,12 @@ export default class SpeciesSelector extends Vue {
 <i18n>
 en:
   SpeciesSelector:
-    select-one-placeholder: "Select a species"
-    select-one: "Species"
+    select-multiple-placeholder: "Select species"
+    select-multiple: "Species"
 fr:
   SpeciesSelector:
-    select-one-placeholder: "Sélectionner une espèce"
-    select-one: "Espèce"
+    select-multiple-placeholder: "Sélectionner des espèces"
+    select-multiple: "Espèces"
 </i18n>
 
 <style scoped lang="scss">

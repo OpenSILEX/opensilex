@@ -19,4 +19,9 @@ public interface CoreConfig {
     )
     boolean enableLogs();
 
+    @ConfigDescription(
+            value = "Metrics options"
+    )
+    public MetricsConfig metrics();
+    
 }

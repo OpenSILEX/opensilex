@@ -1,6 +1,7 @@
 <template>
-  <opensilex-PageContent>
-    <template v-slot>
+  <opensilex-PageContent
+  class="pagecontent">
+
       <opensilex-TableAsyncView
         ref="tableRef"
         :searchMethod="searchScientificObject"
@@ -10,11 +11,25 @@
         labelNumberOfSelectedRow="ScientificObjectList.selected"
         iconNumberOfSelectedRow="ik#ik-target"
         :defaultPageSize="pageSize"
+        @refreshed="onRefreshed"
         @select="$emit('select', $event)"
         @unselect="$emit('unselect', $event)"
         @selectall="$emit('selectall', $event)"
+        :maximumSelectedRows="maximumSelectedRows"
       >
         <template v-slot:selectableTableButtons="{ numberOfSelectedRows }">
+
+          <b-dropdown
+            dropright
+            class="mb-2 mr-2"
+            :small="true"
+            :text="$t('VariableList.display')">
+
+            <b-dropdown-item-button @click="clickOnlySelected()">{{ onlySelected ? $t('VariableList.selected-all') : $t('VariableList.selected-only')}}</b-dropdown-item-button>
+            <b-dropdown-item-button @click="resetSelected()">{{$t('VariableList.resetSelected')}}</b-dropdown-item-button>
+          </b-dropdown>
+
+
           <b-dropdown
             v-if="!noActions" 
             dropright
@@ -123,7 +138,7 @@
           </b-button-group>
         </template>
       </opensilex-TableAsyncView>
-    </template>
+ 
   </opensilex-PageContent>
 </template>
 
@@ -159,6 +174,9 @@ export default class ScientificObjectList extends Vue {
     default: false
   })
   noUpdateURL;
+
+  @Prop()
+  maximumSelectedRows: number;
 
   @PropSync("searchFilter", {
     default: () => {
@@ -237,6 +255,10 @@ export default class ScientificObjectList extends Vue {
     Array<ExperimentGetDTO>
   >();
 
+  get onlySelected() {
+    return this.tableRef.onlySelected;
+  }
+
   get user() {
     return this.$store.state.user;
   }
@@ -262,15 +284,37 @@ export default class ScientificObjectList extends Vue {
     this.refresh();
   }
 
+  clickOnlySelected() {
+    this.tableRef.clickOnlySelected();
+  }
+
+  resetSelected() {
+    this.tableRef.resetSelected();
+  }
+
+
   refresh() {
-    this.tableRef.selectAll = false;
-    this.tableRef.onSelectAll();
-    this.tableRef.refresh();
+    if(this.tableRef.onlySelected) {
+      this.tableRef.onlySelected = false;
+      this.tableRef.refresh();
+    } else {
+      this.tableRef.refresh();
+    }
     this.$nextTick(() => {
       if (!this.noUpdateURL) {
         this.$opensilex.updateURLParameters(this.filter);
       }      
     });
+  }
+
+  // fix the state of the button selectAll 
+  onRefreshed() {
+      let that = this;
+      setTimeout(function() {
+        if(that.tableRef.selectAll === true && that.tableRef.selectedItems.length !== that.tableRef.totalRow) {                    
+          that.tableRef.selectAll = false;
+        } 
+      }, 1);
   }
 
   refreshWithKeepingSelection() {
@@ -302,6 +346,8 @@ export default class ScientificObjectList extends Vue {
   }
 
   private objectDetails = {};
+
+ 
 
   loadObjectDetail(data) {
     if (!data.detailsShowing) {
@@ -393,7 +439,6 @@ export default class ScientificObjectList extends Vue {
   onItemUnselected(row) {
     this.tableRef.onItemUnselected(row);
   }
-  
 }
 </script>
 

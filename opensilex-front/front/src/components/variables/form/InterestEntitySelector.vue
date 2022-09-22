@@ -4,8 +4,6 @@
     :selected.sync="interestEntityURI"
     :multiple="multiple"
     :searchMethod="searchInterestEntities"
-    :itemLoadingMethod="loadInterestEntities"
-    :conversionMethod="interestEntityToSelectNode"
     :clearable="clearable"
     :placeholder="placeholder"
     noResultsText="component.interestEntity.form.selector.filter-search-no-result"
@@ -44,29 +42,13 @@ export default class InterestEntitySelector extends Vue {
       ? "component.interestEntity.form.selector.placeholder-multiple"
       : "component.interestEntity.form.selector.placeholder";
   }
-
-  loadInterestEntities(interestEntities) {
-    return this.$opensilex.getService("opensilex.VariablesService")
-      .getInterestEntitiesByURIs(interestEntities)
-      .then((http: HttpResponse<OpenSilexResponse<InterestEntityGetDTO>>) => {
-        return http.response.result;
-      })
-      .catch(this.$opensilex.errorHandler);
-  }
-
+  
   searchInterestEntities(name) {
     return this.$opensilex.getService("opensilex.VariablesService")
     .searchInterestEntity(name, ["name=asc"], 0, 10)    
     .then((http: HttpResponse<OpenSilexResponse<Array<InterestEntityGetDTO>>>) => {
         return http;
     });
-  }
-
-  interestEntityToSelectNode(dto) {
-    return {
-      id: dto.uri,
-      label: dto.name,
-    };
   }
 
   select(value) {

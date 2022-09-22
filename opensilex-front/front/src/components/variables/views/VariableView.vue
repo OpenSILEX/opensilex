@@ -4,9 +4,10 @@
         icon="fa#sun"
         description="VariableView.type"
         :title="variable.name"
+        class="detail-element-header"
     ></opensilex-PageHeader>
 
-    <opensilex-PageActions :tabs="true" :returnButton="true">
+    <opensilex-PageActions :tabs="true" :returnButton="true" class="navigationTabs">
       <template v-slot>
         <b-nav-item
             :active="isDetailsTab()"
@@ -23,32 +24,44 @@
             :to="{ path: '/variable/visualization/' + encodeURIComponent(uri) }"
         >{{ $t('VariableDetails.visualization') }}
         </b-nav-item>
+        <b-nav-item
+            :active="isDocumentTab()"
+            :to="{ path: '/variable/documents/' + encodeURIComponent(uri) }"
+        >{{ $t('component.project.documents') }}
+        </b-nav-item>
 
       </template>
     </opensilex-PageActions>
     <opensilex-PageContent>
       <template v-slot>
         <opensilex-VariableDetails
-            v-if="isDetailsTab()"
-            :variable="variable"
-            @onUpdate="updateVariable($event)"
+          v-if="isDetailsTab()"
+          :variable="variable"
+          @onUpdate="updateVariable($event)"
         ></opensilex-VariableDetails>
 
         <opensilex-AnnotationList
-                v-else-if="isAnnotationTab()"
-                ref="annotationList"
-                :target="uri"
-                :displayTargetColumn="false"
-                :enableActions="true"
-                :modificationCredentialId="credentials.CREDENTIAL_ANNOTATION_MODIFICATION_ID"
-                :deleteCredentialId="credentials.CREDENTIAL_ANNOTATION_DELETE_ID"
+        class="projectAnnotations"
+          v-else-if="isAnnotationTab()"
+          ref="annotationList"
+          :target="uri"
+          :displayTargetColumn="false"
+          :enableActions="true"
+          :modificationCredentialId="credentials.CREDENTIAL_ANNOTATION_MODIFICATION_ID"
+          :deleteCredentialId="credentials.CREDENTIAL_ANNOTATION_DELETE_ID"
         ></opensilex-AnnotationList>
 
         <opensilex-VariableVisualizationTab
-            v-else-if="isVisualizationTab()"
-            :variable="uri"
-            :modificationCredentialId="credentials.CREDENTIAL_DEVICE_MODIFICATION_ID"
+          v-else-if="isVisualizationTab()"
+          :variable="uri"
+          :modificationCredentialId="credentials.CREDENTIAL_DEVICE_MODIFICATION_ID"
         ></opensilex-VariableVisualizationTab>
+
+        <opensilex-DocumentTabList
+          v-else-if="isDocumentTab()"
+          :uri="uri"        
+          :modificationCredentialId="credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID"
+        ></opensilex-DocumentTabList>
       </template>
 
     </opensilex-PageContent>
@@ -58,13 +71,11 @@
 <script lang="ts">
 import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
-import {VariableDetailsDTO} from "opensilex-core/model/variableDetailsDTO";
 import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
-// @ts-ignore
 import {VariablesService} from "opensilex-core/api/variables.service";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import AnnotationList from "../../annotations/list/AnnotationList.vue";
+import { VariableDetailsDTO } from 'opensilex-core/index';
 
 @Component
 export default class VariableView extends Vue {
@@ -134,6 +145,10 @@ export default class VariableView extends Vue {
     return this.$route.path.startsWith("/variable/visualization/");
   }
 
+  isDocumentTab() {
+    return this.$route.path.startsWith("/variable/documents/");
+  }
+
   loadVariable(uri: string) {
     this.service.getVariable(uri).then((http: HttpResponse<OpenSilexResponse<VariableDetailsDTO>>) => {
       this.variable = http.response.result;
@@ -149,4 +164,11 @@ export default class VariableView extends Vue {
 </script>
 
 <style scoped lang="scss">
+.projectAnnotations{
+  margin-top: 18px; 
+}
+
+.navigationTabs {
+  margin-bottom: -9px
+}
 </style>

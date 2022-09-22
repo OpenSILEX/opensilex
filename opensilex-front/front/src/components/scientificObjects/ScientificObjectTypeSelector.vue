@@ -5,7 +5,6 @@
     :selected.sync="typesURI"
     :multiple="multiple"
     :optionsLoadingMethod="loadTypes"
-    :conversionMethod="typeToSelectNode"
     placeholder="ScientificObjectTypeSelector.placeholder"
     @select="select"
     @deselect="deselect"
@@ -63,13 +62,6 @@ export default class ScientificObjectTypeSelector extends Vue {
           return http.response.result;
         });
     }
-  }
-
-  typeToSelectNode(dto: ListItemDTO) {
-    return {
-      label: dto.name,
-      id: dto.uri
-    };
   }
 
   select(value) {

@@ -121,6 +121,9 @@ public class SystemCommands extends AbstractOpenSilexCommand implements OpenSile
     ) throws Exception {
         OpenSilex opensilex = getOpenSilex();
 
+        // set OpenSILEX instance for each module (this is performed by default in OpenSilex.startUp() method
+        opensilex.getModules().forEach(module -> module.setOpenSilex(opensilex));
+
         LOGGER.info("Install Modules");
         opensilex.install(reset);
     }

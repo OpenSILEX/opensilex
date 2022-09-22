@@ -7,6 +7,8 @@
 package org.opensilex.core.data.api;
 
 import java.net.URI;
+import java.util.Set;
+
 import org.opensilex.core.data.dal.DataModel;
 
 /**
@@ -24,9 +26,9 @@ public class DataExportDTO extends DataGetDTO {
         this.experiment = experiment;
     }
     
-    public static DataExportDTO fromModel(DataModel model, URI experiment) {       
+    public static DataExportDTO fromModel(DataModel model, URI experiment, Set<URI> dateVariables) {
         DataExportDTO dto = new DataExportDTO();   
-        dto.fromModel(model);
+        dto.fromModel(model, dateVariables);
         dto.setExperiment(experiment);
         return dto;
     }

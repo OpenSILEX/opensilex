@@ -1,17 +1,15 @@
 <template>
   <div class="container-fluid">
-    <opensilex-PageHeader
-      icon="ik#ik-folder"
-      title="component.menu.projects"
-      description="component.project.search-description"
-    ></opensilex-PageHeader>
-
     <opensilex-PageActions
-      v-if="user.hasCredential(credentials.CREDENTIAL_PROJECT_MODIFICATION_ID)"
-    >
-      <template v-slot>
-        <opensilex-CreateButton @click="projectForm.showCreateForm()" label="component.project.add"></opensilex-CreateButton>
-      </template>
+      v-if="
+        user.hasCredential(
+          credentials.CREDENTIAL_PROJECT_MODIFICATION_ID)
+      ">
+        <opensilex-CreateButton
+          @click="projectForm.showCreateForm()"
+          label="component.project.add"
+          class="createButton"
+        ></opensilex-CreateButton>
     </opensilex-PageActions>
 
     <opensilex-PageContent>
@@ -56,4 +54,10 @@ export default class ProjectView extends Vue {
 </script>
 
 <style scoped lang="scss">
+
+.createButton {
+  margin-bottom: 10px;
+  margin-top: -15px;
+  margin-left: 0;
+}
 </style>

@@ -125,6 +125,8 @@ public class Oeso {
     public static final Property studiedEffectIn = Ontology.property(NS, "studiedEffectIn");
 
     public static final Resource SensingDevice = Ontology.resource(NS, "SensingDevice");
+    public static final Resource Software = Ontology.resource(NS, "Software");
+
     public static final Resource Operator = Ontology.resource(NS, "Operator");
 
     // ---- GERMPLASM ----

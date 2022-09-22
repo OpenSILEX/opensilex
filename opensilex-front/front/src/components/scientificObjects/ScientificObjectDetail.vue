@@ -1,5 +1,5 @@
 <template>
-  <div v-if="selected && selected.uri" :class="{'embed-tabs': !globalView}">
+  <div v-if="selected && selected.uri" :class="{'ok embed-tabs': !globalView}">
     <opensilex-PageActions :returnButton="withReturnButton" :tabs="true">
       <b-nav-item
         :active="isDetailsTab"
@@ -151,7 +151,7 @@ export default class ScientificObjectDetail extends Vue {
   }
 
   getPositionsColumnToDisplay() : Set<string>{
-      return this.globalView ? PositionList.getDefaultColumns() : new Set(['to', 'end', 'coordinates']) ;
+      return this.globalView ? PositionList.getDefaultColumns() : new Set(['to', 'end', 'coordinates','custom_coordinates','textual_position']) ;
   }
 
 

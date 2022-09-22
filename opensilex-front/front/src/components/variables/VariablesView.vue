@@ -1,11 +1,5 @@
 <template>
     <div class="container-fluid">
-        <opensilex-PageHeader
-            icon="fa#vials"
-            title="VariableView.title"
-            description="VariableView.description"
-        ></opensilex-PageHeader>
-
         <div>
             <opensilex-PageActions>
                 <div>
@@ -19,24 +13,30 @@
                         <b-tab :title="$t('VariableView.groupVariable')" @click="refreshSelected"></b-tab>
                     </b-tabs>
                 </div>
-
+                </opensilex-PageActions>
                 <div class="col-lg-5">
-                    <opensilex-HelpButton
+                    <opensilex-PageActions
+                    >
+                        <opensilex-HelpButton
                             @click="helpModal.show()"
                             label="component.common.help-button"
-                    ></opensilex-HelpButton>
-                    <b-modal ref="helpModal" size="xl" hide-header ok-only>
-                        <opensilex-VariableHelp v-if="elementType != 'VariableGroup'"></opensilex-VariableHelp>
-                        <opensilex-GroupVariablesHelp v-else></opensilex-GroupVariablesHelp>
-                    </b-modal>
+                            class="helpButton"
+                        ></opensilex-HelpButton>
+                        
+                        <b-modal ref="helpModal" size="xl" hide-header hide-footer>
+                            <opensilex-VariableHelp v-if="elementType != 'VariableGroup'" @hideBtnIsClicked="hide()"></opensilex-VariableHelp>
+                            <opensilex-GroupVariablesHelp v-else @hideBtnIsClicked="hide()"></opensilex-GroupVariablesHelp>
+                        </b-modal>
 
-                    <opensilex-CreateButton
-                        v-show="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
-                        @click="showCreateForm"
-                        :label="buttonTitle"
-                    ></opensilex-CreateButton>
+                        <opensilex-CreateButton
+                            v-show="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
+                            @click="showCreateForm"
+                            :label="buttonTitle"
+                            class="createButton"
+                        ></opensilex-CreateButton>
+
+                    </opensilex-PageActions>
                 </div>
-            </opensilex-PageActions>
             <opensilex-PageContent
                 v-if="loadVariableList()" >
                 <template v-slot>
@@ -79,7 +79,7 @@
             ></opensilex-UnitCreate>
 
             <opensilex-ModalForm
-                v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
+                v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID) && loadGroupForm"
                 ref="groupVariablesForm"
                 modalSize="lg"
                 :tutorial="false"
@@ -176,6 +176,7 @@ import ExternalReferencesModalForm from "../common/external-references/ExternalR
 import { VariablesService, DataService } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+import ModalForm from "../common/forms/ModalForm.vue";
 
 
 @Component
@@ -216,7 +217,12 @@ export default class VariablesView extends Vue {
     @Ref("characteristicForm") readonly characteristicForm!: any;
     @Ref("methodForm") readonly methodForm!: any;
     @Ref("unitForm") readonly unitForm!: UnitCreate;
-    @Ref("groupVariablesForm") readonly groupVariablesForm!: any;
+
+    /**
+     * Lazy loading of modal group form, this ensures to not load nested variable selected which trigger an API call
+     */
+    loadGroupForm: boolean = false;
+    @Ref("groupVariablesForm") readonly groupVariablesForm!: ModalForm;
 
     @Ref("skosReferences") skosReferences!: ExternalReferencesModalForm;
 
@@ -402,7 +408,16 @@ export default class VariablesView extends Vue {
 
 
     showCreateForm(){
-        this.getForm().showCreateForm();
+
+        // ensure that the group form component is loaded
+        if(this.elementType == VariablesView.GROUP_VARIABLE_TYPE){
+            this.loadGroupForm = true;
+            this.$nextTick(() => {
+                this.getForm().showCreateForm();
+            })
+        }else{
+            this.getForm().showCreateForm();
+        }
     }
 
     formatVariablesGroup(dto : any) {
@@ -415,8 +430,14 @@ export default class VariablesView extends Vue {
 
     showEditForm(dto : any){
         if (this.elementType == VariablesView.GROUP_VARIABLE_TYPE) {
-            let formatVariableGroup = this.formatVariablesGroup(dto);
-            this.getForm().showEditForm(formatVariableGroup);
+
+            // ensure that the group form component is loaded
+            this.loadGroupForm = true;
+            this.$nextTick(() => {
+
+                let formatVariableGroup = this.formatVariablesGroup(dto);
+                this.getForm().showEditForm(formatVariableGroup);
+            });
         }
         else{
             this.getForm().showEditForm(dto);
@@ -518,10 +539,31 @@ export default class VariablesView extends Vue {
         }).catch(this.$opensilex.errorHandler);
     }
 
+    hide() {
+        this.helpModal.hide();
+    }
 }
 </script>
 
 <style scoped lang="scss">
+
+.createButton, .helpButton{
+  margin-bottom: 5px;
+  margin-top: -10px;
+  margin-left: -10px;
+  margin-right: 15px;
+}
+.helpButton {
+  margin-left: -15px;
+  color: #00A28C;
+  font-size: 1.2em;
+  border: none
+}
+  
+.helpButton:hover {
+  background-color: #00A28C;
+  color: #f1f1f1
+}
 </style>
 
 <i18n>
@@ -534,8 +576,8 @@ en:
         add-variable: Add variable
         entity: Entity
         add-entity: Add entity
-        entityOfInterest: Entity of interest
-        add-entityOfInterest: Add entity of interest
+        entityOfInterest: Observation level
+        add-entityOfInterest: Add observation level
         characteristic: Characteristic
         add-characteristic: Add characteristic
         method: Method
@@ -555,8 +597,8 @@ fr:
         add-variable: Ajouter une variable
         entity: Entité
         add-entity: Ajouter une entité
-        entityOfInterest: Entité d'intérêt
-        add-entityOfInterest: Ajouter une entité d'intérêt
+        entityOfInterest: Niveau d'observation
+        add-entityOfInterest: Ajouter un niveau d'observation
         characteristic: Caractéristique
         add-characteristic: Ajouter une caractéristique
         method: Méthode

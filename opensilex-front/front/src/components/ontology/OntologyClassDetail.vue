@@ -41,7 +41,7 @@
                     <opensilex-Button
                         v-if="user.isAdmin()"
                         @click="addProperty"
-                        variant="primary"
+                        class="greenThemeColor addPropertyButton"
                         icon="ik#ik-plus"
                         :small="false"
                         label="OntologyClassDetail.addProperty"
@@ -51,7 +51,7 @@
                     <opensilex-Button
                         v-if="user.isAdmin()"
                         @click="startSetPropertiesOrder"
-                        variant="primary"
+                        class="greenThemeColor"
                         icon="fa#pencil-alt"
                         :small="false"
                         label="OntologyClassDetail.setPropertiesOrder"
@@ -77,7 +77,7 @@
                         </button>
                         <button
                             type="button"
-                            class="btn btn-primary"
+                            class="btn greenThemeColor"
                             v-on:click="setPropertiesOrder()"
                         >
                             {{ $t("component.common.validateSelection") }}
@@ -337,6 +337,15 @@ export default class OntologyClassDetail extends Vue {
 
 ::v-deep td > span {
     white-space: nowrap;
+}
+
+@media (min-width: 769px) and (max-width: 1540px) {
+    .addPropertyButton {
+        margin-bottom: 5px;
+    }
+}
+.greenThemeColor {
+    color: #f1f1f1
 }
 </style>
 

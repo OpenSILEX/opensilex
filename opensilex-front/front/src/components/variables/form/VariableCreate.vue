@@ -20,10 +20,11 @@
     import {Component, Prop, Ref} from "vue-property-decorator";
     import Vue from "vue";
     // @ts-ignore
-    import { VariablesService, VariableGetDTO, VariableCreationDTO, ObjectUriResponse, VariableUpdateDTO } from "opensilex-core/index";
+    import { VariablesService, VariableDetailsDTO, VariableCreationDTO, ObjectUriResponse, VariableUpdateDTO } from "opensilex-core/index";
     import ModalForm from "../../common/forms/ModalForm.vue";
     import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
     import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
+    import DTOConverter from "../../../models/DTOConverter";
 
     @Component
     export default class VariableCreate extends Vue {
@@ -67,14 +68,8 @@
           this.refresh();
             this.loadForm = true;
             this.$nextTick(() => {
-                let speciesUri;
-                if (form.species) {
-                    speciesUri = form.species.uri ? form.species.uri : form.species; 
-                } else {
-                    speciesUri = undefined;
-                }
-                let formCopy = JSON.parse(JSON.stringify(form));
-                formCopy.species = speciesUri;
+                // the fonction extractURIFromResourceProperties transforms the dto where species is a list of names and uris into a dto where species is only a list of uris
+                let formCopy: VariableDetailsDTO = DTOConverter.extractURIFromResourceProperties(form, ["species"]);
                 this.variableForm.showEditForm(formCopy);
             });
         }

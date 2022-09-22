@@ -10,10 +10,13 @@ import io.swagger.jaxrs.config.BeanConfig;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.inject.Singleton;
 import javax.servlet.ServletContext;
 import javax.ws.rs.ApplicationPath;
+import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.ext.Provider;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.message.GZipEncoder;
@@ -21,6 +24,7 @@ import org.glassfish.jersey.process.internal.RequestScoped;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.ServerProperties;
 import org.glassfish.jersey.server.filter.EncodingFilter;
+import org.glassfish.jersey.server.monitoring.ApplicationEventListener;
 import org.opensilex.OpenSilex;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.OpenSilexModuleNotFoundException;
@@ -29,6 +33,7 @@ import org.opensilex.server.extensions.APIExtension;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.service.Service;
 import org.opensilex.service.ServiceFactory;
+import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -104,16 +109,17 @@ public class RestApplication extends ResourceConfig {
         register(EncodingFilter.class);
 
         // Register all module packages needed for service initialization
-        registerAPI();
-
+        registerAPI(); 
+        
         // Initialize swagger API
         initSwagger();
-
+        
         registerServices();
 
         // Allow all modules to do custom initialization
         initModules();
     }
+
 
     /**
      * Initialize packages list to scan for services and request filters (A.K.A. components) from all modules.

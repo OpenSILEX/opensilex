@@ -6,18 +6,16 @@
 //******************************************************************************
 package org.opensilex.nosql.mongodb.codec;
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import org.bson.BsonReader;
 import org.bson.BsonWriter;
 import org.bson.codecs.Codec;
 import org.bson.codecs.DecoderContext;
 import org.bson.codecs.EncoderContext;
-import org.opensilex.server.rest.validation.DateFormat;
+
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 
 /**
  *
@@ -26,42 +24,20 @@ import org.opensilex.server.rest.validation.DateFormat;
 public class ObjectCodec implements Codec<Object>{
 
     @Override
-    public void encode(BsonWriter writer, Object value, EncoderContext ec) {        
-        
+    public void encode(BsonWriter writer, Object value, EncoderContext ec) {
         if (value instanceof Integer) {
-            Integer intValue = Integer.parseInt(value.toString());
-            writer.writeInt32(intValue);
-            
+            writer.writeInt32((Integer) value);
         } else if (value instanceof Double) {
-            Double doubleValue = Double.valueOf(value.toString());
-            writer.writeDouble(doubleValue);   
-            
+            writer.writeDouble((Double) value);
         } else if (value instanceof Boolean) {
-            boolean boolValue = Boolean.parseBoolean(value.toString()); 
-            writer.writeBoolean(boolValue);  
-            
+            writer.writeBoolean((Boolean) value);
         } else if (value instanceof String) {
-            try { 
-                DateFormat[] formats = {DateFormat.YMDTHMSZ, DateFormat.YMDTHMSMSZ};
-                for (DateFormat dateCheckFormat : formats) {
-                    DateTimeFormatter dtf = DateTimeFormatter.ofPattern(dateCheckFormat.toString());
-                    ZonedDateTime zdt = ZonedDateTime.parse(value.toString(), dtf);
-                    long dateTime = zdt.withZoneSameLocal(ZoneId.of("UTC")).toInstant().toEpochMilli();
-                    writer.writeDateTime(dateTime);
-                    break;
-                }
-            } catch (DateTimeParseException dateTimeExc) {
-                try {
-                    DateTimeFormatter dtf = DateTimeFormatter.ofPattern(DateFormat.YMD.toString());
-                    LocalDate date = LocalDate.parse(value.toString(), dtf);
-                    long dateTime = date.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli();
-                    writer.writeDateTime(dateTime);
-                } catch (DateTimeParseException dateExc){
-                    writer.writeString(value.toString());
-                }
-            }
-        } 
-  
+            writer.writeString((String) value);
+        } else if (value instanceof LocalDate) {
+            writer.writeDateTime(((LocalDate) value).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli());
+        } else if (value instanceof ZonedDateTime) {
+            writer.writeDateTime(((ZonedDateTime) value).withZoneSameInstant(ZoneOffset.UTC).toInstant().toEpochMilli());
+        }
     }
 
     @Override
@@ -76,8 +52,7 @@ public class ObjectCodec implements Codec<Object>{
             switch (reader.getCurrentBsonType()) {
             case DATE_TIME: 
                 long instant = reader.readDateTime();
-                ZonedDateTime dateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(instant), ZoneId.of("UTC"));
-                return dateTime;
+                return ZonedDateTime.ofInstant(Instant.ofEpochMilli(instant), ZoneOffset.UTC);
             case INT32: 
                 return reader.readInt32();
             case INT64:

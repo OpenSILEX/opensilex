@@ -11,12 +11,15 @@ import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
 import com.mongodb.client.result.DeleteResult;
 import com.opencsv.CSVWriter;
+import org.apache.jena.sparql.core.Var;
+import org.apache.jena.vocabulary.XSD;
 import org.bson.Document;
 import org.opensilex.core.data.api.DataExportDTO;
 import org.opensilex.core.data.api.DataGetDTO;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.utils.ExportDataIndex;
+import org.opensilex.core.ontology.Oeso;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
@@ -31,6 +34,7 @@ import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
+import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
@@ -50,6 +54,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -370,7 +375,7 @@ public class DataDAO {
         return filter;
     }    
     
-    private void appendExperimentUserAccessFilter(Document filter, UserModel user, List<URI> experiments) throws Exception {
+    public void appendExperimentUserAccessFilter(Document filter, UserModel user, List<URI> experiments) throws Exception {
         String experimentField = "provenance.experiments";
         
         //user access
@@ -591,10 +596,12 @@ public class DataDAO {
         return nosql.deleteOnCriteria(DataModel.class, DATA_COLLECTION_NAME, filter);
     }
 
-    public List<VariableModel> getUsedVariables(UserModel user, List<URI> experiments, List<URI> objects, List<URI> provenances, List<URI> devices) throws Exception {             
+    public List<VariableModel> getUsedVariables(UserModel user, List<URI> experiments, List<URI> objects, List<URI> provenances, List<URI> devices) throws Exception {
         Document filter = searchFilter(user, experiments, objects, null, provenances, devices, null, null, null, null, null);
         Set<URI> variableURIs = nosql.distinct("variable", URI.class, DATA_COLLECTION_NAME, filter);
-        return new VariableDAO(sparql,nosql,fs).getList(new ArrayList<>(variableURIs));
+
+        // #TODO don't invoke Variable dao here
+        return new VariableDAO(sparql,nosql,fs).getList(new ArrayList<>(variableURIs), user.getLanguage());
     }
     
     public Set<URI> getUsedVariablesByExpeSoDevice(UserModel user, List<URI> experiments, List<URI> objects, List<URI> devices) throws Exception {
@@ -606,12 +613,13 @@ public class DataDAO {
     public Response prepareCSVWideExportResponse(List<DataModel> resultList, UserModel user, boolean withRawData) throws Exception {
         Instant data = Instant.now();
 
+        Set<URI> dateVariables = getAllDateVariables();
+
         List<URI> variables = new ArrayList<>();
 
         Map<URI, SPARQLNamedResourceModel> objects = new HashMap<>();
         Map<URI, ProvenanceModel> provenances = new HashMap<>();
         Map<Instant, Map<ExportDataIndex, List<DataExportDTO>>> dataByIndexAndInstant = new HashMap<>();
-        Map<URI, List<DataModel>> dataByExp = new HashMap<>();
         Map<URI, ExperimentModel> experiments = new HashMap();
         
         for (DataModel dataModel : resultList) {
@@ -646,7 +654,7 @@ public class DataDAO {
                     if (!dataByIndexAndInstant.get(dataModel.getDate()).containsKey(exportDataIndex)) {
                         dataByIndexAndInstant.get(dataModel.getDate()).put(exportDataIndex, new ArrayList<>());
                     } 
-                    dataByIndexAndInstant.get(dataModel.getDate()).get(exportDataIndex).add(DataExportDTO.fromModel(dataModel, exp));
+                    dataByIndexAndInstant.get(dataModel.getDate()).get(exportDataIndex).add(DataExportDTO.fromModel(dataModel, exp, dateVariables));
                 }                
             } else {
                 ExportDataIndex exportDataIndex = new ExportDataIndex(
@@ -655,11 +663,10 @@ public class DataDAO {
                                 dataModel.getTarget()
                         );
                     
-                DataExportDTO dataExportDto = DataExportDTO.fromModel(dataModel, null); 
                 if (!dataByIndexAndInstant.get(dataModel.getDate()).containsKey(exportDataIndex)) {
                         dataByIndexAndInstant.get(dataModel.getDate()).put(exportDataIndex, new ArrayList<>());
                     } 
-                dataByIndexAndInstant.get(dataModel.getDate()).get(exportDataIndex).add(DataExportDTO.fromModel(dataModel, null));
+                dataByIndexAndInstant.get(dataModel.getDate()).get(exportDataIndex).add(DataExportDTO.fromModel(dataModel, null, dateVariables));
 
             }
             
@@ -891,6 +898,8 @@ public class DataDAO {
     public Response prepareCSVLongExportResponse(List<DataModel> resultList, UserModel user, boolean withRawData) throws Exception {
         Instant data = Instant.now();
 
+        Set<URI> dateVariables = getAllDateVariables();
+
         Map<URI, VariableModel> variables = new HashMap<>();
         Map<URI, SPARQLNamedResourceModel> objects = new HashMap<>();
         Map<URI, ProvenanceModel> provenances = new HashMap<>();
@@ -910,7 +919,7 @@ public class DataDAO {
             if (!dataByInstant.containsKey(dataModel.getDate())) {
                 dataByInstant.put(dataModel.getDate(), new ArrayList<>());
             }                        
-            dataByInstant.get(dataModel.getDate()).add(DataGetDTO.getDtoFromModel(dataModel));
+            dataByInstant.get(dataModel.getDate()).add(DataGetDTO.getDtoFromModel(dataModel, dateVariables));
             if (dataModel.getProvenance().getExperiments() != null) {
                 for (URI exp:dataModel.getProvenance().getExperiments()) {
                     if (!experiments.containsKey(exp)) {
@@ -1111,4 +1120,47 @@ public class DataDAO {
         return getUsedProvenances(FILE_COLLECTION_NAME, user, experiments, objects, null, devices);
     }
 
+    /**
+     * Fetches and return all URIs for the variable with the xsd:date datatype.
+     *
+     * @return
+     * @throws Exception
+     */
+    private Set<URI> getAllDateVariables() throws Exception {
+        return new HashSet<>(sparql.searchURIs(VariableModel.class, null, selectBuilder -> {
+            Var uriVar = SPARQLQueryHelper.makeVar(VariableModel.URI_FIELD);
+            selectBuilder.addWhere(uriVar, Oeso.hasDataType.asNode(), XSD.date.asNode());
+        }));
+    }
+
+    /**
+     * Converts a {@link DataModel} to a {@link DataGetDTO}, with the correct conversion if the value is of
+     * type xsd:date. This method should be called as few times as possible (ideally only once), as it performs
+     * a SPARQL query. To convert multiple models, please use {@link #modelListToDTO(ListWithPagination)} instead.
+     *
+     * @param model
+     * @return
+     * @throws Exception
+     */
+    public DataGetDTO modelToDTO(DataModel model) throws Exception {
+        Set<URI> dateVariables = getAllDateVariables();
+        return DataGetDTO.getDtoFromModel(model, dateVariables);
+    }
+
+    /**
+     * Converts a list of {@link DataModel} to a lislt of {@link DataGetDTO}, with the correct conversion if the value is of
+     * type xsd:date. This method should be called as few times as possible (ideally only once), as it performs
+     * a SPARQL query.
+     *
+     * @param modelList
+     * @return
+     * @throws Exception
+     */
+    public ListWithPagination<DataGetDTO> modelListToDTO(ListWithPagination<DataModel> modelList) throws Exception {
+        Set<URI> dateVariables = getAllDateVariables();
+        List<DataGetDTO> dtoList = modelList.getList().stream()
+                .map(dataModel -> DataGetDTO.getDtoFromModel(dataModel, dateVariables))
+                .collect(Collectors.toList());
+        return new ListWithPagination<>(dtoList, modelList.getPage(), modelList.getPageSize(), modelList.getTotal());
+    }
 }

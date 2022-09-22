@@ -8,23 +8,6 @@
     @show="shown()"
   >
     <template v-slot:modal-title>{{ $t("DataHelp.title") }}</template>
-    <template v-slot:modal-footer>
-      <b-button
-        v-if="variables.length == 0"
-        class="float-right"
-        @click="csvExportDataExample"
-        variant="outline-info"
-        :disabled="experiment==null && !validSelection"
-      >{{ $t("DataHelp.download-template-example") }}
-      </b-button>
-      <b-button 
-        @click="csvExport" 
-        variant="primary" 
-        :disabled="experiment==null && !validSelection || variables.length == 0">{{$t("OntologyCsvImporter.downloadTemplate")}}
-      </b-button>
-      &nbsp;
-      <font-awesome-icon icon="question-circle" v-b-tooltip.hover.right=" $t('DataTemplateForm.help') "/>
-    </template>
     <div>
       <ValidationObserver ref="validatorRefDataTemplate">
         <b-row>
@@ -37,6 +20,15 @@
                 @change="change"
               ></b-form-checkbox-group>
             </b-form-group>
+
+            <b-form-group v-else :label="$t('DataTemplateForm.select-columns')" v-slot="{ ariaDescribedby }">
+              <b-form-checkbox-group
+                v-model="selectedColumns"
+                :options="expeOptions"
+                :aria-describedby="ariaDescribedby"
+              ></b-form-checkbox-group>
+            </b-form-group>
+
           </b-col>
           <b-col cols="7">
             <b-alert v-if="experiment==null"
@@ -64,20 +56,38 @@
         </b-row>
       </ValidationObserver>
     </div>
+
+    <template v-slot:modal-footer>
+      <b-button
+        v-if="variables.length == 0"
+        class="float-right greenThemeColor"
+        @click="csvExportDataExample"
+        :disabled="experiment==null && !validSelection"
+      >{{ $t("DataHelp.download-template-example") }}
+      </b-button>
+      <b-button 
+        @click="csvExport" 
+        class="greenThemeColor"
+        :disabled="experiment==null && !validSelection || variables.length == 0">{{$t("OntologyCsvImporter.downloadTemplate")}}
+      </b-button>
+      &nbsp;
+      <font-awesome-icon icon="question-circle" v-b-tooltip.hover.right=" $t('DataTemplateForm.help') "/>
+    </template>
+
   </b-modal>
 </template>
 
 <script lang="ts">
 import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
 import {VariableDatatypeDTO, VariableDetailsDTO, VariablesService} from "opensilex-core/index";
-// @ts-ignore
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
+import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
+import Xsd from "../../../ontologies/Xsd";
 
 @Component
 export default class GenerateDataTemplateFrom extends Vue {
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
   $store: any;
   $t: any;
   $i18n: any;
@@ -97,6 +107,7 @@ export default class GenerateDataTemplateFrom extends Vue {
   readonly expColumn = "experiment";
   readonly targetColumn = "target";
   readonly deviceColumn = "device";
+  readonly soColumn = "scientific_object";
 
   @Prop()
   editMode;
@@ -107,6 +118,11 @@ export default class GenerateDataTemplateFrom extends Vue {
   options = [
     { text: this.expColumn, value: this.expColumn },
     { text: this.targetColumn, value: this.targetColumn },
+    { text: this.deviceColumn, value: this.deviceColumn }
+  ];
+
+
+  expeOptions = [
     { text: this.deviceColumn, value: this.deviceColumn }
   ];
 
@@ -204,7 +220,7 @@ export default class GenerateDataTemplateFrom extends Vue {
 
     //column object
     if (this.experiment != null) {
-      line1.push(this.$t("DataHelp.objectId"));
+      line1.push(this.soColumn);
       line2.push(this.$t("DataHelp.objectId-help")); 
       line3.push(
         this.$t("DataHelp.column-type-help")+
@@ -314,7 +330,7 @@ export default class GenerateDataTemplateFrom extends Vue {
         
         //column object
         if (this.experiment != null) {
-          line1.push(this.$t("DataHelp.objectId"));
+          line1.push(this.soColumn);
           line2.push(this.$t("DataHelp.objectId-help")); 
           line3.push(
             this.$t("DataHelp.column-type-help")+
@@ -352,12 +368,16 @@ export default class GenerateDataTemplateFrom extends Vue {
             line1.push(element.uri);
             line2.push(element.name);
             if (element.datatype === undefined || element.datatype === null) {
-              element.datatype = "xsd:string";
-            } 
-            line3.push(
-              this.$t("DataHelp.column-type-help").toString() +
-              this.getDataTypeLabel(element.datatype)
-            );
+              element.datatype = Xsd.STRING;
+            }
+            let variableHelp = this.$t("DataHelp.column-type-help").toString() +
+                this.$opensilex.getVariableDatatypeLabel(element.datatype);
+            if (this.$opensilex.checkURIs(element.datatype, Xsd.DATE)) {
+              variableHelp += " " + this.$t("DataTemplateForm.format-help.date");
+            } else if (this.$opensilex.checkURIs(element.datatype, Xsd.DATETIME)) {
+              variableHelp += " " + this.$t("DataTemplateForm.format-help.datetime");
+            }
+            line3.push(variableHelp);
 
             //column raw_data
             if (this.withRawData) {
@@ -366,7 +386,7 @@ export default class GenerateDataTemplateFrom extends Vue {
               line3.push(
                 this.$t("DataHelp.column-type-help").toString() +
                 this.$t("DataTemplateForm.type-list") +
-                this.getDataTypeLabel(element.datatype));
+                this.$opensilex.getVariableDatatypeLabel(element.datatype));
             }
           }
           arrData = [line1, line2, line3];
@@ -379,22 +399,6 @@ export default class GenerateDataTemplateFrom extends Vue {
     });
   }
 
-  loadMethods() {
-    let service = this.$opensilex.getService("opensilex.VariablesService");
-    return service
-      .searchMethods(undefined, undefined, 100, 0)
-      .then(
-        (http: HttpResponse<OpenSilexResponse<Array<any>>>) =>
-          http.response.result
-      );
-  }
-
-  dtoToSelectNode(dto) {
-    return {
-      id: dto.uri,
-      label: dto.name,
-    };
-  }
   getDataTypeLabel(dataTypeUri: string): string {
     if (!dataTypeUri) {
       return undefined;
@@ -413,7 +417,7 @@ export default class GenerateDataTemplateFrom extends Vue {
 
   shown() {
     this.validSelection = this.hasDeviceAgent;
-    this.requiredField = true;
+     this.requiredField = true; // due to the impact on the required field on the Form who encapsulte this form component
     this.selectedColumns = [];
   }
 
@@ -432,6 +436,9 @@ en :
     target-device-required: The provenance you selected doesn't contain any device agent, so you must add the target or the device column
     example :
       column-data-type : "Column data type: "
+    format-help:
+      datetime: "(format: YYYY-MM-DDThh:mm:ssZ)"
+      date: "(format: YYYY-MM-DD)"
 fr :
   DataTemplateForm:
     help: Le bouton est désactivé si aucune variable n'est sélectionnée
@@ -443,5 +450,8 @@ fr :
     select-variables: Sélectionnez les variables dont vous avez besoin
     target-device-required: "La provenance sélectionnée ne contient pas de device, vous devez donc ajouter la colonne \"target\" ou \"device\""
     example :
-      column-data-type : "Type de données colonne : " 
+      column-data-type : "Type de données colonne : "
+    format-help:
+      datetime: "(format: AAAA-MM-JJThh:mm:ssZ)"
+      date: "(format: AAAA-MM-JJ)"
  </i18n>

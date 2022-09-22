@@ -2,8 +2,8 @@
     <div class="table-responsive-xl">
         <p @click="visible = !visible" style="cursor: pointer">
             <strong>{{ $t("ScientificObjectImportHelp.exceptedFormat") }} </strong>
-            <opensilex-Icon v-if="!visible" icon="fa#eye" class="text-primary"/>
-            <opensilex-Icon v-if="visible" icon="fa#eye-slash" class="text-primary"/>
+            <opensilex-Icon v-if="!visible" icon="fa#eye" class="EventHelpTableViewHelpEyeIcon"/>
+            <opensilex-Icon v-if="visible" icon="fa#eye-slash" class="EventHelpTableViewHelpEyeIcon"/>
         </p>
         <b-collapse id="collapse-4" v-model="visible" class="mt-2">
             <b-table-simple responsive>

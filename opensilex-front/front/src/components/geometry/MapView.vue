@@ -1,25 +1,29 @@
 <template>
   <div id="map">
     <div v-if="!editingMode" id="selected" class="d-flex">
+      <!--tools buttons -->
       <div class="mr-auto p-2">
+        <!--create area button -->
         <opensilex-CreateButton
           v-if="user.hasCredential(credentials.CREDENTIAL_AREA_MODIFICATION_ID)"
           label="MapView.add-area-button"
           @click="editingMode = true"
         ></opensilex-CreateButton>
-        <!-- map panel, controls -->
+        <!-- map panel button (toggle side bar) -->
         <b-button v-b-toggle.map-sidebar>{{ $t("MapView.mapPanel") }}</b-button>
-        <!--// map panel, controls -->
+        <!-- focus button -->
         <opensilex-Button
           icon="fa#crosshairs"
           label="MapView.center"
           @click="defineCenter"
         ></opensilex-Button>
+        <!-- save map button -->
         <opensilex-Button
           icon="fa#save"
           label="MapView.save"
           @click="saveMap"
         ></opensilex-Button>
+        <!-- save map modal -->
         <b-modal id="modal-save-map">
           <template #default>
             <p>{{ $t("MapView.save-confirmation") }}</p>
@@ -34,6 +38,7 @@
             >
           </template>
         </b-modal>
+        <!-- events panel button (toggle side bar) -->
         <b-button
           v-on:click="showTemporalAreas"
           v-b-toggle.event-sidebar
@@ -43,14 +48,14 @@
             <opensilex-Icon :icon="'ik#ik-activity'" />
           </slot>
         </b-button>
-
+        <!-- time line button -->
         <opensilex-Button
           icon="fa#stopwatch"
           label="MapView.dateRange"
           @click="handleDateRangeStatus"
         ></opensilex-Button>
-        <!--// in waiting for the bug' s correction -->
       </div>
+      <!-- Info message - in waiting for the bug' s correction . TODO: delete when it will be OK-->
       <span class="p-2">
         <label class="alert-warning">
           <img
@@ -61,7 +66,9 @@
         </label>
       </span>
     </div>
+    <!--editing area mode -->
     <div v-if="editingMode" id="editing">
+      <!--exit button -->
       <opensilex-Button
         :small="false"
         icon
@@ -70,6 +77,7 @@
         @click="editingMode = false"
       ></opensilex-Button>
     </div>
+    <!--editing area modal -->
     <opensilex-ModalForm
       v-if="!errorGeometry && showArea"
       ref="areaForm"
@@ -83,18 +91,15 @@
       @onUpdate="callAreaUpdate"
       :initForm="initAreaForm"
     ></opensilex-ModalForm>
+    <!--Update SO form. TODO: same method call onCreate and onUpdate??-->
     <opensilex-ScientificObjectForm
-      v-if="
-        user.hasCredential(
-          credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID
-        )
-      "
+      v-if=" user.hasCredential(credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID)"
       ref="soForm"
       :context="{ experimentURI: this.experiment }"
       @onCreate="callScientificObjectUpdate"
       @onUpdate="callScientificObjectUpdate"
     />
-
+    <!--Map -->
     <div
       id="mapPoster"
       :class="editingMode ? 'bg-light border border-secondary' : ''"
@@ -102,7 +107,7 @@
       <p class="alert-info">
         <span v-if="!editingMode" v-html="$t('MapView.Instruction')"></span>
       </p>
-      <!-- "mapControls" to display the scale -->
+      <!-- Map config - "mapControls" to display the scale -->
       <vl-map
         ref="map"
         :default-controls="mapControls"
@@ -114,6 +119,7 @@
         @created="mapCreated"
         @pointermove="onMapPointerMove"
       >
+        <!-- Zoom and position-->
         <vl-view
           ref="mapView"
           :min-zoom="2"
@@ -122,32 +128,28 @@
           @update:zoom="areaRecovery"
           @update:center="overlayPositionsRecovery"
         ></vl-view>
-
+        <!-- Base tile -->
         <vl-layer-tile id="osm">
           <vl-source-osm :wrap-x="false" />
         </vl-layer-tile>
-
+        <!--Name OS Pop-up -->
         <!-- position ternary to show the overlay only if mouse on Object else default value -->
         <!-- stop-event property to be sure the map is not glitching vertically -->
         <vl-overlay
           id="overlay"
-          :position="
-            overlayCoordinate.length === 2 ? overlayCoordinate : [0, 0]
-          "
-          :stop-event="
-            selectPointerMove.name && selectPointerMove.type ? true : false
-          "
+          :position="overlayCoordinate.length === 2 ? overlayCoordinate : [0, 0]"
+          :stop-event="selectPointerMove.name && selectPointerMove.type ? true : false"
         >
           <template slot-scope="scope">
             <div class="panel-content">{{ displayInfoInOverlay() }}</div>
           </template>
         </vl-overlay>
-
+        <!--Detail Pop-up -->
         <vl-overlay
           id="detailItem"
           :position="centerMap.length === 2 ? centerMap : [0, 0]"
         >
-          <template slot-scope="scope">
+          <template v-slot="scope">
             <div class="panel-content">
               <opensilex-DisplayInformationAboutItem
                 :details-s-o="detailsSO"
@@ -159,13 +161,15 @@
             </div>
           </template>
         </vl-overlay>
-
+        <!-- Vectors -->
         <template v-if="endReceipt">
+          <!-- Temporal and perennial Areas -->
           <vl-layer-vector
             v-for="area in featuresArea"
             :key="area.id"
             :visible="isAreaVisible(area)"
           >
+            <!-- perennial areas -->
             <div v-if="area.properties.type != temporalAreaType">
               <vl-source-vector
                 ref="vectorSourceArea"
@@ -176,12 +180,8 @@
                 <vl-style-fill color="rgba(200,255,200,0.4)"></vl-style-fill>
               </vl-style-box>
             </div>
-            <div
-              v-if="
-                area.properties.type == temporalAreaType &&
-                !isSelectedArea(area)
-              "
-            >
+            <!-- temporal areas -->
+            <div v-if="area.properties.type == temporalAreaType &&!isSelectedArea(area)">
               <vl-source-vector
                 ref="vectorSourceArea"
                 :features="[area]"
@@ -191,11 +191,8 @@
                 <vl-style-fill color="rgba(128,139,150,0.4)"></vl-style-fill>
               </vl-style-box>
             </div>
-            <div
-              v-if="
-                area.properties.type == temporalAreaType && isSelectedArea(area)
-              "
-            >
+            <!-- temporal areas ?? -->
+            <div v-if="area.properties.type == temporalAreaType && isSelectedArea(area)">
               <vl-source-vector
                 ref="vectorSourceArea"
                 :features="[area]"
@@ -206,12 +203,14 @@
               </vl-style-box>
             </div>
           </vl-layer-vector>
+          <!-- OS features -->
           <vl-layer-vector v-for="layerSO in featuresOS" :key="layerSO.id">
             <vl-source-vector
               ref="vectorSource"
               :features="layerSO"
             ></vl-source-vector>
           </vl-layer-vector>
+          <!-- Filters -->
           <vl-layer-vector
             v-for="layer in tabLayer"
             :key="layer.ref"
@@ -222,21 +221,21 @@
               :features.sync="layer.tabFeatures"
             ></vl-source-vector>
             <vl-style-box>
+              <!-- outline color -->
               <vl-style-stroke
                 v-if="layer.vlStyleStrokeColor"
                 :color="layer.vlStyleStrokeColor"
               ></vl-style-stroke>
-              <!-- outline color -->
               <vl-style-fill
                 v-if="layer.vlStyleFillColor"
                 :color="colorFeature(layer.vlStyleFillColor)"
               ></vl-style-fill>
               <vl-style-circle :radius="5">
+                <!-- outline color -->
                 <vl-style-stroke
                   v-if="layer.vlStyleStrokeColor"
                   :color="layer.vlStyleStrokeColor"
                 ></vl-style-stroke>
-                <!-- outline color -->
                 <vl-style-fill
                   v-if="layer.vlStyleFillColor"
                   :color="colorFeature(layer.vlStyleFillColor)"
@@ -245,7 +244,7 @@
             </vl-style-box>
           </vl-layer-vector>
         </template>
-
+        <!-- Editing areas -->
         <template v-on="editingMode">
           <div id="editionMode">
             <vl-layer-vector :visible="false">
@@ -263,6 +262,7 @@
               type="Polygon"
               @drawend="showCreateForm()"
             >
+              <!-- features style-->
               <vl-style-box>
                 <vl-style-stroke color="blue"></vl-style-stroke>
                 <vl-style-fill color="rgba(255,255,255,0.5)"></vl-style-fill>
@@ -271,7 +271,7 @@
           </div>
         </template>
 
-        <!-- to make the selection -->
+        <!-- Interaction for selecting vector features -->
         <vl-interaction-select
           v-if="!editingMode"
           id="select"
@@ -279,9 +279,9 @@
           :features="selectedFeatures"
           @update:features="updateSelectionFeatures"
         />
-      </vl-map>
+    </vl-map>
     </div>
-
+    <!-- time-line sidebar (toggle) -->
     <b-sidebar
       id="event-sidebar"
       v-model="timelineSidebarVisibility"
@@ -330,7 +330,7 @@
         </opensilex-Timeline>
       </template>
     </b-sidebar>
-
+    <!-- Side Manage Menu -->
     <b-sidebar id="map-sidebar" visible no-header class="sidebar-content">
       <template #default="{ hide }">
         <div
@@ -356,6 +356,7 @@
           </div>
         </div>
         <b-tabs content-class="mt-3">
+          <!-- SO -->
           <opensilex-TreeView :nodes.sync="scientificObjects">
             <template v-slot:node="{ node }">
               <span class="item-icon"> </span>&nbsp;
@@ -392,7 +393,7 @@
               ></opensilex-CheckboxForm>
             </template>
           </opensilex-TreeView>
-
+          <!-- areas -->
           <opensilex-TreeView :nodes.sync="areas">
             <template v-slot:node="{ node }">
               <span class="item-icon"> </span>&nbsp;
@@ -434,7 +435,7 @@
               ></opensilex-CheckboxForm>
             </template>
           </opensilex-TreeView>
-
+          <!-- filters -->
           <opensilex-TreeView :nodes.sync="filters">
             <template v-slot:node="{ node }">
               <span class="item-icon"> </span>&nbsp;
@@ -496,6 +497,7 @@
               </div>
             </template>
           </opensilex-TreeView>
+          <!-- Create filter button -->
           <opensilex-CreateButton
             class="ml-50 mt-10"
             label="MapView.create-filter"
@@ -504,6 +506,7 @@
         </b-tabs>
       </template>
     </b-sidebar>
+    <!-- create filter modal-->
     <opensilex-ModalForm
       v-if="!errorGeometry"
       ref="filterForm"
@@ -513,13 +516,16 @@
       icon="fa#sun"
       modalSize="m"
       @onCreate="showFiltersDetails"
+      successMessage="Filter.created"
     ></opensilex-ModalForm>
+    <!-- Legend -->
     {{ $t("MapView.Legend") }}:
     <span id="OS">{{ $t("MapView.LegendSO") }}</span>
     &nbsp;-&nbsp;
     <span id="PerennialArea">{{ $t("MapView.LegendPerennialArea") }}</span>
     &nbsp;-&nbsp;
     <span id="TemporalArea">{{ $t("MapView.LegendTemporalArea") }}</span>
+    <!-- TimeLine -->
     <div class="timeline-slider" v-if="displayDateRange">
       <JqxRangeSelector
         ref="JqxRangeSelector"
@@ -540,6 +546,7 @@
       >
       </JqxRangeSelector>
     </div>
+    <!-- Features table -->
     <div
       id="selectedTable"
       v-if="selectedFeatures.length !== 0"
@@ -636,8 +643,6 @@ import Vue from "vue";
 import { DragBox } from "ol/interaction";
 import { GeoJSON } from "ol/format";
 import { Vector } from "ol/source";
-import Collection from "ol/Collection";
-import Select from "ol/interaction/Select";
 import Feature from "ol/Feature";
 import * as olExtent from "ol/extent";
 import Polygon from "ol/geom/Polygon";
@@ -645,26 +650,14 @@ import Point from "ol/geom/Point";
 import { platformModifierKeyOnly } from "ol/events/condition";
 import * as olExt from "vuelayers/lib/ol-ext";
 let shpwrite = require("shp-write");
-// @ts-ignore
-import { ScientificObjectNodeDTO } from "opensilex-core/index";
-// @ts-ignore
+import {AreaGetDTO, EventGetDTO, ObjectUriResponse, ResourceTreeDTO, ScientificObjectDetailDTO, ScientificObjectNodeDTO } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 import { transformExtent } from "vuelayers/src/ol-ext/proj";
-// @ts-ignore
-import { AreaGetDTO } from "opensilex-core/model/areaGetDTO";
-// @ts-ignore
-import { EventGetDTO } from "opensilex-core/model/eventGetDTO";
-// @ts-ignore
-import { ObjectUriResponse } from "opensilex-core/model/objectUriResponse";
-// @ts-ignore
-import { ResourceTreeDTO } from "opensilex-core/model/resourceTreeDTO";
 import { defaults, ScaleLine } from "ol/control";
 import Oeso from "../../ontologies/Oeso";
 import * as turf from "@turf/turf";
 import { jsPDF } from "jspdf";
 import { saveAs } from "file-saver";
-// @ts-ignore
-import { ScientificObjectDetailDTO } from "opensilex-core/model/scientificObjectDetailDTO";
 
 @Component
 export default class MapView extends Vue {
@@ -833,7 +826,7 @@ export default class MapView extends Vue {
   }
 
   set filters(value) {}
-
+//initialize form area
   initAreaForm(form) {
     form.minDate = this.minDate;
     form.maxDate = this.maxDate;
@@ -843,7 +836,7 @@ export default class MapView extends Vue {
   beforeDestroy() {
     this.langUnwatcher();
   }
-
+//show Name pop-up
   displayInfoInOverlay(): string {
     if (this.selectPointerMove.name && this.selectPointerMove.type) {
       // if Object existing and filled
@@ -979,7 +972,7 @@ export default class MapView extends Vue {
       }
     });
   }
-
+//Control show/hide SO on map panel
   updateScientificObject(node) {
     // Update the Scientific Objects of areas
     const isAllScientificObjects: boolean = node.title == "Scientific Object"; // is the 'Scientific Object' node clicked ?
@@ -1032,7 +1025,7 @@ export default class MapView extends Vue {
       return res.pathname;
     }
   }
-
+//Show areas (perennial / temporal)
   isAreaVisible(area) {
     if (area.properties.type != this.temporalAreaType) {
       return this.displayPerennialAreas;
@@ -1102,7 +1095,7 @@ export default class MapView extends Vue {
       }
     }
   }
-
+//???
   isSelectedArea(area) {
     for (let selected of this.selectedFeatures) {
       if (selected.properties.uri == area.properties.uri) {
@@ -1129,7 +1122,7 @@ export default class MapView extends Vue {
       data.toggleDetails = -data.toggleDetails();
     }
   }
-
+//On create area, show detail
   showAreaDetails(areaUriResult: any) {
     if (areaUriResult instanceof Promise) {
       areaUriResult.then((areaUri) => {
@@ -1150,9 +1143,8 @@ export default class MapView extends Vue {
       this.tabLayer.push(filterResult);
     }
   }
-
+  // Gets the name when the cursor hovers over the item.
   onMapPointerMove({ pixel }: any) {
-    // Gets the name when the cursor hovers over the item.
     const hitFeature = this.map.forEachFeatureAtPixel(
       pixel,
       (feature) => feature
@@ -1166,7 +1158,7 @@ export default class MapView extends Vue {
       this.selectPointerMove = { name: null, type: null };
     }
   }
-
+//update area
   callAreaUpdate(areaUriResult) {
     if (areaUriResult instanceof Promise) {
       areaUriResult.then((areaUri) => {
@@ -1205,7 +1197,7 @@ export default class MapView extends Vue {
 
     return diffInDays;
   }
-
+//select Features from timeline??
   selectFeaturesFromTimeline(uri) {
     for (let area of this.featuresArea) {
       if (area.properties.uri == uri) {
@@ -1220,7 +1212,7 @@ export default class MapView extends Vue {
       }
     }
   }
-
+//update SO
   callScientificObjectUpdate() {
     if (this.callSO) {
       this.callSO = false;
@@ -1263,7 +1255,7 @@ export default class MapView extends Vue {
         .catch(this.$opensilex.errorHandler);
     }
   }
-
+//Save created areas
   memorizesArea() {
     if (this.temporaryArea.length) {
       // Transfers geometry to the form using the $store
@@ -1302,14 +1294,14 @@ export default class MapView extends Vue {
       }
     }
   }
-
+//show created area form
   showCreateForm() {
     this.showArea = true;
     this.$nextTick(() => {
       this.areaForm.showCreateForm();
     });
   }
-
+//show events panel
   showTemporalAreas() {
     if (
       this.displayAreas &&
@@ -1423,7 +1415,7 @@ export default class MapView extends Vue {
     this.majorTicksInterval = this.majorTicksIntervalFct();
     this.labelsFormat = this.labelsFormatFct();
   }
-
+//Show time-line
   handleDateRangeStatus() {
     if (this.displayDateRange) {
       this.displayDateRange = !this.displayDateRange;
@@ -1471,7 +1463,7 @@ export default class MapView extends Vue {
         .catch(this.$opensilex.errorHandler);
     });
   }
-
+// Select multi-features (OS, Areas and Filters)
   mapCreated(map) {
     // a DragBox interaction used to select features by drawing boxes
     const dragBox = new DragBox({
@@ -1480,20 +1472,22 @@ export default class MapView extends Vue {
         // features that intersect the box are selected
         if (this.isMapHasLayer) {
           const extent = dragBox.getGeometry().getExtent();
-          if (this.$refs.vectorSource) {
-            (this.$refs.vectorSource as any).forEach((vector) => {
-              const source = vector.$source;
-
+          //All layers (tile/vector)
+          var layers= this.map.$map.getLayers();
+          //Recover vector and visible layers
+          layers.forEach((layer)=>{
+            if(layer.getVisible() && layer.type=='VECTOR'){
+              const source = layer.getSource();
               source.forEachFeatureIntersectingExtent(
-                extent,
-                (feature: any) => {
-                  feature = olExt.writeGeoJsonFeature(feature);
-                  this.selectedFeatures.push(feature);
-                }
-              );
-            });
-          }
-        }
+                  extent,
+                  (feature: any) => {
+                    feature = olExt.writeGeoJsonFeature(feature);
+                    this.selectedFeatures.push(feature);
+                  }
+              )
+            }
+          });
+       }
       },
     });
 
@@ -1507,7 +1501,7 @@ export default class MapView extends Vue {
     });
 
     // clear selection when drawing a new box and when clicking on the map
-    dragBox.on("boxStart", () => {
+    dragBox.on("boxstart", () => {
       this.selectedFeatures = [];
     });
   }
@@ -1528,7 +1522,7 @@ export default class MapView extends Vue {
 
     return new Promise(poll);
   }
-
+//On click, focus on map vectors
   defineCenter(): Promise<boolean> {
     return new Promise((resolve, reject) => {
       if (this.featuresOS.length > 0) {
@@ -1655,11 +1649,11 @@ export default class MapView extends Vue {
       ",0.5)"
     );
   }
-
+//On click, open modal "Save map"
   saveMap() {
     this.$bvModal.show("modal-save-map");
   }
-
+//save and export the map in PNG format
   savePNG(titleFile: String) {
     let canvas = document.getElementsByTagName("canvas")[0];
     canvas.toBlob((blob) => {
@@ -1667,7 +1661,7 @@ export default class MapView extends Vue {
     });
     this.$bvModal.hide("modal-save-map");
   }
-
+  //save and export the map in PDF format
   savePDF(titleFile: String) {
     let map = this.map.$map;
     let size = map.getSize();
@@ -1693,7 +1687,7 @@ export default class MapView extends Vue {
     let printSize = [width, height];
     map.setSize(printSize);
   }
-
+//save and export the map in shape format
   saveShapefile(titleFile: String) {
     let vectorSource = new Vector();
     let geometry = null;
@@ -1759,7 +1753,7 @@ export default class MapView extends Vue {
       })
       .catch(this.$opensilex.errorHandler);
   }
-
+//Check selected features and make different actions depending on the number of feature
   updateSelectionFeatures(features) {
     if (features.length && features[0]) {
       this.selectedFeatures = features;
@@ -2074,7 +2068,7 @@ export default class MapView extends Vue {
       (coordinateExtent[1] + coordinateExtent[3]) / 2,
     ];
   }
-
+//map expansion?
   private areaRecovery() {
     let coordinateExtent = this.getCoordinateExtent();
 
@@ -2399,6 +2393,7 @@ en:
   Filter:
     add: Creation of the filter
     update: Update Filter
+    created: The filter
   ScientificObjects:
     title: Scientific object
     update: Scientific object has been updated
@@ -2453,6 +2448,7 @@ fr:
   Filter:
     add: Création d'un filtre
     update: Mise à jour du filtre
+    created: Le filtre
   ScientificObjects:
     title: Objet scientifique
     update: L'objet scientifique a été mis à jour

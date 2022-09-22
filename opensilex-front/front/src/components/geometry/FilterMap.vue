@@ -51,14 +51,8 @@
 <script lang="ts">
 import {Component, Prop} from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
-// @ts-ignore
-import {GermplasmGetSingleDTO} from "opensilex-core/model/germplasmGetSingleDTO";
-// @ts-ignore
-import {FactorDetailsGetDTO} from "opensilex-core/model/factorDetailsGetDTO";
-// @ts-ignore
-import {ScientificObjectNodeDTO} from "opensilex-core/index";
+import {FactorDetailsGetDTO, GermplasmGetSingleDTO, ScientificObjectNodeDTO} from "opensilex-core/index";
 
 @Component
 export default class FilterMap extends Vue {
@@ -134,8 +128,9 @@ export default class FilterMap extends Vue {
 
   searchScientificObject() {
     return new Promise((resolve, reject) => {
+      this.formatFactors();
+
       const {germplasm, factorLevels} = this.filter;
-      if (this.IsThereReference()) return;
   
       this.feature.splice(0, this.feature.length);
   
@@ -195,7 +190,7 @@ export default class FilterMap extends Vue {
         this.$opensilex.showErrorToast(this.$i18n.t("FilterMap.filter.empty-filter-error"))
         return false;
       }
-  
+
       let newFilter = {
         ref: ref,
         tabFeatures: this.feature,
@@ -293,15 +288,16 @@ export default class FilterMap extends Vue {
     return ref;
   }
 
-  private IsThereReference() {
+  /**
+   * format factorsLevels to match the type expected by the Scientific Objects search service -> array
+   * @private
+   */
+  private formatFactors() {
     if (typeof this.filter.factorLevels != "object") {
       this.filter.factorLevels
           ? (this.filter.factorLevels = [this.filter.factorLevels])
           : (this.filter.factorLevels = []);
     }
-
-    let ref = this.ReferenceDefinition();
-    return false;
   }
 
   private recoveryScientificObjects() {
@@ -342,6 +338,7 @@ export default class FilterMap extends Vue {
           this.$opensilex.hideLoader();
         });
   }
+
 }
 </script>
 

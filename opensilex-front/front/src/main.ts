@@ -185,6 +185,13 @@ Vue.use(VueLayers, {
 import ToggleButton from 'vue-js-toggle-button'
 Vue.use(ToggleButton);
 
+
+// Initialize EasyLighBox ->  https://github.com/XiongAmao/vue-easy-lightbox/tree/vue2.x
+
+import VueEasyLightbox from "vue-easy-lightbox";
+// Method 1. via Vue.use
+Vue.use(VueEasyLightbox)
+
 // Initialize i18n
 import VueI18n from 'vue-i18n'
 import en from './lang/message-en.json';
@@ -597,6 +604,7 @@ $opensilex.loadModules([
                   $opensilex.loadVersionInfo(),
                   $opensilex.loadFactorCategories(),
                   $opensilex.loadDataTypes(),
+                  $opensilex.loadVariableDataTypes(),
                   $opensilex.loadNameSpaces(),
                   $opensilex.loadObjectTypes(),
                   $opensilex.loadComponentModules(modulesToLoad)

@@ -23,7 +23,7 @@ import org.opensilex.sparql.response.NamedResourceDTO;
  * @author vidalmor
  */
 @JsonPropertyOrder({
-        "uri", "name", "entity", "entity_of_interest", "characteristic", "method", "unit"
+        "uri", "name", "alternative_name", "entity", "entity_of_interest", "characteristic", "method", "unit"
 })
 public class VariableGetDTO {
 
@@ -33,12 +33,15 @@ public class VariableGetDTO {
     @JsonProperty("name")
     private String name;
 
+    @JsonProperty("alternative_name")
+    private String alternativeName;
+
     @JsonProperty("entity")
     private EntityGetDTO entity;
-    
+
     @JsonProperty("entity_of_interest")
     private NamedResourceDTO entityOfInterest;
-    
+
     @JsonProperty("characteristic")
     private CharacteristicGetDTO characteristic;
 
@@ -66,20 +69,28 @@ public class VariableGetDTO {
         this.name = name;
     }
 
+    public String getAlternativeName() {
+        return alternativeName;
+    }
+
+    public void setAlternativeName(String alternativeName) {
+        this.alternativeName = alternativeName;
+    }
+
     public EntityGetDTO getEntity() { return entity; }
 
     public void setEntity(EntityGetDTO entity) {
         this.entity = entity;
     }
-    
+
     public NamedResourceDTO getEntityOfInterest(){
         return entityOfInterest;
-    } 
-    
+    }
+
     public void setEntityOfInterest(NamedResourceDTO entityOfInterest){
         this.entityOfInterest = entityOfInterest;
     }
-    
+
     public CharacteristicGetDTO getCharacteristic() {
         return characteristic;
     }
@@ -104,25 +115,25 @@ public class VariableGetDTO {
         VariableGetDTO dto = new VariableGetDTO();
         dto.setUri(model.getUri());
         dto.setName(model.getName());
+        dto.setAlternativeName(model.getAlternativeName());
 
         EntityModel entity = model.getEntity();
         dto.setEntity(new EntityGetDTO(entity));
-        
+
         InterestEntityModel entityOfInterest = model.getEntityOfInterest();
         if(entityOfInterest != null){
             dto.setEntityOfInterest(NamedResourceDTO.getDTOFromModel(entityOfInterest));
         }
-                
+
         CharacteristicModel characteristic = model.getCharacteristic();
         dto.setCharacteristic(new CharacteristicGetDTO(characteristic));
 
         MethodModel method = model.getMethod();
         dto.setMethod(new MethodGetDTO(method));
-        
+
         UnitModel unit = model.getUnit();
         dto.setUnit(new UnitGetDTO(unit));
 
         return dto;
     }
 }
-

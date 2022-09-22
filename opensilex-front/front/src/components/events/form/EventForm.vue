@@ -42,6 +42,19 @@
             </div>
         </div>
 
+      <div class="row">
+        <div class="col">
+          <!-- Comment -->
+          <opensilex-TextAreaForm
+              :value.sync="form.description"
+              label="component.common.description"
+              helpMessage="Event.description"
+              placeholder="Event.description"
+          >
+          </opensilex-TextAreaForm>
+        </div>
+      </div>
+
         <div class="row">
             <div class="col">
 
@@ -90,7 +103,7 @@
             :rdfType="this.form.rdf_type"
             :relations="this.form.relations"
             :excludedProperties="this.excludedProperties"
-            :baseType="this.$opensilex.Oeev.EVENT_TYPE_URI"
+            :baseType="this.baseType"
             :editMode="editMode"
             :context="context ? { experimentURI: context} : undefined"
         ></opensilex-OntologyRelationsForm>
@@ -105,13 +118,12 @@
 <script lang="ts">
 import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import {EventCreationDTO} from "opensilex-core/model/eventCreationDTO";
 import {OntologyService} from "opensilex-core/api/ontology.service";
 import MoveForm from "./MoveForm.vue";
-import {MoveCreationDTO} from "opensilex-core/model/moveCreationDTO";
 import {VueJsOntologyExtensionService} from "../../../lib";
 import OpenSilexVuePlugin from 'src/models/OpenSilexVuePlugin';
 import OntologyRelationsForm from "../../ontology/OntologyRelationsForm.vue";
+import {EventCreationDTO, MoveCreationDTO } from 'opensilex-core/index';
 
 @Component
 export default class EventForm extends Vue {
@@ -155,14 +167,15 @@ export default class EventForm extends Vue {
         this.baseType = this.$opensilex.Oeev.EVENT_TYPE_URI;
 
         this.excludedProperties = new Set<string>([
-            this.$opensilex.Oeev.getShortURI(this.$opensilex.Oeev.CONCERNS),
-            this.$opensilex.Oeev.getShortURI(this.$opensilex.Oeev.IS_INSTANT),
-            this.$opensilex.Time.getShortURI(this.$opensilex.Time.HAS_BEGINNING),
-            this.$opensilex.Time.getShortURI(this.$opensilex.Time.HAS_END),
+            this.$opensilex.Oeev.CONCERNS,
+            this.$opensilex.Oeev.IS_INSTANT,
+            this.$opensilex.Time.HAS_BEGINNING,
+            this.$opensilex.Time.HAS_END,
+            this.$opensilex.Rdfs.COMMENT,
 
             // from/to properties to handle into MoveForm
-            this.$opensilex.Oeev.getShortURI(this.$opensilex.Oeev.FROM),
-            this.$opensilex.Oeev.getShortURI(this.$opensilex.Oeev.TO)
+            this.$opensilex.Oeev.FROM,
+            this.$opensilex.Oeev.TO
         ]);
     }
 

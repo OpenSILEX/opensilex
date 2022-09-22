@@ -2,11 +2,12 @@
   <div class="container-fluid">
     <opensilex-PageHeader
       icon="ik#ik-thermometer"
-      title="DeviceDetails.title"
-      :description="device.name"
+      :title="device.name"
+      description="DeviceDetails.title"
+      class="detail-element-header"
     ></opensilex-PageHeader>
 
-    <opensilex-PageActions :tabs="true" :returnButton="true" >
+    <opensilex-PageActions :tabs="true" :returnButton="true">
       <template v-slot>
         <b-nav-item
           :active="isDetailsTab()"

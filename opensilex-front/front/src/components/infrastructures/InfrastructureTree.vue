@@ -1,17 +1,5 @@
 <template>
-  <b-card>
-    <!-- Card header -->
-    <template v-slot:header>
-      <h3>
-        {{ $t("InfrastructureTree.infrastructure-component") }}
-        &nbsp;
-        <font-awesome-icon
-          icon="question-circle"
-          v-b-tooltip.hover.top="$t('InfrastructureTree.infrastructure-help')"
-        />
-      </h3>
-
-      <div class="card-header-right">
+<div >
         <div class="spaced-actions">
           <opensilex-CreateButton
             v-if="
@@ -21,6 +9,7 @@
             "
             @click="createOrganization()"
             label="InfrastructureTree.add"
+            class="createButton firstButton"
           ></opensilex-CreateButton>
           <opensilex-CreateButton
             v-if="
@@ -30,10 +19,24 @@
             "
             @click="createSite()"
             label="InfrastructureTree.addSite"
+            class="createButton"
           ></opensilex-CreateButton>
         </div>
-      </div>
+  <b-card>
+    <!-- Card header -->
+    <template v-slot:header>
+      <h3>
+        {{ $t("InfrastructureTree.infrastructure-component") }}
+        &nbsp;
+        <font-awesome-icon
+          icon="question-circle"
+          class="infrastructureHelp"
+          v-b-tooltip.hover.top="$t('InfrastructureTree.infrastructure-help')"
+        />
+      </h3>
+
     </template>
+
     <!-- Card body -->
     <!-- Infrastructure filter -->
     <opensilex-StringFilter
@@ -136,20 +139,17 @@
         :doNotHideOnError="true"
     ></opensilex-ModalForm>
   </b-card>
+</div>
 </template>
 
 <script lang="ts">
 import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
-import {InfrastructureGetDTO} from "opensilex-core/index";
-import {InfrastructureUpdateDTO} from "opensilex-core/model/infrastructureUpdateDTO";
+import {InfrastructureGetDTO, InfrastructureUpdateDTO, ResourceDagDTO, SiteGetDTO, SiteUpdateDTO} from "opensilex-core/index";
 import OpenSilexVuePlugin, {GenericTreeOption, TreeOption} from "../../models/OpenSilexVuePlugin";
-import {SiteGetDTO} from "opensilex-core/model/siteGetDTO";
 import ModalForm from "../common/forms/ModalForm.vue";
-import {SiteUpdateDTO} from "opensilex-core/model/siteUpdateDTO";
 import {DropdownButtonOption} from "../common/dropdown/Dropdown.vue";
-import {ResourceDagDTO} from "opensilex-core/model/resourceDagDTO";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
 import TreeView from "../common/views/TreeView.vue";
 import DTOConverter from "../../models/DTOConverter";
@@ -560,6 +560,13 @@ export default class InfrastructureTree extends Vue {
   display: inline-block;
   width: 23px;
 }
+.infrastructureHelp{
+  font-size: 1.3em;
+  background: #f1f1f1;
+  color: #00A38D;
+  border-radius: 50%;
+}
+
 
 @media (max-width: 768px) {
   .sl-vue-tree-root {
@@ -573,10 +580,14 @@ export default class InfrastructureTree extends Vue {
 }
 
 .spaced-actions {
-  button {
-    margin-left: 10px;
-  }
+  margin-top: -15px;
+  margin-bottom: 10px;
 }
+
+.firstButton {
+  margin-right: 10px;
+}
+
 </style>
 
 <i18n>

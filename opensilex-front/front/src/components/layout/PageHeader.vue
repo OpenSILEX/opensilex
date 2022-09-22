@@ -1,44 +1,16 @@
 <template>
   <div class="page-header">
-    <div class="row">
-      <div class="col-lg-8">
-        <div class="page-header-title">
-          <div class="d-inline">
-            <h5>
-              <opensilex-Icon :icon="icon" class="title-icon" />
-              <slot name="title">&nbsp;{{ $t(title) }}</slot>
-            </h5>
-            <span><slot name="description">{{ $t(description) }}</slot></span>
 
-            <span v-if="isExperimentalFeature">
-                <span style="padding-left:1%"></span>
-                <label class="alert-warning">
-                    <img alt="Warning" src="../../../theme/phis/images/construction.png"/>
-                    {{ $t("component.common.warningInstruction") }}
-                </label>
-              </span>
-
-          </div>
-        </div>
-      </div>
-      <div class="col-lg-4">
-        <nav class="breadcrumb-container" aria-label="breadcrumb">
-          <ol class="breadcrumb">
-            <li class="breadcrumb-item">
-              <router-link :to="{path: '/dashboard'}" :title="$t('component.menu.backToDashboard')">
-                <opensilex-Icon icon="ik#ik-grid" />
-                {{ $t('component.menu.dashboard') }}
-              </router-link>
-            </li>
-            <li class="breadcrumb-item active">
-              <opensilex-Icon :icon="icon" />
-              <span class="navbar-title">&nbsp;{{ $t(title) }}</span>
-
-            </li>
-          </ol>
-        </nav>
-      </div>
+      <opensilex-Icon :icon="icon" class="title-icon" />
+      <div class="header-title">
+    <h5>
+      <span class="title-title"><slot name="title">&nbsp;{{ $t(title) }}</slot></span>
+    </h5>
     </div>
+    <div class="header-desc">
+    <span class="title-description"><slot name="description" >{{ $t(description) }}</slot></span>
+    </div>
+
   </div>
 </template>
 
@@ -61,11 +33,14 @@ export default class PageHeader extends Vue {
 
   @Prop({default: false})
   isExperimentalFeature: boolean;
-
 }
 </script>
 
 <style scoped lang="scss">
+
+.page-header{
+  z-index: 1030;
+}
 .title-icon {
   float: left;
   width: 40px;
@@ -85,8 +60,68 @@ export default class PageHeader extends Vue {
 h5 {
   margin-bottom: 0;
 }
+.header-title, .header-desc, .title-description {
+  width: 80%;
+}
 
 .navbar-title {
   white-space: pre;
+}
+
+@media only screen and (min-width: 1201px) {
+  .header-title {
+    height: 28px;
+    overflow: hidden;
+  }
+  .header-desc{
+    height: 20px;
+    overflow: hidden;
+  }
+}
+
+@media (min-width: 676px) and (max-width: 1200px) {
+  .header-title{
+    width: 65%;
+    height: 37px;
+    overflow: hidden;
+  }
+    .header-desc{
+    width: 65%;
+    height: 20px;
+    overflow: hidden;
+  }
+
+  .title-title {
+    font-size: 0.8em;
+    display: block;
+    line-height: 1.2;
+  }
+
+}
+
+@media (min-width: 200px) and (max-width: 675px) {
+  .header-title{
+    width: 100%;
+    height: 35px;
+    overflow: hidden;
+    margin-left: -30px;
+  }
+  .header-desc{
+    width: 100%;
+    height: 20px;
+    overflow: hidden;
+    margin-left: -30px;
+  }
+
+  .title-icon{
+    display: none;
+  }
+
+  .title-title {
+    font-size: 0.7em;
+    display: block;
+    line-height: 1.2;
+    font-weight: 600;
+  }
 }
 </style>

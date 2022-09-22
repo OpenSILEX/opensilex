@@ -241,9 +241,9 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     @Override
     public void executeUpdateQuery(UpdateBuilder update) throws SPARQLException {
         addPrefixes(update);
-//        if (LOGGER.isDebugEnabled()) {
-//            LOGGER.debug("SPARQL UPDATE\n" + update.build().toString());
-//        }
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("SPARQL UPDATE\n" + update.buildRequest().toString());
+        }
         connection.executeUpdateQuery(update);
     }
 
@@ -374,9 +374,18 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
 
-    /**
-     *  @throws SPARQLInvalidUriListException if any URI from uris could not be loaded
+    /*
+     *
+     * @param graph object location
+     * @param objectClass object class
+     * @param uris object URIs
+     * @param lang
+     * @param resultHandler function used to convert SPARQL results in a custom way (can be null)
+     * @return a non-null list containing all object which match uris
+     * @param <T> object class/type
+     * @throws SPARQLInvalidUriListException if any URI from uris could not be loaded
      */
+
     public <T extends SPARQLResourceModel> List<T> getListByURIs(Node graph, Class<T> objectClass, Collection<URI> uris, String lang,
                                                                  ThrowingFunction<SPARQLResult, T, Exception> resultHandler
     ) throws Exception {
@@ -389,8 +398,21 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             lang = getDefaultLang();
         }
 
-        SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(objectClass);
-        return mapper.createInstanceList(graph, uris, lang, this);
+        // default fetching behavior
+        if(resultHandler == null){
+            SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(objectClass);
+            return mapper.createInstanceList(graph, uris, lang, this);
+        }
+
+        // custom result handler -> just load by uris and convert with the given handler
+        return this.loadListByURIs(
+                graph,
+                objectClass,
+                uris,
+                lang,
+                resultHandler,
+                Collections.emptyMap()
+        );
     }
 
 
@@ -1128,9 +1150,17 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         }
     }
 
-    private <T extends SPARQLResourceModel> void generateUniqueUriIfNullOrValidateCurrent(Node graph, SPARQLClassObjectMapper<T> mapper, T instance, boolean checkUriExist) throws Exception {
-        URIGenerator<T> uriGenerator = mapper.getUriGenerator(instance);
-        URI uri = mapper.getURI(instance);
+    /**
+     * Generate a unique URI if instance URI is not set.
+     * if checkUriExist is true, then the function re-generate a new URI while the URI is not unique inside graph
+     * @param graph graph in which we check if the generated URI exists or not
+     * @param instance model for which we generate a new URI
+     * @param uriGenerator generation of new URI
+     * @param checkUriExist indicate if we must check the existence of the generated URI
+     * @param <T> type of SPARQLResourceModel
+     */
+    public <T extends SPARQLResourceModel> void generateUniqueURI(Node graph, T instance, URIGenerator<T> uriGenerator, boolean checkUriExist) throws SPARQLException, URISyntaxException {
+        URI uri = instance.getUri();
         if (uri == null) {
 
             int retry = 0;
@@ -1142,8 +1172,15 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                     uri = uriGenerator.generateURI(prefix, instance, ++retry);
                 }
             }
+            instance.setUri(uri);
+        }
+    }
 
-            mapper.setUri(instance, uri);
+    public  <T extends SPARQLResourceModel> void generateUniqueUriIfNullOrValidateCurrent(Node graph, SPARQLClassObjectMapper<T> mapper, T instance, boolean checkUriExist) throws Exception {
+        URIGenerator<T> uriGenerator = mapper.getUriGenerator(instance);
+        URI uri = instance.getUri();
+        if (uri == null) {
+            generateUniqueURI(graph,instance,uriGenerator,checkUriExist);
         } else if (checkUriExist && uriExists(graph, uri)) {
             throw new SPARQLAlreadyExistingUriException(uri);
         }

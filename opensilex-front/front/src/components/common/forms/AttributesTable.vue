@@ -7,9 +7,8 @@
       <b-row class="ml-2">
         <b-col md="4">
           <opensilex-AddChildButton
-            class="mr-2"
+            class="mr-2 addChildButton"
             @click="addEmptyRow"
-            variant="outline-primary"
             label="AttributesTable.add"
           ></opensilex-AddChildButton>
           <span>{{$t('AttributesTable.add')}}</span>

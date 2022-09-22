@@ -15,12 +15,12 @@
 
       <button
         type="button"
-        class="btn btn-primary"
+        class="btn greenThemeColor"
         v-on:click="hide(true)"
       >{{ $t('component.common.validateSelection') }}</button>
     </template>
 
-    <div class="card">
+    <div>
       <opensilex-VariableList
         ref="variableSelection"
         :noActions="true"
@@ -88,6 +88,7 @@ export default class VariableModalList extends Vue {
 </script>
 
 <style scoped >
+
 @media (min-width: 576px) {
   div >>> .modal-xl {
     max-width: 800px;

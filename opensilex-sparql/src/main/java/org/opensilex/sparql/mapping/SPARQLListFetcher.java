@@ -197,6 +197,8 @@ public class SPARQLListFetcher<T extends SPARQLResourceModel> {
      * Update {@link #results} by setting all multi-valued properties
      *
      * @throws SPARQLException if some error is encountered during SPARQL query evaluation
+     * @throws IllegalArgumentException if {@link SPARQLListFetcher#results} contains two models with the same URI.
+     * This exception if throw because the two SPARQL query used to match list attributes must work on the same unique results
      */
     public void updateModels() throws SPARQLException {
 
@@ -209,9 +211,16 @@ public class SPARQLListFetcher<T extends SPARQLResourceModel> {
 
         // compute index between models and models URIs in order to associate in O(n) time complexity, the n results from selectWithMultivalued
         Map<String,T> modelsByUris = new PatriciaTrie<>();
-        results.forEach(result ->
-                modelsByUris.put(URIDeserializer.formatURIAsStr(result.getUri().toString()), result)
-        );
+        int i=0;
+        for(T model : results){
+            String modelURI = URIDeserializer.formatURIAsStr(model.getUri().toString());
+            if(modelsByUris.containsKey(modelURI)){
+                throw new IllegalArgumentException(String.format("Multiple results with the same URI (%s) at index %d", modelURI, i));
+            }
+            modelsByUris.put(modelURI, model);
+            i++;
+        }
+
 
         // execute the query and update model with all data/object list property
         sparql.executeSelectQueryAsStream(selectWithMultivalued).forEach(result -> {

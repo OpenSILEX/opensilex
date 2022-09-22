@@ -4,10 +4,11 @@
       icon="ik#ik-globe"
       :title="selected.name"
       :description="selected.rdf_type_name"
+      class="detail-element-header"
     ></opensilex-PageHeader>
-    <opensilex-PageActions :tabs="false" :returnButton="true">
+    <opensilex-PageActions :tabs="false" :returnButton="true" class="FacilityViewReturnButton">
     </opensilex-PageActions>
-    <div class="row">
+    <div class="facilityDescription">
       <div class="col-md-12">
         <opensilex-FacilityDetail
           :selected="selected"
@@ -65,5 +66,14 @@ export default class FacilityView extends Vue {
 </script>
 
 <style scoped lang="scss">
+.facilityDescription {
+  margin-top: -25px;
+}
+
+@media (max-width: 769px) {
+  .facilityDescription {
+    margin-top: 0;
+  }
+}
 </style>
 

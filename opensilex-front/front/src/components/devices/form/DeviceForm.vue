@@ -12,7 +12,7 @@
         <!-- rdfType -->
         <opensilex-TypeForm
             :type.sync="form.rdf_type"
-            :baseType="this.$opensilex.Oeso.DEVICE_TYPE_URI"
+            :baseType="this.baseType"
             helpMessage="DeviceForm.type-help"
             :required="true"
             :multiple="false"
@@ -83,8 +83,8 @@
             ref="ontologyRelationsForm"
             :rdfType="this.form.rdf_type"
             :relations="this.form.relations"
-            :excludedProperties="this.defaultProperties"
-            :baseType="this.$opensilex.Oeso.DEVICE_TYPE_URI"
+            :excludedProperties="this.excludedProperties"
+            :baseType="this.baseType"
             :editMode="editMode"
         ></opensilex-OntologyRelationsForm>
 
@@ -100,11 +100,9 @@
 <script lang="ts">
 import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
-import {DevicesService} from "opensilex-core/index";
+import {DeviceCreationDTO, DevicesService} from "opensilex-core/index";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import OntologyRelationsForm from "../../ontology/OntologyRelationsForm.vue";
-import {DeviceCreationDTO} from "opensilex-core/model/deviceCreationDTO";
 import AttributesTable from "../../common/forms/AttributesTable.vue";
 
 @Component
@@ -114,16 +112,7 @@ export default class DeviceForm extends Vue {
     $store: any;
     $t: any;
 
-    defaultProperties = new Set<string>([
-        "rdfs:label",
-        "rdfs:comment",
-        "vocabulary:hasModel",
-        "vocabulary:hasBrand",
-        "vocabulary:hasSerialNumber",
-        "vocabulary:personInCharge",
-        "vocabulary:startUp",
-        "vocabulary:removal",
-    ]);
+    excludedProperties: Set<string>;
 
     uriGenerated = true;
 
@@ -133,11 +122,26 @@ export default class DeviceForm extends Vue {
     @Prop()
     editMode;
 
+    baseType: string = "";
+
     @Prop({default: () => DeviceForm.getEmptyForm()})
     form: DeviceCreationDTO;
 
     created(){
         this.service = this.$opensilex.getService("opensilex.DevicesService");
+        this.baseType = this.$opensilex.Oeso.DEVICE_TYPE_URI;
+
+        this.excludedProperties = new Set<string>([
+            this.$opensilex.Rdfs.LABEL,
+            this.$opensilex.Rdfs.COMMENT,
+            this.$opensilex.Oeso.HAS_MODEL,
+            this.$opensilex.Oeso.HAS_BRAND,
+            this.$opensilex.Oeso.HAS_SERIAL_NUMBER,
+            this.$opensilex.Oeso.PERSON_IN_CHARGE,
+            this.$opensilex.Oeso.START_UP,
+            this.$opensilex.Oeso.REMOVAL,
+        ]);
+
     }
 
     get user() {

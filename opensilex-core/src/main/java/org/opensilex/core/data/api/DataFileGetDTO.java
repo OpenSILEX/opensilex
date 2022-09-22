@@ -32,7 +32,9 @@ public class DataFileGetDTO extends DataFileCreationDTO {
     public URI getUri() {
         return uri;
     }
-    
+
+    private String filename;
+
     public void setDate(Instant instant, String offset, Boolean isDateTime) {
         if (isDateTime) {
             OffsetDateTime odt = instant.atOffset(ZoneOffset.of(offset));
@@ -54,7 +56,16 @@ public class DataFileGetDTO extends DataFileCreationDTO {
         dto.setMetadata(model.getMetadata());   
         dto.setProvenance(model.getProvenance());
         dto.setArchive(model.getArchive());
+        dto.setFilename(model.getFilename());
         
         return dto;
     }
+    public String getFilename() {
+        return filename;
+    }
+
+    public void setFilename(String filename) {
+        this.filename = filename;
+    }
+
 }

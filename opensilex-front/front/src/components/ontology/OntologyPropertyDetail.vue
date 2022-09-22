@@ -23,10 +23,10 @@
 </template>
 
 <script lang="ts">
-import {Component, Prop, PropSync, Ref, Watch} from "vue-property-decorator";
+import {Component, PropSync} from "vue-property-decorator";
 import Vue from "vue";
 import OWL from "../../ontologies/OWL";
-import {RDFPropertyGetDTO} from "opensilex-core/model/rDFPropertyGetDTO";
+import { RDFPropertyGetDTO } from 'opensilex-core/index';
 
 @Component
 export default class OntologyPropertyDetail extends Vue {

@@ -7,6 +7,10 @@ package org.opensilex.front.api;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.opensilex.front.config.CustomMenuItem;
+import org.opensilex.front.config.MenuItem;
+
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +28,7 @@ public class MenuItemDTO {
 
         menuDTO.setId(menuItem.id());
         menuDTO.setLabel(menuItem.label());
+
 
         List<MenuItem> mc = menuItem.children();
         List<MenuItemDTO> children = new ArrayList<>(mc.size());
@@ -117,5 +122,4 @@ public class MenuItemDTO {
     public void setRoute(RouteDTO route) {
         this.route = route;
     }
-
 }

@@ -4,6 +4,7 @@
       icon="ik#ik-thermometer"
       title="DeviceCreate.title"
       description="DeviceCreate.description"
+      class= "detail-element-header"
     ></opensilex-PageHeader>
     <opensilex-PageActions :returnButton="true" >
     </opensilex-PageActions>

@@ -1,14 +1,9 @@
  <template>
   <b-modal
     ref="OntologyCsvImporter"
-    @ok.prevent="importCSV"
     size="xl"
     :static="true"
-    :ok-disabled="!csvFile || !!validationErrors"
   >
-    <template v-slot:modal-ok>{{ $t("component.common.ok") }}</template>
-    <template v-slot:modal-cancel>{{ $t("component.common.cancel") }}</template>
-
     <template class="mt-1" v-slot:modal-header>
       <b-row class="mt-1" style="width: 100%">
         <b-col cols="11">
@@ -18,7 +13,6 @@
                 <opensilex-Icon icon="fa#eye" class="icon-title" />
               </slot>
                 <span>{{$t(title)}}</span>
-
             </h4>
           </i>
         </b-col>
@@ -129,6 +123,21 @@
         </div>
       </ValidationObserver>
     </div>
+    <template v-slot:modal-footer>
+      <button
+        type="button"
+        class="btn btn-secondary"
+        v-on:click="hide(false)"
+      >{{ $t('component.common.close') }}</button>
+
+      <button
+        type="button"
+        class="btn greenThemeColor"
+        v-on:click="importCSV()"
+        :disabled="!csvFile || !!validationErrors"
+        :prevent="importCSV"
+      >{{ $t('component.common.ok') }}</button> 
+    </template>
   </b-modal>
 </template>
 

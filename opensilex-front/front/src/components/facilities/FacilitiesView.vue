@@ -1,27 +1,37 @@
 <template>
+  <div>
+    <!--CreateButton position on top for FacilityListView-->
+    <div class="spaced-actions" v-if="displayButtonOnTop" >
+      <opensilex-CreateButton
+        v-if="
+          user.hasCredential(credentials.CREDENTIAL_FACILITY_MODIFICATION_ID)"
+        @click="facilityForm.showCreateForm()"
+        label="FacilitiesView.add"
+        class="createButton"
+      ></opensilex-CreateButton>
+    </div>
+
   <b-card>
     <template v-slot:header>
       <h3>
         {{ $t("FacilitiesView.facilities") }}
+
+        <!--CreateButton position on card for InfrastructureView-->
+        <span v-if="!displayButtonOnTop">
+        <opensilex-CreateButton
+          v-if="user.hasCredential(credentials.CREDENTIAL_FACILITY_MODIFICATION_ID)"
+          @click="facilityForm.showCreateForm()"
+          label="FacilitiesView.add"
+          class="createButton"
+        ></opensilex-CreateButton>
+        </span>
         &nbsp;
         <font-awesome-icon
           icon="question-circle"
-          v-b-tooltip.hover.top="
-            $t('FacilitiesView.infrastructure-facility-help')
-          "
+          class="facilitiesHelp"
+          v-b-tooltip.hover.top="$t('FacilitiesView.infrastructure-facility-help')"
         />
       </h3>
-      <div class="card-header-right" v-if="withActions">
-        <opensilex-CreateButton
-          v-if="
-            user.hasCredential(
-              credentials.CREDENTIAL_FACILITY_MODIFICATION_ID
-            )
-          "
-          @click="facilityForm.showCreateForm()"
-          label="FacilitiesView.add"
-        ></opensilex-CreateButton>
-      </div>
     </template>
 
     <opensilex-StringFilter
@@ -107,20 +117,19 @@
       :initForm="initForm"
     ></opensilex-FacilityModalForm>
   </b-card>
+</div>
 </template>
 
 <script lang="ts">
-import {Component, Prop, Ref, Watch} from "vue-property-decorator";
+import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
-import {InfrastructureFacilityGetDTO} from "opensilex-core/model/infrastructureFacilityGetDTO";
 import {BTable} from "bootstrap-vue";
-import { NamedResourceDTOInfrastructureFacilityModel } from "opensilex-core/model/namedResourceDTOInfrastructureFacilityModel";
-import {InfrastructureFacilityCreationDTO} from "opensilex-core/model/infrastructureFacilityCreationDTO";
 import FacilityModalForm from "./FacilityModalForm.vue";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
-import {NamedResourceDTOInfrastructureModel} from "opensilex-core/model/namedResourceDTOInfrastructureModel";
-import {NamedResourceDTOSiteModel} from "opensilex-core/model/namedResourceDTOSiteModel";
+import {InfrastructureFacilityCreationDTO,
+  InfrastructureFacilityGetDTO,
+  NamedResourceDTOInfrastructureFacilityModel, NamedResourceDTOInfrastructureModel, NamedResourceDTOSiteModel } from 'opensilex-core/index';
 
 @Component
 export default class FacilitiesView extends Vue {
@@ -148,6 +157,9 @@ export default class FacilitiesView extends Vue {
    */
   fetchedFacilities: Array<NamedResourceDTOInfrastructureFacilityModel> = [];
   selectedFacility: NamedResourceDTOInfrastructureFacilityModel = undefined;
+
+  @Prop()
+  displayButtonOnTop : boolean;
 
   @Prop({
     default: false,
@@ -269,6 +281,19 @@ export default class FacilitiesView extends Vue {
 </script>
 
 <style scoped lang="scss">
+
+.facilitiesHelp{
+  font-size: 1.3em;
+  background: #f1f1f1;
+  color: #00A38D;
+  border-radius: 50%;
+}
+
+.spaced-actions {
+  margin-top: -15px;
+  margin-bottom: 10px;
+}
+
 </style>
 
 <i18n>

@@ -1,9 +1,9 @@
 <template>
   <opensilex-Button
     @click="$emit('click')"
-    :variant="variant"
-    :small="small"
     :label="label"
+    class="helpButton"
+    :variant="variant"
     :disabled="disabled"
     icon="fa#question"
   ></opensilex-Button>

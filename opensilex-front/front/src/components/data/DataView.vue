@@ -1,177 +1,221 @@
 <template>
   <div class="container-fluid">
-    <opensilex-PageHeader
-      icon="ik#ik-bar-chart-line"
-      title="component.menu.data.label"
-      description="DataView.description"
-    ></opensilex-PageHeader>
-
     <opensilex-PageActions>
-      <template v-slot>
-        <opensilex-CreateButton
-            v-if="user.hasCredential(credentials.CREDENTIAL_DATA_MODIFICATION_ID)"
+      <opensilex-CreateButton
+          v-if="user.hasCredential(
+              credentials.CREDENTIAL_DATA_MODIFICATION_ID)"
           @click="modalDataForm.showCreateForm()"
           label="OntologyCsvImporter.import"
-        ></opensilex-CreateButton>
-      </template>
+          class="createButton greenThemeColor"
+      >
+      </opensilex-CreateButton>
+      <b-button
+          @click="exportModal.show()"
+          class="exportButton greenThemeColor createButton"
+      >
+        export
+      </b-button>
     </opensilex-PageActions>
 
+
+    <opensilex-DataExportModal
+        ref="exportModal"
+        :filter="filter"
+    ></opensilex-DataExportModal>
+
+
     <opensilex-ModalForm
-      ref="modalDataForm"
-      createTitle="DataImportForm.create"
-      editTitle="DataImportForm.update"
-      component="opensilex-DataImportForm"
-      icon="ik#ik-bar-chart-line"
-      modalSize="xl"
-      @onCreate="afterCreateData"
-      :successMessage="successMessage"
+        ref="modalDataForm"
+        createTitle="DataImportForm.create"
+        editTitle="DataImportForm.update"
+        component="opensilex-DataImportForm"
+        icon="ik#ik-bar-chart-line"
+        modalSize="xl"
+        @onCreate="afterCreateData"
+        :successMessage="successMessage"
     ></opensilex-ModalForm>
 
-    <opensilex-PageContent>
+    <opensilex-PageContent
+        class="pagecontent">
       <template v-slot>
 
-        <opensilex-SearchFilterField
-          ref="searchField"
-          @search="refresh()"
-          @clear="reset()"
-          label="DataView.filter.label"
-          :showTitle="false"
-        >
-          <template v-slot:filters>
+        <!-- Toggle Sidebar-->
+        <div class="searchMenuContainer"
+             v-on:click="SearchFiltersToggle = !SearchFiltersToggle"
+             :title="searchFiltersPannel()">
+          <div class="searchMenuIcon">
+            <i class="icon ik ik-search"></i>
+          </div>
+        </div>
+        <!-- FILTERS -->
+        <Transition>
+          <div v-show="SearchFiltersToggle">
 
-              <!-- Variables -->
-              <opensilex-FilterField  quarterWidth="true">
-                <opensilex-VariableSelectorWithFilter
-                  placeholder="VariableSelectorWithFilter.placeholder-multiple"
-                  :variables.sync="filter.variables"
-                  :withAssociatedData="true"
-                ></opensilex-VariableSelectorWithFilter>
-              </opensilex-FilterField>
-            
-              <!-- Experiments -->
-              <opensilex-FilterField  quarterWidth="true">
-                <opensilex-ExperimentSelector
-                  label="DataView.filter.experiments"
-                  :experiments.sync="filter.experiments"
-                  :multiple="true"
-                  @select="updateSOFilter"
-                  @clear="updateSOFilter"
-                ></opensilex-ExperimentSelector>
-              </opensilex-FilterField> 
+            <opensilex-SearchFilterField
+                ref="searchField"
+                @search="refresh()"
+                @clear="reset()"
+                label="DataView.filter.label"
+                :showTitle="false"
+                class="searchFilterField"
+            >
+              <template v-slot:filters>
 
-              <opensilex-FilterField quarterWidth="true">
+                <!-- Variables -->
+                <div>
+                  <opensilex-FilterField quarterWidth="true">
+                    <opensilex-VariableSelectorWithFilter
+                        placeholder="VariableSelectorWithFilter.placeholder-multiple"
+                        :variables.sync="filter.variables"
+                        :withAssociatedData="true"
+                        class="searchFilter"
+                    ></opensilex-VariableSelectorWithFilter>
+                  </opensilex-FilterField>
+                </div>
+
+                <!-- Experiments -->
+                <div>
+                  <opensilex-FilterField quarterWidth="true">
+                    <opensilex-ExperimentSelector
+                        label="DataView.filter.experiments"
+                        :experiments.sync="filter.experiments"
+                        :multiple="true"
+                        @select="updateSOFilter"
+                        @clear="updateSOFilter"
+                        class="searchFilter"
+                    ></opensilex-ExperimentSelector>
+                  </opensilex-FilterField>
+                </div>
+
                 <!-- Start Date -->
-                <opensilex-DateTimeForm
-                    :value.sync="filter.start_date"
-                    label="component.common.begin"
-                    name="startDate"
-                    :max-date="filter.end_date ? filter.end_date : undefined"                
-                ></opensilex-DateTimeForm>
-              </opensilex-FilterField>
+                <div>
+                  <opensilex-FilterField quarterWidth="true">
+                    <opensilex-DateTimeForm
+                        :value.sync="filter.start_date"
+                        label="component.common.begin"
+                        name="startDate"
+                        :max-date="filter.end_date ? filter.end_date : undefined"
+                        class="searchFilter"
+                    ></opensilex-DateTimeForm>
+                  </opensilex-FilterField>
+                </div>
 
-              <opensilex-FilterField quarterWidth="true">
                 <!-- End Date -->
-                <opensilex-DateTimeForm
-                    :value.sync="filter.end_date"
-                    label="component.common.end"
-                    name="endDate"
-                    :min-date="filter.start_date ? filter.start_date : undefined"
-                ></opensilex-DateTimeForm>
-              </opensilex-FilterField>
-              <!-- Scientific objects -->
-              <opensilex-FilterField halfWidth="true">
-                <opensilex-SelectForm
-                  ref="soSelector"
-                  label="DataView.filter.scientificObjects"
-                  placeholder="DataView.filter.scientificObjects-placeholder"
-                  :selected.sync="filter.scientificObjects"
-                  modalComponent="opensilex-ScientificObjectModalList"
-                  :filter.sync="soFilter"
-                  :isModalSearch="true"
-                  :clearable="true"
-                  :multiple="true"
-                  @clear="refreshSoSelector"
-                  @onValidate="refreshComponent"
-                  @onClose="refreshComponent"
-                  @select="refreshComponent"
-                  :limit="1"
-                ></opensilex-SelectForm>
-              </opensilex-FilterField>
+                <div>
+                  <opensilex-FilterField quarterWidth="true">
+                    <opensilex-DateTimeForm
+                        :value.sync="filter.end_date"
+                        label="component.common.end"
+                        name="endDate"
+                        :min-date="filter.start_date ? filter.start_date : undefined"
+                        class="searchFilter"
+                    ></opensilex-DateTimeForm>
+                  </opensilex-FilterField>
+                </div>
 
-               <!-- targets -->
-              <opensilex-FilterField halfWidth="true">
-                <opensilex-TagInputForm
-                  class="overflow-auto"
-                  style="height: 90px"
-                  :value.sync="filter.targets"
-                  label="DataView.filter.targets"
-                  helpMessage="DataView.filter.targets-help"
-                  type="text"
-                ></opensilex-TagInputForm>
-              </opensilex-FilterField>
-            
+                <!-- Scientific objects -->
+                <div>
+                  <opensilex-FilterField quarterWidth="true">
+                    <opensilex-SelectForm
+                        ref="soSelector"
+                        label="DataView.filter.scientificObjects"
+                        placeholder="DataView.filter.scientificObjects-placeholder"
+                        :selected.sync="filter.scientificObjects"
+                        modalComponent="opensilex-ScientificObjectModalList"
+                        class="searchFilter"
+                        :filter.sync="soFilter"
+                        :isModalSearch="true"
+                        :clearable="true"
+                        :multiple="true"
+                        @clear="refreshSoSelector"
+                        @onValidate="refreshComponent"
+                        @onClose="refreshComponent"
+                        @select="refreshComponent"
+                        :limit="1"
+                    ></opensilex-SelectForm>
+                  </opensilex-FilterField>
+                </div>
 
-              <!-- Provenance -->
-              <opensilex-FilterField >
-                <opensilex-DataProvenanceSelector
-                  ref="provSelector"
-                  :provenances.sync="filter.provenance"
-                  label="ExperimentData.provenance"
-                  @select="loadProvenance"
-                  :targets="filter.scientificObjects"
-                  :experiments="filter.experiments"
-                  :multiple="false"
-                  :viewHandler="showProvenanceDetails"
-                  :viewHandlerDetailsVisible="visibleDetails"
-                  :key="refreshKey"
-                ></opensilex-DataProvenanceSelector>
+                <!-- Targets -->
+                <div>
+                  <opensilex-FilterField quarterWidth="true">
+                    <opensilex-TagInputForm
+                        class="searchFilter"
+                        :value.sync="filter.targets"
+                        label="DataView.filter.targets"
+                        helpMessage="DataView.filter.targets-help"
+                        type="text"
+                    ></opensilex-TagInputForm>
+                  </opensilex-FilterField>
+                </div>
 
-                <b-collapse
-                  v-if="selectedProvenance"
-                  id="collapse-4"
-                  v-model="visibleDetails"
-                  class="mt-2"
-                >
-                  <opensilex-ProvenanceDetails
-                    :provenance="getSelectedProv"
-                  ></opensilex-ProvenanceDetails>
-                </b-collapse>
-              </opensilex-FilterField>
-          </template>
-        </opensilex-SearchFilterField>
-    
-        <opensilex-DataList 
-          ref="dataList"
-          :listFilter.sync="filter">
+                <!-- Provenance -->
+                <div>
+                  <opensilex-FilterField quarterWidth="true">
+                    <opensilex-DataProvenanceSelector
+                        ref="provSelector"
+                        :provenances.sync="filter.provenance"
+                        label="ExperimentData.provenance"
+                        @select="loadProvenance"
+                        :targets="filter.scientificObjects"
+                        :experiments="filter.experiments"
+                        :multiple="false"
+                        :viewHandler="showProvenanceDetails"
+                        :viewHandlerDetailsVisible="visibleDetails"
+                        :key="refreshKey"
+                        class="searchFilter"
+                    ></opensilex-DataProvenanceSelector>
+
+                    <b-collapse
+                        v-if="selectedProvenance"
+                        id="collapse-4"
+                        v-model="visibleDetails"
+                    >
+                      <opensilex-ProvenanceDetails
+                          :provenance="getSelectedProv"
+                      ></opensilex-ProvenanceDetails>
+                    </b-collapse>
+                  </opensilex-FilterField>
+                </div>
+              </template>
+            </opensilex-SearchFilterField>
+          </div>
+        </Transition>
+
+        <opensilex-DataList
+            ref="dataList"
+            :listFilter.sync="filter"
+            class="dataList">
         </opensilex-DataList>
-        
+
       </template>
     </opensilex-PageContent>
 
-    <opensilex-ResultModalView ref="resultModal" @onHide="refreshDataAfterImportation()"> </opensilex-ResultModalView>
+    <opensilex-ResultModalView ref="resultModal" @onHide="refreshDataAfterImportation()"></opensilex-ResultModalView>
 
-    <opensilex-DataProvenanceModalView 
-      ref="dataProvenanceModalView"        
+    <opensilex-DataProvenanceModalView
+        ref="dataProvenanceModalView"
     ></opensilex-DataProvenanceModalView>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Ref } from "vue-property-decorator";
+import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import { ProvenanceGetDTO } from "opensilex-core/index";
+import {ProvenanceGetDTO} from "opensilex-core/index";
 import {ScientificObjectNodeDTO} from "opensilex-core/model/scientificObjectNodeDTO";
-import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
+import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
+import {DataService} from "opensilex-core/api/data.service";
 
 @Component
 export default class DataView extends Vue {
   $opensilex: any;
   $store: any;
-  service: any;
+  dataService: DataService;
   disabled = false;
 
   visibleDetails: boolean = false;
-  selectedProvenance: any = null;
+  selectedProvenance: ProvenanceGetDTO = null;
   filterProvenanceLabel: string = null;
   refreshKey = 0;
 
@@ -191,6 +235,7 @@ export default class DataView extends Vue {
   @Ref("resultModal") readonly resultModal!: any;
   @Ref("soSelector") readonly soSelector!: any;
   @Ref("varSelector") readonly varSelector!: any;
+  @Ref("exportModal") readonly exportModal!: any;
 
   filter = {
     start_date: null,
@@ -203,15 +248,20 @@ export default class DataView extends Vue {
   };
 
   soFilter = {
-      name: "",
-      experiment: undefined,
-      germplasm: undefined,
-      factorLevels: [],
-      types: [],
-      existenceDate: undefined,
-      creationDate: undefined,
-    };
+    name: "",
+    experiment: undefined,
+    germplasm: undefined,
+    factorLevels: [],
+    types: [],
+    existenceDate: undefined,
+    creationDate: undefined,
+  };
 
+  data() {
+    return {
+      SearchFiltersToggle: false,
+    }
+  }
 
   refreshSoSelector() {
 
@@ -219,7 +269,7 @@ export default class DataView extends Vue {
     this.refreshComponent();
   }
 
-  refreshComponent(){
+  refreshComponent() {
     this.refreshKey += 1
   }
 
@@ -254,7 +304,7 @@ export default class DataView extends Vue {
   }
 
   created() {
-    this.service = this.$opensilex.getService("opensilex.DataService");
+    this.dataService = this.$opensilex.getService("opensilex.DataService");
   }
 
   get getSelectedProv() {
@@ -269,28 +319,25 @@ export default class DataView extends Vue {
 
   getProvenance(uri) {
     if (uri != undefined && uri != null) {
-      return this.$opensilex
-        .getService("opensilex.DataService")
-        .getProvenance(uri)
-        .then((http: HttpResponse<OpenSilexResponse<ProvenanceGetDTO>>) => {
-          return http.response.result;
-        });
+      this.dataService
+          .getProvenance(uri)
+          .then((http: HttpResponse<OpenSilexResponse<ProvenanceGetDTO>>) => {
+            this.selectedProvenance = http.response.result;
+          });
     }
   }
 
   loadProvenance(selectedValue) {
     if (selectedValue != undefined && selectedValue != null) {
-      this.getProvenance(selectedValue.id).then((prov) => {
-        this.selectedProvenance = prov;
-      });
+      this.getProvenance(selectedValue.id);
     }
   }
 
   afterCreateData(results) {
-    if(results instanceof Promise){
+    if (results instanceof Promise) {
       results.then((res) => {
         this.resultModal.setNbLinesImported(
-          res.validation.dataErrors.nbLinesImported
+            res.validation.dataErrors.nbLinesImported
         );
         this.resultModal.setProvenance(res.form.provenance);
         this.resultModal.show();
@@ -298,9 +345,9 @@ export default class DataView extends Vue {
         this.clear();
         this.filter.provenance = res.form.provenance.uri;
       });
-    }else{ 
+    } else {
       this.resultModal.setNbLinesImported(
-        results.validation.dataErrors.nbLinesImported
+          results.validation.dataErrors.nbLinesImported
       );
       this.resultModal.setProvenance(results.form.provenance);
       this.resultModal.show();
@@ -308,7 +355,7 @@ export default class DataView extends Vue {
       this.clear();
       this.filter.provenance = results.form.provenance.uri;
     }
-    
+
   }
 
   clear() {
@@ -321,14 +368,22 @@ export default class DataView extends Vue {
     return this.$t("ResultModalView.data-imported");
   }
 
-  refreshDataAfterImportation(){
+  refreshDataAfterImportation() {
     this.refresh();
   }
-  
+
+  searchFiltersPannel() {
+    return this.$t("searchfilter.label")
+  }
 }
 </script>
 
 <style scoped lang="scss">
+
+.createButton {
+  margin-bottom: 10px;
+  margin-top: -15px
+}
 </style>
 
 <i18n>
@@ -336,8 +391,8 @@ export default class DataView extends Vue {
 en:
   DataView:
     buttons:
-      create-data : Add data
-      generate-template : Generate template
+      create-data: Add data
+      generate-template: Generate template
     description: View and export data
     list:
       date: Date
@@ -348,7 +403,7 @@ en:
       details: view data details
     filter:
       label: Search data
-      experiments:  Experiment(s)
+      experiments: Experiment(s)
       variables: Variable(s)
       scientificObjects: Scientific object(s)
       scientificObjects-placeholder: Select scientific objects
@@ -359,8 +414,8 @@ en:
 fr:
   DataView:
     buttons:
-      create-data : Ajouter un jeu de données
-      generate-template : Générer un gabarit
+      create-data: Ajouter un jeu de données
+      generate-template: Générer un gabarit
     description: Visualiser et exporter des données
     list:
       date: Date
@@ -371,12 +426,12 @@ fr:
       details: Voir les détails de la donnée
     filter:
       label: Rechercher des données
-      experiments:  Expérimentation(s)
+      experiments: Expérimentation(s)
       variables: Variable(s)
       scientificObjects: Objet(s) scientifique(s)
       scientificObjects-placeholder: Sélectionner des objets scientifiques
-      provenance: Provenance  
+      provenance: Provenance
       targets: Cible(s)
-      targets-help: Copier les URI des cibles ici    
-  
+      targets-help: Copier les URI des cibles ici
+
 </i18n>

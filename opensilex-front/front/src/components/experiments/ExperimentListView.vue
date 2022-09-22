@@ -1,21 +1,15 @@
 <template>
   <div class="container-fluid">
-
-    <opensilex-PageHeader
-      icon="ik#ik-layers"
-      title="component.menu.experiments"
-      description="component.experiment.search.description"
-    ></opensilex-PageHeader>
-
     <opensilex-PageActions
-      v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
-    >
-      <template v-slot>
+      v-if="
+        user.hasCredential(
+          credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)
+          ">
         <opensilex-CreateButton
           @click="experimentForm.showCreateForm()"
           label="component.experiment.search.buttons.create-experiment"
+          class="createButton"
         ></opensilex-CreateButton>
-      </template>
     </opensilex-PageActions>
 
     <opensilex-PageContent>
@@ -83,6 +77,12 @@ export default class ExperimentListView extends Vue {
 
 
 <style scoped lang="scss">
+.createButton, .helpButton{
+  margin-bottom: 10px;
+  margin-top: -15px;
+  margin-left: 0;
+  margin-right: 5px;
+}
 </style>
 
 <i18n>

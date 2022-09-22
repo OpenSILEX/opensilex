@@ -4,8 +4,6 @@
     :selected.sync="experimentsURI"
     :multiple="multiple"
     :searchMethod="searchExperiments"
-    :itemLoadingMethod="loadExperiments"
-    :conversionMethod="experimentToSelectNode"
     :clearable="clearable"
     :placeholder="placeholder"
     noResultsText="component.experiment.form.selector.filter-search-no-result"
@@ -53,18 +51,6 @@ export default class ExperimentSelector extends Vue {
     this.experimentsByUriCache = new Map();
   }
 
-  loadExperiments(experiments) {
-
-    return this.$opensilex
-      .getService("opensilex.ExperimentsService")
-      .getExperimentsByURIs(experiments)
-      .then((http: HttpResponse<OpenSilexResponse<ExperimentGetListDTO>>) => {
-        return http.response.result;
-      })
-      .catch(this.$opensilex.errorHandler);   
-
-  }
-
   searchExperiments(name) {
     return this.$opensilex
       .getService("opensilex.ExperimentsService")
@@ -94,13 +80,6 @@ export default class ExperimentSelector extends Vue {
           
       );
 
-  }
-
-  experimentToSelectNode(dto) {
-    return {
-      id: dto.uri,
-      label: dto.name,
-    };
   }
 
   select(value) {

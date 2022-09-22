@@ -1,33 +1,43 @@
 <template>
   <div class="container-fluid">
     <b-row>
-      <opensilex-Card icon :label="$t(label)">
+      <opensilex-Card
+      icon :label="$t(label)"
+      class="ProvenanceDetailsVisible">
         <template v-slot:rightHeader>
           <div class="ml-3"></div>
         </template>
         <template v-slot:body>
+
+          <!-- uri -->
           <opensilex-UriView
             label="ProvenanceDetails.uri"
             :uri="provenance.uri"
             :value="provenance.uri"
             :to="{path: '/provenances/details/'+ encodeURIComponent(provenance.uri)}"
           ></opensilex-UriView>
+
+          <!-- name -->
           <opensilex-StringView
             label="ProvenanceDetails.label"
             :value="provenance.name"
+            class="provenanceDetails"
           ></opensilex-StringView>
 
+          <!-- description -->
           <opensilex-StringView
             label="ProvenanceDetails.description"
             :value="provenance.description"
           ></opensilex-StringView>
 
+          <!-- activity -->
           <opensilex-StringView 
             v-if="provenance.prov_activity != null && provenance.prov_activity.length>0"
             label="ProvenanceDetailsPage.activity"
             :value="provenance.prov_activity[0].rdf_type"
           ></opensilex-StringView>
 
+          <!-- agent -->
           <opensilex-UriListView v-if="agentList.length>0"
             label="ProvenanceDetails.agent"
             :list="agentList"
@@ -109,6 +119,21 @@ export default class ProvenanceDetails extends Vue {
   margin-top: -35px;
   margin-left: -15px;
   margin-right: 15px;
+}
+
+.ProvenanceDetailsVisible{
+  width: auto;
+  min-width: auto;
+  max-width: 340px;
+}
+
+@media screen and (min-width: 1200px) {
+  .ProvenanceDetailsVisible{
+    min-width: 340px;
+    max-width: 340px;
+    margin-left: -20px;
+    overflow: hidden;
+  }
 }
 </style>
 <i18n>

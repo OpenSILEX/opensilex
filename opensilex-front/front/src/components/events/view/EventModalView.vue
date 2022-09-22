@@ -57,7 +57,16 @@
             :search=false
         ></opensilex-DocumentTabList>
 
-        <template v-slot:modal-ok>{{$t('component.common.ok')}}</template>
+        <template v-slot:modal-footer>
+            <button
+                type="button"
+                class="btn greenThemeColor"
+                v-on:click="hide(false)"
+            >
+                {{ $t('component.common.ok') }}
+            </button>
+        </template>
+
 
     </b-modal>
 </template>
@@ -65,10 +74,9 @@
 <script lang="ts">
     import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
     import Vue from "vue";
-    // @ts-ignore
-    import {EventDetailsDTO} from "opensilex-core/model/eventDetailsDTO";
     import {VueJsOntologyExtensionService, VueRDFTypeDTO} from "../../../lib";
     import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
+    import { EventDetailsDTO } from 'opensilex-core/index';
 
     @Component
     export default class EventModalView extends Vue {

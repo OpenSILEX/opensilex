@@ -13,7 +13,8 @@
               v-else
               :label="label"
               :helpMessage="helpMessage"
-              :labelFor="'field' + id">
+              :labelFor="'field' + id"
+              class="checkbox">
 
       </opensilex-FormInputLabelHelper>
     </ValidationProvider>
@@ -74,6 +75,6 @@ export default class UriForm extends Vue {
 }
 </script>
 
-<style scoped lang="scss">
+<style scoped lang="scss"> 
 </style>
 

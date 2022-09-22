@@ -1,6 +1,6 @@
 <template>
     <ValidationObserver ref="validatorRef">
-
+        <!--Coordinates form-->
         <div class="row">
             <div class="col-lg-9">
                 <opensilex-GeometryForm
@@ -10,9 +10,8 @@
                         placeholder="Position.coordinates-placeholder"
                 ></opensilex-GeometryForm>
             </div>
-
         </div>
-
+      <!--XYZ form-->
         <div class="row">
             <div class="col-lg-3">
                 <opensilex-InputForm
@@ -20,7 +19,7 @@
                         label="Position.x"
                         helpMessage="Position.x-help"
                         placeholder="Position.x-placeholder"
-                        type="number"
+                        type="text"
                 ></opensilex-InputForm>
             </div>
 
@@ -30,7 +29,7 @@
                         label="Position.y"
                         helpMessage="Position.y-help"
                         placeholder="Position.y-placeholder"
-                        type="number"
+                        type="text"
                 ></opensilex-InputForm>
             </div>
 
@@ -40,11 +39,11 @@
                         label="Position.z"
                         helpMessage="Position.z-help"
                         placeholder="Position.z-placeholder"
-                        type="number"
+                        type="text"
                 ></opensilex-InputForm>
             </div>
         </div>
-
+      <!--Textual position form-->
         <div class="row">
             <div class="col">
                 <!-- Comment -->
@@ -63,8 +62,7 @@
 <script lang="ts">
     import {Component, Prop, Ref} from "vue-property-decorator";
     import Vue from "vue";
-    // @ts-ignore
-    import {PositionCreationDTO} from "opensilex-core/model/positionCreationDTO";
+    import { PositionCreationDTO } from 'opensilex-core/index';
 
     @Component
     export default class PositionForm extends Vue {
@@ -101,12 +99,12 @@ en:
         custom-coordinates: Custom coordinates
         x-help: "1th dimension of a custom coordinate system"
         x: X
-        x-placeholder: "10"
+        x-placeholder: "A or 10 or 10.5"
         y: Y
         y-help: "2nd dimension of a custom coordinate system"
-        y-placeholder: "10"
+        y-placeholder: "A or 10 or 10.5"
         z: Z
-        z-placeholder: "10"
+        z-placeholder: "A or 10 or 10.5"
         z-help: "3rd dimension of a custom coordinate system"
         textual-position: Textual position
         textual-position-placeholder: Beside the left door
@@ -126,12 +124,12 @@ fr:
         custom-coordinates: "Coordonnées personnalisées"
         x-help: "1ère dimension d'un système de coordonnées"
         x: X
-        x-placeholder: "10"
+        x-placeholder: "A ou 10 ou 10,5"
         y: Y
         y-help: "2ème dimension d'un système de coordonnées"
-        y-placeholder: "10"
+        y-placeholder: "A ou 10 ou 10,5"
         z: Z
-        z-placeholder: "10"
+        z-placeholder: "A ou 10 ou 10,5"
         z-help: "3ème dimension d'un système de coordonnées"
         textual-position: Positition textuelle
         textual-position-placeholder: "à côté de la porte gauche"

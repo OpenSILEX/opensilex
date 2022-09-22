@@ -14,6 +14,9 @@ menu:
           component: opensilex-InfrastructureView
           credentials:
             - organization-access
+          icon: ik#ik-globe
+          title: component.menu.infrastructures
+          description: InfrastructureView.description
       - id: projects
         label: component.menu.projects
         route:
@@ -21,6 +24,9 @@ menu:
           component: opensilex-ProjectView
           credentials:
             - project-access
+          icon: ik#ik-folder
+          title: component.menu.projects
+          description: component.project.search-description
       - id: experiments
         label: component.menu.experiments
         route:
@@ -28,6 +34,9 @@ menu:
           component: opensilex-ExperimentListView
           credentials:
             - experiment-access
+          icon: ik#ik-layers
+          title: component.menu.experiments
+          description: component.experiment.search.description
       - id: facilities
         label: component.menu.facilities
         route:
@@ -35,6 +44,9 @@ menu:
           component: opensilex-FacilityListView
           credentials:
             - facility-access
+          icon: "ik#ik-globe"
+          title: "component.menu.facilities" 
+          description: FacilityListView.description
       - id: devices
         label: component.menu.devices
         route:
@@ -42,6 +54,9 @@ menu:
           component: opensilex-DeviceView
           credentials:
             - device-access
+          icon: ik#ik-thermometer
+          title: Device.title
+          description: Device.description
       - id: events
         label: component.menu.events
         route:
@@ -49,6 +64,9 @@ menu:
           component: opensilex-EventsView
           credentials:
             - event-access
+          icon: ik#ik-activity
+          title: Event.list-title
+          description: EventsView.description
   - id: experimentalDesign
     label: component.menu.experimentalDesign.label
     children:
@@ -59,6 +77,9 @@ menu:
           component: opensilex-VariablesView
           credentials:
             - variable-access
+          icon: fa#vials
+          title: VariableView.title
+          description: VariableView.description
       - id: germplasm
         label: component.menu.experimentalDesign.germplasm
         icon: ik-cloud-rain
@@ -67,6 +88,9 @@ menu:
           component: opensilex-GermplasmView
           credentials:
             - germplasm-access
+          icon: fa#seedling
+          title: GermplasmView.title
+          description: GermplasmView.description
       - id: documents
         label: Documents
         route:
@@ -74,6 +98,9 @@ menu:
           component: opensilex-DocumentView
           credentials:
             - document-access
+          icon: ik#ik-file-text
+          title: DocumentView.title
+          description: DocumentView.description
       - id: scientificObjects
         label: component.menu.scientificObjects
         route:
@@ -81,6 +108,9 @@ menu:
           component: opensilex-ScientificObjectView
           credentials:
             - scientific-objects-access
+          icon: ik#ik-target
+          title: component.menu.scientificObjects
+          description: ScientificObjectList.description
   - id: data-menu
     label: component.menu.data.label
     children:
@@ -96,6 +126,9 @@ menu:
           component: opensilex-ProvenanceView
           credentials:
             - provenance-access
+          icon: ik#ik-bar-chart-line
+          title: component.menu.data.provenance
+          description: ProvenanceView.description
       - id: data
         label: component.menu.data.tabularData
         route:
@@ -103,6 +136,9 @@ menu:
           component: opensilex-DataView
           credentials:
             - data-access
+          icon: ik#ik-bar-chart-line
+          title: component.menu.data.label
+          description: DataView.description
       - id: datafiles
         label: component.menu.data.datafiles
         route:
@@ -110,6 +146,9 @@ menu:
           component: opensilex-DataFilesView
           credentials:
             - data-access
+          icon: fa#file-medical-alt
+          title: component.menu.data.datafiles
+          description: DataFilesView.description
 
       # - id: equipments
       #   label: component.menu.equipments.label
@@ -148,6 +187,9 @@ menu:
           component: opensilex-FacilitiesTypes
           credentials:
             - vocabulary-access
+          icon: ik#ik-settings
+          title: FacilitiesTypes.typeTitle
+          description: FacilitiesTypes.typeDescription
       - id: scientificObjectVocabulary
         label: component.menu.scientificObjectTypes
         route:
@@ -155,6 +197,9 @@ menu:
           component: opensilex-ScientificObjectTypes
           credentials:
             - vocabulary-access
+          icon: ik#ik-settings
+          title: ScientificObjectTypes.typeTitle
+          description: ScientificObjectTypes.typeDescription
       - id: deviceVocabulary
         label: component.menu.deviceTypes
         route:
@@ -162,6 +207,9 @@ menu:
           component: opensilex-DeviceTypes
           credentials:
             - vocabulary-access
+          icon: ik#ik-settings
+          title: DeviceTypes.typeTitle
+          description: DeviceTypes.typeDescription
       - id: factorCategoryVocabulary
         label: component.menu.factorCategoryTypes
         route:
@@ -169,6 +217,9 @@ menu:
           component: opensilex-FactorCategoryTypes
           credentials:
             - vocabulary-access
+          icon: ik#ik-settings
+          title: FactorCategoryTypes.typeTitle
+          description: FactorCategoryTypes.typeDescription
       - id: eventVocabulary
         label: component.menu.eventTypes
         route:
@@ -176,7 +227,19 @@ menu:
           component: opensilex-EventTypes
           credentials:
             - vocabulary-access
-
+          icon: ik#ik-settings
+          title: EventTypes.typeTitle
+          description: EventTypes.typeDescription
+      - id: namespacesVocabulary
+        label: component.menu.namespaces
+        route:
+          path: /namespaces
+          component: opensilex-NamespacesView
+          credentials:
+            - vocabulary-access
+          icon: ik#ik-settings
+          title: component.menu.namespaces
+          description: Namespaces.description
   - id: configuration
     label: component.menu.configuration
     children:
@@ -187,6 +250,9 @@ menu:
           component: opensilex-UserView
           credentials:
             - user-access
+          icon: ik#ik-user
+          title: UserView.title
+          description: UserView.description
       - id: groups
         label: component.menu.security.groups
         route:
@@ -194,6 +260,9 @@ menu:
           component: opensilex-GroupView
           credentials:
             - group-access
+          icon: ik#ik-users
+          title: component.menu.security.groups
+          description: component.group.description
       - id: profiles
         label: component.menu.security.profiles
         route:
@@ -201,6 +270,10 @@ menu:
           component: opensilex-ProfileView
           credentials:
             - profile-access
+            - is-admin
+          icon: ik#ik-settings
+          title: component.menu.security.profiles
+          description: component.profile.description
       - id: system
         label: component.menu.tools.system
         route:
@@ -208,6 +281,10 @@ menu:
           component: opensilex-SystemView
           credentials:
             - is-admin
+          component: opensilex-SystemView 
+          icon: ik#ik-layers
+          title: SystemView.title
+          description: SystemView.title-description
   - id: tools
     label: component.menu.tools.label
     children:
@@ -218,10 +295,14 @@ menu:
           component: opensilex-PackagesView
           credentials:
             - package-access
+          icon: ik#ik-layers
+          title: PackagesView.title
+          description: PackagesView.description
 
 routes:
   - path: /infrastructure/details/:uri
     component: opensilex-InfrastructureDetailView
+    icon: ik#ik-globe
   - path: /infrastructure/site/details/:uri
     component: opensilex-SiteView
   - path: /experiment/details/:uri
@@ -229,6 +310,8 @@ routes:
   - path: /experiment/scientific-objects/:uri
     component: opensilex-ExperimentView
   - path: /experiment/data/:uri
+    component: opensilex-ExperimentView
+  - path: /experiment/data-visualisation/:uri
     component: opensilex-ExperimentView
   - path: /experiment/map/:uri
     component: opensilex-ExperimentView
@@ -244,6 +327,9 @@ routes:
 
   - path: /scientific-object-types/properties
     component: opensilex-ScientificObjectTypes
+    icon: ik#ik-settings
+    title: ScientificObjectTypes.typeTitle
+    description: ScientificObjectTypes.typeDescription 
 
   - path: /facilities-types/properties
     component: opensilex-FacilitiesTypes
@@ -260,6 +346,8 @@ routes:
   - path: /variable/annotations/:uri
     component: opensilex-VariableView
   - path: /variable/visualization/:uri
+    component: opensilex-VariableView
+  - path: /variable/documents/:uri
     component: opensilex-VariableView
 
   - path: /variables_group/details/:uri
@@ -278,6 +366,9 @@ routes:
   - path: /germplasm/create
     component: opensilex-GermplasmCreate
     credentials: [germplasm-modification]
+    icon: fa#seedling
+    title: GermplasmCreate.title
+    description: GermplasmCreate.description
   - path: /germplasm/details/:uri
     component: opensilex-GermplasmDetails
     credentials: []
@@ -285,6 +376,7 @@ routes:
     component: opensilex-GermplasmDetails
   - path: /germplasm/documents/:uri
     component: opensilex-GermplasmDetails
+
 
   - path: /factor/create
     component: opensilex-FactorForm
@@ -321,6 +413,9 @@ routes:
   - path: /devices/create
     component: opensilex-DeviceCreate
     credentials: [device-modification]
+    icon: ik#ik-thermometer
+    title: DeviceCreate.title
+    description: DeviceCreate.description
 
   - path: /area/details/:uri
     component: opensilex-AreaDetails
@@ -332,6 +427,9 @@ routes:
   - path: /scientific-objects/details/:uri
     component: opensilex-ScientificObjectDetailView
     credentials: []
+    icon: ik#ik-target
+    title: component.menu.scientificObjects
+    description: ScientificObjectList.description
   - path: /infrastructures/details/:uri
     component: opensilex-InfrastructureDetailView
     credentials: []
@@ -343,6 +441,7 @@ routes:
     component: opensilex-ProvenanceDetailsPage
   - path: /provenances/documents/:uri
     component: opensilex-ProvenanceDetailsPage
+
 
   # Route item example:
   #  - path: /users/create

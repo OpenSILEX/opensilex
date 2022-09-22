@@ -13,7 +13,6 @@ import org.bson.Document;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.nosql.mongodb.MongoDBConfig;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.nosql.mongodb.MongoModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,7 +51,7 @@ public class NoSQLModule extends OpenSilexModule {
     @Override
     public void check() throws Exception {
         MongoDBConfig config = getOpenSilex().loadConfigPath(MongoDBConfig.DEFAULT_CONFIG_PATH, MongoDBConfig.class);
-        MongoClient mongo = MongoDBService.getMongoDBClient(config);
+        MongoClient mongo = MongoDBService.buildMongoDBClient(config);
         MongoDatabase db = mongo.getDatabase(config.database());
 
         MongoCollection<Document> c = db.getCollection("test");
@@ -80,22 +79,25 @@ public class NoSQLModule extends OpenSilexModule {
     
     public void initMongo(boolean reset) throws Exception {
         MongoDBConfig config = getOpenSilex().loadConfigPath(MongoDBConfig.DEFAULT_CONFIG_PATH, MongoDBConfig.class);
-        MongoClient mongo = MongoDBService.getMongoDBClient(config);
-        LOGGER.info("Install with parameters : Reset :" + String.valueOf(reset) + ", Db : " + config.database());
-        if (reset) {            
-            MongoDatabase db = mongo.getDatabase(config.database());
-            db.drop();
-        } else {
-            try {
-                MongoDatabase adminDb = mongo.getDatabase("admin");   
-                Document runCommand = adminDb.runCommand(new Document("replSetGetStatus", 1));
-                LOGGER.info("Replica set information : " + runCommand.toJson());
-            } catch (Exception e) {
-                LOGGER.error("No configured replica set.");
-                LOGGER.error("More information at https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/databases/mongodb.md");
-                throw e; 
-            }                        
-        }       
+
+        try(MongoClient mongo = MongoDBService.buildMongoDBClient(config)){
+
+            LOGGER.info("Install with parameters : Reset :" + reset + ", Db : " + config.database());
+            if (reset) {
+                MongoDatabase db = mongo.getDatabase(config.database());
+                db.drop();
+            } else {
+                try {
+                    MongoDatabase adminDb = mongo.getDatabase("admin");
+                    Document runCommand = adminDb.runCommand(new Document("replSetGetStatus", 1));
+                    LOGGER.info("Replica set information : " + runCommand.toJson());
+                } catch (Exception e) {
+                    LOGGER.error("No configured replica set.");
+                    LOGGER.error("More information at https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/databases/mongodb.md");
+                    throw e;
+                }
+            }
+        }
 
     }
     

@@ -4,6 +4,7 @@
       icon="fa#seedling"
       :title="provenance.name"
       description="ProvenanceDetailsPage.title"
+      class="detail-element-header"
     ></opensilex-PageHeader>
 
     <opensilex-PageActions :tabs=true :returnButton="true">
@@ -157,7 +158,7 @@ import {
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import AnnotationList from "../annotations/list/AnnotationList.vue";
 import DocumentTabList from "../documents/DocumentTabList.vue";
-import { UserGetDTO } from "opensilex-security/model/userGetDTO";
+import { UserGetDTO } from 'opensilex-security/index';
 
 
 @Component

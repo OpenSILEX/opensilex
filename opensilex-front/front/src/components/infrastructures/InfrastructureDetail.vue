@@ -1,5 +1,5 @@
 <template>
-  <div style="display: contents;">
+  <div>
     <b-card v-if="selected">
       <template v-slot:header>
         <h3>
@@ -225,6 +225,7 @@ export default class InfrastructureDetail extends Vue {
 </script>
 
 <style scoped lang="scss">
+
 </style>
 
 <i18n>

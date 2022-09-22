@@ -1,10 +1,5 @@
 <template>
   <div class="container-fluid">
-    <opensilex-PageHeader
-      icon="ik#ik-globe"
-      title="component.menu.infrastructures"
-      description="InfrastructureView.description"
-    ></opensilex-PageHeader>
     <div class="row">
       <div class="col-md-6">
         <!-- Infrastructure tree -->
@@ -16,27 +11,28 @@
       <div class="col-md-6">
         <!-- Infrastructure detail -->
         <opensilex-InfrastructureDetail
-            :selected="selectedOrganization"
-            @onUpdate="refreshTree"
+          :selected="selectedOrganization"
+          @onUpdate="refreshTree"
+          class="infrastructureDetailComponent"
         ></opensilex-InfrastructureDetail>
         <!-- Site detail -->
         <opensilex-SiteDetail
-            :selected="selectedSite"
-            :withActions="true"
-            @onUpdate="refreshTree"
+          :selected="selectedSite"
+          :withActions="true"
+          @onUpdate="refreshTree"
         ></opensilex-SiteDetail>
         <!-- Facilities -->
         <opensilex-FacilitiesView
-            v-if="selectedFacilities"
-
-            :withActions="facilitiesActions"
-            @onUpdate="refreshTree"
-            @onCreate="refreshTree"
-            @onDelete="refreshTree"
-            :facilities="selectedFacilities"
-            :organization="selectedOrganization"
-            :site="selectedSite"
-            :isSelectable="false"
+          v-if="selectedFacilities"
+          :withActions="facilitiesActions"
+          @onUpdate="refreshTree"
+          @onCreate="refreshTree"
+          @onDelete="refreshTree"
+          :facilities="selectedFacilities"
+          :organization="selectedOrganization"
+          :site="selectedSite"
+          :isSelectable="false"
+          :displayButtonOnTop="false"
         ></opensilex-FacilitiesView>
       </div>
     </div>
@@ -46,12 +42,8 @@
 <script lang="ts">
 import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import {InfrastructureGetDTO, OrganizationsService} from "opensilex-core/index";
-import {SiteGetDTO} from "opensilex-core/model/siteGetDTO";
+import {InfrastructureGetDTO, NamedResourceDTOInfrastructureFacilityModel, OrganizationsService, SiteGetDTO} from "opensilex-core/index";
 import Org from "../../ontologies/Org";
-import {
-  NamedResourceDTOInfrastructureFacilityModel
-} from "opensilex-core/model/namedResourceDTOInfrastructureFacilityModel";
 import InfrastructureTree from "./InfrastructureTree.vue";
 
 @Component
@@ -137,7 +129,13 @@ export default class InfrastructureView extends Vue {
 }
 </script>
 
+
 <style scoped lang="scss">
+@media only screen and (min-width: 768px) {
+  .infrastructureDetailComponent {
+    margin-top: 30px;
+  }
+}
 </style>
 
 <i18n>
@@ -150,5 +148,5 @@ fr:
   InfrastructureView:
     description: Gérer et configurer les organisations
     organizations: Organisations et sites
-    facilities: Installations environnementales
+    facilities: Installations techniques
 </i18n>

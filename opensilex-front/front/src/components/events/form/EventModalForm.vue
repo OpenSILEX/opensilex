@@ -26,21 +26,13 @@
     import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
     import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
     import {EventsService} from "opensilex-core/api/events.service";
-    // @ts-ignore
-    import {EventCreationDTO} from "opensilex-core/model/eventCreationDTO";
-    // @ts-ignore
-    import {ObjectUriResponse} from "opensilex-core/model/objectUriResponse";
 
     import PositionsView from "../../positions/view/PositionsView.vue";
-    // @ts-ignore
-    import {MoveCreationDTO} from "opensilex-core/model/moveCreationDTO";
-    // @ts-ignore
-    import {PositionCreationDTO} from "opensilex-core/model/positionCreationDTO";
     import MoveForm from "./MoveForm.vue";
-    import {VueJsOntologyExtensionService, VueRDFTypeDTO} from "../../../lib";
+    import {VueJsOntologyExtensionService} from "../../../lib";
     import moment from "moment-timezone";
-    import {EventGetDTO} from "opensilex-core/model/eventGetDTO";
     import EventForm from "./EventForm.vue";
+    import { EventCreationDTO, MoveCreationDTO, ObjectUriResponse, PositionCreationDTO } from 'opensilex-core/index';
 
     @Component
     export default class EventModalForm extends Vue {
@@ -343,6 +335,7 @@
             targets: Concerne
             targets-help: Objet(s) concerné(s) sont "Dispositifs" et "Objets scientifiques"
             targets-example: "os-so:plant1"
+            target-help: URI de l'objet concerné par l'évènement (Doit exister).
             start: Début
             start-help: Début de l'événement, uniquement si celui-ci n'est pas instantané
             start-example: 2019-09-08T13:00:00+01:00"
@@ -357,5 +350,4 @@
             specific-properties: Propriétés spécifiques
             multiple-insert: événement(s) enregistré(s)
             move-multiple-insert: déplacement(s) enregistré(s)
-
     </i18n>

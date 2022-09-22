@@ -4,8 +4,6 @@
     :selected.sync="entityURI"
     :multiple="multiple"
     :searchMethod="searchEntities"
-    :itemLoadingMethod="loadEntities"
-    :conversionMethod="entityToSelectNode"
     :clearable="clearable"
     :placeholder="placeholder"
     noResultsText="component.entity.form.selector.filter-search-no-result"
@@ -45,28 +43,12 @@ export default class EntitySelector extends Vue {
       : "component.entity.form.selector.placeholder";
   }
 
-  loadEntities(entities) {
-    return this.$opensilex.getService("opensilex.VariablesService")
-      .getEntitiesByURIs(entities)
-      .then((http: HttpResponse<OpenSilexResponse<EntityGetDTO>>) => {
-        return http.response.result;
-      })
-      .catch(this.$opensilex.errorHandler); 
-  }
-
   searchEntities(name) {
     return this.$opensilex.getService("opensilex.VariablesService")
     .searchEntities(name, ["name=asc"], 0, 10)    
     .then((http: HttpResponse<OpenSilexResponse<Array<EntityGetDTO>>>) => {
         return http;
     });
-  }
-
-  entityToSelectNode(dto) {
-    return {
-      id: dto.uri,
-      label: dto.name,
-    };
   }
 
   select(value) {

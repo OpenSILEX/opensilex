@@ -1,18 +1,13 @@
 <template>
   <div class="container-fluid">
-    <opensilex-PageHeader
-      icon="ik#ik-settings"
-      title="component.menu.security.profiles"
-      description="component.profile.description"
-    ></opensilex-PageHeader>
-
-    <opensilex-PageActions>
-      <template v-slot>
-        <opensilex-CreateButton
-            v-if="user.hasCredential(credentials.CREDENTIAL_PROFILE_MODIFICATION_ID)"
-            @click="profileForm.showCreateForm()" label="component.profile.add"></opensilex-CreateButton>
-      </template>
-    </opensilex-PageActions>
+    <opensilex-CreateButton
+      v-if="
+      user.hasCredential(
+        credentials.CREDENTIAL_PROFILE_MODIFICATION_ID)"
+      @click="profileForm.showCreateForm()"
+      label="component.profile.add"
+      class="createButton">
+    </opensilex-CreateButton>
 
     <opensilex-PageContent>
       <template v-slot>
@@ -70,4 +65,8 @@ export default class ProfileView extends Vue {
 </script>
 
 <style scoped lang="scss">
+.createButton{
+  margin-bottom: 10px;
+  margin-top: -15px
+}
 </style>

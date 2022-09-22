@@ -45,6 +45,10 @@ public class AbstractMongoIntegrationTest extends AbstractSecurityIntegrationTes
     private static MongodProcess mongod;
     private static int replicaCount = 0;
 
+    public static final int MONGO_PORT = 28018;
+    public static final String MONGO_DATABASE = "admin";
+    public static final String MONGO_HOST = "localhost";
+
     @BeforeClass
     public static void initMongo() throws IOException {
 
@@ -53,7 +57,7 @@ public class AbstractMongoIntegrationTest extends AbstractSecurityIntegrationTes
                 .build();
 
         MongodStarter runtime = MongodStarter.getInstance(runtimeConfig);
-        int nodePort = 28018;
+        int nodePort = MONGO_PORT;
         Map<String, String> args = new HashMap<>();
         String replicaName = "rs0";
         args.put("--replSet", replicaName);
@@ -64,12 +68,12 @@ public class AbstractMongoIntegrationTest extends AbstractSecurityIntegrationTes
         mongod = mongoExec.start();
 
         try (MongoClient mongo = MongoClients.create("mongodb://127.0.0.1:" + nodePort)) {
-            MongoDatabase adminDatabase = mongo.getDatabase("admin");
+            MongoDatabase adminDatabase = mongo.getDatabase(MONGO_DATABASE);
 
             Document config = new Document("_id", replicaName);
             BasicDBList members = new BasicDBList();
             members.add(new Document("_id", 0)
-                    .append("host", "localhost:" + nodePort));
+                    .append("host", MONGO_HOST+":" + nodePort));
             config.put("members", members);
 
             adminDatabase.runCommand(new Document("replSetInitiate", config));
@@ -121,7 +125,7 @@ public class AbstractMongoIntegrationTest extends AbstractSecurityIntegrationTes
 
     private void clearCollections(){
 
-        MongoDBService mongoDBService = getOpensilex().getServiceInstance("mongodb", MongoDBService.class);
+        MongoDBService mongoDBService = getOpensilex().getServiceInstance(MongoDBService.DEFAULT_SERVICE, MongoDBService.class);
         MongoDatabase mongoDb = mongoDBService.getDatabase();
 
         try{
@@ -136,7 +140,7 @@ public class AbstractMongoIntegrationTest extends AbstractSecurityIntegrationTes
     }
 
     protected MongoDBService getMongoDBService(){
-        return getOpensilex().getServiceInstance("mongodb", MongoDBService.class);
+        return getOpensilex().getServiceInstance(MongoDBService.DEFAULT_SERVICE, MongoDBService.class);
     }
 
 

@@ -1,10 +1,5 @@
 <template>
   <div class="container-fluid">
-    <opensilex-PageHeader
-        icon="ik#ik-globe"
-        title="component.menu.facilities"
-        :description="$t('FacilityListView.description')"
-    ></opensilex-PageHeader>
     <div class="row">
       <div class="col-md-6">
         <!-- Facilities -->
@@ -16,6 +11,7 @@
             :isSelectable="true"
             ref="facilitiesView"
             @facilitySelected="updateSelectedFacility"
+            :displayButtonOnTop="true"
         ></opensilex-FacilitiesView>
       </div>
       <div class="col-md-6">
@@ -34,9 +30,9 @@ import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
 import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import {InfrastructureFacilityGetDTO} from "opensilex-core/model/infrastructureFacilityGetDTO";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
 import FacilitiesView from "./FacilitiesView.vue";
+import { InfrastructureFacilityGetDTO } from 'opensilex-core/index';
 
 @Component
 export default class FacilityListView extends Vue {

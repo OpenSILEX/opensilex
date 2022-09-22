@@ -69,6 +69,8 @@
             "select-all" : "Select all",
             "unselect-all" : "Unselect all",
             "example": "Example",
+            "loading" : "Loading...",
+            "metadata": "Metadata",
             "errors": {
                 "error-title": "Error",
                 "constraint-error": "A data validation error occurred, please check the validity of the submitted fields.",
@@ -77,7 +79,10 @@
                 "unexpected-error": "An unexpected error occurred, please contact your local support.",
                 "unauthorized-error": "Your session expired, please login again.",
                 "form-step-errors": "Some field are required in order to go to the next step",
-                "uri-already-exists": "This URI already exists."
+                "uri-already-exists": "This URI already exists.",
+                "regex": {
+                    "invalid-regex" : "Invalid regex : {__regex__}. The following characters are forbidden : {__forbidden_characters__}"
+                }
             },
             "form-wizard": {
                 "external-ontologies": "(Optional) External ontologies references",
@@ -211,6 +216,7 @@
             "deviceTypes": "Device object types",
             "eventTypes": "Event types",
             "factorCategoryTypes": "Factor categories",
+            "namespaces": "Namespaces",
             "scientific-organisation": "Scientific Organization",
             "devices": "Devices",
             "events" : "Events",
@@ -483,52 +489,26 @@
                 "variables-sensors-factors": "Variables, factors and sensors"
             }
         },
+        "germplasms": {
+            "errors": {
+                "duplicateUri": "Duplicate URI: {uri}",
+                "duplicateLabel": "Duplicate label: {label}",
+                "wrongRdfType": "rdfType doesn't exist in the ontology: {rdfType}",
+                "unknownSpecies": "The given species doesn't exist in the database: {unknownSpecies}",
+                "unknownVariety": "The given variety doesn't exist in the database: {unknownVariety}",
+                "unknownAccession": "The given accession doesn't exist in the database: {unknownAccession}",
+                "missingAttribute": "Missing required field : {message}"
+            }
+        },
         "scientificObjects": {
-            "search": {
-                "selected": "Selected Scientific Objects",
-                "description": "Manage and configure scientific objects",
-                "advancedSearch": "Advanced search",
-                "propetiesConfiguration": "Properties to display",
-                "column": {
-                    "alias": "Alias",
-                    "experiments": "Experiment(s)",
-                    "germplasm": "Germplasm",
-                    "campaigns": "Campaign(s)",
-                    "type": "Type",
-                    "uri": "URI",
-                    "properties": "Properties",
-                    "actions": "Actions"
-                },
-                "filter": {
-                    "label": "Search for Scientific Objects",
-                    "experiments": "Filter by Experiments",
-                    "germplasm": "Filter by Germplasm",
-                    "campains": "Filter by Campaign(s)",
-                    "types": "Filter by Type(s)",
-                    "alias": "Filter by Alias / URI",
-                    "hasExperimentModalities": "hasExperimentModalities",
-                    "hasReplication": "hasReplication",
-                    "hasSpecies": "hasSpecies",
-                    "hasVariety": "hasVariety",
-                    "hasPart": "hasPart (Alias ou URI)",
-                    "isPartOf": "isPartOf (Alias ou URI)"
-                },
-                "placeholder": {
-                    "experiments": "Please select at least one item",
-                    "germplasm": "Please select at least one item",
-                    "campains": "All Campaigns",
-                    "types": "All Types",
-                    "alias": "All Alias / URI",
-                    "hasExperimentModalities": "All attributes",
-                    "hasReplication": "All attributes",
-                    "hasSpecies": "All attributes",
-                    "hasVariety": "All attributes",
-                    "hasPart": "All Alias / URI",
-                    "isPartOf": "All Alias / URI"
+            "error" : {
+                "delete" : {
+                    "associated-data" : "The object {scientific_object} can't be deleted since there are some associated data. You must delete them first",
+                    "associated-data-files" : "The object {scientific_object} can't be deleted since there are some associated data files. You must delete them first",
+                    "used-in-experiment" :"The object {scientific_object} can't be deleted since it's involved in some experiments. You must delete the object from the experiment first",
+                    "has-child" :"The object {scientific_object} can't be deleted since it has some child. You must delete them first (It may sound cruel but it has to be)"
                 }
-            },
-            "selector-placeholder":"Search scientific objects",
-            "selector-search-no-result": "Sorry, no scientific object is matching your research."
+            }
         },
         "skos": {
             "uri": "Reference URI",
@@ -722,6 +702,9 @@
                 "facilitiesTypes": "ik-settings"
             }
         }
+    },
+    "searchfilter": {
+        "label": "Search filters"
     },
     "datatypes": {
         "boolean": "boolean",

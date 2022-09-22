@@ -30,7 +30,7 @@ import org.opensilex.server.rest.validation.ValidURI;
  *
  * @author Alice Boizet
  */
-@JsonPropertyOrder({"uri", "rdf_type", "date","timezone", "target", "provenance",  "metadata"})
+@JsonPropertyOrder({"uri", "rdf_type", "date","timezone", "target", "provenance",  "metadata", "archive"})
 public class DataFileCreationDTO {
     
     @ValidURI

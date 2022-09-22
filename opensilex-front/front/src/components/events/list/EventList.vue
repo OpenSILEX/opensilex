@@ -1,156 +1,191 @@
 <template>
-
-    <div class="card">
-
-        <opensilex-PageActions>
-
-            <opensilex-CreateButton
-                v-if="user.hasCredential(modificationCredentialId)"
-                label="Event.add"
-                @click="showForm"
-            ></opensilex-CreateButton>
-
-            <opensilex-CreateButton
-                v-if="user.hasCredential(modificationCredentialId)"
-                label="OntologyCsvImporter.import"
-                @click="showCsvForm"
-            ></opensilex-CreateButton>
-
+    <div>
+        <opensilex-PageActions class="pageActions">
+        <opensilex-CreateButton
+            v-if="user.hasCredential(modificationCredentialId)"
+            label="Event.add"
+            class="createButton"
+            @click="showForm"
+        >
+        </opensilex-CreateButton>
+        <opensilex-CreateButton
+            v-if="user.hasCredential(modificationCredentialId)"
+            label="OntologyCsvImporter.import"
+            class="createButton"
+            @click="showCsvForm"
+        >
+        </opensilex-CreateButton>
         </opensilex-PageActions>
 
-        <opensilex-SearchFilterField
-            @search="refresh()"
-            @clear="reset()"
-            label="component.experiment.search.label"
-            :showAdvancedSearch="true"
+        <opensilex-PageContent
+        class="pagecontent"
         >
-            <template v-slot:filters>
+            <!-- Toggle Sidebar--> 
+            <div class="searchMenuContainer"
+                v-on:click="SearchFiltersToggle = !SearchFiltersToggle"
+                :title="searchFiltersPannel()">
+                <div class="searchMenuIcon">
+                    <i class="icon ik ik-search"></i>
+                </div>
+            </div>
+            <!-- FILTERS -->
+            <Transition>
+                <div v-show="SearchFiltersToggle">
 
-                <!-- type -->
-                <opensilex-FilterField :halfWidth="maximizeFilterSize">
-                    <opensilex-TypeForm
-                        :type.sync="filter.type"
-                        :baseType="baseType"
-                        :ignoreRoot="false"
-                        placeholder="Event.type-placeholder"
-                    ></opensilex-TypeForm>
-
-                </opensilex-FilterField>
-
-                <!-- target -->
-                <opensilex-FilterField v-if="displayTargetFilter">
-                    <label>{{ $t("Event.targets") }}</label>
-                    <opensilex-StringFilter
-                        id="target"
-                        :filter.sync="filter.target"
-                        placeholder="EventList.target-filter-placeholder"
-                    ></opensilex-StringFilter>
-                </opensilex-FilterField>
-
-                <!-- description -->
-                <opensilex-FilterField :halfWidth="maximizeFilterSize">
-                    <label>{{ $t("component.common.description") }}</label>
-                    <opensilex-StringFilter
-                        id="description"
-                        :filter.sync="filter.description"
-                        placeholder="ExperimentList.filter-label-placeholder"
-                    ></opensilex-StringFilter>
-                </opensilex-FilterField>
-
-            </template>
-
-            <template v-slot:advancedSearch>
-                <opensilex-FilterField :halfWidth="maximizeFilterSize">
-                    <opensilex-DateTimeForm
-                        :value.sync="filter.start"
-                        label="Event.start"
-                        :required="false"
-                    ></opensilex-DateTimeForm>
-                </opensilex-FilterField>
-
-                <opensilex-FilterField :halfWidth="maximizeFilterSize">
-                    <opensilex-DateTimeForm
-                        :value.sync="filter.end"
-                        label="Event.end"
-                        :required="false"
-                    ></opensilex-DateTimeForm>
-                </opensilex-FilterField>
-
-            </template>
-
-        </opensilex-SearchFilterField>
-        <opensilex-TableAsyncView
-                        ref="tableRef"
-                        :searchMethod="search"
-                        :fields="fields"
-                        defaultSortBy=""
-                        labelNumberOfSelectedRow="EventList.selected"
-                        iconNumberOfSelectedRow="ik#ik-layers"
+                    <opensilex-SearchFilterField
+                        @search="refresh()"
+                        @clear="reset()"
+                        label="component.experiment.search.label"
+                        :showAdvancedSearch="true"
+                        class="searchFilterField"
                     >
+                <template v-slot:filters>
 
-                        <template v-slot:selectableTableButtons="{ numberOfSelectedRows }">
-                            <b-dropdown
-                            dropright
-                            class="mb-2 mr-2"
-                            :small="true"
-                            :disabled="numberOfSelectedRows == 0"
-                            text=actions>
-                                <b-dropdown-item-button
-                                @click="createDocument()"
-                                >{{$t('component.common.addDocument')}}</b-dropdown-item-button>
-                            </b-dropdown>
-                        </template>
+                    <!-- type -->
+                    <div>
+                        <opensilex-FilterField :halfWidth="maximizeFilterSize">
+                            <opensilex-TypeForm
+                                :type.sync="filter.type"
+                                :baseType="baseType"
+                                :ignoreRoot="false"
+                                placeholder="Event.type-placeholder"
+                                class="searchFilter"
+                            ></opensilex-TypeForm>
+                        </opensilex-FilterField>
+                    </div>
 
-                        <template v-slot:cell(rdf_type_name)="{data}">
-                            <opensilex-UriLink
-                                v-if="data.item.rdf_type_name"
-                                :uri="data.item.uri"
-                                :value="data.item.rdf_type_name"
-                                @click="showEventView(data.item)"
-                            ></opensilex-UriLink>
+                    <!-- target -->
+                    <div>
+                        <opensilex-FilterField v-if="displayTargetFilter">
+                            <label>{{ $t("Event.targets") }}</label>
+                            <opensilex-StringFilter
+                                id="target"
+                                :filter.sync="filter.target"
+                                placeholder="EventList.target-filter-placeholder"
+                                class="searchFilter"
+                            ></opensilex-StringFilter>
+                        </opensilex-FilterField><br>
+                    </div>
 
-                        </template>
+                    <!-- description -->
+                    <div>
+                        <opensilex-FilterField :halfWidth="maximizeFilterSize">
+                            <label>{{ $t("component.common.description") }}</label>
+                            <opensilex-StringFilter
+                                id="description"
+                                :filter.sync="filter.description"
+                                placeholder="ExperimentList.filter-label-placeholder"
+                                class="searchFilter"
+                            ></opensilex-StringFilter>
+                        </opensilex-FilterField><br>
+                    </div>
+                </template>
 
-                        <template v-slot:cell(start)="{data}">
-                            <opensilex-TextView v-if="data.item.start && data.item.start.length > 0"
-                                                :value="new Date(data.item.start).toLocaleString()">
-                            </opensilex-TextView>
-                        </template>
-                        <template v-slot:cell(end)="{data}">
-                            <opensilex-TextView v-if="data.item.end"
-                                                :value="new Date(data.item.end).toLocaleString()">
-                            </opensilex-TextView>
-                        </template>
+                <template v-slot:advancedSearch>
+                    <!-- begin -->
+                    <div>
+                        <opensilex-FilterField :halfWidth="maximizeFilterSize">
+                            <opensilex-DateTimeForm
+                                :value.sync="filter.start"
+                                label="Event.start"
+                                :required="false"
+                                class="searchFilter"
+                            ></opensilex-DateTimeForm>
+                        </opensilex-FilterField>
+                    </div>
 
-                        <template v-slot:cell(targets)="{data}">
-                            <span :key="index" v-for="(uri, index) in data.item.targets">
-                                 <opensilex-TextView :value="uri"></opensilex-TextView>
-                                <span v-if="data.item.targets.length > 1 && index < 2"> </span>
-                                <span v-if="index >= 2"> ... </span>
-                            </span>
-                        </template>
+                    <!-- end -->
+                    <div>
+                        <opensilex-FilterField :halfWidth="maximizeFilterSize">
+                            <opensilex-DateTimeForm
+                                :value.sync="filter.end"
+                                label="Event.end"
+                                :required="false"
+                                class="searchFilter"
+                            ></opensilex-DateTimeForm>
+                        </opensilex-FilterField>
+                    </div>
 
-                        <template v-slot:cell(description)="{data}">
-                            <opensilex-TextView :value="data.item.description"></opensilex-TextView>
-                        </template>
+                </template>
 
-                        <template v-slot:cell(actions)="{data}">
-                            <b-button-group size="sm">
+            </opensilex-SearchFilterField>
+            </div>
+        </Transition>
+        <div class="card">
+            <div class="card-body">
+                <opensilex-TableAsyncView
+                    ref="tableRef"
+                    :searchMethod="search"
+                    :fields="fields"
+                    defaultSortBy=""
+                    labelNumberOfSelectedRow="EventList.selected"
+                    iconNumberOfSelectedRow="ik#ik-layers"
+                >
 
-                                <opensilex-EditButton
-                                    v-if="user.hasCredential(modificationCredentialId)"
-                                    @click="editEvent(data.item.uri,data.item.rdf_type)"
-                                    :small="true"
-                                ></opensilex-EditButton>
-                                <opensilex-DeleteButton
-                                    v-if="user.hasCredential(deleteCredentialId)"
-                                    @click="deleteEvent(data.item.uri)"
-                                    label="EventForm.delete"
-                                    :small="true"
-                                ></opensilex-DeleteButton>
-                            </b-button-group>
-                        </template>
-                    </opensilex-TableAsyncView>
+                    <template v-slot:selectableTableButtons="{ numberOfSelectedRows }">
+                        <b-dropdown
+                        dropright
+                        class="mb-2 mr-2"
+                        :small="true"
+                        :disabled="numberOfSelectedRows == 0"
+                        text=actions>
+                        <b-dropdown-item-button
+                            @click="createDocument()"
+                            >{{$t('component.common.addDocument')}}</b-dropdown-item-button>
+                        </b-dropdown>
+                    </template>
+
+                    <template v-slot:cell(rdf_type_name)="{data}">
+                        <opensilex-UriLink
+                            v-if="data.item.rdf_type_name"
+                            :uri="data.item.uri"
+                            :value="data.item.rdf_type_name"
+                            @click="showEventView(data.item)"
+                        ></opensilex-UriLink>
+                    </template>
+
+                    <template v-slot:cell(start)="{data}">
+                        <opensilex-TextView v-if="data.item.start && data.item.start.length > 0"
+                                            :value="new Date(data.item.start).toLocaleString()">
+                        </opensilex-TextView>
+                    </template>
+                    <template v-slot:cell(end)="{data}">
+                        <opensilex-TextView v-if="data.item.end"
+                                            :value="new Date(data.item.end).toLocaleString()">
+                        </opensilex-TextView>
+                    </template>
+
+                    <template v-slot:cell(targets)="{data}">
+                        <span :key="index" v-for="(uri, index) in data.item.targets">
+                                <opensilex-TextView :value="uri"></opensilex-TextView>
+                            <span v-if="data.item.targets.length > 1 && index < 2"> </span>
+                            <span v-if="index >= 2"> ... </span>
+                        </span>
+                    </template>
+
+                    <template v-slot:cell(description)="{data}">
+                        <opensilex-TextView :value="data.item.description"></opensilex-TextView>
+                    </template>
+
+                    <template v-slot:cell(actions)="{data}">
+                        <b-button-group size="sm">
+
+                            <opensilex-EditButton
+                                v-if="user.hasCredential(modificationCredentialId)"
+                                @click="editEvent(data.item.uri,data.item.rdf_type)"
+                                :small="true"
+                            ></opensilex-EditButton>
+                            <opensilex-DeleteButton
+                                v-if="user.hasCredential(deleteCredentialId)"
+                                @click="deleteEvent(data.item.uri)"
+                                label="EventForm.delete"
+                                :small="true"
+                            ></opensilex-DeleteButton>
+                        </b-button-group>
+                    </template>
+                </opensilex-TableAsyncView>
+            </div>
+        </div>
 
         <opensilex-EventModalView
             modalSize="lg"
@@ -184,6 +219,7 @@
             :initForm="initForm"
             icon="ik#ik-file-text"
         ></opensilex-ModalForm>
+        </opensilex-PageContent>
 
     </div>
 </template>
@@ -273,6 +309,12 @@ export default class EventList extends Vue {
 
     renderModalForm = false;
     renderCsvForm = false;
+
+    data(){
+    return {
+      SearchFiltersToggle : false,
+    }
+  }
 
     showForm(){
         this.renderModalForm = true;
@@ -465,11 +507,30 @@ export default class EventList extends Vue {
             file: undefined
         }
     }
+    searchFiltersPannel() {
+        return  this.$t("searchfilter.label")
+    }
 }
 </script>
 
 
 <style scoped lang="scss">
+.createButton{
+    margin-top: 10px;
+}
+
+.pageActions {
+    margin-bottom: 10px;
+    margin-left: -15px; 
+}
+
+.card-body {
+  margin-bottom: -15px;
+}
+.pagecontent {
+ margin-top: 10px
+}
+
 </style>
 
 <i18n>

@@ -45,13 +45,13 @@
                 >{{$t('component.common.form-wizard.previous')}}</b-button>
                 <b-button
                   v-if="!props.isLastStep"
-                  variant="primary"
+                  class="greenThemeColor"
                   @click="nextStepHandler(props)"
                 >{{$t('component.common.form-wizard.next')}}</b-button>
                 <b-button
                   v-if="props.isLastStep"
                   @click="validate(props)"
-                  variant="primary"
+                  class="greenThemeColor"
                 >{{$t('component.common.form-wizard.done')}}</b-button>
               </b-button-group>
             </div>

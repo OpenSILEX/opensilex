@@ -1,5 +1,23 @@
 <template>
-  <div ref="page">
+  <div ref="page" class="page">
+
+    <opensilex-PageContent class="pagecontent">
+
+      <!-- Toggle Sidebar-->
+      <div class="searchMenuContainer"
+      v-on:click="SearchFiltersToggle = !SearchFiltersToggle"
+      :title="searchFiltersPannel()">
+        <div class="searchMenuIcon">
+          <i class="icon ik ik-search"></i>
+        </div>
+      </div>
+
+
+<!-- FILTERS -->
+      <Transition>
+        <div v-show="SearchFiltersToggle">
+
+    <!--Form-->
     <opensilex-VariableVisualizationForm
         ref="variableVisualizationForm"
         :variable="variable"
@@ -8,10 +26,14 @@
         @update="onUpdate"
     ></opensilex-VariableVisualizationForm>
 
+        </div>
+      </Transition>
+
     <div class="d-flex justify-content-center mb-3" v-if="!isGraphicLoaded">
       <b-spinner label="Loading..."></b-spinner>
     </div>
 
+    <!--Visualisation-->
     <opensilex-DataVisuGraphic
         v-if="isGraphicLoaded"
         ref="visuGraphic"
@@ -20,6 +42,7 @@
         :lWidth="true"
         @addEventIsClicked="showEventForm"
         @dataAnnotationIsClicked="showAnnotationForm"
+        class="VariableVisualisationGraphic"
     ></opensilex-DataVisuGraphic>
 
     <opensilex-AnnotationModalForm
@@ -33,27 +56,19 @@
         :eventCreatedTime="eventCreatedTime"
         @onCreate="onEventCreated"
     ></opensilex-EventModalForm>
+    </opensilex-PageContent>
   </div>
 </template>
 
 <script lang="ts">
-import {Component, Ref, Prop} from "vue-property-decorator";
+import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import moment from "moment-timezone";
-import Highcharts from "highcharts";
-// @ts-ignore
-import {
-  DevicesService,
-  DataGetDTO,
-  EventsService,
-  EventGetDTO,
-} from "opensilex-core/index";
-// @ts-ignore
+import {DataGetDTO, DevicesService, EventGetDTO, EventsService,} from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
-import VariableForm from "../form/VariableForm.vue";
-import {VariableDetailsDTO} from "opensilex-core/model/variableDetailsDTO";
 import {DataService} from "opensilex-core/api/data.service";
-import {DeviceGetDTO} from "opensilex-core/model/deviceGetDTO";
+import HighchartsDataTransformer from "../../../models/HighchartsDataTransformer";
+import DataVisuGraphic from "../../visualization/DataVisuGraphic.vue";
 
 @Component
 export default class VariableVisualizationTab extends Vue {
@@ -72,6 +87,12 @@ export default class VariableVisualizationTab extends Vue {
     return this.$store.state.credentials;
   }
 
+  data(){
+    return {
+      SearchFiltersToggle : true,
+    }
+  }
+
   @Prop()
   variable;
 
@@ -87,7 +108,7 @@ export default class VariableVisualizationTab extends Vue {
   eventsService: EventsService;
   deviceColorMap = [];
   @Ref("page") readonly page!: any;
-  @Ref("visuGraphic") readonly visuGraphic!: any;
+  @Ref("visuGraphic") readonly visuGraphic!: DataVisuGraphic;
   @Ref("annotationModalForm") readonly annotationModalForm!: any;
   @Ref("eventsModalForm") readonly eventsModalForm!: any;
   @Ref("variableVisualizationForm") readonly variableVisualizationForm!: any;
@@ -246,8 +267,6 @@ export default class VariableVisualizationTab extends Vue {
   buildSeries() {
     var promises = [];
     var promise;
-    const series = [];
-    let serie;
     this.dataService = this.$opensilex.getService("opensilex.DataService");
 
     this.$opensilex.disableLoader();
@@ -421,7 +440,7 @@ export default class VariableVisualizationTab extends Vue {
           const data = http.response.result as Array<DataGetDTO>;
           let dataLength = data.length;
           if (dataLength > 0) {
-            const cleanData = this.dataTransforme(data, concernedItem);
+            const cleanData = HighchartsDataTransformer.transformDataForHighcharts(data, {deviceUri: concernedItem.uri});
             if (dataLength > 50000) {
               this.$opensilex.showInfoToast(
                   this.$i18n.t("ExperimentDataVisuView.limitSizeMessageA") +
@@ -448,45 +467,21 @@ export default class VariableVisualizationTab extends Vue {
         });
   }
 
-
-  // keep only date/value/provenanceUri properties
-  dataTransforme(data, concernedItem) {
-    let toAdd,
-        cleanData = [];
-
-    data.forEach(element => {
-      let stringDateWithoutUTC =
-          moment.parseZone(element.date).format("YYYYMMDD HHmmss") + "+00:00";
-      let dateWithoutUTC = moment(stringDateWithoutUTC).valueOf();
-      let highchartsDate = Highcharts.dateFormat(
-          "%Y-%m-%dT%H:%M:%S",
-          dateWithoutUTC
-      );
-      let offset = moment.parseZone(element.date).format("Z");
-      toAdd = {
-        x: dateWithoutUTC,
-        y: element.value,
-        offset: offset,
-        dateWithOffset: highchartsDate + offset,
-        provenanceUri: element.provenance.uri,
-        deviceUri: concernedItem.uri, //concernedItem,
-        data: element
-      };
-      cleanData.push(toAdd);
-    });
-
-    return cleanData;
-  }
-
-  timestampToUTC(time) {
-    // var day = moment.unix(time).utc().format();
-    var day = Highcharts.dateFormat("%Y-%m-%dT%H:%M:%S+0000", time);
-    return day;
+  searchFiltersPannel() {
+    return this.$t("searchfilter.label")
   }
 }
 </script>
 
 <style scoped lang="scss">
+.page {
+  margin-top : 20px;
+}
+
+.VariableVisualisationGraphic{
+  min-width: 100%;
+  max-width: 100vw;
+}
 </style>
 
 <i18n>

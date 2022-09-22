@@ -80,7 +80,7 @@
                             <b-form-group label-align-sm="right">
                                 <b-button
                                         @click="addRelationsToSkosReferences"
-                                        variant="success"
+                                        class="greenThemeColor"
                                 >{{$t('component.skos.add')}}
                                 </b-button>
                             </b-form-group>
@@ -93,7 +93,6 @@
                     <b-button
                             class="float-right"
                             @click="update"
-                            variant="primary"
                     >{{$t("component.skos.update")}}
                     </b-button>
                 </b-form-group>

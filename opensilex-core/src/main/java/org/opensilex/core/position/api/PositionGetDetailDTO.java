@@ -13,13 +13,13 @@ public class PositionGetDetailDTO {
     private Point point;
 
     @JsonProperty("x")
-    private Integer x;
+    private String x;
 
     @JsonProperty("y")
-    private Integer y;
+    private String y;
 
     @JsonProperty("z")
-    private Integer z;
+    private String z;
 
     @JsonProperty("text")
     private String description;
@@ -50,29 +50,29 @@ public class PositionGetDetailDTO {
     }
 
     @ApiModelProperty(example = "35")
-    public Integer getX() {
+    public String getX() {
         return x;
     }
 
-    public void setX(Integer x) {
+    public void setX(String x) {
         this.x = x;
     }
 
     @ApiModelProperty(example = "76")
-    public Integer getY() {
+    public String getY() {
         return y;
     }
 
-    public void setY(Integer y) {
+    public void setY(String y) {
         this.y = y;
     }
 
     @ApiModelProperty(example = "8611")
-    public Integer getZ() {
+    public String getZ() {
         return z;
     }
 
-    public void setZ(Integer z) {
+    public void setZ(String z) {
         this.z = z;
     }
 

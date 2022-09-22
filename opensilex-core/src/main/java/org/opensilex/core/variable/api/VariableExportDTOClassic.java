@@ -10,7 +10,11 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.opensilex.core.germplasm.api.GermplasmAPI;
+import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -56,7 +60,7 @@ public class VariableExportDTOClassic extends BaseVariableExportDTO<VariableMode
 
     private URI dataType;
     
-    private URI species;
+    private List<URI> species;
     
     public VariableExportDTOClassic(VariableModel model) {
         super(model);
@@ -91,7 +95,11 @@ public class VariableExportDTOClassic extends BaseVariableExportDTO<VariableMode
             throw new RuntimeException(e);
         }
         if(model.getSpecies() != null){
-            this.species = model.getSpecies().getUri();
+            List<URI> uris = new ArrayList<>();
+            for(SpeciesModel species : model.getSpecies()){
+                uris.add(species.getUri());
+            }
+            this.species = uris;
         }
         
     }
@@ -235,11 +243,11 @@ public class VariableExportDTOClassic extends BaseVariableExportDTO<VariableMode
     
     @ValidURI
     @ApiModelProperty(notes = "Species associated with the variable", example = GermplasmAPI.GERMPLASM_EXAMPLE_SPECIES)
-    public URI getSpecies() {
+    public List<URI> getSpecies() {
         return this.species;
     }
 
-    public void setSpecies(URI species) {
+    public void setSpecies(List<URI> species) {
         this.species = species;
     }
     

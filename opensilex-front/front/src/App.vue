@@ -6,13 +6,12 @@
          <!-- if route as credentials public -->
         <div v-if="this.$route.meta.public">
           <component
-          class="header-logo"
+          
           v-bind:is="headerComponent"
         ></component>
  
 
         <section id="content-wrapper" class="page-wrap"  v-bind:class="{ 'hidden-menu': !menuVisible }" >
-      
           <div id="main-content">
             <main class="main-content">
               <router-view :key="$route.fullPath" />
@@ -26,7 +25,7 @@
         </div>  
         <div v-else>
         <component
-          class="header-logo"
+          
           v-bind:is="headerComponent"
           v-if="user.isLoggedIn() && !disconnected && !embed"
         ></component>

@@ -4,8 +4,6 @@
     :selected.sync="vgURI"
     :multiple="multiple"
     :searchMethod="searchVariablesGroups"
-    :itemLoadingMethod="loadVariablesGroups"
-    :conversionMethod="vgToSelectNode"
     :clearable="clearable"
     :placeholder="placeholder"
     noResultsText="component.groupVariable.form.selector.filter-search-no-result"
@@ -45,28 +43,12 @@ export default class GroupVariablesSelector extends Vue {
       : "component.groupVariable.form.selector.placeholder";
   }
 
-  loadVariablesGroups(vg) {
-    return this.$opensilex.getService("opensilex.VariablesService")
-      .getVariablesGroupByURIs(vg)
-      .then((http: HttpResponse<OpenSilexResponse<VariablesGroupGetDTO>>) => {
-        return http.response.result;
-      })
-      .catch(this.$opensilex.errorHandler); 
-  }
-
   searchVariablesGroups(name) {
     return this.$opensilex.getService("opensilex.VariablesService")
     .searchVariablesGroups(name, undefined, ["name=asc"], 0, 10)    
     .then((http: HttpResponse<OpenSilexResponse<Array<VariablesGroupGetDTO>>>) => {
         return http;
     });
-  }
-
-  vgToSelectNode(dto) {
-    return {
-      id: dto.uri,
-      label: dto.name,
-    };
   }
 
   select(value) {

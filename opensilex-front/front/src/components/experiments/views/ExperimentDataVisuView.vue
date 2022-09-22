@@ -1,6 +1,20 @@
 <template>
   <div class="experimentDataVisuView">
-    <b-collapse v-model="showSearchComponent" class="mt-2">
+    <opensilex-PageContent class="pagecontent">
+
+      <!-- Toggle Sidebar-->
+      <div class="searchMenuContainer"
+      v-on:click="SearchFiltersToggle = !SearchFiltersToggle"
+      :title="searchFiltersPannel()">
+        <div class="searchMenuIcon">
+          <i class="icon ik ik-search"></i>
+        </div>
+      </div>
+
+  <!-- FILTERS -->
+  <Transition>
+    <div v-show="SearchFiltersToggle">
+      <!--Form-->
       <opensilex-ExperimentDataVisuForm
         ref="experimentDataVisuForm"
         :selectedExperiment="selectedExperiment"
@@ -8,20 +22,22 @@
         @search="onSearch"
         @update="onUpdate"
       ></opensilex-ExperimentDataVisuForm>
-    </b-collapse>
+    </div>
+  </Transition>
 
     <div class="d-flex justify-content-center mb-3" v-if="!showGraphicComponent && initLoader">
       <b-spinner label="Loading..."></b-spinner>
     </div>
-    <b-collapse v-model="showGraphicComponent" class="mt-2">
-      <opensilex-DataVisuGraphic
-        v-if="showGraphicComponent"
-        ref="visuGraphic"
-        @addEventIsClicked="showEventForm"
-        @dataAnnotationIsClicked="showAnnotationForm"
-        @graphicCreated="$emit('graphicCreated')"
-      ></opensilex-DataVisuGraphic>
-    </b-collapse>
+
+    <!-- Graphic -->
+    <opensilex-DataVisuGraphic
+      v-if="showGraphicComponent"
+      ref="visuGraphic"
+      @addEventIsClicked="showEventForm"
+      @dataAnnotationIsClicked="showAnnotationForm"
+      @graphicCreated="$emit('graphicCreated')"
+      class="experimentDataVisuGraphic"
+    ></opensilex-DataVisuGraphic>
 
     <opensilex-AnnotationModalForm 
     ref="annotationModalForm"
@@ -37,23 +53,17 @@
       :context="{experimentURI: selectedExperiment}"
     ></opensilex-EventModalForm>
 
+    </opensilex-PageContent>
   </div>
 </template>
 
 <script lang="ts">
 import moment from "moment-timezone";
-import Highcharts from "highcharts";
-// @ts-ignore
-import {
-  DataService,
-  DataGetDTO,
-  EventsService,
-  EventGetDTO
-} from "opensilex-core/index";
-// @ts-ignore
-import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
-import { Component, Ref, Prop } from "vue-property-decorator";
+import {DataGetDTO, DataService, EventGetDTO, EventsService} from "opensilex-core/index";
+import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
+import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
+import HighchartsDataTransformer from "../../../models/HighchartsDataTransformer";
 
 @Component
 export default class ExperimentDataVisuView extends Vue {
@@ -87,6 +97,12 @@ export default class ExperimentDataVisuView extends Vue {
     return this.selectedScientificObjects.map(so => {
       return so.uri;
     });
+  }
+
+    data(){
+    return {
+      SearchFiltersToggle : true,
+    }
   }
 
   private langUnwatcher;
@@ -394,7 +410,7 @@ export default class ExperimentDataVisuView extends Vue {
         const data = http.response.result as Array<DataGetDTO>;
         let dataLength = data.length;
         if (dataLength > 0) {
-          const cleanData = this.dataTransforme(data, concernedItem);
+          const cleanData = HighchartsDataTransformer.transformDataForHighcharts(data, {scientificObjectUri: concernedItem.uri});
           if (dataLength > 50000) {
             this.$opensilex.showInfoToast(
               this.$i18n.t("ExperimentDataVisuView.limitSizeMessageA") +
@@ -420,39 +436,8 @@ export default class ExperimentDataVisuView extends Vue {
       .catch(error => {});
   }
 
-  // keep only date/value/uriprovenance properties
-  dataTransforme(data, concernedItem) {
-    let toAdd,
-      cleanData = [];
-
-    data.forEach(element => {
-      let stringDateWithoutUTC =
-        moment.parseZone(element.date).format("YYYYMMDD HHmmss") + "+00:00";
-      let dateWithoutUTC = moment(stringDateWithoutUTC).valueOf();
-      let highchartsDate = Highcharts.dateFormat(
-        "%Y-%m-%dT%H:%M:%S",
-        dateWithoutUTC
-      );
-      let offset = moment.parseZone(element.date).format("Z");
-      toAdd = {
-        x: dateWithoutUTC,
-        y: element.value,
-        offset: offset,
-        dateWithOffset: highchartsDate + offset,
-        objectUri: concernedItem.uri,
-        provenanceUri: element.provenance.uri,
-        data: element
-      };
-      cleanData.push(toAdd);
-    });
-
-    return cleanData;
-  }
-
-  timestampToUTC(time) {
-    // var day = moment.unix(time).utc().format();
-    var day = Highcharts.dateFormat("%Y-%m-%dT%H:%M:%S+0000", time);
-    return day;
+  searchFiltersPannel() {
+    return this.$t("searchfilter.label")
   }
 }
 </script>
@@ -473,6 +458,22 @@ export default class ExperimentDataVisuView extends Vue {
 
 .experimentDataVisuView {
   min-height: 700px;
+  margin-top: 15px
+}
+
+.experimentDataVisuGraphic {
+  min-width: 100%;
+  max-width: 100vw;
+}
+.visualizeBtn {
+ float:right;
+ border:none;
+ background: #00A28C;
+}
+.visualizeBtn:disabled,
+.visualizeBtn[disabled]{
+  background-color: #666666;
+  color: #F1F1F1;
 }
 </style>
 

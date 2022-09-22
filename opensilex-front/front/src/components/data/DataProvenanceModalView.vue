@@ -1,6 +1,5 @@
 <template>
-  <b-modal v-model="modalShow" size="lg" centered scrollable :title="$t('DataProvenanceModalView.title')"
-  :ok-only="true" :ok-title="$t('component.common.close')">
+  <b-modal v-model="modalShow" size="lg" centered scrollable :title="$t('DataProvenanceModalView.title')">
     <template v-slot:modal-header>
       <b-row class="mt-1" style="width: 100%">
         <b-col cols="10">
@@ -25,6 +24,17 @@
       <h3>Provenance</h3>
       <pre>{{ provenance }}</pre>
     </template>
+
+    <template v-slot:modal-footer>
+      <button
+          type="button"
+          class="btn greenThemeColor"
+          v-on:click="hide(false)"
+      >
+          {{ $t('component.common.close') }}
+      </button>
+    </template>
+
   </b-modal>
 </template>
 

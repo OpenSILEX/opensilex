@@ -3,8 +3,14 @@
         <div class="col-md-6">
             <b-card>
                 <div class="button-zone">
-                    <opensilex-CreateButton v-if="user.isAdmin()" @click="showCreateForm()"
-                                            label="OntologyPropertyView.add"></opensilex-CreateButton>
+
+                    <opensilex-CreateButton
+                        v-if="user.isAdmin()"
+                        @click="showCreateForm()"
+                        label="OntologyPropertyView.add"
+                        class="createButton"
+                    ></opensilex-CreateButton>
+
                     <opensilex-ModalForm
                         ref="propertyForm"
                         component="opensilex-OntologyPropertyForm"
@@ -16,6 +22,8 @@
                         modalSize="lg"
                         successMessage="OntologyPropertyView.the-property"
                         :icon="icon"
+                        :title="propertiesTitle"
+                        :description="propertiesDescription"
                     ></opensilex-ModalForm>
                 </div>
 
@@ -44,16 +52,12 @@
 <script lang="ts">
 import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
-import {OntologyService} from "opensilex-core/index";
+import {OntologyService, RDFPropertyDTO, RDFPropertyGetDTO, ResourceTreeDTO} from "opensilex-core/index";
 import OWL from "../../ontologies/OWL";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import OntologyPropertyTreeView from "./OntologyPropertyTreeView.vue";
 import {Store} from "vuex";
-import {RDFPropertyDTO} from "opensilex-core/model/rDFPropertyDTO";
-import {RDFPropertyGetDTO} from "opensilex-core/model/rDFPropertyGetDTO";
 import OntologyPropertyForm from "./OntologyPropertyForm.vue";
-import {ResourceTreeDTO} from "opensilex-core/model/resourceTreeDTO";
 
 @Component
 export default class OntologyPropertyView extends Vue {
@@ -78,6 +82,9 @@ export default class OntologyPropertyView extends Vue {
 
     @Prop()
     icon;
+
+    @Prop()
+    description;
 
     selected: RDFPropertyGetDTO = null;
 
@@ -155,6 +162,10 @@ export default class OntologyPropertyView extends Vue {
 </script>
 
 <style scoped lang="scss">
+.createButton{
+  margin-bottom: -10px;
+  margin-top: -10px
+}
 </style>
 
 

@@ -144,9 +144,9 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
         // first position
         PositionCreationDTO k2Summit = new PositionCreationDTO();
         k2Summit.setDescription("Not far from sky");
-        k2Summit.setX(35);
-        k2Summit.setY(76);
-        k2Summit.setZ(8611);
+        k2Summit.setX("A");
+        k2Summit.setY("76");
+        k2Summit.setZ("8,611");
         k2Summit.setPoint(new Point(76.513333, 35.8825, 8611));
 
         TargetPositionCreationDTO so1Position = new TargetPositionCreationDTO();
@@ -156,7 +156,7 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
         // 2nd position
         PositionCreationDTO k2Camp4 = new PositionCreationDTO();
         k2Camp4.setDescription("Just behind the Bottleneck");
-        k2Camp4.setZ(7600);
+        k2Camp4.setZ("7600");
 
         TargetPositionCreationDTO so2Position = new TargetPositionCreationDTO();
         so2Position.setTarget(dto.getTargets().get(1));

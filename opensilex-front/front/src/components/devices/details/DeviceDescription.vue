@@ -65,6 +65,27 @@
                                 label="DeviceDescription.description"
                                 :value="device.description"
                             ></opensilex-StringView>
+                          <!--Last Calibration-->
+                          <opensilex-StringView
+                              label="Event.calibration"
+                              :value="lastCalibration"
+                          ></opensilex-StringView>
+                          <!--Last Position-->
+                          <opensilex-StringView label="Event.position">
+                              <div v-if="lastPosition.move_time">
+                                  <!-- Position detail -->
+                                  <span>{{new Date(lastPosition.move_time).toLocaleString()}}</span>
+                                  <ul>
+                                      <li v-if="lastPosition.to">{{lastPosition.to.name}}</li>
+                                      <li v-if="lastPosition.position">{{customCoordinatesText(lastPosition.position)}}</li>
+                                      <li v-if="lastPosition.position && lastPosition.position.text">{{lastPosition.position.text}}</li>
+                                      <li v-if="lastPosition.position && lastPosition.position.point">
+                                          <opensilex-GeometryCopy :label="label" :value="lastPosition.position.point">
+                                          </opensilex-GeometryCopy>
+                                      </li>
+                                  </ul>
+                              </div>
+                          </opensilex-StringView>
 
                             <div :key="index" v-for="(relation, index) in device.relations">
 
@@ -164,13 +185,17 @@
 import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
-import {DevicesService, DeviceGetDetailsDTO} from "opensilex-core/index";
+import {DevicesService, DeviceGetDetailsDTO, RDFObjectRelationDTO} from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
-import {RDFObjectRelationDTO} from "opensilex-core/model/rDFObjectRelationDTO";
 import {VueJsOntologyExtensionService, VueRDFTypeDTO} from "../../../lib";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import ModalForm from "../../common/forms/ModalForm.vue";
 import DeviceModalForm from "../form/DeviceModalForm.vue";
+import {EventGetDTO} from "opensilex-core/model/eventGetDTO";
+import {EventsService} from "opensilex-core/api/events.service";
+import Oeev from "../../../ontologies/Oeev";
+import {PositionGetDTO} from "opensilex-core/model/positionGetDTO";
+import {PositionsService} from "opensilex-core/api/positions.service";
 
 @Component
 export default class DeviceDescription extends Vue {
@@ -190,18 +215,12 @@ export default class DeviceDescription extends Vue {
 
     @Ref("deviceForm") readonly deviceForm!: DeviceModalForm;
     @Ref("tableAtt") readonly tableAtt!: any;
+    @Ref("modalForm") readonly modalForm!: ModalForm;
 
-    get user() {
-        return this.$store.state.user;
-    }
+    renderModalForm: boolean = false;
 
-    refresh() {
-        this.loadDevice();
-    }
-
-    get credentials() {
-        return this.$store.state.credentials;
-    }
+    eventService : EventsService;
+    positionService: PositionsService;
 
     relationsFields: any[] = [
         {
@@ -226,9 +245,48 @@ export default class DeviceDescription extends Vue {
         relations: [],
     };
 
+    attributeFields = [
+      {
+        key: "attribute",
+        label: "DeviceDescription.attribute",
+      },
+      {
+        key: "value",
+        label: "DeviceDescription.value",
+      },
+    ];
+
+    lastCalibration: string = "";
+    lastPosition: PositionGetDTO = {
+      event: null,
+      from: null,
+      position: {
+        point: null,
+        text: null
+      },
+      to: null
+    };
+    label: string = "";
+
+    get user() {
+      return this.$store.state.user;
+    }
+
+    refresh() {
+      this.loadDevice();
+    }
+
+    get credentials() {
+      return this.$store.state.credentials;
+    }
+
     created() {
         this.service = this.$opensilex.getService("opensilex.DevicesService");
         this.vueJsOntologyService = this.$opensilex.getService("opensilex.VueJsOntologyExtensionService");
+        //Get Events Service
+        this.eventService = this.$opensilex.getService("opensilex.EventsService");
+        //Get Position Service
+        this.positionService = this.$opensilex.getService("opensilex.PositionsService");
 
         this.uri = decodeURIComponent(this.$route.params.uri);
         this.baseType = this.$opensilex.Oeso.DEVICE_TYPE_URI;
@@ -243,6 +301,8 @@ export default class DeviceDescription extends Vue {
                 this.device = http.response.result;
                 this.getAddInfo();
                 this.loadProperties();
+                this.loadLastCalibrationEvent();
+                this.loadLastPosition();
             })
             .catch(this.$opensilex.errorHandler);
     }
@@ -262,6 +322,54 @@ export default class DeviceDescription extends Vue {
             }).catch(this.$opensilex.errorHandler);
     }
 
+    loadLastCalibrationEvent(){
+        // Get calibration events with the device uri (target) by date in descending order
+        this.eventService.searchEvents(
+            Oeev.CALIBRATION_TYPE_URI,
+            undefined,
+            undefined,
+            this.device.uri,
+            undefined,
+            ["end=desc"],
+            undefined,
+            undefined
+        )
+            .then((http: HttpResponse<OpenSilexResponse<Array<EventGetDTO>>>) => {
+              //No calibration events existing
+              if( http.response.result.length === 0) {
+                return;
+              }
+              //Calibration events existing -> only the newest
+              else {
+                this.lastCalibration = new Date(http.response.result[0].end).toLocaleString();
+              }
+            })
+            .catch(this.$opensilex.errorHandler);
+    }
+
+    loadLastPosition(){
+      // Get moves with the device uri (target) by date in descending order
+        this.positionService.searchPositionHistory(
+            this.device.uri,
+            undefined,
+            undefined,
+            ["end=desc"],
+            undefined,
+            undefined
+        )
+            .then((http: HttpResponse<OpenSilexResponse<Array<PositionGetDTO>>>) => {
+                  //No moves existing
+                 if( http.response.result.length === 0) {
+                   return ;
+                 }
+                 //Moves existing -> only the newest
+                 else {
+                      this.lastPosition = http.response.result[0];
+                }
+            })
+            .catch(this.$opensilex.errorHandler);
+    }
+
     getAddInfo() {
         this.addInfo = [];
         for (const property in this.device.metadata) {
@@ -272,17 +380,6 @@ export default class DeviceDescription extends Vue {
             this.addInfo.push(tableData);
         }
     }
-
-    attributeFields = [
-        {
-            key: "attribute",
-            label: "DeviceDescription.attribute",
-        },
-        {
-            key: "value",
-            label: "DeviceDescription.value",
-        },
-    ];
 
     deleteDevice(uri: string) {
         this.service
@@ -300,9 +397,6 @@ export default class DeviceDescription extends Vue {
                 }
             });
     }
-
-    @Ref("modalForm") readonly modalForm!: ModalForm;
-    renderModalForm: boolean = false;
 
     editForm() {
         this.deviceForm.showEditForm(this.device.uri);
@@ -331,10 +425,41 @@ export default class DeviceDescription extends Vue {
         return propertyUri;
     }
 
+    customCoordinatesText(position: any): string {
+
+      if (!position) {
+        return undefined;
+      }
+
+      let customCoordinates = "";
+
+      if (position.x) {
+        customCoordinates += "X:" + position.x;
+      }
+      if (position.y) {
+        if (customCoordinates.length > 0) {
+          customCoordinates += ", ";
+        }
+        customCoordinates += "Y:" + position.y;
+      }
+      if (position.z) {
+        if (customCoordinates.length > 0) {
+          customCoordinates += ", ";
+        }
+        customCoordinates += "Z:" + position.z;
+      }
+
+      if (customCoordinates.length == 0) {
+        return undefined;
+      }
+      return customCoordinates;
+    }
+
 }
 </script>
 
 <style scoped lang="scss">
+
 </style>
 
 <i18n>
@@ -361,6 +486,9 @@ en:
         attribute: Attribute
         value: Value
         no-var-provided: No variable provided
+    Event:
+        calibration: Last calibration
+        position: Last position
 
 fr:
     DeviceDescription:
@@ -385,11 +513,8 @@ fr:
         attribute: Attribut
         value: Valeur
         no-var-provided: Aucune variable associée
-
-
-
-
-
-
+    Event:
+      calibration: Dernière calibration
+      position: Dernière position
 
 </i18n>

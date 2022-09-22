@@ -11,10 +11,8 @@
 <script lang="ts">
 import {Component, Prop, PropSync} from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
-import {VariableDatatypeDTO} from "opensilex-core/model/variableDatatypeDTO";
-// @ts-ignore
 import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
+import { VariableDatatypeDTO } from 'opensilex-core/index';
 
 @Component
 export default class VariableDataTypeSelector extends Vue {

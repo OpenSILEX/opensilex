@@ -11,11 +11,8 @@ import java.net.URI;
 
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.OWL;
-import org.opensilex.OpenSilex;
 import org.opensilex.OpenSilexModule;
 
-import java.time.Duration;
-import java.time.Instant;
 import java.util.List;
 
 import org.apache.jena.riot.Lang;
@@ -67,8 +64,11 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
         List<String> list = APIExtension.super.getPackagesToScan();
 
         if (getConfig(CoreConfig.class).enableLogs()) {
-            list.add("org.opensilex.core.logs.filter");
+            list.add("org.opensilex.core.logs.filter"); 
         }
+        if (getConfig(CoreConfig.class).metrics().enableMetrics()) {
+            list.add("org.opensilex.core.metrics.schedule"); 
+        } 
 
         return list;
     }
@@ -150,7 +150,8 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
 
         SPARQLConfig sparqlConfig = getOpenSilex().getModuleConfig(SPARQLModule.class, SPARQLConfig.class);
         MongoDBConfig config = getOpenSilex().loadConfigPath(MongoDBConfig.DEFAULT_CONFIG_PATH, MongoDBConfig.class);
-        MongoClient mongo = MongoDBService.getMongoDBClient(config);
+
+        MongoClient mongo = MongoDBService.buildMongoDBClient(config);
         MongoDatabase db = mongo.getDatabase(config.database());
 
         ProvenanceModel provenance = new ProvenanceModel();
@@ -164,6 +165,9 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
            db.getCollection(ProvenanceDAO.PROVENANCE_COLLECTION_NAME, ProvenanceModel.class).insertOne(provenance); 
         } catch (Exception e) {
            LOGGER.warn("Couldn't create default provenance : " + e.getMessage());
+        }
+        finally {
+            mongo.close();
         }
     }
 

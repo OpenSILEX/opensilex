@@ -4,8 +4,6 @@
     :selected.sync="characteristicURI"
     :multiple="multiple"
     :searchMethod="searchCharacteristics"
-    :itemLoadingMethod="loadCharacteristics"
-    :conversionMethod="characteristicToSelectNode"
     :clearable="clearable"
     :placeholder="placeholder"
     noResultsText="component.characteristic.form.selector.filter-search-no-result"
@@ -45,28 +43,12 @@ export default class CharacteristicSelector extends Vue {
       : "component.characteristic.form.selector.placeholder";
   }
 
-  loadCharacteristics(characteristics) {
-    return this.$opensilex.getService("opensilex.VariablesService")
-      .getCharacteristicsByURIs(characteristics)
-      .then((http: HttpResponse<OpenSilexResponse<CharacteristicGetDTO>>) => {
-        return http.response.result;
-      })
-      .catch(this.$opensilex.errorHandler); 
-  }
-
   searchCharacteristics(name) {
     return this.$opensilex.getService("opensilex.VariablesService")
     .searchCharacteristics(name, ["name=asc"], 0, 10)    
     .then((http: HttpResponse<OpenSilexResponse<Array<CharacteristicGetDTO>>>) => {
         return http;
     });
-  }
-
-  characteristicToSelectNode(dto) {
-    return {
-      id: dto.uri,
-      label: dto.name,
-    };
   }
 
   select(value) {

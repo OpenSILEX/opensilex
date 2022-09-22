@@ -29,6 +29,7 @@ public class DataCSVValidationModel extends CSVValidationModel {
     private Map<DeviceModel, List<URI>> variablesToDevices = new HashMap<>();
     
     private Map<Integer, List<CSVCell>> invalidObjectErrors = new HashMap<>();
+    private Map<Integer, List<CSVCell>> invalidTargetErrors = new HashMap<>();
     private Map<Integer, List<CSVCell>> invalidDateErrors = new HashMap<>();
     private Map<Integer, List<CSVCell>> invalidDataTypeErrors = new HashMap<>();
     private Map<Integer, List<CSVCell>> invalidExperimentErrors = new HashMap<>();
@@ -38,6 +39,7 @@ public class DataCSVValidationModel extends CSVValidationModel {
     
     private Map<Integer, List<CSVCell>> duplicatedDataErrors = new HashMap<>();
     private Map<Integer, List<CSVCell>> duplicatedObjectErrors = new HashMap<>();
+    private Map<Integer, List<CSVCell>> duplicatedTargetErrors = new HashMap<>();
     private Map<Integer, List<CSVCell>> duplicatedExperimentErrors = new HashMap<>();
     private Map<Integer, List<CSVCell>> duplicatedDeviceErrors = new HashMap<>();
 
@@ -205,7 +207,9 @@ public class DataCSVValidationModel extends CSVValidationModel {
                 || duplicatedExperimentErrors.size() > 0
                 || duplicatedDeviceErrors.size() > 0
                 || duplicatedObjectErrors.size() > 0
+                || duplicatedTargetErrors.size() > 0
                 || invalidObjectErrors.size() > 0
+                || invalidTargetErrors.size() > 0
                 || invalidExperimentErrors.size() > 0
                 || invalidDeviceErrors.size() > 0
                 || invalidDateErrors.size() > 0
@@ -214,6 +218,9 @@ public class DataCSVValidationModel extends CSVValidationModel {
                 ;
     }
 
+    public Map<Integer, List<CSVCell>> getInvalidTargetErrors() {
+        return invalidTargetErrors;
+    }
     public Map<Integer, List<CSVCell>> getInvalidObjectErrors() {
         return invalidObjectErrors;
     }
@@ -230,6 +237,20 @@ public class DataCSVValidationModel extends CSVValidationModel {
     public void setInvalidObjectErrors(Map<Integer, List<CSVCell>> invalidObjectErrors) {
         this.invalidObjectErrors = invalidObjectErrors;
     }
+
+
+    public void addInvalidTargetError(CSVCell cell) {
+        int rowIndex = cell.getRowIndex();
+        if (!invalidTargetErrors.containsKey(rowIndex)) {
+            invalidTargetErrors.put(rowIndex, new ArrayList<>());
+        }
+        invalidTargetErrors.get(rowIndex).add(cell);
+    }
+
+    public void setInvalidTargetErrors(Map<Integer, List<CSVCell>> invalidTargetErrors) {
+        this.invalidTargetErrors = invalidTargetErrors;
+    }
+
 
     public Map<Integer, List<CSVCell>> getInvalidDateErrors() {
         return invalidDateErrors;
@@ -305,6 +326,15 @@ public class DataCSVValidationModel extends CSVValidationModel {
         duplicatedObjectErrors.get(rowIndex).add(cell);
     }
 
+
+    public void addDuplicateTargetError(CSVCell cell) {
+        int rowIndex = cell.getRowIndex();
+        if (!duplicatedTargetErrors.containsKey(rowIndex)) {
+            duplicatedTargetErrors.put(rowIndex, new ArrayList<>());
+        }
+        duplicatedTargetErrors.get(rowIndex).add(cell);
+    }
+
     public void addDuplicateExperimentError(CSVCell cell) {
         int rowIndex = cell.getRowIndex();
         if (!duplicatedExperimentErrors.containsKey(rowIndex)) {
@@ -320,6 +350,16 @@ public class DataCSVValidationModel extends CSVValidationModel {
     public void setDuplicatedObjectErrors(Map<Integer, List<CSVCell>> duplicatedObjectErrors) {
         this.duplicatedObjectErrors = duplicatedObjectErrors;
     }
+
+
+    public Map<Integer, List<CSVCell>> getDuplicatedTargetErrors() {
+        return duplicatedTargetErrors;
+    }
+
+    public void setDuplicatedTargetErrors(Map<Integer, List<CSVCell>> duplicatedTargetErrors) {
+        this.duplicatedTargetErrors = duplicatedTargetErrors;
+    }
+
 
     public Map<Integer, List<CSVCell>> getDuplicatedExperimentErrors() {
         return duplicatedExperimentErrors;

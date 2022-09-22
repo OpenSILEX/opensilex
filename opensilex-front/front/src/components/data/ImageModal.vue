@@ -18,6 +18,13 @@
       </b-row>
     </template>
     <b-img ref='image' :src="url" fluid center></b-img>
+    <template v-slot:modal-footer>
+      <button
+        type="button"
+        class="btn greenThemeColor"
+        v-on:click="hide(false)"
+      >{{ $t('component.common.ok') }}</button>
+    </template>
   </b-modal>
 </template>
 

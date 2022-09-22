@@ -27,6 +27,7 @@ public class DataModel extends MongoModel {
     private URI target;
     
     private URI variable;
+    public static final String VARIABLE_FIELD = "variable";
     
     private DataProvenanceModel provenance;
 
@@ -36,7 +37,10 @@ public class DataModel extends MongoModel {
     
     private String offset;
 
+    public static final String IS_VALUE_DATE_FIELD = "isValueDate";
+
     private Object value;
+    public static final String VALUE_FIELD = "value";
     
     private List<Object> rawData;
     

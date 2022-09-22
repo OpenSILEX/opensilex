@@ -37,12 +37,15 @@ import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.SecurityOntology;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.time.LocalDate;
@@ -59,6 +62,8 @@ public class ExperimentDAO {
 
     protected final SPARQLService sparql;
     protected final MongoDBService nosql;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ExperimentDAO.class);
 
     public ExperimentDAO(SPARQLService sparql, MongoDBService nosql) {
         this.sparql = sparql;
@@ -340,6 +345,29 @@ public class ExperimentDAO {
         return userExperiments;
     }
     
+    /**
+     * Get only running experiments available for a selected user
+     * @param user current user
+     * @return List of current experiment that are not ended
+     * @throws Exception 
+     */
+    public Set<URI> getRunningUserExperiments(UserModel user) throws Exception {
+        String lang = user.getLanguage();
+        Set<URI> userExperiments = new HashSet<>(); 
+        
+        List<URI> xps = sparql.searchURIs(ExperimentModel.class, lang, (SelectBuilder select) -> {
+            appendUserExperimentsFilter(select, user); 
+            Var uriVar = makeVar(ExperimentModel.URI_FIELD);
+            Var endDateField = makeVar(ExperimentModel.END_DATE_FIELD);
+            Triple endDateTriple = new Triple(uriVar, Oeso.endDate.asNode(), endDateField);
+            select.addFilter(SPARQLQueryHelper.getExprFactory().notexists(new WhereBuilder().addWhere(endDateTriple))); 
+        });
+
+        userExperiments.addAll(xps);
+
+        return userExperiments;
+    }
+    
     public static void appendUserExperimentsFilter(SelectBuilder select, UserModel user) throws Exception {
         if (user == null || user.isAdmin()) {
             return;
@@ -469,7 +497,7 @@ public class ExperimentDAO {
             ExperimentModel.class,
             null,
             (SelectBuilder select) -> {
-                select.addFilter(SPARQLQueryHelper.eq(ExperimentModel.NAME_FIELD, name));
+                appendRegexLabelFilter(select, name);
             },
             null,
             0,
@@ -488,44 +516,51 @@ public class ExperimentDAO {
     }
 
     /**
-     * Update the experiment species from the germplasms of their scientific objects. The following request is used
-     * to perform the update :
+     * Update the experiment species from the germplasms of their scientific objects. Three requests are performed :
+     *
+     * First query (delete) :
      *
      * <pre>
-     * delete {
-     *         graph <.../set/experiments> {
-     *                 <__experimentUri__> vocabulary:hasSpecies ?oldSpecies.
-     *         }
-     * } insert {
-     *         graph <.../set/experiments> {
-     *                 <__experimentUri__> vocabulary:hasSpecies ?newSpecies.
-     *         }
-     * } where {
-     *         optional {
-     *                 graph <.../set/experiments> {
-     *                         <__experimentUri__> vocabulary:hasSpecies ?oldSpecies.
-     *                 }
-     *         } optional {
-     *                 graph <__experimentUri__> {
-     *                         ?scientificObject a ?rdfType.
-     *                         ?scientificObject vocabulary:hasGermplasm ?germplasm.
-     *                 }
-     *                         ?rdfType rdfs:subClassOf* vocabulary:ScientificObject.
-     *                 {
-     *                         ?germplasm a/rdfs:subClassOf* vocabulary:Species.
-     *                         bind(?germplasm as ?newSpecies)
-     *                 } union {
-     *                         ?germplasm vocabulary:fromSpecies ?newSpecies.
-     *                 }
-     *         }
+     * delete where {
+     *     graph <../set/experiment> {
+     *         <experimentUri> vocabulary:hasSpecies ?oldSpecies .
+     *     }
      * }
      * </pre>
      *
-     * Note : I perform the operation within a single request. The downside is that the "where" section has two independent
-     * optionals, the first corresponding to the "delete" statement, and the second corresponding to the "insert".
-     * I guess this could cause performance issues, as a cartesian product is done. Maybe it would be better to do it in
-     * two requests, even if this mean having more communication latency, but I'm not sure...
-     * - Valentin Rigolle
+     * Second query (insert germplasms that are species) :
+     *
+     * <pre>
+     * insert {
+     *     graph <../set/experiment> {
+     *         <experimentUri> vocabulary:hasSpecies ?germplasm .
+     *     }
+     * } where {
+     *     graph <experimentUri> {
+     *         ?scientificObject a ?rdfType ;
+     *             vocabulary:hasGermplasm ?germplasm;
+     *     }
+     *     ?rdfType rdfs:subClassOf* vocabulary:ScientificObject .
+     *     ?germplasm a/rdfs:subClassOf* vocabulary:Species .
+     * }
+     * </pre>
+     *
+     * Third query (insert species the germplasms derive from) :
+     *
+     * <pre>
+     * insert {
+     *     graph <../set/experiment> {
+     *         <experimentUri> vocabulary:hasSpecies ?newSpecies .
+     *     }
+     * } where {
+     *     graph <experimentUri> {
+     *         ?scientificObject a ?rdfType ;
+     *             vocabulary:hasGermplasm ?germplasm;
+     *     }
+     *     ?rdfType rdfs:subClassOf* vocabulary:ScientificObject .
+     *     ?germplasm vocabulary:fromSpecies ?newSpecies .
+     * }
+     * </pre>
      *
      * @param experimentUri
      * @throws Exception
@@ -542,53 +577,49 @@ public class ExperimentDAO {
         Node experimentGraph = SPARQLDeserializers.nodeURI(sparql.getDefaultGraphURI(ExperimentModel.class));
         Node experimentUriNode = SPARQLDeserializers.nodeURI(experimentUri);
 
-        // Useful paths to reuse
-        Path subClassOf = new P_ZeroOrMore1(new P_Link(RDFS.subClassOf.asNode()));
-        Path aSubClassOf = new P_Seq(new P_Link(RDF.type.asNode()), subClassOf);
-
         // Update statement building
-        UpdateBuilder update = new UpdateBuilder();
-        update.addDelete(experimentGraph, experimentUriNode, Oeso.hasSpecies.asNode(), oldSpeciesVar);
-        update.addInsert(experimentGraph, experimentUriNode, Oeso.hasSpecies.asNode(), newSpeciesVar);
+        UpdateBuilder updateDelete = new UpdateBuilder();
+        UpdateBuilder updateInsert1 = new UpdateBuilder();
+        UpdateBuilder updateInsert2 = new UpdateBuilder();
+        updateDelete.addDelete(experimentGraph, experimentUriNode, Oeso.hasSpecies.asNode(), oldSpeciesVar);
+        updateInsert1.addInsert(experimentGraph, experimentUriNode, Oeso.hasSpecies.asNode(), germplasmVar);
+        updateInsert2.addInsert(experimentGraph, experimentUriNode, Oeso.hasSpecies.asNode(), newSpeciesVar);
 
-        // Where statement building
-        WhereBuilder where = new WhereBuilder();
+        // Delete - where
+        WhereBuilder deleteWhere = new WhereBuilder();
+        deleteWhere.addGraph(experimentGraph, experimentUriNode, Oeso.hasSpecies.asNode(), oldSpeciesVar);
+        updateDelete.addWhere(deleteWhere);
 
-        // Old species
-        WhereBuilder whereOldSpecies = new WhereBuilder();
-        whereOldSpecies.addGraph(experimentGraph, experimentUriNode, Oeso.hasSpecies.asNode(), oldSpeciesVar);
-        where.addOptional(whereOldSpecies);
-
-        // New species
-        WhereBuilder whereNewSpecies = new WhereBuilder();
+        // Insert - where statement building
+        WhereBuilder insertWhere1 = new WhereBuilder();
+        WhereBuilder insertWhere2 = new WhereBuilder();
 
         // Selection of the scientific object and its germplasm
         WhereBuilder whereInExperiment = new WhereBuilder();
         whereInExperiment.addWhere(scientificObjectVar, RDF.type.asNode(), rdfTypeVar);
         whereInExperiment.addWhere(scientificObjectVar, Oeso.hasGermplasm.asNode(), germplasmVar);
-        whereNewSpecies.addGraph(experimentUriNode, whereInExperiment);
-        whereNewSpecies.addWhere(rdfTypeVar, subClassOf, Oeso.ScientificObject.asNode());
+        insertWhere1.addGraph(experimentUriNode, whereInExperiment);
+        insertWhere1.addWhere(rdfTypeVar, Ontology.subClassAny, Oeso.ScientificObject.asNode());
+        insertWhere2.addGraph(experimentUriNode, whereInExperiment);
+        insertWhere2.addWhere(rdfTypeVar, Ontology.subClassAny, Oeso.ScientificObject.asNode());
 
         // The two cases for the species
-        WhereBuilder whereIsSpecies = new WhereBuilder();
-        WhereBuilder whereFromSpecies = new WhereBuilder();
+        insertWhere1.addWhere(germplasmVar, Ontology.typeSubClassAny, Oeso.Species.asNode());
+        insertWhere2.addWhere(germplasmVar, Oeso.fromSpecies.asNode(), newSpeciesVar);
 
-        // First case : the germplasm is a species
-        whereIsSpecies.addWhere(germplasmVar, aSubClassOf, Oeso.Species.asNode());
-        whereIsSpecies.addBind(new ExprVar(germplasmVar), newSpeciesVar);
+        // Add the where clauses to the queries
+        updateInsert1.addWhere(insertWhere1);
+        updateInsert2.addWhere(insertWhere2);
 
-        // Second case : the germplasm is derived from a species
-        whereFromSpecies.addWhere(germplasmVar, Oeso.fromSpecies.asNode(), newSpeciesVar);
-
-        // Union
-        whereNewSpecies.addWhere(
-                whereIsSpecies.addUnion(whereFromSpecies)
-        );
-
-        where.addOptional(whereNewSpecies);
-
-        update.addWhere(where);
-
-        sparql.executeUpdateQuery(update);
+        sparql.startTransaction();
+        try {
+            sparql.executeUpdateQuery(updateDelete);
+            sparql.executeUpdateQuery(updateInsert1);
+            sparql.executeUpdateQuery(updateInsert2);
+            sparql.commitTransaction();
+        } catch (SPARQLException e) {
+            LOGGER.error("Error while updating species of experiment " + experimentUri, e);
+            sparql.rollbackTransaction();
+        }
     }
 }

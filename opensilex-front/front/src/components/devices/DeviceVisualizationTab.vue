@@ -1,51 +1,57 @@
 <template>
   <div ref="page">
-    <opensilex-DeviceVisualizationForm
-      ref="deviceVisualizationForm"
-      :device="device"
-      @search="onSearch"
-    ></opensilex-DeviceVisualizationForm>
 
-    <div class="d-flex justify-content-center mb-3" v-if="!isGraphicLoaded">
-      <b-spinner label="Loading..."></b-spinner>
-    </div>
+    <opensilex-PageContent class="pagecontent">
 
-    <opensilex-DataVisuGraphic
-      v-if="isGraphicLoaded"
-      ref="visuGraphic"
-      :deviceType="false"
-      @addEventIsClicked="showAddEventComponent"
-      @dataAnnotationIsClicked="showAnnotationForm"
-    ></opensilex-DataVisuGraphic>
+        <!--Form-->
+        <opensilex-DeviceVisualizationForm
+          ref="deviceVisualizationForm"
+          :device="device"
+          @search="onSearch"
+        ></opensilex-DeviceVisualizationForm>
 
-    <opensilex-AnnotationModalForm ref="annotationModalForm" @onCreate="onAnnotationCreated"></opensilex-AnnotationModalForm>
 
-    <opensilex-EventModalForm
-      ref="eventsModalForm"
-      :target="target"
-      :eventCreatedTime="eventCreatedTime"
-      @onCreate="onEventCreated"
-    ></opensilex-EventModalForm>
+
+      <div class="d-flex justify-content-center mb-3" v-if="!isGraphicLoaded">
+        <b-spinner label="Loading..."></b-spinner>
+      </div>
+
+      <!--Visualisation-->
+      <opensilex-DataVisuGraphic
+        v-if="isGraphicLoaded"
+        ref="visuGraphic"
+        :deviceType="false"
+        @addEventIsClicked="showAddEventComponent"
+        @dataAnnotationIsClicked="showAnnotationForm"
+        class="DeviceVisualisationGraphic"
+      ></opensilex-DataVisuGraphic>
+
+      <opensilex-AnnotationModalForm ref="annotationModalForm" @onCreate="onAnnotationCreated"></opensilex-AnnotationModalForm>
+
+      <opensilex-EventModalForm
+        ref="eventsModalForm"
+        :target="target"
+        :eventCreatedTime="eventCreatedTime"
+        @onCreate="onEventCreated"
+      ></opensilex-EventModalForm>
+    </opensilex-PageContent>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Ref, Prop } from "vue-property-decorator";
+import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import moment from "moment-timezone";
-import Highcharts from "highcharts";
-// @ts-ignore
-import {
-  DevicesService,
-  DataGetDTO,
-  EventsService,
-  EventGetDTO
-} from "opensilex-core/index";
-// @ts-ignore
-import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
+import {DataGetDTO, DevicesService, EventGetDTO, EventsService} from "opensilex-core/index";
+import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
+import HighchartsDataTransformer from "../../models/HighchartsDataTransformer";
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+import {VariablesService} from "opensilex-core/api/variables.service";
+import {DataService} from "opensilex-core/api/data.service";
+
 @Component
 export default class DeviceVisualizationTab extends Vue {
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
 
   get user() {
     return this.$store.state.user;
@@ -121,7 +127,7 @@ export default class DeviceVisualizationTab extends Vue {
       this.form = form;
       this.$opensilex.disableLoader();
       this.$opensilex
-        .getService("opensilex.VariablesService")
+        .getService<VariablesService>("opensilex.VariablesService")
         .getVariable(form.variable)
         .then((http: HttpResponse<OpenSilexResponse>) => {
           this.selectedVariable = http.response.result;
@@ -289,34 +295,34 @@ export default class DeviceVisualizationTab extends Vue {
   }
 
   buildDataSerie() {
-    return this.$opensilex.getService("opensilex.DataService")
-
-      .searchDataList(
-        this.form.startDate != undefined && this.form.startDate != ""
-          ? this.form.startDate
-          : undefined, // start_date
-        this.form.endDate != undefined && this.form.endDate != ""
-          ? this.form.endDate
-          : undefined, // end_date
-        undefined, // timezone,
-        undefined, // experiments
-        undefined, // scientific_object
-        [this.form.variable], // variables,
-        [this.device], // devices
-        undefined, // min_confidence
-        undefined, // max_confidence
-        this.form.provenance ? [this.form.provenance] : undefined,
-        undefined, //this.addMetadataFilter(),
-        ["date=asc"], //order by
-        0,
-        50000
-      )
+    return this.$opensilex
+        .getService<DataService>("opensilex.DataService")
+        .searchDataList(
+            this.form.startDate != undefined && this.form.startDate != ""
+                ? this.form.startDate
+                : undefined, // start_date
+            this.form.endDate != undefined && this.form.endDate != ""
+                ? this.form.endDate
+                : undefined, // end_date
+            undefined, // timezone,
+            undefined, // experiments
+            undefined, // scientific_object
+            [this.form.variable], // variables,
+            [this.device], // devices
+            undefined, // min_confidence
+            undefined, // max_confidence
+            this.form.provenance ? [this.form.provenance] : undefined,
+            undefined, //this.addMetadataFilter(),
+            ["date=asc"], //order by
+            0,
+            50000
+        )
       .then((http: HttpResponse<OpenSilexResponse<Array<DataGetDTO>>>) => {
         const data = http.response.result as Array<DataGetDTO>;
         let dataLength = data.length;
 
         if (dataLength > 0) {
-          const cleanData = this.dataTransforme(data);
+          const cleanData = HighchartsDataTransformer.transformDataForHighcharts(data);
           if (dataLength > 50000) {
             this.$opensilex.showInfoToast(
               this.$i18n.t("DeviceDataTab.limitSizeMessageA") +
@@ -335,42 +341,15 @@ export default class DeviceVisualizationTab extends Vue {
         }
       });
   }
-
-  // keep only date/value/uriprovenance properties
-  dataTransforme(data) {
-    let toAdd,
-      cleanData = [];
-
-    data.forEach(element => {
-      let stringDateWithoutUTC =
-        moment.parseZone(element.date).format("YYYY-MM-DDTHH:mm:ss") + "+00:00";
-      let dateWithoutUTC = moment(stringDateWithoutUTC).valueOf();
-      let offset = moment.parseZone(element.date).format("Z");
-      let stringDate =
-        moment.parseZone(element.date).format("YYYY-MM-DDTHH:mm:ss") + offset;
-
-      toAdd = {
-        x: dateWithoutUTC,
-        y: element.value,
-        offset: offset,
-        dateWithOffset: stringDate,
-        provenanceUri: element.provenance.uri,
-        data: element
-      };
-      cleanData.push(toAdd);
-    });
-    return cleanData;
-  }
-
-  timestampToUTC(time) {
-    // var day = moment.unix(time).utc().format();
-    var day = Highcharts.dateFormat("%Y-%m-%dT%H:%M:%S+0000", time);
-    return day;
-  }
 }
 </script>
 
 <style scoped lang="scss">
+
+.DeviceVisualisationGraphic {
+  min-width: 100%;
+  max-width: 100vw;
+}
 </style>
 
 <i18n>

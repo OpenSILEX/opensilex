@@ -68,6 +68,8 @@
             "select-all" : "Sélectionner tout",
             "unselect-all" : "Désélectionner tout",
             "example": "Exemple",
+            "loading" : "Chargement...",
+            "metadata": "Metadonnée(s)",
             "errors": {
                 "error-title": "Erreur",
                 "constraint-error": "Une erreur de validation s'est produite, merci de vérifier les données saisies.",
@@ -76,7 +78,10 @@
                 "unexpected-error": "Une erreur inattendue s'est produite, merci de contacter votre administrateur local.",
                 "unauthorized-error": "Votre session a expiré, merci de vous connecter à nouveau.",
                 "form-step-errors": "Certains champs sont requis avant de passer à l'étape suivante",
-                "uri-already-exists": "Cet URI existe déjà."
+                "uri-already-exists": "Cet URI existe déjà.",
+                "regex": {
+                    "invalid-regex" : "Expression régulière invalide : {__regex__}. Les caractères suivants sont interdits : {__forbidden_characters__}"
+                }
             },
             "form-wizard": {
                 "external-ontologies": "(Optionnel) Ontologies de références",
@@ -211,6 +216,7 @@
             "deviceTypes": "Types de dispositifs",
             "eventTypes": "Types d'évènements", 
             "factorCategoryTypes": "Catégories de facteurs",
+            "namespaces": "Espaces de nom",
             "scientific-organisation": "Organisation scientifique",
             "devices": "Dispositifs",
             "events" : "Évènements",
@@ -462,6 +468,27 @@
                 "variables-sensors-factors": "Variables, facteurs et capteurs"
             }
         },
+        "germplasms": {
+            "errors": {
+                "duplicateUri": "URI en double : {uri}",
+                "duplicateLabel": "Label en double : {label}",
+                "wrongRdfType": "Le rdfType n'existe pas dans l'ontologie : {rdfType}",
+                "unknownSpecies": "L'espèce donnée n'existe pas dans la base de données : {unknownSpecies}",
+                "unknownVariety": "La variete donnée n'existe pas dans la base de données : {unknownVariety}",
+                "unknownAccession": "L'accession donnée n'existe pas dans la base de données : {unknownAccession}",
+                "missingAttribute": "Champ necessaire manquant : {message}"
+            }
+        },
+        "scientificObjects": {
+            "error" : {
+                "delete" : {
+                    "associated-data" : "L'objet scientifique {scientific_object} ne peut être supprimé car il y a des données associées. Vous devez les supprimer d'abord",
+                    "associated-data-files" : "L'objet scientifique {scientific_object} ne peut être supprimé car il y a des fichiers de données associés. Vous devez les supprimer d'abord",
+                    "used-in-experiment" :"L'objet scientifique {scientific_object} ne peut être supprimé car il est utilisé dans une expérience. Vous devez supprimer l'objet de l'expérience d'abord",
+                    "has-child" :"L'objet scientifique {scientific_object} ne peut être supprimé car il cet objet a des enfants. Vous devez les supprimer d'abord (ça peut paraitre cruel mais il le faut)"
+                }
+            }
+        },
         "skos": {
             "uri": "URI de référence",
             "uri-help": "Identifiant du concept référencé",
@@ -695,6 +722,9 @@
         "wkt": "Le champ {_field_} doit être au format WKT",
         "dateDiff" : "La date du champ {_field_} ne doit pas être antérieur à la date de début",
         "nameFiltered" : "Le {_field_} ne doit pas contenir -,+,=,<,>,=,?,/,*,&"
+    },
+    "searchfilter": {
+        "label": "Filtres de recherche"
     },
     "datatypes": {
         "boolean": "booléen",

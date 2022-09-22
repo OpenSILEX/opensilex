@@ -1,10 +1,5 @@
 <template>
   <div class="container-fluid" v-if="selected">
-    <opensilex-PageHeader
-        icon="ik#ik-globe"
-        :title="selected.name"
-        :description="selected.rdf_type_name"
-    ></opensilex-PageHeader>
     <opensilex-PageActions :tabs="false" :returnButton="true">
     </opensilex-PageActions>
     <div class="row">
@@ -24,8 +19,8 @@
 import {Component} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
-import {SiteGetDTO} from "opensilex-core/model/siteGetDTO";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
+import { SiteGetDTO } from 'opensilex-core/index';
 
 @Component
 export default class SiteView extends Vue {

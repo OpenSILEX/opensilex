@@ -27,7 +27,17 @@
     </opensilex-TextAreaForm>
 
     <!-- Variables -->
+
+    <!-- We use the old VariableSelector in editMode because of the edit bug -->
+    <opensilex-VariableSelector
+      v-if="editMode"
+      label="DataView.filter.variables"
+      :variables.sync="form.variables"
+      :multiple="true"
+    ></opensilex-VariableSelector>
+
     <opensilex-VariableSelectorWithFilter
+      v-else
       placeholder="VariableSelectorWithFilter.placeholder-multiple"
       :variables.sync="form.variables"
     ></opensilex-VariableSelectorWithFilter>
@@ -59,16 +69,7 @@ export default class GroupVariablesForm extends Vue {
     return this.$store.state.user;
   }
 
-  @Prop({
-    default: () => {
-      return {
-        uri: null,
-        name: null,
-        description: null,
-        variables: []
-      };
-    }
-  })
+  @Prop()
   form;
 
   static getEmptyForm(){

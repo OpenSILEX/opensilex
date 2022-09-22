@@ -1,20 +1,22 @@
 <template>
   <div ref="page">
-    <opensilex-PageActions>
+    <opensilex-PageActions class="pageActionsBtns">
       <opensilex-CreateButton
-        v-if="
-          user.hasCredential(credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID)
-        "
-        @click="soForm.createScientificObject()"
+        v-if="user.hasCredential(credentials.CREDENTIAL_EXPERIMENT_MODIFICATION_ID)"
         label="ExperimentScientificObjects.create-scientific-object"
-      ></opensilex-CreateButton>&nbsp;
+        @click="soForm.createScientificObject()"
+        class="createButton">
+      </opensilex-CreateButton>&nbsp;
+
       <opensilex-CreateButton
         v-if="
           user.hasCredential(credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID)
         "
         @click="importForm.show()"
         label="OntologyCsvImporter.import"
-      ></opensilex-CreateButton>
+        class="createButton">
+      </opensilex-CreateButton>
+
       <opensilex-ScientificObjectCSVImporter
         ref="importForm"
         :experimentURI="uri"
@@ -22,72 +24,111 @@
       ></opensilex-ScientificObjectCSVImporter>
     </opensilex-PageActions>
 
-    <div class="row">
-      <div class="col-md-12">
-        <opensilex-SearchFilterField @clear="resetSearch()" @search="unselectRefresh()">
+
+  <template>
+    <opensilex-PageContent class="pagecontent">
+      <!-- Toggle Sidebar--> 
+      <div class="searchMenuContainer"
+      v-on:click="SearchFiltersToggle = !SearchFiltersToggle"
+      :title="searchFiltersPannel()">
+        <div class="searchMenuIcon">
+          <i class="icon ik ik-search"></i>
+        </div>
+      </div>
+
+
+      <!-- FILTERS -->
+      <Transition>
+        <div v-show="SearchFiltersToggle">
+
+        <opensilex-SearchFilterField @clear="resetSearch()" @search="unselectRefresh()" class="searchFilterField">
           <template v-slot:filters>
-            <opensilex-FilterField>
-              <b-form-group>
-                <label for="name">{{ $t("component.common.name") }}</label>
-                <opensilex-StringFilter
-                  id="name"
-                  :filter.sync="filters.name"
-                  placeholder="ExperimentScientificObjects.name-placeholder"
-                ></opensilex-StringFilter>
-              </b-form-group>
-            </opensilex-FilterField>
 
-            <opensilex-FilterField>
-              <b-form-group>
-                <label for="type">{{ $t("ExperimentScientificObjects.objectType") }}</label>
-                <opensilex-ScientificObjectTypeSelector
-                  id="type"
-                  :types.sync="filters.types"
-                  :multiple="true"
-                  :experimentURI="uri"
-                  :key="refreshKey"
-                ></opensilex-ScientificObjectTypeSelector>
-              </b-form-group>
-            </opensilex-FilterField>
+            <!-- Name -->
+            <div>
+              <opensilex-FilterField>
+                <b-form-group>
+                  <label for="name">{{ $t("component.common.name") }}</label>
+                  <opensilex-StringFilter
+                    id="name"
+                    :filter.sync="filters.name"
+                    placeholder="ExperimentScientificObjects.name-placeholder"
+                    class="searchFilter"
+                  ></opensilex-StringFilter>
+                </b-form-group>
+              </opensilex-FilterField>
+            </div>
 
-            <opensilex-FilterField>
-              <b-form-group>
-                <label for="parentFilter">{{ $t("ExperimentScientificObjects.parent-label") }}</label>
-                <opensilex-SelectForm
-                  id="parentFilter"
-                  :selected.sync="filters.parent"
-                  :multiple="false"
-                  :required="false"
-                  :searchMethod="searchParents"
-                ></opensilex-SelectForm>
-              </b-form-group>
-            </opensilex-FilterField>
+            <!-- Object Type -->
+            <div>
+              <opensilex-FilterField>
+                <b-form-group>
+                  <label for="type">{{ $t("ExperimentScientificObjects.objectType") }}</label>
+                  <opensilex-ScientificObjectTypeSelector
+                    id="type"
+                    :types.sync="filters.types"
+                    :multiple="true"
+                    :experimentURI="uri"
+                    :key="refreshKey"
+                    class="searchFilter"
+                  ></opensilex-ScientificObjectTypeSelector>
+                </b-form-group>
+              </opensilex-FilterField>
+            </div>
 
-            <opensilex-FilterField>
-              <b-form-group>
-                <label for="factorLevels">{{ $t("FactorLevelSelector.label") }}</label>
-                <opensilex-FactorLevelSelector
-                  id="factorLevels"
-                  :factorLevels.sync="filters.factorLevels"
-                  :multiple="true"
-                  :required="false"
-                  :experimentURI="uri"
-                ></opensilex-FactorLevelSelector>
-              </b-form-group>
-            </opensilex-FilterField>
+            <!-- Parent -->
+            <div>
+              <opensilex-FilterField>
+                <b-form-group>
+                  <label for="parentFilter">{{ $t("ExperimentScientificObjects.parent-label") }}</label>
+                  <opensilex-SelectForm
+                    id="parentFilter"
+                    :selected.sync="filters.parent"
+                    :multiple="false"
+                    :required="false"
+                    :searchMethod="searchParents"
+                    class="searchFilter"
+                  ></opensilex-SelectForm>
+                </b-form-group>
+              </opensilex-FilterField>
+            </div>
+
+            <!-- Factor Level -->
+            <div>
+              <opensilex-FilterField>
+                <b-form-group>
+                  <label for="factorLevels">{{ $t("FactorLevelSelector.label") }}</label>
+                  <opensilex-FactorLevelSelector
+                    id="factorLevels"
+                    :factorLevels.sync="filters.factorLevels"
+                    :multiple="true"
+                    :required="false"
+                    :experimentURI="uri"
+                    class="searchFilter"
+                  ></opensilex-FactorLevelSelector>
+                </b-form-group>
+              </opensilex-FilterField>
+            </div>
           </template>
         </opensilex-SearchFilterField>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-md-6">
+        </div>
+      </Transition>
+
+  <div class="experimentScientificObjectsList"
+    v-bind:style='{
+      "display":(!SearchFiltersToggle?"flex":"block"),
+      }'>
+      <div
+        v-bind:style='{
+          "width":(!SearchFiltersToggle?"100%":"100%"),
+      }'>
         <b-card>
           <div class="card-header">
             <h3 class="d-inline">
               <opensilex-Icon icon="ik#ik-target" class="title-icon" />
               {{ $t("ScientificObjectList.selected") }}
             </h3>&nbsp;
-            <span class="badge badge-pill badge-info">
+            <span class="badge badge-pill greenThemeColor">
               {{
               selectedObjects.length
               }}
@@ -137,7 +178,7 @@
 
           <div>
             <b-row>
-              <b-col cols="1">
+              <b-col cols="0">
                 <b-form-checkbox
                     class="selection-box custom-control custom-checkbox"
                     v-model="selectAll"
@@ -146,7 +187,7 @@
                   >
                 </b-form-checkbox>
               </b-col>
-              <b-col class="ml-1 mt-1"> {{!selectAll ? $t('component.common.select-all') : $t('component.common.unselect-all')}}</b-col>
+              <span class="ml-1 mt-1 selectLabel"> {{!selectAll ? $t('component.common.select-all') : $t('component.common.unselect-all')}}</span>
             </b-row>
           </div>
 
@@ -212,16 +253,27 @@
           ></opensilex-ScientificObjectForm>
         </b-card>
       </div>
-      <div class="col-md-6">
-        <b-card v-if="selected">
+     
+        <div v-if="selected" class="selectedCard"
+         v-bind:style='{
+          "padding":(!SearchFiltersToggle?"15px 15px 0 15px":"15px"),
+          "margin-left":(!SearchFiltersToggle?"15px":"0"),
+          "width":(!SearchFiltersToggle? "100%" : "100%")
+      }'>
             <h5>
               <opensilex-Icon icon="ik#ik-target" class="title-icon" />
               <slot name="name">&nbsp;{{ $t(selected.name) }}</slot>
             </h5>
-        <opensilex-ScientificObjectDetail :key="selected.name" :selected="selected" :tabs="detailTabs" :experiment="uri"/>
-        </b-card>
-      </div>
+          <opensilex-ScientificObjectDetail
+          :key="selected.name"
+          :selected="selected"
+          :tabs="detailTabs"
+          :experiment="uri"
+          class="experimentDetails"/>
+        </div>
+      
     </div>
+    </opensilex-PageContent>
 
     <opensilex-ExperimentDataVisuView
       v-if="showDataVisuView"
@@ -251,22 +303,24 @@
         :targets="selectedObjects"
         :isMove="true"
     ></opensilex-EventCsvForm>
-    
+
+  </template>
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
 import { ScientificObjectsService } from "opensilex-core/index";
 import ScientificObjectDetail from "../../scientificObjects/ScientificObjectDetail.vue";
 import EventCsvForm from "../../events/form/csv/EventCsvForm.vue";
 import TreeViewAsync from "../../common/views/TreeViewAsync.vue";
 import {User} from "../../../models/User";
+import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
+import ScientificObjectForm from "../../scientificObjects/ScientificObjectForm.vue";
 @Component
 export default class ExperimentScientificObjects extends Vue {
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
   $route: any;
   $store: any;
   $t: any;
@@ -280,8 +334,15 @@ export default class ExperimentScientificObjects extends Vue {
   refreshTypeSelectorComponent(){
     this.refreshKey += 1
   }
+
+  data(){
+    return {
+      SearchFiltersToggle : false,
+    } 
+  }
+
   
-  @Ref("soForm") readonly soForm!: any;
+  @Ref("soForm") readonly soForm!: ScientificObjectForm;
   @Ref("soTree") readonly soTree!: TreeViewAsync;
   @Ref("importForm") readonly importForm!: any;
   @Ref("documentForm") readonly documentForm!: any;
@@ -458,27 +519,6 @@ export default class ExperimentScientificObjects extends Vue {
         page,
         pageSize
     );
-    // )
-    //     .then(http => {
-    //       let childrenNodes = [];
-    //       for (let i in http.response.result) {
-    //         let soDTO = http.response.result[i];
-    //
-    //         let soNode = {
-    //           title: soDTO.name,
-    //           data: soDTO,
-    //           isLeaf: [],
-    //           children: [],
-    //           isExpanded: true,
-    //           isSelected: false,
-    //           isDraggable: false,
-    //           isSelectable: true
-    //         };
-    //         childrenNodes.push(soNode);
-    //       }
-    //
-    //       root.children = childrenNodes;
-    //     });
   }
 
   searchMethod(nodeURI, page, pageSize) {
@@ -567,15 +607,14 @@ export default class ExperimentScientificObjects extends Vue {
   }
 
   public deleteScientificObject(node: any) {
-    this.soService
-      .deleteScientificObject(node.data.uri, this.uri)
+    this.soService.deleteScientificObject(node.data.uri, this.uri)
       .then(http => {
         if (this.selected.uri == http.response.result) {
           this.selected = null;
           this.soTree.refresh();
           this.refreshTypeSelectorComponent();
         }
-      });
+      }).catch(this.$opensilex.errorHandler);
   }
 
   exportCSV(exportAll: boolean) {
@@ -708,6 +747,10 @@ export default class ExperimentScientificObjects extends Vue {
       this.numberOfSelectedRows = this.selectedObjects.length;
     }
   }
+
+  searchFiltersPannel() {
+    return  this.$t("searchfilter.label")
+  }
 }
 </script>
 
@@ -735,6 +778,31 @@ export default class ExperimentScientificObjects extends Vue {
 .card-header .badge {
   margin-left: 5px;
 }
+
+.createButton, .helpButton{
+  margin-top: 1px;
+  margin-left: 0;
+}
+
+.pageActionsBtns .createButton{
+  margin-left: 15px;
+}
+
+.selectLabel {
+  font-weight: bold;
+}
+
+.pagecontent{
+  margin-top : 10px;
+  width: 100%
+
+}
+
+.selectedCard {
+  background-color: #fff;
+  padding: 15px 15px 0 15px;
+}
+
 </style>
 
 <i18n>

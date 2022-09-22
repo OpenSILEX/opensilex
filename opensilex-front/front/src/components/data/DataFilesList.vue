@@ -6,7 +6,7 @@
       :fields="fields"
       defaultSortBy="name"
     >
-
+      <!--Target -->
       <template v-slot:cell(target)="{ data }">
           <opensilex-UriLink
             :uri="data.item.target"
@@ -15,48 +15,44 @@
               path:
                 '/scientific-objects/details/' +
                 encodeURIComponent(data.item.target),
-            }"
+            }
+            "
           ></opensilex-UriLink>
       </template>
 
+       <!-- Type -->
+       <template v-slot:cell(rdfType)="{ data }">
+          <div>{{ rdf_types[data.item.rdf_type] }}</div>
+        </template>
+
+      <!-- Provenance -->
       <template v-slot:cell(provenance)="{ data }">
-        <!-- <opensilex-UriLink
-          :uri="data.item.provenance.uri"
-          :value="provenances[data.item.provenance.uri]"
-          :to="{
-            path: '/provenances/details/' +
-              encodeURIComponent(data.item.provenance.uri),
-          }"
-        ></opensilex-UriLink> -->
         <opensilex-UriLink
           :uri="data.item.provenance.uri"
           :value="provenances[data.item.provenance.uri]"
         ></opensilex-UriLink>
       </template>
 
-       <template v-slot:cell(type)="{ data }">
-          <div>{{ rdf_types[data.item.rdf_type] }}</div>
-        </template>
-
-        <template v-slot:cell(actions)="{data}">
-          <b-button-group size="sm">
-            <opensilex-Button
-              :disabled="!images_rdf_types.includes(data.item.rdf_type)"
-              component="opensilex-DocumentDetails"
-              @click="showImage(data.item)"
-              label="ScientificObjectDataFiles.displayImage"
-              :small="true"
-              icon= "fa#image"
-              variant="outline-info"
-            ></opensilex-Button>
-            <opensilex-DetailButton
-              v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
-              @click="showDataProvenanceDetailsModal(data.item)"
-              label="DataFilesView.details"
-              :small="true"
-          ></opensilex-DetailButton>
-          </b-button-group>
-        </template>
+      <!-- Actions -->
+      <template v-slot:cell(actions)="{data}">
+        <b-button-group size="sm">
+          <opensilex-Button
+            :disabled="!images_rdf_types.includes(data.item.rdf_type)"
+            component="opensilex-DocumentDetails"
+            @click="showImage(data.item)"
+            label="ScientificObjectDataFiles.displayImage"
+            :small="true"
+            icon= "fa#image"
+            variant="outline-info"
+          ></opensilex-Button>
+          <opensilex-DetailButton
+            v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
+            @click="showDataProvenanceDetailsModal(data.item)"
+            label="DataFilesView.details"
+            :small="true"
+        ></opensilex-DetailButton>
+        </b-button-group>
+      </template>
 
     </opensilex-TableAsyncView>
 
@@ -77,7 +73,6 @@ import { Prop, Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import { ProvenanceGetDTO, ResourceTreeDTO } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
-import Oeso from "../../ontologies/Oeso";
 
 @Component
 export default class DataFilesList extends Vue {
@@ -93,7 +88,7 @@ export default class DataFilesList extends Vue {
       return {
         start_date: null,
         end_date: null,
-        variables: [],
+        rdf_type: null,
         provenance: null,
         experiments: [],
         scientificObjects: []
@@ -119,7 +114,7 @@ export default class DataFilesList extends Vue {
   @Ref("imageModal") readonly imageModal!: any;
 
   get fields() {
-    let tableFields: any = [
+    let fields: any = [
       {
         key: "target",
         label: "DataView.list.object",
@@ -130,7 +125,7 @@ export default class DataFilesList extends Vue {
         sortable: true,
       },
       {
-        key: "type",
+        key: "rdfType",
         label: "ScientificObjectDataFiles.rdfType",
         sortable: true,
       },
@@ -145,7 +140,7 @@ export default class DataFilesList extends Vue {
       }
     ];
 
-    return tableFields;
+    return fields;
   }
 
   refresh() {
@@ -204,7 +199,7 @@ export default class DataFilesList extends Vue {
           this.filter.devices, //devices
           provUris, // provenances
           undefined, // metadata
-          undefined, // order_by
+          options.orderBy, // order_by
           options.currentPage,
           options.pageSize,
           this.filter.scientificObjects, // scientific_object
@@ -282,7 +277,8 @@ export default class DataFilesList extends Vue {
   rdf_types = {};
   loadTypes() {
     this.$opensilex.getService("opensilex.OntologyService")
-    .getSubClassesOf(Oeso.DATAFILE_TYPE_URI, false)
+    .getSubClassesOf(
+        this.$opensilex.Oeso.DATAFILE_TYPE_URI, false)
     .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
       let parentType = http.response.result[0];
       let key = parentType.uri;
@@ -290,7 +286,7 @@ export default class DataFilesList extends Vue {
       for (let i = 0; i < parentType.children.length; i++) {   
         let key = parentType.children[i].uri;
         this.rdf_types[key] = parentType.children[i].name;
-        if (Oeso.checkURIs(key, Oeso.IMAGE_TYPE_URI)) {
+        if (this.$opensilex.Oeso.checkURIs(key, this.$opensilex.Oeso.IMAGE_TYPE_URI)) {
           let imageType = parentType.children[i];
           this.images_rdf_types.push(imageType.uri);
           for (let i = 0; i < imageType.children.length; i++) {

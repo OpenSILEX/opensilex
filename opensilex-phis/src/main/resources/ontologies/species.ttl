@@ -6,22 +6,22 @@ PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 <http://aims.fao.org/aos/agrovoc/c_1066>  rdfs:label  "colza"@en    .
 <http://aims.fao.org/aos/agrovoc/c_1066>  rdfs:label  "colza"@fr    .
 <http://aims.fao.org/aos/agrovoc/c_1066>  rdfs:label  "Brassica napus"@la    .
-<http://aims.fao.org/aos/agrovoc/c_11456>  rdf:type  vocabulary:Species    .
-<http://aims.fao.org/aos/agrovoc/c_11456>  rdfs:label  "durum wheat"@en    .
-<http://aims.fao.org/aos/agrovoc/c_11456>  rdfs:label  "blé dur"@fr    .
-<http://aims.fao.org/aos/agrovoc/c_11456>  rdfs:label  "Triticum turgidum"@la    .
-<http://aims.fao.org/aos/agrovoc/c_12332>  rdf:type  vocabulary:Species    .
-<http://aims.fao.org/aos/agrovoc/c_12332>  rdfs:label  "maize"@en    .
-<http://aims.fao.org/aos/agrovoc/c_12332>  rdfs:label  "maïs"@fr    .
-<http://aims.fao.org/aos/agrovoc/c_12332>  rdfs:label  "Zea mays"@la    .
+<http://aims.fao.org/aos/agrovoc/c_7955>  rdf:type  vocabulary:Species    .
+<http://aims.fao.org/aos/agrovoc/c_7955>  rdfs:label  "durum wheat"@en    .
+<http://aims.fao.org/aos/agrovoc/c_7955>  rdfs:label  "blé dur"@fr    .
+<http://aims.fao.org/aos/agrovoc/c_7955>  rdfs:label  "Triticum turgidum"@la    .
+<http://aims.fao.org/aos/agrovoc/c_8504>  rdf:type  vocabulary:Species    .
+<http://aims.fao.org/aos/agrovoc/c_8504>  rdfs:label  "maize"@en    .
+<http://aims.fao.org/aos/agrovoc/c_8504>  rdfs:label  "maïs"@fr    .
+<http://aims.fao.org/aos/agrovoc/c_8504>  rdfs:label  "Zea mays"@la    .
 <http://aims.fao.org/aos/agrovoc/c_13199>  rdf:type  vocabulary:Species    .
 <http://aims.fao.org/aos/agrovoc/c_13199>  rdfs:label  "Pearl millet"@en    .
 <http://aims.fao.org/aos/agrovoc/c_13199>  rdfs:label  "mil"@fr    .
 <http://aims.fao.org/aos/agrovoc/c_13199>  rdfs:label  "Pennisetum glaucum"@la    .
-<http://aims.fao.org/aos/agrovoc/c_14386>  rdf:type  vocabulary:Species    .
-<http://aims.fao.org/aos/agrovoc/c_14386>  rdfs:label  "bread wheat"@en    .
-<http://aims.fao.org/aos/agrovoc/c_14386>  rdfs:label  "blé tendre"@fr    .
-<http://aims.fao.org/aos/agrovoc/c_14386>  rdfs:label  "Triticum aestivum"@la    .
+<http://aims.fao.org/aos/agrovoc/c_7951>  rdf:type  vocabulary:Species    .
+<http://aims.fao.org/aos/agrovoc/c_7951>  rdfs:label  "bread wheat"@en    .
+<http://aims.fao.org/aos/agrovoc/c_7951>  rdfs:label  "blé tendre"@fr    .
+<http://aims.fao.org/aos/agrovoc/c_7951>  rdfs:label  "Triticum aestivum"@la    .
 <http://aims.fao.org/aos/agrovoc/c_15476>  rdf:type  vocabulary:Species    .
 <http://aims.fao.org/aos/agrovoc/c_15476>  rdfs:label  "teosintes"@en    .
 <http://aims.fao.org/aos/agrovoc/c_15476>  rdfs:label  "téosintes"@fr    .

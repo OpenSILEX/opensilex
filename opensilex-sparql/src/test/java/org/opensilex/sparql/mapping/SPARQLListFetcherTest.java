@@ -1,14 +1,13 @@
 package org.opensilex.sparql.mapping;
 
 import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.A;
 import org.opensilex.sparql.model.B;
 import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.OpenSilexTestEnvironment;
 import org.opensilex.utils.OrderBy;
@@ -183,7 +182,40 @@ public class SPARQLListFetcherTest  {
                 initialSelect,
                 initialResults
         ));
+    }
 
+    @Test
+    public void testFailWithDuplicateResults() throws Exception {
+
+        SPARQLService sparql = openSilexTestEnv.getSparql();
+
+        List<OrderBy> orderByList = Collections.singletonList(SPARQLClassObjectMapper.DEFAULT_ORDER_BY);
+
+        AtomicReference<SelectBuilder> initialSelectRef = new AtomicReference<>();
+        List<B> initialResults = sparql.search(B.class, null, initialSelectRef::set, orderByList);
+
+        // append a duplicate into models to ensure fail
+        initialResults.add(initialResults.get(0));
+
+        SelectBuilder initialSelect = initialSelectRef.get();
+
+        // unknown property test
+        Map<String,Boolean> fieldsToFetch = new HashMap<>();
+        fieldsToFetch.put(B.A_LIST_FIELD,true);
+
+        IllegalArgumentException ex = assertThrows(IllegalArgumentException.class, () -> {
+            SPARQLListFetcher<B> listFetcher = new SPARQLListFetcher<>(
+                    sparql,
+                    B.class,
+                    null,
+                    fieldsToFetch,
+                    initialSelect,
+                    initialResults
+            );
+            listFetcher.updateModels();
+        });
+
+        Assert.assertEquals("Multiple results with the same URI (" + initialResults.get(3).getUri().toString() + ") at index 3", ex.getMessage());
     }
 
 

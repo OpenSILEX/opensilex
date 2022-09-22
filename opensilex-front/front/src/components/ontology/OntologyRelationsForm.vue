@@ -26,10 +26,10 @@
 
 import {Component, Prop} from "vue-property-decorator";
 import Vue from "vue";
-import {RDFObjectRelationDTO} from "opensilex-core/model/rDFObjectRelationDTO";
 import {VueJsOntologyExtensionService, VueRDFTypeDTO, VueRDFTypePropertyDTO} from "../../lib";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {MultiValuedRDFObjectRelation} from "./models/MultiValuedRDFObjectRelation";
+import { RDFObjectRelationDTO } from 'opensilex-core/index';
 
 @Component
 /**
@@ -61,7 +61,7 @@ export default class OntologyRelationsForm extends Vue {
     rdfType: string;
 
     /**
-     * The root type, change according upper-component which use this component. (E.g. event, os, device)
+     * The root type URI, change according upper-component which use this component. (E.g. event, os, device)
      */
     @Prop()
     baseType: string;
@@ -69,13 +69,15 @@ export default class OntologyRelationsForm extends Vue {
     /**
      * The set of property URI to exclude from custom properties handling.
      * This property can be set, when some property are handled in code/hard.
+     *
+     * @description You can pass a short or full URI for properties, this has no effect since this component take care of this.
      */
     @Prop()
     excludedProperties: Set<string>;
 
     /**
      * Type definition, contains data/properties and associated input/view component.
-     * This model is changed after each call to this.typeSwitch()
+     * This model is changed after each call to {@link this.typeSwitch()}
      */
     typeModel: VueRDFTypeDTO = null;
 
@@ -88,7 +90,7 @@ export default class OntologyRelationsForm extends Vue {
 
     /**
      * Function which can be applied on startup and on each type update.
-     * This function can be used when some specific logic on internalRelations need to be applied
+     * This function can be used when some specific logic on {@link internalRelations} need to be applied
      *
      * @param relation : relation object (property + value)
      */
@@ -122,10 +124,22 @@ export default class OntologyRelationsForm extends Vue {
         return this.internalRelations;
     }
 
-    getFilteredProperties(): Array<VueRDFTypePropertyDTO> {
-        return this.typeModel.data_properties
+    /**
+     * @return the sorted list of VueRDFTypePropertyDTO which must be handled by this component.
+     * It include all data and object properties from the {@link typeModel} minus properties from {@link excludedProperties}
+     */
+    getHandledProperties(): Array<VueRDFTypePropertyDTO> {
+
+        // compute short form of properties in order to compare properties URI coming from service with URI from excludedProperties
+        // this ensure URI equality according registered namespaces into OpenSilexVuePlugin
+        let shortExcludedProperties = new Set<string>();
+        this.excludedProperties.forEach(property => shortExcludedProperties.add(this.$opensilex.getShortUri(property)))
+
+        let properties =  this.typeModel.data_properties
             .concat(this.typeModel.object_properties)
-            .filter(property => !this.excludedProperties.has(property.uri));
+            .filter(property => ! shortExcludedProperties.has(this.$opensilex.getShortUri(property.uri)));
+
+        return this.sortProperties(properties);
     }
 
     /**
@@ -170,7 +184,7 @@ export default class OntologyRelationsForm extends Vue {
                 if (initialLoad) {
                     this.internalRelations.push(...this.toMultiValuedRelations(this.relations));
                 } else {
-                    this.internalRelations.push(...this.getFilteredProperties().map(property => {
+                    this.internalRelations.push(...this.getHandledProperties().map(property => {
                         return {
                             property: property,
                             value: property.is_list ? [] : undefined
@@ -183,10 +197,60 @@ export default class OntologyRelationsForm extends Vue {
                         this.initHandler.apply(this, [relation]);
                     });
                 }
-            //     // #TODO sort properties according typeModel order
+
+
+                // #TODO sort properties according typeModel order
             }).catch(this.$opensilex.errorHandler);
     }
 
+    /**
+     * @param properties properties to sort according {@link typeModel} {@link VueRDFTypeDTO#properties_order}
+     * @return sorted properties if {@link typeModel} has a non null or empty {@link VueRDFTypeDTO#properties_order}, return properties else
+     */
+    sortProperties(properties: Array<VueRDFTypePropertyDTO>): Array<VueRDFTypePropertyDTO>{
+
+        if(! this.typeModel.properties_order || this.typeModel.properties_order.length == 0){
+            return properties;
+        }
+
+        return properties.sort((propModel1, propModel2) => {
+            let property1 = propModel1.uri;
+            let property2 = propModel2.uri;
+            if (property1 == property2) {
+                return 0;
+            }
+
+            // always put name (rdfs:label) in first
+            if (this.$opensilex.checkURIs(property1, this.$opensilex.Rdfs.LABEL)) {
+                return -1;
+            }
+
+            if (this.$opensilex.checkURIs(property2, this.$opensilex.Rdfs.LABEL)) {
+                return 1;
+            }
+
+            let aIndex = this.typeModel.properties_order.indexOf(property1);
+            let bIndex = this.typeModel.properties_order.indexOf(property2);
+            if (aIndex == -1) {
+                if (bIndex == -1) {
+                    return property1.localeCompare(property2);
+                } else {
+                    return -1;
+                }
+            } else {
+                if (bIndex == -1) {
+                    return 1;
+                } else {
+                    return aIndex - bIndex;
+                }
+            }
+        });
+    }
+
+    /**
+     * @param property property description with association vue-js information
+     * @return the vue component associated with property
+     */
     getInputComponent(property: VueRDFTypePropertyDTO) {
         if (property.input_components_by_property && property.input_components_by_property[property.uri]) {
             return property.input_components_by_property[property.uri];
@@ -277,7 +341,7 @@ export default class OntologyRelationsForm extends Vue {
         })
 
         // init empty relations, those not present from initial relations
-        let emptyRelations: Array<MultiValuedRDFObjectRelation> = this.getFilteredProperties()
+        let emptyRelations: Array<MultiValuedRDFObjectRelation> = this.getHandledProperties()
             .filter(property => !valueByProperties.has(property.uri))
             .map(property => {
                 return {

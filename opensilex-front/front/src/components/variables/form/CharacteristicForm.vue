@@ -79,9 +79,8 @@
     import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
     import Vue from "vue";
     import {ExternalOntologies} from "../../../models/ExternalOntologies";
-    // @ts-ignore
-    import {CharacteristicCreationDTO} from "opensilex-core/model/characteristicCreationDTO";
     import CharacteristicModalForm from "./CharacteristicModalForm.vue";
+    import { CharacteristicCreationDTO } from 'opensilex-core/index';
 
     @Component
     export default class CharacteristicForm extends Vue {

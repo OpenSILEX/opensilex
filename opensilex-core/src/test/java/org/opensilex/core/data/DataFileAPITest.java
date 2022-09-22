@@ -50,11 +50,11 @@ public class DataFileAPITest extends AbstractMongoIntegrationTest {
     @Rule
     public TemporaryFolder tmpFolder = new TemporaryFolder();
     
-    protected String path = "/core/datafiles";
+    public static final String path = "/core/datafiles";
 
     protected String uriPath = path + "/{uri}";
     protected String searchPath = path;
-    protected String createPath = path;
+    public static final  String createPath = path;
     protected String deletePath = path + "/{uri}";    
     protected String getDescriptionPath = path + "/{uri}/description";
         

@@ -2,6 +2,7 @@
   <opensilex-Card
       icon="ik#ik-clipboard"
       :label="$t('component.common.description')"
+      class="facilityDetailComponent"
   >
     <template v-slot:rightHeader v-if="withActions">
       <b-button-group>
@@ -121,9 +122,9 @@
 <script lang="ts">
 import Component from "vue-class-component";
 import Vue from "vue";
-import {InfrastructureFacilityGetDTO} from "opensilex-core/model/infrastructureFacilityGetDTO";
 import {Prop, Ref, Watch} from "vue-property-decorator";
 import DTOConverter from "../../models/DTOConverter";
+import { InfrastructureFacilityGetDTO } from 'opensilex-core/index';
 
 @Component
 export default class FacilityDetail extends Vue {
@@ -234,7 +235,7 @@ export default class FacilityDetail extends Vue {
         .getService("opensilex.VueJsOntologyExtensionService")
         .getRDFTypeProperties(
             this.selected.rdf_type,
-            this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI
+            this.$opensilex.Oeso.FACILITY_TYPE_URI
         )
         .then((result) => {
           this.classModel = result.response.result;
@@ -344,6 +345,11 @@ export default class FacilityDetail extends Vue {
 </script>
 
 <style scoped>
+      @media only screen and (min-width: 768px) {
+  .facilityDetailComponent {
+    margin-top: 30px;
+  }
+}
 
 </style>
 

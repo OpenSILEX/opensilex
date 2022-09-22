@@ -20,8 +20,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
 import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -29,6 +27,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import javax.imageio.ImageIO;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -66,6 +65,9 @@ import org.opensilex.core.exception.DateValidationException;
 import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.sparql.SPARQLModule;
+import org.opensilex.sparql.model.SPARQLTreeListModel;
+import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
@@ -87,10 +89,14 @@ import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.ontology.store.OntologyStore;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
+
 
 /**
  *
@@ -293,7 +299,7 @@ public class DataFilesAPI {
                 return Response.status(Response.Status.NOT_IMPLEMENTED.getStatusCode()).build();
             }
             if (ArrayUtils.isEmpty(fileContent)) {
-                return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()).build();
+                return Response.status(Response.Status.NOT_FOUND.getStatusCode()).build();
             }
             return Response.ok(fileContent, MediaType.APPLICATION_OCTET_STREAM)
                     .header("Content-Disposition", "attachment; filename=\"" + filePath.getFileName().toString() + "\"") //optional
@@ -302,7 +308,7 @@ public class DataFilesAPI {
         } catch (NoSQLInvalidURIException e) {
             return Response.status(Response.Status.NOT_FOUND.getStatusCode()).build();           
         } catch (IOException e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()).build();           
+            return Response.status(Response.Status.NOT_FOUND.getStatusCode()).build();
         } 
     }
     
@@ -378,17 +384,26 @@ public class DataFilesAPI {
         
         try {
             DataFileModel description = dao.getFile(uri);
-            byte[] image = fs.readFileAsByteArray(FS_FILE_PREFIX, Paths.get(description.getPath()));
-            
-            byte[] imageData = ImageResizer.getInstance().resize(
-                image,
-                scaledWidth,
-                scaledHeight
-            );
 
-            return Response.ok(imageData, MediaType.APPLICATION_OCTET_STREAM)
-                    .header("Content-Disposition", "attachment; filename=\"" + description.getFilename() + "\"") //optional
-                    .build();
+            Pattern pattern = Pattern.compile("(.*/)*.+\\.(png|jpg|gif|bmp|jpeg|PNG|JPG|GIF|BMP)$") ;
+            if( pattern.matcher(description.getFilename()).matches()) {
+                byte[] image = fs.readFileAsByteArray(FS_FILE_PREFIX, Paths.get(description.getPath()));
+
+                byte[] imageData = ImageResizer.getInstance().resize(
+                        image,
+                        scaledWidth,
+                        scaledHeight
+                );
+
+                return Response.ok(imageData, MediaType.APPLICATION_OCTET_STREAM)
+                        .header("Content-Disposition", "attachment; filename=\"" + description.getFilename() + "\"") //optional
+                        .build();
+            } else {
+                return Response.status(Response.Status.NOT_FOUND.getStatusCode()).build();
+            }
+
+
+
 
         } catch (NoSQLInvalidURIException e) {
             return Response.status(Response.Status.NOT_FOUND.getStatusCode()).build();
@@ -518,15 +533,20 @@ public class DataFilesAPI {
         }
 
         OntologyDAO ontoDao = new OntologyDAO(sparql);
-        List<URI> rdfTypes = new ArrayList<>();
+        Set<URI> rdfTypes = new HashSet<>();
 
         if (rdfType != null) {
-            rdfTypes = ontoDao.getSubclassRdfTypes(rdfType, user.getLanguage());
+//            rdfTypes = ontoDao.getSubclassRdfTypes(rdfType, user.getLanguage());
+            OntologyStore cache = SPARQLModule.getOntologyStoreInstance();
+            SPARQLTreeListModel<ClassModel> treeList = cache.searchSubClasses(rdfType, null, user.getLanguage(), false);
+            treeList.traverse(classModel -> rdfTypes.add(URI.create(SPARQLDeserializers.getExpandedURI(classModel.getUri()))));
+            rdfTypes.add(URI.create(SPARQLDeserializers.getExpandedURI(rdfType))); // fix root
+//            List<ResourceTreeDTO> treeDto = ResourceTreeDTO.fromResourceTree(treeList);
         }
 
         ListWithPagination<DataFileModel> resultList = dao.searchFiles(
                 user,
-                rdfTypes,
+                new ArrayList<>(rdfTypes),
                 experiments,
                 targets,
                 provenances,

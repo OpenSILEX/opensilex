@@ -11,6 +11,8 @@
       @imageIsHovered=" $emit('imageIsHovered', $event)"
       @imageIsUnHovered=" $emit('imageIsUnHovered', $event)"
       @imageIsDeleted="$emit('imageIsDeleted', $event)"
+      @onImageAnnotate="$emit('onImageAnnotate', $event)"
+      @onImageDetails="$emit('onImageDetails', $event)"
       @imageIsClicked="$emit('imageIsClicked',$event)"
 
     ></opensilex-VisuImageSingle>

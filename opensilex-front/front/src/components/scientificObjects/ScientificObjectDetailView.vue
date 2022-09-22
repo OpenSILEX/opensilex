@@ -2,8 +2,9 @@
   <div class="container-fluid">
     <opensilex-PageHeader
       icon="ik#ik-target"
-      title="component.menu.scientificObjects"
-      :description="selected ? selected.name : ''"
+      description="component.menu.scientificObjects"
+      :title="selected ? selected.name : ''"
+      class="detail-element-header"
     ></opensilex-PageHeader>
 
     <opensilex-ScientificObjectDetail
@@ -12,14 +13,16 @@
       :objectByContext="objectByContext"
       :globalView="true"
       :withReturnButton="true"
+      icon="ik#ik-target"
       @onUpdate="refresh"
     ></opensilex-ScientificObjectDetail>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Ref, Watch } from "vue-property-decorator";
+import { Component } from "vue-property-decorator";
 import Vue from "vue";
+import {ScientificObjectsService} from "opensilex-core/api/scientificObjects.service";
 
 @Component
 export default class ScientificObjectDetailView extends Vue {
@@ -31,18 +34,17 @@ export default class ScientificObjectDetailView extends Vue {
 
   uri;
 
+  service: ScientificObjectsService;
+
   created() {
+    this.service =this.$opensilex.getService("opensilex.ScientificObjectsService");
     this.refresh();
   }
 
   refresh() {
-    let service = this.$opensilex.getService(
-      "opensilex.ScientificObjectsService"
-    );
-
     this.uri = decodeURIComponent(this.$route.params.uri);
     if (this.uri) {
-      service.getScientificObjectDetailByExperiments(this.uri).then((http) => {
+      this.service.getScientificObjectDetailByExperiments(this.uri).then((http) => {
         this.objectByContext = [];
         if (http.response.result.length == 1) {
           this.selected = http.response.result[0];
@@ -55,6 +57,7 @@ export default class ScientificObjectDetailView extends Vue {
               this.objectByContext.push(scientificObject);
             }
           });
+          this.selected.geometry= this.objectByContext[0].geometry;
         }
       });
     }

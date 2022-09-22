@@ -334,9 +334,9 @@ file-system:
                 S3:
                   implementation: org.opensilex.fs.s3.transferManager.S3TransferManagerStorageConnection
                   config:
-                    endpoint: https://s3.datacloud.helsinki.fi
+                    endpoint: s3-website.eu-west-3.amazonaws.com
                     region: eu-west-3
-                    bucket: 2022-phis-test
+                    bucket: opensilex-bucket                              
                     minimumPartSizeInBytes: 8000000
                     targetThroughputInGbps: 5.0
 ```

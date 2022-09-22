@@ -73,6 +73,7 @@ public class S3FileStorageConnectionTest {
     }
 
     @Test
+    @Ignore
     public void writeFile() throws IOException {
         for (Path filePath : getPaths()) {
 
@@ -93,6 +94,7 @@ public class S3FileStorageConnectionTest {
     }
 
     @Test
+    @Ignore
     public void WriteFileContent() throws IOException {
         for (Path filePath : getPaths()) {
 
@@ -113,6 +115,7 @@ public class S3FileStorageConnectionTest {
     }
 
     @Test
+    @Ignore
     public void createDirectories() throws IOException {
 
         // create directory and check existence

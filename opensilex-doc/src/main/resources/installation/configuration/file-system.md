@@ -96,7 +96,7 @@ It refers to the [GridFS](https://docs.mongodb.com/manual/core/gridfs/) is a Mon
 It refers to the [S3](http://aws.amazon.com/s3/) is a storage service from Amazon for storing and retrieving object and file (see `opensilex-doc/src/main/resources/file-systems/amazon_s3.md` for more details).
 
 - `org.opensilex.fs.s3.S3FileStorageConnection`
-- `org.opensilex.fs.s3.S3TransferManagerStorageConnection`
+- `org.opensilex.fs.s3.tranferManager.S3TransferManagerStorageConnection`
 
 It refers to the file system connection
 

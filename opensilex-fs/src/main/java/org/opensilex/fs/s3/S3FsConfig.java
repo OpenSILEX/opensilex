@@ -40,6 +40,18 @@ public interface S3FsConfig extends ServiceConfig {
     String region();
 
     /**
+     * @return the name of the credentials profile to use
+     * 
+     * @see software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider#create(String)
+     * @see <a href="https://docs.aws.amazon.com/sdkref/latest/guide/file-format.html">Credentials file format</a>
+     *
+     */
+    @ConfigDescription(
+            value = "default"
+    )
+    String profileName();
+
+    /**
      * @return true if we must use {@link software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider} (it tries each available credentials' method), false else
      *
      * @see software.amazon.awssdk.services.s3.S3ClientBuilder#credentialsProvider(AwsCredentialsProvider)

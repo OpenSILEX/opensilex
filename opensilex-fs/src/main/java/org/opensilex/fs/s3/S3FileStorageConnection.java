@@ -82,7 +82,11 @@ public class S3FileStorageConnection extends BaseService implements FileStorageC
         if(config.useDefaultCredentialsProvider()){
             return DefaultCredentialsProvider.create();
         }
-        return ProfileCredentialsProvider.create();
+
+        if(StringUtils.isEmpty(config.profileName())){
+            throw new IllegalArgumentException("Null or empty S3FsConfig profileName");
+        }
+        return ProfileCredentialsProvider.create(config.profileName());
     }
 
     @Override

@@ -151,8 +151,9 @@ Several authentication method are provided for S3 ([credentials](https://docs.aw
 
 By default, OpenSILEX rely on credentials file stored in `$HOME/.aws/credentials` with `aws_access_key_id` and `aws_secret_access_key` and 
 use the [ProfileCredentialsProvider](https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/auth/credentials/ProfileCredentialsProvider.html).
+This credential provider also take care of the profile passed in configuration. 
 
-If the `useDefaultCredentialsProvider` is set to `true` in your configuration,
+**Note :** If the `useDefaultCredentialsProvider` is set to `true` in your configuration,
 then OpenSILEX will let Amazon SDK search for any available credentials (see [credentials retrieval order](https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/credentials.html)).
 Set this setting if you must use a credential method different from shared credentials file.
 
@@ -169,6 +170,7 @@ Two configurations are available depending on the chosen S3 file store implement
 - `endpoint` : S3 endpoint URL
 - `region` : S3 region code 
 - `bucket` : S3 bucket name
+- `profileName` : S3 credential profile name
 - `useDefaultCredentialsProvider` : Indicate if we let S3 determine the credentials method or if the OpenSILEX
 preferred credentials method must be used (Use shared credentials and configs file). 
 
@@ -302,6 +304,53 @@ file-system:
                       region: eu-west-2
                       bucket: opensilex-document-bucket  # document bucket
 ```
+
+### Use default credential method 
+
+Your have to create or to update the shared credentials file which will be read by S3 SDK on OpenSILEX 
+file system initialization.
+
+Run the following command
+
+```shell
+mkdir $HOME/.aws/ && nano $HOME/.aws/credentials
+```
+
+put the following content in the file and save it (by replacing `custom_profile`, `aws_access_key_id` and `aws_secret_access_key` with your correct values)
+
+```
+[custom_profile]
+aws_access_key_id = 4XoC55EXyaMo4thWqH8k
+aws_secret_access_key = 1iEorGRsia7S4o32XHxLx8mQlntx6gLH7W58wXJ9
+```
+
+**Note:** if no particular profile is set, then consider the use of the default profile :
+
+```
+[default]
+aws_access_key_id = 4XoC55EXyaMo4thWqH8k
+aws_secret_access_key = 1iEorGRsia7S4o32XHxLx8mQlntx6gLH7W58wXJ9
+```
+
+The OpenSILEX config to use will be the following : 
+
+```yaml
+file-system:
+    fs:
+        config:
+            defaultFS: S3      
+            connections:
+                S3:
+                    implementation: org.opensilex.fs.s3.S3FileStorageConnection
+                    config:
+                        endpoint: s3-website.eu-west-3.amazonaws.com
+                        region: eu-west-3
+                        bucket: opensilex-bucket 
+                        profile: custom_profile # no value | default if no particular profile is used
+```
+
+See [credentials-files-format](https://docs.aws.amazon.com/sdkref/latest/guide/file-format.html) for more informations
+about file configuration
 
 ### Use a credential method different from the credential file method
 

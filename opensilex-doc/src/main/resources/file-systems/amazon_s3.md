@@ -31,6 +31,10 @@
 # Conception
 
 ## Bucket and file management 
+
+S3 use the concept **bucket** in order to represent storage resource and access configuration.
+It can be viewed as the equivalent of database for a RDBMS or collection for document NoSQL databases.
+
 This section describes how OpenSILEX can handle S3 connection and manage storage by different way (see **_How to use_** for configuration)
 
 ### One endpoint <-> One bucket
@@ -45,6 +49,12 @@ s3-website.eu-west-2.amazonaws.com:
         document/fd45fdpf5df1fd14df4fd14d
 ```
 
+with :
+- `s3-website.eu-west-2.amazonaws.com` : URL of the S3 service/endpoint
+- `opensilex-bucket` : a bucket
+- `datafile/aHR0cDovL3d3dy5waGVub21l`: path to an object/file stored inside the opensilex-bucket.
+- `document/fd45fdpf5df1fd14df4fd14d` : path to an object/file stored inside the opensilex-bucket.
+
 ### One endpoint <-> multiple bucket
 
 OpenSILEX can manage multiple S3 bucket for a single endpoint
@@ -56,6 +66,14 @@ s3-website.eu-west-2.amazonaws.com:
     document-bucket:
       document/fd45fdpf5df1fd14df4fd14d
 ```
+
+with :
+- `s3-website.eu-west-2.amazonaws.com` : URL of the S3 service/endpoint
+- `datafile-bucket` : a bucket
+- `datafile/aHR0cDovL3d3dy5waGVub21l`: path to an object/file stored inside the datafile-bucket.
+- `document-bucket` : a bucket
+- `document/fd45fdpf5df1fd14df4fd14d` : path to an object/file stored inside the document-bucket.
+
 
 ### Multiple endpoint <-> multiple bucket
 
@@ -71,79 +89,9 @@ s3-website.eu-west-3.amazonaws.com:
       document/fd45fdpf5df1fd14df4fd14d
 ```
 
-## Upload/Download file
-
-![S3 fs connection class diagram](s3_fs_uml_class_diagramm.png)
-
-Two `FileStoreConnection` are implemented for the access of a S3 storage :
-- `S3FileStorageConnection` : Basic implementation of S3 storage access
-- `S3TransferManagerStorageConnection` : Specialization which use the high level `TransferManager` library.
-This one has high level file manipulation functionalities (file upload/download, directory upload), enhanced throughput and performance, and provides
-progress view of files operations. 
-
-Following sections describe succinctly the possible uses cases of file connection
-and some connection code examples.
-
-### Upload
-
-Considering the upload of a datafile with : 
-- `http://www.phenome-fppn.fr/id/file/1661036401.fcf0933a40d6bc61bbdb89d625c44ec1` : URI of the datafile
-- `datafile/aHR0cDovL3d3dy5waGVub21l`: file path generated from datafile URI
-
-**Upload file :** 
-
-```java
-File fileToUpload; // file from API
-Path dataFilePath = Paths.get("datafile/aHR0cDovL3d3dy5waGVub21l"); // path for a datafile
-s3FsConnection.writeFile(dataFilePath,fileToUpload);
-```
-
-**Upload file content :**
-
-```java
-String fileContent; // file content from API
-Path dataFilePath = Paths.get("datafile/aHR0cDovL3d3dy5waGVub21l"); // path for a datafile
-s3FsConnection.writeFile(dataFilePath,fileContent);
-```
-
-An object (a file here) with the key `datafile/aHR0cDovL3d3dy5waGVub21l` will be inserted
-into the bucket used by the datafile connection.
-
-### Declaring existing file
-
-Considering the declaration of an existing datafile from a S3 bucket with : 
-- `datafile/sub_directory/LWZwcG4uZnIvaWQvZmlsZS8x` : relative path of the existing datafile (key of file into bucket)
-- `/datafile/sub_directory/LWZwcG4uZnIvaWQvZmlsZS8x` : absolute path of the existing datafile
-
-For already uploaded file declaration, it's just needed to check if the specified file exists or not
-
-**Check file existence**
-
-```java
-Path dataFilePath = Paths.get("datafile/aHR0cDovL3d3dy5waGVub21l"); // path for a datafile
-boolean fileExists = s3FsConnection.exists(dataFilePath);
-
-Path absoluteFilePath = Paths.get("/datafile/aHR0cDovL3d3dy5waGVub21l"); // absolute path for a datafile
-fileExists =  s3FsConnection.exists(absoluteFilePath);
-```
-
-**_Note_** : The S3 connection has no notion of base/root path, so calling `S3FileStorageConnection.getAbsolutePath(path)`
-will just return `path`
-
-### Download file
-
-Considering the download of a datafile with :
-- `http://www.phenome-fppn.fr/id/file/1661036401.fcf0933a40d6bc61bbdb89d625c44ec1` : URI of the datafile
-- `datafile/aHR0cDovL3d3dy5waGVub21l`: file path generated from datafile URI (key of file into bucket)
-
-File is just downloaded from S3 bucket with the corresponding path/key. 
-
-**Read file**
-
-```java
-Path dataFilePath = Paths.get("datafile/aHR0cDovL3d3dy5waGVub21l"); // path for a datafile
-byte[] fileContent = s3FsConnection.readFileAsByteArray(dataFilePath);
-```
+with :
+- `s3-website.eu-west-2.amazonaws.com` : URL of the S3 service/endpoint
+- `s3-website.eu-west-3.amazonaws.com` : URL of another S3 endpoint
 
 ## Authentication
 
@@ -153,87 +101,10 @@ By default, OpenSILEX rely on credentials file stored in `$HOME/.aws/credentials
 use the [ProfileCredentialsProvider](https://sdk.amazonaws.com/java/api/latest/software/amazon/awssdk/auth/credentials/ProfileCredentialsProvider.html).
 This credential provider also take care of the profile passed in configuration. 
 
-**Note :** If the `useDefaultCredentialsProvider` is set to `true` in your configuration,
-then OpenSILEX will let Amazon SDK search for any available credentials (see [credentials retrieval order](https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/credentials.html)).
-Set this setting if you must use a credential method different from shared credentials file.
+**Note :**  If you must use a credential method different from shared credentials file, you can update the
+configuration file in order to tell OpenSILEX to let Amazon SDK search for any available credentials (see [credentials retrieval order](https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/credentials.html)).
 
-## Configuration
-
-Two configurations are available depending on the chosen S3 file store implementation
-
-<img alt="s3_config_uml_class_diagramm.png" src="s3_config_uml_class_diagramm.png" width="50%"/>
-
-### S3 Client
-
-`S3FsConfig` : Settings which apply on S3 storage configuration
-
-- `endpoint` : S3 endpoint URL
-- `region` : S3 region code 
-- `bucket` : S3 bucket name
-- `profileName` : S3 credential profile name
-- `useDefaultCredentialsProvider` : Indicate if we let S3 determine the credentials method or if the OpenSILEX
-preferred credentials method must be used (Use shared credentials and configs file). 
-
-See _credentials_ in developers links for more details
-
-### Transfer Manager
-
-`S3FsTransferManagerConfig` : Specific settings when using S3 Transfer Manager : 
-
-- `minimumPartSizeInBytes` : minimum part size for file transfer parts
-- `targetThroughputInGbps` : target throughput
-
-See _client configuration_ in developers links for more details
-
-## S3 Client usage
-
-**Client sharing:**  If multiple connection share the same endpoint and region, then the `S3FileStorageConnection`
-can reuse the same `S3Client` :
-- This ensures to not re-create multiple `S3Client` which can be costly
-- `S3Client` is thread-safe and can so be shared by multiple `S3FileStorageConnection` safely
-- In this case it's only during read/write that each `S3FileStorageConnection` will need a different bucket setting,
-  but with the same client.
-
-<hr>
-
-# Performances
-
-## Benchmark protocol
-
-**Client configuration :** 
-- **CPU** : i7-8650U CPU @ 1.90GHz × 8
-- **RAM** : 16GO DDR4
-- **SSD** : NVMe 512GB
-- **OS** : Ubuntu 18.04.6LTS
-- **Amazon SDK**: v2.17.267
-- **Java** : OpenJDK 11.0.1
-- **Network** : max net speed ? 
-
-**Dataset**
-- **Little** : high number of call (998) with small file -> **269 MB** of bandwidth
-- **Middle** : medium number of call (100) with medium file -> **517MB** of bandwidth
-- **Big** : small number of call (10) with big file -> **989 MB** of bandwidth
-
-**Connections**
-- **S3FileStorageConnection** : basic S3 connection
-- **S3TransferManagerStorageConnection** : optimized connection for file upload/download
-
-**Run mode**:
-- **Single** : upload/download file one by one
-- **Concurrent** : parallel file upload/download
-
-## Results
-
-| Dataset | Connection                         | Upload | Download | Upload (parallel) | Download (parallel) |
-|---------|------------------------------------|--------|----------|-------------------|---------------------|
-| little  | S3FileStorageConnection            |        |          |                   |                     |
-| middle  | S3FileStorageConnection            |        |          |                   |                     |
-| big     | S3FileStorageConnection            |        |          |                   |                     |
-| little  | S3TransferManagerStorageConnection |        |          |                   |                     |
-| middle  | S3TransferManagerStorageConnection |        |          |                   |                     |
-| big     | S3TransferManagerStorageConnection |        |          |                   |                     |
-
-<hr>
+(Go to **How to use/Use a credential method different from the credential file method for configuration** section for an example)
 
 # How to use
 
@@ -392,6 +263,112 @@ file-system:
 
 <hr>
 
+# Implementation
+
+## Upload/Download file
+
+![S3 fs connection class diagram](s3_fs_uml_class_diagramm.png)
+
+Two `FileStoreConnection` are implemented for the access of a S3 storage :
+- `S3FileStorageConnection` : Basic implementation of S3 storage access
+- `S3TransferManagerStorageConnection` : Specialization which use the high level `TransferManager` library.
+  This one has high level file manipulation functionalities (file upload/download, directory upload), enhanced throughput and performance, and provides
+  progress view of files operations.
+
+Following sections describe succinctly the possible uses cases of file connection
+and some connection code examples.
+
+### Upload
+
+Considering the upload of a datafile with :
+- `http://www.phenome-fppn.fr/id/file/1661036401.fcf0933a40d6bc61bbdb89d625c44ec1` : URI of the datafile
+- `datafile/aHR0cDovL3d3dy5waGVub21l`: file path generated from datafile URI
+
+**Upload file :**
+
+```java
+File fileToUpload; // file from API
+Path dataFilePath = Paths.get("datafile/aHR0cDovL3d3dy5waGVub21l"); // path for a datafile
+s3FsConnection.writeFile(dataFilePath,fileToUpload);
+```
+
+**Upload file content :**
+
+```java
+String fileContent; // file content from API
+Path dataFilePath = Paths.get("datafile/aHR0cDovL3d3dy5waGVub21l"); // path for a datafile
+s3FsConnection.writeFile(dataFilePath,fileContent);
+```
+
+An object (a file here) with the key `datafile/aHR0cDovL3d3dy5waGVub21l` will be inserted
+into the bucket used by the datafile connection.
+
+### Declaring existing file
+
+Considering the declaration of an existing datafile from a S3 bucket with :
+- `datafile/sub_directory/LWZwcG4uZnIvaWQvZmlsZS8x` : relative path of the existing datafile (key of file into bucket)
+- `/datafile/sub_directory/LWZwcG4uZnIvaWQvZmlsZS8x` : absolute path of the existing datafile
+
+For already uploaded file declaration, it's just needed to check if the specified file exists or not
+
+**Check file existence**
+
+```java
+Path dataFilePath = Paths.get("datafile/aHR0cDovL3d3dy5waGVub21l"); // path for a datafile
+boolean fileExists = s3FsConnection.exists(dataFilePath);
+
+Path absoluteFilePath = Paths.get("/datafile/aHR0cDovL3d3dy5waGVub21l"); // absolute path for a datafile
+fileExists =  s3FsConnection.exists(absoluteFilePath);
+```
+
+**_Note_** : The S3 connection has no notion of base/root path, so calling `S3FileStorageConnection.getAbsolutePath(path)`
+will just return `path`
+
+### Download file
+
+Considering the download of a datafile with :
+- `http://www.phenome-fppn.fr/id/file/1661036401.fcf0933a40d6bc61bbdb89d625c44ec1` : URI of the datafile
+- `datafile/aHR0cDovL3d3dy5waGVub21l`: file path generated from datafile URI (key of file into bucket)
+
+File is just downloaded from S3 bucket with the corresponding path/key.
+
+**Read file**
+
+```java
+Path dataFilePath = Paths.get("datafile/aHR0cDovL3d3dy5waGVub21l"); // path for a datafile
+byte[] fileContent = s3FsConnection.readFileAsByteArray(dataFilePath);
+```
+
+## Configuration
+
+Two configurations are available depending on the chosen S3 file store implementation
+
+<img alt="s3_config_uml_class_diagramm.png" src="s3_config_uml_class_diagramm.png" width="50%"/>
+
+### S3 Client
+
+`S3FsConfig` : Settings which apply on S3 storage configuration
+
+- `endpoint` : S3 endpoint URL
+- `region` : S3 region code
+- `bucket` : S3 bucket name
+- `profileName` : S3 credential profile name
+- `useDefaultCredentialsProvider` : Indicate if we let S3 determine the credentials method or if the OpenSILEX
+  preferred credentials method must be used (Use shared credentials and configs file).
+
+See _credentials_ in developers links for more details
+
+### Transfer Manager
+
+`S3FsTransferManagerConfig` : Specific settings when using S3 Transfer Manager :
+
+- `minimumPartSizeInBytes` : minimum part size for file transfer parts
+- `targetThroughputInGbps` : target throughput
+
+See _client configuration_ in developers links for more details
+
+<hr>
+
 # Links
 
 ## Developers
@@ -409,3 +386,42 @@ file-system:
 - [configuration-and-credentials](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html)
 - [credentials-files](https://docs.aws.amazon.com/sdkref/latest/guide/creds-config-files.html)
 - [credentilas-files-format](https://docs.aws.amazon.com/sdkref/latest/guide/file-format.html)
+
+# Performances
+
+## Benchmark protocol
+
+**Client configuration :**
+- **CPU** : i7-8650U CPU @ 1.90GHz × 8
+- **RAM** : 16GO DDR4
+- **SSD** : NVMe 512GB
+- **OS** : Ubuntu 18.04.6LTS
+- **Amazon SDK**: v2.17.267
+- **Java** : OpenJDK 11.0.1
+- **Network** : max net speed ?
+
+**Dataset**
+- **Little** : high number of call (998) with small file -> **269 MB** of bandwidth
+- **Middle** : medium number of call (100) with medium file -> **517MB** of bandwidth
+- **Big** : small number of call (10) with big file -> **989 MB** of bandwidth
+
+**Connections**
+- **S3FileStorageConnection** : basic S3 connection
+- **S3TransferManagerStorageConnection** : optimized connection for file upload/download
+
+**Run mode**:
+- **Single** : upload/download file one by one
+- **Concurrent** : parallel file upload/download
+
+## Results
+
+| Dataset | Connection                         | Upload | Download | Upload (parallel) | Download (parallel) |
+|---------|------------------------------------|--------|----------|-------------------|---------------------|
+| little  | S3FileStorageConnection            |        |          |                   |                     |
+| middle  | S3FileStorageConnection            |        |          |                   |                     |
+| big     | S3FileStorageConnection            |        |          |                   |                     |
+| little  | S3TransferManagerStorageConnection |        |          |                   |                     |
+| middle  | S3TransferManagerStorageConnection |        |          |                   |                     |
+| big     | S3TransferManagerStorageConnection |        |          |                   |                     |
+
+<hr>

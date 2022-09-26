@@ -126,9 +126,6 @@ export default class ExperimentDataVisualisationView extends Vue {
     this.langUnwatcher = this.$store.watch(
       () => this.$store.getters.language,
       lang => {
-        if (this.showGraphicComponent) {
-          this.onUpdate(this.form);
-        }
       }
     );
   }
@@ -147,7 +144,6 @@ export default class ExperimentDataVisualisationView extends Vue {
 
     // refresh count at event creation
   onEventCreated() {
-    this.onUpdate(this.form);
     this.experimentDataVisualisationForm.getTotalEventsCount();
   }
 
@@ -165,25 +161,6 @@ export default class ExperimentDataVisualisationView extends Vue {
     this.VariablesService = this.$opensilex.getService("opensilex.VariablesService");
   }
 
-    // when event is created or if this.ShowGraphicComponent is true:
-  onUpdate(form) {
-    this.form = form;
-    const datatype = this.selectedVariable[0].datatype.split("#")[1];
-    if (datatype == "decimal" || datatype == "integer") {
-      this.showGraphicComponent = false;
-      this.$opensilex.enableLoader();
-      this.loadSeries();
-    } else {
-      this.showGraphicComponent = false;
-      this.$opensilex.showInfoToast(
-        this.$i18n.t("ExperimentDataVisualisationView.datatypeMessageA") +
-          " " +
-          datatype +
-          " " +
-          this.$i18n.t("ExperimentDataVisualisationView.datatypeMessageB")
-      );
-    }
-  }
 
   buildColorsSOArray() {
     const colorPalette = [
@@ -238,9 +215,26 @@ export default class ExperimentDataVisualisationView extends Vue {
         .getVariablesByURIs(this.selectedVariable)
         .then((http: HttpResponse<OpenSilexResponse>) => {
           this.selectedVariablesObjectsList = http.response.result;
-            this.showGraphicComponent = true;
+          const datatype = this.selectedVariablesObjectsList[0].datatype.split("#")[1];
+          if (datatype == "decimal" || datatype == "integer") {
+            if (this.form.startDate === ""){
+              this.form.startDate = undefined;
+            }
+            if (this.form.endDate === ""){
+              this.form.endDate = undefined;
+            }
             this.buildColorsSOArray();
             this.loadSeries();
+          } else {
+            this.showGraphicComponent = true;
+            this.$opensilex.showInfoToast(
+            this.$i18n.t("ExperimentDataVisuView.datatypeMessageA") +
+              " " +
+              datatype +
+              " " +
+              this.$i18n.t("ExperimentDataVisuView.datatypeMessageB")
+            );
+          }
         }
       )
     }  

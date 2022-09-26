@@ -84,7 +84,9 @@ public abstract class AbstractCsvDao<T extends SPARQLNamedResourceModel> impleme
             int firstRow,
             String lang,
             Map<String, BiConsumer<CSVCell, CSVValidationModel>> customValidators,
-            List<String> customColumns) throws IOException {
+            List<String> customColumns,
+            boolean generateURI
+    ) throws IOException {
 
         Map<String, Map<String, OwlRestrictionModel>> typeRestrictions = new HashMap<>();
         Map<String, ClassModel> typeModels = new HashMap<>();
@@ -164,7 +166,7 @@ public abstract class AbstractCsvDao<T extends SPARQLNamedResourceModel> impleme
 
                         Map<String, OwlRestrictionModel> restrictionsByID = typeRestrictions.get(rdfType.toString());
 
-                        validateCSVRow(graph, typeModels.get(rdfType.toString()), values, rowIndex, csvValidation, uriIndex, typeIndex, nameIndex, restrictionsByID, headerByIndex, checkedClassObjectURIs, checkedURIs, customValidators);
+                        validateCSVRow(graph, typeModels.get(rdfType.toString()), values, rowIndex, csvValidation, uriIndex, typeIndex, nameIndex, restrictionsByID, headerByIndex, checkedClassObjectURIs, checkedURIs, customValidators, generateURI);
 
                     } catch (Exception ex) {
                         CSVCell cell = new CSVCell(rowIndex, 0, "Unhandled error while parsing row: " + ex.getMessage(), "all");
@@ -193,7 +195,8 @@ public abstract class AbstractCsvDao<T extends SPARQLNamedResourceModel> impleme
             Map<Integer, String> headerByIndex,
             Map<URI, Map<URI, Boolean>> checkedClassObjectURIs,
             Map<URI, Integer> checkedURIs,
-            Map<String, BiConsumer<CSVCell, CSVValidationModel>> customValidators
+            Map<String, BiConsumer<CSVCell, CSVValidationModel>> customValidators,
+            boolean generateURI
     ) throws Exception {
 
         SPARQLNamedResourceModel<T> object = objectClass.getConstructor().newInstance();
@@ -256,7 +259,7 @@ public abstract class AbstractCsvDao<T extends SPARQLNamedResourceModel> impleme
         }
 
         if (!csvValidation.hasErrors()) {
-            if (object.getUri() == null) {
+            if (object.getUri() == null && generateURI) {
                 String generationUriPrefix = sparql.getDefaultGenerationURI(objectClass).toString();
                 int retry = 0;
                 URI objectURI = object.generateURI(generationUriPrefix, (T) object, retry);

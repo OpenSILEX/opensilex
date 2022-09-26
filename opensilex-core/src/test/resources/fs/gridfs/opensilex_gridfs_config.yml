@@ -1,0 +1,11 @@
+file-system:
+    fs:
+        config:
+            defaultFS: gridfs
+            connections:
+                gridfs:
+                    implementation: org.opensilex.fs.gridfs.GridFSConnection
+                    config:
+                        host: localhost
+                        port: 28018
+                        database: admin

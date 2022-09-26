@@ -12,6 +12,7 @@
       <b-spinner small label="Small Spinning" v-if="loading"></b-spinner>
       <input :id="field.id" type="hidden" :value="hiddenValue" />
       <b-input-group class="select-button-container">
+        <!-- First case : modal search-->
         <treeselect
           v-if="isModalSearch"
           class="multiselect-popup"
@@ -37,47 +38,7 @@
             <slot name="value-label" v-bind:node="node">{{ node.label }}</slot>
           </template>
         </treeselect>
-        <treeselect
-          v-else-if="optionsLoadingMethod"
-          v-bind:class="{
-            'multiselect-action': actionHandler,
-            'multiselect-view': viewHandler,
-          }"
-          :multiple="multiple"
-          :flat="multiple && flat"
-          :value="selectedValues"
-          valueFormat="node"
-          :async="searchMethod != null"
-          :default-options="searchMethod != null"
-          :load-options="loadOptions"
-          :options="internalOption"
-          :placeholder="$t(placeholder)"
-          :disabled="disabled"
-          :clearable="clearable"
-          :defaultExpandLevel="2"
-          @deselect="deselect"
-          @select="select"
-          @input="clearIfNeeded"
-          @close="close(field)"
-          :noResultsText="$t(noResultsText)"
-          :searchPromptText="$t('component.common.search-prompt-text')"
-          :disable-branch-nodes="disableBranchNodes"
-          :search-nested="searchNested"
-          :show-count="showCount"
-          :limit="limit"
-        >
-          <template v-slot:option-label="{ node }">
-            <slot name="option-label" v-bind:node="node">{{ node.label }}</slot>
-          </template>
-          <template v-slot:value-label="{ node }">
-            <slot name="value-label" v-bind:node="node">{{ node.label }}</slot>
-          </template>
-          <template v-if="resultCount < totalCount" v-slot:after-list>
-            <i class="more-results-info">{{
-              $t("SelectorForm.refineSearchMessage", [resultCount, totalCount])
-            }}</i>
-          </template>
-        </treeselect>
+        <!-- Second case : not modal -->
         <treeselect
           v-else
           v-bind:class="{
@@ -142,7 +103,6 @@
             :small="true"
           ></opensilex-DetailButton>
         </b-input-group-append>
-   
       </b-input-group>
       <component
         v-if="isModalSearch"
@@ -335,38 +295,30 @@ export default class SelectForm extends Vue {
   @AsyncComputedProp()
   selectedValues(): Promise<any> {
     return new Promise((resolve, reject) => {
-      if(this.isModalSearch) {
-    
-          if (!this.selection || this.selection.length == 0) {
-            resolve([]);
-            
-          } else if (this.currentValue) {
-            resolve(this.currentValue);
-          } else {
-            
-            let nodeList = [];
-            this.selectedCopie.forEach((item) => {
-              nodeList.push(this.conversionMethod(item));
-            });
-            this.currentValue = nodeList;
-
-            if(this.loading) {
-              this.loading = false;
-            }
-            resolve(this.currentValue);
+      if (this.isModalSearch) {
+        if (!this.selection || this.selection.length == 0) {
+          resolve([]);
+        } else if (this.currentValue) {
+          resolve(this.currentValue);
+        } else {
+          let nodeList = [];
+          this.selectedCopie.forEach((item) => {
+            nodeList.push(this.conversionMethod(item));
+          });
+          this.currentValue = nodeList;
+          if (this.loading) {
+            this.loading = false;
           }
-
-
+          resolve(this.currentValue);
+        }
       } else {
-
-         if (this.itemLoadingMethod) {
+        if (this.itemLoadingMethod) {
           if (!this.selection || this.selection.length == 0) {
             if (this.multiple) {
               resolve([]);
             } else {
               resolve();
             }
-           
           } else if (this.currentValue) {
             resolve(this.currentValue);
           } else {
@@ -380,26 +332,29 @@ export default class SelectForm extends Vue {
               loadingPromise = Promise.resolve(loadingPromise);
             }
             loadingPromise
-              .then((list) => {
-                let nodeList = [];
-                list.forEach((item) => {
-                  nodeList.push(this.conversionMethod(item));
+                .then((list) => {
+                  let nodeList = [];
+                  list.forEach((item) => {
+                    nodeList.push(this.conversionMethod(item));
+                  });
+                  if (this.multiple) {
+                    this.currentValue = nodeList;
+                  } else {
+                    this.currentValue = nodeList[0];
+                  }
+                  resolve(this.currentValue);
+                })
+                .catch((error) => {
+
+                  this.$opensilex.errorHandler(error);
+                  reject(error);
                 });
-                if (this.multiple) {
-                  this.currentValue = nodeList;
-                } else {
-                  this.currentValue = nodeList[0];
-                }
-                resolve(this.currentValue);
-              })
-              .catch((error) => {
-                
-                this.$opensilex.errorHandler(error);
-                reject(error);
-              });
           }
         } else if (this.searchMethod) {
-          resolve(this.selectedNodes);
+          // If there is a search method but no item loading method, then initial values
+          // cannot be retrieved.
+          console.warn("A search method was specified but no item loading method.")
+          resolve(undefined);
         } else {
           let currentOptions = this.options || this.internalOption;
           if (this.multiple) {
@@ -489,7 +444,7 @@ export default class SelectForm extends Vue {
       }
 
     }
-   
+
     this.$emit("select", value, this.selectedCopie);
   }
 
@@ -667,19 +622,9 @@ export default class SelectForm extends Vue {
     };
   }
 
-  selectedNodes;
-
-  setCurrentSelectedNodes(values) {
-    this.selectedNodes = values;
-  }
-
   showModal() {
     let searchModal: any = this.$refs.searchModal;
     searchModal.show();
-  }
-
-  showDetails() {
-    this.detailVisible != this.detailVisible;
   }
 
   showModalSearch() {

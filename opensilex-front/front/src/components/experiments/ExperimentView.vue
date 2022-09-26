@@ -200,7 +200,7 @@ en:
         document: Documents
         factors: Factors
         map: Map
-        data-visualisation: Vizualisation
+        data-visualisation: Visualization
 fr:
     ExperimentView:
         details: Détail

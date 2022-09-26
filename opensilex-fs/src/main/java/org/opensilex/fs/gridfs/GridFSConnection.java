@@ -27,11 +27,9 @@ import org.opensilex.service.ServiceDefaultDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
@@ -45,76 +43,81 @@ import java.nio.file.Path;
 
 public class GridFSConnection extends BaseService implements FileStorageConnection {
 
+    /**
+     * Inner MongoClient used for gridfs connection.
+     * Moreover, this client must be closed when the GridFSConnection service is shutdown in order to avoid
+     * resource leak
+     */
+    private MongoClient mongoClient;
     private GridFSBucket gridFSBucket = null;
-    public static String BUCKETS_COLLECTION_NAME = "fs";
-    public static String FILES_COLLECTION_NAME = BUCKETS_COLLECTION_NAME + ".files";
-    public static String CHUNKS_COLLECTION_NAME = BUCKETS_COLLECTION_NAME + ".chunks";
+    private static final String BUCKETS_COLLECTION_NAME = "fs";
+    private static final String FILES_COLLECTION_NAME = BUCKETS_COLLECTION_NAME + ".files";
+    private static final String METADATA_PATH = "metadata.path";
+    private static final String PATH = "path";
 
     public static final int CHUNK_SIZE = 1048576;
 
-    public static Logger LOGGER =  LoggerFactory.getLogger(GridFSConnection.class);
+    public static final Logger LOGGER =  LoggerFactory.getLogger(GridFSConnection.class);
     
     public GridFSConnection(GridFSConfig config) { 
         super(config);
-        createFileSystemCollections(config); 
-
-    }
-
-    public GridFSConnection(MongoDBConfig config) { 
-        super(config);
-        createFileSystemCollections(config); 
     }
 
     @Override
-    public void startup() throws Exception { 
+    public void startup() throws Exception {
         GridFSConfig implementedConfig = this.getImplementedConfig();
+        mongoClient = MongoDBService.buildMongoDBClient(implementedConfig);
         createFileSystemCollections(implementedConfig);
     }
 
     private void createFilesIndexes(MongoDatabase database){
-        MongoCollection dataCollection = database.getCollection(FILES_COLLECTION_NAME);
+        MongoCollection<?> dataCollection = database.getCollection(FILES_COLLECTION_NAME);
 
         IndexOptions unicityOptions = new IndexOptions().unique(true);
         dataCollection.createIndex(Indexes.ascending("filename"), unicityOptions);
-        dataCollection.createIndex(Indexes.ascending("metadata.path" ), unicityOptions);
+        dataCollection.createIndex(Indexes.ascending(METADATA_PATH ), unicityOptions);
     }
     
     public GridFSConfig getImplementedConfig() {
         return (GridFSConfig) this.getConfig(); 
     }
-    
-    private void createFileSystemCollections(MongoDBConfig config){
 
-        try(MongoClient mongo = MongoDBService.buildMongoDBClient(config)){
-            MongoDatabase database = mongo.getDatabase(config.database());
-            gridFSBucket = GridFSBuckets.create(database);
-            createFilesIndexes(database);
-        }
+    private void createFileSystemCollections(MongoDBConfig config){
+        MongoDatabase database = mongoClient.getDatabase(config.database());
+        gridFSBucket = GridFSBuckets.create(database);
+        createFilesIndexes(database);
     }
 
     @Override
     public byte[] readFileAsByteArray(Path filePath) throws IOException {
 
-        Bson query = Filters.eq("metadata.path", filePath.toString());
+        GridFSFindIterable find = findByPath(filePath);
 
-        GridFSFindIterable find = gridFSBucket.find(query);
-        MongoCursor<GridFSFile> cursor = find.cursor();
+        // check if a file exists
+        try(MongoCursor<GridFSFile> cursor = find.cursor()){
 
-        GridFSFile gridFSFile = cursor.next();
-
-        ObjectId fileId = gridFSFile.getObjectId();
-
-        try ( GridFSDownloadStream downloadStream = gridFSBucket.openDownloadStream(fileId)) { 
-            int fileLength = (int) downloadStream.getGridFSFile().getLength();
-            int chunkSize = downloadStream.getGridFSFile().getChunkSize();
-            byte[] bytesToWriteTo = new byte[fileLength];
-            int bytesRead = 0;
-            while (bytesRead < fileLength) {
-                bytesRead += downloadStream.read(bytesToWriteTo, bytesRead, chunkSize);
+            if(!cursor.hasNext()){
+                throw new FileNotFoundException(filePath.toAbsolutePath().toString());
             }
 
-            return bytesToWriteTo; 
-        } 
+            // get description of the file
+            GridFSFile gridFSFile = cursor.next();
+            ObjectId fileId = gridFSFile.getObjectId();
+
+            // download it
+            try ( GridFSDownloadStream downloadStream = gridFSBucket.openDownloadStream(fileId)) {
+                int fileLength = (int) downloadStream.getGridFSFile().getLength();
+                int chunkSize = downloadStream.getGridFSFile().getChunkSize();
+                byte[] bytesToWriteTo = new byte[fileLength];
+                int bytesRead = 0;
+                while (bytesRead < fileLength) {
+                    bytesRead += downloadStream.read(bytesToWriteTo, bytesRead, chunkSize);
+                }
+
+                return bytesToWriteTo;
+            }
+        }
+
     }
 
 
@@ -123,11 +126,11 @@ public class GridFSConnection extends BaseService implements FileStorageConnecti
 
         byte[] data = content.getBytes(StandardCharsets.UTF_8);
 
-        GridFSUploadOptions options = new GridFSUploadOptions()
-                .chunkSizeBytes(CHUNK_SIZE)
-                .metadata(new Document("path", filePath.toString()));
+        GridFSUploadOptions options = getWriteOptions(filePath);
 
-        try ( GridFSUploadStream uploadStream = gridFSBucket.openUploadStream(null, options)) {
+        try ( GridFSUploadStream uploadStream = gridFSBucket.openUploadStream(filePath.getFileName().toString(), options)) {
+
+            // file content is wrote after GridFSUploadStream.close() method
             uploadStream.write(data);
         } 
     }
@@ -135,52 +138,82 @@ public class GridFSConnection extends BaseService implements FileStorageConnecti
     @Override
     public void writeFile(Path filePath, File file) throws IOException {
 
-        try ( InputStream streamToUploadFrom = new FileInputStream(file)) {
-
-            GridFSUploadOptions options = new GridFSUploadOptions()
-                    .chunkSizeBytes(CHUNK_SIZE)
-                    .metadata(new Document("path", filePath.toString()));
-
-            gridFSBucket.uploadFromStream(filePath.getParent().toString(), streamToUploadFrom, options);
-        }catch(Exception ex){
-            LOGGER.error(ex.getMessage(),ex);
+        try ( InputStream streamToUploadFrom = Files.newInputStream(file.toPath())) {
+            GridFSUploadOptions options = getWriteOptions(filePath);
+            gridFSBucket.uploadFromStream(filePath.getFileName().toString(), streamToUploadFrom, options);
         }
     }
 
     @Override
-    public void createDirectories(Path directoryPath) throws IOException {
-        
+    public void createDirectories(Path directoryPath) {
         GridFSConfig implementedConfig = this.getImplementedConfig();
         createFileSystemCollections(implementedConfig);
+    }
+
+    /**
+     *
+     * @param filePath Path to the file to write
+     * @return upload options with "metadata.path" set
+     *
+     * @apiNote This method use the same value for the metadata path as {@link #findByPath(Path)}
+     * This ensure that read/write always use the same path identifier
+     */
+    private GridFSUploadOptions getWriteOptions(Path filePath){
+        return new GridFSUploadOptions()
+                .chunkSizeBytes(CHUNK_SIZE)
+                .metadata(new Document(PATH, filePath.toString()));
+    }
+
+    /**
+     *
+     * @param filePath Path to the file to find
+     * @return a {@link GridFSFindIterable} by using an equality filter between
+     * {@link #METADATA_PATH} and filePath String representation
+     *
+     * @apiNote This method use the same value for the metadata path as {@link #getWriteOptions(Path)}
+     * This ensure that read/write always use the same path identifier
+     */
+    private GridFSFindIterable findByPath(Path filePath){
+        Bson query = Filters.eq(METADATA_PATH, filePath.toString());
+        return gridFSBucket.find(query);
     }
 
     @Override
     public boolean exist(Path filePath) throws IOException {
 
-        Bson query = Filters.eq("metadata.path", filePath.toUri());
+        GridFSFindIterable find = findByPath(filePath);
 
-        GridFSFindIterable find = gridFSBucket.find(query);
-        MongoCursor<GridFSFile> cursor = find.cursor();
-
-        return cursor.hasNext();
+        try(MongoCursor<GridFSFile> cursor = find.cursor()){
+            return cursor.hasNext();
+        }
     }
 
     @Override 
     public void delete(Path filePath) throws IOException {
 
-        Bson query = Filters.eq("metadata.path", filePath.toUri());
+        GridFSFindIterable find = findByPath(filePath);
 
-        GridFSFindIterable find = gridFSBucket.find(query);
-        MongoCursor<GridFSFile> cursor = find.cursor();
-
-        GridFSFile gridFSFile = cursor.next();
-
-        gridFSBucket.delete(gridFSFile.getObjectId());
+        try(MongoCursor<GridFSFile> cursor = find.cursor()){
+            if(! cursor.hasNext()){
+                throw new FileNotFoundException(filePath.toAbsolutePath().toString());
+            }
+            GridFSFile gridFSFile = cursor.next();
+            gridFSBucket.delete(gridFSFile.getObjectId());
+        }
 
     }
 
     @Override
-    public Path getAbsolutePath(Path filePath) throws IOException { 
+    public Path getAbsolutePath(Path filePath){
        return filePath; 
+    }
+
+    @Override
+    public void shutdown() {
+
+        // ensure that the client is well closed
+        if(mongoClient != null){
+            mongoClient.close();
+        }
     }
 }

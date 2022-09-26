@@ -102,7 +102,6 @@ export default class ScientificObjectForm extends Vue {
         this.soService
             .getScientificObjectDetail(objectURI, this.getExperimentURI())
             .then((http) => {
-
                 let form: OntologyObjectForm = this.modalForm.getFormRef();
                 this.initOntologyObjectForm(form);
                 this.excludeCurrentURIFromParentSelector(objectURI, form);
@@ -110,13 +109,6 @@ export default class ScientificObjectForm extends Vue {
                 let os: any = http.response.result;
                 this.modalForm.showEditForm(os);
             });
-    }
-
-    getContext() {
-        if (this.context) {
-            return this.context;
-        }
-        return {};
     }
 
     getExperimentURI() {

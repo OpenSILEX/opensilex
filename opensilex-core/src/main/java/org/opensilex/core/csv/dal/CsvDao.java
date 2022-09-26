@@ -31,7 +31,8 @@ public interface CsvDao<T extends SPARQLNamedResourceModel> {
                                    int firstRow,
                                    String lang,
                                    Map<String, BiConsumer<CSVCell, CSVValidationModel>> customValidators,
-                                   List<String> customColumns) throws SPARQLException, IOException;
+                                   List<String> customColumns,
+                                   boolean generateURI) throws SPARQLException, IOException;
 
     String exportCSV(
             List<T> objects,

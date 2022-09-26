@@ -1,6 +1,12 @@
 
 # Email
 
+E-mail service for password renewal will only works with a stmp server which accept username and password as identifiers.
+
+From May 30, 2022, ​​Google no longer supports the use of third-party apps or devices which ask you to sign in to your Google Account using only your username and password. See [Less secure apps & your Google Account](https://support.google.com/accounts/answer/6010255#zippy=%2Cif-less-secure-app-access-is-on-for-your-account)
+
+# ---- DEPRECATED ---------
+
 ## Configure smtp for gmail in order to use javax.mail
 
 You need to connect to your account.

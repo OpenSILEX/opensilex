@@ -528,7 +528,7 @@ public class OntologyAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return URI label", response = String.class)
+            @ApiResponse(code = 200, message = "Return URI label", response = NamedResourceDTO.class, responseContainer = "List")
     })
     public Response getURILabelsList(
             @ApiParam(value = "URIs to get label from", required = true) @QueryParam("uri") @NotNull @ValidURI @NotEmpty List<URI> uris,

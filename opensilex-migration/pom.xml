@@ -19,14 +19,6 @@
     <url>https://www.opensilex.org/</url>
     <version>${revision}</version>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.opensilex</groupId>
-            <artifactId>opensilex-mobile</artifactId>
-            <version>${revision}</version>
-        </dependency>
-    </dependencies>
-
     <parent>
         <groupId>org.opensilex</groupId>
         <artifactId>opensilex-module</artifactId>

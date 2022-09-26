@@ -243,6 +243,8 @@ merge-request:build:
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event' && $CI_MERGE_REQUEST_TITLE !~ /^(Draft:|\[Draft\]|\(Draft\)).*/i && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME != "release"
   needs:
     - job: "merge-request:check"
+  tags:
+    - stable
 
 
 ####################
@@ -318,7 +320,7 @@ opensilex-release:close:
     -   echo 'RELEASE_TAG must be set'
     -   exit 1
     - else
-    -   echo "Finishing release $RELEASE_TAG"
+    -   echo "Closing release $RELEASE_TAG"
     - fi
     # Install packages git & curl
     - apk update
@@ -364,15 +366,81 @@ opensilex-release:close:
     - git push origin $RELEASE_TAG
     # Trigger the merge request to develop
     - >
-      curl -X POST -F "private_token=$JOB_API_TOKEN" -F "source_branch=release" 
-      -F "target_branch=develop" -F "title=[Release] Merge $RELEASE_TAG into develop" 
+      curl -X POST -F "private_token=$JOB_API_TOKEN" -F "source_branch=release"
+      -F "target_branch=develop" -F "title=[Release] Merge $RELEASE_TAG into develop"
       -F "remove_source_branch=true" -F "labels[]=finishing release"
       https://forgemia.inra.fr/api/v4/projects/1675/merge_requests
+    # Transmit release tag variable to next job (name must be different)
+    - echo "PUBLISH_RELEASE_TAG=$RELEASE_TAG" >> opensilex-release:close.env
   rules:
     - if: $CI_COMMIT_BRANCH == "release"
+  artifacts:
+    reports:
+      dotenv:
+        - "opensilex-release:close.env"
   needs:
     - job: "opensilex-release:build"
   when: manual
+
+############################
+## PUBLISH RELEASE TO GITHUB
+############################
+
+opensilex-release:publish:
+  stage: release
+  image: maven:$MVN_VERSION-jdk-$JAVA_VERSION
+  script:
+    - if [[ -z $PUBLISH_RELEASE_TAG ]]; then
+    -   echo 'PUBLISH_RELEASE_TAG must be set'
+    -   exit 1
+    - else
+    -   echo "Publishing release $PUBLISH_RELEASE_TAG"
+    - fi
+    # Install packages curl & jq
+    - apt-get update
+    - apt-get install -y curl
+    - apt-get install -y jq
+    # Remove local tags & fetch them again
+    - git tag -l | xargs git tag -d
+    - git fetch origin --tags
+    # Checkout the release tag & build with the correct revision
+    - git checkout $PUBLISH_RELEASE_TAG
+    - mvn clean install $MAVEN_CLI_OPTS -Drevision=$PUBLISH_RELEASE_TAG -DskipTests=true
+    # Extract release description from changelog
+    # The CHANGELOG.md file should have a section starting with "## [$PUBLISH_RELEASE_TAG]", for example "## [1.0.0-rc+4]"
+    # Otherwise, "Missing release notes" will be set as the release description
+    - echo "Try to extract the release description from changelog..."
+    - RELEASE_DESCRIPTION=$(sed -n  "/^## \[${PUBLISH_RELEASE_TAG}\]/,/^## /p" CHANGELOG.md | head -n -1 | jq -Rsa .)
+    - if [[ "$RELEASE_DESCRIPTION" == '""' ]]; then
+    -   echo "Missing release description for tag $PUBLISH_RELEASE_TAG in the changelog. Please change it later in the Github repository."
+    -   RELEASE_DESCRIPTION="\"# [$PUBLISH_RELEASE_TAG] - $(date --iso-8601)\n\nMissing release notes\n\""
+    - fi
+    # Headers for the queries
+    - AUTHORIZATION="$GITHUB_API_ACCOUNT:$GITHUB_API_TOKEN"
+    - 'ACCEPTS_HEADER="Accept: application/vnd.github+json"'
+    # JSON payload for the creation query
+    # NB : the 'RELEASE_DESCRIPTION' variable already contains the quotes (thanks to jq), that's why they're omitted here
+    - 'CREATE_QUERY_PAYLOAD="{\"tag_name\":\"$PUBLISH_RELEASE_TAG\",\"name\":\"$PUBLISH_RELEASE_TAG\",\"body\":$RELEASE_DESCRIPTION}"'
+    # Create the release
+    - 'echo "\"curl -u \"$AUTHORIZATION\" -X POST -H \"$ACCEPTS_HEADER\" -d \"$CREATE_QUERY_PAYLOAD\" https://api.github.com/repos/OpenSILEX/opensilex/releases"'
+    - CREATE_RESPONSE=$(curl -u "$AUTHORIZATION" -X POST -H "$ACCEPTS_HEADER" -d "$CREATE_QUERY_PAYLOAD" https://api.github.com/repos/OpenSILEX/opensilex/releases)
+    - echo $CREATE_RESPONSE
+    # Asset file
+    - FILENAME=opensilex-release-$PUBLISH_RELEASE_TAG.zip
+    - FILEPATH=opensilex-release/target/$FILENAME
+    # Extract the asset upload URL from the response
+    # The URL is formatted like this : https://uploads.github.com/repos/OpenSILEX/opensilex/releases/73752399/assets{?name,label}
+    # So the last part must be replaced with a valid query parameter (only ?name is required)
+    - UPLOAD_URL=$(echo $CREATE_RESPONSE | jq -r .upload_url | sed -e "s/{.*}/\?name=${FILENAME}/g")
+    # Upload the asset file
+    - 'echo "curl -u \"$AUTHORIZATION\" -X POST -H \"$ACCEPTS_HEADER\" -H "Content-Type: application/zip" -T \"$FILEPATH\" \"$UPLOAD_URL\""'
+    - 'curl -u "$AUTHORIZATION" -X POST -H "$ACCEPTS_HEADER" -H "Content-Type: application/zip" -T "$FILEPATH" "$UPLOAD_URL"'
+  rules:
+    - if: $CI_COMMIT_BRANCH == "release"
+  needs:
+    - job: "opensilex-release:close"
+      artifacts: true
+
 
 # Trigger pipeline for data-analysis module deployment
 #trigger:dataanalysis:deploy:test:

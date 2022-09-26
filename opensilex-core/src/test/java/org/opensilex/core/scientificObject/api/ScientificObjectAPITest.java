@@ -17,10 +17,7 @@ import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.riot.Lang;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.junit.rules.TemporaryFolder;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.AbstractMongoIntegrationTest;
@@ -32,6 +29,7 @@ import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataProvenanceModel;
 import org.opensilex.core.experiment.api.ExperimentAPITest;
 import org.opensilex.core.experiment.api.ExperimentGetDTO;
+import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.germplasm.api.GermplasmAPITest;
 import org.opensilex.core.ontology.Oeso;
@@ -47,6 +45,7 @@ import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLService;
 
@@ -675,6 +674,80 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
     public void testOsDeleteFailWhenDataFilesAssociatedWithinExperiment() throws Exception {
         testOsDeleteFailWhenAssociatedDataFile(false);
     }
+
+    private ScientificObjectCreationDTO getCreationDTO(URI experiment, String name, URI uri) throws Exception {
+        ScientificObjectCreationDTO dto = new ScientificObjectCreationDTO();
+        dto.setName(name);
+        dto.setUri(uri);
+        dto.setType(URI.create(Oeso.ScientificObject.getURI()));
+        dto.setExperiment(experiment);
+        Response postResult = getJsonPostResponse(target(createPath), dto);
+        dto.setUri(extractUriFromResponse(postResult));
+        return dto;
+    }
+
+    @Test
+    public void testUriGenerationInExperimentalContext() throws Exception {
+
+        // create two experiments
+        SPARQLService sparql = getSparqlService();
+        ExperimentModel xp = new ExperimentModel();
+        xp.setStartDate(LocalDate.now());
+        xp.setObjective("testGraphLocationAndUriGeneration");
+        xp.setName("testGraphLocationAndUriGeneration");
+        sparql.create(xp);
+
+        ExperimentModel xp2 = new ExperimentModel();
+        xp2.setStartDate(LocalDate.now());
+        xp2.setObjective("testGraphLocationAndUriGeneration2");
+        xp2.setName("testGraphLocationAndUriGeneration2");
+        sparql.create(xp2);
+
+        ScientificObjectCreationDTO os1 = getCreationDTO(xp.getUri(),"os1",null);
+
+        // two os with same name but in different experiment -> /1
+        ScientificObjectCreationDTO os1_1 =  getCreationDTO(xp2.getUri(),"os1",null);
+        Assert.assertFalse(SPARQLDeserializers.compareURIs(os1.getUri(),os1_1.getUri()));
+        Assert.assertTrue(os1_1.getUri().toString().endsWith("os1/1"));
+
+        // os with unique name -> OK
+        ScientificObjectCreationDTO os1_2 = getCreationDTO(xp2.getUri(),"os2",null);
+        Assert.assertTrue(os1_2.getUri().toString().endsWith("os2"));
+
+        // object URI reuse in another experiment
+        ScientificObjectCreationDTO os1_reuse = getCreationDTO(xp2.getUri(),"os1_reuse",os1.getUri());
+        Assert.assertEquals(os1.getUri(),os1_reuse.getUri());
+
+        // re-insert OS inside same experiment -> duplicate URI error
+        ScientificObjectCreationDTO duplicateInXp = new ScientificObjectCreationDTO();
+        duplicateInXp.setName("os1");
+        duplicateInXp.setUri(os1.getUri());
+        duplicateInXp.setType(URI.create(Oeso.ScientificObject.getURI()));
+        duplicateInXp.setExperiment(xp2.getUri());
+        Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), getJsonPostResponse(target(createPath), duplicateInXp).getStatus());
+
+        // global context
+        URI defaultGraphURI = sparql.getDefaultGraphURI(ScientificObjectModel.class);
+        ScientificObjectCreationDTO os_global_1 =  getCreationDTO(null,"os_global_1",null);
+
+        // two os with same name into global graph -> /1
+        ScientificObjectCreationDTO os_global_1_1 = getCreationDTO(null,"os_global_1",null) ;
+        Assert.assertFalse(SPARQLDeserializers.compareURIs(os_global_1.getUri(),os_global_1_1.getUri()));
+        Assert.assertTrue(os_global_1_1.getUri().toString().endsWith("os_global_1/1"));
+
+        // os with unique name -> OK
+        ScientificObjectCreationDTO os_global_1_2 = getCreationDTO(null,"os_global_2",null);
+        Assert.assertTrue(os_global_1_2.getUri().toString().endsWith("os_global_2"));
+
+        // re-insert OS inside global graph -> duplicate URI error
+        // re-insert OS inside same experiment -> duplicate URI error
+        ScientificObjectCreationDTO duplicateInGlobal = new ScientificObjectCreationDTO();
+        duplicateInXp.setName("os_global_1");
+        duplicateInXp.setUri(os_global_1.getUri());
+        duplicateInXp.setType(URI.create(Oeso.ScientificObject.getURI()));
+        Assert.assertEquals(Status.BAD_REQUEST.getStatusCode(), getJsonPostResponse(target(createPath), duplicateInGlobal).getStatus());
+    }
+
 
 
 }

@@ -26,11 +26,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Web client** : New tab with associated document into variable details page -> ab7b6bb0
 - **Web client** : Variables selection and contextual actions into variable search page -> da82201c
 - **Web client**:  Add loader on scientific object tree view loading -> cf864292
+
+
 - **API/Web client** : A software (Device) can be linked to a variable -> 8d8cfb43
 - **API** : Prevent deletion of OS in case of associated experiment, children, data or datafile  -> e17caea7
 - **API** : When storing position for a move, we now use a String representation of x,y,z fields instead of 
 a previous Integer representation -> 9b3a4a27.
 - **API** : Add the "Operating procedure" as a new type of technical document -> e39e3c6b
+- **API** : Remove opensilex-mobile module from default OpenSILEX modules -> 252e4565 
 
 ### Fixed or optimized
 
@@ -39,10 +42,14 @@ a previous Integer representation -> 9b3a4a27.
 - **Web client** : optimize loading of variables and variables group tab. Optimize loading of variables and variable groups in forms -> b00c53ba
 - **Web client** : [Data visualization] Optimizations on date formatting into data visualisation -> 687bfcb3
 - **Web client** : several fixes for the map visualisation -> 9b3a4a27
-- **Web client**: [Geospatial] Display calibration position & enhance multi select -> 73811bcb
+- **Web client** : [Geospatial] Display calibration position & enhance multi select -> 73811bcb
+- **Web client** : Fix variable name display on tabular data list -> fd3ea6be
+
+
 - **API** : Variables associated with a variable of type "date" are now stored and exported correctly -> 624e99dd
-- **API** : Better error handling in case of Invalid character when evaluating a SPARQL REGEX -> 326be84c
-- **API** : Fix URI generation when providing a URI on OS creation -> e17caea7
+- **API** : Better error handling in case of Invalid character when evaluating a SPARQL REGEX -> 326be84c 
+- **API** : Fix URI generation when providing a URI on scientific object creation and CSV import -> e17caea7 , a77a3629
+- **API** : Remove no duplicate name constraint when importing OS into global graph -> 45bcf04a
 - **API** : Optimize search and loading for entities, characteristics, methods, units, variables and variable groups -> b00c53ba
 - **API** : Fix deletion and existence checking for gridfs file-system connection -> e1034199
 

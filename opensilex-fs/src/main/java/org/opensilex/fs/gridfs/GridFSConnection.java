@@ -45,13 +45,10 @@ public class GridFSConnection extends BaseService implements FileStorageConnecti
 
     /**
      * Inner MongoClient used for gridfs connection.
-     * This object is managed into the lifecycle of this class, because the client must be unique per database.
-     * {@link MongoClient}
-     *
      * Moreover, this client must be closed when the GridFSConnection service is shutdown in order to avoid
      * resource leak
      */
-    private static MongoClient MONGO_CLIENT_INSTANCE;
+    private MongoClient mongoClient;
     private GridFSBucket gridFSBucket = null;
     private static final String BUCKETS_COLLECTION_NAME = "fs";
     private static final String FILES_COLLECTION_NAME = BUCKETS_COLLECTION_NAME + ".files";
@@ -85,15 +82,8 @@ public class GridFSConnection extends BaseService implements FileStorageConnecti
         return (GridFSConfig) this.getConfig(); 
     }
 
-    private static void initClient(MongoDBConfig config){
-        if(MONGO_CLIENT_INSTANCE == null){
-            MONGO_CLIENT_INSTANCE = MongoDBService.buildMongoDBClient(config);
-        }
-    }
-
     private void createFileSystemCollections(MongoDBConfig config){
-        initClient(config);
-        MongoDatabase database = MONGO_CLIENT_INSTANCE.getDatabase(config.database());
+        MongoDatabase database = mongoClient.getDatabase(config.database());
         gridFSBucket = GridFSBuckets.create(database);
         createFilesIndexes(database);
     }
@@ -222,8 +212,8 @@ public class GridFSConnection extends BaseService implements FileStorageConnecti
     public void shutdown() {
 
         // ensure that the client is well closed
-        if(MONGO_CLIENT_INSTANCE != null){
-            MONGO_CLIENT_INSTANCE.close();
+        if(mongoClient != null){
+            mongoClient.close();
         }
     }
 }

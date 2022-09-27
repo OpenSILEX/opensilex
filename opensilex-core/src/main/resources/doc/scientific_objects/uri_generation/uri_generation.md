@@ -74,6 +74,8 @@ test:set/scientific-objects:
 The following insertion will result to error 
 - os with URI `test:id/scientific_object/os1` inside `test:id/experiment/xp1` experiment (this URI already exist into experiment)
 
+**Name** : OS name must be unique for an experiment, else it's an error.
+
 ## Global context  (Insertion outside any experiment)
 
 - **If URI are set**
@@ -106,6 +108,9 @@ test:set/scientific-objects:
 The following insertion will result to error
 - os with URI `test:id/scientific_object/os1` inside `test:set/scientific-objects` (this URI already exist into the global graph)
 
+**Name** : OS name is not unique inside global graph.
+- Two OS with same name which are inserted within two experiment, can have the same name into the global OS graph
+- Two OS inserted into the global graph, can have the same name
 
 ## Implementation
 

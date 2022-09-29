@@ -511,6 +511,24 @@ update:nightly:builds:branch:
   variables:
     JAVA_VERSION: 14
 
+.with_java16: &java16
+  before_script:
+    - yum install -y git
+  variables:
+    JAVA_VERSION: 16
+
+.with_java17: &java17
+  before_script:
+    - yum install -y git
+  variables:
+    JAVA_VERSION: 17
+
+.with_java18: &java18
+  before_script:
+    - yum install -y git
+  variables:
+    JAVA_VERSION: 18
+
 test:build:java9:
   <<: *java9
   <<: *test_build_on_schedules
@@ -525,6 +543,18 @@ test:build:java13:
 
 test:build:java14:
   <<: *java14
+  <<: *test_build_on_schedules
+
+test:build:java16:
+  <<: *java16
+  <<: *test_build_on_schedules
+
+test:build:java17:
+  <<: *java17
+  <<: *test_build_on_schedules
+
+test:build:java18:
+  <<: *java18
   <<: *test_build_on_schedules
 
 ########################

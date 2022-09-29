@@ -481,7 +481,7 @@ update:nightly:builds:branch:
     - if [ -z "$MVN_VERSION" ]; then echo "Missing MVN_VERSION variable"; exit 1; fi
     - echo "with_java $JAVA_VERSION and maven $MVN_VERSION with latest version of OpenSILEX/opensilex-dev"
   stage: build
-  image: maven:$MVN_VERSION-jdk-$JAVA_VERSION
+  image: maven:$MVN_VERSION-openjdk-$JAVA_VERSION-slim
   script:
     - mvn clean install $MAVEN_CLI_OPTS -Drevision=$OPENSILEX_APP_REVISION
     - ls $OPENSILEX_BUILD_PATH/opensilex-release-$OPENSILEX_APP_REVISION
@@ -490,12 +490,11 @@ update:nightly:builds:branch:
     - if: $NIGHTLY_BUILD == "true"
 
 ##  BUILD VERSIONS # example https://gitlab.com/gitlab-org/gitlab-foss/issues/13755
-
-.with_java9: &java9
-  variables:
-    JAVA_VERSION: 9
+ 
 
 .with_java11: &java11
+  before_script:
+    - yum install -y git
   variables:
     JAVA_VERSION: 11
 
@@ -528,10 +527,6 @@ update:nightly:builds:branch:
     - yum install -y git
   variables:
     JAVA_VERSION: 18
-
-test:build:java9:
-  <<: *java9
-  <<: *test_build_on_schedules
 
 test:build:java11:
   <<: *java11

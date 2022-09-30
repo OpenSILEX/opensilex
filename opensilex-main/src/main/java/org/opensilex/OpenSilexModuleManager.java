@@ -245,11 +245,6 @@ public class OpenSilexModuleManager {
      * @param dependenciesURL List of dependencies to register
      */
     private void registerDependencies(Set<URL> dependenciesURL) {
-        if (LOGGER.isDebugEnabled()) {
-            dependenciesURL.forEach((dependencyURL) -> {
-                LOGGER.debug("Added dependency to classpath: " + dependencyURL.getPath());
-            });
-        }
 
         // Load dependencies through URL Class Loader based on actual class loader
         if (dependenciesURL.size() > 0) {
@@ -381,7 +376,6 @@ public class OpenSilexModuleManager {
         Set<URL> modulesJarURLs = new HashSet<>();
         if (modulesList != null) {
             for (File moduleFile : modulesList) {
-                LOGGER.debug("Module found: " + moduleFile.getName());
                 URL jarURL = getModuleURLFromFile(moduleFile);
                 if (jarURL != null) {
                     modulesJarURLs.add(jarURL);
@@ -408,7 +402,6 @@ public class OpenSilexModuleManager {
             try {
                 URL jarUrl = moduleFile.toURI().toURL();
                 result = jarUrl;
-                LOGGER.debug("Registering jar module file: " + moduleFile.getPath());
             } catch (MalformedURLException ex) {
                 LOGGER.error("Error while registering module: " + moduleFile.getPath(), ex);
             }

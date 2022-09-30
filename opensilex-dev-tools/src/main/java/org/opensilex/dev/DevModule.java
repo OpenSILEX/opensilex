@@ -12,6 +12,7 @@ import java.util.Map;
 import org.apache.commons.collections4.MapUtils;
 import org.opensilex.OpenSilex;
 import org.opensilex.OpenSilexModule;
+import org.opensilex.cli.HelpOption;
 import org.opensilex.cli.MainCommand;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,10 +65,10 @@ public class DevModule extends OpenSilexModule {
 
         // If no arguments assume help is requested
         if (args.length == 0) {
-            args = new String[]{"--help"};
+            args = new String[]{HelpOption.HELP_COMMAND};
         }
 
-        MainCommand.getCLI(args, instance).execute(args);
+        MainCommand.getCLI(instance).execute(args);
     }
 
     private static String getConfig(Path baseDirectory) {

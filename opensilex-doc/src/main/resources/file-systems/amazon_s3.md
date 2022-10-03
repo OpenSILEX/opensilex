@@ -64,7 +64,7 @@ s3-website.eu-west-2.amazonaws.com:
     datafile-bucket:
         datafile/aHR0cDovL3d3dy5waGVub21l
     document-bucket:
-      document/fd45fdpf5df1fd14df4fd14d
+        document/fd45fdpf5df1fd14df4fd14d
 ```
 
 with :
@@ -86,12 +86,13 @@ s3-website.eu-west-2.amazonaws.com:
     
 s3-website.eu-west-3.amazonaws.com:   
     document-bucket:
-      document/fd45fdpf5df1fd14df4fd14d
+        document/fd45fdpf5df1fd14df4fd14d
 ```
 
 with :
 - `s3-website.eu-west-2.amazonaws.com` : URL of the S3 service/endpoint
 - `s3-website.eu-west-3.amazonaws.com` : URL of another S3 endpoint
+
 
 ## Authentication
 
@@ -105,6 +106,14 @@ This credential provider also take care of the profile passed in configuration.
 configuration file in order to tell OpenSILEX to let Amazon SDK search for any available credentials (see [credentials retrieval order](https://docs.aws.amazon.com/sdk-for-java/latest/developer-guide/credentials.html)).
 
 (Go to **How to use/Use a credential method different from the credential file method for configuration** section for an example)
+
+### Bucket creation
+
+If the specified bucket doesn't exist, then OpenSILEX will try to create it.
+It can fail according the permissions accorded to the used profile.
+
+
+https://docs.aws.amazon.com/config/latest/developerguide/s3-bucket-policy.html
 
 # How to use
 

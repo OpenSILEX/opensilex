@@ -80,7 +80,7 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     public static final String DEFAULT_GRAPH_KEYWORD = "set";
 
     protected SPARQLClassObjectMapper(Class<T> objectClass, URI baseGraphURI, URI generationPrefixURI, SPARQLClassObjectMapperIndex mapperIndex) {
-        LOGGER.debug("Initialize SPARQL ressource class object mapper for: " + objectClass.getName());
+//        LOGGER.debug("Initialize SPARQL ressource class object mapper for: " + objectClass.getName());
         this.objectClass = objectClass;
         this.mapperIndex = mapperIndex;
         this.baseGraphURI = baseGraphURI;
@@ -94,18 +94,18 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
     }
 
     protected void init() throws SPARQLInvalidClassDefinitionException {
-        LOGGER.debug("Look for object constructor with no arguments for class: " + objectClass.getName());
+        // LOGGER.debug("Look for object constructor with no arguments for class: " + objectClass.getName());
         try {
             constructor = objectClass.getConstructor();
         } catch (NoSuchMethodException | SecurityException ex) {
             throw new SPARQLInvalidClassDefinitionException(objectClass, "Impossible to find constructor with no parameters", ex);
         }
 
-        LOGGER.debug("Analyze class by reflection: " + objectClass.getName());
+        // LOGGER.debug("Analyze class by reflection: " + objectClass.getName());
         try {
             classAnalizer = new SPARQLClassAnalyzer(mapperIndex, objectClass);
 
-            LOGGER.debug("Init SPARQL class query builder: " + objectClass.getName());
+            // LOGGER.debug("Init SPARQL class query builder: " + objectClass.getName());
             classQueryBuilder = new SPARQLClassQueryBuilder(mapperIndex, classAnalizer);
 
             if (classAnalizer.getGraph() != null) {

@@ -249,7 +249,7 @@ public class DependencyManager {
 
                 // If dependency is not already loaded
                 if (!loadedDependencies.contains(key)) {
-                    LOGGER.debug(String.format("Loading dependency: %s", key));
+//                    LOGGER.debug(String.format("Loading dependency: %s", key));
                     // Add it to the loaded list
                     loadedDependencies.add(key);
 

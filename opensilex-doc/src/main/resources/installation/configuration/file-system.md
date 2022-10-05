@@ -81,7 +81,7 @@ file-system:
 
 It is possible to defined differents implementations. Each implementation has a specific configuration.
 
-We provide three file system implementations:
+We provide the following file system implementations:
 
 - `org.opensilex.fs.irods.IrodsFileSystemConnection`
 
@@ -92,6 +92,11 @@ It refers to the [IRODS](https://irods.org/) Data Management Software
 It refers to the [GridFS](https://docs.mongodb.com/manual/core/gridfs/) is a MongoDB JSON specification for storing and retrieving files.
 
 - `org.opensilex.fs.local.LocalFileSystemConnection`
+
+It refers to the [S3](http://aws.amazon.com/s3/) is a storage service from Amazon for storing and retrieving object and file (see `opensilex-doc/src/main/resources/file-systems/amazon_s3.md` for more details).
+
+- `org.opensilex.fs.s3.S3FileStorageConnection`
+- `org.opensilex.fs.s3.tranferManager.S3TransferManagerStorageConnection`
 
 It refers to the file system connection
 
@@ -119,6 +124,13 @@ connections:
     config:
       # Base path for file storage (String)
       basePath: ../../opensilex-data
+  s3:
+    # Service implementation class for: s3 (S3FileStorageConnection)
+    implementation: org.opensilex.fs.s3.S3FileStorageConnection
+      config:
+        endpoint: s3-website.eu-west-3.amazonaws.com 
+        region: eu-west-3
+        bucket: opensilex-datafile-bucket
 ```
 
 ## Custom paths

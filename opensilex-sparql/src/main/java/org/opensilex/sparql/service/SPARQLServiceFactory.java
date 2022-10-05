@@ -80,7 +80,7 @@ public abstract class SPARQLServiceFactory extends ServiceFactory<SPARQLService>
         Set<Class<? extends SPARQLResourceModel>> initClasses = new HashSet<>();
 
         getOpenSilex().getAnnotatedClasses(SPARQLResource.class).forEach(c -> {
-            LOGGER.debug("Register model class to build: " + c.getCanonicalName());
+//            LOGGER.debug("Register model class to build: " + c.getCanonicalName());
             initClasses.add((Class<? extends SPARQLResourceModel>) c);
         });
         mapperIndex = new SPARQLClassObjectMapperIndex(baseURI, generationPrefixURI, initClasses);

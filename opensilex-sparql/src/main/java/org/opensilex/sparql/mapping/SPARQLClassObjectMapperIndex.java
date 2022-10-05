@@ -71,7 +71,7 @@ public class SPARQLClassObjectMapperIndex {
     @SuppressWarnings("unchecked")
     private void addClasses(Collection<Class<? extends SPARQLResourceModel>> newClasses) throws SPARQLInvalidClassDefinitionException {
         newClasses.forEach((clazz) -> {
-            LOGGER.debug("SPARQL Resource class found: " + clazz.getCanonicalName());
+//            LOGGER.debug("SPARQL Resource class found: " + clazz.getCanonicalName());
         });
 
         newClasses.removeIf((Class<?> resource) -> {

@@ -13,6 +13,8 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.opensilex.service.Service;
@@ -22,8 +24,8 @@ import org.opensilex.service.ServiceDefaultDefinition;
  * @author rcolin
  */
 @ServiceDefaultDefinition(config = IrodsFileSystemConfig.class)
-public class IrodsFileSystemConnection extends BaseService implements Service, FileStorageConnection {    
-    
+public class IrodsFileSystemConnection extends BaseService implements Service, FileStorageConnection {
+
     public IrodsFileSystemConnection(IrodsFileSystemConfig config) {
         super(config);
     }
@@ -31,11 +33,11 @@ public class IrodsFileSystemConnection extends BaseService implements Service, F
     public IrodsFileSystemConfig getImplementedConfig() {
         return (IrodsFileSystemConfig) this.getConfig();
     }
-    
+
     public Path getStorageBasePath() {
         return Paths.get(getImplementedConfig().basePath());
     }
-    
+
     private final static Logger LOGGER = LoggerFactory.getLogger(IrodsFileSystemConnection.class);
 
     private final static String IRODS_GET_CMD = "iget";
@@ -94,7 +96,7 @@ public class IrodsFileSystemConnection extends BaseService implements Service, F
             errorStream.close();
         }
     }
-    
+
     public Path getAbsolutePath(Path filePath) throws IOException {
         if (filePath.isAbsolute()) {
             return filePath;
@@ -135,17 +137,20 @@ public class IrodsFileSystemConnection extends BaseService implements Service, F
     }
 
     @Override
-    public void writeFile(Path dest, String content) throws IOException {
+    public void writeFile(Path dest, byte[] content) throws IOException {
         Path filePath = getAbsolutePath(dest);
-        
-        File tmpFile = null;
+
+        Path tmpPath = null;
         try {
-            tmpFile = Files.createTempFile(tmpDirectory, null, null).toFile();
-            FileUtils.writeStringToFile(tmpFile, content, StandardCharsets.UTF_8);
-            writeFile(filePath, tmpFile);
+            tmpPath = Files.createTempFile(tmpDirectory, null, null);
+            Files.write(tmpPath, content, StandardOpenOption.WRITE);
+            writeFile(filePath, tmpPath.toFile());
         } finally {
-            if (tmpFile != null && tmpFile.exists()) {
-                tmpFile.delete();
+            if (tmpPath != null) {
+                File tmpFile = tmpPath.toFile();
+                if (tmpFile.exists()) {
+                    tmpFile.delete();
+                }
             }
         }
 
@@ -156,23 +161,23 @@ public class IrodsFileSystemConnection extends BaseService implements Service, F
     @Override
     public void writeFile(Path dest, File file) throws IOException {
         Path filePath = getAbsolutePath(dest);
-        
+
         try {
             createDirectories(filePath.getParent());
         } catch (Exception e) {
             LOGGER.debug(e.getMessage());
         }
-        
+
         irodsCommand(
                 IRODS_IPUT_CMD,
                 file.getPath(),
                 filePath.toString()
         );
-        
+
     }
 
     private final static String IRODS_MKDIR_CMD = "imkdir";
-    
+
     /**
      * Option used in order to force IRODS make parent directories as needed
      */

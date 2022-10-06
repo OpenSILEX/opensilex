@@ -983,3 +983,13 @@ pheno3c:build:
   <<: *build_template_with_opensilex
   rules:
     - if: $CI_COMMIT_BRANCH == "pheno3c"
+
+######################################
+##  PHIS-UH-PROD-BUILD-DEPLOYMENT
+######################################
+phis:uh:build:
+  <<: *build_template_with_opensilex
+  rules:
+    -   if: $CI_COMMIT_BRANCH == "phis_uh"
+  tags:
+    - stable

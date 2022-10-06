@@ -984,12 +984,22 @@ pheno3c:build:
   rules:
     - if: $CI_COMMIT_BRANCH == "pheno3c"
 
-######################################
-##  PHIS-UH-PROD-BUILD-DEPLOYMENT
-######################################
-phis:uh:build:
-  <<: *build_template_with_opensilex
+test:phis:uh:deploy:
+  <<: *deploy_opensilex_before_script
+  <<: *deploy_opensilex_template
+  variables:
+    REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_OPENSILEX_RSYNC_ACCOUNT"
+    REMOTE_SERVER_IP: "$UH_SERVER_IP"
+    REMOTE_SERVER_SSH_KEY: "$OPENSTACK_EGI_SSH_PRIVATE_KEY"
+    REMOTE_SERVER_RSYNC_DIR: "phis/uh"
+    CONFIGS_FILES_DIR_PATH: "$DEV_TOOLS_REPO_CONF_FILES_PATH/phis/phis_uh"
+    OPENSILEX_START_SERVER_OPTS: "server start --CONFIG_FILE=$INSTANCE_CONFIGURATION_FILE_NAME -d"
+    INSTANCE_CONFIGURATION_FILE_NAME: "phis.uh.yml"
+    OPENSILEX_JAR_ADMIN_PORT: 4020
+    OPENSILEX_JAR_PORT: 8081
   rules:
     -   if: $CI_COMMIT_BRANCH == "phis_uh"
-  tags:
-    - stable
+        when: manual
+  needs:
+    - phis:uh:build
+

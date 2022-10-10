@@ -272,7 +272,7 @@ export default class VisuGraphic extends Vue {
         line: {
           marker: {
             enabled: true,
-            symbol: "circle",
+            symbol: "triangle",
             radius: 3
           }
         },

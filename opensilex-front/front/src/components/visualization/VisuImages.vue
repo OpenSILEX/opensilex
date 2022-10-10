@@ -9,6 +9,7 @@
         @imageIsDeleted="$emit('imageIsDeleted', $event)"
         @onImageAnnotate="$emit('onImageAnnotate', $event)"
         @onImageDetails="$emit('onImageDetails', $event)"
+        @onAnnotationDetails="$emit('onAnnotationDetails', $event)"
         @imageIsClicked="onImageIsClicked"
     ></opensilex-VisuImageGrid>
     <vue-easy-lightbox
@@ -17,6 +18,11 @@
         :index="slide"
         @hide="handleHide"
     ></vue-easy-lightbox>
+
+    <opensilex-DataProvenanceModalView
+        ref="dataProvenanceModalView"
+        :datafile="true"
+    ></opensilex-DataProvenanceModalView>
 
     <b-modal :title="$t('Annotation.image')" id="modal-center" v-model="showAnnotationsModal" hide-footer centered
              no-fade size="lg">
@@ -49,15 +55,21 @@ import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {AnnotationGetDTO} from "opensilex-core/model/annotationGetDTO";
 import {AnnotationsService} from "opensilex-core/api/annotations.service";
+import {ProvenanceGetDTO} from "opensilex-core/model/provenanceGetDTO";
+import {DataFileGetDTO} from "opensilex-core/model/dataFileGetDTO";
+import {DataService} from "opensilex-core/api/data.service";
+import {data} from "browserslist";
 
 @Component
 export default class VisuImages extends Vue {
   $opensilex: any;
   annotationService: AnnotationsService;
+  dataService: DataService;
   key = 0; // fix VisuImageGrid reload
   images = [];
   imagesUri = [];
   image: any;
+  imageData: any;
   slide = 0;
   show: boolean = false;
   showAnnotationsModal: boolean = false;
@@ -68,6 +80,7 @@ export default class VisuImages extends Vue {
   annotations: Array<AnnotationGetDTO> = [];
 
   @Ref("visuImageGrid") readonly visuImageGrid!: any;
+  @Ref("dataProvenanceModalView") readonly dataProvenanceModalView!: any;
 
   onImagePointMouseEnter(toSend) {
     this.visuImageGrid.onImagePointMouseEnter(toSend);
@@ -77,12 +90,17 @@ export default class VisuImages extends Vue {
     this.visuImageGrid.onImagePointMouseOut();
   }
 
+  onImagePointClick(toReturn) {
+    this.visuImageGrid.onImagePointClick(toReturn);
+  }
+
   onImageIsDeleted(index) {
     this.deleteImage(index);
     this.imagesUri.splice(index, 1)
   }
 
   created() {
+    this.dataService = this.$opensilex.getService("opensilex.DataService");
     this.annotationService = this.$opensilex.getService("opensilex.AnnotationsService");
   }
 
@@ -101,7 +119,48 @@ export default class VisuImages extends Vue {
     this.getAnnotations(dataUri);
   }
 
+  getProvenance(uri) {
+    if (uri != undefined && uri != null) {
+      return this.dataService
+          .getProvenance(uri)
+          .then((http: HttpResponse<OpenSilexResponse<ProvenanceGetDTO>>) => {
+            return http.response.result;
+          });
+    }
+  }
+
+  getDataFileDescription(uri) {
+    if (uri != undefined && uri != null) {
+      return this.dataService
+          .getDataFileDescription(uri)
+          .then((http: HttpResponse<OpenSilexResponse<DataFileGetDTO>>) => {
+            return http.response.result;
+          });
+    }
+  }
+
+  showDataProvenanceDetailsModal(item) {
+    return this.getDataFileDescription(item)
+        .then(imageData => {
+          this.imageData = imageData
+          return this.getProvenance(imageData.provenance.uri)
+        }).then(response => {
+          let value = {
+            provenance: response,
+            data: this.imageData
+          }
+
+          this.dataProvenanceModalView.setProvenance(value);
+          this.dataProvenanceModalView.show();
+        });
+  }
+
+
   onImageDetails(index) {
+    this.showDataProvenanceDetailsModal(index);
+  }
+
+  onAnnotationDetails(index) {
     this.showAnnotationsModal = true;
     this.showAnnotations(index);
   }

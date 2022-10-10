@@ -1,49 +1,50 @@
 <template>
   <div ref="page">
-      <!-- FILTERS -->
+    <!-- FILTERS -->
 
-          <!--Form-->
-          <opensilex-ScientificObjectVisualizationForm
-              ref="scientificObjectVisualizationForm"
-              :scientificObject="scientificObject.uri"
-              @search="onSearch"
-          ></opensilex-ScientificObjectVisualizationForm>
-
-
-      <div class="d-flex justify-content-center mb-3" v-if="!isGraphicLoaded">
-        <b-spinner label="Loading..."></b-spinner>
-      </div>
-
-      <opensilex-VisuImages
-          ref="visuImages"
-          v-if="showImages"
-          @imageIsHovered="onImageIsHovered"
-          @imageIsUnHovered=" onImageIsUnHovered"
-          @imageIsDeleted=" onImageIsDeleted"
-          @onImageAnnotate=" showAnnotationForm"
-          @onImageDetails=" onImageDetails"
-      ></opensilex-VisuImages>
-
-      <opensilex-DataVisuGraphic
-          v-if="isGraphicLoaded"
-          ref="visuGraphic"
-          :selectedScientificObjects="scientificObject.uri"
-          @addEventIsClicked="showAddEventComponent"
-          @dataAnnotationIsClicked="showAnnotationForm"
-      ></opensilex-DataVisuGraphic>
+    <!--Form-->
+    <opensilex-ScientificObjectVisualizationForm
+        ref="scientificObjectVisualizationForm"
+        :scientificObject="scientificObject.uri"
+        @search="onSearch"
+    ></opensilex-ScientificObjectVisualizationForm>
 
 
-      <opensilex-AnnotationModalForm
-          ref="annotationModalForm"
-          @onCreate="onAnnotationCreated"
-      ></opensilex-AnnotationModalForm>
+    <div class="d-flex justify-content-center mb-3" v-if="!isGraphicLoaded">
+      <b-spinner label="Loading..."></b-spinner>
+    </div>
 
-      <opensilex-EventModalForm
-          ref="eventsModalForm"
-          :target="target"
-          :eventCreatedTime="eventCreatedTime"
-          @onCreate="onEventCreated"
-      ></opensilex-EventModalForm>
+    <opensilex-VisuImages
+        ref="visuImages"
+        v-if="showImages"
+        @imageIsHovered="onImageIsHovered"
+        @imageIsUnHovered=" onImageIsUnHovered"
+        @imageIsDeleted=" onImageIsDeleted"
+        @onImageAnnotate=" showAnnotationForm"
+        @onImageDetails=" onImageDetails"
+        @onAnnotationDetails=" onAnnotationDetails"
+    ></opensilex-VisuImages>
+
+    <opensilex-DataVisuGraphic
+        v-if="isGraphicLoaded"
+        ref="visuGraphic"
+        :selectedScientificObjects="scientificObject.uri"
+        @addEventIsClicked="showAddEventComponent"
+        @dataAnnotationIsClicked="showAnnotationForm"
+    ></opensilex-DataVisuGraphic>
+
+
+    <opensilex-AnnotationModalForm
+        ref="annotationModalForm"
+        @onCreate="onAnnotationCreated"
+    ></opensilex-AnnotationModalForm>
+
+    <opensilex-EventModalForm
+        ref="eventsModalForm"
+        :target="target"
+        :eventCreatedTime="eventCreatedTime"
+        @onCreate="onEventCreated"
+    ></opensilex-EventModalForm>
   </div>
 </template>
 
@@ -63,11 +64,15 @@ import {DataFileGetDTO} from "opensilex-core/model/dataFileGetDTO";
 import {Image} from "../visualization/image";
 import * as http from "http";
 import {VariablesService} from "opensilex-core/api/variables.service";
+import {AnnotationGetDTO} from "opensilex-core/model/annotationGetDTO";
+import {AnnotationsService} from "opensilex-core/api/annotations.service";
 
 @Component
 export default class ScientificObjectVisualizationTab extends Vue {
   $opensilex: any;
+  annotationData: any;
   variablesService: VariablesService;
+  annotationService: AnnotationsService;
 
   get user() {
     return this.$store.state.user;
@@ -98,9 +103,11 @@ export default class ScientificObjectVisualizationTab extends Vue {
   @Ref("scientificObjectVisualizationForm")
   readonly scientificObjectVisualizationForm!: any;
   showImages = true;
+  annotations: Array<AnnotationGetDTO> = [];
 
   created() {
     this.dataService = this.$opensilex.getService("opensilex.DataService");
+    this.annotationService = this.$opensilex.getService("opensilex.AnnotationsService");
     this.eventsService = this.$opensilex.getService("opensilex.EventsService");
     this.variablesService = this.$opensilex.getService("opensilex.VariablesService");
   }
@@ -329,9 +336,9 @@ export default class ScientificObjectVisualizationTab extends Vue {
     }
   }
 
-  buildDataSerie() {
+  async buildDataSerie() {
     if (this.form) {
-      return this.dataService
+      let http = await this.dataService
           .searchDataList(
               this.form.startDate != undefined && this.form.startDate != ""
                   ? this.form.startDate
@@ -351,91 +358,92 @@ export default class ScientificObjectVisualizationTab extends Vue {
               ["date=asc"],
               0,
               50000
-          )
-          .then((http: HttpResponse<OpenSilexResponse<Array<DataGetDTO>>>) => {
-            const data = http.response.result as Array<DataGetDTO>;
+          );
 
-            let dataLength = data.length;
-            if (dataLength > 0) {
-              const cleanData = this.dataTransforme(data);
-              if (dataLength > 50000) {
-                this.$opensilex.showInfoToast(
-                    this.$i18n.t(
-                        "ScientificObjectVisualizationTab.limitSizeMessageA"
-                    ) +
-                    " " +
-                    dataLength +
-                    " " +
-                    this.$i18n.t(
-                        "ScientificObjectVisualizationTab.limitSizeMessageB"
-                    )
-                );
-              }
-              const dataAndImage = [];
+      const data = http.response.result as Array<DataGetDTO>;
 
-              const dataSerie = {
-                name: this.scientificObject.name,
-                data: cleanData[0],
-                id: 'A',
-                visible: true
-              };
-              dataAndImage.push(dataSerie)
+      let dataLength = data.length;
+      if (dataLength > 0) {
+        const cleanData = await this.dataTransforme(data);
+        if (dataLength > 50000) {
+          this.$opensilex.showInfoToast(
+              this.$i18n.t(
+                  "ScientificObjectVisualizationTab.limitSizeMessageA"
+              ) +
+              " " +
+              dataLength +
+              " " +
+              this.$i18n.t(
+                  "ScientificObjectVisualizationTab.limitSizeMessageB"
+              )
+          );
+        }
+        const dataAndImage = [];
 
+        const dataSerie = {
+          name: this.scientificObject.name,
+          data: cleanData[0],
+          id: 'A',
+          visible: true
+        };
+        dataAndImage.push(dataSerie)
 
-              if (cleanData[1].length > 0) {
-                const imageSerie = {
-                  type: 'flags',
-                  name: 'Image/' + this.scientificObject.name,
-                  data: cleanData[1],
-                  onSeries: 'A',
-                  width: 8,
-                  height: 8,
-                  shape: 'circlepin',
-                  lineWidth: 1,
-                  point: {
-                    events: {
-                      stickyTracking: false,
-                      mouseOver: e => {
-                        const toSend = {
-                          imageIndex: e.target.index,
-                          serieIndex: e.target.series.index
-                        };
-                        if (this.visuImages) {
-                          this.visuImages.onImagePointMouseEnter(toSend);
-                        }
-                        e.preventDefault();
-                        return false;
-                      },
-                      mouseOut: e => {
-                        if (this.visuImages) {
-                          this.visuImages.onImagePointMouseOut();
-                        }
-                        e.preventDefault();
-                        return false;
-                      },
-                      click: event => {
-                        imagePointClick(event);
-                        event.preventDefault();
-                        return false;
-                      }
-                    }
-                  }
-                };
-                const imagePointClick = event => {
-                  const toReturn = {
-                    date: event.point.date,
-                    serieIndex: event.point.series.index,
-                    imageIndex: event.point.index,
-                    concernedItem: event.point.prov_used[0].uri
+        if (cleanData[1].length > 0) {
+          const imageSerie = {
+            type: 'flags',
+            name: 'Image/' + this.scientificObject.name,
+            data: cleanData[1],
+            onSeries: 'A',
+            width: 8,
+            height: 8,
+            shape: 'circlepin',
+            lineWidth: 1,
+            point: {
+              events: {
+                stickyTracking: false,
+                mouseOver: e => {
+                  const toSend = {
+                    imageIndex: e.target.index,
+                    serieIndex: e.target.series.index
                   };
-                  this.onImagePointClick(toReturn);
-                };
-                dataAndImage.push(imageSerie);
+                  if (this.visuImages) {
+                    this.visuImages.onImagePointMouseEnter(toSend);
+                  }
+                  e.preventDefault();
+                  return false;
+                },
+                mouseOut: e => {
+                  if (this.visuImages) {
+                    this.visuImages.onImagePointMouseOut();
+                  }
+                  e.preventDefault();
+                  return false;
+                },
+                click: event => {
+                  imagePointClick(event);
+                  event.preventDefault();
+                  return false;
+                }
               }
-
-              return dataAndImage;
             }
-          });
+          };
+          const imagePointClick = event => {
+            const toReturn = {
+              date: event.point.date,
+              serieIndex: event.point.series.index,
+              imageIndex: event.point.index,
+              concernedItem: event.point.prov_used[0].uri
+            };
+            this.onImagePointClick(toReturn);
+            if (this.visuImages) {
+              this.visuImages.onImagePointClick(toReturn);
+            }
+          };
+          dataAndImage.push(imageSerie);
+        }
+
+        return dataAndImage;
+      }
     } else {
       return null;
     }
@@ -487,29 +495,39 @@ export default class ScientificObjectVisualizationTab extends Vue {
     this.visuImages.onImageDetails(indexes);
   }
 
+  onAnnotationDetails(indexes) {
+    this.visuImages.onAnnotationDetails(indexes);
+  }
+
   // keep only date/value/uriprovenance properties
-  dataTransforme(data) {
+  async dataTransforme(data) {
     let toAdd,
         imageToAdd,
         cleanData = [],
         cleanImage = [];
 
-    data.forEach(element => {
+    for (let element of data) {
       let stringDateWithoutUTC = moment.parseZone(element.date).format("YYYY-MM-DDTHH:mm:ss") + "+00:00";
       let dateWithoutUTC = moment(stringDateWithoutUTC).valueOf();
       let offset = moment.parseZone(element.date).format("Z");
       let stringDate = moment.parseZone(element.date).format("YYYY-MM-DDTHH:mm:ss") + offset;
       if (element.provenance.prov_used) {
+        let response = await this.getAnnotations(element.provenance.prov_used[0].uri);
         imageToAdd = {
           x: dateWithoutUTC,
           y: element.value,
           date: stringDate,
           title: "I",
           prov_used: element.provenance.prov_used,
-          data: element
-        };
+          data: element,
+          imageURI: element.provenance.prov_used[0].uri,
+          color: response.length > 0 ? "#FF0000" : undefined
+        }
+
         cleanImage.push(imageToAdd);
+
       }
+
       toAdd = {
         x: dateWithoutUTC,
         y: element.value,
@@ -519,7 +537,8 @@ export default class ScientificObjectVisualizationTab extends Vue {
         data: element
       };
       cleanData.push(toAdd);
-    });
+    }
+
     return [cleanData, cleanImage];
   }
 
@@ -540,6 +559,18 @@ export default class ScientificObjectVisualizationTab extends Vue {
     };
     return newDate.toLocaleDateString("fr-FR", options);
   }
+
+  getAnnotations(uri: string) {
+    return this.annotationService
+        .searchAnnotations(undefined, uri, undefined, undefined, undefined, 0, 0)
+        .then(
+            (http: HttpResponse<OpenSilexResponse<Array<AnnotationGetDTO>>>) => {
+              const annotations = http.response.result as Array<AnnotationGetDTO>;
+              return annotations;
+            }
+        );
+  }
+
 }
 </script>
 

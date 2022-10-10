@@ -1,6 +1,6 @@
 <template>
   <li class="item" v-if="show">
-    <div class="card" style="margin: 4px; max-width: 100px;" :class="{ 'redBorder' : showBorder}">
+    <div class="card" style="margin: 4px; max-width: 100px;" :class="{'redBorder' : showBorder }">
       <span v-if="annotations.length > 0"
             class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle">
       </span>
@@ -19,7 +19,12 @@
             </a>
           </template>
           <b-dropdown-item href="#" @click="imageDetails">{{ $t("VisuImageSingle.details") }}</b-dropdown-item>
-          <b-dropdown-item href="#" @click="imageAnnotate">{{
+          <b-dropdown-item href="#" @click="annotationDetails">{{
+              $t("VisuImageSingle.annotation-details")
+            }}
+          </b-dropdown-item>
+          <b-dropdown-item href="#" @click="imageAnnotate">
+            {{
               $i18n.t("VisuImageSingle.annotate-image")
             }}
           </b-dropdown-item>
@@ -109,6 +114,10 @@ export default class VisuImageSingle extends Vue {
     this.$emit("onImageDetails", this.image.imageUri);
   }
 
+  annotationDetails() {
+    this.$emit("onAnnotationDetails", this.image.imageUri);
+  }
+
   imageAnnotate() {
     this.$emit("onImageAnnotate", this.image.imageUri);
   }
@@ -124,6 +133,15 @@ export default class VisuImageSingle extends Vue {
 
   onImagePointMouseOut() {
     this.showBorder = false;
+  }
+
+  onImagePointClick(indexes) {
+    if (
+        this.image.serieIndex === indexes.serieIndex &&
+        this.image.imageIndex === indexes.imageIndex
+    ) {
+      this.showBorder = true;
+    }
   }
 
   getAnnotations(uri: string) {
@@ -158,34 +176,8 @@ export default class VisuImageSingle extends Vue {
   }
 
   mounted() {
-    //this.getObjectAlias();
   }
 
-  /*  getObjectAlias() {
-    let service: ScientificObjectsService = this.$opensilex.getService(
-      "opensilex.ScientificObjectsService"
-    );
-    const result = service
-      .getScientificObjectsBySearch(
-        1,
-        0,
-        this.image.objectUri,
-        undefined,
-        undefined,
-        undefined
-      )
-      .then(
-        (http: HttpResponse<OpenSilexResponse<Array<ScientificObjectDTO>>>) => {
-          const res = http.response.result as any;
-          this.image.objectAlias = res.data[0].label;
-          this.objectAlias = res.data[0].label;
-        }
-      )
-      .catch(error => {
-        console.log(error);
-      });
-  }
- */
   formatedDate(date) {
     const newDate = new Date(date);
     const options = {
@@ -248,11 +240,13 @@ img {
 en:
   VisuImageSingle:
     details: Image details
+    annotation-details: Annotation details
     annotate-image: Annotate image
     hide-image: Hide image
 fr:
   VisuImageSingle:
     details: Détails de l'image
+    annotation-details: Détails de l'annotation
     annotate-image: Annoter l'image
     hide-image: Masquer l'image
 </i18n>

@@ -33,27 +33,29 @@
         ></opensilex-UriLink>
       </template>
 
-      <!-- Actions -->
-      <template v-slot:cell(actions)="{data}">
-        <b-button-group size="sm">
-          <opensilex-Button
-            :disabled="!images_rdf_types.includes(data.item.rdf_type)"
-            component="opensilex-DocumentDetails"
-            @click="showImage(data.item)"
-            label="ScientificObjectDataFiles.displayImage"
-            :small="true"
-            icon= "fa#image"
-            variant="outline-info"
-          ></opensilex-Button>
-          <opensilex-DetailButton
-            v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
-            @click="showDataProvenanceDetailsModal(data.item)"
-            label="DataFilesView.details"
-            :small="true"
-        ></opensilex-DetailButton>
-        </b-button-group>
-      </template>
+       <template v-slot:cell(type)="{ data }">
+          <div>{{ rdf_types[data.item.rdf_type] }}</div>
+        </template>
 
+        <template v-slot:cell(actions)="{data}">
+          <b-button-group size="sm">
+            <opensilex-Button
+              :disabled="!images_rdf_types.includes(data.item.rdf_type)"
+              component="opensilex-DocumentDetails"
+              @click="showImage(data.item)"
+              label="ScientificObjectDataFiles.displayImage"
+              :small="true"
+              icon= "fa#image"
+              variant="outline-info"
+            ></opensilex-Button>
+            <opensilex-DetailButton
+              v-if="user.hasCredential(credentials.CREDENTIAL_DEVICE_MODIFICATION_ID)"
+              @click="showDataProvenanceDetailsModal(data.item)"
+              label="DataFilesView.details"
+              :small="true"
+          ></opensilex-DetailButton>
+          </b-button-group>
+        </template>
     </opensilex-TableAsyncView>
 
     <opensilex-DataProvenanceModalView 

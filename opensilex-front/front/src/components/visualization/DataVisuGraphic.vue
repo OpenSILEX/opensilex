@@ -240,13 +240,6 @@ export default class DataVisuGraphic extends Vue {
   annotations = [];
   event: any = null;
 
-  // created(){
-  //   Highcharts.setOptions({
-  //     time: {
-  //       useUTC: false
-  //     }
-  //   });
-  // }
 
   created() {
     Highcharts.wrap(Highcharts.Legend.prototype, "colorizeItem", function(
@@ -454,7 +447,7 @@ export default class DataVisuGraphic extends Vue {
                     '<span style=" color:' +
                     this.point.color +
                     '" ><b> ' +
-                    this.point.y +
+                    point.data.value +
                     "</b></span>" +
                     "<br/>Time:<b> " +
                     date +
@@ -467,7 +460,7 @@ export default class DataVisuGraphic extends Vue {
                     " :" +
                     '<span style=" color:' +
                     point.color +
-                    '" ><b> ' +
+                    '" ><b>' +
                     point.text +
                     "</b></span>" +
                     "<br/>Time:<b> " +
@@ -485,7 +478,8 @@ export default class DataVisuGraphic extends Vue {
               marker: {
                 enabled: true,
                 symbol: "circle",
-                radius: 3
+                radius: 3,
+                fillColor: '#fff004'
               }
             },
 
@@ -572,7 +566,6 @@ export default class DataVisuGraphic extends Vue {
   }
 
   reload(series: Array<Highcharts.SeriesLineOptions>, variable, form) {
-
     if(form) {
       this.startDate = form.startDate;
       this.endDate = form.endDate;

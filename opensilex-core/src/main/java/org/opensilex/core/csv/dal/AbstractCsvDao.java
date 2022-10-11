@@ -479,8 +479,8 @@ public abstract class AbstractCsvDao<T extends SPARQLNamedResourceModel> impleme
         );
 
         // write property id+name headers
-        String[] headerArray = new String[initialOffset + columnsIndexes.size()];
-        String[] headerNameArray = new String[initialOffset + columnsIndexes.size()];
+        String[] headerArray = new String[initialOffset + customColumns.size()];
+        String[] headerNameArray = new String[initialOffset + customColumns.size()];
         headerArray[0] = CSV_URI_KEY;
         headerNameArray[0] = "URI";
         headerArray[1] = CSV_TYPE_KEY;
@@ -510,7 +510,7 @@ public abstract class AbstractCsvDao<T extends SPARQLNamedResourceModel> impleme
 
         // write rows
         for (Map<Integer, String> row : rows) {
-            String[] rowArray = new String[columnsIndexes.size() + initialOffset];
+            String[] rowArray = new String[customColumns.size() + initialOffset];
             rowArray[0] = row.get(0);
             rowArray[1] = row.get(1);
             rowArray[2] = row.get(2);

@@ -557,6 +557,11 @@ $opensilex.loadModules([
                 $opensilex.setCookieValue(user);
                 window.location = baseURL.slice(0, -7);
               }).catch(manageError);
+          } else if (baseURL.endsWith("/app/saml") && urlParams.has("token")) {
+            console.debug("Authenticate user through SAML");
+            let user = User.fromToken(urlParams.get("token"));
+            $opensilex.setCookieValue(user);
+            window.location = baseURL.slice(0, -5);
           } else {
             let themePromise: Promise<any> = loadTheme(vueJsService, config);
 

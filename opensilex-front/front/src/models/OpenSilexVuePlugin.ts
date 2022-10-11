@@ -425,7 +425,6 @@ export default class OpenSilexVuePlugin {
         if (this.getConfig() && this.getConfig().pathPrefix) {
             return this.getConfig().pathPrefix;
         }
-        console.error("No path prefix in configuration");
         return undefined;
     }
 

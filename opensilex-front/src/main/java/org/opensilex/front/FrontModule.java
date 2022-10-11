@@ -13,10 +13,7 @@ import org.opensilex.front.api.FrontConfigDTO;
 import org.opensilex.front.api.RouteDTO;
 import org.opensilex.front.api.UserFrontConfigDTO;
 import org.opensilex.front.config.*;
-import org.opensilex.security.EmailConfig;
-import org.opensilex.security.OpenIDConfig;
-import org.opensilex.security.SecurityConfig;
-import org.opensilex.security.SecurityModule;
+import org.opensilex.security.*;
 import org.opensilex.security.authentication.AuthenticationService;
 import org.opensilex.security.email.EmailService;
 import org.opensilex.security.user.dal.UserModel;
@@ -32,6 +29,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 /**
  *
@@ -115,22 +113,36 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
             }
 
 
+            AuthenticationService auth = getOpenSilex().getServiceInstance(AuthenticationService.DEFAULT_AUTHENTICATION_SERVICE, AuthenticationService.class);
+            // OpenID configuration
             try {
-                AuthenticationService auth = getOpenSilex().getServiceInstance(AuthenticationService.DEFAULT_AUTHENTICATION_SERVICE, AuthenticationService.class);
                 URI authURI = auth.getOpenIDAuthenticationURI();
                 if (authURI != null) {
                     config.setOpenIDAuthenticationURI(authURI.toString());
                     OpenIDConfig openid =  getOpenSilex().getModuleConfig(SecurityModule.class, SecurityConfig.class).openID();
                     String connectionTitle = openid.connectionTitle().get(lang);
-                    if (connectionTitle == null || connectionTitle.isEmpty()) {
-                        connectionTitle = "Connect with OpenID";
-                    }
                     config.setOpenIDConnectionTitle(connectionTitle);
                 }
             } catch (Exception ex) {
                 LOGGER.error("Unexpected error", ex);
             }
-            
+
+            // SAML configuration
+            try {
+                URI samlProxyLoginURI = auth.getSamlProxyLoginURI();
+                if (Objects.nonNull(samlProxyLoginURI)) {
+                    config.setSamlProxyLoginURI(samlProxyLoginURI.toString());
+                    SAMLConfig samlConfig = getOpenSilex()
+                            .getModuleConfig(SecurityModule.class, SecurityConfig.class)
+                            .saml();
+                    String samlConnectionTitle = samlConfig.connectionTitle().get(lang);
+                    config.setSamlConnectionTitle(samlConnectionTitle);
+                }
+            } catch (OpenSilexModuleNotFoundException e) {
+                LOGGER.error("Security module not found", e);
+                throw new RuntimeException(e);
+            }
+
             try {
                 EmailService emailService = getOpenSilex().getModuleConfig(SecurityModule.class, SecurityConfig.class).email();
                 EmailConfig emailConfig = (EmailConfig) emailService.getConfig();

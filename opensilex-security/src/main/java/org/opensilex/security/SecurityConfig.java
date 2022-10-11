@@ -20,22 +20,27 @@ public interface SecurityConfig {
     @ConfigDescription(
             value = "Authentication service"
     )
-    public AuthenticationService authentication();
+    AuthenticationService authentication();
 
     
      @ConfigDescription(
             value = "Email service"
     )
-    public EmailService email();
+    EmailService email();
     
     @ConfigDescription(
             value = "Option to allow multiple connection with the same account (NOT RECOMMENDED IN PRODUCTION)",
             defaultBoolean = false
     )
-    public boolean allowMultiConnection();
+    boolean allowMultiConnection();
 
     @ConfigDescription(
             value = "OpenID configuration (disable by default)"
     )
-    public OpenIDConfig openID();
+    OpenIDConfig openID();
+
+    @ConfigDescription(
+            value = "SAML configuration (disable by default)"
+    )
+    SAMLConfig saml();
 }

@@ -46,6 +46,10 @@ public class FrontConfigDTO {
     String openIDAuthenticationURI;
 
     String openIDConnectionTitle;
+
+    String samlProxyLoginURI;
+
+    String samlConnectionTitle;
     
     Boolean activateResetPassword;
 
@@ -158,6 +162,22 @@ public class FrontConfigDTO {
 
     public void setOpenIDConnectionTitle(String openIDConnectionTitle) {
         this.openIDConnectionTitle = openIDConnectionTitle;
+    }
+
+    public String getSamlProxyLoginURI() {
+        return samlProxyLoginURI;
+    }
+
+    public void setSamlProxyLoginURI(String samlProxyLoginURI) {
+        this.samlProxyLoginURI = samlProxyLoginURI;
+    }
+
+    public String getSamlConnectionTitle() {
+        return samlConnectionTitle;
+    }
+
+    public void setSamlConnectionTitle(String samlConnectionTitle) {
+        this.samlConnectionTitle = samlConnectionTitle;
     }
 
     public Boolean getActivateResetPassword() {

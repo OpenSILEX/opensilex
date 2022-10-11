@@ -51,5 +51,10 @@ public interface ServerConfig {
             value = "Application path prefix, must start with '/' and do not end with '/' or be an empty string",
             defaultString = ""
     )
-    String pathPrefix();    
+    String pathPrefix();
+
+    @ConfigDescription(
+            value = "AJP connector for communication between Apache and Tomcat"
+    )
+    AJPConnectorConfig ajpConnector();
 }

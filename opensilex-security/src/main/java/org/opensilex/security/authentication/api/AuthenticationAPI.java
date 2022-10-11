@@ -6,64 +6,47 @@
 //******************************************************************************
 package org.opensilex.security.authentication.api;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.*;
+import org.apache.commons.lang3.StringUtils;
+import org.opensilex.OpenSilex;
+import org.opensilex.OpenSilexModuleNotFoundException;
+import org.opensilex.security.SecurityConfig;
+import org.opensilex.security.SecurityModule;
+import org.opensilex.security.authentication.ApiProtected;
+import org.opensilex.security.authentication.AuthenticationService;
+import org.opensilex.security.authentication.dal.AuthenticationDAO;
+import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.security.email.EmailService;
+import org.opensilex.security.user.dal.UserDAO;
+import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.server.ServerModule;
+import org.opensilex.server.response.*;
+import org.opensilex.server.rest.validation.Required;
+import org.opensilex.server.rest.validation.ValidURI;
+import org.opensilex.sparql.service.SPARQLService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.inject.Inject;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
+import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import javax.inject.Inject;
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import org.apache.commons.lang3.StringUtils;
-import org.opensilex.OpenSilex;
-import org.opensilex.security.SecurityConfig;
-import org.opensilex.OpenSilexModuleNotFoundException;
-import org.opensilex.server.response.ErrorDTO;
-import org.opensilex.server.response.ErrorResponse;
-import org.opensilex.server.response.PaginatedListResponse;
-import org.opensilex.server.response.SingleObjectResponse;
-import org.opensilex.security.authentication.ApiProtected;
-import org.opensilex.security.authentication.AuthenticationService;
-import org.opensilex.security.SecurityModule;
+import java.util.*;
+
 import static org.opensilex.security.authentication.AuthenticationService.DEFAULT_SUPER_ADMIN_EMAIL;
-import org.opensilex.security.email.EmailService;
-import org.opensilex.security.authentication.dal.AuthenticationDAO;
-import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.sparql.service.SPARQLService;
-import org.opensilex.security.user.dal.UserDAO;
-import org.opensilex.security.user.dal.UserModel;
-import org.opensilex.server.rest.validation.Required;
-import org.opensilex.server.ServerModule;
-import org.opensilex.server.response.ObjectUriResponse;
-import org.opensilex.server.rest.validation.ValidURI;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * <pre>
@@ -416,7 +399,7 @@ public class AuthenticationAPI {
     @Path("openid")
     @ApiOperation("Authenticate a user and return an access token")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "User sucessfully authenticated", response = TokenGetDTO.class),
+        @ApiResponse(code = 200, message = "User successfully authenticated", response = TokenGetDTO.class),
         @ApiResponse(code = 403, message = "Invalid credentials (Bad token provided)", response = ErrorDTO.class)
     })
     @Consumes(MediaType.APPLICATION_JSON)
@@ -442,4 +425,31 @@ public class AuthenticationAPI {
         }
     }
 
+    @GET
+    @Path("saml")
+    @ApiOperation("Authenticate a user and return an access token from SAML response")
+    @ApiResponses(value = {
+            @ApiResponse(code = 302, message = "User successfully authenticated"),
+            @ApiResponse(code = 403, message = "Invalid SAML authentication")
+    })
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response authenticateSAML(@Context HttpServletRequest request) throws Exception {
+        UserDAO userDAO = new UserDAO(sparql);
+
+        UserModel user = authentication.authenticateWithSAML(request);
+
+        user = userDAO.getByEmailOrCreate(user, openSilex.getDefaultLanguage());
+
+        if (authentication.authenticate(user, userDAO.getCredentialList(user.getUri()))) {
+            String token = user.getToken();
+            URI samlLandingPageUri = authentication.buildSAMLLandingPageURI(token);
+            return Response
+                    .status(Status.FOUND)
+                    .header("Location", samlLandingPageUri.toString())
+                    .build();
+        }
+
+        return new ErrorResponse(Status.FORBIDDEN, "Invalid SAML authentication", "Could not authenticate user with SAML")
+                .getResponse();
+    }
 }

@@ -6,16 +6,6 @@
 //******************************************************************************
 package org.opensilex.server;
 
-import org.opensilex.server.admin.ServerAdmin;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.HashSet;
-import java.util.Set;
 import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.WebResourceRoot;
@@ -26,16 +16,24 @@ import org.apache.catalina.valves.StuckThreadDetectionValve;
 import org.apache.catalina.valves.rewrite.RewriteValve;
 import org.apache.catalina.webresources.StandardRoot;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jasper.servlet.JasperInitializer;
 import org.apache.tomcat.JarScanType;
 import org.apache.tomcat.util.buf.EncodedSolidusHandling;
 import org.opensilex.OpenSilex;
+import org.opensilex.OpenSilexModule;
+import org.opensilex.OpenSilexModuleNotFoundException;
+import org.opensilex.server.admin.ServerAdmin;
 import org.opensilex.server.extensions.ServerExtension;
 import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.opensilex.OpenSilexModule;
-import org.opensilex.OpenSilexModuleNotFoundException;
+
+import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * <pre>
@@ -139,13 +137,15 @@ public class Server extends Tomcat {
         getHost().setAppBase(baseDir);
         getServer().setParentClassLoader(OpenSilex.getClassLoader());
 
-        String pathPrefix = "";
+        ServerConfig serverConfig = null;
         try {
-            pathPrefix = instance.getModuleConfig(ServerModule.class, ServerConfig.class).pathPrefix();
-        } catch (Exception ex) {
-            LOGGER.error("Error while loading path prefix", ex);
+            serverConfig = instance.getModuleConfig(ServerModule.class, ServerConfig.class);
+        } catch (OpenSilexModuleNotFoundException e) {
+            LOGGER.error("Could not load server configuration", e);
+            throw new RuntimeException(e);
         }
 
+        String pathPrefix = serverConfig.pathPrefix();
         if (!pathPrefix.equals("")) {
             try {
                 Context redirectContext = addWebapp("defaultRedirect", new File(".").getAbsolutePath());
@@ -225,6 +225,10 @@ public class Server extends Tomcat {
 
         // enable UTF-8
         enableUTF8(connector);
+
+        if (serverConfig.ajpConnector().enable()) {
+            addAJPConnector(serverConfig.ajpConnector());
+        }
 
         // Enable admin thread to manage server
         initAdminThread(adminPort);
@@ -398,5 +402,30 @@ public class Server extends Tomcat {
      */
     private void enableUTF8(Connector connector) {
         connector.setURIEncoding("UTF-8");
+    }
+
+    /**
+     * Add an AJP connector to the Tomcat service. This allows Tomcat to communicate with an Apache server using the
+     * AJP protocol.
+     *
+     * @param ajpConnectorConfig The configuration for the AJP connector
+     */
+    private void addAJPConnector(AJPConnectorConfig ajpConnectorConfig) {
+        Connector ajpConnector = new Connector("AJP/1.3");
+        ajpConnector.setPort(ajpConnectorConfig.port());
+
+        if (StringUtils.isNotEmpty(ajpConnectorConfig.secret())) {
+            ajpConnector.setProperty("secretRequired", "true");
+            ajpConnector.setProperty("secret", ajpConnectorConfig.secret());
+        } else {
+            ajpConnector.setProperty("secretRequired", "false");
+        }
+
+        // Necessary for SAML  attributes (see https://shibboleth.atlassian.net/wiki/spaces/SHIB2/pages/2577072431/NativeSPJavaInstall)
+        ajpConnector.setProperty("packetSize", "65536");
+        // Necessary so that tomcat doesn't reject the request
+        ajpConnector.setProperty("allowedRequestAttributesPattern", ".*");
+
+        getService().addConnector(ajpConnector);
     }
 }

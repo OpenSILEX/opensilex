@@ -124,7 +124,7 @@ import {AuthenticationService, TokenGetDTO} from "opensilex-security/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
 import {FrontConfigDTO} from "../../lib";
 import {SystemService, VersionInfoDTO} from "opensilex-core/index";
-import VueRouter from "vue-router";
+import VueRouter from 'vue-router';
 
 @Component
 export default class DefaultLoginComponent extends Vue { 
@@ -173,8 +173,15 @@ export default class DefaultLoginComponent extends Vue {
     if (opensilexConfig.openIDAuthenticationURI) {
       options.push({
         id: "openid",
-        label: opensilexConfig.openIDConnectionTitle
+        label: opensilexConfig.openIDConnectionTitle ?? this.$t("LoginComponent.defaultOpenIDConnectionTitle")
       });
+    }
+
+    if (opensilexConfig.samlProxyLoginURI) {
+      options.push({
+        id: "shibboleth",
+        label: opensilexConfig.samlConnectionTitle ?? this.$t("LoginComponent.defaultSAMLConnectionTitle")
+      })
     }
 
     return options;
@@ -185,11 +192,12 @@ export default class DefaultLoginComponent extends Vue {
   }
 
   loginMethodChange(loginMethod) {
-    console.error(loginMethod);
-    if (loginMethod.id == "openid") {
-      let opensilexConfig: FrontConfigDTO = this.$opensilex.getConfig();
+    let opensilexConfig: FrontConfigDTO = this.$opensilex.getConfig();
+    if (loginMethod.id === "openid") {
       window.location.href = opensilexConfig.openIDAuthenticationURI;
-    } else if (loginMethod.id == "password") {
+    } else if (loginMethod.id === "shibboleth") {
+      window.location.href = opensilexConfig.samlProxyLoginURI;
+    } else if (loginMethod.id === "password") {
       this.validatorRef.reset();
     }
   }
@@ -287,9 +295,13 @@ en:
     selectLoginMethod: Select login method
     passwordConnectionTitle: Connect with password
     forgotPassword: Forgot your password ?
+    defaultOpenIDConnectionTitle: Log in with SSO (OpenID)
+    defaultSAMLConnectionTitle: Log in with SSO (SAML)
 fr:
   LoginComponent:
     selectLoginMethod: Choisir la méthode de connexion
     passwordConnectionTitle: Connexion par mot de passe
     forgotPassword: Mot de passe oublié ?
+    defaultOpenIDConnectionTitle: Connexion par SSO (OpenID)
+    defaultSAMLConnectionTitle: Connexion par SSO (SAML)
 </i18n>

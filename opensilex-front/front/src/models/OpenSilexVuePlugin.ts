@@ -1084,7 +1084,7 @@ export default class OpenSilexVuePlugin {
                     }
                     divPreview.appendChild(error.appendChild(content));
                 }
-                let blob = new Blob([file], { type: type });
+                let blob = new Blob([file as BlobPart], { type: type });
                 
                 if (type != null) {
                     let url = URL.createObjectURL(blob);
@@ -1126,7 +1126,7 @@ export default class OpenSilexVuePlugin {
                 
             }).catch(this.errorHandler).then((result) => {
                 let file = result;
-                let blob = new Blob([file]);
+                let blob = new Blob([file as BlobPart]);
                 let url = URL.createObjectURL(blob);
                 return url;
             })

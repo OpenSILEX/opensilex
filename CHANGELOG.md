@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0-rc+5.2]
+
+### Fixed or optimized
+
+[Scientific Object] Fix CSV export on column size -> 9c88f33
+[Documentation] Update migration information for OpenSILEX 1.0.0+rc-2 version -> 9c88f33
+[Modularity] Fix Extended module build -> 9c88f33
+[TypeScript] Remove http import -> a27cf7e
+[Documentation] Update Changelog -> a27cf7e
+
+## [1.0.0-rc+5.1]
+
+### Fixed or optimized
+
+Fix OpenSILEX commands initialization and append test scripts -> cd19dd5
+
 ## [1.0.0-rc+5]
 
 > Warning : upgrading to this new version may require manual operations. Please
@@ -15,7 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 > Warning: since version 1.0.0-rc+2, if you have created scientific objects with the same name in different experiments
 > (with automatic URI generation), their URI would end up being the same. That may cause problems if you intended to create
 > distinct scientific objects, such as some scientific objects being associated with the wrong data.
-> 
+>
 > This bug has been fixed in this version. If you suspect that may have happened to you, please contact us ([opensilex-help@groupes.renater.fr](mailto:opensilex-help@groupes.renater.fr)).
 
 ### Added or changed
@@ -27,13 +43,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Web client** : Variables selection and contextual actions into variable search page -> da82201c
 - **Web client**:  Add loader on scientific object tree view loading -> cf864292
 
-
 - **API/Web client** : A software (Device) can be linked to a variable -> 8d8cfb43
 - **API** : Prevent deletion of OS in case of associated experiment, children, data or datafile  -> e17caea7
-- **API** : When storing position for a move, we now use a String representation of x,y,z fields instead of 
+- **API** : When storing position for a move, we now use a String representation of x,y,z fields instead of
 a previous Integer representation -> 9b3a4a27.
 - **API** : Add the "Operating procedure" as a new type of technical document -> e39e3c6b
-- **API** : Remove opensilex-mobile module from default OpenSILEX modules -> 252e4565 
+- **API** : Remove opensilex-mobile module from default OpenSILEX modules -> 252e4565
 
 ### Fixed or optimized
 
@@ -45,9 +60,8 @@ a previous Integer representation -> 9b3a4a27.
 - **Web client** : [Geospatial] Display calibration position & enhance multi select -> 73811bcb
 - **Web client** : Fix variable name display on tabular data list -> fd3ea6be
 
-
 - **API** : Variables associated with a variable of type "date" are now stored and exported correctly -> 624e99dd
-- **API** : Better error handling in case of Invalid character when evaluating a SPARQL REGEX -> 326be84c 
+- **API** : Better error handling in case of Invalid character when evaluating a SPARQL REGEX -> 326be84c
 - **API** : Fix URI generation when providing a URI on scientific object creation and CSV import -> e17caea7 , a77a3629
 - **API** : Remove no duplicate name constraint when importing OS into global graph -> 45bcf04a
 - **API** : Optimize search and loading for entities, characteristics, methods, units, variables and variable groups -> b00c53ba
@@ -77,7 +91,6 @@ java -jar opensilex.jar --CONFIG_FILE=<config_file> sparql reset-ontologies
 - Variables can now be filtered by datatype and time interval.
 - When a groups of variables are created or Updated, there are a redirection on detail part of the group.
 - Associated experiments are now listed in the project description.
-
 
 ### Fixed
 
@@ -141,6 +154,7 @@ Be carful, updating to this new version need to execute some actions. See [Versi
 New installations don't need updating action.
 
 ### Added
+
 - Concept of "Site" with an address : use W3C vcard specification.
 - Filter on variables with filter in entity, entity of interest, characteristic, method, unit, group of variables
 - Search in germplasm's attributs in Webapp
@@ -151,10 +165,12 @@ New installations don't need updating action.
 - Command org.opensilex.migration.GraphAndCollectionMigration for SPARQL graph and MongoDB collection renaming after URI generation update
 
 ### Added in pre-production
+
 - Visualisation og device value by variable. See. Variable / visualisation
 - Species become optional in an experiment
 
-###  Fixed or improvement
+### Fixed or improvement
+
 - **WARNING:** Update model graph from sets/<model_name> to set/<model_name>. Update URI generation by using "id" instead of "set" : **this improvement need an action**. See [Versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc+2.md) if updating.
 - **WARNING:** Organization and Facilities ontologies. See [Versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc+2.md) if updating
 - Control access in the Web interface, in progress
@@ -170,6 +186,7 @@ New installations don't need updating action.
   - others bugs
 
 ### Some Known Issues
+
 - Problem of authentification when migrate. It's due to FOAF import. You need to remove `<http://xmlns.com/foaf/0.1/Agent> rdfs:label "Agent"`
 - When installing other version, PHIS ontology is imported. You need to remove <http://www.opensilex.org/vocabulary/oeso-ext> context
 - Some installation have problem with geospatial visualisation.
@@ -187,11 +204,10 @@ New installations don't need updating action.
 - Impove **Organization** in progress:
   - Association of Groups to Organizations: you can now associate some groups with an organization at the creation or update of it.
 
-###  Fixed or optimized
+### Fixed or optimized
 
 - Provenance : fix no device selector render when selecting oeso:SensingDevice's Agents .
 - Ergonomic mistakes fixed
-
 
 ## [1.0.0-rc] - 2021-10-08
 
@@ -203,17 +219,14 @@ New installations don't need updating action.
   - Ability to put data on other entities such as sites, areas, factors, etc. except people.  So now, you have to use target instead of scientificObject in the API. This is also the case for importing data via the web interface. See [Versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc.md) when upgrading.
   - Ability to mention raw data of a measure (i.e. for repetition)
 
-
 - Variable:
   - Add a species attribute to link a variable to a specific species.
   - Ability to create groups of variables. Add a default group for environmental variables.
   - Prevent incorrect update of variables with data attached
   - Ability to add a document to methods
 
-
 - Scientific Object:
   - Unicity of a scientific object name in an experiment.
-
 
 - Map:
   - Ability to specify a geospatial event on Map
@@ -223,11 +236,9 @@ New installations don't need updating action.
 - Event:
   - Add a document to an event (image, video, etc.)
 
-
 - Added system details in the administration menu : instance version, loaded modules, link to web API documentation, etc.
 
-
-###  Fixed or optimized
+### Fixed or optimized
 
 - Geospatial filters on the Map
 - Optimized vocabulary menu
@@ -239,11 +250,11 @@ New installations don't need updating action.
 - Various translation mistakes
 
 ### Changed
+
 - Data Model : "scientificObject": "target"
 - DataFile Model : "scientificObject": "target"
 
 Link to the upgrade scripts: [1.0.0-rc migration](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc.md)
-
 
 ### Major bugs identified
 
@@ -251,15 +262,15 @@ Link to the upgrade scripts: [1.0.0-rc migration](https://github.com/OpenSILEX/o
 - Specific properties of Event are not manage in Map
 - Specific properties of Event are not apply on Forms.
 
-
 ********************************************************************************
+
 ## [1.0.0-beta+2.1] - 2021-07-27
 
 ### Added
 
 - Add global provenances management interface allows to create and visualize them
 
-###  Fixed
+### Fixed
 
 - Issue on device association
 - Miscellaneous data bugs fixed

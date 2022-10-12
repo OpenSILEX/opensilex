@@ -852,20 +852,22 @@ public class DataDAO {
 
                             first = false;
                         }
+                        // compare only expended URIs
+                        URI dataGetDTOVariable = URI.create(SPARQLDeserializers.getExpandedURI(dataGetDTO.getVariable()));
 
                         // value
                         if (dataGetDTO.getValue() == null){
-                            csvRow.set(variableUriIndex.get(dataGetDTO.getVariable()), null);
+                            csvRow.set(variableUriIndex.get(dataGetDTOVariable), null);
                         } else {
-                            csvRow.set(variableUriIndex.get(dataGetDTO.getVariable()), dataGetDTO.getValue().toString());
+                            csvRow.set(variableUriIndex.get(dataGetDTOVariable), dataGetDTO.getValue().toString());
                         }
                         
                         // raw data
                         if (withRawData) {
                             if (dataGetDTO.getRawData() == null){
-                                csvRow.set(variableUriIndex.get(dataGetDTO.getVariable())+1, null);
+                                csvRow.set(variableUriIndex.get(dataGetDTOVariable)+1, null);
                             } else {
-                                csvRow.set(variableUriIndex.get(dataGetDTO.getVariable())+1, Arrays.toString(dataGetDTO.getRawData().toArray()).replace("[", "").replace("]", ""));
+                                csvRow.set(variableUriIndex.get(dataGetDTOVariable)+1, Arrays.toString(dataGetDTO.getRawData().toArray()).replace("[", "").replace("]", ""));
                             } 
                         }
                         

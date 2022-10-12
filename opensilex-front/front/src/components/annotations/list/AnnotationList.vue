@@ -96,7 +96,6 @@ import AnnotationModalForm from "../form/AnnotationModalForm.vue";
 import {SecurityService} from "opensilex-security/api/security.service";
 import {UserGetDTO} from 'opensilex-security/index';
 import {AnnotationGetDTO} from 'opensilex-core/index';
-import * as http from "http";
 
 @Component
 export default class AnnotationList extends Vue {

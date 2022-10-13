@@ -13,7 +13,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.opensilex.fs.service.FileStorageConnection;
 import org.opensilex.service.BaseService;
 import org.opensilex.service.ServiceDefaultDefinition;
@@ -75,8 +78,8 @@ public class LocalFileSystemConnection extends BaseService implements FileStorag
     }
 
     @Override
-    public void writeFile(Path filePath, String content) throws IOException {
-        FileUtils.writeStringToFile(getAbsolutePathFile(filePath), content, StandardCharsets.UTF_8);
+    public void writeFile(Path filePath, byte[] content) throws IOException {
+        Files.write(getAbsolutePath(filePath), content, StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
     }
 
     @Override

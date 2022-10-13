@@ -9,7 +9,6 @@ import org.opensilex.service.Service;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
@@ -26,7 +25,7 @@ public interface FileStorageConnection extends Service {
         return new String(data, StandardCharsets.UTF_8);
     }
 
-    void writeFile(Path filePath, String content) throws IOException;
+    void writeFile(Path filePath,byte[] content) throws IOException;
 
     void writeFile(Path filePath, File file) throws IOException;
 

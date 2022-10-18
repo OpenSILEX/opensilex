@@ -31,7 +31,7 @@ import picocli.CommandLine;
 )
 public class UserCommands extends AbstractOpenSilexCommand implements OpenSilexCommand {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(UserCommands.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserCommands.class);
 
     /**
      * /**
@@ -66,13 +66,18 @@ public class UserCommands extends AbstractOpenSilexCommand implements OpenSilexC
         SPARQLService sparql = factory.provide();
 
         AuthenticationService authentication = opensilex.getServiceInstance(AuthenticationService.DEFAULT_AUTHENTICATION_SERVICE, AuthenticationService.class);
+        String passwordHash = authentication.getPasswordHash(password);
 
         UserDAO userDAO = new UserDAO(sparql);
+        InternetAddress userMail = new InternetAddress(email);
 
-        String passwordHash = authentication.getPasswordHash(password);
-        UserModel user = userDAO.create(null, new InternetAddress(email), firstName, lastName, isAdmin, passwordHash, lang);
+        if (userDAO.userEmailexists(userMail)) {
+            LOGGER.warn("An user with the email {} already exists. New user will not be created", userMail);
+        } else {
+            UserModel user = userDAO.create(null, userMail, firstName, lastName, isAdmin, passwordHash, lang);
+            LOGGER.info("User created: {}", user.getUri());
+        }
 
-        LOGGER.info("User created: " + user.getUri());
         factory.dispose(sparql);
     }
 

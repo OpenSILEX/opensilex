@@ -6,6 +6,7 @@ import org.opensilex.sparql.model.B;
 import org.opensilex.sparql.model.C;
 import org.opensilex.sparql.rdf4j.RDF4JInMemoryServiceFactory;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.service.SPARQLServiceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +24,6 @@ public class OpenSilexTestEnvironment {
     protected final static Logger LOGGER = LoggerFactory.getLogger(OpenSilexTestEnvironment.class);
 
     private final OpenSilex openSilex;
-    private final RDF4JInMemoryServiceFactory factory;
     private final SPARQLService sparql;
 
     public static OpenSilexTestEnvironment getInstance() throws Exception {
@@ -44,17 +44,13 @@ public class OpenSilexTestEnvironment {
         LOGGER.debug("Create OpenSilex instance for Unit Test");
         openSilex = OpenSilex.createInstance(args);
 
-        factory = new RDF4JInMemoryServiceFactory();
-        factory.setOpenSilex(openSilex);
-        factory.setup();
-        factory.startup();
+        SPARQLServiceFactory factory = openSilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
         factory.getMapperIndex().addClasses(
                 A.class,
                 B.class,
                 C.class
         );
-
-        sparql = factory.provide();
+        sparql = openSilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class).provide();
     }
 
     public OpenSilex getOpenSilex() {
@@ -67,10 +63,6 @@ public class OpenSilexTestEnvironment {
 
     public void stopOpenSilex() throws Exception {
         openSilex.shutdown();
-    }
-
-    public void cleanSPARQL() {
-        factory.dispose(sparql);
     }
 
 }

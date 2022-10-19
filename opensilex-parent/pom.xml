@@ -58,7 +58,7 @@
         <jersey.version>2.35</jersey.version>
         <tomcat.version>9.0.39</tomcat.version>
         <hibernate.validator.version>7.0.2.Final</hibernate.validator.version>
-        <jackson.version>2.13.1</jackson.version>
+        <jackson.version>2.13.4.1</jackson.version>
         <geojson.jackson.version>1.14</geojson.jackson.version>
         <jts.version>1.18.2</jts.version>
         <javax.servlet.api.version>4.0.1</javax.servlet.api.version>

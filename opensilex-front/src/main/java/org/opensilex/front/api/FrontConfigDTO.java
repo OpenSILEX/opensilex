@@ -55,6 +55,8 @@ public class FrontConfigDTO {
 
     String geocodingService;
 
+    List<String> menuExclusions;
+
     VersionLabel versionLabel;
 
     @ApiModelProperty(value = "Application url path prefix", example = "app")
@@ -197,6 +199,15 @@ public class FrontConfigDTO {
         this.geocodingService = geocodingService;
     }
 
+    @ApiModelProperty(value = "Menu exclusions")
+    public List<String> getMenuExclusions() {
+        return menuExclusions;
+    }
+
+    public void setMenuExclusions(List<String> menuExclusions) {
+        this.menuExclusions = menuExclusions;
+    }
+    
     @ApiModelProperty(value = "Version label to use in the header")
     public VersionLabel getVersionLabel() {
         return versionLabel;

@@ -96,6 +96,7 @@
                 <opensilex-Card label="VariableDetails.advanced" icon="ik#ik-clipboard">
                     <template v-slot:body>
                       <opensilex-UriListView
+                          v-if="!isGermplasmMenuExcluded"
                           label="GermplasmList.speciesLabel"
                           :list="speciesList"
                       ></opensilex-UriListView>
@@ -172,6 +173,10 @@ export default class VariableDetails extends Vue {
         }
       };
     });
+  }
+  
+  get isGermplasmMenuExcluded() {
+        return this.$opensilex.getConfig().menuExclusions.includes("germplasm");
   }
 
   created() {

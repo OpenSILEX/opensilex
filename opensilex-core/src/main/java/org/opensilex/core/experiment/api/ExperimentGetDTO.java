@@ -81,6 +81,9 @@ public class ExperimentGetDTO {
 
     @JsonProperty("is_public")
     protected Boolean isPublic;
+
+    @JsonProperty("record_author")
+    protected URI creator;
     
 
     public URI getUri() {
@@ -215,6 +218,15 @@ public class ExperimentGetDTO {
         this.factors = factors;
     }
 
+    @ApiModelProperty(value = "Experiment creator URI")
+    public URI getCreator() {
+        return creator;
+    }
+
+    public void setCreator(URI creator) {
+        this.creator = creator;
+    }
+
     protected static List<URI> getUriList(List<? extends SPARQLResourceModel> models) {
 
         if (models == null || models.isEmpty()) {
@@ -245,6 +257,7 @@ public class ExperimentGetDTO {
         dto.setGroups(getUriList(model.getGroups()));
         dto.setSpecies(getUriList(model.getSpecies()));
         dto.setFactors(getUriList(model.getFactors()));
+        dto.setCreator(model.getCreator());
 
         List<NamedResourceDTO<InfrastructureModel>> infrastructuresDTO = new ArrayList<>();
         model.getInfrastructures().forEach((infra) -> {

@@ -117,6 +117,7 @@
               :list="facilityListUris"
             ></opensilex-UriListView>
             <opensilex-UriListView
+              v-if="!isGermplasmMenuExcluded"
               label="component.experiment.species"
               :list="speciesList"
             ></opensilex-UriListView>
@@ -144,6 +145,12 @@
               label="component.experiment.technicalSupervisors"
               :list="technicalSupervisorsList"
             ></opensilex-UriListView>
+            <opensilex-UriView
+              title="component.experiment.record_author"
+              :uri="recordAuthor.uri"
+              :value="recordAuthor.first_name + ' ' + recordAuthor.last_name"
+          >
+          </opensilex-UriView>
           </template>
         </opensilex-Card>
       </div>
@@ -191,6 +198,7 @@ export default class ExperimentDetail extends Vue {
   technicalSupervisorsList = [];
   installationsList = [];
   infrastructuresList = [];
+  recordAuthor = null;
 
   created() {
     this.service = this.$opensilex.getService("opensilex.ExperimentsService");
@@ -218,6 +226,10 @@ export default class ExperimentDetail extends Vue {
 
   showEditForm() {
     this.experimentForm.showEditForm(DTOConverter.extractURIFromResourceProperties(this.experiment));
+  }
+
+  get isGermplasmMenuExcluded() {
+        return this.$opensilex.getConfig().menuExclusions.includes("germplasm");
   }
 
   get infrastructuresListURIs() {
@@ -365,6 +377,15 @@ export default class ExperimentDetail extends Vue {
         })
         .catch(this.$opensilex.errorHandler);
     }
+    if (this.experiment.record_author &&
+      this.experiment.record_author.length > 0){
+        service
+        .getUser(this.experiment.record_author)
+        .then((http: HttpResponse<OpenSilexResponse<UserGetDTO>>) => {
+          this.recordAuthor = http.response.result;
+        })
+        .catch(this.$opensilex.errorHandler);
+      }
   }
 
   loadSpecies() {

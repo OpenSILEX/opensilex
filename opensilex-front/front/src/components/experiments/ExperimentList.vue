@@ -42,6 +42,7 @@
               <div>
                 <opensilex-FilterField>
                   <opensilex-SelectForm
+                    v-if="!isGermplasmMenuExcluded"
                     label="ExperimentList.filter-species"
                     placeholder="ExperimentList.filter-species-placeholder"
                     :multiple="true"
@@ -153,7 +154,7 @@
         ></opensilex-UriLink>
       </template>
 
-      <template v-slot:cell(species)="{ data }">
+      <template v-if="!isGermplasmMenuExcluded" v-slot:cell(species)="{ data }">
         <span class="species-list" v-if="data.item.species.length > 0">
           <span :key="index" v-for="(uri, index) in data.item.species">
             <span :title="uri">{{ getSpeciesName(uri) }}</span>
@@ -414,16 +415,16 @@ export default class ExperimentList extends Vue {
     return false;
   }
 
+  get isGermplasmMenuExcluded() {
+        return this.$opensilex.getConfig().menuExclusions.includes("germplasm");
+  }
+
   get fields() {
     let tableFields = [
       {
         key: "name",
         label: "component.common.name",
         sortable: true,
-      },
-      {
-        key: "species",
-        label: "component.experiment.species",
       },
       {
         key: "start_date",
@@ -440,6 +441,12 @@ export default class ExperimentList extends Vue {
         label: "component.experiment.search.column.state",
       },
     ];
+    if (!this.isGermplasmMenuExcluded) {
+      tableFields.push({
+        key: "species",
+        label: "component.experiment.species",
+      });
+    }
     if (!this.noActions) {
       tableFields.push({
         key: "actions",

@@ -391,6 +391,7 @@
             "description": "Description",
             "technicalSupervisors": "Responsables techniques",
             "scientificSupervisors": "Responsables scientifiques",
+            "record_author": "Saisie par",
             "infrastructures": "Organisations",
             "facilities": "Installations techniques",
             "contacts": "Contacts",

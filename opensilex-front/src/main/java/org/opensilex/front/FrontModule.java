@@ -107,6 +107,7 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
             config.setMenuComponent(frontConfig.menuComponent());
             config.setFooterComponent(frontConfig.footerComponent());
             config.setGeocodingService(frontConfig.geocodingService());
+            config.setMenuExclusions(frontConfig.menuExclusions());
             try {
                 config.setVersionLabel(VersionLabel.valueOf(frontConfig.versionLabel().toUpperCase()));
             } catch (IllegalArgumentException ignored) {

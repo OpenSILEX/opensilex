@@ -11,7 +11,6 @@
         :refreshSoSelector="refreshSoSelector"
         :refreshProvComponent="refreshProvComponent"
         :soFilter="soFilter"
-        :showAllEvents.sync="showEvents"
         @search="onSearch"
         @onValidateScientificObjects="onValidateScientificObjects"
       ></opensilex-ExperimentDataVisualisationForm>
@@ -21,16 +20,15 @@
       </div>
 
       <!-- Graphic -->
-      <opensilex-DataVisualisationGraphic
+      <opensilex-DataVisuGraphic
         v-if="showGraphicComponent"
         ref="visuGraphic"
         class="experimentDataVisualisationGraphic"
         @addEventIsClicked="showEventForm"
         @dataAnnotationIsClicked="showAnnotationForm"
-        :showEvents="showEvents"
         :startDate="experimentDataVisualisationForm.startDate"
         :endDate="experimentDataVisualisationForm.endDate"
-      ></opensilex-DataVisualisationGraphic>
+      ></opensilex-DataVisuGraphic>
 
 
       <!-- Annotations -->
@@ -54,23 +52,21 @@
 </template>
 
 <script lang="ts">
-import moment from "moment-timezone";
 import Highcharts from "highcharts";
 import {
-  DataService,
   DataGetDTO,
-  EventsService,
+  DataService,
   EventGetDTO,
+  EventsService,
+  ScientificObjectsService,
   VariableDetailsDTO,
-  VariablesService,
-  ScientificObjectsService
-  // @ts-ignore
+  VariablesService
 } from "opensilex-core/index";
-// @ts-ignore
-import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
-import { Component, Ref, Prop, PropSync } from "vue-property-decorator";
+import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
+import {Component, Prop, Ref} from "vue-property-decorator";
 import OpenSilexVuePlugin from '../../../models/OpenSilexVuePlugin'
 import Vue from "vue";
+import HighchartsDataTransformer from "../../../models/HighchartsDataTransformer";
 
 @Component
 export default class ExperimentDataVisualisationView extends Vue {
@@ -101,7 +97,6 @@ export default class ExperimentDataVisualisationView extends Vue {
   selectedObjects = [];
   selectedScientificObjects= [];
   selectedScientificObjectsWithLabel: Array<{id: string, label: string}> = [];
-  showEvents = false;
   multipleVariables = false;
   showDataVisuView = false;
   @Ref("page") readonly page!: any;
@@ -251,19 +246,14 @@ export default class ExperimentDataVisualisationView extends Vue {
   // buildSeries | <= buildDataSeries <= buildDataSerie
   //             | <= buildEventsSeries <= buildEventsSerie
   buildSeries() {
-    var promises = [];
-    var promise;
-    const series = [];
-    let serie;
+    let promises = [];
     this.dataService = this.$opensilex.getService("opensilex.DataService");
     
     this.$opensilex.disableLoader();
-    promise = this.buildEventsSeries();
-    promises.push(promise);
+    promises.push(this.buildEventsSeries());
 
       for (let variable of this.selectedVariablesObjectsList) {
-        promise = this.buildDataSeries(variable);
-        promises.push(promise);
+        promises.push(this.buildDataSeries(variable));
       }
 
     Promise.all(promises).then(values => {
@@ -280,7 +270,7 @@ export default class ExperimentDataVisualisationView extends Vue {
       this.showGraphicComponent = true;
       // reload only when all datas are loaded
       this.$nextTick(() => {
-         this.visuGraphic.reload(series, this.selectedVariablesObjectsList, this.form, { showEvents:this.showEvents });
+         this.visuGraphic.reload(series, this.selectedVariablesObjectsList, this.form);
 
       // and scroll to graphic
         let graphic = document.querySelector('.experimentDataVisualisationGraphic');
@@ -337,7 +327,7 @@ export default class ExperimentDataVisualisationView extends Vue {
         const data = http.response.result as Array<DataGetDTO>;
         let dataLength = data.length;
         if (dataLength > 0) {
-          const cleanData = this.dataTransforme(data, concernedItem);
+          const cleanData = HighchartsDataTransformer.transformDataForHighcharts(data, {scientificObjectUri: concernedItem.id});
           if (dataLength > 50000) {
             this.$opensilex.showInfoToast(
               this.$i18n.t("ExperimentDataVisualisationView.limitSizeMessageA") +
@@ -372,37 +362,9 @@ export default class ExperimentDataVisualisationView extends Vue {
       .catch(this.$opensilex.errorHandler);
   }
 
-  // keep only date/value/uriprovenance properties
-  dataTransforme(data, concernedItem) {
-    let toAdd,
-      cleanData = [];
-
-    data.forEach(element => {
-      let stringDateWithoutUTC =
-        moment.parseZone(element.date).format("YYYYMMDD HHmmss") + "+00:00";
-      let dateWithoutUTC = moment(stringDateWithoutUTC).valueOf();
-      let highchartsDate = Highcharts.dateFormat(
-        "%Y-%m-%dT%H:%M:%S",
-        dateWithoutUTC
-      );
-      let offset = moment.parseZone(element.date).format("Z");
-      toAdd = {
-        x: dateWithoutUTC,
-        y: element.value,
-        offset: offset,
-        dateWithOffset: highchartsDate + offset,
-        objectUri: concernedItem.id,
-        provenanceUri: element.provenance.uri,
-        data: element
-      };
-      cleanData.push(toAdd);
-    });
-    return cleanData;
-  }
-
   // Build EventsSeries for each OS with elements from each EventsSerie
   buildEventsSeries() {
-    if (this.form && this.showEvents) {
+    if (this.form && this.form.showEvents) {
       let series = [],
         serie;
       let promises = [],
@@ -460,22 +422,17 @@ export default class ExperimentDataVisualisationView extends Vue {
               label = label + "(End: " + endTime + ")";
             }
             title = label.charAt(0).toUpperCase();
-            let stringDateWithoutUTC;
+            let timestamp;
             // if start date -> stringdate = start date
             if (element.start != null) {
-              stringDateWithoutUTC =
-                moment.parseZone(element.start).format("YYYYMMDD HHmmss") +
-                "+00:00";
+              timestamp = new Date(element.start).getTime();
             // else stringdate = end date
             } else {
-              stringDateWithoutUTC =
-                moment.parseZone(element.end).format("YYYYMMDD HHmmss") +
-                "+00:00";
+              timestamp = new Date(element.end).getTime();
             }
 
-            let dateWithoutUTC = moment(stringDateWithoutUTC).valueOf();
             toAdd = {
-              x: dateWithoutUTC,
+              x: timestamp,
               title: title,
               text: label,
               eventUri: element.uri,
@@ -490,7 +447,7 @@ export default class ExperimentDataVisualisationView extends Vue {
             allowOverlapX: false,
             name: (this.$t('ExperimentDataVisualisationView.events')) + " -> " + name,
             lineWidth: 1,
-            yAxis: 2,
+            yAxis: this.selectedVariablesObjectsList.length,
             data: cleanEventsData,
             style: {
               color: "white"
@@ -503,12 +460,6 @@ export default class ExperimentDataVisualisationView extends Vue {
         }
       });
   }
-
-  timestampToUTC(time) {
-    var day = Highcharts.dateFormat("%Y-%m-%dT%H:%M:%S+0000", time);
-    return day;
-  }  
-  
   onValidateScientificObjects(scientificObjects) {
     if (scientificObjects === undefined) {
       return;

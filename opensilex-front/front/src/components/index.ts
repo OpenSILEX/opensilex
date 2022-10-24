@@ -663,10 +663,6 @@ components["opensilex-ImageGrid"] = ImageGrid;
 import ImageSingle from './visualization/ImageSingle.vue';
 components["opensilex-ImageSingle"] = ImageSingle;
 
-import VisuView from './visualization/VisuView.vue';
-components["opensilex-VisuView"] = VisuView;
-import VisuGraphic from './visualization/VisuGraphic.vue';
-components["opensilex-VisuGraphic"] = VisuGraphic;
 import VisuImages from './visualization/VisuImages.vue';
 components["opensilex-VisuImages"] = VisuImages;
 import VisuForm from './visualization/VisuForm.vue';
@@ -681,8 +677,6 @@ components["opensilex-ImageLightBox"] = ImageLightBox;
 
 import DataVisuGraphic from './visualization/DataVisuGraphic.vue';
 components["opensilex-DataVisuGraphic"] = DataVisuGraphic;
-import DataVisualisationGraphic from './visualization/DataVisualisationGraphic.vue';
-components["opensilex-DataVisualisationGraphic"] = DataVisualisationGraphic;
 import DataVisuHelp from './visualization/DataVisuHelp.vue';
 components["opensilex-DataVisuHelp"] = DataVisuHelp;
 
@@ -703,10 +697,6 @@ import DeviceDetails from './devices/DeviceDetails.vue';
 components["opensilex-DeviceDetails"] = DeviceDetails;
 import DeviceDescription from './devices/details/DeviceDescription.vue';
 components["opensilex-DeviceDescription"] = DeviceDescription;
-import DeviceCreate from './devices/DeviceCreate.vue';
-components["opensilex-DeviceCreate"] = DeviceCreate;
-import DeviceTable from './devices/DeviceTable.vue';
-components["opensilex-DeviceTable"] = DeviceTable;
 import DeviceForm from './devices/form/DeviceForm.vue';
 components["opensilex-DeviceForm"] = DeviceForm;
 import DeviceModalForm from './devices/form/DeviceModalForm.vue';

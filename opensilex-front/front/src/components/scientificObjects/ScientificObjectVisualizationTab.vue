@@ -49,27 +49,28 @@
 </template>
 
 <script lang="ts">
-import {Component, Ref, Prop} from "vue-property-decorator";
+import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import moment from "moment-timezone";
 import Highcharts from "highcharts";
-import {
-  DataService,
-  DataGetDTO,
-  EventsService,
-  EventGetDTO,
-} from "opensilex-core/index";
+import {DataGetDTO, DataService, EventGetDTO, EventsService,} from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {DataFileGetDTO} from "opensilex-core/model/dataFileGetDTO";
 import {Image} from "../visualization/image";
-import * as http from "http";
 import {VariablesService} from "opensilex-core/api/variables.service";
 import {AnnotationGetDTO} from "opensilex-core/model/annotationGetDTO";
 import {AnnotationsService} from "opensilex-core/api/annotations.service";
+import HighchartsDataTransformer, {OpenSilexPointOptionsObject} from "../../models/HighchartsDataTransformer";
+import {ProvEntityModel} from "opensilex-core/model/provEntityModel";
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+
+interface ImagePointOptionsObject extends OpenSilexPointOptionsObject {
+  prov_used: Array<ProvEntityModel>,
+  imageURI: string
+}
 
 @Component
 export default class ScientificObjectVisualizationTab extends Vue {
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
   annotationData: any;
   variablesService: VariablesService;
   annotationService: AnnotationsService;
@@ -293,20 +294,15 @@ export default class ScientificObjectVisualizationTab extends Vue {
                   label = label + "(End: " + endTime + ")";
                 }
                 title = label.charAt(0).toUpperCase();
-                let stringDateWithoutUTC;
+                let timestamp;
                 if (element.start != null) {
-                  stringDateWithoutUTC =
-                      moment.parseZone(element.start).format("YYYYMMDD HHmmss") +
-                      "+00:00";
+                  timestamp = new Date(element.start).getTime();
                 } else {
-                  stringDateWithoutUTC =
-                      moment.parseZone(element.end).format("YYYYMMDD HHmmss") +
-                      "+00:00";
+                  timestamp = new Date(element.end).getTime();
                 }
 
-                let dateWithoutUTC = moment(stringDateWithoutUTC).valueOf();
                 toAdd = {
-                  x: dateWithoutUTC,
+                  x: timestamp,
                   title: title,
                   text: label,
                   eventUri: element.uri,
@@ -364,7 +360,7 @@ export default class ScientificObjectVisualizationTab extends Vue {
 
       let dataLength = data.length;
       if (dataLength > 0) {
-        const cleanData = await this.dataTransforme(data);
+        const {cleanData, imageData} = await this.transformDataWithImages(data);
         if (dataLength > 50000) {
           this.$opensilex.showInfoToast(
               this.$i18n.t(
@@ -382,17 +378,17 @@ export default class ScientificObjectVisualizationTab extends Vue {
 
         const dataSerie = {
           name: this.scientificObject.name,
-          data: cleanData[0],
+          data: cleanData,
           id: 'A',
           visible: true
         };
         dataAndImage.push(dataSerie)
 
-        if (cleanData[1].length > 0) {
+        if (imageData.length > 0) {
           const imageSerie = {
             type: 'flags',
             name: 'Image/' + this.scientificObject.name,
-            data: cleanData[1],
+            data: imageData,
             onSeries: 'A',
             width: 8,
             height: 8,
@@ -475,7 +471,7 @@ export default class ScientificObjectVisualizationTab extends Vue {
       const image: Image = {
         imageUri: element.uri,
         src: result,
-        title: this.formatedDate(element.date),
+        title: this.$opensilex.$dateTimeFormatter.formatLocaleDateTime(element.date),
         type: element.rdf_type,
         objectUri: element.target,
         date: element.date,
@@ -499,74 +495,45 @@ export default class ScientificObjectVisualizationTab extends Vue {
     this.visuImages.onAnnotationDetails(indexes);
   }
 
-  // keep only date/value/uriprovenance properties
-  async dataTransforme(data) {
-    let toAdd,
-        imageToAdd,
-        cleanData = [],
-        cleanImage = [];
+  /**
+   * Transforms the data array to a Highcharts point options array, and creates the image point array if needed.
+   *
+   * @todo Optimize the fetching of annotations
+   *
+   * @param data
+   */
+  async transformDataWithImages(data: Array<DataGetDTO>): Promise<{
+    cleanData: Array<OpenSilexPointOptionsObject>;
+    imageData: Array<ImagePointOptionsObject>
+  }> {
+    const cleanData = HighchartsDataTransformer.transformDataForHighcharts(data);
+    let imageData: Array<ImagePointOptionsObject> = [];
 
-    for (let element of data) {
-      let stringDateWithoutUTC = moment.parseZone(element.date).format("YYYY-MM-DDTHH:mm:ss") + "+00:00";
-      let dateWithoutUTC = moment(stringDateWithoutUTC).valueOf();
-      let offset = moment.parseZone(element.date).format("Z");
-      let stringDate = moment.parseZone(element.date).format("YYYY-MM-DDTHH:mm:ss") + offset;
-      if (element.provenance.prov_used) {
-        let response = await this.getAnnotations(element.provenance.prov_used[0].uri);
-        imageToAdd = {
-          x: dateWithoutUTC,
-          y: element.value,
-          date: stringDate,
-          title: "I",
-          prov_used: element.provenance.prov_used,
-          data: element,
-          imageURI: element.provenance.prov_used[0].uri,
-          color: response.length > 0 ? "#FF0000" : undefined
-        }
-
-        cleanImage.push(imageToAdd);
-
+    for (let point of cleanData) {
+      if (Array.isArray(point.data.provenance.prov_used) && point.data.provenance.prov_used.length > 0) {
+        const annotations = await this.getAnnotations(point.data.provenance.prov_used[0].uri);
+        imageData.push({
+          ...point,
+          title: "",
+          prov_used: point.data.provenance.prov_used,
+          imageURI: point.data.provenance.prov_used[0].uri,
+          color: annotations.length > 0 ? "#FF0000" : undefined
+        });
       }
-
-      toAdd = {
-        x: dateWithoutUTC,
-        y: element.value,
-        offset: offset,
-        dateWithOffset: stringDate,
-        provenanceUri: element.provenance.uri,
-        data: element
-      };
-      cleanData.push(toAdd);
     }
 
-    return [cleanData, cleanImage];
-  }
-
-  timestampToUTC(time) {
-    // var day = moment.unix(time).utc().format();
-    var day = Highcharts.dateFormat("%Y-%m-%dT%H:%M:%S+0000", time);
-    return day;
-  }
-
-  formatedDate(date) {
-    const newDate = new Date(date);
-    const options = {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit"
+    return {
+      cleanData,
+      imageData
     };
-    return newDate.toLocaleDateString("fr-FR", options);
   }
 
-  getAnnotations(uri: string) {
+  getAnnotations(uri: string): Promise<Array<AnnotationGetDTO>> {
     return this.annotationService
         .searchAnnotations(undefined, uri, undefined, undefined, undefined, 0, 0)
         .then(
             (http: HttpResponse<OpenSilexResponse<Array<AnnotationGetDTO>>>) => {
-              const annotations = http.response.result as Array<AnnotationGetDTO>;
-              return annotations;
+              return http.response.result as Array<AnnotationGetDTO>;
             }
         );
   }

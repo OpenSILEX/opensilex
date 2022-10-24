@@ -63,7 +63,6 @@
 <script lang="ts">
 import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import moment from "moment-timezone";
 import {DataGetDTO, DevicesService, EventGetDTO, EventsService,} from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {DataService} from "opensilex-core/api/data.service";
@@ -371,20 +370,15 @@ export default class VariableVisualizationTab extends Vue {
                 label = label + "(End: " + endTime + ")";
               }
               title = label.charAt(0).toUpperCase();
-              let stringDateWithoutUTC;
+              let timestamp;
               if (element.start != null) {
-                stringDateWithoutUTC =
-                    moment.parseZone(element.start).format("YYYYMMDD HHmmss") +
-                    "+00:00";
+                timestamp = new Date(element.start).getTime();
               } else {
-                stringDateWithoutUTC =
-                    moment.parseZone(element.end).format("YYYYMMDD HHmmss") +
-                    "+00:00";
+                timestamp = new Date(element.end).getTime();
               }
 
-              let dateWithoutUTC = moment(stringDateWithoutUTC).valueOf();
               toAdd = {
-                x: dateWithoutUTC,
+                x: timestamp,
                 title: title,
                 text: label,
                 eventUri: element.uri,

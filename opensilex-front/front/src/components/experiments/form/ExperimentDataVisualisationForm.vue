@@ -93,7 +93,7 @@
           <div>
             <opensilex-FilterField>
               <label>{{ $t("ScientificObjectVisualizationForm.show_events") }}</label>
-              <b-form-checkbox v-model="showEvents" switch>
+              <b-form-checkbox v-model="filter.showEvents" switch>
                 <b-spinner v-if="countIsLoading" small label="Busy" ></b-spinner>
                 <b-badge  v-else variant="light">{{(eventsCount)}}</b-badge>
               </b-form-checkbox>
@@ -208,9 +208,6 @@ export default class ExperimentDataVisualisationForm extends Vue {
 
   @PropSync("selectedVar")
   selectedVariables;
-
-  @PropSync("showAllEvents")
-  showEvents;
 
   get startDate() {
     return this.filter.startDate

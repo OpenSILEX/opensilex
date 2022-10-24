@@ -83,9 +83,9 @@
 
       <b-card-text v-else>{{ $t("component.common.type") }}:{{event.rdf_type}}</b-card-text>
 
-      <b-card-text v-if="event.start">{{ $t("component.common.begin") }}: {{event.start}}</b-card-text>
-      <b-card-text v-else>{{ $t("component.common.begin") }}: {{event.end}}</b-card-text>
-      <b-card-text v-if="event.start">{{ $t("component.common.end") }}: {{event.end}}</b-card-text>
+      <b-card-text v-if="event.start">{{ $t("component.common.begin") }}: {{formatEventDate(event.start)}}</b-card-text>
+      <b-card-text v-else>{{ $t("component.common.begin") }}: {{formatEventDate(event.end)}}</b-card-text>
+      <b-card-text v-if="event.start">{{ $t("component.common.end") }}: {{formatEventDate(event.end)}}</b-card-text>
       <b-card-text
           v-if="event.description"
       >{{ $t("component.common.description") }}: {{event.description}}</b-card-text>
@@ -133,12 +133,16 @@ import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import {AnnotationGetDTO, EventDetailsDTO, ProvenanceGetDTO} from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
-import moment from "moment-timezone";
 import Highcharts from "highcharts";
 
 import ClickOutside from "vue-click-outside";
 import exportingInit from "highcharts/modules/exporting";
 import HighchartsCustomEvents from "highcharts-custom-events";
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+import {DataService} from "opensilex-core/api/data.service";
+import {AnnotationsService} from "opensilex-core/api/annotations.service";
+import {EventsService} from "opensilex-core/api/events.service";
+import {VariableGetDTO} from "opensilex-core/model/variableGetDTO";
 
 /**
  * Custom type for highcharts options. The event 'contextmenu', corresponding to the
@@ -169,7 +173,7 @@ exportingInit(Highcharts);
   }
 })
 export default class DataVisuGraphic extends Vue {
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
 
   @Ref("helpModal") readonly helpModal!: any;
   @Ref("contextMenu") readonly contextMenu!: any;
@@ -188,12 +192,12 @@ export default class DataVisuGraphic extends Vue {
   selectedDate;
   selectedValue;
   selectedOffset;
-  variable;
+  variables: Array<VariableGetDTO>;
   selectedPointsCount = 0;
 
   lineType = false;
   lineWidth = false;
-  yAxis = {
+  yAxis: Array<Highcharts.YAxisOptions> | Highcharts.YAxisOptions = {
     title: {
       text: ""
     }
@@ -277,7 +281,7 @@ export default class DataVisuGraphic extends Vue {
 
   getEventDetail(uri) {
     return this.$opensilex
-        .getService("opensilex.EventsService")
+        .getService<EventsService>("opensilex.EventsService")
         .getEventDetails(uri)
         .then((http: HttpResponse<OpenSilexResponse<EventDetailsDTO>>) => {
           return http.response.result;
@@ -297,7 +301,7 @@ export default class DataVisuGraphic extends Vue {
 
   getAnnotations(uri) {
     return this.$opensilex
-        .getService("opensilex.AnnotationsService")
+        .getService<AnnotationsService>("opensilex.AnnotationsService")
         .searchAnnotations(undefined, uri, undefined, undefined, undefined, 0, 0)
         .then(
             (http: HttpResponse<OpenSilexResponse<Array<AnnotationGetDTO>>>) => {
@@ -319,7 +323,7 @@ export default class DataVisuGraphic extends Vue {
 
   getProvenance(uri) {
     return this.$opensilex
-        .getService("opensilex.DataService")
+        .getService<DataService>("opensilex.DataService")
         .getProvenance(uri)
         .then((http: HttpResponse<OpenSilexResponse<ProvenanceGetDTO>>) => {
           return http.response.result;
@@ -344,7 +348,11 @@ export default class DataVisuGraphic extends Vue {
     }
   }
 
-  get chartOptions(): Array<HighchartsOptions> {
+  get chartOptions(): Array<HighchartsOptions | {
+    xAxis: {
+      marginBottom: number
+    }
+  }> {
     const that = this;
     let previousPoint;
     let previousPointColor;
@@ -353,9 +361,9 @@ export default class DataVisuGraphic extends Vue {
         {
           chart: {
             zoomType: "x",
-            marginBottom: that.series.length > 8 ? 130 : 100,
+            marginBottom: this.resizeLegendMargin(),
             marginLeft: 80,
-            height: that.series.length > 8 ? 500 : 400, //ok until 20 or 30 series depends on the name (uri) lenght....
+            height: that.series.length > 8 ? 650 : 500, //ok until 20 or 30 series depends on the name (uri) lenght....
             type: that.lineType ? "line" : "scatter",
             events: {
               click: function(e) {
@@ -415,8 +423,8 @@ export default class DataVisuGraphic extends Vue {
           xAxis: {
             type: "datetime",
             title: { text: "time" },
-            min: this.startDate? moment(this.startDate).toDate().getTime(): undefined,
-            max: this.endDate? moment(this.endDate).toDate().getTime(): undefined,
+            min: this.startDate? new Date(this.startDate).getTime(): undefined,
+            max: this.endDate? new Date(this.endDate).getTime(): undefined,
             labels: {
               formatter: function() {
                 return Highcharts.dateFormat("%e-%b-%Y %H:%M:%S", this.value);
@@ -437,9 +445,6 @@ export default class DataVisuGraphic extends Vue {
                 text: any
               };
               if (point.y) {
-                let date = moment
-                    .parseZone(point.data.date)
-                    .format("DD-MM-YYYY HH:mm:ss");
                 return (
                     "" +
                     this.point.series.name +
@@ -450,7 +455,7 @@ export default class DataVisuGraphic extends Vue {
                     point.data.value +
                     "</b></span>" +
                     "<br/>Time:<b> " +
-                    date +
+                    that.$opensilex.$dateTimeFormatter.formatLocaleDateTime(point.data.date) +
                     "</b> "
                 );
               } else {
@@ -464,7 +469,7 @@ export default class DataVisuGraphic extends Vue {
                     point.text +
                     "</b></span>" +
                     "<br/>Time:<b> " +
-                    Highcharts.dateFormat("%d-%m-%Y %H:%M:%S", this.x) +
+                    that.$opensilex.$dateTimeFormatter.formatLocaleDateTime(this.x) +
                     "</b> "
                 );
               }
@@ -496,12 +501,13 @@ export default class DataVisuGraphic extends Vue {
                 states: {
                   hover: {
                     enabled: true
-                  }
+                  },
+                  radius: 2
                 }
               },
               states: {
                 inactive: {
-                  opacity: 1
+                  opacity: 0.4
                 }
               },
               events: {
@@ -546,6 +552,10 @@ export default class DataVisuGraphic extends Vue {
     }
   }
 
+  formatEventDate(date: string) {
+    return this.$opensilex.$dateTimeFormatter.formatLocaleDateTime(date);
+  }
+
   scatter() {
     this.lineType = !this.lineType;
     this.lineWidth = !this.lineWidth;
@@ -565,7 +575,7 @@ export default class DataVisuGraphic extends Vue {
     //this.closeIntervalContextMenu();
   }
 
-  reload(series: Array<Highcharts.SeriesLineOptions>, variable, form) {
+  reload(series: Array<Highcharts.SeriesLineOptions>, variable: VariableGetDTO | Array<VariableGetDTO>, form) {
     if(form) {
       this.startDate = form.startDate;
       this.endDate = form.endDate;
@@ -578,61 +588,68 @@ export default class DataVisuGraphic extends Vue {
     this.detailDataShow = false;
     this.detailEventShow = false;
 
-    this.variable = variable;
+    this.variables = Array.isArray(variable)
+      ? variable
+      : [variable];
     if (series.length > 0) {
       this.yAxis = this.buildYAxis(this.showEvents);
     }
     this.series = series;
   }
 
-  buildYAxis(isEvents) {
-    let yAxis;
-
-    if (isEvents) {
-      yAxis = [
-        {
+  buildYAxis(showEvents): Array<Highcharts.YAxisOptions> {
+    let yAxis: Array<Highcharts.YAxisOptions> = this.variables.map(variable => {
+        return {
           labels: {
             align: "right",
             x: -3
           },
           title: {
-            text: this.variable
-                ? this.variable.name + " (" + this.variable.unit.name + ")"
-                : ""
-          },
-          height: "80%",
-          lineWidth: 2,
-          resize: {
-            enabled: true
+            text: variable
+                ? variable.name + " (" + variable.unit.name + ")"
+                : "",
+            style: {
+              color: Highcharts.getOptions().colors[1],
+              fontWeight: 'bold',
+              fontSize: window.innerWidth < 1200 ? "12" : "13" //fontSize is a string
+            }
           }
-        },
-        {
-          labels: {
-            align: "right",
-            x: -3
-          },
-          title: {
-            text: "Event"
-          },
-          top: "85%",
-          height: "15%",
-          offset: 0,
-          lineWidth: 2
+        };
+      });
+
+    // Special rules for 2 axis
+    if (yAxis.length === 2) {
+      yAxis[0].opposite = true;
+      yAxis[1].opposite = false;
+      yAxis[1].linkedTo = 0;
+    }
+
+    if (showEvents) {
+      // Resize the var axis
+      for (let options of yAxis) {
+        options.height = "80%";
+        options.lineWidth = 2;
+        options.resize = {
+          enabled: true
         }
-      ];
-    } else {
-      yAxis = {
+      }
+
+      // Event axis
+      yAxis.push({
         labels: {
           align: "right",
           x: -3
         },
         title: {
-          text: this.variable
-              ? this.variable.name + " (" + this.variable.unit.name + ")"
-              : ""
-        }
-      };
+          text: "Event"
+        },
+        top: "85%",
+        height: "15%",
+        offset: 0,
+        lineWidth: 2
+      });
     }
+
     return yAxis;
   }
 
@@ -663,9 +680,8 @@ export default class DataVisuGraphic extends Vue {
 
       this.selectedTime = e.point.data.date;
 
-      let momentDate = moment(this.selectedTime);
-      this.selectedOffset = momentDate.format("Z");
-      this.selectedTimeToSend = momentDate.format("YYYY-MM-DDTHH:mm:ssZ");
+      this.selectedTimeToSend = new Date(this.selectedTime).toISOString();
+      this.selectedOffset = "Z";
     }
   }
   pointClick(e, graphic) {
@@ -836,6 +852,119 @@ export default class DataVisuGraphic extends Vue {
     var chart = this.highchartsRef[0].chart;
     chart.series[indexes.serie].data[indexes.point].setState();
     chart.tooltip.hide();
+  }
+
+  // resize space between graphic and legends
+  resizeLegendMargin (){
+    //  2 elements
+    if (this.series.length <= 2) {
+      return 100
+    }
+    //   3 to 4
+    else if (this.series.length > 2 && this.series.length <= 4) {
+      if (window.innerWidth <= 1200){
+        //small
+        return 120
+      }
+      else {
+        //large
+        return 100
+      }
+    }
+    //  5 to 8
+    else if (this.series.length > 4 && this.series.length <= 8) {
+      if (window.innerWidth <= 1030){
+        //mobile
+        return 210
+      }
+      else if (window.innerWidth >1030 && window.innerWidth <= 1285){
+        //small
+        return 160
+      }
+      else if (window.innerWidth <= 1700 && window.innerWidth > 1285) {
+        //medium
+        return 140
+      }
+      else {
+        //large
+        return 110
+      }
+    }
+    //  9 to 12
+    else if (this.series.length > 8 && this.series.length <= 12) {
+      if (window.innerWidth <= 1030){
+        //mobile
+        return 240
+      }
+      else if (window.innerWidth >1030 && window.innerWidth <= 1285){
+        //small
+        return 190
+      }
+      else if (window.innerWidth <= 1700 && window.innerWidth > 1285) {
+        //medium
+        return 160
+      }
+      else {
+        //large
+        return 130
+      }
+    }
+    // 13 to 16
+    else if (this.series.length > 12 && this.series.length <= 16) {
+      if (window.innerWidth <= 1015){
+        //small
+        return 300
+      }
+      else if (window.innerWidth <= 1450 && window.innerWidth > 1015) {
+        //medium
+        return 220
+      }
+      else {
+        //large
+        return 150
+      }
+    }
+    //  17 to 20
+    else if (this.series.length > 16 && this.series.length <= 20) {
+      if (window.innerWidth <= 1015){
+        //small
+        return 300
+      }
+      else if (window.innerWidth <= 1450 && window.innerWidth > 1015) {
+        //medium
+        return 220
+      }
+      else {
+        //large
+        return 170
+      }
+    }
+    //  21 to 24
+    else if (this.series.length > 20 && this.series.length <= 24) {
+      if (window.innerWidth <= 1015){
+        //small
+        return 300
+      }
+      else if (window.innerWidth <= 1450 && window.innerWidth > 1015) {
+        //medium
+        return 240
+      }
+      else {
+        //large
+        return 190
+      }
+    }
+    // more than 25
+    else {
+      if (window.innerWidth <= 1450) {
+        //small
+        return 300
+      }
+      else {
+        //large
+        return 210
+      }
+    }
   }
 }
 </script>

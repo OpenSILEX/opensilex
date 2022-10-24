@@ -1,5 +1,4 @@
 import { Container } from 'inversify';
-import moment from 'moment';
 import { VueJsOntologyExtensionService } from './../lib/api/vueJsOntologyExtension.service';
 import { SystemService } from '../../../../opensilex-core/front/src/lib/api/system.service';
 import Vue from 'vue';
@@ -29,7 +28,7 @@ import { User } from './User';
 import {ResourceDagDTO} from "opensilex-core/model/resourceDagDTO";
 import {ServiceBinder} from "../services/ServiceBinder";
 import { OntologyService, VariableDatatypeDTO, VariablesService } from 'opensilex-core/index';
-import {data} from "browserslist";
+import DateTimeFormatter from "./DateTimeFormatter";
 
 declare var $cookies: VueCookies;
 
@@ -60,10 +59,11 @@ export default class OpenSilexVuePlugin {
     private baseApi: string;
     private config: FrontConfigDTO;
     private themeConfig: ThemeConfigDTO;
+
     public $store: Store<any>;
     public $i18n: VueI18n;
-    public $moment: any;
     public $bvToast: any;
+    public $dateTimeFormatter: DateTimeFormatter;
 
     public Oeso = Oeso;
     public Foaf = Foaf;
@@ -82,7 +82,7 @@ export default class OpenSilexVuePlugin {
         this.baseApi = baseApi;
         this.$store = store;
         this.$i18n = i18n;
-        this.$moment = moment;
+        this.$dateTimeFormatter = new DateTimeFormatter(i18n);
         ApiServiceBinder.with(this.container);
         ServiceBinder.with(this.container);
     }
@@ -807,22 +807,6 @@ export default class OpenSilexVuePlugin {
         return User.fromToken(token)
     }
 
-    public formatDate(value) {
-        if (value != undefined && value != null) {
-            moment.locale(this.$i18n.locale);
-            return moment(value, "YYYY-MM-DD").format("YYYY-MM-DD");
-        }
-        return "";
-    }
-
-    public formatDateTime(value) {
-        if (value != undefined && value != null) {
-            moment.locale(this.$i18n.locale);
-            return moment(value).toISOString(true);
-        }
-        return "";
-    }
-
     public getLocalLangCode(): string {
         let availableLocalesFiltered = this.$i18n.availableLocales.filter(
             function (value, index, arr) {
@@ -846,7 +830,7 @@ export default class OpenSilexVuePlugin {
      *  {description  : {"name" :"filename",....}, file : File Object}
      *  @see UploadFile interface
      */
-    uploadFileToService(servicePath: string, body: UploadFileBody, queryParams: any, isUpdated: boolean) {
+    uploadFileToService(servicePath: string, body: UploadFileBody, queryParams: any, isUpdated?: boolean) {
         let formData = new FormData();
 
         // send form data  string part in json

@@ -167,11 +167,9 @@
 </template>
 
 <script lang="ts">
-import moment from "moment";
-import { Component, Ref, Prop,PropSync } from "vue-property-decorator";
+import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
-import { ProjectsService } from "opensilex-core/index";
+import {ProjectsService} from "opensilex-core/index";
 
 @Component
 export default class ProjectList extends Vue {
@@ -313,7 +311,7 @@ export default class ProjectList extends Vue {
 
   isEnded(project) {
     if (project.end_date) {
-      return moment(project.end_date, "YYYY-MM-DD").diff(moment()) < 0;
+      return new Date(project.end_date).getTime() < new Date().getTime();
     }
     return false;
   }

@@ -62,12 +62,11 @@
 </template>
 
 <script lang="ts">
-import { Component, Ref, Prop, PropSync } from "vue-property-decorator";
+import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import moment from "moment";
 import {SpeciesService} from "opensilex-core/api/species.service";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
-import { SpeciesDTO } from 'opensilex-core/index';
+import {SpeciesDTO} from 'opensilex-core/index';
 
 @Component
 export default class AssociatedExperimentsList extends Vue {
@@ -137,7 +136,7 @@ export default class AssociatedExperimentsList extends Vue {
 
   isEnded(experiment) {
     if (experiment.end_date) {
-      return moment(experiment.end_date, "YYYY-MM-DD").diff(moment()) < 0;
+      return new Date(experiment.end_date).getTime() < new Date().getTime();
     }
 
     return false;

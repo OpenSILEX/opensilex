@@ -4,9 +4,21 @@ import Highcharts from "highcharts";
 /**
  * @author Valentin RIGOLLE
  */
-interface HighchartsDataTransformerOptions {
+export interface HighchartsDataTransformerOptions {
     deviceUri?: string,
     scientificObjectUri?: string
+}
+
+/**
+ * @author Valentin RIGOLLE
+ */
+export interface OpenSilexPointOptionsObject extends Highcharts.PointOptionsObject {
+    provenanceUri: string,
+    data: DataGetDTO,
+    dataUri: string,
+    dateWithOffset: string,
+    deviceUri?: string,
+    objectUri?: string
 }
 
 /**
@@ -22,7 +34,7 @@ interface HighchartsDataTransformerOptions {
  * @param data
  * @param options an optional HighchartsDataTransformerOptions object
  */
-function transformDataForHighcharts(data: Array<DataGetDTO>, options?: HighchartsDataTransformerOptions): Array<Highcharts.PointOptionsObject> {
+function transformDataForHighcharts(data: Array<DataGetDTO>, options?: HighchartsDataTransformerOptions): Array<OpenSilexPointOptionsObject> {
     return data.map(element => {
         let date = new Date(element.date);
         let timestamp = date.getTime();
@@ -32,9 +44,10 @@ function transformDataForHighcharts(data: Array<DataGetDTO>, options?: Highchart
             provenanceUri: element.provenance.uri,
             data: element,
             dataUri: element.uri,
+            dateWithOffset: date.toISOString(),
             deviceUri: options?.deviceUri,
             objectUri: options?.scientificObjectUri
-        } as Highcharts.PointOptionsObject;
+        } as OpenSilexPointOptionsObject;
     });
 }
 

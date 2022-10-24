@@ -281,7 +281,6 @@ menu:
           component: opensilex-SystemView
           credentials:
             - is-admin
-          component: opensilex-SystemView 
           icon: ik#ik-layers
           title: SystemView.title
           description: SystemView.title-description
@@ -409,13 +408,6 @@ routes:
     component: opensilex-DeviceDetails
   - path: /device/positions/:uri
     component: opensilex-DeviceDetails
-
-  - path: /devices/create
-    component: opensilex-DeviceCreate
-    credentials: [device-modification]
-    icon: ik#ik-thermometer
-    title: DeviceCreate.title
-    description: DeviceCreate.description
 
   - path: /area/details/:uri
     component: opensilex-AreaDetails

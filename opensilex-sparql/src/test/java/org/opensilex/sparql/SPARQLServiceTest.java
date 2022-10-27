@@ -16,12 +16,10 @@ import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.OWL2;
 import org.apache.jena.vocabulary.RDF;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 import org.opensilex.OpenSilex;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidUriListException;
 import org.opensilex.sparql.model.*;
@@ -211,6 +209,63 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
 
         assertEquals("Instance URI must be the same", bURI, selectedB.getUri());
         assertEquals("B.getStringList size should match inserted triple count", stringList.size(), selectedB.getStringList().size());
+    }
+
+
+    @Test
+    public void testCreateWithGeneratedURI() throws Exception {
+
+        UriGeneratedTestModel model = new UriGeneratedTestModel();
+        model.setString("testCreateWithGeneratedURI");
+
+        sparql.generateUniqueURI(null,model,model,false);
+        URI expectedURI = new URI(model.getUri().toString());
+        model.setUri(null);
+
+        // insert out-going relation and check that generated model URI will be different
+        sparql.insertPrimitive(null, expectedURI, TEST_ONTOLOGY.hasLong, 82L);
+        sparql.create(model);
+        assertFalse(SPARQLDeserializers.compareURIs(expectedURI,model.getUri()));
+
+        UriGeneratedTestModel model2 = new UriGeneratedTestModel();
+        model2.setString("testCreateWithGeneratedURI2");
+        sparql.generateUniqueURI(null,model2,model,false);
+        URI expectedURI2 = new URI(model2.getUri().toString());
+        model2.setUri(null);
+
+        // insert in-coming relation and check that generated model URI will be different
+        sparql.insertPrimitive(null, model.getUri(), TEST_ONTOLOGY.hasUri, expectedURI2);
+        sparql.create(model2);
+        assertFalse(SPARQLDeserializers.compareURIs(expectedURI2,model2.getUri()));
+    }
+
+    @Test
+    public void testCreateWithFixedURI() throws Exception {
+
+        UriGeneratedTestModel model = new UriGeneratedTestModel();
+        model.setString("testCreateWithFixedURI");
+
+        sparql.generateUniqueURI(null,model,model,false);
+        URI expectedURI = new URI(model.getUri().toString());
+
+        // insert out-going relation and check that generated model URI will be different
+        sparql.insertPrimitive(null, expectedURI, TEST_ONTOLOGY.hasLong, 82L);
+
+        // should fail since URI exist with an out-going triple
+        SPARQLAlreadyExistingUriException e = Assert.assertThrows(SPARQLAlreadyExistingUriException.class,() -> {
+            sparql.create(model);
+        });
+        Assert.assertTrue(SPARQLDeserializers.compareURIs(expectedURI,e.getUri()));
+
+        UriGeneratedTestModel model2 = new UriGeneratedTestModel();
+        model2.setString("testCreateWithFixedURI2");
+        sparql.generateUniqueURI(null,model2,model,false);
+        URI expectedURI2 = new URI(model2.getUri().toString());
+
+        // insert in-coming relation and check that generated model URI is the same
+        sparql.insertPrimitive(null, model.getUri(), TEST_ONTOLOGY.hasUri, expectedURI2);
+        sparql.create(model2);
+        assertTrue(SPARQLDeserializers.compareURIs(expectedURI2,model2.getUri()));
     }
 
     @Test

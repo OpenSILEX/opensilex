@@ -193,18 +193,18 @@
 
                     <template v-slot:cell(name)="{data}">
                         <span class="lowSize" v-bind:class="{ variablesCheckboxMarginHighSize: toggleSearchFilters }">
-                            <opensilex-UriLink
-                                v-if="noActions"
-                                :uri="data.item.uri"
-                                :value="data.item.name"
-                                :url="'/app/variable/details/'+ encodeURIComponent(data.item.uri)"
-                            ></opensilex-UriLink>
-                            <opensilex-UriLink
-                                v-else
-                                :uri="data.item.uri"
-                                :value="data.item.name"
-                                :to="{path: '/variable/details/'+ encodeURIComponent(data.item.uri)}"
-                            ></opensilex-UriLink>
+                             <opensilex-UriLink
+                                 v-if="noActions"
+                                 :uri="data.item.uri"
+                                 :value="data.item.name"
+                                 :url="'/variable/details/'+ encodeURIComponent(data.item.uri)"
+                             ></opensilex-UriLink>
+                             <opensilex-UriLink
+                                 v-else
+                                 :uri="data.item.uri"
+                                 :value="data.item.name"
+                                 :to="{path: '/variable/details/'+ encodeURIComponent(data.item.uri)}"
+                             ></opensilex-UriLink>
                         </span >
                         <br>
                         <span class="lowSize" v-bind:class="{ variablesCheckboxMarginHighSize: toggleSearchFilters }">{{data.item.alternative_name}}</span>

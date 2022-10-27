@@ -285,6 +285,9 @@
                 "funding-contacts": "Financeurs et contacts"
             }
         },
+        "variable" : {
+            "linked-object-error" : "{uri} ne peut être supprimé : utilisé par les variables {variable}"
+        },
         "profile": {
             "description": "Gérer et configurer les profils",
             "profile-uri": "URI du profil",

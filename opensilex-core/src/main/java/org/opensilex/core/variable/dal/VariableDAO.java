@@ -86,13 +86,12 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
         this.dataDAO = new DataDAO(nosql, sparql, fs);
     }
 
-    @Override
-    public void delete(URI varUri) throws Exception {
-        int linkedDataNb = getLinkedDataNb(varUri);
+    public void delete(URI uri) throws Exception {
+        int linkedDataNb = getLinkedDataNb(uri);
         if (linkedDataNb > 0) {
-            throw new ForbiddenURIAccessException(varUri, "Variable can't be deleted. " + linkedDataNb + " linked data");
+            throw new ForbiddenURIAccessException(uri, "Variable can't be deleted. " + linkedDataNb + " linked data");
         }
-        super.delete(varUri);
+        sparql.delete(VariableModel.class, uri);
     }
 
     protected int getLinkedDataNb(URI uri) throws Exception {

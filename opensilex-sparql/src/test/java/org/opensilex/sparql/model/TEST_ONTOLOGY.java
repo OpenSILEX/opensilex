@@ -67,6 +67,7 @@ public class TEST_ONTOLOGY {
     public static final Property hasDateTime = Ontology.property(NAMESPACE, "hasDateTime");
     public static final Property hasStringList = Ontology.property(NAMESPACE, "hasStringList");
     public static final Property hasAList = Ontology.property(NAMESPACE, "hasAList");
+    public static final Property hasUri = Ontology.property(NAMESPACE,"hasUri");
 
 
     public static final Property hasLabel = Ontology.property(NAMESPACE, "hasLabel");

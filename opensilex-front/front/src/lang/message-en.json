@@ -282,6 +282,9 @@
                 "user-already-exists": "User already exists with this URI or email address."
             }
         },
+        "variable" : {
+            "linked-object-error" : "{uri} can't be deleted : used by variables {variable}"
+        },
         "profile": {
             "description": "Manage and configure profiles",
             "profile-uri": "Profile URI",

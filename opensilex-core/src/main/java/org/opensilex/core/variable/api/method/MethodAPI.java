@@ -6,6 +6,7 @@
 package org.opensilex.core.variable.api.method;
 
 import io.swagger.annotations.*;
+import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.variable.api.VariableAPI;
 import org.opensilex.core.variable.dal.BaseVariableDAO;
 import org.opensilex.core.variable.dal.MethodModel;
@@ -182,7 +183,7 @@ public class MethodAPI {
             @ApiParam(value = "Method URI", example = "http://opensilex.dev/set/variables/method/ImageAnalysis", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         BaseVariableDAO<MethodModel> dao = new BaseVariableDAO<>(MethodModel.class, sparql);
-        dao.delete(uri);
+        dao.delete(uri, Oeso.hasMethod);
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
 

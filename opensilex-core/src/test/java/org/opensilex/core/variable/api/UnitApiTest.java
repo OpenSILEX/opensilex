@@ -33,12 +33,12 @@ import static org.junit.Assert.assertNotNull;
  */
 public class UnitApiTest extends AbstractSecurityIntegrationTest {
 
-    public String path = UnitAPI.PATH;
+    public static String path = UnitAPI.PATH;
 
-    public String getByUriPath = path + "/{uri}";
-    public String createPath = path;
-    public String updatePath = path;
-    public String deletePath = path + "/{uri}";
+    public static String getByUriPath = path + "/{uri}";
+    public static String createPath = path;
+    public static String updatePath = path;
+    public static String deletePath = path + "/{uri}";
     
     
     private UnitCreationDTO getCreationDto() {

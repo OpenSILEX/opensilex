@@ -131,6 +131,8 @@ import VariableForm from "./form/VariableForm.vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {DataService} from "opensilex-core/api/data.service";
+import DTOConverter from "../../models/DTOConverter";
+import {VariableUpdateDTO} from "opensilex-core/index";
 
 @Component
 export default class VariableDetails extends Vue {
@@ -201,7 +203,7 @@ export default class VariableDetails extends Vue {
   }
 
   update(variable) {
-    let formattedVariable = VariableCreate.formatVariableBeforeUpdate(variable);
+    let formattedVariable:VariableUpdateDTO =  DTOConverter.extractURIFromResourceProperties(variable);
 
     this.service.updateVariable(formattedVariable).then(() => {
       let message = this.$i18n.t("VariableView.name") + " " + formattedVariable.name + " " + this.$i18n.t("component.common.success.update-success-message");

@@ -8,10 +8,7 @@ package org.opensilex.sparql.rdf4j;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.opensilex.sparql.SPARQLServiceTest;
-import org.opensilex.sparql.model.A;
-import org.opensilex.sparql.model.B;
-import org.opensilex.sparql.model.C;
-import org.opensilex.sparql.model.D;
+import org.opensilex.sparql.model.*;
 
 /**
  *
@@ -31,7 +28,8 @@ public class RDF4JConnectionTest extends SPARQLServiceTest {
                 A.class,
                 B.class,
                 C.class,
-                D.class
+                D.class,
+                UriGeneratedTestModel.class
         );
         sparql = factory.provide();
         SPARQLServiceTest.initialize();

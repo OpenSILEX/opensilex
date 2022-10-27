@@ -29,6 +29,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.variable.api.VariableAPI;
 import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_DELETE_ID;
 import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_DELETE_LABEL_KEY;
@@ -201,7 +203,7 @@ public class InterestEntityAPI {
             @ApiParam(value = "Entity of interest URI", example = "http://opensilex.dev/set/variables/entity_of_interest/Plot", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         BaseVariableDAO<InterestEntityModel> dao = new BaseVariableDAO<>(InterestEntityModel.class, sparql);
-        dao.delete(uri);
+        dao.delete(uri, Oeso.hasEntityOfInterest);
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
     

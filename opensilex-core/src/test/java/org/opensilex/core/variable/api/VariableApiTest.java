@@ -3,6 +3,8 @@ package org.opensilex.core.variable.api;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Sets;
+import org.apache.commons.lang3.StringUtils;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.opensilex.core.AbstractMongoIntegrationTest;
@@ -10,11 +12,10 @@ import org.opensilex.core.germplasm.api.GermplasmAPITest;
 import org.opensilex.core.germplasm.api.GermplasmCreationDTO;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.species.api.SpeciesDTO;
 import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.core.variable.api.entity.EntityCreationDTO;
 import org.opensilex.core.variable.dal.*;
-import org.opensilex.core.variablesGroup.api.VariablesGroupCreationDTO;
+import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -374,6 +375,38 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
         List<VariableGetDTO> noVariables = getResults(searchPath, searchParams, new TypeReference<PaginatedListResponse<VariableGetDTO>>() {
         });
         assertTrue(noVariables.isEmpty());
+    }
+
+    @Test
+    public void testDeleteComponentFail() throws Exception {
+        VariableCreationDTO dto = getCreationDto();
+        Response createResponse = getJsonPostResponse(target(createPath), dto);
+        Assert.assertEquals(Response.Status.CREATED.getStatusCode(), createResponse.getStatus());
+
+        // try to delete each subcomponent and ensure it fails while variable exists
+        // check that entity is not deleted
+        Response deleteEntity = getDeleteByUriResponse(target(EntityApiTest.deletePath),dto.getEntity().toString());
+        Assert.assertEquals(Response.Status.BAD_REQUEST.getStatusCode(),deleteEntity.getStatus());
+        ErrorResponse errorResponse = mapper.convertValue(deleteEntity.readEntity(JsonNode.class), new TypeReference<ErrorResponse>() {});
+        Assert.assertFalse(StringUtils.isEmpty(errorResponse.getResult().message));
+
+        // check that characteristic is not deleted
+        Response deleteCharacteristic = getDeleteByUriResponse(target(CharacteristicApiTest.deletePath),dto.getCharacteristic().toString());
+        Assert.assertEquals(Response.Status.BAD_REQUEST.getStatusCode(),deleteCharacteristic.getStatus());
+        errorResponse = mapper.convertValue(deleteCharacteristic.readEntity(JsonNode.class), new TypeReference<ErrorResponse>() {});
+        Assert.assertFalse(StringUtils.isEmpty(errorResponse.getResult().message));
+
+        // check that method is not deleted
+        Response deleteMethod = getDeleteByUriResponse(target(MethodApiTest.deletePath),dto.getMethod().toString());
+        Assert.assertEquals(Response.Status.BAD_REQUEST.getStatusCode(),deleteMethod.getStatus());
+        errorResponse = mapper.convertValue(deleteMethod.readEntity(JsonNode.class), new TypeReference<ErrorResponse>() {});
+        Assert.assertFalse(StringUtils.isEmpty(errorResponse.getResult().message));
+
+        // check that unit is not deleted
+        Response deleteUnit = getDeleteByUriResponse(target(UnitApiTest.deletePath),dto.getUnit().toString());
+        Assert.assertEquals(Response.Status.BAD_REQUEST.getStatusCode(),deleteUnit.getStatus());
+        errorResponse = mapper.convertValue(deleteUnit.readEntity(JsonNode.class), new TypeReference<ErrorResponse>() {});
+        Assert.assertFalse(StringUtils.isEmpty(errorResponse.getResult().message));
     }
 
     @Override

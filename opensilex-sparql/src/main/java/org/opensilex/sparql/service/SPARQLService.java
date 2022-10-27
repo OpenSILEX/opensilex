@@ -76,7 +76,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
-import static org.opensilex.sparql.service.SPARQLQueryHelper.or;
 
 /**
  * Implementation of SPARQLService
@@ -607,13 +606,15 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(objectClass);
         SelectBuilder select = mapper.getSelectBuilder(graph, lang, filterHandler, null);
 
-        List<URI> resultList = new ArrayList<>();
         SPARQLDeserializer<URI> uriDeserializer = SPARQLDeserializers.getForClass(URI.class);
-        executeSelectQuery(select, ThrowingConsumer.wrap((SPARQLResult result) -> {
-            resultList.add(uriDeserializer.fromString((result.getStringValue(mapper.getURIFieldName()))));
-        }, Exception.class));
-
-        return resultList;
+        return executeSelectQueryAsStream(select)
+                .map(result -> {
+                    try {
+                        return uriDeserializer.fromString(result.getStringValue(SPARQLResourceModel.URI_FIELD));
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }).collect(Collectors.toList());
     }
 
     public <T extends SPARQLTreeModel<T>> SPARQLTreeListModel<T> searchResourceTree(Class<T> objectClass, String lang, ThrowingConsumer<SelectBuilder, Exception> filterHandler) throws Exception {
@@ -1181,7 +1182,10 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         URI uri = instance.getUri();
         if (uri == null) {
             generateUniqueURI(graph,instance,uriGenerator,checkUriExist);
-        } else if (checkUriExist && uriExists(graph, uri)) {
+
+            // only ensure that the URI hasn't some outgoing relation
+            // the URI can have some in relations without problem (ex : skos or other in-coming relation)
+        } else if (checkUriExist && uriExists(graph, uri,true,false)) {
             throw new SPARQLAlreadyExistingUriException(uri);
         }
     }
@@ -1523,8 +1527,122 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         );
     }
 
+    /**
+     *
+     * @param graph SPARQL GRAPH in which search for URI existence (optional)
+     * @param uri URI to check (required)
+     * @param checkOutRelations true if outgoing relation existence must be checked, false else
+     * @param checkInRelations true if incoming relation existence must be checked, false else
+     * @return true if uri exist withing graph or in global repository (if graph is null).
+     *
+     * @throws SPARQLException if an error occurs during SPARQL ASK query execution
+     * @throws IllegalArgumentException if uri is null or if both checkInRelations and checkOutRelations are false
+     *
+     * @apiNote
+     * <pre>
+     * Example of generated query with {@code uriExists(test:my_graph,<my_uri>,true,true)} call :
+     *
+     * {@code
+     *
+     * PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+     * PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+     *
+     * ASK WHERE {
+     *      GRAPH test:my_graph {
+     *          <my_uri> ?p_out ?o
+     *      }
+     *      UNION {
+     *          GRAPH test:my_graph {
+     *             ?s ?p_in <my_uri>
+     *          }
+     *      }
+     *
+     * }
+     * }
+     * </pre>
+     */
+    public boolean uriExists(Node graph, URI uri, boolean checkOutRelations, boolean checkInRelations) throws SPARQLException{
 
+        if(! checkInRelations && ! checkOutRelations){
+            throw new IllegalArgumentException("checkOutRelations and checkInRelations are both equals to false");
+        }
+
+        Objects.requireNonNull(uri);
+        AskBuilder askQuery = new AskBuilder();
+
+        Var subject = makeVar("s");
+        Var outPredicate = makeVar("p_out");
+        Var inPredicate = makeVar("p_in");
+        Var object = makeVar("o");
+
+        Node nodeUri = SPARQLDeserializers.nodeURI(uri);
+
+        // check if incoming relation exists
+        WhereBuilder outWhere = null;
+        if(checkOutRelations){
+            outWhere = new WhereBuilder();
+            if (graph != null) {
+                outWhere.addGraph(graph, nodeUri, outPredicate, object);
+            } else {
+                outWhere.addWhere(nodeUri, outPredicate, object);
+            }
+            askQuery.addWhere(outWhere);
+        }
+
+        // check if outgoing relation exists
+        WhereBuilder inWhere;
+        if(checkInRelations){
+            inWhere = new WhereBuilder();
+            if (graph != null) {
+                inWhere.addGraph(graph, subject,inPredicate,nodeUri);
+            } else {
+                inWhere.addWhere(subject,inPredicate,nodeUri);
+            }
+            if(outWhere == null){
+                askQuery.addWhere(inWhere);
+            }else{
+                askQuery.addUnion(inWhere);
+            }
+        }
+        return executeAskQuery(askQuery);
+    }
+
+    /**
+     *
+     * @param graph SPARQL GRAPH in which search for URI existence (optional)
+     * @param uri URI to check (not-null)
+     * @return true if uri exist in the repository as subject or as object
+     *
+     * @throws SPARQLException if an error occurs during SPARQL ASK query execution
+     * @throws IllegalArgumentException if uri is null
+     *
+     * @apiNote
+     * The generated query is
+     * <pre>
+     *{@code
+     *
+     * PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+     * PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+     *
+     * ASK WHERE {
+     *      {
+     *          GRAPH test:my_graph {
+     *              <my_uri> ?p ?o
+     *          }
+     *      }
+     *      UNION {
+    *           GRAPH test:my_graph {
+     *              ?s ?p <my_uri>
+     *          }
+     *      }
+     *
+     * }
+     * }
+     * </pre>
+     */
     public boolean uriExists(Node graph, URI uri) throws SPARQLException {
+        Objects.requireNonNull(uri);
+
         AskBuilder askQuery = new AskBuilder();
         Var s = makeVar("s");
         Var p = makeVar("p");
@@ -1759,7 +1877,11 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         if (SPARQLDeserializers.existsForClass(value.getClass())) {
             nodeValue = SPARQLDeserializers.getForClass(value.getClass()).getNode(value);
 
-            insertQuery.addInsert(graph, SPARQLDeserializers.nodeURI(subject), property, nodeValue);
+            if(graph != null){
+                insertQuery.addInsert(graph, SPARQLDeserializers.nodeURI(subject), property, nodeValue);
+            }else{
+                insertQuery.addInsert(SPARQLDeserializers.nodeURI(subject), property, nodeValue);
+            }
 
             executeUpdateQuery(insertQuery);
         }

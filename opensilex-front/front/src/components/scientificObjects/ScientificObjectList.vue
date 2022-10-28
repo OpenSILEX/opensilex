@@ -25,8 +25,8 @@
             :small="true"
             :text="$t('VariableList.display')">
 
-            <b-dropdown-item-button @click="clickOnlySelected()">{{ onlySelected ? $t('VariableList.selected-all') : $t('VariableList.selected-only')}}</b-dropdown-item-button>
-            <b-dropdown-item-button @click="resetSelected()">{{$t('VariableList.resetSelected')}}</b-dropdown-item-button>
+            <b-dropdown-item-button @click="clickOnlySelected()">{{ onlySelected ? $t('VariableList.selected-all') : $t("component.common.selected-only")}}</b-dropdown-item-button>
+            <b-dropdown-item-button @click="resetSelected()">{{$t("component.common.resetSelected")}}</b-dropdown-item-button>
           </b-dropdown>
 
 

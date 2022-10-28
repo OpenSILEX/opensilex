@@ -4,7 +4,7 @@
       <opensilex-PageContent class="pagecontent">
             <!-- Toggle Sidebar--> 
       <div class="searchMenuContainer"
-      v-on:click="searchFiltersToggle = !searchFiltersToggle"
+      v-on:click="SearchFiltersToggle = !SearchFiltersToggle"
       :title="searchFiltersPannel()">
         <div class="searchMenuIcon">
           <i class="ik ik-search"></i>
@@ -13,7 +13,7 @@
 
        <!-- FILTERS -->
       <Transition>
-        <div v-show="searchFiltersToggle">
+        <div v-show="SearchFiltersToggle">
 
       <opensilex-SearchFilterField
         ref="searchField"
@@ -219,9 +219,7 @@ export default class ExperimentDataVisualisationForm extends Vue {
 
   eventsCount = "";
 
- 
-    searchFiltersToggle = true;
-
+  SearchFiltersToggle: boolean = true;
 
   searchFiltersPannel() {
     return  this.$t("searchfilter.label")
@@ -235,7 +233,7 @@ export default class ExperimentDataVisualisationForm extends Vue {
   onSearch() {
     this.getTotalEventsCount();
     this.$emit("search", this.filter);
-    this.searchFiltersToggle = false;
+    this.SearchFiltersToggle = false;
   }
 
     //  search events on EventsService format

@@ -1,6 +1,6 @@
 <template>
   <div ref="page">
-    <!-- FILTERS -->
+    <opensilex-PageContent class="pagecontent">
 
     <!--Form-->
     <opensilex-ScientificObjectVisualizationForm
@@ -31,8 +31,8 @@
         :selectedScientificObjects="scientificObject.uri"
         @addEventIsClicked="showAddEventComponent"
         @dataAnnotationIsClicked="showAnnotationForm"
+        class="ScientificObjectVisualizationGraphic"
     ></opensilex-DataVisuGraphic>
-
 
     <opensilex-AnnotationModalForm
         ref="annotationModalForm"
@@ -45,6 +45,7 @@
         :eventCreatedTime="eventCreatedTime"
         @onCreate="onEventCreated"
     ></opensilex-EventModalForm>
+    </opensilex-PageContent>
   </div>
 </template>
 
@@ -74,15 +75,10 @@ export default class ScientificObjectVisualizationTab extends Vue {
   annotationData: any;
   variablesService: VariablesService;
   annotationService: AnnotationsService;
+  SearchFiltersToggle: boolean = true;
 
   get user() {
     return this.$store.state.user;
-  }
-
-  data() {
-    return {
-      SearchFiltersToggle: true,
-    }
   }
 
   @Prop()
@@ -543,7 +539,7 @@ export default class ScientificObjectVisualizationTab extends Vue {
 
 <style scoped lang="scss">
 
-.ScientificObjectVisualisationGraphic {
+.ScientificObjectVisualizationGraphic{
   min-width: 100%;
   max-width: 100vw;
 }

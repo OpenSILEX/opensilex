@@ -130,6 +130,7 @@ export default class ScientificObjectVisualizationForm extends Vue {
   visibleDetails: boolean = false;
   countIsLoading: boolean = false;
   dataService: DataService;
+  SearchFiltersToggle: boolean = true;
 
   filter = {
     variable: [],
@@ -160,12 +161,6 @@ export default class ScientificObjectVisualizationForm extends Vue {
 
   public set eventsCount(eventsCount: string) {
     this.eventsCountValue = eventsCount;
-  }
-
-  data() {
-    return {
-      SearchFiltersToggle: true,
-    }
   }
 
   created() {
@@ -210,6 +205,7 @@ export default class ScientificObjectVisualizationForm extends Vue {
 
   onSearch() {
     this.$emit("search", this.filter);
+    this.SearchFiltersToggle = !this.SearchFiltersToggle;
   }
 
   getProvenance(uri) {

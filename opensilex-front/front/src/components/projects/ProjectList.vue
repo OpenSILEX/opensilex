@@ -87,10 +87,21 @@
       @select="$emit('select', $event)"
       @unselect="$emit('unselect', $event)"
       @selectall="$emit('selectall', $event)"
+      @refreshed="onRefreshed"
     >
       <template v-slot:selectableTableButtons="{ numberOfSelectedRows }">
+        
         <b-dropdown
+          dropright
+          class="mb-2 mr-2"
+          :small="true"
+          :text="$t('VariableList.display')">
 
+          <b-dropdown-item-button @click="clickOnlySelected()">{{ onlySelected ? $t('ProjectList.selected-all') : $t("component.common.selected-only")}}</b-dropdown-item-button>
+          <b-dropdown-item-button @click="resetSelected()">{{$t("component.common.resetSelected")}}</b-dropdown-item-button>
+        </b-dropdown>
+
+        <b-dropdown
           v-if="!noActions" 
           dropright
           class="mb-2 mr-2"
@@ -177,6 +188,7 @@ export default class ProjectList extends Vue {
   $store: any;
 
   service: ProjectsService;
+  SearchFiltersToggle: boolean = false;
 
   @Ref("documentForm") readonly documentForm!: any;
   @Ref("tableRef") readonly tableRef!: any;
@@ -184,6 +196,11 @@ export default class ProjectList extends Vue {
   get user() {
     return this.$store.state.user;
   }
+
+  get onlySelected() {
+    return this.tableRef.onlySelected;
+  }
+
   get credentials() {
     return this.$store.state.credentials;
   }
@@ -225,10 +242,13 @@ export default class ProjectList extends Vue {
     };
     this.refresh();
   }
-  data(){
-    return {
-      SearchFiltersToggle : false,
-    }
+
+  clickOnlySelected() {
+    this.tableRef.clickOnlySelected();
+  }
+
+  resetSelected() {
+    this.tableRef.resetSelected();
   }
 
   searchFiltersPannel() {
@@ -287,14 +307,15 @@ export default class ProjectList extends Vue {
 
 
   refresh() {
-    
-    this.tableRef.selectAll = false;
-    this.tableRef.onSelectAll();
-    this.tableRef.refresh();
+    if(this.tableRef.onlySelected) {
+      this.tableRef.onlySelected = false;
+      this.tableRef.refresh();
+    } else {
+      this.tableRef.refresh();
+    }
     if (!this.noUpdateURL) {
       this.$opensilex.updateURLParameters(this.filter);
     }
-
   }
 
   loadData(options) {
@@ -357,9 +378,29 @@ export default class ProjectList extends Vue {
       file: undefined
     };
   }
+
+  onRefreshed() {
+    let that = this;
+    setTimeout(function() {
+      if(that.tableRef.selectAll === true && that.tableRef.selectedItems.length !== that.tableRef.totalRow) {                    
+        that.tableRef.selectAll = false;
+      } 
+    }, 1);
+  }
 }
 </script>
 
 <style scoped lang="scss">
 </style>
+
+<i18n>
+en:
+  ProjectList:
+    selected-all: All projects
+
+fr:
+  ProjectList:
+    selected-all: Tout les projets
+
+</i18n>
 

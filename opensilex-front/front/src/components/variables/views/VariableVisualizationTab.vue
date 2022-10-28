@@ -1,61 +1,56 @@
 <template>
   <div ref="page" class="page">
-
     <opensilex-PageContent class="pagecontent">
 
       <!-- Toggle Sidebar-->
       <div class="searchMenuContainer"
-      v-on:click="SearchFiltersToggle = !SearchFiltersToggle"
-      :title="searchFiltersPannel()">
+        v-on:click="SearchFiltersToggle = !SearchFiltersToggle"
+        :title="searchFiltersPannel()"
+      >
         <div class="searchMenuIcon">
           <i class="icon ik ik-search"></i>
         </div>
       </div>
-
-
-<!-- FILTERS -->
       <Transition>
         <div v-show="SearchFiltersToggle">
-
-    <!--Form-->
-    <opensilex-VariableVisualizationForm
-        ref="variableVisualizationForm"
-        :variable="variable"
-        :devices="devicesURI"
-        @search="onSearch"
-        @update="onUpdate"
-    ></opensilex-VariableVisualizationForm>
-
+          <!--Form-->
+          <opensilex-VariableVisualizationForm
+              ref="variableVisualizationForm"
+              :variable="variable"
+              :devices="devicesURI"
+              @search="onSearch"
+              @update="onUpdate"
+          ></opensilex-VariableVisualizationForm>
         </div>
       </Transition>
 
-    <div class="d-flex justify-content-center mb-3" v-if="!isGraphicLoaded">
-      <b-spinner label="Loading..."></b-spinner>
-    </div>
+      <div class="d-flex justify-content-center mb-3" v-if="!isGraphicLoaded">
+        <b-spinner label="Loading..."></b-spinner>
+      </div>
 
-    <!--Visualisation-->
-    <opensilex-DataVisuGraphic
-        v-if="isGraphicLoaded"
-        ref="visuGraphic"
-        :deviceType="false"
-        :lType="true"
-        :lWidth="true"
-        @addEventIsClicked="showEventForm"
-        @dataAnnotationIsClicked="showAnnotationForm"
-        class="VariableVisualisationGraphic"
-    ></opensilex-DataVisuGraphic>
+      <!--Visualisation-->
+      <opensilex-DataVisuGraphic
+          v-if="isGraphicLoaded"
+          ref="visuGraphic"
+          :deviceType="false"
+          :lType="true"
+          :lWidth="true"
+          @addEventIsClicked="showEventForm"
+          @dataAnnotationIsClicked="showAnnotationForm"
+          class="VariableVisualisationGraphic"
+      ></opensilex-DataVisuGraphic>
 
-    <opensilex-AnnotationModalForm
-        ref="annotationModalForm"
-        @onCreate="onAnnotationCreated"
-    ></opensilex-AnnotationModalForm>
+      <opensilex-AnnotationModalForm
+          ref="annotationModalForm"
+          @onCreate="onAnnotationCreated"
+      ></opensilex-AnnotationModalForm>
 
-    <opensilex-EventModalForm
-        ref="eventsModalForm"
-        :target="target"
-        :eventCreatedTime="eventCreatedTime"
-        @onCreate="onEventCreated"
-    ></opensilex-EventModalForm>
+      <opensilex-EventModalForm
+          ref="eventsModalForm"
+          :target="target"
+          :eventCreatedTime="eventCreatedTime"
+          @onCreate="onEventCreated"
+      ></opensilex-EventModalForm>
     </opensilex-PageContent>
   </div>
 </template>
@@ -86,12 +81,6 @@ export default class VariableVisualizationTab extends Vue {
     return this.$store.state.credentials;
   }
 
-  data(){
-    return {
-      SearchFiltersToggle : true,
-    }
-  }
-
   @Prop()
   variable;
 
@@ -106,6 +95,7 @@ export default class VariableVisualizationTab extends Vue {
   devicesService: DevicesService;
   eventsService: EventsService;
   deviceColorMap = [];
+  SearchFiltersToggle: boolean = true;
   @Ref("page") readonly page!: any;
   @Ref("visuGraphic") readonly visuGraphic!: DataVisuGraphic;
   @Ref("annotationModalForm") readonly annotationModalForm!: any;
@@ -217,6 +207,7 @@ export default class VariableVisualizationTab extends Vue {
   }
 
   onSearch(form) {
+    this.SearchFiltersToggle = !this.SearchFiltersToggle;
     this.isGraphicLoaded = false;
     if (this.variable) {
       this.form = form;

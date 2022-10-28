@@ -1,6 +1,4 @@
 <template>
-
- 
   <opensilex-FormField
     :rules="rules"
     :required="required"
@@ -8,14 +6,14 @@
     :helpMessage="helpMessage"
   >
     <template v-slot:field="field">
-
       <b-spinner small label="Small Spinning" v-if="loading"></b-spinner>
       <input :id="field.id" type="hidden" :value="hiddenValue" />
       <b-input-group class="select-button-container">
+
         <!-- First case : modal search-->
         <treeselect
           v-if="isModalSearch"
-          class="multiselect-popup"
+          class="multiselect-popup modalSearchLabel"
           :multiple="true"
           :openOnClick="openOnClick"
           :searchable="false"
@@ -34,10 +32,13 @@
           <template v-slot:option-label="{ node }">
             <slot name="option-label" v-bind:node="node">{{ node.label }}</slot>
           </template>
+
           <template v-slot:value-label="{ node }">
-            <slot name="value-label" v-bind:node="node">{{ node.label }}</slot>
+            <slot name="value-label" v-bind:node="node"> <div class="modalSearchLabel" :title="node.label">{{ node.label }}</div></slot>
           </template>
+
         </treeselect>
+
         <!-- Second case : not modal -->
         <treeselect
           v-else
@@ -69,11 +70,13 @@
           :limit="limit"
         >
           <template v-slot:option-label="{ node }">
-            <slot name="option-label" v-bind:node="node">{{ node.label }}</slot>
+            <slot name="option-label" v-bind:node="node"> <div class="label" :title="node.label">{{ node.label }}</div></slot>
           </template>
+
           <template v-slot:value-label="{ node }">
-            <slot name="value-label" v-bind:node="node">{{ node.label }}</slot>
+            <slot name="value-label" v-bind:node="node"><div class="label" :title="node.label">{{ node.label }}</div></slot>
           </template>
+
           <template v-if="resultCount < totalCount" v-slot:after-list>
             <i class="more-results-info">{{
               $t("SelectorForm.refineSearchMessage", [resultCount, totalCount])
@@ -194,7 +197,7 @@ export default class SelectForm extends Vue {
       if (e && e.name) {
         return {
             id: e.uri,
-            label: (e.name.length > 20) ? e.name.substr(0, 20-1) + '...' : e.name
+            label: e.name
           };
       } else {
         return e;
@@ -692,6 +695,17 @@ i.more-results-info {
   color: #fff
 }
 
+.label {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.modalSearchLabel {
+ white-space: normal;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
 </style>
 
 <i18n>

@@ -60,6 +60,8 @@
             "not-specified": "Not specified",
             "validate": "Validate",
             "validateSelection": "Validate the selection",
+            "selected-only": "Selection only",
+            "resetSelected": "Reset selection",
             "state":"State",
             "species":"Species",
             "period":"Period",

@@ -1,6 +1,20 @@
 <template>
   <div>
     <div>
+      <opensilex-PageContent class="pagecontent">
+      <!-- Toggle Sidebar-->
+      <div class="searchMenuContainer"
+        v-on:click="SearchFiltersToggle = !SearchFiltersToggle"
+        :title="searchFiltersPannel()"
+      >
+        <div class="searchMenuIcon">
+          <i class="icon ik ik-search"></i>
+        </div>
+      </div>
+
+  <!-- FILTERS -->
+  <Transition>
+    <div v-show="SearchFiltersToggle">
       <opensilex-SearchFilterField
       ref="searchField"
       :withButton="false"
@@ -94,6 +108,9 @@
         </template>
       </opensilex-SearchFilterField>
     </div>
+  </Transition>
+      </opensilex-PageContent>
+    </div>
   </div>
 </template>
 
@@ -114,6 +131,7 @@ export default class ExperimentDataVisuForm extends Vue {
   selectedProvenance: any = null;
   visibleDetails: boolean = false;
   countIsLoading : boolean = false;
+  SearchFiltersToggle: boolean = true;
   @Ref("searchField") readonly searchField!: any;
   @Ref("provSelector") readonly provSelector!: any;
   filter = {
@@ -163,6 +181,7 @@ export default class ExperimentDataVisuForm extends Vue {
 
   onSearch() {
     this.$emit("search", this.filter);
+    this.SearchFiltersToggle = !this.SearchFiltersToggle;
   }
 
   getTotalEventsCount() {
@@ -250,6 +269,10 @@ export default class ExperimentDataVisuForm extends Vue {
 
   get getSelectedProv() {
     return this.selectedProvenance;
+  }
+
+  searchFiltersPannel() {
+    return this.$t("searchfilter.label")
   }
 }
 </script>

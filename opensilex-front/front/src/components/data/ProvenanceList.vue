@@ -65,22 +65,26 @@
           </opensilex-FilterField>
         </div>
 
-        <opensilex-FilterField v-if="filter.agent_type === 'vocabulary:Operator'">
-          <opensilex-UserSelector
-            :users.sync="filter.agent"
-            label="ProvenanceForm.agent"
-          ></opensilex-UserSelector>
-        </opensilex-FilterField>
+        <div>
+          <opensilex-FilterField v-if="filter.agent_type === 'vocabulary:Operator'">
+            <opensilex-UserSelector
+              :users.sync="filter.agent"
+              label="ProvenanceForm.agent"
+              class="searchFilter"
+            ></opensilex-UserSelector>
+          </opensilex-FilterField>
 
-        <opensilex-FilterField v-else-if="filter.agent_type">
-          <opensilex-DeviceSelector
-            ref="deviceSelector"
-            label="ProvenanceForm.agent"
-            :value.sync="filter.agent"
-            :multiple="false"
-            :type="filter.agent_type"
-          ></opensilex-DeviceSelector>
-        </opensilex-FilterField>
+          <opensilex-FilterField v-else-if="filter.agent_type">
+            <opensilex-DeviceSelector
+              ref="deviceSelector"
+              label="ProvenanceForm.agent"
+              :value.sync="filter.agent"
+              :multiple="false"
+              :type="filter.agent_type"
+              class="searchFilter"
+            ></opensilex-DeviceSelector>
+          </opensilex-FilterField>
+        </div>
 
       </template>
     </opensilex-SearchFilterField>
@@ -91,12 +95,24 @@
       ref="tableRef"
       :searchMethod="searchProvenance"
       :fields="fields"
-      defaultSortBy="name"
       :isSelectable="true"
+      @refreshed="onRefreshed"
+      defaultSortBy="name"
       labelNumberOfSelectedRow="ProvenanceList.selected"
       iconNumberOfSelectedRow="ik#ik-target"
     >
       <template v-slot:selectableTableButtons="{ numberOfSelectedRows }">
+
+        <b-dropdown
+          dropright
+          class="mb-2 mr-2"
+          :small="true"
+          :text="$t('VariableList.display')">
+
+          <b-dropdown-item-button @click="clickOnlySelected()">{{ onlySelected ? $t('ProvenanceList.selected-all') : $t("component.common.selected-only")}}</b-dropdown-item-button>
+          <b-dropdown-item-button @click="resetSelected()">{{$t("component.common.resetSelected")}}</b-dropdown-item-button>
+        </b-dropdown>
+
         <b-dropdown
           v-if="!noActions" 
           dropright
@@ -198,9 +214,14 @@ export default class ProvenanceList extends Vue {
   usedVariables: any[] = [];
   selectedProvenance: any = null;
   agentTypes: any[] = [];
+  SearchFiltersToggle: boolean = false;
 
   get user() {
     return this.$store.state.user;
+  }
+
+  get onlySelected() {
+    return this.tableRef.onlySelected;
   }
 
   get credentials() {
@@ -219,11 +240,6 @@ export default class ProvenanceList extends Vue {
     operator: undefined
   };
 
-  data(){
-    return {
-      SearchFiltersToggle : false,
-    }
-  }
 
   resetFilter() {
     this.filter = {
@@ -272,12 +288,26 @@ export default class ProvenanceList extends Vue {
 
   refresh() {
     this.$opensilex.updateURLParameters(this.filter);
-    this.tableRef.refresh();
+
+    if(this.tableRef.onlySelected) {
+      this.tableRef.onlySelected = false;
+      this.tableRef.refresh();
+    } else {
+      this.tableRef.refresh();
+    }
   }
 
   reset() {
     this.resetFilter();
     this.refresh();
+  }
+
+  clickOnlySelected() {
+    this.tableRef.clickOnlySelected();
+  }
+
+  resetSelected() {
+    this.tableRef.resetSelected();
   }
 
   created() {
@@ -371,7 +401,15 @@ export default class ProvenanceList extends Vue {
   searchFiltersPannel() {
     return  this.$t("searchfilter.label")
   }
-  
+
+  onRefreshed() {
+    let that = this;
+    setTimeout(function() {
+      if(that.tableRef.selectAll === true && that.tableRef.selectedItems.length !== that.tableRef.totalRow) {                    
+        that.tableRef.selectAll = false;
+      } 
+    }, 1);
+  }
 }
 </script>
 
@@ -388,10 +426,13 @@ en:
     selected: Selected provenances
     update: Update provenance
     delete: Delete provenance
+    selected-all: All provenances
 
 fr:
   ProvenanceList: 
     selected: Provenances sélectionnées
     update: Modifier la provenance
     delete: Supprimer la provenance
+    selected-all: Toutes les provenances
+
 </i18n>

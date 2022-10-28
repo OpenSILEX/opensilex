@@ -115,10 +115,22 @@
             :fields="fields"
             defaultSortBy="name"
             :isSelectable="true"
+            @refreshed="onRefreshed"
             labelNumberOfSelectedRow="DeviceList.selected"
             iconNumberOfSelectedRow="ik#ik-thermometer"
         >
             <template v-slot:selectableTableButtons="{ numberOfSelectedRows }">
+
+                <b-dropdown
+                dropright
+                class="mb-2 mr-2"
+                :small="true"
+                :text="$t('VariableList.display')">
+
+                <b-dropdown-item-button @click="clickOnlySelected()">{{ onlySelected ? $t('DeviceList.selected-all') : $t("component.common.selected-only")}}</b-dropdown-item-button>
+                <b-dropdown-item-button @click="resetSelected()">{{$t("component.common.resetSelected")}}</b-dropdown-item-button>
+                </b-dropdown>
+
                 <b-dropdown
                     dropright
                     class="mb-2 mr-2"
@@ -245,9 +257,14 @@ export default class DeviceList extends Vue {
     @Ref("moveCsvForm") readonly moveCsvForm!: EventCsvForm;
 
     selectedUris: Array<string> = [];
+    SearchFiltersToggle: boolean = false;
 
     get user() {
         return this.$store.state.user;
+    }
+
+    get onlySelected() {
+        return this.tableRef.onlySelected;
     }
 
     get lang() {
@@ -272,12 +289,6 @@ export default class DeviceList extends Vue {
         metadataKey: undefined,
         metadataValue: undefined,
     };
-
-    data(){
-        return {
-            SearchFiltersToggle : false,
-        }
-    }
 
     exportFilter = {
         name: undefined,
@@ -309,6 +320,14 @@ export default class DeviceList extends Vue {
     reset() {
         this.resetFilters();
         this.refresh();
+    }
+
+    clickOnlySelected() {
+        this.tableRef.clickOnlySelected();
+    }
+
+    resetSelected() {
+        this.tableRef.resetSelected();
     }
 
     created() {
@@ -360,10 +379,15 @@ export default class DeviceList extends Vue {
     ];
 
     refresh() {
-        this.tableRef.selectAll = false;
-        this.tableRef.onSelectAll();
+      
         this.$opensilex.updateURLParameters(this.filter);
-        this.tableRef.refresh();
+
+        if(this.tableRef.onlySelected) {
+            this.tableRef.onlySelected = false;
+            this.tableRef.refresh();
+        } else {
+            this.tableRef.refresh();
+        }
     }
 
     searchDevices(options) {
@@ -543,9 +567,21 @@ export default class DeviceList extends Vue {
         this.exportFilter.serial_number = undefined;
         this.exportFilter.metadata = this.addMetadataFilter();
     }
+
     searchFiltersPannel() {
         return  this.$t("searchfilter.label")
     }
+
+
+    onRefreshed() {
+      let that = this;
+      setTimeout(function() {
+        if(that.tableRef.selectAll === true && that.tableRef.selectedItems.length !== that.tableRef.totalRow) {                    
+          that.tableRef.selectAll = false;
+        } 
+      }, 1);
+    }
+
 }
 </script>
 
@@ -574,6 +610,7 @@ en:
         showMap: Show in a map
         alertBadDeviceType: The selected type doesn't match with add variable
         associated-device-error: Device is associated with
+        selected-all: All Devices
 
         filter:
             namePattern: Name
@@ -613,6 +650,7 @@ fr:
         showMap: Afficher sur une carte
         alertBadDeviceType: La selection comporte un type incompatible avec l'ajout de variable
         associated-device-error: Le dispositif est associé à
+        selected-all: Tout les dispositifs
 
         filter:
             namePattern: Nom

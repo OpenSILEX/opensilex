@@ -125,11 +125,23 @@
       :searchMethod="searchExperiments"
       :fields="fields"
       :isSelectable="true"
+      @refreshed="onRefreshed"
       labelNumberOfSelectedRow="ExperimentList.selected"
       iconNumberOfSelectedRow="ik#ik-layers"
     >
 
       <template v-slot:selectableTableButtons="{ numberOfSelectedRows }">
+
+        <b-dropdown
+          dropright
+          class="mb-2 mr-2"
+          :small="true"
+          :text="$t('VariableList.display')">
+
+          <b-dropdown-item-button @click="clickOnlySelected()">{{ onlySelected ? $t('ExperimentList.selected-all') : $t("component.common.selected-only")}}</b-dropdown-item-button>
+          <b-dropdown-item-button @click="resetSelected()">{{$t("component.common.resetSelected")}}</b-dropdown-item-button>
+        </b-dropdown>
+
         <b-dropdown
           dropright
           class="mb-2 mr-2"
@@ -237,6 +249,7 @@ export default class ExperimentList extends Vue {
   $opensilex: any;
   $i18n: any;
   $store: any;
+  SearchFiltersToggle: boolean = false;
   
   @Ref("documentForm") readonly documentForm!: any;
 
@@ -249,6 +262,11 @@ export default class ExperimentList extends Vue {
     default: false,
   })
   noActions;
+
+
+  get onlySelected() {
+    return this.tableRef.onlySelected;
+  }
 
   get user(): User {
     return this.$store.state.user;
@@ -265,10 +283,14 @@ export default class ExperimentList extends Vue {
   @Ref("projectSelector") readonly projectSelector!: any;
 
   refresh() {
-    this.tableRef.selectAll = false;
-    this.tableRef.onSelectAll();
     this.$opensilex.updateURLParameters(this.filter);
-    this.tableRef.refresh();
+
+    if(this.tableRef.onlySelected) {
+      this.tableRef.onlySelected = false;
+      this.tableRef.refresh();
+    } else {
+      this.tableRef.refresh();
+    }
   }
 
   filter = {
@@ -280,11 +302,6 @@ export default class ExperimentList extends Vue {
     state: "",
   };
 
-    data(){
-    return {
-      SearchFiltersToggle : false,
-    }
-  }
 
   reset() {
     this.filter = {
@@ -298,6 +315,13 @@ export default class ExperimentList extends Vue {
     this.refresh();
   }
 
+  clickOnlySelected() {
+    this.tableRef.clickOnlySelected();
+  }
+
+  resetSelected() {
+    this.tableRef.resetSelected();
+  }
 
   refreshProjectSelector() {
    
@@ -353,6 +377,15 @@ export default class ExperimentList extends Vue {
         this.refresh();
       }
     );
+  }
+
+  onRefreshed() {
+      let that = this;
+      setTimeout(function() {
+        if(that.tableRef.selectAll === true && that.tableRef.selectedItems.length !== that.tableRef.totalRow) {                    
+          that.tableRef.selectAll = false;
+        } 
+      }, 1);
   }
 
   beforeDestroy() {
@@ -534,6 +567,7 @@ en:
     filter-factors-categories: Factors categories
     filter-factors-categories-placeholder: Select one or more categories
     selected: Selected experiments
+    selected-all: All experiments
 
 fr:
   ExperimentList:
@@ -550,5 +584,6 @@ fr:
     filter-factors-categories: Categories de facteurs
     filter-factors-categories-placeholder: Sélectionner une ou plusieurs categories
     selected: Expérimentations selectionnées
+    selected-all: Toutes les expérimentations
 
 </i18n>

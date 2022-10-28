@@ -59,6 +59,8 @@
             "not-specified": "Non renseigné(e)",
             "validate": "Valider",
             "validateSelection": "Valider la selection",
+            "selected-only": "Sélection seulement",
+            "resetSelected": "Réinitialiser la sélection",
             "state":"Etat",
             "species":"Espèces",
             "period":"Période",

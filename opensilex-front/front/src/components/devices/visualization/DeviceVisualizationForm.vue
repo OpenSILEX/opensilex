@@ -136,6 +136,7 @@ export default class DeviceVisualizationForm extends Vue {
   selectedProvenance: any = null;
   visibleDetails: boolean = false;
   countIsLoading: boolean = false;
+  SearchFiltersToggle: boolean = true;
   filter = {
     variable: [],
     startDate: undefined,
@@ -169,11 +170,6 @@ export default class DeviceVisualizationForm extends Vue {
   }
 
 
-  data() {
-    return {
-      SearchFiltersToggle: true,
-    }
-  }
 
   created() {
     this.getEvents();
@@ -216,6 +212,7 @@ export default class DeviceVisualizationForm extends Vue {
 
   onSearch() {
     this.$emit("search", this.filter);
+    this.SearchFiltersToggle = !this.SearchFiltersToggle;
   }
 
   getProvenance(uri) {

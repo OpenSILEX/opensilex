@@ -2,18 +2,6 @@
   <div class="experimentDataVisuView">
     <opensilex-PageContent class="pagecontent">
 
-      <!-- Toggle Sidebar-->
-      <div class="searchMenuContainer"
-      v-on:click="SearchFiltersToggle = !SearchFiltersToggle"
-      :title="searchFiltersPannel()">
-        <div class="searchMenuIcon">
-          <i class="icon ik ik-search"></i>
-        </div>
-      </div>
-
-  <!-- FILTERS -->
-  <Transition>
-    <div v-show="SearchFiltersToggle">
       <!--Form-->
       <opensilex-ExperimentDataVisuForm
         ref="experimentDataVisuForm"
@@ -22,8 +10,6 @@
         @search="onSearch"
         @update="onUpdate"
       ></opensilex-ExperimentDataVisuForm>
-    </div>
-  </Transition>
 
     <div class="d-flex justify-content-center mb-3" v-if="!showGraphicComponent && initLoader">
       <b-spinner label="Loading..."></b-spinner>
@@ -88,6 +74,7 @@ export default class ExperimentDataVisuView extends Vue {
   selectedVariable;
   eventsService: EventsService;
   eventTypesColorArray = [];
+  SearchFiltersToggle: boolean = true;
 
   @Prop()
   selectedScientificObjects;
@@ -96,12 +83,6 @@ export default class ExperimentDataVisuView extends Vue {
     return this.selectedScientificObjects.map(so => {
       return so.uri;
     });
-  }
-
-    data(){
-    return {
-      SearchFiltersToggle : true,
-    }
   }
 
   private langUnwatcher;
@@ -428,10 +409,6 @@ export default class ExperimentDataVisuView extends Vue {
         }
       })
       .catch(error => {});
-  }
-
-  searchFiltersPannel() {
-    return this.$t("searchfilter.label")
   }
 }
 </script>

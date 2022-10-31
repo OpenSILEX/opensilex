@@ -8,7 +8,7 @@ services:
          - backend
       ports:
          - "8667:8080"
-      restart: always         
+      restart: always
       volumes:
          - rdf4j_data:/var/rdf4j
       environment:
@@ -25,12 +25,13 @@ services:
          - "8668:27017"
       restart: always   
       volumes:
-         - mongodb_data:/data/db
+         - mongodb_data5:/data/db
          
 networks:
    backend:
 
 volumes:
+
    mongodb_data:
    rdf4j_data:
 

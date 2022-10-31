@@ -25,6 +25,7 @@ import org.bson.Document;
 import org.bson.codecs.Codec;
 import org.bson.codecs.DecoderContext;
 import org.bson.codecs.configuration.CodecRegistry;
+import org.bson.conversions.Bson;
 import org.bson.json.JsonReader;
 import org.geojson.Feature;
 import org.geojson.FeatureCollection;
@@ -47,6 +48,8 @@ import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.response.ResourceTreeDTO;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -67,6 +70,7 @@ public class GeospatialDAO {
     private final MongoCollection<GeospatialModel> geometryCollection;
 
     public static final String GEOSPATIAL_COLLECTION_NAME = "geospatial";
+    protected final static Logger LOGGER = LoggerFactory.getLogger(GeospatialDAO.class);
 
     public GeospatialDAO(MongoDBService nosql) {
         MongoDatabase db = nosql.getDatabase();
@@ -244,7 +248,11 @@ public class GeospatialDAO {
                     extractedChildren(ontologyAreaURI, childrenList);
             });
 
-            return geometryCollection.find(and(Filters.geoIntersects("geometry", geometry), Filters.in("rdfType", ontologyAreaURI)));
+            Bson query = and(Filters.geoIntersects(GeospatialModel.GEOMETRY_FIELD, geometry), Filters.in(GeospatialModel.RDF_TYPE_FIELD, ontologyAreaURI));
+
+            LOGGER.debug("MongoDB search intersect: {}", query);
+
+            return geometryCollection.find(query);
         } else {
             return null;
         }

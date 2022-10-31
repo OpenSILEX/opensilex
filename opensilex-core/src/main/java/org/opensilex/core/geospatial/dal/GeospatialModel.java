@@ -20,10 +20,15 @@ import java.net.URI;
  * @author Jean Philippe VERT
  */
 public class GeospatialModel extends MongoModel {
+
     URI graph;
     URI rdfType;
     String name;
     Geometry geometry;
+
+    public static final String GEOMETRY_FIELD = "geometry";
+
+    public static final String RDF_TYPE_FIELD = "rdfType";
 
     public URI getGraph() {
         return graph;

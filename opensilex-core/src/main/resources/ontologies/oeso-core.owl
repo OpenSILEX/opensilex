@@ -906,7 +906,6 @@ OESO</rdfs:label>
     <!-- http://www.opensilex.org/vocabulary/oeso#Area -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Area">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Equipement"/>
         <rdfs:comment xml:lang="fr">Zone au sens large.
 Peut définir une zone au sens physique ou théorique</rdfs:comment>
         <rdfs:comment xml:lang="en">Zone in the broadest sense.
@@ -1545,7 +1544,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Area"/>
         <rdfs:comment xml:lang="en">Area that are link to an event.</rdfs:comment>
         <rdfs:label xml:lang="en">Temporal area</rdfs:label>
-        <rdfs:label xml:lang="fr">Zone temporel</rdfs:label>
+        <rdfs:label xml:lang="fr">Zone temporaire</rdfs:label>
     </owl:Class>
 
 

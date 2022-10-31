@@ -15,6 +15,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.geojson.GeoJsonObject;
 import org.opensilex.core.area.dal.AreaModel;
+import org.opensilex.core.event.api.EventGetDTO;
+import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
@@ -28,7 +30,7 @@ import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
  *
  * @author Jean Philippe VERT
  */
-@JsonPropertyOrder({"uri", "rdf_type", "name", "description", "author", "geometry"})
+@JsonPropertyOrder({"uri", "rdf_type", "is_structural_area","name", "description", "author", "geometry","event"})
 public class AreaGetDTO {
     /**
      * Area URI
@@ -47,6 +49,11 @@ public class AreaGetDTO {
     protected URI rdfType;
 
     /**
+     * Area type ( true = structural | false = temporal)
+     */
+    @JsonProperty("is_structural_area")
+    protected Boolean isStructuralArea;
+    /**
      * geometry of the Area
      */
     protected GeoJsonObject geometry;
@@ -60,6 +67,33 @@ public class AreaGetDTO {
      * author
      */
     protected URI author;
+
+    /**
+     * event of the Area
+     */
+    protected EventGetDTO event;
+
+    /**
+     * Convert Area Model into Area DTO
+     *
+     * @param model         Area Model to convert
+     * @param geometryByURI Geometry Model to convert
+     * @param eventByURI    Event Model to convert
+     * @return Corresponding user DTO
+     */
+    public static AreaGetDTO fromModel(AreaModel model, GeospatialModel geometryByURI, EventModel eventByURI) throws JsonProcessingException {
+        AreaGetDTO dto = dtoWithoutGeometry(model);
+
+        if (geometryByURI.getGeometry() != null) {
+            dto.setGeometry(geometryToGeoJson(geometryByURI.getGeometry()));
+        }
+
+        if (eventByURI != null) {
+            dto.setEvent(EventGetDTO.getDTOFromModel(eventByURI));
+        }
+
+        return dto;
+    }
 
     /**
      * Convert Area Model into Area DTO
@@ -141,6 +175,14 @@ public class AreaGetDTO {
         this.rdfType = rdfType;
     }
 
+    public Boolean getIsStructuralArea() {
+        return isStructuralArea;
+    }
+
+    public void setIsStructuralArea(Boolean structuralArea) {
+        isStructuralArea = structuralArea;
+    }
+
     public GeoJsonObject getGeometry() {
         return geometry;
     }
@@ -163,5 +205,13 @@ public class AreaGetDTO {
 
     public void setAuthor(URI author) {
         this.author = author;
+    }
+
+    public EventGetDTO getEvent() {
+        return event;
+    }
+
+    public void setEvent(EventGetDTO event) {
+        this.event = event;
     }
 }

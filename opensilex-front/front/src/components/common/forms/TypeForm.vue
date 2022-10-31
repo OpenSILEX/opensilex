@@ -21,6 +21,7 @@
         @select="field.validator && field.validator.validate(); $emit('select',$event)"
         @close="field.validator && field.validator.validate()"
         @input="$emit('input', $event)"
+        @open="$emit('open', $event)"
       />
     </template>
   </opensilex-FormField>
@@ -73,7 +74,6 @@ export default class TypeForm extends Vue {
     default: true
   })
   ignoreRoot: boolean;
-
 
   typesOptions = null;
 

@@ -65,6 +65,7 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
         dto.setName("Area " + soCount++);
         dto.setRdfType(new URI("vocabulary:WindyArea"));
         dto.setGeometry(geometryToGeoJson(geometry));
+        dto.setIsStructuralArea(true);
 
         return dto;
     }

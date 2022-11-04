@@ -4,7 +4,7 @@
 
       <!-- Toggle Sidebar-->
       <div class="searchMenuContainer"
-        v-on:click="SearchFiltersToggle = !SearchFiltersToggle"
+        v-on:click="searchFiltersToggle = !searchFiltersToggle"
         :title="searchFiltersPannel()"
       >
         <div class="searchMenuIcon">
@@ -12,7 +12,7 @@
         </div>
       </div>
       <Transition>
-        <div v-show="SearchFiltersToggle">
+        <div v-show="searchFiltersToggle">
           <!--Form-->
           <opensilex-VariableVisualizationForm
               ref="variableVisualizationForm"
@@ -37,7 +37,10 @@
           :lWidth="true"
           @addEventIsClicked="showEventForm"
           @dataAnnotationIsClicked="showAnnotationForm"
-          class="VariableVisualisationGraphic"
+          v-bind:class ="{
+            'VariableVisualisationGraphic': searchFiltersToggle,
+            'VariableVisualisationGraphicWithoutForm': !searchFiltersToggle
+          }"
       ></opensilex-DataVisuGraphic>
 
       <opensilex-AnnotationModalForm
@@ -56,7 +59,7 @@
 </template>
 
 <script lang="ts">
-import {Component, Prop, Ref} from "vue-property-decorator";
+import {Component, Prop, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
 import {DataGetDTO, DevicesService, EventGetDTO, EventsService,} from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
@@ -95,7 +98,8 @@ export default class VariableVisualizationTab extends Vue {
   devicesService: DevicesService;
   eventsService: EventsService;
   deviceColorMap = [];
-  SearchFiltersToggle: boolean = true;
+  searchFiltersToggle: boolean = true;
+
   @Ref("page") readonly page!: any;
   @Ref("visuGraphic") readonly visuGraphic!: DataVisuGraphic;
   @Ref("annotationModalForm") readonly annotationModalForm!: any;
@@ -119,6 +123,14 @@ export default class VariableVisualizationTab extends Vue {
           }
         }
     );
+  }
+
+  // simulate window resizing to resize the graphic when the filter panel display changes
+  @Watch("searchFiltersToggle")
+  onSearchFilterToggleChange(){
+    this.$nextTick(()=> { 
+      window.dispatchEvent(new Event('resize'));
+    })  
   }
 
   beforeDestroy() {
@@ -207,7 +219,7 @@ export default class VariableVisualizationTab extends Vue {
   }
 
   onSearch(form) {
-    this.SearchFiltersToggle = !this.SearchFiltersToggle;
+    this.searchFiltersToggle = !this.searchFiltersToggle;
     this.isGraphicLoaded = false;
     if (this.variable) {
       this.form = form;
@@ -424,7 +436,13 @@ export default class VariableVisualizationTab extends Vue {
         .then((http: HttpResponse<OpenSilexResponse<Array<DataGetDTO>>>) => {
           const data = http.response.result as Array<DataGetDTO>;
           let dataLength = data.length;
-          if (dataLength > 0) {
+          
+          if (dataLength === 0){
+            this.$opensilex.showInfoToast(
+            this.$t("component.common.search.noDataFound").toString());
+          }
+
+          if (dataLength >= 0) {
             const cleanData = HighchartsDataTransformer.transformDataForHighcharts(data, {deviceUri: concernedItem.uri});
             if (dataLength > 50000) {
               this.$opensilex.showInfoToast(
@@ -464,6 +482,11 @@ export default class VariableVisualizationTab extends Vue {
 }
 
 .VariableVisualisationGraphic{
+  min-width: calc(100% - 450px);
+  max-width: calc(100vw - 380px);
+}
+
+.VariableVisualisationGraphicWithoutForm{
   min-width: 100%;
   max-width: 100vw;
 }

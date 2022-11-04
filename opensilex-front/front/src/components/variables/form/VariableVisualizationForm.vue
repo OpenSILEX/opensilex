@@ -15,7 +15,7 @@
           <template v-slot:filters>
             <!-- Device -->
             <div>
-              <opensilex-FilterField :halfWidth="true">
+              <opensilex-FilterField>
                 <opensilex-VariableDevicesSelector
                     ref="devSelector"
                     :devices.sync="filter.device"
@@ -30,7 +30,7 @@
             </div>
 
             <div>
-              <opensilex-FilterField :halfWidth="true">
+              <opensilex-FilterField>
                 <div>
                   <div>
                     <!-- Start Date -->
@@ -58,13 +58,15 @@
             </div>
 
             <!-- Events -->
-            <opensilex-FilterField :halfWidth="true">
-              <label>{{ $t("ScientificObjectVisualizationForm.show_events") }}</label>
-              <b-form-checkbox v-model="filter.showEvents" switch>
-                <b-spinner v-if="countIsLoading" small label="Busy"></b-spinner>
-                <b-badge v-else variant="light">{{ $i18n.n(eventsCount) }}</b-badge>
-              </b-form-checkbox>
-            </opensilex-FilterField>
+            <div>
+              <opensilex-FilterField>
+                <label>{{ $t("ScientificObjectVisualizationForm.show_events") }}</label>
+                <b-form-checkbox v-model="filter.showEvents" switch>
+                  <b-spinner v-if="countIsLoading" small label="Busy"></b-spinner>
+                  <b-badge v-else variant="light">{{ $i18n.n(eventsCount) }}</b-badge>
+                </b-form-checkbox>
+              </opensilex-FilterField>
+            </div>
           </template>
 
           <template v-slot:advancedSearch>
@@ -85,16 +87,18 @@
               ></opensilex-DataProvenanceSelector>
             </opensilex-FilterField>
 
-            <opensilex-FilterField>
-              <b-collapse
-                  v-if="selectedProvenance"
-                  id="collapse-4"
-                  v-model="visibleDetails"
-                  class="mt-2"
-              >
-                <opensilex-ProvenanceDetails :provenance="getSelectedProv"></opensilex-ProvenanceDetails>
-              </b-collapse>
-            </opensilex-FilterField>
+            <div>
+              <opensilex-FilterField>
+                <b-collapse
+                    v-if="selectedProvenance"
+                    id="collapse-4"
+                    v-model="visibleDetails"
+                    class="mt-2"
+                >
+                  <opensilex-ProvenanceDetails :provenance="getSelectedProv"></opensilex-ProvenanceDetails>
+                </b-collapse>
+              </opensilex-FilterField>
+            </div>
           </template>
         </opensilex-SearchFilterField>
       </opensilex-PageContent>

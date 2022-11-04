@@ -128,7 +128,8 @@
             "search": {
                 "search-button": "Rechercher",
                 "visualize-button": "Visualiser",
-                "clear-button": "Réinitialiser"
+                "clear-button": "Réinitialiser",
+                "noDataFound": "Pas de données trouvées"
             },
             "filter-search-no-result": "Désolé, aucun élément ne correspond à votre recherche.",
             "help-button": "Aide",

@@ -14,20 +14,6 @@
       >{{ $t("DataVisuGraphic.dataAnnotation") }}</b-list-group-item>
     </b-list-group>
 
-    <!-- <b-list-group
-      v-show="intervalContextMenuShow"
-      ref="intervalContextMenu"
-      class="contextMenu"
-      :style="{ top: topPosition + 'px', left:leftPosition + 'px' }"
-    >
-      <b-list-group-item
-        v-if="showEvents"
-        href="#"
-        @click="addEventClick"
-      >{{ $t("DataVisuGraphic.addEvent") }}</b-list-group-item>
-
-    </b-list-group>-->
-
     <div class="card">
       <div ref="header" class="card-header" v-if="chartOptions.length">
         <opensilex-HelpButton :label="helpText" @click="helpModal.show()" class="dataVisuGraphicHelpButton"></opensilex-HelpButton>
@@ -177,6 +163,7 @@ export default class DataVisuGraphic extends Vue {
 
   @Ref("helpModal") readonly helpModal!: any;
   @Ref("contextMenu") readonly contextMenu!: any;
+  @Ref("highcharts") readonly highchartsRef!: any;
   contextMenuShow = false;
   //  intervalContextMenuShow = false;
   detailDataShow = false;
@@ -561,7 +548,6 @@ export default class DataVisuGraphic extends Vue {
     this.lineWidth = !this.lineWidth;
   }
 
-  @Ref("highcharts") readonly highchartsRef!: any;
 
   closeContextMenu() {
     this.contextMenuShow = false;

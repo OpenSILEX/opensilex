@@ -78,9 +78,11 @@
           </template>
 
           <template v-if="resultCount < totalCount" v-slot:after-list>
-            <i class="more-results-info">{{
-              $t("SelectorForm.refineSearchMessage", [resultCount, totalCount])
-            }}</i>
+            <div class="refineSearchMessage">
+              <i class="more-results-info">{{
+                $t("SelectorForm.refineSearchMessage", [resultCount, totalCount])
+              }}</i>
+            </div>
           </template>
         </treeselect>
         <b-input-group-append v-if="isModalSearch">
@@ -706,18 +708,24 @@ i.more-results-info {
   text-overflow: ellipsis;
   overflow: hidden;
 }
+
+.refineSearchMessage {
+  font-weight: bold;
+  background-color: #00A28C;
+  color: #FFFFFF ;
+}
 </style>
 
 <i18n>
 en:
   SelectorForm:
-    refineSearchMessage: "{0}/{1} results displayed, please refine your search..."
+    refineSearchMessage: "{0} / {1} results displayed, please refine your search..."
     showDetails : "Show details"
     hideDetails : "Hide details"
   
 fr:
   SelectorForm:
-    refineSearchMessage: "{0}/{1} résultats affichés, merci de préciser votre recherche..."
+    refineSearchMessage: "{0} / {1} résultats affichés, merci de préciser votre recherche..."
     showDetails : "Afficher les détails"
     hideDetails : "Masquer les détails"
 

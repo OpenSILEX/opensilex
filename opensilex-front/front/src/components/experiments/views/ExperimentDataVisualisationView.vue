@@ -2,18 +2,32 @@
   <div class="experimentDataVisualisationView">
     <opensilex-PageContent class="pagecontent">
 
+      <!-- Toggle Sidebar--> 
+      <div class="searchMenuContainer"
+        v-on:click="searchFiltersToggle = !searchFiltersToggle"
+        :title="searchFiltersPannel()"
+      >
+        <div class="searchMenuIcon">
+          <i class="ik ik-search"></i>
+        </div>
+      </div>
+
       <!-- Form -->
-      <opensilex-ExperimentDataVisualisationForm
-        ref="experimentDataVisualisationForm"
-        :selectedExperiment="selectedExperiment"
-        :scientificObjects.sync="selectedScientificObjects"
-        :selectedVar.sync="selectedVariable"
-        :refreshSoSelector="refreshSoSelector"
-        :refreshProvComponent="refreshProvComponent"
-        :soFilter="soFilter"
-        @search="onSearch"
-        @onValidateScientificObjects="onValidateScientificObjects"
-      ></opensilex-ExperimentDataVisualisationForm>
+      <Transition>
+        <div v-show="searchFiltersToggle">
+          <opensilex-ExperimentDataVisualisationForm
+            ref="experimentDataVisualisationForm"
+            :selectedExperiment="selectedExperiment"
+            :scientificObjects.sync="selectedScientificObjects"
+            :selectedVar.sync="selectedVariable"
+            :refreshSoSelector="refreshSoSelector"
+            :refreshProvComponent="refreshProvComponent"
+            :soFilter="soFilter"
+            @search="onSearch"
+            @onValidateScientificObjects="onValidateScientificObjects"
+          ></opensilex-ExperimentDataVisualisationForm>
+        </div>
+      </Transition>
 
       <div class="d-flex justify-content-center mb-3" v-if="!showGraphicComponent && initLoader">
         <b-spinner label="Loading..."></b-spinner>
@@ -23,7 +37,10 @@
       <opensilex-DataVisuGraphic
         v-if="showGraphicComponent"
         ref="visuGraphic"
-        class="experimentDataVisualisationGraphic"
+        v-bind:class ="{
+          'experimentDataVisualisationGraphic': searchFiltersToggle,
+          'experimentDataVisualisationGraphicWithoutForm': !searchFiltersToggle
+        }"
         @addEventIsClicked="showEventForm"
         @dataAnnotationIsClicked="showAnnotationForm"
         :startDate="experimentDataVisualisationForm.startDate"
@@ -63,7 +80,7 @@ import {
   VariablesService
 } from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
-import {Component, Prop, Ref} from "vue-property-decorator";
+import {Component, Prop, Ref, Watch} from "vue-property-decorator";
 import OpenSilexVuePlugin from '../../../models/OpenSilexVuePlugin'
 import Vue from "vue";
 import HighchartsDataTransformer from "../../../models/HighchartsDataTransformer";
@@ -86,6 +103,7 @@ export default class ExperimentDataVisualisationView extends Vue {
   @Ref("annotationModalForm") readonly annotationModalForm!: any;
   @Ref("eventsModalForm") readonly eventsModalForm!: any;
   @Ref("experimentDataVisualisationForm") readonly experimentDataVisualisationForm!: any;
+  @Ref("page") readonly page!: any;
 
   showSearchComponent: boolean = true;
   showGraphicComponent: boolean = false;
@@ -99,12 +117,12 @@ export default class ExperimentDataVisualisationView extends Vue {
   selectedScientificObjectsWithLabel: Array<{id: string, label: string}> = [];
   multipleVariables = false;
   showDataVisuView = false;
-  @Ref("page") readonly page!: any;
 
   selectedSO = false;
   selectedVar = false;
   selectedVarLimit;
   selectedSOLimit; 
+  searchFiltersToggle: boolean = true;
 
 
   @Prop()
@@ -156,7 +174,18 @@ export default class ExperimentDataVisualisationView extends Vue {
     this.VariablesService = this.$opensilex.getService("opensilex.VariablesService");
   }
 
+  searchFiltersPannel() {
+    return  this.$t("searchfilter.label")
+  }
 
+  // simulate window resizing to resize the graphic when the filter panel display changes
+  @Watch("searchFiltersToggle")
+  onSearchFilterToggleChange(){
+    this.$nextTick(()=> { 
+      window.dispatchEvent(new Event('resize'));
+    })  
+  }
+  
   buildColorsSOArray() {
     const colorPalette = [
       "#ca6434 ",
@@ -185,6 +214,7 @@ export default class ExperimentDataVisualisationView extends Vue {
 
   // function called on visualization button
   onSearch(form) {
+    this.searchFiltersToggle = !this.searchFiltersToggle
     this.initLoader = true;
     this.form = form;
     this.showGraphicComponent = false;
@@ -273,7 +303,7 @@ export default class ExperimentDataVisualisationView extends Vue {
          this.visuGraphic.reload(series, this.selectedVariablesObjectsList, this.form);
 
       // and scroll to graphic
-        let graphic = document.querySelector('.experimentDataVisualisationGraphic');
+        let graphic = document.querySelector('.experimentDataVisualisationGraphicWithoutForm');
         graphic.scrollIntoView({
           behavior: 'smooth',
         });
@@ -326,7 +356,13 @@ export default class ExperimentDataVisualisationView extends Vue {
       .then((http: HttpResponse<OpenSilexResponse<Array<DataGetDTO>>>) => {
         const data = http.response.result as Array<DataGetDTO>;
         let dataLength = data.length;
-        if (dataLength > 0) {
+
+        if (dataLength === 0){
+          this.$opensilex.showInfoToast(
+          this.$t("component.common.search.noDataFound").toString());
+        }
+
+        if (dataLength >= 0) {
           const cleanData = HighchartsDataTransformer.transformDataForHighcharts(data, {scientificObjectUri: concernedItem.id});
           if (dataLength > 50000) {
             this.$opensilex.showInfoToast(
@@ -478,7 +514,12 @@ export default class ExperimentDataVisualisationView extends Vue {
   transition: height 0.8s ease !important;
 }
 
-.experimentDataVisualisationGraphic {
+.experimentDataVisualisationGraphic{
+  min-width: calc(100% - 400px);
+  max-width: calc(100vw - 400px);
+}
+
+.experimentDataVisualisationGraphicWithoutForm{
   min-width: 100%;
   max-width: 100vw;
 }

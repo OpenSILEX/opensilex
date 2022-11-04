@@ -1,13 +1,26 @@
 <template>
   <div ref="page">
     <opensilex-PageContent class="pagecontent">
+      <!-- Toggle Sidebar-->
+      <div class="searchMenuContainer"
+          v-on:click="searchFiltersToggle = !searchFiltersToggle"
+          :title="searchFiltersPannel()"
+        >
+        <div class="searchMenuIcon">
+          <i class="icon ik ik-search"></i>
+        </div>
+      </div>
 
-    <!--Form-->
-    <opensilex-ScientificObjectVisualizationForm
-        ref="scientificObjectVisualizationForm"
-        :scientificObject="scientificObject.uri"
-        @search="onSearch"
-    ></opensilex-ScientificObjectVisualizationForm>
+      <Transition>
+        <div v-show="searchFiltersToggle">
+          <!--Form-->
+          <opensilex-ScientificObjectVisualizationForm
+              ref="scientificObjectVisualizationForm"
+              :scientificObject="scientificObject.uri"
+              @search="onSearch"
+          ></opensilex-ScientificObjectVisualizationForm>
+        </div>
+      </Transition>
 
 
     <div class="d-flex justify-content-center mb-3" v-if="!isGraphicLoaded">
@@ -31,7 +44,10 @@
         :selectedScientificObjects="scientificObject.uri"
         @addEventIsClicked="showAddEventComponent"
         @dataAnnotationIsClicked="showAnnotationForm"
-        class="ScientificObjectVisualizationGraphic"
+        v-bind:class ="{
+          'ScientificObjectVisualizationGraphic': searchFiltersToggle,
+          'ScientificObjectVisualizationGraphicWithoutForm': !searchFiltersToggle
+        }"
     ></opensilex-DataVisuGraphic>
 
     <opensilex-AnnotationModalForm
@@ -50,7 +66,7 @@
 </template>
 
 <script lang="ts">
-import {Component, Prop, Ref} from "vue-property-decorator";
+import {Component, Prop, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
 import Highcharts from "highcharts";
 import {DataGetDTO, DataService, EventGetDTO, EventsService,} from "opensilex-core/index";
@@ -75,7 +91,7 @@ export default class ScientificObjectVisualizationTab extends Vue {
   annotationData: any;
   variablesService: VariablesService;
   annotationService: AnnotationsService;
-  SearchFiltersToggle: boolean = true;
+  searchFiltersToggle: boolean = true;
 
   get user() {
     return this.$store.state.user;
@@ -120,6 +136,14 @@ export default class ScientificObjectVisualizationTab extends Vue {
     );
   }
 
+  // simulate window resizing to resize the graphic when the filter panel display changes
+  @Watch("searchFiltersToggle")
+  onSearchFilterToggleChange(){
+    this.$nextTick(()=> { 
+      window.dispatchEvent(new Event('resize'));
+    })  
+  }
+
   beforeDestroy() {
     this.langUnwatcher();
   }
@@ -157,6 +181,7 @@ export default class ScientificObjectVisualizationTab extends Vue {
   }
 
   onSearch(form) {
+    this.searchFiltersToggle = !this.searchFiltersToggle;
     this.isGraphicLoaded = false;
     this.showImages = false;
     this.$opensilex.disableLoader();
@@ -355,7 +380,13 @@ export default class ScientificObjectVisualizationTab extends Vue {
       const data = http.response.result as Array<DataGetDTO>;
 
       let dataLength = data.length;
-      if (dataLength > 0) {
+
+        if (dataLength === 0){
+          this.$opensilex.showInfoToast(
+          this.$t("component.common.search.noDataFound").toString());
+        }
+
+        if (dataLength >= 0) {
         const {cleanData, imageData} = await this.transformDataWithImages(data);
         if (dataLength > 50000) {
           this.$opensilex.showInfoToast(
@@ -534,12 +565,20 @@ export default class ScientificObjectVisualizationTab extends Vue {
         );
   }
 
+  searchFiltersPannel() {
+    return this.$t("searchfilter.label")
+  }
 }
 </script>
 
 <style scoped lang="scss">
 
 .ScientificObjectVisualizationGraphic{
+  min-width: calc(100% - 450px);
+  max-width: calc(100vw - 380px);
+}
+
+.ScientificObjectVisualizationGraphicWithoutForm{
   min-width: 100%;
   max-width: 100vw;
 }

@@ -25,7 +25,7 @@ services:
          - "8668:27017"
       restart: always   
       volumes:
-         - mongodb_data5:/data/db
+         - mongodb_data:/data/db
          
 networks:
    backend:

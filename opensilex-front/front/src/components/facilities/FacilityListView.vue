@@ -36,6 +36,7 @@ import FacilitiesView from "./FacilitiesView.vue";
 import { InfrastructureFacilityGetDTO } from 'opensilex-core/index';
 import {ExperimentsService} from "opensilex-core/api/experiments.service";
 import {ExperimentGetListDTO} from "opensilex-core/model/experimentGetListDTO";
+import AssociatedExperimentsList from "../experiments/AssociatedExperimentsList.vue";
 
 @Component
 export default class FacilityListView extends Vue {
@@ -80,26 +81,7 @@ export default class FacilityListView extends Vue {
         .getInfrastructureFacility(facility.uri)
         .then((http: HttpResponse<OpenSilexResponse<FacilityGetDTO>>) => {
           this.selectedFacility = http.response.result;
-          this.expService
-              .searchExperiments(
-                  undefined, // label
-                  undefined, // year
-                  false, // isEnded
-                  undefined, // species
-                  undefined, // factorCategories
-                  undefined, // projects
-                  undefined, // isPublic
-                  [this.selectedFacility.uri],
-                  undefined,
-                  0,
-                  20)
-              .then(
-                  (
-                    http: HttpResponse<OpenSilexResponse<Array<ExperimentGetListDTO>>>
-                  ) => {
-                    this.experiments = http.response.result;
-                  }
-              );
+          this.loadExperiments();
         });
   }
 

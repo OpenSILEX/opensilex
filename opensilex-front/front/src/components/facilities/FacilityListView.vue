@@ -18,6 +18,7 @@
         <!-- Facility detail -->
         <opensilex-FacilityDetail
             :selected="selectedFacility"
+            :experiments="experiments"
         >
         </opensilex-FacilityDetail>
       </div>
@@ -33,14 +34,18 @@ import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
 import FacilitiesView from "./FacilitiesView.vue";
 import { InfrastructureFacilityGetDTO } from 'opensilex-core/index';
+import {ExperimentsService} from "opensilex-core/api/experiments.service";
+import {ExperimentGetListDTO} from "opensilex-core/model/experimentGetListDTO";
 
 @Component
 export default class FacilityListView extends Vue {
   $opensilex: OpenSilexVuePlugin;
 
   service: OrganizationsService;
+  expService: ExperimentsService;
 
   selectedFacility: InfrastructureFacilityGetDTO = null;
+  experiments: Array<ExperimentGetListDTO> = [];
 
   @Ref("facilitiesView")
   facilitiesView: FacilitiesView;
@@ -48,6 +53,9 @@ export default class FacilityListView extends Vue {
   created() {
     this.service = this.$opensilex.getService(
         "opensilex-core.OrganizationsService"
+    );
+    this.expService = this.$opensilex.getService(
+        "opensilex.ExperimentsService"
     );
   }
 
@@ -62,13 +70,36 @@ export default class FacilityListView extends Vue {
   updateSelectedFacility(facility: InfrastructureFacilityGetDTO) {
     if (!facility || !facility.uri) {
       this.selectedFacility = undefined;
+      this.experiments = [];
       return;
     }
+
+    this.experiments = [];
 
     this.service
         .getInfrastructureFacility(facility.uri)
         .then((http: HttpResponse<OpenSilexResponse<InfrastructureFacilityGetDTO>>) => {
           this.selectedFacility = http.response.result;
+          this.expService
+              .searchExperiments(
+                  undefined, // label
+                  undefined, // year
+                  false, // isEnded
+                  undefined, // species
+                  undefined, // factorCategories
+                  undefined, // projects
+                  undefined, // isPublic
+                  [this.selectedFacility.uri],
+                  undefined,
+                  0,
+                  20)
+              .then(
+                  (
+                    http: HttpResponse<OpenSilexResponse<Array<ExperimentGetListDTO>>>
+                  ) => {
+                    this.experiments = http.response.result;
+                  }
+              );
         });
   }
 

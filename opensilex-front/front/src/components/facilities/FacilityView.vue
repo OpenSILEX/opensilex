@@ -8,16 +8,24 @@
     ></opensilex-PageHeader>
     <opensilex-PageActions :tabs="false" :returnButton="true" class="FacilityViewReturnButton">
     </opensilex-PageActions>
-    <div class="facilityDescription">
-      <div class="col-md-12">
-        <opensilex-FacilityDetail
-          :selected="selected"
-          :experiments="experiments"
-          :devices="devices"
-          :withActions="true"
-          @onUpdate="refresh"
-        >
-        </opensilex-FacilityDetail>
+    <div class="row">
+      <div class="col-md-6">
+        <div class="facilityDescription">
+            <opensilex-FacilityDetail
+              :selected="selected"
+              :devices="devices"
+              :withActions="true"
+              @onUpdate="refresh"
+            >
+            </opensilex-FacilityDetail>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <opensilex-AssociatedExperimentsList
+            :searchMethod="loadExperiments"
+            ref="experimentsView"
+        ></opensilex-AssociatedExperimentsList>
       </div>
     </div>
   </div>
@@ -37,6 +45,7 @@ import {ExperimentsService} from "opensilex-core/api/experiments.service";
 import {DevicesService} from "opensilex-core/api/devices.service";
 import {PositionsService} from "opensilex-core/api/positions.service";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+import AssociatedExperimentsList from "../experiments/AssociatedExperimentsList.vue";
 
 @Component
 export default class FacilityView extends Vue {
@@ -94,11 +103,11 @@ export default class FacilityView extends Vue {
 
   loadExperiments() {
     this.experiments = [];
-    this.experimentService
+    return this.experimentService
         .searchExperiments(
             undefined, // label
             undefined, // year
-            false, // isEnded
+            undefined, // isEnded
             undefined, // species
             undefined, // factorCategories
             undefined, // projects
@@ -112,6 +121,7 @@ export default class FacilityView extends Vue {
               http: HttpResponse<OpenSilexResponse<Array<ExperimentGetListDTO>>>
             ) => {
               this.experiments = http.response.result;
+              return http;
             }
         )
         .catch(this.$opensilex.errorHandler);

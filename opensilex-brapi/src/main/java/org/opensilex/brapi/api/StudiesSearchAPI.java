@@ -129,7 +129,7 @@ public class StudiesSearchAPI implements BrapiCall {
                 throw new NotFoundURIException(studyDbId);
             }
         } else {
-            ListWithPagination<ExperimentModel> resultList = xpDao.search(null, null, null, null, isEnded, null, null, currentUser, orderByList, page, pageSize);
+            ListWithPagination<ExperimentModel> resultList = xpDao.search(null, null, null, null, isEnded, null, null, null, currentUser, orderByList, page, pageSize);
 
             ListWithPagination<StudyDTO> resultDTOList = resultList.convert(StudyDTO.class, StudyDTO::fromModel);
             return new BrapiPaginatedListResponse<>(resultDTOList).getResponse();

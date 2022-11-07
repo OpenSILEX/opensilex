@@ -51,6 +51,9 @@ public class ExperimentGetListDTO {
     @JsonProperty("is_public")
     protected Boolean isPublic;
 
+    @JsonProperty("facilities")
+    protected List<URI> facilities = new ArrayList<>();
+
     public URI getUri() {
         return uri;
     }
@@ -115,6 +118,14 @@ public class ExperimentGetListDTO {
         this.isPublic = isPublic;
     }
 
+    public List<URI> getFacilities() {
+        return facilities;
+    }
+
+    public void setFacilities(List<URI> facilities) {
+        this.facilities = facilities;
+    }
+
     protected static List<URI> getUriList(List<? extends SPARQLResourceModel> models) {
 
         if (models == null || models.isEmpty()) {
@@ -136,6 +147,7 @@ public class ExperimentGetListDTO {
         dto.setObjective(model.getObjective());
         dto.setDescription(model.getDescription());
         dto.setSpecies(getUriList(model.getSpecies()));
+        dto.setFacilities(getUriList(model.getFacilities()));
 
         return dto;
     }

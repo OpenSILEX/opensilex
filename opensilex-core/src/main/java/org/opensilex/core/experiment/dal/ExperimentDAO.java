@@ -167,6 +167,7 @@ public class ExperimentDAO {
             Boolean isEnded,
             List<URI> projects,
             Boolean isPublic,
+            List<URI> facilities,
             UserModel user,
             List<OrderBy> orderByList, int page, int pageSize) throws Exception {
         LocalDate startDate;
@@ -192,6 +193,7 @@ public class ExperimentDAO {
                     appendProjectListFilter(select, projects);
                     appendUserExperimentsFilter(select, user);
                     appendPublicFilter(select, isPublic);
+                    appendFacilitiesFilter(select, facilities);
                 },
                 orderByList,
                 page,
@@ -206,6 +208,13 @@ public class ExperimentDAO {
         if (species != null && !species.isEmpty()) {
             addWhere(select, ExperimentModel.URI_FIELD, Oeso.hasSpecies, ExperimentModel.SPECIES_FIELD);
             select.addFilter(SPARQLQueryHelper.inURIFilter(ExperimentModel.SPECIES_FIELD, species));
+        }
+    }
+
+    private void appendFacilitiesFilter(SelectBuilder select, List<URI> facilities) throws Exception {
+        if (facilities != null && !facilities.isEmpty()) {
+            addWhere(select, ExperimentModel.URI_FIELD, Oeso.usesFacility, ExperimentModel.FACILITY_FIELD);
+            select.addFilter(SPARQLQueryHelper.inURIFilter(ExperimentModel.FACILITY_FIELD, facilities));
         }
     }
 

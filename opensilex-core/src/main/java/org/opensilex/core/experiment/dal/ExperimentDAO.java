@@ -159,7 +159,17 @@ public class ExperimentDAO {
 
     }
 
-    public ListWithPagination<ExperimentModel> search(ExperimentSearchFilter filter) throws Exception {
+    public ListWithPagination<ExperimentModel> search(
+            Integer year,
+            String name,
+            List<URI> species,
+            List<URI> factorCategories,
+            Boolean isEnded,
+            List<URI> projects,
+            Boolean isPublic,
+            List<URI> facilities,
+            UserModel user,
+            List<OrderBy> orderByList, int page, int pageSize) throws Exception {
         LocalDate startDate;
         LocalDate endDate;
         if (filter.getYear() != null) {
@@ -180,10 +190,10 @@ public class ExperimentDAO {
                     appendFactorFilter(select, filter.getFactorCategories());
                     appendIsActiveFilter(select, filter.isEnded());
                     appendDateFilter(select, startDate, endDate);
-                    appendProjectListFilter(select, filter.getProjects());
-                    appendUserExperimentsFilter(select, filter.getUser());
-                    appendPublicFilter(select, filter.isPublic());
-                    appendFacilitiesFilter(select, filter.getFacilities());
+                    appendProjectListFilter(select, projects);
+                    appendUserExperimentsFilter(select, user);
+                    appendPublicFilter(select, isPublic);
+                    appendFacilitiesFilter(select, facilities);
                 },
                 filter.getOrderByList(),
                 filter.getPage(),

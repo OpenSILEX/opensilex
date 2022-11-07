@@ -707,6 +707,7 @@ i.more-results-info {
  white-space: normal;
   text-overflow: ellipsis;
   overflow: hidden;
+  width: 170px;
 }
 
 .refineSearchMessage {

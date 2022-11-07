@@ -272,22 +272,20 @@ public class ExperimentAPI {
     ) throws Exception {
         ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql);
 
-        ExperimentSearchFilter filter = new ExperimentSearchFilter()
-                .setYear(year)
-                .setName(name)
-                .setSpecies(species)
-                .setFactorCategories(factorCategories)
-                .setEnded(isEnded)
-                .setProjects(projects)
-                .setPublic(isPublic)
-                .setFacilities(facilities)
-                .setUser(currentUser);
-
-        filter.setOrderByList(orderByList)
-                .setPage(page)
-                .setPageSize(pageSize);
-
-        ListWithPagination<ExperimentModel> resultList = xpDao.search(filter);
+        ListWithPagination<ExperimentModel> resultList = xpDao.search(
+                year,
+                name,
+                species,
+                factorCategories,
+                isEnded,
+                projects,
+                isPublic,
+                facilities,
+                currentUser,
+                orderByList,
+                page,
+                pageSize
+        );
 
         // Convert paginated list to DTO
         ListWithPagination<ExperimentGetListDTO> resultDTOList = resultList.convert(ExperimentGetListDTO.class, ExperimentGetListDTO::fromModel);

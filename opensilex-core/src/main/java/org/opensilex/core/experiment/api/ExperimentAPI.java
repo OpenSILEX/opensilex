@@ -29,6 +29,7 @@ import org.opensilex.core.data.utils.ParsedDateTimeMongo;
 import org.opensilex.core.exception.*;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.experiment.dal.ExperimentSearchFilter;
 import org.opensilex.core.experiment.factor.api.FactorDetailsGetDTO;
 import org.opensilex.core.experiment.factor.dal.FactorDAO;
 import org.opensilex.core.experiment.factor.dal.FactorModel;
@@ -271,20 +272,22 @@ public class ExperimentAPI {
     ) throws Exception {
         ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql);
 
-        ListWithPagination<ExperimentModel> resultList = xpDao.search(
-                year,
-                name,
-                species,
-                factorCategories,
-                isEnded,
-                projects,
-                isPublic,
-                facilities,
-                currentUser,
-                orderByList,
-                page,
-                pageSize
-        );
+        ExperimentSearchFilter filter = new ExperimentSearchFilter()
+                .setYear(year)
+                .setName(name)
+                .setSpecies(species)
+                .setFactorCategories(factorCategories)
+                .setEnded(isEnded)
+                .setProjects(projects)
+                .setPublic(isPublic)
+                .setFacilities(facilities)
+                .setUser(currentUser);
+
+        filter.setOrderByList(orderByList)
+                .setPage(page)
+                .setPageSize(pageSize);
+
+        ListWithPagination<ExperimentModel> resultList = xpDao.search(filter);
 
         // Convert paginated list to DTO
         ListWithPagination<ExperimentGetListDTO> resultDTOList = resultList.convert(ExperimentGetListDTO.class, ExperimentGetListDTO::fromModel);

@@ -350,6 +350,7 @@ export default class ExperimentList extends Vue {
   searchExperiments(options) {
     let isPublic = undefined;
     let isEnded = undefined;
+    let facilities = undefined;
     if (this.filter.state) {
       if (this.filter.state == "public") {
         isPublic = true;
@@ -371,7 +372,7 @@ export default class ExperimentList extends Vue {
         this.filter.factorCategories, // factorCategories
         this.filter.projects, // projects
         isPublic, // isPublic
-        this.filter.facilities,
+        facilities,
         options.orderBy,
         options.currentPage,
         options.pageSize

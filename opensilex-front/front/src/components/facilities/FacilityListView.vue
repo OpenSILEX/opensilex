@@ -33,7 +33,7 @@ import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
 import FacilitiesView from "./FacilitiesView.vue";
-import { FacilityGetDTO } from 'opensilex-core/index';
+import { InfrastructureFacilityGetDTO } from 'opensilex-core/index';
 import {ExperimentsService} from "opensilex-core/api/experiments.service";
 import {ExperimentGetListDTO} from "opensilex-core/model/experimentGetListDTO";
 
@@ -44,7 +44,7 @@ export default class FacilityListView extends Vue {
   service: OrganizationsService;
   expService: ExperimentsService;
 
-  selectedFacility: FacilityGetDTO = null;
+  selectedFacility: InfrastructureFacilityGetDTO = null;
   experiments: Array<ExperimentGetListDTO> = [];
 
   @Ref("facilitiesView")
@@ -80,9 +80,26 @@ export default class FacilityListView extends Vue {
         .getInfrastructureFacility(facility.uri)
         .then((http: HttpResponse<OpenSilexResponse<FacilityGetDTO>>) => {
           this.selectedFacility = http.response.result;
-          if(this.selectedFacility) {
-            this.$nextTick(() => {this.loadExperiments();});
-          }
+          this.expService
+              .searchExperiments(
+                  undefined, // label
+                  undefined, // year
+                  false, // isEnded
+                  undefined, // species
+                  undefined, // factorCategories
+                  undefined, // projects
+                  undefined, // isPublic
+                  [this.selectedFacility.uri],
+                  undefined,
+                  0,
+                  20)
+              .then(
+                  (
+                    http: HttpResponse<OpenSilexResponse<Array<ExperimentGetListDTO>>>
+                  ) => {
+                    this.experiments = http.response.result;
+                  }
+              );
         });
   }
 

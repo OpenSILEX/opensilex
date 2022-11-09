@@ -23,6 +23,7 @@ import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.device.dal.DeviceModel;
+import org.opensilex.core.device.dal.DeviceSearchFilter;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.event.dal.move.PositionModel;
@@ -199,20 +200,23 @@ public class DeviceAPI {
         }
         
         DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
-        ListWithPagination<DeviceModel> devices = dao.search(name,
-            rdfType,
-            includeSubTypes,
-            variable,
-            year,
-            existenceDate,
-            brand,
-            model,
-            serialNumber,
-            metadataFilter,
-            currentUser,
-            orderByList,
-            page,
-            pageSize);
+
+        DeviceSearchFilter filter = new DeviceSearchFilter()
+                .setRdfType(rdfType)
+                .setIncludeSubTypes(includeSubTypes)
+                .setVariable(variable)
+                .setYear(year)
+                .setExistenceDate(existenceDate)
+                .setBrandPattern(brand)
+                .setModelPattern(model)
+                .setSnPattern(serialNumber)
+                .setMetadata(metadataFilter)
+                .setCurrentUser(currentUser);
+        filter.setOrderByList(orderByList)
+                .setPage(page)
+                .setPageSize(pageSize);
+
+        ListWithPagination<DeviceModel> devices = dao.search(filter);
 
         ListWithPagination<DeviceGetDTO> dtoList = devices.convert(DeviceGetDTO.class, DeviceGetDTO::getDTOFromModel);
 
@@ -440,21 +444,22 @@ public class DeviceAPI {
 
         // Search device with device DAO
         DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
-        List<DeviceModel> resultList = dao.searchForExport(
-            name,
-            rdfType,
-            includeSubTypes,
-            year,
-            existenceDate,
-            brand,
-            model,
-            serialNumber,
-            metadataFilter,
-            currentUser
-        );
+
+        DeviceSearchFilter filter = new DeviceSearchFilter()
+                .setNamePattern(name)
+                .setRdfType(rdfType)
+                .setIncludeSubTypes(includeSubTypes)
+                .setYear(year)
+                .setExistenceDate(existenceDate)
+                .setBrandPattern(brand)
+                .setModelPattern(model)
+                .setSnPattern(serialNumber)
+                .setMetadata(metadataFilter)
+                .setCurrentUser(currentUser);
+
+        List<DeviceModel> resultList = dao.searchForExport(filter);
 
         return buildCSV(resultList);
-
     }
     
     @POST
@@ -993,21 +998,14 @@ public class DeviceAPI {
     ) throws Exception {
 
         DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
-        ListWithPagination<DeviceModel> devices = dao.search(
-                null,
-                null,
-                false,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                currentUser,
-                orderByList,
-                page,
-                pageSize);
+
+        DeviceSearchFilter filter = new DeviceSearchFilter()
+                .setCurrentUser(currentUser);
+        filter.setOrderByList(orderByList)
+                .setPage(page)
+                .setPageSize(pageSize);
+
+        ListWithPagination<DeviceModel> devices = dao.search(filter);
 
         List<DeviceGetDTO> resultList = new ArrayList<>();
         devices.getList().forEach( (device) -> {

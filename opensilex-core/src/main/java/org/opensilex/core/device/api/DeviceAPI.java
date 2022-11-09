@@ -23,6 +23,7 @@ import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.device.dal.DeviceModel;
+import org.opensilex.core.device.dal.DeviceSearchFilter;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.event.dal.move.PositionModel;
@@ -204,7 +205,6 @@ public class DeviceAPI {
         DeviceSearchFilter filter = new DeviceSearchFilter()
                 .setRdfType(rdfType)
                 .setIncludeSubTypes(includeSubTypes)
-                .setNamePattern(name)
                 .setVariable(variable)
                 .setYear(year)
                 .setExistenceDate(existenceDate)
@@ -218,25 +218,6 @@ public class DeviceAPI {
                 .setPageSize(pageSize);
 
         ListWithPagination<DeviceModel> devices = dao.search(filter);
-
-        if (facility != null) {
-            List<DeviceModel> resultList = new ArrayList<>();
-
-            devices.getList().forEach((device) -> {
-                try {
-                    FacilityModel facilityModel = dao.getAssociatedFacility(device.getUri(), currentUser);
-                    if (facilityModel != null) {
-                        if (SPARQLDeserializers.compareURIs(facility, facilityModel.getUri())) {
-                            resultList.add(device);
-                        }
-                    }
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            });
-
-            devices = new ListWithPagination<>(resultList);
-        }
 
         ListWithPagination<DeviceGetDTO> dtoList = devices.convert(DeviceGetDTO.class, DeviceGetDTO::getDTOFromModel);
 
@@ -1018,21 +999,14 @@ public class DeviceAPI {
     ) throws Exception {
 
         DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
-        ListWithPagination<DeviceModel> devices = dao.search(
-                null,
-                null,
-                false,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                currentUser,
-                orderByList,
-                page,
-                pageSize);
+
+        DeviceSearchFilter filter = new DeviceSearchFilter()
+                .setCurrentUser(currentUser);
+        filter.setOrderByList(orderByList)
+                .setPage(page)
+                .setPageSize(pageSize);
+
+        ListWithPagination<DeviceModel> devices = dao.search(filter);
 
         List<DeviceGetDTO> resultList = new ArrayList<>();
         devices.getList().forEach( (device) -> {

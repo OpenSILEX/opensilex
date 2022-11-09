@@ -1,5 +1,6 @@
 package org.opensilex.core.device.api;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -22,9 +23,19 @@ import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.device.dal.DeviceModel;
+import org.opensilex.core.event.dal.move.MoveEventDAO;
+import org.opensilex.core.event.dal.move.MoveModel;
+import org.opensilex.core.event.dal.move.PositionModel;
 import org.opensilex.core.exception.UnableToParseDateException;
 import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
+import org.opensilex.core.organisation.api.InfrastructureGetDTO;
+import org.opensilex.core.organisation.api.facitity.InfrastructureFacilityGetDTO;
+import org.opensilex.core.organisation.dal.InfrastructureDAO;
+import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
+import org.opensilex.core.organisation.dal.InfrastructureModel;
+import org.opensilex.core.position.api.PositionAPI;
+import org.opensilex.core.position.api.PositionGetDTO;
 import org.opensilex.sparql.csv.DefaultCsvImporter;
 import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
@@ -41,6 +52,9 @@ import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.server.rest.validation.ValidURI;
+import org.opensilex.sparql.deserializer.SPARQLDeserializer;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.service.SPARQLService;
@@ -61,6 +75,7 @@ import java.io.StringWriter;
 import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.time.zone.ZoneRulesException;
@@ -937,6 +952,79 @@ public class DeviceAPI {
         DataDAO dataDAO = new DataDAO(nosql, sparql, null);
         List<ProvenanceModel> provenances = dataDAO.getProvenancesByDevice(currentUser, uri, DataDAO.FILE_COLLECTION_NAME);
         List<ProvenanceGetDTO> dtoList = provenances.stream().map(ProvenanceGetDTO::fromModel).collect(Collectors.toList());
+        return new PaginatedListResponse<>(dtoList).getResponse();
+    }
+
+    @GET
+    @Path("{uri}/facility")
+    @ApiOperation("Get device facility")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return device details corresponding to the device URI", response = InfrastructureFacilityGetDTO.class)
+    })
+    public Response getDeviceFacility(
+            @ApiParam(value = "Device URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
+    ) throws Exception {
+
+        DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
+
+        InfrastructureFacilityModel facilityModel = dao.getAssociatedFacility(uri, currentUser);
+        InfrastructureFacilityGetDTO facility = InfrastructureFacilityGetDTO.getDTOFromModel(facilityModel, true);
+
+        return new SingleObjectResponse<>(facility).getResponse();
+    }
+
+    @GET
+    @Path("facility")
+    @ApiOperation("Search devices by facility")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return devices corresponding to the given search parameters", response = DeviceGetDTO.class, responseContainer = "List")
+    })
+    public Response searchDevicesByFacility(
+            @ApiParam(value = "Facility URI", example = DEVICE_EXAMPLE_URI) @QueryParam("facility") @ValidURI URI facility,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+    ) throws Exception {
+
+        DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
+        ListWithPagination<DeviceModel> devices = dao.search(
+                null,
+                null,
+                false,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                currentUser,
+                orderByList,
+                page,
+                pageSize);
+
+        List<DeviceGetDTO> resultList = new ArrayList<>();
+        devices.getList().forEach( (device) -> {
+            try {
+                InfrastructureFacilityModel facilityModel = dao.getAssociatedFacility(device.getUri(), currentUser);
+                if (facilityModel != null) {
+                    if (SPARQLDeserializers.compareURIs(facility, facilityModel.getUri())) {
+                        resultList.add(DeviceGetDTO.getDTOFromModel(device));
+                    }
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        ListWithPagination<DeviceGetDTO> dtoList = new ListWithPagination<>(resultList);
+
         return new PaginatedListResponse<>(dtoList).getResponse();
     }
 

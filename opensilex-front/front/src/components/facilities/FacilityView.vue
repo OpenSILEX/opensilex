@@ -24,6 +24,7 @@
       <div class="col-md-6">
         <opensilex-AssociatedExperimentsList
             :searchMethod="loadExperiments"
+            :nameFilter.sync="experimentName"
             ref="experimentsView"
         ></opensilex-AssociatedExperimentsList>
       </div>
@@ -54,11 +55,12 @@ export default class FacilityView extends Vue {
   selected: InfrastructureGetDTO = null;
   experiments: Array<ExperimentGetListDTO> = [];
   devices: Array<DeviceGetDTO> = [];
+  experimentName: string = "";
   uri = null;
+
   organizationService: OrganizationsService;
   experimentService: ExperimentsService;
   deviceService: DevicesService;
-  positionService: PositionsService;
 
   @Ref("infrastructureFacilityForm") readonly infrastructureFacilityForm!: any;
   @Ref("experimentsView")
@@ -83,9 +85,6 @@ export default class FacilityView extends Vue {
     this.deviceService = this.$opensilex.getService(
         "opensilex-core.DevicesService"
     );
-    this.positionService = this.$opensilex.getService(
-        "opensilex.PositionsService"
-    );
     this.refresh();
   }
 
@@ -105,7 +104,7 @@ export default class FacilityView extends Vue {
     this.experiments = [];
     return this.experimentService
         .searchExperiments(
-            undefined, // label
+            this.experimentName, // label
             undefined, // year
             undefined, // isEnded
             undefined, // species
@@ -129,52 +128,23 @@ export default class FacilityView extends Vue {
 
   loadDevices() {
     this.devices = [];
-    this.deviceService.searchDevices()
-      .then(
-          (
-            http: HttpResponse<OpenSilexResponse<Array<DeviceGetDTO>>>
-          ) => {
-            if (http && http.response) {
-              http.response.result.forEach(dto => {
-                this.loadDeviceIfRelatedToFacility(dto);
-              })
+    this.deviceService.searchDevicesByFacility(
+        this.uri,
+        undefined,
+        0,
+        20)
+        .then(
+            (
+                http: HttpResponse<OpenSilexResponse<Array<DeviceGetDTO>>>
+            ) => {
+              if (http && http.response) {
+                this.devices = http.response.result;
+              }
             }
-          }
-      )
-      .catch(this.$opensilex.errorHandler);
+        )
+        .catch(this.$opensilex.errorHandler);
   }
 
-  // TODO: rework uri comparison
-  loadDeviceIfRelatedToFacility(dto : DeviceGetDTO){
-    // Get moves with the device uri (target) by date in descending order
-    this.positionService.searchPositionHistory(
-        dto.uri,
-        undefined,
-        undefined,
-        ["end=desc"],
-        undefined,
-        undefined
-    )
-      .then(
-          (
-            http: HttpResponse<OpenSilexResponse<Array<PositionGetDTO>>>
-          ) => {
-            console.log(http);
-            if (!http && !http.response && http.response.result.length === 0) {
-              return;
-            }
-            let lastPosition = http.response.result[0];
-            if (!lastPosition) {
-              return;
-            }
-
-            let isMatchUri = this.$opensilex.checkURIs(lastPosition.to.uri, this.uri)
-            if (isMatchUri) {
-              this.devices.push(dto);
-            }
-      })
-      .catch(this.$opensilex.errorHandler);
-  }
 }
 </script>
 

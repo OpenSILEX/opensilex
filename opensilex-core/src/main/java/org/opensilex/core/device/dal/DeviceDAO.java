@@ -197,7 +197,7 @@ public class DeviceDAO {
             // set the custom filter on type
             Map<String, WhereHandler> customHandlerByFields = new HashMap<>();
 
-            if (includeSubTypes) {
+            if (BooleanUtils.isTrue(includeSubTypes)) {
                 appendTypeFilter(customHandlerByFields, rdfType);
             }
 
@@ -602,10 +602,12 @@ public class DeviceDAO {
             });
 
             PositionGetDTO lastPosition = resultDTOList.get(0);
-            URI facilityUri = new URI(URIDeserializer.getShortURI(lastPosition.getTo().getUri().toString()));
+            if (lastPosition.getTo() != null) {
+                URI facilityUri = new URI(URIDeserializer.getShortURI(lastPosition.getTo().getUri().toString()));
 
-            InfrastructureDAO infraDAO = new InfrastructureDAO(sparql, nosql);
-            facility = infraDAO.getFacility(facilityUri, currentUser);
+                InfrastructureDAO infraDAO = new InfrastructureDAO(sparql, nosql);
+                facility = infraDAO.getFacility(facilityUri, currentUser);
+            }
         }
 
         return facility;

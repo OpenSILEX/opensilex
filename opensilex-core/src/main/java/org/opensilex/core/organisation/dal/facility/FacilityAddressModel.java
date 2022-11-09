@@ -1,7 +1,8 @@
-package org.opensilex.core.organisation.dal;
+package org.opensilex.core.organisation.dal.facility;
 
 import org.apache.jena.vocabulary.VCARD4;
 import org.opensilex.core.address.dal.AddressModel;
+import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 
@@ -13,7 +14,7 @@ import org.opensilex.sparql.annotations.SPARQLResource;
 @SPARQLResource(
         ontology = VCARD4.class,
         resource = "Address",
-        graph = InfrastructureModel.GRAPH
+        graph = OrganizationModel.GRAPH
 )
 public class FacilityAddressModel extends AddressModel {
     @SPARQLProperty(
@@ -21,13 +22,13 @@ public class FacilityAddressModel extends AddressModel {
             property = "hasAddress",
             inverse = true
     )
-    protected InfrastructureFacilityModel facility;
+    protected FacilityModel facility;
 
-    public InfrastructureFacilityModel getFacility() {
+    public FacilityModel getFacility() {
         return facility;
     }
 
-    public void setFacility(InfrastructureFacilityModel facility) {
+    public void setFacility(FacilityModel facility) {
         this.facility = facility;
     }
 }

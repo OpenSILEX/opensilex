@@ -24,7 +24,6 @@ import static org.junit.Assert.assertFalse;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.opensilex.OpenSilex;
 import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
@@ -63,12 +62,12 @@ public class GermplasmAPITest extends AbstractMongoIntegrationTest {
     public void testCreate() throws Exception {
 
         // create species
-        final Response postResultSpecies = getJsonPostResponse(target(createPath), getCreationSpeciesDTO());
+        final Response postResultSpecies = getJsonPostResponseAsAdmin(target(createPath), getCreationSpeciesDTO());
         assertEquals(Response.Status.CREATED.getStatusCode(), postResultSpecies.getStatus());
 
         // ensure that the result is a well formed URI, else throw exception
         URI createdSpeciesUri = extractUriFromResponse(postResultSpecies);
-        final Response getResultSpecies = getJsonGetByUriResponse(target(uriPath), createdSpeciesUri.toString());
+        final Response getResultSpecies = getJsonGetByUriResponseAsAdmin(target(uriPath), createdSpeciesUri.toString());
         assertEquals(Response.Status.OK.getStatusCode(), getResultSpecies.getStatus());
         
     }
@@ -76,10 +75,10 @@ public class GermplasmAPITest extends AbstractMongoIntegrationTest {
     @Test
     public void testGetByUri() throws Exception {
 
-        final Response postResult = getJsonPostResponse(target(createPath), getCreationSpeciesDTO());
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationSpeciesDTO());
         URI uri = extractUriFromResponse(postResult);
 
-        final Response getResult = getJsonGetByUriResponse(target(uriPath), uri.toString());
+        final Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), uri.toString());
         assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
 
         // try to deserialize object
@@ -94,7 +93,7 @@ public class GermplasmAPITest extends AbstractMongoIntegrationTest {
     @Test
     public void testSearch() throws Exception {
         GermplasmCreationDTO creationDTO = getCreationSpeciesDTO();
-        final Response postResult = getJsonPostResponse(target(createPath), creationDTO);
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), creationDTO);
         URI uri = extractUriFromResponse(postResult);
 
         Map<String, Object> params = new HashMap<String, Object>() {
@@ -105,7 +104,7 @@ public class GermplasmAPITest extends AbstractMongoIntegrationTest {
         };
 
         WebTarget searchTarget = appendSearchParams(target(searchPath), 0, 20, params);
-        final Response getResult = appendToken(searchTarget).get();
+        final Response getResult = appendAdminToken(searchTarget).get();
         assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
 
         JsonNode node = getResult.readEntity(JsonNode.class);
@@ -174,7 +173,7 @@ public class GermplasmAPITest extends AbstractMongoIntegrationTest {
 
         // create a species
         GermplasmCreationDTO species = getCreationSpeciesDTO();
-        final Response postResult = getJsonPostResponse(target(createPath), species);
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), species);
 
         // update the germplasm
         species.setUri(extractUriFromResponse(postResult));
@@ -191,14 +190,14 @@ public class GermplasmAPITest extends AbstractMongoIntegrationTest {
 
         // create the species that can be deleted and check if URI exists
         GermplasmCreationDTO speciesToDelete = getCreationSpeciesDTO();
-        Response postResponse1 = getJsonPostResponse(target(createPath), speciesToDelete);
+        Response postResponse1 = getJsonPostResponseAsAdmin(target(createPath), speciesToDelete);
         URI uriToDelete = extractUriFromResponse(postResponse1);
         // delete the species that can be deleted 
         Response delResult = getDeleteByUriResponse(target(deletePath), uriToDelete.toString());
         assertEquals(Status.OK.getStatusCode(), delResult.getStatus());
 
         // check if URI no longer exists
-        Response getResult = getJsonGetByUriResponse(target(uriPath), uriToDelete.toString());
+        Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), uriToDelete.toString());
         assertEquals(Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
 
     }

@@ -8,9 +8,9 @@ package org.opensilex.core.organisation.api;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModel;
 import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
-import org.opensilex.core.organisation.dal.InfrastructureModel;
-import org.opensilex.core.organisation.dal.SiteModel;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
+import org.opensilex.core.organisation.dal.OrganizationModel;
+import org.opensilex.core.organisation.dal.site.SiteModel;
 import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.response.ResourceDagReferenceDTO;
@@ -26,12 +26,12 @@ import java.util.stream.Collectors;
  */
 @ApiModel
 @JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "parents", "children", "groups", "facilities", "sites", "experiments"})
-public class InfrastructureGetDTO extends ResourceDagReferenceDTO<InfrastructureModel> {
+public class OrganizationGetDTO extends ResourceDagReferenceDTO<OrganizationModel> {
     
     protected List<NamedResourceDTO<GroupModel>> groups;
 
     
-    protected List<NamedResourceDTO<InfrastructureFacilityModel>> facilities;
+    protected List<NamedResourceDTO<FacilityModel>> facilities;
 
     protected List<NamedResourceDTO<SiteModel>> sites;
 
@@ -45,11 +45,11 @@ public class InfrastructureGetDTO extends ResourceDagReferenceDTO<Infrastructure
         this.groups = groups;
     }
 
-    public List<NamedResourceDTO<InfrastructureFacilityModel>> getFacilities() {
+    public List<NamedResourceDTO<FacilityModel>> getFacilities() {
         return facilities;
     }
 
-    public void setFacilities(List<NamedResourceDTO<InfrastructureFacilityModel>> facilities) {
+    public void setFacilities(List<NamedResourceDTO<FacilityModel>> facilities) {
         this.facilities = facilities;
     }
 
@@ -70,12 +70,12 @@ public class InfrastructureGetDTO extends ResourceDagReferenceDTO<Infrastructure
     }
 
     @Override
-    public InfrastructureModel newModelInstance() {
-        return new InfrastructureModel();
+    public OrganizationModel newModelInstance() {
+        return new OrganizationModel();
     }
 
     @Override
-    public void fromModel(InfrastructureModel model) {
+    public void fromModel(OrganizationModel model) {
         super.fromModel(model);
 
         List<NamedResourceDTO<GroupModel>> groups;
@@ -89,7 +89,7 @@ public class InfrastructureGetDTO extends ResourceDagReferenceDTO<Infrastructure
         }
         setGroups(groups);
 
-        List<NamedResourceDTO<InfrastructureFacilityModel>> facilities;
+        List<NamedResourceDTO<FacilityModel>> facilities;
         if (model.getFacilities() != null) {
             facilities = new ArrayList<>(model.getFacilities().size());
             model.getFacilities().forEach(facility -> {
@@ -124,7 +124,7 @@ public class InfrastructureGetDTO extends ResourceDagReferenceDTO<Infrastructure
     }
 
     @Override
-    public void toModel(InfrastructureModel model) {
+    public void toModel(OrganizationModel model) {
         super.toModel(model);
 
         List<GroupModel> groups;
@@ -137,7 +137,7 @@ public class InfrastructureGetDTO extends ResourceDagReferenceDTO<Infrastructure
             model.setGroups(groups);
         }
 
-        List<InfrastructureFacilityModel> facilities;
+        List<FacilityModel> facilities;
         if (getFacilities() != null) {
             facilities = new ArrayList<>(getFacilities().size());
             getFacilities().forEach(facility -> {
@@ -160,16 +160,16 @@ public class InfrastructureGetDTO extends ResourceDagReferenceDTO<Infrastructure
         }
     }
 
-    public static InfrastructureGetDTO getDTOFromModel(InfrastructureModel model) {
-        InfrastructureGetDTO dto = new InfrastructureGetDTO();
+    public static OrganizationGetDTO getDTOFromModel(OrganizationModel model) {
+        OrganizationGetDTO dto = new OrganizationGetDTO();
         dto.fromModel(model);
 
         return dto;
     }
 
-    public static List<InfrastructureGetDTO> getDTOListFromModel(List<InfrastructureModel> modelList) {
+    public static List<OrganizationGetDTO> getDTOListFromModel(List<OrganizationModel> modelList) {
         return modelList
-                .stream().map(InfrastructureGetDTO::getDTOFromModel)
+                .stream().map(OrganizationGetDTO::getDTOFromModel)
                 .collect(Collectors.toList());
     }
 }

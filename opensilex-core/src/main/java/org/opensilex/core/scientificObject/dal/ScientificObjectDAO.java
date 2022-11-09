@@ -32,13 +32,12 @@ import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.ontology.dal.SPARQLRelationFetcher;
-import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.scientificObject.api.ScientificObjectNodeDTO;
 import org.opensilex.core.scientificObject.api.ScientificObjectNodeWithChildrenDTO;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.exceptions.InvalidValueException;
-import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.DateDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -792,7 +791,7 @@ public class ScientificObjectDAO {
         boolean hasFacility = false;
         for (SPARQLModelRelation relation : object.getRelations()) {
             if (SPARQLDeserializers.compareURIs(relation.getProperty().getURI(), Oeso.isHosted.getURI())) {
-                InfrastructureFacilityModel infraModel = new InfrastructureFacilityModel();
+                FacilityModel infraModel = new FacilityModel();
                 infraModel.setUri(new URI(relation.getValue()));
                 facilityMoveEvent.setTo(infraModel);
                 hasFacility = true;

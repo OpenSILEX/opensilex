@@ -7,7 +7,7 @@ import io.swagger.annotations.ApiModelProperty;
 import org.apache.commons.collections4.CollectionUtils;
 import org.opensilex.core.event.api.EventGetDTO;
 import org.opensilex.core.event.dal.move.MoveModel;
-import org.opensilex.core.organisation.api.facitity.InfrastructureFacilityNamedDTO;
+import org.opensilex.core.organisation.api.facility.FacilityNamedDTO;
 import org.opensilex.core.position.api.TargetPositionGetDTO;
 import org.opensilex.core.event.dal.move.TargetPositionModel;
 import org.opensilex.core.event.dal.move.MoveEventNoSqlModel;
@@ -25,10 +25,10 @@ import java.util.List;
 public class MoveGetDTO extends EventGetDTO {
 
     @JsonProperty("from")
-    private InfrastructureFacilityNamedDTO from;
+    private FacilityNamedDTO from;
 
     @JsonProperty("to")
-    private InfrastructureFacilityNamedDTO to;
+    private FacilityNamedDTO to;
 
     @JsonProperty("targets_positions")
     private List<TargetPositionGetDTO> targetsPositions;
@@ -40,10 +40,10 @@ public class MoveGetDTO extends EventGetDTO {
 
         super.fromModel(model);
         if(model.getFrom() != null){
-            from = new InfrastructureFacilityNamedDTO(model.getFrom());
+            from = new FacilityNamedDTO(model.getFrom());
         }
         if(model.getTo() != null){
-            to = new InfrastructureFacilityNamedDTO(model.getTo());
+            to = new FacilityNamedDTO(model.getTo());
         }
 
         MoveEventNoSqlModel moveEventNoSqlModel = model.getNoSqlModel();
@@ -63,19 +63,19 @@ public class MoveGetDTO extends EventGetDTO {
 
     }
 
-    public InfrastructureFacilityNamedDTO getFrom() {
+    public FacilityNamedDTO getFrom() {
         return from;
     }
 
-    public void setFrom(InfrastructureFacilityNamedDTO from) {
+    public void setFrom(FacilityNamedDTO from) {
         this.from = from;
     }
 
-    public InfrastructureFacilityNamedDTO getTo() {
+    public FacilityNamedDTO getTo() {
         return to;
     }
 
-    public void setTo(InfrastructureFacilityNamedDTO to) {
+    public void setTo(FacilityNamedDTO to) {
         this.to = to;
     }
 

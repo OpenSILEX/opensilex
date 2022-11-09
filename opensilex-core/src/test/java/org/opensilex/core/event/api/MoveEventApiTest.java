@@ -14,7 +14,7 @@ import org.opensilex.core.event.api.move.MoveCreationDTO;
 import org.opensilex.core.event.api.move.MoveGetDTO;
 import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
-import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.position.api.*;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.server.response.PaginatedListResponse;
@@ -46,36 +46,36 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
     public String getPositionPath = positionPath + "/{uri}";
     public String getPositionHistoryPath = positionPath + "/history";
 
-    private InfrastructureFacilityModel facilityA;
-    private InfrastructureFacilityModel facilityB;
-    private InfrastructureFacilityModel facilityC;
+    private FacilityModel facilityA;
+    private FacilityModel facilityB;
+    private FacilityModel facilityC;
 
     private Node scientificObjectGraph;
     private ScientificObjectModel scientificObjectA;
     private ScientificObjectModel scientificObjectB;
     private ScientificObjectModel scientificObjectC;
 
-    private List<InfrastructureFacilityModel> fromFacilities;
-    private List<InfrastructureFacilityModel> toFacilities;
+    private List<FacilityModel> fromFacilities;
+    private List<FacilityModel> toFacilities;
     private final static int nbMoveMax = 10;
 
     @Before
     public void createFacilities() throws Exception {
 
-        facilityA = new InfrastructureFacilityModel();
+        facilityA = new FacilityModel();
         facilityA.setUri(new URI("test:greenHouseA"));
         facilityA.setName("greenHouseA");
 
-        facilityB = new InfrastructureFacilityModel();
+        facilityB = new FacilityModel();
         facilityB.setUri(new URI("test:greenHouseB"));
         facilityB.setName("greenHouseB");
 
-        facilityC = new InfrastructureFacilityModel();
+        facilityC = new FacilityModel();
         facilityC.setUri(new URI("test:greenHouseC"));
         facilityC.setName("greenHouseC");
 
         SPARQLService sparql = getSparqlService();
-        Node facilityGraph = sparql.getDefaultGraph(InfrastructureFacilityModel.class);
+        Node facilityGraph = sparql.getDefaultGraph(FacilityModel.class);
         sparql.create(facilityGraph,Arrays.asList(facilityA, facilityB, facilityC));
 
         //
@@ -84,12 +84,12 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
 
         for(int i=0; i<nbMoveMax;i++){
 
-            InfrastructureFacilityModel fromFacility = new InfrastructureFacilityModel();
+            FacilityModel fromFacility = new FacilityModel();
             fromFacility.setUri(new URI("test:from_facility_"+i));
             fromFacility.setName("from_facility_"+i);
             fromFacilities.add(fromFacility);
 
-            InfrastructureFacilityModel toFacility = new InfrastructureFacilityModel();
+            FacilityModel toFacility = new FacilityModel();
             toFacility.setUri(new URI("test:to_facility_"+i));
             toFacility.setName("to_facility_"+i);
             toFacilities.add(toFacility);
@@ -178,7 +178,7 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
         MoveCreationDTO creationDTO = getCreationDto();
         creationDTO.setTo(new URI("test:unknownFacilityA"));
 
-        final Response postResult = getJsonPostResponse(target(createPath),Collections.singletonList(creationDTO));
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath),Collections.singletonList(creationDTO));
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(),postResult.getStatus());
     }
 
@@ -187,7 +187,7 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
         MoveCreationDTO creationDTO = getCreationDto();
         creationDTO.setFrom(new URI("test:unknownFacilityA"));
 
-        final Response postResult = getJsonPostResponse(target(createPath),Collections.singletonList(creationDTO));
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath),Collections.singletonList(creationDTO));
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(),postResult.getStatus());
     }
 
@@ -197,7 +197,7 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
         MoveCreationDTO dto = getCreationDto();
         dto.setTargets(Arrays.asList(new URI("oeev:unknown_target")));
 
-        Response postResult = getJsonPostResponse(target(createPath),Collections.singletonList(dto));
+        Response postResult = getJsonPostResponseAsAdmin(target(createPath),Collections.singletonList(dto));
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), postResult.getStatus());
 
     }
@@ -212,8 +212,8 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
 
         for(int i=0; i<n;i++){
 
-            InfrastructureFacilityModel fromFacility = fromFacilities.get(i);
-            InfrastructureFacilityModel toFacility = toFacilities.get(i);
+            FacilityModel fromFacility = fromFacilities.get(i);
+            FacilityModel toFacility = toFacilities.get(i);
 
             MoveCreationDTO creationDTO = getCreationDto();
             creationDTO.setDescription("Description "+i);
@@ -222,7 +222,7 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
             dtos.add(creationDTO);
         }
 
-        Response postResult = getJsonPostResponse(target(createPath), dtos);
+        Response postResult = getJsonPostResponseAsAdmin(target(createPath), dtos);
 
         List<URI> createdUris = extractUriListFromPaginatedListResponse(postResult);
         assertEquals(n,createdUris.size());
@@ -231,7 +231,7 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
 //    @Test
     public void testUpdate() throws Exception {
         MoveCreationDTO creationDTO = getCreationDto();
-        Response postResult = getJsonPostResponse(target(createPath), Collections.singletonList(creationDTO));
+        Response postResult = getJsonPostResponseAsAdmin(target(createPath), Collections.singletonList(creationDTO));
         URI uri =  extractUriListFromPaginatedListResponse(postResult).get(0);
 
         // update move by setting no positions
@@ -240,7 +240,7 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
         assertEquals(Response.Status.OK.getStatusCode(),putResponse.getStatus());
 
         // check that positions have been deleted
-        Response getResult = getJsonGetByUriResponse(target(getByUriPath), uri.toString());
+        Response getResult = getJsonGetByUriResponseAsAdmin(target(getByUriPath), uri.toString());
         JsonNode node = getResult.readEntity(JsonNode.class);
         SingleObjectResponse<MoveGetDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<MoveGetDTO>>() {
         });
@@ -251,7 +251,7 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
     public void testUpdateWithNullNoSqlModel() throws Exception {
 
         MoveCreationDTO creationDTO = getCreationDto();
-        Response postResult = getJsonPostResponse(target(createPath), Collections.singletonList(creationDTO));
+        Response postResult = getJsonPostResponseAsAdmin(target(createPath), Collections.singletonList(creationDTO));
         URI uri =  extractUriListFromPaginatedListResponse(postResult).get(0);
 
         // update move by setting no positions
@@ -261,7 +261,7 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
         assertEquals(Response.Status.OK.getStatusCode(),putResponse.getStatus());
 
         // check that positions have been deleted
-        Response getResult = getJsonGetByUriResponse(target(getByUriPath), uri.toString());
+        Response getResult = getJsonGetByUriResponseAsAdmin(target(getByUriPath), uri.toString());
         JsonNode node = getResult.readEntity(JsonNode.class);
         SingleObjectResponse<MoveGetDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<MoveGetDTO>>() {
         });
@@ -288,10 +288,10 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
     public void testGetByUri() throws Exception {
 
         MoveCreationDTO creationDTO = getCreationDto();
-        Response postResult = getJsonPostResponse(target(createPath), Collections.singletonList(creationDTO));
+        Response postResult = getJsonPostResponseAsAdmin(target(createPath), Collections.singletonList(creationDTO));
 
         URI uri =  extractUriListFromPaginatedListResponse(postResult).get(0);
-        Response getResult = getJsonGetByUriResponse(target(getByUriPath), uri.toString());
+        Response getResult = getJsonGetByUriResponseAsAdmin(target(getByUriPath), uri.toString());
 
         // try to deserialize object and check if the fields value are the same
         JsonNode node = getResult.readEntity(JsonNode.class);
@@ -342,11 +342,11 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
     public void testGetPosition() throws Exception {
 
         MoveCreationDTO creationDTO = getCreationDto();
-        Response postResult = getJsonPostResponse(target(createPath), Collections.singletonList(creationDTO));
+        Response postResult = getJsonPostResponseAsAdmin(target(createPath), Collections.singletonList(creationDTO));
         URI moveEventUri =  extractUriListFromPaginatedListResponse(postResult).get(0);
 
         // get last move concerning first scientific object
-        Response getPositionResult = getJsonGetByUriResponse(target(getPositionPath), creationDTO.getTargets().get(0).toString());
+        Response getPositionResult = getJsonGetByUriResponseAsAdmin(target(getPositionPath), creationDTO.getTargets().get(0).toString());
         JsonNode node = getPositionResult.readEntity(JsonNode.class);
         SingleObjectResponse<PositionGetDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<PositionGetDTO>>() {
         });
@@ -355,7 +355,7 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
         testEquals(creationDTO, 0,dtoFromDb, moveEventUri);
 
         // get last move concerning second scientific object
-        getPositionResult = getJsonGetByUriResponse(target(getPositionPath), creationDTO.getTargets().get(1).toString());
+        getPositionResult = getJsonGetByUriResponseAsAdmin(target(getPositionPath), creationDTO.getTargets().get(1).toString());
         node = getPositionResult.readEntity(JsonNode.class);
         getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<PositionGetDTO>>() {
         });
@@ -371,10 +371,10 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
         newEventCreationDto.setFrom(creationDTO.getTo());
         newEventCreationDto.setTo(facilityC.getUri());
 
-        postResult = getJsonPostResponse(target(createPath), Collections.singletonList(newEventCreationDto));
+        postResult = getJsonPostResponseAsAdmin(target(createPath), Collections.singletonList(newEventCreationDto));
         URI newerMoveEventUri =  extractUriListFromPaginatedListResponse(postResult).get(0);
 
-        getPositionResult = getJsonGetByUriResponse(target(getPositionPath), newEventCreationDto.getTargets().get(0).toString());
+        getPositionResult = getJsonGetByUriResponseAsAdmin(target(getPositionPath), newEventCreationDto.getTargets().get(0).toString());
         node = getPositionResult.readEntity(JsonNode.class);
         getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<PositionGetDTO>>() {
         });
@@ -383,7 +383,7 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
         testEquals(newEventCreationDto,0, dtoFromDb, newerMoveEventUri);
 
         // get last move concerning second scientific object
-        getPositionResult = getJsonGetByUriResponse(target(getPositionPath), newEventCreationDto.getTargets().get(1).toString());
+        getPositionResult = getJsonGetByUriResponseAsAdmin(target(getPositionPath), newEventCreationDto.getTargets().get(1).toString());
         node = getPositionResult.readEntity(JsonNode.class);
         getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<PositionGetDTO>>() {
         });
@@ -398,14 +398,14 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
     public void testGetPositionHistory() throws Exception {
 
         MoveCreationDTO creationDTO = getCreationDto();
-        Response postResult = getJsonPostResponse(target(createPath), Collections.singletonList(creationDTO));
+        Response postResult = getJsonPostResponseAsAdmin(target(createPath), Collections.singletonList(creationDTO));
         URI moveEventUri =  extractUriListFromPaginatedListResponse(postResult).get(0);
 
         // search given a description witch match both events
         Map<String, Object> params = new HashMap<String, Object>() {{
             put(TARGET_HISTORY_PARAM,creationDTO.getTargets().get(0));
         }};
-        List<PositionGetDTO> history = getResults(getPositionHistoryPath,params,new TypeReference<PaginatedListResponse<PositionGetDTO>>() {});
+        List<PositionGetDTO> history = getSearchResultsAsAdmin(getPositionHistoryPath,params,new TypeReference<PaginatedListResponse<PositionGetDTO>>() {});
 
         assertEquals(1,history.size());
 
@@ -418,10 +418,10 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
         newEventCreationDto.setFrom(creationDTO.getTo());
         newEventCreationDto.setTo(facilityC.getUri());
 
-        postResult = getJsonPostResponse(target(createPath), Collections.singletonList(newEventCreationDto));
+        postResult = getJsonPostResponseAsAdmin(target(createPath), Collections.singletonList(newEventCreationDto));
         URI newerMoveEventUri =  extractUriListFromPaginatedListResponse(postResult).get(0);
 
-        history = getResults(getPositionHistoryPath,params,new TypeReference<PaginatedListResponse<PositionGetDTO>>() {});
+        history = getSearchResultsAsAdmin(getPositionHistoryPath,params,new TypeReference<PaginatedListResponse<PositionGetDTO>>() {});
 
         assertEquals(2,history.size());
 
@@ -431,7 +431,7 @@ public class MoveEventApiTest extends AbstractMongoIntegrationTest {
 
     @Override
     protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {
-        return Arrays.asList(InfrastructureFacilityModel.class,EventModel.class);
+        return Arrays.asList(FacilityModel.class,EventModel.class);
     }
 
     @After

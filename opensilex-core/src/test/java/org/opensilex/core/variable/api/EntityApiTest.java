@@ -60,13 +60,13 @@ public class EntityApiTest extends AbstractSecurityIntegrationTest {
         EntityCreationDTO dtoWithNoName = new EntityCreationDTO();
         dtoWithNoName.setDescription("only a comment, not a name");
 
-        final Response postResult = getJsonPostResponse(target(createPath),dtoWithNoName);
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath),dtoWithNoName);
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), postResult.getStatus());
     }
 
     @Test
     public void testGetByUriWithUnknownUri() throws Exception {
-        Response getResult = getJsonGetByUriResponse(target(getByUriPath), Oeso.Entity+"/58165");
+        Response getResult = getJsonGetByUriResponseAsAdmin(target(getByUriPath), Oeso.Entity+"/58165");
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
     }
 
@@ -74,7 +74,7 @@ public class EntityApiTest extends AbstractSecurityIntegrationTest {
     public void testUpdate() throws Exception {
 
         EntityCreationDTO dto = getCreationDto();
-        final Response postResult = getJsonPostResponse(target(createPath), dto);
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), dto);
 
         dto.setUri(extractUriFromResponse(postResult));
         dto.setName("new alias");
@@ -84,7 +84,7 @@ public class EntityApiTest extends AbstractSecurityIntegrationTest {
         assertEquals(Response.Status.OK.getStatusCode(), updateResult.getStatus());
 
         // retrieve the new xp and compare to the expected xp
-        final Response getResult = getJsonGetByUriResponse(target(getByUriPath), dto.getUri().toString());
+        final Response getResult = getJsonGetByUriResponseAsAdmin(target(getByUriPath), dto.getUri().toString());
 
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
@@ -102,10 +102,10 @@ public class EntityApiTest extends AbstractSecurityIntegrationTest {
 
         // Try to insert an Entity, to fetch it and to get fields
         EntityCreationDTO creationDTO = getCreationDto();
-        Response postResult = getJsonPostResponse(target(createPath), creationDTO);
+        Response postResult = getJsonPostResponseAsAdmin(target(createPath), creationDTO);
         URI uri = extractUriFromResponse(postResult);
 
-        Response getResult = getJsonGetByUriResponse(target(getByUriPath), uri.toString());
+        Response getResult = getJsonGetByUriResponseAsAdmin(target(getByUriPath), uri.toString());
 
         // try to deserialize object and check if the fields value are the same
         JsonNode node = getResult.readEntity(JsonNode.class);

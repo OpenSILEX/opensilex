@@ -44,7 +44,7 @@ import org.opensilex.core.experiment.factor.dal.FactorModel;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
@@ -1113,8 +1113,8 @@ public class ScientificObjectAPI {
             });
 
             List<String> facilityStringURIs = new ArrayList<>();
-            List<InfrastructureFacilityModel> facilities = xpDAO.getAvailableFacilities(contextURI, currentUser);
-            for (InfrastructureFacilityModel facility : facilities) {
+            List<FacilityModel> facilities = xpDAO.getAvailableFacilities(contextURI, currentUser);
+            for (FacilityModel facility : facilities) {
                 facilityStringURIs.add(SPARQLDeserializers.getExpandedURI(facility.getUri()));
             }
 

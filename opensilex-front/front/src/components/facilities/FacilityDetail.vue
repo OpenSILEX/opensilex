@@ -124,14 +124,14 @@ import Component from "vue-class-component";
 import Vue from "vue";
 import {Prop, Ref, Watch} from "vue-property-decorator";
 import DTOConverter from "../../models/DTOConverter";
-import { InfrastructureFacilityGetDTO } from 'opensilex-core/index';
+import { FacilityGetDTO } from 'opensilex-core/index';
 
 @Component
 export default class FacilityDetail extends Vue {
   $opensilex: any;
 
   @Prop()
-  selected: InfrastructureFacilityGetDTO;
+  selected: FacilityGetDTO;
 
   @Prop({
     default: false

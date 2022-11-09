@@ -14,7 +14,6 @@ import org.apache.jena.vocabulary.XSD;
 import org.junit.Assert;
 import org.junit.Test;
 import org.opensilex.core.AbstractMongoIntegrationTest;
-import org.opensilex.core.CoreModule;
 import org.opensilex.core.data.api.DataAPI;
 import org.opensilex.core.data.api.DataCreationDTO;
 import org.opensilex.core.data.dal.DataDAO;
@@ -33,7 +32,6 @@ import org.opensilex.core.variable.api.VariableCreationDTO;
 import org.opensilex.core.variable.dal.*;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.SingleObjectResponse;
-import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLService;
@@ -94,7 +92,7 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
 
     @Test
     public void testGetByUriWithUnknownUri() throws Exception {
-        Response getResult = getJsonGetByUriResponse(target(getByUriPath), Oeso.Device + "/unknown_uri");
+        Response getResult = getJsonGetByUriResponseAsAdmin(target(getByUriPath), Oeso.Device + "/unknown_uri");
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
     }
 
@@ -104,10 +102,10 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
         // Try to insert an Entity, to fetch it and to get fields
         DeviceCreationDTO creationDTO = getCreationDto();
 
-        Response postResult = getJsonPostResponse(target(createPath), creationDTO);
+        Response postResult = getJsonPostResponseAsAdmin(target(createPath), creationDTO);
         URI uri = extractUriFromResponse(postResult);
 
-        Response getResult = getJsonGetByUriResponse(target(getByUriPath), uri.toString());
+        Response getResult = getJsonGetByUriResponseAsAdmin(target(getByUriPath), uri.toString());
 
         // try to deserialize object and check if the fields value are the same
         JsonNode node = getResult.readEntity(JsonNode.class);
@@ -162,14 +160,14 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
 
         // create device
         DeviceCreationDTO deviceDto = getCreationDto();
-        Response postResult = getJsonPostResponse(target(createPath), deviceDto);
+        Response postResult = getJsonPostResponseAsAdmin(target(createPath), deviceDto);
         deviceDto.setUri(extractUriFromResponse(postResult));
 
         // create provenance
         ProvenanceCreationDTO provDto = new ProvenanceCreationDTO();
         provDto.setName("prov");
         provDto.setDescription("prov");
-        Response postProvResult = getJsonPostResponse(target(provenancePath),provDto);
+        Response postProvResult = getJsonPostResponseAsAdmin(target(provenancePath),provDto);
         provDto.setUri(extractUriFromResponse(postProvResult));
 
         // create data with a DataProvenance associated to device
@@ -193,7 +191,7 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
         dataDto.setVariable(variable.getUri());
         dataDto.setUri(URI.create("dev:data1"));
 
-        Response postDataProvResult = getJsonPostResponse(target(dataPath), Collections.singletonList(dataDto));
+        Response postDataProvResult = getJsonPostResponseAsAdmin(target(dataPath), Collections.singletonList(dataDto));
         assertEquals(Response.Status.CREATED.getStatusCode(),postDataProvResult.getStatus());
 
         // try to delete device -> expect error 404 with result.title = LINKED_DEVICE_ERROR
@@ -211,7 +209,7 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
 
         // create device
         DeviceCreationDTO deviceDto = getCreationDto();
-        Response postResult = getJsonPostResponse(target(createPath), deviceDto);
+        Response postResult = getJsonPostResponseAsAdmin(target(createPath), deviceDto);
         deviceDto.setUri(extractUriFromResponse(postResult));
 
         // create provenance associated to device
@@ -224,7 +222,7 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
         agent.setUri(deviceDto.getUri());
         provDto.setAgents(Collections.singletonList(agent));
 
-        Response postProvResult = getJsonPostResponse(target(provenancePath),provDto);
+        Response postProvResult = getJsonPostResponseAsAdmin(target(provenancePath),provDto);
         assertEquals(Response.Status.CREATED.getStatusCode(),postProvResult.getStatus());
         provDto.setUri(extractUriFromResponse(postProvResult));
 
@@ -244,7 +242,7 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
         // create variable and relation
         VariableApiTest variableApiTest = new VariableApiTest();
         VariableCreationDTO linkedVariable = variableApiTest.getCreationDto();
-        Response postVariableResponse = getJsonPostResponse(target(variableApiTest.createPath), variableApiTest.getCreationDto());
+        Response postVariableResponse = getJsonPostResponseAsAdmin(target(variableApiTest.createPath), variableApiTest.getCreationDto());
         linkedVariable.setUri(extractUriFromResponse(postVariableResponse));
 
         RDFObjectRelationDTO measuresRelation = new RDFObjectRelationDTO();
@@ -257,7 +255,7 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
         sensingDeviceDto.setType(URI.create(Oeso.SensingDevice.getURI()));
         sensingDeviceDto.setRelations(Collections.singletonList(measuresRelation));
 
-        Response postSensingDeviceResponse = getJsonPostResponse(target(createPath),sensingDeviceDto);
+        Response postSensingDeviceResponse = getJsonPostResponseAsAdmin(target(createPath),sensingDeviceDto);
         assertEquals(Response.Status.CREATED.getStatusCode(), postSensingDeviceResponse.getStatus());
         sensingDeviceDto.setUri(extractUriFromResponse(postSensingDeviceResponse));
 
@@ -267,7 +265,7 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
         softwareDto.setName("software");
         softwareDto.setRelations(Collections.singletonList(measuresRelation));
 
-        Response postSoftwareResponse = getJsonPostResponse(target(createPath),softwareDto);
+        Response postSoftwareResponse = getJsonPostResponseAsAdmin(target(createPath),softwareDto);
         assertEquals(Response.Status.CREATED.getStatusCode(), postSoftwareResponse.getStatus());
         softwareDto.setUri(extractUriFromResponse(postSoftwareResponse));
 
@@ -278,7 +276,7 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
         );
 
         // test on sensing device
-        Response getSensingDeviceResponse = getJsonGetByUriResponse(target(getByUriPath), sensingDeviceDto.getUri().toString());
+        Response getSensingDeviceResponse = getJsonGetByUriResponseAsAdmin(target(getByUriPath), sensingDeviceDto.getUri().toString());
         SingleObjectResponse<DeviceGetDetailsDTO> getResponse = mapper.convertValue(
                 getSensingDeviceResponse.readEntity(JsonNode.class),
                 new TypeReference<SingleObjectResponse<DeviceGetDetailsDTO>>() {}
@@ -287,7 +285,7 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
         Assert.assertTrue(sensingDeviceGetDTO.getRelations().stream().anyMatch(relation -> findRelationPredicate.test(relation, sensingDeviceGetDTO)));
 
         // test on software
-        Response getSoftwareDeviceResponse = getJsonGetByUriResponse(target(getByUriPath), softwareDto.getUri().toString());
+        Response getSoftwareDeviceResponse = getJsonGetByUriResponseAsAdmin(target(getByUriPath), softwareDto.getUri().toString());
         getResponse = mapper.convertValue(
                 getSoftwareDeviceResponse.readEntity(JsonNode.class),
                 new TypeReference<SingleObjectResponse<DeviceGetDetailsDTO>>() {}

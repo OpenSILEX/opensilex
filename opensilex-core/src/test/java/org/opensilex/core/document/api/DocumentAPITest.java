@@ -100,7 +100,7 @@ public class DocumentAPITest extends AbstractSecurityIntegrationTest {
 
         // ensure that the result is a well formed URI, else throw exception
         URI createdUri = extractUriFromResponse(postResult);
-        final Response getResult = getJsonGetByUriResponse(target(uriPath), createdUri.toString());
+        final Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), createdUri.toString());
         assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
     }
 
@@ -118,7 +118,7 @@ public class DocumentAPITest extends AbstractSecurityIntegrationTest {
 
         // ensure that the result is a well formed URI, else throw exception
         URI createdUri = extractUriFromResponse(postResult);
-        final Response getResult = getJsonGetByUriResponse(target(uriPath), createdUri.toString());
+        final Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), createdUri.toString());
         assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
 
         // try to deserialize object
@@ -156,7 +156,7 @@ public class DocumentAPITest extends AbstractSecurityIntegrationTest {
         assertEquals(Status.BAD_REQUEST.getStatusCode(), postResult.getStatus());
 
         // ensure that the document model has not been inserted
-        final Response getResult = getJsonGetByUriResponse(target(uriPath), creationDTO.getUri().toString());
+        final Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), creationDTO.getUri().toString());
         assertEquals(Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
 
         // ensure that the file has not been inserted
@@ -184,7 +184,7 @@ public class DocumentAPITest extends AbstractSecurityIntegrationTest {
         assertEquals(Status.OK.getStatusCode(), updateResult.getStatus());
 
         // retrieve the new doc and compare to the expected doc
-        final Response getResult = getJsonGetByUriResponse(target(uriPath), docDto.getUri().toString());
+        final Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), docDto.getUri().toString());
 
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
@@ -215,7 +215,7 @@ public class DocumentAPITest extends AbstractSecurityIntegrationTest {
         Response delResult = getDeleteByUriResponse(target(deletePath), uri);
         assertEquals(Status.OK.getStatusCode(), delResult.getStatus());
 
-        Response getResult = getJsonGetByUriResponse(target(uriPath), uri);
+        Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), uri);
         assertEquals(Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
     }
 
@@ -236,7 +236,7 @@ public class DocumentAPITest extends AbstractSecurityIntegrationTest {
 
         Response postResponse = getJsonPostResponseMultipart(target(path), multipart);
 
-        Response getResult = getJsonGetByUriResponse(target(uriPath), creationDTO.getUri().toString());
+        Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), creationDTO.getUri().toString());
         assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
 
         // try to get the file path and to delete file, outside of the document API
@@ -251,7 +251,7 @@ public class DocumentAPITest extends AbstractSecurityIntegrationTest {
         assertEquals(Status.NOT_FOUND.getStatusCode(), getFileResult.getStatus());
 
         // check that the document model is still present
-        getResult = getJsonGetByUriResponse(target(uriPath), creationDTO.getUri().toString());
+        getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), creationDTO.getUri().toString());
         assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
 
     }
@@ -269,7 +269,7 @@ public class DocumentAPITest extends AbstractSecurityIntegrationTest {
         final Response postResult = getJsonPostResponseMultipart(target(path), multipart);
         URI uri = extractUriFromResponse(postResult);
 
-        final Response getResult = getJsonGetByUriResponse(target(uriPath), uri.toString());
+        final Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), uri.toString());
         assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
 
         // try to deserialize object
@@ -320,7 +320,7 @@ public class DocumentAPITest extends AbstractSecurityIntegrationTest {
         String uri = postResponse.getResult();
 
         // call the service with a non existing pseudo random URI
-        final Response getResult = getJsonGetByUriResponse(target(uriPath), uri + "7FG4FG89FG4GH4GH57");
+        final Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), uri + "7FG4FG89FG4GH4GH57");
         assertEquals(Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
     }
 
@@ -364,7 +364,7 @@ public class DocumentAPITest extends AbstractSecurityIntegrationTest {
         };
 
         WebTarget searchTarget = appendSearchParams(target(path), 0, 50, params);
-        final Response getResult = appendToken(searchTarget).get();
+        final Response getResult = appendAdminToken(searchTarget).get();
         assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
 
         JsonNode node = getResult.readEntity(JsonNode.class);
@@ -424,7 +424,7 @@ public class DocumentAPITest extends AbstractSecurityIntegrationTest {
 
         // Perform the search
         WebTarget searchTarget = appendSearchParams(target(path), 0, 50, params);
-        final Response getResult = appendToken(searchTarget).get();
+        final Response getResult = appendAdminToken(searchTarget).get();
         assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
 
         // Get the result and assert that they are correct

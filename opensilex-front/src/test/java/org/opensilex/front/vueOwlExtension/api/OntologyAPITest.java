@@ -72,10 +72,10 @@ public class OntologyAPITest extends AbstractSecurityIntegrationTest {
 
     @Test
     public void testCreateClass() throws Exception {
-        Response postResult = getJsonPostResponse(target(rdfTypePath), getTypeDto("0", null));
+        Response postResult = getJsonPostResponseAsAdmin(target(rdfTypePath), getTypeDto("0", null));
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
 
-        postResult = getJsonPostResponse(target(rdfTypePath), getTypeDto("1", null));
+        postResult = getJsonPostResponseAsAdmin(target(rdfTypePath), getTypeDto("1", null));
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
     }
 
@@ -83,18 +83,18 @@ public class OntologyAPITest extends AbstractSecurityIntegrationTest {
     public void testGetClass() throws Exception {
 
         // create types
-        getJsonPostResponse(target(rdfTypePath), getTypeDto("0", null));
-        getJsonPostResponse(target(rdfTypePath), getTypeDto("1", null));
+        getJsonPostResponseAsAdmin(target(rdfTypePath), getTypeDto("0", null));
+        getJsonPostResponseAsAdmin(target(rdfTypePath), getTypeDto("1", null));
 
         String getTypePath = OntologyAPI.PATH + "/" + OntologyAPI.RDF_TYPE;
 
         // get types
         URI classURI = URI.create("test:class_0");
-        Response getResult = getJsonGetResponse(target(getTypePath).queryParam("rdf_type", classURI.toString()));
+        Response getResult = getJsonGetResponseAsAdmin(target(getTypePath).queryParam("rdf_type", classURI.toString()));
         assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
 
         classURI = URI.create("test:class_1");
-        getResult = getJsonGetResponse(target(getTypePath).queryParam("rdf_type", classURI.toString()));
+        getResult = getJsonGetResponseAsAdmin(target(getTypePath).queryParam("rdf_type", classURI.toString()));
         assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
 
     }
@@ -103,20 +103,20 @@ public class OntologyAPITest extends AbstractSecurityIntegrationTest {
     public void testSearchSubClasses() throws Exception {
 
         VueRDFTypeDTO parent1 = getTypeDto("parent1", URI.create(Oeso.ScientificObject.toString()));
-        getJsonPostResponse(target(rdfTypePath), parent1);
+        getJsonPostResponseAsAdmin(target(rdfTypePath), parent1);
 
         VueRDFTypeDTO child11 = getTypeDto("child11", parent1.getUri());
         VueRDFTypeDTO child12 = getTypeDto("child12", parent1.getUri());
-        getJsonPostResponse(target(rdfTypePath), child11);
-        getJsonPostResponse(target(rdfTypePath), child12);
+        getJsonPostResponseAsAdmin(target(rdfTypePath), child11);
+        getJsonPostResponseAsAdmin(target(rdfTypePath), child12);
 
         VueRDFTypeDTO parent2 = getTypeDto("parent2", URI.create(Oeso.ScientificObject.toString()));
-        getJsonPostResponse(target(rdfTypePath), parent2);
+        getJsonPostResponseAsAdmin(target(rdfTypePath), parent2);
 
         VueRDFTypeDTO child21 = getTypeDto("child21", parent2.getUri());
         VueRDFTypeDTO child211 = getTypeDto("child211", child21.getUri());
-        getJsonPostResponse(target(rdfTypePath), child21);
-        getJsonPostResponse(target(rdfTypePath), child211);
+        getJsonPostResponseAsAdmin(target(rdfTypePath), child21);
+        getJsonPostResponseAsAdmin(target(rdfTypePath), child211);
 
         Map<String, Object> params = new HashMap<>();
         params.put("parent_type", Oeso.ScientificObject.toString());
@@ -155,15 +155,15 @@ public class OntologyAPITest extends AbstractSecurityIntegrationTest {
 
         // create type
         VueRDFTypeDTO dto = getTypeDto("testDeleteClass", null);
-        getJsonPostResponse(target(rdfTypePath), dto);
+        getJsonPostResponseAsAdmin(target(rdfTypePath), dto);
         Response deleteResponse = getDeleteByUriResponse(target(deleteRdfTypePath), dto.getUri().toString());
         assertEquals(Response.Status.OK.getStatusCode(), deleteResponse.getStatus());
 
-        Response getResult = getJsonGetResponse(target(rdfTypePath).queryParam("rdf_type", dto.getUri().toString()));
+        Response getResult = getJsonGetResponseAsAdmin(target(rdfTypePath).queryParam("rdf_type", dto.getUri().toString()));
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
 
         // test to recreate it, should be OK
-        Response recreateResponse = getJsonPostResponse(target(rdfTypePath), dto);
+        Response recreateResponse = getJsonPostResponseAsAdmin(target(rdfTypePath), dto);
         assertEquals(Response.Status.CREATED.getStatusCode(), recreateResponse.getStatus());
     }
 
@@ -172,7 +172,7 @@ public class OntologyAPITest extends AbstractSecurityIntegrationTest {
 
         // create type
         VueRDFTypeDTO dto = getTypeDto("testDeleteClassWithAssociatedInstanceFail", URI.create(Oeso.ScientificObject.toString()));
-        Response createResponse = getJsonPostResponse(target(rdfTypePath), dto);
+        Response createResponse = getJsonPostResponseAsAdmin(target(rdfTypePath), dto);
         assertEquals(Response.Status.CREATED.getStatusCode(), createResponse.getStatus());
 
         // create object (here ScientificObject) with the created type
@@ -189,15 +189,15 @@ public class OntologyAPITest extends AbstractSecurityIntegrationTest {
     @Test
     public void testDeleteClassWithChildrenFail() throws Exception {
         VueRDFTypeDTO dto = getTypeDto("testDeleteClassWithChildrenFail", URI.create(Oeso.ScientificObject.toString()));
-        Response createResponse = getJsonPostResponse(target(rdfTypePath), dto);
+        Response createResponse = getJsonPostResponseAsAdmin(target(rdfTypePath), dto);
         assertEquals(Response.Status.CREATED.getStatusCode(), createResponse.getStatus());
 
         VueRDFTypeDTO child1 = getTypeDto("testDeleteClassWithChildrenFail_child1", dto.getUri());
-        createResponse = getJsonPostResponse(target(rdfTypePath), child1);
+        createResponse = getJsonPostResponseAsAdmin(target(rdfTypePath), child1);
         assertEquals(Response.Status.CREATED.getStatusCode(), createResponse.getStatus());
 
         VueRDFTypeDTO child2 = getTypeDto("testDeleteClassWithChildrenFail_child2", dto.getUri());
-        createResponse = getJsonPostResponse(target(rdfTypePath), child2);
+        createResponse = getJsonPostResponseAsAdmin(target(rdfTypePath), child2);
         assertEquals(Response.Status.CREATED.getStatusCode(), createResponse.getStatus());
 
         Response deleteResponse = getDeleteByUriResponse(target(deleteRdfTypePath), dto.getUri().toString());
@@ -209,12 +209,12 @@ public class OntologyAPITest extends AbstractSecurityIntegrationTest {
 
         // create class
         VueRDFTypeDTO dto = getTypeDto("testDeleteClassWithDataPropertiesFail", URI.create(Oeso.ScientificObject.toString()));
-        Response createResponse = getJsonPostResponse(target(rdfTypePath), dto);
+        Response createResponse = getJsonPostResponseAsAdmin(target(rdfTypePath), dto);
         assertEquals(Response.Status.CREATED.getStatusCode(), createResponse.getStatus());
 
         // create data property
         RDFPropertyDTO dataProperty = getPropertyDto("data_prop_to_delete", null, true, dto.getUri(), URI.create(XSD.integer.getURI()));
-        Response createDataPropertyResponse = getJsonPostResponse(target(createPropertyPath), dataProperty);
+        Response createDataPropertyResponse = getJsonPostResponseAsAdmin(target(createPropertyPath), dataProperty);
         assertEquals(Response.Status.CREATED.getStatusCode(), createDataPropertyResponse.getStatus());
 
         // delete class -> bad request
@@ -232,17 +232,17 @@ public class OntologyAPITest extends AbstractSecurityIntegrationTest {
 
         // create class
         VueRDFTypeDTO dto = getTypeDto("testDeleteClassWithObjectPropertiesFail", URI.create(Oeso.ScientificObject.toString()));
-        Response createResponse = getJsonPostResponse(target(rdfTypePath), dto);
+        Response createResponse = getJsonPostResponseAsAdmin(target(rdfTypePath), dto);
         assertEquals(Response.Status.CREATED.getStatusCode(), createResponse.getStatus());
 
         // create range class
         VueRDFTypeDTO range = getTypeDto("testDeleteClassWithObjectPropertiesFail-range", null);
-        Response createRangeResponse = getJsonPostResponse(target(rdfTypePath), range);
+        Response createRangeResponse = getJsonPostResponseAsAdmin(target(rdfTypePath), range);
         assertEquals(Response.Status.CREATED.getStatusCode(), createRangeResponse.getStatus());
 
         // create object property
         RDFPropertyDTO objectProperty = getPropertyDto("object_prop_to_delete", null, false, dto.getUri(), range.getUri());
-        Response createObjectPropertyResponse = getJsonPostResponse(target(createPropertyPath), objectProperty);
+        Response createObjectPropertyResponse = getJsonPostResponseAsAdmin(target(createPropertyPath), objectProperty);
         assertEquals(Response.Status.CREATED.getStatusCode(), createObjectPropertyResponse.getStatus());
 
         // delete class -> bad request
@@ -292,32 +292,32 @@ public class OntologyAPITest extends AbstractSecurityIntegrationTest {
         // create types
         VueRDFTypeDTO domain = getTypeDto("domain", null);
         VueRDFTypeDTO range = getTypeDto("range", null);
-        getJsonPostResponse(target(rdfTypePath), domain);
-        getJsonPostResponse(target(rdfTypePath), range);
+        getJsonPostResponseAsAdmin(target(rdfTypePath), domain);
+        getJsonPostResponseAsAdmin(target(rdfTypePath), range);
 
         // create data and object property
         RDFPropertyDTO dataProperty = getPropertyDto("data_0", null, true, domain.getUri(), URI.create(XSD.integer.getURI()));
         RDFPropertyDTO objectProperty = getPropertyDto("object_1", null, false, domain.getUri(), range.getUri());
 
         // check that property are created
-        Response createDataPropertyResponse = getJsonPostResponse(target(createPropertyPath), dataProperty);
+        Response createDataPropertyResponse = getJsonPostResponseAsAdmin(target(createPropertyPath), dataProperty);
         assertEquals(Response.Status.CREATED.getStatusCode(), createDataPropertyResponse.getStatus());
 
-        Response createObjectPropertyResponse = getJsonPostResponse(target(createPropertyPath), objectProperty);
+        Response createObjectPropertyResponse = getJsonPostResponseAsAdmin(target(createPropertyPath), objectProperty);
         assertEquals(Response.Status.CREATED.getStatusCode(), createObjectPropertyResponse.getStatus());
 
 
         String getPropertyPath = OntologyAPI.PATH + "/" + OntologyAPI.PROPERTY_PATH;
 
         // get data property
-        Response getResult = getJsonGetResponse(target(getPropertyPath)
+        Response getResult = getJsonGetResponseAsAdmin(target(getPropertyPath)
                 .queryParam("uri", dataProperty.getUri().toString())
                 .queryParam("rdf_type", OWL2.DatatypeProperty.getURI())
         );
         assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
 
         // get object property
-        getResult = getJsonGetResponse(target(getPropertyPath)
+        getResult = getJsonGetResponseAsAdmin(target(getPropertyPath)
                 .queryParam("uri", objectProperty.getUri().toString())
                 .queryParam("rdf_type", OWL2.ObjectProperty.getURI())
         );
@@ -330,22 +330,22 @@ public class OntologyAPITest extends AbstractSecurityIntegrationTest {
         // create types
         VueRDFTypeDTO domain = getTypeDto("domain", null);
         VueRDFTypeDTO range = getTypeDto("range", null);
-        getJsonPostResponse(target(rdfTypePath), domain);
-        getJsonPostResponse(target(rdfTypePath), range);
+        getJsonPostResponseAsAdmin(target(rdfTypePath), domain);
+        getJsonPostResponseAsAdmin(target(rdfTypePath), range);
 
         // create data and object property
         RDFPropertyDTO dataProperty = getPropertyDto("data_0", null, true, domain.getUri(), URI.create(XSD.integer.getURI()));
         RDFPropertyDTO objectProperty = getPropertyDto("object_1", null, false, domain.getUri(), range.getUri());
-        getJsonPostResponse(target(createPropertyPath), dataProperty);
-        getJsonPostResponse(target(createPropertyPath), objectProperty);
+        getJsonPostResponseAsAdmin(target(createPropertyPath), dataProperty);
+        getJsonPostResponseAsAdmin(target(createPropertyPath), objectProperty);
 
-        Response deleteDataPropertyResponse = appendToken(target(propertyPath)
+        Response deleteDataPropertyResponse = appendAdminToken(target(propertyPath)
                 .queryParam("uri", dataProperty.getUri().toString())
                 .queryParam("rdf_type", OWL2.DatatypeProperty.getURI())).delete();
 
         assertEquals(Response.Status.OK.getStatusCode(), deleteDataPropertyResponse.getStatus());
 
-        Response deleteObjectPropertyResponse = appendToken(target(propertyPath)
+        Response deleteObjectPropertyResponse = appendAdminToken(target(propertyPath)
                 .queryParam("uri", objectProperty.getUri().toString())
                 .queryParam("rdf_type", OWL2.ObjectProperty.getURI())).delete();
 
@@ -358,14 +358,14 @@ public class OntologyAPITest extends AbstractSecurityIntegrationTest {
         // create OS type
         VueRDFTypeDTO domain = getTypeDto("domain", URI.create(Oeso.ScientificObject.toString()));
         VueRDFTypeDTO range = getTypeDto("range", URI.create(Oeso.ScientificObject.toString()));
-        getJsonPostResponse(target(rdfTypePath), domain);
-        getJsonPostResponse(target(rdfTypePath), range);
+        getJsonPostResponseAsAdmin(target(rdfTypePath), domain);
+        getJsonPostResponseAsAdmin(target(rdfTypePath), range);
 
         // create data/object property on custom OS type
         RDFPropertyDTO dataProperty = getPropertyDto("data_0", null, true, domain.getUri(), URI.create(XSD.integer.getURI()));
         RDFPropertyDTO objectProperty = getPropertyDto("object_1", null, false, domain.getUri(), range.getUri());
-        getJsonPostResponse(target(createPropertyPath), dataProperty);
-        getJsonPostResponse(target(createPropertyPath), objectProperty);
+        getJsonPostResponseAsAdmin(target(createPropertyPath), dataProperty);
+        getJsonPostResponseAsAdmin(target(createPropertyPath), objectProperty);
 
         // create objects (here ScientificObject) with the created type
         ScientificObjectModel model = new ScientificObjectModel();
@@ -382,7 +382,7 @@ public class OntologyAPITest extends AbstractSecurityIntegrationTest {
         getSparqlService().create(model2);
 
         // check that data property deletion FAIL
-        Response deleteDataPropertyResponse = appendToken(target(propertyPath)
+        Response deleteDataPropertyResponse = appendAdminToken(target(propertyPath)
                 .queryParam("uri", dataProperty.getUri().toString())
                 .queryParam("rdf_type", OWL2.DatatypeProperty.getURI())).delete();
 
@@ -393,7 +393,7 @@ public class OntologyAPITest extends AbstractSecurityIntegrationTest {
         assertEquals("Some objects use the data-property test:property_data_0. You must delete these relations first", errorResponse.getResult().message);
 
         // check that object property deletion FAIL
-        Response deleteObjectPropertyResponse = appendToken(target(propertyPath)
+        Response deleteObjectPropertyResponse = appendAdminToken(target(propertyPath)
                 .queryParam("uri", objectProperty.getUri().toString())
                 .queryParam("rdf_type", OWL2.ObjectProperty.getURI())).delete();
 
@@ -410,27 +410,27 @@ public class OntologyAPITest extends AbstractSecurityIntegrationTest {
         // create types
         VueRDFTypeDTO domain = getTypeDto("domain", null);
         VueRDFTypeDTO range = getTypeDto("range", null);
-        getJsonPostResponse(target(rdfTypePath), domain);
-        getJsonPostResponse(target(rdfTypePath), range);
+        getJsonPostResponseAsAdmin(target(rdfTypePath), domain);
+        getJsonPostResponseAsAdmin(target(rdfTypePath), range);
 
         // create data and object property
         RDFPropertyDTO dataProperty = getPropertyDto("data_0", null, true, domain.getUri(), URI.create(XSD.integer.getURI()));
         RDFPropertyDTO objectProperty = getPropertyDto("object_1", null, false, domain.getUri(), range.getUri());
-        getJsonPostResponse(target(createPropertyPath), dataProperty);
-        getJsonPostResponse(target(createPropertyPath), objectProperty);
+        getJsonPostResponseAsAdmin(target(createPropertyPath), dataProperty);
+        getJsonPostResponseAsAdmin(target(createPropertyPath), objectProperty);
 
         RDFPropertyDTO dataPropertyChild = getPropertyDto("data_child_0", dataProperty.getUri(), true, domain.getUri(), URI.create(XSD.integer.getURI()));
         RDFPropertyDTO objectPropertyChild = getPropertyDto("object_child_0", objectProperty.getUri(), false, domain.getUri(), range.getUri());
 
         // check that children property are created
-        Response createDataPropertyResponse = getJsonPostResponse(target(createPropertyPath), dataPropertyChild);
+        Response createDataPropertyResponse = getJsonPostResponseAsAdmin(target(createPropertyPath), dataPropertyChild);
         assertEquals(Response.Status.CREATED.getStatusCode(), createDataPropertyResponse.getStatus());
 
-        Response createObjectPropertyResponse = getJsonPostResponse(target(createPropertyPath), objectPropertyChild);
+        Response createObjectPropertyResponse = getJsonPostResponseAsAdmin(target(createPropertyPath), objectPropertyChild);
         assertEquals(Response.Status.CREATED.getStatusCode(), createObjectPropertyResponse.getStatus());
 
         // check that data property deletion FAIL
-        Response deleteDataPropertyResponse = appendToken(target(propertyPath)
+        Response deleteDataPropertyResponse = appendAdminToken(target(propertyPath)
                 .queryParam("uri", dataProperty.getUri().toString())
                 .queryParam("rdf_type", OWL2.DatatypeProperty.getURI())).delete();
 
@@ -441,7 +441,7 @@ public class OntologyAPITest extends AbstractSecurityIntegrationTest {
         assertEquals("The property test:property_data_0 has child properties. You must delete them thirst", errorResponse.getResult().message);
 
         // check that object property deletion FAIL
-        Response deleteObjectPropertyResponse = appendToken(target(propertyPath)
+        Response deleteObjectPropertyResponse = appendAdminToken(target(propertyPath)
                 .queryParam("uri", objectProperty.getUri().toString())
                 .queryParam("rdf_type", OWL2.ObjectProperty.getURI())).delete();
 

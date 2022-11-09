@@ -52,13 +52,13 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
 
         // create an entity to use as InterestEntity
         entity = EntityApiTest.getCreationDto();
-        final Response postEntityResult = getJsonPostResponse(target(EntityApiTest.createPath), entity);
+        final Response postEntityResult = getJsonPostResponseAsAdmin(target(EntityApiTest.createPath), entity);
         assertEquals(Response.Status.CREATED.getStatusCode(), postEntityResult.getStatus());
         entity.setUri(extractUriFromResponse(postEntityResult));
 
         // create a germplasm to use as InterestEntity
         germplasm = GermplasmAPITest.getCreationSpeciesDTO();
-        final Response postGermplasmResult = getJsonPostResponse(target(GermplasmAPITest.createPath), germplasm);
+        final Response postGermplasmResult = getJsonPostResponseAsAdmin(target(GermplasmAPITest.createPath), germplasm);
         assertEquals(Response.Status.CREATED.getStatusCode(), postGermplasmResult.getStatus());
         germplasm.setUri(extractUriFromResponse(postGermplasmResult));
     }
@@ -120,7 +120,7 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
         dto.setName("name");
         dto.setDescription("only a comment, not a name");
 
-        Response postResult = getJsonPostResponse(target(createPath), dto);
+        Response postResult = getJsonPostResponseAsAdmin(target(createPath), dto);
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), postResult.getStatus());
 
         dto = getCreationDto();
@@ -132,7 +132,7 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
         dto.setEntity(null);
         dto.setCharacteristic(null);
 
-        postResult = getJsonPostResponse(target(createPath), dto);
+        postResult = getJsonPostResponseAsAdmin(target(createPath), dto);
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), postResult.getStatus());
     }
 
@@ -144,31 +144,31 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
         VariableCreationDTO badDto = getCreationDto();
         badDto.setEntity(new URI("test:no-entity"));
 
-        Response postResult = getJsonPostResponse(target(createPath), badDto);
+        Response postResult = getJsonPostResponseAsAdmin(target(createPath), badDto);
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), postResult.getStatus());
 
         // reset with good entity and bad characteristic
         badDto.setEntity(dto.getEntity());
         badDto.setCharacteristic(new URI("test:no-characteristic"));
-        postResult = getJsonPostResponse(target(createPath), badDto);
+        postResult = getJsonPostResponseAsAdmin(target(createPath), badDto);
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), postResult.getStatus());
 
         // reset with good characteristic and bad method
         badDto.setCharacteristic(dto.getCharacteristic());
         badDto.setMethod(new URI("test:no-method"));
-        postResult = getJsonPostResponse(target(createPath), badDto);
+        postResult = getJsonPostResponseAsAdmin(target(createPath), badDto);
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), postResult.getStatus());
 
         // reset with good method and bad unit
         badDto.setMethod(dto.getMethod());
         badDto.setUnit(new URI("test:no-unit"));
-        postResult = getJsonPostResponse(target(createPath), badDto);
+        postResult = getJsonPostResponseAsAdmin(target(createPath), badDto);
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), postResult.getStatus());
     }
 
     @Test
     public void testGetByUriWithUnknownUri() throws Exception {
-        Response getResult = getJsonGetByUriResponse(target(getByUriPath), Oeso.Variable + "/58165");
+        Response getResult = getJsonGetByUriResponseAsAdmin(target(getByUriPath), Oeso.Variable + "/58165");
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
     }
 
@@ -176,7 +176,7 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
     public void testUpdate() throws Exception {
 
         VariableCreationDTO dto = getCreationDto();
-        final Response postResult = getJsonPostResponse(target(createPath), dto);
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), dto);
 
         dto.setUri(extractUriFromResponse(postResult));
         dto.setName("new alias");
@@ -194,7 +194,7 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
         assertEquals(Response.Status.OK.getStatusCode(), updateResult.getStatus());
 
         // retrieve the new xp and compare to the expected xp
-        final Response getResult = getJsonGetByUriResponse(target(getByUriPath), dto.getUri().toString());
+        final Response getResult = getJsonGetByUriResponseAsAdmin(target(getByUriPath), dto.getUri().toString());
 
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
@@ -215,10 +215,10 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
         // Try to insert an Entity, to fetch it and to get fields
         VariableCreationDTO creationDTO = getCreationDto();
 
-        Response postResult = getJsonPostResponse(target(createPath), creationDTO);
+        Response postResult = getJsonPostResponseAsAdmin(target(createPath), creationDTO);
         URI uri = extractUriFromResponse(postResult);
 
-        Response getResult = getJsonGetByUriResponse(target(getByUriPath), uri.toString());
+        Response getResult = getJsonGetByUriResponseAsAdmin(target(getByUriPath), uri.toString());
 
         // try to deserialize object and check if the fields value are the same
         JsonNode node = getResult.readEntity(JsonNode.class);
@@ -252,13 +252,13 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
         GermplasmCreationDTO species1 = GermplasmAPITest.getCreationSpeciesDTO();
         species1.setName("species_testCreateWithSpeciesOK_1");
         species1.setUri(GERMPLASM_URI_1);
-        Response postGermplasmResult = getJsonPostResponse(target(GermplasmAPITest.createPath), species1);
+        Response postGermplasmResult = getJsonPostResponseAsAdmin(target(GermplasmAPITest.createPath), species1);
         assertEquals(Response.Status.CREATED.getStatusCode(), postGermplasmResult.getStatus());
 
         GermplasmCreationDTO species2 = GermplasmAPITest.getCreationSpeciesDTO();
         species2.setName("species_testCreateWithSpeciesOK_2");
         species2.setUri(GERMPLASM_URI_2);
-        postGermplasmResult = getJsonPostResponse(target(GermplasmAPITest.createPath), species2);
+        postGermplasmResult = getJsonPostResponseAsAdmin(target(GermplasmAPITest.createPath), species2);
         assertEquals(Response.Status.CREATED.getStatusCode(), postGermplasmResult.getStatus());
 
         // create variable with species -> should be CREATED
@@ -266,10 +266,10 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
         dto.setUri(URI.create("test:variable_testCreateWithSpeciesOK"));
         dto.setSpecies(Arrays.asList(species1.getUri(), species2.getUri()));
 
-        Response postResult = getJsonPostResponse(target(createPath), dto);
+        Response postResult = getJsonPostResponseAsAdmin(target(createPath), dto);
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
 
-        Response getResult = getJsonGetByUriResponse(target(getByUriPath), dto.getUri().toString());
+        Response getResult = getJsonGetByUriResponseAsAdmin(target(getByUriPath), dto.getUri().toString());
 
         // try to deserialize object and check if the fields value are the same
         JsonNode node = getResult.readEntity(JsonNode.class);
@@ -295,7 +295,7 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
         VariableCreationDTO dto = getCreationDto();
         dto.setSpecies(Arrays.asList(URI.create("test:unknown_species_1")));
 
-        Response postResult = getJsonPostResponse(target(createPath), dto);
+        Response postResult = getJsonPostResponseAsAdmin(target(createPath), dto);
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), postResult.getStatus());
     }
 
@@ -312,7 +312,7 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
         speciesOfVariety.setUri(URI.create("test:speciesOfVariety"));
 
         // ensure species was created
-        Response postSpeciesResponse = getJsonPostResponse(target(GermplasmAPITest.createPath), speciesOfVariety);
+        Response postSpeciesResponse = getJsonPostResponseAsAdmin(target(GermplasmAPITest.createPath), speciesOfVariety);
         assertEquals(Response.Status.CREATED.getStatusCode(), postSpeciesResponse.getStatus());
 
         GermplasmCreationDTO variety = new GermplasmCreationDTO();
@@ -322,14 +322,14 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
         variety.setSpecies(speciesOfVariety.getUri());
 
         // ensure variety was created
-        Response postVarietyResponse = getJsonPostResponse(target(GermplasmAPITest.createPath), variety);
+        Response postVarietyResponse = getJsonPostResponseAsAdmin(target(GermplasmAPITest.createPath), variety);
         assertEquals(Response.Status.CREATED.getStatusCode(), postVarietyResponse.getStatus());
 
         // create variable with variety -> should fail, since variable expect species, not variety
         VariableCreationDTO dto = getCreationDto();
         dto.setSpecies(Arrays.asList(variety.getUri()));
 
-        Response postResult = getJsonPostResponse(target(createPath), dto);
+        Response postResult = getJsonPostResponseAsAdmin(target(createPath), dto);
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), postResult.getStatus());
     }
 
@@ -345,7 +345,7 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
         // create variable with no species and ensure creation was OK
         VariableCreationDTO variableWithNoSpecies = getCreationDto();
         variableWithNoSpecies.setUri(URI.create("test:variable_with_no_species"));
-        Response postResult = getJsonPostResponse(target(createPath), variableWithNoSpecies);
+        Response postResult = getJsonPostResponseAsAdmin(target(createPath), variableWithNoSpecies);
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
 
         // run a search query with species filter
@@ -353,7 +353,7 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
         searchParams.put("species", Arrays.asList(GERMPLASM_URI_1));
 
         // convert returned JSON into dtos
-        List<VariableGetDTO> results = getResults(searchPath, searchParams, new TypeReference<PaginatedListResponse<VariableGetDTO>>() {
+        List<VariableGetDTO> results = getSearchResultsAsAdmin(searchPath, searchParams, new TypeReference<PaginatedListResponse<VariableGetDTO>>() {
         });
         assertEquals(1, results.size());
 
@@ -364,7 +364,7 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
         assertTrue(variableFound);
 
         // ensure that all variables are returned when no filter
-        List<VariableGetDTO> allVariables = getResults(searchPath, Collections.emptyMap(), new TypeReference<PaginatedListResponse<VariableGetDTO>>() {
+        List<VariableGetDTO> allVariables = getSearchResultsAsAdmin(searchPath, Collections.emptyMap(), new TypeReference<PaginatedListResponse<VariableGetDTO>>() {
         });
         assertEquals(2, allVariables.size());
 
@@ -372,7 +372,7 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
         // ensure that no variables is returned when using a species not linked to any variable
         searchParams = new HashMap<>();
         searchParams.put("species", Arrays.asList("test:unknown_species_in_search"));
-        List<VariableGetDTO> noVariables = getResults(searchPath, searchParams, new TypeReference<PaginatedListResponse<VariableGetDTO>>() {
+        List<VariableGetDTO> noVariables = getSearchResultsAsAdmin(searchPath, searchParams, new TypeReference<PaginatedListResponse<VariableGetDTO>>() {
         });
         assertTrue(noVariables.isEmpty());
     }
@@ -380,7 +380,7 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
     @Test
     public void testDeleteComponentFail() throws Exception {
         VariableCreationDTO dto = getCreationDto();
-        Response createResponse = getJsonPostResponse(target(createPath), dto);
+        Response createResponse = getJsonPostResponseAsAdmin(target(createPath), dto);
         Assert.assertEquals(Response.Status.CREATED.getStatusCode(), createResponse.getStatus());
 
         // try to delete each subcomponent and ensure it fails while variable exists

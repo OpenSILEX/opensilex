@@ -126,7 +126,7 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
     public void beforeTest() throws Exception {
         //create experiment
         ExperimentAPITest expAPI = new ExperimentAPITest();
-        Response postResultExp = getJsonPostResponse(target(expAPI.createPath), expAPI.getCreationDTO());
+        Response postResultExp = getJsonPostResponseAsAdmin(target(expAPI.createPath), expAPI.getCreationDTO());
         List<URI> experiments = new ArrayList<>();
         experiments.add(extractUriFromResponse(postResultExp));
         
@@ -136,7 +136,7 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
         
         //create scientific object
         ScientificObjectAPITest soAPI = new ScientificObjectAPITest();
-        Response postResultSO = getJsonPostResponse(target(ScientificObjectAPITest.createPath), soAPI.getCreationDTO(false));
+        Response postResultSO = getJsonPostResponseAsAdmin(target(ScientificObjectAPITest.createPath), soAPI.getCreationDTO(false));
         scientificObjects = new ArrayList<>();
         scientificObjects.add(extractUriFromResponse(postResultSO)); 
         
@@ -144,51 +144,51 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
 
     private void createVariables() throws Exception {
         VariableApiTest varAPI = new VariableApiTest();
-        Response postResultVar = getJsonPostResponse(target(varAPI.createPath), varAPI.getCreationDto());
+        Response postResultVar = getJsonPostResponseAsAdmin(target(varAPI.createPath), varAPI.getCreationDto());
         variable = extractUriFromResponse(postResultVar);
 
         VariableCreationDTO variableDateDTO = varAPI.getCreationDto();
         variableDateDTO.setDataType(new URI(XSD.date.getURI()));
-        postResultVar = getJsonPostResponse(target(varAPI.createPath), variableDateDTO);
+        postResultVar = getJsonPostResponseAsAdmin(target(varAPI.createPath), variableDateDTO);
         dateVariable = extractUriFromResponse(postResultVar);
 
         VariableCreationDTO variableDatetimeDTO = varAPI.getCreationDto();
         variableDatetimeDTO.setDataType(new URI(XSD.dateTime.getURI()));
-        postResultVar = getJsonPostResponse(target(varAPI.createPath), variableDatetimeDTO);
+        postResultVar = getJsonPostResponseAsAdmin(target(varAPI.createPath), variableDatetimeDTO);
         datetimeVariable = extractUriFromResponse(postResultVar);
 
         VariableCreationDTO variableDecimalDTO = varAPI.getCreationDto();
         variableDecimalDTO.setDataType(new URI(XSD.decimal.getURI()));
-        postResultVar = getJsonPostResponse(target(varAPI.createPath), variableDecimalDTO);
+        postResultVar = getJsonPostResponseAsAdmin(target(varAPI.createPath), variableDecimalDTO);
         decimalVariable = extractUriFromResponse(postResultVar);
 
         VariableCreationDTO variableIntegerDTO = varAPI.getCreationDto();
         variableIntegerDTO.setDataType(new URI(XSD.integer.getURI()));
-        postResultVar = getJsonPostResponse(target(varAPI.createPath), variableIntegerDTO);
+        postResultVar = getJsonPostResponseAsAdmin(target(varAPI.createPath), variableIntegerDTO);
         integerVariable = extractUriFromResponse(postResultVar);
 
         VariableCreationDTO variableBooleanDTO = varAPI.getCreationDto();
         variableBooleanDTO.setDataType(new URI(XSD.xboolean.getURI()));
-        postResultVar = getJsonPostResponse(target(varAPI.createPath), variableBooleanDTO);
+        postResultVar = getJsonPostResponseAsAdmin(target(varAPI.createPath), variableBooleanDTO);
         booleanVariable = extractUriFromResponse(postResultVar);
 
         VariableCreationDTO variableStringDTO = varAPI.getCreationDto();
         variableStringDTO.setDataType(new URI(XSD.xstring.getURI()));
-        postResultVar = getJsonPostResponse(target(varAPI.createPath), variableStringDTO);
+        postResultVar = getJsonPostResponseAsAdmin(target(varAPI.createPath), variableStringDTO);
         stringVariable = extractUriFromResponse(postResultVar);
     }
 
     private URI createOneProvenance(String name) throws Exception {
         ProvenanceCreationDTO provenanceImportIntegerDTO = new ProvenanceCreationDTO();
         provenanceImportIntegerDTO.setName("Import test : integer");
-        Response postResultProv = getJsonPostResponse(target(provAPI.createPath), provenanceImportIntegerDTO);
+        Response postResultProv = getJsonPostResponseAsAdmin(target(provAPI.createPath), provenanceImportIntegerDTO);
         return extractUriFromResponse(postResultProv);
     }
 
     private void createProvenances(List<URI> experiments) throws Exception {
         ProvenanceCreationDTO prov = new ProvenanceCreationDTO();
         prov.setName("name");
-        Response postResultProv = getJsonPostResponse(target(provAPI.createPath), prov);
+        Response postResultProv = getJsonPostResponseAsAdmin(target(provAPI.createPath), prov);
 
         provenance = new DataProvenanceModel();
         provenance.setUri(extractUriFromResponse(postResultProv));
@@ -256,7 +256,7 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
     }
 
     private List<DataGetDTO> getSearchResponseAsDTOList(URI provenance) throws Exception {
-        final Response searchResult = getJsonGetResponse(appendSearchParams(target(searchPath), 0, 20, new HashMap<String, Object>() {{
+        final Response searchResult = getJsonGetResponseAsAdmin(appendSearchParams(target(searchPath), 0, 20, new HashMap<String, Object>() {{
             put(SEARCH_PROVENANCES_QUERY_PARAMETER_NAME, Collections.singletonList(provenance));
         }}));
         assertEquals(Response.Status.OK.getStatusCode(), searchResult.getStatus());
@@ -270,7 +270,7 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
     public void testCreate() throws Exception {        
         ArrayList<DataCreationDTO> dtoList = new ArrayList<>();
         dtoList.add(getCreationDataDTO("2020-10-11T10:29:06.402+0200"));
-        final Response postResultData = getJsonPostResponse(target(createListPath), dtoList);
+        final Response postResultData = getJsonPostResponseAsAdmin(target(createListPath), dtoList);
         LOGGER.info(postResultData.toString());
         assertEquals(Response.Status.CREATED.getStatusCode(), postResultData.getStatus());        
     }
@@ -401,7 +401,7 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
         ArrayList<DataCreationDTO> dtoList = new ArrayList<>();
         DataCreationDTO dto = getCreationDataDTO("2020-10-12T10:29:06.402+0200");
         dtoList.add(dto);
-        final Response postResult = getJsonPostResponse(target(createPath), dtoList);
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), dtoList);
 
         dto.setUri(extractUriFromResponse(postResult));
         dto.setValue(10.2);
@@ -410,7 +410,7 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
         final Response updateResult = getJsonPutResponse(target(updatePath), dto);
         assertEquals(Response.Status.OK.getStatusCode(), updateResult.getStatus());
 
-        final Response getResult = getJsonGetByUriResponse(target(uriPath), dto.getUri().toString());
+        final Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), dto.getUri().toString());
 
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
@@ -428,14 +428,14 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
         // create object and check if URI exists
         ArrayList<DataCreationDTO> dtoList = new ArrayList<>();
         dtoList.add(getCreationDataDTO("2020-10-13T10:29:06.402+0200"));
-        Response postResponse = getJsonPostResponse(target(createPath), dtoList);
+        Response postResponse = getJsonPostResponseAsAdmin(target(createPath), dtoList);
         String uri = extractUriFromResponse(postResponse).toString();
 
         // delete object and check if URI no longer exists
         Response delResult = getDeleteByUriResponse(target(deletePath), uri);
         assertEquals(Response.Status.OK.getStatusCode(), delResult.getStatus());
 
-        Response getResult = getJsonGetByUriResponse(target(uriPath), uri);
+        Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), uri);
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
     }
 
@@ -443,10 +443,10 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
     public void testGetByUri() throws Exception {
         ArrayList<DataCreationDTO> dtoList = new ArrayList<>();
         dtoList.add(getCreationDataDTO("2020-10-14T10:29:06.402+0200"));
-        final Response postResult = getJsonPostResponse(target(createPath), dtoList);
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), dtoList);
         URI uri = extractUriFromResponse(postResult);
 
-        final Response getResult = getJsonGetByUriResponse(target(uriPath), uri.toString());
+        final Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), uri.toString());
         assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
 
         // try to deserialize object
@@ -462,7 +462,7 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
         ArrayList<DataCreationDTO> dtoList = new ArrayList<>();
         DataCreationDTO creationDTO = getCreationDataDTO("2020-06-15T10:29:06.402+0200");
         dtoList.add(creationDTO);
-        final Response postResult = getJsonPostResponse(target(createPath), dtoList);
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), dtoList);
         URI uri = extractUriFromResponse(postResult);
         
         List<URI> provenances = new ArrayList();
@@ -481,7 +481,7 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
         };
 
         WebTarget searchTarget = appendSearchParams(target(searchPath), 0, 20, params);
-        final Response getResult = appendToken(searchTarget).get();
+        final Response getResult = appendAdminToken(searchTarget).get();
         assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
 
         JsonNode node = getResult.readEntity(JsonNode.class);

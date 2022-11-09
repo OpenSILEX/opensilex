@@ -22,7 +22,7 @@ import org.bson.conversions.Bson;
 import org.opensilex.core.event.dal.EventDAO;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Time;
-import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
@@ -229,7 +229,7 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
 
         String fromStr = result.getStringValue(MoveModel.FROM_FIELD);
         if (!StringUtils.isEmpty(fromStr)) {
-            InfrastructureFacilityModel from = new InfrastructureFacilityModel();
+            FacilityModel from = new FacilityModel();
             from.setUri(new URI(fromStr));
             from.setName(result.getStringValue(fromNameVar.getVarName()));
             model.setFrom(from);
@@ -237,7 +237,7 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
 
         String toStr = result.getStringValue(MoveModel.TO_FIELD);
         if (!StringUtils.isEmpty(toStr)) {
-            InfrastructureFacilityModel to = new InfrastructureFacilityModel();
+            FacilityModel to = new FacilityModel();
             to.setUri(new URI(toStr));
             to.setName(result.getStringValue(toNameVar.getVarName()));
             model.setTo(to);

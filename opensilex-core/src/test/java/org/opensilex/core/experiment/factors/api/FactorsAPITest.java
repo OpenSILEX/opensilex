@@ -108,34 +108,34 @@ public class FactorsAPITest extends AbstractSecurityIntegrationTest {
     @Test
     public void testCreate() throws Exception {
         // create xp
-        final Response postResultExp = getJsonPostResponse(target(ExperimentAPITest.createPath), ExperimentAPITest.getCreationDTO());
+        final Response postResultExp = getJsonPostResponseAsAdmin(target(ExperimentAPITest.createPath), ExperimentAPITest.getCreationDTO());
         assertEquals(Status.CREATED.getStatusCode(), postResultExp.getStatus());
 
         // ensure that the result is a well formed URI, else throw exception
         URI createdUriExp = extractUriFromResponse(postResultExp);
-        final Response postResult = getJsonPostResponse(target(createPath), getCreationDTO(createdUriExp)); 
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(createdUriExp));
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
 
         // ensure that the result is a well formed URI, else throw exception
         URI createdUri = extractUriFromResponse(postResult);
-        final Response getResult = getJsonGetByUriResponse(target(uriPath), createdUri.toString());
+        final Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), createdUri.toString());
         assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
     }
 
     @Test
     public void testGetByUri() throws Exception {
         // create xp
-        final Response postResultExp = getJsonPostResponse(target(ExperimentAPITest.createPath), ExperimentAPITest.getCreationDTO());
+        final Response postResultExp = getJsonPostResponseAsAdmin(target(ExperimentAPITest.createPath), ExperimentAPITest.getCreationDTO());
         assertEquals(Status.CREATED.getStatusCode(), postResultExp.getStatus());
          // ensure that the result is a well formed URI, else throw exception
         URI createdUriExp = extractUriFromResponse(postResultExp);
         
-        final Response postResult = getJsonPostResponse(target(createPath), getCreationDTO(createdUriExp));
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(createdUriExp));
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
 
         // ensure that the result is a well formed URI, else throw exception
         URI createdUri = extractUriFromResponse(postResult);
-        final Response getResult = getJsonGetByUriResponse(target(uriPath), createdUri.toString());
+        final Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), createdUri.toString());
         assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
 
         // try to deserialize object
@@ -153,14 +153,14 @@ public class FactorsAPITest extends AbstractSecurityIntegrationTest {
     @Test
     public void testUpdate() throws Exception {
         // create xp
-        final Response postResultExp = getJsonPostResponse(target(ExperimentAPITest.createPath), ExperimentAPITest.getCreationDTO());
+        final Response postResultExp = getJsonPostResponseAsAdmin(target(ExperimentAPITest.createPath), ExperimentAPITest.getCreationDTO());
         assertEquals(Status.CREATED.getStatusCode(), postResultExp.getStatus());
          // ensure that the result is a well formed URI, else throw exception
         URI createdUriExp = extractUriFromResponse(postResultExp);
         
         FactorCreationDTO creationDTO = getCreationDTO(createdUriExp);
         int initialFactorLevelSize = creationDTO.getFactorLevels().size();
-        final Response postResult = getJsonPostResponse(target(createPath), creationDTO);
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), creationDTO);
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
 
         // ensure that the result is a well formed URI, else throw exception
@@ -177,7 +177,7 @@ public class FactorsAPITest extends AbstractSecurityIntegrationTest {
 //        System.out.println(putResultNode.toPrettyString());
         assertEquals(Response.Status.OK.getStatusCode(), putResult.getStatus());
 
-        final Response getResult = getJsonGetByUriResponse(target(uriPath), createdUri.toString());
+        final Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), createdUri.toString());
         assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
 
         // try to deserialize object
@@ -197,23 +197,23 @@ public class FactorsAPITest extends AbstractSecurityIntegrationTest {
     @Test
     public void testSearch() throws Exception {
         // create xp
-        final Response postResultExp = getJsonPostResponse(target(ExperimentAPITest.createPath), ExperimentAPITest.getCreationDTO());
+        final Response postResultExp = getJsonPostResponseAsAdmin(target(ExperimentAPITest.createPath), ExperimentAPITest.getCreationDTO());
         assertEquals(Status.CREATED.getStatusCode(), postResultExp.getStatus());
          // ensure that the result is a well formed URI, else throw exception
         URI createdUriExp = extractUriFromResponse(postResultExp);
         FactorCreationDTO creationDTO = getCreationDTO(createdUriExp);
         FactorCreationDTO creationDTOTwo = getCreationDTO(createdUriExp);
 
-        getJsonPostResponse(target(createPath), creationDTO);
-        getJsonPostResponse(target(createPath), creationDTOTwo);
-        getJsonPostResponse(target(createPath), getCreationDTO(createdUriExp));
+        getJsonPostResponseAsAdmin(target(createPath), creationDTO);
+        getJsonPostResponseAsAdmin(target(createPath), creationDTOTwo);
+        getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(createdUriExp));
 
         Map<String, Object> params = new HashMap<String, Object>() {
             
         };
 
         WebTarget searchTarget = appendSearchParams(target(searchPath), 0, 20, params);
-        final Response getResult1 = appendToken(searchTarget).get();
+        final Response getResult1 = appendAdminToken(searchTarget).get();
         JsonNode node1 = getResult1.readEntity(JsonNode.class);
 
         // System.out.println(node1.toPrettyString());
@@ -239,7 +239,7 @@ public class FactorsAPITest extends AbstractSecurityIntegrationTest {
         };
 
         WebTarget searchTarget2 = appendSearchParams(target(searchPath), 0, 20, params2);
-        final Response getResult2 = appendToken(searchTarget2).get();
+        final Response getResult2 = appendAdminToken(searchTarget2).get();
 
         assertEquals(Status.OK.getStatusCode(), getResult2.getStatus());
 
@@ -259,39 +259,39 @@ public class FactorsAPITest extends AbstractSecurityIntegrationTest {
     @Test
     public void testDeleteFactor() throws Exception { 
         // create xp
-        final Response postResultExp = getJsonPostResponse(target(ExperimentAPITest.createPath), ExperimentAPITest.getCreationDTO());
+        final Response postResultExp = getJsonPostResponseAsAdmin(target(ExperimentAPITest.createPath), ExperimentAPITest.getCreationDTO());
         assertEquals(Status.CREATED.getStatusCode(), postResultExp.getStatus());
 
         // ensure that the result is a well formed URI, else throw exception
         URI createdUriExp = extractUriFromResponse(postResultExp);
         // create object and check if URI exists
-        Response postResponse = getJsonPostResponse(target(createPath), getCreationDTO(createdUriExp));
+        Response postResponse = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(createdUriExp));
         String uri = extractUriFromResponse(postResponse).toString();
         assertEquals(Response.Status.CREATED.getStatusCode(), postResponse.getStatus());
         // delete object and check if URI no longer exists
         Response delResult = getDeleteByUriResponse(target(deleteFactorPath), uri);
         assertEquals(Status.OK.getStatusCode(), delResult.getStatus());
 
-        Response getResult = getJsonGetByUriResponse(target(uriPath), uri);
+        Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), uri);
         assertEquals(Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
     }
 
     @Test
     public void testGetFactorLevel() throws Exception {
         // create xp
-        final Response postResultExp = getJsonPostResponse(target(ExperimentAPITest.createPath), ExperimentAPITest.getCreationDTO());
+        final Response postResultExp = getJsonPostResponseAsAdmin(target(ExperimentAPITest.createPath), ExperimentAPITest.getCreationDTO());
         assertEquals(Status.CREATED.getStatusCode(), postResultExp.getStatus());
          // ensure that the result is a well formed URI, else throw exception
         URI createdUriExp = extractUriFromResponse(postResultExp);
         
         // create object and check if URI exists
         FactorCreationDTO creationDTO = getCreationDTO(createdUriExp);
-        Response postResponse = getJsonPostResponse(target(createPath), creationDTO);
+        Response postResponse = getJsonPostResponseAsAdmin(target(createPath), creationDTO);
         String uri = extractUriFromResponse(postResponse).toString();
         assertEquals(Response.Status.CREATED.getStatusCode(), postResponse.getStatus());
 
         // ensure that the result is a well formed URI, else throw exception
-        final Response getResult = getJsonGetByUriResponse(target(uriPath), uri);
+        final Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), uri);
         assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
 
         // try to deserialize object
@@ -311,7 +311,7 @@ public class FactorsAPITest extends AbstractSecurityIntegrationTest {
         URI uriToFind = factorGetDto.getFactorLevels().get(0).getUri();
 //        System.out.println(factorLevelSize + "-"+ creationDTO.getFactorLevels().size());
 
-        Response getResult2 = getJsonGetByUriResponse(target(getFactorsLevelPath), uriToFind.toString());
+        Response getResult2 = getJsonGetByUriResponseAsAdmin(target(getFactorsLevelPath), uriToFind.toString());
 //        System.out.println(uriToFind.toString());
         JsonNode readEntity = getResult2.readEntity(JsonNode.class);
 //        System.out.println(readEntity.toString());

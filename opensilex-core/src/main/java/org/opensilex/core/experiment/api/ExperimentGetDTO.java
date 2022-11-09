@@ -17,8 +17,8 @@ import java.util.stream.Collectors;
 import javax.validation.constraints.NotNull;
 
 import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
-import org.opensilex.core.organisation.dal.InfrastructureModel;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
+import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.server.rest.validation.Required;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -62,10 +62,10 @@ public class ExperimentGetDTO {
     protected List<URI> factors = new ArrayList<>();
     
     @JsonProperty("organisations") 
-    protected List<NamedResourceDTO<InfrastructureModel>> infrastructures = new ArrayList<>();
+    protected List<NamedResourceDTO<OrganizationModel>> infrastructures = new ArrayList<>();
 
     @JsonProperty("facilities")
-    protected List<NamedResourceDTO<InfrastructureFacilityModel>> facilities = new ArrayList<>();
+    protected List<NamedResourceDTO<FacilityModel>> facilities = new ArrayList<>();
      
     @JsonProperty("projects")
     protected List<NamedResourceDTO<ProjectModel>> projects = new ArrayList<>();
@@ -186,19 +186,19 @@ public class ExperimentGetDTO {
         this.isPublic = isPublic;
     }
 
-    public List<NamedResourceDTO<InfrastructureModel>> getInfrastructures() {
+    public List<NamedResourceDTO<OrganizationModel>> getInfrastructures() {
         return infrastructures;
     }
 
-    public void setInfrastructures(List<NamedResourceDTO<InfrastructureModel>> infrastructures) {
+    public void setInfrastructures(List<NamedResourceDTO<OrganizationModel>> infrastructures) {
         this.infrastructures = infrastructures;
     }
 
-    public List<NamedResourceDTO<InfrastructureFacilityModel>> getFacilities() {
+    public List<NamedResourceDTO<FacilityModel>> getFacilities() {
         return facilities;
     }
 
-    public void setFacilities(List<NamedResourceDTO<InfrastructureFacilityModel>> facilities) {
+    public void setFacilities(List<NamedResourceDTO<FacilityModel>> facilities) {
         this.facilities = facilities;
     }
 //
@@ -259,9 +259,9 @@ public class ExperimentGetDTO {
         dto.setFactors(getUriList(model.getFactors()));
         dto.setCreator(model.getCreator());
 
-        List<NamedResourceDTO<InfrastructureModel>> infrastructuresDTO = new ArrayList<>();
+        List<NamedResourceDTO<OrganizationModel>> infrastructuresDTO = new ArrayList<>();
         model.getInfrastructures().forEach((infra) -> {
-            NamedResourceDTO<InfrastructureModel> infraDTO = NamedResourceDTO.getDTOFromModel(infra);
+            NamedResourceDTO<OrganizationModel> infraDTO = NamedResourceDTO.getDTOFromModel(infra);
             infrastructuresDTO.add(infraDTO);
         });
         dto.setInfrastructures(infrastructuresDTO);
@@ -273,7 +273,7 @@ public class ExperimentGetDTO {
         });
         dto.setProjects(projectsDTO);
 
-        List<NamedResourceDTO<InfrastructureFacilityModel>> facilitiesDTO = new ArrayList<>();
+        List<NamedResourceDTO<FacilityModel>> facilitiesDTO = new ArrayList<>();
         model.getFacilities().forEach((facilityModel) -> {
             facilitiesDTO.add(NamedResourceDTO.getDTOFromModel(facilityModel));
         });

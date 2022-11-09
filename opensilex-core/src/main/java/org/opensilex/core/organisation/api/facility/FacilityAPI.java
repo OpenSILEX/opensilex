@@ -3,17 +3,17 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.opensilex.core.organisation.api.facitity;
+package org.opensilex.core.organisation.api.facility;
 
 import io.swagger.annotations.*;
-import org.opensilex.core.CoreModule;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
+import org.opensilex.core.organisation.dal.facility.FacilityDAO;
+import org.opensilex.core.organisation.dal.facility.FacilitySearchFilter;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
-import org.opensilex.core.organisation.api.InfrastructureAPI;
-import org.opensilex.core.organisation.dal.InfrastructureDAO;
-import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
+import org.opensilex.core.organisation.dal.OrganizationDAO;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
@@ -25,7 +25,6 @@ import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.ontology.dal.ClassModel;
-import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
@@ -42,7 +41,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.opensilex.core.organisation.api.InfrastructureAPI.CREDENTIAL_GROUP_INFRASTRUCTURE_ID;
+import static org.opensilex.core.organisation.api.OrganizationAPI.CREDENTIAL_GROUP_INFRASTRUCTURE_ID;
 
 /**
  *
@@ -88,17 +87,19 @@ public class FacilityAPI {
         @ApiResponse(code = 409, message = "A facility with the same URI already exists", response = ErrorResponse.class)
     })
     public Response createInfrastructureFacility(
-            @ApiParam("Facility description") @Valid InfrastructureFacilityCreationDTO dto
+            @ApiParam("Facility description") @Valid FacilityCreationDTO dto
     ) throws Exception {
         try {
-            InfrastructureDAO dao = new InfrastructureDAO(sparql, nosql);
-            InfrastructureFacilityModel facility = dto.newModel();
+            OrganizationDAO organizationDAO = new OrganizationDAO(sparql, nosql);
+            FacilityDAO facilityDAO = new FacilityDAO(sparql, nosql, organizationDAO);
+            FacilityModel facility = dto.newModel();
+            facility.setCreator(currentUser.getUri());
 
             if (dto.getRelations() != null) {
                 OntologyDAO ontoDAO = new OntologyDAO(sparql);
                 ClassModel model = SPARQLModule.getOntologyStoreInstance().getClassModel(facility.getType(),
                         new URI(Oeso.Facility.getURI()), currentUser.getLanguage());
-                URI graph = sparql.getDefaultGraphURI(InfrastructureFacilityModel.class);
+                URI graph = sparql.getDefaultGraphURI(FacilityModel.class);
                 for (RDFObjectRelationDTO relation : dto.getRelations()) {
                     if (!ontoDAO.validateObjectValue(graph, model, relation.getProperty(), relation.getValue(), facility)) {
                         throw new InvalidValueException("Invalid relation value for " + relation.getProperty().toString() + " => " + relation.getValue());
@@ -106,7 +107,7 @@ public class FacilityAPI {
                 }
             }
 
-            facility = dao.createFacility(facility, currentUser);
+            facility = facilityDAO.create(facility, currentUser);
 
             return new ObjectUriResponse(Response.Status.CREATED, facility.getUri()).getResponse();
 
@@ -127,8 +128,11 @@ public class FacilityAPI {
         @ApiResponse(code = 404, message = "Facility URI not found", response = ErrorResponse.class)
     })
     public Response getAllFacilities() throws Exception {
-        InfrastructureDAO dao = new InfrastructureDAO(sparql, nosql);
-        List<InfrastructureFacilityModel> facilities = dao.getAllFacilities(currentUser);
+        OrganizationDAO organizationDAO = new OrganizationDAO(sparql, nosql);
+        FacilityDAO facilityDAO = new FacilityDAO(sparql, nosql, organizationDAO);
+        List<FacilityModel> facilities = facilityDAO.search(new FacilitySearchFilter()
+                        .setUser(currentUser))
+                .getList();
 
         List<NamedResourceDTO> dtoList = facilities.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
 
@@ -143,19 +147,20 @@ public class FacilityAPI {
     @Produces(MediaType.APPLICATION_JSON)
 
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Facility retrieved", response = InfrastructureFacilityGetDTO.class),
+        @ApiResponse(code = 200, message = "Facility retrieved", response = FacilityGetDTO.class),
         @ApiResponse(code = 404, message = "Facility URI not found", response = ErrorResponse.class)
     })
     public Response getInfrastructureFacility(
             @ApiParam(value = "facility URI", example = "http://opensilex.dev/organisations/facility/phenoarch", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        InfrastructureDAO dao = new InfrastructureDAO(sparql, nosql);
+        OrganizationDAO organizationDAO = new OrganizationDAO(sparql, nosql);
+        FacilityDAO facilityDAO = new FacilityDAO(sparql, nosql, organizationDAO);
 
-        InfrastructureFacilityGetDTO facilityGetDTO = InfrastructureFacilityGetDTO.getDTOFromModel(
-                dao.getFacility(uri, currentUser),
+        FacilityGetDTO facilityGetDTO = FacilityGetDTO.getDTOFromModel(
+                facilityDAO.get(uri, currentUser),
                 true
         );
-        facilityGetDTO.fromGeospatialModel(dao.getFacilityGeospatialModel(uri));
+        facilityGetDTO.fromGeospatialModel(facilityDAO.getFacilityGeospatialModel(uri));
         return new SingleObjectResponse<>(facilityGetDTO).getResponse();
     }
 
@@ -166,22 +171,24 @@ public class FacilityAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return facilities", response = InfrastructureFacilityNamedDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = "Return facilities", response = FacilityNamedDTO.class, responseContainer = "List"),
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
         @ApiResponse(code = 404, message = "Facility not found (if any provided URIs is not found", response = ErrorDTO.class)
     })
     public Response getFacilitiesByURI(
             @ApiParam(value = "Facilities URIs", required = true) @QueryParam("uris") @NotNull @NotEmpty @ValidURI List<URI> uris) throws Exception {
 
-        InfrastructureDAO dao = new InfrastructureDAO(sparql, nosql);
-        List<InfrastructureFacilityModel> facilities = dao.getFacilitiesByURI(currentUser, uris);
+        OrganizationDAO organizationDAO = new OrganizationDAO(sparql, nosql);
+        FacilityDAO facilityDAO = new FacilityDAO(sparql, nosql, organizationDAO);
+
+        List<FacilityModel> facilities = facilityDAO.getList(uris, currentUser);
 
         if (facilities.isEmpty()) {
             return new ErrorResponse(Response.Status.NOT_FOUND, "Facilities not found", "Unknown facilities URIs").getResponse();
         }
 
-        List<InfrastructureFacilityNamedDTO> dtoList = facilities.stream()
-                .map(InfrastructureFacilityNamedDTO::new)
+        List<FacilityNamedDTO> dtoList = facilities.stream()
+                .map(FacilityNamedDTO::new)
                 .collect(Collectors.toList());
 
         return new PaginatedListResponse<>(dtoList).getResponse();
@@ -193,7 +200,7 @@ public class FacilityAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return facilities", response = InfrastructureFacilityNamedDTO.class, responseContainer = "List")
+        @ApiResponse(code = 200, message = "Return facilities", response = FacilityNamedDTO.class, responseContainer = "List")
     })
     public Response searchInfrastructureFacilities(
             @ApiParam(value = "Regex pattern for filtering facilities by names", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern,
@@ -202,12 +209,19 @@ public class FacilityAPI {
             @ApiParam(value = "Page number") @QueryParam("page") int page,
             @ApiParam(value = "Page size") @QueryParam("page_size") int pageSize
     ) throws Exception {
+        OrganizationDAO organizationDAO = new OrganizationDAO(sparql, nosql);
+        FacilityDAO facilityDAO = new FacilityDAO(sparql, nosql, organizationDAO);
 
-        InfrastructureDAO dao = new InfrastructureDAO(sparql, nosql);
-        ListWithPagination<InfrastructureFacilityModel> facilities = dao.searchFacilities(currentUser, pattern, organizations, orderByList, page, pageSize);
+        ListWithPagination<FacilityModel> facilities = facilityDAO.search((FacilitySearchFilter) new FacilitySearchFilter()
+                .setUser(currentUser)
+                .setPattern(pattern)
+                .setOrganizations(organizations)
+                .setOrderByList(orderByList)
+                .setPage(page)
+                .setPageSize(pageSize));
 
-        List<InfrastructureFacilityGetDTO> dtoList = facilities.getList().stream()
-                .map((facilityModel) -> InfrastructureFacilityGetDTO.getDTOFromModel(facilityModel, true))
+        List<FacilityGetDTO> dtoList = facilities.getList().stream()
+                .map((facilityModel) -> FacilityGetDTO.getDTOFromModel(facilityModel, true))
                 .collect(Collectors.toList());
 
         return new PaginatedListResponse<>(dtoList).getResponse();
@@ -230,8 +244,11 @@ public class FacilityAPI {
     public Response deleteInfrastructureFacility(
             @ApiParam(value = "Facility URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
     ) throws Exception {
-        InfrastructureDAO dao = new InfrastructureDAO(sparql, nosql);
-        dao.deleteFacility(uri, currentUser);
+        OrganizationDAO organizationDAO = new OrganizationDAO(sparql, nosql);
+        FacilityDAO facilityDAO = new FacilityDAO(sparql, nosql, organizationDAO);
+
+        facilityDAO.delete(uri, currentUser);
+
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
 
@@ -250,16 +267,17 @@ public class FacilityAPI {
     })
     public Response updateInfrastructureFacility(
             @ApiParam("Facility description")
-            @Valid InfrastructureFacilityUpdateDTO dto
+            @Valid FacilityUpdateDTO dto
     ) throws Exception {
-        InfrastructureDAO dao = new InfrastructureDAO(sparql, nosql);
+        OrganizationDAO organizationDAO = new OrganizationDAO(sparql, nosql);
+        FacilityDAO facilityDAO = new FacilityDAO(sparql, nosql, organizationDAO);
 
-        InfrastructureFacilityModel facility = dto.newModel();
+        FacilityModel facility = dto.newModel();
 
         if (dto.getRelations() != null) {
             OntologyDAO ontoDAO = new OntologyDAO(sparql);
             ClassModel model = ontoDAO.getClassModel(facility.getType(), new URI(Oeso.Facility.getURI()), currentUser.getLanguage());
-            URI graph = sparql.getDefaultGraphURI(InfrastructureFacilityModel.class);
+            URI graph = sparql.getDefaultGraphURI(FacilityModel.class);
             for (RDFObjectRelationDTO relation : dto.getRelations()) {
                 if (!ontoDAO.validateObjectValue(graph, model, relation.getProperty(), relation.getValue(), facility)) {
                     throw new InvalidValueException("Invalid relation value for " + relation.getProperty().toString() + " => " + relation.getValue());
@@ -267,7 +285,7 @@ public class FacilityAPI {
             }
         }
 
-        facility = dao.updateFacility(facility, currentUser);
+        facility = facilityDAO.update(facility, currentUser);
 
         Response response = new ObjectUriResponse(Response.Status.OK, facility.getUri()).getResponse();
 

@@ -26,13 +26,13 @@ import { Component, Ref, Watch } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 // @ts-ignore
-import { InfrastructureGetDTO } from "opensilex-core/index";
+import { OrganizationGetDTO } from "opensilex-core/index";
 
 @Component
 export default class FacilityView extends Vue {
   $opensilex: any;
 
-  selected: InfrastructureGetDTO = null;
+  selected: OrganizationGetDTO = null;
   uri = null;
   service;
 
@@ -57,8 +57,8 @@ export default class FacilityView extends Vue {
   refresh() {
     this.service
       .getInfrastructureFacility(this.uri)
-      .then((http: HttpResponse<OpenSilexResponse<InfrastructureGetDTO>>) => {
-        let detailDTO: InfrastructureGetDTO = http.response.result;
+      .then((http: HttpResponse<OpenSilexResponse<OrganizationGetDTO>>) => {
+        let detailDTO: OrganizationGetDTO = http.response.result;
         this.selected = detailDTO;
       });
   }

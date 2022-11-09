@@ -8,27 +8,26 @@ package org.opensilex.core.organisation.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
-import java.net.URI;
-import java.util.*;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertFalse;
-import static junit.framework.TestCase.assertTrue;
 import org.junit.Test;
-import org.opensilex.core.organisation.dal.InfrastructureModel;
-
+import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.response.ResourceDagDTO;
 
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import java.net.URI;
+import java.util.*;
+
+import static junit.framework.TestCase.*;
+
 /**
  * @author Vincent MIGOT
  * @author Renaud COLIN
  */
-public class InfrastructureAPITest extends AbstractSecurityIntegrationTest {
+public class OrganizationAPITest extends AbstractSecurityIntegrationTest {
 
     protected String path = "/core/organisations";
 
@@ -40,9 +39,9 @@ public class InfrastructureAPITest extends AbstractSecurityIntegrationTest {
 
     private static int infraCount = 0;
 
-    protected InfrastructureCreationDTO getCreationDTO(URI parent) {
+    protected OrganizationCreationDTO getCreationDTO(URI parent) {
         infraCount++;
-        InfrastructureCreationDTO dto = new InfrastructureCreationDTO();
+        OrganizationCreationDTO dto = new OrganizationCreationDTO();
         dto.setName("Infra " + infraCount);
         if (parent != null) {
             List<URI> parents = new ArrayList<>();
@@ -52,8 +51,8 @@ public class InfrastructureAPITest extends AbstractSecurityIntegrationTest {
         return dto;
     }
 
-    protected InfrastructureUpdateDTO getUpdateDTO(URI organizationUri, List<URI> updatedParents) {
-        InfrastructureUpdateDTO dto = new InfrastructureUpdateDTO();
+    protected OrganizationUpdateDTO getUpdateDTO(URI organizationUri, List<URI> updatedParents) {
+        OrganizationUpdateDTO dto = new OrganizationUpdateDTO();
         dto.setUri(organizationUri);
         if (updatedParents != null) {
             dto.setParents(updatedParents);
@@ -63,26 +62,25 @@ public class InfrastructureAPITest extends AbstractSecurityIntegrationTest {
 
     @Test
     public void testCreate() throws Exception {
-        final Response postResult = getJsonPostResponse(target(createPath), getCreationDTO(null));
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(null));
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
 
         // ensure that the result is a well formed URI, else throw exception
         URI createdUri = extractUriFromResponse(postResult);
-        final Response getResult = getJsonGetByUriResponse(target(uriPath), createdUri.toString());
+        final Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), createdUri.toString());
         assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
     }
 
     /**
      * Updating an organization to change its parent
      *
-     * @throws Exception
      */
     @Test
     public void testUpdateParents() throws Exception {
-        Response creationResponse = getJsonPostResponse(target(createPath), getCreationDTO(null));
+        Response creationResponse = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(null));
         URI root1 = extractUriFromResponse(creationResponse);
 
-        creationResponse = getJsonPostResponse(target(createPath), getCreationDTO(null));
+        creationResponse = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(null));
         URI root2 = extractUriFromResponse(creationResponse);
 
         Response updateResponse = getJsonPutResponse(target(updatePath), getUpdateDTO(root1, new ArrayList<URI>() {{ add(root2); }}));
@@ -93,14 +91,13 @@ public class InfrastructureAPITest extends AbstractSecurityIntegrationTest {
     /**
      * Updating an organization to create a cycle should fail
      *
-     * @throws Exception
      */
     @Test
     public void testUpdateParentsCycle() throws Exception {
-        Response creationResponse = getJsonPostResponse(target(createPath), getCreationDTO(null));
+        Response creationResponse = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(null));
         URI root1 = extractUriFromResponse(creationResponse);
 
-        creationResponse = getJsonPostResponse(target(createPath), getCreationDTO(root1));
+        creationResponse = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(root1));
         URI root2 = extractUriFromResponse(creationResponse);
 
         Response updateResponse = getJsonPutResponse(target(updatePath), getUpdateDTO(root1, new ArrayList<URI>() {{ add(root2); }}));
@@ -111,11 +108,10 @@ public class InfrastructureAPITest extends AbstractSecurityIntegrationTest {
     /**
      * Updating an organization to have itself as a parent should fail
      *
-     * @throws Exception
      */
     @Test
     public void testUpdateParentsSelf() throws Exception {
-        Response creationResponse = getJsonPostResponse(target(createPath), getCreationDTO(null));
+        Response creationResponse = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(null));
         URI root1 = extractUriFromResponse(creationResponse);
 
         Response updateResponse = getJsonPutResponse(target(updatePath), getUpdateDTO(root1, new ArrayList<URI>() {{ add(root1); }}));
@@ -125,27 +121,27 @@ public class InfrastructureAPITest extends AbstractSecurityIntegrationTest {
 
     @Test
     public void testSearch() throws Exception {
-        Response creationResponse = getJsonPostResponse(target(createPath), getCreationDTO(null));
+        Response creationResponse = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(null));
         URI root1 = extractUriFromResponse(creationResponse);
 
-        creationResponse = getJsonPostResponse(target(createPath), getCreationDTO(null));
+        creationResponse = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(null));
         URI root2 = extractUriFromResponse(creationResponse);
 
-        creationResponse = getJsonPostResponse(target(createPath), getCreationDTO(root1));
+        creationResponse = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(root1));
         URI root1Child1 = extractUriFromResponse(creationResponse);
 
-        final Response getResult = appendToken(target(searchPath)).get();
+        final Response getResult = appendAdminToken(target(searchPath)).get();
         assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
 
         JsonNode node = getResult.readEntity(JsonNode.class);
 
-        PaginatedListResponse<ResourceDagDTO<InfrastructureModel>> response = mapper.convertValue(node, new TypeReference<PaginatedListResponse<ResourceDagDTO<InfrastructureModel>>>() {
+        PaginatedListResponse<ResourceDagDTO<OrganizationModel>> response = mapper.convertValue(node, new TypeReference<PaginatedListResponse<ResourceDagDTO<OrganizationModel>>>() {
         });
 
-        List<ResourceDagDTO<InfrastructureModel>> list = response.getResult();
+        List<ResourceDagDTO<OrganizationModel>> list = response.getResult();
         assertFalse(list.isEmpty());
-        Optional<ResourceDagDTO<InfrastructureModel>> searchedRoot1 = list.stream().filter(orgDto -> SPARQLDeserializers.compareURIs(orgDto.getUri(), root1)).findFirst();
-        Optional<ResourceDagDTO<InfrastructureModel>> searchedRoot2 = list.stream().filter(orgDto -> SPARQLDeserializers.compareURIs(orgDto.getUri(), root2)).findFirst();
+        Optional<ResourceDagDTO<OrganizationModel>> searchedRoot1 = list.stream().filter(orgDto -> SPARQLDeserializers.compareURIs(orgDto.getUri(), root1)).findFirst();
+        Optional<ResourceDagDTO<OrganizationModel>> searchedRoot2 = list.stream().filter(orgDto -> SPARQLDeserializers.compareURIs(orgDto.getUri(), root2)).findFirst();
         assertTrue(searchedRoot1.isPresent());
         assertTrue(searchedRoot2.isPresent());
 
@@ -157,6 +153,6 @@ public class InfrastructureAPITest extends AbstractSecurityIntegrationTest {
 
     @Override
     protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {
-        return Collections.singletonList(InfrastructureModel.class);
+        return Collections.singletonList(OrganizationModel.class);
     }
 }

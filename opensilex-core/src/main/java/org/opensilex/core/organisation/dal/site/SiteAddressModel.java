@@ -1,8 +1,9 @@
-package org.opensilex.core.organisation.dal;
+package org.opensilex.core.organisation.dal.site;
 
 import org.apache.jena.vocabulary.ORG;
 import org.apache.jena.vocabulary.VCARD4;
 import org.opensilex.core.address.dal.AddressModel;
+import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 
@@ -14,7 +15,7 @@ import org.opensilex.sparql.annotations.SPARQLResource;
 @SPARQLResource(
         ontology = VCARD4.class,
         resource = "Address",
-        graph = InfrastructureModel.GRAPH
+        graph = OrganizationModel.GRAPH
 )
 public class SiteAddressModel extends AddressModel {
     @SPARQLProperty(

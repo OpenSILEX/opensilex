@@ -32,7 +32,7 @@ import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
 import FacilitiesView from "./FacilitiesView.vue";
-import { InfrastructureFacilityGetDTO } from 'opensilex-core/index';
+import { FacilityGetDTO } from 'opensilex-core/index';
 
 @Component
 export default class FacilityListView extends Vue {
@@ -40,7 +40,7 @@ export default class FacilityListView extends Vue {
 
   service: OrganizationsService;
 
-  selectedFacility: InfrastructureFacilityGetDTO = null;
+  selectedFacility: FacilityGetDTO = null;
 
   @Ref("facilitiesView")
   facilitiesView: FacilitiesView;
@@ -59,7 +59,7 @@ export default class FacilityListView extends Vue {
     return this.$store.state.credentials;
   }
 
-  updateSelectedFacility(facility: InfrastructureFacilityGetDTO) {
+  updateSelectedFacility(facility: FacilityGetDTO) {
     if (!facility || !facility.uri) {
       this.selectedFacility = undefined;
       return;
@@ -67,7 +67,7 @@ export default class FacilityListView extends Vue {
 
     this.service
         .getInfrastructureFacility(facility.uri)
-        .then((http: HttpResponse<OpenSilexResponse<InfrastructureFacilityGetDTO>>) => {
+        .then((http: HttpResponse<OpenSilexResponse<FacilityGetDTO>>) => {
           this.selectedFacility = http.response.result;
         });
   }

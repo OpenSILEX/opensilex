@@ -30,12 +30,12 @@ import org.opensilex.sparql.service.SPARQLService;
 
 public class GroupAPITest extends AbstractSecurityIntegrationTest {
 
-    protected String path = "/security/groups";
-    protected String createPath = path;
-    protected String updatePath = path ;
-    protected String getPath = path + "/{uri}";
-    protected String deletePath = path + "/{uri}";
-    protected String searchPath = path;
+    public String path = "/security/groups";
+    public String createPath = path;
+    public String updatePath = path ;
+    public String getPath = path + "/{uri}";
+    public String deletePath = path + "/{uri}";
+    public String searchPath = path;
 
     private final static String USER1_URI = "http://example.org/users/user1";
     private final static String USER2_URI = "http://example.org/users/user2";
@@ -82,12 +82,12 @@ public class GroupAPITest extends AbstractSecurityIntegrationTest {
     public void testCreate() throws Exception {
         createTestEnv();
 
-        Response postResult = getJsonPostResponse(target(createPath), getGroupCreationDTO());
+        Response postResult = getJsonPostResponseAsAdmin(target(createPath), getGroupCreationDTO());
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
 
         // ensure that the result is a well formed URI, else throw exception
         URI createdUri = extractUriFromResponse(postResult);
-        Response getResult = getJsonGetByUriResponse(target(getPath), createdUri.toString());
+        Response getResult = getJsonGetByUriResponseAsAdmin(target(getPath), createdUri.toString());
         assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
     }
 
@@ -96,7 +96,7 @@ public class GroupAPITest extends AbstractSecurityIntegrationTest {
         createTestEnv();
 
         // create the user
-        Response postResult = getJsonPostResponse(target(createPath), getGroupCreationDTO());
+        Response postResult = getJsonPostResponseAsAdmin(target(createPath), getGroupCreationDTO());
 
         // update the xp
         URI uri = extractUriFromResponse(postResult);
@@ -119,7 +119,7 @@ public class GroupAPITest extends AbstractSecurityIntegrationTest {
         assertEquals(Response.Status.OK.getStatusCode(), putResult.getStatus());
 
         // retrieve the new xp and compare to the expected xp
-        final Response getResult = getJsonGetByUriResponse(target(getPath), dto.getUri().toString());
+        final Response getResult = getJsonGetByUriResponseAsAdmin(target(getPath), dto.getUri().toString());
 
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
@@ -135,7 +135,7 @@ public class GroupAPITest extends AbstractSecurityIntegrationTest {
     public void testDelete() throws Exception {
         createTestEnv();
         // create object and check if URI exists
-        Response postResponse = getJsonPostResponse(target(createPath), getGroupCreationDTO());
+        Response postResponse = getJsonPostResponseAsAdmin(target(createPath), getGroupCreationDTO());
         assertEquals(Response.Status.CREATED.getStatusCode(), postResponse.getStatus());
         String uri = extractUriFromResponse(postResponse).toString();
 
@@ -143,14 +143,14 @@ public class GroupAPITest extends AbstractSecurityIntegrationTest {
         Response delResult = getDeleteByUriResponse(target(deletePath), uri);
         assertEquals(Response.Status.OK.getStatusCode(), delResult.getStatus());
 
-        Response getResult = getJsonGetByUriResponse(target(getPath), uri);
+        Response getResult = getJsonGetByUriResponseAsAdmin(target(getPath), uri);
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
     }
 
     @Test
     public void testSearch() throws Exception {
         createTestEnv();
-        Response postResult = getJsonPostResponse(target(createPath), getGroupCreationDTO());
+        Response postResult = getJsonPostResponseAsAdmin(target(createPath), getGroupCreationDTO());
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
 
         GroupCreationDTO dto = new GroupCreationDTO();
@@ -170,7 +170,7 @@ public class GroupAPITest extends AbstractSecurityIntegrationTest {
 
         dto.setUserProfiles(userProfiles);
 
-        postResult = getJsonPostResponse(target(createPath), dto);
+        postResult = getJsonPostResponseAsAdmin(target(createPath), dto);
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
 
         Map<String, Object> params = new HashMap<String, Object>() {
@@ -180,7 +180,7 @@ public class GroupAPITest extends AbstractSecurityIntegrationTest {
         };
 
         WebTarget target = appendSearchParams(target(searchPath), 0, 50, params);
-        Response getSearchResult = appendToken(target).get();
+        Response getSearchResult = appendAdminToken(target).get();
         assertEquals(Response.Status.OK.getStatusCode(), getSearchResult.getStatus());
 
         JsonNode node = getSearchResult.readEntity(JsonNode.class);
@@ -193,7 +193,7 @@ public class GroupAPITest extends AbstractSecurityIntegrationTest {
 
         params.put("name", "Group 2");
         target = appendSearchParams(target(searchPath), 0, 50, params);
-        getSearchResult = appendToken(target).get();
+        getSearchResult = appendAdminToken(target).get();
         assertEquals(Response.Status.OK.getStatusCode(), getSearchResult.getStatus());
 
         node = getSearchResult.readEntity(JsonNode.class);

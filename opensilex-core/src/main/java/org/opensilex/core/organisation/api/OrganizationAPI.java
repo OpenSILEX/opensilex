@@ -27,8 +27,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.opensilex.core.organisation.dal.InfrastructureDAO;
-import org.opensilex.core.organisation.dal.InfrastructureModel;
+import org.opensilex.core.organisation.dal.OrganizationDAO;
+import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
@@ -49,13 +49,13 @@ import org.opensilex.sparql.service.SPARQLService;
  *
  * @author vidalmor
  */
-@Api(InfrastructureAPI.CREDENTIAL_GROUP_INFRASTRUCTURE_ID)
+@Api(OrganizationAPI.CREDENTIAL_GROUP_INFRASTRUCTURE_ID)
 @Path("/core/organisations")
 @ApiCredentialGroup(
-        groupId = InfrastructureAPI.CREDENTIAL_GROUP_INFRASTRUCTURE_ID,
-        groupLabelKey = InfrastructureAPI.CREDENTIAL_GROUP_INFRASTRUCTURE_LABEL_KEY
+        groupId = OrganizationAPI.CREDENTIAL_GROUP_INFRASTRUCTURE_ID,
+        groupLabelKey = OrganizationAPI.CREDENTIAL_GROUP_INFRASTRUCTURE_LABEL_KEY
 )
-public class InfrastructureAPI {
+public class OrganizationAPI {
 
     public static final String CREDENTIAL_GROUP_INFRASTRUCTURE_ID = "Organizations";
     public static final String CREDENTIAL_GROUP_INFRASTRUCTURE_LABEL_KEY = "credential-groups.infrastructures";
@@ -90,11 +90,11 @@ public class InfrastructureAPI {
     })
 
     public Response createInfrastructure(
-            @ApiParam("Organisation description") @Valid InfrastructureCreationDTO dto
+            @ApiParam("Organisation description") @Valid OrganizationCreationDTO dto
     ) throws Exception {
         try {
-            InfrastructureDAO dao = new InfrastructureDAO(sparql, nosql);
-            InfrastructureModel model = dto.newModel();
+            OrganizationDAO dao = new OrganizationDAO(sparql, nosql);
+            OrganizationModel model = dto.newModel();
             model.setCreator(currentUser.getUri());
 
             model = dao.create(model);
@@ -113,15 +113,15 @@ public class InfrastructureAPI {
     @Produces(MediaType.APPLICATION_JSON)
 
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Organisation retrieved", response = InfrastructureGetDTO.class),
+        @ApiResponse(code = 200, message = "Organisation retrieved", response = OrganizationGetDTO.class),
         @ApiResponse(code = 404, message = "Organisation URI not found", response = ErrorResponse.class)
     })
     public Response getInfrastructure(
             @ApiParam(value = "Organisation URI", example = "http://opensilex.dev/organisation/phenoarch", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        InfrastructureDAO dao = new InfrastructureDAO(sparql, nosql);
-        InfrastructureModel model = dao.get(uri, currentUser);
-        return new SingleObjectResponse<>(InfrastructureGetDTO.getDTOFromModel(model)).getResponse();
+        OrganizationDAO dao = new OrganizationDAO(sparql, nosql);
+        OrganizationModel model = dao.get(uri, currentUser);
+        return new SingleObjectResponse<>(OrganizationGetDTO.getDTOFromModel(model)).getResponse();
     }
 
     @DELETE
@@ -141,7 +141,7 @@ public class InfrastructureAPI {
     public Response deleteInfrastructure(
             @ApiParam(value = "Organisation URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
     ) throws Exception {
-        InfrastructureDAO dao = new InfrastructureDAO(sparql, nosql);
+        OrganizationDAO dao = new OrganizationDAO(sparql, nosql);
         dao.delete(uri, currentUser);
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
@@ -158,10 +158,10 @@ public class InfrastructureAPI {
             @ApiParam(value = "Regex pattern for filtering list by names", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern,
             @ApiParam(value = " organisation URIs") @QueryParam("organisation_uris") List<URI> infraURIs
     ) throws Exception {
-        InfrastructureDAO dao = new InfrastructureDAO(sparql, nosql);
+        OrganizationDAO dao = new OrganizationDAO(sparql, nosql);
 
-        List<InfrastructureModel> organizations = dao.search(pattern, infraURIs, currentUser);
-        ResourceDagDTOBuilder<InfrastructureModel> dtoBuilder = new ResourceDagDTOBuilder<>(organizations);
+        List<OrganizationModel> organizations = dao.search(pattern, infraURIs, currentUser);
+        ResourceDagDTOBuilder<OrganizationModel> dtoBuilder = new ResourceDagDTOBuilder<>(organizations);
         return new PaginatedListResponse<>(dtoBuilder.build()).getResponse();
     }
 
@@ -180,11 +180,11 @@ public class InfrastructureAPI {
     })
     public Response updateInfrastructure(
             @ApiParam("Organisation description")
-            @Valid InfrastructureUpdateDTO dto
+            @Valid OrganizationUpdateDTO dto
     ) throws Exception {
-        InfrastructureDAO dao = new InfrastructureDAO(sparql, nosql);
+        OrganizationDAO dao = new OrganizationDAO(sparql, nosql);
 
-        InfrastructureModel infrastructure = dao.update(dto.newModel(), currentUser);
+        OrganizationModel infrastructure = dao.update(dto.newModel(), currentUser);
         Response response = new ObjectUriResponse(Response.Status.OK, infrastructure.getUri()).getResponse();
 
         return response;

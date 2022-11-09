@@ -197,7 +197,7 @@ public class DeviceDAO {
             // set the custom filter on type
             Map<String, WhereHandler> customHandlerByFields = new HashMap<>();
 
-            if (BooleanUtils.isTrue(includeSubTypes)) {
+            if (includeSubTypes) {
                 appendTypeFilter(customHandlerByFields, rdfType);
             }
 

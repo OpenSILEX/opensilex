@@ -160,22 +160,21 @@ public class DeviceDAO {
         return devModel.getUri();
     }
 
-    public ListWithPagination<DeviceModel> search(
-            String namePattern,
-            URI rdfType,
-            boolean includeSubTypes,
-            URI variable,
-            Integer year,
-            LocalDate existenceDate,
-            String brandPattern,
-            String modelPattern,
-            String snPattern,
-            Document metadata,
-            UserModel currentUser,
-            List<OrderBy> orderByList,
-            Integer page,
-            Integer pageSize) throws Exception {
+    public ListWithPagination<DeviceModel> search(DeviceSearchFilter filter) throws Exception {
+
+        Document metadata = filter.getMetadata();
+        Integer year = filter.getYear();
+        UserModel currentUser = filter.getCurrentUser();
+        Boolean includeSubTypes = filter.getIncludeSubTypes();
+        String namePattern = filter.getNamePattern();
+        URI rdfType = filter.getRdfType();
+        URI variable = filter.getVariable();
+        String brandPattern = filter.getBrandPattern();
+        String modelPattern = filter.getModelPattern();
+        String snPattern = filter.getSnPattern();
+        LocalDate existenceDate = filter.getExistenceDate();
         LocalDate date;
+
         if (year != null) {
             String yearString = Integer.toString(year);
             date = LocalDate.parse(yearString + "-01-01");
@@ -197,10 +196,11 @@ public class DeviceDAO {
         } else {
             // set the custom filter on type
             Map<String, WhereHandler> customHandlerByFields = new HashMap<>();
+
             if (includeSubTypes) {
                 appendTypeFilter(customHandlerByFields, rdfType);
-            }           
-            
+            }
+
             returnList = sparql.searchWithPagination(
                     sparql.getDefaultGraph(DeviceModel.class),
                     DeviceModel.class,
@@ -255,9 +255,9 @@ public class DeviceDAO {
                     },
                     customHandlerByFields,
                     null,
-                    orderByList,
-                    page,
-                    pageSize);
+                    filter.getOrderByList(),
+                    filter.getPage(),
+                    filter.getPageSize());
         }
 
         return returnList;
@@ -273,18 +273,20 @@ public class DeviceDAO {
         return nosql.distinct(MongoModel.URI_FIELD, URI.class, ATTRIBUTES_COLLECTION_NAME, filter);
     }
 
-    public List<DeviceModel> searchForExport(
-            String namePattern,
-            URI rdfType,
-            boolean includeSubTypes,
-            Integer year,
-            LocalDate existenceDate,
-            String brandPattern,
-            String modelPattern,
-            String snPattern,
-            Document metadata,
-            UserModel currentUser) throws Exception {
+    public List<DeviceModel> searchForExport(DeviceSearchFilter filter) throws Exception {
+
+        Document metadata = filter.getMetadata();
+        Integer year = filter.getYear();
+        UserModel currentUser = filter.getCurrentUser();
+        Boolean includeSubTypes = filter.getIncludeSubTypes();
+        String namePattern = filter.getNamePattern();
+        URI rdfType = filter.getRdfType();
+        String brandPattern = filter.getBrandPattern();
+        String modelPattern = filter.getModelPattern();
+        String snPattern = filter.getSnPattern();
+        LocalDate existenceDate = filter.getExistenceDate();
         LocalDate date;
+
         if (year != null) {
             String yearString = Integer.toString(year);
             date = LocalDate.parse(yearString + "-01-01");

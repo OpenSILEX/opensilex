@@ -204,6 +204,7 @@ public class DeviceAPI {
         DeviceSearchFilter filter = new DeviceSearchFilter()
                 .setRdfType(rdfType)
                 .setIncludeSubTypes(includeSubTypes)
+                .setNamePattern(name)
                 .setVariable(variable)
                 .setYear(year)
                 .setExistenceDate(existenceDate)
@@ -975,8 +976,12 @@ public class DeviceAPI {
 
         DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
 
+        InfrastructureFacilityGetDTO facility = null;
+
         InfrastructureFacilityModel facilityModel = dao.getAssociatedFacility(uri, currentUser);
-        InfrastructureFacilityGetDTO facility = InfrastructureFacilityGetDTO.getDTOFromModel(facilityModel, true);
+        if (facilityModel != null) {
+            facility = InfrastructureFacilityGetDTO.getDTOFromModel(facilityModel, true);
+        }
 
         return new SingleObjectResponse<>(facility).getResponse();
     }

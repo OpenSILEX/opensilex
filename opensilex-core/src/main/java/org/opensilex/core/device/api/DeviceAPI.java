@@ -1006,49 +1006,4 @@ public class DeviceAPI {
         return new SingleObjectResponse<>(facility).getResponse();
     }
 
-    @GET
-    @Path("facility")
-    @ApiOperation("Search devices by facility")
-    @ApiProtected
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return devices corresponding to the given search parameters", response = DeviceGetDTO.class, responseContainer = "List")
-    })
-    public Response searchDevicesByFacility(
-            @ApiParam(value = "Facility URI", example = DEVICE_EXAMPLE_URI) @QueryParam("facility") @ValidURI URI facility,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
-            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
-    ) throws Exception {
-
-        DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
-
-        DeviceSearchFilter filter = new DeviceSearchFilter()
-                .setCurrentUser(currentUser);
-        filter.setOrderByList(orderByList)
-                .setPage(page)
-                .setPageSize(pageSize);
-
-        ListWithPagination<DeviceModel> devices = dao.search(filter);
-
-        List<DeviceGetDTO> resultList = new ArrayList<>();
-        devices.getList().forEach( (device) -> {
-            try {
-                InfrastructureFacilityModel facilityModel = dao.getAssociatedFacility(device.getUri(), currentUser);
-                if (facilityModel != null) {
-                    if (SPARQLDeserializers.compareURIs(facility, facilityModel.getUri())) {
-                        resultList.add(DeviceGetDTO.getDTOFromModel(device));
-                    }
-                }
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        });
-
-        ListWithPagination<DeviceGetDTO> dtoList = new ListWithPagination<>(resultList);
-
-        return new PaginatedListResponse<>(dtoList).getResponse();
-    }
-
 }

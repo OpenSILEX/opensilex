@@ -253,7 +253,7 @@ import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
 import EventCsvForm from "../events/form/csv/EventCsvForm.vue";
 import DeviceModalForm from "./form/DeviceModalForm.vue";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
-import {FacilityGetDTO} from "opensilex-core/index";
+import {InfrastructureFacilityGetDTO} from "opensilex-core/model/infrastructureFacilityGetDTO";
 
 @Component
 export default class DeviceList extends Vue {
@@ -594,7 +594,7 @@ export default class DeviceList extends Vue {
       );
       service
           .getAllFacilities()
-          .then((http: HttpResponse<OpenSilexResponse<Array<FacilityGetDTO>>>) => {
+          .then((http: HttpResponse<OpenSilexResponse<Array<InfrastructureFacilityGetDTO>>>) => {
             this.facilities = [];
             for (let i = 0; i < http.response.result.length; i++) {
               this.facilities.push({

@@ -108,6 +108,7 @@ components["opensilex-FacilityView"] = FacilityView;
 import FacilityListView from "./facilities/FacilityListView.vue";
 components["opensilex-FacilityListView"] = FacilityListView;
 
+
 // Factors
 import FactorView from './experiments/factors/FactorView.vue';
 components["opensilex-FactorView"] = FactorView;

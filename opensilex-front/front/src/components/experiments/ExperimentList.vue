@@ -258,7 +258,7 @@ import {SpeciesDTO, SpeciesService} from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {User} from "../../models/User";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
-import {FacilityGetDTO} from "opensilex-core/index";
+import {InfrastructureFacilityGetDTO} from "opensilex-core/model/infrastructureFacilityGetDTO";
 
 @Component
 export default class ExperimentList extends Vue {
@@ -357,7 +357,6 @@ export default class ExperimentList extends Vue {
   searchExperiments(options) {
     let isPublic = undefined;
     let isEnded = undefined;
-    let facilities = undefined;
     if (this.filter.state) {
       if (this.filter.state == "public") {
         isPublic = true;
@@ -379,7 +378,7 @@ export default class ExperimentList extends Vue {
         this.filter.factorCategories, // factorCategories
         this.filter.projects, // projects
         isPublic, // isPublic
-        facilities,
+        this.filter.facilities,
         options.orderBy,
         options.currentPage,
         options.pageSize
@@ -467,7 +466,7 @@ export default class ExperimentList extends Vue {
     );
     service
         .getAllFacilities()
-        .then((http: HttpResponse<OpenSilexResponse<Array<FacilityGetDTO>>>) => {
+        .then((http: HttpResponse<OpenSilexResponse<Array<InfrastructureFacilityGetDTO>>>) => {
           this.facilities = [];
           for (let i = 0; i < http.response.result.length; i++) {
             this.facilities.push({

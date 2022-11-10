@@ -182,6 +182,7 @@ public class DeviceAPI {
             @ApiParam(value = "Variable", example = DEVICE_EXAMPLE_VARIABLE) @QueryParam("variable") @ValidURI URI variable,
             @ApiParam(value = "Search by year", example = DEVICE_EXAMPLE_YEAR) @QueryParam("year")  @Min(999) @Max(10000) Integer year,
             @ApiParam(value = "Date to filter device existence") @QueryParam("existence_date") LocalDate existenceDate,
+            @ApiParam(value = "Search by facility", example = "http://example.com") @QueryParam("facility") @ValidURI URI facility,
             @ApiParam(value = "Regex pattern for filtering by brand", example = ".*") @DefaultValue("") @QueryParam("brand") String brand,
             @ApiParam(value = "Regex pattern for filtering by model", example = ".*") @DefaultValue("") @QueryParam("model") String model,
             @ApiParam(value = "Regex pattern for filtering by serial number", example = ".*") @DefaultValue("") @QueryParam("serial_number") String serialNumber,
@@ -219,9 +220,28 @@ public class DeviceAPI {
 
         ListWithPagination<DeviceModel> devices = dao.search(filter);
 
+        if (facility != null) {
+            List<DeviceModel> resultList = new ArrayList<>();
+
+            devices.getList().forEach((device) -> {
+                try {
+                    InfrastructureFacilityModel facilityModel = dao.getAssociatedFacility(device.getUri(), currentUser);
+                    if (facilityModel != null) {
+                        if (SPARQLDeserializers.compareURIs(facility, facilityModel.getUri())) {
+                            resultList.add(device);
+                        }
+                    }
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            });
+
+            devices = new ListWithPagination<>(resultList);
+        }
+
         ListWithPagination<DeviceGetDTO> dtoList = devices.convert(DeviceGetDTO.class, DeviceGetDTO::getDTOFromModel);
 
-        return new PaginatedListResponse<DeviceGetDTO>(dtoList).getResponse();
+        return new PaginatedListResponse<>(dtoList).getResponse();
     }
     
     @GET

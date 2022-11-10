@@ -128,8 +128,18 @@ export default class FacilityView extends Vue {
 
   loadDevices() {
     this.devices = [];
-    this.deviceService.searchDevicesByFacility(
+    this.deviceService.searchDevices(
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
         this.uri,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
         undefined,
         0,
         20)

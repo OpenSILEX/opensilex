@@ -220,6 +220,25 @@ public class DeviceAPI {
 
         ListWithPagination<DeviceModel> devices = dao.search(filter);
 
+        if (facility != null) {
+            List<DeviceModel> resultList = new ArrayList<>();
+
+            devices.getList().forEach((device) -> {
+                try {
+                    InfrastructureFacilityModel facilityModel = dao.getAssociatedFacility(device.getUri(), currentUser);
+                    if (facilityModel != null) {
+                        if (SPARQLDeserializers.compareURIs(facility, facilityModel.getUri())) {
+                            resultList.add(device);
+                        }
+                    }
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            });
+
+            devices = new ListWithPagination<>(resultList);
+        }
+
         ListWithPagination<DeviceGetDTO> dtoList = devices.convert(DeviceGetDTO.class, DeviceGetDTO::getDTOFromModel);
 
         return new PaginatedListResponse<>(dtoList).getResponse();

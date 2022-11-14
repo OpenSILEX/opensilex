@@ -9,6 +9,7 @@ import java.util.List;
 public class MoveEventNoSqlModel extends MongoModel {
 
     public final static String ID_FIELD = "_id";
+    public final static String COORDINATES_FIELD = "targetPositions.position.coordinates";
 
     private List<TargetPositionModel> targetPositions;
 

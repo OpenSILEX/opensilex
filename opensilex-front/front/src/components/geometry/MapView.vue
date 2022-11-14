@@ -116,7 +116,7 @@
         style="height: 500px"
         @created="mapCreated"
         @pointermove="onMapPointerMove"
-        @moveend="areaRecovery"
+        @moveend="zoomRestriction"
       >
         <!-- Zoom and position-->
         <vl-view
@@ -178,7 +178,7 @@
               </vl-style-box>
             </div>
             <!-- temporal areas -->
-            <div v-if="area.properties.type == temporalAreaType &&!isSelectedArea(area)">
+            <div v-if="area.properties.type === temporalAreaType &&!isSelectedArea(area)">
               <vl-source-vector
                 ref="vectorSourceArea"
                 :features="[area]"
@@ -189,7 +189,7 @@
               </vl-style-box>
             </div>
             <!-- temporal areas ?? -->
-            <div v-if="area.properties.type == temporalAreaType && isSelectedArea(area)">
+            <div v-if="area.properties.type === temporalAreaType && isSelectedArea(area)">
               <vl-source-vector
                 ref="vectorSourceArea"
                 :features="[area]"
@@ -205,6 +205,13 @@
             <vl-source-vector
               ref="vectorSource"
               :features="layerSO"
+            ></vl-source-vector>
+          </vl-layer-vector>
+          <!-- Devices features -->
+          <vl-layer-vector v-for="layerDevice in featuresDevice" :key="layerDevice.id">
+            <vl-source-vector
+                ref="vectorSource"
+                :features="[layerDevice]"
             ></vl-source-vector>
           </vl-layer-vector>
           <!-- Filters -->
@@ -278,7 +285,7 @@
         />
     </vl-map>
     </div>
-    <!-- time-line sidebar (toggle) -->
+    <!-- event sidebar (toggle) -->
     <b-sidebar
       id="event-sidebar"
       v-model="timelineSidebarVisibility"
@@ -316,7 +323,7 @@
             </button>
           </div>
         </div>
-        <div v-if="temporalAreas.length == 0" class="p-3">
+        <div v-if="temporalAreas.length === 0" class="p-3">
           <p>{{ $t("MapView.noTemporalAreas") }}</p>
         </div>
         <opensilex-Timeline
@@ -357,7 +364,7 @@
           <opensilex-TreeView :nodes.sync="scientificObjects">
             <template v-slot:node="{ node }">
               <span class="item-icon"> </span>&nbsp;
-              <span v-if="node.title == 'Scientific Object'"
+              <span v-if="node.title === 'Scientific Object'"
                 >{{ $t("MapView.mapPanelScientificObjects") }} ({{
                   getNumberScientificObjects(featuresOS)
                 }})</span
@@ -375,7 +382,7 @@
               <opensilex-CheckboxForm
                 :value.sync="displaySO"
                 class="col-lg-2"
-                v-if="node.title == 'Scientific Object'"
+                v-if="node.title === 'Scientific Object'"
                 :small="true"
                 @update:value="updateScientificObject(node)"
               ></opensilex-CheckboxForm>
@@ -424,11 +431,32 @@
               ></opensilex-CheckboxForm>
             </template>
           </opensilex-TreeView>
+          <!-- Devices -->
+          <opensilex-TreeView :nodes.sync="devices" :class="isDisabled ? 'disabled' : ''">
+            <template v-slot:node="{ node }">
+              <span class="item-icon"> </span>&nbsp;
+              <span v-if="node.title === 'Devices'"
+              >{{ $t("MapView.mapPanelDevices") }} ({{
+                  getNumberDevices()
+                }})</span
+              >
+            </template>
+
+            <template v-slot:buttons="{ node }" v-if="!isDisabled">
+              <opensilex-CheckboxForm
+                  :value.sync="displayDevices"
+                  class="col-lg-2"
+                  v-if="node.title == 'Devices'"
+                  :small="true"
+                  @update:value="updateDevice(node)"
+              ></opensilex-CheckboxForm>
+            </template>
+          </opensilex-TreeView>
           <!-- filters -->
           <opensilex-TreeView :nodes.sync="filters">
             <template v-slot:node="{ node }">
               <span class="item-icon"> </span>&nbsp;
-              <span v-if="node.title == 'Filters'"
+              <span v-if="node.title ==='Filters'"
                 >{{ $t("MapView.mapPanelFilters") }} ({{
                   tabLayer.length
                 }})</span
@@ -439,7 +467,7 @@
             <template v-slot:buttons="{ node }">
               <opensilex-CheckboxForm
                 :disabled="!tabLayer.length"
-                v-if="node.title == 'Filters'"
+                v-if="node.title === 'Filters'"
                 :value.sync="displayFilters"
                 class="col-lg-2"
                 :small="true"
@@ -477,7 +505,7 @@
                   :small="true"
                   @click="
                     tabLayer.forEach((element, index) => {
-                      if (element.titleDisplay == node.data.titleDisplay)
+                      if (element.titleDisplay === node.data.titleDisplay)
                         tabLayer.splice(index, 1);
                     })
                   "
@@ -639,8 +667,7 @@ import Point from "ol/geom/Point";
 import { platformModifierKeyOnly } from "ol/events/condition";
 import * as olExt from "vuelayers/lib/ol-ext";
 let shpwrite = require("shp-write");
-import {AreaGetDTO,
-  AreaService, EventGetDTO, ResourceTreeDTO, ScientificObjectDetailDTO, ScientificObjectNodeDTO } from "opensilex-core/index";
+import {AreaGetDTO, PositionsService, AreaService, EventGetDTO, ResourceTreeDTO, ScientificObjectDetailDTO, ScientificObjectNodeDTO } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 import { transformExtent } from "vuelayers/src/ol-ext/proj";
 import { defaults, ScaleLine } from "ol/control";
@@ -648,6 +675,8 @@ import Oeso from "../../ontologies/Oeso";
 import * as turf from "@turf/turf";
 import { jsPDF } from "jspdf";
 import { saveAs } from "file-saver";
+import {TargetPositionCreationDTO} from "opensilex-core/model/targetPositionCreationDTO";
+import {ExperimentGetDTO} from "opensilex-core/model/experimentGetDTO";
 
 @Component
 export default class MapView extends Vue {
@@ -669,6 +698,7 @@ export default class MapView extends Vue {
   service: any;
   featuresOS: any[] = [];
   featuresArea: any[] = [];
+  featuresDevice: Feature[] = [];
   temporaryArea: any[] = [];
   temporalAreas: any[] = [];
   selectPointerMove: { name: string; type: string } = {
@@ -703,6 +733,7 @@ export default class MapView extends Vue {
   minorTicksInterval = "hour";
   range: { from: Date; to: Date } = { from: null, to: null };
   // filter: any = {};
+  experimentData: ExperimentGetDTO;
 
   private showArea: boolean = false;
   private editingMode: boolean = false;
@@ -711,6 +742,7 @@ export default class MapView extends Vue {
   private displayStructuralAreas: boolean = false;
   private displayTemporalAreas: boolean = false;
   private displayFilters: boolean = true;
+  private displayDevices: boolean = true;
   private temporalAreaType: String = "vocabulary:TemporalArea";
   private structuralAreaType: String = "vocabulary:Area";
   private displaySO: boolean = true;
@@ -725,9 +757,19 @@ export default class MapView extends Vue {
   private experiment: string;
   private scientificObjectsService = "opensilex.ScientificObjectsService";
   private areaService: AreaService;
-  private eventsService = "EventsService";
+  private positionService: PositionsService;
   private scientificObjectURI: string;
   private scientificObjects: any = [];
+  private devices: any = [{
+    title: "Devices",
+    isLeaf: false,
+    children: [],
+    isExpanded: true,
+    isSelected: null,
+    isDraggable: false,
+    isSelectable: false,
+    isCheckable: true,
+  }];
   private areas: any = [
     {
       title: "Areas",
@@ -853,7 +895,7 @@ export default class MapView extends Vue {
 
     for (let layer of this.featuresOS) {
       for (let obj of layer) {
-        if (this.getType(obj.properties.type) == type) {
+        if (this.getType(obj.properties.type) === type) {
           res += 1;
         }
       }
@@ -862,7 +904,7 @@ export default class MapView extends Vue {
   }
 
   getNumberByArea(areaType: String): Number {
-    if (areaType == "StructuralArea") {
+    if (areaType === "StructuralArea") {
       return this.getNumberStructuralArea();
     } else {
       return this.getNumberTemporalArea();
@@ -884,17 +926,26 @@ export default class MapView extends Vue {
     let res = 0;
 
     for (let area of this.featuresArea) {
-      if (area.properties.type == this.temporalAreaType) {
+      if (area.properties.type === this.temporalAreaType) {
         res += 1;
       }
     }
     return res;
   }
 
+  getNumberDevices(): Number {
+    let res = 0;
+
+    for (let layer of this.featuresDevice) {
+      res += 1;
+    }
+    return res;
+  }
+
   updateFilterDisplay(node) {
     for (let layer of this.tabLayer) {
-      if (layer.titleDisplay == node.title) {
-        if (layer.display == "false") {
+      if (layer.titleDisplay === node.title) {
+        if (layer.display === "false") {
           layer.display = "true";
           node.data.display = "true";
         } else {
@@ -908,13 +959,52 @@ export default class MapView extends Vue {
 
   updateColorFilter(node: any, type: String) {
     this.tabLayer.forEach((layer) => {
-      if (layer.titleDisplay == node.title) {
-        if (type == "vlStyleStrokeColor") {
+      if (layer.titleDisplay === node.title) {
+        if (type === "vlStyleStrokeColor") {
           layer.vlStyleStrokeColor = node.data.vlStyleStrokeColor;
         } else {
           layer.vlStyleFillColor = node.data.vlStyleFillColor;
         }
         return;
+      }
+    });
+  }
+  updateDevice(node) {
+    // Update the visibility of devices
+    const type: "Devices" = node.title; // What node is clicked ?
+    const layers = this.map.$map.getLayers();
+    layers.forEach((element, index) => {
+      // Iterate all layers of the map (OpenLayers API) to find the ones that are linked to Devices
+      const source = element.getSource();
+      if (source) {
+        const collection = source.featuresCollection_;
+        if (collection) {
+          const array = collection.array_; // Get array of Features
+          if (array && array.length > 0) {
+            // We can check only the first element of the array
+            // instead of check all elements (optimisation)
+           if (
+                array[0].values_.nature === "Device" && // Element must be of type 'Device'
+                type === "Devices"
+            ) {
+              let status: boolean = false;
+              if (type === "Devices") {
+                status = this.displayDevices;
+                if (status) {
+                  // Trick to save or get the last visible status
+                  status = element.get("last-visible-status");
+                } else {
+                  element.set("last-visible-status", element.getVisible());
+                }
+              } else {
+                status = !element.getVisible(); // Inverse visibility status
+              }
+              if (element.getVisible() != status) {
+                element.setVisible(status);
+              }
+            }
+          }
+        }
       }
     });
   }
@@ -934,16 +1024,16 @@ export default class MapView extends Vue {
             // We can check only the first element of the array
             // instead of check all elements (optimisation)
             if (
-              array[0].values_.nature == "Area" && // Element must be of type 'Area'
-              (type == "Areas" || // If 'Areas' node is clicked
-                (type == "StructuralArea" &&
+              array[0].values_.nature === "Area" && // Element must be of type 'Area'
+              (type === "Areas" || // If 'Areas' node is clicked
+                (type === "StructuralArea" &&
                   this.getType(array[0].values_.type) != "TemporalArea") || // If 'StructurArea' node is clicked and element is not temporal area type
-                (type == "TemporalArea" &&
-                  this.getType(array[0].values_.type) == "TemporalArea"))
+                (type === "TemporalArea" &&
+                  this.getType(array[0].values_.type) === "TemporalArea"))
             ) {
               // If 'TemporalArea' node is clicked and element is temporal area type
               let status: boolean = false;
-              if (type == "Areas") {
+              if (type === "Areas") {
                 status = this.displayAreas;
                 if (status) {
                   // Trick to save or get the last visible status
@@ -966,7 +1056,7 @@ export default class MapView extends Vue {
 //Control show/hide SO on map panel
   updateScientificObject(node) {
     // Update the Scientific Objects of areas
-    const isAllScientificObjects: boolean = node.title == "Scientific Object"; // is the 'Scientific Object' node clicked ?
+    const isAllScientificObjects: boolean = node.title === "Scientific Object"; // is the 'Scientific Object' node clicked ?
     const layers = this.map.$map.getLayers();
     layers.forEach((element, index) => {
       // Iterate all layers of the map (OpenLayers API) to find the ones that are linked to ScientificObjects
@@ -979,9 +1069,9 @@ export default class MapView extends Vue {
             // We can check only the first element of the array
             // instead of check all elements (optimisation)
             if (
-              array[0].values_.nature == "ScientificObjects" &&
+              array[0].values_.nature === "ScientificObjects" &&
               (isAllScientificObjects || // All Scientific Objects
-                array[0].values_.name == node.title)
+                array[0].values_.name === node.title)
             ) {
               // Only the only type selected
               let status: boolean = false;
@@ -1070,7 +1160,7 @@ export default class MapView extends Vue {
   displayScientificObjects() {
     if (!this.displaySO) {
       for (const feature of this.featuresOS) {
-        if (feature[0].properties.display == "true") {
+        if (feature[0].properties.display === "true") {
           feature[0].properties.display = "false";
           this.subDisplaySO.push(feature[0].properties.uri);
         }
@@ -1078,7 +1168,7 @@ export default class MapView extends Vue {
     } else {
       for (const feature of this.featuresOS) {
         for (const uri of this.subDisplaySO) {
-          if (feature[0].properties.uri == uri) {
+          if (feature[0].properties.uri === uri) {
             feature[0].properties.display = "true";
             this.subDisplaySO.splice(this.subDisplaySO.indexOf(uri), 1);
           }
@@ -1089,7 +1179,7 @@ export default class MapView extends Vue {
 //???
   isSelectedArea(area) {
     for (let selected of this.selectedFeatures) {
-      if (selected.properties.uri == area.properties.uri) {
+      if (selected.properties.uri === area.properties.uri) {
         return true;
       }
     }
@@ -1117,7 +1207,7 @@ export default class MapView extends Vue {
   showFiltersDetails(filterResult: any) {
     if (filterResult.ref) {
       this.tabLayer.forEach((element, index) => {
-        if (element.ref == filterResult.ref) {
+        if (element.ref === filterResult.ref) {
           this.tabLayer.splice(index, 1);
         }
       });
@@ -1151,7 +1241,7 @@ export default class MapView extends Vue {
     // this.$opensilex.updateURLParameters(this.filter);
 
     this.recoveryScientificObjects(startDate, endDate);
-    this.areaRecovery();
+    this.zoomRestriction();
   }
 
   formatDate(date): string {
@@ -1171,9 +1261,9 @@ export default class MapView extends Vue {
 //select Features from timeline??
   selectFeaturesFromTimeline(uri) {
     for (let area of this.featuresArea) {
-      if (area.properties.uri == uri) {
+      if (area.properties.uri === uri) {
         for (let i = 0; i < this.selectedFeatures.length; i++) {
-          if (this.selectedFeatures[i].properties.uri == uri) {
+          if (this.selectedFeatures[i].properties.uri === uri) {
             this.selectedFeatures = [];
             return;
           }
@@ -1210,7 +1300,7 @@ export default class MapView extends Vue {
 
               let inserted = false;
               this.featuresOS.forEach((item) => {
-                if (item[0].properties.type == result.rdf_type) {
+                if (item[0].properties.type === result.rdf_type) {
                   item.push(result.geometry);
                   inserted = true;
                 }
@@ -1290,8 +1380,16 @@ export default class MapView extends Vue {
     this.$opensilex.showLoader();
     // this.$opensilex.updateFiltersFromURL(this.$route.query, this.filter);
     this.experiment = decodeURIComponent(this.$route.params.uri);
+    this.$opensilex
+        .getService("opensilex.ExperimentsService")
+        .getExperiment(this.experiment)
+        .then((http) => {
+          this.experimentData = http.response.result;
+        })
+        .catch(this.$opensilex.errorHandler);
 
     this.areaService = this.$opensilex.getService("opensilex.AreaService");
+    this.positionService = this.$opensilex.getService("opensilex.PositionsService");
 
     this.retrievesNameOfType();
     this.recoveryScientificObjects();
@@ -1351,10 +1449,10 @@ export default class MapView extends Vue {
     const date = new Date(value);
     let res: string = "";
 
-    if (position == "left") res += this.$i18n.t("MapView.marketFrom");
+    if (position === "left") res += this.$i18n.t("MapView.marketFrom");
     else res += this.$i18n.t("MapView.marketTo");
     res += ": ";
-    if (this.$store.getters.language == "en") {
+    if (this.$store.getters.language === "en") {
       res +=
         String(date.getMonth() + 1).padStart(2, "0") +
         "/" +
@@ -1451,7 +1549,7 @@ export default class MapView extends Vue {
           var layers= this.map.$map.getLayers();
           //Recover vector and visible layers
           layers.forEach((layer)=>{
-            if(layer.getVisible() && layer.type=='VECTOR'){
+            if(layer.getVisible() && layer.type==='VECTOR'){
               const source = layer.getSource();
               source.forEachFeatureIntersectingExtent(
                   extent,
@@ -1573,7 +1671,7 @@ export default class MapView extends Vue {
       this.retrievesNameOfType();
     }
     for (let typeLabelElement of this.typeLabel) {
-      if (typeLabelElement.uri == uriType) return typeLabelElement.name;
+      if (typeLabelElement.uri === uriType) return typeLabelElement.name;
     }
   }
 
@@ -1669,7 +1767,7 @@ export default class MapView extends Vue {
     for (let layer of this.featuresOS) {
       for (let obj of layer) {
         geometry = null;
-        if (obj.geometry.type == "Point") {
+        if (obj.geometry.type === "Point") {
           geometry = new Point(obj.geometry.coordinates);
         } else {
           geometry = new Polygon(obj.geometry.coordinates);
@@ -1683,7 +1781,7 @@ export default class MapView extends Vue {
     }
     for (let layer of this.featuresArea) {
       geometry = null;
-      if (layer.geometry.type == "Point") {
+      if (layer.geometry.type === "Point") {
         geometry = new Point(layer.geometry.coordinates);
       } else {
         geometry = new Polygon(layer.geometry.coordinates);
@@ -1759,7 +1857,7 @@ export default class MapView extends Vue {
 
               let inserted = false;
               this.featuresOS.forEach((item) => {
-                if (item[0].properties.type == element.rdf_type) {
+                if (item[0].properties.type === element.rdf_type) {
                   item.push(element.geometry);
                   inserted = true;
                 }
@@ -1826,7 +1924,7 @@ export default class MapView extends Vue {
       let regExp = /area:.+|area#.+/;
 
       if (
-        uri.slice(uri.search(regExp) + 5) ==
+        uri.slice(uri.search(regExp) + 5) ===
         uriItem.slice(uriItem.search(regExp) + 5)
       ) {
         features.splice(features.indexOf(item), 1);
@@ -1854,7 +1952,7 @@ export default class MapView extends Vue {
       let regExp = /area:.+|area#.+/;
 
       if (
-        uri.slice(uri.search(regExp) + 5) ==
+        uri.slice(uri.search(regExp) + 5) ===
         uriItem.slice(uriItem.search(regExp) + 5)
       ) {
         features.splice(features.indexOf(item), 1);
@@ -1869,12 +1967,12 @@ export default class MapView extends Vue {
       } else {
         const { uri: uriItem } = item.properties;
 
-        if (uri == uriItem) {
-          if (features.length > 1 || higherLevelFeatures.length == 0) {
+        if (uri === uriItem) {
+          if (features.length > 1 || higherLevelFeatures.length === 0) {
             features.splice(features.indexOf(item), 1);
           } else {
             for (let i = 0; i < higherLevelFeatures.length; i++) {
-              if (uri == higherLevelFeatures[i][0].properties.uri) {
+              if (uri === higherLevelFeatures[i][0].properties.uri) {
                 higherLevelFeatures.splice(i, 1);
               }
             }
@@ -1931,14 +2029,14 @@ export default class MapView extends Vue {
       (coordinateExtent[1] + coordinateExtent[3]) / 2,
     ];
   }
-//Recovery areas (structural|temporal) in  the current map expansion
-  private areaRecovery() {
-    if(this.mapView.$view.getZoom()<9){
+  private zoomRestriction() {
+    if (this.mapView.$view.getZoom() < 9) {
       this.isDisabled = true;
-      this.featuresArea= [];
-    }
-    else{
+      this.featuresArea = [];
+      this.featuresDevice = [];
+    } else {
       this.isDisabled = false;
+
       let coordinateExtent = this.getCoordinateExtent();
 
       this.calcOverlayCoordinate(coordinateExtent);
@@ -1968,17 +2066,14 @@ export default class MapView extends Vue {
           ],
         };
 
-        this.featuresArea = [];
-        this.temporalAreas = [];
-
         //For time-line
         let minDate = this.range.from;
-        if (minDate == null) {
+        if (minDate === null) {
           minDate = this.minDate;
         }
 
         let maxDate = this.range.to;
-        if (maxDate == null) {
+        if (maxDate === null) {
           maxDate = this.maxDate;
         }
         minDate = this.$opensilex.prepareGetParameter(minDate);
@@ -1997,10 +2092,21 @@ export default class MapView extends Vue {
         if (maxDate != undefined) {
           maxDateString = maxDate.toISOString();
         }
+        this.areaRecovery(geometry, minDateString,maxDateString);
+        this.devicesRecovery(geometry);
+      }
+    }
+  }
+
+//Recovery areas (structural|temporal) in  the current map expansion
+  private areaRecovery(geometry, minDateString, maxDateString) {
+
+        this.featuresArea = [];
+        this.temporalAreas = [];
 
         this.areaService
          .searchIntersects(
-                JSON.parse(JSON.stringify(geometry)),
+                geometry,
                 minDateString,
                 maxDateString
             )
@@ -2018,14 +2124,14 @@ export default class MapView extends Vue {
                   };
                   let bool = true;
                   for (let area of this.featuresArea) {
-                    if (area.properties.uri == element.geometry.properties.uri) {
+                    if (area.properties.uri === element.geometry.properties.uri) {
                       // Check if already exists
                       bool = false;
                     }
                   }
                   if (bool) {
                     this.featuresArea.push(element.geometry);
-                    if (element.geometry.properties.type == this.temporalAreaType) {
+                    if (element.geometry.properties.type === this.temporalAreaType) {
                       this.appendTemporalArea(element.geometry.properties);
                     }
                   }
@@ -2037,8 +2143,45 @@ export default class MapView extends Vue {
               this.endReceipt = true;
               this.$opensilex.hideLoader();
             });
-      }
-    }
+  }
+
+  //Recovery devices in  the current map expansion
+  private devicesRecovery(geometry) {
+
+      this.featuresDevice = [];
+
+
+     this.positionService.searchGeospatializedPosition(
+              geometry,
+              Oeso.DEVICE_TYPE_URI,
+              new Date(this.experimentData.start_date).toISOString(),
+              this.experimentData.end_date ? new Date(this.experimentData.end_date).toISOString() : undefined
+     )
+          .then((http: HttpResponse<OpenSilexResponse<Array<TargetPositionCreationDTO>>>) => {
+            const res = http.response.result as any;
+            res.forEach((element) => {
+              if (element.targetPositions[0].position.coordinates != null) {
+                 element = {
+                   geometry: {
+                     coordinates: element.targetPositions[0].position.coordinates.coordinates.values,
+                     type: 'Point'
+                   },
+                   type: "Feature",
+                   properties: {
+                     uri: element.uri,
+                     target: element.targetPositions[0].target,
+                     nature: "Device",
+                     }
+                 };
+                this.featuresDevice.push(element);
+              }
+            });
+          })
+          .catch(this.$opensilex.errorHandler)
+          .finally(() => {
+              this.endReceipt = true;
+              this.$opensilex.hideLoader();
+            });
   }
 
   private edit(data) {
@@ -2048,7 +2191,7 @@ export default class MapView extends Vue {
           let form = data.item.properties;
           form.geometry= data.item.geometry;
 
-          if(data.item.properties.type == this.temporalAreaType){
+          if(data.item.properties.type === this.temporalAreaType){
             form.is_structural_area = false;
             form.rdf_type = form.event.rdf_type;
             form.start = form.event.start;
@@ -2259,6 +2402,7 @@ en:
     mapPanelAreasStructuralArea: Structural area
     mapPanelAreasTemporalArea: Temporal area
     mapPanelFilters: Filters
+    mapPanelDevices : Devices
     create-filter: Create filter
     center: Refocus the map
     save: Save the map
@@ -2282,6 +2426,7 @@ en:
     title: Scientific object
     update: Scientific object has been updated
     display: Scientific objects
+
 fr:
   MapView:
     name: nom
@@ -2314,6 +2459,7 @@ fr:
     mapPanelAreasStructuralArea: Zone structurelle
     mapPanelAreasTemporalArea: Zone temporaire
     mapPanelFilters: Filtres
+    mapPanelDevices : Capteurs
     create-filter: Créer un filtre
     center: Recentrer la carte
     save: Enregistrer la carte

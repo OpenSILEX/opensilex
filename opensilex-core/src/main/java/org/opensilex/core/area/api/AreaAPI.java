@@ -204,6 +204,7 @@ public class AreaAPI {
                     null,
                     null,
                     null,
+                    null,
                     currentUser.getLanguage(),
                     null,
                     null,
@@ -268,6 +269,7 @@ public class AreaAPI {
             // Check if an event is linked to the area
             ListWithPagination<EventModel> eventList = eventDAO.search(
                     areaDTO.getUri().toString(),
+                    null,
                     null,
                     null,
                     null,
@@ -359,6 +361,7 @@ public class AreaAPI {
             //search if an event is linked
             ListWithPagination<EventModel> eventList = eventDAO.search(
                     areaURI.toString(),
+                    null,
                     null,
                     null,
                     null,
@@ -496,6 +499,7 @@ public class AreaAPI {
                 // Check if event is linked to the area
                 ListWithPagination<EventModel> eventList = eventDAO.search(
                         geospatialModel.getUri().toString(),
+                        null,
                         null,
                         null,
                         null,

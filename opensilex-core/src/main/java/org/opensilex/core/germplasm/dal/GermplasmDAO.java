@@ -130,45 +130,6 @@ public class GermplasmDAO {
         return sparql.executeAskQuery(askQuery);
     }
 
-    public boolean labelExistsCaseSensitiveBySpecies(GermplasmCreationDTO germplasm) throws Exception {
-        AskBuilder askQuery = new AskBuilder()
-                .from(sparql.getDefaultGraph(GermplasmModel.class).toString())
-                .addWhere("?uri", RDF.type, SPARQLDeserializers.nodeURI(germplasm.getRdfType()))
-                .addWhere("?uri", RDFS.label, germplasm.getName());
-
-        if (germplasm.getSpecies() != null) {
-            askQuery.addWhere("?uri", Oeso.fromSpecies, SPARQLDeserializers.nodeURI(germplasm.getSpecies()));
-        } else if (germplasm.getVariety() != null) {
-            askQuery.addWhere("?uri", Oeso.fromVariety, SPARQLDeserializers.nodeURI(germplasm.getVariety()));
-        } else if (germplasm.getAccession() != null) {
-            askQuery.addWhere("?uri", Oeso.fromAccession, SPARQLDeserializers.nodeURI(germplasm.getAccession()));
-        }
-
-        return sparql.executeAskQuery(askQuery);
-    }
-
-    private Set<String> getAllLabels(URI rdfType) {
-        HashSet<String> labels = new HashSet<>();
-
-        try {
-            SelectBuilder query = new SelectBuilder()
-                    .addVar("?label")
-                    .from(sparql.getDefaultGraph(GermplasmModel.class).toString())
-                    .addWhere("?uri", RDF.type, SPARQLDeserializers.nodeURI(rdfType))
-                    .addWhere("?uri", RDFS.label, "?label");
-
-            List<SPARQLResult> results = sparql.executeSelectQuery(query);
-
-            results.forEach(result -> {
-                labels.add(result.getStringValue("label").toLowerCase());
-            });
-        } catch (SPARQLException error) {
-            throw new RuntimeException(error);
-        }
-
-        return labels;
-    }
-
     public GermplasmModel create(GermplasmModel model) throws Exception {
         if (model.getMetadata() != null) {
             nosql.startTransaction();

@@ -9,7 +9,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
-import io.swagger.annotations.ApiParam;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
@@ -30,11 +29,10 @@ import org.opensilex.core.event.dal.move.PositionModel;
 import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
-import org.opensilex.core.organisation.api.facitity.InfrastructureFacilityGetDTO;
-import org.opensilex.core.organisation.dal.InfrastructureDAO;
-import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
+import org.opensilex.core.organisation.dal.OrganizationDAO;
+import org.opensilex.core.organisation.dal.facility.FacilityDAO;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.position.api.PositionGetDTO;
-import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.model.SPARQLModelRelation;
@@ -56,7 +54,6 @@ import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
-import org.opensilex.utils.OrderBy;
 
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
@@ -575,12 +572,12 @@ public class DeviceDAO {
         return results.getList().get(0);
     }
 
-    public InfrastructureFacilityModel getAssociatedFacility(URI deviceURI, UserModel currentUser) throws Exception {
+    public FacilityModel getAssociatedFacility(URI deviceURI, UserModel currentUser) throws Exception {
 
         MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
         MoveModel moveEvent = moveDAO.getLastMoveAfter(deviceURI, null);
 
-        InfrastructureFacilityModel facility = null;
+        FacilityModel facility = null;
 
         List<PositionGetDTO> resultDTOList = new ArrayList<>();
         if (moveEvent != null) {
@@ -606,8 +603,9 @@ public class DeviceDAO {
             if (lastPosition.getTo() != null) {
                 URI facilityUri = new URI(URIDeserializer.getShortURI(lastPosition.getTo().getUri().toString()));
 
-                InfrastructureDAO infraDAO = new InfrastructureDAO(sparql, nosql);
-                facility = infraDAO.getFacility(facilityUri, currentUser);
+                OrganizationDAO orgaDAO = new OrganizationDAO(sparql, nosql);
+                FacilityDAO infraDAO = new FacilityDAO(sparql, nosql, orgaDAO);
+                facility = infraDAO.get(facilityUri, currentUser);
             }
         }
 

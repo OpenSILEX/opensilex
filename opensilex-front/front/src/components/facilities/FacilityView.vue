@@ -36,15 +36,12 @@
 import { Component, Ref, Watch } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
-// @ts-ignore
-import { InfrastructureGetDTO } from "opensilex-core/index";
+import { OrganizationGetDTO } from "opensilex-core/index";
 import { ExperimentGetListDTO } from "opensilex-core/model/experimentGetListDTO";
 import { DeviceGetDTO } from "opensilex-core/model/deviceGetDTO";
-import {PositionGetDTO} from "opensilex-core/model/positionGetDTO";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
 import {ExperimentsService} from "opensilex-core/api/experiments.service";
 import {DevicesService} from "opensilex-core/api/devices.service";
-import {PositionsService} from "opensilex-core/api/positions.service";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import AssociatedExperimentsList from "../experiments/AssociatedExperimentsList.vue";
 
@@ -52,7 +49,7 @@ import AssociatedExperimentsList from "../experiments/AssociatedExperimentsList.
 export default class FacilityView extends Vue {
   $opensilex: OpenSilexVuePlugin;
 
-  selected: InfrastructureGetDTO = null;
+  selected: OrganizationGetDTO = null;
   experiments: Array<ExperimentGetListDTO> = [];
   devices: Array<DeviceGetDTO> = [];
   experimentName: string = "";
@@ -91,8 +88,8 @@ export default class FacilityView extends Vue {
   refresh() {
     this.organizationService
       .getInfrastructureFacility(this.uri)
-      .then((http: HttpResponse<OpenSilexResponse<InfrastructureGetDTO>>) => {
-        let detailDTO: InfrastructureGetDTO = http.response.result;
+      .then((http: HttpResponse<OpenSilexResponse<OrganizationGetDTO>>) => {
+        let detailDTO: OrganizationGetDTO = http.response.result;
         this.selected = detailDTO;
 
         this.loadExperiments();

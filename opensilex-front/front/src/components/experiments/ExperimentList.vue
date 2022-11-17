@@ -258,7 +258,7 @@ import {SpeciesDTO, SpeciesService} from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {User} from "../../models/User";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
-import {InfrastructureFacilityGetDTO} from "opensilex-core/model/infrastructureFacilityGetDTO";
+import {FacilityGetDTO} from "opensilex-core/index";
 
 @Component
 export default class ExperimentList extends Vue {
@@ -466,7 +466,7 @@ export default class ExperimentList extends Vue {
     );
     service
         .getAllFacilities()
-        .then((http: HttpResponse<OpenSilexResponse<Array<InfrastructureFacilityGetDTO>>>) => {
+        .then((http: HttpResponse<OpenSilexResponse<Array<FacilityGetDTO>>>) => {
           this.facilities = [];
           for (let i = 0; i < http.response.result.length; i++) {
             this.facilities.push({

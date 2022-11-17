@@ -25,13 +25,13 @@ public class ProfileAPITest extends AbstractSecurityIntegrationTest {
 //    protected boolean isDebug() {
 //        return true;
 //    }
-    protected String path = "/security/profiles";
-    protected String createPath = path ;
-    protected String updatePath = path ;
-    protected String getPath = path + "/{uri}";
-    protected String deletePath = path + "/{uri}";
-    protected String searchPath = path;
-    protected String getAllPath = path + "/all";
+    public String path = "/security/profiles";
+    public String createPath = path ;
+    public String updatePath = path ;
+    public String getPath = path + "/{uri}";
+    public String deletePath = path + "/{uri}";
+    public String searchPath = path;
+    public String getAllPath = path + "/all";
 
     protected ProfileCreationDTO getProfilCreationDTO() {
 
@@ -50,12 +50,12 @@ public class ProfileAPITest extends AbstractSecurityIntegrationTest {
     @Test
     public void testCreate() throws Exception {
 
-        Response postResult = getJsonPostResponse(target(createPath), getProfilCreationDTO());
+        Response postResult = getJsonPostResponseAsAdmin(target(createPath), getProfilCreationDTO());
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
 
         // ensure that the result is a well formed URI, else throw exception
         URI createdUri = extractUriFromResponse(postResult);
-        Response getResult = getJsonGetByUriResponse(target(getPath), createdUri.toString());
+        Response getResult = getJsonGetByUriResponseAsAdmin(target(getPath), createdUri.toString());
         assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
     }
 
@@ -63,7 +63,7 @@ public class ProfileAPITest extends AbstractSecurityIntegrationTest {
     public void testUpdate() throws Exception {
 
         // create the user
-        Response postResult = getJsonPostResponse(target(createPath), getProfilCreationDTO());
+        Response postResult = getJsonPostResponseAsAdmin(target(createPath), getProfilCreationDTO());
 
         // update the xp
         URI uri = extractUriFromResponse(postResult);
@@ -81,7 +81,7 @@ public class ProfileAPITest extends AbstractSecurityIntegrationTest {
         assertEquals(Response.Status.OK.getStatusCode(), putResult.getStatus());
 
         // retrieve the new xp and compare to the expected xp
-        final Response getResult = getJsonGetByUriResponse(target(getPath), dto.getUri().toString());
+        final Response getResult = getJsonGetByUriResponseAsAdmin(target(getPath), dto.getUri().toString());
 
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
@@ -97,7 +97,7 @@ public class ProfileAPITest extends AbstractSecurityIntegrationTest {
     public void testDelete() throws Exception {
 
         // create object and check if URI exists
-        Response postResponse = getJsonPostResponse(target(createPath), getProfilCreationDTO());
+        Response postResponse = getJsonPostResponseAsAdmin(target(createPath), getProfilCreationDTO());
         assertEquals(Response.Status.CREATED.getStatusCode(), postResponse.getStatus());
         String uri = extractUriFromResponse(postResponse).toString();
 
@@ -105,14 +105,14 @@ public class ProfileAPITest extends AbstractSecurityIntegrationTest {
         Response delResult = getDeleteByUriResponse(target(deletePath), uri);
         assertEquals(Response.Status.OK.getStatusCode(), delResult.getStatus());
 
-        Response getResult = getJsonGetByUriResponse(target(getPath), uri);
+        Response getResult = getJsonGetByUriResponseAsAdmin(target(getPath), uri);
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
     }
 
     @Test
     public void testSearch() throws Exception {
 
-        Response postResult = getJsonPostResponse(target(createPath), getProfilCreationDTO());
+        Response postResult = getJsonPostResponseAsAdmin(target(createPath), getProfilCreationDTO());
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
 
         ProfileCreationDTO profile2 = new ProfileCreationDTO();
@@ -125,7 +125,7 @@ public class ProfileAPITest extends AbstractSecurityIntegrationTest {
             }
         });
 
-        postResult = getJsonPostResponse(target(createPath), profile2);
+        postResult = getJsonPostResponseAsAdmin(target(createPath), profile2);
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
 
         Map<String, Object> params = new HashMap<String, Object>() {
@@ -135,7 +135,7 @@ public class ProfileAPITest extends AbstractSecurityIntegrationTest {
         };
 
         WebTarget target = appendSearchParams(target(searchPath), 0, 50, params);
-        Response getSearchResult = appendToken(target).get();
+        Response getSearchResult = appendAdminToken(target).get();
         assertEquals(Response.Status.OK.getStatusCode(), getSearchResult.getStatus());
 
         JsonNode node = getSearchResult.readEntity(JsonNode.class);
@@ -148,7 +148,7 @@ public class ProfileAPITest extends AbstractSecurityIntegrationTest {
 
         params.put("name", "profile 2");
         target = appendSearchParams(target(searchPath), 0, 50, params);
-        getSearchResult = appendToken(target).get();
+        getSearchResult = appendAdminToken(target).get();
         assertEquals(Response.Status.OK.getStatusCode(), getSearchResult.getStatus());
 
         node = getSearchResult.readEntity(JsonNode.class);
@@ -161,7 +161,7 @@ public class ProfileAPITest extends AbstractSecurityIntegrationTest {
     @Test
     public void testGetAll() throws Exception {
 
-        Response postResult = getJsonPostResponse(target(createPath), getProfilCreationDTO());
+        Response postResult = getJsonPostResponseAsAdmin(target(createPath), getProfilCreationDTO());
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
 
         ProfileCreationDTO profile2 = new ProfileCreationDTO();
@@ -174,10 +174,10 @@ public class ProfileAPITest extends AbstractSecurityIntegrationTest {
             }
         });
 
-        postResult = getJsonPostResponse(target(createPath), profile2);
+        postResult = getJsonPostResponseAsAdmin(target(createPath), profile2);
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
 
-        Response getAllResult = appendToken(target(getAllPath)).get();
+        Response getAllResult = appendAdminToken(target(getAllPath)).get();
         assertEquals(Response.Status.OK.getStatusCode(), getAllResult.getStatus());
 
         JsonNode node = getAllResult.readEntity(JsonNode.class);

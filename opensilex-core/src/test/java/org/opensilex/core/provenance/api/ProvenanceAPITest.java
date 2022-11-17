@@ -62,7 +62,7 @@ public class ProvenanceAPITest extends AbstractMongoIntegrationTest {
     public void beforeTest() throws Exception {
         
         if(deviceURI == null){ // create only once ( static )
-            final Response postResultXP = getJsonPostResponse(target(devicePath), getCreationDeviceDTO());
+            final Response postResultXP = getJsonPostResponseAsAdmin(target(devicePath), getCreationDeviceDTO());
             deviceURI = extractUriFromResponse(postResultXP);
         }
     }
@@ -102,18 +102,18 @@ public class ProvenanceAPITest extends AbstractMongoIntegrationTest {
     public void testCreate() throws Exception {
         
         // create provenance
-        final Response postResultProvenance = getJsonPostResponse(target(createPath), getCreationProvDTO());
+        final Response postResultProvenance = getJsonPostResponseAsAdmin(target(createPath), getCreationProvDTO());
         assertEquals(Response.Status.CREATED.getStatusCode(), postResultProvenance.getStatus());
         
         // test that creating a provenance is not possible if activity type doesn't exist
         ProvenanceCreationDTO prov = getCreationProvDTO(new URI(Oeso.Accession.toString()), sensingDeviceType);
-        final Response postResult1 = getJsonPostResponse(target(createPath), prov);
+        final Response postResult1 = getJsonPostResponseAsAdmin(target(createPath), prov);
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), postResult1.getStatus());
 
         
         // test test that creating a provenance is not possible if sensor doesn't exist
         ProvenanceCreationDTO prov2 = getCreationProvDTO(activityType, new URI(Oeso.Accession.toString()));
-        final Response postResult2 = getJsonPostResponse(target(createPath), prov2);
+        final Response postResult2 = getJsonPostResponseAsAdmin(target(createPath), prov2);
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), postResult2.getStatus());
     }
     
@@ -122,7 +122,7 @@ public class ProvenanceAPITest extends AbstractMongoIntegrationTest {
 
         // create the provenance
         ProvenanceCreationDTO dto = getCreationProvDTO();
-        final Response postResult = getJsonPostResponse(target(createPath), dto);
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), dto);
 
         // update the provenance
         dto.setUri(extractUriFromResponse(postResult));
@@ -133,7 +133,7 @@ public class ProvenanceAPITest extends AbstractMongoIntegrationTest {
         assertEquals(Response.Status.OK.getStatusCode(), updateResult.getStatus());
 
         // retrieve the new provenance and compare to the expected provenance
-        final Response getResult = getJsonGetByUriResponse(target(uriPath), dto.getUri().toString());
+        final Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), dto.getUri().toString());
 
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
@@ -149,24 +149,24 @@ public class ProvenanceAPITest extends AbstractMongoIntegrationTest {
     public void testDelete() throws Exception {
 
         // create object and check if URI exists
-        Response postResponse = getJsonPostResponse(target(createPath), getCreationProvDTO());
+        Response postResponse = getJsonPostResponseAsAdmin(target(createPath), getCreationProvDTO());
         String uri = extractUriFromResponse(postResponse).toString();
 
         // delete object and check if URI no longer exists
         Response delResult = getDeleteByUriResponse(target(deletePath), uri);
         assertEquals(Response.Status.OK.getStatusCode(), delResult.getStatus());
 
-        Response getResult = getJsonGetByUriResponse(target(uriPath), uri);
+        Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), uri);
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
     }
 
     @Test
     public void testGetByUri() throws Exception {
 
-        final Response postResult = getJsonPostResponse(target(createPath), getCreationProvDTO());
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationProvDTO());
         URI uri = extractUriFromResponse(postResult);
 
-        final Response getResult = getJsonGetByUriResponse(target(uriPath), uri.toString());
+        final Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), uri.toString());
         assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
 
         // try to deserialize object
@@ -181,7 +181,7 @@ public class ProvenanceAPITest extends AbstractMongoIntegrationTest {
     public void testSearch() throws Exception {
 
         ProvenanceCreationDTO creationDTO = getCreationProvDTO();
-        final Response postResult = getJsonPostResponse(target(createPath), creationDTO);
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), creationDTO);
 
         Map<String, Object> params = new HashMap<String, Object>() {
             {
@@ -193,7 +193,7 @@ public class ProvenanceAPITest extends AbstractMongoIntegrationTest {
         };
 
         WebTarget searchTarget = appendSearchParams(target(searchPath), 0, 50, params);
-        final Response getResult = appendToken(searchTarget).get();
+        final Response getResult = appendAdminToken(searchTarget).get();
         assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
 
         JsonNode node = getResult.readEntity(JsonNode.class);

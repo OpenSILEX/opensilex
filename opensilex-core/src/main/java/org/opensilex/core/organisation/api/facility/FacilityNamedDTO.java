@@ -1,17 +1,17 @@
-package org.opensilex.core.organisation.api.facitity;
+package org.opensilex.core.organisation.api.facility;
 
 import io.swagger.annotations.ApiModelProperty;
-import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.sparql.response.ObjectNamedResourceDTO;
 
 import java.net.URI;
 
-public class InfrastructureFacilityNamedDTO extends ObjectNamedResourceDTO  {
+public class FacilityNamedDTO extends ObjectNamedResourceDTO  {
 
-    public InfrastructureFacilityNamedDTO() {
+    public FacilityNamedDTO() {
     }
 
-    public InfrastructureFacilityNamedDTO(InfrastructureFacilityModel model) {
+    public FacilityNamedDTO(FacilityModel model) {
         super(model);
     }
 

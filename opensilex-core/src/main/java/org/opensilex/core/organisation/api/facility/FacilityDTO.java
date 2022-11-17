@@ -3,14 +3,14 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.opensilex.core.organisation.api.facitity;
+package org.opensilex.core.organisation.api.facility;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModel;
 import org.opensilex.core.ontology.api.RDFObjectDTO;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
-import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.sparql.model.SPARQLModelRelation;
 
 import java.util.ArrayList;
@@ -23,7 +23,7 @@ import java.util.List;
  */
 @ApiModel
 @JsonPropertyOrder({"uri", "rdf_type", "name", "address"})
-public class InfrastructureFacilityDTO extends RDFObjectDTO {
+public class FacilityDTO extends RDFObjectDTO {
 
     @JsonProperty("rdf_type_name")
     protected String typeLabel;
@@ -56,7 +56,7 @@ public class InfrastructureFacilityDTO extends RDFObjectDTO {
         this.address = address;
     }
 
-    public void toModel(InfrastructureFacilityModel model) {
+    public void toModel(FacilityModel model) {
         model.setUri(getUri());
         model.setType(getType());
         model.setName(getName());
@@ -65,7 +65,7 @@ public class InfrastructureFacilityDTO extends RDFObjectDTO {
         }
     }
 
-    public void fromModel(InfrastructureFacilityModel model) {
+    public void fromModel(FacilityModel model) {
         setUri(model.getUri());
         setType(model.getType());
         setTypeLabel(model.getTypeLabel().getDefaultValue());
@@ -77,15 +77,15 @@ public class InfrastructureFacilityDTO extends RDFObjectDTO {
         }
     }
 
-    public InfrastructureFacilityModel newModel() {
-        InfrastructureFacilityModel instance = new InfrastructureFacilityModel();
+    public FacilityModel newModel() {
+        FacilityModel instance = new FacilityModel();
         toModel(instance);
 
         return instance;
     }
 
-    public static InfrastructureFacilityGetDTO getDTOFromModel(InfrastructureFacilityModel model, boolean withDetails) {
-        InfrastructureFacilityGetDTO dto = new InfrastructureFacilityGetDTO();
+    public static FacilityGetDTO getDTOFromModel(FacilityModel model, boolean withDetails) {
+        FacilityGetDTO dto = new FacilityGetDTO();
         dto.fromModel(model);
 
         if (withDetails) {

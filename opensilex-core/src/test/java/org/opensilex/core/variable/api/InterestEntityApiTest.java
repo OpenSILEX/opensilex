@@ -54,13 +54,13 @@ public class InterestEntityApiTest extends AbstractSecurityIntegrationTest {
         InterestEntityCreationDTO dtoWithNoName = new InterestEntityCreationDTO();
         dtoWithNoName.setDescription("only a comment, not a name");
 
-        final Response postResult = getJsonPostResponse(target(createPath), dtoWithNoName);
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), dtoWithNoName);
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), postResult.getStatus());
     }
    
     @Test
     public void testGetByUriWithUnknownUri() throws Exception {
-        Response getResult = getJsonGetByUriResponse(target(getByUriPath), Oeso.EntityOfInterest + "/58165");
+        Response getResult = getJsonGetByUriResponseAsAdmin(target(getByUriPath), Oeso.EntityOfInterest + "/58165");
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
     }
     
@@ -68,7 +68,7 @@ public class InterestEntityApiTest extends AbstractSecurityIntegrationTest {
     public void testUpdate() throws Exception {
 
         InterestEntityCreationDTO dto = getCreationDto();
-        final Response postResult = getJsonPostResponse(target(createPath), dto);
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), dto);
 
         dto.setUri(extractUriFromResponse(postResult));
         dto.setName("new alias");
@@ -78,7 +78,7 @@ public class InterestEntityApiTest extends AbstractSecurityIntegrationTest {
         assertEquals(Response.Status.OK.getStatusCode(), updateResult.getStatus());
 
         // retrieve the new eoi and compare to the expected eoi
-        final Response getResult = getJsonGetByUriResponse(target(getByUriPath), dto.getUri().toString());
+        final Response getResult = getJsonGetByUriResponseAsAdmin(target(getByUriPath), dto.getUri().toString());
 
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
@@ -95,10 +95,10 @@ public class InterestEntityApiTest extends AbstractSecurityIntegrationTest {
 
         // Try to insert an eoi, to fetch it and to get fields
         InterestEntityCreationDTO creationDTO = getCreationDto();
-        Response postResult = getJsonPostResponse(target(createPath), creationDTO);
+        Response postResult = getJsonPostResponseAsAdmin(target(createPath), creationDTO);
         URI uri = extractUriFromResponse(postResult);
 
-        Response getResult = getJsonGetByUriResponse(target(getByUriPath), uri.toString());
+        Response getResult = getJsonGetByUriResponseAsAdmin(target(getByUriPath), uri.toString());
 
         // try to deserialize object and check if the fields value are the same
         JsonNode node = getResult.readEntity(JsonNode.class);

@@ -105,7 +105,7 @@
 import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
-import {InfrastructureGetDTO} from "opensilex-core/index";
+import {OrganizationGetDTO} from "opensilex-core/index";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
 import DTOConverter from "../../models/DTOConverter";
 
@@ -115,7 +115,7 @@ export default class InfrastructureDetail extends Vue {
   organizationService: OrganizationsService;
 
   @Prop()
-  selected: InfrastructureGetDTO;
+  selected: OrganizationGetDTO;
 
   @Prop({
     default: false,
@@ -203,7 +203,7 @@ export default class InfrastructureDetail extends Vue {
   editInfrastructure() {
     this.organizationService
       .getInfrastructure(this.selected.uri)
-      .then((http: HttpResponse<OpenSilexResponse<InfrastructureGetDTO>>) => {
+      .then((http: HttpResponse<OpenSilexResponse<OrganizationGetDTO>>) => {
         let editDto = DTOConverter.extractURIFromResourceProperties(http.response.result);
         this.infrastructureForm.showEditForm(editDto);
       })

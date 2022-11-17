@@ -8,15 +8,14 @@ package org.opensilex.core.experiment.api;
 
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorModel;
-import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
-import org.opensilex.core.organisation.dal.InfrastructureModel;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
+import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.security.user.dal.UserModel;
 
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -39,17 +38,17 @@ public class ExperimentCreationDTO extends ExperimentDTO {
         // No species at experiment creation
         model.setSpecies(null);
         
-        List<InfrastructureModel> infrastructuresList = new ArrayList<>(infrastructures.size());
+        List<OrganizationModel> infrastructuresList = new ArrayList<>(infrastructures.size());
         infrastructures.forEach((URI u) -> {
-            InfrastructureModel infrastructure = new InfrastructureModel();
+            OrganizationModel infrastructure = new OrganizationModel();
             infrastructure.setUri(u);
             infrastructuresList.add(infrastructure);
         });
         model.setInfrastructures(infrastructuresList);
 
-        List<InfrastructureFacilityModel> facilityList = new ArrayList<>(facilities.size());
+        List<FacilityModel> facilityList = new ArrayList<>(facilities.size());
         facilities.forEach((facilityUri) -> {
-            InfrastructureFacilityModel facilityModel = new InfrastructureFacilityModel();
+            FacilityModel facilityModel = new FacilityModel();
             facilityModel.setUri(facilityUri);
             facilityList.add(facilityModel);
         });

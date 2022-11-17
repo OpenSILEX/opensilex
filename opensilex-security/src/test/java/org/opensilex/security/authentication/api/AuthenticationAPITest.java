@@ -14,7 +14,6 @@ import static junit.framework.TestCase.assertTrue;
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.group.api.GroupAPI;
-import org.opensilex.security.profile.api.ProfileAPI;
 import org.opensilex.security.user.api.UserAPI;
 import org.opensilex.server.response.PaginatedListResponse;
 
@@ -34,7 +33,7 @@ public class AuthenticationAPITest extends AbstractSecurityIntegrationTest {
 
     @Test
     public void testRenew() throws Exception {
-        String oldToken = getToken().getToken();
+        String oldToken = queryAdminToken().getToken();
         Response putResult = getJsonPutResponse(target(renewTokenPath), "");
         assertEquals(Response.Status.OK.getStatusCode(), putResult.getStatus());
 
@@ -60,7 +59,7 @@ public class AuthenticationAPITest extends AbstractSecurityIntegrationTest {
 
     @Test
     public void testLogout() throws Exception {
-        TokenGetDTO oldToken = getToken();
+        TokenGetDTO oldToken = queryAdminToken();
         Response deleteResult = getDeleteJsonResponse(target(logoutPath));
         assertEquals(Response.Status.OK.getStatusCode(), deleteResult.getStatus());
 

@@ -113,13 +113,13 @@ public class VariablesGroupApiTest extends AbstractSecurityIntegrationTest {
         VariablesGroupCreationDTO dtoWithNoName = new VariablesGroupCreationDTO();
         dtoWithNoName.setDescription("only a comment, not a name");
 
-        final Response postResult = getJsonPostResponse(target(createPath), dtoWithNoName);
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), dtoWithNoName);
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), postResult.getStatus());
     }
     
     @Test
     public void testGetByUriWithUnknownUri() throws Exception {
-        Response getResult = getJsonGetByUriResponse(target(getByUriPath), Oeso.VariablesGroup + "/58165");
+        Response getResult = getJsonGetByUriResponseAsAdmin(target(getByUriPath), Oeso.VariablesGroup + "/58165");
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
     }
     
@@ -128,7 +128,7 @@ public class VariablesGroupApiTest extends AbstractSecurityIntegrationTest {
         
         // create the vg
         VariablesGroupCreationDTO dto = getCreationDto();
-        final Response postResult = getJsonPostResponse(target(createPath), dto);             
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), dto);
                 
         // update the vg
         dto.setUri(extractUriFromResponse(postResult));
@@ -139,7 +139,7 @@ public class VariablesGroupApiTest extends AbstractSecurityIntegrationTest {
         assertEquals(Response.Status.OK.getStatusCode(), updateResult.getStatus());
         
         // retrieve the new vg and compare to the expected vg
-        final Response getResult = getJsonGetByUriResponse(target(getByUriPath), dto.getUri().toString());
+        final Response getResult = getJsonGetByUriResponseAsAdmin(target(getByUriPath), dto.getUri().toString());
 
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
@@ -157,10 +157,10 @@ public class VariablesGroupApiTest extends AbstractSecurityIntegrationTest {
 
         // Try to insert a group of variables, to fetch it and to get fields
         VariablesGroupCreationDTO creationDTO = getCreationDto();
-        Response postResult = getJsonPostResponse(target(createPath), creationDTO);
+        Response postResult = getJsonPostResponseAsAdmin(target(createPath), creationDTO);
         URI uri = extractUriFromResponse(postResult);
 
-        Response getResult = getJsonGetByUriResponse(target(getByUriPath), uri.toString());
+        Response getResult = getJsonGetByUriResponseAsAdmin(target(getByUriPath), uri.toString());
 
         // try to deserialize object and check if the fields value are the same
         JsonNode node = getResult.readEntity(JsonNode.class);
@@ -180,7 +180,7 @@ public class VariablesGroupApiTest extends AbstractSecurityIntegrationTest {
         VariableCreationDTO variableDto = getVariableCreationDto();
         
         //Call the api to create a variable and get its uri
-        Response postResult = getJsonPostResponse(target(createVariablePath), variableDto);
+        Response postResult = getJsonPostResponseAsAdmin(target(createVariablePath), variableDto);
         URI uriVariable = extractUriFromResponse(postResult);
         
         //Create a variablesList with the variable before and add it to the vg
@@ -189,11 +189,11 @@ public class VariablesGroupApiTest extends AbstractSecurityIntegrationTest {
         dto.setVariablesList(variablesList);
         
         //Call the api to create a vg and get its uri
-        Response postResult2 = getJsonPostResponse(target(createPath), dto);      
+        Response postResult2 = getJsonPostResponseAsAdmin(target(createPath), dto);
         URI uriGroup = extractUriFromResponse(postResult2);
         
         //Try to deserialize object and check if the fields value are the same
-        Response getResult = getJsonGetByUriResponse(target(getByUriPath), uriGroup.toString());
+        Response getResult = getJsonGetByUriResponseAsAdmin(target(getByUriPath), uriGroup.toString());
         JsonNode node = getResult.readEntity(JsonNode.class);
         SingleObjectResponse<VariablesGroupGetDTO> getResponse =  mapper.convertValue(node, new TypeReference<SingleObjectResponse<VariablesGroupGetDTO>>() {});
         VariablesGroupGetDTO dtoFromDb = getResponse.getResult();
@@ -203,7 +203,7 @@ public class VariablesGroupApiTest extends AbstractSecurityIntegrationTest {
         Assert.assertEquals(1, dto.getVariablesList().size());
         
         //Try to deserialize object and check if the variables uris are the same
-        Response getResult2 = getJsonGetByUriResponse(target(getVariableByUriPath), uriVariable.toString());
+        Response getResult2 = getJsonGetByUriResponseAsAdmin(target(getVariableByUriPath), uriVariable.toString());
         JsonNode node2 = getResult2.readEntity(JsonNode.class);
         SingleObjectResponse<VariableGetDTO> getResponse2 =  mapper.convertValue(node2, new TypeReference<SingleObjectResponse<VariableGetDTO>>() {});
         VariableGetDTO dtoFromDb2 = getResponse2.getResult();

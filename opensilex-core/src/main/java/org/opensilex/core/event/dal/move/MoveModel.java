@@ -2,7 +2,7 @@ package org.opensilex.core.event.dal.move;
 
 import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.ontology.Oeev;
-import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.sparql.annotations.SPARQLIgnore;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
@@ -21,7 +21,7 @@ public class MoveModel extends EventModel {
             ontology = Oeev.class,
             property = "to"
     )
-    private InfrastructureFacilityModel to;
+    private FacilityModel to;
     public static final String TO_FIELD = "to";
 
 
@@ -29,26 +29,26 @@ public class MoveModel extends EventModel {
             ontology = Oeev.class,
             property = "from"
     )
-    private InfrastructureFacilityModel from;
+    private FacilityModel from;
     public static final String FROM_FIELD = "from";
 
 
     @SPARQLIgnore
     private MoveEventNoSqlModel noSqlModel;
 
-    public InfrastructureFacilityModel getTo() {
+    public FacilityModel getTo() {
         return to;
     }
 
-    public void setTo(InfrastructureFacilityModel to) {
+    public void setTo(FacilityModel to) {
         this.to = to;
     }
 
-    public InfrastructureFacilityModel getFrom() {
+    public FacilityModel getFrom() {
         return from;
     }
 
-    public void setFrom(InfrastructureFacilityModel from) {
+    public void setFrom(FacilityModel from) {
         this.from = from;
     }
 

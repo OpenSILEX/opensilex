@@ -146,7 +146,7 @@
 import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
-import {InfrastructureGetDTO, InfrastructureUpdateDTO, ResourceDagDTO, SiteGetDTO, SiteUpdateDTO} from "opensilex-core/index";
+import {OrganizationGetDTO, OrganizationUpdateDTO, ResourceDagDTO, SiteGetDTO, SiteUpdateDTO} from "opensilex-core/index";
 import OpenSilexVuePlugin, {GenericTreeOption, TreeOption} from "../../models/OpenSilexVuePlugin";
 import ModalForm from "../common/forms/ModalForm.vue";
 import {DropdownButtonOption} from "../common/dropdown/Dropdown.vue";
@@ -181,7 +181,7 @@ export default class InfrastructureTree extends Vue {
 
   private langUnwatcher;
 
-  private selectedOrganization: InfrastructureGetDTO;
+  private selectedOrganization: OrganizationGetDTO;
   private selectedSite: SiteGetDTO;
 
   @Ref("infrastructureForm") readonly infrastructureForm!: ModalForm;
@@ -402,8 +402,8 @@ export default class InfrastructureTree extends Vue {
     if (forceRefresh || this.selectedOrganization == null || this.selectedOrganization.uri != uri) {
       return this.service
         .getInfrastructure(uri)
-        .then((http: HttpResponse<OpenSilexResponse<InfrastructureGetDTO>>) => {
-          let detailDTO: InfrastructureGetDTO = http.response.result;
+        .then((http: HttpResponse<OpenSilexResponse<OrganizationGetDTO>>) => {
+          let detailDTO: OrganizationGetDTO = http.response.result;
           this.selectedOrganization = detailDTO;
           this.selectedSite = undefined;
           this.$emit("onSelect", detailDTO);
@@ -470,13 +470,13 @@ export default class InfrastructureTree extends Vue {
   editOrganization(uri) {
     this.service
       .getInfrastructure(uri)
-      .then((http: HttpResponse<OpenSilexResponse<InfrastructureGetDTO>>) => {
-        let detailDTO: InfrastructureGetDTO = http.response.result;
+      .then((http: HttpResponse<OpenSilexResponse<OrganizationGetDTO>>) => {
+        let detailDTO: OrganizationGetDTO = http.response.result;
         this.parentURI = Array.isArray(detailDTO.parents) && detailDTO.parents.length > 0
           ? detailDTO.parents[0].uri
           : undefined;
 
-        let editDTO: InfrastructureUpdateDTO = DTOConverter.extractURIFromResourceProperties(detailDTO);
+        let editDTO: OrganizationUpdateDTO = DTOConverter.extractURIFromResourceProperties(detailDTO);
         this.infrastructureForm.showEditForm(editDTO);
       });
   }

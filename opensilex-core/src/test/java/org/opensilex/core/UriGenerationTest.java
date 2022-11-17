@@ -21,8 +21,8 @@ import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.logs.dal.LogModel;
 import org.opensilex.core.logs.dal.LogsDAO;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
-import org.opensilex.core.organisation.dal.InfrastructureModel;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
+import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
@@ -76,8 +76,8 @@ public class UriGenerationTest extends AbstractMongoIntegrationTest {
 
         Assert.assertEquals(graphPrefix+"project",sparql.getDefaultGraph(ProjectModel.class).toString());
         Assert.assertEquals(graphPrefix+"experiment",sparql.getDefaultGraph(ExperimentModel.class).toString());
-        Assert.assertEquals(graphPrefix+"organization",sparql.getDefaultGraph(InfrastructureModel.class).toString());
-        Assert.assertEquals(graphPrefix+"organization",sparql.getDefaultGraph(InfrastructureFacilityModel.class).toString());
+        Assert.assertEquals(graphPrefix+"organization",sparql.getDefaultGraph(OrganizationModel.class).toString());
+        Assert.assertEquals(graphPrefix+"organization",sparql.getDefaultGraph(FacilityModel.class).toString());
 
         Assert.assertEquals(graphPrefix+"variable",sparql.getDefaultGraph(VariableModel.class).toString());
         Assert.assertEquals(graphPrefix+"variable",sparql.getDefaultGraph(EntityModel.class).toString());
@@ -171,7 +171,7 @@ public class UriGenerationTest extends AbstractMongoIntegrationTest {
     @Test
     public void testInfra() throws Exception {
 
-        InfrastructureModel model = new InfrastructureModel();
+        OrganizationModel model = new OrganizationModel();
         model.setName("name");
 
         getSparqlService().create(model);
@@ -182,7 +182,7 @@ public class UriGenerationTest extends AbstractMongoIntegrationTest {
     @Test
     public void testFacility() throws Exception {
 
-        InfrastructureFacilityModel model = new InfrastructureFacilityModel();
+        FacilityModel model = new FacilityModel();
         model.setName("name");
 
         getSparqlService().create(model);

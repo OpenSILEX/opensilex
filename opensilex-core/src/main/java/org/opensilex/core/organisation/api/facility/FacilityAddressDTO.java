@@ -1,9 +1,9 @@
-package org.opensilex.core.organisation.api.facitity;
+package org.opensilex.core.organisation.api.facility;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.opensilex.core.address.api.AddressDTO;
-import org.opensilex.core.organisation.dal.FacilityAddressModel;
-import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
+import org.opensilex.core.organisation.dal.facility.FacilityAddressModel;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.sparql.response.NamedResourceDTO;
 
 /**
@@ -12,14 +12,14 @@ import org.opensilex.sparql.response.NamedResourceDTO;
  * @author Valentin RIGOLLE
  */
 public class FacilityAddressDTO extends AddressDTO<FacilityAddressModel> {
-    protected NamedResourceDTO<InfrastructureFacilityModel> facility;
+    protected NamedResourceDTO<FacilityModel> facility;
 
     @JsonIgnore
-    public NamedResourceDTO<InfrastructureFacilityModel> getFacility() {
+    public NamedResourceDTO<FacilityModel> getFacility() {
         return facility;
     }
 
-    public void setFacility(NamedResourceDTO<InfrastructureFacilityModel> facility) {
+    public void setFacility(NamedResourceDTO<FacilityModel> facility) {
         this.facility = facility;
     }
 
@@ -32,7 +32,7 @@ public class FacilityAddressDTO extends AddressDTO<FacilityAddressModel> {
     public void fromModel(FacilityAddressModel model) {
         super.fromModel(model);
 
-        InfrastructureFacilityModel facilityModel = model.getFacility();
+        FacilityModel facilityModel = model.getFacility();
         if (facilityModel != null) {
             setFacility(NamedResourceDTO.getDTOFromModel(facilityModel));
         }
@@ -42,9 +42,9 @@ public class FacilityAddressDTO extends AddressDTO<FacilityAddressModel> {
     public void toModel(FacilityAddressModel model) {
         super.toModel(model);
 
-        NamedResourceDTO<InfrastructureFacilityModel> facility = getFacility();
+        NamedResourceDTO<FacilityModel> facility = getFacility();
         if (facility != null) {
-            InfrastructureFacilityModel facilityModel = new InfrastructureFacilityModel();
+            FacilityModel facilityModel = new FacilityModel();
             facilityModel.setUri(facility.getUri());
             model.setFacility(facilityModel);
         }

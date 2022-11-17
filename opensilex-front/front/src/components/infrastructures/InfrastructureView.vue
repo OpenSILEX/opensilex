@@ -42,7 +42,7 @@
 <script lang="ts">
 import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import {InfrastructureGetDTO, NamedResourceDTOInfrastructureFacilityModel, OrganizationsService, SiteGetDTO} from "opensilex-core/index";
+import {OrganizationGetDTO, NamedResourceDTOFacilityModel, OrganizationsService, SiteGetDTO} from "opensilex-core/index";
 import Org from "../../ontologies/Org";
 import InfrastructureTree from "./InfrastructureTree.vue";
 
@@ -57,7 +57,7 @@ export default class InfrastructureView extends Vue {
   @Ref("organizationFacilitiesView") readonly organizationFacilitiesView!: any;
   @Ref("facilitiesView") readonly facilitiesView!: any;
 
-  selectedOrganization: InfrastructureGetDTO = null;
+  selectedOrganization: OrganizationGetDTO = null;
   selectedSite: SiteGetDTO = null;
 
   created() {
@@ -78,7 +78,7 @@ export default class InfrastructureView extends Vue {
     return !!this.selectedOrganization;
   }
 
-  get selectedFacilities(): Array<NamedResourceDTOInfrastructureFacilityModel> {
+  get selectedFacilities(): Array<NamedResourceDTOFacilityModel> {
     if (this.selectedOrganization) {
       return this.selectedOrganization.facilities;
     }
@@ -88,7 +88,7 @@ export default class InfrastructureView extends Vue {
     return undefined;
   }
 
-  onSelectedOrganizationOrSite(selection: InfrastructureGetDTO | SiteGetDTO) {
+  onSelectedOrganizationOrSite(selection: OrganizationGetDTO | SiteGetDTO) {
     if (!selection) {
       this.clearSelection();
       return;

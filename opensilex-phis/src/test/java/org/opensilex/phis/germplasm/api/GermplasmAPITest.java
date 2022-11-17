@@ -81,7 +81,7 @@ public class GermplasmAPITest extends AbstractMongoIntegrationTest {
     
     protected URI createSpecies() throws URISyntaxException, Exception {
         // create species
-        final Response postResultSpecies = getJsonPostResponse(target(createPath), getCreationSpeciesDTO());
+        final Response postResultSpecies = getJsonPostResponseAsAdmin(target(createPath), getCreationSpeciesDTO());
         assertEquals(Response.Status.CREATED.getStatusCode(), postResultSpecies.getStatus());
         URI createdSpeciesUri = extractUriFromResponse(postResultSpecies);
         return createdSpeciesUri;
@@ -92,30 +92,30 @@ public class GermplasmAPITest extends AbstractMongoIntegrationTest {
         
         // create Variety
         URI species = createSpecies();
-        final Response postResultVariety = getJsonPostResponse(target(createPath), getCreationVarietyDTO(species));
+        final Response postResultVariety = getJsonPostResponseAsAdmin(target(createPath), getCreationVarietyDTO(species));
         assertEquals(Response.Status.CREATED.getStatusCode(), postResultVariety.getStatus());
 
         // ensure that the result is a well formed URI, else throw exception
         URI createdVarietyUri = extractUriFromResponse(postResultVariety);
-        final Response getResultVariety = getJsonGetByUriResponse(target(uriPath), createdVarietyUri.toString());
+        final Response getResultVariety = getJsonGetByUriResponseAsAdmin(target(uriPath), createdVarietyUri.toString());
         assertEquals(Response.Status.OK.getStatusCode(), getResultVariety.getStatus());
 
         // create Accession
-        final Response postResultAccession = getJsonPostResponse(target(createPath), getCreationAccessionDTO(createdVarietyUri));
+        final Response postResultAccession = getJsonPostResponseAsAdmin(target(createPath), getCreationAccessionDTO(createdVarietyUri));
         assertEquals(Response.Status.CREATED.getStatusCode(), postResultAccession.getStatus());
 
         // ensure that the result is a well formed URI, else throw exception
         URI createdAccessionUri = extractUriFromResponse(postResultAccession);
-        final Response getResultAccession = getJsonGetByUriResponse(target(uriPath), createdAccessionUri.toString());
+        final Response getResultAccession = getJsonGetByUriResponseAsAdmin(target(uriPath), createdAccessionUri.toString());
         assertEquals(Response.Status.OK.getStatusCode(), getResultAccession.getStatus());
 
         // create Lot
-        final Response postResultLot = getJsonPostResponse(target(createPath), getCreationLotDTO(createdAccessionUri));
+        final Response postResultLot = getJsonPostResponseAsAdmin(target(createPath), getCreationLotDTO(createdAccessionUri));
         assertEquals(Response.Status.CREATED.getStatusCode(), postResultLot.getStatus());
 
         // ensure that the result is a well formed URI, else throw exception
         URI createdLotUri = extractUriFromResponse(postResultLot);
-        final Response getResultLot = getJsonGetByUriResponse(target(uriPath), createdLotUri.toString());
+        final Response getResultLot = getJsonGetByUriResponseAsAdmin(target(uriPath), createdLotUri.toString());
         assertEquals(Response.Status.OK.getStatusCode(), getResultLot.getStatus());
     }
 
@@ -123,10 +123,10 @@ public class GermplasmAPITest extends AbstractMongoIntegrationTest {
     public void testGetByUri() throws Exception {
 
         URI species = createSpecies();
-        final Response postResultVariety = getJsonPostResponse(target(createPath), getCreationVarietyDTO(species));
+        final Response postResultVariety = getJsonPostResponseAsAdmin(target(createPath), getCreationVarietyDTO(species));
         URI uri = extractUriFromResponse(postResultVariety);
 
-        final Response getResult = getJsonGetByUriResponse(target(uriPath), uri.toString());
+        final Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), uri.toString());
         assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
 
         // try to deserialize object
@@ -141,7 +141,7 @@ public class GermplasmAPITest extends AbstractMongoIntegrationTest {
     @Test
     public void testSearch() throws Exception {
         URI species = createSpecies();
-        final Response postResult = getJsonPostResponse(target(createPath), getCreationVarietyDTO(species));
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationVarietyDTO(species));
         URI uri = extractUriFromResponse(postResult);
 
         Map<String, Object> params = new HashMap<String, Object>() {
@@ -152,7 +152,7 @@ public class GermplasmAPITest extends AbstractMongoIntegrationTest {
         };
 
         WebTarget searchTarget = appendSearchParams(target(searchPath), 0, 20, params);
-        final Response getResult = appendToken(searchTarget).get();
+        final Response getResult = appendAdminToken(searchTarget).get();
         assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
 
         JsonNode node = getResult.readEntity(JsonNode.class);
@@ -171,7 +171,7 @@ public class GermplasmAPITest extends AbstractMongoIntegrationTest {
 
         // create a Variety
         GermplasmCreationDTO variety = getCreationVarietyDTO(species);
-        final Response postResultVariety = getJsonPostResponse(target(createPath), variety);
+        final Response postResultVariety = getJsonPostResponseAsAdmin(target(createPath), variety);
         
         // update the variety
         variety.setUri(extractUriFromResponse(postResultVariety));
@@ -180,7 +180,7 @@ public class GermplasmAPITest extends AbstractMongoIntegrationTest {
         assertEquals(Status.OK.getStatusCode(), updateResult.getStatus());
 
         // retrieve the new germplasm and compare to the expected germplasm
-        final Response getResult = getJsonGetByUriResponse(target(uriPath), variety.getUri().toString());
+        final Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), variety.getUri().toString());
 
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
@@ -198,11 +198,11 @@ public class GermplasmAPITest extends AbstractMongoIntegrationTest {
 
         // create the species that can't be deleted because it is linked to a variety
         GermplasmCreationDTO speciesNotToDelete = getCreationSpeciesDTO();
-        Response postResponse2 = getJsonPostResponse(target(createPath), speciesNotToDelete);
+        Response postResponse2 = getJsonPostResponseAsAdmin(target(createPath), speciesNotToDelete);
         URI uriNotToDelete = extractUriFromResponse(postResponse2);
 
         // create Variety linked to this species
-        Response postResultVariety = getJsonPostResponse(target(createPath), getCreationVarietyDTO(uriNotToDelete));
+        Response postResultVariety = getJsonPostResponseAsAdmin(target(createPath), getCreationVarietyDTO(uriNotToDelete));
         assertEquals(Response.Status.CREATED.getStatusCode(), postResultVariety.getStatus());
 
         // try to delete the species that can't be deleted and get a bad request status
@@ -210,7 +210,7 @@ public class GermplasmAPITest extends AbstractMongoIntegrationTest {
         assertEquals(Status.BAD_REQUEST.getStatusCode(), delResult2.getStatus());
 
         // check uri still exists
-        Response getResult3 = getJsonGetByUriResponse(target(uriPath), uriNotToDelete.toString());
+        Response getResult3 = getJsonGetByUriResponseAsAdmin(target(uriPath), uriNotToDelete.toString());
         assertEquals(Status.OK.getStatusCode(), getResult3.getStatus());
     }
 

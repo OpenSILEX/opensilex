@@ -3,13 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.opensilex.core.organisation.api.facitity;
+package org.opensilex.core.organisation.api.facility;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModel;
-import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
-import org.opensilex.core.organisation.dal.InfrastructureModel;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
+import org.opensilex.core.organisation.dal.OrganizationModel;
 
 import java.net.URI;
 import java.util.List;
@@ -21,7 +21,8 @@ import java.util.stream.Collectors;
  */
 @ApiModel
 @JsonPropertyOrder({"uri", "rdf_type", "name","organizations", "address"})
-class InfrastructureFacilityCreationDTO extends InfrastructureFacilityDTO {
+public
+class FacilityCreationDTO extends FacilityDTO {
     @JsonProperty("organizations")
     protected List<URI> organizations;
 
@@ -34,12 +35,12 @@ class InfrastructureFacilityCreationDTO extends InfrastructureFacilityDTO {
     }
 
     @Override
-    public void toModel(InfrastructureFacilityModel model) {
+    public void toModel(FacilityModel model) {
         super.toModel(model);
 
         if (getOrganizations() != null) {
-            List<InfrastructureModel> organizationList = getOrganizations().stream().map(organizationUri -> {
-                InfrastructureModel organization = new InfrastructureModel();
+            List<OrganizationModel> organizationList = getOrganizations().stream().map(organizationUri -> {
+                OrganizationModel organization = new OrganizationModel();
                 organization.setUri(organizationUri);
                 return organization;
             }).collect(Collectors.toList());
@@ -48,7 +49,7 @@ class InfrastructureFacilityCreationDTO extends InfrastructureFacilityDTO {
     }
 
     @Override
-    public void fromModel(InfrastructureFacilityModel model) {
+    public void fromModel(FacilityModel model) {
         super.fromModel(model);
 
         setOrganizations(model.getInfrastructureUris());

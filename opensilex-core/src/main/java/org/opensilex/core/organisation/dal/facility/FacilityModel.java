@@ -3,10 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.opensilex.core.organisation.dal;
+package org.opensilex.core.organisation.dal.facility;
 
 import org.apache.jena.vocabulary.VCARD4;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.organisation.dal.OrganizationModel;
+import org.opensilex.core.organisation.dal.site.SiteModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLTreeModel;
@@ -19,10 +21,10 @@ import java.util.stream.Collectors;
 @SPARQLResource(
         ontology = Oeso.class,
         resource = "Facility",
-        graph = InfrastructureModel.GRAPH,
+        graph = OrganizationModel.GRAPH,
         prefix = "infra"
 )
-public class InfrastructureFacilityModel extends SPARQLTreeModel<InfrastructureFacilityModel> {
+public class FacilityModel extends SPARQLTreeModel<FacilityModel> {
 
     private static final String FACILITY = "facility";
 
@@ -30,7 +32,7 @@ public class InfrastructureFacilityModel extends SPARQLTreeModel<InfrastructureF
             ontology = Oeso.class,
             property = "isPartOf"
     )
-    protected InfrastructureFacilityModel parent;
+    protected FacilityModel parent;
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -39,14 +41,14 @@ public class InfrastructureFacilityModel extends SPARQLTreeModel<InfrastructureF
             ignoreUpdateIfNull = true,
             useDefaultGraph = false
     )
-    protected List<InfrastructureFacilityModel> children;
+    protected List<FacilityModel> children;
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "isHosted",
             inverse = true
     )
-    private List<InfrastructureModel> infrastructures;
+    private List<OrganizationModel> infrastructures;
     public static final String INFRASTRUCTURE_FIELD = "infrastructures";
 
     @SPARQLProperty(
@@ -65,11 +67,11 @@ public class InfrastructureFacilityModel extends SPARQLTreeModel<InfrastructureF
     private FacilityAddressModel address;
     public static final String ADDRESS_FIELD = "address";
 
-    public List<InfrastructureModel> getInfrastructures() {
+    public List<OrganizationModel> getInfrastructures() {
         return infrastructures;
     }
 
-    public void setInfrastructures(List<InfrastructureModel> infrastructures) {
+    public void setInfrastructures(List<OrganizationModel> infrastructures) {
         this.infrastructures = infrastructures;
     }
 
@@ -79,7 +81,7 @@ public class InfrastructureFacilityModel extends SPARQLTreeModel<InfrastructureF
         }
         return this.infrastructures
                 .stream()
-                .map(InfrastructureModel::getUri)
+                .map(OrganizationModel::getUri)
                 .collect(Collectors.toList());
     }
 
@@ -100,7 +102,7 @@ public class InfrastructureFacilityModel extends SPARQLTreeModel<InfrastructureF
     }
 
     @Override
-    public String[] getInstancePathSegments(SPARQLTreeModel<InfrastructureFacilityModel> instance) {
+    public String[] getInstancePathSegments(SPARQLTreeModel<FacilityModel> instance) {
         return new String[]{
                 FACILITY,
                 instance.getName()

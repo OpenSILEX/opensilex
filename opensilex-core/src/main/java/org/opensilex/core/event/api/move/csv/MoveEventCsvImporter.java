@@ -15,7 +15,7 @@ import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
 import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
-import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.service.SPARQLService;
 
@@ -73,7 +73,7 @@ public class MoveEventCsvImporter extends AbstractEventCsvImporter<MoveModel> {
         // parse from and to properties
         String from = row[colIndex.getAndIncrement()];
         if(!StringUtils.isEmpty(from)) {
-            InfrastructureFacilityModel fromModel = new InfrastructureFacilityModel();
+            FacilityModel fromModel = new FacilityModel();
             fromModel.setUri(new URI(from));
             model.setFrom(fromModel);
             anyMoveFieldNonNull = true;
@@ -81,7 +81,7 @@ public class MoveEventCsvImporter extends AbstractEventCsvImporter<MoveModel> {
 
         String to = row[colIndex.getAndIncrement()];
         if(!StringUtils.isEmpty(to)) {
-            InfrastructureFacilityModel toModel = new InfrastructureFacilityModel();
+            FacilityModel toModel = new FacilityModel();
             toModel.setUri(new URI(to));
             model.setTo(toModel);
             anyMoveFieldNonNull = true;

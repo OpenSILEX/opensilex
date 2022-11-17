@@ -7,7 +7,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.opensilex.core.event.api.EventCreationDTO;
 import org.opensilex.core.event.api.validation.MoveLocationOrPositionNotNullConstraint;
 import org.opensilex.core.event.dal.move.MoveModel;
-import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.position.api.TargetPositionCreationDTO;
 import org.opensilex.core.event.dal.move.TargetPositionModel;
 import org.opensilex.core.event.dal.move.MoveEventNoSqlModel;
@@ -62,12 +62,12 @@ public class MoveCreationDTO extends EventCreationDTO {
 
         MoveModel model = toModel(new MoveModel());
         if(from != null && ! from.toString().isEmpty()){
-            InfrastructureFacilityModel fromModel = new InfrastructureFacilityModel();
+            FacilityModel fromModel = new FacilityModel();
             fromModel.setUri(from);
             model.setFrom(fromModel);
         }
         if(to != null && ! to.toString().isEmpty()){
-            InfrastructureFacilityModel toModel = new InfrastructureFacilityModel();
+            FacilityModel toModel = new FacilityModel();
             toModel.setUri(to);
             model.setTo(toModel);
         }

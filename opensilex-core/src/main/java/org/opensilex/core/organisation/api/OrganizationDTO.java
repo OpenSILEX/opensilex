@@ -5,7 +5,7 @@
  */
 package org.opensilex.core.organisation.api;
 
-import org.opensilex.core.organisation.dal.InfrastructureModel;
+import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.response.ResourceDagDTO;
 
@@ -16,24 +16,24 @@ import java.util.stream.Collectors;
  *
  * @author vince
  */
-public class InfrastructureDTO extends ResourceDagDTO<InfrastructureModel> {
+public class OrganizationDTO extends ResourceDagDTO<OrganizationModel> {
     @Override
-    public InfrastructureModel newModelInstance() {
-        return new InfrastructureModel();
+    public OrganizationModel newModelInstance() {
+        return new OrganizationModel();
     }
 
     @Override
-    public void fromModel(InfrastructureModel model) {
+    public void fromModel(OrganizationModel model) {
         super.fromModel(model);
 
-        List<InfrastructureModel> parents = model.getParents();
+        List<OrganizationModel> parents = model.getParents();
         if (parents != null) {
             setParents(parents
                     .stream().map(SPARQLResourceModel::getUri)
                     .collect(Collectors.toList()));
         }
 
-        List<InfrastructureModel> children = model.getChildren();
+        List<OrganizationModel> children = model.getChildren();
         if (children != null) {
             setChildren(children
                     .stream().map(SPARQLResourceModel::getUri)
@@ -42,12 +42,12 @@ public class InfrastructureDTO extends ResourceDagDTO<InfrastructureModel> {
     }
 
     @Override
-    public void toModel(InfrastructureModel model) {
+    public void toModel(OrganizationModel model) {
         super.toModel(model);
 
         if (getParents() != null) {
             model.setParents(getParents().stream().map(parentUri -> {
-                InfrastructureModel parentModel = new InfrastructureModel();
+                OrganizationModel parentModel = new OrganizationModel();
                 parentModel.setUri(parentUri);
                 return parentModel;
             }).collect(Collectors.toList()));
@@ -55,15 +55,15 @@ public class InfrastructureDTO extends ResourceDagDTO<InfrastructureModel> {
 
         if (getChildren() != null) {
             model.setChildren(getChildren().stream().map(childUri -> {
-                InfrastructureModel childModel = new InfrastructureModel();
+                OrganizationModel childModel = new OrganizationModel();
                 childModel.setUri(childUri);
                 return childModel;
             }).collect(Collectors.toList()));
         }
     }
 
-    public static InfrastructureDTO getDTOFromModel(InfrastructureModel model) {
-        InfrastructureDTO dto = new InfrastructureDTO();
+    public static OrganizationDTO getDTOFromModel(OrganizationModel model) {
+        OrganizationDTO dto = new OrganizationDTO();
         dto.fromModel(model);
 
         return dto;

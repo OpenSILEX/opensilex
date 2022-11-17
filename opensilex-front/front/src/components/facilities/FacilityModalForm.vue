@@ -19,7 +19,7 @@ import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import DTOConverter from "../../models/DTOConverter";
-import { InfrastructureFacilityCreationDTO } from 'opensilex-core/index';
+import { FacilityCreationDTO } from 'opensilex-core/index';
 
 @Component
 export default class FacilityModalForm extends Vue {
@@ -28,7 +28,7 @@ export default class FacilityModalForm extends Vue {
   @Prop({
     default: () => {}
   })
-  initForm: (f: InfrastructureFacilityCreationDTO) => {};
+  initForm: (f: FacilityCreationDTO) => {};
 
   @Ref("facilityForm") readonly facilityForm!: any;
 

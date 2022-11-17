@@ -11,6 +11,8 @@ import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.vocabulary.ORG;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
+import org.opensilex.core.organisation.dal.site.SiteModel;
 import org.opensilex.security.authentication.SecurityOntology;
 import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
@@ -24,10 +26,10 @@ import org.opensilex.sparql.model.SPARQLDagModel;
 @SPARQLResource(
         ontology = FOAF.class,
         resource = "Organization",
-        graph = InfrastructureModel.GRAPH,
+        graph = OrganizationModel.GRAPH,
         prefix = "infra"
 )
-public class InfrastructureModel extends SPARQLDagModel<InfrastructureModel> {
+public class OrganizationModel extends SPARQLDagModel<OrganizationModel> {
 
     public static final String GRAPH = "organization";
 
@@ -37,21 +39,21 @@ public class InfrastructureModel extends SPARQLDagModel<InfrastructureModel> {
             inverse = true,
             ignoreUpdateIfNull = true
     )
-    protected List<InfrastructureModel> parents;
+    protected List<OrganizationModel> parents;
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasPart",
             ignoreUpdateIfNull = true
     )
-    protected List<InfrastructureModel> children;
+    protected List<OrganizationModel> children;
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "isHosted",
             ignoreUpdateIfNull = true
     )
-    private List<InfrastructureFacilityModel> facilities;
+    private List<FacilityModel> facilities;
     public static final String FACILITIES_FIELD = "facilities";
 
     @SPARQLProperty(
@@ -88,11 +90,11 @@ public class InfrastructureModel extends SPARQLDagModel<InfrastructureModel> {
         this.groups = group;
     }
 
-    public List<InfrastructureFacilityModel> getFacilities() {
+    public List<FacilityModel> getFacilities() {
         return facilities;
     }
 
-    public void setFacilities(List<InfrastructureFacilityModel> facilities) {
+    public void setFacilities(List<FacilityModel> facilities) {
         this.facilities = facilities;
     }
 

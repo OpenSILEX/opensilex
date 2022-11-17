@@ -14,7 +14,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -30,7 +29,6 @@ import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
 import org.junit.Before;
 import org.junit.Rule;
-import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.core.data.api.DataFileCreationDTO;
@@ -39,7 +37,6 @@ import org.opensilex.core.data.dal.DataProvenanceModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.provenance.api.ProvenanceAPITest;
 import org.opensilex.core.provenance.api.ProvenanceCreationDTO;
-import org.opensilex.core.variable.api.VariableApiTest;
 import org.opensilex.server.response.SingleObjectResponse;
 
 /**
@@ -66,7 +63,7 @@ public class DataFileAPITest extends AbstractMongoIntegrationTest {
         ProvenanceAPITest provAPI = new ProvenanceAPITest();
         ProvenanceCreationDTO prov = new ProvenanceCreationDTO();
         prov.setName("name");
-        Response postResultProv = getJsonPostResponse(target(provAPI.createPath), prov);
+        Response postResultProv = getJsonPostResponseAsAdmin(target(provAPI.createPath), prov);
         provenance = new DataProvenanceModel();
         provenance.setUri(extractUriFromResponse(postResultProv)); 
 
@@ -131,7 +128,7 @@ public class DataFileAPITest extends AbstractMongoIntegrationTest {
         final Response postResult = getJsonPostResponseMultipart(target(createPath), multipart);
         URI uri = extractUriFromResponse(postResult);
     
-        final Response getResult = getJsonGetByUriResponse(target(getDescriptionPath), uri.toString());
+        final Response getResult = getJsonGetByUriResponseAsAdmin(target(getDescriptionPath), uri.toString());
         assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
 
         //try to deserialize object

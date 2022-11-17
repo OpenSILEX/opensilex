@@ -53,12 +53,12 @@ public class ProjectAPITest extends AbstractSecurityIntegrationTest {
     @Test
     public void testCreate() throws Exception {
 
-        final Response postResult = getJsonPostResponse(target(createPath), getCreationDTO());
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO());
         assertEquals(Status.CREATED.getStatusCode(), postResult.getStatus());
 
         // ensure that the result is a well formed URI, else throw exception
         URI createdUri = extractUriFromResponse(postResult);
-        final Response getResult = getJsonGetByUriResponse(target(uriPath), createdUri.toString());
+        final Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), createdUri.toString());
         assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
     }
 
@@ -68,11 +68,11 @@ public class ProjectAPITest extends AbstractSecurityIntegrationTest {
         List<ProjectCreationDTO> creationDTOS = Arrays.asList(getCreationDTO(), getCreationDTO());
 
         for (ProjectCreationDTO creationDTO : creationDTOS) {
-            final Response postResult = getJsonPostResponse(target(createPath), creationDTO);
+            final Response postResult = getJsonPostResponseAsAdmin(target(createPath), creationDTO);
             assertEquals(Status.CREATED.getStatusCode(), postResult.getStatus());
 
             URI uri = extractUriFromResponse(postResult);
-            final Response getResult = getJsonGetByUriResponse(target(uriPath), uri.toString());
+            final Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), uri.toString());
             assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
         }
 
@@ -83,7 +83,7 @@ public class ProjectAPITest extends AbstractSecurityIntegrationTest {
 
         // create the pj
         ProjectCreationDTO pjctDto = getCreationDTO();
-        final Response postResult = getJsonPostResponse(target(createPath), pjctDto);
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), pjctDto);
 
         // update the pj
         pjctDto.setUri(extractUriFromResponse(postResult));
@@ -94,7 +94,7 @@ public class ProjectAPITest extends AbstractSecurityIntegrationTest {
         assertEquals(Status.OK.getStatusCode(), updateResult.getStatus());
 
         // retrieve the new pj and compare to the expected pj
-        final Response getResult = getJsonGetByUriResponse(target(uriPath), pjctDto.getUri().toString());
+        final Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), pjctDto.getUri().toString());
 
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
@@ -110,10 +110,10 @@ public class ProjectAPITest extends AbstractSecurityIntegrationTest {
     @Test
     public void testGetByUri() throws Exception {
 
-        final Response postResult = getJsonPostResponse(target(createPath), getCreationDTO());
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO());
         URI uri = extractUriFromResponse(postResult);
 
-        final Response getResult = getJsonGetByUriResponse(target(uriPath), uri.toString());
+        final Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), uri.toString());
         assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
 
         // try to deserialize object
@@ -128,7 +128,7 @@ public class ProjectAPITest extends AbstractSecurityIntegrationTest {
     public void testSearch() throws Exception {
 
         ProjectCreationDTO creationDTO = getCreationDTO();
-        final Response postResult = getJsonPostResponse(target(createPath), creationDTO);
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), creationDTO);
         URI uri = extractUriFromResponse(postResult);
 
         Map<String, Object> params = new HashMap<String, Object>() {
@@ -140,7 +140,7 @@ public class ProjectAPITest extends AbstractSecurityIntegrationTest {
         };
 
         WebTarget searchTarget = appendSearchParams(target(searchPath), 0, 50, params);
-        final Response getResult = appendToken(searchTarget).get();
+        final Response getResult = appendAdminToken(searchTarget).get();
         assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
 
         JsonNode node = getResult.readEntity(JsonNode.class);

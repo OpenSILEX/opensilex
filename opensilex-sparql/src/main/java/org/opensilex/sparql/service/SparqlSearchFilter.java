@@ -5,10 +5,14 @@ import net.minidev.json.annotate.JsonIgnore;
 import org.opensilex.OpenSilex;
 import org.opensilex.utils.OrderBy;
 
+import javax.validation.constraints.NotNull;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author rcolin
@@ -78,5 +82,26 @@ public abstract class SparqlSearchFilter {
     public SparqlSearchFilter setLang(String lang) {
         this.lang = lang;
         return this;
+    }
+
+    /**
+     * Validate the constraints for the filter. At the moment, the only validated constraint is that all getters annotated
+     * with the {@link NotNull} annotations actually return an initialized value.
+     * <p>
+     *     You can override this method to add custom validation, but make sure to call <code>super.validate();</code>
+     *     to validate the basic constraints.
+     * </p>
+     *
+     * @throws IllegalArgumentException If a constraint is not valid
+     * @throws InvocationTargetException If the annotated method throws an exception
+     * @throws IllegalAccessException If the method annotated with "NotNull" could not be accessed from SparqlSearchFilter.
+     * Remember that {@link NotNull} can only be specified on <strong>public getters</strong>.
+     */
+    public void validate() throws IllegalArgumentException, InvocationTargetException, IllegalAccessException {
+        for (Method method : this.getClass().getDeclaredMethods()) {
+            if (method.isAnnotationPresent(NotNull.class) && Objects.isNull(method.invoke(this))) {
+                throw new IllegalArgumentException(method.getName() + " cannot be null");
+            }
+        }
     }
 }

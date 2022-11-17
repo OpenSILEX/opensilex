@@ -1,7 +1,9 @@
-package org.opensilex.core.organisation.dal;
+package org.opensilex.core.organisation.dal.site;
 
 import org.apache.jena.vocabulary.ORG;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.organisation.dal.OrganizationModel;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.security.authentication.SecurityOntology;
 import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
@@ -21,7 +23,7 @@ import java.util.stream.Collectors;
 @SPARQLResource(
         ontology = ORG.class,
         resource = "Site",
-        graph = InfrastructureModel.GRAPH,
+        graph = OrganizationModel.GRAPH,
         prefix = "infra"
 )
 public class SiteModel extends SPARQLNamedResourceModel<SiteModel> {
@@ -38,7 +40,7 @@ public class SiteModel extends SPARQLNamedResourceModel<SiteModel> {
             ignoreUpdateIfNull = true,
             inverse = true
     )
-    protected List<InfrastructureModel> organizations;
+    protected List<OrganizationModel> organizations;
     public static final String ORGANIZATION_FIELD = "organizations";
 
     @SPARQLProperty(
@@ -55,7 +57,7 @@ public class SiteModel extends SPARQLNamedResourceModel<SiteModel> {
             ignoreUpdateIfNull = true,
             inverse = true
     )
-    protected List<InfrastructureFacilityModel> facilities;
+    protected List<FacilityModel> facilities;
     public static final String FACILITY_FIELD = "facilities";
 
 
@@ -67,11 +69,11 @@ public class SiteModel extends SPARQLNamedResourceModel<SiteModel> {
         this.address = address;
     }
 
-    public List<InfrastructureModel> getOrganizations() {
+    public List<OrganizationModel> getOrganizations() {
         return organizations;
     }
 
-    public void setOrganizations(List<InfrastructureModel> organizations) {
+    public void setOrganizations(List<OrganizationModel> organizations) {
         this.organizations = organizations;
     }
 
@@ -83,11 +85,11 @@ public class SiteModel extends SPARQLNamedResourceModel<SiteModel> {
         this.groups = groups;
     }
 
-    public List<InfrastructureFacilityModel> getFacilities() {
+    public List<FacilityModel> getFacilities() {
         return facilities;
     }
 
-    public void setFacilities(List<InfrastructureFacilityModel> facilities) {
+    public void setFacilities(List<FacilityModel> facilities) {
         this.facilities = facilities;
     }
 
@@ -97,7 +99,7 @@ public class SiteModel extends SPARQLNamedResourceModel<SiteModel> {
         }
 
         return getOrganizations().stream()
-                .map(InfrastructureModel::getUri)
+                .map(OrganizationModel::getUri)
                 .collect(Collectors.toList());
     }
 }

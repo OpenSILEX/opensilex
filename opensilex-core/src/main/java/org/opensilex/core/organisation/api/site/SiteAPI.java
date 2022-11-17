@@ -2,15 +2,16 @@ package org.opensilex.core.organisation.api.site;
 
 import io.swagger.annotations.*;
 import org.apache.commons.collections4.CollectionUtils;
-import org.opensilex.core.organisation.api.InfrastructureAPI;
-import org.opensilex.core.organisation.dal.SiteModel;
+import org.opensilex.core.organisation.api.OrganizationAPI;
+import org.opensilex.core.organisation.dal.site.SiteDAO;
+import org.opensilex.core.organisation.dal.site.SiteModel;
+import org.opensilex.core.organisation.dal.site.SiteSearchFilter;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
-import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.exceptions.displayable.DisplayableBadRequestException;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
@@ -32,11 +33,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import java.net.URI;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.opensilex.core.organisation.api.InfrastructureAPI.*;
+import static org.opensilex.core.organisation.api.OrganizationAPI.*;
 
 /**
  * @author Valentin RIGOLLE
@@ -44,8 +44,8 @@ import static org.opensilex.core.organisation.api.InfrastructureAPI.*;
 @Api(CREDENTIAL_GROUP_INFRASTRUCTURE_ID)
 @Path("core/sites")
 @ApiCredentialGroup(
-        groupId = InfrastructureAPI.CREDENTIAL_GROUP_INFRASTRUCTURE_ID,
-        groupLabelKey = InfrastructureAPI.CREDENTIAL_GROUP_INFRASTRUCTURE_LABEL_KEY
+        groupId = OrganizationAPI.CREDENTIAL_GROUP_INFRASTRUCTURE_ID,
+        groupLabelKey = OrganizationAPI.CREDENTIAL_GROUP_INFRASTRUCTURE_LABEL_KEY
 )
 public class SiteAPI {
 
@@ -78,8 +78,13 @@ public class SiteAPI {
     ) throws Exception {
         SiteDAO siteDAO = new SiteDAO(sparql, nosql);
 
-        ListWithPagination<SiteModel> siteModels = siteDAO.searchSites(currentUser, pattern, organizations, orderByList,
-                page, pageSize);
+        ListWithPagination<SiteModel> siteModels = siteDAO.search((SiteSearchFilter) new SiteSearchFilter()
+                .setNamePattern(pattern)
+                .setUser(currentUser)
+                .setOrganizations(organizations)
+                .setOrderByList(orderByList)
+                .setPage(page)
+                .setPageSize(pageSize));
 
         List<SiteGetDTO> siteDtos = siteModels.getList().stream()
                 .map(siteModel -> {
@@ -107,7 +112,7 @@ public class SiteAPI {
 
         SiteGetDTO siteDto = new SiteGetDTO();
         siteDto.fromModelWithGeospatialInfo(
-                siteDAO.getSite(siteUri, currentUser),
+                siteDAO.get(siteUri, currentUser),
                 siteDAO.getSiteGeospatialModel(siteUri));
 
         return new SingleObjectResponse<>(siteDto).getResponse();
@@ -128,7 +133,7 @@ public class SiteAPI {
     ) throws Exception {
         SiteDAO siteDAO = new SiteDAO(sparql, nosql);
 
-        List<SiteModel> siteModels = siteDAO.getSitesByURI(uris, currentUser);
+        List<SiteModel> siteModels = siteDAO.getList(uris, currentUser);
 
         List<NamedResourceDTO> dtoList = siteModels.stream()
                 .map(NamedResourceDTO::getDTOFromModel)
@@ -160,7 +165,7 @@ public class SiteAPI {
         try {
             SiteDAO siteDAO = new SiteDAO(sparql, nosql);
 
-            SiteModel created = siteDAO.createSite(siteCreationDto.newModel(), currentUser);
+            SiteModel created = siteDAO.create(siteCreationDto.newModel(), currentUser);
 
             return new ObjectUriResponse(Response.Status.CREATED, created.getUri()).getResponse();
 
@@ -194,7 +199,7 @@ public class SiteAPI {
 
         SiteModel siteModel = siteUpdateDTO.newModel();
 
-        SiteModel updated = siteDAO.updateSite(siteModel, currentUser);
+        SiteModel updated = siteDAO.update(siteModel, currentUser);
 
         return new ObjectUriResponse(Response.Status.OK, updated.getUri()).getResponse();
     }
@@ -217,7 +222,7 @@ public class SiteAPI {
             @ApiParam(value = "Site URI", required = true) @PathParam("uri") @NotNull @Valid URI siteUri
     ) throws Exception {
         SiteDAO siteDAO = new SiteDAO(sparql, nosql);
-        siteDAO.deleteSite(siteUri, currentUser);
+        siteDAO.delete(siteUri, currentUser);
         return new ObjectUriResponse(Response.Status.OK, siteUri).getResponse();
     }
 }

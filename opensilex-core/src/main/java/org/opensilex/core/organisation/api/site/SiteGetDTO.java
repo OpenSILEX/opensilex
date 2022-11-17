@@ -6,10 +6,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.geojson.GeoJsonObject;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
-import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
-import org.opensilex.core.organisation.dal.InfrastructureModel;
-import org.opensilex.core.organisation.dal.SiteAddressModel;
-import org.opensilex.core.organisation.dal.SiteModel;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
+import org.opensilex.core.organisation.dal.OrganizationModel;
+import org.opensilex.core.organisation.dal.site.SiteAddressModel;
+import org.opensilex.core.organisation.dal.site.SiteModel;
 import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.sparql.response.NamedResourceDTO;
 
@@ -25,11 +25,11 @@ import java.util.stream.Collectors;
 public class SiteGetDTO extends SiteDTO {
     protected SiteAddressDTO address;
 
-    protected List<NamedResourceDTO<InfrastructureModel>> organizations;
+    protected List<NamedResourceDTO<OrganizationModel>> organizations;
 
     protected List<NamedResourceDTO<GroupModel>> groups;
 
-    protected List<NamedResourceDTO<InfrastructureFacilityModel>> facilities;
+    protected List<NamedResourceDTO<FacilityModel>> facilities;
 
     @JsonProperty("geometry")
     protected GeoJsonObject geometry;
@@ -42,19 +42,19 @@ public class SiteGetDTO extends SiteDTO {
         this.address = address;
     }
 
-    public List<NamedResourceDTO<InfrastructureModel>> getOrganizations() {
+    public List<NamedResourceDTO<OrganizationModel>> getOrganizations() {
         return organizations;
     }
 
-    public void setOrganizations(List<NamedResourceDTO<InfrastructureModel>> organizations) {
+    public void setOrganizations(List<NamedResourceDTO<OrganizationModel>> organizations) {
         this.organizations = organizations;
     }
 
-    public List<NamedResourceDTO<InfrastructureFacilityModel>> getFacilities() {
+    public List<NamedResourceDTO<FacilityModel>> getFacilities() {
         return facilities;
     }
 
-    public void setFacilities(List<NamedResourceDTO<InfrastructureFacilityModel>> facilities) {
+    public void setFacilities(List<NamedResourceDTO<FacilityModel>> facilities) {
         this.facilities = facilities;
     }
 
@@ -83,8 +83,8 @@ public class SiteGetDTO extends SiteDTO {
         }
 
         if (getOrganizations() != null) {
-            List<InfrastructureModel> organizationModels = getOrganizations().stream().map(organizationDto -> {
-                InfrastructureModel organizationModel = new InfrastructureModel();
+            List<OrganizationModel> organizationModels = getOrganizations().stream().map(organizationDto -> {
+                OrganizationModel organizationModel = new OrganizationModel();
                 organizationModel.setUri(organizationDto.getUri());
                 return organizationModel;
             }).collect(Collectors.toList());
@@ -92,8 +92,8 @@ public class SiteGetDTO extends SiteDTO {
         }
 
         if (getFacilities() != null) {
-            List<InfrastructureFacilityModel> facilityModels = getFacilities().stream().map(facilityDto -> {
-                InfrastructureFacilityModel facilityModel = new InfrastructureFacilityModel();
+            List<FacilityModel> facilityModels = getFacilities().stream().map(facilityDto -> {
+                FacilityModel facilityModel = new FacilityModel();
                 facilityModel.setUri(facilityDto.getUri());
                 return facilityModel;
             }).collect(Collectors.toList());
@@ -121,18 +121,18 @@ public class SiteGetDTO extends SiteDTO {
             setAddress(addressDTO);
         }
 
-        List<InfrastructureModel> organizationModels = model.getOrganizations();
+        List<OrganizationModel> organizationModels = model.getOrganizations();
         if (organizationModels != null) {
-            List<NamedResourceDTO<InfrastructureModel>> organizationDtos = organizationModels.stream()
-                    .map(organizationModel -> (NamedResourceDTO<InfrastructureModel>) NamedResourceDTO.getDTOFromModel(organizationModel))
+            List<NamedResourceDTO<OrganizationModel>> organizationDtos = organizationModels.stream()
+                    .map(organizationModel -> (NamedResourceDTO<OrganizationModel>) NamedResourceDTO.getDTOFromModel(organizationModel))
                     .collect(Collectors.toList());
             setOrganizations(organizationDtos);
         }
 
-        List<InfrastructureFacilityModel> facilityModels = model.getFacilities();
+        List<FacilityModel> facilityModels = model.getFacilities();
         if (facilityModels != null) {
-            List<NamedResourceDTO<InfrastructureFacilityModel>> facilityDtos = facilityModels.stream()
-                    .map(facilityModel -> (NamedResourceDTO<InfrastructureFacilityModel>) NamedResourceDTO.getDTOFromModel(facilityModel))
+            List<NamedResourceDTO<FacilityModel>> facilityDtos = facilityModels.stream()
+                    .map(facilityModel -> (NamedResourceDTO<FacilityModel>) NamedResourceDTO.getDTOFromModel(facilityModel))
                     .collect(Collectors.toList());
             setFacilities(facilityDtos);
         }

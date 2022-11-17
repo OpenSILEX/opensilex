@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.opensilex.core.organisation.api.facitity;
+package org.opensilex.core.organisation.api.facility;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -12,9 +12,9 @@ import io.swagger.annotations.ApiModel;
 import org.geojson.GeoJsonObject;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
-import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
-import org.opensilex.core.organisation.dal.InfrastructureModel;
-import org.opensilex.core.organisation.dal.SiteModel;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
+import org.opensilex.core.organisation.dal.OrganizationModel;
+import org.opensilex.core.organisation.dal.site.SiteModel;
 import org.opensilex.sparql.response.NamedResourceDTO;
 
 import javax.validation.constraints.NotNull;
@@ -29,10 +29,10 @@ import java.util.stream.Collectors;
  */
 @ApiModel
 @JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "organizations", "sites", "address", "geometry"})
-public class InfrastructureFacilityGetDTO extends InfrastructureFacilityDTO {
+public class FacilityGetDTO extends FacilityDTO {
 
     @JsonProperty("organizations")
-    protected List<NamedResourceDTO<InfrastructureModel>> infrastructures;
+    protected List<NamedResourceDTO<OrganizationModel>> infrastructures;
 
     @JsonProperty("sites")
     protected List<NamedResourceDTO<SiteModel>> sites;
@@ -41,11 +41,11 @@ public class InfrastructureFacilityGetDTO extends InfrastructureFacilityDTO {
     protected GeoJsonObject geometry;
 
     @NotNull
-    public List<NamedResourceDTO<InfrastructureModel>> getInfrastructures() {
+    public List<NamedResourceDTO<OrganizationModel>> getInfrastructures() {
         return infrastructures;
     }
 
-    public void setInfrastructures(List<NamedResourceDTO<InfrastructureModel>> infrastructures) {
+    public void setInfrastructures(List<NamedResourceDTO<OrganizationModel>> infrastructures) {
         this.infrastructures = infrastructures;
     }
 
@@ -66,17 +66,17 @@ public class InfrastructureFacilityGetDTO extends InfrastructureFacilityDTO {
     }
 
     @Override
-    public void toModel(InfrastructureFacilityModel model) {
+    public void toModel(FacilityModel model) {
         super.toModel(model);
 
         if (getInfrastructures() != null) {
-            List<InfrastructureModel> infrastructureModels = new ArrayList<>();
+            List<OrganizationModel> organizationModels = new ArrayList<>();
             getInfrastructures().forEach(infrastructure -> {
-                InfrastructureModel infrastructureModel = new InfrastructureModel();
-                infrastructureModel.setUri(infrastructure.getUri());
-                infrastructureModels.add(infrastructureModel);
+                OrganizationModel organizationModel = new OrganizationModel();
+                organizationModel.setUri(infrastructure.getUri());
+                organizationModels.add(organizationModel);
             });
-            model.setInfrastructures(infrastructureModels);
+            model.setInfrastructures(organizationModels);
         }
 
         if (getSites() != null) {
@@ -90,14 +90,14 @@ public class InfrastructureFacilityGetDTO extends InfrastructureFacilityDTO {
         }
     }
 
-    public void fromModel(InfrastructureFacilityModel model) {
+    public void fromModel(FacilityModel model) {
         super.fromModel(model);
 
         if (model.getInfrastructures() != null) {
             setInfrastructures(model.getInfrastructures()
                     .stream()
                     .map(infrastructureModel ->
-                            (NamedResourceDTO<InfrastructureModel>)NamedResourceDTO.getDTOFromModel(infrastructureModel))
+                            (NamedResourceDTO<OrganizationModel>)NamedResourceDTO.getDTOFromModel(infrastructureModel))
                     .collect(Collectors.toList()));
         }
 
@@ -108,7 +108,7 @@ public class InfrastructureFacilityGetDTO extends InfrastructureFacilityDTO {
         }
     }
 
-    public void fromModelWithGeospatialInfo(InfrastructureFacilityModel facilityModel, GeospatialModel geospatialModel) throws JsonProcessingException {
+    public void fromModelWithGeospatialInfo(FacilityModel facilityModel, GeospatialModel geospatialModel) throws JsonProcessingException {
         fromModel(facilityModel);
         fromGeospatialModel(geospatialModel);
     }

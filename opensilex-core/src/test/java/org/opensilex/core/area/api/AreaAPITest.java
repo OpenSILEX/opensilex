@@ -72,12 +72,12 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
 
     @Test
     public void testCreate() throws Exception {
-        final Response postResult = getJsonPostResponse(target(createPath), getCreationDTO(false));
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(false));
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
 
         // ensure that the result is a well formed URI, else throw exception
         URI createdUri = extractUriFromResponse(postResult);
-        final Response getResult = getJsonGetByUriResponse(target(uriPath), createdUri.toString());
+        final Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), createdUri.toString());
         assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
     }
 
@@ -85,7 +85,7 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
     public void testUpdate() throws Exception {
         // create the area
         AreaCreationDTO areaDTO = getCreationDTO(false);
-        final Response postResult = getJsonPostResponse(target(createPath), areaDTO);
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), areaDTO);
 
         // update the area
         areaDTO.setUri(extractUriFromResponse(postResult));
@@ -98,7 +98,7 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
         assertEquals(Response.Status.OK.getStatusCode(), updateResult.getStatus());
 
         // retrieve the new area and compare it to the expected area
-        final Response getResult = getJsonGetByUriResponse(target(uriPath), areaDTO.getUri().toString());
+        final Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), areaDTO.getUri().toString());
 
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
@@ -115,23 +115,23 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
     @Test
     public void testDelete() throws Exception {
         // create object and check if URI exists
-        Response postResponse = getJsonPostResponse(target(createPath), getCreationDTO(false));
+        Response postResponse = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(false));
         String uri = extractUriFromResponse(postResponse).toString();
 
         // delete object and check if URI no longer exists
         Response delResult = getDeleteByUriResponse(target(deletePath), uri);
         assertEquals(Response.Status.OK.getStatusCode(), delResult.getStatus());
 
-        Response getResult = getJsonGetByUriResponse(target(uriPath), uri);
+        Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), uri);
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
     }
 
     @Test
     public void testGetByURI() throws Exception {
-        final Response postResult = getJsonPostResponse(target(createPath), getCreationDTO(false));
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(false));
         URI uri = extractUriFromResponse(postResult);
 
-        final Response getResult = getJsonGetByUriResponse(target(uriPath), uri.toString());
+        final Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), uri.toString());
         assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
 
         // try to deserialize object
@@ -144,22 +144,22 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
 
     @Test
     public void testGetByUriBadUri() throws Exception {
-        final Response postResult = getJsonPostResponse(target(createPath), getCreationDTO(false));
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(false));
         JsonNode node = postResult.readEntity(JsonNode.class);
         ObjectUriResponse postResponse = mapper.convertValue(node, ObjectUriResponse.class);
         String uri = postResponse.getResult();
 
         // call the service with a non existing pseudo random URI
-        final Response getResult = getJsonGetByUriResponse(target(uriPath), uri + "7FG4FG89FG4GH4GH57");
+        final Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), uri + "7FG4FG89FG4GH4GH57");
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
     }
 
     @Test
     public void testSearchIntersectsArea() throws Exception {
-        final Response postResult = getJsonPostResponse(target(createPath), getCreationDTO(false));
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(false));
         URI uri = extractUriFromResponse(postResult);
 
-        final Response getResult = getJsonGetByUriResponse(target(uriPath), uri.toString());
+        final Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), uri.toString());
         assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
 
         // try to deserialize object
@@ -172,10 +172,10 @@ public class AreaAPITest extends AbstractMongoIntegrationTest {
 
     @Test(expected = Exception.class)
     public void testSearchIntersectsAreaErrorGeometry() throws Exception {
-        final Response postResult = getJsonPostResponse(target(createPath), getCreationDTO(true));
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(true));
         URI uri = extractUriFromResponse(postResult);
 
-        final Response getResult = getJsonGetByUriResponse(target(uriPath), uri.toString());
+        final Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), uri.toString());
         assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
 
         // try to deserialize object

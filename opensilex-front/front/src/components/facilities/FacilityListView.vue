@@ -33,10 +33,9 @@ import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
 import FacilitiesView from "./FacilitiesView.vue";
-import { InfrastructureFacilityGetDTO } from 'opensilex-core/index';
+import { FacilityGetDTO } from 'opensilex-core/index';
 import {ExperimentsService} from "opensilex-core/api/experiments.service";
 import {ExperimentGetListDTO} from "opensilex-core/model/experimentGetListDTO";
-import AssociatedExperimentsList from "../experiments/AssociatedExperimentsList.vue";
 
 @Component
 export default class FacilityListView extends Vue {
@@ -45,7 +44,7 @@ export default class FacilityListView extends Vue {
   service: OrganizationsService;
   expService: ExperimentsService;
 
-  selectedFacility: InfrastructureFacilityGetDTO = null;
+  selectedFacility: FacilityGetDTO = null;
   experiments: Array<ExperimentGetListDTO> = [];
 
   @Ref("facilitiesView")

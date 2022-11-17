@@ -24,19 +24,11 @@ import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.device.dal.DeviceSearchFilter;
-import org.opensilex.core.event.dal.move.MoveEventDAO;
-import org.opensilex.core.event.dal.move.MoveModel;
-import org.opensilex.core.event.dal.move.PositionModel;
 import org.opensilex.core.exception.UnableToParseDateException;
 import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
-import org.opensilex.core.organisation.api.InfrastructureGetDTO;
-import org.opensilex.core.organisation.api.facitity.InfrastructureFacilityGetDTO;
-import org.opensilex.core.organisation.dal.InfrastructureDAO;
-import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
-import org.opensilex.core.organisation.dal.InfrastructureModel;
-import org.opensilex.core.position.api.PositionAPI;
-import org.opensilex.core.position.api.PositionGetDTO;
+import org.opensilex.core.organisation.api.facility.FacilityGetDTO;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.sparql.csv.DefaultCsvImporter;
 import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
@@ -225,7 +217,7 @@ public class DeviceAPI {
 
             devices.getList().forEach((device) -> {
                 try {
-                    InfrastructureFacilityModel facilityModel = dao.getAssociatedFacility(device.getUri(), currentUser);
+                    FacilityModel facilityModel = dao.getAssociatedFacility(device.getUri(), currentUser);
                     if (facilityModel != null) {
                         if (SPARQLDeserializers.compareURIs(facility, facilityModel.getUri())) {
                             resultList.add(device);
@@ -988,7 +980,7 @@ public class DeviceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return device details corresponding to the device URI", response = InfrastructureFacilityGetDTO.class)
+            @ApiResponse(code = 200, message = "Return device details corresponding to the device URI", response = FacilityGetDTO.class)
     })
     public Response getDeviceFacility(
             @ApiParam(value = "Device URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
@@ -996,11 +988,11 @@ public class DeviceAPI {
 
         DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
 
-        InfrastructureFacilityGetDTO facility = null;
+        FacilityGetDTO facility = null;
 
-        InfrastructureFacilityModel facilityModel = dao.getAssociatedFacility(uri, currentUser);
+        FacilityModel facilityModel = dao.getAssociatedFacility(uri, currentUser);
         if (facilityModel != null) {
-            facility = InfrastructureFacilityGetDTO.getDTOFromModel(facilityModel, true);
+            facility = FacilityGetDTO.getDTOFromModel(facilityModel, true);
         }
 
         return new SingleObjectResponse<>(facility).getResponse();

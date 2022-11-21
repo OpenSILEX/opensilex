@@ -980,7 +980,7 @@ public class DeviceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return device details corresponding to the device URI", response = FacilityGetDTO.class)
+            @ApiResponse(code = 200, message = "Return facility where the device is set", response = FacilityGetDTO.class)
     })
     public Response getDeviceFacility(
             @ApiParam(value = "Device URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri

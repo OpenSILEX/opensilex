@@ -1,0 +1,462 @@
+<template>
+  <opensilex-FormField
+    :rules="rules"
+    :required="required"
+    :label="label"
+    :helpMessage="helpMessage"
+  >
+    <template v-slot:field="field">
+      <b-spinner small label="Small Spinning" v-if="loading"></b-spinner>
+      <input :id="field.id" type="hidden" :value="hiddenValue" />
+      <b-input-group class="select-button-container">
+
+        <treeselect
+          class="multiselect-popup modalSearchLabel"
+          :multiple="true"
+          :openOnClick="openOnClick"
+          :searchable="false"
+          :clearable="clearable"
+          valueFormat="object"
+          :value="selectedValues"
+          :placeholder="$t(placeholder)"
+          :disable-branch-nodes="disableBranchNodes"
+          :search-nested="searchNested"
+          :show-count="showCount"
+          @input="clearIfNeeded"
+          @deselect="removeItem"
+          @open="showModal"
+          :limit="limit"
+        >
+          <template v-slot:option-label="{ node }">
+            <slot name="option-label" v-bind:node="node">{{ node.label }}</slot>
+          </template>
+
+          <template v-slot:value-label="{ node }">
+            <slot name="value-label" v-bind:node="node"> <div class="modalSearchLabel" :title="node.label">{{ node.label }}</div></slot>
+          </template>
+
+        </treeselect>
+
+        <b-input-group-append>
+          <b-button class="createButton greenThemeColor" @click="showModal">>></b-button>
+        </b-input-group-append>
+        <b-input-group-append v-if="!actionHandler && viewHandler">
+           <opensilex-DetailButton
+            v-if="viewHandler"
+            @click="viewHandler"
+            :detailVisible="viewHandlerDetailsVisible"
+            :label="(viewHandlerDetailsVisible ? 'SelectorFormModal.hideDetails' : 'SelectorFormModal.showDetails')"
+            :small="true"
+            class="greenThemeColor"
+          ></opensilex-DetailButton>
+        </b-input-group-append>
+        <b-input-group-append v-else-if="actionHandler">
+          <b-button class="greenThemeColor" @click="actionHandler">+</b-button>
+          <opensilex-DetailButton
+            v-if="viewHandler"
+            @click="viewHandler"
+            :detailVisible="viewHandlerDetailsVisible"
+            :label="(viewHandlerDetailsVisible ? 'SelectorFormModal.hideDetails' : 'SelectorFormModal.showDetails')"
+            :small="true"
+          ></opensilex-DetailButton>
+        </b-input-group-append>
+      </b-input-group>
+      <component
+        :is="modalComponent"
+        ref="searchModal"
+        :maximumSelectedRows="maximumSelectedItems"
+        :searchFilter.sync="searchModalFilter"
+        :withAssociatedData="withAssociatedData"
+        :experiment="experiment"
+        :objects="objects"
+        :devices="devices"
+        @onClose="$emit('onClose')"
+        @onValidate="onValidate"
+        @shown="showModalSearch"
+        @close='$emit("close")'
+        @clear='$emit("clear")'
+        @select="select(conversionMethod($event))"
+        @unselect="deselect(conversionMethod($event))"
+        @selectall="selectall"
+        class="isModalSearchComponent"
+      ></component>
+
+    </template>
+  </opensilex-FormField>
+</template>
+
+<script lang="ts">
+import { Component, Prop, PropSync, Watch, Ref } from "vue-property-decorator";
+import Vue from "vue";
+import AsyncComputedProp from "vue-async-computed-decorator";
+
+@Component
+export default class SelectFormModal extends Vue {
+  $opensilex: any;
+  currentValue;
+  loading = false;
+
+  @Ref("searchModal") readonly searchModal!: any;
+
+  @PropSync("selected")
+  selection;
+
+  @Prop()
+  multiple;
+
+  @Prop({
+    default: true,
+  })
+  clearable;
+
+  @Prop({
+    default: true,
+  })
+  openOnClick;
+
+  @Prop({
+    default: false,
+  })
+  showCount;
+
+  @Prop()
+  modalComponent;
+
+  @PropSync("filter")
+  searchModalFilter;
+
+  @Prop({
+    type: Function,
+    default: function (e) {
+      if (e && e.name) {
+        return {
+            id: e.uri,
+            label: e.name
+          };
+      } else {
+        return e;
+      }
+    }
+  })
+  conversionMethod: Function;
+
+  @Prop()
+  label: string;
+
+  @Prop()
+  helpMessage: string;
+
+  @Prop()
+  placeholder: string;
+
+  @Prop({
+    default: "component.common.filter-search-no-result",
+  })
+  noResultsText: string;
+
+  @Prop()
+  required: boolean;
+
+  @Prop()
+  disabled: boolean;
+
+  @Prop()
+  rules: string | Function;
+
+  @Prop({
+    default: true,
+  })
+  flat: boolean;
+
+  @Prop({
+    default: null,
+  })
+  actionHandler;
+
+  @Prop({
+    default: null,
+  })
+  viewHandler;
+
+  @Prop({
+    default: false,
+  })
+  viewHandlerDetailsVisible
+
+  @Prop({
+    default: 10,
+  })
+  resultLimit;
+
+
+  @Prop()
+  defaultSelectedValue;
+
+  @Watch("selection")
+  onSelectionChange() {
+    this.currentValue = null;
+  }
+
+  @Prop({
+    default: false,
+  })
+  disableBranchNodes: boolean;
+
+  @Prop({
+    default: false,
+  })
+  searchNested: boolean;
+
+  @Prop()
+  maximumSelectedItems;
+
+  @Prop()
+  limit: number; // limit number of items in the input box
+
+  // props for variableSelectorWithFilter
+  @Prop()
+  withAssociatedData;
+
+  @Prop()
+  experiment;
+
+  @Prop()
+  objects;
+
+  @Prop()
+  devices;
+
+  selectedCopie = [] ;
+
+  @AsyncComputedProp()
+  selectedValues(): Promise<any> {
+    return new Promise((resolve, reject) => {
+      if (!this.selection || this.selection.length == 0) {
+        resolve([]);
+      } else if (this.currentValue) {
+        resolve(this.currentValue);
+      } else {
+        let nodeList = [];
+        this.selectedCopie.forEach((item) => {
+          nodeList.push(this.conversionMethod(item));
+        });
+        this.currentValue = nodeList;
+        if (this.loading) {
+          this.loading = false;
+        }
+        resolve(this.currentValue);
+      }
+    });
+  }
+
+  get hiddenValue() {
+    if (this.multiple) {
+      if(Array.isArray(this.selection)) {
+        if (this.selection.length > 0) {
+          return this.selection.join(",");
+        }else{
+          return "";
+        }
+      }
+    } else {
+      if (this.selection) {
+        return this.selection;
+      }
+    }
+
+    return "";
+  }
+
+  select(value) {
+    // copy selected items in local variable to wait validate action and then, change the selection
+    this.selectedCopie.push(value);
+
+    this.$emit("select", value, this.selectedCopie);
+  }
+
+  deselect(item) {
+    // copy selected items in local variable to wait validate action and then, change the selection
+    this.selectedCopie = this.selectedCopie.filter((value) => value.id !== item.id);
+  
+    this.$emit("deselect", item);
+  }
+  
+  onValidate(){
+    
+      if(this.selectedCopie == null || this.selectedCopie.length == 0) {
+        this.loading = false;
+      } else {
+        this.loading = true;
+      }
+      setTimeout(() => { // fix :  time to close the modal .
+        this.selection = this.selectedCopie.map(value => value.id);
+        this.$emit('onValidate', this.selectedCopie);
+      }, 400);
+    
+  }
+
+  clearSelectedCopie() {
+    this.selectedCopie.forEach((item) => {
+      this.searchModal.unSelect(item);
+    });
+    this.selectedCopie = [];
+  }
+
+  removeItem(item) {
+    this.deselect(item);
+    this.searchModal.unSelect(item);
+  }
+  
+  selectall(selectedValues) {
+    if(selectedValues){  
+      // copy selected items in local variable to wait validate action and then, change the selection
+      this.selectedCopie = selectedValues.map((item => this.conversionMethod(item)));
+    }
+    else {
+      this.selectedCopie = null;    
+    }
+  }
+
+  close(field) {
+    if (field.validator) {
+      this.$nextTick(() => field.validator.validate());
+    }
+  }
+
+  clearIfNeeded(values) {
+    if (this.multiple) {
+      if (values.length == 0) {
+        this.selection.splice(0, this.selection.length);
+        this.clearSelectedCopie();
+        this.$emit("clear");
+        return;
+      }
+    } else if (!values) {
+      this.selection = undefined;
+      this.clearSelectedCopie();
+      this.$emit("clear");
+      return;
+    }
+
+    if (this.multiple) {
+      let newValues = [];
+      for (let i in values) {
+        newValues.push(values[i].id);
+      }
+      this.selection = newValues;
+    }
+    this.refreshModalSearch();
+  }
+
+  created() {
+
+  }
+
+  refresh(){ 
+
+  }
+
+  showModal() {
+    let searchModal: any = this.$refs.searchModal;
+    searchModal.show();
+  }
+
+  showModalSearch() {
+    this.$emit("shown");
+    this.searchModal.refreshWithKeepingSelection();
+  }
+
+  refreshModalSearch() {
+    this.searchModal.refresh();
+  }
+
+}
+</script>
+
+<style scoped lang="scss">
+::v-deep .multiselect-action.vue-treeselect,
+::v-deep .multiselect-popup.vue-treeselect {
+  width: calc(100% - 38px);
+}
+
+.multiselect-popup ~ .input-group-append > button {
+  height: 100%;
+}
+
+::v-deep .multiselect-action .vue-treeselect__control,
+::v-deep .multiselect-popup .vue-treeselect__control {
+  border-bottom-right-radius: 0;
+  border-top-right-radius: 0;
+  border-bottom-left-radius: 5px !important;
+  width: 100%;
+  height: 35px;
+}
+
+::v-deep .multiselect-view.vue-treeselect,
+::v-deep .multiselect-popup.vue-treeselect {
+  width: calc(100% - 85px);
+}
+
+::v-deep .multiselect-view .vue-treeselect__control,
+::v-deep .multiselect-popup .vue-treeselect__control {
+  border-bottom-right-radius: 0;
+  border-top-right-radius: 0;
+  border-bottom-left-radius: 5px !important;
+  width: 100%;
+  height: 35px;
+}
+
+.select-button-container {
+  margin-bottom: 0;
+}
+
+::v-deep .multiselect-popup .vue-treeselect__control-arrow-container {
+  display: none;
+}
+
+::v-deep .multiselect-popup .vue-treeselect__menu-container {
+  display: none;
+}
+
+i.more-results-info {
+  margin-left: 10px;
+  margin-right: 10px;
+}
+.greenThemeColor {
+  color: #fff
+}
+
+.label {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.modalSearchLabel {
+ white-space: normal;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  width: 170px;
+}
+
+.refineSearchMessage {
+  font-weight: bold;
+  background-color: #00A28C;
+  color: #FFFFFF ;
+}
+</style>
+
+<i18n>
+en:
+  SelectorFormModal:
+    refineSearchMessage: "{0} / {1} results displayed, please refine your search..."
+    showDetails : "Show details"
+    hideDetails : "Hide details"
+  
+fr:
+  SelectorFormModal:
+    refineSearchMessage: "{0} / {1} résultats affichés, merci de préciser votre recherche..."
+    showDetails : "Afficher les détails"
+    hideDetails : "Masquer les détails"
+
+</i18n>

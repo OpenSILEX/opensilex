@@ -32,6 +32,7 @@ import org.opensilex.security.SecurityConfig;
 import org.opensilex.security.SecurityModule;
 import org.opensilex.security.extensions.LoginExtension;
 import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.exceptions.ForbiddenException;
 import org.opensilex.service.BaseService;
 import org.opensilex.service.Service;
@@ -759,9 +760,26 @@ public class AuthenticationService extends BaseService implements Service {
             throw new ForbiddenException("SAML is not enabled on this instance");
         }
 
+        if (LOGGER.isDebugEnabled()) {
+            String debugAttributes = String.format("SAML login request attributes :\n" +
+                    "- %s: %s\n" +
+                    "- %s: %s\n" +
+                    "- %s: %s",
+                    samlConfig.attributes().email(), request.getAttribute(samlConfig.attributes().email()),
+                    samlConfig.attributes().firstName(), request.getAttribute(samlConfig.attributes().firstName()),
+                    samlConfig.attributes().lastName(), request.getAttribute(samlConfig.attributes().lastName()));
+            LOGGER.debug(debugAttributes);
+        }
+
+        String email = (String) request.getAttribute(samlConfig.attributes().email());
+
+        if (Objects.isNull(email)) {
+            throw new BadRequestException("User mail was not found in the request attributes");
+        }
+
         InternetAddress emailAddress = null;
         try {
-            emailAddress = new InternetAddress((String) request.getAttribute("mail"));
+            emailAddress = new InternetAddress(email);
         } catch (AddressException e) {
             LOGGER.error("User mail is not a valid mail address : " + request.getAttribute(samlConfig.attributes().email()), e);
             throw new RuntimeException(e);

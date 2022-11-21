@@ -10,6 +10,7 @@ package org.opensilex.core.device.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import org.apache.jena.graph.Node;
 import org.apache.jena.vocabulary.XSD;
 import org.junit.Assert;
 import org.junit.Test;
@@ -21,8 +22,14 @@ import org.opensilex.core.data.dal.DataProvenanceModel;
 import org.opensilex.core.data.dal.ProvEntityModel;
 import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.device.dal.DeviceModel;
+import org.opensilex.core.event.dal.move.MoveModel;
+import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
+import org.opensilex.core.organisation.api.FacilityApiTest;
+import org.opensilex.core.organisation.api.facility.FacilityCreationDTO;
+import org.opensilex.core.organisation.api.facility.FacilityUpdateDTO;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.provenance.api.ProvenanceAPI;
 import org.opensilex.core.provenance.api.ProvenanceCreationDTO;
 import org.opensilex.core.provenance.dal.AgentModel;
@@ -30,16 +37,19 @@ import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.variable.api.VariableApiTest;
 import org.opensilex.core.variable.api.VariableCreationDTO;
 import org.opensilex.core.variable.dal.*;
+import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.model.time.InstantModel;
 import org.opensilex.sparql.service.SPARQLService;
 
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.function.BiPredicate;
 
@@ -57,6 +67,7 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
     public String createPath = path;
     public String updatePath = path;
     public String deletePath = path + "/{uri}";
+    public String facilityPath = path + "/{uri}/facility";
 
     public String provenancePath = ProvenanceAPI.PATH;
     public String dataPath = DataAPI.PATH;
@@ -293,6 +304,49 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
         DeviceGetDetailsDTO softwareGetDTO = getResponse.getResult();
         Assert.assertTrue(softwareGetDTO.getRelations().stream().anyMatch(relation -> findRelationPredicate.test(relation, softwareGetDTO)));
     }
+
+    /*
+    class mvnTestBrice {
+        private FacilityModel createFacility(URI uri) throws Exception {
+            FacilityModel facilityModel = new FacilityModel();
+            facilityModel.setUri(uri);
+            getSparqlService().create(facilityModel);
+            return facilityModel;
+        }
+
+        private MoveModel createMove(List<URI> devices, FacilityModel fromFacility, FacilityModel toFacility, String end) throws Exception {
+            MoveModel moveModel = new MoveModel();
+            moveModel.setUri(URI.create(Oeev.Move.getURI()));
+            moveModel.setTargets(devices);
+            moveModel.setFrom(fromFacility);
+            moveModel.setTo(toFacility);
+            InstantModel endInstant = new InstantModel();
+            endInstant.setDateTimeStamp(OffsetDateTime.parse(end));
+            moveModel.setEnd(endInstant);
+            getSparqlService().create(moveModel);
+            return moveModel;
+        }
+
+        @Test
+        public void testGetAssociatedFacilityOK() throws Exception {
+            // create a device
+            DeviceCreationDTO deviceDto = getCreationDto();
+            Response postResult = getJsonPostResponseAsAdmin(target(createPath), deviceDto);
+            URI deviceUri = extractUriFromResponse(postResult);
+
+            // create facilities
+            FacilityModel facilityA = createFacility(new URI("test:facilityA"));
+            FacilityModel facilityB = createFacility(new URI("test:facilityB"));
+
+            ArrayList<URI> devices = new ArrayList<>();
+            devices.add(deviceUri);
+            MoveModel moveModel = createMove(devices, facilityA, facilityB, "10/10/2022");
+
+            Response getResult = getJsonGetByUriResponseAsAdmin(target(facilityPath), deviceUri.toString());
+            System.out.println(getResult.getStatusInfo());
+        }
+    }
+    */
 
     @Override
     protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {

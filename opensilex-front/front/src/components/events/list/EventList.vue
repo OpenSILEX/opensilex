@@ -1,20 +1,27 @@
 <template>
     <div>
         <opensilex-PageActions class="pageActions">
-        <opensilex-CreateButton
-            v-if="user.hasCredential(modificationCredentialId)"
-            label="Event.add"
-            class="createButton"
-            @click="showForm"
-        >
-        </opensilex-CreateButton>
-        <opensilex-CreateButton
-            v-if="user.hasCredential(modificationCredentialId)"
-            label="OntologyCsvImporter.import"
-            class="createButton"
-            @click="showCsvForm"
-        >
-        </opensilex-CreateButton>
+            <opensilex-CreateButton
+                v-if="user.hasCredential(modificationCredentialId)"
+                label="Event.add"
+                class="createButton"
+                @click="showForm"
+            >
+            </opensilex-CreateButton>
+            <opensilex-CreateButton
+                v-if="user.hasCredential(modificationCredentialId)"
+                label="OntologyCsvImporter.import"
+                class="createButton"
+                @click="showCsvForm"
+            >
+            </opensilex-CreateButton>
+            <opensilex-CreateButton
+                v-if="user.hasCredential(modificationCredentialId)"
+                label="EventHelpTableView.move-csv-import-title"
+                class="createButton"
+                @click="showMoveCsvForm"
+            >
+            </opensilex-CreateButton>
         </opensilex-PageActions>
 
         <opensilex-PageContent
@@ -210,6 +217,14 @@
             :targets="[this.target]"
         ></opensilex-EventCsvForm>
 
+        <opensilex-EventCsvForm
+            v-if="renderMoveCsvForm"
+            ref="moveCsvForm"
+            isMove="true"
+            @csvImported="onImport"
+            :targets="[this.target]"
+        ></opensilex-EventCsvForm>
+
         <opensilex-ModalForm
             v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
             ref="documentForm"
@@ -227,7 +242,6 @@
 <script lang="ts">
 import {Component, Prop, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
 import {EventsService} from "opensilex-core/api/events.service";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import EventModalView from "../view/EventModalView.vue";
@@ -242,6 +256,7 @@ export default class EventList extends Vue {
     @Ref("eventModalView") readonly eventModalView!: EventModalView;
     @Ref("modalForm") readonly modalForm!: EventModalForm;
     @Ref("csvForm") readonly csvForm!: EventCsvForm;
+    @Ref("moveCsvForm") readonly moveCsvForm!: EventCsvForm;
     @Ref("documentForm") readonly documentForm!: any;
 
     $opensilex: OpenSilexVuePlugin;
@@ -309,6 +324,7 @@ export default class EventList extends Vue {
 
     renderModalForm = false;
     renderCsvForm = false;
+    renderMoveCsvForm = false;
 
     data(){
     return {
@@ -327,6 +343,13 @@ export default class EventList extends Vue {
         this.renderCsvForm = true;
         this.$nextTick(() => {
             this.csvForm.show();
+        });
+    }
+
+    showMoveCsvForm(){
+        this.renderMoveCsvForm = true;
+        this.$nextTick(() => {
+            this.moveCsvForm.show();
         });
     }
 

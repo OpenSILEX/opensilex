@@ -440,9 +440,9 @@ export default class SelectForm extends Vue {
  select(value) {
     if(this.isModalSearch)  {
       // copy selected items in local variable to wait validate action and then, change the selection
-      this.selectedTmp.push(value);
+      this.selectedCopie.push(value);
 
-      this.$emit("select", value, this.selectedTmp);
+      this.$emit("select", value, this.selectedCopie);
     } 
     else {
       if (this.multiple) {
@@ -458,8 +458,9 @@ export default class SelectForm extends Vue {
   deselect(item) {
     if(this.isModalSearch)  {
       // copy selected items in local variable to wait validate action and then, change the selection
-      this.selectedTmp = this.selectedTmp.filter((value) => value.id !== item.id);
-      console.log(this.selectedTmp);
+      this.selectedCopie = this.selectedCopie.filter((value) => value.id !== item.id);
+
+      this.$emit("deselect", item);
     } 
     else {
       if (this.multiple) {
@@ -473,29 +474,28 @@ export default class SelectForm extends Vue {
   }
 
   onValidate(){
-    this.selectedCopie = this.selectedTmp.slice();
-    if(this.selectedTmp == null || this.selectedTmp.length == 0) {
+
+    if(this.selectedCopie == null || this.selectedCopie.length == 0) {
       this.loading = false;
     } else {
       this.loading = true;
     }
     setTimeout(() => { // fix :  time to close the modal .
-      this.selection = this.selectedTmp.map(value => value.id);
-      this.$emit('onValidate', this.selectedTmp);
+      this.selection = this.selectedCopie.map(value => value.id);
+      this.$emit('onValidate', this.selectedCopie);
     }, 400);
+
   }
 
-  clearSelectedModal() {
-    this.selectedTmp.forEach((item) => {
+  clearSelectedCopie() {
+    this.selectedCopie.forEach((item) => {
       this.searchModal.unSelect(item);
     });
-    this.selectedCopie = []
-    this.selectedTmp = [];
+    this.selectedCopie = [];
   }
 
   removeItem(item) {
     this.deselect(item);
-    this.selectedCopie = this.selectedTmp.slice();
     this.searchModal.unSelect(item);
   }
   
@@ -519,13 +519,13 @@ export default class SelectForm extends Vue {
     if (this.multiple) {
       if (values.length == 0) {
         this.selection.splice(0, this.selection.length);
-        this.clearSelectedModal();
+        this.clearSelectedCopie();
         this.$emit("clear");
         return;
       }
     } else if (!values) {
       this.selection = undefined;
-      this.clearSelectedModal();
+      this.clearSelectedCopie();
       this.$emit("clear");
       return;
     }

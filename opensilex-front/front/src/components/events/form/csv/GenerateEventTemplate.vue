@@ -49,11 +49,14 @@
 <script lang="ts">
 import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import {VueRDFTypePropertyDTO} from "../../../../lib";
+import {VueJsOntologyExtensionService, VueRDFTypePropertyDTO} from "../../../../lib";
+import OpenSilexVuePlugin from "../../../../models/OpenSilexVuePlugin";
 
 @Component
 export default class GenerateEventTemplate extends Vue {
-    $opensilex: any;
+    $opensilex: OpenSilexVuePlugin;
+    vueOntologyService: VueJsOntologyExtensionService;
+
     $store: any;
     $t: any;
     $i18n: any;
@@ -61,7 +64,7 @@ export default class GenerateEventTemplate extends Vue {
 
     requiredField: boolean = false;
     separator = ",";
-    types: any[] = [];
+    types: Array<string> = [];
 
     @Ref("validatorRefTemplate") readonly validatorRefTemplate!: any;
     @Ref("soModalRef") readonly soModalRef!: any;
@@ -69,6 +72,9 @@ export default class GenerateEventTemplate extends Vue {
     @Prop({default: false})
     isMove: boolean;
 
+    created(){
+       this.vueOntologyService = this.$opensilex.getService("opensilex-front.VueJsOntologyExtensionService");
+    }
 
     get user() {
         return this.$store.state.user;
@@ -134,11 +140,10 @@ export default class GenerateEventTemplate extends Vue {
     }
 
     getTypesPromises() {
-        let ontoService = this.$opensilex.getService("opensilex-front.VueJsOntologyExtensionService");
         let promises = [];
 
         for (let type of this.types) {
-            let typePromise = ontoService.getRDFTypeProperties(type, this.$opensilex.Oeev.EVENT_TYPE_URI)
+            let typePromise = this.vueOntologyService.getRDFTypeProperties(type, this.$opensilex.Oeev.EVENT_TYPE_URI)
                 .then(http => {
 
                     let result = {
@@ -188,7 +193,7 @@ export default class GenerateEventTemplate extends Vue {
             this.getPropertyDescription("component.common.description", false),
         ];
 
-        if (this.isMove) {
+        if (this.generateMoveTemplate()) {
             managedProperties.push(this.$opensilex.Oeev.FROM, this.$opensilex.Oeev.TO);
 
             headers.push("from", "to", "coordinates", "x", "y", "z", "textualPosition");
@@ -269,7 +274,7 @@ export default class GenerateEventTemplate extends Vue {
 
                     let data = this.generateCSV(results)
 
-                    let templateName = this.isMove ? "move" : "event";
+                    let templateName = this.generateMoveTemplate() ? "move" : "event";
                     templateName += "_template_" + new Date().getTime();
 
                     this.$papa.download(this.$papa.unparse(data, {delimiter: this.separator}), templateName);
@@ -289,6 +294,24 @@ export default class GenerateEventTemplate extends Vue {
             label = this.$t(type.label_key);
         }
         return label.charAt(0).toUpperCase() + label.slice(1);
+    }
+
+    generateMoveTemplate() : boolean {
+        // parent component explicit use this component for move template
+        if (this.isMove) {
+            return true;
+        }
+
+        if (this.types.length == 0) {
+            return false;
+        }
+
+        for (const type of this.types) {
+            if (this.$opensilex.Oeev.checkURIs(type, this.$opensilex.Oeev.MOVE_TYPE_URI)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
 </script>

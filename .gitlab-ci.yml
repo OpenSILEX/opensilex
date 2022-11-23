@@ -152,6 +152,13 @@ variables:
   image: instrumentisto/rsync-ssh
   script:
     - apk add curl git
+    # - If there is no release branch, then develop is deployed
+    # - Otherwise, nothing is deployed 
+    - |
+      if git ls-remote --exit-code --heads origin release && [[ "$CI_COMMIT_BRANCH" == "develop" ]]; then
+        echo 'Branch release exists, cannot deploy develop';
+        exit 0;
+      fi
     - rm -R $CI_PROJECT_DIR/opensilex-dev-tools
     - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@forgemia.inra.fr/OpenSILEX/opensilex-dev-tools.git --branch master $CI_PROJECT_DIR/opensilex-dev-tools
     - ls $CI_PROJECT_DIR/opensilex-dev-tools
@@ -251,62 +258,66 @@ merge-request:build:
 ### TEST DEPLOYMENTS
 ####################
 
-# Trigger pipeline for deployment of the master branch
-trigger:opensilex-master:deploy:test:
-  stage: deploy
-  image: curlimages/curl
-  script:
-    - curl --request POST --form "variables[DEPLOY]=opensilex-master" --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$CI_COMMIT_SHA" --form "variables[OPENSILEX_APP_REVISION]=$OPENSILEX_APP_REVISION" https://forgemia.inra.fr/api/v4/projects/403/trigger/pipeline
+#  Deployment of the master branch
+test:opensilex-master:deploy:
+  <<: *deploy_opensilex_before_script
+  <<: *deploy_opensilex_template
+  variables:
+    CONFIGS_FILES_DIR_PATH: "$DEV_TOOLS_REPO_CONF_FILES_PATH/mistea/master"
+    INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
+    OPENSILEX_JAR_ADMIN_PORT: 4085
+    OPENSILEX_JAR_PORT: 8085
+    REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
+    REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
+    REMOTE_SERVER_RSYNC_DIR: "mistea/master"
+    REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   rules:
     - if: $CI_COMMIT_BRANCH == "master"
+      when: on_success
   needs:
-    - job: "opensilex-master:build"
-
-# Trigger pipeline for sixtine module deployment
-trigger:sixtine:build:
-  stage: deploy
-  image: curlimages/curl
-  script:
-    - curl --request POST --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[OPENSILEX_APP_REVISION]=$OPENSILEX_APP_REVISION" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$CI_COMMIT_SHA" https://forgemia.inra.fr/api/v4/projects/1757/trigger/pipeline
-  rules:
-    - if: $CI_COMMIT_BRANCH == "master"
-  needs:
-    - job: "opensilex-master:build"
+    - opensilex-master:build
+ 
 
 # Trigger pipeline for the deployment of the develop branch
 # - If there is no release branch, then develop is deployed
-# - Otherwise, nothing is deployed
-trigger:opensilex-develop:deploy:test:
-  stage: deploy
-  image: alpine
-  script:
-    - apk update
-    - apk add git
-    - apk add curl
-    - if ! git ls-remote --exit-code --heads origin release; then
-    -   echo 'Deploying develop'
-    -   curl --request POST --form "variables[DEPLOY]=opensilex-develop" --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$CI_COMMIT_SHA" --form "variables[OPENSILEX_APP_REVISION]=$OPENSILEX_APP_REVISION" https://forgemia.inra.fr/api/v4/projects/403/trigger/pipeline
-    - else
-    -   echo 'Branch release exists, cannot deploy develop'
-    - fi
+# - Otherwise, nothing is deployed 
+#  see deploy_opensilex_template script
+test:opensilex-develop:deploy:
+  <<: *deploy_opensilex_before_script
+  <<: *deploy_opensilex_template
+  variables:
+    CONFIGS_FILES_DIR_PATH: "$DEV_TOOLS_REPO_CONF_FILES_PATH/mistea/develop"
+    INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
+    OPENSILEX_JAR_ADMIN_PORT: 4081
+    OPENSILEX_JAR_PORT: 28081
+    REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
+    REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
+    REMOTE_SERVER_RSYNC_DIR: "mistea/develop"
+    REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   rules:
     - if: $CI_COMMIT_BRANCH == "develop"
+      when: on_success
   needs:
-    - job: "opensilex-develop:build"
+    - opensilex-develop:build
 
-# Trigger pipeline for the deployment of the release branch
-trigger:opensilex-release:deploy:test:
-  stage: deploy
-  image: alpine
-  script:
-    - apk update
-    - apk add curl
-    - echo 'Deploying release'
-    - curl --request POST --form "variables[DEPLOY]=opensilex-release" --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$CI_COMMIT_SHA" --form "variables[OPENSILEX_APP_REVISION]=$OPENSILEX_APP_REVISION" https://forgemia.inra.fr/api/v4/projects/403/trigger/pipeline
+# Deployment of the release branch
+test:opensilex-release:deploy:
+  <<: *deploy_opensilex_before_script
+  <<: *deploy_opensilex_template
+  variables:
+    REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
+    REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
+    REMOTE_SERVER_RSYNC_DIR: "mistea/release"
+    CONFIGS_FILES_DIR_PATH: "$DEV_TOOLS_REPO_CONF_FILES_PATH/mistea/release"
+    INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
+    REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
+    OPENSILEX_JAR_ADMIN_PORT: 4081
+    OPENSILEX_JAR_PORT: 8081
   rules:
     - if: $CI_COMMIT_BRANCH == "release"
+      when: on_success
   needs:
-    - job: "opensilex-release:build"
+    - opensilex-release:build
 
 #################
 ### CLOSE RELEASE
@@ -442,18 +453,6 @@ opensilex-release:publish:
       artifacts: true
 
 
-# Trigger pipeline for data-analysis module deployment
-#trigger:dataanalysis:deploy:test:
-#  stage: deploy
-#  image: curlimages/curl
-#  script:
-#    - sleep 10
-#    - curl --request POST --form "token=$CI_JOB_TOKEN" --form "ref=master" --form "variables[COMMIT_SHA_OPENSILEX_DEV]=$CI_COMMIT_SHA" #https://forgemia.inra.fr/api/v4/projects/2076/trigger/pipeline
-#  rules:
-#    - if: $CI_COMMIT_BRANCH == "master"
-#  needs:
-#    - job: "opensilex:build"
-
 # Update nightly builds branch
 update:nightly:builds:branch:
   stage: build
@@ -464,10 +463,10 @@ update:nightly:builds:branch:
     - git remote set-url origin "https://oauth2:$GITLAB_USER_CI_PAT@forgemia.inra.fr/OpenSILEX/opensilex-dev.git"
     - if [  -z "`git show-ref refs/heads/nightly-builds`" ]; then  echo 'branch nightly-builds will be created!' &&  git checkout -b nightly-builds; else git checkout nightly-builds ;fi
     - git fetch origin
-    - git reset --hard origin/master
+    - git reset --hard origin/develop
     - git push -f origin nightly-builds
   rules:
-    - if: $CI_COMMIT_BRANCH == "master"
+    - if: $CI_COMMIT_BRANCH == "develop"
 
 ###############################################
 ##  BUILD - TESTS WITH DIFFERENT MAVEN VERSIONS

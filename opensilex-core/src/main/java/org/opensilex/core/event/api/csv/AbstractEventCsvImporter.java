@@ -126,7 +126,7 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
 
     protected List<URI> readCustomHeader(String[] header) throws Exception {
 
-        URI eventUri = new URI(Oeev.Event.getURI());
+        URI eventTypeURI = new URI(Oeev.Event.getURI());
 
         int propsBeginIndex = getHeader().size();
         List<URI> customProperties = new ArrayList<>();
@@ -137,23 +137,34 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
 
             if(StringUtils.isEmpty(property)){
                 validation.addInvalidHeaderURI(i,property);
-            }else{
-                URI propertyUri = URIDeserializer.formatURI(property);
+                continue;
+            }
+
+            try{
+                // ensure URI is well formatted, else an error will be encountered during property retrieval
+                URI propertyUri = URIDeserializer.formatURI(new URI(property));
+                if(! propertyUri.isAbsolute()){
+                    validation.addInvalidHeaderURI(i,property);
+                    continue;
+                }
 
                 // searching for a data-type or object-type property
-                PropertyModel propertyModel = ontologyDAO.getDataProperty(propertyUri,eventUri,this.user.getLanguage());
+                PropertyModel propertyModel = ontologyDAO.getDataProperty(propertyUri,eventTypeURI,this.user.getLanguage());
                 if(propertyModel == null){
-                    propertyModel = ontologyDAO.getObjectProperty(propertyUri,eventUri,this.user.getLanguage());
+                    propertyModel = ontologyDAO.getObjectProperty(propertyUri,eventTypeURI,this.user.getLanguage());
                     if(propertyModel == null){
-                        CSVCell csvCell = new CSVCell(0, i, null, property);
-                        validation.addInvalidURIError(csvCell);
+                        validation.addInvalidHeaderURI(i,property);
                     }
                 }
 
                 if(propertyModel != null){
                     customProperties.add(propertyUri);
                 }
+            }catch (URISyntaxException e){
+                // error on URI parsing
+                validation.addInvalidHeaderURI(i,property);
             }
+
         }
 
         return customProperties;

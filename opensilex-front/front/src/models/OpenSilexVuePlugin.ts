@@ -823,12 +823,16 @@ export default class OpenSilexVuePlugin {
     }
 
     /**
-     * 
+     * Performs an HTTP call to the specified upload service with the given file and API query params.
+     * @example
+     * uploadFileToService("/core/scientific_object/import_csv", {description: {}, file: csvFile}, {custom_upload_setting : "custom_value"}, false)
+     *
      * @param servicePath a string defines path which will
-     *  be combine with api base path. e.g. "/data-analysis/scientific-app/create"
-     * @param body description and file key are mandatory : 
-     *  {description  : {"name" :"filename",....}, file : File Object}
-     *  @see UploadFile interface
+     * be combined with api base path. e.g. "/data-analysis/scientific-app/create" (required)
+     * @param body description and file key are mandatory
+     * @param queryParams Any object that define additional settings which are specific to the called API (optional)
+     * @param isUpdated Determine if the called HTTP API accept POST (isUpdated=true or undefined) or PUT(isUpdated=false) HTTP method (optional)
+     *
      */
     uploadFileToService(servicePath: string, body: UploadFileBody, queryParams: any, isUpdated?: boolean) {
         let formData = new FormData();
@@ -845,7 +849,6 @@ export default class OpenSilexVuePlugin {
             }
         }
 
-        console.debug("POST request body", body, JSON.stringify(body));
         let headers = {};
         let user: User = this.getUser();
         if (user != User.ANONYMOUS()) {
@@ -889,7 +892,6 @@ export default class OpenSilexVuePlugin {
             if (paramsSize > 0) {
                 url = url + "?" + params.toString();
             }
-            console.debug("Query parameters", queryParams, "Generated URL", url)
         }
 
         this.showLoader();
@@ -897,7 +899,6 @@ export default class OpenSilexVuePlugin {
             let promise = fetch(url, options)
                 .then(response => response.json())
                 .then((http) => {
-                    console.debug("uploaded file result", http);
                     return http;
                 });
 
@@ -914,11 +915,17 @@ export default class OpenSilexVuePlugin {
     }
 
     /**
-    * @param servicePath a string defines path which will
-    *  be combine with api base path. e.g. "/data-analysis/get/{uri}/download"
-    * @param name name of the returned file
-    * @param extension extension of the file
-    */
+     * Performs an HTTP call to the specified download service with the given file and API query params.
+     *
+     * @example
+     * uploadFileToService("/core/scientific_object/export_csv", "os_export","csv", {custom_download_setting : "custom_value"})
+     *
+     * @param servicePath a string defines path which will
+     * be combined with api base path. e.g. "/data-analysis/get/{uri}/download" (required)
+     * @param name name of the returned file (required)
+     * @param extension extension of the file (required)
+     * @param queryParams Any object that define additional settings which are specific to the called API (optional)
+     */
     downloadFilefromService(servicePath: string, name: string, extension: string, queryParams: any) {
         return this.downloadFilefromPostOrGetService(servicePath, name, extension, "GET", queryParams, null)
     }

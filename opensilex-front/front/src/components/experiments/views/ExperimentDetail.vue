@@ -247,7 +247,10 @@ export default class ExperimentDetail extends Vue {
     return this.experiment.facilities.map(facility => {
       return {
         uri: facility.uri,
-        value: facility.name
+        value: facility.name,
+        to: {
+          path: "/facility/details/" + encodeURIComponent(facility.uri),
+        }
       }
     });
   }

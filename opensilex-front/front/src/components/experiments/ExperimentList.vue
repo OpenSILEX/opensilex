@@ -68,6 +68,20 @@
                 </opensilex-FilterField>
               </div>
 
+              <!-- Facilities -->
+              <div>
+                <opensilex-FilterField>
+                  <opensilex-SelectForm
+                      label="ExperimentList.filter-facilities"
+                      placeholder="ExperimentList.filter-facilities-placeholder"
+                      :multiple="true"
+                      :selected.sync="filter.facilities"
+                      :options="facilities"
+                      class="searchFilter"
+                  ></opensilex-SelectForm>
+                </opensilex-FilterField>
+              </div>
+
               <!-- Year -->
               <div>
                 <opensilex-FilterField>
@@ -243,6 +257,8 @@ import Vue from "vue";
 import {SpeciesDTO, SpeciesService} from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {User} from "../../models/User";
+import {OrganizationsService} from "opensilex-core/api/organizations.service";
+import {FacilityGetDTO} from "opensilex-core/index";
 
 @Component
 export default class ExperimentList extends Vue {
@@ -276,6 +292,7 @@ export default class ExperimentList extends Vue {
     return this.$store.state.credentials;
   }
 
+  facilities = [];
   species = [];
   speciesByUri: Map<String, SpeciesDTO> = new Map<String, SpeciesDTO>();
 
@@ -300,6 +317,7 @@ export default class ExperimentList extends Vue {
     projects: [],
     yearFilter: undefined,
     state: "",
+    facilities: [],
   };
 
 
@@ -311,6 +329,7 @@ export default class ExperimentList extends Vue {
       projects: [],
       yearFilter: undefined,
       state: "",
+      facilities: [],
     };   
     this.refresh();
   }
@@ -352,6 +371,7 @@ export default class ExperimentList extends Vue {
         this.filter.factorCategories, // factorCategories
         this.filter.projects, // projects
         isPublic, // isPublic
+        this.filter.facilities,
         options.orderBy,
         options.currentPage,
         options.pageSize
@@ -362,6 +382,7 @@ export default class ExperimentList extends Vue {
 
   created() {
     this.loadSpecies();
+    this.loadFacilities();
     this.refreshStateLabel();
     this.$opensilex.updateFiltersFromURL(this.$route.query, this.filter);
   }
@@ -373,6 +394,7 @@ export default class ExperimentList extends Vue {
       (lang) => {
         this.refreshStateLabel();
         this.loadSpecies();
+        this.loadFacilities();
         this.$opensilex.loadFactorCategories();
         this.refresh();
       }
@@ -429,6 +451,24 @@ export default class ExperimentList extends Vue {
         }
       })
       .catch(this.$opensilex.errorHandler);
+  }
+
+  loadFacilities() {
+    let service: OrganizationsService = this.$opensilex.getService(
+        "opensilex.OrganizationsService"
+    );
+    service
+        .getAllFacilities()
+        .then((http: HttpResponse<OpenSilexResponse<Array<FacilityGetDTO>>>) => {
+          this.facilities = [];
+          for (let i = 0; i < http.response.result.length; i++) {
+            this.facilities.push({
+              id: http.response.result[i].uri,
+              label: http.response.result[i].name,
+            });
+          }
+        })
+        .catch(this.$opensilex.errorHandler);
   }
 
   getSpeciesName(uri: String): String {
@@ -560,6 +600,8 @@ en:
     filter-year-placeholder: Enter a year
     filter-species: Species
     filter-species-placeholder: Select one or more species
+    filter-facilities: Facilities
+    filter-facilities-placeholder: Select one or more facilities
     filter-project: Project
     filter-project-placeholder: Select a project
     filter-state: State
@@ -577,6 +619,8 @@ fr:
     filter-year-placeholder: Saisir une année
     filter-species: Espèces
     filter-species-placeholder: Sélectionner une ou plusieurs espèces
+    filter-facilities: Infrastructures environnementales
+    filter-facilities-placeholder: Sélectionner une ou plusieurs infrastructure
     filter-project: Projet
     filter-project-placeholder: Sélectionner un projet
     filter-state: Etat

@@ -58,6 +58,7 @@
           :type="selectedFacilityOrDefault.rdf_type"
           :typeLabel="selectedFacilityOrDefault.rdf_type_name"
       ></opensilex-TypeView>
+
       <!-- Organisations -->
       <opensilex-UriListView
           v-if="hasOrganizations"
@@ -73,6 +74,24 @@
           label="FacilityDetail.site"
           :list="siteUriList"
           :inline="false"
+      >
+      </opensilex-UriListView>
+
+      <!-- Experiments -->
+      <opensilex-UriListView
+          v-if="hasExperiments"
+          label="FacilityDetail.expsInProgress"
+          :list="experimentUriList"
+          :inline="false"
+      >
+      </opensilex-UriListView>
+
+      <!-- Devices -->
+      <opensilex-UriListView
+          v-if="hasDevices"
+          label="FacilityDetail.devices"
+          :list="deviceUriList"
+          :inline="true"
       >
       </opensilex-UriListView>
 
@@ -125,6 +144,8 @@ import Vue from "vue";
 import {Prop, Ref, Watch} from "vue-property-decorator";
 import DTOConverter from "../../models/DTOConverter";
 import { FacilityGetDTO } from 'opensilex-core/index';
+import {ExperimentGetListDTO} from "opensilex-core/model/experimentGetListDTO";
+import {DeviceGetDTO} from "opensilex-core/model/deviceGetDTO";
 
 @Component
 export default class FacilityDetail extends Vue {
@@ -132,6 +153,10 @@ export default class FacilityDetail extends Vue {
 
   @Prop()
   selected: FacilityGetDTO;
+  @Prop()
+  experiments: Array<ExperimentGetListDTO>;
+  @Prop()
+  devices: Array<DeviceGetDTO>;
 
   @Prop({
     default: false
@@ -171,6 +196,14 @@ export default class FacilityDetail extends Vue {
     return !!this.selected && this.selected.organizations.length > 0;
   }
 
+  get hasExperiments() {
+    return !!this.experiments && this.experiments.length > 0;
+  }
+
+  get hasDevices() {
+    return !!this.devices && this.devices.length > 0;
+  }
+
   get hasSites() {
     return !!this.selected && this.selected.sites.length > 0;
   }
@@ -179,12 +212,45 @@ export default class FacilityDetail extends Vue {
     if (!this.selected) {
       return [];
     }
+
     return this.selected.organizations.map(org => {
       return {
         uri: org.uri,
         value: org.name,
         to: {
           path: "/infrastructure/details/" + encodeURIComponent(org.uri),
+        },
+      };
+    });
+  }
+
+  get experimentUriList() {
+    if (!this.experiments) {
+      return [];
+    }
+
+    return this.experiments.map(exp => {
+      return {
+        uri: exp.uri,
+        value: exp.name,
+        to: {
+          path: "/experiment/details/" + encodeURIComponent(exp.uri),
+        },
+      };
+    });
+  }
+
+  get deviceUriList() {
+    if (!this.devices) {
+      return [];
+    }
+
+    return this.devices.map(device => {
+      return {
+        uri: device.uri,
+        value: device.name,
+        to: {
+          path: "/device/details/" + encodeURIComponent(device.uri),
         },
       };
     });
@@ -357,12 +423,16 @@ export default class FacilityDetail extends Vue {
 en:
   FacilityDetail:
     organizations: Organizations
+    expsInProgress: Experiments in progress
+    devices: Devices
     site: "Site"
     address: "Address"
     noGeometryWarning: No geometry was associated with the address. Maybe the address is invalid.
 fr:
   FacilityDetail:
     organizations: Organisations
+    expsInProgress: Experiences en cours
+    devices: Dispositifs
     site: "Site"
     address: "Adresse"
     noGeometryWarning: Aucune géométrie n'a pu être déterminée à partir de l'adresse. L'adresse est peut-être invalide.

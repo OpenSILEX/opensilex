@@ -1,5 +1,6 @@
 package org.opensilex.core.device.api;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -22,9 +23,12 @@ import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.device.dal.DeviceModel;
+import org.opensilex.core.device.dal.DeviceSearchFilter;
 import org.opensilex.core.exception.UnableToParseDateException;
 import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
+import org.opensilex.core.organisation.api.facility.FacilityGetDTO;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.sparql.csv.DefaultCsvImporter;
 import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
@@ -41,6 +45,9 @@ import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.server.rest.validation.ValidURI;
+import org.opensilex.sparql.deserializer.SPARQLDeserializer;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.service.SPARQLService;
@@ -61,6 +68,7 @@ import java.io.StringWriter;
 import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.time.zone.ZoneRulesException;
@@ -166,6 +174,7 @@ public class DeviceAPI {
             @ApiParam(value = "Variable", example = DEVICE_EXAMPLE_VARIABLE) @QueryParam("variable") @ValidURI URI variable,
             @ApiParam(value = "Search by year", example = DEVICE_EXAMPLE_YEAR) @QueryParam("year")  @Min(999) @Max(10000) Integer year,
             @ApiParam(value = "Date to filter device existence") @QueryParam("existence_date") LocalDate existenceDate,
+            @ApiParam(value = "Search by facility", example = "http://example.com") @QueryParam("facility") @ValidURI URI facility,
             @ApiParam(value = "Regex pattern for filtering by brand", example = ".*") @DefaultValue("") @QueryParam("brand") String brand,
             @ApiParam(value = "Regex pattern for filtering by model", example = ".*") @DefaultValue("") @QueryParam("model") String model,
             @ApiParam(value = "Regex pattern for filtering by serial number", example = ".*") @DefaultValue("") @QueryParam("serial_number") String serialNumber,
@@ -184,24 +193,47 @@ public class DeviceAPI {
         }
         
         DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
-        ListWithPagination<DeviceModel> devices = dao.search(name,
-            rdfType,
-            includeSubTypes,
-            variable,
-            year,
-            existenceDate,
-            brand,
-            model,
-            serialNumber,
-            metadataFilter,
-            currentUser,
-            orderByList,
-            page,
-            pageSize);
+
+        DeviceSearchFilter filter = new DeviceSearchFilter()
+                .setRdfType(rdfType)
+                .setIncludeSubTypes(includeSubTypes)
+                .setNamePattern(name)
+                .setVariable(variable)
+                .setYear(year)
+                .setExistenceDate(existenceDate)
+                .setBrandPattern(brand)
+                .setModelPattern(model)
+                .setSnPattern(serialNumber)
+                .setMetadata(metadataFilter)
+                .setCurrentUser(currentUser);
+        filter.setOrderByList(orderByList)
+                .setPage(page)
+                .setPageSize(pageSize);
+
+        ListWithPagination<DeviceModel> devices = dao.search(filter);
+
+        if (facility != null) {
+            List<DeviceModel> resultList = new ArrayList<>();
+
+            devices.getList().forEach((device) -> {
+                try {
+                    FacilityModel facilityModel = dao.getAssociatedFacility(device.getUri(), currentUser);
+                    if (facilityModel != null) {
+                        if (SPARQLDeserializers.compareURIs(facility, facilityModel.getUri())) {
+                            resultList.add(device);
+                        }
+                    }
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            });
+
+            devices = new ListWithPagination<>(resultList);
+        }
 
         ListWithPagination<DeviceGetDTO> dtoList = devices.convert(DeviceGetDTO.class, DeviceGetDTO::getDTOFromModel);
 
-        return new PaginatedListResponse<DeviceGetDTO>(dtoList).getResponse();
+        return new PaginatedListResponse<>(dtoList).getResponse();
     }
     
     @GET
@@ -425,21 +457,22 @@ public class DeviceAPI {
 
         // Search device with device DAO
         DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
-        List<DeviceModel> resultList = dao.searchForExport(
-            name,
-            rdfType,
-            includeSubTypes,
-            year,
-            existenceDate,
-            brand,
-            model,
-            serialNumber,
-            metadataFilter,
-            currentUser
-        );
+
+        DeviceSearchFilter filter = new DeviceSearchFilter()
+                .setNamePattern(name)
+                .setRdfType(rdfType)
+                .setIncludeSubTypes(includeSubTypes)
+                .setYear(year)
+                .setExistenceDate(existenceDate)
+                .setBrandPattern(brand)
+                .setModelPattern(model)
+                .setSnPattern(serialNumber)
+                .setMetadata(metadataFilter)
+                .setCurrentUser(currentUser);
+
+        List<DeviceModel> resultList = dao.searchForExport(filter);
 
         return buildCSV(resultList);
-
     }
     
     @POST
@@ -938,6 +971,31 @@ public class DeviceAPI {
         List<ProvenanceModel> provenances = dataDAO.getProvenancesByDevice(currentUser, uri, DataDAO.FILE_COLLECTION_NAME);
         List<ProvenanceGetDTO> dtoList = provenances.stream().map(ProvenanceGetDTO::fromModel).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();
+    }
+
+    @GET
+    @Path("{uri}/facility")
+    @ApiOperation("Get device facility")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return facility where the device is set", response = FacilityGetDTO.class)
+    })
+    public Response getDeviceFacility(
+            @ApiParam(value = "Device URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
+    ) throws Exception {
+
+        DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
+
+        FacilityGetDTO facility = null;
+
+        FacilityModel facilityModel = dao.getAssociatedFacility(uri, currentUser);
+        if (facilityModel != null) {
+            facility = FacilityGetDTO.getDTOFromModel(facilityModel, true);
+        }
+
+        return new SingleObjectResponse<>(facility).getResponse();
     }
 
 }

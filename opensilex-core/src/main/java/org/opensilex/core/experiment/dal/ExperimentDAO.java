@@ -159,22 +159,13 @@ public class ExperimentDAO {
 
     }
 
-    public ListWithPagination<ExperimentModel> search(
-            Integer year,
-            String name,
-            List<URI> species,
-            List<URI> factorCategories,
-            Boolean isEnded,
-            List<URI> projects,
-            Boolean isPublic,
-            UserModel user,
-            List<OrderBy> orderByList, int page, int pageSize) throws Exception {
+    public ListWithPagination<ExperimentModel> search(ExperimentSearchFilter filter) throws Exception {
         LocalDate startDate;
         LocalDate endDate;
-        if (year != null) {
-            String yearString = Integer.toString(year);
-            startDate = LocalDate.of(year, 1, 1);
-            endDate = LocalDate.of(year, 12, 31);
+        if (filter.getYear() != null) {
+            String yearString = Integer.toString(filter.getYear());
+            startDate = LocalDate.of(filter.getYear(), 1, 1);
+            endDate = LocalDate.of(filter.getYear(), 12, 31);
         } else {
             startDate = null;
             endDate = null;
@@ -184,18 +175,19 @@ public class ExperimentDAO {
                 ExperimentModel.class,
                 null,
                 (SelectBuilder select) -> {
-                    appendRegexLabelFilter(select, name);
-                    appendSpeciesFilter(select, species);
-                    appendFactorFilter(select, factorCategories);
-                    appendIsActiveFilter(select, isEnded);
+                    appendRegexLabelFilter(select, filter.getName());
+                    appendSpeciesFilter(select, filter.getSpecies());
+                    appendFactorFilter(select, filter.getFactorCategories());
+                    appendIsActiveFilter(select, filter.isEnded());
                     appendDateFilter(select, startDate, endDate);
-                    appendProjectListFilter(select, projects);
-                    appendUserExperimentsFilter(select, user);
-                    appendPublicFilter(select, isPublic);
+                    appendProjectListFilter(select, filter.getProjects());
+                    appendUserExperimentsFilter(select, filter.getUser());
+                    appendPublicFilter(select, filter.isPublic());
+                    appendFacilitiesFilter(select, filter.getFacilities());
                 },
-                orderByList,
-                page,
-                pageSize
+                filter.getOrderByList(),
+                filter.getPage(),
+                filter.getPageSize()
         );
 
         return xps;
@@ -206,6 +198,13 @@ public class ExperimentDAO {
         if (species != null && !species.isEmpty()) {
             addWhere(select, ExperimentModel.URI_FIELD, Oeso.hasSpecies, ExperimentModel.SPECIES_FIELD);
             select.addFilter(SPARQLQueryHelper.inURIFilter(ExperimentModel.SPECIES_FIELD, species));
+        }
+    }
+
+    private void appendFacilitiesFilter(SelectBuilder select, List<URI> facilities) throws Exception {
+        if (facilities != null && !facilities.isEmpty()) {
+            addWhere(select, ExperimentModel.URI_FIELD, Oeso.usesFacility, ExperimentModel.FACILITY_FIELD);
+            select.addFilter(SPARQLQueryHelper.inURIFilter(ExperimentModel.FACILITY_FIELD, facilities));
         }
     }
 

@@ -33,7 +33,7 @@
           ></opensilex-StringFilter><br>
         </div>
 
-      <!-- Type --> 
+        <!-- Type -->
         <div>
           <opensilex-TypeForm
             :type.sync="filter.rdf_type"
@@ -62,6 +62,18 @@
             type="number"
             class="searchFilter"
           ></opensilex-StringFilter><br>
+        </div>
+
+        <!-- Facilities -->
+        <div>
+            <opensilex-SelectForm
+                label="DeviceList.filter.facility"
+                placeholder="DeviceList.filter.facility-placeholder"
+                :multiple="false"
+                :selected.sync="filter.facility"
+                :options="facilities"
+                class="searchFilter"
+            ></opensilex-SelectForm>
         </div>
 
         <!-- Brand --> 
@@ -240,6 +252,8 @@ import {DevicesService, DeviceGetDetailsDTO} from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
 import EventCsvForm from "../events/form/csv/EventCsvForm.vue";
 import DeviceModalForm from "./form/DeviceModalForm.vue";
+import {OrganizationsService} from "opensilex-core/api/organizations.service";
+import {FacilityGetDTO} from "opensilex-core/index";
 
 @Component
 export default class DeviceList extends Vue {
@@ -258,6 +272,8 @@ export default class DeviceList extends Vue {
 
     selectedUris: Array<string> = [];
     SearchFiltersToggle: boolean = false;
+
+    facilities = [];
 
     get user() {
         return this.$store.state.user;
@@ -284,6 +300,7 @@ export default class DeviceList extends Vue {
         variable: undefined,
         start_up: undefined,
         existence_date: undefined,
+        facility: undefined,
         brand: undefined,
         model: undefined,
         metadataKey: undefined,
@@ -309,6 +326,7 @@ export default class DeviceList extends Vue {
             variable: undefined,
             start_up: undefined,
             existence_date: undefined,
+            facility: undefined,
             brand: undefined,
             model: undefined,
             metadataKey: undefined,
@@ -332,6 +350,7 @@ export default class DeviceList extends Vue {
 
     created() {
         this.service = this.$opensilex.getService("opensilex.DevicesService");
+        this.loadFacilities();
         this.$opensilex.updateFiltersFromURL(this.$route.query, this.filter);
     }
 
@@ -399,6 +418,7 @@ export default class DeviceList extends Vue {
             this.filter.variable, // variable filter
             this.filter.start_up, // year filter
             this.filter.existence_date, // existence_date filter
+            this.filter.facility, // facility filter
             this.filter.brand, // brand filter
             this.filter.model, // model filter
             undefined, // serial_number filter
@@ -568,6 +588,24 @@ export default class DeviceList extends Vue {
         this.exportFilter.metadata = this.addMetadataFilter();
     }
 
+    loadFacilities() {
+      let service: OrganizationsService = this.$opensilex.getService(
+          "opensilex.OrganizationsService"
+      );
+      service
+          .getAllFacilities()
+          .then((http: HttpResponse<OpenSilexResponse<Array<FacilityGetDTO>>>) => {
+            this.facilities = [];
+            for (let i = 0; i < http.response.result.length; i++) {
+              this.facilities.push({
+                id: http.response.result[i].uri,
+                label: http.response.result[i].name,
+              });
+            }
+          })
+          .catch(this.$opensilex.errorHandler);
+    }
+
     searchFiltersPannel() {
         return  this.$t("searchfilter.label")
     }
@@ -621,6 +659,8 @@ en:
             variable-placeholder: Select a variable
             start_up: Start up
             start_up-placeholder: Enter year
+            facility: Facility
+            facility-placeholder: Select a facility
             brand: Brand
             brand-placeholder: Enter brand
             model: Constructor model
@@ -661,6 +701,8 @@ fr:
             variable-placeholder: Sélectionner une variable
             start_up: Date d'obtention
             start_up-placeholder: Entrer une année
+            facility: Infrastructure environnementale
+            facility-placeholder: Sélectionner une infrastructure
             brand: Marque
             brand-placeholder: Entrer une marque
             model: Modèle constructeur

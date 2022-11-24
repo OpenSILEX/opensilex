@@ -3,7 +3,7 @@ version: "3.5"
 services:
    rdf4j:
       container_name: opensilex-rdf4j
-      image: eclipse/rdf4j-workbench:amd64-3.5.0
+      image: eclipse/rdf4j-workbench:3.7.7
       networks:
          - backend
       ports:

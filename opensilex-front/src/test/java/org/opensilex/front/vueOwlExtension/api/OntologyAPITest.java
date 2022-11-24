@@ -11,9 +11,11 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.jena.vocabulary.OWL2;
 import org.apache.jena.vocabulary.XSD;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.ontology.api.OWLClassPropertyRestrictionDTO;
 import org.opensilex.core.ontology.api.OntologyAPI;
 import org.opensilex.core.ontology.api.RDFPropertyDTO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
@@ -43,6 +45,8 @@ public class OntologyAPITest extends AbstractSecurityIntegrationTest {
     String searchSubClassOfPath = OntologyAPI.PATH + "/" + OntologyAPI.SEARCH_SUB_CLASS_OF_PATH;
 
     String propertyPath = OntologyAPI.PATH + "/" + OntologyAPI.PROPERTY_PATH;
+
+    String addRestrictionPath = OntologyAPI.PATH + "/" + OntologyAPI.RDF_TYPE_PROPERTY_RESTRICTION;
 
     @BeforeClass
     public static void setup() throws Exception {
@@ -126,27 +130,27 @@ public class OntologyAPITest extends AbstractSecurityIntegrationTest {
         ResourceTreeDTO root = tree.get(0);
 
         // try to find all parent and children from tree
-        ResourceTreeDTO parent1FromDb = root.getChildren().stream().filter(resourceTreeDTO -> SPARQLDeserializers.compareURIs(resourceTreeDTO.getUri(),parent1.getUri()))
+        ResourceTreeDTO parent1FromDb = root.getChildren().stream().filter(resourceTreeDTO -> SPARQLDeserializers.compareURIs(resourceTreeDTO.getUri(), parent1.getUri()))
                 .findFirst().get();
 
-        ResourceTreeDTO child11FromDb =  parent1FromDb.getChildren().stream()
-                .filter(resourceTreeDTO -> SPARQLDeserializers.compareURIs(resourceTreeDTO.getUri(),child11.getUri()))
+        ResourceTreeDTO child11FromDb = parent1FromDb.getChildren().stream()
+                .filter(resourceTreeDTO -> SPARQLDeserializers.compareURIs(resourceTreeDTO.getUri(), child11.getUri()))
                 .findFirst().get();
 
-        ResourceTreeDTO child12FromDb =  parent1FromDb.getChildren().stream()
-                .filter(resourceTreeDTO -> SPARQLDeserializers.compareURIs(resourceTreeDTO.getUri(),child12.getUri()))
+        ResourceTreeDTO child12FromDb = parent1FromDb.getChildren().stream()
+                .filter(resourceTreeDTO -> SPARQLDeserializers.compareURIs(resourceTreeDTO.getUri(), child12.getUri()))
                 .findFirst().get();
 
 
-        ResourceTreeDTO parent2FromDb = root.getChildren().stream().filter(resourceTreeDTO -> SPARQLDeserializers.compareURIs(resourceTreeDTO.getUri(),parent2.getUri()))
+        ResourceTreeDTO parent2FromDb = root.getChildren().stream().filter(resourceTreeDTO -> SPARQLDeserializers.compareURIs(resourceTreeDTO.getUri(), parent2.getUri()))
                 .findFirst().get();
 
-        ResourceTreeDTO child21FromDb =  parent2FromDb.getChildren().stream()
-                .filter(resourceTreeDTO -> SPARQLDeserializers.compareURIs(resourceTreeDTO.getUri(),child21.getUri()))
+        ResourceTreeDTO child21FromDb = parent2FromDb.getChildren().stream()
+                .filter(resourceTreeDTO -> SPARQLDeserializers.compareURIs(resourceTreeDTO.getUri(), child21.getUri()))
                 .findFirst().get();
 
-        ResourceTreeDTO child211FromDb =  child21FromDb.getChildren().stream()
-                .filter(resourceTreeDTO -> SPARQLDeserializers.compareURIs(resourceTreeDTO.getUri(),child211.getUri()))
+        ResourceTreeDTO child211FromDb = child21FromDb.getChildren().stream()
+                .filter(resourceTreeDTO -> SPARQLDeserializers.compareURIs(resourceTreeDTO.getUri(), child211.getUri()))
                 .findFirst().get();
     }
 
@@ -223,9 +227,98 @@ public class OntologyAPITest extends AbstractSecurityIntegrationTest {
 
         // ensure message is OK
         JsonNode node = deleteResponse.readEntity(JsonNode.class);
-        ErrorResponse errorResponse = mapper.convertValue(node, new TypeReference<ErrorResponse>() {});
-        assertEquals(errorResponse.getResult().translationKey,"component.ontology.class.exception.delete.has-data-properties");
+        ErrorResponse errorResponse = mapper.convertValue(node, new TypeReference<ErrorResponse>() {
+        });
+        assertEquals(errorResponse.getResult().translationKey, "component.ontology.class.exception.delete.has-data-properties");
     }
+
+    @Test
+    public void testDeletePropertyImplyRestrictionsRemoval() throws Exception {
+
+        // create class
+        VueRDFTypeDTO typeDTO = getTypeDto("testDeletePropertyImplyRestrictionsRemoval", URI.create(Oeso.ScientificObject.toString()));
+        getJsonPostResponseAsAdmin(target(rdfTypePath), typeDTO);
+
+        // create property
+        RDFPropertyDTO dataProperty = getPropertyDto("data_prop_to_delete", null, true, typeDTO.getUri(), URI.create(XSD.integer.getURI()));
+        getJsonPostResponseAsAdmin(target(createPropertyPath), dataProperty);
+
+        // link class <-> property
+        OWLClassPropertyRestrictionDTO restrictionDTO = new OWLClassPropertyRestrictionDTO();
+        restrictionDTO.setClassURI(typeDTO.getUri());
+        restrictionDTO.setProperty(dataProperty.getUri());
+        restrictionDTO.setDomain(dataProperty.getDomain());
+        restrictionDTO.setList(false);
+        restrictionDTO.setRequired(false);
+
+        Response createRestrictionResponse = getJsonPostResponseAsAdmin(target(addRestrictionPath), restrictionDTO);
+        Assert.assertEquals(Response.Status.OK.getStatusCode(), createRestrictionResponse.getStatus());
+
+        // ensure that restrictions are found
+        OntologyDAO ontologyDAO = new OntologyDAO(getSparqlService());
+        Assert.assertEquals(1, ontologyDAO.getClassPropertyRestriction(null, typeDTO.getUri(), dataProperty.getUri(), null).size());
+
+        // delete property
+        try (Response deleteDataPropertyResponse = appendAdminToken(target(propertyPath)
+                .queryParam("uri", dataProperty.getUri().toString())
+                .queryParam("rdf_type", OWL2.DatatypeProperty.getURI())).delete()) {
+
+            assertEquals(Response.Status.OK.getStatusCode(), deleteDataPropertyResponse.getStatus());
+
+            // ensure that class still exists
+            Assert.assertTrue(getSparqlService().uriExists(null, typeDTO.getUri(), true, true));
+
+            // ensure restriction is deleted
+            Assert.assertTrue(ontologyDAO.getClassPropertyRestriction(null, typeDTO.getUri(), dataProperty.getUri(), null).isEmpty());
+        }
+    }
+
+    @Test
+    public void testDeleteClassImplyRestrictionsRemoval() throws Exception {
+
+        // create class
+        VueRDFTypeDTO typeDTO = getTypeDto("testDeleteClassImplyRestrictionsRemoval", URI.create(Oeso.ScientificObject.toString()));
+        getJsonPostResponseAsAdmin(target(rdfTypePath), typeDTO);
+
+        // create property
+        RDFPropertyDTO dataProperty = getPropertyDto("data_prop_to_delete", null, true, typeDTO.getUri(), URI.create(XSD.integer.getURI()));
+        getJsonPostResponseAsAdmin(target(createPropertyPath), dataProperty);
+
+        // link class <-> property
+        OWLClassPropertyRestrictionDTO restrictionDTO = new OWLClassPropertyRestrictionDTO();
+        restrictionDTO.setClassURI(typeDTO.getUri());
+        restrictionDTO.setProperty(dataProperty.getUri());
+        restrictionDTO.setDomain(dataProperty.getDomain());
+        restrictionDTO.setList(false);
+        restrictionDTO.setRequired(false);
+
+        Response createRestrictionResponse = getJsonPostResponseAsAdmin(target(addRestrictionPath), restrictionDTO);
+        Assert.assertEquals(Response.Status.OK.getStatusCode(), createRestrictionResponse.getStatus());
+
+        // ensure that restrictions are found
+        OntologyDAO ontologyDAO = new OntologyDAO(getSparqlService());
+        Assert.assertEquals(1, ontologyDAO.getClassPropertyRestriction(null, typeDTO.getUri(), dataProperty.getUri(), null).size());
+
+        // first delete property, else class can't be deleted
+        try (Response deleteDataPropertyResponse = appendAdminToken(target(propertyPath)
+                .queryParam("uri", dataProperty.getUri().toString())
+                .queryParam("rdf_type", OWL2.DatatypeProperty.getURI())).delete()) {
+
+            assertEquals(Response.Status.OK.getStatusCode(), deleteDataPropertyResponse.getStatus());
+        }
+
+        // delete type
+        try (Response deleteClassResponse = getDeleteByUriResponse(target(deleteRdfTypePath), typeDTO.getUri().toString())) {
+            assertEquals(Response.Status.OK.getStatusCode(), deleteClassResponse.getStatus());
+
+            // ensure that class still exists
+            Assert.assertFalse(getSparqlService().uriExists(null, typeDTO.getUri(), true, true));
+
+            // ensure restriction is deleted
+            Assert.assertTrue(ontologyDAO.getClassPropertyRestriction(null, typeDTO.getUri(), dataProperty.getUri(), null).isEmpty());
+        }
+    }
+
 
     @Test
     public void testDeleteClassWithObjectPropertiesFail() throws Exception {
@@ -251,8 +344,9 @@ public class OntologyAPITest extends AbstractSecurityIntegrationTest {
 
         // ensure message is OK
         JsonNode node = deleteResponse.readEntity(JsonNode.class);
-        ErrorResponse errorResponse = mapper.convertValue(node, new TypeReference<ErrorResponse>() {});
-        assertEquals(errorResponse.getResult().translationKey,"component.ontology.class.exception.delete.has-object-properties");
+        ErrorResponse errorResponse = mapper.convertValue(node, new TypeReference<ErrorResponse>() {
+        });
+        assertEquals(errorResponse.getResult().translationKey, "component.ontology.class.exception.delete.has-object-properties");
     }
 
     private RDFPropertyDTO getPropertyDto(String suffix, URI parent, boolean dataProperty, URI domain, URI range) {
@@ -339,17 +433,21 @@ public class OntologyAPITest extends AbstractSecurityIntegrationTest {
         getJsonPostResponseAsAdmin(target(createPropertyPath), dataProperty);
         getJsonPostResponseAsAdmin(target(createPropertyPath), objectProperty);
 
-        Response deleteDataPropertyResponse = appendAdminToken(target(propertyPath)
+        try (Response deleteDataPropertyResponse = appendAdminToken(target(propertyPath)
                 .queryParam("uri", dataProperty.getUri().toString())
-                .queryParam("rdf_type", OWL2.DatatypeProperty.getURI())).delete();
+                .queryParam("rdf_type", OWL2.DatatypeProperty.getURI())).delete()) {
 
-        assertEquals(Response.Status.OK.getStatusCode(), deleteDataPropertyResponse.getStatus());
+            assertEquals(Response.Status.OK.getStatusCode(), deleteDataPropertyResponse.getStatus());
 
-        Response deleteObjectPropertyResponse = appendAdminToken(target(propertyPath)
-                .queryParam("uri", objectProperty.getUri().toString())
-                .queryParam("rdf_type", OWL2.ObjectProperty.getURI())).delete();
+            try (Response deleteObjectPropertyResponse = appendAdminToken(target(propertyPath)
+                    .queryParam("uri", objectProperty.getUri().toString())
+                    .queryParam("rdf_type", OWL2.ObjectProperty.getURI())).delete()) {
 
-        assertEquals(Response.Status.OK.getStatusCode(), deleteObjectPropertyResponse.getStatus());
+                assertEquals(Response.Status.OK.getStatusCode(), deleteObjectPropertyResponse.getStatus());
+
+            }
+        }
+
     }
 
     @Test
@@ -382,26 +480,31 @@ public class OntologyAPITest extends AbstractSecurityIntegrationTest {
         getSparqlService().create(model2);
 
         // check that data property deletion FAIL
-        Response deleteDataPropertyResponse = appendAdminToken(target(propertyPath)
+        try (Response deleteDataPropertyResponse = appendAdminToken(target(propertyPath)
                 .queryParam("uri", dataProperty.getUri().toString())
-                .queryParam("rdf_type", OWL2.DatatypeProperty.getURI())).delete();
+                .queryParam("rdf_type", OWL2.DatatypeProperty.getURI())).delete()) {
 
-        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), deleteDataPropertyResponse.getStatus());
-        JsonNode node = deleteDataPropertyResponse.readEntity(JsonNode.class);
-        ErrorResponse errorResponse = mapper.convertValue(node, new TypeReference<ErrorResponse>() {
-        });
-        assertEquals("Some objects use the data-property test:property_data_0. You must delete these relations first", errorResponse.getResult().message);
+            assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), deleteDataPropertyResponse.getStatus());
+            JsonNode node = deleteDataPropertyResponse.readEntity(JsonNode.class);
+            ErrorResponse errorResponse = mapper.convertValue(node, new TypeReference<ErrorResponse>() {
+            });
+            assertEquals(OntologyDAO.PROPERTY_DELETION_ERROR_KEY, errorResponse.getResult().message);
+
+        }
 
         // check that object property deletion FAIL
-        Response deleteObjectPropertyResponse = appendAdminToken(target(propertyPath)
+        try (Response deleteObjectPropertyResponse = appendAdminToken(target(propertyPath)
                 .queryParam("uri", objectProperty.getUri().toString())
-                .queryParam("rdf_type", OWL2.ObjectProperty.getURI())).delete();
+                .queryParam("rdf_type", OWL2.ObjectProperty.getURI())).delete()) {
 
-        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), deleteObjectPropertyResponse.getStatus());
-        node = deleteObjectPropertyResponse.readEntity(JsonNode.class);
-        errorResponse = mapper.convertValue(node, new TypeReference<ErrorResponse>() {
-        });
-        assertEquals("Some objects use the object-property test:property_object_1. You must delete these relations first", errorResponse.getResult().message);
+            assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), deleteObjectPropertyResponse.getStatus());
+            JsonNode node = deleteObjectPropertyResponse.readEntity(JsonNode.class);
+            ErrorResponse errorResponse = mapper.convertValue(node, new TypeReference<ErrorResponse>() {
+            });
+            assertEquals(OntologyDAO.PROPERTY_DELETION_ERROR_KEY, errorResponse.getResult().message);
+
+        }
+
     }
 
     @Test
@@ -430,26 +533,30 @@ public class OntologyAPITest extends AbstractSecurityIntegrationTest {
         assertEquals(Response.Status.CREATED.getStatusCode(), createObjectPropertyResponse.getStatus());
 
         // check that data property deletion FAIL
-        Response deleteDataPropertyResponse = appendAdminToken(target(propertyPath)
+        try (Response deleteDataPropertyResponse = appendAdminToken(target(propertyPath)
                 .queryParam("uri", dataProperty.getUri().toString())
-                .queryParam("rdf_type", OWL2.DatatypeProperty.getURI())).delete();
+                .queryParam("rdf_type", OWL2.DatatypeProperty.getURI())).delete()) {
 
-        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), deleteDataPropertyResponse.getStatus());
-        JsonNode node = deleteDataPropertyResponse.readEntity(JsonNode.class);
-        ErrorResponse errorResponse = mapper.convertValue(node, new TypeReference<ErrorResponse>() {
-        });
-        assertEquals("The property test:property_data_0 has child properties. You must delete them thirst", errorResponse.getResult().message);
+            assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), deleteDataPropertyResponse.getStatus());
+            JsonNode node = deleteDataPropertyResponse.readEntity(JsonNode.class);
+            ErrorResponse errorResponse = mapper.convertValue(node, new TypeReference<ErrorResponse>() {
+            });
+            assertEquals(OntologyDAO.PROPERTY_DELETION_ERROR_KEY, errorResponse.getResult().message);
+        }
+
 
         // check that object property deletion FAIL
-        Response deleteObjectPropertyResponse = appendAdminToken(target(propertyPath)
+        try (Response deleteObjectPropertyResponse = appendAdminToken(target(propertyPath)
                 .queryParam("uri", objectProperty.getUri().toString())
-                .queryParam("rdf_type", OWL2.ObjectProperty.getURI())).delete();
+                .queryParam("rdf_type", OWL2.ObjectProperty.getURI())).delete()) {
 
-        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), deleteObjectPropertyResponse.getStatus());
-        node = deleteObjectPropertyResponse.readEntity(JsonNode.class);
-        errorResponse = mapper.convertValue(node, new TypeReference<ErrorResponse>() {
-        });
-        assertEquals("The property test:property_object_1 has child properties. You must delete them thirst", errorResponse.getResult().message);
+            assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), deleteObjectPropertyResponse.getStatus());
+            JsonNode node = deleteObjectPropertyResponse.readEntity(JsonNode.class);
+            ErrorResponse errorResponse = mapper.convertValue(node, new TypeReference<ErrorResponse>() {
+            });
+            assertEquals(OntologyDAO.PROPERTY_DELETION_ERROR_KEY, errorResponse.getResult().message);
+        }
+
     }
 
     @Override

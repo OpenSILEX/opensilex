@@ -27,6 +27,7 @@ import org.apache.jena.sparql.core.TriplePath;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.aggregate.Aggregator;
 import org.apache.jena.sparql.expr.aggregate.AggregatorFactory;
+import org.apache.jena.vocabulary.OWL;
 import org.apache.jena.vocabulary.OWL2;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
@@ -104,8 +105,8 @@ public final class OntologyDAO {
         sparql.update(customGraph, model);
     }
 
-    private static final String CLASS_DELETION_KEY_PARAMETER = "class";
-    private static final String CLASS_DELETION_ERROR_KEY = "Class can't be deleted";
+    public static final String CLASS_DELETION_KEY_PARAMETER = "class";
+    public static final String CLASS_DELETION_ERROR_KEY = "Class can't be deleted";
 
     /**
      *
@@ -153,29 +154,90 @@ public final class OntologyDAO {
             );
         }
 
+        UpdateBuilder deleteRestrictionOnClass = getDeleteRestrictionUpdate(classURI,null);
+        sparql.startTransaction();
+
         try{
-            sparql.startTransaction();
+            // Delete restriction first because deleting the ClassModel imply a deletion of all rdfs:subClassOf relations
+            // Since a ClassModel can have an outgoing <rdfs:subClassOf> relation with a parent ClassModel, if the Class is deleted first,
+            // there is no way to retrieve and delete OWL restriction which have a <rdfs:subClassOf> relation with the Class
+            sparql.executeUpdateQuery(deleteRestrictionOnClass);
+
+            // then delete class model it-self
             sparql.delete(null, ClassModel.class, classURI);
 
-            Node restriction = makeVar("restriction");
-            Node property = makeVar("p");
-            Node object = makeVar("o");
-            Node classNode = SPARQLDeserializers.nodeURI(classURI);
-
-            UpdateBuilder deleteRestrictionOnClass = new UpdateBuilder()
-                    .addDelete(customGraph, new WhereBuilder()
-                            .addWhere(classNode, RDFS.subClassOf, restriction)
-                            .addWhere(restriction, property, object)
-                    ).addGraph(customGraph, new WhereBuilder()
-                            .addWhere(classNode, RDFS.subClassOf, restriction)
-                            .addWhere(restriction, RDF.type, OWL2.Restriction)
-                            .addWhere(restriction, property, object));
-
-            sparql.executeUpdateQuery(deleteRestrictionOnClass);
             sparql.commitTransaction();
         }catch (Exception e){
             sparql.rollbackTransaction();
         }
+    }
+
+    /**
+     *
+     * @param classURI URI of the class for which we remove associated OWL restriction (optional) If set, the query removal all restriction associated to this class with
+     * the class with a  <b>?class rdfs:subClassOf ?restriction</b> triple
+     * @param propertyURI  URI of the property for which we remove associated OWL restriction (optional) If set, the query remove all restriction associated
+     * to the property with a  <b>?restriction owl:onProperty ?property</b> triple
+     *
+     * @return a SPARQL UPDATE query which allow to delete all restriction associated to a class and/or a property
+     * @throws IllegalArgumentException if classURI and propertyURI are both null
+
+     * @apiNote The following UPDATE is returned, depending on the nullity of classURI and propertyURI
+     * <pre>
+     *
+     * {@code
+     * PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+     * PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+     * PREFIX owl: <http://www.w3.org/2002/07/owl#>
+     *
+     * DELETE {
+     *      :restrictedClass rdfs:subClassOf ?restriction . # case 1 : delete link between restriction and the class
+     *      ?restrictedClass rdfs:subClassOf ?restriction . # or case 2 : delete link between restrictions and associated classes
+     *
+     *      ?restriction ?p ?o
+     *      WHERE {
+     *           ?restriction a owl:Restriction .
+     *           ?restriction ?p ?o
+     *
+     *           # case 1 : delete restriction linked to a particular class
+     *           ?restriction owl:onProperty ?restrictedProperty .
+     *
+     *           # or case 2 : delete restriction linked to a particular property
+     *           ?restrictedClass rdfs:subClassOf ?restriction .
+     *           ?restriction owl:onProperty :restrictedProperty .
+     *      }
+     * }
+     *
+     * }
+     * </pre>
+     */
+    private UpdateBuilder getDeleteRestrictionUpdate(URI classURI, URI propertyURI) throws IllegalArgumentException{
+
+        if(classURI == null && propertyURI == null){
+            throw new IllegalArgumentException("classURI and propertyURI are both null");
+        }
+
+        Node restriction = makeVar("restriction");
+        Node restrictionProperty = makeVar("p");
+        Node restrictionValue = makeVar("o");
+
+        // if class is not specified use a variable, else use the given class URI
+        // if no class is provided, then delete all relation between a class and a restriction on the given property
+        Node restrictedClass = classURI == null ? makeVar("?restrictedClass") : SPARQLDeserializers.nodeURI(classURI);
+
+        // if a class is provided, then delete all link between the clas
+        // if a class is provided, then delete all relation between a property and restriction on the given class
+        Node restrictedProperty = propertyURI == null ? makeVar("?restrictedProperty") : SPARQLDeserializers.nodeURI(propertyURI);
+
+        return new UpdateBuilder()
+                .addDelete(customGraph, new WhereBuilder()
+                        .addWhere(restrictedClass, RDFS.subClassOf, restriction)
+                        .addWhere(restriction, restrictionProperty, restrictionValue)
+                ).addGraph(customGraph, new WhereBuilder()
+                        .addWhere(restrictedClass, RDFS.subClassOf, restriction)
+                        .addWhere(restriction, OWL.onProperty, restrictedProperty)
+                        .addWhere(restriction, RDF.type, OWL2.Restriction)
+                        .addWhere(restriction, restrictionProperty, restrictionValue));
     }
 
     public ClassModel getClassModel(URI rdfClass, URI parentClass, String lang) throws SPARQLException {
@@ -604,38 +666,77 @@ public final class OntologyDAO {
         }
     }
 
-    public void deleteDataProperty(URI uri) throws Exception {
+    public static final String PROPERTY_DELETION_ERROR_KEY = "Property can't be deleted";
+    public static final String PROPERTY_DELETION_KEY_PARAMETER = "property";
+
+    /**
+     *
+     * @param uri URI of the property to delete (required)
+     * @param dataProperty indicate if the property is a data-property (true) or not (false)
+     * @throws DisplayableBadRequestException if
+     * <ul>
+     *      <li>The property is used by some resource</li>
+     *      <li>The property as sub-property</li>
+     * </ul>
+     * @throws IllegalArgumentException if no property were found with the given {@code uri} is the database
+     * @throws Exception if some error is encountered during SPARQL query evaluation
+     * 
+     * @see #getDeleteRestrictionUpdate(URI, URI) 
+     */
+    public void deleteProperty(URI uri, boolean dataProperty) throws DisplayableBadRequestException, IllegalArgumentException, Exception {
+
+        Objects.requireNonNull(uri);
+
+        SPARQLTreeModel<?> propertyModel = dataProperty ?
+                getDataProperty(uri,null, null) :
+                getObjectProperty(uri, null, null);
+
+        if(propertyModel == null){
+            throw new IllegalArgumentException("Unknown property URI "+uri);
+        }
+
+        // ensure that the property has no children
+        if (! propertyModel.getChildren().isEmpty()){
+            throw new DisplayableBadRequestException(
+                    PROPERTY_DELETION_ERROR_KEY,
+                    "component.ontology.property.exception.delete.has-children",
+                    Collections.singletonMap(PROPERTY_DELETION_KEY_PARAMETER,uri.toString())
+            );
+        }
+
         // check that no instance is associated to class
         if (sparql.anyPropertyValue(uri)) {
-            throw new IllegalArgumentException("Some objects use the data-property " + uri + ". You must delete these relations first");
+            throw new DisplayableBadRequestException(
+                    PROPERTY_DELETION_ERROR_KEY,
+                    "component.ontology.property.exception.delete.instance-exists",
+                    Collections.singletonMap(PROPERTY_DELETION_KEY_PARAMETER,uri.toString())
+            );
         }
 
-        DatatypePropertyModel model = getDataProperty(uri,null,null);
-        if(! model.getChildren().isEmpty()){
-            throw new IllegalArgumentException("The property "+uri+" has child properties. You must delete them thirst");
+        UpdateBuilder deleteRestrictionOnProperty = getDeleteRestrictionUpdate(null,uri);
+        sparql.startTransaction();
+
+        try{
+            // delete associated restriction
+            sparql.executeUpdateQuery(deleteRestrictionOnProperty);
+
+            // delete property it-self
+            if(dataProperty){
+                sparql.delete(customGraph,DatatypePropertyModel.class,uri);
+            }else {
+                sparql.delete(customGraph,ObjectPropertyModel.class,uri);
+            }
+            sparql.commitTransaction();
+        }catch (Exception e){
+            sparql.rollbackTransaction(e);
         }
 
-        sparql.delete(customGraph, DatatypePropertyModel.class, uri);
-    }
-
-    public void deleteObjectProperty(URI uri) throws Exception {
-
-        // check that no instance is associated to class
-        if (sparql.anyPropertyValue(uri)) {
-            throw new IllegalArgumentException("Some objects use the object-property " + uri + ". You must delete these relations first");
-        }
-
-        ObjectPropertyModel model = getObjectProperty(uri,null,null);
-        if(! model.getChildren().isEmpty()){
-            throw new IllegalArgumentException("The property "+uri+" has child properties. You must delete them thirst");
-        }
-        sparql.delete(customGraph, ObjectPropertyModel.class, uri);
     }
 
     public boolean addClassPropertyRestriction(URI classURI, OwlRestrictionModel restriction, String lang) throws Exception {
         List<OwlRestrictionModel> results = getClassPropertyRestriction(null, classURI, restriction.getOnProperty(), lang);
 
-        if (results.size() == 0) {
+        if (results.isEmpty()) {
             sparql.create(customGraph, restriction, false, true, (create, node) -> {
                 create.addInsert(customGraph, SPARQLDeserializers.nodeURI(classURI), RDFS.subClassOf, node);
             });
@@ -664,16 +765,12 @@ public final class OntologyDAO {
     public void deleteClassPropertyRestriction(URI classURI, URI propertyURI, String lang) throws Exception {
         List<OwlRestrictionModel> results = getClassPropertyRestriction(customGraph, classURI, propertyURI, lang);
 
-        if (results.size() == 0) {
+        if (results.isEmpty()) {
             throw new NotFoundException("Class property restriction not found for : " + classURI.toString() + " - " + propertyURI.toString());
         } else if (results.size() > 1) {
             throw new NotFoundException("Multiple class property restrictions found (should never happened) for : " + classURI.toString() + " - " + propertyURI.toString());
         } else {
-            UpdateBuilder delete = new UpdateBuilder();
-            delete.addDelete(customGraph, SPARQLDeserializers.nodeURI(classURI), RDFS.subClassOf, "?s");
-            delete.addDelete(customGraph, "?s", "?p", "?o");
-            delete.addWhere("?s", OWL2.onProperty, SPARQLDeserializers.nodeURI(propertyURI));
-            delete.addWhere("?s", "?p", "?o");
+            UpdateBuilder delete = getDeleteRestrictionUpdate(classURI, propertyURI);
             sparql.executeDeleteQuery(delete);
         }
     }

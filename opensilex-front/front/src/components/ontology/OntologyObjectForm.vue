@@ -25,6 +25,7 @@
             :baseType="baseType"
             :required="true"
             :disabled="editMode"
+            :ignoreRoot="false"
             placeholder="OntologyObjectForm.form-type-placeholder"
             @select="typeSwitch($event.id,false)"
         ></opensilex-TypeForm>
@@ -100,7 +101,7 @@ export default class OntologyObjectForm extends Vue {
 
     setBaseType(baseType) {
         this.baseType = baseType;
-        // ontologyReleationsForm exists only after baseType has been set, so we wait the next tick
+        // ontologyRelationsForm exists only after baseType has been set, so we wait the next tick
         this.$nextTick(() => {
             if (this.ontologyRelationsForm) {
               this.ontologyRelationsForm.typeSwitch(baseType, true);

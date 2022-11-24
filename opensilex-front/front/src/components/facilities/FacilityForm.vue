@@ -14,6 +14,7 @@
         v-if="baseType"
         :type.sync="form.rdf_type"
         :baseType="baseType"
+        :ignoreRoot="false"
         :required="true"
         :disabled="editMode"
         placeholder="OntologyObjectForm.form-type-placeholder"

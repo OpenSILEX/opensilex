@@ -59,7 +59,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
 import java.util.*;
 
 import static com.mongodb.client.model.Filters.eq;
@@ -586,7 +585,7 @@ public class DeviceDAO {
                     deviceURI,
                     null,
                     null,
-                    OffsetDateTime.now(),
+                    null,
                     null,
                     0,
                     0

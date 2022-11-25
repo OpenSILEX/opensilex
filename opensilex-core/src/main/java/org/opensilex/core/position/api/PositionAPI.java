@@ -123,7 +123,7 @@ public class PositionAPI {
                     target,
                     null,
                     startDate != null ? OffsetDateTime.parse(startDate) : null,
-                    endDate != null ? OffsetDateTime.parse(endDate) : null,
+                    endDate != null ? OffsetDateTime.parse(endDate) : OffsetDateTime.now(),
                     orderByList,
                     page,
                     pageSize

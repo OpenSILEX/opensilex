@@ -408,13 +408,15 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
             positionsByUri.put(move.getUri(), null);
         });
 
-
+        /*
         if (start != null) {
             MoveModel lastMove = getLastMoveAfter(target, start);
             if (lastMove != null) {
+                System.out.println(lastMove.getTo().getName());
                 positionsByUri.put(lastMove.getUri(), null);
             }
         }
+        */
 
         if (!positionsByUri.isEmpty()) {
 

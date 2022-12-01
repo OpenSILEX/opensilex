@@ -647,12 +647,10 @@ export default class SelectForm extends Vue {
 
   updateModal() {
     let difference = this.selectedTmp.filter(x => !this.selectedCopie.includes(x));
-    //console.log(difference);
     difference.forEach((item) => {
       this.searchModal.unSelect(item);
     });
     difference = this.selectedCopie.filter(x => !this.selectedTmp.includes(x));
-    //console.log(difference);
     difference.forEach((item) => {
       this.searchModal.selectItem(item);
     });

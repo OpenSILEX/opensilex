@@ -32,6 +32,13 @@ import FactorList from "./FactorList.vue";
 export default class FactorModalList extends FactorList {
   @Ref("factorSelection") readonly factorSelection!: any;
 
+  selectItem(row) {
+    this.factorSelection.onItemSelected(row);
+  }
+  unSelect(row) {
+    this.factorSelection.onItemSelected(row);
+  }
+
   show() {
     let modalRef: any = this.$refs.modalRef;
     modalRef.show();

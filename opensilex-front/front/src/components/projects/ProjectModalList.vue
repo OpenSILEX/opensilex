@@ -43,9 +43,13 @@ import { Component, Ref, PropSync} from "vue-property-decorator";
 export default class ProjectModalList extends Vue {
   @Ref("projectSelection") readonly projectSelection!: any;
 
+  selectItem(row) {
+    this.projectSelection.onItemSelected(row);
+  }
   unSelect(row) {
     this.projectSelection.onItemUnselected(row);
   }
+
   show() {
     let modalRef: any = this.$refs.modalRef;
     modalRef.show();

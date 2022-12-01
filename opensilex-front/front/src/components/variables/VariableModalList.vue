@@ -63,6 +63,9 @@ export default class VariableModalList extends Vue {
   @Prop()
   devices;
 
+  selectItem(row) {
+    this.variableSelection.onItemSelected(row);
+  }
   unSelect(row) {
     this.variableSelection.onItemUnselected(row);
   }

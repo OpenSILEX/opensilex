@@ -32,6 +32,13 @@ import ExperimentList from "./ExperimentList.vue";
 export default class ExperimentModalList extends ExperimentList {
   @Ref("experimentSelection") readonly experimentSelection!: any;
 
+  selectItem(row) {
+    this.experimentSelection.onItemSelected(row);
+  }
+  unSelect(row) {
+    this.experimentSelection.onItemSelected(row);
+  }
+
   show() {
     let modalRef: any = this.$refs.modalRef;
     modalRef.show();

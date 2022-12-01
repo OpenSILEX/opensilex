@@ -459,7 +459,6 @@ export default class SelectForm extends Vue {
     if(this.isModalSearch)  {
       // copy selected items in local variable to wait validate action and then, change the selection
       this.selectedTmp = this.selectedTmp.filter((value) => value.id !== item.id);
-      console.log(this.selectedTmp);
     } 
     else {
       if (this.multiple) {

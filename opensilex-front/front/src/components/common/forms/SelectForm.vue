@@ -126,7 +126,7 @@
         @clear='$emit("clear")'
         @select="select(conversionMethod($event))"
         @unselect="deselect(conversionMethod($event))"
-        @selectall="selectall"
+        @selectall="selectAll"
         class="isModalSearchComponent"
       ></component>
 
@@ -295,7 +295,9 @@ export default class SelectForm extends Vue {
   devices;
 
   detailVisible: boolean = false;
+  // confirmed modal selection
   selectedCopie = [];
+  // temporary modal selection
   selectedTmp = [];
 
   @AsyncComputedProp()
@@ -471,16 +473,17 @@ export default class SelectForm extends Vue {
     this.$emit("deselect", item);
   }
 
-  onValidate(){
-    this.selectedCopie = this.selectedTmp.slice();
+  onValidate() {
     if(this.selectedTmp == null || this.selectedTmp.length == 0) {
       this.loading = false;
     } else {
       this.loading = true;
     }
+    this.selectedCopie = this.selectedTmp.slice();
+
     setTimeout(() => { // fix :  time to close the modal .
-      this.selection = this.selectedTmp.map(value => value.id);
-      this.$emit('onValidate', this.selectedTmp);
+      this.selection = this.selectedCopie.map(value => value.id);
+      this.$emit('onValidate', this.selectedCopie);
     }, 400);
   }
 
@@ -498,7 +501,7 @@ export default class SelectForm extends Vue {
     this.searchModal.unSelect(item);
   }
   
-  selectall(selectedValues) {
+  selectAll(selectedValues) {
     if(selectedValues){  
       // copy selected items in local variable to wait validate action and then, change the selection
       this.selectedTmp = selectedValues.map((item => this.conversionMethod(item)));
@@ -645,16 +648,18 @@ export default class SelectForm extends Vue {
   }
 
   updateModal() {
+    // unselect temporary items that are not in confirmed selection
     let difference = this.selectedTmp.filter(x => !this.selectedCopie.includes(x));
     difference.forEach((item) => {
       this.searchModal.unSelect(item);
     });
+    // reselect previously confirmed items that are not in temporary selection
     difference = this.selectedCopie.filter(x => !this.selectedTmp.includes(x));
     difference.forEach((item) => {
       this.searchModal.selectItem(item);
     });
+    // reset temporary selection
     this.selectedTmp = this.selectedCopie.slice();
-
   }
 
   showModal() {

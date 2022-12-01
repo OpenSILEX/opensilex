@@ -313,12 +313,12 @@ export default class TableAsyncView extends Vue {
   }
   //from outside the component
   onItemSelected(item) {
-    const idx = this.tableRef.sortedItems.findIndex(it => item.id == it.uri);
+    const selectedItemIndex = this.tableRef.sortedItems.findIndex(it => item.id == it.uri);
 
-    if (idx >= 0) {
-      this.tableRef.selectRow(idx);
+    if (selectedItemIndex >= 0) {
+      this.tableRef.selectRow(selectedItemIndex);
     }
-    this.selectedItems.push(this.tableRef.sortedItems[idx]);
+    this.selectedItems.push(this.tableRef.sortedItems[selectedItemIndex]);
     this.numberOfSelectedRows = this.selectedItems.length;
   }
 

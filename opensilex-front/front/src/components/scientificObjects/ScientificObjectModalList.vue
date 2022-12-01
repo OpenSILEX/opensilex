@@ -183,6 +183,9 @@ export default class ScientificObjectModalList extends Vue {
   @Ref("soList") readonly soList!: any;
   @Ref("modalRef") readonly modalRef!: any;
 
+  selectItem(row) {
+    this.soList.onItemSelected(row);
+  }
   unSelect(row) {
     this.soList.onItemUnselected(row);
   }

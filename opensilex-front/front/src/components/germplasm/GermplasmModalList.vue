@@ -32,6 +32,13 @@ import GermplasmList from "./GermplasmList.vue";
 export default class GermplasmModalList extends GermplasmList {
   @Ref("germplasmSelection") readonly germplasmSelection!: any;
 
+  selectItem(row) {
+    this.germplasmSelection.onItemSelected(row);
+  }
+  unSelect(row) {
+    this.germplasmSelection.onItemSelected(row);
+  }
+
   show() {
     let modalRef: any = this.$refs.modalRef;
     modalRef.show();

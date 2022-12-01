@@ -37,6 +37,9 @@ export default class GroupVariablesModalList extends Vue {
 
   @Ref("groupVariableSelection") readonly groupVariableSelection!: any;
 
+  selectItem(row) {
+    this.groupVariableSelection.onItemSelected(row);
+  }
   unSelect(row) {
     this.groupVariableSelection.onItemUnselected(row);
   }

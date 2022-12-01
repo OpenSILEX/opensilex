@@ -340,6 +340,9 @@ export default class ProjectList extends Vue {
   onItemUnselected(row) {
     this.tableRef.onItemUnselected(row);
   }
+  onItemSelected(row) {
+    this.tableRef.onItemSelected(row);
+  }
 
   deleteProject(uri: string) {
     this.service

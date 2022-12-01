@@ -68,6 +68,13 @@ export default class GroupVariablesList extends Vue {
 
   @Ref("tableRef") readonly tableRef!: any;
 
+  onItemUnselected(row) {
+    this.tableRef.onItemUnselected(row);
+  }
+  onItemSelected(row) {
+    this.tableRef.onItemSelected(row);
+  }
+
   searchVariablesGroups(options) {
     return this.$service.searchVariablesGroups(
       this.nameFilter,

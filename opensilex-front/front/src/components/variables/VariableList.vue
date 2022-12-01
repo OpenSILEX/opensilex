@@ -476,6 +476,9 @@ export default class VariableList extends Vue {
     onItemUnselected(row) {
         this.tableRef.onItemUnselected(row);
     }
+    onItemSelected(row) {
+      this.tableRef.onItemSelected(row);
+    }
 
     searchVariablesWithAttribute(options) {
         return this.$service.searchVariables(

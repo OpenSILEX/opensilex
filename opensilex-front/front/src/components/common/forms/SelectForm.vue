@@ -25,7 +25,7 @@
           :search-nested="searchNested"
           :show-count="showCount"
           @input="clearIfNeeded"
-          @deselect="searchModal.unSelect($event)"
+          @deselect="removeItem"
           @open="showModal"
           :limit="limit"
         >
@@ -126,7 +126,7 @@
         @clear='$emit("clear")'
         @select="select(conversionMethod($event))"
         @unselect="deselect(conversionMethod($event))"
-        @selectall="selectall"
+        @selectall="selectAll"
         class="isModalSearchComponent"
       ></component>
 
@@ -295,7 +295,10 @@ export default class SelectForm extends Vue {
   devices;
 
   detailVisible: boolean = false;
-  selectedCopie = [] ;
+  // confirmed modal selection
+  selectedCopie = [];
+  // temporary modal selection
+  selectedTmp = [];
 
   @AsyncComputedProp()
   selectedValues(): Promise<any> {
@@ -307,7 +310,7 @@ export default class SelectForm extends Vue {
           resolve(this.currentValue);
         } else {
           let nodeList = [];
-          this.selectedCopie.forEach((item) => {
+          this.selectedTmp.forEach((item) => {
             nodeList.push(this.conversionMethod(item));
           });
           this.currentValue = nodeList;
@@ -439,7 +442,9 @@ export default class SelectForm extends Vue {
  select(value) {
     if(this.isModalSearch)  {
       // copy selected items in local variable to wait validate action and then, change the selection
-      this.selectedCopie.push(value);
+      this.selectedTmp.push(value);
+
+      this.$emit("select", value, this.selectedTmp);
     } 
     else {
       if (this.multiple) {
@@ -449,14 +454,13 @@ export default class SelectForm extends Vue {
       }
 
     }
-
-    this.$emit("select", value, this.selectedCopie);
+    this.$emit("select", value, this.selectedTmp);
   }
 
   deselect(item) {
     if(this.isModalSearch)  {
       // copy selected items in local variable to wait validate action and then, change the selection
-      this.selectedCopie = this.selectedCopie.filter((value) => value.id !== item.id);
+      this.selectedTmp = this.selectedTmp.filter((value) => value.id !== item.id);
     } 
     else {
       if (this.multiple) {
@@ -468,29 +472,42 @@ export default class SelectForm extends Vue {
   
     this.$emit("deselect", item);
   }
-  
-  onValidate(){
-    
-      if(this.selectedCopie == null || this.selectedCopie.length == 0) {
-        this.loading = false;
-      } else {
-        this.loading = true;
-      }
-      setTimeout(() => { // fix :  time to close the modal .
-        this.selection = this.selectedCopie.map(value => value.id);
-        this.$emit('onValidate', this.selectedCopie);
-      }, 400);
-    
+
+  onValidate() {
+    if(this.selectedTmp == null || this.selectedTmp.length == 0) {
+      this.loading = false;
+    } else {
+      this.loading = true;
+    }
+    this.selectedCopie = this.selectedTmp.slice();
+
+    setTimeout(() => { // fix :  time to close the modal .
+      this.selection = this.selectedCopie.map(value => value.id);
+      this.$emit('onValidate', this.selectedCopie);
+    }, 400);
+  }
+
+  clearSelectedModal() {
+    this.selectedTmp.forEach((item) => {
+      this.searchModal.unSelect(item);
+    });
+    this.selectedCopie = []
+    this.selectedTmp = [];
+  }
+
+  removeItem(item) {
+    this.deselect(item);
+    this.selectedCopie = this.selectedTmp.slice();
+    this.searchModal.unSelect(item);
   }
   
-  selectall(selectedValues) {
-    
+  selectAll(selectedValues) {
     if(selectedValues){  
       // copy selected items in local variable to wait validate action and then, change the selection
-      this.selectedCopie = selectedValues.map((item => this.conversionMethod(item)));
+      this.selectedTmp = selectedValues.map((item => this.conversionMethod(item)));
     }
     else {
-      this.selectedCopie = null;    
+      this.selectedTmp = null;
     }
   }
 
@@ -504,11 +521,13 @@ export default class SelectForm extends Vue {
     if (this.multiple) {
       if (values.length == 0) {
         this.selection.splice(0, this.selection.length);
+        this.clearSelectedModal();
         this.$emit("clear");
         return;
       }
     } else if (!values) {
       this.selection = undefined;
+      this.clearSelectedModal();
       this.$emit("clear");
       return;
     }
@@ -520,6 +539,7 @@ export default class SelectForm extends Vue {
       }
       this.selection = newValues;
     }
+    this.refreshModalSearch();
   }
 
   loadOptions({ action, searchQuery, callback }) {
@@ -627,8 +647,24 @@ export default class SelectForm extends Vue {
     };
   }
 
+  updateModal() {
+    // unselect temporary items that are not in confirmed selection
+    let difference = this.selectedTmp.filter(x => !this.selectedCopie.includes(x));
+    difference.forEach((item) => {
+      this.searchModal.unSelect(item);
+    });
+    // reselect previously confirmed items that are not in temporary selection
+    difference = this.selectedCopie.filter(x => !this.selectedTmp.includes(x));
+    difference.forEach((item) => {
+      this.searchModal.selectItem(item);
+    });
+    // reset temporary selection
+    this.selectedTmp = this.selectedCopie.slice();
+  }
+
   showModal() {
     let searchModal: any = this.$refs.searchModal;
+    this.updateModal();
     searchModal.show();
   }
 

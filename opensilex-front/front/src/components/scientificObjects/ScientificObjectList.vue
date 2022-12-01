@@ -439,6 +439,9 @@ export default class ScientificObjectList extends Vue {
   onItemUnselected(row) {
     this.tableRef.onItemUnselected(row);
   }
+  onItemSelected(row) {
+    this.tableRef.onItemSelected(row);
+  }
 }
 </script>
 

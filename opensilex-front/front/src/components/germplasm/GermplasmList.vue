@@ -295,6 +295,13 @@ export default class GermplasmList extends Vue {
     this.refresh();
   }
 
+  onItemUnselected(row) {
+    this.tableRef.onItemUnselected(row);
+  }
+  onItemSelected(row) {
+    this.tableRef.onItemSelected(row);
+  }
+
   clickOnlySelected() {
     this.tableRef.clickOnlySelected();
   }

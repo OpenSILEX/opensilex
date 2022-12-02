@@ -202,5 +202,5 @@ fr:
     form-parent-placeholder: Sélectionner l'organisation parente
     infrastructure-already-exists: Une organisation existe déjà avec cette URI
     form-group-label: Groupes
-    form-facilities-labe: Installations environnementales
+    form-facilities-label: Installations environnementales
 </i18n>

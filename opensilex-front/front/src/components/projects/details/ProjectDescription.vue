@@ -212,6 +212,7 @@ export default class ProjectDescription extends Vue {
         undefined, // factors
         [this.uri], // projects
         undefined, // isPublic
+        null,
         options.orderBy,
         options.currentPage,
         options.pageSize

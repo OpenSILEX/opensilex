@@ -41,6 +41,7 @@ import org.opensilex.core.data.api.DataCSVValidationDTO;
 import org.opensilex.core.data.api.DataCreationDTO;
 import org.opensilex.core.data.api.DataGetDTO;
 import org.opensilex.core.data.dal.DataProvenanceModel;
+import org.opensilex.core.data.dal.ProvEntityModel;
 import org.opensilex.core.experiment.api.ExperimentAPITest;
 import org.opensilex.core.provenance.api.ProvenanceAPITest;
 import org.opensilex.core.provenance.api.ProvenanceCreationDTO;
@@ -120,7 +121,7 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
     private URI provenanceImportDatetimeDatatypeError;
 
     private DataProvenanceModel provenance;
-    private List<URI> scientificObjects;    
+    private List<URI> scientificObjects;
     
     @Before
     public void beforeTest() throws Exception {
@@ -273,6 +274,40 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
         final Response postResultData = getJsonPostResponseAsAdmin(target(createListPath), dtoList);
         LOGGER.info(postResultData.toString());
         assertEquals(Response.Status.CREATED.getStatusCode(), postResultData.getStatus());        
+    }
+
+    @Test
+    public void testCreateWithIncompleteProvUsedShouldFail() throws Exception {
+        // Create provenance with incomplete provUsed (no rdf_type specified)
+        DataProvenanceModel provenanceModel = new DataProvenanceModel();
+        provenanceModel.setUri(provenance.getUri());
+        ProvEntityModel provUsed = new ProvEntityModel();
+        provUsed.setUri(scientificObjects.get(0));
+        provenanceModel.setProvUsed(Collections.singletonList(provUsed));
+
+        // DataCreationDTO uses this provenance
+        DataCreationDTO creationDTO = getCreationDataDTO("2020-10-11T10:29:06.402+0200");
+        creationDTO.setProvenance(provenanceModel);
+
+        final Response postResultData = getJsonPostResponseAsAdmin(target(createListPath), Collections.singletonList(creationDTO));
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), postResultData.getStatus());
+    }
+
+    @Test
+    public void testCreateWithIncompleteProvWasAssociatedWithShouldFail() throws Exception {
+        // Create provenance with incomplete provWasAssociatedWith (no rdf_type specified)
+        DataProvenanceModel provenanceModel = new DataProvenanceModel();
+        provenanceModel.setUri(provenance.getUri());
+        ProvEntityModel provUsed = new ProvEntityModel();
+        provUsed.setUri(scientificObjects.get(0));
+        provenanceModel.setProvWasAssociatedWith(Collections.singletonList(provUsed));
+
+        // DataCreationDTO uses this provenance
+        DataCreationDTO creationDTO = getCreationDataDTO("2020-10-11T10:29:06.402+0200");
+        creationDTO.setProvenance(provenanceModel);
+
+        final Response postResultData = getJsonPostResponseAsAdmin(target(createListPath), Collections.singletonList(creationDTO));
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), postResultData.getStatus());
     }
 
     @Test

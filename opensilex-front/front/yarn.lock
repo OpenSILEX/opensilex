@@ -5135,9 +5135,9 @@ decamelize@^1.2.0:
   integrity sha1-9lNNFRSCabIDUue+4m9QH5oZEpA=
 
 decode-uri-component@^0.2.0:
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/decode-uri-component/-/decode-uri-component-0.2.0.tgz#eb3913333458775cb84cd1a1fae062106bb87545"
-  integrity sha1-6zkTMzRYd1y4TNGh+uBiEGu4dUU=
+  version "0.2.2"
+  resolved "https://registry.yarnpkg.com/decode-uri-component/-/decode-uri-component-0.2.2.tgz#e69dbe25d37941171dd540e024c444cd5188e1e9"
+  integrity sha512-FqUYQ+8o158GyGTrMFJms9qh3CqTKvAqgqsTnkLI8sKu0028orqBhxNMFkFen0zGyg6epACD32pjVk58ngIErQ==
 
 deep-equal@^1.0.0, deep-equal@^1.0.1:
   version "1.1.1"
@@ -11167,6 +11167,11 @@ vue-date-fns@^2.0.1:
   integrity sha512-j2G97bVOKO0mVfFEnzCu5dQU0dgD8jLAAVU0dGRDqxZzzNXqep7d3WEGuuJ6mNOP5PM7GE+UqpKYfkL/LNmDKQ==
   dependencies:
     date-fns "^2.0.0"
+
+vue-easy-lightbox@0.17.0:
+  version "0.17.0"
+  resolved "https://registry.yarnpkg.com/vue-easy-lightbox/-/vue-easy-lightbox-0.17.0.tgz#c668fba3d2794c5dfcd58002930617dde8deef2b"
+  integrity sha512-CwFp6da7J4L00DKwLwcFNLWkV3L5ol/OduHZJLuArfREjGZ+MEbHaTJDMb3AplRqoLdB+R0ZKpz9PNlWDXCpeA==
 
 vue-eslint-parser@^7.0.0:
   version "7.5.0"

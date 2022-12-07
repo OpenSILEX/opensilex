@@ -4,11 +4,11 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.core.organisation.api.facility.FacilityGetDTO;
 import org.opensilex.core.organisation.api.facility.FacilityUpdateDTO;
-import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.OrganizationModel;
-import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -20,7 +20,7 @@ import java.util.*;
 
 import static junit.framework.TestCase.assertEquals;
 
-public class FacilityApiTest extends AbstractSecurityIntegrationTest {
+public class FacilityApiTest extends AbstractMongoIntegrationTest {
 
     protected final static String PATH = "/core/facilities";
     protected final static String URI_PATH = PATH + "/{uri}";

@@ -11,6 +11,7 @@ package org.opensilex.core.geospatial.dal;
 
 import com.mongodb.client.model.geojson.Geometry;
 import org.opensilex.nosql.mongodb.MongoModel;
+import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 
 import java.net.URI;
 
@@ -21,14 +22,27 @@ import java.net.URI;
  */
 public class GeospatialModel extends MongoModel {
 
+    public static final String GRAPH_FIELD = "graph";
     URI graph;
     URI rdfType;
     String name;
+
     Geometry geometry;
 
     public static final String GEOMETRY_FIELD = "geometry";
 
     public static final String RDF_TYPE_FIELD = "rdfType";
+
+    public GeospatialModel() {
+    }
+
+    public GeospatialModel(SPARQLNamedResourceModel<?> model, URI graph, Geometry geometry) {
+        this.uri = model.getUri();
+        this.name = model.getName();
+        this.rdfType = model.getType();
+        this.graph = graph;
+        this.geometry = geometry;
+    }
 
     public URI getGraph() {
         return graph;

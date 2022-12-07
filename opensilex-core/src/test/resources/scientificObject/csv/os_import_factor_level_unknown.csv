@@ -1,0 +1,4 @@
+uri,type,vocabulary:hasFactorLevel,rdfs:label
+,,,
+,,test:id/unknown_factor.level1,os_import_factor_level_unknown_1
+,,test:id/unknown_factor.level2,os_import_factor_level_unknown_2

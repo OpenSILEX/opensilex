@@ -240,9 +240,6 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     @Override
     public void executeUpdateQuery(UpdateBuilder update) throws SPARQLException {
         addPrefixes(update);
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("SPARQL UPDATE\n" + update.buildRequest().toString());
-        }
         connection.executeUpdateQuery(update);
     }
 
@@ -1766,8 +1763,10 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     public static final String EXISTING_VAR = "existing";
 
     /**
-     * @param type the rdf:type (if null/empty then the query only search if there exist an occurrence of <b>( ?uri a ?rdfType )</b> triple pattern for each URI
      * @param uris the {@link Collection} of URI to check in {@link String} representation
+     * @param streamSize
+     * @param type the rdf:type (if null/empty then the query only search if there exist an occurrence of <b>( ?uri a ?rdfType )</b> triple pattern for each URI
+     * @param graph
      * @return a {@link SelectBuilder} which when executed, indicate for each element of uris, if the element exist (TRUE/FALSE)
      * as an instance of the type (or as any rdf:type if no type is provided)
      *
@@ -1786,17 +1785,28 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      * }
      * }</pre>
      */
-    public SelectBuilder getCheckUriListExistQuery(String type, Stream<String> uris, int streamSize) {
+    public SelectBuilder getCheckUriListExistQuery(Stream<String> uris, int streamSize, String type, Node graph) {
+
+        Objects.requireNonNull(uris);
 
         Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
         Var typeVar = makeVar(SPARQLResourceModel.TYPE_FIELD);
         Var existing = makeVar(SPARQLService.EXISTING_VAR);
 
         WhereBuilder where = new WhereBuilder();
+
+        // check if URIs must have some type
         if (! StringUtils.isEmpty(type)) {
             where.addWhere(typeVar, Ontology.subClassAny, NodeFactory.createURI(URIDeserializer.getExpandedURI(type)));
         }
-        where.addWhere(uriVar, RDF.type, typeVar);
+
+        // search inside graph, if provided
+        if(graph != null){
+            Node expandedGraph = NodeFactory.createURI(URIDeserializer.getExpandedURI(graph.toString()));
+            where.addGraph(expandedGraph,uriVar, RDF.type, typeVar);
+        }else{
+            where.addWhere(uriVar, RDF.type, typeVar);
+        }
 
         // add EXIST {} expression as var of SELECT
         SelectBuilder select = new SelectBuilder()

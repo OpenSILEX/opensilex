@@ -5,8 +5,13 @@
  */
 package org.opensilex.core.scientificObject.api;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.ApiModelProperty;
+
+import java.io.IOException;
 import java.net.URI;
+
+import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.server.rest.validation.ValidURI;
 
 /**
@@ -36,6 +41,11 @@ public class ScientificObjectCsvDescriptionDTO {
 
     public void setValidationToken(String validationToken) {
         this.validationToken = validationToken;
+    }
+
+    public static ScientificObjectCsvDescriptionDTO fromString(String param) throws IOException {
+        ObjectMapper mapper = ObjectMapperContextResolver.getObjectMapper();
+        return mapper.readValue(param, ScientificObjectCsvDescriptionDTO.class);
     }
 
 }

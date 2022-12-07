@@ -21,7 +21,7 @@
                     <button
                         type="button"
                         class="close"
-                        @click="OntologyCsvImporter.hide()"
+                        @click="this.hide()"
                         data-dismiss="modal"
                         aria-label="Close"
                     >
@@ -57,14 +57,14 @@
                         <slot name="help"></slot>
                     </div>
                 </div>
-                <div class="error-container" v-if="validationErrors">
+                <div class="error-container" v-if="validationErrors && validationErrors.length > 0">
                     <div class="static-field">
             <span class="field-view-title"
             >{{ $t("OntologyCsvImporter.csvErrors") }}:</span
             >
                     </div>
 
-                    <b-table-simple hover small responsive sticky-header>
+                    <b-table-simple borderless striped hover small responsive sticky-header>
                         <b-thead head-variant="light">
                             <b-tr>
                                 <b-th>{{ $t("OntologyCsvImporter.line") }}</b-th>
@@ -73,37 +73,28 @@
                             </b-tr>
                         </b-thead>
                         <b-tbody>
-                            <slot v-for="(row, index) in validationErrors">
+                            <slot v-for="row in validationErrors">
                                 <b-tr>
-                                    <b-th :rowspan="row.listSize">{{ row.index }}</b-th>
-                                    <b-td>{{
-                                            $t("OntologyCsvImporter." + row.firstErrorType.type)
-                                        }}
+                                    <b-th variant="danger" :rowspan="row.listSize">{{ row.index }}</b-th>
+                                    <b-td>
+                                        <b>{{$t("OntologyCsvImporter." + row.firstErrorType.type) }}</b>
                                     </b-td>
                                     <b-td>
                                         <ul>
                                             <li
-                                                v-for="validationErr in row.firstErrorType
-                          .validationErrors"
-                                                v-bind:key="
-                          getErrKey(validationErr, row.firstErrorType.type)
-                        "
+                                                v-for="validationErr in row.firstErrorType.validationErrors"
+                                                v-bind:key="getErrKey(validationErr, row.firstErrorType.type)"
                                             >
-                                                {{
-                                                    getValidationErrorDetail(
-                                                        validationErr,
-                                                        row.firstErrorType.type
-                                                    )
-                                                }}
+                                              {{getValidationErrorDetail(validationErr, row.firstErrorType.type) }}
                                             </li>
                                         </ul>
                                     </b-td>
                                 </b-tr>
                                 <b-tr
                                     v-for="(validationError, errorType) in row.list"
-                                    v-bind:key="index + errorType"
+                                    v-bind:key="row.index + errorType"
                                 >
-                                    <b-td>{{ $t("OntologyCsvImporter." + errorType) }}</b-td>
+                                    <b-td><b>{{ $t("OntologyCsvImporter." + errorType) }}</b></b-td>
                                     <b-td>
                                         <ul>
                                             <li
@@ -119,8 +110,8 @@
                         </b-tbody>
                     </b-table-simple>
                 </div>
-                <div class="validation-confirm-container" v-else-if="validationToken">
-                    {{ $t("OntologyCsvImporter.CSVIsValid") }}
+                <div class="validation-confirm-container" v-else-if="validationToken && nbLines">
+                    {{ this.$t("OntologyCsvImporter.CSVIsValid", {nb_lines: nbLines}) }}
                 </div>
             </ValidationObserver>
         </div>
@@ -128,7 +119,7 @@
             <button
                 type="button"
                 class="btn btn-secondary"
-                v-on:click="hide(false)"
+                v-on:click="hide()"
             >{{ $t('component.common.close') }}
             </button>
 
@@ -136,8 +127,7 @@
                 type="button"
                 class="btn greenThemeColor"
                 v-on:click="importCSV()"
-                :disabled="!csvFile || !!validationErrors"
-                :prevent="importCSV"
+                :disabled="!csvFile || validationErrors && validationErrors.length > 0"
             >{{ $t('component.common.ok') }}
             </button>
         </template>
@@ -147,9 +137,10 @@
 <script lang="ts">
 import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import {OntologyService} from "opensilex-core/index";
-import {CSVValidationModel} from "opensilex-core/model/cSVValidationModel";
-import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+import {CSVValidationModel, OntologyService} from "opensilex-core/index";
+import {CSVValidationDTO} from "opensilex-core/model/cSVValidationDTO";
+import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
+import {CsvError} from "./CsvError";
 
 @Component
 export default class OntologyCsvImporter extends Vue {
@@ -179,6 +170,9 @@ export default class OntologyCsvImporter extends Vue {
     })
     uploadCSV;
 
+    @Prop()
+    successImportMsg: string;
+
     @Prop({
         default: () => [],
     })
@@ -188,7 +182,7 @@ export default class OntologyCsvImporter extends Vue {
         this.validatorRef.reset();
         this.csvFile = null;
         this.validationToken = null;
-        this.validationErrors = null;
+        this.validationErrors = [];
         this.OntologyCsvImporter.show();
     }
 
@@ -214,22 +208,32 @@ export default class OntologyCsvImporter extends Vue {
     rows = [];
 
     csvFile = null;
-    validationToken = null;
+    validationToken: string = null;
+    nbLines: number = 0;
 
     csvUploaded() {
         this.validationToken = null;
-        this.validationErrors = null;
+        this.validationErrors = [];
+        this.nbLines = 0;
         if (this.csvFile != null) {
-            this.validateCSV(this.csvFile).then(this.checkCSVValidation);
+            this.validateCSV(this.csvFile).then((response) => {
+                this.checkCSVValidation(response);
+                if (this.validationToken) {
+                    this.$emit("csvValidated", response);
+                }
+            })
+
         }
     }
 
     importCSV() {
-        this.validationErrors = null;
+        this.validationErrors = [];
+        this.nbLines = 0;
         this.uploadCSV(this.validationToken, this.csvFile)
             .then((response) => {
                 this.checkCSVValidation(response);
                 if (this.validationToken) {
+                    this.$opensilex.showSuccessToast(response.result.nb_lines_imported + " " + this.$i18n.t(this.successImportMsg));
                     this.$emit("csvImported", response);
                     this.hide();
                 }
@@ -238,21 +242,24 @@ export default class OntologyCsvImporter extends Vue {
     }
 
     checkCSVValidation(response) {
-        this.validationToken = response.result.validation_token;
+        let result: CSVValidationDTO = response.result;
+        this.validationToken = result.validation_token;
+        this.nbLines = result.nb_lines_imported;
+
         if (!this.validationToken) {
-            let errors: CSVValidationModel = response.result.errors;
+            let errors = response.result.errors;
 
-            let globalErrors = {};
+            let errorsByRowIndex:  Map<number, CsvError> = new Map();
 
-            this.loadErrorType("datatypeErrors", errors, globalErrors);
-            this.loadErrorType("uriNotFoundErrors", errors, globalErrors);
-            this.loadErrorType("invalidURIErrors", errors, globalErrors);
-            this.loadErrorType("missingRequiredValueErrors", errors, globalErrors);
-            this.loadErrorType("invalidValueErrors", errors, globalErrors);
-            this.loadErrorType("alreadyExistingURIErrors", errors, globalErrors);
-            this.loadErrorType("duplicateURIErrors", errors, globalErrors);
+            OntologyCsvImporter.loadErrorType("datatypeErrors", errors, errorsByRowIndex);
+            OntologyCsvImporter.loadErrorType("uriNotFoundErrors", errors, errorsByRowIndex);
+            OntologyCsvImporter.loadErrorType("invalidURIErrors", errors, errorsByRowIndex);
+            OntologyCsvImporter.loadErrorType("missingRequiredValueErrors", errors, errorsByRowIndex);
+            OntologyCsvImporter.loadErrorType("invalidValueErrors", errors, errorsByRowIndex);
+            OntologyCsvImporter.loadErrorType("alreadyExistingURIErrors", errors, errorsByRowIndex);
+            OntologyCsvImporter.loadErrorType("duplicateURIErrors", errors, errorsByRowIndex);
 
-            let generalErrors: any = {
+            let generalErrors: CsvError = {
                 index: "Erreurs générales",
                 list: {},
                 listSize: 1,
@@ -265,22 +272,21 @@ export default class OntologyCsvImporter extends Vue {
                     generalErrors.firstErrorType = "missingHeaders";
                 }
             }
-
-            if (errors.invalidHeaderURIs) {
-                let invalidHeaders: any[] = Object.values(errors.invalidHeaderURIs);
-
-                if(invalidHeaders.length > 0){
-                    generalErrors.list.invalidHeaderURIs = invalidHeaders;
-                    generalErrors.listSize = generalErrors.listSize + 1;
-                    if (!generalErrors.firstErrorType) {
-                        generalErrors.firstErrorType = "invalidHeaderURIs";
-                    }
+            if (errors.emptyHeaders.length > 0) {
+                generalErrors.list.emptyHeaders = errors.emptyHeaders;
+                generalErrors.listSize++;
+                if (!generalErrors.firstErrorType) {
+                    generalErrors.firstErrorType = "emptyHeaders";
                 }
-
             }
 
-            this.validationErrors = [];
-
+            if (errors.invalidHeaderURIs.length > 0) {
+                generalErrors.list.invalidHeaderURIs = errors.invalidHeaderURIs;
+                generalErrors.listSize = generalErrors.listSize + 1;
+                if (!generalErrors.firstErrorType) {
+                    generalErrors.firstErrorType = "invalidHeaderURIs";
+                }
+            }
             if (generalErrors.firstErrorType) {
                 generalErrors.listSize--;
                 let firstErrorType = generalErrors.firstErrorType;
@@ -292,34 +298,35 @@ export default class OntologyCsvImporter extends Vue {
                 this.validationErrors.push(generalErrors);
             }
 
-            for (let i in globalErrors) {
-                globalErrors[i].index = globalErrors[i].index + 1;
-                if (globalErrors[i].firstErrorType) {
-                    globalErrors[i].listSize = globalErrors[i].listSize - 1;
-                    let firstErrorType = globalErrors[i].firstErrorType;
-                    globalErrors[i].firstErrorType = {
+            errorsByRowIndex.forEach(error => {
+                if (error.firstErrorType) {
+                    error.listSize--;
+                    let firstErrorType = error.firstErrorType;
+                    error.firstErrorType = {
                         type: firstErrorType,
-                        validationErrors: globalErrors[i].list[firstErrorType],
+                        validationErrors: error.list[firstErrorType],
                     };
-                    delete globalErrors[i].list[firstErrorType];
-                    this.validationErrors.push(globalErrors[i]);
+                    delete error.list[firstErrorType];
                 }
-            }
+            });
+
+            // push all element form globalErrors to validationError in one call, in order to perform Vue render only once
+            this.validationErrors.push(...errorsByRowIndex.values());
         }
     }
 
-    validationErrors = null;
+    validationErrors: Array<CsvError> = null;
 
     getValidationErrorDetail(validationError, errorType) {
         switch (errorType) {
-            case "invalidHeaderURIs":
-                return this.$t(
-                    "OntologyCsvImporter.validationErrorInvalidHeaderMessage",
-                    {header: validationError}
-                );
             case "missingHeaders":
                 return this.$t(
                     "OntologyCsvImporter.validationErrorMissingHeaderMessage",
+                    {header: validationError}
+                );
+            case "emptyHeaders":
+                return this.$t(
+                    "OntologyCsvImporter.validationErrorEmptyHeaderMessage",
                     {header: validationError}
                 );
             case "missingRequiredValueErrors":
@@ -345,7 +352,9 @@ export default class OntologyCsvImporter extends Vue {
         }
     }
 
-    private loadErrorType(errorType, errors, globalErrors) {
+
+    private static loadErrorType(errorType: string, errors: CSVValidationModel, globalErrors: Map<number,CsvError>) {
+
         for (let i in errors[errorType]) {
             let errorList = errors[errorType][i];
             if (!Array.isArray(errorList)) {
@@ -353,30 +362,34 @@ export default class OntologyCsvImporter extends Vue {
             }
             for (let j in errorList) {
                 let errorItem = errorList[j];
+                let rowIndex: number = errorItem.rowIndex;
 
-                let rowIndex = errorItem.rowIndex;
-                if (!globalErrors[rowIndex]) {
-                    globalErrors[rowIndex] = {
-                        index: rowIndex,
+                let globalError: CsvError = globalErrors.get(rowIndex);
+                if (!globalError) {
+                    globalError = {
+                        index: ""+rowIndex,
                         list: {},
                         listSize: 1,
+                        firstErrorType: undefined
                     };
+                    globalErrors.set(rowIndex,globalError);
                 }
 
-                if (!globalErrors[rowIndex].list) {
-                    globalErrors[rowIndex].list = {};
+
+                if (!globalError.list) {
+                    globalError.list = {};
                 }
 
-                if (!globalErrors[rowIndex].firstErrorType) {
-                    globalErrors[rowIndex].firstErrorType = errorType;
+                if (!globalError.firstErrorType) {
+                    globalError.firstErrorType = errorType;
                 }
 
-                if (!globalErrors[rowIndex].list[errorType]) {
-                    globalErrors[rowIndex].list[errorType] = [];
-                    globalErrors[rowIndex].listSize = globalErrors[rowIndex].listSize + 1;
+                if (!globalError.list[errorType]) {
+                    globalError.list[errorType] = [];
+                    globalError.listSize++;
                 }
 
-                globalErrors[rowIndex].list[errorType].push(errorItem);
+                globalError.list[errorType].push(errorItem);
             }
         }
     }
@@ -438,8 +451,9 @@ en:
         dataPlaceholder: Your can insert your data from this row.
         ignoredFirstRows: First three rows of CSV content will be ignored.
         columnModification: You can change columns' order and add new ones as long as you don't change the ID of the first row.
-        csvErrors: Error detected in CSV file
+        csvErrors: Error(s) detected in CSV file
         missingHeaders: Missing column headers
+        emptyHeaders: Header with empty column
         invalidHeaderURIs: Invalid header URI
         datatypeErrors: Data type error
         uriNotFoundErrors: URI not found
@@ -448,13 +462,13 @@ en:
         invalidValueErrors: Invalid value
         alreadyExistingURIErrors: URI already existing
         duplicateURIErrors: Duplicate URI
-        validationErrorMessage: "Column: '{header}' - Value: '{value}' - Details: '{msg}'"
+        validationErrorMessage: "Column: '{header}' - Value: '{value}' - Details: '{message}'"
         validationErrorMissingRequiredMessage: "Column: '{header}'"
-        validationErrorMissingHeaderMessage: "Header: '{header}'"
-        validationErrorInvalidHeaderMessage: "Invalid header: '{header}'"
-        validationErrorDuplicateURIMessage: "Column: '{header}' - Value: '{value}' - Identical with row: '{previousRow}'"
+        validationErrorMissingHeaderMessage: "Column: '{header}'"
+        validationErrorEmptyHeaderMessage: "Header: column '{header}' - Empty column"
+        validationErrorDuplicateURIMessage: "Header: column '{header}' - Value: '{value}' - Identical with row: '{previousRow}'"
         validationErrorDatatypeMessage: "Column: '{header}' - Value: '{value}' ({datatype})"
-        CSVIsValid: Your CSV file has been successfully validated, click OK to import it
+        CSVIsValid: Your CSV file has been successfully validated ({nb_lines} row(s) found), click OK to import it
         csv-file-placeholder: Drop or select CSV file here...
         csv-file-drop-placeholder: Drop CSV file here...
         csv-file-select-button: Select
@@ -471,12 +485,13 @@ fr:
         object-type-placeholder: Utiliser cette zone pour rechercher un type d'objet
         expectedFormat: Format de fichier CSV attendu
         objectURI: URI de l'objet
-        objectURIComment: Vous pouvez définir un URI personnalisé ou laisser vide pour en générer un.
+        objectURIComment: Vous pouvez définir une URI personnalisé ou laisser vide pour en générer une.
         dataPlaceholder: Vous pouvez insérer vos données à partir de cette ligne.
         ignoredFirstRows: Les trois premières lignes de contenu du CSV seront ignorées.
         columnModification: Vous pouvez changer l'ordre des colonnes et en ajouter tant que vous ne modifiez pas l'identifiant de la première ligne.
-        csvErrors: Erreurs détectées lors de la validation du fichier CSV
+        csvErrors: Erreur(s) détectée(s) lors de la validation du fichier CSV
         missingHeaders: En-tête de colonne manquant
+        emptyHeaders: En-tête avec une ou plusieurs colonne(s) vide(s)
         invalidHeaderURIs: URI d'en-tête invalide
         datatypeErrors: Type de donnée invalide
         uriNotFoundErrors: URI non trouvée
@@ -485,13 +500,13 @@ fr:
         invalidValueErrors: Valeur invalide
         alreadyExistingURIErrors: URI déjà existante
         duplicateURIErrors: URI dupliquée
-        validationErrorMessage: "Colonne: '{header}' - Valeur: '{value}' - Détail: '{msg}'"
+        validationErrorMessage: "Colonne: '{header}' - Valeur: '{value}' - Détail: '{message}'"
         validationErrorMissingRequiredMessage: "Colonne: '{header}'"
-        validationErrorMissingHeaderMessage: "En-tête : '{header}'"
-        validationErrorInvalidHeaderMessage: "Colonne : '{header}'"
+        validationErrorMissingHeaderMessage: "En-tête: '{header}'"
+        validationErrorEmptyHeaderMessage: "En-tête: '{header}' - Colonne vide"
         validationErrorDuplicateURIMessage: "Colonne: '{header}' - Valeur: '{value}' - Identique à la ligne: '{previousRow}'"
         validationErrorDatatypeMessage: "Colonne: '{header}' - Valeur: '{value}' ({datatype})"
-        CSVIsValid: Votre fichier CSV est valide, cliquer sur OK pour l'importer
+        CSVIsValid: Votre fichier CSV est valide ({nb_lines} ligne lue(s)), cliquer sur OK pour l'importer
         csv-file-placeholder: Déposer ou choisir un fichier CSV ici...
         csv-file-drop-placeholder: Déposer le fichier CSV ici...
         csv-file-select-button: Parcourir

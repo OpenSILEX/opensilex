@@ -10,38 +10,25 @@ package org.opensilex.core.csv.dal;
 
 import com.opencsv.CSVWriter;
 import com.opencsv.ICSVWriter;
-import com.univocity.parsers.csv.CsvParser;
-import com.univocity.parsers.csv.CsvParserSettings;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.RDFS;
-import org.opensilex.sparql.csv.CSVCell;
-import org.opensilex.sparql.csv.CSVValidationModel;
-import org.opensilex.sparql.deserializer.SPARQLDeserializer;
-import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
-import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.sparql.ontology.dal.ClassModel;
-import org.opensilex.sparql.ontology.dal.OntologyDAO;
-import org.opensilex.sparql.ontology.dal.OwlRestrictionModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
-import org.opensilex.utils.ClassUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.StringWriter;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
 
@@ -75,281 +62,6 @@ public abstract class AbstractCsvDao<T extends SPARQLNamedResourceModel> impleme
 
     public static final int CSV_HEADER_COL_OFFSET = 3;
     public static final int CSV_HEADER_ROWS_NB = 2;
-
-    @Override
-    public CSVValidationModel validateCSV(
-            URI graph,
-            URI parentClass,
-            InputStream file,
-            int firstRow,
-            String lang,
-            Map<String, BiConsumer<CSVCell, CSVValidationModel>> customValidators,
-            List<String> customColumns,
-            boolean generateURI
-    ) throws IOException {
-
-        Map<String, Map<String, OwlRestrictionModel>> typeRestrictions = new HashMap<>();
-        Map<String, ClassModel> typeModels = new HashMap<>();
-        Map<Integer, String> headerByIndex = new HashMap<>();
-
-        try (Reader inputReader = new InputStreamReader(file, StandardCharsets.UTF_8.name())) {
-            CsvParserSettings csvParserSettings = ClassUtils.getCSVParserDefaultSettings();
-            CsvParser csvReader = new CsvParser(csvParserSettings);
-            csvReader.beginParsing(inputReader);
-            LOGGER.debug("Import Ontology objects - CSV format => \n '" + csvReader.getDetectedFormat() + "'");
-
-            String[] ids = csvReader.parseNext();
-
-            int uriIndex = -1;
-            int typeIndex = -1;
-            int nameIndex = -1;
-            for (int i = 0; i < ids.length; i++) {
-                String id = ids[i];
-
-                if (id.equalsIgnoreCase(CSV_URI_KEY)) {
-                    uriIndex = i;
-                } else if (id.equalsIgnoreCase(CSV_TYPE_KEY)) {
-                    typeIndex = i;
-                } else if (id.equalsIgnoreCase(CSV_NAME_KEY)) {
-                    nameIndex = i;
-                }
-                headerByIndex.put(i, SPARQLDeserializers.getExpandedURI(id));
-            }
-
-            if (firstRow > 2) {
-                int skipLines = 0;
-                while (skipLines < (firstRow - 2)) {
-                    csvReader.parseNext();
-                    skipLines++;
-                }
-            }
-
-            int rowIndex = 1;
-            String[] values = null;
-
-            CSVValidationModel csvValidation = new CSVValidationModel();
-
-            List<String> missingHeaders = new ArrayList<>();
-            if (uriIndex == -1) {
-                missingHeaders.add(CSV_URI_KEY);
-            }
-            if (typeIndex == -1) {
-                missingHeaders.add(CSV_TYPE_KEY);
-            }
-            if (nameIndex == -1) {
-                missingHeaders.add(CSV_NAME_KEY);
-            }
-
-            if (missingHeaders.size() > 0) {
-                csvValidation.addMissingHeaders(missingHeaders);
-            } else {
-
-                Map<URI, Map<URI, Boolean>> checkedClassObjectURIs = new HashMap<>();
-                Map<URI, Integer> checkedURIs = new HashMap<>();
-
-                OntologyDAO ontologyDAO = new OntologyDAO(sparql);
-                while ((values = csvReader.parseNext()) != null) {
-                    try {
-                        URI rdfType = new URI(SPARQLDeserializers.getExpandedURI(values[typeIndex].trim()));
-                        if (!typeRestrictions.containsKey(rdfType.toString())) {
-                            ClassModel model = ontologyDAO.getClassModel(rdfType, parentClass, lang);
-
-                            Map<String, OwlRestrictionModel> restrictionsByID = new HashMap<>();
-                            model.getRestrictionsByProperties().values().forEach(restriction -> {
-                                String propertyURI = SPARQLDeserializers.getExpandedURI(restriction.getOnProperty());
-                                restrictionsByID.put(propertyURI, restriction);
-                            });
-
-                            typeRestrictions.put(SPARQLDeserializers.getExpandedURI(rdfType.toString()), restrictionsByID);
-                            typeModels.put(rdfType.toString(), model);
-                        }
-
-                        Map<String, OwlRestrictionModel> restrictionsByID = typeRestrictions.get(rdfType.toString());
-
-                        validateCSVRow(graph, typeModels.get(rdfType.toString()), values, rowIndex, csvValidation, uriIndex, typeIndex, nameIndex, restrictionsByID, headerByIndex, checkedClassObjectURIs, checkedURIs, customValidators, generateURI);
-
-                    } catch (Exception ex) {
-                        CSVCell cell = new CSVCell(rowIndex, 0, "Unhandled error while parsing row: " + ex.getMessage(), "all");
-                        csvValidation.addInvalidValueError(cell);
-                    }
-
-                    rowIndex++;
-                }
-
-            }
-
-            return csvValidation;
-        }
-    }
-
-    private void validateCSVRow(
-            URI graph,
-            ClassModel model,
-            String[] values,
-            int rowIndex,
-            CSVValidationModel csvValidation,
-            int uriIndex,
-            int typeIndex,
-            int nameIndex,
-            Map<String, OwlRestrictionModel> restrictionsByID,
-            Map<Integer, String> headerByIndex,
-            Map<URI, Map<URI, Boolean>> checkedClassObjectURIs,
-            Map<URI, Integer> checkedURIs,
-            Map<String, BiConsumer<CSVCell, CSVValidationModel>> customValidators,
-            boolean generateURI
-    ) throws Exception {
-
-        SPARQLNamedResourceModel<T> object = objectClass.getConstructor().newInstance();
-
-        String name = null;
-
-        for (int colIndex = 0; colIndex < values.length; colIndex++) {
-            if (colIndex == typeIndex) {
-                continue;
-            } else if (colIndex == nameIndex) {
-                name = values[colIndex];
-                if (StringUtils.isEmpty(name)) {
-                    CSVCell cell = new CSVCell(rowIndex, colIndex, name, CSV_NAME_KEY);
-                    csvValidation.addMissingRequiredValue(cell);
-                } else {
-                    object.setName(name);
-                }
-            } else if (colIndex == uriIndex) {
-                String value = values[colIndex];
-                CSVCell cell = new CSVCell(rowIndex, colIndex, value, CSV_URI_KEY);
-                if (!StringUtils.isEmpty(value)) {
-                    if (URIDeserializer.validateURI(value)) {
-                        URI objectURI = new URI(value);
-                        if (checkedURIs.containsKey(objectURI)) {
-                            csvValidation.addDuplicateURIError(cell, checkedURIs.get(objectURI));
-                        } else if (!sparql.uriExists(SPARQLDeserializers.nodeURI(graph), objectURI)) {
-                            object.setUri(objectURI);
-                        } else {
-                            csvValidation.addAlreadyExistingURIError(cell);
-                        }
-                        checkedURIs.put(objectURI, rowIndex);
-                    } else {
-                        csvValidation.addInvalidURIError(cell);
-                    }
-                }
-            } else if (headerByIndex.containsKey(colIndex)) {
-                String header = headerByIndex.get(colIndex);
-                String value = values[colIndex];
-                if (restrictionsByID.containsKey(header)) {
-                    OwlRestrictionModel restriction = restrictionsByID.get(header);
-                    URI propertyURI = restriction.getOnProperty();
-                    BiConsumer<CSVCell, CSVValidationModel> customValidator = null;
-                    if (customValidators != null) {
-                        customValidator = customValidators.get(SPARQLDeserializers.getExpandedURI(propertyURI));
-                    }
-
-                    CSVCell cell = new CSVCell(rowIndex, colIndex, value, header);
-                    validateCSVSingleValue(graph, model, propertyURI, cell, restriction, csvValidation, checkedClassObjectURIs, customValidator, object);
-
-                } else {
-                    CSVCell cell = new CSVCell(rowIndex, colIndex, value, header);
-                    if (customValidators != null) {
-                        BiConsumer<CSVCell, CSVValidationModel> customValidator = customValidators.get(header);
-                        if (customValidator != null) {
-                            customValidator.accept(cell, csvValidation);
-                        }
-                    }
-                }
-            }
-        }
-
-        if (!csvValidation.hasErrors()) {
-            if (object.getUri() == null && generateURI) {
-                String generationUriPrefix = sparql.getDefaultGenerationURI(objectClass).toString();
-                int retry = 0;
-                URI objectURI = object.generateURI(generationUriPrefix, (T) object, retry);
-
-                // check if URI has not been locally used or if it not already exist into sparql repository
-                while (checkedURIs.containsKey(objectURI) || sparql.uriExists(SPARQLDeserializers.nodeURI(graph), objectURI)) {
-                    retry++;
-                    objectURI = object.generateURI(generationUriPrefix, (T) object, retry);
-                }
-                checkedURIs.put(objectURI, rowIndex);
-                object.setUri(objectURI);
-            }
-
-            object.setType(model.getUri());
-            csvValidation.addObject(name, object);
-        }
-    }
-
-    private void validateCSVSingleValue(
-            URI graph,
-            ClassModel model,
-            URI propertyURI,
-            CSVCell cell,
-            OwlRestrictionModel restriction,
-            CSVValidationModel csvValidation,
-            Map<URI, Map<URI, Boolean>> checkedClassObjectURIs,
-            BiConsumer<CSVCell, CSVValidationModel> customValidator,
-            SPARQLResourceModel object
-    ) throws SPARQLException {
-        String value = cell.getValue();
-
-        if (restriction.isRequired() && (StringUtils.isEmpty(value))) {
-            csvValidation.addMissingRequiredValue(cell);
-        } else if (model.isDatatypePropertyRestriction(propertyURI)) {
-            try {
-                if (!StringUtils.isEmpty(value)) {
-                    SPARQLDeserializer<?> deserializer = SPARQLDeserializers.getForDatatype(restriction.getSubjectURI());
-                    if (!deserializer.validate(value)) {
-                        csvValidation.addInvalidDatatypeError(cell, restriction.getSubjectURI());
-                    } else if (customValidator != null) {
-                        customValidator.accept(cell, csvValidation);
-                    }
-
-                    if (!csvValidation.hasErrors()) {
-                        object.addRelation(graph, propertyURI, deserializer.getClassType(), value);
-                    }
-                }
-            } catch (SPARQLDeserializerNotFoundException ex) {
-                csvValidation.addInvalidDatatypeError(cell, restriction.getSubjectURI());
-            }
-        } else if (model.isObjectPropertyRestriction(propertyURI)) {
-            try {
-                if (!StringUtils.isEmpty(value)) {
-                    if (URIDeserializer.validateURI(value)) {
-                        URI objectURI = new URI(value);
-
-                        URI classURI = restriction.getSubjectURI();
-                        boolean doesClassObjectUriExist;
-                        if (checkedClassObjectURIs.containsKey(classURI) && checkedClassObjectURIs.get(classURI).containsKey(objectURI)) {
-                            doesClassObjectUriExist = checkedClassObjectURIs.get(classURI).get(objectURI);
-                        } else {
-                            doesClassObjectUriExist = sparql.uriExists(classURI, objectURI);
-                            if (!checkedClassObjectURIs.containsKey(classURI)) {
-                                checkedClassObjectURIs.put(classURI, new HashMap<>());
-                            }
-                            checkedClassObjectURIs.get(classURI).put(objectURI, doesClassObjectUriExist);
-                        }
-
-                        if (!doesClassObjectUriExist) {
-                            csvValidation.addURINotFoundError(cell, classURI, objectURI);
-                        } else if (customValidator != null) {
-                            customValidator.accept(cell, csvValidation);
-                        }
-
-                        if (!csvValidation.hasErrors()) {
-                            object.addRelation(graph, propertyURI, URI.class, value);
-                        }
-                    } else {
-                        if (customValidator != null) {
-                            customValidator.accept(cell, csvValidation);
-                        } else {
-                            csvValidation.addInvalidURIError(cell);
-                        }
-                    }
-                }
-            } catch (URISyntaxException ex) {
-                csvValidation.addInvalidURIError(cell);
-            }
-        }
-    }
 
 
     @Override

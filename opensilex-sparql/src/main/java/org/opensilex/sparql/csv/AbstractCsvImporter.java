@@ -6,12 +6,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
+import org.opensilex.OpenSilexModuleNotFoundException;
+import org.opensilex.sparql.SPARQLConfig;
 import org.opensilex.sparql.SPARQLModule;
+import org.opensilex.sparql.csv.header.CsvHeader;
+import org.opensilex.sparql.csv.validation.CsvCellValidationContext;
+import org.opensilex.sparql.csv.validation.CustomCsvValidation;
 import org.opensilex.sparql.deserializer.URIDeserializer;
-import org.opensilex.sparql.exceptions.SPARQLException;
-import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
-import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
-import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
+import org.opensilex.sparql.exceptions.*;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OwlRestrictionModel;
@@ -24,79 +26,154 @@ import org.opensilex.utils.ClassUtils;
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
-public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassURIGenerator> implements CsvImporter {
+/**
+ * @author rcolin
+ * @param <T>
+ */
+public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassURIGenerator> implements CsvImporter<T> {
 
     public static final String CSV_URI_KEY = "uri";
     public static final int CSV_URI_INDEX = 0;
 
     public static final String CSV_TYPE_KEY = "type";
     public static final int CSV_TYPE_INDEX = 1;
-    private static final int PROPERTIES_BEGIN_INDEX = 2;
+    private static final int CSV_PROPERTIES_BEGIN_INDEX = 2;
 
-    private final SPARQLService sparql;
-    private final OntologyStore ontologyStore;
+    // Start at 2 since we skip header and header description line (2)
+    private static final int CSV_ROW_BEGIN_INDEX = 2;
 
-    protected final URI classURI;
+    // Offset for a human-readable error reporting (array index start at 0 for computer-scientist but not for all human)
+    // Here users expect that first column index is 1
+    public static final int CSV_HEADER_HUMAN_READABLE_COLUMN_OFFSET = 1;
+
+    // Add one LINE since users expect that the first effective row is the third line
+    public static final int CSV_HEADER_HUMAN_READABLE_ROW_OFFSET = CSV_ROW_BEGIN_INDEX+1;
+
+    protected final SPARQLService sparql;
+    protected final OntologyStore ontologyStore;
+
+    protected final URI rootClassURI;
     protected final Class<T> objectClass;
     protected final ClassModel rootClassModel;
+
+    /**
+     * URI of the SPARQL graph is which models are managed. This graph
+     * can be used for validation and creation
+     */
     protected final URI graph;
+    protected final Node graphNode;
     protected final String generationPrefix;
+
+    /**
+     * Determine how to create a new instance of {@code T}
+     */
     protected final Supplier<T> objectConstructor;
 
-    private final int batchSize;
-    private final int errorNbLimit;
+    /**
+     * Index between RDF property and corresponding custom CSV validation
+     * @see #addCustomValidation(CustomCsvValidation)
+     */
+    private final Map<String, CustomCsvValidation<T>> customValidationByProperty;
 
+    /**
+     * Size of chunk during CSV file reading.
+     * The importer read a chunk and apply creation and validation on this chunk.
+     */
+    protected final int batchSize;
+
+    /**
+     * Maximum number of error until stop file reading
+     */
+    protected final int errorNbLimit;
+
+    /**
+     *
+     * @param sparql SPARQL service
+     * @param objectClass object class
+     * @param graph object graph
+     * @param objectConstructor way to define new model which are instance of the given {@code objectClass}
+     */
     protected AbstractCsvImporter(SPARQLService sparql, Class<T> objectClass, URI graph, Supplier<T> objectConstructor) throws SPARQLException {
+
+        Objects.requireNonNull(sparql);
+        Objects.requireNonNull(objectClass);
+        Objects.requireNonNull(graph);
+        Objects.requireNonNull(objectConstructor);
+
+        SPARQLConfig sparqlConfig;
+        try{
+             sparqlConfig = sparql.getOpenSilex().getModuleConfig(SPARQLModule.class,SPARQLConfig.class);
+        }catch (OpenSilexModuleNotFoundException e){
+            throw new RuntimeException(e);
+        }
+
+        if(sparqlConfig.csvBatchSize() <= 0 ){
+            throw new IllegalArgumentException("csvBatchSize config value is <= 0");
+        }
+        this.batchSize = sparqlConfig.csvBatchSize();
+
+        if(sparqlConfig.csvMaxErrorNb() <= 0 ){
+            throw new IllegalArgumentException("csvMaxErrorNb config value is <= 0");
+        }
+        this.errorNbLimit = sparqlConfig.csvMaxErrorNb();
+
         this.sparql = sparql;
         this.objectClass = objectClass;
         this.graph = graph;
+        this.graphNode = NodeFactory.createURI(graph.toString());
         this.generationPrefix = sparql.getDefaultGenerationURI(objectClass).toString();
         this.objectConstructor = objectConstructor;
-
         this.ontologyStore = SPARQLModule.getOntologyStoreInstance();
-        this.batchSize = 4096;
-        this.errorNbLimit = 16;
 
         try {
-            this.classURI = URIDeserializer.formatURI(sparql.getMapperIndex().getForClass(objectClass).getRDFType().getURI());
+            this.rootClassURI = URIDeserializer.formatURI(sparql.getMapperIndex().getForClass(objectClass).getRDFType().getURI());
         } catch (SPARQLMapperNotFoundException | SPARQLInvalidClassDefinitionException e) {
             throw new RuntimeException(e);
         }
 
-        this.rootClassModel = ontologyStore.getClassModel(classURI, null, null);
+        this.rootClassModel = ontologyStore.getClassModel(rootClassURI, null, null);
+        customValidationByProperty = new PatriciaTrie<>();
     }
 
 
-    @Override
-    public Map<Integer, URI> readHeader(Iterator<String[]> rowIterator, CSVValidationModel csvValidationModel) {
+    /**
+     * Read CSV file header and update validation in case of invalid or unknown column/property
+     *
+     * @param rowIterator an Iterator on each CSV row, this iterator is read 2 times (for header and header description)
+     * @param csvValidationModel CSV validation
+     *
+     * @return the extracted {@link CsvHeader}
+     */
+    protected CsvHeader readHeader(Iterator<String[]> rowIterator, CSVValidationModel csvValidationModel) {
 
         String[] headers = rowIterator.next();
-        Set<String> customHeaders = getCustomColumns();
 
-        if (headers == null || headers.length < PROPERTIES_BEGIN_INDEX) {
+        if (headers == null || headers.length < CSV_PROPERTIES_BEGIN_INDEX) {
             csvValidationModel.addEmptyHeader(0);
-            return Collections.emptyMap();
+            return null;
         }
 
         // no additional properties
-        if (headers.length == PROPERTIES_BEGIN_INDEX) {
-            return Collections.emptyMap();
+        if (headers.length == CSV_PROPERTIES_BEGIN_INDEX) {
+            return null;
         }
 
-        Map<Integer,URI> columnByIndex = new HashMap<>();
+        CsvHeader csvHeader = new CsvHeader(true);
 
-        for (int i = 0; i < headers.length - PROPERTIES_BEGIN_INDEX; i++) {
-            String header = headers[i + PROPERTIES_BEGIN_INDEX];
+        for (int i = 0; i < headers.length - CSV_PROPERTIES_BEGIN_INDEX; i++) {
+            String header = headers[i + CSV_PROPERTIES_BEGIN_INDEX];
             try {
                 if (StringUtils.isEmpty(header)) {
-                    csvValidationModel.addEmptyHeader(i);
-                }else{
-                    if(! customHeaders.contains(header)){
-                        columnByIndex.put(i+PROPERTIES_BEGIN_INDEX,new URI(URIDeserializer.getShortURI(header)));
-                    }
+                    // add +1 because index start at 0, but error reporting is more intuitive with index which start at 1 (all users are not computer scientist)
+                    csvValidationModel.addEmptyHeader(i+ CSV_PROPERTIES_BEGIN_INDEX +1);
+                } else {
+                    csvHeader.addColumn(header,i + CSV_PROPERTIES_BEGIN_INDEX);
                 }
             } catch (URISyntaxException e) {
                 csvValidationModel.addInvalidHeaderURI(i, header);
@@ -106,88 +183,165 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
         // skip help line
         rowIterator.next();
 
-        return columnByIndex;
+        return csvHeader;
     }
 
-    @Override
-    public void readBody(Iterator<String[]> rowIterator, Map<Integer, URI> columnByIndex, CsvOwlRestrictionValidator restrictionValidator, boolean validOnly) throws Exception {
+    /**
+     *
+     * @param rowIterator an Iterator on each CSV row
+     * @param csvHeader CSV Header
+     * @param validator OWL validation which can deal with custom csv validation and errors registering
+     * @param validOnly performs validation if {@code true}, performs validation+insertion else
+     * @param modelsConsumer a {@link BiConsumer} used to consume each chunk after validation/insertion (optional)
+     */
+    private void readBody(Iterator<String[]> rowIterator, CsvHeader csvHeader, CsvOwlRestrictionValidator validator, boolean validOnly, BiConsumer<CSVValidationModel, Stream<T>> modelsConsumer) throws Exception {
 
-        try {
-            if (!validOnly) {
-                sparql.startTransaction();
+        boolean allOk = true;
+        int totalRowIdx = 0;
+
+        // contains each encountered type which is a subClass of rootClassModel, during whole CSV file reading
+        Map<String,ClassModel> localClassesCache = new PatriciaTrie<>();
+
+        while (rowIterator.hasNext() && allOk) {
+
+            // read csv file by batch : perform validation and insertion by batch (by using transaction)
+            List<T> modelChunk = new ArrayList<>(batchSize);
+            Map<String, Integer> filledUrisToIndexesInChunk = new PatriciaTrie<>();
+            Map<String, Integer> generatedUrisToIndexesInChunk = new PatriciaTrie<>();
+
+            int chunkRowIdx = 0;
+
+            // continue while batch size or max error limit is not reached
+            while ((chunkRowIdx++ < batchSize) && (validator.getNbError() < errorNbLimit) && (rowIterator.hasNext())) {
+                String[] row = rowIterator.next();
+
+                // read model and performs local validation
+                T model = getModel(totalRowIdx, row, csvHeader, validator,localClassesCache);
+                modelChunk.add(model);
+
+                // generate new URI and register it to set of URI to check
+                if (model.getUri() == null) {
+                    generateLocallyUniqueUri(model, totalRowIdx, validator.getValidationModel(), generatedUrisToIndexesInChunk);
+                } else {
+                    // register URI to the set of URI to check
+                    filledUrisToIndexesInChunk.put(model.getUri().toString(), totalRowIdx);
+                }
+                totalRowIdx++;
             }
 
-            boolean allOk = true;
-            int totalRowIdx = 0;
-            Node graphNode = graph != null ? NodeFactory.createURI(graph.toString()) : null;
+            // check generated and filled URI uniqueness in batch way
+            if(validator.isValid()){
+                checkUrisUniqueness(filledUrisToIndexesInChunk, validator);
+                checkGeneratedUrisUniqueness(generatedUrisToIndexesInChunk, modelChunk, validator);
+            }
 
-            while (rowIterator.hasNext() && allOk) {
-
-                // read csv file by batch : perform validation and insertion by batch (by using transaction)
-                List<T> modelChunk = new ArrayList<>(batchSize);
-                Map<String, Integer> filledUrisToIndexesInChunk = new PatriciaTrie<>();
-                Map<String, Integer> generatedUrisToIndexesInChunk = new PatriciaTrie<>();
-
-                int chunkRowIdx = 0;
-
-                // continue while batch size or max error limit is not reached
-                while ((chunkRowIdx++ < batchSize) && (restrictionValidator.getNbError() < errorNbLimit) && (rowIterator.hasNext())) {
-                    String[] row = rowIterator.next();
-                    T model = getModel(totalRowIdx, row, columnByIndex, restrictionValidator);
-                    modelChunk.add(model);
-
-                    generateURI(model, totalRowIdx, restrictionValidator.getValidationModel(), filledUrisToIndexesInChunk, generatedUrisToIndexesInChunk);
-                    totalRowIdx++;
-                }
-
-                checkUrisUniqueness(filledUrisToIndexesInChunk, restrictionValidator.getValidationModel());
-                checkGeneratedUrisUniqueness(generatedUrisToIndexesInChunk,modelChunk,restrictionValidator.getValidationModel());
-
-                restrictionValidator.validateValuesByType();
-                allOk = restrictionValidator.isValid();
-
-                if (allOk && !validOnly) {
-                    sparql.create(graphNode, modelChunk, batchSize, false);
-                } else if (! allOk) {
-                    sparql.rollbackTransaction();
+            // batch validation and custom consumer use
+            if(validator.isValid()){
+                batchValidation(validator, modelChunk,totalRowIdx-chunkRowIdx);
+                if(modelsConsumer != null){
+                    modelsConsumer.accept(validator.getValidationModel(), modelChunk.stream());
                 }
             }
+
+            // write chunk
+            allOk = validator.isValid();
             if (allOk && !validOnly) {
-                sparql.commitTransaction();
-                restrictionValidator.getValidationModel().setNbObjectImported(totalRowIdx);
+                create(validator.getValidationModel(), modelChunk);
             }
-
-        } catch (Exception e) {
-            if (!validOnly) {
-                sparql.rollbackTransaction();
-            }
-            throw e;
         }
-
+        if (allOk) {
+            validator.getValidationModel().setNbObjectImported(totalRowIdx);
+        }
     }
 
-    private void checkGeneratedUrisUniqueness(final Map<String, Integer> generatedUrisToIndexes, List<T> models, CSVValidationModel validationModel) throws SPARQLException {
+    /**
+     * Apply a custom validation on a chunk. This method is useful is you need to perform some validation
+     * not row-by-row, but for row chunk. <br>
+     * Example : performs a validation query on a database on n objects, instead of evaluating validation query of each row
+     *
+     * @param restrictionValidator OWL validator
+     * @param models chunk of models
+     *
+     * @throws IOException if some error occurs during custom validation
+     */
+    protected void customBatchValidation(CsvOwlRestrictionValidator restrictionValidator, List<T> models, int offset) throws IOException {
+        // no custom batch validation
+    }
 
-        if(generatedUrisToIndexes.isEmpty()){
+    /**
+     * Performs batch validation by applying {@link CsvOwlRestrictionValidator#batchValidation()} and {@link #customBatchValidation(CsvOwlRestrictionValidator, List,int)}
+     * @param restrictionValidator OWL validator
+     * @param models chunk of models
+     * @param offset current index in CSV file
+     * @throws IOException if some error occurs during custom validation
+     */
+    private void batchValidation(CsvOwlRestrictionValidator restrictionValidator, List<T> models, int offset) throws IOException {
+        restrictionValidator.batchValidation();
+        customBatchValidation(restrictionValidator,models,offset);
+    }
+
+    /**
+     * 
+     * @param urisToCheck a bounded Stream on the URIs to check
+     * @param streamSize stream size
+     * @return a SPARQL query which indicate for each input URI, if the URI exist or not (boolean representation)
+     * 
+     * @see SPARQLService#getCheckUriListExistQuery(Stream, int, String, Node)
+     *
+     * @apiNote the SPARQL query must use the SPARQL variable {@link SPARQLService#EXISTING_VAR}
+     */
+    protected SelectBuilder getCheckGeneratedUrisUniquenessQuery(Stream<String> urisToCheck, int streamSize){
+        return sparql.getCheckUriListExistQuery(urisToCheck, streamSize, rootClassURI.toString(), graphNode);
+    }
+
+    /**
+     *
+     * Generate a unique URI for each {@link SPARQLResourceModel} from {@code models}
+     * @param generatedUrisToIndexes index between URI (string representation) and corresponding row index in CSV file
+     * @param models models for which we need to generate a unique URI
+     * @param validator CSV validation
+     * @throws SPARQLException if SPARQL query evaluation fails
+     * @throws IllegalArgumentException if the SPARQL query returned by {@link #getCheckGeneratedUrisUniquenessQuery(Stream, int)}
+     * doesn't contains the {@link SPARQLService#EXISTING_VAR} variable
+     *
+     * @apiNote This method evaluate a SPARQL query while there are remaining duplicate URI.
+     * By duplicate, we mean, a URI which is already present into the triple-store. <br>
+     *
+     * This method rely on {@link #getCheckGeneratedUrisUniquenessQuery(Stream, int)} in order to know what is the SPARQL
+     * query to evaluate at each generation round. <br>
+     *
+     * if error occurs during URI parsing, then {@link CSVValidationModel#addInvalidURIError(CSVCell)} is called for error registration
+     *
+     */
+    private void checkGeneratedUrisUniqueness(final Map<String, Integer> generatedUrisToIndexes, List<T> models, CsvOwlRestrictionValidator validator) throws SPARQLException, IllegalArgumentException {
+
+        if (generatedUrisToIndexes.isEmpty()) {
             return;
         }
 
         Set<String> urisToCheck = new HashSet<>(generatedUrisToIndexes.keySet());
 
         // store the number of duplicate for a row
-        Map<Integer,Integer> duplicateCountByRowIdx = new HashMap<>();
+        Map<Integer, Integer> duplicateCountByRowIdx = new HashMap<>();
 
-        while(! urisToCheck.isEmpty()){
+        while (!urisToCheck.isEmpty()) {
 
             // query used to check existence of n URIs (return false/true for each given URI)
-            SelectBuilder checkUrisQuery = sparql.getCheckUriListExistQuery(classURI.toString(), urisToCheck.stream(), urisToCheck.size());
+            SelectBuilder checkUrisQuery = getCheckGeneratedUrisUniquenessQuery(urisToCheck.stream(), urisToCheck.size());
+
+            // ensure var name is recognized, since we expect to use it just after
+            boolean useExistingVar = checkUrisQuery.getVars().stream().anyMatch(sparqlVar -> sparqlVar.getVarName().equals(SPARQLService.EXISTING_VAR));
+            if (!useExistingVar) {
+                throw new IllegalArgumentException("The SPARQL query generated from getCheckGeneratedUrisUniquenessQuery() must contains the "+SPARQLService.EXISTING_VAR+" variable name");
+            }
 
             // iterator on uri <-> row, used to loop over results by mapping result without input URI set
-            // Indeed query only return true/false in order to minimize I/O)
+            // Indeed query only return true/false in order to minimize I/O
             Iterator<String> urisIterator = urisToCheck.iterator();
 
             Set<String> duplicates = new HashSet<>();
 
+            // evaluate query and iterate over results : true or false
             sparql.executeSelectQueryAsStream(checkUrisQuery).forEach((SPARQLResult result) -> {
 
                 boolean uriExists = Boolean.parseBoolean(result.getStringValue(SPARQLService.EXISTING_VAR));
@@ -199,24 +353,26 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
                     T duplicateModel = models.get(rowIdx);
 
                     // regenerate a new URI
-                    try{
+                    try {
                         int retryCount = duplicateCountByRowIdx.computeIfAbsent(rowIdx, key -> 1);
                         URI generated;
-                        do{
-                            generated = duplicateModel.generateURI(generationPrefix,duplicateModel,retryCount++);
-                        }while(generatedUrisToIndexes.containsKey(generated.toString()));
+                        do {
+                            generated = duplicateModel.generateURI(generationPrefix, duplicateModel, retryCount++);
+                        } while (generatedUrisToIndexes.containsKey(generated.toString()));
 
-                        // add URI to the set of uri to re-check at next turn and update duplicate count
-                        duplicateCountByRowIdx.put(rowIdx,retryCount);
+                        //  update duplicate count and current model URI
+                        duplicateCountByRowIdx.put(rowIdx, retryCount);
                         duplicateModel.setUri(generated);
 
+                        // add URI to the set of uri to re-check at next turn
                         duplicates.add(generated.toString());
 
+                        // update URI <-> row index map
                         generatedUrisToIndexes.remove(duplicate);
-                        generatedUrisToIndexes.put(generated.toString(),rowIdx);
+                        generatedUrisToIndexes.put(generated.toString(), rowIdx);
 
-                    }catch (URISyntaxException e){
-                        validationModel.addInvalidURIError(new CSVCell(rowIdx, CSV_URI_INDEX, e.getMessage(), CSV_URI_KEY));
+                    } catch (URISyntaxException e) {
+                        validator.addInvalidURIError(new CsvCellValidationContext(rowIdx+CSV_HEADER_HUMAN_READABLE_ROW_OFFSET, CSV_URI_INDEX, e.getMessage(), CSV_URI_KEY));
                     }
                 } else {
                     urisIterator.next();
@@ -226,7 +382,30 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
         }
     }
 
-    private void checkUrisUniqueness(Map<String, Integer> filledUrisToIndexesInChunk, CSVValidationModel validationModel) throws SPARQLException {
+    /**
+     * @param urisToCheck a bounded Stream on the URIs to check
+     * @param streamSize stream size
+     * @return a SPARQL query which indicate for each input URI, if the URI exist or not (boolean representation)
+     */
+    protected SelectBuilder getCheckUrisUniquenessQuery(Stream<String> urisToCheck, int streamSize) {
+        return sparql.getCheckUriListExistQuery(urisToCheck, streamSize, rootClassURI.toString(), graphNode);
+    }
+
+    /**
+     * Check that each URI from {models} is unique
+     * @param filledUrisToIndexesInChunk index between URI (string representation) and corresponding row index in CSV file
+     * @param validator CSV validator
+     * @throws SPARQLException if SPARQL query evaluation fails
+     * @throws IllegalArgumentException if the SPARQL query returned by {@link #getCheckGeneratedUrisUniquenessQuery(Stream, int)}
+     * doesn't contains the {@link SPARQLService#EXISTING_VAR} variable
+     *
+     * @apiNote
+     * This method rely on {@link #getCheckUrisUniquenessQuery(Stream, int)} in order to know what is the SPARQL
+     * query to evaluate. <br>
+     * 
+     * If duplicate URI are found, then {@link CSVValidationModel#addAlreadyExistingURIError(CSVCell)} is called for error registration
+     */
+    private void checkUrisUniqueness(Map<String, Integer> filledUrisToIndexesInChunk, CsvOwlRestrictionValidator validator) throws SPARQLException, IllegalArgumentException {
 
         Set<String> urisToCheck = filledUrisToIndexesInChunk.keySet();
         if (!urisToCheck.isEmpty()) {
@@ -235,47 +414,75 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
             Iterator<Map.Entry<String, Integer>> entryIterator = filledUrisToIndexesInChunk.entrySet().iterator();
 
             // query used to check existence of n URIs (return false/true)
-            SelectBuilder checkUrisQuery = sparql.getCheckUriListExistQuery(classURI.toString(), urisToCheck.stream(), urisToCheck.size());
-            sparql.executeSelectQueryAsStream(checkUrisQuery).forEach((SPARQLResult result) -> {
+            SelectBuilder checkUrisQuery = getCheckUrisUniquenessQuery(urisToCheck.stream(), urisToCheck.size());
+
+            // ensure var name is recognized, since we expect to use it just after
+            boolean useExistingVar = checkUrisQuery.getVars().stream().anyMatch(sparqlVar -> sparqlVar.getVarName().equals(SPARQLService.EXISTING_VAR));
+            if (!useExistingVar) {
+                throw new IllegalArgumentException("The SPARQL query generated from getCheckUrisUniquenessQuery() must contains the "+SPARQLService.EXISTING_VAR+" variable name");
+            }
+
+            Iterator<SPARQLResult> resultIt = sparql.executeSelectQueryAsStream(checkUrisQuery).iterator();
+            while (resultIt.hasNext()){
+                SPARQLResult result = resultIt.next();
 
                 boolean uriExists = Boolean.parseBoolean(result.getStringValue(SPARQLService.EXISTING_VAR));
                 if (uriExists) {
                     Map.Entry<String, Integer> entry = entryIterator.next();
-                    validationModel.addAlreadyExistingURIError(new CSVCell(entry.getValue(), CSV_URI_INDEX, entry.getKey(), CSV_URI_KEY));
+                    validator.addAlreadyExistingURIError(new CsvCellValidationContext(entry.getValue()+CSV_HEADER_HUMAN_READABLE_ROW_OFFSET, CSV_URI_INDEX, entry.getKey(), CSV_URI_KEY));
+
+                    if(validator.getNbError() >= errorNbLimit){
+                        break;
+                    }
                 } else {
                     entryIterator.next();
                 }
-            });
+            }
         }
 
     }
 
-    private void generateURI(T model, int rowIdx, CSVValidationModel validation, Map<String, Integer> filledUrisToIndexesInChunk, Map<String, Integer> generatedUrisToIndexes) {
+    /**
+     * Generate a URI for the given model, by ensuring that the URI is locally unique; that the URI
+     * has not been used for model generation before.
+     * @param model CSV row model
+     * @param rowIdx CSV row index
+     * @param validation CSV validation
+     * @param generatedUrisToIndexes index between URI (string representation) and corresponding row index in CSV file
+     */
+    private void generateLocallyUniqueUri(T model, int rowIdx, CSVValidationModel validation, Map<String, Integer> generatedUrisToIndexes) {
 
         // generate URI after relations building
-        if (model.getUri() == null) {
-            try {
+        try {
 
-                // regenerate URI while there are local conflict
-                int retryCount = 1;
-                URI generated;
-                do{
-                    generated = model.generateURI(generationPrefix,model,retryCount++);
-                }while(generatedUrisToIndexes.containsKey(generated.toString()));
+            // regenerate URI while there are local conflict
+            int retryCount = 1;
+            URI generated;
+            do {
+                generated = model.generateURI(generationPrefix, model, retryCount++);
+            } while (generatedUrisToIndexes.containsKey(generated.toString()));
 
-                model.setUri(generated);
-                generatedUrisToIndexes.put(generated.toString(), rowIdx);
+            model.setUri(generated);
+            generatedUrisToIndexes.put(generated.toString(), rowIdx);
 
-            } catch (URISyntaxException e) {
-                validation.addInvalidURIError(new CSVCell(rowIdx, CSV_URI_INDEX, e.getMessage(), CSV_URI_KEY));
-            }
-        } else {
-            filledUrisToIndexesInChunk.put(model.getUri().toString(), rowIdx);
+        } catch (URISyntaxException e) {
+            validation.addInvalidURIError(new CSVCell(rowIdx+ CSV_HEADER_HUMAN_READABLE_ROW_OFFSET, CSV_URI_INDEX+ CSV_HEADER_HUMAN_READABLE_COLUMN_OFFSET, e.getMessage(), CSV_URI_KEY));
         }
     }
 
 
-    private ClassModel readUriAndType(int rowIdx, String[] row, T model, CSVValidationModel csvValidationModel) throws SPARQLException {
+    /**
+     * Read the uri and the type of the given row and update model
+     * @param rowIdx CSV row index
+     * @param row row content
+     * @param model current row model
+     * @param validator CSV validator
+     * @param localClassesCache a {@link Map} on each encountered type during CSV file reading. This map is used as a local cache in order to minimize call to {@link OntologyStore#getClassModel(URI, URI, String)}.
+     *
+     * @return the {@link ClassModel} corresponding with the type declared in row. Return the rootClassModel if no type was set into row
+     * @throws SPARQLException if some error occurs during {@link ClassModel} information retrieval
+     */
+    private ClassModel readUriAndType(int rowIdx, String[] row, T model, CsvOwlRestrictionValidator validator, Map<String,ClassModel> localClassesCache) throws SPARQLException {
 
         String uriStr = row[CSV_URI_INDEX];
         try {
@@ -283,92 +490,163 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
                 model.setUri(new URI(uriStr));
             }
         } catch (URISyntaxException e) {
-            csvValidationModel.addInvalidURIError(new CSVCell(rowIdx, CSV_URI_INDEX, e.getMessage(), CSV_URI_KEY));
+            validator.addInvalidValueError(new CsvCellValidationContext(rowIdx+CSV_HEADER_HUMAN_READABLE_ROW_OFFSET, CSV_URI_INDEX, e.getMessage(), CSV_URI_KEY));
         }
 
-        ClassModel classModel;
         String typeStr = row[CSV_TYPE_INDEX];
-        if (!StringUtils.isEmpty(typeStr)) {
-            try {
-                URI type = new URI(typeStr);
-                classModel = ontologyStore.getClassModel(type,classURI,null);
-                model.setType(type);
-                return classModel;
-            } catch (URISyntaxException e) {
-                csvValidationModel.addInvalidURIError(new CSVCell(rowIdx, CSV_URI_INDEX, e.getMessage(), CSV_URI_KEY));
-                return null;
-            }catch (SPARQLInvalidURIException e){
-                csvValidationModel.addInvalidURIError(new CSVCell(rowIdx, CSV_TYPE_INDEX, "Unknown type : " + typeStr, CSV_TYPE_KEY));
-                return null;
-            }
-        } else {
-            model.setType(classURI);
+
+        // no type specified -> use default root type
+        if(StringUtils.isEmpty(typeStr)){
+            model.setType(rootClassURI);
             return rootClassModel;
+        }
+
+        try {
+            String shortTypeStr = URIDeserializer.getShortURI(typeStr);  // ensure prefixed type URI using
+            URI type = new URI(shortTypeStr);
+
+            // ensure that the type exists and is a subClassOf of rootClassURI
+            ClassModel classModel = localClassesCache.get(shortTypeStr);
+            if(classModel == null){
+                classModel = ontologyStore.getClassModel(type, rootClassURI, null);
+                localClassesCache.put(typeStr,classModel);
+            }
+
+            model.setType(type);
+            return classModel;
+        } catch (URISyntaxException e) {
+            validator.addInvalidValueError(new CsvCellValidationContext(rowIdx+CSV_HEADER_HUMAN_READABLE_ROW_OFFSET, CSV_URI_INDEX, e.getMessage(), CSV_URI_KEY));
+            return null;
+        } catch (SPARQLInvalidURIException | SPARQLInvalidUriListException e) { // unknown or incorrect type
+            validator.addInvalidValueError(new CsvCellValidationContext(rowIdx+CSV_HEADER_HUMAN_READABLE_ROW_OFFSET, CSV_TYPE_INDEX, "Unknown type : " + typeStr, CSV_TYPE_KEY));
+            return null;
         }
     }
 
-    private void readRelations(int rowIdx, String[] row, Map<Integer, URI> columnByIndex, T model, ClassModel classModel, CsvOwlRestrictionValidator restrictionValidator) {
 
-        for (int colIdx = PROPERTIES_BEGIN_INDEX; colIdx < row.length; colIdx++) {
+    /**
+     * Read each relation from {@code row} by applying validation on relation value
+     * @param rowIdx CSV row index
+     * @param row CSV row content
+     * @param csvHeader CSV header
+     * @param model current model
+     * @param classModel {@link ClassModel} witch match with current model
+     * @param restrictionValidator OWL validator
+     */
+    protected void readRelations(int rowIdx, String[] row, CsvHeader csvHeader, T model, ClassModel classModel, CsvOwlRestrictionValidator restrictionValidator) {
 
-            String value = row[colIdx];
+        for (int colIdx = CSV_PROPERTIES_BEGIN_INDEX; colIdx < row.length; colIdx++) {
 
-            // non custom header
-            if(columnByIndex.containsKey(colIdx)){
-                URI property = columnByIndex.get(colIdx);
+            URI property = csvHeader.getUriColumn(colIdx- CSV_PROPERTIES_BEGIN_INDEX);
+            CustomCsvValidation<T> customValidator = customValidationByProperty.get(property.toString());
 
+            // no custom validation or validation which just overload default validation
+            if (customValidator == null || customValidator.applyDefaultValidation()) {
                 OwlRestrictionModel restriction = classModel.getRestrictionsByProperties().get(property);
-                restrictionValidator.validateCsvValue(rowIdx, colIdx, classModel, model, value, property, restriction);
-            }else{
-                // custom validation
+                restrictionValidator.validateCsvValue(rowIdx, colIdx, classModel, model, row[colIdx], property, restriction);
+            }
 
+            // apply custom validation
+            if (customValidator != null) {
+                final int finalColIdx = colIdx;
+
+                // pass value, validator and how to generate a validation context (a CSV cell here)
+                customValidator.getValidationAction().accept(model, row[colIdx], restrictionValidator, () -> new CsvCellValidationContext(
+                        rowIdx + CSV_HEADER_HUMAN_READABLE_ROW_OFFSET,
+                        finalColIdx + CSV_HEADER_HUMAN_READABLE_COLUMN_OFFSET,
+                        row[finalColIdx],
+                        property.toString())
+                );
             }
         }
 
         // row based checking (cardinality/list check)
         restrictionValidator.validateModel(classModel, model, () -> {
-            CSVCell cell = new CSVCell();
-            cell.setRowIndex(rowIdx);
-            return new CsvCellValidationContext(cell);
+            CsvCellValidationContext cell = new CsvCellValidationContext();
+            cell.setRowIndex(rowIdx+ CSV_HEADER_HUMAN_READABLE_ROW_OFFSET);
+            return cell;
         });
     }
 
-    private T getModel(int rowIdx, String[] row, Map<Integer, URI> columnByIndex, CsvOwlRestrictionValidator restrictionValidator) throws SPARQLException {
-
-        CSVValidationModel validation = restrictionValidator.getValidationModel();
+    /**
+     *
+     * @param rowIdx CSV row index
+     * @param row CSV row
+     * @param csvHeader CSV header
+     * @param validator OWL validator
+     * @param localClassesCache local class cache
+     * @return the {@link SPARQLResourceModel} parsed according row content
+     * @throws SPARQLException if some error in encountered during row URI and type reading
+     */
+    private T getModel(int rowIdx, String[] row, CsvHeader csvHeader, CsvOwlRestrictionValidator validator, Map<String,ClassModel> localClassesCache) throws SPARQLException {
 
         T model = objectConstructor.get();
-        ClassModel classModel = readUriAndType(rowIdx, row, model, validation);
-        if(classModel != null){
-            readRelations(rowIdx, row, columnByIndex, model, classModel,restrictionValidator);
+        ClassModel classModel = readUriAndType(rowIdx, row, model, validator,localClassesCache);
+        if (classModel != null) {
+            readRelations(rowIdx, row, csvHeader, model, classModel, validator);
         }
-
         return model;
     }
 
-    public CSVValidationModel read(InputStream inputStream, boolean validOnly) throws Exception {
+    @Override
+    public final CSVValidationModel importCSV(File file, boolean validOnly, BiConsumer<CSVValidationModel, Stream<T>> modelsConsumer) throws Exception {
 
-        CSVValidationModel csvValidationModel = new CSVValidationModel();
-        CsvOwlRestrictionValidator restrictionValidator = new CsvOwlRestrictionValidator(sparql, ontologyStore, csvValidationModel, graph,errorNbLimit);
+        Objects.requireNonNull(file);
+
+        CsvOwlRestrictionValidator restrictionValidator = new CsvOwlRestrictionValidator(sparql, ontologyStore, graph, errorNbLimit);
+        CSVValidationModel csvValidationModel = restrictionValidator.getValidationModel();
 
         // use try with resource in order to auto close resource in case of IOException
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+        try(BufferedInputStream inputStream = new BufferedInputStream(Files.newInputStream(file.toPath()))){
 
             CsvParser csvParser = new CsvParser(ClassUtils.getCSVParserDefaultSettings());
-            Iterator<String[]> rowIterator = csvParser.iterate(reader).iterator();
+            Iterator<String[]> rowIterator = csvParser.iterate(inputStream).iterator();
 
             // read header and  compute columns/properties index
-            Map<Integer,URI> columnByIndex = readHeader(rowIterator, csvValidationModel);
+            CsvHeader csvHeader = readHeader(rowIterator, csvValidationModel);
 
-            if (columnByIndex.isEmpty()) {
+            // no header -> error
+            if (csvHeader == null) {
                 csvValidationModel.addEmptyHeader(0);
-
-            } else {
-                readBody(rowIterator, columnByIndex, restrictionValidator, validOnly);
+            } else if(!csvValidationModel.hasErrors()){ // only read body if header is correct
+                readBody(rowIterator, csvHeader, restrictionValidator, validOnly, modelsConsumer);
             }
         }
 
         return csvValidationModel;
     }
 
+    /**
+     * <pre>
+     * Add a custom validation on some specific rdf property.
+     * If this property is found into CSV file header, then the associated custom validation
+     * is applied on each row, on the cell which match with the property.
+     *
+     * Example :
+     *  <b>custom validation</b> : rdfs:label ->  {your validation}
+     *  <b>header</b> : (uri,type,rdfs:label)
+     *  <b>body</b> :
+     *       :uri1, :type, "name1",
+     *       :uri1, :type, "name2",
+     *
+     * The custom validation will be applied on "name1" and on "name2" cells.
+     * </pre>
+     *
+     * @param customValidator the Custom validation to apply (required)
+     *
+     * @apiNote This method rely on {@link CustomCsvValidation#getProperty()} in order to determine on which property apply the validation
+     */
+    protected final void addCustomValidation(CustomCsvValidation<T> customValidator) {
+        Objects.requireNonNull(customValidator);
+
+        String property = URIDeserializer.formatURIAsStr(customValidator.getProperty());
+        customValidationByProperty.put(property, customValidator);
+    }
+
+    @Override
+    public void create(CSVValidationModel validation, List<T> models) throws Exception {
+        if (!validation.hasErrors()) {
+            sparql.create(NodeFactory.createURI(graph.toString()), models, models.size(), false);
+        }
+    }
 }

@@ -5,6 +5,7 @@
  */
 package org.opensilex.core.scientificObject.dal;
 
+import com.github.jsonldjava.utils.Obj;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.trie.PatriciaTrie;
 import org.apache.commons.lang3.StringUtils;
@@ -641,6 +642,27 @@ public class ScientificObjectDAO {
      * The exception has the {@link DuplicateNameListException#getExistingUriByName()} method which return association between existing name and uri.
      * @throws SPARQLException If some error is encountered during SPARQL query execution
      * @throws IllegalArgumentException if objects is null or empty or if objectGraph is null
+     *
+     * @apiNote This method performs a SPARQL request with a VALUES clause on each object name
+     * A large collection of object could lead to a too big SPARQL query, which may be un-parsable or too slow.
+     * Try to split your object' names verification, into multiple call to this method, if you have too much object to handle.
+     *
+     * The produced query looks like : <br>
+     *
+     * <pre>
+     * {@code
+     *
+     * SELECT  ?uri ?name
+     * WHERE
+     * {
+     *     ?rdfType  rdfs:subClassOf*  vocabulary:ScientificObject
+     *     GRAPH <http://opensilex.dev/id/experiment/experiment1> {
+     *           ?uri  a           ?rdfType ;
+     *                 rdfs:label  ?name
+     *     }
+     *     VALUES ?name { "name_1" "name_2"  "name_k"}
+     * }
+     * }</pre>
      */
     public void checkUniqueNameByGraph(List<ScientificObjectModel> objects, URI objectGraph) throws DuplicateNameListException, SPARQLException {
 
@@ -661,22 +683,18 @@ public class ScientificObjectDAO {
         Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
         Var nameVar = makeVar(SPARQLNamedResourceModel.NAME_FIELD);
         Var typeVar = makeVar(SPARQLResourceModel.TYPE_FIELD);
-
         Node graphNode = NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(objectGraph.toString()));
 
         Stream<String> objectNames = objects.stream().map(SPARQLNamedResourceModel::getName);
 
-        // create graph clause
-        WhereBuilder graphWhere = new WhereBuilder()
-                .addWhere(uriVar,RDF.type.asNode(),typeVar)
-                .addWhere(uriVar,RDFS.label.asNode(),nameVar);
-
+        // build query
         SelectBuilder select = new SelectBuilder()
                 .addVar(uriVar)
                 .addVar(nameVar)
-                .addWhere(uriVar, RDF.type.asNode(), typeVar)
-                .addWhere(typeVar, RDFS.subClassOf.asNode(), Oeso.ScientificObject.asNode())
-                .addGraph(graphNode, graphWhere);
+                .addWhere(typeVar, Ontology.subClassAny, Oeso.ScientificObject.asNode())
+                .addGraph(graphNode,  new WhereBuilder()
+                        .addWhere(uriVar,RDF.type.asNode(),typeVar)
+                        .addWhere(uriVar,RDFS.label.asNode(),nameVar));
 
         // append VALUES clause on name with objectNames
         SPARQLQueryHelper.appendValueStream(select,nameVar,objectNames);
@@ -709,17 +727,7 @@ public class ScientificObjectDAO {
         boolean useDefaultGraph = SPARQLDeserializers.compareURIs(defaultGraphNode.getURI(),contextURI);
         Node graphNode = useDefaultGraph ? defaultGraphNode : SPARQLDeserializers.nodeURI(contextURI);
 
-        for(ScientificObjectModel model : models){
-
-            // experimental context + no URI set
-            if(! useDefaultGraph && model.getUri() == null) {
-
-                // generate a globally unique URI
-                // (by taking account of all OS into global graph, which also includes OS from any xp)
-                sparql.generateUniqueURI(defaultGraphNode, model, model, true);
-            }
-            sparql.create(graphNode,model);
-        }
+        sparql.create(graphNode,models,SPARQLService.DEFAULT_MAX_INSTANCE_PER_QUERY,false);
     }
 
     /**
@@ -1158,5 +1166,29 @@ public class ScientificObjectDAO {
         Expr notBoundedDates = SPARQLQueryHelper.getExprFactory().and(notStartBounded, notEndBounded); // If SO has no creation and destruction dates
         Expr res = SPARQLQueryHelper.getExprFactory().or(notBoundedDates, range);
         return res;
+    }
+
+    public Node getDefaultGraphNode() {
+        return defaultGraphNode;
+    }
+
+    /**
+     *
+     * @param models
+     * @throws SPARQLException
+     */
+    public void copyIntoGlobalGraph(Stream<ScientificObjectModel> models) throws SPARQLException {
+
+        Objects.requireNonNull(models);
+
+        // OS type and name COPY
+        UpdateBuilder update = new UpdateBuilder();
+        models.forEach(object -> {
+            Node soNode = SPARQLDeserializers.nodeURI(object.getUri());
+            update.addInsert(defaultGraphNode, soNode, RDF.type, SPARQLDeserializers.nodeURI(object.getType()));
+            update.addInsert(defaultGraphNode, soNode, RDFS.label, object.getName());
+        });
+
+        sparql.executeUpdateQuery(update);
     }
 }

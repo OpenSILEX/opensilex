@@ -8,7 +8,7 @@
         @show="requiredField = true"
     >
 
-        <template v-slot:modal-title>{{ $t("ScientificObjectCSVTemplateGenerator.title") }}</template>
+        <template v-slot:modal-title>{{ $t("OntologyCsvTemplateGenerator.title") }}</template>
 
         <div>
             <ValidationObserver ref="validatorRefTemplate">
@@ -18,9 +18,9 @@
                             :type.sync="types"
                             :multiple="true"
                             :required="false"
-                            :baseType="this.$opensilex.Oeso.DEVICE_TYPE_URI"
+                            :baseType="baseType"
                             :ignoreRoot="false"
-                            placeholder="DeviceList.filter.rdfTypes-placeholder"
+                            :placeholder="typePlaceholder"
                         ></opensilex-TypeForm>
                     </b-col>
                     <b-col>
@@ -48,18 +48,46 @@
 </template>
 
 <script lang="ts">
-import {Component, Ref} from "vue-property-decorator";
+import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import {VueDataTypeDTO, VueJsOntologyExtensionService, VueObjectTypeDTO, VueRDFTypePropertyDTO} from "../../../lib";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
+import {Store} from "vuex";
 
 @Component
-export default class DeviceCsvTemplateGenerator extends Vue {
+export default class OntologyCsvTemplateGenerator extends Vue {
     $opensilex: OpenSilexVuePlugin;
-    $store: any;
+    $store: Store<any>;
     $t: any;
     $i18n: any;
     $papa: any;
+
+    /**
+     * URI of base type : used for type+form and vocabulary search
+     */
+    @Prop()
+    baseType: string;
+
+    @Prop()
+    typePlaceholder: string;
+
+    /**
+     * Template file prefix. The final file name will be : templatePrefix + _csv_template_  + <current_datetime> + .csv
+     */
+    @Prop({default: "csv_import_template"})
+    templatePrefix: string;
+
+    @Prop()
+    uriHelp: string;
+
+    @Prop()
+    uriExample: string;
+
+    @Prop()
+    typeHelp: string;
+
+    @Prop()
+    typeExample: string;
 
     requiredField: boolean = false;
     separator = ",";
@@ -102,31 +130,31 @@ export default class DeviceCsvTemplateGenerator extends Vue {
     private getCustomPropertyDescription(property: VueRDFTypePropertyDTO, isDataProperty: boolean) {
         let parts = Array.of(
             // property name
-            this.$t("DeviceCsvTemplateGenerator.property-name"),
+            this.$t("OntologyCsvTemplateGenerator.property-name"),
             " : ",
             property.name,
 
             // data/object type
             "\n",
-            this.$t("ScientificObjectCSVTemplateGenerator.data-type"),
+            this.$t("OntologyCsvTemplateGenerator.data-type"),
             " : ",
             this.getPropertyLabel(property.target_property, isDataProperty),
 
             // property description
             "\n",
-            this.$t("DeviceCsvTemplateGenerator.property-description"),
+            this.$t("OntologyCsvTemplateGenerator.property-description"),
             " : ",
             property.comment,
 
             // required
             "\n",
-            this.$t("ScientificObjectCSVTemplateGenerator.required"),
+            this.$t("OntologyCsvTemplateGenerator.required"),
             " : ",
             property.is_required ? this.$t("component.common.yes") : this.$t("component.common.no")
         );
 
         if (property.is_list) {
-            parts.push("\n", this.$t("ScientificObjectCSVTemplateGenerator.property-list"));
+            parts.push("\n", this.$t("OntologyCsvTemplateGenerator.property-list"));
         }
 
         // example
@@ -147,7 +175,7 @@ export default class DeviceCsvTemplateGenerator extends Vue {
         let parts = Array.of(
             this.$t(propertyTranslationKey),
             "\n",
-            this.$t("ScientificObjectCSVTemplateGenerator.required"),
+            this.$t("OntologyCsvTemplateGenerator.required"),
             " : ",
             (required) ? this.$t("component.common.yes") : this.$t("component.common.no"),
             ". ",
@@ -165,7 +193,7 @@ export default class DeviceCsvTemplateGenerator extends Vue {
         let promises = [];
 
         for (let type of this.types) {
-            let typePromise = ontoService.getRDFTypeProperties(type, this.$opensilex.Oeso.DEVICE_TYPE_URI)
+            let typePromise = ontoService.getRDFTypeProperties(type, this.baseType)
                 .then(http => {
 
                     let result = {
@@ -196,8 +224,8 @@ export default class DeviceCsvTemplateGenerator extends Vue {
 
         let headers = ["uri", "type"];
         let headersDescription = [
-            this.getPropertyDescription("DeviceImportHelp.uri-help", false, "DeviceCsvTemplateGenerator.uri-example"),
-            this.getPropertyDescription("DeviceImportHelp.type-help", false, "DeviceCsvTemplateGenerator.type-example"),
+            this.getPropertyDescription(this.uriHelp, false, this.uriExample),
+            this.getPropertyDescription(this.typeHelp, false, this.typeExample),
         ];
 
         let visitedProperties = new Set<string>();
@@ -250,7 +278,7 @@ export default class DeviceCsvTemplateGenerator extends Vue {
 
                 Promise.all(typePromises).then((results => {
                     let data = this.generateCSV(results)
-                    let templateName = "device_csv_template_" + new Date().getTime();
+                    let templateName = this.templatePrefix + "_csv_template_" + new Date().getTime();
                     this.$papa.download(
                         this.$papa.unparse(data, {delimiter: this.separator}), templateName
                     );
@@ -295,7 +323,7 @@ export default class DeviceCsvTemplateGenerator extends Vue {
             let translateKey = "datatype-example." + key;
             return this.$t(translateKey);
         }else{
-             // #TODO get type concerned by property and add skos:example property associated to type
+            // #TODO get type concerned by property and add skos:example property associated to type
             // need to add those translated example into ontologies,  for each type which are range of an object-property
         }
 
@@ -306,17 +334,21 @@ export default class DeviceCsvTemplateGenerator extends Vue {
 
 <i18n>
 en:
-    DeviceCsvTemplateGenerator:
+    OntologyCsvTemplateGenerator:
+        title: Generate CSV template
         property-name: Property name
         property-description: Property description
-        uri-example: http://opensilex.org/id/device/rasperry_pi_4B
-        type-example: vocabulary:SensingDevice
+        property-list: This column can be present multiple time to define multiple values
+        data-type: Data type
+        required: Required
 fr:
-    DeviceCsvTemplateGenerator:
+    OntologyCsvTemplateGenerator:
+        title: Générer un modèle de CSV
         property-name: Nom de la propriété
         property-description: Description de la propriété
-        uri-example: http://opensilex.org/id/device/rasperry_pi_4B
-        type-example: vocabulary:SensingDevice
+        property-list: Cette colonne peut être présente plusieurs fois pour définir plusieurs valeurs
+        data-type: Type de donnée
+        required: Obligatoire
 </i18n>
 
 

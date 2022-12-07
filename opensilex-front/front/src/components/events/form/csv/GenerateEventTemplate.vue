@@ -17,7 +17,7 @@
         </template>
 
         <!-- <template v-slot:modal-ok>{{ $t("component.common.close") }}</template> -->
-        <template v-slot:modal-title>{{ $t("ScientificObjectCSVTemplateGenerator.title") }}</template>
+        <template v-slot:modal-title>{{ $t("OntologyCsvTemplateGenerator.title") }}</template>
 
         <div>
             <ValidationObserver ref="validatorRefTemplate">
@@ -106,19 +106,19 @@ export default class GenerateEventTemplate extends Vue {
 
             // datatype
             "\n",
-            this.$t("ScientificObjectCSVTemplateGenerator.data-type"),
+            this.$t("OntologyCsvTemplateGenerator.data-type"),
             " : ",
             this.getDataTypeLabel(property.target_property),
 
             // required
             "\n",
-            this.$t("ScientificObjectCSVTemplateGenerator.required"),
+            this.$t("OntologyCsvTemplateGenerator.required"),
             " : ",
             property.is_required ? this.$t("component.common.yes") : this.$t("component.common.no")
         );
 
         if (property.is_list) {
-            parts.push("\n", this.$t("ScientificObjectCSVTemplateGenerator.property-list"));
+            parts.push("\n", this.$t("OntologyCsvTemplateGenerator.property-list"));
         }
 
         return parts.join('');
@@ -129,7 +129,7 @@ export default class GenerateEventTemplate extends Vue {
         let parts = Array.of(
             this.$t(propertyTranslationKey),
             "\n",
-            this.$t("ScientificObjectCSVTemplateGenerator.required"),
+            this.$t("OntologyCsvTemplateGenerator.required"),
             " : ",
             (required) ? this.$t("component.common.yes") : this.$t("component.common.no"),
             ". ",

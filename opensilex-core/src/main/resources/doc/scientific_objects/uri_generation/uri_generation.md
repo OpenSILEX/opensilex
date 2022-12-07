@@ -116,6 +116,6 @@ The following insertion will result to error
 
 Implementation of these rules are into the `ScientificObjectDAO.create` method.
 
-Tests are implemented into the `ScientificObjectDaoTest` test class
+Tests are implemented into the `ScientificObjectAPITest` test class
 
 

@@ -1,0 +1,4 @@
+uri,type,vocabulary:isHosted,rdfs:label
+column_description,column_description,column_description,column_description
+,,test:id/facility/unknown_facility1,os_import_facility_unknown_1
+,,test:id/facility/unkown_facility2,os_import_facility_unknown_2

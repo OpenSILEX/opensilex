@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.opensilex.sparql;
 
 import java.util.Map;
@@ -66,4 +61,17 @@ public interface SPARQLConfig {
             defaultBoolean = true
     )
     boolean enableOntologyStore();
+
+    @ConfigDescription(
+            value = "Number of line processed by batch during CSV import (must be strictly positive)." +
+                    "Small value lead to less RAM usage at the cost of additional I/O during validation",
+            defaultInt = 4096
+    )
+    int csvBatchSize();
+
+    @ConfigDescription(
+            value = "Maximum number of invalid line to encounter until CSV import interruption (must be strictly positive)",
+            defaultInt = 100
+    )
+    int csvMaxErrorNb();
 }

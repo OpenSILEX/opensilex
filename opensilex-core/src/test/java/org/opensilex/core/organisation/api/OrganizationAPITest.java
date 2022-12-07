@@ -9,8 +9,9 @@ package org.opensilex.core.organisation.api;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.Test;
+import org.opensilex.core.AbstractMongoIntegrationTest;
+
 import org.opensilex.core.organisation.dal.OrganizationModel;
-import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -27,7 +28,7 @@ import static junit.framework.TestCase.*;
  * @author Vincent MIGOT
  * @author Renaud COLIN
  */
-public class OrganizationAPITest extends AbstractSecurityIntegrationTest {
+public class OrganizationAPITest extends AbstractMongoIntegrationTest {
 
     protected String path = "/core/organisations";
 

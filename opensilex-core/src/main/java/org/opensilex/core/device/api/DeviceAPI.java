@@ -1,6 +1,5 @@
 package org.opensilex.core.device.api;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -63,6 +62,7 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.File;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.URI;
@@ -101,7 +101,7 @@ public class DeviceAPI {
 
     public static final String CREDENTIAL_DEVICE_DELETE_ID = "device-delete";
     public static final String CREDENTIAL_DEVICE_DELETE_LABEL_KEY = "credential.default.delete";
-    
+
     public static final String DEVICE_EXAMPLE_TYPE = "vocabulary:SensingDevice";
     public static final String DEVICE_EXAMPLE_VARIABLE = "test:set/variables#air_temperature_thermocouple_degree-celsius";
     public static final String DEVICE_EXAMPLE_YEAR = "2017";
@@ -119,8 +119,8 @@ public class DeviceAPI {
     private MongoDBService nosql;
     @Inject
     private FileStorageService fs;
-    
-    
+
+
     @POST
     @ApiOperation("Create a device")
     @ApiProtected
@@ -131,14 +131,14 @@ public class DeviceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "A device is created", response = ObjectUriResponse.class),
-        @ApiResponse(code = 409, message = "A device with the same URI already exists", response = ErrorResponse.class)
+            @ApiResponse(code = 201, message = "A device is created", response = ObjectUriResponse.class),
+            @ApiResponse(code = 409, message = "A device with the same URI already exists", response = ErrorResponse.class)
     })
 
     public Response createDevice(
             @ApiParam("Device description") @Valid DeviceCreationDTO deviceDTO,
             @ApiParam(value = "Checking only", example = "false") @DefaultValue("false") @QueryParam("checkOnly") Boolean checkOnly
-    ) throws Exception {       
+    ) throws Exception {
         DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
         if (!checkOnly){
             try {
@@ -149,24 +149,24 @@ public class DeviceAPI {
                 return new ObjectUriResponse(Response.Status.CREATED, uri).getResponse();
             } catch (SPARQLAlreadyExistingUriException ex) {
                 return new ErrorResponse(
-                    Response.Status.CONFLICT,
-                    "Device URI already exists",
-                    "Duplicated URI: " + deviceDTO.getUri()
+                        Response.Status.CONFLICT,
+                        "Device URI already exists",
+                        "Duplicated URI: " + deviceDTO.getUri()
                 ).getResponse();
             }
         } else {
             return new ObjectUriResponse().getResponse();
         }
     }
-    
+
     @GET
     @ApiOperation("Search devices")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return devices corresponding to the given search parameters", response = DeviceGetDTO.class, responseContainer = "List")
-    })    
+            @ApiResponse(code = 200, message = "Return devices corresponding to the given search parameters", response = DeviceGetDTO.class, responseContainer = "List")
+    })
     public Response searchDevices(
             @ApiParam(value = "RDF type filter", example = DEVICE_EXAMPLE_TYPE) @QueryParam("rdf_type") @ValidURI URI rdfType,
             @ApiParam(value = "Set this param to true when filtering on rdf_type to also retrieve sub-types") @DefaultValue("false") @QueryParam("include_subtypes") boolean includeSubTypes,
@@ -188,10 +188,10 @@ public class DeviceAPI {
             try {
                 metadataFilter = Document.parse(metadata);
             } catch (Exception e) {
-                return new ErrorResponse(e).getResponse();                
+                return new ErrorResponse(e).getResponse();
             }
         }
-        
+
         DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
 
         DeviceSearchFilter filter = new DeviceSearchFilter()
@@ -235,7 +235,7 @@ public class DeviceAPI {
 
         return new PaginatedListResponse<>(dtoList).getResponse();
     }
-    
+
     @GET
     @Path("{uri}")
     @ApiOperation("Get device detail")
@@ -243,7 +243,7 @@ public class DeviceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return device details corresponding to the device URI", response = DeviceGetDetailsDTO.class)
+            @ApiResponse(code = 200, message = "Return device details corresponding to the device URI", response = DeviceGetDetailsDTO.class)
     })
     public Response getDevice(
             @ApiParam(value = "device URI", example = DEVICE_EXAMPLE_URI, required = true)
@@ -260,7 +260,7 @@ public class DeviceAPI {
         } else {
             response = Response.status(Response.Status.NOT_FOUND.getStatusCode()).build();
         }
-        
+
         return response;
     }
 
@@ -296,7 +296,7 @@ public class DeviceAPI {
             ).getResponse();
         }
     }
-    
+
     @PUT
     @ApiOperation("Update a device")
     @ApiProtected
@@ -307,7 +307,7 @@ public class DeviceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Device updated", response = ObjectUriResponse.class)
+            @ApiResponse(code = 200, message = "Device updated", response = ObjectUriResponse.class)
     })
     public Response updateDevice(
             @ApiParam(value = "Device description", required = true)
@@ -316,7 +316,7 @@ public class DeviceAPI {
     ) throws Exception {
         DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
         DeviceModel deviceModel = dto.newModel();
-        
+
         deviceDAO.initDevice(deviceModel, dto.getRelations(), currentUser);
         deviceDAO.update(deviceModel, currentUser);
         return new ObjectUriResponse(Response.Status.OK, deviceModel.getUri()).getResponse();
@@ -366,7 +366,7 @@ public class DeviceAPI {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     public Response importCSV(
-            @ApiParam(value = "Device file", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
+            @ApiParam(value = "Device file", required = true, type = "file") @NotNull @FormDataParam("file") File file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition
     ) throws Exception {
 
@@ -376,7 +376,7 @@ public class DeviceAPI {
                 sparql.getDefaultGraphURI(DeviceModel.class),
                 DeviceModel::new
         );
-        CSVValidationModel csvValidationModel = csvImporter.read(file, false);
+        CSVValidationModel csvValidationModel = csvImporter.importCSV(file, false);
 
         CSVValidationDTO validationDTO = new CSVValidationDTO();
         validationDTO.setErrors(csvValidationModel);
@@ -403,7 +403,7 @@ public class DeviceAPI {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     public Response validateCSV(
-            @ApiParam(value = "Device file", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
+            @ApiParam(value = "Device file", required = true, type = "file") @NotNull @FormDataParam("file") File file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition
     ) throws Exception {
 
@@ -413,7 +413,7 @@ public class DeviceAPI {
                 sparql.getDefaultGraphURI(DeviceModel.class),
                 DeviceModel::new
         );
-        CSVValidationModel csvValidationModel = csvImporter.read(file, true);
+        CSVValidationModel csvValidationModel = csvImporter.importCSV(file, true);
 
         CSVValidationDTO validationDTO = new CSVValidationDTO();
         validationDTO.setErrors(csvValidationModel);
@@ -424,7 +424,7 @@ public class DeviceAPI {
         }
         return new SingleObjectResponse<>(validationDTO).getResponse();
     }
-        
+
     @GET
     @Path("export")
     @ApiOperation("export devices")
@@ -432,8 +432,8 @@ public class DeviceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces({MediaType.TEXT_PLAIN})
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return a csv file with device list"),
-        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
+            @ApiResponse(code = 200, message = "Return a csv file with device list"),
+            @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
     })
     public Response exportDevices(
             @ApiParam(value = "RDF type filter", example = DEVICE_EXAMPLE_TYPE) @QueryParam("rdf_type") @ValidURI URI rdfType,
@@ -444,14 +444,14 @@ public class DeviceAPI {
             @ApiParam(value = "Regex pattern for filtering by brand", example = ".*") @DefaultValue("") @QueryParam("brand") String brand,
             @ApiParam(value = "Regex pattern for filtering by model", example = ".*") @DefaultValue("") @QueryParam("model") String model,
             @ApiParam(value = "Regex pattern for filtering by serial number", example = ".*") @DefaultValue("") @QueryParam("serial_number") String serialNumber,
-            @ApiParam(value = "Search by metadata", example = DEVICE_EXAMPLE_METADATA) @QueryParam("metadata") String metadata            
+            @ApiParam(value = "Search by metadata", example = DEVICE_EXAMPLE_METADATA) @QueryParam("metadata") String metadata
     ) throws Exception {
         Document metadataFilter = null;
         if (metadata != null) {
             try {
                 metadataFilter = Document.parse(metadata);
             } catch (Exception e) {
-                return new ErrorResponse(e).getResponse();                
+                return new ErrorResponse(e).getResponse();
             }
         }
 
@@ -474,7 +474,7 @@ public class DeviceAPI {
 
         return buildCSV(resultList);
     }
-    
+
     @POST
     @Path("export_by_uris")
     @ApiOperation("export devices")
@@ -482,8 +482,8 @@ public class DeviceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces({MediaType.TEXT_PLAIN})
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return a csv file with device list"),
-        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
+            @ApiResponse(code = 200, message = "Return a csv file with device list"),
+            @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
     })
     public Response exportList(
             @ApiParam(value = "List of device URI", example = "dev:set/sensor_01") URIsListPostDTO dto
@@ -492,7 +492,7 @@ public class DeviceAPI {
         List<DeviceModel> resultList = dao.getDevicesByURI(dto.getUris(), currentUser);
         return buildCSV(resultList);
     }
-    
+
     private Response buildCSV(List<DeviceModel> devices) throws Exception {
         // Convert list to DTO
         List<DeviceExportDTO> resultDTOList = new ArrayList<>();
@@ -505,7 +505,7 @@ public class DeviceAPI {
             if (metadata != null) {
                 metadataKeys.addAll(metadata.keySet());
             }
-            
+
             List<RDFObjectRelationDTO> relations = dto.getRelations();
             Map<URI,Integer> relationsUsed_local = new HashMap();
             for(RDFObjectRelationDTO relation : relations){
@@ -528,7 +528,7 @@ public class DeviceAPI {
         if (resultDTOList.isEmpty()) {
             resultDTOList.add(new DeviceExportDTO()); // to return an empty table
         }
-        
+
         //Construct manually json with metadata and type property to convert it to csv
         ObjectMapper mapper = ObjectMapperContextResolver.getObjectMapper();
         JsonNode jsonTree = mapper.convertValue(resultDTOList, JsonNode.class);
@@ -553,7 +553,7 @@ public class DeviceAPI {
                             objectNode.put(key.toString(), value.asText());
                         } else {
                             objectNode.putNull(key.toString());
-                        }                            
+                        }
                     }
                 }
                 JsonNode property = null;
@@ -563,7 +563,7 @@ public class DeviceAPI {
                         objectNode.putNull(prop.toString()+"_"+i);
                     }
                 }
-                
+
                 Map<String,Integer> relationsUsed_local = new HashMap();
                 for(JsonNode relation : relations){
                     property = relation.get("property");
@@ -575,12 +575,12 @@ public class DeviceAPI {
                     propertyValue = relation.get("value");
                     objectNode.put(property.asText()+"_"+relationsUsed_local.get(property.asText()), propertyValue.asText());
                 }
-                
+
                 list.add(objectNode);
-               
+
             }
-         }
-        
+        }
+
         ArrayNode arrayNode = new ArrayNode(JsonNodeFactory.instance, list);
 
         Builder csvSchemaBuilder = CsvSchema.builder();
@@ -599,7 +599,7 @@ public class DeviceAPI {
         LocalDate date = LocalDate.now();
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd");
         String fileName = "export_device" + dtf.format(date) + ".csv";
-        
+
         return Response.ok(str.toString(), MediaType.APPLICATION_OCTET_STREAM)
                 .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
                 .build();
@@ -633,15 +633,15 @@ public class DeviceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return data list", response = DataGetDTO.class, responseContainer = "List"),
-        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
+            @ApiResponse(code = 200, message = "Return data list", response = DataGetDTO.class, responseContainer = "List"),
+            @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
     })
     public Response searchDeviceData(
             @ApiParam(value = "Device URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri,
             @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
             @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
             @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
-            @ApiParam(value = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") List<URI> experiments,            
+            @ApiParam(value = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") List<URI> experiments,
             @ApiParam(value = "Search by variables", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variable") List<URI> variables,
             @ApiParam(value = "Search by minimal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("min_confidence") @Min(0) @Max(1) Float confidenceMin,
             @ApiParam(value = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
@@ -708,7 +708,7 @@ public class DeviceAPI {
 
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
-    
+
     /**
      *
      * @param uri
@@ -733,21 +733,21 @@ public class DeviceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return the number of data", response = Integer.class),
-        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
+            @ApiResponse(code = 200, message = "Return the number of data", response = Integer.class),
+            @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
     })
     public Response countDeviceData(
             @ApiParam(value = "Device URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri,
             @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
             @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
             @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
-            @ApiParam(value = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") List<URI> experiments,            
+            @ApiParam(value = "Search by experiment uris", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") List<URI> experiments,
             @ApiParam(value = "Search by variables", example = DATA_EXAMPLE_VARIABLEURI) @QueryParam("variable") List<URI> variables,
             @ApiParam(value = "Search by minimal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("min_confidence") @Min(0) @Max(1) Float confidenceMin,
             @ApiParam(value = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
             @ApiParam(value = "Search by provenance uri", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenance") List<URI> provenances,
             @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata
-          
+
     ) throws Exception {
         DataDAO dao = new DataDAO(nosql, sparql, null);
         //convert dates
@@ -801,7 +801,7 @@ public class DeviceAPI {
 
         return new SingleObjectResponse<>(count).getResponse();
     }
-    
+
     /**
      *
      * @param uri
@@ -828,8 +828,8 @@ public class DeviceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return datafiles list", response = DataGetDTO.class, responseContainer = "List"),
-        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
+            @ApiResponse(code = 200, message = "Return datafiles list", response = DataGetDTO.class, responseContainer = "List"),
+            @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
     })
     public Response searchDeviceDatafiles(
             @ApiParam(value = "Device URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri,
@@ -900,7 +900,7 @@ public class DeviceAPI {
 
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
-    
+
     @GET
     @Path("{uri}/variables")
     @ApiOperation("Get variables linked to the device")
@@ -908,11 +908,11 @@ public class DeviceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return variables list", response = NamedResourceDTO.class, responseContainer = "List")
+            @ApiResponse(code = 200, message = "Return variables list", response = NamedResourceDTO.class, responseContainer = "List")
     })
     public Response getDeviceVariables(
             @ApiParam(value = "Device URI", example = DeviceAPI.DEVICE_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri
-    ) throws Exception {        
+    ) throws Exception {
         DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
         List<VariableModel> variables = dao.getDeviceVariables(uri, currentUser.getLanguage());
         List<NamedResourceDTO> dtoList = variables.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
@@ -934,18 +934,18 @@ public class DeviceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return provenances list", response = ProvenanceGetDTO.class, responseContainer = "List")
+            @ApiResponse(code = 200, message = "Return provenances list", response = ProvenanceGetDTO.class, responseContainer = "List")
     })
     public Response getDeviceDataProvenances(
             @ApiParam(value = "Device URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
-        ) throws Exception {
-        
+    ) throws Exception {
+
         DataDAO dataDAO = new DataDAO(nosql, sparql, null);
         List<ProvenanceModel> provenances = dataDAO.getProvenancesByDevice(currentUser, uri, DataDAO.DATA_COLLECTION_NAME);
         List<ProvenanceGetDTO> resultDTOList = provenances.stream().map(ProvenanceGetDTO::fromModel).collect(Collectors.toList());
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
-    
+
     /**
      *
      * @param uri
@@ -961,12 +961,12 @@ public class DeviceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return provenances list", response = ProvenanceGetDTO.class, responseContainer = "List")
+            @ApiResponse(code = 200, message = "Return provenances list", response = ProvenanceGetDTO.class, responseContainer = "List")
     })
     public Response getDeviceDataFilesProvenances(
             @ApiParam(value = "Device URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
-        ) throws Exception {
-        
+    ) throws Exception {
+
         DataDAO dataDAO = new DataDAO(nosql, sparql, null);
         List<ProvenanceModel> provenances = dataDAO.getProvenancesByDevice(currentUser, uri, DataDAO.FILE_COLLECTION_NAME);
         List<ProvenanceGetDTO> dtoList = provenances.stream().map(ProvenanceGetDTO::fromModel).collect(Collectors.toList());

@@ -25,15 +25,6 @@ import java.util.function.BiFunction;
 
 public interface CsvDao<T extends SPARQLNamedResourceModel> {
 
-    CSVValidationModel validateCSV(URI graph,
-                                   URI parentClass,
-                                   InputStream file,
-                                   int firstRow,
-                                   String lang,
-                                   Map<String, BiConsumer<CSVCell, CSVValidationModel>> customValidators,
-                                   List<String> customColumns,
-                                   boolean generateURI) throws SPARQLException, IOException;
-
     String exportCSV(
             List<T> objects,
             URI parentClass,

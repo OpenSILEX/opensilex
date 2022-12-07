@@ -22,16 +22,18 @@ import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.facility.FacilityDAO;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.facility.FacilitySearchFilter;
 import org.opensilex.core.organisation.dal.OrganizationDAO;
-import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.SecurityOntology;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
@@ -46,6 +48,7 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
@@ -461,6 +464,75 @@ public class ExperimentDAO {
         if (!sparql.executeAskQuery(ask)) {
             throw new ForbiddenURIAccessException(experimentURI);
         }
+    }
+
+    /**
+     *
+     * @param experiment experiment
+     * @return a non-null Stream of facilities URI (with a prefixed form) which are accessible inside an experiment.
+     * A facility is accessible if :
+     * <ul>
+     *     <li>The facility is linked to an experiment with the {@link Oeso#usesFacility} relation</li>
+     *     <li>The experiment has no explicit facility and the facility is linked to an organisation (with {@link Oeso#isHosted}) which is used by the experiment (with {@link Oeso#usesOrganization}}</li>
+     * </ul>
+     *
+     * @throws IllegalArgumentException if experiment is null
+     * @throws SPARQLException if an error occurs during SPARQL query evaluation
+     * @apiNote
+     *
+     * <pre>
+     * This method first search for experiment facilities, and check for organization facilities if and only if the experiment has no direct relation (trough {@link Oeso#isHosted})
+     * with a facility.
+     *
+     * <b>SPARQL query : </b>
+     *
+     * {@code
+     * PREFIX vocabulary: <http://www.opensilex.org/vocabulary/oeso#>
+     * SELECT DISTINCT ?facility ?experiment_facilities WHERE {
+     *          GRAPH <../set/experiment> {
+     *              :experiment vocabulary:usesFacility ?experiment_facilities
+     *          }
+     *          UNION {
+     *              GRAPH <../set/experiment> {
+     *                  :experiment vocabulary:usesOrganization ?experiment_facilities
+     *              }
+     *              GRAPH <../set/organization>{
+     *   	            ?infrastructure vocabulary:isHosted ?facility
+     *              }
+     *              FILTER BOUND(?experiment_facilities)
+     *          }
+     * }
+     *
+     * }
+     * </pre>
+     */
+    public Stream<String> getAvailableFacilitiesURIs(URI experiment) throws SPARQLException {
+
+        Node experimentNode = SPARQLDeserializers.nodeURI(experiment);
+        Node experimentGraph = sparql.getDefaultGraph(ExperimentModel.class);
+
+        Var xpFacility = makeVar("experiment_"+ OrganizationModel.FACILITIES_FIELD);
+        Var facility = makeVar(OrganizationModel.FACILITIES_FIELD);
+        Var infrastructure = makeVar(ExperimentModel.INFRASTRUCTURE_FIELD);
+
+        SelectBuilder query = new SelectBuilder()
+                .setDistinct(true)
+                .addVar(facility)
+                .addVar(xpFacility)
+                .addGraph(experimentGraph,experimentNode,Oeso.usesFacility,xpFacility)
+                .addUnion(new WhereBuilder()
+                        .addGraph(experimentGraph, experimentNode, Oeso.usesOrganization, infrastructure)
+                        .addGraph(sparql.getDefaultGraph(OrganizationModel.class), infrastructure, Oeso.isHosted, facility)
+                        .addFilter(SPARQLQueryHelper.getExprFactory().bound(xpFacility)) // don't retrieve facilities from experiment organizations, if some facilities were found via experiment
+                );
+
+        // evaluate query and iterate of facilities URI stream
+        return sparql.executeSelectQueryAsStream(query)
+                .map(result -> StringUtils.isEmpty(result.getStringValue(facility.getVarName())) ?
+                                result.getStringValue(xpFacility.getVarName()) :
+                                result.getStringValue(facility.getVarName())
+                )
+                .map(URIDeserializer::formatURIAsStr);  // map each facility URI in a prefixed form
     }
 
     public List<FacilityModel> getAvailableFacilities(URI xpUri, UserModel user) throws Exception {

@@ -11,8 +11,9 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.interfaces.Claim;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import java.io.IOException;
-import java.io.InputStream;
+
+import java.io.*;
+import java.nio.file.Files;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.MessageDigest;
@@ -22,6 +23,9 @@ import java.security.interfaces.RSAPublicKey;
 import java.time.temporal.TemporalUnit;
 import java.util.Date;
 import java.util.Map;
+import java.util.zip.CheckedInputStream;
+import java.util.zip.Checksum;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -85,6 +89,17 @@ public class TokenGenerator {
         return getFileChecksum(shaDigest, fis);
     }
 
+    public static long getFileChecksum(File file, Checksum checksum) throws IOException {
+
+        try (final CheckedInputStream inputStream = new CheckedInputStream(new BufferedInputStream(Files.newInputStream(file.toPath())), checksum)) {
+            final byte[] buffer = new byte[4096];
+            while(inputStream.read(buffer) != -1){
+                // checksum is updated inside CheckedInputStream.read() method
+            }
+            return checksum.getValue();
+        }
+    }
+
     private static String getFileChecksum(MessageDigest digest, InputStream fis) throws IOException {
         //Get file input stream for reading the file content
 
@@ -95,7 +110,7 @@ public class TokenGenerator {
         //Read file data and update in message digest
         while ((bytesCount = fis.read(byteArray)) != -1) {
             digest.update(byteArray, 0, bytesCount);
-        };
+        }
 
         //close the stream; We don't need it now.
         fis.close();

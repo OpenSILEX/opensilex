@@ -5,14 +5,12 @@
 //******************************************************************************
 package org.opensilex.core.scientificObject.api;
 
-import com.auth0.jwt.interfaces.Claim;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.MongoWriteException;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.model.geojson.Geometry;
 import io.swagger.annotations.*;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.ext.com.google.common.cache.Cache;
@@ -26,6 +24,7 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.locationtech.jts.io.ParseException;
 import org.opensilex.core.csv.api.CSVValidationDTO;
 import org.opensilex.core.csv.dal.AbstractCsvDao;
+import org.opensilex.core.scientificObject.dal.ScientificObjectCsvImporter;
 import org.opensilex.server.exceptions.displayable.DisplayableBadRequestException;
 import org.opensilex.sparql.csv.CSVCell;
 import org.opensilex.core.csv.dal.CsvDao;
@@ -35,16 +34,13 @@ import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.exception.DuplicateNameException;
-import org.opensilex.core.exception.DuplicateNameListException;
 import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
-import org.opensilex.core.experiment.factor.dal.FactorModel;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
@@ -62,9 +58,10 @@ import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.Date;
 import org.opensilex.server.rest.validation.DateFormat;
 import org.opensilex.server.rest.validation.ValidURI;
+import org.opensilex.sparql.csv.CsvImporter;
+import org.opensilex.sparql.csv.validation.CachedCsvImporter;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
-import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
@@ -83,6 +80,7 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -756,138 +754,29 @@ public class ScientificObjectAPI {
             @FormDataParam("description") ScientificObjectCsvDescriptionDTO descriptionDto,
             @ApiParam(value = "Data file", required = true, type = "file")
             @NotNull
-            @FormDataParam("file") InputStream file,
+            @FormDataParam("file") File file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition
     ) throws Exception {
-        URI contextURI = descriptionDto.getExperiment();
-        boolean globalCopy = false;
-        boolean insertIntoSomeXp = contextURI != null;
-
-        if (insertIntoSomeXp) {
-            globalCopy = true;
-        }
-        String validationToken = descriptionDto.getValidationToken();
-
-        CSVValidationModel errors;
-        if (validationToken == null) {
-            errors = getCSVValidationModel(contextURI, file, currentUser);
-        } else {
-            errors = filesValidationCache.getIfPresent(validationToken);
-            if (errors == null) {
-                errors = getCSVValidationModel(contextURI, file, currentUser);
-            } else {
-                Map<String, Claim> claims = TokenGenerator.getTokenClaims(validationToken);
-                contextURI = new URI(claims.get(CLAIM_CONTEXT_URI).asString());
-            }
-        }
-
-        CSVValidationDTO csvValidation = new CSVValidationDTO();
-        csvValidation.setErrors(errors);
-
-        ScientificObjectDAO dao = new ScientificObjectDAO(sparql,nosql);
-        ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
-
-        final URI graphURI;
-        if (insertIntoSomeXp) {
-            graphURI = contextURI;
-        } else {
-            graphURI = sparql.getDefaultGraphURI(ScientificObjectModel.class);
-        }
-
-        if(errors.hasErrors()){
-            return new SingleObjectResponse<>(csvValidation).getResponse();
-        }
-
-        // start transaction, since multiple operations on triple store are performed
-        // objects creation, first moves creations, experiment species update
-        sparql.startTransaction();
-
-        // start transaction since geometry or move can involve mongodb
-        nosql.startTransaction();
-
-        Map<Integer, Geometry> geometries = (Map<Integer, Geometry>) errors.getObjectsMetadata().get(Oeso.hasGeometry.toString());
-        boolean hasGeometry = ! MapUtils.isEmpty(geometries);
-        GeospatialDAO geoDAO = new GeospatialDAO(nosql);
 
         try {
-            List<ScientificObjectModel> models = (List<ScientificObjectModel>) (List<?>) errors.getObjects();
-            dao.create(models, graphURI);
+            sparql.startTransaction();
+            nosql.startTransaction();
 
-            // #TODO avoid to running n INSERT, use one INSERT with all move
-            MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
-            for (SPARQLNamedResourceModel object : models) {
-                MoveModel facilityMoveEvent = new MoveModel();
-                if (ScientificObjectDAO.fillFacilityMoveEvent(facilityMoveEvent, object)) {
-                    moveDAO.create(facilityMoveEvent);
-                }
-                // #TODO avoid to running n DELETE query, use one DELETE
-                sparql.deletePrimitives(SPARQLDeserializers.nodeURI(graphURI), object.getUri(), Oeso.isHosted);
-            }
+            CsvImporter<ScientificObjectModel> csvImporter = new CachedCsvImporter<>(
+                    new ScientificObjectCsvImporter(sparql, nosql, descriptionDto.getExperiment(), currentUser),
+                    descriptionDto.getValidationToken()
+            );
 
-            if (globalCopy) {
-                UpdateBuilder update = new UpdateBuilder();
-                Node graphNode = SPARQLDeserializers.nodeURI(sparql.getDefaultGraphURI(ScientificObjectModel.class));
-                for (SPARQLNamedResourceModel object : models) {
-                    Node soNode = SPARQLDeserializers.nodeURI(object.getUri());
-                    update.addInsert(graphNode, soNode, RDF.type, SPARQLDeserializers.nodeURI(object.getType()));
-                    update.addInsert(graphNode, soNode, RDFS.label, object.getName());
-                }
-                sparql.executeUpdateQuery(update);
-            }
-
-            //Update experiment
-            if (insertIntoSomeXp) {
-                experimentDAO.updateExperimentSpeciesFromScientificObjects(contextURI);
-            }
-
-            if(hasGeometry){
-                List<GeospatialModel> geospatialModels = new ArrayList<>();
-                geometries.forEach((rowIndex, geometry) -> {
-                    SPARQLNamedResourceModel<?> object = models.get(rowIndex - 1);
-                    GeospatialModel geospatialModel = new GeospatialModel();
-                    geospatialModel.setUri(object.getUri());
-                    geospatialModel.setName(object.getName());
-                    geospatialModel.setRdfType(object.getType());
-                    geospatialModel.setGraph(graphURI);
-                    geospatialModel.setGeometry(geometry);
-                    geospatialModels.add(geospatialModel);
-                });
-
-                geoDAO.createAll(geospatialModels);
-                nosql.commitTransaction();
-            }
-
+            CSVValidationModel validationModel = csvImporter.importCSV(file,false);
             sparql.commitTransaction();
+            nosql.commitTransaction();
 
-        }catch (Exception e) {
+            return new SingleObjectResponse<>(new CSVValidationDTO(validationModel)).getResponse();
+
+        }catch (Exception e){
+            sparql.rollbackTransaction();
             nosql.rollbackTransaction();
-            sparql.rollbackTransaction(e);
-        }
-
-        csvValidation.setNbLinesImported(errors.getObjects().size());
-        String token = TokenGenerator.getValidationToken(5, ChronoUnit.MINUTES, Collections.emptyMap());
-        csvValidation.setValidationToken(token);
-        return new SingleObjectResponse<>(csvValidation).getResponse();
-    }
-
-    private void addDuplicateNameErrors(List<SPARQLNamedResourceModel> objects, CSVValidationModel validationModel, Map<String,URI> existingUriByName){
-
-        int i=0;
-
-        // iterate object, check if a conflict was found (by name), if so, append an error into validation
-        for(SPARQLNamedResourceModel object : objects){
-            String name = object.getName();
-
-            if(existingUriByName.containsKey(name)) {
-                URI duplicateObjectURI = existingUriByName.get(name);
-
-                // handle case where URI is null (in case of local duplicate with a non set URI)
-                String errorMsg = String.format(ScientificObjectDAO.NON_UNIQUE_NAME_ERROR_MSG, name, duplicateObjectURI == null ? "A new object " : duplicateObjectURI.toString());
-
-                CSVCell cell = new CSVCell(AbstractCsvDao.CSV_HEADER_ROWS_NB +i, AbstractCsvDao.CSV_NAME_INDEX,object.getName(),errorMsg);
-                validationModel.addInvalidValueError(cell);
-            }
-            i++;
+            throw e;
         }
     }
 
@@ -1046,148 +935,17 @@ public class ScientificObjectAPI {
             @FormDataParam("description") ScientificObjectCsvDescriptionDTO descriptionDto,
             @ApiParam(value = "Data file", required = true, type = "file")
             @NotNull
-            @FormDataParam("file") InputStream file,
+            @FormDataParam("file") File file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition
     ) throws Exception {
 
-        URI contextURI = descriptionDto.getExperiment();
+        CachedCsvImporter<ScientificObjectModel> csvImporter = new CachedCsvImporter<>(
+                new ScientificObjectCsvImporter(sparql, nosql, descriptionDto.getExperiment(), currentUser),
+                descriptionDto.getValidationToken()
+        );
 
-        CSVValidationModel csvValidationModel = getCSVValidationModel(contextURI, file, currentUser);
-
-
-        CSVValidationDTO csvValidation = new CSVValidationDTO();
-        csvValidation.setErrors(csvValidationModel);
-
-        if (!csvValidationModel.hasErrors()) {
-            csvValidation.setValidationToken(generateCSVValidationToken(contextURI));
-            filesValidationCache.put(csvValidation.getValidationToken(), csvValidationModel);
-        }
-
-        return new SingleObjectResponse<CSVValidationDTO>(csvValidation).getResponse();
-    }
-
-    private CSVValidationModel getCSVValidationModel(URI contextURI, InputStream file, UserModel currentUser) throws Exception {
-        HashMap<String, BiConsumer<CSVCell, CSVValidationModel>> customValidators = new HashMap<>();
-
-        if (contextURI == null) {
-            contextURI = sparql.getDefaultGraphURI(ScientificObjectModel.class);
-        } else if (!sparql.uriExists(ExperimentModel.class, contextURI)) {
-            throw new NotFoundURIException("Experiment URI not found:", contextURI);
-        }
-
-        Map<String, List<CSVCell>> parentNamesToReplace = new HashMap<>();
-        customValidators.put(Oeso.isPartOf.toString(), (cell, csvErrors) -> {
-            String value = cell.getValue();
-            if (!URIDeserializer.validateURI(value)) {
-                if (!parentNamesToReplace.containsKey(value)) {
-                    parentNamesToReplace.put(value, new ArrayList<>());
-                }
-                parentNamesToReplace.get(value).add(cell);
-            }
-        });
-
-        if (sparql.uriExists(ExperimentModel.class, contextURI)) {
-
-            ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql);
-            xpDAO.validateExperimentAccess(contextURI, currentUser);
-            ExperimentModel xp = sparql.getByURI(ExperimentModel.class, contextURI, currentUser.getLanguage());
-
-            List<String> factorLevelURIs = new ArrayList<>();
-            for (FactorModel factor : xp.getFactors()) {
-                for (FactorLevelModel factorLevel : factor.getFactorLevels()) {
-                    factorLevelURIs.add(SPARQLDeserializers.getExpandedURI(factorLevel.getUri()));
-                }
-            }
-
-            customValidators.put(Oeso.hasFactorLevel.toString(), (cell, csvErrors) -> {
-                try {
-                    if (!cell.getValue().isEmpty()) {
-                        String factorLevelURI = SPARQLDeserializers.getExpandedURI(new URI(cell.getValue()));
-                        if (!factorLevelURIs.contains(factorLevelURI)) {
-                            csvErrors.addInvalidValueError(cell);
-                        }
-                    }
-                } catch (URISyntaxException ex) {
-                    csvErrors.addInvalidURIError(cell);
-                }
-            });
-
-            List<String> facilityStringURIs = new ArrayList<>();
-            List<FacilityModel> facilities = xpDAO.getAvailableFacilities(contextURI, currentUser);
-            for (FacilityModel facility : facilities) {
-                facilityStringURIs.add(SPARQLDeserializers.getExpandedURI(facility.getUri()));
-            }
-
-            customValidators.put(Oeso.isHosted.toString(), (cell, csvErrors) -> {
-                try {
-                    if (!cell.getValue().isEmpty()) {
-                        String facilityURI = SPARQLDeserializers.getExpandedURI(new URI(cell.getValue()));
-                        if (!facilityStringURIs.contains(facilityURI)) {
-                            csvErrors.addInvalidValueError(cell);
-                        }
-                    }
-                } catch (URISyntaxException ex) {
-                    csvErrors.addInvalidURIError(cell);
-                }
-            });
-        }
-
-        List<String> customColumns = new ArrayList<>();
-        customColumns.add(Oeso.hasGeometry.toString());
-
-        Map<Integer, Geometry> geometries = new HashMap<>();
-        customValidators.put(Oeso.hasGeometry.toString(), (cell, csvErrors) -> {
-            String wktGeometry = cell.getValue();
-            if (wktGeometry != null && !wktGeometry.isEmpty()) {
-                try {
-                    Geometry geometry = GeospatialDAO.wktToGeometry(wktGeometry);
-                    geometries.put(cell.getRowIndex(), geometry);
-                } catch (JsonProcessingException | ParseException ex) {
-                    csvErrors.addInvalidValueError(cell);
-                }
-            }
-        });
-
-        CsvDao<ScientificObjectModel> csvDao = new DefaultCsvDao<>(sparql,ScientificObjectModel.class);
-
-        int firstRow = 3;
-        CSVValidationModel validationResult = csvDao.validateCSV(contextURI, new URI(Oeso.ScientificObject.getURI()), file, firstRow, currentUser.getLanguage(), customValidators, customColumns,false);
-
-        if (!validationResult.hasErrors()) {
-            URI partOfURI = new URI(Oeso.isPartOf.toString());
-            final URI graphURI = contextURI;
-            parentNamesToReplace.forEach((name, cells) -> {
-                List<URI> parentURIs = validationResult.getObjectNameUris(name);
-                if (parentURIs == null || parentURIs.size() == 0) {
-                    // Case parent name not found in file
-                    cells.forEach((cell) -> {
-                        validationResult.addInvalidValueError(cell);
-                    });
-                } else if (parentURIs.size() == 1) {
-                    cells.forEach((cell) -> {
-                        int rowIndex = cell.getRowIndex() - 1;
-                        SPARQLResourceModel object = validationResult.getObjects().get(rowIndex);
-                        object.addRelation(graphURI, partOfURI, URI.class, parentURIs.get(0).toString());
-                    });
-                } else {
-                    // Case multiple objects with the same name, can not chose correct parent
-                    cells.forEach((cell) -> {
-                        validationResult.addInvalidValueError(cell);
-                    });
-                }
-            });
-
-            validationResult.addObjectMetadata(Oeso.hasGeometry.toString(), geometries);
-        }
-
-        try{
-            // check that names are unique into the experiment, throw a DuplicateNameListException if any conflict is found
-            new ScientificObjectDAO(sparql,nosql).checkUniqueNameByGraph((List<ScientificObjectModel>) (List<?>) validationResult.getObjects(),contextURI);
-        }catch (DuplicateNameListException e){
-            addDuplicateNameErrors(validationResult.getObjects(), validationResult, e.getExistingUriByName());
-        }
-
-        return validationResult;
+        CSVValidationModel validationModel = csvImporter.importCSV(file, true);
+        return new SingleObjectResponse<>(new CSVValidationDTO(validationModel)).getResponse();
     }
 
     private void validateContextAccess(URI contextURI) throws Exception {

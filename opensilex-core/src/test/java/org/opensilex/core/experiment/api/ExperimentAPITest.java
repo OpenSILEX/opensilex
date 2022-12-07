@@ -9,6 +9,7 @@ package org.opensilex.core.experiment.api;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.Test;
+import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.organisation.api.facility.FacilityGetDTO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
@@ -33,7 +34,7 @@ import static org.junit.Assert.*;
  * @author Vincent MIGOT
  * @author Renaud COLIN
  */
-public class ExperimentAPITest extends AbstractSecurityIntegrationTest {
+public class ExperimentAPITest extends AbstractMongoIntegrationTest {
 
     protected static String path = "/core/experiments";
 

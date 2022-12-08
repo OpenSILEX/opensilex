@@ -101,6 +101,7 @@ export default class VariableDevicesSelector extends Vue {
             undefined,
             undefined,
             undefined,
+            undefined,
             ["name=asc"],
             0,
             200

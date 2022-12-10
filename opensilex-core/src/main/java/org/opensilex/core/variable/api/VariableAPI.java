@@ -276,7 +276,8 @@ public class VariableAPI {
 
         VariableSearchFilter filter = new VariableSearchFilter()
                 .setNamePattern(namePattern)
-                .setFetchSpecies(true);
+                .setFetchSpecies(true)
+                .setUserModel(currentUser);
 
         filter.setOrderByList(orderByList)
                 .setPage(page)

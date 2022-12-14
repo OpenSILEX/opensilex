@@ -51,3 +51,13 @@ You can set a new limit temporary with:
 $ sudo sysctl fs.inotify.max_user_watches=524288
 $ sudo sysctl -p
 ```
+
+# Run issues
+
+## Authentication
+
+### Unexpected internal error - java.lang.IllegalStateException, message": "size = 2"
+
+- **How to reproduce** : This errors is returned when you try to login (via UI or via Swagger UI) and only occurs if you have a JAVA version >= 17.
+- **Cause** : It's due to the dependency [ByteBuddy](https://bytebuddy.net/)
+- **How to solve** : use a JAVA version <= 14

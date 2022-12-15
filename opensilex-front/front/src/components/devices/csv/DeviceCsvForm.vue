@@ -55,8 +55,8 @@
 import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
-import OntologyCsvTemplateGenerator from 'src/components/ontology/csv/OntologyCsvImporter.vue';
-import OntologyCsvImporter from 'src/components/ontology/csv/OntologyCsvImporter.vue';
+import OntologyCsvImporter from '../../ontology/csv/OntologyCsvImporter.vue';
+import OntologyCsvTemplateGenerator from "../../ontology/csv/OntologyCsvTemplateGenerator.vue";
 
 @Component
 export default class DeviceCsvForm extends Vue {

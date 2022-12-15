@@ -79,6 +79,7 @@ We are still considering the case of import of object with `vocabulary:test_type
 | **URI not found**          | URI used as value of an object property is not found into the triple store   | BODY   |
 | **Duplicate URI**          | A fixed URI is already used by a previous row                                | BODY   |
 | **Invalid URI**            | A URI used as value of an object property can't be parsed                    | BODY   |
+| **Invalid row size**       | Row size is different than the header size                                   | BODY   |
 
 # Conception
 

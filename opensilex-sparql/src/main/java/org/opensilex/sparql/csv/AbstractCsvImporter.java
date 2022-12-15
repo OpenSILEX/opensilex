@@ -43,10 +43,13 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
 
     public static final String CSV_TYPE_KEY = "type";
     public static final int CSV_TYPE_INDEX = 1;
-    private static final int CSV_PROPERTIES_BEGIN_INDEX = 2;
+
+    public static final int CSV_NAME_INDEX = 2;
+
+    public static final int CSV_PROPERTIES_BEGIN_INDEX = 2;
 
     // Start at 2 since we skip header and header description line (2)
-    private static final int CSV_ROW_BEGIN_INDEX = 2;
+    public static final int CSV_ROW_BEGIN_INDEX = 2;
 
     // Offset for a human-readable error reporting (array index start at 0 for computer-scientist but not for all human)
     // Here users expect that first column index is 1
@@ -187,6 +190,35 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
     }
 
     /**
+     * Check if the row size is equals to the {@link CsvHeader} size, append the error to the validator else
+     * @param row CSV row to check
+     * @param totalRowIdx current index in CSV reading
+     * @param validator CSV validator (used for error registration)
+     * @param header CSV header
+     * @return true if row size is OK, false else
+     *
+     * @see CsvHeader#size()
+     * @see CsvOwlRestrictionValidator#addInvalidRowSizeError(CsvCellValidationContext)
+     */
+    private boolean checkRowSize(String[] row, int totalRowIdx, CsvOwlRestrictionValidator validator, CsvHeader header){
+
+        int maxRowSize = header.size() + CSV_PROPERTIES_BEGIN_INDEX;
+        int diff = row.length - maxRowSize;
+
+        if(diff == 0){
+            return true;
+        }
+        else if(diff < 0){
+            // row too small -> return an error linked to the first cell which is expected to be defined
+            validator.addInvalidRowSizeError(new CsvCellValidationContext(totalRowIdx + CSV_HEADER_HUMAN_READABLE_ROW_OFFSET, row.length,null, null));
+        }else{
+            // row too large -> return an error linked to the first illegal/unexpected cell
+            validator.addInvalidRowSizeError(new CsvCellValidationContext(totalRowIdx + CSV_HEADER_HUMAN_READABLE_ROW_OFFSET, row.length, row[maxRowSize], null));
+        }
+        return false;
+    }
+
+    /**
      *
      * @param rowIterator an Iterator on each CSV row
      * @param csvHeader CSV Header
@@ -215,16 +247,20 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
             while ((chunkRowIdx++ < batchSize) && (validator.getNbError() < errorNbLimit) && (rowIterator.hasNext())) {
                 String[] row = rowIterator.next();
 
-                // read model and performs local validation
-                T model = getModel(totalRowIdx, row, csvHeader, validator,localClassesCache);
-                modelChunk.add(model);
+                // Check that row size is coherent with header size
+                if (checkRowSize(row, totalRowIdx, validator, csvHeader)) {
 
-                // generate new URI and register it to set of URI to check
-                if (model.getUri() == null) {
-                    generateLocallyUniqueUri(model, totalRowIdx, validator.getValidationModel(), generatedUrisToIndexesInChunk);
-                } else {
-                    // register URI to the set of URI to check
-                    filledUrisToIndexesInChunk.put(model.getUri().toString(), totalRowIdx);
+                    // read model and performs local validation
+                    T model = getModel(totalRowIdx, row, csvHeader, validator,localClassesCache);
+                    modelChunk.add(model);
+
+                    // generate new URI and register it to set of URI to check
+                    if (model.getUri() == null) {
+                        generateLocallyUniqueUri(model, totalRowIdx, validator.getValidationModel(), generatedUrisToIndexesInChunk);
+                    } else {
+                        // register URI to the set of URI to check
+                        filledUrisToIndexesInChunk.put(model.getUri().toString(), totalRowIdx);
+                    }
                 }
                 totalRowIdx++;
             }
@@ -456,7 +492,7 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
         try {
 
             // regenerate URI while there are local conflict
-            int retryCount = 1;
+            int retryCount = 0;
             URI generated;
             do {
                 generated = model.generateURI(generationPrefix, model, retryCount++);
@@ -609,6 +645,7 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
             if (csvHeader == null) {
                 csvValidationModel.addEmptyHeader(0);
             } else if(!csvValidationModel.hasErrors()){ // only read body if header is correct
+                csvValidationModel.setCsvHeader(csvHeader);
                 readBody(rowIterator, csvHeader, restrictionValidator, validOnly, modelsConsumer);
             }
         }

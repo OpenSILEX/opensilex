@@ -412,6 +412,10 @@ export default class TableAsyncView extends Vue {
     return this.$i18n.n(this.pageSize * (this.currentPage ) < this.totalRow ? this.pageSize * (this.currentPage )  :  this.totalRow )
   }
 
+  getTotalRow(): number {
+    return this.totalRow;
+  }
+
   onSelectAll() {
     if (this.selectAll) {
 

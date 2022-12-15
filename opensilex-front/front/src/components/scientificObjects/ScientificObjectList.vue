@@ -381,10 +381,13 @@ export default class ScientificObjectList extends Vue {
     let path = "/core/scientific_objects/export";
     let today = new Date();
     let filename =
-      "export_scientific_objects_" +
-      today.getFullYear() +
-      String(today.getMonth() + 1).padStart(2, "0") +
-      String(today.getDate()).padStart(2, "0");
+          "export_scientific_objects_" +
+          today.getFullYear() + ""
+          + (today.getMonth()) + ""
+          + today.getDate() + "_"
+          +  today.getHours() + ""
+          + today.getMinutes()
+          + "" + today.getSeconds();
 
     // export all OS corresponding to filter
     let exportDto  = {

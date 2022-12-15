@@ -5,7 +5,6 @@
 //******************************************************************************
 package org.opensilex.core.scientificObject.api;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.MongoWriteException;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.model.geojson.Geometry;
@@ -13,22 +12,15 @@ import io.swagger.annotations.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.UpdateBuilder;
-import org.apache.jena.ext.com.google.common.cache.Cache;
-import org.apache.jena.ext.com.google.common.cache.CacheBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.bson.codecs.configuration.CodecConfigurationException;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
-import org.locationtech.jts.io.ParseException;
 import org.opensilex.core.csv.api.CSVValidationDTO;
-import org.opensilex.core.csv.dal.AbstractCsvDao;
-import org.opensilex.core.scientificObject.dal.ScientificObjectCsvImporter;
+import org.opensilex.core.scientificObject.dal.*;
 import org.opensilex.server.exceptions.displayable.DisplayableBadRequestException;
-import org.opensilex.sparql.csv.CSVCell;
-import org.opensilex.core.csv.dal.CsvDao;
-import org.opensilex.core.csv.dal.DefaultCsvDao;
 import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
@@ -37,15 +29,11 @@ import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
-import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
-import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
-import org.opensilex.core.scientificObject.dal.ScientificObjectSearchFilter;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.authentication.ApiCredential;
@@ -59,17 +47,15 @@ import org.opensilex.server.rest.validation.Date;
 import org.opensilex.server.rest.validation.DateFormat;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.csv.CsvImporter;
+import org.opensilex.sparql.csv.export.CsvExporter;
 import org.opensilex.sparql.csv.validation.CachedCsvImporter;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.deserializer.URIDeserializer;
-import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
-import org.opensilex.utils.TokenGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,19 +67,12 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 /**
@@ -780,13 +759,6 @@ public class ScientificObjectAPI {
         }
     }
 
-    private static final Set<String> columnsWhenNoExperiment = new HashSet<>(Arrays.asList(
-            AbstractCsvDao.CSV_URI_KEY,
-            AbstractCsvDao.CSV_TYPE_KEY,
-            AbstractCsvDao.CSV_NAME_KEY,
-            Oeso.hasGeometry.toString()
-    ));
-
     @POST
     @Path("export")
     @ApiOperation("Export a given list of scientific object URIs to csv data file")
@@ -828,93 +800,18 @@ public class ScientificObjectAPI {
 
         boolean hasExperiment = dto.getExperiment() != null;
 
-        // define csv headers
-        List<String> customColumns = new ArrayList<>();
-        if(hasExperiment){
-            customColumns.add(Oeso.isPartOf.toString());
-            customColumns.add(Oeso.hasCreationDate.toString());
-            customColumns.add(Oeso.hasDestructionDate.toString());
-            customColumns.add(Oeso.hasFactorLevel.toString());
-            customColumns.add(Oeso.isHosted.toString());
-        }
-        customColumns.add(Oeso.hasGeometry.toString());
-
-        // define how to write value for each selected column from header
-        BiFunction<String, ScientificObjectModel, String> customValueGenerator = (columnID, value) -> {
-            if (value == null) {
-                return null;
-            }
-            if(hasExperiment){
-                if (columnID.equals(Oeso.isPartOf.toString())) {
-                    if (value.getParent() != null) {
-                        return SPARQLDeserializers.formatURI(value.getParent().getUri()).toString();
-                    } else {
-                        return null;
-                    }
-                } else if (columnID.equals(Oeso.hasCreationDate.toString()) && value.getCreationDate() != null) {
-                    return value.getCreationDate().toString();
-                } else if (columnID.equals(Oeso.hasDestructionDate.toString()) && value.getDestructionDate() != null) {
-                    return value.getDestructionDate().toString();
-                } else if (columnID.equals(Oeso.hasFactorLevel.toString()) && value.getFactorLevels() != null) {
-
-                    StringBuilder sb = new StringBuilder();
-
-                    for (FactorLevelModel factorLevel : value.getFactorLevels()) {
-                        if (factorLevel != null && factorLevel.getUri() != null) {
-                            sb.append(factorLevel.getUri().toString()).append(" ");
-                        }
-                    }
-                    // remove last space character
-                    return sb.length() > 0 ? sb.substring(0,sb.length()-1) : sb.toString();
-
-                } else if (columnID.equals(Oeso.isHosted.toString())) {
-                    if (arrivalFacilityByOs.containsKey(value.getUri())) {
-                        return arrivalFacilityByOs.get(value.getUri()).toString();
-                    }
-                    return null;
-                }
-            }
-            if (columnID.equals(Oeso.hasGeometry.toString())) {
-                String uriString = value.getUri().toString();
-                if (geospatialMap.containsKey(uriString)) {
-                    Geometry geo = geospatialMap.get(uriString);
-                    try {
-                        return GeospatialDAO.geometryToWkt(geo);
-                    } catch (JsonProcessingException | ParseException ex) {
-                        return null;
-                    }
-                } else {
-                    return null;
-                }
-            } else {
-                return null;
-            }
-
-        };
-
-        CsvDao<ScientificObjectModel> csvDao = new DefaultCsvDao<>(sparql,ScientificObjectModel.class);
-
-        String csvContent = csvDao.exportCSV(
+        CsvExporter<ScientificObjectModel> csvExporter = new ScientificObjectCsvExporter(
+                sparql,
                 objects.getList(),
-                new URI(Oeso.ScientificObject.toString()),
+                dto.getExperiment(),
                 currentUser.getLanguage(),
-                customValueGenerator,
-                customColumns,
-                hasExperiment ? null : columnsWhenNoExperiment,
-                (colId1, colId2) -> {
-                    if (colId1.equals(colId2)) {
-                        return 0;
-                    } else if (colId1.equals(Oeso.hasGeometry.toString())) {
-                        return 1;
-                    } else if (colId2.equals(Oeso.hasGeometry.toString())) {
-                        return -1;
-                    } else {
-                        return colId1.compareTo(colId2);
-                    }
-                });
+                arrivalFacilityByOs,
+                geospatialMap
+        );
+        byte[] content = csvExporter.exportCSV();
 
         String csvName = "scientific-object-export.csv";
-        return Response.ok(csvContent.getBytes(), MediaType.APPLICATION_OCTET_STREAM)
+        return Response.ok(content, MediaType.APPLICATION_OCTET_STREAM)
                 .header("Content-Disposition", "attachment; filename=\"" + csvName + "\"")
                 .build();
     }
@@ -939,7 +836,7 @@ public class ScientificObjectAPI {
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition
     ) throws Exception {
 
-        CachedCsvImporter<ScientificObjectModel> csvImporter = new CachedCsvImporter<>(
+        CsvImporter<ScientificObjectModel> csvImporter = new CachedCsvImporter<>(
                 new ScientificObjectCsvImporter(sparql, nosql, descriptionDto.getExperiment(), currentUser),
                 descriptionDto.getValidationToken()
         );
@@ -973,21 +870,6 @@ public class ScientificObjectAPI {
         } else {
             return null;
         }
-    }
-
-    private static String generateCSVValidationToken(URI experiementURI) throws NoSuchAlgorithmException, IOException {
-        Map<String, Object> additionalClaims = new HashMap<>();
-        additionalClaims.put(CLAIM_CONTEXT_URI, experiementURI);
-        return TokenGenerator.getValidationToken(5, ChronoUnit.MINUTES, additionalClaims);
-    }
-
-    private static Cache<String, CSVValidationModel> filesValidationCache;
-
-    static {
-        filesValidationCache = CacheBuilder.newBuilder()
-                .maximumSize(1000)
-                .expireAfterWrite(5, TimeUnit.MINUTES)
-                .build();
     }
 
     /**

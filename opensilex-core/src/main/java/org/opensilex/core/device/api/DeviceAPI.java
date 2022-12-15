@@ -14,6 +14,7 @@ import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.opensilex.core.URIsListPostDTO;
 import org.opensilex.core.csv.api.CSVValidationDTO;
+import org.opensilex.core.csv.api.CsvImportDTO;
 import org.opensilex.core.data.api.DataFileGetDTO;
 import org.opensilex.core.data.api.DataGetDTO;
 import org.opensilex.core.data.dal.DataDAO;
@@ -28,6 +29,8 @@ import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.organisation.api.facility.FacilityGetDTO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
+import org.opensilex.core.scientificObject.api.ScientificObjectCsvDescriptionDTO;
+import org.opensilex.sparql.csv.CsvImporter;
 import org.opensilex.sparql.csv.DefaultCsvImporter;
 import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
@@ -44,6 +47,7 @@ import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.server.rest.validation.ValidURI;
+import org.opensilex.sparql.csv.validation.CachedCsvImporter;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
@@ -366,27 +370,18 @@ public class DeviceAPI {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     public Response importCSV(
+            @ApiParam(value = "CSV import settings", required = true) @NotNull @Valid @FormDataParam("description") CsvImportDTO importDTO,
             @ApiParam(value = "Device file", required = true, type = "file") @NotNull @FormDataParam("file") File file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition
     ) throws Exception {
 
-        DefaultCsvImporter<DeviceModel> csvImporter = new DefaultCsvImporter<>(
-                sparql,
-                DeviceModel.class,
-                sparql.getDefaultGraphURI(DeviceModel.class),
-                DeviceModel::new
+        CsvImporter<DeviceModel> csvImporter = new CachedCsvImporter<>(
+                new DefaultCsvImporter<>(sparql, DeviceModel.class, DeviceModel::new),
+                importDTO.getValidationToken()
         );
-        CSVValidationModel csvValidationModel = csvImporter.importCSV(file, false);
 
-        CSVValidationDTO validationDTO = new CSVValidationDTO();
-        validationDTO.setErrors(csvValidationModel);
-
-        if (!csvValidationModel.hasErrors()) {
-            String token = TokenGenerator.getValidationToken(5, ChronoUnit.MINUTES, Collections.emptyMap());
-            validationDTO.setValidationToken(token);
-            validationDTO.setNbLinesImported(csvValidationModel.getNbObjectImported());
-        }
-        return new SingleObjectResponse<>(validationDTO).getResponse();
+        CSVValidationModel validationModel = csvImporter.importCSV(file, false);
+        return new SingleObjectResponse<>(new CSVValidationDTO(validationModel)).getResponse();
     }
 
     @POST
@@ -403,26 +398,18 @@ public class DeviceAPI {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     public Response validateCSV(
+            @ApiParam(value = "CSV import settings", required = true) @NotNull @Valid @FormDataParam("description") CsvImportDTO importDTO,
             @ApiParam(value = "Device file", required = true, type = "file") @NotNull @FormDataParam("file") File file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition
     ) throws Exception {
 
-        DefaultCsvImporter<DeviceModel> csvImporter = new DefaultCsvImporter<>(
-                sparql,
-                DeviceModel.class,
-                sparql.getDefaultGraphURI(DeviceModel.class),
-                DeviceModel::new
+        CsvImporter<DeviceModel> csvImporter = new CachedCsvImporter<>(
+                new DefaultCsvImporter<>(sparql, DeviceModel.class, DeviceModel::new),
+                importDTO.getValidationToken()
         );
-        CSVValidationModel csvValidationModel = csvImporter.importCSV(file, true);
 
-        CSVValidationDTO validationDTO = new CSVValidationDTO();
-        validationDTO.setErrors(csvValidationModel);
-
-        if (!csvValidationModel.hasErrors()) {
-            String token = TokenGenerator.getValidationToken(5, ChronoUnit.MINUTES, Collections.emptyMap());
-            validationDTO.setValidationToken(token);
-        }
-        return new SingleObjectResponse<>(validationDTO).getResponse();
+        CSVValidationModel validationModel = csvImporter.importCSV(file, true);
+        return new SingleObjectResponse<>(new CSVValidationDTO(validationModel)).getResponse();
     }
 
     @GET

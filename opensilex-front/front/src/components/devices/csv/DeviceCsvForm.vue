@@ -15,7 +15,7 @@
             :uploadCSV="uploadCSV"
             @csvImported="onCsvImported"
             title="DeviceCsvForm.import-title"
-            successImportMsg="DeviceCsvForm.multiple-insert"
+            successImportMsg="DeviceCsvForm.successImportMsg"
         >
             <template v-slot:icon>
                 <opensilex-Icon icon="ik#ik-target" class="icon-title"/>
@@ -55,8 +55,8 @@
 import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
-import OntologyCsvTemplateGenerator from 'src/components/ontology/csv/OntologyCsvImporter.vue';
-import OntologyCsvImporter from 'src/components/ontology/csv/OntologyCsvImporter.vue';
+import OntologyCsvImporter from '../../ontology/csv/OntologyCsvImporter.vue';
+import OntologyCsvTemplateGenerator from "../../ontology/csv/OntologyCsvTemplateGenerator.vue";
 
 @Component
 export default class DeviceCsvForm extends Vue {
@@ -82,16 +82,28 @@ export default class DeviceCsvForm extends Vue {
     }
 
     validateCSV(csvFile) {
-        let path = "/core/devices/import_validation";
         return this.$opensilex.uploadFileToService(
-            path, {file: csvFile}, null, false
+            "/core/devices/import_validation",
+            {
+                description: {},
+                file: csvFile,
+            },
+            null,
+            false
         );
     }
 
-    uploadCSV(validationToken, csvFile) {
-        let path = "/core/devices/import";
+    uploadCSV(validationToken: string, csvFile) {
         return this.$opensilex.uploadFileToService(
-            path, {file: csvFile}, null, false
+            "/core/devices/import",
+            {
+                description: {
+                    validationToken: validationToken
+                },
+                file: csvFile,
+            },
+            null,
+            false
         );
     }
 
@@ -108,13 +120,13 @@ export default class DeviceCsvForm extends Vue {
 en:
     DeviceCsvForm:
         import-title: Import device(s)
-        multiple-insert: device(s) imported
+        successImportMsg: device(s) imported
         uri-example: http://opensilex.org/id/device/rasperry_pi_4B
         type-example: vocabulary:SensingDevice
 fr:
     DeviceCsvForm:
         import-title: Importer des dispositifs
-        multiple-insert: dispositifs(s) importé(s)
+        successImportMsg: dispositifs(s) importé(s)
         uri-example: http://opensilex.org/id/device/rasperry_pi_4B
         type-example: vocabulary:SensingDevice
 </i18n>

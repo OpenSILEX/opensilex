@@ -1,5 +1,6 @@
 package org.opensilex.sparql.service;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import net.minidev.json.annotate.JsonIgnore;
 import org.opensilex.OpenSilex;
@@ -46,6 +47,7 @@ public abstract class SparqlSearchFilter {
     }
 
     @ApiModelProperty(name = "order_by", value = "List of fields to sort as an array of fieldName=asc|desc", example = "name=asc")
+    @JsonProperty("order_by")
     public List<OrderBy> getOrderByList() {
         return orderByList;
     }
@@ -66,6 +68,7 @@ public abstract class SparqlSearchFilter {
     }
 
     @ApiModelProperty(name = "page_size", value = "Page size")
+    @JsonProperty("page_size")
     public Integer getPageSize() {
         return pageSize;
     }

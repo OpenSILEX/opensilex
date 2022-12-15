@@ -6,7 +6,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.eclipse.rdf4j.model.vocabulary.RDFS;
 import org.locationtech.jts.io.ParseException;
-import org.opensilex.core.csv.dal.AbstractCsvDao;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.exception.DuplicateNameListException;
@@ -309,7 +308,7 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
                 // handle case where URI is null (in case of local duplicate with a non set URI)
                 String errorMsg = String.format(ScientificObjectDAO.NON_UNIQUE_NAME_ERROR_MSG, name, duplicateObjectURI == null ? "A new object " : duplicateObjectURI.toString());
 
-                CsvCellValidationContext cell = new CsvCellValidationContext(i+CSV_HEADER_HUMAN_READABLE_ROW_OFFSET, AbstractCsvDao.CSV_NAME_INDEX, object.getName(), rdfsLabel);
+                CsvCellValidationContext cell = new CsvCellValidationContext(i+CSV_HEADER_HUMAN_READABLE_ROW_OFFSET, AbstractCsvImporter.CSV_NAME_INDEX, object.getName(), rdfsLabel);
                 cell.setMessage(errorMsg);
                 validator.addInvalidValueError(cell);
 

@@ -223,6 +223,7 @@ import VueRouter from "vue-router";
 import { GermplasmService, ExperimentGetListDTO, ExperimentsService, SpeciesService, SpeciesDTO, GermplasmSearchFilter } from "opensilex-core/index";
 
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
+import TableAsyncView from "../common/views/TableAsyncView.vue";
 
 @Component
 export default class GermplasmList extends Vue {
@@ -233,7 +234,7 @@ export default class GermplasmList extends Vue {
   service: GermplasmService;
 
   @Ref("documentForm") readonly documentForm!: any;
-  @Ref("tableRef") readonly tableRef!: any;
+  @Ref("tableRef") readonly tableRef!: TableAsyncView;
 
   @Prop({
     default: false
@@ -421,6 +422,9 @@ export default class GermplasmList extends Vue {
       Object.assign(exportDto, {
         uris: objectURIs
       });
+      exportDto.page_size = objectURIs.length;
+    } else {
+      exportDto.page_size = this.tableRef.getTotalRow();
     }
 
     this.$opensilex

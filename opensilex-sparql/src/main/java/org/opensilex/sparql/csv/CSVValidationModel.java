@@ -26,6 +26,7 @@ import java.util.Set;
 import org.opensilex.sparql.csv.error.CSVDatatypeError;
 import org.opensilex.sparql.csv.error.CSVDuplicateURIError;
 import org.opensilex.sparql.csv.error.CSVURINotFoundError;
+import org.opensilex.sparql.csv.header.CsvHeader;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 
@@ -64,9 +65,13 @@ public class CSVValidationModel {
 
     private Map<Integer, List<CSVDuplicateURIError>> duplicateURIErrors = new HashMap<>();
 
+    private Map<Integer,List<CSVCell>> invalidRowSizeErrors;
+
     private int nbObjectImported;
 
     private String validationToken;
+
+    private CsvHeader csvHeader;
 
     public List<String> getMissingHeaders() {
         return missingHeaders;
@@ -104,6 +109,11 @@ public class CSVValidationModel {
         return duplicateURIErrors;
     }
 
+    public CSVValidationModel(){
+        this.invalidRowSizeErrors = new HashMap<>(1);
+
+    }
+
     public List<SPARQLResourceModel> getObjects() {
         if (hasErrors()) {
             return new ArrayList<>();
@@ -138,7 +148,8 @@ public class CSVValidationModel {
                 || getInvalidValueErrors().size() > 0
                 || getAlreadyExistingURIErrors().size() > 0
                 || getDuplicateURIErrors().size() > 0
-                || getEmptyHeaders().size() > 0;
+                || getEmptyHeaders().size() > 0
+                || ! invalidRowSizeErrors.isEmpty();
     }
 
     public void addMissingHeaders(Collection<String> headers) {
@@ -238,4 +249,24 @@ public class CSVValidationModel {
         this.validationToken = validationToken;
         return this;
     }
+
+    public CsvHeader getCsvHeader() {
+        return csvHeader;
+    }
+
+    public CSVValidationModel setCsvHeader(CsvHeader csvHeader) {
+        this.csvHeader = csvHeader;
+        return this;
+    }
+
+    public Map<Integer, List<CSVCell>> getInvalidRowSizeErrors() {
+        return invalidRowSizeErrors;
+    }
+
+    public void addAInvalidRowSizeError(CSVCell cell) {
+        invalidRowSizeErrors
+                .computeIfAbsent(cell.getRowIndex(), rowIndex -> new ArrayList<>())
+                .add(cell);
+    }
+
 }

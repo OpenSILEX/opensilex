@@ -2,6 +2,7 @@ package org.opensilex.sparql.csv.header;
 
 import org.apache.commons.collections4.trie.PatriciaTrie;
 import org.apache.commons.lang3.StringUtils;
+import org.opensilex.sparql.csv.AbstractCsvImporter;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 
 import java.net.URI;
@@ -9,6 +10,10 @@ import java.net.URISyntaxException;
 import java.util.*;
 import java.util.stream.Stream;
 
+/**
+ * Contains all information about a CSV header during import.
+ * @author rcolin
+ */
 public class CsvHeader{
 
     private final List<String> columns;
@@ -23,11 +28,15 @@ public class CsvHeader{
     private final Map<String, List<Integer>> columnIndexes;
     private final boolean allowPropertiesRepeat;
 
+    // The effective size of the CSV header, take care of the number of column, + (uri,type)
+    private int realCsvHeaderLength;
+
     public CsvHeader(boolean allowPropertiesRepeat) {
         this.allowPropertiesRepeat = allowPropertiesRepeat;
         columnIndexes = new PatriciaTrie<>();
         columns = new ArrayList<>();
         uriColumns = new ArrayList<>();
+        realCsvHeaderLength = AbstractCsvImporter.CSV_PROPERTIES_BEGIN_INDEX;
     }
 
     /**
@@ -61,6 +70,8 @@ public class CsvHeader{
         columns.add(shortHeader.toString());
         columnIndexes.computeIfAbsent(shortHeader.toString(), newKey -> new ArrayList<>()).add(index);
         uriColumns.add(shortHeader);
+
+        realCsvHeaderLength++;
     }
 
 
@@ -84,5 +95,13 @@ public class CsvHeader{
 
     public int size() {
         return columns.size();
+    }
+
+    public List<String> getColumns() {
+        return columns;
+    }
+
+    public int getRealCsvHeaderLength() {
+        return realCsvHeaderLength;
     }
 }

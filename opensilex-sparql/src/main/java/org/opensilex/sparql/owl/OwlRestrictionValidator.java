@@ -311,9 +311,13 @@ public abstract class OwlRestrictionValidator<T extends ValidationContext> {
      */
     protected void validateObjectPropertyValue(URI graph, SPARQLResourceModel model, String value, URI property, OwlRestrictionModel restriction, Supplier<T> validationContextSupplier) {
 
-        // check if URI is valid
+        // check if URI is valid and absolute
         try {
-            new URI(value);
+            URI uri = new URI(value);
+            if(! uri.isAbsolute()){
+                addInvalidURIError(getValidationContext(validationContextSupplier, property, value, "Not a valid and absolute URI"));
+                return;
+            }
         } catch (URISyntaxException e) {
             T validationContext = getValidationContext(validationContextSupplier,property,value,e.getMessage());
             addInvalidURIError(validationContext);

@@ -85,7 +85,7 @@
                                                 v-for="validationErr in row.firstErrorType.validationErrors"
                                                 v-bind:key="getErrKey(validationErr, row.firstErrorType.type)"
                                             >
-                                              {{getValidationErrorDetail(validationErr, row.firstErrorType.type) }}
+                                              {{getValidationErrorDetail(validationErr, row.firstErrorType.type,validation) }}
                                             </li>
                                         </ul>
                                     </b-td>
@@ -101,7 +101,7 @@
                                                 v-for="validationErr in validationError"
                                                 v-bind:key="getErrKey(validationErr, errorType)"
                                             >
-                                                {{ getValidationErrorDetail(validationErr, errorType) }}
+                                                {{ getValidationErrorDetail(validationErr, errorType,validation) }}
                                             </li>
                                         </ul>
                                     </b-td>
@@ -210,6 +210,7 @@ export default class OntologyCsvImporter extends Vue {
     csvFile = null;
     validationToken: string = null;
     nbLines: number = 0;
+    validation: CSVValidationDTO = null;
 
     csvUploaded() {
         this.validationToken = null;
@@ -242,9 +243,10 @@ export default class OntologyCsvImporter extends Vue {
     }
 
     checkCSVValidation(response) {
-        let result: CSVValidationDTO = response.result;
-        this.validationToken = result.validation_token;
-        this.nbLines = result.nb_lines_imported;
+        let validation: CSVValidationDTO = response.result;
+        this.validation = validation;
+        this.validationToken = validation.validation_token;
+        this.nbLines = validation.nb_lines_imported;
 
         if (!this.validationToken) {
             let errors = response.result.errors;
@@ -258,6 +260,7 @@ export default class OntologyCsvImporter extends Vue {
             OntologyCsvImporter.loadErrorType("invalidValueErrors", errors, errorsByRowIndex);
             OntologyCsvImporter.loadErrorType("alreadyExistingURIErrors", errors, errorsByRowIndex);
             OntologyCsvImporter.loadErrorType("duplicateURIErrors", errors, errorsByRowIndex);
+            OntologyCsvImporter.loadErrorType("invalidRowSizeErrors", errors, errorsByRowIndex);
 
             let generalErrors: CsvError = {
                 index: "Erreurs générales",
@@ -265,6 +268,7 @@ export default class OntologyCsvImporter extends Vue {
                 listSize: 1,
                 firstErrorType: null,
             };
+
             if (errors.missingHeaders.length > 0) {
                 generalErrors.list.missingHeaders = errors.missingHeaders;
                 generalErrors.listSize++;
@@ -282,11 +286,12 @@ export default class OntologyCsvImporter extends Vue {
 
             if (errors.invalidHeaderURIs.length > 0) {
                 generalErrors.list.invalidHeaderURIs = errors.invalidHeaderURIs;
-                generalErrors.listSize = generalErrors.listSize + 1;
+                generalErrors.listSize++;
                 if (!generalErrors.firstErrorType) {
                     generalErrors.firstErrorType = "invalidHeaderURIs";
                 }
             }
+
             if (generalErrors.firstErrorType) {
                 generalErrors.listSize--;
                 let firstErrorType = generalErrors.firstErrorType;
@@ -317,7 +322,8 @@ export default class OntologyCsvImporter extends Vue {
 
     validationErrors: Array<CsvError> = null;
 
-    getValidationErrorDetail(validationError, errorType) {
+    getValidationErrorDetail(validationError, errorType, validation: CSVValidationDTO) {
+        console.log("getValidationErrorDetail",validationError);
         switch (errorType) {
             case "missingHeaders":
                 return this.$t(
@@ -343,6 +349,11 @@ export default class OntologyCsvImporter extends Vue {
                 return this.$t(
                     "OntologyCsvImporter.validationErrorDatatypeMessage",
                     validationError
+                );
+            case "invalidRowSizeErrors":
+                return this.$t(
+                    "OntologyCsvImporter.validationErrorInvalidRowSizeErrorsMessage",
+                    {row_size: validationError.colIndex, header_size: validation.errors.csvHeader.realCsvHeaderLength} // append offset since (uri,type) column are not counted
                 );
             default:
                 return this.$t(
@@ -462,12 +473,14 @@ en:
         invalidValueErrors: Invalid value
         alreadyExistingURIErrors: URI already existing
         duplicateURIErrors: Duplicate URI
+        invalidRowSizeErrors: Invalid row size
         validationErrorMessage: "Column: '{header}' - Value: '{value}' - Details: '{message}'"
         validationErrorMissingRequiredMessage: "Column: '{header}'"
         validationErrorMissingHeaderMessage: "Column: '{header}'"
         validationErrorEmptyHeaderMessage: "Header: column '{header}' - Empty column"
         validationErrorDuplicateURIMessage: "Header: column '{header}' - Value: '{value}' - Identical with row: '{previousRow}'"
         validationErrorDatatypeMessage: "Column: '{header}' - Value: '{value}' ({datatype})"
+        validationErrorInvalidRowSizeErrorsMessage: "Invalid row size : {row_size}. Row size for this line must be equals to the CSV header size : {header_size}"
         CSVIsValid: Your CSV file has been successfully validated ({nb_lines} row(s) found), click OK to import it
         csv-file-placeholder: Drop or select CSV file here...
         csv-file-drop-placeholder: Drop CSV file here...
@@ -500,12 +513,14 @@ fr:
         invalidValueErrors: Valeur invalide
         alreadyExistingURIErrors: URI déjà existante
         duplicateURIErrors: URI dupliquée
+        invalidRowSizeErrors: Taile de ligne invalide
         validationErrorMessage: "Colonne: '{header}' - Valeur: '{value}' - Détail: '{message}'"
         validationErrorMissingRequiredMessage: "Colonne: '{header}'"
         validationErrorMissingHeaderMessage: "En-tête: '{header}'"
         validationErrorEmptyHeaderMessage: "En-tête: '{header}' - Colonne vide"
         validationErrorDuplicateURIMessage: "Colonne: '{header}' - Valeur: '{value}' - Identique à la ligne: '{previousRow}'"
         validationErrorDatatypeMessage: "Colonne: '{header}' - Valeur: '{value}' ({datatype})"
+        validationErrorInvalidRowSizeErrorsMessage: "Taille de ligne invalide : {row_size}. Le nombre de colonne pour cette ligne doit être égal à la taille de l'entête CSV : {header_size}"
         CSVIsValid: Votre fichier CSV est valide ({nb_lines} ligne lue(s)), cliquer sur OK pour l'importer
         csv-file-placeholder: Déposer ou choisir un fichier CSV ici...
         csv-file-drop-placeholder: Déposer le fichier CSV ici...

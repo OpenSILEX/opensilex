@@ -25,8 +25,8 @@
             :small="true"
             :text="$t('VariableList.display')">
 
-            <b-dropdown-item-button @click="clickOnlySelected()">{{ onlySelected ? $t('VariableList.selected-all') : $t('VariableList.selected-only')}}</b-dropdown-item-button>
-            <b-dropdown-item-button @click="resetSelected()">{{$t('VariableList.resetSelected')}}</b-dropdown-item-button>
+            <b-dropdown-item-button @click="clickOnlySelected()">{{ onlySelected ? $t('VariableList.selected-all') : $t("component.common.selected-only")}}</b-dropdown-item-button>
+            <b-dropdown-item-button @click="resetSelected()">{{$t("component.common.resetSelected")}}</b-dropdown-item-button>
           </b-dropdown>
 
 
@@ -381,10 +381,13 @@ export default class ScientificObjectList extends Vue {
     let path = "/core/scientific_objects/export";
     let today = new Date();
     let filename =
-      "export_scientific_objects_" +
-      today.getFullYear() +
-      String(today.getMonth() + 1).padStart(2, "0") +
-      String(today.getDate()).padStart(2, "0");
+          "export_scientific_objects_" +
+          today.getFullYear() + ""
+          + (today.getMonth()) + ""
+          + today.getDate() + "_"
+          +  today.getHours() + ""
+          + today.getMinutes()
+          + "" + today.getSeconds();
 
     // export all OS corresponding to filter
     let exportDto  = {
@@ -438,6 +441,9 @@ export default class ScientificObjectList extends Vue {
 
   onItemUnselected(row) {
     this.tableRef.onItemUnselected(row);
+  }
+  onItemSelected(row) {
+    this.tableRef.onItemSelected(row);
   }
 }
 </script>

@@ -7,10 +7,10 @@ package org.opensilex.front.vueOwlExtension.dal;
 
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.OpenSilex;
-import org.opensilex.core.CoreModule;
 import org.opensilex.front.vueOwlExtension.types.VueOntologyDataType;
 import org.opensilex.front.vueOwlExtension.types.VueOntologyObjectType;
 import org.opensilex.front.vueOwlExtension.types.VueOntologyType;
+import org.opensilex.server.exceptions.displayable.DisplayableBadRequestException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
@@ -62,14 +62,29 @@ public class VueOwlExtensionDAO {
         }
     }
 
+    /**
+     * Delete the {@link VueClassExtensionModel} and {@link ClassModel} associated with {@code classURI}
+     * @param classURI URI of the class to delete (required)
+     * @throws Exception if some error is encountered during SPARQL query evaluation
+     * @throws org.opensilex.server.exceptions.displayable.DisplayableBadRequestException if the class is not a custom class
+     *
+     * @see OntologyDAO#deleteClass(URI)
+     */
     public void deleteExtendedClass(URI classURI) throws Exception {
-        try {
-            VueClassExtensionModel extensionModel = sparql.getByURI(VueClassExtensionModel.class,classURI,null);
-            if(extensionModel == null){
-                throw new IllegalArgumentException("Could not delete custom class "+classURI+". This class is not found or is not a custom class");
-            }
 
-            sparql.startTransaction();
+        Objects.requireNonNull(classURI);
+
+        VueClassExtensionModel extensionModel = sparql.getByURI(VueClassExtensionModel.class, classURI, null);
+        if(extensionModel == null){
+            throw new DisplayableBadRequestException(
+                    OntologyDAO.CLASS_DELETION_ERROR_KEY,
+                    "component.ontology.class.exception.delete.not-custom-class",
+                    Collections.singletonMap(OntologyDAO.CLASS_DELETION_KEY_PARAMETER,classURI.toString())
+            );
+        }
+
+        sparql.startTransaction();
+        try {
             ontologyDAO.deleteClass(classURI);
             sparql.delete(VueClassExtensionModel.class, classURI);
             sparql.commitTransaction();

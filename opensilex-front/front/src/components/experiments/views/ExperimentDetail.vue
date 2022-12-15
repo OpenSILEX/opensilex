@@ -117,6 +117,7 @@
               :list="facilityListUris"
             ></opensilex-UriListView>
             <opensilex-UriListView
+              v-if="!isGermplasmMenuExcluded"
               label="component.experiment.species"
               :list="speciesList"
             ></opensilex-UriListView>
@@ -144,6 +145,12 @@
               label="component.experiment.technicalSupervisors"
               :list="technicalSupervisorsList"
             ></opensilex-UriListView>
+            <opensilex-UriView
+              title="component.experiment.record_author"
+              :uri="recordAuthor.uri"
+              :value="recordAuthor.first_name + ' ' + recordAuthor.last_name"
+          >
+          </opensilex-UriView>
           </template>
         </opensilex-Card>
       </div>
@@ -165,13 +172,13 @@ import {
   SpeciesService
 } from "opensilex-core/index";
 import {GroupDTO, SecurityService, UserGetDTO} from "opensilex-security/index";
-import moment from "moment";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import DTOConverter from "../../../models/DTOConverter";
+import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 
 @Component
 export default class ExperimentDetail extends Vue {
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
   $t: any;
   $route: any;
   $store: any;
@@ -191,6 +198,7 @@ export default class ExperimentDetail extends Vue {
   technicalSupervisorsList = [];
   installationsList = [];
   infrastructuresList = [];
+  recordAuthor = null;
 
   created() {
     this.service = this.$opensilex.getService("opensilex.ExperimentsService");
@@ -204,7 +212,7 @@ export default class ExperimentDetail extends Vue {
       () => this.$store.getters.language,
       (lang) => {
         this.loadSpecies();
-        this.period = this.formatPeriod(
+        this.period = this.$opensilex.$dateTimeFormatter.formatPeriod(
           this.experiment.start_date,
           this.experiment.end_date
         );
@@ -218,6 +226,10 @@ export default class ExperimentDetail extends Vue {
 
   showEditForm() {
     this.experimentForm.showEditForm(DTOConverter.extractURIFromResourceProperties(this.experiment));
+  }
+
+  get isGermplasmMenuExcluded() {
+        return this.$opensilex.getConfig().menuExclusions.includes("germplasm");
   }
 
   get infrastructuresListURIs() {
@@ -235,7 +247,10 @@ export default class ExperimentDetail extends Vue {
     return this.experiment.facilities.map(facility => {
       return {
         uri: facility.uri,
-        value: facility.name
+        value: facility.name,
+        to: {
+          path: "/facility/details/" + encodeURIComponent(facility.uri),
+        }
       }
     });
   }
@@ -280,7 +295,7 @@ export default class ExperimentDetail extends Vue {
     this.loadGroups();
     this.loadFactors();
     this.loadSpecies();
-    this.period = this.formatPeriod(
+    this.period = this.$opensilex.$dateTimeFormatter.formatPeriod(
       this.experiment.start_date,
       this.experiment.end_date
     );
@@ -365,6 +380,15 @@ export default class ExperimentDetail extends Vue {
         })
         .catch(this.$opensilex.errorHandler);
     }
+    if (this.experiment.record_author &&
+      this.experiment.record_author.length > 0){
+        service
+        .getUser(this.experiment.record_author)
+        .then((http: HttpResponse<OpenSilexResponse<UserGetDTO>>) => {
+          this.recordAuthor = http.response.result;
+        })
+        .catch(this.$opensilex.errorHandler);
+      }
   }
 
   loadSpecies() {
@@ -465,65 +489,9 @@ export default class ExperimentDetail extends Vue {
 
   isEnded(experiment) {
     if (experiment.end_date) {
-      return moment(experiment.end_date, "YYYY-MM-DD").diff(moment()) < 0;
+      return new Date(experiment.end_date).getTime() < new Date().getTime();
     }
     return false;
-  }
-
-  formatPeriod(startDateValue: string, endDateValue: string) {
-    let startDate = moment(startDateValue, "YYYY-MM-DD");
-    let endDate;
-    let result = this.$opensilex.formatDate(startDateValue);
-
-    if (endDateValue) {
-      endDate = moment(endDateValue, "YYYY-MM-DD");
-      result += " - " + this.$opensilex.formatDate(endDateValue);
-    } else {
-      endDate = moment();
-    }
-
-    endDate.add(1, "days");
-    let years = endDate.diff(startDate, "year");
-    startDate.add(years, "years");
-    let months = endDate.diff(startDate, "months");
-    startDate.add(months, "months");
-    let days = endDate.diff(startDate, "days");
-
-    let yearsString = "";
-    let monthsString = "";
-    let daysString = "";
-    if (years > 0) {
-      if (years == 1) {
-        yearsString = years + " " + this.$t("component.common.year").toString();
-      }
-      if (years > 1) {
-        yearsString =
-          years + " " + this.$t("component.common.years").toString();
-      }
-    }
-
-    if (months > 0) {
-      if (months == 1) {
-        monthsString =
-          months + " " + this.$t("component.common.month").toString();
-      }
-      if (months > 1) {
-        monthsString =
-          months + " " + this.$t("component.common.months").toString();
-      }
-    }
-    if (days > 0) {
-      if (days == 1) {
-        daysString = days + " " + this.$t("component.common.day").toString();
-      }
-      if (days > 1) {
-        daysString = days + " " + this.$t("component.common.days").toString();
-      }
-    }
-    result +=
-      " ( " + yearsString + " " + monthsString + " " + daysString + " )";
-
-    return result;
   }
 }
 </script>

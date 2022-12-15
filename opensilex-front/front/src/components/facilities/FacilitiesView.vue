@@ -127,9 +127,9 @@ import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
 import {BTable} from "bootstrap-vue";
 import FacilityModalForm from "./FacilityModalForm.vue";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
-import {InfrastructureFacilityCreationDTO,
-  InfrastructureFacilityGetDTO,
-  NamedResourceDTOInfrastructureFacilityModel, NamedResourceDTOInfrastructureModel, NamedResourceDTOSiteModel } from 'opensilex-core/index';
+import {FacilityCreationDTO,
+  FacilityGetDTO,
+  NamedResourceDTOFacilityModel, NamedResourceDTOOrganizationModel, NamedResourceDTOSiteModel } from 'opensilex-core/index';
 
 @Component
 export default class FacilitiesView extends Vue {
@@ -141,7 +141,7 @@ export default class FacilitiesView extends Vue {
   @Ref("facilityTable") readonly facilityTable: BTable;
 
   @Prop()
-  organization: NamedResourceDTOInfrastructureModel;
+  organization: NamedResourceDTOOrganizationModel;
 
   @Prop()
   site: NamedResourceDTOSiteModel;
@@ -151,12 +151,12 @@ export default class FacilitiesView extends Vue {
    * fetched from the server.
    */
   @Prop()
-  facilities: Array<NamedResourceDTOInfrastructureFacilityModel>;
+  facilities: Array<NamedResourceDTOFacilityModel>;
   /**
    * Facilities fetched from the server, only if {@link facilities} is undefined.
    */
-  fetchedFacilities: Array<NamedResourceDTOInfrastructureFacilityModel> = [];
-  selectedFacility: NamedResourceDTOInfrastructureFacilityModel = undefined;
+  fetchedFacilities: Array<NamedResourceDTOFacilityModel> = [];
+  selectedFacility: NamedResourceDTOFacilityModel = undefined;
 
   @Prop()
   displayButtonOnTop : boolean;
@@ -222,7 +222,7 @@ export default class FacilitiesView extends Vue {
       });
   }
 
-  onFacilitySelected(selected: Array<InfrastructureFacilityGetDTO>) {
+  onFacilitySelected(selected: Array<FacilityGetDTO>) {
     this.selectedFacility = selected[0];
     this.$emit('facilitySelected', this.selectedFacility);
   }
@@ -241,7 +241,7 @@ export default class FacilitiesView extends Vue {
     }
 
     return this.service.searchInfrastructureFacilities(this.filter)
-        .then((http: HttpResponse<OpenSilexResponse<Array<InfrastructureFacilityGetDTO>>>) => {
+        .then((http: HttpResponse<OpenSilexResponse<Array<FacilityGetDTO>>>) => {
           this.fetchedFacilities = http.response.result;
         }).then(() => {
 
@@ -252,7 +252,7 @@ export default class FacilitiesView extends Vue {
         });
   }
 
-  initForm(form: InfrastructureFacilityCreationDTO) {
+  initForm(form: FacilityCreationDTO) {
     if (this.organization) {
       form.organizations = [this.organization.uri];
     }
@@ -262,7 +262,7 @@ export default class FacilitiesView extends Vue {
     this.facilityForm.showCreateForm()
   }
 
-  editFacility(facility: InfrastructureFacilityGetDTO) {
+  editFacility(facility: FacilityGetDTO) {
     this.facilityForm.showEditForm(facility);
   }
 

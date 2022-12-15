@@ -2,8 +2,8 @@ package org.opensilex.core.organisation.api.site;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.opensilex.core.address.api.AddressDTO;
-import org.opensilex.core.organisation.dal.SiteAddressModel;
-import org.opensilex.core.organisation.dal.SiteModel;
+import org.opensilex.core.organisation.dal.site.SiteAddressModel;
+import org.opensilex.core.organisation.dal.site.SiteModel;
 import org.opensilex.sparql.response.NamedResourceDTO;
 
 /**

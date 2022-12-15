@@ -1,0 +1,4 @@
+uri,type,vocabulary:hasFactorLevel,vocabulary:hasFactorLevel,rdfs:label
+,,,,
+,,test:id/factor/test_os_csv_import.factor.level1,test:id/factor/test_os_csv_import.factor.level2,os_import_factor_level_multiple_1
+,,test:id/factor/test_os_csv_import.factor.level2,test:id/factor/test_os_csv_import.factor.level1,os_import_factor_level_multiple_2

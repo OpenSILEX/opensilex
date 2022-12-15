@@ -59,6 +59,8 @@
             "not-specified": "Non renseigné(e)",
             "validate": "Valider",
             "validateSelection": "Valider la selection",
+            "selected-only": "Sélection seulement",
+            "resetSelected": "Réinitialiser la sélection",
             "state":"Etat",
             "species":"Espèces",
             "period":"Période",
@@ -126,7 +128,8 @@
             "search": {
                 "search-button": "Rechercher",
                 "visualize-button": "Visualiser",
-                "clear-button": "Réinitialiser"
+                "clear-button": "Réinitialiser",
+                "noDataFound": "Pas de données trouvées"
             },
             "filter-search-no-result": "Désolé, aucun élément ne correspond à votre recherche.",
             "help-button": "Aide",
@@ -285,6 +288,9 @@
                 "funding-contacts": "Financeurs et contacts"
             }
         },
+        "variable" : {
+            "linked-object-error" : "{uri} ne peut être supprimé : utilisé par les variables {variable}"
+        },
         "profile": {
             "description": "Gérer et configurer les profils",
             "profile-uri": "URI du profil",
@@ -391,6 +397,7 @@
             "description": "Description",
             "technicalSupervisors": "Responsables techniques",
             "scientificSupervisors": "Responsables scientifiques",
+            "record_author": "Saisie par",
             "infrastructures": "Organisations",
             "facilities": "Installations techniques",
             "contacts": "Contacts",
@@ -604,10 +611,19 @@
             "class" : {
                 "exception" : {
                     "delete" : {
+                        "not-custom-class" : "Le type {class} n'est pas une classe personnalisée. Vous n'avez pas la permission de supprimer un type declaré au sein d'une ontologie utilisée par OpenSILEX",
                         "instance-exists" : "Une ou plusieurs ressources du type {class} existent. Vous devez les supprimer d'abord",
                         "has-children" : "Le type {class} a plusieurs sous-types. Vous devez les supprimer d'abord",
                         "has-data-properties" : "Le type {class} est relié à plusieurs propriétés literales. Vous devez les supprimer d'abord",
                         "has-object-properties" : "Le type {class} est relié à plusieurs propriétés objets. Vous devez les supprimer d'abord"
+                    }
+                }
+            },
+            "property" : {
+                "exception" : {
+                    "delete" : {
+                        "instance-exists" : "Une ou plusieurs ressources utilisent la propriété {property}. Vous devez les supprimer d'abord",
+                        "has-children" : "La propriété {property} possède une ou plusieurs sous-propriétés. Vous devez les supprimer d'abord"
                     }
                 }
             }

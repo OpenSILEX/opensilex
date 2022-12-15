@@ -6,6 +6,7 @@
 package org.opensilex.core.variable.api.unit;
 
 import io.swagger.annotations.*;
+import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.variable.api.VariableAPI;
 import org.opensilex.core.variable.dal.BaseVariableDAO;
 import org.opensilex.core.variable.dal.UnitModel;
@@ -178,7 +179,7 @@ public class UnitAPI {
             @ApiParam(value = "Unit URI", example = "http://opensilex.dev/set/variables/unit/Centimeter", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         BaseVariableDAO<UnitModel> dao = new BaseVariableDAO<>(UnitModel.class, sparql);
-        dao.delete(uri);
+        dao.delete(uri, Oeso.hasUnit);
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
 

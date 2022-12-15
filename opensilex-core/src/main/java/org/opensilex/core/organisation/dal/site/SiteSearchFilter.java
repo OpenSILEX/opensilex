@@ -1,0 +1,112 @@
+/*******************************************************************************
+ *                         SiteSearchFilter.java
+ * OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+ * Copyright © INRAE 2022.
+ * Last Modification: 31/10/2022
+ * Contact: valentin.rigolle@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
+ *
+ ******************************************************************************/
+package org.opensilex.core.organisation.dal.site;
+
+import org.apache.commons.collections.CollectionUtils;
+import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.sparql.service.SparqlSearchFilter;
+
+import javax.validation.constraints.NotNull;
+import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
+import java.util.List;
+
+/**
+ * @author Valentin Rigolle
+ */
+public class SiteSearchFilter extends SparqlSearchFilter {
+    private String namePattern;
+    private List<URI> sites;
+    private List<URI> organizations;
+    private URI facility;
+    private UserModel user;
+    /**
+     * If set to true, the site search method will not perform a query to fetch the organizations accessible to the
+     * user. Instead, it will use the {@link #userOrganizations} search field as the list of accessible organizations.
+     */
+    private boolean skipUserOrganizationFetch = false;
+    private List<URI> userOrganizations;
+
+    public SiteSearchFilter() {
+        super();
+    }
+
+    public String getNamePattern() {
+        return namePattern;
+    }
+
+    public SiteSearchFilter setNamePattern(String namePattern) {
+        this.namePattern = namePattern;
+        return this;
+    }
+
+    public List<URI> getSites() {
+        return sites;
+    }
+
+    public SiteSearchFilter setSites(List<URI> sites) {
+        this.sites = sites;
+        return this;
+    }
+
+    public List<URI> getOrganizations() {
+        return organizations;
+    }
+
+    public SiteSearchFilter setOrganizations(List<URI> organizations) {
+        this.organizations = organizations;
+        return this;
+    }
+
+    public URI getFacility() {
+        return facility;
+    }
+
+    public SiteSearchFilter setFacility(URI facility) {
+        this.facility = facility;
+        return this;
+    }
+
+    @NotNull
+    public UserModel getUser() {
+        return user;
+    }
+
+    public SiteSearchFilter setUser(UserModel user) {
+        this.user = user;
+        return this;
+    }
+
+    public boolean getSkipUserOrganizationFetch() {
+        return skipUserOrganizationFetch;
+    }
+
+    public SiteSearchFilter setSkipUserOrganizationFetch(boolean skipUserOrganizationFetch) {
+        this.skipUserOrganizationFetch = skipUserOrganizationFetch;
+        return this;
+    }
+
+    public List<URI> getUserOrganizations() {
+        return userOrganizations;
+    }
+
+    public SiteSearchFilter setUserOrganizations(List<URI> userOrganizations) {
+        this.userOrganizations = userOrganizations;
+        return this;
+    }
+
+    @Override
+    public void validate() throws IllegalArgumentException, InvocationTargetException, IllegalAccessException {
+        super.validate();
+
+        if (getSkipUserOrganizationFetch() && CollectionUtils.isEmpty(getUserOrganizations())) {
+            throw new IllegalArgumentException("`skipUserOrganizationFetch` requires `userOrganizations` to be defined");
+        }
+    }
+}

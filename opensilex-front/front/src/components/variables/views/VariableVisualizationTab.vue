@@ -1,69 +1,66 @@
 <template>
   <div ref="page" class="page">
-
     <opensilex-PageContent class="pagecontent">
 
       <!-- Toggle Sidebar-->
       <div class="searchMenuContainer"
-      v-on:click="SearchFiltersToggle = !SearchFiltersToggle"
-      :title="searchFiltersPannel()">
+        v-on:click="searchFiltersToggle = !searchFiltersToggle"
+        :title="searchFiltersPannel()"
+      >
         <div class="searchMenuIcon">
           <i class="icon ik ik-search"></i>
         </div>
       </div>
-
-
-<!-- FILTERS -->
       <Transition>
-        <div v-show="SearchFiltersToggle">
-
-    <!--Form-->
-    <opensilex-VariableVisualizationForm
-        ref="variableVisualizationForm"
-        :variable="variable"
-        :devices="devicesURI"
-        @search="onSearch"
-        @update="onUpdate"
-    ></opensilex-VariableVisualizationForm>
-
+        <div v-show="searchFiltersToggle">
+          <!--Form-->
+          <opensilex-VariableVisualizationForm
+              ref="variableVisualizationForm"
+              :variable="variable"
+              :devices="devicesURI"
+              @search="onSearch"
+              @update="onUpdate"
+          ></opensilex-VariableVisualizationForm>
         </div>
       </Transition>
 
-    <div class="d-flex justify-content-center mb-3" v-if="!isGraphicLoaded">
-      <b-spinner label="Loading..."></b-spinner>
-    </div>
+      <div class="d-flex justify-content-center mb-3" v-if="!isGraphicLoaded">
+        <b-spinner label="Loading..."></b-spinner>
+      </div>
 
-    <!--Visualisation-->
-    <opensilex-DataVisuGraphic
-        v-if="isGraphicLoaded"
-        ref="visuGraphic"
-        :deviceType="false"
-        :lType="true"
-        :lWidth="true"
-        @addEventIsClicked="showEventForm"
-        @dataAnnotationIsClicked="showAnnotationForm"
-        class="VariableVisualisationGraphic"
-    ></opensilex-DataVisuGraphic>
+      <!--Visualisation-->
+      <opensilex-DataVisuGraphic
+          v-if="isGraphicLoaded"
+          ref="visuGraphic"
+          :deviceType="false"
+          :lType="true"
+          :lWidth="true"
+          @addEventIsClicked="showEventForm"
+          @dataAnnotationIsClicked="showAnnotationForm"
+          v-bind:class ="{
+            'VariableVisualisationGraphic': searchFiltersToggle,
+            'VariableVisualisationGraphicWithoutForm': !searchFiltersToggle
+          }"
+      ></opensilex-DataVisuGraphic>
 
-    <opensilex-AnnotationModalForm
-        ref="annotationModalForm"
-        @onCreate="onAnnotationCreated"
-    ></opensilex-AnnotationModalForm>
+      <opensilex-AnnotationModalForm
+          ref="annotationModalForm"
+          @onCreate="onAnnotationCreated"
+      ></opensilex-AnnotationModalForm>
 
-    <opensilex-EventModalForm
-        ref="eventsModalForm"
-        :target="target"
-        :eventCreatedTime="eventCreatedTime"
-        @onCreate="onEventCreated"
-    ></opensilex-EventModalForm>
+      <opensilex-EventModalForm
+          ref="eventsModalForm"
+          :target="target"
+          :eventCreatedTime="eventCreatedTime"
+          @onCreate="onEventCreated"
+      ></opensilex-EventModalForm>
     </opensilex-PageContent>
   </div>
 </template>
 
 <script lang="ts">
-import {Component, Prop, Ref} from "vue-property-decorator";
+import {Component, Prop, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
-import moment from "moment-timezone";
 import {DataGetDTO, DevicesService, EventGetDTO, EventsService,} from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {DataService} from "opensilex-core/api/data.service";
@@ -87,12 +84,6 @@ export default class VariableVisualizationTab extends Vue {
     return this.$store.state.credentials;
   }
 
-  data(){
-    return {
-      SearchFiltersToggle : true,
-    }
-  }
-
   @Prop()
   variable;
 
@@ -107,6 +98,8 @@ export default class VariableVisualizationTab extends Vue {
   devicesService: DevicesService;
   eventsService: EventsService;
   deviceColorMap = [];
+  searchFiltersToggle: boolean = true;
+
   @Ref("page") readonly page!: any;
   @Ref("visuGraphic") readonly visuGraphic!: DataVisuGraphic;
   @Ref("annotationModalForm") readonly annotationModalForm!: any;
@@ -130,6 +123,14 @@ export default class VariableVisualizationTab extends Vue {
           }
         }
     );
+  }
+
+  // simulate window resizing to resize the graphic when the filter panel display changes
+  @Watch("searchFiltersToggle")
+  onSearchFilterToggleChange(){
+    this.$nextTick(()=> { 
+      window.dispatchEvent(new Event('resize'));
+    })  
   }
 
   beforeDestroy() {
@@ -218,6 +219,7 @@ export default class VariableVisualizationTab extends Vue {
   }
 
   onSearch(form) {
+    this.searchFiltersToggle = !this.searchFiltersToggle;
     this.isGraphicLoaded = false;
     if (this.variable) {
       this.form = form;
@@ -371,20 +373,15 @@ export default class VariableVisualizationTab extends Vue {
                 label = label + "(End: " + endTime + ")";
               }
               title = label.charAt(0).toUpperCase();
-              let stringDateWithoutUTC;
+              let timestamp;
               if (element.start != null) {
-                stringDateWithoutUTC =
-                    moment.parseZone(element.start).format("YYYYMMDD HHmmss") +
-                    "+00:00";
+                timestamp = new Date(element.start).getTime();
               } else {
-                stringDateWithoutUTC =
-                    moment.parseZone(element.end).format("YYYYMMDD HHmmss") +
-                    "+00:00";
+                timestamp = new Date(element.end).getTime();
               }
 
-              let dateWithoutUTC = moment(stringDateWithoutUTC).valueOf();
               toAdd = {
-                x: dateWithoutUTC,
+                x: timestamp,
                 title: title,
                 text: label,
                 eventUri: element.uri,
@@ -439,7 +436,13 @@ export default class VariableVisualizationTab extends Vue {
         .then((http: HttpResponse<OpenSilexResponse<Array<DataGetDTO>>>) => {
           const data = http.response.result as Array<DataGetDTO>;
           let dataLength = data.length;
-          if (dataLength > 0) {
+          
+          if (dataLength === 0){
+            this.$opensilex.showInfoToast(
+            this.$t("component.common.search.noDataFound").toString());
+          }
+
+          if (dataLength >= 0) {
             const cleanData = HighchartsDataTransformer.transformDataForHighcharts(data, {deviceUri: concernedItem.uri});
             if (dataLength > 50000) {
               this.$opensilex.showInfoToast(
@@ -479,6 +482,11 @@ export default class VariableVisualizationTab extends Vue {
 }
 
 .VariableVisualisationGraphic{
+  min-width: calc(100% - 450px);
+  max-width: calc(100vw - 380px);
+}
+
+.VariableVisualisationGraphicWithoutForm{
   min-width: 100%;
   max-width: 100vw;
 }

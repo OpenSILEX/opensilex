@@ -4,15 +4,14 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.opensilex.core.organisation.api.facitity.InfrastructureFacilityGetDTO;
-import org.opensilex.core.organisation.api.facitity.InfrastructureFacilityUpdateDTO;
-import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
-import org.opensilex.core.organisation.dal.InfrastructureModel;
-import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
+import org.opensilex.core.AbstractMongoIntegrationTest;
+import org.opensilex.core.organisation.api.facility.FacilityGetDTO;
+import org.opensilex.core.organisation.api.facility.FacilityUpdateDTO;
+import org.opensilex.core.organisation.dal.OrganizationModel;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.sparql.response.NamedResourceDTO;
 
 import javax.ws.rs.core.Response;
 import java.net.URI;
@@ -21,7 +20,7 @@ import java.util.*;
 
 import static junit.framework.TestCase.assertEquals;
 
-public class FacilityApiTest extends AbstractSecurityIntegrationTest {
+public class FacilityApiTest extends AbstractMongoIntegrationTest {
 
     protected final static String PATH = "/core/facilities";
     protected final static String URI_PATH = PATH + "/{uri}";
@@ -31,23 +30,23 @@ public class FacilityApiTest extends AbstractSecurityIntegrationTest {
     protected final static String UPDATE_PATH = PATH;
     protected final static String DELETE_PATH = PATH + "/{uri}";
 
-    protected InfrastructureModel infra;
+    protected OrganizationModel infra;
 
-    // TypeReference used to parse Response into a List of InfrastructureFacilityGetDTO
-    protected static final TypeReference<PaginatedListResponse<InfrastructureFacilityGetDTO>> listTypeReference = new TypeReference<PaginatedListResponse<InfrastructureFacilityGetDTO>>() {};
+    // TypeReference used to parse Response into a List of FacilityGetDTO
+    protected static final TypeReference<PaginatedListResponse<FacilityGetDTO>> listTypeReference = new TypeReference<PaginatedListResponse<FacilityGetDTO>>() {};
 
     @Before
     public void createInfrastructure() throws Exception {
-        infra = new InfrastructureModel();
+        infra = new OrganizationModel();
         infra.setUri(new URI("test:infra"));
         infra.setName("infra");
 
         getSparqlService().create(infra);
     }
 
-    public InfrastructureFacilityUpdateDTO getCreationDTO(int count) throws URISyntaxException {
+    public FacilityUpdateDTO getCreationDTO(int count) throws URISyntaxException {
 
-        InfrastructureFacilityUpdateDTO facility = new InfrastructureFacilityUpdateDTO();
+        FacilityUpdateDTO facility = new FacilityUpdateDTO();
         facility.setName("facility"+count);
         facility.setUri(new URI("test:facility"+count));
         List<URI> infraUris = new ArrayList<>();
@@ -60,19 +59,19 @@ public class FacilityApiTest extends AbstractSecurityIntegrationTest {
     public void testSearchByName() throws Exception {
 
         // insert the both facility
-        InfrastructureFacilityUpdateDTO facility1 = getCreationDTO(1);
-        InfrastructureFacilityUpdateDTO facility2 = getCreationDTO(2);
+        FacilityUpdateDTO facility1 = getCreationDTO(1);
+        FacilityUpdateDTO facility2 = getCreationDTO(2);
 
-        Response creationResponse = getJsonPostResponse(target(CREATE_PATH), facility1);
+        Response creationResponse = getJsonPostResponseAsAdmin(target(CREATE_PATH), facility1);
         assertEquals(Response.Status.CREATED.getStatusCode(), creationResponse.getStatus());
-        creationResponse = getJsonPostResponse(target(CREATE_PATH), facility2);
+        creationResponse = getJsonPostResponseAsAdmin(target(CREATE_PATH), facility2);
         assertEquals(Response.Status.CREATED.getStatusCode(), creationResponse.getStatus());
 
         // test search with pattern which match the both facility
         Map<String,Object> searchParams = new HashMap<>();
         searchParams.put("pattern","facility");
 
-        List<InfrastructureFacilityGetDTO> results = getResults(SEARCH_PATH,searchParams,listTypeReference);
+        List<FacilityGetDTO> results = getSearchResultsAsAdmin(SEARCH_PATH,searchParams,listTypeReference);
         assertEquals(2,results.size());
         Assert.assertTrue(results.stream().anyMatch(dto -> SPARQLDeserializers.compareURIs(dto.getUri(),facility1.getUri())));
         Assert.assertTrue(results.stream().anyMatch(dto -> SPARQLDeserializers.compareURIs(dto.getUri(),facility2.getUri())));
@@ -81,7 +80,7 @@ public class FacilityApiTest extends AbstractSecurityIntegrationTest {
         searchParams = new HashMap<>();
         searchParams.put("pattern","1");
 
-        results = getResults(SEARCH_PATH,null,null,searchParams,listTypeReference);
+        results = getSearchResultsAsAdmin(SEARCH_PATH,null,null,searchParams,listTypeReference);
         assertEquals(1,results.size());
         Assert.assertTrue(results.stream().anyMatch(dto -> SPARQLDeserializers.compareURIs(dto.getUri(),facility1.getUri())));
         Assert.assertFalse(results.stream().anyMatch(dto -> SPARQLDeserializers.compareURIs(dto.getUri(),facility2.getUri())));
@@ -90,7 +89,7 @@ public class FacilityApiTest extends AbstractSecurityIntegrationTest {
         searchParams = new HashMap<>();
         searchParams.put("pattern","non-matching pattern");
 
-        results = getResults(SEARCH_PATH,null,null,searchParams,listTypeReference);
+        results = getSearchResultsAsAdmin(SEARCH_PATH,null,null,searchParams,listTypeReference);
         Assert.assertTrue(results.isEmpty());
     }
 
@@ -100,12 +99,12 @@ public class FacilityApiTest extends AbstractSecurityIntegrationTest {
     public void testSearchByUris() throws Exception{
 
         // insert the both facility
-        InfrastructureFacilityUpdateDTO facility1 = getCreationDTO(1);
-        InfrastructureFacilityUpdateDTO facility2 = getCreationDTO(2);
+        FacilityUpdateDTO facility1 = getCreationDTO(1);
+        FacilityUpdateDTO facility2 = getCreationDTO(2);
 
-        Response creationResponse = getJsonPostResponse(target(CREATE_PATH), facility1);
+        Response creationResponse = getJsonPostResponseAsAdmin(target(CREATE_PATH), facility1);
         assertEquals(Response.Status.CREATED.getStatusCode(), creationResponse.getStatus());
-        creationResponse = getJsonPostResponse(target(CREATE_PATH), facility2);
+        creationResponse = getJsonPostResponseAsAdmin(target(CREATE_PATH), facility2);
         assertEquals(Response.Status.CREATED.getStatusCode(), creationResponse.getStatus());
 
 
@@ -113,7 +112,7 @@ public class FacilityApiTest extends AbstractSecurityIntegrationTest {
         Map<String,Object> searchParams = new HashMap<>();
         searchParams.put(URIS_PARAM_NAME,Arrays.asList(facility1.getUri(),facility2.getUri()));
 
-        List<InfrastructureFacilityGetDTO> results = getResults(URIS_PATH,searchParams,listTypeReference);
+        List<FacilityGetDTO> results = getSearchResultsAsAdmin(URIS_PATH,searchParams,listTypeReference);
         assertEquals(2,results.size());
         Assert.assertTrue(results.stream().anyMatch(dto -> SPARQLDeserializers.compareURIs(dto.getUri(),facility1.getUri())));
         Assert.assertTrue(results.stream().anyMatch(dto -> SPARQLDeserializers.compareURIs(dto.getUri(),facility2.getUri())));
@@ -122,7 +121,7 @@ public class FacilityApiTest extends AbstractSecurityIntegrationTest {
         searchParams = new HashMap<>();
         searchParams.put(URIS_PARAM_NAME, Collections.singletonList(facility1.getUri()));
 
-        results = results = getResults(URIS_PATH,searchParams,listTypeReference);
+        results = results = getSearchResultsAsAdmin(URIS_PATH,searchParams,listTypeReference);
         assertEquals(1,results.size());
         Assert.assertTrue(results.stream().anyMatch(dto -> SPARQLDeserializers.compareURIs(dto.getUri(),facility1.getUri())));
 
@@ -130,14 +129,14 @@ public class FacilityApiTest extends AbstractSecurityIntegrationTest {
         searchParams = new HashMap<>();
         searchParams.put(URIS_PARAM_NAME, Collections.singletonList(facility2.getUri()));
 
-        results = getResults(URIS_PATH,searchParams,listTypeReference);
+        results = getSearchResultsAsAdmin(URIS_PATH,searchParams,listTypeReference);
         assertEquals(1,results.size());
         Assert.assertTrue(results.stream().anyMatch(dto -> SPARQLDeserializers.compareURIs(dto.getUri(),facility2.getUri())));
     }
 
     @Override
     protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {
-        return Collections.singletonList(InfrastructureFacilityModel.class);
+        return Collections.singletonList(FacilityModel.class);
     }
 
 }

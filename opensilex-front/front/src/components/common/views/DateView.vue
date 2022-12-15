@@ -5,12 +5,12 @@
 <script lang="ts">
 import { Component, Prop } from "vue-property-decorator";
 import Vue from "vue";
-import moment from "moment";
+import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 
 @Component
 export default class DateView extends Vue {
   $i18n: any;
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
 
   @Prop()
   value: string;
@@ -20,9 +20,9 @@ export default class DateView extends Vue {
 
   formatDate(value: string): string {
     if(this.isDatetime){
-      return this.$opensilex.formatDateTime(value); 
+      return this.$opensilex.$dateTimeFormatter.formatISODateTime(value);
     }else{
-      return this.$opensilex.formatDate(value);
+      return this.$opensilex.$dateTimeFormatter.formatISODate(value);
     } 
   }
 }

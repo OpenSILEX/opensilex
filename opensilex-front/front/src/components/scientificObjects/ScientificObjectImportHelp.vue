@@ -12,7 +12,7 @@
             <b-th>1</b-th>
             <b-th>URI<span class="required"> *</span></b-th>
             <b-th>type<span class="required"> *</span></b-th>
-            <b-th>name<span class="required"> *</span></b-th>
+            <b-th>rdfs:label<span class="required"> *</span></b-th>
             <b-th class="uri-field">vocabulary:hasCreationDate</b-th>
             <b-th class="uri-field">vocabulary:hasDestructionDate</b-th>
             <b-th class="uri-field">vocabulary:hasFacility</b-th>

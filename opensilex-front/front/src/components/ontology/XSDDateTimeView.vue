@@ -12,7 +12,6 @@ import {
   Watch
 } from "vue-property-decorator";
 import Vue from "vue";
-import moment from "moment";
 
 @Component
 export default class XSDDateTimeView extends Vue {
@@ -22,7 +21,7 @@ export default class XSDDateTimeView extends Vue {
   @Prop()
   value;
 
-  date = null;
+  date: string = undefined;
 
   private langUnwatcher;
 
@@ -43,9 +42,7 @@ export default class XSDDateTimeView extends Vue {
   @Watch("value")
   onValueChange() {
     if (this.value) {
-      this.date = moment
-        .parseZone(this.value)
-        .format("" + this.$t("dateTimeFormat"));
+      this.date = new Date(this.value).toISOString();
     }
   }
 }

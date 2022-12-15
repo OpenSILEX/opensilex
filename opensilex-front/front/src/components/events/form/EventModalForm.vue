@@ -30,7 +30,6 @@
     import PositionsView from "../../positions/view/PositionsView.vue";
     import MoveForm from "./MoveForm.vue";
     import {VueJsOntologyExtensionService} from "../../../lib";
-    import moment from "moment-timezone";
     import EventForm from "./EventForm.vue";
     import { EventCreationDTO, MoveCreationDTO, ObjectUriResponse, PositionCreationDTO } from 'opensilex-core/index';
 
@@ -113,19 +112,7 @@
 
         }
 
-        convertDateTime(event){
-           event.end = event.end.includes("Z") ? moment(event.end).utcOffset(this.eventCreatedTime.offset).format() : event.end;
-           if(event.start) {
-                event.start = event.start.includes("Z") ? moment(event.start).utcOffset(this.eventCreatedTime.offset).format() : event.start;
-           }
-           return event;
-        }
-
         create(event: EventCreationDTO) {
-            if(this.eventCreatedTime){
-                event = this.convertDateTime(event);
-            }
-           
             let isMove = this.isMove(event.rdf_type);
             EventModalForm.convertFormToDto(event,isMove);
 

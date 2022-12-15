@@ -216,10 +216,10 @@ let i18nOptions = {
   silentFallbackWarn: !isDebug,
   messages: {
     "en": {
-      "dateTimeFormat": "MM/DD/YYYY hh:mm:ss A Z"
+      "dateTimeLocale": "en-US" // Necessary for date & time formatting
     },
     "fr": {
-      "dateTimeFormat": "DD/MM/YYYY HH:mm:ss Z"
+      "dateTimeLocale": "fr-FR"
     }
   },
   dateTimeFormats: {
@@ -260,7 +260,6 @@ import validationMessagesEN from 'vee-validate/dist/locale/en.json';
 import validationMessagesFR from 'vee-validate/dist/locale/fr.json';
 import * as rules from 'vee-validate/dist/rules';
 import { email } from 'vee-validate/dist/rules';
-import moment from "moment";
 
 for (let [rule, validation] of Object.entries(rules)) {
   let anyVal: any = validation;
@@ -313,7 +312,7 @@ extend("dateDiff", {
     if (startDate === null) {
       return true;
     }
-    return moment(value, "YYYY-MM-DD").diff(moment(startDate, "YYYY-MM-DD")) >= 0;
+    return new Date(value).getTime()  >= new Date(startDate).getTime();
   }
 });
 
@@ -557,6 +556,11 @@ $opensilex.loadModules([
                 $opensilex.setCookieValue(user);
                 window.location = baseURL.slice(0, -7);
               }).catch(manageError);
+          } else if (baseURL.endsWith("/app/saml") && urlParams.has("token")) {
+            console.debug("Authenticate user through SAML");
+            let user = User.fromToken(urlParams.get("token"));
+            $opensilex.setCookieValue(user);
+            window.location = baseURL.slice(0, -5);
           } else {
             let themePromise: Promise<any> = loadTheme(vueJsService, config);
 

@@ -128,21 +128,18 @@
 
 
 <script lang="ts">
-import { Component, Prop, Ref } from "vue-property-decorator";
+import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import Oeso from "../../../ontologies/Oeso";
-import moment from "moment";
-
-// @ts-ignore
-import { AgentModel, ProvenanceGetDTO, RDFTypeDTO } from "opensilex-core/index";
-// @ts-ignore
-import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
-// @ts-ignore
-import { ExperimentGetDTO } from "opensilex-core/index";
+import {AgentModel, ProvenanceGetDTO} from "opensilex-core/index";
+import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
+import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
+import {DataService} from "opensilex-core/api/data.service";
+import {OntologyService} from "opensilex-core/api/ontology.service";
 
 @Component
 export default class DataImportForm extends Vue {
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
   $i18n: any;
   $store: any;
   $papa: any;
@@ -194,9 +191,9 @@ export default class DataImportForm extends Vue {
   form;
 
   created() {
-    this.$opensilex.getService("opensilex.DataService")
+    this.$opensilex.getService<DataService>("opensilex.DataService")
     .searchProvenance("standard_provenance")
-    .then((http: HttpResponse<OpenSilexResponse<ProvenanceGetDTO>>) => {
+    .then((http: HttpResponse<OpenSilexResponse<Array<ProvenanceGetDTO>>>) => {
           this.standardProvURI = http.response.result[0].uri;
         });
   }
@@ -239,10 +236,8 @@ export default class DataImportForm extends Vue {
   }
 
   initForm(form) {
-    let date = new Date();
-    let formattedDate = moment(date).format("YYYY-MM-DDTHH:MM:SS");
-    let name = "PROV_" + formattedDate;
-    form.name = name;
+    let formattedDate = this.$opensilex.$dateTimeFormatter.formatISODateTime(new Date());
+    form.name = "PROV_" + formattedDate;
     form.experiments = [];
   }
 
@@ -284,7 +279,7 @@ export default class DataImportForm extends Vue {
   getProvenance(uri) {
     if (uri != undefined && uri != null) {
       return this.$opensilex
-        .getService("opensilex.DataService")
+        .getService<DataService>("opensilex.DataService")
         .getProvenance(uri)
         .then((http: HttpResponse<OpenSilexResponse<ProvenanceGetDTO>>) => {
           return http.response.result;
@@ -458,7 +453,7 @@ export default class DataImportForm extends Vue {
       let body = {
         uris: uris
       }
-      this.$opensilex.getService("opensilex.OntologyService")
+      this.$opensilex.getService<OntologyService>("opensilex.OntologyService")
       .checkURIsTypes(new Array(Oeso.DEVICE_TYPE_URI), body)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => { 
         let results = http.response.result;

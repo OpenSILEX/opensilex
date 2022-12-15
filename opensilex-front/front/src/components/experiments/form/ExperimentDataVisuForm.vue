@@ -1,98 +1,99 @@
 <template>
   <div>
     <div>
-      <opensilex-SearchFilterField
-      ref="searchField"
-      :withButton="false"
-      :showAdvancedSearch="true"
-      class="searchFilterField"
-      >
-
-        <template v-slot:filters>
-          <!-- Variables -->
-          <div>
-          <opensilex-FilterField :halfWidth="true">
-            <opensilex-VariableSelectorWithFilter
-              placeholder="VariableSelectorWithFilter.placeholder"
-              :variables.sync="filter.variable"
-              :withAssociatedData="true"
-              :experiment="[selectedExperiment]"
-              :objects="scientificObjects"
-              maximumSelectedRows="1"
-              @validate="onSearch"
-              class="searchFilter"
-            ></opensilex-VariableSelectorWithFilter>
-          </opensilex-FilterField>
-          </div>
-
-          <!-- Dates -->
-          <div>
-            <opensilex-FilterField :halfWidth="true">
-              <div>
-                <opensilex-DateTimeForm
-                  :value.sync="filter.startDate"
-                  label="component.common.begin"
-                  @input="onDateChange"
-                  @clear="onDateChange"
+      <opensilex-PageContent class="pagecontent">
+        <opensilex-SearchFilterField
+        ref="searchField"
+        :withButton="false"
+        :showAdvancedSearch="true"
+        class="searchFilterField"
+        >
+          <template v-slot:filters>
+            <!-- Variables -->
+            <div>
+              <opensilex-FilterField :halfWidth="true">
+                <opensilex-VariableSelectorWithFilter
+                  placeholder="VariableSelectorWithFilter.placeholder"
+                  :variables.sync="filter.variable"
+                  :withAssociatedData="true"
+                  :experiment="[selectedExperiment]"
+                  :objects="scientificObjects"
+                  maximumSelectedRows="1"
+                  @validate="onSearch"
                   class="searchFilter"
-                ></opensilex-DateTimeForm>
-              </div>
-              <div>
-                <opensilex-DateTimeForm
-                  :value.sync="filter.endDate"
-                  label="component.common.end"
-                  @input="onDateChange"
-                  @clear="onDateChange"
-                  class="searchFilter"
-                ></opensilex-DateTimeForm>
-              </div>
-          </opensilex-FilterField>
-          </div>
+                ></opensilex-VariableSelectorWithFilter>
+              </opensilex-FilterField>
+            </div>
 
-          <!-- Events -->
-          <div>
-          <opensilex-FilterField :halfWidth="true">
-            <label>{{ $t("ScientificObjectVisualizationForm.show_events") }}</label>
-            <b-form-checkbox v-model="filter.showEvents" @input="onUpdate" switch>
-              <b-spinner v-if="countIsLoading" small   label="Busy" ></b-spinner>
-              <b-badge  v-else variant="light">{{$i18n.n(eventsCount)}}</b-badge>
-              </b-form-checkbox>
-          </opensilex-FilterField><br>
-          </div>
-        </template>
-
-        <template v-slot:advancedSearch>
-          <!-- Provenance -->
-          <div>
-            <opensilex-FilterField>
-              <opensilex-DataProvenanceSelector
-                ref="provSelector"
-                :provenances.sync="filter.provenance"
-                label="Provenance"
-                @select="loadProvenance"
-                @clear="clearProvenance"
-                :experiments="[selectedExperiment]"
-                :targets="scientificObjects"
-                :multiple="false"
-                :viewHandler="showProvenanceDetails"
-                :viewHandlerDetailsVisible="visibleDetails"
-                class="searchFilter"
-              ></opensilex-DataProvenanceSelector>
+            <!-- Dates -->
+            <div>
+              <opensilex-FilterField :halfWidth="true">
+                <div>
+                  <opensilex-DateTimeForm
+                    :value.sync="filter.startDate"
+                    label="component.common.begin"
+                    @input="onDateChange"
+                    @clear="onDateChange"
+                    class="searchFilter"
+                  ></opensilex-DateTimeForm>
+                </div>
+                <div>
+                  <opensilex-DateTimeForm
+                    :value.sync="filter.endDate"
+                    label="component.common.end"
+                    @input="onDateChange"
+                    @clear="onDateChange"
+                    class="searchFilter"
+                  ></opensilex-DateTimeForm>
+                </div>
             </opensilex-FilterField>
-          </div>
+            </div>
 
-          <opensilex-FilterField>
-            <b-collapse
-              v-if="selectedProvenance"
-              id="collapse-4"
-              v-model="visibleDetails"
-              class="mt-2"
-            >
-              <opensilex-ProvenanceDetails :provenance="getSelectedProv"></opensilex-ProvenanceDetails>
-            </b-collapse>
-          </opensilex-FilterField>
-        </template>
-      </opensilex-SearchFilterField>
+            <!-- Events -->
+            <div>
+            <opensilex-FilterField :halfWidth="true">
+              <label>{{ $t("ScientificObjectVisualizationForm.show_events") }}</label>
+              <b-form-checkbox v-model="filter.showEvents" @input="onUpdate" switch>
+                <b-spinner v-if="countIsLoading" small   label="Busy" ></b-spinner>
+                <b-badge  v-else variant="light">{{$i18n.n(eventsCount)}}</b-badge>
+                </b-form-checkbox>
+            </opensilex-FilterField><br>
+            </div>
+          </template>
+
+          <template v-slot:advancedSearch>
+            <!-- Provenance -->
+            <div>
+              <opensilex-FilterField>
+                <opensilex-DataProvenanceSelector
+                  ref="provSelector"
+                  :provenances.sync="filter.provenance"
+                  label="Provenance"
+                  @select="loadProvenance"
+                  @clear="clearProvenance"
+                  :experiments="[selectedExperiment]"
+                  :targets="scientificObjects"
+                  :multiple="false"
+                  :viewHandler="showProvenanceDetails"
+                  :viewHandlerDetailsVisible="visibleDetails"
+                  class="searchFilter"
+                ></opensilex-DataProvenanceSelector>
+              </opensilex-FilterField>
+            </div>
+
+            <opensilex-FilterField>
+              <b-collapse
+                v-if="selectedProvenance"
+                id="collapse-4"
+                v-model="visibleDetails"
+                class="mt-2"
+              >
+                <opensilex-ProvenanceDetails :provenance="getSelectedProv"></opensilex-ProvenanceDetails>
+              </b-collapse>
+            </opensilex-FilterField>
+          </template>
+        </opensilex-SearchFilterField>
+      </opensilex-PageContent>
     </div>
   </div>
 </template>

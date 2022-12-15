@@ -14,6 +14,15 @@ import org.opensilex.sparql.csv.CSVValidationModel;
  */
 public class CSVValidationDTO {
 
+    public CSVValidationDTO() {
+    }
+
+    public CSVValidationDTO(CSVValidationModel errors) {
+        this.errors = errors;
+        setValidationToken(errors.getValidationToken());
+        setNbLinesImported(errors.getNbObjectImported());
+    }
+
     @JsonProperty("validation_token")
     private String validationToken;
 

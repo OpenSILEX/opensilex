@@ -2,18 +2,7 @@
   <div>
     <div>
       <opensilex-PageContent class="pagecontent">
-        <!-- Toggle Sidebar-->
-        <div class="searchMenuContainer"
-             v-on:click="SearchFiltersToggle = !SearchFiltersToggle"
-             :title="searchFiltersPannel()">
-          <div class="searchMenuIcon">
-            <i class="icon ik ik-search"></i>
-          </div>
-        </div>
 
-        <!-- FILTERS -->
-        <Transition>
-          <div v-show="SearchFiltersToggle">
             <opensilex-SearchFilterField
                 :withButton="true"
                 searchButtonLabel="component.common.search.visualize-button"
@@ -105,8 +94,6 @@
                 </opensilex-FilterField>
               </template>
             </opensilex-SearchFilterField>
-          </div>
-        </Transition>
       </opensilex-PageContent>
     </div>
   </div>
@@ -160,12 +147,6 @@ export default class ScientificObjectVisualizationForm extends Vue {
 
   public set eventsCount(eventsCount: string) {
     this.eventsCountValue = eventsCount;
-  }
-
-  data() {
-    return {
-      SearchFiltersToggle: true,
-    }
   }
 
   created() {
@@ -240,10 +221,6 @@ export default class ScientificObjectVisualizationForm extends Vue {
 
   get getSelectedProv() {
     return this.selectedProvenance;
-  }
-
-  searchFiltersPannel() {
-    return this.$t("searchfilter.label")
   }
 }
 </script>

@@ -2,20 +2,8 @@
   <div>
     <div>
       <opensilex-PageContent class="pagecontent">
-        <!-- Toggle Sidebar-->
-        <div class="searchMenuContainer"
-             v-on:click="SearchFiltersToggle = !SearchFiltersToggle"
-             :title="searchFiltersPannel()">
-          <div class="searchMenuIcon">
-            <i class="icon ik ik-search"></i>
-          </div>
-        </div>
-
-
+  
         <!-- FILTERS -->
-        <Transition>
-          <div v-show="SearchFiltersToggle">
-
             <opensilex-SearchFilterField
                 :withButton="true"
                 searchButtonLabel="component.common.search.visualize-button"
@@ -109,8 +97,6 @@
                 </opensilex-FilterField>
               </template>
             </opensilex-SearchFilterField>
-          </div>
-        </Transition>
       </opensilex-PageContent>
     </div>
   </div>
@@ -169,11 +155,6 @@ export default class DeviceVisualizationForm extends Vue {
   }
 
 
-  data() {
-    return {
-      SearchFiltersToggle: true,
-    }
-  }
 
   created() {
     this.getEvents();
@@ -249,10 +230,6 @@ export default class DeviceVisualizationForm extends Vue {
 
   get getSelectedProv() {
     return this.selectedProvenance;
-  }
-
-  searchFiltersPannel() {
-    return this.$t("searchfilter.label")
   }
 }
 

@@ -46,10 +46,16 @@ public class FrontConfigDTO {
     String openIDAuthenticationURI;
 
     String openIDConnectionTitle;
+
+    String samlProxyLoginURI;
+
+    String samlConnectionTitle;
     
     Boolean activateResetPassword;
 
     String geocodingService;
+
+    List<String> menuExclusions;
 
     VersionLabel versionLabel;
 
@@ -160,6 +166,22 @@ public class FrontConfigDTO {
         this.openIDConnectionTitle = openIDConnectionTitle;
     }
 
+    public String getSamlProxyLoginURI() {
+        return samlProxyLoginURI;
+    }
+
+    public void setSamlProxyLoginURI(String samlProxyLoginURI) {
+        this.samlProxyLoginURI = samlProxyLoginURI;
+    }
+
+    public String getSamlConnectionTitle() {
+        return samlConnectionTitle;
+    }
+
+    public void setSamlConnectionTitle(String samlConnectionTitle) {
+        this.samlConnectionTitle = samlConnectionTitle;
+    }
+
     public Boolean getActivateResetPassword() {
         return activateResetPassword;
     }
@@ -177,6 +199,15 @@ public class FrontConfigDTO {
         this.geocodingService = geocodingService;
     }
 
+    @ApiModelProperty(value = "Menu exclusions")
+    public List<String> getMenuExclusions() {
+        return menuExclusions;
+    }
+
+    public void setMenuExclusions(List<String> menuExclusions) {
+        this.menuExclusions = menuExclusions;
+    }
+    
     @ApiModelProperty(value = "Version label to use in the header")
     public VersionLabel getVersionLabel() {
         return versionLabel;

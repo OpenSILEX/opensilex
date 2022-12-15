@@ -3,7 +3,7 @@ package org.opensilex.core.position.api;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.annotations.ApiModelProperty;
-import org.opensilex.core.organisation.api.facitity.InfrastructureFacilityNamedDTO;
+import org.opensilex.core.organisation.api.facility.FacilityNamedDTO;
 
 import java.net.URI;
 import org.opensilex.core.event.dal.move.MoveModel;
@@ -18,10 +18,10 @@ public class PositionGetDTO {
     private String moveTime;
 
     @JsonProperty("from")
-    private InfrastructureFacilityNamedDTO from;
+    private FacilityNamedDTO from;
 
     @JsonProperty("to")
-    private InfrastructureFacilityNamedDTO to;
+    private FacilityNamedDTO to;
 
     @JsonProperty("position")
     private PositionGetDetailDTO position;
@@ -30,10 +30,10 @@ public class PositionGetDTO {
 
         event = model.getUri();
         if (model.getFrom() != null) {
-            from = new InfrastructureFacilityNamedDTO(model.getFrom());
+            from = new FacilityNamedDTO(model.getFrom());
         }
         if (model.getTo() != null) {
-            to = new InfrastructureFacilityNamedDTO(model.getTo());
+            to = new FacilityNamedDTO(model.getTo());
         }
         moveTime = model.getEnd().getDateTimeStamp().toString();
 
@@ -64,19 +64,19 @@ public class PositionGetDTO {
         this.moveTime = moveTime;
     }
 
-    public InfrastructureFacilityNamedDTO getFrom() {
+    public FacilityNamedDTO getFrom() {
         return from;
     }
 
-    public void setFrom(InfrastructureFacilityNamedDTO from) {
+    public void setFrom(FacilityNamedDTO from) {
         this.from = from;
     }
 
-    public InfrastructureFacilityNamedDTO getTo() {
+    public FacilityNamedDTO getTo() {
         return to;
     }
 
-    public void setTo(InfrastructureFacilityNamedDTO to) {
+    public void setTo(FacilityNamedDTO to) {
         this.to = to;
     }
 

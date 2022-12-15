@@ -1,6 +1,6 @@
 package org.opensilex.core.organisation.api.site;
 
-import org.opensilex.core.organisation.dal.SiteModel;
+import org.opensilex.core.organisation.dal.site.SiteModel;
 import org.opensilex.sparql.response.NamedResourceDTO;
 
 /**

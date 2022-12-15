@@ -190,7 +190,22 @@ public class RDFPropertyDTO {
         return model;
     }
 
+    /**
+     *
+     * @param propertyType URI to check
+     * @return true if {@code propertyType} is equals to {@code owl:DatatypeProperty} IRI (by handling prefix)
+     */
     public static boolean isDataProperty(URI propertyType) {
         return SPARQLDeserializers.compareURIs(propertyType.toString(), OWL2.DatatypeProperty.getURI());
     }
+
+    /**
+     *
+     * @param propertyType URI to check
+     * @return true if {@code propertyType} is equals to {@code owl:ObjectProperty} IRI (by handling prefix)
+     */
+    public static boolean isObjectProperty(URI propertyType){
+        return SPARQLDeserializers.compareURIs(propertyType.toString(), OWL2.ObjectProperty.getURI());
+    }
+
 }

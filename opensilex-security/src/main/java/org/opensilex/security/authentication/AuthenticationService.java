@@ -14,23 +14,36 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.impl.PublicClaims;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.nimbusds.oauth2.sdk.AccessTokenResponse;
-import com.nimbusds.oauth2.sdk.AuthorizationCode;
-import com.nimbusds.oauth2.sdk.AuthorizationCodeGrant;
-import com.nimbusds.oauth2.sdk.ErrorObject;
-import com.nimbusds.oauth2.sdk.ResponseType;
-import com.nimbusds.oauth2.sdk.Scope;
-import com.nimbusds.oauth2.sdk.SerializeException;
-import com.nimbusds.oauth2.sdk.TokenErrorResponse;
-import com.nimbusds.oauth2.sdk.TokenRequest;
-import com.nimbusds.oauth2.sdk.TokenResponse;
+import com.nimbusds.oauth2.sdk.*;
 import com.nimbusds.oauth2.sdk.auth.ClientSecretBasic;
 import com.nimbusds.oauth2.sdk.auth.Secret;
 import com.nimbusds.oauth2.sdk.http.HTTPResponse;
 import com.nimbusds.oauth2.sdk.id.ClientID;
-import com.nimbusds.openid.connect.sdk.AuthenticationRequest;
-import com.nimbusds.openid.connect.sdk.Nonce;
+import com.nimbusds.oauth2.sdk.id.State;
+import com.nimbusds.oauth2.sdk.token.Tokens;
+import com.nimbusds.openid.connect.sdk.*;
 import com.nimbusds.openid.connect.sdk.op.OIDCProviderMetadata;
+import net.minidev.json.JSONObject;
+import org.apache.http.client.utils.URIBuilder;
+import org.opensilex.OpenSilexModuleNotFoundException;
+import org.opensilex.security.OpenIDConfig;
+import org.opensilex.security.SAMLConfig;
+import org.opensilex.security.SecurityConfig;
+import org.opensilex.security.SecurityModule;
+import org.opensilex.security.extensions.LoginExtension;
+import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.server.exceptions.BadRequestException;
+import org.opensilex.server.exceptions.ForbiddenException;
+import org.opensilex.service.BaseService;
+import org.opensilex.service.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.core.SecurityContext;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -42,34 +55,8 @@ import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import com.nimbusds.oauth2.sdk.id.State;
-import com.nimbusds.oauth2.sdk.token.Tokens;
-import com.nimbusds.openid.connect.sdk.OIDCTokenResponseParser;
-import com.nimbusds.openid.connect.sdk.UserInfoErrorResponse;
-import com.nimbusds.openid.connect.sdk.UserInfoRequest;
-import com.nimbusds.openid.connect.sdk.UserInfoResponse;
-import com.nimbusds.openid.connect.sdk.UserInfoSuccessResponse;
-import java.io.IOException;
-import javax.mail.internet.InternetAddress;
-import javax.ws.rs.core.SecurityContext;
-import net.minidev.json.JSONObject;
-import org.opensilex.security.OpenIDConfig;
-import org.opensilex.security.SecurityConfig;
-import org.opensilex.security.SecurityModule;
-import org.opensilex.service.Service;
-import org.opensilex.security.user.dal.UserModel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.opensilex.security.extensions.LoginExtension;
-import org.opensilex.security.user.dal.UserDAO;
-import org.opensilex.server.exceptions.ForbiddenException;
-import org.opensilex.service.BaseService;
 
 /**
  * <pre>
@@ -752,5 +739,106 @@ public class AuthenticationService extends BaseService implements Service {
             forgotPasswordUserRegistry.remove(uuidURI);
         }
         return true;
+    }
+
+    /**
+     * Construct a {@link UserModel} based on the SAML attributes in the request. Attributes are retrieved using the
+     * AJP protocol, configured in the {@link org.opensilex.server.Server} class, by examining the
+     * {@link HttpServletRequest} object.
+     *
+     * @param request The current request
+     * @return A {@link UserModel} constructed from the SAML attributes in the request
+     * @throws Exception If SAML is not enabled on the instance, or something went wrong while trying to retrieve the
+     * attributes
+     */
+    public UserModel authenticateWithSAML(HttpServletRequest request) throws Exception {
+        SAMLConfig samlConfig = getOpenSilex()
+                .getModuleConfig(SecurityModule.class, SecurityConfig.class)
+                .saml();
+
+        if (!samlConfig.enable()) {
+            throw new ForbiddenException("SAML is not enabled on this instance");
+        }
+
+        if (LOGGER.isDebugEnabled()) {
+            String debugAttributes = String.format("SAML login request attributes :\n" +
+                    "- %s: %s\n" +
+                    "- %s: %s\n" +
+                    "- %s: %s",
+                    samlConfig.attributes().email(), request.getAttribute(samlConfig.attributes().email()),
+                    samlConfig.attributes().firstName(), request.getAttribute(samlConfig.attributes().firstName()),
+                    samlConfig.attributes().lastName(), request.getAttribute(samlConfig.attributes().lastName()));
+            LOGGER.debug(debugAttributes);
+        }
+
+        String email = (String) request.getAttribute(samlConfig.attributes().email());
+
+        if (Objects.isNull(email)) {
+            throw new BadRequestException("User mail was not found in the request attributes");
+        }
+
+        InternetAddress emailAddress = null;
+        try {
+            emailAddress = new InternetAddress(email);
+        } catch (AddressException e) {
+            LOGGER.error("User mail is not a valid mail address : " + request.getAttribute(samlConfig.attributes().email()), e);
+            throw new RuntimeException(e);
+        }
+
+        String givenName = (String) request.getAttribute(samlConfig.attributes().firstName());
+        String surname = (String) request.getAttribute(samlConfig.attributes().lastName());
+
+        UserModel user = new UserModel();
+        user.setEmail(emailAddress);
+        user.setFirstName(givenName);
+        user.setLastName(surname);
+
+        return user;
+    }
+
+    /**
+     * Get the SAML proxy URI from the configuration. If SAML is not enabled, or if the SAML proxy login URI could not
+     * be parsed from the configuration, returns null.
+     *
+     * @return The SAML proxy URI.
+     * @throws OpenSilexModuleNotFoundException If the Security Module is not found
+     */
+    public URI getSamlProxyLoginURI() throws OpenSilexModuleNotFoundException {
+        SAMLConfig samlConfig = getOpenSilex()
+                .getModuleConfig(SecurityModule.class, SecurityConfig.class)
+                .saml();
+
+        if (!samlConfig.enable()) {
+            return null;
+        }
+
+        try {
+            return new URI(samlConfig.samlProxyLoginURI());
+        } catch (URISyntaxException e) {
+            LOGGER.error("SAML config is invalid : the provided samlProxyLoginURI is not a valid URI. SAML authentication will not be enabled.", e);
+            return null;
+        }
+    }
+
+    /**
+     * Builds the SAML landing page redirect URI with the user token.
+     *
+     * @param token The jwt of the user
+     * @return The redirect URI to the SAML landing page
+     * @throws OpenSilexModuleNotFoundException If the Security Module is not found
+     */
+    public URI buildSAMLLandingPageURI(String token) throws OpenSilexModuleNotFoundException {
+        SAMLConfig samlConfig = getOpenSilex()
+                .getModuleConfig(SecurityModule.class, SecurityConfig.class)
+                .saml();
+
+        try {
+            return new URIBuilder(samlConfig.samlLandingPageURI())
+                    .addParameter("token", token)
+                    .build();
+        } catch (URISyntaxException e) {
+            LOGGER.error("SAML config is invalid : the provided samlLandingPageURI is not a valid URI", e);
+            throw new RuntimeException(e);
+        }
     }
 }

@@ -42,6 +42,7 @@
               <div>
                 <opensilex-FilterField>
                   <opensilex-SelectForm
+                    v-if="!isGermplasmMenuExcluded"
                     label="ExperimentList.filter-species"
                     placeholder="ExperimentList.filter-species-placeholder"
                     :multiple="true"
@@ -64,6 +65,20 @@
                   :category.sync="filter.factorCategories"
                   class="searchFilter"
                 ></opensilex-FactorCategorySelector> 
+                </opensilex-FilterField>
+              </div>
+
+              <!-- Facilities -->
+              <div>
+                <opensilex-FilterField>
+                  <opensilex-SelectForm
+                      label="ExperimentList.filter-facilities"
+                      placeholder="ExperimentList.filter-facilities-placeholder"
+                      :multiple="true"
+                      :selected.sync="filter.facilities"
+                      :options="facilities"
+                      class="searchFilter"
+                  ></opensilex-SelectForm>
                 </opensilex-FilterField>
               </div>
 
@@ -124,11 +139,23 @@
       :searchMethod="searchExperiments"
       :fields="fields"
       :isSelectable="true"
+      @refreshed="onRefreshed"
       labelNumberOfSelectedRow="ExperimentList.selected"
       iconNumberOfSelectedRow="ik#ik-layers"
     >
 
       <template v-slot:selectableTableButtons="{ numberOfSelectedRows }">
+
+        <b-dropdown
+          dropright
+          class="mb-2 mr-2"
+          :small="true"
+          :text="$t('VariableList.display')">
+
+          <b-dropdown-item-button @click="clickOnlySelected()">{{ onlySelected ? $t('ExperimentList.selected-all') : $t("component.common.selected-only")}}</b-dropdown-item-button>
+          <b-dropdown-item-button @click="resetSelected()">{{$t("component.common.resetSelected")}}</b-dropdown-item-button>
+        </b-dropdown>
+
         <b-dropdown
           dropright
           class="mb-2 mr-2"
@@ -153,7 +180,7 @@
         ></opensilex-UriLink>
       </template>
 
-      <template v-slot:cell(species)="{ data }">
+      <template v-if="!isGermplasmMenuExcluded" v-slot:cell(species)="{ data }">
         <span class="species-list" v-if="data.item.species.length > 0">
           <span :key="index" v-for="(uri, index) in data.item.species">
             <span :title="uri">{{ getSpeciesName(uri) }}</span>
@@ -225,20 +252,20 @@
 </template>
 
 <script lang="ts">
-import { Component, Ref, Prop } from "vue-property-decorator";
+import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import moment from "moment";
-// @ts-ignore
-import { SpeciesDTO, SpeciesService, ProjectGetDTO } from "opensilex-core/index";
-// @ts-ignore
-import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
+import {SpeciesDTO, SpeciesService} from "opensilex-core/index";
+import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {User} from "../../models/User";
+import {OrganizationsService} from "opensilex-core/api/organizations.service";
+import {FacilityGetDTO} from "opensilex-core/index";
 
 @Component
 export default class ExperimentList extends Vue {
   $opensilex: any;
   $i18n: any;
   $store: any;
+  SearchFiltersToggle: boolean = false;
   
   @Ref("documentForm") readonly documentForm!: any;
 
@@ -252,6 +279,11 @@ export default class ExperimentList extends Vue {
   })
   noActions;
 
+
+  get onlySelected() {
+    return this.tableRef.onlySelected;
+  }
+
   get user(): User {
     return this.$store.state.user;
   }
@@ -260,17 +292,29 @@ export default class ExperimentList extends Vue {
     return this.$store.state.credentials;
   }
 
+  facilities = [];
   species = [];
   speciesByUri: Map<String, SpeciesDTO> = new Map<String, SpeciesDTO>();
 
   @Ref("tableRef") readonly tableRef!: any;
   @Ref("projectSelector") readonly projectSelector!: any;
 
+  onItemUnselected(row) {
+    this.tableRef.onItemUnselected(row);
+  }
+  onItemSelected(row) {
+    this.tableRef.onItemSelected(row);
+  }
+
   refresh() {
-    this.tableRef.selectAll = false;
-    this.tableRef.onSelectAll();
     this.$opensilex.updateURLParameters(this.filter);
-    this.tableRef.refresh();
+
+    if(this.tableRef.onlySelected) {
+      this.tableRef.onlySelected = false;
+      this.tableRef.refresh();
+    } else {
+      this.tableRef.refresh();
+    }
   }
 
   filter = {
@@ -280,13 +324,9 @@ export default class ExperimentList extends Vue {
     projects: [],
     yearFilter: undefined,
     state: "",
+    facilities: [],
   };
 
-    data(){
-    return {
-      SearchFiltersToggle : false,
-    }
-  }
 
   reset() {
     this.filter = {
@@ -296,10 +336,18 @@ export default class ExperimentList extends Vue {
       projects: [],
       yearFilter: undefined,
       state: "",
+      facilities: [],
     };   
     this.refresh();
   }
 
+  clickOnlySelected() {
+    this.tableRef.clickOnlySelected();
+  }
+
+  resetSelected() {
+    this.tableRef.resetSelected();
+  }
 
   refreshProjectSelector() {
    
@@ -330,6 +378,7 @@ export default class ExperimentList extends Vue {
         this.filter.factorCategories, // factorCategories
         this.filter.projects, // projects
         isPublic, // isPublic
+        this.filter.facilities,
         options.orderBy,
         options.currentPage,
         options.pageSize
@@ -340,6 +389,7 @@ export default class ExperimentList extends Vue {
 
   created() {
     this.loadSpecies();
+    this.loadFacilities();
     this.refreshStateLabel();
     this.$opensilex.updateFiltersFromURL(this.$route.query, this.filter);
   }
@@ -351,10 +401,20 @@ export default class ExperimentList extends Vue {
       (lang) => {
         this.refreshStateLabel();
         this.loadSpecies();
+        this.loadFacilities();
         this.$opensilex.loadFactorCategories();
         this.refresh();
       }
     );
+  }
+
+  onRefreshed() {
+      let that = this;
+      setTimeout(function() {
+        if(that.tableRef.selectAll === true && that.tableRef.selectedItems.length !== that.tableRef.totalRow) {                    
+          that.tableRef.selectAll = false;
+        } 
+      }, 1);
   }
 
   beforeDestroy() {
@@ -400,6 +460,24 @@ export default class ExperimentList extends Vue {
       .catch(this.$opensilex.errorHandler);
   }
 
+  loadFacilities() {
+    let service: OrganizationsService = this.$opensilex.getService(
+        "opensilex.OrganizationsService"
+    );
+    service
+        .getAllFacilities()
+        .then((http: HttpResponse<OpenSilexResponse<Array<FacilityGetDTO>>>) => {
+          this.facilities = [];
+          for (let i = 0; i < http.response.result.length; i++) {
+            this.facilities.push({
+              id: http.response.result[i].uri,
+              label: http.response.result[i].name,
+            });
+          }
+        })
+        .catch(this.$opensilex.errorHandler);
+  }
+
   getSpeciesName(uri: String): String {
     if (this.speciesByUri.has(uri)) {
       return this.speciesByUri.get(uri).name;
@@ -409,9 +487,13 @@ export default class ExperimentList extends Vue {
 
   isEnded(experiment) {
     if (experiment.end_date) {
-      return moment(experiment.end_date, "YYYY-MM-DD").diff(moment()) < 0;
+      return new Date(experiment.end_date).getTime() < new Date().getTime();
     }
     return false;
+  }
+
+  get isGermplasmMenuExcluded() {
+        return this.$opensilex.getConfig().menuExclusions.includes("germplasm");
   }
 
   get fields() {
@@ -420,10 +502,6 @@ export default class ExperimentList extends Vue {
         key: "name",
         label: "component.common.name",
         sortable: true,
-      },
-      {
-        key: "species",
-        label: "component.experiment.species",
       },
       {
         key: "start_date",
@@ -440,6 +518,12 @@ export default class ExperimentList extends Vue {
         label: "component.experiment.search.column.state",
       },
     ];
+    if (!this.isGermplasmMenuExcluded) {
+      tableFields.push({
+        key: "species",
+        label: "component.experiment.species",
+      });
+    }
     if (!this.noActions) {
       tableFields.push({
         key: "actions",
@@ -523,6 +607,8 @@ en:
     filter-year-placeholder: Enter a year
     filter-species: Species
     filter-species-placeholder: Select one or more species
+    filter-facilities: Facilities
+    filter-facilities-placeholder: Select one or more facilities
     filter-project: Project
     filter-project-placeholder: Select a project
     filter-state: State
@@ -530,6 +616,7 @@ en:
     filter-factors-categories: Factors categories
     filter-factors-categories-placeholder: Select one or more categories
     selected: Selected experiments
+    selected-all: All experiments
 
 fr:
   ExperimentList:
@@ -539,6 +626,8 @@ fr:
     filter-year-placeholder: Saisir une année
     filter-species: Espèces
     filter-species-placeholder: Sélectionner une ou plusieurs espèces
+    filter-facilities: Infrastructures environnementales
+    filter-facilities-placeholder: Sélectionner une ou plusieurs infrastructure
     filter-project: Projet
     filter-project-placeholder: Sélectionner un projet
     filter-state: Etat
@@ -546,5 +635,6 @@ fr:
     filter-factors-categories: Categories de facteurs
     filter-factors-categories-placeholder: Sélectionner une ou plusieurs categories
     selected: Expérimentations selectionnées
+    selected-all: Toutes les expérimentations
 
 </i18n>

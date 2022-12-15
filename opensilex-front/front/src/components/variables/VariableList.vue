@@ -167,8 +167,8 @@
                             :small="true"
                             :text="$t('VariableList.display')">
 
-                            <b-dropdown-item-button @click="clickOnlySelected()">{{ onlySelected ? $t('VariableList.selected-all') : $t('VariableList.selected-only')}}</b-dropdown-item-button>
-                            <b-dropdown-item-button @click="resetSelected()">{{$t('VariableList.resetSelected')}}</b-dropdown-item-button>
+                            <b-dropdown-item-button @click="clickOnlySelected()">{{ onlySelected ? $t('VariableList.selected-all') : $t("component.common.selected-only")}}</b-dropdown-item-button>
+                            <b-dropdown-item-button @click="resetSelected()">{{$t("component.common.resetSelected")}}</b-dropdown-item-button>
                         </b-dropdown>
 
                         <b-dropdown
@@ -193,18 +193,18 @@
 
                     <template v-slot:cell(name)="{data}">
                         <span class="lowSize" v-bind:class="{ variablesCheckboxMarginHighSize: toggleSearchFilters }">
-                            <opensilex-UriLink
-                                v-if="noActions"
-                                :uri="data.item.uri"
-                                :value="data.item.name"
-                                :url="'/app/variable/details/'+ encodeURIComponent(data.item.uri)"
-                            ></opensilex-UriLink>
-                            <opensilex-UriLink
-                                v-else
-                                :uri="data.item.uri"
-                                :value="data.item.name"
-                                :to="{path: '/variable/details/'+ encodeURIComponent(data.item.uri)}"
-                            ></opensilex-UriLink>
+                             <opensilex-UriLink
+                                 v-if="noActions"
+                                 :uri="data.item.uri"
+                                 :value="data.item.name"
+                                 :url="'/variable/details/'+ encodeURIComponent(data.item.uri)"
+                             ></opensilex-UriLink>
+                             <opensilex-UriLink
+                                 v-else
+                                 :uri="data.item.uri"
+                                 :value="data.item.name"
+                                 :to="{path: '/variable/details/'+ encodeURIComponent(data.item.uri)}"
+                             ></opensilex-UriLink>
                         </span >
                         <br>
                         <span class="lowSize" v-bind:class="{ variablesCheckboxMarginHighSize: toggleSearchFilters }">{{data.item.alternative_name}}</span>
@@ -476,6 +476,9 @@ export default class VariableList extends Vue {
     onItemUnselected(row) {
         this.tableRef.onItemUnselected(row);
     }
+    onItemSelected(row) {
+      this.tableRef.onItemSelected(row);
+    }
 
     searchVariablesWithAttribute(options) {
         return this.$service.searchVariables(
@@ -702,9 +705,7 @@ en:
         export-variables-details: Export detailed variable list
         variablesGroup: Variable used in one or many groups of variables
         not-used-in-variablesGroup: Variable not used in any group of variables
-        selected-only: Selection only
         selected-all: All variables
-        resetSelected: Reset selection
         display: Display
 fr:
     VariableList:
@@ -719,9 +720,7 @@ fr:
         export-variables-details: Exporter la liste détaillée de variables
         variablesGroup: Variable utilisé dans un ou plusieurs groupe de variables
         not-used-in-variablesGroup: Variable n'est utilisé dans aucun groupe de variables
-        selected-only: Sélection seulement
-        selected-all: Toute la liste
-        resetSelected: Réinitialiser la sélection
+        selected-all: Toutes les variables
         display: Affichage
 
 </i18n>

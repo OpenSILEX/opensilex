@@ -20,6 +20,7 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.syntax.ElementFilter;
 import org.apache.jena.sparql.syntax.ElementGroup;
+import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.event.dal.move.MoveModel;
@@ -374,6 +375,7 @@ public class EventDAO<T extends EventModel> {
      *
      * @param target partial or exact match on target
      * @param targets exact match on a URI list
+     * @param targetType target type (device, scientific object,...)
      * @param descriptionPattern
      * @param type
      * @param start
@@ -389,6 +391,7 @@ public class EventDAO<T extends EventModel> {
      */
     public ListWithPagination<EventModel> search(String target,
                                                  List<URI> targets,
+                                                 URI targetType,
                                                  String descriptionPattern,
                                                  URI type,
                                                  OffsetDateTime start,
@@ -415,6 +418,16 @@ public class EventDAO<T extends EventModel> {
                 (select -> {
                     ElementGroup rootElementGroup = select.getWhereHandler().getClause();
                     ElementGroup eventGraphGroupElem = SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(rootElementGroup, eventGraph);
+
+                    //append filter for baseType
+                    if (targetType != null) {
+                        Var baseTypeVar = makeVar("baseType");
+                        Var targetTypeVar = makeVar("target");
+
+                        eventGraphGroupElem.addTriplePattern(new Triple(uriVar, Oeev.concerns.asNode(), targetTypeVar));
+                        select.addWhere(baseTypeVar, Ontology.subClassAny, SPARQLDeserializers.nodeURI(targetType));
+                        select.addWhere(targetTypeVar, RDF.type, baseTypeVar);
+                    }
 
                     // match on list of URIs
                     if(! CollectionUtils.isEmpty(targets)){

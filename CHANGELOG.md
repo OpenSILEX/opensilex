@@ -5,7 +5,44 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.0.0-rc+6]
+
+### Fixed or optimized
+
+- **[Installation]** The dockerized version of rdf4j-workbench provided with OpenSILEX has been upgraded to version 3.7.7 -> e6bbbaf3
+- **[Server CLI]** It is now impossible to create duplicate users by CLI -> d8e10669
+- **[Ontology]** Fixed the deletion of custom properties, which would not delete the restriction and cause an error on the next launch -> 44aa61aa
+- **[Web Client]** Removed moment.js dependency -> 0a42b846
+- **[Web Client]** Selector fields now use the whole line to display item names -> 46957e0f
+- **[Web Client]** Selectors that allow to select multiple items no longer reset their selection after performing a second search  -> 46957e0f
+- **[Web Client]** The base type is now selectable on multiple forms (scientific objects, events, devices) -> 44aa61aa
+- **[Web Client]** Fixed several issues with the modal selector -> 564539a7
+- **[Geospatial]** Creation, visualization, modification and deletion of areas now functions properly -> f8416c7c
+- **[Geospatial]** Services for managing temporal areas were simplified and manage the associated events. It is no longer needed to call the event
+service manually. -> f8416c7c
+- **[Data Visualization]** Graphs now take the optimal amount of screen space -> 66428cf5
+- **[Data Visualization]** If there is no data to plot, a message is shown and an empty graph is still displayed -> 66428cf5
+- **[Variable]** It is no longer possible to delete a variable component if it is associated to a variable -> fbc69422
+- **[Variable]** The update of SKOS properties of a variable now works properly -> fbc69422
+- **[Variable]** Fixed a wrong link in the variable modal list -> fbc69422
+- **[Organization]** The organization / facility / site access check system has been reworked to function properly -> 540f2adc
+- **[Germplasm]** Germplasm names no longer need to be unique -> a92e43e3
+- **[Germplasm]** More than 20 germplasms can now be exported at the same time -> 4c1e68c2
+- **[Event]** CSV template columns are now correctly generated when the event type is `oeev:Move` -> 6c7a8043
+- **[Vocabulary]** Default class is now displayed -> 44aa61aa
+- **[Data]** Data creation with an incomplete `provUsed` is no longer possible -> 786b4a9a
+- **[Scientific Object]** CSV import has been fixed and optimized -> fc5b3041
+
+### Added or changed
+
+- **[Authentication]** SAML protocol can now be used for authentication to supported federations (e.g. RENATER) -> 701f988c
+- **[File Storage]** Amazon S3 can now be used for file storage -> 5386906b
+- **[Geospatial]** Devices are now displayed on the map -> 93b2c8b7
+- **[Data Visualization]** Images associated with data can now be visualized from a data graph -> a48a59a6
+- **[Data Visualization]** Filter forms are now reduced after launching the visualization action -> 46957e0f
+- **[Experiment / Variable]** Germplasm-related fields are no longer displayed if the germplasm menu is excluded on the instance -> 3652ae43
+- **[Experiment]** Added "record author" field on the experiment description -> 3652ae43
+- **[Facility]** Associated experiments and devices can now be viewed in the facility details -> 91758cb9
 
 ## [1.0.0-rc+5.2]
 

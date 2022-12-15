@@ -15,7 +15,7 @@
         >{{ $t("component.common.details-label") }}
         </b-nav-item>
 
-        <b-nav-item
+  <!--      <b-nav-item
             :active="isDocumentTab()"
             :to="{ path: '/area/documents/' + encodeURIComponent(uri) }"
         >{{ $t("component.project.documents") }}
@@ -26,6 +26,7 @@
             :to="{ path: '/area/annotations/' + encodeURIComponent(uri) }"
         >{{ $t("Annotation.list-title") }}
         </b-nav-item>
+  -->
       </opensilex-PageActions>
 
       <opensilex-PageContent>
@@ -149,8 +150,11 @@
 import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
-import { AreaGetDTO, EventGetDTO, ObjectUriResponse } from 'opensilex-core/index';
+import { AreaGetDTO, ObjectUriResponse } from 'opensilex-core/index';
 import { UserGetDTO } from 'opensilex-security/index';
+import {AreaService} from "opensilex-core/api/area.service";
+import {SecurityService} from "opensilex-security/api/security.service";
+import {OntologyService} from "opensilex-core/api/ontology.service";
 
 @Component
 export default class AreaDetails extends Vue {
@@ -158,7 +162,9 @@ export default class AreaDetails extends Vue {
   $store: any;
   $t: any;
   $i18n: any;
-  service: any;
+  areaService: AreaService;
+  securityService: SecurityService;
+  ontologyService: OntologyService;
 
   @Prop({
     default: true,
@@ -180,6 +186,7 @@ export default class AreaDetails extends Vue {
     rdf_type: null,
     description: null,
     geometry: null,
+    event: null
   };
 
   isViewAllInformation: boolean = false;
@@ -196,15 +203,18 @@ export default class AreaDetails extends Vue {
   }
 
   created() {
-    this.service = this.$opensilex.getService("opensilex.AreaService");
+    this.areaService = this.$opensilex.getService("opensilex.AreaService");
+    this.securityService = this.$opensilex.getService("opensilex.SecurityService");
+    this.ontologyService = this.$opensilex.getService("opensilex.OntologyService")
     if (this.withBasicProperties)
       this.loadArea(decodeURIComponent(this.$route.params.uri));
     else
       this.loadArea(this.uri);
+
   }
 
   loadArea(uri) {
-    this.service
+    this.areaService
         .getByURI(uri)
         .then((http: HttpResponse<OpenSilexResponse<AreaGetDTO>>) => {
           this.area = http.response.result;
@@ -215,8 +225,7 @@ export default class AreaDetails extends Vue {
   }
 
   loadAuthor(uriAuthor) {
-    this.$opensilex
-        .getService("opensilex.SecurityService")
+    this.securityService
         .getUser(uriAuthor)
         .then((http: HttpResponse<OpenSilexResponse<UserGetDTO>>) => {
           const {last_name, first_name} = http.response.result;
@@ -262,8 +271,7 @@ export default class AreaDetails extends Vue {
   }
 
   private editArea() {
-    this.$opensilex
-        .getService("opensilex.AreaService")
+    this.areaService
         .getByURI(this.uri)
         .then((http: HttpResponse<OpenSilexResponse<AreaGetDTO>>) => {
           let form: any = http.response.result;
@@ -273,13 +281,9 @@ export default class AreaDetails extends Vue {
   }
 
   private deleteArea() {
-    this.$opensilex
-        .getService("opensilex.AreaService")
+    this.areaService
         .deleteArea(this.uri)
         .then((http: HttpResponse<OpenSilexResponse<ObjectUriResponse>>) => {
-          if (this.rdf_type == "vocabulary:TemporalArea") {
-            return this.deleteEvent();
-          }
           let message =
               this.$i18n.t("component.area.title") +
               " " +
@@ -289,31 +293,6 @@ export default class AreaDetails extends Vue {
           this.$opensilex.showSuccessToast(message);
         })
         .catch(this.$opensilex.errorHandler);
-  }
-
-  private deleteEvent() {
-    const eventsService = "EventsService";
-    this.$opensilex
-      .getService(eventsService)
-      .searchEvents(undefined, undefined, undefined, this.uri)
-      .then((http: HttpResponse<OpenSilexResponse<EventGetDTO>>) => {
-        const res = http.response.result[0] as any;
-        this.$opensilex
-          .getService(eventsService)
-          .deleteEvent(res.uri)
-          .then((http: HttpResponse<OpenSilexResponse<ObjectUriResponse>>) => {
-            let message =
-              this.$i18n.t("component.area.title") +
-              " " +
-              this.uri +
-              " " +
-              this.$i18n.t("component.common.success.delete-success-message");
-              console.debug("Event deleted");
-            this.$opensilex.showSuccessToast(message);
-          })
-          .catch(this.$opensilex.errorHandler);
-      })
-      .catch(this.$opensilex.errorHandler);
   }
 }
 </script>

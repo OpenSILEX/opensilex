@@ -26,6 +26,7 @@ import java.util.Set;
 import org.opensilex.sparql.csv.error.CSVDatatypeError;
 import org.opensilex.sparql.csv.error.CSVDuplicateURIError;
 import org.opensilex.sparql.csv.error.CSVURINotFoundError;
+import org.opensilex.sparql.csv.header.CsvHeader;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 
@@ -36,7 +37,7 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
 public class CSVValidationModel {
 
     @JsonIgnore()
-    private List<SPARQLNamedResourceModel> objects = new ArrayList<>();
+    private List<SPARQLResourceModel> objects = new ArrayList<>();
 
     @JsonIgnore()
     private Map<String, Object> objectsMetadata = new HashMap<>();
@@ -60,11 +61,17 @@ public class CSVValidationModel {
 
     private Map<Integer, List<CSVCell>> invalidValueErrors = new HashMap<>();
 
-    private Map<Integer, CSVCell> alreadyExistingURIErrors = new HashMap<>();
+    private Map<Integer, List<CSVCell>> alreadyExistingURIErrors = new HashMap<>();
 
-    private Map<Integer, CSVDuplicateURIError> duplicateURIErrors = new HashMap<>();
+    private Map<Integer, List<CSVDuplicateURIError>> duplicateURIErrors = new HashMap<>();
+
+    private Map<Integer,List<CSVCell>> invalidRowSizeErrors;
 
     private int nbObjectImported;
+
+    private String validationToken;
+
+    private CsvHeader csvHeader;
 
     public List<String> getMissingHeaders() {
         return missingHeaders;
@@ -94,15 +101,20 @@ public class CSVValidationModel {
         return invalidValueErrors;
     }
 
-    public Map<Integer, CSVCell> getAlreadyExistingURIErrors() {
+    public Map<Integer, List<CSVCell>> getAlreadyExistingURIErrors() {
         return alreadyExistingURIErrors;
     }
 
-    public Map<Integer, CSVDuplicateURIError> getDuplicateURIErrors() {
+    public Map<Integer, List<CSVDuplicateURIError>> getDuplicateURIErrors() {
         return duplicateURIErrors;
     }
 
-    public List<SPARQLNamedResourceModel> getObjects() {
+    public CSVValidationModel(){
+        this.invalidRowSizeErrors = new HashMap<>(1);
+
+    }
+
+    public List<SPARQLResourceModel> getObjects() {
         if (hasErrors()) {
             return new ArrayList<>();
         }
@@ -110,7 +122,7 @@ public class CSVValidationModel {
         return objects;
     }
 
-    public void setObjects(List<SPARQLNamedResourceModel> objects) {
+    public void setObjects(List<SPARQLResourceModel> objects) {
         this.objects = objects;
     }
 
@@ -136,7 +148,8 @@ public class CSVValidationModel {
                 || getInvalidValueErrors().size() > 0
                 || getAlreadyExistingURIErrors().size() > 0
                 || getDuplicateURIErrors().size() > 0
-                || getEmptyHeaders().size() > 0;
+                || getEmptyHeaders().size() > 0
+                || ! invalidRowSizeErrors.isEmpty();
     }
 
     public void addMissingHeaders(Collection<String> headers) {
@@ -148,53 +161,46 @@ public class CSVValidationModel {
     }
 
     public void addInvalidDatatypeError(CSVCell cell, URI dataType) {
-        int rowIndex = cell.getRowIndex();
-        if (!datatypeErrors.containsKey(rowIndex)) {
-            datatypeErrors.put(rowIndex, new ArrayList<>());
-        }
-        datatypeErrors.get(rowIndex).add(new CSVDatatypeError(cell, dataType));
+        datatypeErrors
+                .computeIfAbsent(cell.getRowIndex(), rowIndex -> new ArrayList<>())
+                .add(new CSVDatatypeError(cell, dataType));
     }
 
     public void addURINotFoundError(CSVCell cell, URI subjectURI, URI objectURI) {
-        int rowIndex = cell.getRowIndex();
-        if (!uriNotFoundErrors.containsKey(rowIndex)) {
-            uriNotFoundErrors.put(rowIndex, new ArrayList<>());
-        }
-        uriNotFoundErrors.get(rowIndex).add(new CSVURINotFoundError(cell, subjectURI, objectURI));
+        uriNotFoundErrors
+                .computeIfAbsent(cell.getRowIndex(), rowIndex -> new ArrayList<>())
+                .add(new CSVURINotFoundError(cell, subjectURI, objectURI));
     }
 
     public void addInvalidURIError(CSVCell cell) {
-        int rowIndex = cell.getRowIndex();
-        if (!invalidURIErrors.containsKey(rowIndex)) {
-            invalidURIErrors.put(rowIndex, new ArrayList<>());
-        }
-        invalidURIErrors.get(rowIndex).add(cell);
+        invalidURIErrors
+                .computeIfAbsent(cell.getRowIndex(), rowIndex -> new ArrayList<>())
+                .add(cell);
     }
 
     public void addMissingRequiredValue(CSVCell cell) {
-        int rowIndex = cell.getRowIndex();
-        if (!missingRequiredValueErrors.containsKey(rowIndex)) {
-            missingRequiredValueErrors.put(rowIndex, new ArrayList<>());
-        }
-        missingRequiredValueErrors.get(rowIndex).add(cell);
+        missingRequiredValueErrors
+                .computeIfAbsent(cell.getRowIndex(), rowIndex -> new ArrayList<>())
+                .add(cell);
     }
 
+
     public void addInvalidValueError(CSVCell cell) {
-        int rowIndex = cell.getRowIndex();
-        if (!invalidValueErrors.containsKey(rowIndex)) {
-            invalidValueErrors.put(rowIndex, new ArrayList<>());
-        }
-        invalidValueErrors.get(rowIndex).add(cell);
+        invalidValueErrors
+                .computeIfAbsent(cell.getRowIndex(), rowIndex -> new ArrayList<>())
+                .add(cell);
     }
 
     public void addAlreadyExistingURIError(CSVCell cell) {
-        int rowIndex = cell.getRowIndex();
-        alreadyExistingURIErrors.put(rowIndex, cell);
+        alreadyExistingURIErrors
+                .computeIfAbsent(cell.getRowIndex(), rowIndex -> new ArrayList<>())
+                .add(cell);
     }
 
     public void addDuplicateURIError(CSVCell cell, int previousRow) {
-        int rowIndex = cell.getRowIndex();
-        duplicateURIErrors.put(rowIndex, new CSVDuplicateURIError(cell, previousRow));
+        duplicateURIErrors
+                .computeIfAbsent(cell.getRowIndex(), rowIndex -> new ArrayList<>())
+                .add(new CSVDuplicateURIError(cell, previousRow));
     }
 
     public void addObject(String name, SPARQLNamedResourceModel object) {
@@ -233,6 +239,34 @@ public class CSVValidationModel {
 
     public void setNbObjectImported(int nbObjectImported) {
         this.nbObjectImported = nbObjectImported;
+    }
+
+    public String getValidationToken() {
+        return validationToken;
+    }
+
+    public CSVValidationModel setValidationToken(String validationToken) {
+        this.validationToken = validationToken;
+        return this;
+    }
+
+    public CsvHeader getCsvHeader() {
+        return csvHeader;
+    }
+
+    public CSVValidationModel setCsvHeader(CsvHeader csvHeader) {
+        this.csvHeader = csvHeader;
+        return this;
+    }
+
+    public Map<Integer, List<CSVCell>> getInvalidRowSizeErrors() {
+        return invalidRowSizeErrors;
+    }
+
+    public void addAInvalidRowSizeError(CSVCell cell) {
+        invalidRowSizeErrors
+                .computeIfAbsent(cell.getRowIndex(), rowIndex -> new ArrayList<>())
+                .add(cell);
     }
 
 }

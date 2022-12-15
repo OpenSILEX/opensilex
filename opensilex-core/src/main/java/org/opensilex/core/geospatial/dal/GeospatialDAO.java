@@ -17,6 +17,7 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.FindOneAndReplaceOptions;
 import com.mongodb.client.model.IndexOptions;
+import com.mongodb.client.model.Indexes;
 import com.mongodb.client.model.geojson.Geometry;
 import com.mongodb.client.model.geojson.Point;
 import com.mongodb.client.model.geojson.codecs.GeoJsonCodecProvider;
@@ -25,6 +26,7 @@ import org.bson.Document;
 import org.bson.codecs.Codec;
 import org.bson.codecs.DecoderContext;
 import org.bson.codecs.configuration.CodecRegistry;
+import org.bson.conversions.Bson;
 import org.bson.json.JsonReader;
 import org.geojson.Feature;
 import org.geojson.FeatureCollection;
@@ -36,6 +38,7 @@ import org.locationtech.jts.io.WKTWriter;
 import org.locationtech.jts.io.geojson.GeoJsonReader;
 import org.locationtech.jts.io.geojson.GeoJsonWriter;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.user.dal.UserModel;
@@ -47,6 +50,8 @@ import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.response.ResourceTreeDTO;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -67,10 +72,12 @@ public class GeospatialDAO {
     private final MongoCollection<GeospatialModel> geometryCollection;
 
     public static final String GEOSPATIAL_COLLECTION_NAME = "geospatial";
+    protected final static Logger LOGGER = LoggerFactory.getLogger(GeospatialDAO.class);
 
     public GeospatialDAO(MongoDBService nosql) {
         MongoDatabase db = nosql.getDatabase();
         geometryCollection = db.getCollection(GEOSPATIAL_COLLECTION_NAME, GeospatialModel.class);
+        createIndexes();
     }
 
     public static Geometry geoJsonToGeometry(GeoJsonObject geo) throws JsonProcessingException {
@@ -128,7 +135,6 @@ public class GeospatialDAO {
     public GeospatialModel create(GeospatialModel instanceGeospatial) throws MongoWriteException {
         if (instanceGeospatial.getGeometry() != null) {
             // the verification of the existence of the URI is done by mongoDB thanks to the uri_1_graph_1 index.
-            addIndex();
             geometryCollection.insertOne(instanceGeospatial);
         }
 
@@ -141,14 +147,15 @@ public class GeospatialDAO {
         return geometryCollection.find(filter).first();
     }
 
-    private void addIndex() {
-        // db.Geospatial.createIndex( { uri: 1, graph: 1}, { unique: true } )
-        Document indexURI = new Document("uri", 1).append("graph", 1);
-        // db.Geospatial.createIndex( { "geometry" : "2dsphere" } )
-        Document indexGeometry = new Document("geometry", "2dsphere");
+    private void createIndexes() {
 
-        geometryCollection.createIndex(indexURI, new IndexOptions().unique(true));
-        geometryCollection.createIndex(indexGeometry);
+        // (uri,graph) index
+        geometryCollection.createIndex(
+                Indexes.ascending(MongoModel.URI_FIELD, GeospatialModel.GRAPH_FIELD),
+                new IndexOptions().unique(true)
+        );
+
+        geometryCollection.createIndex(Indexes.geo2dsphere(GeospatialModel.GEOMETRY_FIELD));
     }
 
     public GeospatialModel update(GeospatialModel geospatial, URI uri, URI graph) throws MongoWriteException {
@@ -244,7 +251,11 @@ public class GeospatialDAO {
                     extractedChildren(ontologyAreaURI, childrenList);
             });
 
-            return geometryCollection.find(and(Filters.geoIntersects("geometry", geometry), Filters.in("rdfType", ontologyAreaURI)));
+            Bson query = and(Filters.geoIntersects(GeospatialModel.GEOMETRY_FIELD, geometry), Filters.in(GeospatialModel.RDF_TYPE_FIELD, ontologyAreaURI));
+
+            LOGGER.debug("MongoDB search intersect: {}", query);
+
+            return geometryCollection.find(query);
         } else {
             return null;
         }
@@ -325,7 +336,6 @@ public class GeospatialDAO {
     }
 
     public void createAll(List<GeospatialModel> geospatialModels) {
-        addIndex();
         geometryCollection.insertMany(geospatialModels);
     }
 }

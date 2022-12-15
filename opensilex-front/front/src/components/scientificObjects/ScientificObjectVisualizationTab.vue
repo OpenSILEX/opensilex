@@ -1,82 +1,100 @@
 <template>
   <div ref="page">
-      <!-- FILTERS -->
+    <opensilex-PageContent class="pagecontent">
+      <!-- Toggle Sidebar-->
+      <div class="searchMenuContainer"
+          v-on:click="searchFiltersToggle = !searchFiltersToggle"
+          :title="searchFiltersPannel()"
+        >
+        <div class="searchMenuIcon">
+          <i class="icon ik ik-search"></i>
+        </div>
+      </div>
 
+      <Transition>
+        <div v-show="searchFiltersToggle">
           <!--Form-->
           <opensilex-ScientificObjectVisualizationForm
               ref="scientificObjectVisualizationForm"
               :scientificObject="scientificObject.uri"
               @search="onSearch"
           ></opensilex-ScientificObjectVisualizationForm>
+        </div>
+      </Transition>
 
 
-      <div class="d-flex justify-content-center mb-3" v-if="!isGraphicLoaded">
-        <b-spinner label="Loading..."></b-spinner>
-      </div>
+    <div class="d-flex justify-content-center mb-3" v-if="!isGraphicLoaded">
+      <b-spinner label="Loading..."></b-spinner>
+    </div>
 
-      <opensilex-VisuImages
-          ref="visuImages"
-          v-if="showImages"
-          @imageIsHovered="onImageIsHovered"
-          @imageIsUnHovered=" onImageIsUnHovered"
-          @imageIsDeleted=" onImageIsDeleted"
-          @onImageAnnotate=" showAnnotationForm"
-          @onImageDetails=" onImageDetails"
-      ></opensilex-VisuImages>
+    <opensilex-VisuImages
+        ref="visuImages"
+        v-if="showImages"
+        @imageIsHovered="onImageIsHovered"
+        @imageIsUnHovered=" onImageIsUnHovered"
+        @imageIsDeleted=" onImageIsDeleted"
+        @onImageAnnotate=" showAnnotationForm"
+        @onImageDetails=" onImageDetails"
+        @onAnnotationDetails=" onAnnotationDetails"
+    ></opensilex-VisuImages>
 
-      <opensilex-DataVisuGraphic
-          v-if="isGraphicLoaded"
-          ref="visuGraphic"
-          :selectedScientificObjects="scientificObject.uri"
-          @addEventIsClicked="showAddEventComponent"
-          @dataAnnotationIsClicked="showAnnotationForm"
-      ></opensilex-DataVisuGraphic>
+    <opensilex-DataVisuGraphic
+        v-if="isGraphicLoaded"
+        ref="visuGraphic"
+        :selectedScientificObjects="scientificObject.uri"
+        @addEventIsClicked="showAddEventComponent"
+        @dataAnnotationIsClicked="showAnnotationForm"
+        v-bind:class ="{
+          'ScientificObjectVisualizationGraphic': searchFiltersToggle,
+          'ScientificObjectVisualizationGraphicWithoutForm': !searchFiltersToggle
+        }"
+    ></opensilex-DataVisuGraphic>
 
+    <opensilex-AnnotationModalForm
+        ref="annotationModalForm"
+        @onCreate="onAnnotationCreated"
+    ></opensilex-AnnotationModalForm>
 
-      <opensilex-AnnotationModalForm
-          ref="annotationModalForm"
-          @onCreate="onAnnotationCreated"
-      ></opensilex-AnnotationModalForm>
-
-      <opensilex-EventModalForm
-          ref="eventsModalForm"
-          :target="target"
-          :eventCreatedTime="eventCreatedTime"
-          @onCreate="onEventCreated"
-      ></opensilex-EventModalForm>
+    <opensilex-EventModalForm
+        ref="eventsModalForm"
+        :target="target"
+        :eventCreatedTime="eventCreatedTime"
+        @onCreate="onEventCreated"
+    ></opensilex-EventModalForm>
+    </opensilex-PageContent>
   </div>
 </template>
 
 <script lang="ts">
-import {Component, Ref, Prop} from "vue-property-decorator";
+import {Component, Prop, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
-import moment from "moment-timezone";
 import Highcharts from "highcharts";
-import {
-  DataService,
-  DataGetDTO,
-  EventsService,
-  EventGetDTO,
-} from "opensilex-core/index";
+import {DataGetDTO, DataService, EventGetDTO, EventsService,} from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {DataFileGetDTO} from "opensilex-core/model/dataFileGetDTO";
 import {Image} from "../visualization/image";
-import * as http from "http";
 import {VariablesService} from "opensilex-core/api/variables.service";
+import {AnnotationGetDTO} from "opensilex-core/model/annotationGetDTO";
+import {AnnotationsService} from "opensilex-core/api/annotations.service";
+import HighchartsDataTransformer, {OpenSilexPointOptionsObject} from "../../models/HighchartsDataTransformer";
+import {ProvEntityModel} from "opensilex-core/model/provEntityModel";
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+
+interface ImagePointOptionsObject extends OpenSilexPointOptionsObject {
+  prov_used: Array<ProvEntityModel>,
+  imageURI: string
+}
 
 @Component
 export default class ScientificObjectVisualizationTab extends Vue {
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
+  annotationData: any;
   variablesService: VariablesService;
+  annotationService: AnnotationsService;
+  searchFiltersToggle: boolean = true;
 
   get user() {
     return this.$store.state.user;
-  }
-
-  data() {
-    return {
-      SearchFiltersToggle: true,
-    }
   }
 
   @Prop()
@@ -98,9 +116,11 @@ export default class ScientificObjectVisualizationTab extends Vue {
   @Ref("scientificObjectVisualizationForm")
   readonly scientificObjectVisualizationForm!: any;
   showImages = true;
+  annotations: Array<AnnotationGetDTO> = [];
 
   created() {
     this.dataService = this.$opensilex.getService("opensilex.DataService");
+    this.annotationService = this.$opensilex.getService("opensilex.AnnotationsService");
     this.eventsService = this.$opensilex.getService("opensilex.EventsService");
     this.variablesService = this.$opensilex.getService("opensilex.VariablesService");
   }
@@ -114,6 +134,14 @@ export default class ScientificObjectVisualizationTab extends Vue {
           this.prepareGraphic();
         }
     );
+  }
+
+  // simulate window resizing to resize the graphic when the filter panel display changes
+  @Watch("searchFiltersToggle")
+  onSearchFilterToggleChange(){
+    this.$nextTick(()=> { 
+      window.dispatchEvent(new Event('resize'));
+    })  
   }
 
   beforeDestroy() {
@@ -153,6 +181,7 @@ export default class ScientificObjectVisualizationTab extends Vue {
   }
 
   onSearch(form) {
+    this.searchFiltersToggle = !this.searchFiltersToggle;
     this.isGraphicLoaded = false;
     this.showImages = false;
     this.$opensilex.disableLoader();
@@ -286,20 +315,15 @@ export default class ScientificObjectVisualizationTab extends Vue {
                   label = label + "(End: " + endTime + ")";
                 }
                 title = label.charAt(0).toUpperCase();
-                let stringDateWithoutUTC;
+                let timestamp;
                 if (element.start != null) {
-                  stringDateWithoutUTC =
-                      moment.parseZone(element.start).format("YYYYMMDD HHmmss") +
-                      "+00:00";
+                  timestamp = new Date(element.start).getTime();
                 } else {
-                  stringDateWithoutUTC =
-                      moment.parseZone(element.end).format("YYYYMMDD HHmmss") +
-                      "+00:00";
+                  timestamp = new Date(element.end).getTime();
                 }
 
-                let dateWithoutUTC = moment(stringDateWithoutUTC).valueOf();
                 toAdd = {
-                  x: dateWithoutUTC,
+                  x: timestamp,
                   title: title,
                   text: label,
                   eventUri: element.uri,
@@ -329,9 +353,9 @@ export default class ScientificObjectVisualizationTab extends Vue {
     }
   }
 
-  buildDataSerie() {
+  async buildDataSerie() {
     if (this.form) {
-      return this.dataService
+      let http = await this.dataService
           .searchDataList(
               this.form.startDate != undefined && this.form.startDate != ""
                   ? this.form.startDate
@@ -351,91 +375,98 @@ export default class ScientificObjectVisualizationTab extends Vue {
               ["date=asc"],
               0,
               50000
-          )
-          .then((http: HttpResponse<OpenSilexResponse<Array<DataGetDTO>>>) => {
-            const data = http.response.result as Array<DataGetDTO>;
+          );
 
-            let dataLength = data.length;
-            if (dataLength > 0) {
-              const cleanData = this.dataTransforme(data);
-              if (dataLength > 50000) {
-                this.$opensilex.showInfoToast(
-                    this.$i18n.t(
-                        "ScientificObjectVisualizationTab.limitSizeMessageA"
-                    ) +
-                    " " +
-                    dataLength +
-                    " " +
-                    this.$i18n.t(
-                        "ScientificObjectVisualizationTab.limitSizeMessageB"
-                    )
-                );
-              }
-              const dataAndImage = [];
+      const data = http.response.result as Array<DataGetDTO>;
 
-              const dataSerie = {
-                name: this.scientificObject.name,
-                data: cleanData[0],
-                id: 'A',
-                visible: true
-              };
-              dataAndImage.push(dataSerie)
+      let dataLength = data.length;
 
+        if (dataLength === 0){
+          this.$opensilex.showInfoToast(
+          this.$t("component.common.search.noDataFound").toString());
+        }
 
-              if (cleanData[1].length > 0) {
-                const imageSerie = {
-                  type: 'flags',
-                  name: 'Image/' + this.scientificObject.name,
-                  data: cleanData[1],
-                  onSeries: 'A',
-                  width: 8,
-                  height: 8,
-                  shape: 'circlepin',
-                  lineWidth: 1,
-                  point: {
-                    events: {
-                      stickyTracking: false,
-                      mouseOver: e => {
-                        const toSend = {
-                          imageIndex: e.target.index,
-                          serieIndex: e.target.series.index
-                        };
-                        if (this.visuImages) {
-                          this.visuImages.onImagePointMouseEnter(toSend);
-                        }
-                        e.preventDefault();
-                        return false;
-                      },
-                      mouseOut: e => {
-                        if (this.visuImages) {
-                          this.visuImages.onImagePointMouseOut();
-                        }
-                        e.preventDefault();
-                        return false;
-                      },
-                      click: event => {
-                        imagePointClick(event);
-                        event.preventDefault();
-                        return false;
-                      }
-                    }
-                  }
-                };
-                const imagePointClick = event => {
-                  const toReturn = {
-                    date: event.point.date,
-                    serieIndex: event.point.series.index,
-                    imageIndex: event.point.index,
-                    concernedItem: event.point.prov_used[0].uri
+        if (dataLength >= 0) {
+        const {cleanData, imageData} = await this.transformDataWithImages(data);
+        if (dataLength > 50000) {
+          this.$opensilex.showInfoToast(
+              this.$i18n.t(
+                  "ScientificObjectVisualizationTab.limitSizeMessageA"
+              ) +
+              " " +
+              dataLength +
+              " " +
+              this.$i18n.t(
+                  "ScientificObjectVisualizationTab.limitSizeMessageB"
+              )
+          );
+        }
+        const dataAndImage = [];
+
+        const dataSerie = {
+          name: this.scientificObject.name,
+          data: cleanData,
+          id: 'A',
+          visible: true
+        };
+        dataAndImage.push(dataSerie)
+
+        if (imageData.length > 0) {
+          const imageSerie = {
+            type: 'flags',
+            name: 'Image/' + this.scientificObject.name,
+            data: imageData,
+            onSeries: 'A',
+            width: 8,
+            height: 8,
+            shape: 'circlepin',
+            lineWidth: 1,
+            point: {
+              events: {
+                stickyTracking: false,
+                mouseOver: e => {
+                  const toSend = {
+                    imageIndex: e.target.index,
+                    serieIndex: e.target.series.index
                   };
-                  this.onImagePointClick(toReturn);
-                };
-                dataAndImage.push(imageSerie);
+                  if (this.visuImages) {
+                    this.visuImages.onImagePointMouseEnter(toSend);
+                  }
+                  e.preventDefault();
+                  return false;
+                },
+                mouseOut: e => {
+                  if (this.visuImages) {
+                    this.visuImages.onImagePointMouseOut();
+                  }
+                  e.preventDefault();
+                  return false;
+                },
+                click: event => {
+                  imagePointClick(event);
+                  event.preventDefault();
+                  return false;
+                }
               }
-
-              return dataAndImage;
             }
-          });
+          };
+          const imagePointClick = event => {
+            const toReturn = {
+              date: event.point.date,
+              serieIndex: event.point.series.index,
+              imageIndex: event.point.index,
+              concernedItem: event.point.prov_used[0].uri
+            };
+            this.onImagePointClick(toReturn);
+            if (this.visuImages) {
+              this.visuImages.onImagePointClick(toReturn);
+            }
+          };
+          dataAndImage.push(imageSerie);
+        }
+
+        return dataAndImage;
+      }
     } else {
       return null;
     }
@@ -467,7 +498,7 @@ export default class ScientificObjectVisualizationTab extends Vue {
       const image: Image = {
         imageUri: element.uri,
         src: result,
-        title: this.formatedDate(element.date),
+        title: this.$opensilex.$dateTimeFormatter.formatLocaleDateTime(element.date),
         type: element.rdf_type,
         objectUri: element.target,
         date: element.date,
@@ -487,65 +518,67 @@ export default class ScientificObjectVisualizationTab extends Vue {
     this.visuImages.onImageDetails(indexes);
   }
 
-  // keep only date/value/uriprovenance properties
-  dataTransforme(data) {
-    let toAdd,
-        imageToAdd,
-        cleanData = [],
-        cleanImage = [];
+  onAnnotationDetails(indexes) {
+    this.visuImages.onAnnotationDetails(indexes);
+  }
 
-    data.forEach(element => {
-      let stringDateWithoutUTC = moment.parseZone(element.date).format("YYYY-MM-DDTHH:mm:ss") + "+00:00";
-      let dateWithoutUTC = moment(stringDateWithoutUTC).valueOf();
-      let offset = moment.parseZone(element.date).format("Z");
-      let stringDate = moment.parseZone(element.date).format("YYYY-MM-DDTHH:mm:ss") + offset;
-      if (element.provenance.prov_used) {
-        imageToAdd = {
-          x: dateWithoutUTC,
-          y: element.value,
-          date: stringDate,
-          title: "I",
-          prov_used: element.provenance.prov_used,
-          data: element
-        };
-        cleanImage.push(imageToAdd);
+  /**
+   * Transforms the data array to a Highcharts point options array, and creates the image point array if needed.
+   *
+   * @todo Optimize the fetching of annotations
+   *
+   * @param data
+   */
+  async transformDataWithImages(data: Array<DataGetDTO>): Promise<{
+    cleanData: Array<OpenSilexPointOptionsObject>;
+    imageData: Array<ImagePointOptionsObject>
+  }> {
+    const cleanData = HighchartsDataTransformer.transformDataForHighcharts(data);
+    let imageData: Array<ImagePointOptionsObject> = [];
+
+    for (let point of cleanData) {
+      if (Array.isArray(point.data.provenance.prov_used) && point.data.provenance.prov_used.length > 0) {
+        const annotations = await this.getAnnotations(point.data.provenance.prov_used[0].uri);
+        imageData.push({
+          ...point,
+          title: "",
+          prov_used: point.data.provenance.prov_used,
+          imageURI: point.data.provenance.prov_used[0].uri,
+          color: annotations.length > 0 ? "#FF0000" : undefined
+        });
       }
-      toAdd = {
-        x: dateWithoutUTC,
-        y: element.value,
-        offset: offset,
-        dateWithOffset: stringDate,
-        provenanceUri: element.provenance.uri,
-        data: element
-      };
-      cleanData.push(toAdd);
-    });
-    return [cleanData, cleanImage];
-  }
+    }
 
-  timestampToUTC(time) {
-    // var day = moment.unix(time).utc().format();
-    var day = Highcharts.dateFormat("%Y-%m-%dT%H:%M:%S+0000", time);
-    return day;
-  }
-
-  formatedDate(date) {
-    const newDate = new Date(date);
-    const options = {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit"
+    return {
+      cleanData,
+      imageData
     };
-    return newDate.toLocaleDateString("fr-FR", options);
+  }
+
+  getAnnotations(uri: string): Promise<Array<AnnotationGetDTO>> {
+    return this.annotationService
+        .searchAnnotations(undefined, uri, undefined, undefined, undefined, 0, 0)
+        .then(
+            (http: HttpResponse<OpenSilexResponse<Array<AnnotationGetDTO>>>) => {
+              return http.response.result as Array<AnnotationGetDTO>;
+            }
+        );
+  }
+
+  searchFiltersPannel() {
+    return this.$t("searchfilter.label")
   }
 }
 </script>
 
 <style scoped lang="scss">
 
-.ScientificObjectVisualisationGraphic {
+.ScientificObjectVisualizationGraphic{
+  min-width: calc(100% - 450px);
+  max-width: calc(100vw - 380px);
+}
+
+.ScientificObjectVisualizationGraphicWithoutForm{
   min-width: 100%;
   max-width: 100vw;
 }

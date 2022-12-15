@@ -6,6 +6,7 @@
 package org.opensilex.core.variable.api.characteristic;
 
 import io.swagger.annotations.*;
+import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.variable.api.VariableAPI;
 import org.opensilex.core.variable.dal.BaseVariableDAO;
 import org.opensilex.core.variable.dal.CharacteristicModel;
@@ -180,7 +181,7 @@ public class CharacteristicAPI {
             @ApiParam(value = "Characteristic URI", example = "http://opensilex.dev/set/variables/characteristic/Height", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         BaseVariableDAO<CharacteristicModel> dao = new BaseVariableDAO<>(CharacteristicModel.class, sparql);
-        dao.delete(uri);
+        dao.delete(uri, Oeso.hasCharacteristic);
         return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
     }
 

@@ -13,6 +13,7 @@ import static java.lang.Double.NaN;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
+import javax.validation.Valid;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
@@ -68,7 +69,8 @@ public class DataCreationDTO {
     @Max(1)
     @ApiModelProperty(value = "confidence index", example = DataAPI.DATA_EXAMPLE_CONFIDENCE)
     private Float confidence = null;    
-        
+
+    @Valid
     @NotNull
     private DataProvenanceModel provenance;
     

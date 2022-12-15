@@ -9,12 +9,13 @@ package org.opensilex.core.data.dal;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModelProperty;
+import org.bson.Document;
+import org.opensilex.core.provenance.api.ProvenanceAPI;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.net.URI;
 import java.util.List;
-import javax.validation.constraints.NotNull;
-import org.bson.Document;
-import org.opensilex.core.data.api.DataAPI;
-import org.opensilex.core.provenance.api.ProvenanceAPI;
 
 /**
  * Provenance model used in DataModel
@@ -28,11 +29,13 @@ public class DataProvenanceModel {
     
     @ApiModelProperty(value = "experiments uris on which the data has been produced")
     List<URI> experiments;
-    
+
+    @Valid
     @JsonProperty("prov_used")
     @ApiModelProperty(value = "list of inputs of the process described in the provenance")
     List<ProvEntityModel> provUsed;
-    
+
+    @Valid
     @JsonProperty("prov_was_associated_with")
     @ApiModelProperty(value = "allow an activity to be linked to an agent")
     List<ProvEntityModel> provWasAssociatedWith;

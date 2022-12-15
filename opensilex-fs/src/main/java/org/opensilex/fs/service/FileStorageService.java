@@ -180,7 +180,7 @@ public class FileStorageService extends BaseService implements Service {
         return getConnection(prefix).readFile(filePath);
     }
 
-    public void writeFile(String prefix, Path filePath, String content, URI fileURI) throws IOException {
+    public void writeFile(String prefix, Path filePath, byte[] content, URI fileURI) throws IOException {
         LOGGER.debug("WRITE FILE: " + filePath.toString());
         getConnection(prefix).writeFile(filePath, content);
     }
@@ -218,7 +218,7 @@ public class FileStorageService extends BaseService implements Service {
         return readFile(prefix, getFilePathFromPrefixURI(prefix, fileURI));
     }
 
-    public void writeFile(String prefix, URI fileURI, String content) throws IOException {
+    public void writeFile(String prefix, URI fileURI, byte[] content) throws IOException {
         writeFile(prefix, getFilePathFromPrefixURI(prefix, fileURI), content, fileURI);
     }
 
@@ -254,4 +254,6 @@ public class FileStorageService extends BaseService implements Service {
         } catch (Exception e) {
         }
     }
+
+
 }

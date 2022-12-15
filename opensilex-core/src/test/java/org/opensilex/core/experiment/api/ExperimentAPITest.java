@@ -9,10 +9,11 @@ package org.opensilex.core.experiment.api;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.Test;
+import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.core.organisation.api.facitity.InfrastructureFacilityGetDTO;
-import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
-import org.opensilex.core.organisation.dal.InfrastructureModel;
+import org.opensilex.core.organisation.api.facility.FacilityGetDTO;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
+import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
@@ -33,7 +34,7 @@ import static org.junit.Assert.*;
  * @author Vincent MIGOT
  * @author Renaud COLIN
  */
-public class ExperimentAPITest extends AbstractSecurityIntegrationTest {
+public class ExperimentAPITest extends AbstractMongoIntegrationTest {
 
     protected static String path = "/core/experiments";
 
@@ -56,18 +57,18 @@ public class ExperimentAPITest extends AbstractSecurityIntegrationTest {
         return xpDto;
     }
 
-    private InfrastructureFacilityModel createFacility(URI uri) throws Exception {
-        InfrastructureFacilityModel facilityModel = new InfrastructureFacilityModel();
+    private FacilityModel createFacility(URI uri) throws Exception {
+        FacilityModel facilityModel = new FacilityModel();
         facilityModel.setUri(uri);
         getSparqlService().create(facilityModel);
         return facilityModel;
     }
 
-    private InfrastructureModel createOrganization(URI organizationUri, URI facilityUri) throws Exception {
-        InfrastructureModel organizationModel = new InfrastructureModel();
+    private OrganizationModel createOrganization(URI organizationUri, URI facilityUri) throws Exception {
+        OrganizationModel organizationModel = new OrganizationModel();
         organizationModel.setUri(organizationUri);
         if (Objects.nonNull(facilityUri)) {
-            organizationModel.setFacilities(new ArrayList<InfrastructureFacilityModel>() {{
+            organizationModel.setFacilities(new ArrayList<FacilityModel>() {{
                 add(createFacility(facilityUri));
             }});
         }
@@ -76,11 +77,11 @@ public class ExperimentAPITest extends AbstractSecurityIntegrationTest {
     }
 
     private void deleteFacility(URI uri) throws Exception {
-        getSparqlService().delete(InfrastructureFacilityModel.class, uri);
+        getSparqlService().delete(FacilityModel.class, uri);
     }
 
     private void deleteOrganization(URI uri) throws Exception {
-        getSparqlService().delete(InfrastructureModel.class, uri);
+        getSparqlService().delete(OrganizationModel.class, uri);
     }
 
     public static ExperimentCreationDTO getCreationDTOWithOrganization(URI organizationURI) {
@@ -103,12 +104,12 @@ public class ExperimentAPITest extends AbstractSecurityIntegrationTest {
     @Test
     public void testCreate() throws Exception {
 
-        final Response postResult = getJsonPostResponse(target(createPath), getCreationDTO());
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO());
         assertEquals(Status.CREATED.getStatusCode(), postResult.getStatus());
 
         // ensure that the result is a well formed URI, else throw exception
         URI createdUri = extractUriFromResponse(postResult);
-        final Response getResult = getJsonGetByUriResponse(target(uriPath), createdUri.toString());
+        final Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), createdUri.toString());
         assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
     }
 
@@ -118,11 +119,11 @@ public class ExperimentAPITest extends AbstractSecurityIntegrationTest {
         List<ExperimentCreationDTO> creationDTOS = Arrays.asList(getCreationDTO(), getCreationDTO());
 
         for (ExperimentCreationDTO creationDTO : creationDTOS) {
-            final Response postResult = getJsonPostResponse(target(createPath), creationDTO);
+            final Response postResult = getJsonPostResponseAsAdmin(target(createPath), creationDTO);
             assertEquals(Status.CREATED.getStatusCode(), postResult.getStatus());
 
             URI uri = extractUriFromResponse(postResult);
-            final Response getResult = getJsonGetByUriResponse(target(uriPath), uri.toString());
+            final Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), uri.toString());
             assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
         }
 
@@ -133,7 +134,7 @@ public class ExperimentAPITest extends AbstractSecurityIntegrationTest {
 
         // create the xp
         ExperimentCreationDTO xpDto = getCreationDTO();
-        final Response postResult = getJsonPostResponse(target(createPath), xpDto);
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), xpDto);
 
         // update the xp
         xpDto.setUri(extractUriFromResponse(postResult));
@@ -144,7 +145,7 @@ public class ExperimentAPITest extends AbstractSecurityIntegrationTest {
         assertEquals(Status.OK.getStatusCode(), updateResult.getStatus());
 
         // retrieve the new xp and compare to the expected xp
-        final Response getResult = getJsonGetByUriResponse(target(uriPath), xpDto.getUri().toString());
+        final Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), xpDto.getUri().toString());
 
         // try to deserialize object
         JsonNode node = getResult.readEntity(JsonNode.class);
@@ -161,24 +162,24 @@ public class ExperimentAPITest extends AbstractSecurityIntegrationTest {
     public void testDelete() throws Exception {
 
         // create object and check if URI exists
-        Response postResponse = getJsonPostResponse(target(createPath), getCreationDTO());
+        Response postResponse = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO());
         String uri = extractUriFromResponse(postResponse).toString();
 
         // delete object and check if URI no longer exists
         Response delResult = getDeleteByUriResponse(target(deletePath), uri);
         assertEquals(Status.OK.getStatusCode(), delResult.getStatus());
 
-        Response getResult = getJsonGetByUriResponse(target(uriPath), uri);
+        Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), uri);
         assertEquals(Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
     }
 
     @Test
     public void testGetByUri() throws Exception {
 
-        final Response postResult = getJsonPostResponse(target(createPath), getCreationDTO());
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO());
         URI uri = extractUriFromResponse(postResult);
 
-        final Response getResult = getJsonGetByUriResponse(target(uriPath), uri.toString());
+        final Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), uri.toString());
         assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
 
         // try to deserialize object
@@ -192,13 +193,13 @@ public class ExperimentAPITest extends AbstractSecurityIntegrationTest {
     @Test
     public void testGetByUriFail() throws Exception {
 
-        final Response postResult = getJsonPostResponse(target(createPath), getCreationDTO());
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO());
         JsonNode node = postResult.readEntity(JsonNode.class);
         ObjectUriResponse postResponse = mapper.convertValue(node, ObjectUriResponse.class);
         String uri = postResponse.getResult();
 
         // call the service with a non existing pseudo random URI
-        final Response getResult = getJsonGetByUriResponse(target(uriPath), uri + "7FG4FG89FG4GH4GH57");
+        final Response getResult = getJsonGetByUriResponseAsAdmin(target(uriPath), uri + "7FG4FG89FG4GH4GH57");
         assertEquals(Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
     }
 
@@ -208,7 +209,7 @@ public class ExperimentAPITest extends AbstractSecurityIntegrationTest {
     public void testSearch() throws Exception {
 
         ExperimentCreationDTO creationDTO = getCreationDTO();
-        final Response postResult = getJsonPostResponse(target(createPath), creationDTO);
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), creationDTO);
         URI uri = extractUriFromResponse(postResult);
 
         Map<String, Object> params = new HashMap<String, Object>() {
@@ -220,7 +221,7 @@ public class ExperimentAPITest extends AbstractSecurityIntegrationTest {
         };
 
         WebTarget searchTarget = appendSearchParams(target(searchPath), 0, 50, params);
-        final Response getResult = appendToken(searchTarget).get();
+        final Response getResult = appendAdminToken(searchTarget).get();
         assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
 
         JsonNode node = getResult.readEntity(JsonNode.class);
@@ -246,16 +247,16 @@ public class ExperimentAPITest extends AbstractSecurityIntegrationTest {
         createOrganization(organizationUri, facilityWithOrganizationUri);
 
         ExperimentCreationDTO creationDTO = getCreationDTOWithOrganization(organizationUri);
-        final Response postResult = getJsonPostResponse(target(createPath), creationDTO);
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), creationDTO);
         assertEquals(Status.CREATED.getStatusCode(), postResult.getStatus());
         URI uri = extractUriFromResponse(postResult);
 
-        final Response getResult = getJsonGetResponse(target(getAvailableFacilitiesPath).resolveTemplate("uri", uri));
+        final Response getResult = getJsonGetResponseAsAdmin(target(getAvailableFacilitiesPath).resolveTemplate("uri", uri));
         assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
         JsonNode node = getResult.readEntity(JsonNode.class);
-        PaginatedListResponse<InfrastructureFacilityGetDTO> facilitiesListResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<InfrastructureFacilityGetDTO>>() {
+        PaginatedListResponse<FacilityGetDTO> facilitiesListResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<FacilityGetDTO>>() {
         });
-        List<InfrastructureFacilityGetDTO> facilitiesList = facilitiesListResponse.getResult();
+        List<FacilityGetDTO> facilitiesList = facilitiesListResponse.getResult();
 
         assertEquals(1, facilitiesList.size());
         assertEquals(facilityWithOrganizationUri, facilitiesList.get(0).getUri());
@@ -280,16 +281,16 @@ public class ExperimentAPITest extends AbstractSecurityIntegrationTest {
         createOrganization(organizationUri, facilityWithOrganizationUri);
 
         ExperimentCreationDTO creationDTO = getCreationDTO();
-        final Response postResult = getJsonPostResponse(target(createPath), creationDTO);
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), creationDTO);
         assertEquals(Status.CREATED.getStatusCode(), postResult.getStatus());
         URI uri = extractUriFromResponse(postResult);
 
-        final Response getResult = getJsonGetResponse(target(getAvailableFacilitiesPath).resolveTemplate("uri", uri));
+        final Response getResult = getJsonGetResponseAsAdmin(target(getAvailableFacilitiesPath).resolveTemplate("uri", uri));
         assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
         JsonNode node = getResult.readEntity(JsonNode.class);
-        PaginatedListResponse<InfrastructureFacilityGetDTO> facilitiesListResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<InfrastructureFacilityGetDTO>>() {
+        PaginatedListResponse<FacilityGetDTO> facilitiesListResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<FacilityGetDTO>>() {
         });
-        List<InfrastructureFacilityGetDTO> facilitiesList = facilitiesListResponse.getResult();
+        List<FacilityGetDTO> facilitiesList = facilitiesListResponse.getResult();
 
         assertEquals(2, facilitiesList.size());
         assertTrue(facilitiesList.stream().anyMatch(facility -> Objects.equals(facility.getUri(), facilityWithOrganizationUri)));

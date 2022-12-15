@@ -4,26 +4,26 @@
 
       <!-- Toggle Sidebar-->
       <div class="searchMenuContainer"
-      v-on:click="SearchFiltersToggle = !SearchFiltersToggle"
-      :title="searchFiltersPannel()">
+        v-on:click="searchFiltersToggle = !searchFiltersToggle"
+        :title="searchFiltersPannel()"
+      >
         <div class="searchMenuIcon">
           <i class="icon ik ik-search"></i>
         </div>
       </div>
 
-  <!-- FILTERS -->
-  <Transition>
-    <div v-show="SearchFiltersToggle">
-      <!--Form-->
-      <opensilex-ExperimentDataVisuForm
-        ref="experimentDataVisuForm"
-        :selectedExperiment="selectedExperiment"
-        :scientificObjects="scientificObjectsURI"
-        @search="onSearch"
-        @update="onUpdate"
-      ></opensilex-ExperimentDataVisuForm>
-    </div>
-  </Transition>
+      <Transition>
+        <div v-show="searchFiltersToggle">
+          <!--Form-->
+          <opensilex-ExperimentDataVisuForm
+            ref="experimentDataVisuForm"
+            :selectedExperiment="selectedExperiment"
+            :scientificObjects="scientificObjectsURI"
+            @search="onSearch"
+            @update="onUpdate"
+          ></opensilex-ExperimentDataVisuForm>
+        </div>
+      </Transition>
 
     <div class="d-flex justify-content-center mb-3" v-if="!showGraphicComponent && initLoader">
       <b-spinner label="Loading..."></b-spinner>
@@ -37,6 +37,10 @@
       @dataAnnotationIsClicked="showAnnotationForm"
       @graphicCreated="$emit('graphicCreated')"
       class="experimentDataVisuGraphic"
+      v-bind:class ="{
+        'experimentDataVisuGraphic': searchFiltersToggle,
+        'experimentDataVisuGraphicWithoutForm': !searchFiltersToggle
+      }"
     ></opensilex-DataVisuGraphic>
 
     <opensilex-AnnotationModalForm 
@@ -58,10 +62,9 @@
 </template>
 
 <script lang="ts">
-import moment from "moment-timezone";
 import {DataGetDTO, DataService, EventGetDTO, EventsService} from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
-import {Component, Prop, Ref} from "vue-property-decorator";
+import {Component, Prop, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
 import HighchartsDataTransformer from "../../../models/HighchartsDataTransformer";
 
@@ -89,6 +92,7 @@ export default class ExperimentDataVisuView extends Vue {
   selectedVariable;
   eventsService: EventsService;
   eventTypesColorArray = [];
+  searchFiltersToggle: boolean = true;
 
   @Prop()
   selectedScientificObjects;
@@ -97,12 +101,6 @@ export default class ExperimentDataVisuView extends Vue {
     return this.selectedScientificObjects.map(so => {
       return so.uri;
     });
-  }
-
-    data(){
-    return {
-      SearchFiltersToggle : true,
-    }
   }
 
   private langUnwatcher;
@@ -115,6 +113,14 @@ export default class ExperimentDataVisuView extends Vue {
         }
       }
     );
+  }
+
+    // simulate window resizing to resize the graphic when the filter panel display changes
+  @Watch("searchFiltersToggle")
+  onSearchFilterToggleChange(){
+    this.$nextTick(()=> { 
+      window.dispatchEvent(new Event('resize'));
+    })  
   }
 
   beforeDestroy() {
@@ -192,6 +198,7 @@ export default class ExperimentDataVisuView extends Vue {
   }
 
   onSearch(form) {
+    this.searchFiltersToggle = !this.searchFiltersToggle
     this.initLoader = true;
     this.form = form;
     this.showGraphicComponent = false;
@@ -341,20 +348,15 @@ export default class ExperimentDataVisuView extends Vue {
             //   }
             // }
             title = label.charAt(0).toUpperCase();
-            let stringDateWithoutUTC;
+            let timestamp;
             if (element.start != null) {
-              stringDateWithoutUTC =
-                moment.parseZone(element.start).format("YYYYMMDD HHmmss") +
-                "+00:00";
+              timestamp = new Date(element.start).getTime();
             } else {
-              stringDateWithoutUTC =
-                moment.parseZone(element.end).format("YYYYMMDD HHmmss") +
-                "+00:00";
+              timestamp = new Date(element.end).getTime();
             }
 
-            let dateWithoutUTC = moment(stringDateWithoutUTC).valueOf();
             toAdd = {
-              x: dateWithoutUTC,
+              x: timestamp,
               title: title,
               text: label,
               eventUri: element.uri,
@@ -409,7 +411,13 @@ export default class ExperimentDataVisuView extends Vue {
       .then((http: HttpResponse<OpenSilexResponse<Array<DataGetDTO>>>) => {
         const data = http.response.result as Array<DataGetDTO>;
         let dataLength = data.length;
-        if (dataLength > 0) {
+
+        if (dataLength === 0){
+          this.$opensilex.showInfoToast(
+          this.$t("component.common.search.noDataFound").toString());
+        }
+
+        if (dataLength >= 0) {
           const cleanData = HighchartsDataTransformer.transformDataForHighcharts(data, {scientificObjectUri: concernedItem.uri});
           if (dataLength > 50000) {
             this.$opensilex.showInfoToast(
@@ -462,9 +470,15 @@ export default class ExperimentDataVisuView extends Vue {
 }
 
 .experimentDataVisuGraphic {
+  min-width: calc(100% - 450px);
+  max-width: calc(100vw - 380px);
+}
+
+.experimentDataVisuGraphicWithoutForm{
   min-width: 100%;
   max-width: 100vw;
 }
+
 .visualizeBtn {
  float:right;
  border:none;

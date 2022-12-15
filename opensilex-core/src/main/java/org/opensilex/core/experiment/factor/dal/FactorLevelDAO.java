@@ -12,12 +12,19 @@ package org.opensilex.core.experiment.factor.dal;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
+
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
+import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
@@ -132,5 +139,46 @@ public class FactorLevelDAO {
         return sparql.executeAskQuery(new AskBuilder()
                         .addWhere(subject, Oeso.hasFactorLevel, SPARQLDeserializers.nodeURI(factorLevel.getUri())) 
         );
+    }
+
+    /**
+     *
+     * @param experiment experiment
+     * @return a Stream on each unique factor level URI from the given experiment factors
+     * @throws IllegalArgumentException if experiment is null
+     *
+     * @apiNote
+     * <pre>
+     * <b>SPARQL query : </b>
+     *
+     * {@code
+     * PREFIX vocabulary: <http://www.opensilex.org/vocabulary/oeso#>
+     * SELECT DISTINCT ?factorLevel WHERE {
+     *      GRAPH <../set/experiment> {
+     *          :experiment vocabulary:studyEffectOf ?factor
+     *      }
+     *      GRAPH <../set/factor>{
+     *   	    ?factorLevel vocabulary:hasFactor ?factor
+     *      }
+     * }
+     * }
+     * </pre>
+     */
+    public Stream<String> getLevelsFromExperiment(URI experiment) throws Exception{
+
+        Objects.requireNonNull(experiment);
+
+        Node experimentNode = SPARQLDeserializers.nodeURI(experiment);
+        Var factor = makeVar(ExperimentModel.FACTORS_FIELD);
+        Var factorLevel = makeVar(FactorModel.FACTORLEVELS_SPARQL_VAR);
+
+        SelectBuilder query = new SelectBuilder()
+                .setDistinct(true)
+                .addVar(factorLevel)
+                .addGraph(sparql.getDefaultGraph(ExperimentModel.class), experimentNode, Oeso.studyEffectOf, factor)
+                .addGraph(sparql.getDefaultGraph(FactorModel.class),factorLevel,Oeso.hasFactor,factor);
+
+        return sparql.executeSelectQueryAsStream(query)
+                .map(result -> URIDeserializer.formatURIAsStr(result.getStringValue(factorLevel.getVarName())));
     }
 }

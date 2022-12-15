@@ -55,7 +55,6 @@ import java.net.URI;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -111,9 +110,6 @@ public class GermplasmAPI {
     @CurrentUser
     UserModel currentUser;
     
-    static final ConcurrentHashMap namesConcurrentMap = new ConcurrentHashMap();
-    static final ConcurrentHashMap uriConcurrentMap = new ConcurrentHashMap();
-
     /**
      *
      * @param germplasmDTO
@@ -140,8 +136,7 @@ public class GermplasmAPI {
             @ApiParam("Germplasm description") @Valid GermplasmCreationDTO germplasmDTO,
             @ApiParam(value = "Checking only", example = "false") @DefaultValue("false") @QueryParam("checkOnly") Boolean checkOnly
     ) throws Exception {
-        String name = germplasmDTO.getName();
-        URI uri = germplasmDTO.getUri();     
+        URI uri = germplasmDTO.getUri();
               
         GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
 
@@ -151,41 +146,15 @@ public class GermplasmAPI {
         }
 
         if (!checkOnly) {
-            try {
-                namesConcurrentMap.merge(name, true, (v1, v2)-> {throw new IllegalArgumentException();});
-            } catch (IllegalArgumentException e) {
-                return new ErrorResponse(
-                        Response.Status.CONFLICT,
-                        "Germplasm name already exists",
-                        "Duplicated name: " + name
-                ).getResponse();
-            }
-
-            if (germplasmDTO.getUri() != null) {
-                try {
-                    uriConcurrentMap.merge(uri, true, (v1, v2)-> {throw new IllegalArgumentException();});
-                } catch (IllegalArgumentException e) {
-                    return new ErrorResponse(
-                        Response.Status.CONFLICT,
-                        "Germplasm URI already exists",
-                        "Duplicated URI: " + uri
-                    ).getResponse();
-                }
-            }
 
             try {
-                germplasmDTO = completeDTO(germplasmDTO, germplasmDAO);
+                germplasmDTO = completeDTO(germplasmDTO);
                 // create new germplasm
                 GermplasmModel model = germplasmDTO.newModel();
                 GermplasmModel germplasm = germplasmDAO.create(model);
                 return new ObjectUriResponse(Response.Status.CREATED, germplasm.getUri()).getResponse();
             } catch (Exception e) {
                 return new ErrorResponse(e).getResponse();
-            } finally {
-                namesConcurrentMap.remove(name);
-                if (uri != null) {
-                    uriConcurrentMap.remove(uri);
-                }  
             }
 
         } else {
@@ -535,7 +504,7 @@ public class GermplasmAPI {
                 return error.getResponse();
             }
 
-            germplasmDTO = completeDTO(germplasmDTO, germplasmDAO);
+            germplasmDTO = completeDTO(germplasmDTO);
 
             GermplasmModel model = germplasmDTO.newModel();
             germplasmDAO.update(model);
@@ -594,22 +563,6 @@ public class GermplasmAPI {
                         "component.germplasms.errors.duplicateUri",
                         new HashMap<String, String>() {{
                             put("uri", germplasmDTO.getUri().toString());
-                        }}
-                );
-            }
-
-            // check if germplasm label already exists
-            boolean exists = germplasmDAO.labelExistsCaseSensitiveBySpecies(germplasmDTO);
-            //boolean exists = germplasmDAO.labelExistsCaseInsensitive(germplasmDTO.getLabel(),germplasmDTO.getRdfType());
-            if (exists) {
-                // Return error response 409 - CONFLICT if label already exists
-                return new ErrorResponse(
-                        Response.Status.CONFLICT,
-                        "Germplasm label already exists for this species",
-                        "Duplicated label: " + germplasmDTO.getName(),
-                        "component.germplasms.errors.duplicateLabel",
-                        new HashMap<String, String>() {{
-                            put("label", germplasmDTO.getName());
                         }}
                 );
             }
@@ -753,7 +706,7 @@ public class GermplasmAPI {
         return null;
     }
 
-    private <T extends GermplasmCreationDTO> T completeDTO(T germplasmDTO, GermplasmDAO germplasmDAO) throws Exception {
+    private <T extends GermplasmCreationDTO> T completeDTO(T germplasmDTO) throws Exception {
         if (germplasmDTO.getSpecies() == null && germplasmDTO.getVariety() != null) {
             GermplasmModel variety = cacheGermplasm.get(new KeyGermplasm(germplasmDTO.getVariety()), this::getGermplasm);
             if (variety != null) {

@@ -103,18 +103,17 @@
 </template>
 
 <script lang="ts">
-import moment from "moment";
-import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
+import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
-// @ts-ignore
-import { ProjectGetDetailDTO, ProjectsService } from "opensilex-core/index";
-// @ts-ignore
-import { SecurityService, UserGetDTO } from "opensilex-security/index";
+import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
+import {ProjectGetDetailDTO, ProjectsService} from "opensilex-core/index";
+import {SecurityService, UserGetDTO} from "opensilex-security/index";
+import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
+import {ExperimentsService} from "opensilex-core/api/experiments.service";
 
 @Component
 export default class ProjectDescription extends Vue {
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
   $route: any;
   $store: any;
   service: ProjectsService;
@@ -192,7 +191,7 @@ export default class ProjectDescription extends Vue {
       .getProject(this.uri)
       .then((http: HttpResponse<OpenSilexResponse<ProjectGetDetailDTO>>) => {
         this.project = http.response.result;
-        this.period = this.formatPeriod(
+        this.period = this.$opensilex.$dateTimeFormatter.formatPeriod(
           this.project.start_date,
           this.project.end_date
         );
@@ -204,7 +203,7 @@ export default class ProjectDescription extends Vue {
 
   loadExperiments(options) {
     return this.$opensilex
-      .getService("opensilex.ExperimentsService")
+      .getService<ExperimentsService>("opensilex.ExperimentsService")
       .searchExperiments(
         this.experimentName, // name
         undefined, // year
@@ -213,6 +212,7 @@ export default class ProjectDescription extends Vue {
         undefined, // factors
         [this.uri], // projects
         undefined, // isPublic
+        undefined,
         options.orderBy,
         options.currentPage,
         options.pageSize
@@ -223,7 +223,7 @@ export default class ProjectDescription extends Vue {
     this.langUnwatcher = this.$store.watch(
       () => this.$store.getters.language,
       lang => {
-        this.period = this.formatPeriod(
+        this.period = this.$opensilex.$dateTimeFormatter.formatPeriod(
           this.project.start_date,
           this.project.end_date
         );
@@ -311,66 +311,10 @@ export default class ProjectDescription extends Vue {
 
   isEnded(project) {
     if (project.end_date) {
-      return moment(project.end_date, "YYYY-MM-DD").diff(moment()) < 0;
+      return new Date(project.end_date).getTime() < new Date().getTime();
     }
 
     return false;
-  }
-
-  formatPeriod(startDateValue: string, endDateValue: string) {
-    let startDate = moment(startDateValue, "YYYY-MM-DD");
-    let endDate;
-    let result = this.$opensilex.formatDate(startDateValue);
-
-    if (endDateValue) {
-      endDate = moment(endDateValue, "YYYY-MM-DD");
-      result += " - " + this.$opensilex.formatDate(endDateValue);
-    } else {
-      endDate = moment();
-    }
-
-    let years = endDate.diff(startDate, "year");
-    startDate.add(years, "years");
-    let months = endDate.diff(startDate, "months");
-    startDate.add(months, "months");
-    let days = endDate.diff(startDate, "days");
-
-    let yearsString = "";
-    let monthsString = "";
-    let daysString = "";
-    
-    if (years > 0) {
-      if (years == 1) {
-        yearsString = years + " " + this.$t("component.common.year").toString();
-      }
-      if (years > 1) {
-        yearsString =
-          years + " " + this.$t("component.common.years").toString();
-      }
-    }
-
-    if (months > 0) {
-      if (months == 1) {
-        monthsString =
-          months + " " + this.$t("component.common.month").toString();
-      }
-      if (months > 1) {
-        monthsString =
-          months + " " + this.$t("component.common.months").toString();
-      }
-    }
-    if (days > 0) {
-      if (days == 1) {
-        daysString = days + " " + this.$t("component.common.day").toString();
-      }
-      if (days > 1) {
-        daysString = days + " " + this.$t("component.common.days").toString();
-      }
-    }
-
-    result += " (" + yearsString + " " + monthsString + " " + daysString + " )";
-
-    return result;
   }
 
 

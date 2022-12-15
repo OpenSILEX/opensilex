@@ -2,7 +2,7 @@
     <ValidationObserver ref="validatorRef">
 
         <div class="row">
-            <div class="col">
+            <div class="col" v-if="!linkedToAreaForm">
                 <opensilex-UriForm
                     :uri.sync="form.uri"
                     label="component.common.uri"
@@ -18,6 +18,7 @@
             <div class="col">
                 <!-- Type -->
                 <opensilex-TypeForm
+                    ref="typeForm"
                     :type.sync="form.rdf_type"
                     :baseType="baseType"
                     :ignoreRoot="false"
@@ -25,12 +26,13 @@
                     :disabled="editMode"
                     placeholder="Event.type-placeholder"
                     @select="typeSwitch($event.id,false)"
+                    @open="customOptionsTypes"
                 ></opensilex-TypeForm>
             </div>
         </div>
 
         <div class="row">
-            <div class="col">
+            <div class="col" v-if="!linkedToAreaForm">
                 <opensilex-TagInputForm
                     :value.sync="form.targets"
                     :baseType="this.$opensilex.Oeev.CONCERNS"
@@ -43,7 +45,7 @@
         </div>
 
       <div class="row">
-        <div class="col">
+        <div class="col" v-if="!linkedToAreaForm">
           <!-- Comment -->
           <opensilex-TextAreaForm
               :value.sync="form.description"
@@ -57,14 +59,13 @@
 
         <div class="row">
             <div class="col">
-
                 <opensilex-FormField
                     :required="true"
                     label="Event.is-instant"
                     helpMessage="Event.is-instant-help"
                 >
                     <template v-slot:field="field">
-                        <b-form-checkbox v-model="form.is_instant" switch>
+                        <b-form-checkbox v-model="form.is_instant" switch @change="$emit('change',$event)">
                         </b-form-checkbox>
                     </template>
                 </opensilex-FormField>
@@ -72,7 +73,7 @@
         </div>
 
         <div class="row">
-            <div class="col" v-if="! form.is_instant">
+            <div class="col" v-if="!form.is_instant">
                 <opensilex-DateTimeForm
                     :value.sync="form.start"
                     label="Event.start"
@@ -124,6 +125,7 @@ import {VueJsOntologyExtensionService} from "../../../lib";
 import OpenSilexVuePlugin from 'src/models/OpenSilexVuePlugin';
 import OntologyRelationsForm from "../../ontology/OntologyRelationsForm.vue";
 import {EventCreationDTO, MoveCreationDTO } from 'opensilex-core/index';
+import TypeForm from "../../common/forms/TypeForm.vue";
 
 @Component
 export default class EventForm extends Vue {
@@ -143,7 +145,11 @@ export default class EventForm extends Vue {
     @Prop({default: () => MoveForm.getEmptyForm()})
     form: MoveCreationDTO;
 
+    @Prop({default: false})
+    linkedToAreaForm: boolean;
+
     @Ref("ontologyRelationsForm") readonly ontologyRelationsForm!: OntologyRelationsForm;
+    @Ref("typeForm") readonly typeForm!: TypeForm;
 
     excludedProperties: Set<string>;
 
@@ -246,6 +252,16 @@ export default class EventForm extends Vue {
 
         return this.$opensilex.Oeev.checkURIs(this.form.rdf_type, this.$opensilex.Oeev.MOVE_TYPE_URI);
     }
-
+    //TODO : when the eventForm is used in the area context, the rdftype "move" is disabled because don't make sense : an area can't move (temporary until creation of specific service)
+    customOptionsTypes(){
+      if(this.linkedToAreaForm && this.typeForm.typesOptions){
+        //Get rdfType options of events loaded from the field typeForm
+        let listOptions = this.typeForm.typesOptions;
+        // find the rdfType "move" in event options
+        let move = listOptions[0].children.find(option => option.label === "Move");
+        // add the propriety disabled to "move"
+        move.isDisabled = true;
+      }
+    }
 }
 </script>

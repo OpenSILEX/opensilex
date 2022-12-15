@@ -1,6 +1,4 @@
 <template>
-
- 
   <opensilex-FormField
     :rules="rules"
     :required="required"
@@ -8,14 +6,14 @@
     :helpMessage="helpMessage"
   >
     <template v-slot:field="field">
-
       <b-spinner small label="Small Spinning" v-if="loading"></b-spinner>
       <input :id="field.id" type="hidden" :value="hiddenValue" />
       <b-input-group class="select-button-container">
+
         <!-- First case : modal search-->
         <treeselect
           v-if="isModalSearch"
-          class="multiselect-popup"
+          class="multiselect-popup modalSearchLabel"
           :multiple="true"
           :openOnClick="openOnClick"
           :searchable="false"
@@ -27,17 +25,20 @@
           :search-nested="searchNested"
           :show-count="showCount"
           @input="clearIfNeeded"
-          @deselect="searchModal.unSelect($event)"
+          @deselect="removeItem"
           @open="showModal"
           :limit="limit"
         >
           <template v-slot:option-label="{ node }">
             <slot name="option-label" v-bind:node="node">{{ node.label }}</slot>
           </template>
+
           <template v-slot:value-label="{ node }">
-            <slot name="value-label" v-bind:node="node">{{ node.label }}</slot>
+            <slot name="value-label" v-bind:node="node"> <div class="modalSearchLabel" :title="node.label">{{ node.label }}</div></slot>
           </template>
+
         </treeselect>
+
         <!-- Second case : not modal -->
         <treeselect
           v-else
@@ -69,15 +70,19 @@
           :limit="limit"
         >
           <template v-slot:option-label="{ node }">
-            <slot name="option-label" v-bind:node="node">{{ node.label }}</slot>
+            <slot name="option-label" v-bind:node="node"> <div class="label" :title="node.label">{{ node.label }}</div></slot>
           </template>
+
           <template v-slot:value-label="{ node }">
-            <slot name="value-label" v-bind:node="node">{{ node.label }}</slot>
+            <slot name="value-label" v-bind:node="node"><div class="label" :title="node.label">{{ node.label }}</div></slot>
           </template>
+
           <template v-if="resultCount < totalCount" v-slot:after-list>
-            <i class="more-results-info">{{
-              $t("SelectorForm.refineSearchMessage", [resultCount, totalCount])
-            }}</i>
+            <div class="refineSearchMessage">
+              <i class="more-results-info">{{
+                $t("SelectorForm.refineSearchMessage", [resultCount, totalCount])
+              }}</i>
+            </div>
           </template>
         </treeselect>
         <b-input-group-append v-if="isModalSearch">
@@ -121,7 +126,7 @@
         @clear='$emit("clear")'
         @select="select(conversionMethod($event))"
         @unselect="deselect(conversionMethod($event))"
-        @selectall="selectall"
+        @selectall="selectAll"
         class="isModalSearchComponent"
       ></component>
 
@@ -194,7 +199,7 @@ export default class SelectForm extends Vue {
       if (e && e.name) {
         return {
             id: e.uri,
-            label: (e.name.length > 20) ? e.name.substr(0, 20-1) + '...' : e.name
+            label: e.name
           };
       } else {
         return e;
@@ -290,7 +295,10 @@ export default class SelectForm extends Vue {
   devices;
 
   detailVisible: boolean = false;
-  selectedCopie = [] ;
+  // confirmed modal selection
+  selectedCopie = [];
+  // temporary modal selection
+  selectedTmp = [];
 
   @AsyncComputedProp()
   selectedValues(): Promise<any> {
@@ -302,7 +310,7 @@ export default class SelectForm extends Vue {
           resolve(this.currentValue);
         } else {
           let nodeList = [];
-          this.selectedCopie.forEach((item) => {
+          this.selectedTmp.forEach((item) => {
             nodeList.push(this.conversionMethod(item));
           });
           this.currentValue = nodeList;
@@ -434,7 +442,9 @@ export default class SelectForm extends Vue {
  select(value) {
     if(this.isModalSearch)  {
       // copy selected items in local variable to wait validate action and then, change the selection
-      this.selectedCopie.push(value);
+      this.selectedTmp.push(value);
+
+      this.$emit("select", value, this.selectedTmp);
     } 
     else {
       if (this.multiple) {
@@ -444,14 +454,13 @@ export default class SelectForm extends Vue {
       }
 
     }
-
-    this.$emit("select", value, this.selectedCopie);
+    this.$emit("select", value, this.selectedTmp);
   }
 
   deselect(item) {
     if(this.isModalSearch)  {
       // copy selected items in local variable to wait validate action and then, change the selection
-      this.selectedCopie = this.selectedCopie.filter((value) => value.id !== item.id);
+      this.selectedTmp = this.selectedTmp.filter((value) => value.id !== item.id);
     } 
     else {
       if (this.multiple) {
@@ -463,29 +472,42 @@ export default class SelectForm extends Vue {
   
     this.$emit("deselect", item);
   }
-  
-  onValidate(){
-    
-      if(this.selectedCopie == null || this.selectedCopie.length == 0) {
-        this.loading = false;
-      } else {
-        this.loading = true;
-      }
-      setTimeout(() => { // fix :  time to close the modal .
-        this.selection = this.selectedCopie.map(value => value.id);
-        this.$emit('onValidate', this.selectedCopie);
-      }, 400);
-    
+
+  onValidate() {
+    if(this.selectedTmp == null || this.selectedTmp.length == 0) {
+      this.loading = false;
+    } else {
+      this.loading = true;
+    }
+    this.selectedCopie = this.selectedTmp.slice();
+
+    setTimeout(() => { // fix :  time to close the modal .
+      this.selection = this.selectedCopie.map(value => value.id);
+      this.$emit('onValidate', this.selectedCopie);
+    }, 400);
+  }
+
+  clearSelectedModal() {
+    this.selectedTmp.forEach((item) => {
+      this.searchModal.unSelect(item);
+    });
+    this.selectedCopie = []
+    this.selectedTmp = [];
+  }
+
+  removeItem(item) {
+    this.deselect(item);
+    this.selectedCopie = this.selectedTmp.slice();
+    this.searchModal.unSelect(item);
   }
   
-  selectall(selectedValues) {
-    
+  selectAll(selectedValues) {
     if(selectedValues){  
       // copy selected items in local variable to wait validate action and then, change the selection
-      this.selectedCopie = selectedValues.map((item => this.conversionMethod(item)));
+      this.selectedTmp = selectedValues.map((item => this.conversionMethod(item)));
     }
     else {
-      this.selectedCopie = null;    
+      this.selectedTmp = null;
     }
   }
 
@@ -499,11 +521,13 @@ export default class SelectForm extends Vue {
     if (this.multiple) {
       if (values.length == 0) {
         this.selection.splice(0, this.selection.length);
+        this.clearSelectedModal();
         this.$emit("clear");
         return;
       }
     } else if (!values) {
       this.selection = undefined;
+      this.clearSelectedModal();
       this.$emit("clear");
       return;
     }
@@ -515,6 +539,7 @@ export default class SelectForm extends Vue {
       }
       this.selection = newValues;
     }
+    this.refreshModalSearch();
   }
 
   loadOptions({ action, searchQuery, callback }) {
@@ -622,8 +647,24 @@ export default class SelectForm extends Vue {
     };
   }
 
+  updateModal() {
+    // unselect temporary items that are not in confirmed selection
+    let difference = this.selectedTmp.filter(x => !this.selectedCopie.includes(x));
+    difference.forEach((item) => {
+      this.searchModal.unSelect(item);
+    });
+    // reselect previously confirmed items that are not in temporary selection
+    difference = this.selectedCopie.filter(x => !this.selectedTmp.includes(x));
+    difference.forEach((item) => {
+      this.searchModal.selectItem(item);
+    });
+    // reset temporary selection
+    this.selectedTmp = this.selectedCopie.slice();
+  }
+
   showModal() {
     let searchModal: any = this.$refs.searchModal;
+    this.updateModal();
     searchModal.show();
   }
 
@@ -692,18 +733,36 @@ i.more-results-info {
   color: #fff
 }
 
+.label {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.modalSearchLabel {
+ white-space: normal;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  width: 170px;
+}
+
+.refineSearchMessage {
+  font-weight: bold;
+  background-color: #00A28C;
+  color: #FFFFFF ;
+}
 </style>
 
 <i18n>
 en:
   SelectorForm:
-    refineSearchMessage: "{0}/{1} results displayed, please refine your search..."
+    refineSearchMessage: "{0} / {1} results displayed, please refine your search..."
     showDetails : "Show details"
     hideDetails : "Hide details"
   
 fr:
   SelectorForm:
-    refineSearchMessage: "{0}/{1} résultats affichés, merci de préciser votre recherche..."
+    refineSearchMessage: "{0} / {1} résultats affichés, merci de préciser votre recherche..."
     showDetails : "Afficher les détails"
     hideDetails : "Masquer les détails"
 

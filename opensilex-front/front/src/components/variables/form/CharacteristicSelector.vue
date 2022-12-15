@@ -47,7 +47,7 @@ export default class CharacteristicSelector extends Vue {
     return this.$opensilex.getService("opensilex.VariablesService")
     .searchCharacteristics(name, ["name=asc"], 0, 10)    
     .then((http: HttpResponse<OpenSilexResponse<Array<CharacteristicGetDTO>>>) => {
-        return http;
+      return http;
     });
   }
 

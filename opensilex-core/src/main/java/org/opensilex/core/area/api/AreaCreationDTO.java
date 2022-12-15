@@ -14,10 +14,9 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.geojson.GeoJsonObject;
-import org.opensilex.core.area.dal.AreaModel;
+import org.opensilex.core.event.api.EventCreationDTO;
 import org.opensilex.server.rest.validation.Required;
 import org.opensilex.server.rest.validation.ValidURI;
-
 import javax.validation.constraints.NotNull;
 import java.net.URI;
 
@@ -27,7 +26,7 @@ import java.net.URI;
  * @author Jean Philippe VERT
  */
 @ApiModel
-@JsonPropertyOrder({"uri", "rdf_type", "name", "description", "geometry"})
+@JsonPropertyOrder({"uri", "is_structural_area", "rdf_type", "name", "description", "geometry","event"})
 public class AreaCreationDTO {
     /**
      * Area URI
@@ -63,6 +62,20 @@ public class AreaCreationDTO {
      */
     @ApiModelProperty(value = "Description of the area", example = "Protocol n°1289 - Amount of water 5 ml/Days.")
     protected String description;
+
+    /**
+     * subClass Area Type : Temporal or Structural
+     */
+    @NotNull
+    @JsonProperty("is_structural_area")
+    @ApiModelProperty(value = "Area type ( true = structural | false = temporal)", required = true)
+    protected Boolean isStructuralArea;
+
+    /**
+     * Event created and linked to the temporal area
+     */
+    @ApiModelProperty(value = "Event linked to the area")
+    protected EventCreationDTO event;
 
     public URI getUri() {
         return uri;
@@ -105,29 +118,19 @@ public class AreaCreationDTO {
         this.description = description;
     }
 
-    public AreaModel newModel() {
-        AreaModel model = new AreaModel();
+    public Boolean getIsStructuralArea() {
+        return isStructuralArea;
+    }
 
-        if (uri != null) {
-            model.setUri(uri);
-        }
+    public void setIsStructuralArea(Boolean structuralArea) {
+        isStructuralArea = structuralArea;
+    }
 
-        if (name != null) {
-            model.setName(name);
-        }
+    public EventCreationDTO getEvent() {
+        return event;
+    }
 
-        if (rdfType != null) {
-            model.setType(rdfType);
-        }
-
-        if (geometry != null) {
-            model.setGeometry(geometry);
-        }
-
-        if (description != null) {
-            model.setDescription(description);
-        }
-
-        return model;
+    public void setEvent(EventCreationDTO event) {
+        this.event = event;
     }
 }

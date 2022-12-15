@@ -8,6 +8,11 @@
 
 package org.opensilex.sparql.owl;
 
+/*
+* Basic interface for Validation error handling
+*
+* @author rcolin
+*/
 public interface ValidationContext {
 
     String getValue();

@@ -2,10 +2,10 @@ package org.opensilex.core.organisation.api.site;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
-import org.opensilex.core.organisation.dal.InfrastructureModel;
-import org.opensilex.core.organisation.dal.SiteAddressModel;
-import org.opensilex.core.organisation.dal.SiteModel;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
+import org.opensilex.core.organisation.dal.OrganizationModel;
+import org.opensilex.core.organisation.dal.site.SiteAddressModel;
+import org.opensilex.core.organisation.dal.site.SiteModel;
 import org.opensilex.security.group.dal.GroupModel;
 
 import java.net.URI;
@@ -75,8 +75,8 @@ public class SiteCreationDTO extends SiteDTO {
         }
 
         if (getOrganizations() != null) {
-            List<InfrastructureModel> organizationModels = getOrganizations().stream().map(organizationUri -> {
-                InfrastructureModel organizationModel = new InfrastructureModel();
+            List<OrganizationModel> organizationModels = getOrganizations().stream().map(organizationUri -> {
+                OrganizationModel organizationModel = new OrganizationModel();
                 organizationModel.setUri(organizationUri);
                 return organizationModel;
             }).collect(Collectors.toList());
@@ -84,8 +84,8 @@ public class SiteCreationDTO extends SiteDTO {
         }
 
         if (getFacilities() != null) {
-            List<InfrastructureFacilityModel> facilityModels = getFacilities().stream().map(facilityUri -> {
-                InfrastructureFacilityModel facilityModel = new InfrastructureFacilityModel();
+            List<FacilityModel> facilityModels = getFacilities().stream().map(facilityUri -> {
+                FacilityModel facilityModel = new FacilityModel();
                 facilityModel.setUri(facilityUri);
                 return facilityModel;
             }).collect(Collectors.toList());
@@ -113,17 +113,17 @@ public class SiteCreationDTO extends SiteDTO {
             setAddress(addressDTO);
         }
 
-        List<InfrastructureModel> organizationModels = model.getOrganizations();
+        List<OrganizationModel> organizationModels = model.getOrganizations();
         if (organizationModels != null) {
             setOrganizations(organizationModels.stream()
-                    .map(InfrastructureModel::getUri)
+                    .map(OrganizationModel::getUri)
                     .collect(Collectors.toList()));
         }
 
-        List<InfrastructureFacilityModel> facilityModels = model.getFacilities();
+        List<FacilityModel> facilityModels = model.getFacilities();
         if (facilityModels != null) {
             setOrganizations(facilityModels.stream()
-                    .map(InfrastructureFacilityModel::getUri)
+                    .map(FacilityModel::getUri)
                     .collect(Collectors.toList()));
         }
 

@@ -60,6 +60,8 @@
             "not-specified": "Not specified",
             "validate": "Validate",
             "validateSelection": "Validate the selection",
+            "selected-only": "Selection only",
+            "resetSelected": "Reset selection",
             "state":"State",
             "species":"Species",
             "period":"Period",
@@ -127,7 +129,8 @@
             "search": {
                 "search-button": "Search",
                 "visualize-button": "Visualize",
-                "clear-button": "Reset"
+                "clear-button": "Reset",
+                "noDataFound": "No data found"
             },
             "filter-search-no-result": "Sorry, no results match your search.",
             "help-button": "Help",
@@ -282,6 +285,9 @@
                 "user-already-exists": "User already exists with this URI or email address."
             }
         },
+        "variable" : {
+            "linked-object-error" : "{uri} can't be deleted : used by variables {variable}"
+        },
         "profile": {
             "description": "Manage and configure profiles",
             "profile-uri": "Profile URI",
@@ -348,7 +354,7 @@
             "coordinators":"Coordinators",
             "financialFunding":"Financial funding",
             "scientificContacts":"Scientific supervisors",
-            "administrativeContacts":"Administrative supervisors",
+            "administrativeContacts":"Administrative supervisors",           
             "experiments":"Experiments",
             "relatedProjects":"Related projects",
             "inProgress":"In progress ..",
@@ -394,6 +400,7 @@
             "alias": "Alias",
             "technicalSupervisors": "Technical supervisors",
             "scientificSupervisors": "Scientific supervisors",
+            "record_author": "Declared by",
             "infrastructures": "Organizations",
             "infrastructures-help": "The list of experiment organizations",
             "facilities": "Facilities",
@@ -552,10 +559,19 @@
             "class" : {
                 "exception" : {
                     "delete" : {
+                        "not-custom-class" : "The class {class} is not a custom class. You don't have the permission to delete class declared inside OpenSILEX ontologies",
                         "instance-exists" : "Some objects are instance of {class}. You must delete them first",
                         "has-children" : "The class {class} has child class. You must delete them first",
                         "has-data-properties" : "The class {class} is concerned by some data-properties. You must delete them first",
                         "has-object-properties" : "The class {class} is concerned by some object-properties. You must delete them first"
+                    }
+                }
+            },
+            "property" : {
+                "exception" : {
+                    "delete" : {
+                        "instance-exists" : "Some objects use the property {property} You must delete these relations first",
+                        "has-children" : "The property {property} has sub-properties. You must delete them first"
                     }
                 }
             }

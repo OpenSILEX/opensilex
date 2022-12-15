@@ -44,11 +44,12 @@
     import { Component, Prop, Ref } from "vue-property-decorator";
     import Vue from "vue";
     import VueRouter from "vue-router";
+    import OpenSilexVuePlugin from "../../../../models/OpenSilexVuePlugin";
 
     @Component
     export default class EventCsvForm extends Vue {
 
-        $opensilex: any;
+        $opensilex: OpenSilexVuePlugin;
         $store: any;
         $router: VueRouter;
         users: any[] = [];
@@ -79,7 +80,7 @@
             let path = this.isMove ? "/core/events/moves/import_validation" : "/core/events/import_validation";
 
             return this.$opensilex.uploadFileToService(
-                path, {description: {}, file: csvFile}
+                path, {description: {}, file: csvFile}, null, false
             );
         }
 
@@ -87,7 +88,7 @@
             let path = this.isMove ? "/core/events/moves/import" : "/core/events/import";
 
             return this.$opensilex.uploadFileToService(
-                path, {description: {}, file: csvFile}
+                path, {description: {}, file: csvFile}, null, false
             );
         }
 

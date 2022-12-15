@@ -64,12 +64,14 @@
 <script lang="ts">
 import { Component, Prop } from "vue-property-decorator";
 
-import moment from "moment-timezone";
 import Vue from "vue";
 import {DataFileImageDTO} from "../data/DataFileImageDTO";
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 
 @Component
 export default class ImageSingle extends Vue {
+  $opensilex: OpenSilexVuePlugin;
+
   @Prop()
   image: DataFileImageDTO;
 
@@ -90,7 +92,7 @@ export default class ImageSingle extends Vue {
 
   created() {
     this.src = this.image.url;
-    this.date = moment.parseZone(this.image.date).format("DD-MM-YYYY HH:mm:ss");
+    this.date = this.$opensilex.$dateTimeFormatter.formatISODateTime(this.image.date);
     this.type = this.image.rdf_type.split(":")[1];
   }
 

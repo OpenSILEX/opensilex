@@ -9,8 +9,8 @@ package org.opensilex.core.experiment.dal;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.experiment.factor.dal.FactorModel;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
-import org.opensilex.core.organisation.dal.InfrastructureModel;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
+import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.security.authentication.SecurityOntology;
@@ -110,14 +110,14 @@ public class ExperimentModel extends SPARQLNamedResourceModel<ExperimentModel> i
             ontology = Oeso.class,
             property = "usesOrganization"
     )
-    List<InfrastructureModel> infrastructures;
+    List<OrganizationModel> infrastructures;
     public static final String INFRASTRUCTURE_FIELD = "infrastructure";
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "usesFacility"
     )
-    List<InfrastructureFacilityModel> facilities;
+    List<FacilityModel> facilities;
     public static final String FACILITY_FIELD = "facilities";
 
 
@@ -216,19 +216,19 @@ public class ExperimentModel extends SPARQLNamedResourceModel<ExperimentModel> i
         this.species = species;
     }
 
-    public List<InfrastructureModel> getInfrastructures() {
+    public List<OrganizationModel> getInfrastructures() {
         return infrastructures;
     }
 
-    public void setInfrastructures(List<InfrastructureModel> infrastructures) {
+    public void setInfrastructures(List<OrganizationModel> infrastructures) {
         this.infrastructures = infrastructures;
     }
 
-    public List<InfrastructureFacilityModel> getFacilities() {
+    public List<FacilityModel> getFacilities() {
         return facilities;
     }
 
-    public void setFacilities(List<InfrastructureFacilityModel> facilities) {
+    public void setFacilities(List<FacilityModel> facilities) {
         this.facilities = facilities;
     }
 

@@ -2,15 +2,25 @@
   <div ref="page">
 
     <opensilex-PageContent class="pagecontent">
+      <!-- Toggle Sidebar-->
+      <div class="searchMenuContainer"
+          v-on:click="searchFiltersToggle = !searchFiltersToggle"
+          :title="searchFiltersPannel()">
+        <div class="searchMenuIcon">
+          <i class="icon ik ik-search"></i>
+        </div>
+      </div>
 
         <!--Form-->
-        <opensilex-DeviceVisualizationForm
-          ref="deviceVisualizationForm"
-          :device="device"
-          @search="onSearch"
-        ></opensilex-DeviceVisualizationForm>
-
-
+      <Transition>
+        <div v-show="searchFiltersToggle">
+          <opensilex-DeviceVisualizationForm
+            ref="deviceVisualizationForm"
+            :device="device"
+            @search="onSearch"
+          ></opensilex-DeviceVisualizationForm>
+        </div>
+      </Transition>
 
       <div class="d-flex justify-content-center mb-3" v-if="!isGraphicLoaded">
         <b-spinner label="Loading..."></b-spinner>
@@ -24,6 +34,10 @@
         @addEventIsClicked="showAddEventComponent"
         @dataAnnotationIsClicked="showAnnotationForm"
         class="DeviceVisualisationGraphic"
+        v-bind:class ="{
+          'DeviceVisualisationGraphic': searchFiltersToggle,
+          'DeviceVisualisationGraphicWithoutForm': !searchFiltersToggle
+        }"
       ></opensilex-DataVisuGraphic>
 
       <opensilex-AnnotationModalForm ref="annotationModalForm" @onCreate="onAnnotationCreated"></opensilex-AnnotationModalForm>
@@ -39,9 +53,8 @@
 </template>
 
 <script lang="ts">
-import {Component, Prop, Ref} from "vue-property-decorator";
+import {Component, Prop, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
-import moment from "moment-timezone";
 import {DataGetDTO, DevicesService, EventGetDTO, EventsService} from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import HighchartsDataTransformer from "../../models/HighchartsDataTransformer";
@@ -71,6 +84,7 @@ export default class DeviceVisualizationTab extends Vue {
   selectedVariable;
   devicesService: DevicesService;
   eventsService: EventsService;
+  searchFiltersToggle: boolean = true;
   @Ref("page") readonly page!: any;
   @Ref("visuGraphic") readonly visuGraphic!: any;
   @Ref("annotationModalForm") readonly annotationModalForm!: any;
@@ -98,6 +112,14 @@ export default class DeviceVisualizationTab extends Vue {
     );
   }
 
+  // simulate window resizing to resize the graphic when the filter panel display changes
+  @Watch("searchFiltersToggle")
+  onSearchFilterToggleChange(){
+    this.$nextTick(()=> { 
+      window.dispatchEvent(new Event('resize'));
+    })  
+  }
+
   beforeDestroy() {
     this.langUnwatcher();
   }
@@ -122,6 +144,7 @@ export default class DeviceVisualizationTab extends Vue {
   }
 
   onSearch(form) {
+    this.searchFiltersToggle = !this.searchFiltersToggle
     this.isGraphicLoaded = false;
     if (form.variable) {
       this.form = form;
@@ -243,28 +266,18 @@ export default class DeviceVisualizationTab extends Vue {
                 let endTime = element.end ? element.end : "en cours..";
                 label = label + "(End: " + endTime + ")";
               }
-              // if (element.end) {
-              //   if (element.is_instant) {
-              //     title = label;
-              //   } else {
-              //     title = label + "(End)";
-              //   }
-              // }
+
               title = label.charAt(0).toUpperCase();
-              let stringDateWithoutUTC;
+
+              let timestamp;
               if (element.start != null) {
-                stringDateWithoutUTC =
-                  moment.parseZone(element.start).format("YYYYMMDD HHmmss") +
-                  "+00:00";
+                timestamp = new Date(element.start).getTime();
               } else {
-                stringDateWithoutUTC =
-                  moment.parseZone(element.end).format("YYYYMMDD HHmmss") +
-                  "+00:00";
+                timestamp = new Date(element.end).getTime();
               }
 
-              let dateWithoutUTC = moment(stringDateWithoutUTC).valueOf();
               toAdd = {
-                x: dateWithoutUTC,
+                x: timestamp,
                 title: title,
                 text: label,
                 eventUri: element.uri,
@@ -321,7 +334,12 @@ export default class DeviceVisualizationTab extends Vue {
         const data = http.response.result as Array<DataGetDTO>;
         let dataLength = data.length;
 
-        if (dataLength > 0) {
+        if (dataLength === 0){
+          this.$opensilex.showInfoToast(
+          this.$t("component.common.search.noDataFound").toString());
+        }
+
+        if (dataLength >= 0) {
           const cleanData = HighchartsDataTransformer.transformDataForHighcharts(data);
           if (dataLength > 50000) {
             this.$opensilex.showInfoToast(
@@ -341,12 +359,21 @@ export default class DeviceVisualizationTab extends Vue {
         }
       });
   }
+
+  searchFiltersPannel() {
+    return this.$t("searchfilter.label")
+  }
 }
 </script>
 
 <style scoped lang="scss">
 
 .DeviceVisualisationGraphic {
+  min-width: calc(100% - 450px);
+  max-width: calc(100vw - 380px);
+}
+
+.DeviceVisualisationGraphicWithoutForm{
   min-width: 100%;
   max-width: 100vw;
 }

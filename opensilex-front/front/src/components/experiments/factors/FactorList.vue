@@ -243,6 +243,13 @@ export default class FactorList extends Vue {
 
   @Ref("tableRef") readonly tableRef!: any;
 
+  onItemUnselected(row) {
+    this.tableRef.onItemUnselected(row);
+  }
+  onItemSelected(row) {
+    this.tableRef.onItemSelected(row);
+  }
+
   refresh() {
     this.tableRef.refresh();
   }

@@ -19,7 +19,6 @@
 <script lang="ts">
     import {Component, Prop, Ref} from "vue-property-decorator";
     import Vue from "vue";
-    // @ts-ignore
     import { VariablesService, VariableDetailsDTO, VariableCreationDTO, ObjectUriResponse, VariableUpdateDTO } from "opensilex-core/index";
     import ModalForm from "../../common/forms/ModalForm.vue";
     import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
@@ -68,8 +67,8 @@
           this.refresh();
             this.loadForm = true;
             this.$nextTick(() => {
-                // the fonction extractURIFromResourceProperties transforms the dto where species is a list of names and uris into a dto where species is only a list of uris
-                let formCopy: VariableDetailsDTO = DTOConverter.extractURIFromResourceProperties(form, ["species"]);
+                // the function extractURIFromResourceProperties transforms each nested object into uri
+                let formCopy: VariableDetailsDTO = DTOConverter.extractURIFromResourceProperties(form);
                 this.variableForm.showEditForm(formCopy);
             });
         }
@@ -107,41 +106,9 @@
             return this.$i18n.t("VariableView.name") + " " + variable.name;
         }
 
-        static formatVariableBeforeUpdate(variable) : VariableUpdateDTO{
-            if(! variable){
-                return undefined;
-            }
-            let formattedVariable = JSON.parse(JSON.stringify(variable));
-
-            if(formattedVariable.datatype && formattedVariable.datatype.uri){
-                formattedVariable.datatype = formattedVariable.datatype.uri
-            }
-            if(formattedVariable.entity && formattedVariable.entity.uri){
-                formattedVariable.entity = formattedVariable.entity.uri;
-            }
-            if(formattedVariable.entity_of_interest && formattedVariable.entity_of_interest.uri){
-                formattedVariable.entity_of_interest = formattedVariable.entity_of_interest.uri;
-            }
-            if(formattedVariable.characteristic && formattedVariable.characteristic.uri){
-                formattedVariable.characteristic = formattedVariable.characteristic.uri;
-            }
-            if(formattedVariable.method && formattedVariable.method.uri){
-                formattedVariable.method = formattedVariable.method.uri;
-            }
-            if(formattedVariable.unit && formattedVariable.unit.uri){
-                formattedVariable.unit = formattedVariable.unit.uri;
-            }
-            if(formattedVariable.species && formattedVariable.species.uri){
-                formattedVariable.species = formattedVariable.species.uri;
-            }
-
-            return formattedVariable;
-        }
-
         update(variable) {
-            let formattedVariable = VariableCreate.formatVariableBeforeUpdate(variable);
 
-            this.service.updateVariable(formattedVariable).then(() => {
+            this.service.updateVariable(variable).then(() => {
                 let message = this.$i18n.t("VariableForm.variable") + " " + variable.name + " " + this.$i18n.t("component.common.success.update-success-message");
                 this.$opensilex.showSuccessToast(message);
 

@@ -1,8 +1,10 @@
 package org.opensilex.core.event.dal.move;
 
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
+import com.mongodb.client.model.geojson.Geometry;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.Order;
@@ -18,11 +20,14 @@ import org.apache.jena.sparql.expr.aggregate.AggregatorFactory;
 import org.apache.jena.sparql.syntax.ElementFilter;
 import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.vocabulary.RDF;
+import org.bson.BsonDocument;
+import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.conversions.Bson;
 import org.opensilex.core.event.dal.EventDAO;
+import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Time;
-import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
@@ -35,6 +40,8 @@ import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -42,6 +49,7 @@ import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.stream.Stream;
 
+import static com.mongodb.client.model.Filters.and;
 import static com.mongodb.client.model.Filters.eq;
 import static com.mongodb.client.model.Projections.excludeId;
 
@@ -59,6 +67,8 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
     private static final TriplePath lastEndTimeStampMatchingTriple = new TriplePath(new Triple(endInstantVar, Time.inXSDDateTimeStamp.asNode(), lastEndTimeStampVar));
 
     private final MongoCollection<MoveEventNoSqlModel> moveEventCollection;
+
+    protected final static Logger LOGGER = LoggerFactory.getLogger(GeospatialDAO.class);
 
     public MoveEventDAO(SPARQLService sparql, MongoDBService mongodb) throws SPARQLException, SPARQLDeserializerNotFoundException {
         super(sparql, mongodb);
@@ -229,7 +239,7 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
 
         String fromStr = result.getStringValue(MoveModel.FROM_FIELD);
         if (!StringUtils.isEmpty(fromStr)) {
-            InfrastructureFacilityModel from = new InfrastructureFacilityModel();
+            FacilityModel from = new FacilityModel();
             from.setUri(new URI(fromStr));
             from.setName(result.getStringValue(fromNameVar.getVarName()));
             model.setFrom(from);
@@ -237,7 +247,7 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
 
         String toStr = result.getStringValue(MoveModel.TO_FIELD);
         if (!StringUtils.isEmpty(toStr)) {
-            InfrastructureFacilityModel to = new InfrastructureFacilityModel();
+            FacilityModel to = new FacilityModel();
             to.setUri(new URI(toStr));
             to.setName(result.getStringValue(toNameVar.getVarName()));
             model.setTo(to);
@@ -378,7 +388,8 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
     public LinkedHashMap<MoveModel, PositionModel> getPositionsHistory(
             URI target,
             String descriptionPattern,
-            OffsetDateTime start, OffsetDateTime end,
+            OffsetDateTime start,
+            OffsetDateTime end,
             List<OrderBy> orderByList,
             Integer page, Integer pageSize) throws Exception {
 
@@ -557,5 +568,15 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
         }
 
         return moveNoSqlModel.getTargetPositions().get(0).getPosition();
+    }
+
+   public FindIterable<MoveEventNoSqlModel> getIntersectPosition(List<MoveEventNoSqlModel> moveEventNoSqlModelList, Geometry geometry){
+
+        Bson inFilter = getEventIdInFilter(moveEventNoSqlModelList.stream().map(MoveEventNoSqlModel::getUri));
+
+        Bson query = and(Filters.or(inFilter),Filters.exists(MoveEventNoSqlModel.COORDINATES_FIELD, true), Filters.geoWithin(MoveEventNoSqlModel.COORDINATES_FIELD, geometry));
+        LOGGER.debug("MongoDB search intersect:{}", query);
+
+        return moveEventCollection.find(query);
     }
 }

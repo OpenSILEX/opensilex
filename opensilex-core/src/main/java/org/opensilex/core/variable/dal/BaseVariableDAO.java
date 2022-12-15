@@ -7,19 +7,22 @@ package org.opensilex.core.variable.dal;
 
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.rdf.model.Property;
 import org.apache.jena.sparql.expr.Expr;
-import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.server.exceptions.displayable.DisplayableBadRequestException;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLInvalidUriListException;
 import org.opensilex.sparql.mapping.SparqlNoProxyFetcher;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 
 import java.net.URI;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  *
@@ -59,8 +62,46 @@ public class BaseVariableDAO<T extends SPARQLNamedResourceModel<T>> {
         return instance;
     }
 
-    public void delete(URI instanceURI) throws Exception {
-        sparql.delete(objectClass, instanceURI);
+    /**
+     * Delete a resource associated to a variable
+     * @param uri URI of the resource to delete (required)
+     * @param property The property which link the given uri to a {@link VariableModel} (required)
+     * @throws DisplayableBadRequestException if the resource is linked to an existing variable
+     * @throws Exception if some errors occurs during deletion operation
+     *
+     * @apiNote
+     * Example : <br>
+     * {@code delete(:entity_uri,Oeso.hasEntity)} will delete the given entity by checking
+     * if some variable is linked to the entity, before deleting it
+     */
+    public void delete(URI uri, Property property) throws DisplayableBadRequestException, Exception {
+        Objects.requireNonNull(uri);
+        Objects.requireNonNull(property);
+
+        // check that a variable is not linked to the uri, with the given property
+        List<URI> linkedVariables = sparql.searchURIs(VariableModel.class,null,select -> {
+
+            // Ex with entity : append GRAPH <VAR_GRAPH> { ?uri oeso:hasEntity <ENTITY_URI>
+            select.addGraph(
+                    sparql.getDefaultGraph(VariableModel.class),
+                    NodeFactory.createVariable(SPARQLResourceModel.URI_FIELD),
+                    property.asNode(),
+                    SPARQLDeserializers.nodeURI(uri)
+            );
+        });
+
+        if(! linkedVariables.isEmpty()){
+            Map<String,String> translationValues = new HashMap<>();
+            translationValues.put("uri", uri.toString());
+            translationValues.put("variable", linkedVariables.toString());
+
+            throw new DisplayableBadRequestException(
+                    uri + " can't be deleted : used by variables : " + linkedVariables,
+                    "component.variable.linked-object-error",
+                    translationValues
+            );
+        }
+       sparql.delete(objectClass,uri);
     }
 
     public T get(URI instanceURI) throws Exception {

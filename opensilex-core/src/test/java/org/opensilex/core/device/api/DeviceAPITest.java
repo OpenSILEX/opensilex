@@ -10,11 +10,11 @@ package org.opensilex.core.device.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import org.apache.jena.graph.Node;
 import org.apache.jena.vocabulary.XSD;
 import org.junit.Assert;
 import org.junit.Test;
 import org.opensilex.core.AbstractMongoIntegrationTest;
-import org.opensilex.core.CoreModule;
 import org.opensilex.core.data.api.DataAPI;
 import org.opensilex.core.data.api.DataCreationDTO;
 import org.opensilex.core.data.dal.DataDAO;
@@ -22,8 +22,16 @@ import org.opensilex.core.data.dal.DataProvenanceModel;
 import org.opensilex.core.data.dal.ProvEntityModel;
 import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.device.dal.DeviceModel;
+import org.opensilex.core.event.api.move.MoveCreationDTO;
+import org.opensilex.core.event.dal.move.MoveModel;
+import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
+import org.opensilex.core.organisation.api.FacilityApiTest;
+import org.opensilex.core.organisation.api.facility.FacilityCreationDTO;
+import org.opensilex.core.organisation.api.facility.FacilityGetDTO;
+import org.opensilex.core.organisation.api.facility.FacilityUpdateDTO;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.provenance.api.ProvenanceAPI;
 import org.opensilex.core.provenance.api.ProvenanceCreationDTO;
 import org.opensilex.core.provenance.dal.AgentModel;
@@ -31,17 +39,19 @@ import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.variable.api.VariableApiTest;
 import org.opensilex.core.variable.api.VariableCreationDTO;
 import org.opensilex.core.variable.dal.*;
+import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.SingleObjectResponse;
-import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.model.time.InstantModel;
 import org.opensilex.sparql.service.SPARQLService;
 
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.function.BiPredicate;
 
@@ -59,6 +69,7 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
     public String createPath = path;
     public String updatePath = path;
     public String deletePath = path + "/{uri}";
+    public String facilityPath = path + "/{uri}/facility";
 
     public String provenancePath = ProvenanceAPI.PATH;
     public String dataPath = DataAPI.PATH;
@@ -94,7 +105,7 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
 
     @Test
     public void testGetByUriWithUnknownUri() throws Exception {
-        Response getResult = getJsonGetByUriResponse(target(getByUriPath), Oeso.Device + "/unknown_uri");
+        Response getResult = getJsonGetByUriResponseAsAdmin(target(getByUriPath), Oeso.Device + "/unknown_uri");
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
     }
 
@@ -104,10 +115,10 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
         // Try to insert an Entity, to fetch it and to get fields
         DeviceCreationDTO creationDTO = getCreationDto();
 
-        Response postResult = getJsonPostResponse(target(createPath), creationDTO);
+        Response postResult = getJsonPostResponseAsAdmin(target(createPath), creationDTO);
         URI uri = extractUriFromResponse(postResult);
 
-        Response getResult = getJsonGetByUriResponse(target(getByUriPath), uri.toString());
+        Response getResult = getJsonGetByUriResponseAsAdmin(target(getByUriPath), uri.toString());
 
         // try to deserialize object and check if the fields value are the same
         JsonNode node = getResult.readEntity(JsonNode.class);
@@ -162,14 +173,14 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
 
         // create device
         DeviceCreationDTO deviceDto = getCreationDto();
-        Response postResult = getJsonPostResponse(target(createPath), deviceDto);
+        Response postResult = getJsonPostResponseAsAdmin(target(createPath), deviceDto);
         deviceDto.setUri(extractUriFromResponse(postResult));
 
         // create provenance
         ProvenanceCreationDTO provDto = new ProvenanceCreationDTO();
         provDto.setName("prov");
         provDto.setDescription("prov");
-        Response postProvResult = getJsonPostResponse(target(provenancePath),provDto);
+        Response postProvResult = getJsonPostResponseAsAdmin(target(provenancePath),provDto);
         provDto.setUri(extractUriFromResponse(postProvResult));
 
         // create data with a DataProvenance associated to device
@@ -193,7 +204,7 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
         dataDto.setVariable(variable.getUri());
         dataDto.setUri(URI.create("dev:data1"));
 
-        Response postDataProvResult = getJsonPostResponse(target(dataPath), Collections.singletonList(dataDto));
+        Response postDataProvResult = getJsonPostResponseAsAdmin(target(dataPath), Collections.singletonList(dataDto));
         assertEquals(Response.Status.CREATED.getStatusCode(),postDataProvResult.getStatus());
 
         // try to delete device -> expect error 404 with result.title = LINKED_DEVICE_ERROR
@@ -211,7 +222,7 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
 
         // create device
         DeviceCreationDTO deviceDto = getCreationDto();
-        Response postResult = getJsonPostResponse(target(createPath), deviceDto);
+        Response postResult = getJsonPostResponseAsAdmin(target(createPath), deviceDto);
         deviceDto.setUri(extractUriFromResponse(postResult));
 
         // create provenance associated to device
@@ -224,7 +235,7 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
         agent.setUri(deviceDto.getUri());
         provDto.setAgents(Collections.singletonList(agent));
 
-        Response postProvResult = getJsonPostResponse(target(provenancePath),provDto);
+        Response postProvResult = getJsonPostResponseAsAdmin(target(provenancePath),provDto);
         assertEquals(Response.Status.CREATED.getStatusCode(),postProvResult.getStatus());
         provDto.setUri(extractUriFromResponse(postProvResult));
 
@@ -244,7 +255,7 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
         // create variable and relation
         VariableApiTest variableApiTest = new VariableApiTest();
         VariableCreationDTO linkedVariable = variableApiTest.getCreationDto();
-        Response postVariableResponse = getJsonPostResponse(target(variableApiTest.createPath), variableApiTest.getCreationDto());
+        Response postVariableResponse = getJsonPostResponseAsAdmin(target(variableApiTest.createPath), variableApiTest.getCreationDto());
         linkedVariable.setUri(extractUriFromResponse(postVariableResponse));
 
         RDFObjectRelationDTO measuresRelation = new RDFObjectRelationDTO();
@@ -257,7 +268,7 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
         sensingDeviceDto.setType(URI.create(Oeso.SensingDevice.getURI()));
         sensingDeviceDto.setRelations(Collections.singletonList(measuresRelation));
 
-        Response postSensingDeviceResponse = getJsonPostResponse(target(createPath),sensingDeviceDto);
+        Response postSensingDeviceResponse = getJsonPostResponseAsAdmin(target(createPath),sensingDeviceDto);
         assertEquals(Response.Status.CREATED.getStatusCode(), postSensingDeviceResponse.getStatus());
         sensingDeviceDto.setUri(extractUriFromResponse(postSensingDeviceResponse));
 
@@ -267,7 +278,7 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
         softwareDto.setName("software");
         softwareDto.setRelations(Collections.singletonList(measuresRelation));
 
-        Response postSoftwareResponse = getJsonPostResponse(target(createPath),softwareDto);
+        Response postSoftwareResponse = getJsonPostResponseAsAdmin(target(createPath),softwareDto);
         assertEquals(Response.Status.CREATED.getStatusCode(), postSoftwareResponse.getStatus());
         softwareDto.setUri(extractUriFromResponse(postSoftwareResponse));
 
@@ -278,7 +289,7 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
         );
 
         // test on sensing device
-        Response getSensingDeviceResponse = getJsonGetByUriResponse(target(getByUriPath), sensingDeviceDto.getUri().toString());
+        Response getSensingDeviceResponse = getJsonGetByUriResponseAsAdmin(target(getByUriPath), sensingDeviceDto.getUri().toString());
         SingleObjectResponse<DeviceGetDetailsDTO> getResponse = mapper.convertValue(
                 getSensingDeviceResponse.readEntity(JsonNode.class),
                 new TypeReference<SingleObjectResponse<DeviceGetDetailsDTO>>() {}
@@ -287,13 +298,77 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
         Assert.assertTrue(sensingDeviceGetDTO.getRelations().stream().anyMatch(relation -> findRelationPredicate.test(relation, sensingDeviceGetDTO)));
 
         // test on software
-        Response getSoftwareDeviceResponse = getJsonGetByUriResponse(target(getByUriPath), softwareDto.getUri().toString());
+        Response getSoftwareDeviceResponse = getJsonGetByUriResponseAsAdmin(target(getByUriPath), softwareDto.getUri().toString());
         getResponse = mapper.convertValue(
                 getSoftwareDeviceResponse.readEntity(JsonNode.class),
                 new TypeReference<SingleObjectResponse<DeviceGetDetailsDTO>>() {}
         );
         DeviceGetDetailsDTO softwareGetDTO = getResponse.getResult();
         Assert.assertTrue(softwareGetDTO.getRelations().stream().anyMatch(relation -> findRelationPredicate.test(relation, softwareGetDTO)));
+    }
+
+    private FacilityModel createFacility(URI uri, String name) throws Exception {
+        FacilityModel facilityModel = new FacilityModel();
+        facilityModel.setUri(uri);
+        facilityModel.setName(name);
+        getSparqlService().create(facilityModel);
+        return facilityModel;
+    }
+
+    private MoveModel createMove(URI device, FacilityModel fromFacility, FacilityModel toFacility, String end) throws Exception {
+        MoveModel moveModel = new MoveModel();
+        moveModel.setType(URI.create(Oeev.Move.getURI()));
+        moveModel.setTargets(Arrays.asList(device));
+        moveModel.setFrom(fromFacility);
+        moveModel.setTo(toFacility);
+        moveModel.setIsInstant(true);
+        InstantModel endInstant = new InstantModel();
+        endInstant.setDateTimeStamp(OffsetDateTime.parse(end));
+        moveModel.setEnd(endInstant);
+        getSparqlService().create(moveModel);
+
+        return moveModel;
+    }
+
+    @Test
+    public void testGetAssociatedFacilityOK() throws Exception {
+        // create device
+        DeviceCreationDTO deviceDto = getCreationDto();
+        Response postResult = getJsonPostResponseAsAdmin(target(createPath), deviceDto);
+        assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
+        deviceDto.setUri(extractUriFromResponse(postResult));
+
+        // create facilities
+        FacilityModel facilityA = createFacility(new URI("test:id/facilityA"), "facility A");
+        FacilityModel facilityB = createFacility(new URI("test:id/facilityB"), "facility B");
+
+        // create move event
+        MoveModel moveModel = createMove(deviceDto.getUri(), facilityA, facilityB, OffsetDateTime.now().toString());
+
+        // test get associated facility
+        Response getResult = getJsonGetByUriResponseAsAdmin(target(facilityPath), deviceDto.getUri().toString());
+        JsonNode node = getResult.readEntity(JsonNode.class);
+
+        SingleObjectResponse<FacilityGetDTO> getResponse = mapper.convertValue(
+                node,
+                new TypeReference<SingleObjectResponse<FacilityGetDTO>>() {}
+        );
+        FacilityGetDTO facilityGetDto = getResponse.getResult();
+        assertEquals(facilityGetDto.getUri(), facilityB.getUri());
+
+        // create new move
+        moveModel = createMove(deviceDto.getUri(), facilityB, facilityA, OffsetDateTime.now().plusDays(1).toString());
+
+        // test get associated facility for new move
+        getResult = getJsonGetByUriResponseAsAdmin(target(facilityPath), deviceDto.getUri().toString());
+        node = getResult.readEntity(JsonNode.class);
+
+        getResponse = mapper.convertValue(
+                node,
+                new TypeReference<SingleObjectResponse<FacilityGetDTO>>() {}
+        );
+        facilityGetDto = getResponse.getResult();
+        assertEquals(facilityGetDto.getUri(), facilityA.getUri());
     }
 
     @Override

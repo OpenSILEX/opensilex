@@ -29,12 +29,13 @@ import org.opensilex.core.data.utils.ParsedDateTimeMongo;
 import org.opensilex.core.exception.*;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.experiment.dal.ExperimentSearchFilter;
 import org.opensilex.core.experiment.factor.api.FactorDetailsGetDTO;
 import org.opensilex.core.experiment.factor.dal.FactorDAO;
 import org.opensilex.core.experiment.factor.dal.FactorModel;
 import org.opensilex.core.experiment.utils.ImportDataIndex;
-import org.opensilex.core.organisation.api.facitity.InfrastructureFacilityGetDTO;
-import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
+import org.opensilex.core.organisation.api.facility.FacilityGetDTO;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.provenance.api.ProvenanceAPI;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
@@ -240,6 +241,7 @@ public class ExperimentAPI {
      * @param factorCategories
      * @param projects
      * @param isPublic
+     * @param facilities
      * @param orderByList
      * @param page
      * @param pageSize
@@ -263,25 +265,29 @@ public class ExperimentAPI {
             @ApiParam(value = "Search by studied effect", example = "http://purl.obolibrary.org/obo/CHEBI_25555") @QueryParam("factors") List<URI> factorCategories,
             @ApiParam(value = "Search by related project uri", example = "http://www.phenome-fppn.fr/projects/ZA17\nhttp://www.phenome-fppn.fr/id/projects/ZA18") @QueryParam("projects") List<URI> projects,
             @ApiParam(value = "Search private(false) or public experiments(true)") @QueryParam("is_public") Boolean isPublic,
+            @ApiParam(value = "Search by involved facilities") @QueryParam("facilities") List<URI> facilities,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
         ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql);
 
-        ListWithPagination<ExperimentModel> resultList = xpDao.search(
-                year,
-                name,
-                species,
-                factorCategories,
-                isEnded,
-                projects,
-                isPublic,
-                currentUser,
-                orderByList,
-                page,
-                pageSize
-        );
+        ExperimentSearchFilter filter = new ExperimentSearchFilter()
+                .setYear(year)
+                .setName(name)
+                .setSpecies(species)
+                .setFactorCategories(factorCategories)
+                .setEnded(isEnded)
+                .setProjects(projects)
+                .setPublic(isPublic)
+                .setFacilities(facilities)
+                .setUser(currentUser);
+
+        filter.setOrderByList(orderByList)
+                .setPage(page)
+                .setPageSize(pageSize);
+
+        ListWithPagination<ExperimentModel> resultList = xpDao.search(filter);
 
         // Convert paginated list to DTO
         ListWithPagination<ExperimentGetListDTO> resultDTOList = resultList.convert(ExperimentGetListDTO.class, ExperimentGetListDTO::fromModel);
@@ -325,17 +331,17 @@ public class ExperimentAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return facilities list", response = InfrastructureFacilityGetDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = "Return facilities list", response = FacilityGetDTO.class, responseContainer = "List"),
         @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)
     })
     public Response getAvailableFacilities(
             @ApiParam(value = EXPERIMENT_API_VALUE, example = EXPERIMENT_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI xpUri
     ) throws Exception {
         ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql);
-        List<InfrastructureFacilityModel> facilities = xpDao.getAvailableFacilities(xpUri, currentUser);
+        List<FacilityModel> facilities = xpDao.getAvailableFacilities(xpUri, currentUser);
 
-        List<InfrastructureFacilityGetDTO> dtoList = facilities.stream().map((item) -> {
-            return InfrastructureFacilityGetDTO.getDTOFromModel(item, false);
+        List<FacilityGetDTO> dtoList = facilities.stream().map((item) -> {
+            return FacilityGetDTO.getDTOFromModel(item, false);
         }).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();
     }

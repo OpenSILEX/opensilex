@@ -96,6 +96,7 @@
                 <opensilex-Card label="VariableDetails.advanced" icon="ik#ik-clipboard">
                     <template v-slot:body>
                       <opensilex-UriListView
+                          v-if="!isGermplasmMenuExcluded"
                           label="GermplasmList.speciesLabel"
                           :list="speciesList"
                       ></opensilex-UriListView>
@@ -130,6 +131,8 @@ import VariableForm from "./form/VariableForm.vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {DataService} from "opensilex-core/api/data.service";
+import DTOConverter from "../../models/DTOConverter";
+import {VariableUpdateDTO} from "opensilex-core/index";
 
 @Component
 export default class VariableDetails extends Vue {
@@ -173,6 +176,10 @@ export default class VariableDetails extends Vue {
       };
     });
   }
+  
+  get isGermplasmMenuExcluded() {
+        return this.$opensilex.getConfig().menuExclusions.includes("germplasm");
+  }
 
   created() {
     this.service = this.$opensilex.getService("opensilex.VariablesService");
@@ -196,7 +203,7 @@ export default class VariableDetails extends Vue {
   }
 
   update(variable) {
-    let formattedVariable = VariableCreate.formatVariableBeforeUpdate(variable);
+    let formattedVariable:VariableUpdateDTO =  DTOConverter.extractURIFromResourceProperties(variable);
 
     this.service.updateVariable(formattedVariable).then(() => {
       let message = this.$i18n.t("VariableView.name") + " " + formattedVariable.name + " " + this.$i18n.t("component.common.success.update-success-message");

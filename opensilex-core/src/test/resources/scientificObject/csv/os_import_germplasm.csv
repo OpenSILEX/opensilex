@@ -1,0 +1,4 @@
+uri,type,vocabulary:hasGermplasm,rdfs:label
+,,,
+,,test:id/germplasm/germplasm.test_os_csv_import,os_import_germplasm1
+,,test:id/germplasm/germplasm.test_os_csv_import2,os_import_germplasm2

@@ -53,6 +53,7 @@ import java.util.stream.Collectors;
 public class OntologyAPI {
 
     public static final String PATH = "/ontology";
+    public static final String RDF_TYPE_PROPERTY_RESTRICTION = "rdf_type_property_restriction";
 
     @CurrentUser
     UserModel currentUser;
@@ -311,18 +312,20 @@ public class OntologyAPI {
             @ApiResponse(code = 200, message = "Property deleted ", response = ObjectUriResponse.class)
     })
     public Response deleteProperty(
-            @ApiParam(value = "Property URI") @QueryParam("uri") @ValidURI URI propertyURI,
-            @ApiParam(value = "Property type") @QueryParam("rdf_type") @ValidURI URI propertyType
+            @ApiParam(value = "Property URI") @QueryParam("uri") @NotNull @ValidURI URI propertyURI,
+            @ApiParam(value = "Property type") @QueryParam("rdf_type") @NotNull @ValidURI URI propertyType
     ) throws Exception {
 
         OntologyDAO dao = new OntologyDAO(sparql);
 
         if (RDFPropertyDTO.isDataProperty(propertyType)) {
-            dao.deleteDataProperty(propertyURI);
+            dao.deleteProperty(propertyURI,true);
             SPARQLModule.getOntologyStoreInstance().reload();
-        } else {
-            dao.deleteObjectProperty(propertyURI);
+        } else if(RDFPropertyDTO.isObjectProperty(propertyType)) {
+            dao.deleteProperty(propertyURI, false);
             SPARQLModule.getOntologyStoreInstance().reload();
+        }else{
+            throw new IllegalArgumentException("Unknown OWL property type " + propertyType + ". Only owl:DatatypeProperty or owl:ObjectProperty URI are accepted.");
         }
 
         return new ObjectUriResponse(Response.Status.OK, propertyURI).getResponse();
@@ -434,7 +437,7 @@ public class OntologyAPI {
     }
 
     @POST
-    @Path("rdf_type_property_restriction")
+    @Path(RDF_TYPE_PROPERTY_RESTRICTION)
     @ApiOperation("Add a rdf type property restriction")
     @ApiProtected(adminOnly = true)
     @Consumes(MediaType.APPLICATION_JSON)

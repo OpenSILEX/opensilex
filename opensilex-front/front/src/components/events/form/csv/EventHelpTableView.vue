@@ -172,7 +172,7 @@ table.b-table-selectable tbody tr.b-table-row-selected td span.checkbox:after {
 en:
   EventHelpTableView:
       csv-import-title: "Event(s) CSV import"
-      move-csv-import-title: "Move(s) CSV import"
+      move-csv-import-title: "Move CSV import"
       text-help: "Your can insert your data from this row. <br /> \n
                 First two rows of CSV content will be ignored. <br /> \n
                 Column orders matter.<br /> \n

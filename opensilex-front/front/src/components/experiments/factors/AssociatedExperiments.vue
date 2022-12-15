@@ -27,10 +27,10 @@
           </template>
 
           <template v-slot:cell(startDate)="{data}">
-            <opensilex-DateView :value="data.item.startDate"></opensilex-DateView>
+            <opensilex-DateView :value="data.item.start_date"></opensilex-DateView>
           </template>
           <template v-slot:cell(endDate)="{data}">
-            <opensilex-DateView :value="data.item.endDate"></opensilex-DateView>
+            <opensilex-DateView :value="data.item.end_date"></opensilex-DateView>
           </template>
 
           <template v-slot:cell(state)="{data}">
@@ -59,16 +59,10 @@
 </template>
 
 <script lang="ts">
-import { Component, Ref, Prop } from "vue-property-decorator";
+import {Component, Prop} from "vue-property-decorator";
 import Vue from "vue";
-import VueConstructor from "vue";
-import copy from "copy-to-clipboard";
-import VueI18n from "vue-i18n";
-import moment from "moment";
-// @ts-ignore
-import {ExperimentGetDTO, SpeciesDTO, SpeciesService } from "opensilex-core/index";
-// @ts-ignore
-import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
+import {ExperimentGetDTO, SpeciesDTO, SpeciesService} from "opensilex-core/index";
+import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 
 export class ExperimentState {
   code: String;
@@ -133,9 +127,9 @@ export default class ExperimentList extends Vue {
     }
   ];
 
-  isEnded(experiment) {
-    if (experiment.endDate) {
-      return moment(experiment.endDate, "YYYY-MM-DD").diff(moment()) < 0;
+  isEnded(experiment: ExperimentGetDTO) {
+    if (experiment.end_date) {
+      return new Date(experiment.end_date).getTime() < new Date().getTime();
     }
 
     return false;

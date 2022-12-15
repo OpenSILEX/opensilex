@@ -172,11 +172,11 @@ import UnitCreate from "./form/UnitCreate.vue";
 import VariableCreate from "./form/VariableCreate.vue";
 import VariableList from "./VariableList.vue";
 import ExternalReferencesModalForm from "../common/external-references/ExternalReferencesModalForm.vue";
-// @ts-ignore
-import { VariablesService, DataService } from "opensilex-core/index";
+import { VariablesService, DataService, VariableUpdateDTO } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import ModalForm from "../common/forms/ModalForm.vue";
+import DTOConverter from "../../models/DTOConverter";
 
 
 @Component
@@ -473,7 +473,7 @@ export default class VariablesView extends Vue {
 
     updateReferences(variable){
 
-        let formattedVariable = VariableCreate.formatVariableBeforeUpdate(variable);
+        let formattedVariable: VariableUpdateDTO = DTOConverter.extractURIFromResourceProperties(variable);
 
         this.service.updateVariable(formattedVariable).then(() => {
             let message = this.$i18n.t("VariableView.name") + " " + formattedVariable.name + " " + this.$i18n.t("component.common.success.update-success-message");

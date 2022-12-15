@@ -59,7 +59,7 @@ public class MongoCustomCoordinatesDataTypeUpdate extends AbstractOpenSilexModul
      *       "targetPositions.position.x": {
      *         $toString: {
      *           $arrayElemAt: [
-     *             "targetPositions.position.x",
+     *             "$targetPositions.position.x",
      *             0
      *           ]
      *         }

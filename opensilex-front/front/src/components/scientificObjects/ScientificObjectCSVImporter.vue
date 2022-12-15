@@ -1,128 +1,114 @@
 <template>
-  <div>
-    <opensilex-OntologyCsvImporter
-      ref="importForm"
-      :baseType="$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI"
-      :validateCSV="validateCSV"
-      :uploadCSV="uploadCSV"
-      @csvImported="displayReport($event)"
-    >
-      <template v-slot:icon>
-        <opensilex-Icon icon="ik#ik-target" class="icon-title" />
-      </template>
-      <template v-slot:help>
-        <opensilex-ScientificObjectImportHelp></opensilex-ScientificObjectImportHelp>
-      </template>
-      <template v-slot:generator>
-        <b-col cols="2">
-          <opensilex-Button
-            class="mr-2 greenThemeColor"
-            :small="false"
-            @click="templateGenerator.show()"
-            icon
-            label="DataView.buttons.generate-template"
-          ></opensilex-Button>
-          <opensilex-ScientificObjectCSVTemplateGenerator
-            ref="templateGenerator"
-          ></opensilex-ScientificObjectCSVTemplateGenerator>
-        </b-col>
-      </template>
-    </opensilex-OntologyCsvImporter>
-    <b-modal
-      ref="resultModal"
-      :title="$t('ScientificObjectCSVImporter.result-title')"
-      ok-only
-      @ok="$emit('csvImported')"
-    >
-      <template v-slot:modal-header>
-        <b-row class="mt-1" style="width: 100%">
-          <b-col cols="10">
-            <i>
-              <h4>
-                <opensilex-Icon icon="fa#list" />
-                {{ $t("ScientificObjectCSVImporter.result-title") }}
-              </h4>
-            </i>
-          </b-col>
-        </b-row>
-      </template>
-      <template>
-        <p class="validation-confirm-container">
-          {{
-            $tc(
-              "ScientificObjectCSVImporter.objects-imported",
-              nbLinesImported,
-              { count: nbLinesImported }
-            )
-          }}
-        </p>
-      </template>
-    </b-modal>
-  </div>
+    <div>
+        <opensilex-OntologyCsvImporter
+            ref="importForm"
+            :baseType="$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI"
+            successImportMsg="ScientificObjectCSVImporter.successImportMsg"
+            :validateCSV="validateCSV"
+            :uploadCSV="uploadCSV"
+            @csvImported="onCsvImported($event)"
+        >
+            <template v-slot:icon>
+                <opensilex-Icon icon="ik#ik-target" class="icon-title"/>
+            </template>
+            <template v-slot:help>
+                <opensilex-ScientificObjectImportHelp></opensilex-ScientificObjectImportHelp>
+            </template>
+            <template v-slot:generator>
+                <b-col cols="2">
+                    <opensilex-Button
+                        class="mr-2 greenThemeColor"
+                        :small="false"
+                        @click="templateGenerator.show()"
+                        icon
+                        label="DataView.buttons.generate-template"
+                    ></opensilex-Button>
+                    <opensilex-OntologyCsvTemplateGenerator
+                        ref="templateGenerator"
+                        :baseType="$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI"
+                        templatePrefix="scientific_object"
+                        typePlaceholder="OntologyObjectForm.form-type-placeholder"
+                        uriHelp="ScientificObjectCSVImporter.uri-help"
+                        uriExample="ScientificObjectCSVImporter.uri-example"
+                        typeHelp="ScientificObjectCSVImporter.type-help"
+                        typeExample="ScientificObjectCSVImporter.type-example"
+                    ></opensilex-OntologyCsvTemplateGenerator>
+                </b-col>
+            </template>
+        </opensilex-OntologyCsvImporter>
+    </div>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Ref } from "vue-property-decorator";
+import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import VueRouter from "vue-router";
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+import {Store} from "vuex";
+import OntologyCsvImporter from '../ontology/csv/OntologyCsvImporter.vue';
+import OntologyCsvTemplateGenerator from "../ontology/csv/OntologyCsvTemplateGenerator.vue";
 
 @Component
 export default class ScientificObjectCSVImporter extends Vue {
-  $opensilex: any;
-  $store: any;
-  $router: VueRouter;
+    $opensilex: OpenSilexVuePlugin;
+    $store: Store<any>;
+    $router: VueRouter;
 
-  @Ref("importForm") readonly importForm!: any;
-  @Ref("templateGenerator") readonly templateGenerator!: any;
-  @Ref("resultModal") readonly resultModal!: any;
+    @Ref("importForm") readonly importForm!: OntologyCsvImporter;
+    @Ref("templateGenerator") readonly templateGenerator!: OntologyCsvTemplateGenerator;
+    @Ref("resultModal") readonly resultModal!: any;
 
-  @Prop({
-      default: undefined
-  })
-  experimentURI;
+    @Prop({
+        default: undefined
+    })
+    experimentURI;
 
-  get user() {
-    return this.$store.state.user;
-  }
+    get user() {
+        return this.$store.state.user;
+    }
 
-  get lang() {
-    return this.$store.state.lang;
-  }
+    get lang() {
+        return this.$store.state.lang;
+    }
 
-  show() {
-    this.importForm.show();
-  }
+    show() {
+        this.importForm.show();
+    }
 
-  nbLinesImported = 0;
+    nbLinesImported = 0;
 
-  validateCSV(csvFile) {
-    return this.$opensilex.uploadFileToService(
-      "/core/scientific_objects/import_validation",
-      {
-        description: {
-            experiment: this.experimentURI
-        },
-        file: csvFile,
-      }
-    );
-  }
+    validateCSV(csvFile) {
+        return this.$opensilex.uploadFileToService(
+            "/core/scientific_objects/import_validation",
+            {
+                description: {
+                    experiment: this.experimentURI,
+                },
+                file: csvFile,
+            },
+            null,
+            null
+        );
+    }
 
-  uploadCSV(validationToken, csvFile) {
-    return this.$opensilex.uploadFileToService(
-      "/core/scientific_objects/import",
-      {
-        description: {
-            experiment: this.experimentURI
-        },
-        file: csvFile,
-      }
-    );
-  }
+    uploadCSV(validationToken: string, csvFile) {
+        return this.$opensilex.uploadFileToService(
+            "/core/scientific_objects/import",
+            {
+                description: {
+                    experiment: this.experimentURI,
+                    validationToken: validationToken
+                },
+                file: csvFile,
+            },
+            null,
+            null
+        );
+    }
 
-  displayReport(uploadResponse) {
-    this.nbLinesImported = uploadResponse.result.nb_lines_imported;
-    this.resultModal.show();
-  }
+    onCsvImported(response) {
+        this.$emit("csvImported", response);
+    }
 }
 </script>
 
@@ -132,10 +118,19 @@ export default class ScientificObjectCSVImporter extends Vue {
 <i18n>
 en:
     ScientificObjectCSVImporter:
-        result-title: Insertion report
-        objects-imported: No scientific objects imported | 1 scientific object imported | {count} scientific objects imported
+        import-title: Import scientific objects
+        successImportMsg: "scientific object(s) imported"
+        uri-example: http://opensilex.org/id/scientific-object/so-name1
+        uri-help: Scientific object URI (autogenerated if empty)
+        type-example: vocabulary:Plant
+        type-help: "URI of the object type"
+
 fr:
     ScientificObjectCSVImporter:
-        result-title: Rapport de l'insertion
-        objects-imported: Aucun objet scientifique importé | 1 objet scientifique importé | {count} objets scientifiques importés
+        import-title: Importer des objets scientifiques
+        successImportMsg: "objet(s) scientifique importé(s)"
+        uri-example: http://opensilex.org/id/scientific-object/so-nom1
+        uri-help: URI de l'objet scientifique (auto-générée si vide)
+        type-example: vocabulary:Plant
+        type-help: "URI du type d'objet scientifique"
 </i18n>

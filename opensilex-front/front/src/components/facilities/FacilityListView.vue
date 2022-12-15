@@ -18,6 +18,7 @@
         <!-- Facility detail -->
         <opensilex-FacilityDetail
             :selected="selectedFacility"
+            :experiments="experiments"
         >
         </opensilex-FacilityDetail>
       </div>
@@ -32,15 +33,19 @@ import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
 import FacilitiesView from "./FacilitiesView.vue";
-import { InfrastructureFacilityGetDTO } from 'opensilex-core/index';
+import { FacilityGetDTO } from 'opensilex-core/index';
+import {ExperimentsService} from "opensilex-core/api/experiments.service";
+import {ExperimentGetListDTO} from "opensilex-core/model/experimentGetListDTO";
 
 @Component
 export default class FacilityListView extends Vue {
   $opensilex: OpenSilexVuePlugin;
 
   service: OrganizationsService;
+  expService: ExperimentsService;
 
-  selectedFacility: InfrastructureFacilityGetDTO = null;
+  selectedFacility: FacilityGetDTO = null;
+  experiments: Array<ExperimentGetListDTO> = [];
 
   @Ref("facilitiesView")
   facilitiesView: FacilitiesView;
@@ -48,6 +53,9 @@ export default class FacilityListView extends Vue {
   created() {
     this.service = this.$opensilex.getService(
         "opensilex-core.OrganizationsService"
+    );
+    this.expService = this.$opensilex.getService(
+        "opensilex.ExperimentsService"
     );
   }
 
@@ -59,17 +67,47 @@ export default class FacilityListView extends Vue {
     return this.$store.state.credentials;
   }
 
-  updateSelectedFacility(facility: InfrastructureFacilityGetDTO) {
+  updateSelectedFacility(facility: FacilityGetDTO) {
     if (!facility || !facility.uri) {
       this.selectedFacility = undefined;
+      this.experiments = [];
       return;
     }
 
+    this.experiments = [];
+
     this.service
         .getInfrastructureFacility(facility.uri)
-        .then((http: HttpResponse<OpenSilexResponse<InfrastructureFacilityGetDTO>>) => {
+        .then((http: HttpResponse<OpenSilexResponse<FacilityGetDTO>>) => {
           this.selectedFacility = http.response.result;
+          if(this.selectedFacility) {
+            this.$nextTick(() => {this.loadExperiments();});
+          }
         });
+  }
+
+  loadExperiments() {
+    return this.expService
+        .searchExperiments(
+            undefined, // label
+            undefined, // year
+            false, // isEnded
+            undefined, // species
+            undefined, // factorCategories
+            undefined, // projects
+            undefined, // isPublic
+            [this.selectedFacility.uri],
+            undefined,
+            0,
+            20)
+        .then(
+            (
+                http: HttpResponse<OpenSilexResponse<Array<ExperimentGetListDTO>>>
+            ) => {
+              this.experiments = http.response.result;
+              return http;
+            }
+        );
   }
 
   refresh() {

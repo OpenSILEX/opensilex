@@ -1,5 +1,4 @@
 import { Container } from 'inversify';
-import moment from 'moment';
 import { VueJsOntologyExtensionService } from './../lib/api/vueJsOntologyExtension.service';
 import { SystemService } from '../../../../opensilex-core/front/src/lib/api/system.service';
 import Vue from 'vue';
@@ -29,7 +28,7 @@ import { User } from './User';
 import {ResourceDagDTO} from "opensilex-core/model/resourceDagDTO";
 import {ServiceBinder} from "../services/ServiceBinder";
 import { OntologyService, VariableDatatypeDTO, VariablesService } from 'opensilex-core/index';
-import {data} from "browserslist";
+import DateTimeFormatter from "./DateTimeFormatter";
 
 declare var $cookies: VueCookies;
 
@@ -60,10 +59,11 @@ export default class OpenSilexVuePlugin {
     private baseApi: string;
     private config: FrontConfigDTO;
     private themeConfig: ThemeConfigDTO;
+
     public $store: Store<any>;
     public $i18n: VueI18n;
-    public $moment: any;
     public $bvToast: any;
+    public $dateTimeFormatter: DateTimeFormatter;
 
     public Oeso = Oeso;
     public Foaf = Foaf;
@@ -82,7 +82,7 @@ export default class OpenSilexVuePlugin {
         this.baseApi = baseApi;
         this.$store = store;
         this.$i18n = i18n;
-        this.$moment = moment;
+        this.$dateTimeFormatter = new DateTimeFormatter(i18n);
         ApiServiceBinder.with(this.container);
         ServiceBinder.with(this.container);
     }
@@ -425,7 +425,6 @@ export default class OpenSilexVuePlugin {
         if (this.getConfig() && this.getConfig().pathPrefix) {
             return this.getConfig().pathPrefix;
         }
-        console.error("No path prefix in configuration");
         return undefined;
     }
 
@@ -808,22 +807,6 @@ export default class OpenSilexVuePlugin {
         return User.fromToken(token)
     }
 
-    public formatDate(value) {
-        if (value != undefined && value != null) {
-            moment.locale(this.$i18n.locale);
-            return moment(value, "YYYY-MM-DD").format("YYYY-MM-DD");
-        }
-        return "";
-    }
-
-    public formatDateTime(value) {
-        if (value != undefined && value != null) {
-            moment.locale(this.$i18n.locale);
-            return moment(value).toISOString(true);
-        }
-        return "";
-    }
-
     public getLocalLangCode(): string {
         let availableLocalesFiltered = this.$i18n.availableLocales.filter(
             function (value, index, arr) {
@@ -840,14 +823,18 @@ export default class OpenSilexVuePlugin {
     }
 
     /**
-     * 
+     * Performs an HTTP call to the specified upload service with the given file and API query params.
+     * @example
+     * uploadFileToService("/core/scientific_object/import_csv", {description: {}, file: csvFile}, {custom_upload_setting : "custom_value"}, false)
+     *
      * @param servicePath a string defines path which will
-     *  be combine with api base path. e.g. "/data-analysis/scientific-app/create"
-     * @param body description and file key are mandatory : 
-     *  {description  : {"name" :"filename",....}, file : File Object}
-     *  @see UploadFile interface
+     * be combined with api base path. e.g. "/data-analysis/scientific-app/create" (required)
+     * @param body description and file key are mandatory
+     * @param queryParams Any object that define additional settings which are specific to the called API (optional)
+     * @param isUpdated Determine if the called HTTP API accept POST (isUpdated=true or undefined) or PUT(isUpdated=false) HTTP method (optional)
+     *
      */
-    uploadFileToService(servicePath: string, body: UploadFileBody, queryParams: any, isUpdated: boolean) {
+    uploadFileToService(servicePath: string, body: UploadFileBody, queryParams: any, isUpdated?: boolean) {
         let formData = new FormData();
 
         // send form data  string part in json
@@ -862,7 +849,6 @@ export default class OpenSilexVuePlugin {
             }
         }
 
-        console.debug("POST request body", body, JSON.stringify(body));
         let headers = {};
         let user: User = this.getUser();
         if (user != User.ANONYMOUS()) {
@@ -906,7 +892,6 @@ export default class OpenSilexVuePlugin {
             if (paramsSize > 0) {
                 url = url + "?" + params.toString();
             }
-            console.debug("Query parameters", queryParams, "Generated URL", url)
         }
 
         this.showLoader();
@@ -914,7 +899,6 @@ export default class OpenSilexVuePlugin {
             let promise = fetch(url, options)
                 .then(response => response.json())
                 .then((http) => {
-                    console.debug("uploaded file result", http);
                     return http;
                 });
 
@@ -931,11 +915,17 @@ export default class OpenSilexVuePlugin {
     }
 
     /**
-    * @param servicePath a string defines path which will
-    *  be combine with api base path. e.g. "/data-analysis/get/{uri}/download"
-    * @param name name of the returned file
-    * @param extension extension of the file
-    */
+     * Performs an HTTP call to the specified download service with the given file and API query params.
+     *
+     * @example
+     * uploadFileToService("/core/scientific_object/export_csv", "os_export","csv", {custom_download_setting : "custom_value"})
+     *
+     * @param servicePath a string defines path which will
+     * be combined with api base path. e.g. "/data-analysis/get/{uri}/download" (required)
+     * @param name name of the returned file (required)
+     * @param extension extension of the file (required)
+     * @param queryParams Any object that define additional settings which are specific to the called API (optional)
+     */
     downloadFilefromService(servicePath: string, name: string, extension: string, queryParams: any) {
         return this.downloadFilefromPostOrGetService(servicePath, name, extension, "GET", queryParams, null)
     }

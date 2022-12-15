@@ -77,6 +77,7 @@ export default class DeviceSelector extends Vue {
         undefined, // variable filter
         undefined, // year filter
         undefined, // existence_date filter
+        undefined, // facility filter
         undefined, // brand filter
         undefined, // model filter
         undefined, // serial_number filter

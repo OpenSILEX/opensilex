@@ -14,6 +14,7 @@
         v-if="baseType"
         :type.sync="form.rdf_type"
         :baseType="baseType"
+        :ignoreRoot="false"
         :required="true"
         :disabled="editMode"
         placeholder="OntologyObjectForm.form-type-placeholder"
@@ -82,7 +83,7 @@ import {Component, Prop, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
 import {OntologyService} from "opensilex-core/api/ontology.service";
 import {VueJsOntologyExtensionService} from "../../lib";
-import { InfrastructureFacilityCreationDTO } from 'opensilex-core/index';
+import { FacilityCreationDTO } from 'opensilex-core/index';
 
 @Component
 export default class FacilityForm extends Vue {
@@ -99,7 +100,7 @@ export default class FacilityForm extends Vue {
   @Prop({
     default: FacilityForm.getEmptyForm()
   })
-  form: InfrastructureFacilityCreationDTO;
+  form: FacilityCreationDTO;
   hasAddress: boolean;
 
   baseType: string;
@@ -110,7 +111,7 @@ export default class FacilityForm extends Vue {
     return FacilityForm.getEmptyForm();
   }
 
-  static getEmptyForm(): InfrastructureFacilityCreationDTO {
+  static getEmptyForm(): FacilityCreationDTO {
     return {
       uri: undefined,
       rdf_type: undefined,

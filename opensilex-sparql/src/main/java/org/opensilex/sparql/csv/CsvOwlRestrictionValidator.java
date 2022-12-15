@@ -1,5 +1,6 @@
 package org.opensilex.sparql.csv;
 
+import org.opensilex.sparql.csv.validation.CsvCellValidationContext;
 import org.opensilex.sparql.owl.OwlRestrictionValidator;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
@@ -9,49 +10,72 @@ import org.opensilex.sparql.service.SPARQLService;
 
 import java.net.URI;
 
+/**
+ * Extension of {@link OwlRestrictionValidator} which handle error which are associated to a specific CSV cell.
+ * @author rcolin
+ */
 public class CsvOwlRestrictionValidator extends OwlRestrictionValidator<CsvCellValidationContext> {
 
     private final CSVValidationModel validationModel;
     private final URI graph;
 
-    public CsvOwlRestrictionValidator(SPARQLService sparql, OntologyStore ontologyStore, CSVValidationModel validationModel, URI graph, int nbErrorLimit) {
+    public CsvOwlRestrictionValidator(SPARQLService sparql, OntologyStore ontologyStore, URI graph, int nbErrorLimit) {
         super(sparql, ontologyStore,nbErrorLimit);
-        this.validationModel = validationModel;
+        this.validationModel = new CSVValidationModel();
         this.graph = graph;
     }
 
     @Override
-    protected void addUnknownPropertyError(CsvCellValidationContext cellContext) {
-        validationModel.addInvalidValueError(cellContext.getCsvCell());
+    public void addUnknownPropertyError(CsvCellValidationContext cellContext) {
+        super.addUnknownPropertyError(cellContext);
+        validationModel.addInvalidValueError(cellContext);
     }
 
     @Override
-    protected void addInvalidValueError(CsvCellValidationContext cellContext) {
-        validationModel.addInvalidValueError(cellContext.getCsvCell());
+    public void addInvalidValueError(CsvCellValidationContext cellContext) {
+        super.addInvalidValueError(cellContext);
+        validationModel.addInvalidValueError(cellContext);
     }
 
     @Override
-    protected void addMissingRequiredValue(CsvCellValidationContext cellContext) {
-        validationModel.addMissingRequiredValue(cellContext.getCsvCell());
+    public void addMissingRequiredValue(CsvCellValidationContext cellContext) {
+        super.addMissingRequiredValue(cellContext);
+        validationModel.addMissingRequiredValue(cellContext);
     }
 
     @Override
-    protected void addInvalidDatatypeError(CsvCellValidationContext cellContext, URI datatype) {
-        validationModel.addInvalidDatatypeError(cellContext.getCsvCell(), datatype);
+    public void addInvalidDatatypeError(CsvCellValidationContext cellContext, URI datatype) {
+        super.addInvalidDatatypeError(cellContext,datatype);
+        validationModel.addInvalidDatatypeError(cellContext, datatype);
     }
 
     @Override
-    protected void addInvalidURIError(CsvCellValidationContext cellContext) {
-        validationModel.addInvalidURIError(cellContext.getCsvCell());
+    public void addInvalidURIError(CsvCellValidationContext cellContext) {
+        super.addInvalidURIError(cellContext);
+        validationModel.addInvalidURIError(cellContext);
     }
 
+    @Override
+    public void addAlreadyExistingURIError(CsvCellValidationContext context) {
+        super.addAlreadyExistingURIError(context);
+        validationModel.addAlreadyExistingURIError(context);
+    }
+
+    /**
+     * Register error when the row size is equals to the expected CSV header size
+     * @param context error context
+     */
+    public void addInvalidRowSizeError(CsvCellValidationContext context){
+        nbError++;
+        validationModel.addAInvalidRowSizeError(context);
+    }
 
     protected void validateCsvValue(int rowIdx, int colIdx, ClassModel classModel, SPARQLResourceModel model, String value, URI property, OwlRestrictionModel restriction) {
         validateModelRelation(graph, classModel, model, property, value, restriction, () -> {
-            CSVCell cell = new CSVCell();
-            cell.setRowIndex(rowIdx);
-            cell.setColIndex(colIdx);
-            return new CsvCellValidationContext(cell);
+            CsvCellValidationContext cell = new CsvCellValidationContext();
+            cell.setRowIndex(rowIdx+AbstractCsvImporter.CSV_HEADER_HUMAN_READABLE_ROW_OFFSET);
+            cell.setColIndex(colIdx+AbstractCsvImporter.CSV_HEADER_HUMAN_READABLE_COLUMN_OFFSET);
+            return cell;
         });
     }
 

@@ -302,13 +302,23 @@ export default class TableAsyncView extends Vue {
 
   //from outside the component
   onItemUnselected(item) {
-    const idx = this.tableRef.sortedItems.findIndex(it => item.id == it.uri);
+    const unselectedItemIndex = this.tableRef.sortedItems.findIndex(it => item.id == it.uri);
 
-    if (idx >= 0) {
-      this.tableRef.unselectRow(idx);
+    if (unselectedItemIndex >= 0) {
+      this.tableRef.unselectRow(unselectedItemIndex);
     } 
     const index = this.selectedItems.findIndex(it => item.id == it.uri);
     this.selectedItems.splice(index, 1);
+    this.numberOfSelectedRows = this.selectedItems.length;
+  }
+  //from outside the component
+  onItemSelected(item) {
+    const selectedItemIndex = this.tableRef.sortedItems.findIndex(it => item.id == it.uri);
+
+    if (selectedItemIndex >= 0) {
+      this.tableRef.selectRow(selectedItemIndex);
+    }
+    this.selectedItems.push(this.tableRef.sortedItems[selectedItemIndex]);
     this.numberOfSelectedRows = this.selectedItems.length;
   }
 
@@ -400,6 +410,10 @@ export default class TableAsyncView extends Vue {
 
   getCurrentItemOffset() : number {
     return this.$i18n.n(this.pageSize * (this.currentPage ) < this.totalRow ? this.pageSize * (this.currentPage )  :  this.totalRow )
+  }
+
+  getTotalRow(): number {
+    return this.totalRow;
   }
 
   onSelectAll() {

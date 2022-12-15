@@ -108,6 +108,7 @@ components["opensilex-FacilityView"] = FacilityView;
 import FacilityListView from "./facilities/FacilityListView.vue";
 components["opensilex-FacilityListView"] = FacilityListView;
 
+
 // Factors
 import FactorView from './experiments/factors/FactorView.vue';
 components["opensilex-FactorView"] = FactorView;
@@ -283,8 +284,11 @@ import OntologyClassView from './ontology/OntologyClassView.vue'
 components["opensilex-OntologyClassView"] = OntologyClassView;
 import OntologyClassPropertyForm from './ontology/OntologyClassPropertyForm.vue'
 components["opensilex-OntologyClassPropertyForm"] = OntologyClassPropertyForm;
-import OntologyCsvImporter from './ontology/OntologyCsvImporter.vue';
+import OntologyCsvImporter from './ontology/csv/OntologyCsvImporter.vue';
 components["opensilex-OntologyCsvImporter"] = OntologyCsvImporter;
+import OntologyCsvTemplateGenerator from './ontology/csv/OntologyCsvTemplateGenerator.vue';
+components["opensilex-OntologyCsvTemplateGenerator"] = OntologyCsvTemplateGenerator;
+
 import OntologyPropertyTreeView from './ontology/OntologyPropertyTreeView.vue'
 components["opensilex-OntologyPropertyTreeView"] = OntologyPropertyTreeView;
 import OntologyPropertyDetail from './ontology/OntologyPropertyDetail.vue'
@@ -449,8 +453,6 @@ import ScientificObjectImportHelp from './scientificObjects/ScientificObjectImpo
 components["opensilex-ScientificObjectImportHelp"] = ScientificObjectImportHelp;
 import ScientificObjectCSVImporter from './scientificObjects/ScientificObjectCSVImporter.vue';
 components["opensilex-ScientificObjectCSVImporter"] = ScientificObjectCSVImporter;
-import ScientificObjectCSVTemplateGenerator from './scientificObjects/ScientificObjectCSVTemplateGenerator.vue';
-components["opensilex-ScientificObjectCSVTemplateGenerator"] = ScientificObjectCSVTemplateGenerator;
 import ScientificObjectVisualizationTab from './scientificObjects/ScientificObjectVisualizationTab.vue';
 components["opensilex-ScientificObjectVisualizationTab"] = ScientificObjectVisualizationTab;
 import ScientificObjectVisualizationForm from './scientificObjects/visualization/ScientificObjectVisualizationForm.vue';
@@ -663,10 +665,6 @@ components["opensilex-ImageGrid"] = ImageGrid;
 import ImageSingle from './visualization/ImageSingle.vue';
 components["opensilex-ImageSingle"] = ImageSingle;
 
-import VisuView from './visualization/VisuView.vue';
-components["opensilex-VisuView"] = VisuView;
-import VisuGraphic from './visualization/VisuGraphic.vue';
-components["opensilex-VisuGraphic"] = VisuGraphic;
 import VisuImages from './visualization/VisuImages.vue';
 components["opensilex-VisuImages"] = VisuImages;
 import VisuForm from './visualization/VisuForm.vue';
@@ -681,8 +679,6 @@ components["opensilex-ImageLightBox"] = ImageLightBox;
 
 import DataVisuGraphic from './visualization/DataVisuGraphic.vue';
 components["opensilex-DataVisuGraphic"] = DataVisuGraphic;
-import DataVisualisationGraphic from './visualization/DataVisualisationGraphic.vue';
-components["opensilex-DataVisualisationGraphic"] = DataVisualisationGraphic;
 import DataVisuHelp from './visualization/DataVisuHelp.vue';
 components["opensilex-DataVisuHelp"] = DataVisuHelp;
 
@@ -703,10 +699,6 @@ import DeviceDetails from './devices/DeviceDetails.vue';
 components["opensilex-DeviceDetails"] = DeviceDetails;
 import DeviceDescription from './devices/details/DeviceDescription.vue';
 components["opensilex-DeviceDescription"] = DeviceDescription;
-import DeviceCreate from './devices/DeviceCreate.vue';
-components["opensilex-DeviceCreate"] = DeviceCreate;
-import DeviceTable from './devices/DeviceTable.vue';
-components["opensilex-DeviceTable"] = DeviceTable;
 import DeviceForm from './devices/form/DeviceForm.vue';
 components["opensilex-DeviceForm"] = DeviceForm;
 import DeviceModalForm from './devices/form/DeviceModalForm.vue';
@@ -726,8 +718,6 @@ import  DevicePropertySelector from './devices/DevicePropertySelector.vue';
 components["opensilex-DevicePropertySelector"] = DevicePropertySelector;
 import  DeviceCsvForm from './devices/csv/DeviceCsvForm.vue';
 components["opensilex-DeviceCsvForm"] = DeviceCsvForm;
-import DeviceCsvTemplateGenerator from './devices/csv/DeviceCsvTemplateGenerator.vue';
-components["opensilex-DeviceCsvTemplateGenerator"] = DeviceCsvTemplateGenerator;
 import DeviceImportHelp from './devices/csv/DeviceImportHelp.vue';
 components["opensilex-DeviceImportHelp"] = DeviceImportHelp;
 

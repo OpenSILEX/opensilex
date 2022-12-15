@@ -149,4 +149,11 @@ public class EventGetDTO extends ResourceDTO<EventModel> {
         creator = model.getCreator();
         isInstant = model.getIsInstant();
     }
+
+    public static EventGetDTO getDTOFromModel(EventModel model) {
+        EventGetDTO dto = new EventGetDTO();
+        dto.fromModel(model);
+
+        return dto;
+    }
 }

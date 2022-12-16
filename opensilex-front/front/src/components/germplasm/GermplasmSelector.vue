@@ -79,7 +79,7 @@ export default class GermplasmSelector extends Vue {
         undefined, //metadata?: string
         [], //orderBy?: Array<string>
         page, //page?: number
-        pageSize //pageSize?
+        0 //pageSize?
       );
   }
 

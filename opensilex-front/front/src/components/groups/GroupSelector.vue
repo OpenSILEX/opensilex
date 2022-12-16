@@ -46,7 +46,7 @@ export default class GroupSelector extends Vue {
   searchGroups(searchQuery, page, pageSize) {
     return this.$opensilex
       .getService("opensilex.SecurityService")
-      .searchGroups(searchQuery, undefined, page, pageSize)
+      .searchGroups(searchQuery, undefined, page, 0)
   }
 
   loadGroups(groupsURI) {

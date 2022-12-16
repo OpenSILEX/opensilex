@@ -105,7 +105,7 @@ export default class FactorLevelSelector extends Vue {
   searchFactorLevels(name: string, page, pageSize) {
     return this.$opensilex
       .getService("opensilex.FactorsService")
-      .searchFactorLevels(name, ["name=asc"], page, pageSize);
+      .searchFactorLevels(name, ["name=asc"], page, 0);
   }
 
   convertDetail(factor) {

@@ -45,7 +45,7 @@ export default class GroupVariablesSelector extends Vue {
 
   searchVariablesGroups(name) {
     return this.$opensilex.getService("opensilex.VariablesService")
-    .searchVariablesGroups(name, undefined, ["name=asc"], 0, 10)    
+    .searchVariablesGroups(name, undefined, ["name=asc"], 0, 0)
     .then((http: HttpResponse<OpenSilexResponse<Array<VariablesGroupGetDTO>>>) => {
         return http;
     });

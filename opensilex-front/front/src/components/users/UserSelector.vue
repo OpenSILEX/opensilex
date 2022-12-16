@@ -52,7 +52,7 @@ export default class UserSelector extends Vue {
   searchUsers(searchQuery, page, pageSize) {
     return this.$opensilex
       .getService("opensilex.SecurityService")
-      .searchUsers(searchQuery, undefined, page, pageSize);
+      .searchUsers(searchQuery, undefined, page, 0);
   }
 
   userToSelectNode(dto: UserGetDTO) {

@@ -70,7 +70,7 @@ export default class ScientificObjectSelector extends Vue {
                 undefined,
                 ["name=asc"], // orderBy?: ,
                 page, // page?: number,
-                pageSize // pageSize?: number
+                0 // pageSize?: number
             ).then((http : HttpResponse<OpenSilexResponse<Array<ScientificObjectNodeDTO>>>) => {
 
                 if (http && http.response) {

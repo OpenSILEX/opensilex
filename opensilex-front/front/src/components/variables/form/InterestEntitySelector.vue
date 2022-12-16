@@ -45,7 +45,7 @@ export default class InterestEntitySelector extends Vue {
   
   searchInterestEntities(name) {
     return this.$opensilex.getService("opensilex.VariablesService")
-    .searchInterestEntity(name, ["name=asc"], 0, 10)    
+    .searchInterestEntity(name, ["name=asc"], 0, 0)
     .then((http: HttpResponse<OpenSilexResponse<Array<InterestEntityGetDTO>>>) => {
         return http;
     });

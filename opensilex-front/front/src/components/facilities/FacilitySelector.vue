@@ -57,7 +57,7 @@
                 undefined,
                 undefined,
                 page,
-                pageSize
+                0
             ).then((http: HttpResponse<OpenSilexResponse<Array<NamedResourceDTO>>>) => {
                 return http;
             }).catch(this.$opensilex.errorHandler);

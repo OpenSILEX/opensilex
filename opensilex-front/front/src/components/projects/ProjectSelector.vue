@@ -46,7 +46,7 @@ export default class ProjectSelector extends Vue {
         undefined,
         undefined,
         page,
-        pageSize
+        0
       )
   }
 

@@ -110,7 +110,7 @@ export default class FactorSelector extends Vue {
         undefined, // experiment
         undefined, // orderBy
         page, // page
-        pageSize // pageSize
+        0 // pageSize
       )
       .then((http) => {
         let factorMapByCategory = this.sortFactorListByCategory(

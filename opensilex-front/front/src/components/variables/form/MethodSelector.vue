@@ -45,7 +45,7 @@ export default class MethodSelector extends Vue {
 
   searchMethods(name) {
     return this.$opensilex.getService("opensilex.VariablesService")
-    .searchMethods(name, ["name=asc"], 0, 10)    
+    .searchMethods(name, ["name=asc"], 0, 0)
     .then((http: HttpResponse<OpenSilexResponse<Array<MethodGetDTO>>>) => {
         return http;
     });

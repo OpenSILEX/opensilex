@@ -65,7 +65,7 @@ export default class ExperimentSelector extends Vue {
         undefined,
         undefined,
         0,
-        10
+        0
       )
       .then(
         (http: HttpResponse<OpenSilexResponse<Array<ExperimentGetListDTO>>>) => {

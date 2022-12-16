@@ -104,7 +104,7 @@ export default class VariableDevicesSelector extends Vue {
             undefined,
             ["name=asc"],
             0,
-            200
+            0
         )
         .then(http => {
           return http.response.result;

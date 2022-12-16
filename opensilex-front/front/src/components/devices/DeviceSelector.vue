@@ -84,7 +84,7 @@ export default class DeviceSelector extends Vue {
         undefined, //metadata filter
         ["name=asc"],
         page,
-        pageSize,
+        0,
     ).then((http) => {
 
         if (http && http.response) {

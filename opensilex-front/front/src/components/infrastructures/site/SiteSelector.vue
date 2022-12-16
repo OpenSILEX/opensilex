@@ -62,7 +62,7 @@ export default class SiteSelector extends Vue {
         undefined,
         undefined,
         page,
-        pageSize
+        0
     ).then((http: HttpResponse<OpenSilexResponse<Array<NamedResourceDTO>>>) => {
 
       if (http && http.response) {

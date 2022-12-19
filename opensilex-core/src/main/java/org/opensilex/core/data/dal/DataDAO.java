@@ -737,7 +737,14 @@ public class DataDAO {
         Instant variableTime = Instant.now();
         LOGGER.debug("Get " + variables.size() + " variable(s) " + Long.toString(Duration.between(dataTransform, variableTime).toMillis()) + " milliseconds elapsed");
         OntologyDAO ontologyDao = new OntologyDAO(sparql);
-        List<SPARQLNamedResourceModel> objectsList = ontologyDao.getURILabels(objects.keySet(), user.getLanguage(), null);
+
+        // Provides the experiment as context if there is only one
+        URI context = null;
+        if (experiments.size() == 1) {
+            context = experiments.keySet().stream().findFirst().get();
+        }
+
+        List<SPARQLNamedResourceModel> objectsList = ontologyDao.getURILabels(objects.keySet(), user.getLanguage(), context);
         for (SPARQLNamedResourceModel obj : objectsList) {
             objects.put(obj.getUri(), obj);
         }

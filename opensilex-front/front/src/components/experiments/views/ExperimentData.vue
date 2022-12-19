@@ -160,6 +160,7 @@
             <opensilex-DataList
               ref="dataList"
               :listFilter.sync="filter"
+              :contextUri="uri"
               class="dataList">
             </opensilex-DataList>
           </div>

@@ -39,10 +39,7 @@ import org.opensilex.core.scientificObject.api.ScientificObjectNodeWithChildrenD
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.exceptions.InvalidValueException;
-import org.opensilex.sparql.deserializer.DateDeserializer;
-import org.opensilex.sparql.deserializer.SPARQLDeserializer;
-import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.deserializer.URIDeserializer;
+import org.opensilex.sparql.deserializer.*;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapperIndex;
@@ -585,33 +582,62 @@ public class ScientificObjectDAO {
         }
     }
 
+    public SPARQLNamedResourceModel getUriByNameAndGraph(Node experiment, String objectName) throws SPARQLException {
+
+        Node graph = experiment == null ? defaultGraphNode : experiment;
+
+        List<SPARQLNamedResourceModel> existingOs;
+
+        try {
+            Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
+            SelectBuilder query = new SelectBuilder()
+                    .addVar(uriVar)
+                    .addGraph(graph, new WhereBuilder()
+                            .addWhere(uriVar, RDFS.label, NodeFactory.createLiteral(objectName))
+                    ).setLimit(1);
+
+            existingOs = sparql.executeSelectQueryAsStream(query)
+                    .map(result ->  {
+                        SPARQLNamedResourceModel model = new SPARQLNamedResourceModel();
+                        model.setUri(URIDeserializer.formatURI(result.getStringValue(SPARQLResourceModel.URI_FIELD)));
+                        model.setName(objectName);
+                        return model;
+                    })
+                    .collect(Collectors.toList());
+
+        } catch (Exception e) {
+            throw new SPARQLException(e);
+        }
+
+        return existingOs.isEmpty() ? null : existingOs.get(0);
+    }
+
     /**
-     * Check if a object with the same name already exists into objectGraph graph.
-     * @param objectName name
-     * @param objectGraph graph
+     * Check if an object with the same name already exists into objectGraph graph.
+     * @param name name
+     * @param graph graph
      * @throws SPARQLException if some Exception is encountered during SPARQL query execution
      * @throws DuplicateNameException if an object with the same name already exists into objectGraph graph.
      */
-    public void checkUniqueNameByGraph(URI objectGraph, String objectName, URI objectUri, boolean create) throws DuplicateNameException, SPARQLException {
+    public void checkUniqueNameByGraph(URI graph, String name, URI uri, boolean create) throws DuplicateNameException, SPARQLException {
+
+        Objects.requireNonNull(graph);
 
         // unique name restriction only apply on some experiment graph
-        if(SPARQLDeserializers.compareURIs(objectGraph, defaultGraphURI)){
+        if(SPARQLDeserializers.compareURIs(graph, defaultGraphURI)){
             return;
         }
 
-        ScientificObjectModel alreadyExistingOs;
-        try {
-            alreadyExistingOs = getByNameAndContext(objectName, objectGraph);
-        }catch (Exception e){
-            throw new SPARQLException(e);
+        SPARQLNamedResourceModel alreadyExistingOs = getUriByNameAndGraph(SPARQLDeserializers.nodeURI(graph), name);
+        if(alreadyExistingOs == null){
+            return;
         }
 
         // error on create if -> an already existing os has the same name
         // error on update if -> an already existing os different from <objectUri> has the same name
-
-        if (alreadyExistingOs != null && (create || !SPARQLDeserializers.compareURIs(alreadyExistingOs.getUri(), objectUri))) {
-            String errorMsg = String.format(NON_UNIQUE_NAME_INTO_GRAPH_ERROR_MSG, objectName, objectGraph.toString(), alreadyExistingOs.getUri().toString());
-            throw new DuplicateNameException(errorMsg,objectName);
+        if (create || !SPARQLDeserializers.compareURIs(alreadyExistingOs.getUri(), uri)) {
+            String errorMsg = String.format(NON_UNIQUE_NAME_INTO_GRAPH_ERROR_MSG, name, graph, alreadyExistingOs);
+            throw new DuplicateNameException(errorMsg,name);
         }
     }
 

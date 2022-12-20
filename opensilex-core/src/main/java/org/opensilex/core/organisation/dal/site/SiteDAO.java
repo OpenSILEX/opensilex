@@ -6,6 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.arq.querybuilder.clauses.WhereClause;
 import org.apache.jena.sparql.core.Var;
+import org.apache.jena.vocabulary.ORG;
 import org.opensilex.core.external.geocoding.GeocodingService;
 import org.opensilex.core.external.geocoding.OpenStreetMapGeocodingService;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
@@ -89,11 +90,17 @@ public class SiteDAO {
 
         return sparql.searchWithPagination(SiteModel.class, filter.getUser().getLanguage(), select -> {
             Var uriVar = makeVar(SiteModel.URI_FIELD);
+            Var organizationsVar = makeVar("__" + SiteModel.ORGANIZATION_FIELD);
 
             organizationSPARQLHelper.addSiteAccessClause(select, uriVar, userOrganizations, filter.getUser().getUri());
 
             if (!StringUtils.isEmpty(filter.getNamePattern())) {
                 select.addFilter(SPARQLQueryHelper.regexFilter(SiteModel.NAME_FIELD, filter.getNamePattern()));
+            }
+
+            if (!CollectionUtils.isEmpty(filter.getOrganizations())) {
+                select.addWhere(organizationsVar, ORG.hasSite, uriVar);
+                select.addFilter(SPARQLQueryHelper.inURIFilter(organizationsVar, filter.getOrganizations()));
             }
 
             if (CollectionUtils.isNotEmpty(filter.getSites())) {

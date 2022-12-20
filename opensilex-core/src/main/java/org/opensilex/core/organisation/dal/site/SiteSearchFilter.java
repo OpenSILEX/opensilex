@@ -16,6 +16,7 @@ import javax.validation.constraints.NotNull;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author Valentin Rigolle
@@ -105,7 +106,9 @@ public class SiteSearchFilter extends SparqlSearchFilter {
     public void validate() throws IllegalArgumentException, InvocationTargetException, IllegalAccessException {
         super.validate();
 
-        if (getSkipUserOrganizationFetch() && CollectionUtils.isEmpty(getUserOrganizations())) {
+        // The fetching of user organizations can only be skipped iff a list of user organizations is provided with
+        // the filter. This list can be empty in the case where the user has access to no organization.
+        if (getSkipUserOrganizationFetch() && Objects.isNull(getUserOrganizations())) {
             throw new IllegalArgumentException("`skipUserOrganizationFetch` requires `userOrganizations` to be defined");
         }
     }

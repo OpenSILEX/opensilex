@@ -9,11 +9,15 @@
 package org.opensilex.core.organisation.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.AbstractMongoIntegrationTest;
+import org.opensilex.core.experiment.api.ExperimentAPITest;
+import org.opensilex.core.experiment.api.ExperimentCreationDTO;
+import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.api.RDFObjectDTO;
 import org.opensilex.core.organisation.api.facility.FacilityAPI;
 import org.opensilex.core.organisation.api.facility.FacilityCreationDTO;
@@ -42,6 +46,7 @@ import org.opensilex.sparql.response.ResourceDagDTO;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 import java.net.URI;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -83,6 +88,7 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
     private URI orgChild;
     private URI orgPrivate;
     private URI orgPublic;
+    private URI orgPrivateFinal;
     
     private URI facOfOrgCreatedByUser;
     private URI facOfOrgParent;
@@ -107,6 +113,10 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
     private URI siteOfOrgPrivateWithWrongGroup;
     private URI siteOfOrgPublic;
 
+    private URI experimentWithOrgCreatedByUser;
+    private URI experimentWithOrgPrivateFinal;
+    private URI experimentWithoutOrg;
+
     // Test assertions
     private final Set<URI> accessibleOrganizationURISet = new HashSet<>();
     private final Set<URI> accessibleFacilityURISet = new HashSet<>();
@@ -115,12 +125,16 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
     private final Set<URI> forbiddenFacilityURISet = new HashSet<>();
     private final Set<URI> forbiddenSiteURISet = new HashSet<>();
 
+    private final Set<URI> availableFacilitiesForExperimentWithOrgCreatedByUserURISet = new HashSet<>();
+    private final Set<URI> availableFacilitiesForExperimentWithoutOrgURISet = new HashSet<>();
+
     @Before
     public void beforeTest() throws Exception {
         createAndRegisterUserProfileGroups();
         createOrganizationHierarchy();
         createFacilities();
         createSites();
+        createExperiments();
         initAssertionSets();
     }
 
@@ -194,11 +208,35 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
     private URI createSite(String name, URI orgURI, URI facilityURI, URI groupURI) throws Exception {
         WebTarget createTarget = target(SITE_CREATE_PATH);
         SiteCreationDTO siteCreationDTO = getSiteCreationDTO(name, orgURI, facilityURI, groupURI);
-        Response postSiteResponse;
-
-        postSiteResponse = getJsonPostResponseAsAdmin(createTarget, siteCreationDTO);
-
+        Response postSiteResponse = getJsonPostResponseAsAdmin(createTarget, siteCreationDTO);
         return extractUriFromResponse(postSiteResponse);
+    }
+
+    private ExperimentCreationDTO getExperimentCreationDTO(String name, URI orgURI, URI groupURI) {
+        ExperimentCreationDTO experimentCreationDTO = new ExperimentCreationDTO();
+        experimentCreationDTO.setName(name);
+        experimentCreationDTO.setObjective(name);
+
+        LocalDate startDate = LocalDate.of(2022, 12, 12);
+        experimentCreationDTO.setStartDate(startDate);
+        experimentCreationDTO.setEndDate(startDate.plusDays(3));
+
+        if (Objects.nonNull(orgURI)) {
+            experimentCreationDTO.setInfrastructures(Collections.singletonList(orgURI));
+        }
+
+        if (Objects.nonNull(groupURI)) {
+            experimentCreationDTO.setGroups(Collections.singletonList(groupURI));
+        }
+
+        return experimentCreationDTO;
+    }
+
+    private URI createExperiment(String name, URI orgURI, URI groupURI) throws Exception {
+        WebTarget createTarget = target(ExperimentAPITest.createPath);
+        ExperimentCreationDTO experimentCreationDTO = getExperimentCreationDTO(name, orgURI, groupURI);
+        Response postExperimentResponse = getJsonPostResponseAsAdmin(createTarget, experimentCreationDTO);
+        return extractUriFromResponse(postExperimentResponse);
     }
 
     private void createAndRegisterUserProfileGroups() throws Exception {
@@ -253,6 +291,7 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
         orgChild = createOrganization("Child organization", orgParent, null, false);
         orgPrivate = createOrganization("Private organization", null, groupWithoutUser, false);
         orgPublic = createOrganization("Public organization", null, null, false);
+        orgPrivateFinal = createOrganization("Private final organization", null, groupWithoutUser, false);
     }
     
     private void createFacilities() throws Exception {
@@ -285,12 +324,19 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
         siteOfOrgPrivateWithWrongGroup = createSite("Site of private organization, but with the wrong group", orgPrivate, facOfSiteOfOrgPrivateWithCorrectGroup, groupWithoutUser);
     }
 
+    private void createExperiments() throws Exception {
+        experimentWithOrgCreatedByUser = createExperiment("Experiment with organization created by user", orgCreatedByUser, groupWithUser);
+        experimentWithOrgPrivateFinal = createExperiment("Experiment with private final organization", orgPrivateFinal, groupWithUser);
+        experimentWithoutOrg = createExperiment("Experiment without organizations", null, groupWithUser);
+    }
+
     private void initAssertionSets() {
         accessibleOrganizationURISet.add(orgCreatedByUser);
         accessibleOrganizationURISet.add(orgParent);
         accessibleOrganizationURISet.add(orgChild);
         accessibleOrganizationURISet.add(orgPublic);
         forbiddenOrganizationsURISet.add(orgPrivate);
+        forbiddenOrganizationsURISet.add(orgPrivateFinal);
 
         accessibleFacilityURISet.add(facOfOrgCreatedByUser);
         accessibleFacilityURISet.add(facOfOrgParent);
@@ -314,6 +360,9 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
         accessibleSiteURISet.add(siteOfOrgPrivateWithCorrectGroup);
         forbiddenSiteURISet.add(siteOfOrgPrivate);
         forbiddenSiteURISet.add(siteOfOrgPrivateWithWrongGroup);
+
+        availableFacilitiesForExperimentWithOrgCreatedByUserURISet.add(facOfOrgCreatedByUser);
+        availableFacilitiesForExperimentWithoutOrgURISet.addAll(accessibleFacilityURISet);
     }
 
     @Test
@@ -516,6 +565,57 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
         assertTrue(sitesToGet.get(0) + " should be accessible", SPARQLDeserializers.compareURIs(result.get(0), sitesToGet.get(0)));
     }
 
+    @Test
+    public void testGetAvailableFacilitiesForExperimentWithOrgCreatedByUser() throws Exception {
+        assert !availableFacilitiesForExperimentWithOrgCreatedByUserURISet.isEmpty();
+
+        Response getResponse = getJsonGetResponse(target(ExperimentAPITest.getAvailableFacilitiesPath).resolveTemplate("uri", experimentWithOrgCreatedByUser), USER_MAIL);
+        assertEquals(Response.Status.OK.getStatusCode(), getResponse.getStatus());
+
+        List<URI> availableFacilityURIList = mapper.convertValue(getResponse.readEntity(JsonNode.class),
+                new TypeReference<PaginatedListResponse<FacilityGetDTO>>() {}).getResult()
+                .stream().map(RDFObjectDTO::getUri)
+                .collect(Collectors.toList());
+
+        assertEquals(availableFacilitiesForExperimentWithOrgCreatedByUserURISet.size(), availableFacilityURIList.size());
+
+        for (URI availableFacilityURI : availableFacilitiesForExperimentWithOrgCreatedByUserURISet) {
+            assertTrue(availableFacilityURI + " should be available", availableFacilityURIList.stream().anyMatch(uri -> SPARQLDeserializers.compareURIs(uri, availableFacilityURI)));
+        }
+    }
+
+    @Test
+    public void testGetAvailableFacilitiesForExperimentWithoutOrg() throws Exception {
+        assert !availableFacilitiesForExperimentWithoutOrgURISet.isEmpty();
+
+        Response getResponse = getJsonGetResponse(target(ExperimentAPITest.getAvailableFacilitiesPath).resolveTemplate("uri", experimentWithoutOrg), USER_MAIL);
+        assertEquals(Response.Status.OK.getStatusCode(), getResponse.getStatus());
+
+        List<URI> availableFacilityURIList = mapper.convertValue(getResponse.readEntity(JsonNode.class),
+                new TypeReference<PaginatedListResponse<FacilityGetDTO>>() {}).getResult()
+                .stream().map(RDFObjectDTO::getUri)
+                .collect(Collectors.toList());
+
+        assertEquals(availableFacilitiesForExperimentWithoutOrgURISet.size(), availableFacilityURIList.size());
+
+        for (URI availableFacilityURI : availableFacilitiesForExperimentWithoutOrgURISet) {
+            assertTrue(availableFacilityURI + " should be available", availableFacilityURIList.stream().anyMatch(uri -> SPARQLDeserializers.compareURIs(uri, availableFacilityURI)));
+        }
+    }
+
+    @Test
+    public void testGetAvailableFacilitiesForExperimentWithOrgPrivateFinal() throws Exception {
+        Response getResponse = getJsonGetResponse(target(ExperimentAPITest.getAvailableFacilitiesPath).resolveTemplate("uri", experimentWithOrgPrivateFinal), USER_MAIL);
+        assertEquals(Response.Status.OK.getStatusCode(), getResponse.getStatus());
+
+        List<URI> availableFacilityURIList = mapper.convertValue(getResponse.readEntity(JsonNode.class),
+                new TypeReference<PaginatedListResponse<FacilityGetDTO>>() {}).getResult()
+                .stream().map(RDFObjectDTO::getUri)
+                .collect(Collectors.toList());
+
+        assertEquals(0, availableFacilityURIList.size());
+    }
+
     @After
     public void afterTests() throws Exception {
         getDeleteByUriResponse(target(userAPITest.deletePath), user.toString());
@@ -527,6 +627,7 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
             add(OrganizationModel.class);
             add(FacilityModel.class);
             add(SiteModel.class);
+            add(ExperimentModel.class);
             add(ProfileModel.class);
             add(GroupUserProfileModel.class);
             add(GroupModel.class);

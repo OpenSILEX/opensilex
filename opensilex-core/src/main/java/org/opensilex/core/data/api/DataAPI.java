@@ -59,6 +59,7 @@ import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.csv.CSVCell;
+import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.model.SPARQLModelRelation;
@@ -177,7 +178,7 @@ public class DataAPI {
             
             dataList = validData(dataList);
 
-            dataList = (List<DataModel>) dao.createAll(dataList);
+            dataList = dao.createAll(dataList);
             if(variablesToDevices.size() > 0) {
                
                 DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
@@ -759,15 +760,6 @@ public class DataAPI {
         
     }
     
-     
-    public Map<DeviceModel, List<URI>> getVariablesToDevices() {
-        return variablesToDevices;
-    }
-
-    public void setVariablesToDevices(Map<DeviceModel,  List<URI>> variablesToDevices) {
-        this.variablesToDevices = variablesToDevices;
-    }
-    
     public void addVariableToDevice(DeviceModel device, URI variable) {
         
         if (!variablesToDevices.containsKey(device)) {
@@ -1240,7 +1232,7 @@ public class DataAPI {
 
 
         ScientificObjectDAO scientificObjectDAO = new ScientificObjectDAO(sparql, nosql);
-        Map<String, ScientificObjectModel> nameURIScientificObjectsInXp = new HashMap<>();
+        Map<String, SPARQLNamedResourceModel> nameURIScientificObjectsInXp = new HashMap<>();
         List<String> scientificObjectsNotInXp = new ArrayList<>();
 
         
@@ -1250,11 +1242,11 @@ public class DataAPI {
         List<String> duplicatedDevices = new ArrayList<>();
         
         List<AgentModel> agents = provenance.getAgents();
-        Boolean hasDevice = false;
+        boolean sensingDeviceFoundFromProvenance = false;
         if (agents !=  null) {
             for (AgentModel agent:agents) {
                 if (agent.getRdfType() != null && deviceDAO.isDeviceType(agent.getRdfType())) { 
-                    hasDevice = true;
+                    sensingDeviceFoundFromProvenance = true;
                     break;
                 }
             }
@@ -1278,7 +1270,7 @@ public class DataAPI {
             // Line 1
             String[] ids = csvReader.parseNext();
             Set<String> headers = Arrays.stream(ids).filter(Objects::nonNull).map(id -> id.toLowerCase(Locale.ENGLISH)).collect(Collectors.toSet());
-            if (!headers.contains(deviceHeader) && !headers.contains(targetHeader) && !headers.contains(soHeader) && !hasDevice) {
+            if (!headers.contains(deviceHeader) && !headers.contains(targetHeader) && !headers.contains(soHeader) && !sensingDeviceFoundFromProvenance) {
                 csvValidation.addMissingHeaders(Arrays.asList(deviceHeader + " or " + targetHeader + " or " + soHeader));
             }  
             
@@ -1344,7 +1336,7 @@ public class DataAPI {
                         validateCSVRow = validateCSVRow(
                                 provenance,
                                 experiment,
-                                hasDevice,
+                                sensingDeviceFoundFromProvenance,
                                 variableCheckedDevice,
                                 variableCheckedProvDevice,
                                 checkedVariables,
@@ -1393,7 +1385,7 @@ public class DataAPI {
     private boolean validateCSVRow(
             ProvenanceModel provenance,
             URI experiment,
-            Boolean hasDevice,
+            boolean sensingDeviceFoundFromProvenance,
             Map<String, DeviceModel> variableCheckedDevice,
             Map<String,DeviceModel> variableCheckedProvDevice,
             List<String> checkedVariables,
@@ -1410,7 +1402,7 @@ public class DataAPI {
             List<String> duplicatedTargets,
             Map<String, SPARQLNamedResourceModel> nameURITargets,
             ScientificObjectDAO scientificObjectDAO,
-            Map<String, ScientificObjectModel> nameURIScientificObjects,
+            Map<String, SPARQLNamedResourceModel> nameURIScientificObjects,
             List<String> scientificObjectsNotInXp,
             DeviceDAO deviceDAO, 
             List<String> notExistingDevices,
@@ -1428,12 +1420,12 @@ public class DataAPI {
         List<URI> experiments = new ArrayList<>();
         SPARQLNamedResourceModel target = null;
         
-        Boolean missingTargetOrDevice = false;
+        Boolean missingTarget = false;
         int targetColIndex = 0;
         int deviceColIndex = 0;
 
-        DeviceModel device = null;
-        ScientificObjectModel object = null;
+        DeviceModel deviceFromDeviceColumn = null;
+        SPARQLNamedResourceModel object = null;
         if( experiment != null) {
             experiments.add(experiment);
         }
@@ -1533,21 +1525,26 @@ public class DataAPI {
             } else if (headerByIndex.get(colIndex).equalsIgnoreCase(soHeader)) {
 
                 String objectNameOrUri = values[colIndex];
-                // test in uri list
+                // check if the object name/uri has been previously referenced -> if so, no need to re-perform a check with the Dao
                 if (!StringUtils.isEmpty(objectNameOrUri) && nameURIScientificObjects.containsKey(objectNameOrUri)) {
                     object = nameURIScientificObjects.get(objectNameOrUri);
                 } else {
-                    // test not in uri list
+
+                    SPARQLNamedResourceModel existingOs = null;
+                    Node experimentNode = experiment == null ? null : SPARQLDeserializers.nodeURI(experiment);
+
+                    // check if the object has been previously referenced as unknown, if not, then performs a check with Dao
                     if (!StringUtils.isEmpty(objectNameOrUri) && !scientificObjectsNotInXp.contains(objectNameOrUri)) {
-                        object = getObjectByNameOrURI(scientificObjectDAO, experiment, objectNameOrUri);
+                        existingOs = testNameOrURI(scientificObjectDAO, csvValidation, rowIndex, colIndex, experimentNode, objectNameOrUri);
                     }
-                    if (object == null) {
-                        scientificObjectsNotInXp.add(objectNameOrUri);
-                        CSVCell cell = new CSVCell(rowIndex, colIndex, objectNameOrUri, "OBJECT_ID");
-                        csvValidation.addInvalidObjectError(cell);
+
+                    if(existingOs == null){
                         validRow = false;
-                    } else {
-                        nameURIScientificObjects.put(objectNameOrUri, object);
+                        scientificObjectsNotInXp.add(objectNameOrUri);
+                    }else{
+                        object = existingOs;
+                        // object exist, put it into name/URI cache
+                        nameURIScientificObjects.put(objectNameOrUri,existingOs);
                     }
                 }
 
@@ -1570,7 +1567,7 @@ public class DataAPI {
                 // test in uri list
                 if (!StringUtils.isEmpty(deviceNameOrUri)) {
                     if (nameURIDevices.containsKey(deviceNameOrUri)) {
-                        device = nameURIDevices.get(deviceNameOrUri);
+                        deviceFromDeviceColumn = nameURIDevices.get(deviceNameOrUri);
                     } else {
                         // test not in uri list
                         if (duplicatedDevices.contains(deviceNameOrUri)) {
@@ -1579,8 +1576,8 @@ public class DataAPI {
                             validRow = false;
                         } else if (!notExistingDevices.contains(deviceNameOrUri)) {
                             try {
-                                device = getDeviceByNameOrURI(deviceDAO, deviceNameOrUri);
-                                if (device == null) {
+                                deviceFromDeviceColumn = getDeviceByNameOrURI(deviceDAO, deviceNameOrUri);
+                                if (deviceFromDeviceColumn == null) {
                                     if (!notExistingDevices.contains(deviceNameOrUri)) {
                                         notExistingDevices.add(deviceNameOrUri);
                                     }
@@ -1588,7 +1585,7 @@ public class DataAPI {
                                     csvValidation.addInvalidDeviceError(cell);
                                     validRow = false;
                                 } else {
-                                    nameURIDevices.put(deviceNameOrUri, device);
+                                    nameURIDevices.put(deviceNameOrUri, deviceFromDeviceColumn);
                                 }
                             } catch (DuplicateNameException e) {
                                 CSVCell cell = new CSVCell(rowIndex, colIndex, deviceNameOrUri, "DEVICE_ID");
@@ -1612,21 +1609,21 @@ public class DataAPI {
                         if (validRow) {
                             String variable = headerByIndex.get(colIndex);
                             URI varURI = URI.create(variable);
-                            if (!hasDevice && device == null && target == null && object == null) {
-                                missingTargetOrDevice = true;
+                            if (target == null && object == null) {
+                                missingTarget = true;
                                 validRow = false;
                                 break;
                             }
-                            if (device != null) {
-                                boolean variableIsChecked = variableCheckedDevice.containsKey(variable) && variableCheckedDevice.get(variable) == device;
+                            if (deviceFromDeviceColumn != null) {
+                                boolean variableIsChecked = variableCheckedDevice.containsKey(variable) && variableCheckedDevice.get(variable) == deviceFromDeviceColumn;
                                 if (!variableIsChecked) {
-                                    if (!variableIsAssociatedToDevice(device, varURI)) {
-                                        csvValidation.addVariableToDevice(device, varURI);
+                                    if (!variableIsAssociatedToDevice(deviceFromDeviceColumn, varURI)) {
+                                        csvValidation.addVariableToDevice(deviceFromDeviceColumn, varURI);
                                     }
-                                    variableCheckedDevice.put(variable, device);
+                                    variableCheckedDevice.put(variable, deviceFromDeviceColumn);
                                 }
 
-                            } else if (hasDevice) {
+                            } else if (sensingDeviceFoundFromProvenance) {
                                 if (!checkedVariables.contains(variable)) { // do it one time but write the error on each row if there is one
                                     List<DeviceModel> devices = new ArrayList<>();
                                     List<DeviceModel> linkedDevice = new ArrayList<>();
@@ -1657,7 +1654,7 @@ public class DataAPI {
                                                     variableCheckedProvDevice.put(variable, devices.get(0));
                                                 } else {
                                                     if (target == null) {
-                                                        missingTargetOrDevice = true;
+                                                        missingTarget = true;
                                                         validRow = false;
                                                         break;
                                                     }
@@ -1694,18 +1691,18 @@ public class DataAPI {
                                     provenanceModel.setExperiments(experiments);
                                 }
 
-                                if (device != null) {
+                                if (deviceFromDeviceColumn != null) {
                                     ProvEntityModel agent = new ProvEntityModel();
                                     if (rootDeviceTypes == null) {
                                         rootDeviceTypes = getRootDeviceTypes();
                                     }
-                                    URI rootType = rootDeviceTypes.get(device.getType());
+                                    URI rootType = rootDeviceTypes.get(deviceFromDeviceColumn.getType());
                                     agent.setType(rootType);
-                                    agent.setUri(device.getUri());
+                                    agent.setUri(deviceFromDeviceColumn.getUri());
                                     agents.add(agent);
                                     provenanceModel.setProvWasAssociatedWith(agents);
 
-                                } else if (hasDevice) {
+                                } else if (sensingDeviceFoundFromProvenance) {
 
                                     DeviceModel checkedDevice = variableCheckedProvDevice.get(variable);
                                     ProvEntityModel agent = new ProvEntityModel();
@@ -1749,8 +1746,8 @@ public class DataAPI {
                                 if (object != null) {
                                     targetUri = object.getUri();
                                 }
-                                if(device != null) {
-                                    deviceUri = device.getUri();
+                                if(deviceFromDeviceColumn != null) {
+                                    deviceUri = deviceFromDeviceColumn.getUri();
                                 }
                                 ImportDataIndex importDataIndex = new ImportDataIndex(parsedDateTimeMongo.getInstant(), varURI, provenance.getUri(), targetUri, deviceUri);
                                 if (!duplicateDataByIndex.contains(importDataIndex)) {
@@ -1770,11 +1767,9 @@ public class DataAPI {
             }
         }
         
-        if (missingTargetOrDevice) {
+        if (missingTarget) {
             //the device or the target is mandatory if there is no device in the provenance
-            CSVCell cell1 = new CSVCell(rowIndex, deviceColIndex, null, "DEVICE_ID");
             CSVCell cell2 = new CSVCell(rowIndex, targetColIndex, null, "TARGET_ID");
-            csvValidation.addMissingRequiredValue(cell1);
             csvValidation.addMissingRequiredValue(cell2);
         }
         
@@ -1841,26 +1836,33 @@ public class DataAPI {
     }
 
 
-    private ScientificObjectModel getObjectByNameOrURI(ScientificObjectDAO scientificObjectDAO, URI contextUri, String nameOrUri) {
-        ScientificObjectModel object = null;
-        try {
-            object = testNameOrURI(scientificObjectDAO, contextUri, nameOrUri);
-        } catch (Exception ex) {
-        }
-        return object;
-    }
+    private SPARQLNamedResourceModel testNameOrURI(ScientificObjectDAO dao, CSVValidationModel validation, int rowIndex, int colIndex, Node experiment, String nameOrUri) throws Exception {
 
-    private ScientificObjectModel testNameOrURI(ScientificObjectDAO scientificObjectDAO, URI contextUri, String nameOrUri) throws Exception {
-        ScientificObjectModel object;
+        // check if object exist by URI inside experiment
         if (URIDeserializer.validateURI(nameOrUri)) {
             URI objectUri = URI.create(nameOrUri);
 
-            object = scientificObjectDAO.getObjectByURI(objectUri,contextUri,null);
-        } else {
-            object = scientificObjectDAO.getByNameAndContext(nameOrUri, contextUri);
-        }
+            SPARQLNamedResourceModel existingObject = sparql.getByURI(experiment,ScientificObjectModel.class,objectUri,null);
+            if (existingObject == null) {
+                validation.addInvalidValueError(new CSVCell(rowIndex, colIndex, nameOrUri, "OBJECT_ID"));
+                return null;
+            }
+            return existingObject;
 
-        return object;
+        // check if object exist by name inside experiment
+        } else if (experiment != null) {
+            SPARQLNamedResourceModel existingObject = dao.getUriByNameAndGraph(experiment, nameOrUri);
+            if (existingObject == null) {
+                validation.addInvalidValueError(new CSVCell(rowIndex, colIndex, nameOrUri, "OBJECT_ID"));
+                return null;
+            }
+            return existingObject;
+        } else {
+            // ambiguity about name inside global OS graph, indeed, several OS can have the same name inside the global graph,
+            // so there are no guarantee that a unique OS URI will be found with this name
+            validation.addInvalidValueError(new CSVCell(rowIndex, colIndex, nameOrUri, "OBJECT_NAME_AMBIGUITY_IN_GLOBAL_CONTEXT"));
+            return null;
+        }
     }
 
     // Map who associate each type with its root type

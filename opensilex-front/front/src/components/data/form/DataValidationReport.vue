@@ -500,6 +500,7 @@ en:
     exportResult : "Export validation results"
     csv-import-success-message: CSV file has been imported sucessfully
     OBJECT_ID : "Scientific Object name / URI"
+    OBJECT_NAME_AMBIGUITY_IN_GLOBAL_CONTEXT: "Object can't be referenced by name when importing outside of experimental context"
     generalErrors: "General errors"
     tooLargeDataset: "Too large data :'{sizeMax}' observations expected, '{nbLinesToImport}' observations submitted"
 
@@ -561,6 +562,7 @@ fr:
     csv-import-success-message: Fichier CSV importé avec succès
     exportResult : "Exportation des Résultats de validation"
     OBJECT_ID: "Objet scientifique Nom/ URI"
+    OBJECT_NAME_AMBIGUITY_IN_GLOBAL_CONTEXT: "L'objet scientifique ne peut être réferencé par son nom lors d'un import en dehors du cadre experimental"
     generalErrors: "Erreurs générales"
     tooLargeDataset: "Jeu de données trop volumineux : '{sizeMax}' observations attendues, '{nbLinesToImport}' observations soumises"
 </i18n>

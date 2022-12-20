@@ -9,12 +9,10 @@ import com.google.common.base.CaseFormat;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections4.trie.PatriciaTrie;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.jena.arq.querybuilder.ExprFactory;
-import org.apache.jena.arq.querybuilder.Order;
-import org.apache.jena.arq.querybuilder.SelectBuilder;
-import org.apache.jena.arq.querybuilder.WhereBuilder;
+import org.apache.jena.arq.querybuilder.*;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.rdf.model.Property;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.lang.sparql_11.ParseException;
@@ -22,6 +20,7 @@ import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.data.dal.DataDAO;
+import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.core.variablesGroup.dal.VariablesGroupModel;
@@ -91,7 +90,23 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
         if (linkedDataNb > 0) {
             throw new ForbiddenURIAccessException(uri, "Variable can't be deleted. " + linkedDataNb + " linked data");
         }
+
+        // Delete linked devices
+        Node graph = sparql.getDefaultGraph(DeviceModel.class);
+        deleteDeviceLinks(uri);
+
         sparql.delete(VariableModel.class, uri);
+    }
+
+    private void deleteDeviceLinks(URI deviceURI) throws Exception {
+        Node graph = sparql.getDefaultGraph(DeviceModel.class);
+
+        UpdateBuilder delete = new UpdateBuilder();
+        Var subjectVar = makeVar("s");
+        delete.addDelete(graph, subjectVar, Oeso.measures.asNode(), SPARQLDeserializers.nodeURI(deviceURI));
+        delete.addWhere(new WhereBuilder().addGraph(graph, subjectVar, Oeso.measures.asNode(), SPARQLDeserializers.nodeURI(deviceURI)));
+
+        sparql.executeDeleteQuery(delete);
     }
 
     protected int getLinkedDataNb(URI uri) throws Exception {

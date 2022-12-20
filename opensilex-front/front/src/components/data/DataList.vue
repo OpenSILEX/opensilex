@@ -82,6 +82,11 @@ export default class DataList extends Vue {
   selectedProvenance: any = null;
   filterProvenanceLabel: string = null;
 
+  @Prop({
+    default: "",
+  })
+  contextUri: string;
+
   @PropSync("listFilter", 
   {
     default: () => {
@@ -259,7 +264,7 @@ export default class DataList extends Vue {
           
           if (objectsToLoad.length > 0) {
             let promiseObject = this.ontologyService
-              .getURILabelsList(objectsToLoad)
+              .getURILabelsList(objectsToLoad, this.contextUri)
               .then((httpObj) => {
                 for (let j in httpObj.response.result) {
                   let obj = httpObj.response.result[j];

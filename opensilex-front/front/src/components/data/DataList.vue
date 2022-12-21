@@ -11,9 +11,7 @@
           :uri="data.item.target"
           :value="objects[data.item.target]"
           :to="{
-            path:
-              '/scientific-objects/details/' +
-              encodeURIComponent(data.item.target),
+            path: getTargetPath(data.item.target)
           }"
         ></opensilex-UriLink>
       </template>
@@ -188,6 +186,11 @@ export default class DataList extends Vue {
     }
   }
 
+  getTargetPath(uri) {
+    return this.objectsPath[uri] ?
+        this.objectsPath[uri].replace(':uri', encodeURIComponent(uri)) : "";
+  }
+
   loadProvenance(selectedValue) {
     if (selectedValue != undefined && selectedValue != null) {
       this.getProvenance(selectedValue.id).then((prov) => {
@@ -210,6 +213,7 @@ export default class DataList extends Vue {
   }
 
   objects = {};
+  objectsPath = {};
   variableNames = {};
   provenances = {};
 
@@ -301,8 +305,11 @@ export default class DataList extends Vue {
               .catch(reject);
             promiseArray.push(promiseProvenance);
           }
+
           Promise.all(promiseArray).then((values) => {
-            resolve(http);
+            Promise.all([this.loadObjectsPath()]).then((value) => {
+              resolve(http);
+            })
           });
 
         } else {
@@ -311,6 +318,21 @@ export default class DataList extends Vue {
       })
       .catch(reject);
     });
+  }
+
+  /**
+   * Construct paths for each target's UriLink components according to their type.
+   */
+  loadObjectsPath() {
+    return this.ontologyService
+      .getURITypes(Object.keys(this.objects))
+      .then((httpObj) => {
+        for (let j in httpObj.response.result) {
+          let obj = httpObj.response.result[j];
+          this.objectsPath[obj.uri] =
+            this.$opensilex.getPathFromUriTypes(obj.rdfTypes);
+        }
+      });
   }
 
 }

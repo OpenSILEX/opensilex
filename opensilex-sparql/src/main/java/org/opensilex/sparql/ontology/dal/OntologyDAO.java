@@ -52,6 +52,8 @@ import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
@@ -806,6 +808,59 @@ public final class OntologyDAO {
         }
 
         return name;
+    }
+
+    /**
+     * Get all parent types for each given uris.
+     *
+     * For an uri of type X, it finds all types Y where "X subClassOf Y",
+     * regardless of the number of steps between X and Y.
+     *
+     * @param uris list of uris
+     * @return list of all parent types for each given uris
+     * @throws Exception
+     */
+    public List<URITypesModel> getSuperClassesByURI(List<URI> uris) throws Exception {
+        List<URITypesModel> resultList = new ArrayList<>();
+
+        if (uris.isEmpty()) {
+            return resultList;
+        }
+
+        SelectBuilder select = new SelectBuilder();
+        select.setDistinct(true);
+
+        String uriField = "uri";
+        String typeField = "type";
+        String superClassField = "superclass";
+
+        Var uriVar = makeVar(uriField);
+        Var typeVar = makeVar(typeField);
+        Var superClassVar = makeVar(superClassField);
+        select.addVar(uriVar);
+        select.addVar(typeVar);
+        select.addVar(superClassVar);
+
+        select.addWhere(typeVar, Ontology.subClassAny, superClassVar);
+        select.addWhere(uriVar, RDF.type, typeVar);
+        select.addFilter(SPARQLQueryHelper.inURIFilter(SPARQLResourceModel.URI_FIELD, uris));
+
+        List<SPARQLResult> results = sparql.executeSelectQuery(select);
+        SPARQLDeserializer<URI> uriDeserializer = SPARQLDeserializers.getForClass(URI.class);
+
+        HashMap<URI, ArrayList<URI>> uriTypes = new HashMap<>();
+        for (SPARQLResult res : results) {
+            URI uri = uriDeserializer.fromString(res.getStringValue(uriField));
+            URI superClassUri = uriDeserializer.fromString(res.getStringValue(superClassField));
+
+            uriTypes.computeIfAbsent(uri,newURI -> new ArrayList<>()).add(superClassUri);
+        }
+
+        // transform (uri,types) map to URITypesModel list
+        return uriTypes.entrySet()
+                .stream().map(entry -> new URITypesModel(entry.getKey(),entry.getValue()))
+                .collect(Collectors.toList());
+
     }
 
     public List<SPARQLNamedResourceModel> getURILabels(Collection<URI> uris, String language, URI context) throws Exception {

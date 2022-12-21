@@ -32,6 +32,7 @@ public class RouteDTO {
         routeDTO.setIcon(route.icon());
         routeDTO.setTitle(route.title());
         routeDTO.setDescription(route.description());
+        routeDTO.setRdfType(route.rdfType());
 
         return routeDTO;
     }
@@ -49,6 +50,8 @@ public class RouteDTO {
     public String title;
 
     public String description;
+
+    public String rdfType;
 
     @ApiModelProperty(value = "Route path", example = "/users")
     public String getPath() {
@@ -104,5 +107,14 @@ public class RouteDTO {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    @ApiModelProperty(value = "Route rdf type", example = "vocabulary:ScientificObject")
+    public String getRdfType() {
+        return rdfType;
+    }
+
+    public void setRdfType(String rdfType) {
+        this.rdfType = rdfType;
     }
 }

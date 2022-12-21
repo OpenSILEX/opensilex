@@ -323,6 +323,7 @@ routes:
 
   - path: /facility/details/:uri
     component: opensilex-FacilityView
+    rdfType: vocabulary:Facility
 
   - path: /scientific-object-types/properties
     component: opensilex-ScientificObjectTypes
@@ -396,6 +397,7 @@ routes:
 
   - path: /device/details/:uri
     component: opensilex-DeviceDetails
+    rdfType: vocabulary:Device
   - path: /device/visualization/:uri
     component: opensilex-DeviceDetails
   - path: /device/datafiles/:uri
@@ -422,6 +424,7 @@ routes:
     icon: ik#ik-target
     title: component.menu.scientificObjects
     description: ScientificObjectList.description
+    rdfType: vocabulary:ScientificObject
   - path: /infrastructures/details/:uri
     component: opensilex-InfrastructureDetailView
     credentials: []

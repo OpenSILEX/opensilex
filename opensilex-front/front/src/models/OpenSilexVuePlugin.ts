@@ -108,6 +108,23 @@ export default class OpenSilexVuePlugin {
         }
     }
 
+    /**
+     * Get the route's path that corresponds to a matching type within a given list.
+     *
+     * @param types the list of types to check into
+     * @return if no type matches: return an empty string. Otherwise, return the path for the matching type.
+     */
+    getPathFromUriTypes(types) {
+        let path = "";
+        types.forEach(type => {
+            let route = this.config.routes.find(route => route.rdfType == type)
+            if (route) {
+                path = route.path;
+            }
+        });
+        return path;
+    }
+
     getURL(path: string): string {
         return this.config.pathPrefix + "/app/" + path;
     }

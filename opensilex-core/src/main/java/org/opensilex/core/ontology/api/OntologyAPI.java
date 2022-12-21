@@ -545,6 +545,25 @@ public class OntologyAPI {
         return new SingleObjectResponse<>(dtoList).getResponse();
     }
 
+    @GET
+    @Path("/uri_types")
+    @ApiOperation("Return all rdf types of an uri")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return URI rdf types", response = URITypesDTO.class)
+    })
+    public Response getURITypes(
+            @ApiParam(value = "URIs to get types from", required = true) @QueryParam("uri") @NotNull @ValidURI @NotEmpty List<URI> uris
+    ) throws Exception {
+        OntologyDAO dao = new OntologyDAO(sparql);
+
+        List<URITypesModel> types = dao.getSuperClassesByURI(uris);
+
+        return new SingleObjectResponse<>(types).getResponse();
+    }
+
     @POST
     @Path("/check_rdf_types")
     @ApiOperation("Check the given rdf-types on the given uris")

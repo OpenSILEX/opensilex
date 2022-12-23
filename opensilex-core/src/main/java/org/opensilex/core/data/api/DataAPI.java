@@ -36,6 +36,7 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.nosql.datasource.coordinator.DefaultDataSourceCoordinator;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.csv.CSVCell;
+import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.core.provenance.api.ProvenanceAPI;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
@@ -1233,7 +1234,7 @@ public class DataAPI {
         List<String> duplicatedExperiments = new ArrayList<>();
 
 
-        ScientificObjectDAO scientificObjectDAO = new ScientificObjectDAO(sparql, nosql);
+        ScientificObjectDAO scientificObjectDAO = new ScientificObjectDAO(sparql);
         Map<String, SPARQLNamedResourceModel> nameURIScientificObjectsInXp = new HashMap<>();
         List<String> scientificObjectsNotInXp = new ArrayList<>();
 

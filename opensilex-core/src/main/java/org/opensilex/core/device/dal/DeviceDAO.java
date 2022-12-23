@@ -5,6 +5,7 @@
  */
 package org.opensilex.core.device.dal;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
@@ -19,11 +20,19 @@ import org.apache.jena.sparql.core.TriplePath;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.vocabulary.RDFS;
 import org.bson.Document;
+import org.opensilex.core.event.dal.move.MoveEventDAO;
+import org.opensilex.core.event.dal.move.MoveModel;
+import org.opensilex.core.event.dal.move.PositionModel;
 import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
+import org.opensilex.core.organisation.dal.OrganizationDAO;
+import org.opensilex.core.organisation.dal.facility.FacilityDAO;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
+import org.opensilex.core.position.api.PositionGetDTO;
 import org.opensilex.nosql.mongodb.metadata.MetaDataDao;
 import org.opensilex.nosql.mongodb.metadata.MetaDataModel;
+import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -44,8 +53,6 @@ import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
 
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.*;
@@ -121,7 +128,7 @@ public class DeviceDAO {
         Document metadata = filter.getMetadata();
         Integer year = filter.getYear();
         UserModel currentUser = filter.getCurrentUser();
-        Boolean includeSubTypes = filter.getIncludeSubTypes();
+        boolean includeSubTypes = filter.getIncludeSubTypes();
         String namePattern = filter.getNamePattern();
         URI rdfType = filter.getRdfType();
         URI variable = filter.getVariable();
@@ -153,7 +160,7 @@ public class DeviceDAO {
             // set the custom filter on type
             Map<String, WhereHandler> customHandlerByFields = new HashMap<>();
 
-            if (BooleanUtils.isTrue(includeSubTypes)) {
+            if (includeSubTypes) {
                 appendTypeFilter(customHandlerByFields, rdfType);
             }
 
@@ -446,7 +453,7 @@ public class DeviceDAO {
 
     public FacilityModel getAssociatedFacility(URI deviceURI, UserModel currentUser) throws Exception {
 
-        MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
+        MoveEventDAO moveDAO = new MoveEventDAO(sparql, mongodb,null);
         MoveModel moveEvent = moveDAO.getLastMoveAfter(deviceURI, null);
 
         FacilityModel facility = null;
@@ -475,8 +482,8 @@ public class DeviceDAO {
             if (lastPosition.getTo() != null) {
                 URI facilityUri = new URI(URIDeserializer.getShortURI(lastPosition.getTo().getUri().toString()));
 
-                OrganizationDAO orgaDAO = new OrganizationDAO(sparql, nosql);
-                FacilityDAO infraDAO = new FacilityDAO(sparql, nosql, orgaDAO);
+                OrganizationDAO orgaDAO = new OrganizationDAO(sparql, mongodb);
+                FacilityDAO infraDAO = new FacilityDAO(sparql, mongodb, orgaDAO);
                 facility = infraDAO.get(facilityUri, currentUser);
             }
         }

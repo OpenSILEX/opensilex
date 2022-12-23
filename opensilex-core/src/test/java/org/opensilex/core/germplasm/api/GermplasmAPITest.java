@@ -139,7 +139,7 @@ public class GermplasmAPITest extends AbstractMongoIntegrationTest {
         dto1.setMetadata(attributes);
 
         // run test through API in order to handle device and metadata, create and get URI
-        dto1.setUri(extractUriFromResponse(getJsonPostResponse(target(createPath),dto1)));
+        dto1.setUri(extractUriFromResponse(getJsonPostResponseAsAdmin(target(createPath),dto1)));
 
         GermplasmCreationDTO dto2 = new GermplasmCreationDTO();
 
@@ -152,7 +152,7 @@ public class GermplasmAPITest extends AbstractMongoIntegrationTest {
         dto2.setMetadata(attributes2);
 
         // run test through API in order to handle device and metadata
-        dto2.setUri(extractUriFromResponse(getJsonPostResponse(target(createPath),dto2)));
+        dto2.setUri(extractUriFromResponse(getJsonPostResponseAsAdmin(target(createPath),dto2)));
 
         // search models and ensure that metadata are OK for each model
         ListWithPagination<GermplasmModel> models = dao.search(new GermplasmSearchFilter(),true);

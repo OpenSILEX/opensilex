@@ -95,8 +95,8 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
         experimentDAO = new ExperimentDAO(sparql, mongoDB);
 
         geoDAO = new GeospatialDAO(mongoDB);
-        moveDAO = new MoveEventDAO(sparql, mongoDB);
-        scientificObjectDAO = new ScientificObjectDAO(sparql, mongoDB);
+        moveDAO = new MoveEventDAO(sparql, mongoDB,null);
+        scientificObjectDAO = new ScientificObjectDAO(sparql);
 
         if (experiment != null) {
             // ensure that the user has the right to access experiment

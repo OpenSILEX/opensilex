@@ -78,7 +78,7 @@ public class GeospatialDAO {
     public GeospatialDAO(MongoDBService nosql) {
         MongoDatabase db = nosql.getDatabase();
         geometryCollection = db.getCollection(GEOSPATIAL_COLLECTION_NAME, GeospatialModel.class);
-        createIndexes();
+        addIndexes();
     }
 
     public static Geometry geoJsonToGeometry(GeoJsonObject geo) throws JsonProcessingException {
@@ -140,7 +140,7 @@ public class GeospatialDAO {
     public GeospatialModel create(GeospatialModel model, ClientSession session) throws MongoWriteException {
         if (model.getGeometry() != null) {
             // the verification of the existence of the URI is done by mongoDB thanks to the uri_1_graph_1 index.
-            addIndex();
+            addIndexes();
             if (session != null) {
                 geometryCollection.insertOne(session, model);
             } else {
@@ -157,7 +157,7 @@ public class GeospatialDAO {
         return geometryCollection.find(filter).first();
     }
 
-    private void createIndexes() {
+    private void addIndexes() {
 
         // (uri,graph) index
         geometryCollection.createIndex(

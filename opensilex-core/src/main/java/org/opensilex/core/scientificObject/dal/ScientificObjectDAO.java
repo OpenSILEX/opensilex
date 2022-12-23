@@ -23,9 +23,7 @@ import org.apache.jena.sparql.path.Path;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.OpenSilex;
-import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveModel;
-import org.opensilex.core.event.dal.move.TargetPositionModel;
 import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.exception.DuplicateNameListException;
 import org.opensilex.core.experiment.dal.ExperimentModel;
@@ -78,8 +76,6 @@ public class ScientificObjectDAO {
 
     private final SPARQLService sparql;
 
-    private final MongoDBService nosql;
-
     public static final String NON_UNIQUE_NAME_INTO_GRAPH_ERROR_MSG = "Object name <%s> must be unique onto the graph <%s>. %s has the same name";
     public static final String NON_UNIQUE_NAME_ERROR_MSG = "Object name <%s> must be unique. %s has the same name";
 
@@ -87,9 +83,8 @@ public class ScientificObjectDAO {
     private final Node defaultGraphNode;
 
 
-    public ScientificObjectDAO(SPARQLService sparql, MongoDBService nosql) {
+    public ScientificObjectDAO(SPARQLService sparql) {
         this.sparql = sparql;
-        this.nosql = nosql;
 
         try{
             defaultGraphURI = sparql.getDefaultGraphURI(ScientificObjectModel.class);

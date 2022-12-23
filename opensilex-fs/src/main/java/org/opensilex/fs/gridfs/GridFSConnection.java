@@ -66,7 +66,7 @@ public class GridFSConnection extends BaseService implements FileStorageConnecti
     @Override
     public void startup() throws Exception {
         GridFSConfig implementedConfig = this.getImplementedConfig();
-        mongoClient = MongoDBService.buildMongoDBClient(implementedConfig);
+        mongoClient = MongoDBService.buildMongoClient(implementedConfig);
         createFileSystemCollections(implementedConfig);
     }
 

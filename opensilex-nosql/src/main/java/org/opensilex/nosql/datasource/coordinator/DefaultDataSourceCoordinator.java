@@ -4,6 +4,7 @@ import com.mongodb.client.ClientSession;
 import org.opensilex.nosql.datasource.operation.DataSourceOperation;
 import org.opensilex.nosql.datasource.operation.MongoOperation;
 import org.opensilex.nosql.datasource.operation.SparqlOperation;
+import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ThrowingConsumer;
 
@@ -17,6 +18,10 @@ public class DefaultDataSourceCoordinator extends AbstractDistributedCoordinator
 
     private final SPARQLService sparql;
     private final ClientSession session;
+
+    public DefaultDataSourceCoordinator(SPARQLService sparql, MongoDBService mongodb){
+        this(sparql,mongodb.startSession());
+    }
 
     public DefaultDataSourceCoordinator(SPARQLService sparql, ClientSession session) {
         super();
@@ -93,4 +98,11 @@ public class DefaultDataSourceCoordinator extends AbstractDistributedCoordinator
         return this;
     }
 
+    public SPARQLService getSparql() {
+        return sparql;
+    }
+
+    public ClientSession getSession() {
+        return session;
+    }
 }

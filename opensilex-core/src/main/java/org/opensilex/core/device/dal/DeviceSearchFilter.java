@@ -11,7 +11,7 @@ public class DeviceSearchFilter extends SparqlSearchFilter {
 
     private String namePattern;
     private URI rdfType;
-    private Boolean includeSubTypes;
+    private boolean includeSubTypes;
     private URI variable;
     private Integer year;
     private LocalDate existenceDate;
@@ -43,11 +43,11 @@ public class DeviceSearchFilter extends SparqlSearchFilter {
         return this;
     }
 
-    public Boolean getIncludeSubTypes() {
+    public boolean getIncludeSubTypes() {
         return includeSubTypes;
     }
 
-    public DeviceSearchFilter setIncludeSubTypes(Boolean includeSubTypes) {
+    public DeviceSearchFilter setIncludeSubTypes(boolean includeSubTypes) {
         this.includeSubTypes = includeSubTypes;
         return this;
     }

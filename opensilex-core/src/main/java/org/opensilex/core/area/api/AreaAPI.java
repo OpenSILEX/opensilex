@@ -10,13 +10,13 @@
 package org.opensilex.core.area.api;
 
 import com.mongodb.MongoQueryException;
-import com.mongodb.MongoWriteException;
 import com.mongodb.client.FindIterable;
 import io.swagger.annotations.*;
-import org.bson.codecs.configuration.CodecConfigurationException;
 import org.geojson.GeoJsonObject;
 import org.opensilex.core.area.dal.AreaDAO;
 import org.opensilex.core.area.dal.AreaModel;
+import org.opensilex.core.event.dal.EventDAO;
+import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.nosql.datasource.coordinator.DefaultDataSourceCoordinator;
@@ -28,7 +28,6 @@ import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.ValidURI;
-import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLService;
 
 import javax.inject.Inject;
@@ -38,16 +37,12 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 import static org.opensilex.core.geospatial.dal.GeospatialDAO.geoJsonToGeometry;
-import org.opensilex.core.ontology.Oeso;
 import org.opensilex.server.rest.validation.date.ValidOffsetDateTime;
 import org.opensilex.utils.ListWithPagination;
 
@@ -86,7 +81,7 @@ public class AreaAPI {
     /**
      * Create an Area
      *
-     * @param areaDTO the Area to create
+     * @param dto the Area to create
      * @return a {@link Response} with a {@link ObjectUriResponse} containing
      * the created Area {@link URI}
      * @throws java.lang.Exception if creation failed
@@ -108,7 +103,7 @@ public class AreaAPI {
     })
 
     public Response createArea(
-            @ApiParam("Area description") @NotNull @Valid AreaCreationDTO areaDTO
+            @ApiParam("Area description") @NotNull @Valid AreaCreationDTO dto
     ) throws Exception {
 
         AtomicReference<URI> areaURI = new AtomicReference<>();
@@ -227,7 +222,7 @@ public class AreaAPI {
         AreaDAO dao = new AreaDAO(sparql);
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
         EventDAO<EventModel> eventDAO= new EventDAO<>(sparql,nosql);
-        GeospatialModel geospatialModel = new GeospatialModel();
+//        GeospatialModel geospatialModel = new GeospatialModel();
         URI areaURI;
 
         URI uri = areaDTO.getUri();

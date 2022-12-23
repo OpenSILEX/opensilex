@@ -79,13 +79,37 @@ public class SparqlAndMongoCoordinatorTest extends AbstractMongoIntegrationTest 
         Assert.assertEquals(0, mongoDB.count(MongoTestModel.class, MONGO_COLLECTION_NAME, new Document()));
 
         ClientSession mongoSession = mongoDB.startSession();
-        DefaultDataSourceCoordinator coordinator = new DefaultDataSourceCoordinator(sparql, mongoSession);
+        DistributedDataSourceCoordinator coordinator = new DefaultDataSourceCoordinator(sparql, mongoSession);
         coordinator.addOperation(new MongoOperation(mongoSession, (session) ->
                 testCollection.insertMany(session, getMongoModels(100))
         ));
 
         coordinator.addOperation(new SparqlOperation(sparql, (service) ->
                 service.create(testGraph, getSparqlModels(100, 0)))
+        );
+        coordinator.run();
+
+        Assert.assertEquals(100, sparql.count(testGraph, SPARQLNamedResourceModel.class));
+        Assert.assertEquals(100, mongoDB.count(MongoTestModel.class, MONGO_COLLECTION_NAME, new Document()));
+    }
+
+    @Test
+    public void testInsertWithDefaultDataSourceCoordinator() throws Exception {
+        // test addMongoOperation and addSparqlOperation, these method provide easier operation manipulation
+        SPARQLService sparql = getSparqlService();
+        MongoDBService mongoDB = getMongoDBService();
+
+        sparql.clearGraph(testGraph.toString());
+        Assert.assertEquals(0, sparql.count(testGraph, SPARQLNamedResourceModel.class));
+        Assert.assertEquals(0, mongoDB.count(MongoTestModel.class, MONGO_COLLECTION_NAME, new Document()));
+
+        DefaultDataSourceCoordinator coordinator = new DefaultDataSourceCoordinator(sparql, mongoDB.startSession());
+        coordinator.addMongoOperation((session) ->
+                testCollection.insertMany(session, getMongoModels(100))
+        );
+
+        coordinator.addSparqlOperation((sparqlService) ->
+                sparqlService.create(testGraph, getSparqlModels(100, 0))
         );
         coordinator.run();
 
@@ -104,7 +128,7 @@ public class SparqlAndMongoCoordinatorTest extends AbstractMongoIntegrationTest 
         Assert.assertEquals(0, mongoDB.count(MongoTestModel.class, MONGO_COLLECTION_NAME, new Document()));
 
         ClientSession mongoSession = mongoDB.startSession();
-        DefaultDataSourceCoordinator coordinator = new DefaultDataSourceCoordinator(sparql, mongoSession);
+        DistributedDataSourceCoordinator coordinator = new DefaultDataSourceCoordinator(sparql, mongoSession);
 
         // performs two mongo operations
         coordinator.addOperation(new MongoOperation(mongoSession, (session) -> {
@@ -170,7 +194,7 @@ public class SparqlAndMongoCoordinatorTest extends AbstractMongoIntegrationTest 
         List<Integer> executionOrder = new ArrayList<>();
 
         ClientSession mongoSession = mongoDB.startSession();
-        DefaultDataSourceCoordinator coordinator = new DefaultDataSourceCoordinator(sparql, mongoSession);
+        DistributedDataSourceCoordinator coordinator = new DefaultDataSourceCoordinator(sparql, mongoSession);
 
         coordinator.addOperation(new MongoOperation(mongoSession, (session) -> {
             testCollection.insertMany(session, getMongoModels(100));
@@ -212,7 +236,7 @@ public class SparqlAndMongoCoordinatorTest extends AbstractMongoIntegrationTest 
         List<Integer> executionOrder = new ArrayList<>();
 
         ClientSession mongoSession = mongoDB.startSession();
-        DefaultDataSourceCoordinator coordinator = new DefaultDataSourceCoordinator(sparql, mongoSession);
+        DistributedDataSourceCoordinator coordinator = new DefaultDataSourceCoordinator(sparql, mongoSession);
 
         coordinator.addOperation(new MongoOperation(mongoSession, (session) -> {
             testCollection.insertMany(session, getMongoModels(100));
@@ -258,7 +282,7 @@ public class SparqlAndMongoCoordinatorTest extends AbstractMongoIntegrationTest 
         Assert.assertEquals(0, mongoDB.count(MongoTestModel.class, MONGO_COLLECTION_NAME, new Document()));
 
         ClientSession mongoSession = mongoDB.startSession();
-        DefaultDataSourceCoordinator coordinator = new DefaultDataSourceCoordinator(sparql, mongoSession);
+        DistributedDataSourceCoordinator coordinator = new DefaultDataSourceCoordinator(sparql, mongoSession);
 
         coordinator.addOperation(new MongoOperation(mongoSession, (session) -> {
             testCollection.insertMany(session, getMongoModels(100));

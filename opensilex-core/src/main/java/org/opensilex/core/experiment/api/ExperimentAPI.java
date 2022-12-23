@@ -817,7 +817,7 @@ public class ExperimentAPI {
 
     private DataCSVValidationModel validateWholeCSV(URI experimentURI, ProvenanceModel provenance, InputStream file, UserModel currentUser) throws Exception {
         DataCSVValidationModel csvValidation = new DataCSVValidationModel();
-        ScientificObjectDAO scientificObjectDAO = new ScientificObjectDAO(sparql, nosql);
+        ScientificObjectDAO scientificObjectDAO = new ScientificObjectDAO(sparql);
 
         Map<String, ScientificObjectModel> nameURIScientificObjectsInXp = new HashMap<>();
         List<String> scientificObjectsNotInXp = new ArrayList<>();

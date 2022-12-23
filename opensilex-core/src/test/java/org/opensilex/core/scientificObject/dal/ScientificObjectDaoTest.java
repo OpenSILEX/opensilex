@@ -69,8 +69,7 @@ public class ScientificObjectDaoTest {
         s3.setFactorLevels(Arrays.asList(f1, f2, f3));
         sparql.create(ScientificObjectModel.class, Arrays.asList(s1, s2, s3));
 
-        MongoDBService mongo = openSilexTestEnv.getOpenSilex().getServiceInstance(MongoDBService.DEFAULT_SERVICE,MongoDBService.class);
-        dao = new ScientificObjectDAO(sparql,mongo);
+        dao = new ScientificObjectDAO(sparql);
     }
 
     @Test

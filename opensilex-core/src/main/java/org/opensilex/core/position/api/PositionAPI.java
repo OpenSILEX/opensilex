@@ -157,7 +157,7 @@ public class PositionAPI {
             @ApiParam(value = "End date : match position affected before the given end date", example = "2021-09-08T12:00:00+01:00") @QueryParam("endDateTime") @ValidOffsetDateTime String endDate
     ) throws Exception {
 
-        MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
+        MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql,null);
         List<MoveEventNoSqlModel> lastTargetPositionList = new ArrayList<>();
         List<MoveEventNoSqlModel> lastPositionListGeo = new ArrayList<>();
 

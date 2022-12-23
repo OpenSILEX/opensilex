@@ -23,6 +23,9 @@ import java.net.URI;
 public class GeospatialModel extends MongoModel {
 
     public static final String GRAPH_FIELD = "graph";
+    public static final String GEOMETRY_FIELD = "geometry";
+    public static final String RDF_TYPE_FIELD = "rdfType";
+
     URI graph;
     URI rdfType;
     String name;

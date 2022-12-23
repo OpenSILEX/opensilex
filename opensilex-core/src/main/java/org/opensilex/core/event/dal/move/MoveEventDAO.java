@@ -1,5 +1,6 @@
 package org.opensilex.core.event.dal.move;
 
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Projections;
@@ -19,14 +20,11 @@ import org.apache.jena.sparql.expr.aggregate.AggregatorFactory;
 import org.apache.jena.sparql.syntax.ElementFilter;
 import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.vocabulary.RDF;
-import org.bson.BsonDocument;
-import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.conversions.Bson;
 import org.opensilex.core.event.dal.EventDAO;
-import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Time;
-import org.opensilex.core.organisation.dal.InfrastructureFacilityModel;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.nosql.datasource.coordinator.DefaultDataSourceCoordinator;
 import org.opensilex.nosql.insert.MongoInsertOptions;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -492,7 +490,6 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
         Bson inFilter = getEventIdInFilter(moveEventNoSqlModelList.stream().map(MoveEventNoSqlModel::getUri));
 
         Bson query = and(Filters.or(inFilter),Filters.exists(MoveEventNoSqlModel.COORDINATES_FIELD, true), Filters.geoWithin(MoveEventNoSqlModel.COORDINATES_FIELD, geometry));
-        LOGGER.debug("MongoDB search intersect:{}", query);
 
         return moveEventCollection.find(query);
     }

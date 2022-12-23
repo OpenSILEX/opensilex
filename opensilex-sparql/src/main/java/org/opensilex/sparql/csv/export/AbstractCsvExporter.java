@@ -160,7 +160,7 @@ public abstract class AbstractCsvExporter<T extends SPARQLResourceModel> impleme
 
     protected void writeUriAndType(T object, String[] lineBuffer) {
         lineBuffer[0] = object.getUri().toString();
-        lineBuffer[1] = object.getUri().toString();
+        lineBuffer[1] = object.getType().toString();
     }
 
     private void writeRelations(T object, CsvExportHeader header, String[] lineBuffer, StringBuilder valueWriteBuffer) {

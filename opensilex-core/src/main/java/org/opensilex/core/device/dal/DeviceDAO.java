@@ -11,14 +11,12 @@ import com.mongodb.client.model.IndexOptions;
 import com.mongodb.client.model.Indexes;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.BooleanUtils;
-import org.apache.jena.arq.querybuilder.AskBuilder;
-import org.apache.jena.arq.querybuilder.ExprFactory;
-import org.apache.jena.arq.querybuilder.SelectBuilder;
-import org.apache.jena.arq.querybuilder.WhereBuilder;
+import org.apache.jena.arq.querybuilder.*;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.core.TriplePath;
+import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.vocabulary.RDFS;
 import org.bson.Document;
@@ -33,6 +31,7 @@ import org.opensilex.core.organisation.dal.OrganizationDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.position.api.PositionGetDTO;
+import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.model.SPARQLModelRelation;
@@ -520,12 +519,14 @@ public class DeviceDAO {
         }  
         
         int dataFileCount = dataDAO.countFiles(currentUser, null, null, null, null, Collections.singletonList(deviceURI),null, null, null);
-        if(dataFileCount > 0){
-            throw new ForbiddenURIAccessException(deviceURI, dataFileCount+" datafile(s)");
-        }  
+        if(dataFileCount > 0) {
+            throw new ForbiddenURIAccessException(deviceURI, dataFileCount + " datafile(s)");
+        }
         
         nosql.startTransaction();
         sparql.startTransaction();
+
+        deleteVariableLinks(deviceURI);
         sparql.delete(DeviceModel.class, deviceURI);
         MongoCollection<DeviceAttributeModel> collection = getAttributesCollection();
 
@@ -537,6 +538,17 @@ public class DeviceDAO {
             nosql.rollbackTransaction();
             sparql.rollbackTransaction(ex);
         }
+    }
+
+    private void deleteVariableLinks(URI deviceUri) throws Exception {
+        Node graph = sparql.getDefaultGraph(DeviceModel.class);
+
+        UpdateBuilder delete = new UpdateBuilder();
+        Var objectVar = makeVar("o");
+        delete.addDelete(graph, SPARQLDeserializers.nodeURI(deviceUri), Oeso.measures.asNode(), objectVar);
+        delete.addWhere(new WhereBuilder().addGraph(graph, SPARQLDeserializers.nodeURI(deviceUri), Oeso.measures.asNode(), objectVar));
+
+        sparql.executeDeleteQuery(delete);
     }
 
     public List<VariableModel> getDeviceVariables(URI uri, String language) throws Exception {

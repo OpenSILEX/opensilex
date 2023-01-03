@@ -92,19 +92,18 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
         }
 
         // Delete linked devices
-        Node graph = sparql.getDefaultGraph(DeviceModel.class);
         deleteDeviceLinks(uri);
 
         sparql.delete(VariableModel.class, uri);
     }
 
-    private void deleteDeviceLinks(URI deviceURI) throws Exception {
+    private void deleteDeviceLinks(URI variableUri) throws Exception {
         Node graph = sparql.getDefaultGraph(DeviceModel.class);
 
         UpdateBuilder delete = new UpdateBuilder();
         Var subjectVar = makeVar("s");
-        delete.addDelete(graph, subjectVar, Oeso.measures.asNode(), SPARQLDeserializers.nodeURI(deviceURI));
-        delete.addWhere(new WhereBuilder().addGraph(graph, subjectVar, Oeso.measures.asNode(), SPARQLDeserializers.nodeURI(deviceURI)));
+        delete.addDelete(graph, subjectVar, Oeso.measures.asNode(), SPARQLDeserializers.nodeURI(variableUri));
+        delete.addWhere(new WhereBuilder().addGraph(graph, subjectVar, Oeso.measures.asNode(), SPARQLDeserializers.nodeURI(variableUri)));
 
         sparql.executeDeleteQuery(delete);
     }

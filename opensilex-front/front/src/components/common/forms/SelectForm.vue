@@ -2,6 +2,7 @@
   <opensilex-FormField
     :rules="rules"
     :required="required"
+    :requiredBlue="requiredBlue"
     :label="label"
     :helpMessage="helpMessage"
   >
@@ -224,6 +225,9 @@ export default class SelectForm extends Vue {
 
   @Prop()
   required: boolean;
+
+  @Prop()
+  requiredBlue: boolean;
 
   @Prop()
   disabled: boolean;

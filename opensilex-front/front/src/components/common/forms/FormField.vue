@@ -1,11 +1,14 @@
 <template>
   <b-form-group :required="required">
-    <opensilex-FormInputLabelHelper
-      v-if="label"
-      :label="label"
-      :helpMessage="helpMessage"
-      :labelFor="id"
-    ></opensilex-FormInputLabelHelper>
+    <div class="helperAndBlueStar">
+      <opensilex-FormInputLabelHelper
+        v-if="label"
+        :label="label"
+        :helpMessage="helpMessage"
+        :labelFor="id"
+      ></opensilex-FormInputLabelHelper>
+      <pre v-if="requiredBlue" class="blueStar"> *</pre>
+    </div>
     <ValidationProvider
       ref="validatorRef"
       v-if="required || rules"
@@ -49,6 +52,11 @@ export default class FormField extends Vue {
   })
   required: boolean;
 
+  @Prop({
+    default: false
+  })
+  requiredBlue: boolean;
+
   @Prop()
   rules: string | Function;
 
@@ -89,5 +97,11 @@ export default class FormField extends Vue {
 </script>
 
 <style scoped lang="scss">
+  .helperAndBlueStar {
+    display: flex;
+  }
+  .blueStar {
+    color: #007bff;
+  }
 </style>
 

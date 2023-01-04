@@ -24,7 +24,7 @@
         <!-- Facilities -->
         <opensilex-FacilitiesView
           v-if="selectedFacilities"
-          :withActions="facilitiesActions"
+          :withActions="true"
           @onUpdate="refreshTree"
           @onCreate="refreshTree"
           @onDelete="refreshTree"
@@ -32,7 +32,6 @@
           :organization="selectedOrganization"
           :site="selectedSite"
           :isSelectable="false"
-          :displayButtonOnTop="false"
         ></opensilex-FacilitiesView>
       </div>
     </div>
@@ -72,10 +71,6 @@ export default class InfrastructureView extends Vue {
 
   get credentials() {
     return this.$store.state.credentials;
-  }
-
-  get facilitiesActions(): boolean {
-    return !!this.selectedOrganization;
   }
 
   get selectedFacilities(): Array<NamedResourceDTOFacilityModel> {

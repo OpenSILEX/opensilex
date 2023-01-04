@@ -19,10 +19,12 @@ import {
   Watch,
 } from "vue-property-decorator";
 import Vue from "vue";
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+import {OrganizationsService} from "opensilex-core/api/organizations.service";
 
 @Component
 export default class FacilityPropertyView extends Vue {
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
 
   @Prop()
   value;
@@ -45,8 +47,8 @@ export default class FacilityPropertyView extends Vue {
     if (this.value) {
       this.$opensilex.disableLoader();
       this.$opensilex
-        .getService("opensilex.OrganizationsService")
-        .getInfrastructureFacility(this.value)
+        .getService<OrganizationsService>("opensilex.OrganizationsService")
+        .getFacility(this.value)
         .then((http) => {
           this.infrastructure = http.response.result;
           this.label = this.infrastructure.name;

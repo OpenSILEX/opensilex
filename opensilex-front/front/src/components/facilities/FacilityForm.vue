@@ -39,13 +39,22 @@
 
     <!-- Site -->
     <opensilex-SiteSelector
-        v-if="editMode && form.sites && form.sites.length > 0"
         label="component.common.organization.site"
         :multiple="true"
         :sites.sync="form.sites"
-        :disabled="true"
     >
     </opensilex-SiteSelector>
+
+    <!-- Warning iff more than one site is associated to the facility. While it is currently accepted in the model,
+     we don't currently have any use cases requiring a single facility to belong to multiple sites. This should change
+     in the future. -->
+    <b-alert
+        v-if="Array.isArray(form.sites) && form.sites.length > 1"
+        variant="warning"
+        show
+    >
+      {{$t("component.facility.warning.facility-should-have-unique-site")}}
+    </b-alert>
 
     <!-- Address toggle -->
     <b-form-checkbox
@@ -118,6 +127,7 @@ export default class FacilityForm extends Vue {
       name: undefined,
       address: undefined,
       organizations: [],
+      sites: [],
       relations: []
     };
   }

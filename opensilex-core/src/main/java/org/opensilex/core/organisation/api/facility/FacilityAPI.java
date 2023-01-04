@@ -86,7 +86,7 @@ public class FacilityAPI {
         @ApiResponse(code = 201, message = "Create a facility", response = ObjectUriResponse.class),
         @ApiResponse(code = 409, message = "A facility with the same URI already exists", response = ErrorResponse.class)
     })
-    public Response createInfrastructureFacility(
+    public Response createFacility(
             @ApiParam("Facility description") @Valid FacilityCreationDTO dto
     ) throws Exception {
         try {
@@ -150,7 +150,7 @@ public class FacilityAPI {
         @ApiResponse(code = 200, message = "Facility retrieved", response = FacilityGetDTO.class),
         @ApiResponse(code = 404, message = "Facility URI not found", response = ErrorResponse.class)
     })
-    public Response getInfrastructureFacility(
+    public Response getFacility(
             @ApiParam(value = "facility URI", example = "http://opensilex.dev/organisations/facility/phenoarch", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         OrganizationDAO organizationDAO = new OrganizationDAO(sparql, nosql);
@@ -202,7 +202,7 @@ public class FacilityAPI {
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Return facilities", response = FacilityNamedDTO.class, responseContainer = "List")
     })
-    public Response searchInfrastructureFacilities(
+    public Response searchFacilities(
             @ApiParam(value = "Regex pattern for filtering facilities by names", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern,
             @ApiParam(value = "List of organizations hosted by the facilities to filter") @QueryParam("organizations") List<URI> organizations,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
@@ -241,7 +241,7 @@ public class FacilityAPI {
         @ApiResponse(code = 200, message = "Facility deleted", response = ObjectUriResponse.class),
         @ApiResponse(code = 404, message = "Facility URI not found", response = ErrorResponse.class)
     })
-    public Response deleteInfrastructureFacility(
+    public Response deleteFacility(
             @ApiParam(value = "Facility URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
     ) throws Exception {
         OrganizationDAO organizationDAO = new OrganizationDAO(sparql, nosql);
@@ -265,7 +265,7 @@ public class FacilityAPI {
         @ApiResponse(code = 200, message = "Return updated facility", response = ObjectUriResponse.class),
         @ApiResponse(code = 404, message = "Facility URI not found", response = ErrorResponse.class)
     })
-    public Response updateInfrastructureFacility(
+    public Response updateFacility(
             @ApiParam("Facility description")
             @Valid FacilityUpdateDTO dto
     ) throws Exception {

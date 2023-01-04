@@ -77,7 +77,7 @@ export default class FacilityListView extends Vue {
     this.experiments = [];
 
     this.service
-        .getInfrastructureFacility(facility.uri)
+        .getFacility(facility.uri)
         .then((http: HttpResponse<OpenSilexResponse<FacilityGetDTO>>) => {
           this.selectedFacility = http.response.result;
           if(this.selectedFacility) {

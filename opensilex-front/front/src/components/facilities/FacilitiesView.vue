@@ -1,7 +1,7 @@
 <template>
   <div>
     <!--CreateButton position on top for FacilityListView-->
-    <div class="spaced-actions" v-if="displayButtonOnTop" >
+    <div class="spaced-actions" v-if="withActions" >
       <opensilex-CreateButton
         v-if="
           user.hasCredential(credentials.CREDENTIAL_FACILITY_MODIFICATION_ID)"
@@ -17,7 +17,7 @@
         {{ $t("FacilitiesView.facilities") }}
 
         <!--CreateButton position on card for InfrastructureView-->
-        <span v-if="!displayButtonOnTop">
+        <span v-if="!withActions">
         <opensilex-CreateButton
           v-if="user.hasCredential(credentials.CREDENTIAL_FACILITY_MODIFICATION_ID)"
           @click="facilityForm.showCreateForm()"
@@ -130,10 +130,11 @@ import {OrganizationsService} from "opensilex-core/api/organizations.service";
 import {FacilityCreationDTO,
   FacilityGetDTO,
   NamedResourceDTOFacilityModel, NamedResourceDTOOrganizationModel, NamedResourceDTOSiteModel } from 'opensilex-core/index';
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 
 @Component
 export default class FacilitiesView extends Vue {
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
   $store: any;
   service: OrganizationsService;
 
@@ -157,9 +158,6 @@ export default class FacilitiesView extends Vue {
    */
   fetchedFacilities: Array<NamedResourceDTOFacilityModel> = [];
   selectedFacility: NamedResourceDTOFacilityModel = undefined;
-
-  @Prop()
-  displayButtonOnTop : boolean;
 
   @Prop({
     default: false,
@@ -215,8 +213,8 @@ export default class FacilitiesView extends Vue {
 
   public deleteFacility(uri) {
     this.$opensilex
-      .getService("opensilex.OrganizationsService")
-      .deleteInfrastructureFacility(uri)
+      .getService<OrganizationsService>("opensilex.OrganizationsService")
+      .deleteFacility(uri)
       .then(() => {
         this.$emit("onDelete", uri);
       });
@@ -240,7 +238,7 @@ export default class FacilitiesView extends Vue {
       return;
     }
 
-    return this.service.searchInfrastructureFacilities(this.filter)
+    return this.service.searchFacilities(this.filter)
         .then((http: HttpResponse<OpenSilexResponse<Array<FacilityGetDTO>>>) => {
           this.fetchedFacilities = http.response.result;
         }).then(() => {
@@ -255,6 +253,9 @@ export default class FacilitiesView extends Vue {
   initForm(form: FacilityCreationDTO) {
     if (this.organization) {
       form.organizations = [this.organization.uri];
+    }
+    if (this.site) {
+      form.sites = [this.site.uri];
     }
   }
 

@@ -146,10 +146,13 @@ import DTOConverter from "../../models/DTOConverter";
 import { FacilityGetDTO } from 'opensilex-core/index';
 import {ExperimentGetListDTO} from "opensilex-core/model/experimentGetListDTO";
 import {DeviceGetDTO} from "opensilex-core/model/deviceGetDTO";
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+import {OrganizationsService} from "opensilex-core/api/organizations.service";
+import {VueJsOntologyExtensionService} from "../../lib";
 
 @Component
 export default class FacilityDetail extends Vue {
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
 
   @Prop()
   selected: FacilityGetDTO;
@@ -277,8 +280,8 @@ export default class FacilityDetail extends Vue {
 
   deleteInfrastructureFacility() {
     this.$opensilex
-        .getService("opensilex.OrganizationsService")
-        .deleteInfrastructureFacility(this.selected.uri)
+        .getService<OrganizationsService>("opensilex.OrganizationsService")
+        .deleteFacility(this.selected.uri)
         .then(() => {
           this.$router.push({
             path: "/infrastructures",
@@ -298,7 +301,7 @@ export default class FacilityDetail extends Vue {
     }
 
     this.$opensilex
-        .getService("opensilex.VueJsOntologyExtensionService")
+        .getService<VueJsOntologyExtensionService>("opensilex.VueJsOntologyExtensionService")
         .getRDFTypeProperties(
             this.selected.rdf_type,
             this.$opensilex.Oeso.FACILITY_TYPE_URI

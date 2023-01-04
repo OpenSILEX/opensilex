@@ -87,7 +87,7 @@ export default class FacilityView extends Vue {
 
   refresh() {
     this.organizationService
-      .getInfrastructureFacility(this.uri)
+      .getFacility(this.uri)
       .then((http: HttpResponse<OpenSilexResponse<OrganizationGetDTO>>) => {
         let detailDTO: OrganizationGetDTO = http.response.result;
         this.selected = detailDTO;

@@ -128,14 +128,16 @@
         :value="authorName"
         label="component.area.details.author"
     ></opensilex-StringView>
-    <opensilex-StringView
-        v-if="area.description && isViewAllInformation"
-        :value="area.description"
-        label="component.area.details.description"
-    ></opensilex-StringView>
-    <opensilex-GeometryCopy v-if="isViewAllInformation" :value="area.geometry"></opensilex-GeometryCopy>
+    <div v-if="isViewAllInformation || !showName ">
+      <opensilex-StringView
+          v-if="area.description"
+          :value="area.description"
+          label="component.area.details.description"
+      ></opensilex-StringView>
+      <opensilex-GeometryCopy :value="area.geometry"></opensilex-GeometryCopy>
+    </div>
     <p>
-      <a v-on:click="isViewAllInformation = !isViewAllInformation">{{
+      <a id="show" v-if="showName" v-on:click="isViewAllInformation = !isViewAllInformation">{{
           $t(
               isViewAllInformation
                   ? "ScientificObjectDetailMap.seeMoreInformation"
@@ -218,6 +220,9 @@ export default class AreaDetails extends Vue {
         .getByURI(uri)
         .then((http: HttpResponse<OpenSilexResponse<AreaGetDTO>>) => {
           this.area = http.response.result;
+          if(this.area.event !== null){
+            this.area.rdf_type = this.area.event.rdf_type;
+          }
           this.rdf_type = this.area.rdf_type;
           this.loadAuthor(this.area.author);
         })
@@ -312,7 +317,7 @@ export default class AreaDetails extends Vue {
   color: #007bff;
 }
 
-#vl-overlay-detailItem > div > div > div > div > p > a {
+#show {
   color: #007bff;
   cursor: pointer;
 }

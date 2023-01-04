@@ -720,6 +720,8 @@ import  DeviceCsvForm from './devices/csv/DeviceCsvForm.vue';
 components["opensilex-DeviceCsvForm"] = DeviceCsvForm;
 import DeviceImportHelp from './devices/csv/DeviceImportHelp.vue';
 components["opensilex-DeviceImportHelp"] = DeviceImportHelp;
+import DeviceDetailsMap from './devices/DeviceDetailsMap.vue';
+components["opensilex-DeviceDetailsMap"] = DeviceDetailsMap;
 
 // EVENTS
 import EventModalForm from './events/form/EventModalForm.vue';

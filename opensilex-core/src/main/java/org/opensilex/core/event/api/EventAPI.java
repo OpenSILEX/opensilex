@@ -20,6 +20,7 @@ import org.opensilex.core.event.api.move.MoveUpdateDTO;
 import org.opensilex.core.event.api.move.csv.MoveEventCsvImporter;
 import org.opensilex.core.event.dal.EventDAO;
 import org.opensilex.core.event.dal.EventModel;
+import org.opensilex.core.event.dal.EventSearchFilter;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.ontology.Oeev;
@@ -412,20 +413,19 @@ public class EventAPI {
     ) throws Exception {
 
         EventDAO<EventModel> dao = new EventDAO<>(sparql, nosql);
+        //create search filter
+        EventSearchFilter searchFilter = new EventSearchFilter();
+        searchFilter.setTarget(target)
+                .setDescriptionPattern(descriptionPattern)
+                .setType(type)
+                .setStart(start != null ? OffsetDateTime.parse(start) : null)
+                .setEnd(end != null ? OffsetDateTime.parse(end) : null)
+                .setLang(currentUser.getLanguage())
+                .setOrderByList(orderByList)
+                .setPage(page)
+                .setPageSize(pageSize);
 
-        ListWithPagination<EventModel> resultList = dao.search(
-                target,
-                null,
-                null,
-                descriptionPattern,
-                type,
-                start != null ? OffsetDateTime.parse(start) : null,
-                end != null ? OffsetDateTime.parse(end) : null,
-                currentUser.getLanguage(),
-                orderByList,
-                page,
-                pageSize
-        );
+        ListWithPagination<EventModel> resultList = dao.search(searchFilter);
 
         ListWithPagination<EventGetDTO> resultDTOList = resultList.convert(
                 EventGetDTO.class,

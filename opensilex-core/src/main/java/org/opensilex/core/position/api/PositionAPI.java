@@ -6,8 +6,10 @@ import com.mongodb.client.FindIterable;
 import io.swagger.annotations.*;
 import org.geojson.GeoJsonObject;
 import org.opensilex.core.event.dal.EventModel;
+import org.opensilex.core.event.dal.EventSearchFilter;
 import org.opensilex.core.event.dal.move.*;
 import org.opensilex.core.ontology.Oeev;
+import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
@@ -56,6 +58,9 @@ public class PositionAPI {
 
     @Inject
     private MongoDBService nosql;
+
+    @Inject
+    private FileStorageService fs;
 
     @CurrentUser
     UserModel currentUser;
@@ -143,7 +148,7 @@ public class PositionAPI {
 
     @POST
     @Path("geospatializedPosition")
-    @ApiOperation("Search the last position of a target during an experiment")
+    @ApiOperation("Search the last geospatialized position of a target for an experiment")
     @ApiProtected
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Return position list", response = PositionGetDTO.class, responseContainer = "List")
@@ -162,47 +167,41 @@ public class PositionAPI {
         List<MoveEventNoSqlModel> lastPositionListGeo = new ArrayList<>();
 
         try {
-            // search all moves between the start (and end) date of the experiment for a event type (move) and a target type
-            ListWithPagination<EventModel> moveList = moveDAO.search(
-                    null,
-                    null,
-                    targetType,
-                    null,
-                    new URI(Oeev.Move.getURI()),
-                    startDate != null ? OffsetDateTime.parse(startDate) : null,
-                    endDate != null ? OffsetDateTime.parse(endDate) : OffsetDateTime.now(),
-                    this.currentUser.getLanguage(),
-                    null,
-                    null,
-                    null
-            );
-            if(moveList.getTotal() != 0) {
-                //get last move by unique target uri
-                Map<List<URI>, Optional<EventModel>> uniqueTargetLastMoveList = moveList.getList().stream()
-                        //group by unique target URI
-                        .collect(Collectors.groupingBy(EventModel::getTargets,
-                                // get the last move by the property end
-                                Collectors.maxBy(Comparator.comparing(u -> u.getEnd().getDateTimeStamp()))));
+            //create search filter
+            EventSearchFilter searchFilter = new EventSearchFilter();
+            searchFilter.setStart(startDate != null ? OffsetDateTime.parse(startDate) : null)
+                    .setEnd(endDate != null ? OffsetDateTime.parse(endDate) : OffsetDateTime.now())
+                    .setBaseType(targetType)
+                    .setType(new URI(Oeev.Move.getURI()))
+                    .setLang(this.currentUser.getLanguage());
 
-                //for each unique target uri, get the mongoDB Model move linked
-                for (Optional<EventModel> uniqueTargetLastMove : uniqueTargetLastMoveList.values()) {
+            // search all moves between the start (and end) date of the experiment for an event type (move) and a target type
+            ListWithPagination<EventModel> moveList = moveDAO.search(searchFilter);
+            //get last move by unique target uri
+             Map<List<URI>,Optional<EventModel>> uniqueTargetLastMoveList = moveList.getList().stream()
+                                                                                    //group by unique target URI
+                                                                                    .collect(Collectors.groupingBy(EventModel::getTargets,
+                                                                                    // get the last move by the property end
+                                                                                    Collectors.maxBy(Comparator.comparing(u ->u.getEnd().getDateTimeStamp()))));
 
-                    MoveEventNoSqlModel lastTargetPosition = moveDAO.getMoveEventNoSqlModel(uniqueTargetLastMove.get().getUri());
-                    if (lastTargetPosition != null) {
-                        lastTargetPositionList.add(lastTargetPosition);
-                    }
+            //for each unique target uri, get the mongoDB Model move linked (and the target detail?)
+            for (Optional<EventModel> uniqueDeviceMove : uniqueTargetLastMoveList.values()) {
+
+                MoveEventNoSqlModel lastTargetPosition = moveDAO.getMoveEventNoSqlModel(uniqueDeviceMove.get().getUri());
+                if(lastTargetPosition != null){
+                    lastTargetPositionList.add(lastTargetPosition);
                 }
-                // Get filtered positions with coordinates not null and inside the current extend
-                FindIterable<MoveEventNoSqlModel> lastPositionFindIterable = moveDAO.getIntersectPosition(lastTargetPositionList, geoJsonToGeometry(geometry));
-                //Convert FindIterable to List
-                for (MoveEventNoSqlModel results : lastPositionFindIterable) {
-                    lastPositionListGeo.add(results);
-                }
+            }
+            // Get filtered positions with coordinates not null and inside the current extend
+            FindIterable<MoveEventNoSqlModel> lastPositionFindIterable = moveDAO.getIntersectPosition(lastTargetPositionList, geoJsonToGeometry(geometry));
+            //Convert FindIterable to List and get a target URI list
+            for (MoveEventNoSqlModel results : lastPositionFindIterable) {
+                lastPositionListGeo.add(results);
+                //listTargetURIGeo.add(results.getTargetPositions().get(0).getTarget());
             }
         }catch (MongoQueryException mongoException) {
             return new ErrorResponse(Response.Status.BAD_REQUEST, INVALID_GEOMETRY, mongoException).getResponse();
         }
        return new PaginatedListResponse<>(lastPositionListGeo).getResponse();
     }
-
 }

@@ -86,6 +86,9 @@ export default class VariableDevicesSelector extends Vue {
   @Prop()
   variable;
 
+  created() {
+    this.$service = this.$opensilex.getService("opensilex.DevicesService");
+  }
 
   loadDevices() {
     return this.$opensilex

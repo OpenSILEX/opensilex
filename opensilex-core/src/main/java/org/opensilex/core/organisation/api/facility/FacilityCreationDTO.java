@@ -10,9 +10,11 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModel;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.OrganizationModel;
+import org.opensilex.core.organisation.dal.site.SiteModel;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -20,11 +22,14 @@ import java.util.stream.Collectors;
  * @author vince
  */
 @ApiModel
-@JsonPropertyOrder({"uri", "rdf_type", "name","organizations", "address"})
+@JsonPropertyOrder({"uri", "rdf_type", "name","organizations", "sites", "address"})
 public
 class FacilityCreationDTO extends FacilityDTO {
     @JsonProperty("organizations")
     protected List<URI> organizations;
+
+    @JsonProperty("sites")
+    protected List<URI> sites;
 
     public List<URI> getOrganizations() {
         return organizations;
@@ -32,6 +37,14 @@ class FacilityCreationDTO extends FacilityDTO {
 
     public void setOrganizations(List<URI> organizations) {
         this.organizations = organizations;
+    }
+
+    public List<URI> getSites() {
+        return sites;
+    }
+
+    public void setSites(List<URI> sites) {
+        this.sites = sites;
     }
 
     @Override
@@ -45,6 +58,14 @@ class FacilityCreationDTO extends FacilityDTO {
                 return organization;
             }).collect(Collectors.toList());
             model.setInfrastructures(organizationList);
+        }
+
+        if (Objects.nonNull(getSites())) {
+            model.setSites(getSites().stream().map(siteURI -> {
+                SiteModel site = new SiteModel();
+                site.setUri(siteURI);
+                return site;
+            }).collect(Collectors.toList()));
         }
     }
 

@@ -20,10 +20,12 @@ import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import DTOConverter from "../../models/DTOConverter";
 import { FacilityCreationDTO } from 'opensilex-core/index';
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+import {OrganizationsService} from "opensilex-core/api/organizations.service";
 
 @Component
 export default class FacilityModalForm extends Vue {
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
 
   @Prop({
     default: () => {}
@@ -34,8 +36,8 @@ export default class FacilityModalForm extends Vue {
 
   showEditForm(form) {
     this.$opensilex
-      .getService("opensilex.OrganizationsService")
-      .getInfrastructureFacility(form.uri)
+      .getService<OrganizationsService>("opensilex.OrganizationsService")
+      .getFacility(form.uri)
       .then((http) => {
         this.facilityForm
           .getFormRef()
@@ -73,8 +75,8 @@ export default class FacilityModalForm extends Vue {
     form.relations = definedRelations;
 
     return this.$opensilex
-      .getService("opensilex.OrganizationsService")
-      .createInfrastructureFacility(form)
+      .getService<OrganizationsService>("opensilex.OrganizationsService")
+      .createFacility(form)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         let uri = http.response.result;
         console.debug("Infrastructure facility created", uri);
@@ -114,8 +116,8 @@ export default class FacilityModalForm extends Vue {
 
     form.relations = definedRelations;
     return this.$opensilex
-      .getService("opensilex.OrganizationsService")
-      .updateInfrastructureFacility(form)
+      .getService<OrganizationsService>("opensilex.OrganizationsService")
+      .updateFacility(form)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         let uri = http.response.result;
         console.debug("Infrastructure facility updated", uri);

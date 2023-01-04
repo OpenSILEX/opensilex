@@ -52,7 +52,7 @@
 
         searchFacilities(searchQuery, page, pageSize) {
 
-            return this.$service.searchInfrastructureFacilities(
+            return this.$service.searchFacilities(
                 searchQuery, //name
                 undefined,
                 undefined,

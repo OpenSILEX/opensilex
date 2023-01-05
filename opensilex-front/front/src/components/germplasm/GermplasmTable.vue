@@ -913,21 +913,23 @@ export default class GermplasmTable extends Vue {
           insertionOK = false;
           break;
         } else {
-          if (
-            data[idx].name !== "" &&
-            uniqueNames.indexOf(data[idx].name) === -1
-          ) {
-            uniqueNames.push(data[idx].name);
-          } else {
-            insertionOK = false;
-            alert(
-              this.$t("GermplasmTable.alertDuplicateName") +
-                " " +
-                data[idx]["rowNumber"] +
-                ", name= " +
-                data[idx].name
-            );
-            break;
+          if(!Oeso.checkURIs(this.$attrs.germplasmType, Oeso.ACCESSION_TYPE_URI)){
+            if (
+                data[idx].name !== "" &&
+                uniqueNames.indexOf(data[idx].name) === -1
+            ) {
+              uniqueNames.push(data[idx].name);
+            } else {
+              insertionOK = false;
+              alert(
+                  this.$t("GermplasmTable.alertDuplicateName") +
+                  " " +
+                  data[idx]["rowNumber"] +
+                  ", name= " +
+                  data[idx].name
+              );
+              break;
+            }
           }
         }
         if (data[idx].uri !== "") {

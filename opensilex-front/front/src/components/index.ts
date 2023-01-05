@@ -99,12 +99,16 @@ import FacilityPropertySelector from './facilities/FacilityPropertySelector.vue'
 components["opensilex-FacilityPropertySelector"] = FacilityPropertySelector;
 import FacilitySelector from './facilities/FacilitySelector.vue';
 components["opensilex-FacilitySelector"] = FacilitySelector;
-import FacilityDetail from './facilities/FacilityDetail.vue';
-components["opensilex-FacilityDetail"] = FacilityDetail;
 import FacilityForm from './facilities/FacilityForm.vue';
 components["opensilex-FacilityForm"] = FacilityForm;
 import FacilityView from "./facilities/FacilityView.vue";
 components["opensilex-FacilityView"] = FacilityView;
+import FacilityDetails from "./facilities/views/FacilityDetails.vue";
+components["opensilex-FacilityDetails"] = FacilityDetails;
+import FacilityDescription from "./facilities/views/FacilityDescription.vue";
+components["opensilex-FacilityDescription"] = FacilityDescription;
+import FacilityAssociatedDevices from "./facilities/views/FacilityAssociatedDevices.vue";
+components["opensilex-FacilityAssociatedDevices"] = FacilityAssociatedDevices;
 import FacilityListView from "./facilities/FacilityListView.vue";
 components["opensilex-FacilityListView"] = FacilityListView;
 

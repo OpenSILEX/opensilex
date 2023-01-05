@@ -324,6 +324,12 @@ routes:
   - path: /facility/details/:uri
     component: opensilex-FacilityView
     rdfType: vocabulary:Facility
+  - path: /facility/devices/:uri
+    component: opensilex-FacilityView
+  - path: /facility/annotations/:uri
+    component: opensilex-FacilityView
+  - path: /facility/document/:uri
+    component: opensilex-FacilityView
 
   - path: /scientific-object-types/properties
     component: opensilex-ScientificObjectTypes

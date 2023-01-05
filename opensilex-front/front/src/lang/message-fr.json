@@ -605,7 +605,15 @@
             "warning": {
                 "facility-should-have-unique-site": "Il est déconseillé d'associer une facility à plusieurs sites. Veuillez vérifier à quel site appartient cette facility."
             },
-            "filter-placeholder": "Rechercher des installations environnementales..."
+            "filter-placeholder": "Rechercher des installations environnementales...",
+            "view": {
+                "title": "Infrastructure environnementale",
+                "list": {
+                    "previous": "Consulter l'infrastructure précédente",
+                    "next": "Consulter l'infrastructure suivante",
+                    "return": "Revenir à la liste des infrastructures"
+                }
+            }
         },
         "custom-properties" : {
             "linked-resources" : "Ressources liée(s)"

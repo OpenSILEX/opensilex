@@ -1,169 +1,149 @@
 <template>
-  <div class="container-fluid" v-if="selected">
-    <opensilex-PageHeader
-      icon="ik#ik-globe"
-      :title="selected.name"
-      :description="selected.rdf_type_name"
-      class="detail-element-header"
-    ></opensilex-PageHeader>
-    <opensilex-PageActions :tabs="false" :returnButton="true" class="FacilityViewReturnButton">
-    </opensilex-PageActions>
-    <div class="row">
-      <div class="col-md-6">
-        <div class="facilityDescription">
-            <opensilex-FacilityDetail
-              :selected="selected"
-              :devices="devices"
-              :withActions="true"
-              @onUpdate="refresh"
-            >
-            </opensilex-FacilityDetail>
-        </div>
-      </div>
+    <div v-if="uri" class="container-fluid">
+        <opensilex-PageHeader
+                icon="ik#ik-globe"
+                :title="name"
+                description="component.facility.view.title"
+                class= "detail-element-header"
+        ></opensilex-PageHeader>
 
-      <div class="col-md-6">
-        <opensilex-AssociatedExperimentsList
-            :searchMethod="loadExperiments"
-            :nameFilter.sync="experimentName"
-            ref="experimentsView"
-        ></opensilex-AssociatedExperimentsList>
-      </div>
+        <opensilex-PageActions :tabs="true" :returnButton="true">
+            <template v-slot>
+                <b-nav-item
+                        :active="isDetailsTab()"
+                        :to="{ path: '/facility/details/' + encodeURIComponent(uri) }"
+                >{{ $t("FacilityView.details") }}
+                </b-nav-item>
+
+                <b-nav-item
+                    :active="isDeviceTab()"
+                    :to="{ path: '/facility/devices/' + encodeURIComponent(uri) }"
+                >{{ $t("FacilityView.devices") }}
+                </b-nav-item>
+
+                <b-nav-item
+                        :active="isAnnotationTab()"
+                        :to="{ path: '/facility/annotations/' + encodeURIComponent(uri) }"
+                >{{ $t("Annotation.list-title") }}
+                </b-nav-item>
+                
+                <b-nav-item
+                  :active="isDocumentTab()"
+                  :to="{path: '/facility/document/' + encodeURIComponent(uri)}"
+                >{{ $t('FacilityView.document') }}
+                </b-nav-item>
+            </template>
+        </opensilex-PageActions>
+
+        <opensilex-PageContent>
+            <template v-slot>
+                <opensilex-FacilityDetails
+                        v-if="isDetailsTab()"
+                        :uri="uri"
+                ></opensilex-FacilityDetails>
+
+                <opensilex-FacilityAssociatedDevices
+                    v-if="isDeviceTab()"
+                    :uri="uri"
+                ></opensilex-FacilityAssociatedDevices>
+
+                <opensilex-DocumentTabList
+                        v-else-if="isDocumentTab()"
+                        :modificationCredentialId="credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID"
+                        :uri="uri"
+                ></opensilex-DocumentTabList>
+                
+                <opensilex-AnnotationList
+                        v-else-if="isAnnotationTab()"
+                        ref="annotationList"
+                        :target="uri"
+                        :displayTargetColumn="false"
+                        :enableActions="true"
+                        :modificationCredentialId="credentials.CREDENTIAL_ANNOTATION_MODIFICATION_ID"
+                        :deleteCredentialId="credentials.CREDENTIAL_ANNOTATION_DELETE_ID"
+                ></opensilex-AnnotationList>
+
+            </template>
+        </opensilex-PageContent>
     </div>
-  </div>
 </template>
 
 <script lang="ts">
-import { Component, Ref, Watch } from "vue-property-decorator";
-import Vue from "vue";
-import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
-import { OrganizationGetDTO } from "opensilex-core/index";
-import { ExperimentGetListDTO } from "opensilex-core/model/experimentGetListDTO";
-import { DeviceGetDTO } from "opensilex-core/model/deviceGetDTO";
-import {OrganizationsService} from "opensilex-core/api/organizations.service";
-import {ExperimentsService} from "opensilex-core/api/experiments.service";
-import {DevicesService} from "opensilex-core/api/devices.service";
-import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
-import AssociatedExperimentsList from "../experiments/AssociatedExperimentsList.vue";
+    import {Component, Ref} from "vue-property-decorator";
+    import Vue from "vue";
+    import {OrganizationsService, FacilityGetDTO} from "opensilex-core/index";
+    import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
+    import AnnotationList from "../annotations/list/AnnotationList.vue";
+    import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+    import {Route} from "vue-router";
 
-@Component
-export default class FacilityView extends Vue {
-  $opensilex: OpenSilexVuePlugin;
+    @Component
+    export default class FacilityView extends Vue {
+        $route: Route;
+        $opensilex: OpenSilexVuePlugin;
 
-  selected: OrganizationGetDTO = null;
-  experiments: Array<ExperimentGetListDTO> = [];
-  devices: Array<DeviceGetDTO> = [];
-  experimentName: string = "";
-  uri = null;
+        service: OrganizationsService;
 
-  organizationService: OrganizationsService;
-  experimentService: ExperimentsService;
-  deviceService: DevicesService;
+        uri = null;
+        name: string = "";
 
-  @Ref("infrastructureFacilityForm") readonly infrastructureFacilityForm!: any;
-  @Ref("experimentsView")
-  experimentsView: AssociatedExperimentsList;
+        @Ref("annotationList") readonly annotationList!: AnnotationList;
 
-  get user() {
-    return this.$store.state.user;
-  }
+        created() {
+            this.service = this.$opensilex.getService("opensilex.OrganizationsService");
 
-  get credentials() {
-    return this.$store.state.credentials;
-  }
-
-  created() {
-    this.uri = decodeURIComponent(this.$route.params.uri);
-    this.organizationService = this.$opensilex.getService(
-      "opensilex-core.OrganizationsService"
-    );
-    this.experimentService = this.$opensilex.getService(
-        "opensilex.ExperimentsService"
-    );
-    this.deviceService = this.$opensilex.getService(
-        "opensilex-core.DevicesService"
-    );
-    this.refresh();
-  }
-
-  refresh() {
-    this.organizationService
-      .getFacility(this.uri)
-      .then((http: HttpResponse<OpenSilexResponse<OrganizationGetDTO>>) => {
-        let detailDTO: OrganizationGetDTO = http.response.result;
-        this.selected = detailDTO;
-
-        this.loadExperiments();
-        this.loadDevices();
-      });
-  }
-
-  loadExperiments() {
-    this.experiments = [];
-    return this.experimentService
-        .searchExperiments(
-            this.experimentName, // label
-            undefined, // year
-            undefined, // isEnded
-            undefined, // species
-            undefined, // factorCategories
-            undefined, // projects
-            undefined, // isPublic
-            [this.uri],
-            undefined,
-            0,
-            20)
-        .then(
-            (
-              http: HttpResponse<OpenSilexResponse<Array<ExperimentGetListDTO>>>
-            ) => {
-              this.experiments = http.response.result;
-              return http;
+            this.uri = decodeURIComponent(this.$route.params.uri);
+            if (this.uri) {
+                this.service
+                    .getFacility(this.uri)
+                    .then((http: HttpResponse<OpenSilexResponse<FacilityGetDTO>>) => {
+                        this.name = http.response.result.name;
+                    })
+                    .catch((error) => {
+                        this.$opensilex.errorHandler(error);
+                    });
             }
-        )
-        .catch(this.$opensilex.errorHandler);
-  }
+        }
 
-  loadDevices() {
-    this.devices = [];
-    this.deviceService.searchDevices(
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        this.uri,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        0,
-        20)
-        .then(
-            (
-                http: HttpResponse<OpenSilexResponse<Array<DeviceGetDTO>>>
-            ) => {
-              if (http && http.response) {
-                this.devices = http.response.result;
-              }
-            }
-        )
-        .catch(this.$opensilex.errorHandler);
-  }
+        get user() {
+            return this.$store.state.user;
+        }
 
-}
+        get credentials() {
+            return this.$store.state.credentials;
+        }
+
+        isDetailsTab() {
+            return this.$route.path.startsWith("/facility/details/");
+        }
+
+        isDeviceTab() {
+          return this.$route.path.startsWith("/facility/devices/");
+        }
+
+        isDocumentTab() {
+          return this.$route.path.startsWith("/facility/document/");
+        }
+
+        isAnnotationTab() {
+            return this.$route.path.startsWith("/facility/annotations/");
+        }
+
+    }
 </script>
 
 <style scoped lang="scss">
-.facilityDescription {
-  margin-top: -25px;
-}
-
-@media (max-width: 769px) {
-  .facilityDescription {
-    margin-top: 0;
-  }
-}
 </style>
 
+<i18n>
+en:
+    FacilityView:
+        details: Details
+        devices: Associated devices
+        document: Documents
+fr:
+    FacilityView:
+        details: Détail
+        devices: Dispositifs associés
+        document: Documents
+</i18n>

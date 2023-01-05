@@ -62,7 +62,7 @@
       <!-- Organisations -->
       <opensilex-UriListView
           v-if="hasOrganizations"
-          label="FacilityDetail.organizations"
+          label="FacilityDescription.organizations"
           :list="organizationUriList"
           :inline="false"
       >
@@ -71,7 +71,7 @@
       <!-- Site -->
       <opensilex-UriListView
           v-if="hasSites"
-          label="FacilityDetail.site"
+          label="FacilityDescription.site"
           :list="siteUriList"
           :inline="false"
       >
@@ -80,7 +80,7 @@
       <!-- Experiments -->
       <opensilex-UriListView
           v-if="hasExperiments"
-          label="FacilityDetail.expsInProgress"
+          label="FacilityDescription.expsInProgress"
           :list="experimentUriList"
           :inline="false"
       >
@@ -89,7 +89,7 @@
       <!-- Devices -->
       <opensilex-UriListView
           v-if="hasDevices"
-          label="FacilityDetail.devices"
+          label="FacilityDescription.devices"
           :list="deviceUriList"
           :inline="true"
       >
@@ -100,7 +100,7 @@
           v-if="selectedFacilityOrDefault.address"
           :address="selectedFacilityOrDefault.address"
           :geometry="selectedFacilityOrDefault.geometry"
-          noGeometryLabel="FacilityDetail.noGeometryWarning"
+          noGeometryLabel="FacilityDescription.noGeometryWarning"
       >
       </opensilex-AddressView>
 
@@ -142,16 +142,16 @@
 import Component from "vue-class-component";
 import Vue from "vue";
 import {Prop, Ref, Watch} from "vue-property-decorator";
-import DTOConverter from "../../models/DTOConverter";
+import DTOConverter from "../../../models/DTOConverter";
 import { FacilityGetDTO } from 'opensilex-core/index';
 import {ExperimentGetListDTO} from "opensilex-core/model/experimentGetListDTO";
 import {DeviceGetDTO} from "opensilex-core/model/deviceGetDTO";
-import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
-import {VueJsOntologyExtensionService} from "../../lib";
+import {VueJsOntologyExtensionService} from "../../../lib";
+import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 
 @Component
-export default class FacilityDetail extends Vue {
+export default class FacilityDescription extends Vue {
   $opensilex: OpenSilexVuePlugin;
 
   @Prop()
@@ -424,7 +424,7 @@ export default class FacilityDetail extends Vue {
 
 <i18n>
 en:
-  FacilityDetail:
+  FacilityDescription:
     organizations: Organizations
     expsInProgress: Experiments in progress
     devices: Devices
@@ -432,7 +432,7 @@ en:
     address: "Address"
     noGeometryWarning: No geometry was associated with the address. Maybe the address is invalid.
 fr:
-  FacilityDetail:
+  FacilityDescription:
     organizations: Organisations
     expsInProgress: Experiences en cours
     devices: Dispositifs

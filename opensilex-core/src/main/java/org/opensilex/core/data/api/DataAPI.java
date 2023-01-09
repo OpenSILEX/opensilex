@@ -759,7 +759,7 @@ public class DataAPI {
         return false;
         
     }
-    
+
     public void addVariableToDevice(DeviceModel device, URI variable) {
         
         if (!variablesToDevices.containsKey(device)) {
@@ -1420,7 +1420,7 @@ public class DataAPI {
         List<URI> experiments = new ArrayList<>();
         SPARQLNamedResourceModel target = null;
         
-        Boolean missingTarget = false;
+        Boolean missingTargetOrDevice = false;
         int targetColIndex = 0;
         int deviceColIndex = 0;
 
@@ -1609,8 +1609,8 @@ public class DataAPI {
                         if (validRow) {
                             String variable = headerByIndex.get(colIndex);
                             URI varURI = URI.create(variable);
-                            if (target == null && object == null) {
-                                missingTarget = true;
+                            if (deviceFromDeviceColumn == null && target == null && object == null) {
+                                missingTargetOrDevice = true;
                                 validRow = false;
                                 break;
                             }
@@ -1654,7 +1654,7 @@ public class DataAPI {
                                                     variableCheckedProvDevice.put(variable, devices.get(0));
                                                 } else {
                                                     if (target == null) {
-                                                        missingTarget = true;
+                                                        missingTargetOrDevice = true;
                                                         validRow = false;
                                                         break;
                                                     }
@@ -1767,9 +1767,11 @@ public class DataAPI {
             }
         }
         
-        if (missingTarget) {
+        if (missingTargetOrDevice) {
             //the device or the target is mandatory if there is no device in the provenance
-            CSVCell cell2 = new CSVCell(rowIndex, targetColIndex, null, "TARGET_ID");
+            CSVCell cell1 = new CSVCell(rowIndex, deviceColIndex, null, deviceHeader);
+            CSVCell cell2 = new CSVCell(rowIndex, targetColIndex, null, targetHeader);
+            csvValidation.addMissingRequiredValue(cell1);
             csvValidation.addMissingRequiredValue(cell2);
         }
         

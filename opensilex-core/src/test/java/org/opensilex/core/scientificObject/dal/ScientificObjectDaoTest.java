@@ -4,6 +4,7 @@ import org.apache.jena.graph.NodeFactory;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.ontology.Oeso;
@@ -27,7 +28,7 @@ import static org.junit.Assert.*;
  * Tests on {@link ScientificObjectModel} at {@link ScientificObjectDAO} levels
  * @author rcolin
  */
-public class ScientificObjectDaoTest {
+public class ScientificObjectDaoTest extends AbstractMongoIntegrationTest {
 
     private static OpenSilexTestEnvironment openSilexTestEnv;
     private static ScientificObjectModel s1, s2,s3;

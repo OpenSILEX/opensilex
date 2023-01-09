@@ -31,7 +31,7 @@
         "jqwidgets-scripts": "^12.1.2",
         "jspdf": "^2.3.1",
         "jwt-decode": "3.1.2",
-        "luxon": "^1.26.0",
+        "luxon": "^2.5.2",
         "preval.macro": "5.0.0",
         "sass-loader": "10.1.1",
         "shp-write": "git+https://github.com/Mitix-EPI/shp-write.git",

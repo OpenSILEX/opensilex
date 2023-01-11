@@ -7,10 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+> Warning : upgrading to this new version may require manual operations. Please
+> see the [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc+6.1.md).
+
 ### Fixed or optimized
 
 - **[Organizations]** The "create facility" button on site details now works as expected -> 845f3d1d
 - **[Facilities]** Sites can now be associated to a facility from the facility creation or update form -> 845f3d1d
+- **[Users]** Data model has been changed, old users are now split into accounts and persons -> 8ed0303a
 
 ## [1.0.0-rc+6]
 

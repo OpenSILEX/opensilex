@@ -20,9 +20,9 @@ import org.opensilex.core.organisation.dal.OrganizationSPARQLHelper;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.exception.SiteFacilityInvalidAddressException;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
 import org.opensilex.security.authentication.NotFoundURIException;
-import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.exceptions.NotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -115,7 +115,7 @@ public class SiteDAO {
 
     /**
      * Gets the geospatial model corresponding to the given site. There is no access check in this method, so please
-     * make sure that the user has access to the given site by calling {@link #get(URI, UserModel)} for example.
+     * make sure that the user has access to the given site by calling {@link #get(URI, AccountModel)} for example.
      *
      * @param siteUri The URI of the site
      * @return The geospatial model
@@ -125,7 +125,7 @@ public class SiteDAO {
     }
 
     /**
-     * Gets a site by URI. Checks that the user has access to it beforehand. See {@link #validateSiteAccess(URI, UserModel)}
+     * Gets a site by URI. Checks that the user has access to it beforehand. See {@link #validateSiteAccess(URI, AccountModel)}
      * for further information on  access validation.
      *
      * @param siteUri The URI of the site
@@ -133,7 +133,7 @@ public class SiteDAO {
      * @return The site
      * @throws Exception If the access is not validated, or if any other problem occurs
      */
-    public SiteModel get(URI siteUri, UserModel user) throws Exception {
+    public SiteModel get(URI siteUri, AccountModel user) throws Exception {
         validateSiteAccess(siteUri, user);
 
         return sparql.getByURI(SiteModel.class, siteUri, user.getLanguage());
@@ -148,7 +148,7 @@ public class SiteDAO {
      * @return The sites
      * @throws Exception If the access is not validated, or if any other problem occurs
      */
-    public List<SiteModel> getList(List<URI> uris, UserModel user) throws Exception {
+    public List<SiteModel> getList(List<URI> uris, AccountModel user) throws Exception {
         return search(new SiteSearchFilter()
                 .setUser(user)
                 .setSites(uris)).getList();
@@ -159,19 +159,19 @@ public class SiteDAO {
      * filter field.
      *
      * @param facilityUri The facility URI to search with
-     * @param user The current user
+     * @param account     The current user
      * @return The corresponding sites
      */
-    public List<SiteModel> getByFacility(URI facilityUri, UserModel user) throws Exception {
+    public List<SiteModel> getByFacility(URI facilityUri, AccountModel account) throws Exception {
         return search(new SiteSearchFilter()
-                .setUser(user)
+                .setUser(account)
                 .setFacility(facilityUri)
         ).getList();
     }
 
     /**
      * Creates a site. The address is checked before the creation (it must be the same as the associated facilities).
-     * See {@link #validateSiteFacilityAddress(SiteModel, UserModel)}.
+     * See {@link #validateSiteFacilityAddress(SiteModel, AccountModel)}.
      *
      * @param siteModel The site to create
      * @param user The current user
@@ -179,7 +179,7 @@ public class SiteDAO {
      * @throws SiteFacilityInvalidAddressException If the address is invalid
      * @throws Exception If any other problem occurs
      */
-    public SiteModel create(SiteModel siteModel, UserModel user) throws Exception {
+    public SiteModel create(SiteModel siteModel, AccountModel user) throws Exception {
         validateSiteFacilityAddress(siteModel, user);
 
         if (!user.isAdmin()) {
@@ -211,26 +211,26 @@ public class SiteDAO {
     }
 
     /**
-     * Updates the site. Checks that the user has access to it beforehand. See {@link #validateSiteAccess(URI, UserModel)}
-     * for further information on  access validation. Also checks that the address is valid, see {@link #validateSiteFacilityAddress(SiteModel, UserModel)}
+     * Updates the site. Checks that the user has access to it beforehand. See {@link #validateSiteAccess(URI, AccountModel)}
+     * for further information on  access validation. Also checks that the address is valid, see {@link #validateSiteFacilityAddress(SiteModel, AccountModel)}
      * for further information.
      *
-     * @param siteModel the site to update
-     * @param user The current user
+     * @param siteModel    the site to update
+     * @param accountModel The current user
      * @return The site
      * @throws Exception If the access is not validated, or if any other problem occurs
      */
-    public SiteModel update(SiteModel siteModel, UserModel user) throws Exception {
-        validateSiteAccess(siteModel.getUri(), user);
-        validateSiteFacilityAddress(siteModel, user);
+    public SiteModel update(SiteModel siteModel, AccountModel accountModel) throws Exception {
+        validateSiteAccess(siteModel.getUri(), accountModel);
+        validateSiteFacilityAddress(siteModel, accountModel);
 
         List<OrganizationModel> organizations = sparql.getListByURIs(
                 OrganizationModel.class,
                 siteModel.getOrganizationURIListOrEmpty(),
-                user.getLanguage());
+                accountModel.getLanguage());
         siteModel.setOrganizations(organizations);
 
-        SiteModel existingModel = sparql.getByURI(SiteModel.class, siteModel.getUri(), user.getLanguage());
+        SiteModel existingModel = sparql.getByURI(SiteModel.class, siteModel.getUri(), accountModel.getLanguage());
 
         if (existingModel == null) {
             throw new NotFoundException("Site URI not found : " + siteModel.getUri());
@@ -245,17 +245,17 @@ public class SiteDAO {
     }
 
     /**
-     * Deletes a site by URI. Checks that the user has access to it beforehand. See {@link #validateSiteAccess(URI, UserModel)}
+     * Deletes a site by URI. Checks that the user has access to it beforehand. See {@link #validateSiteAccess(URI, AccountModel)}
      * for further information on  access validation.
      *
-     * @param uri The URI of the site
-     * @param user The current user
+     * @param uri     The URI of the site
+     * @param account The current user
      * @throws Exception If the access is not validated, or if any other problem occurs
      */
-    public void delete(URI uri, UserModel user) throws Exception {
-        validateSiteAccess(uri, user);
+    public void delete(URI uri, AccountModel account) throws Exception {
+        validateSiteAccess(uri, account);
 
-        SiteModel siteModel = sparql.getByURI(SiteModel.class, uri, user.getLanguage());
+        SiteModel siteModel = sparql.getByURI(SiteModel.class, uri, account.getLanguage());
 
         deleteSiteGeospatialModel(siteModel);
 
@@ -305,7 +305,7 @@ public class SiteDAO {
      * @param currentUser The current user
      * @throws SiteFacilityInvalidAddressException If the address is invalid
      */
-    protected void validateSiteFacilityAddress(SiteModel siteModel, UserModel currentUser) throws Exception {
+    protected void validateSiteFacilityAddress(SiteModel siteModel, AccountModel currentUser) throws Exception {
         if (siteModel.getFacilities() == null || siteModel.getAddress() == null) {
             return;
         }
@@ -346,7 +346,7 @@ public class SiteDAO {
      * @param userModel The user
      * @throws IllegalArgumentException If the userModel is null
      */
-    protected void validateSiteAccess(URI siteURI, UserModel userModel) throws Exception {
+    protected void validateSiteAccess(URI siteURI, AccountModel userModel) throws Exception {
         if (Objects.isNull(userModel)) {
             throw new IllegalArgumentException("User cannot be null");
         }

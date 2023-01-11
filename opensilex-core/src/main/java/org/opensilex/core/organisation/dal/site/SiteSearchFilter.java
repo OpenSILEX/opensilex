@@ -9,7 +9,7 @@
 package org.opensilex.core.organisation.dal.site;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.service.SparqlSearchFilter;
 
 import javax.validation.constraints.NotNull;
@@ -26,7 +26,7 @@ public class SiteSearchFilter extends SparqlSearchFilter {
     private List<URI> sites;
     private List<URI> organizations;
     private URI facility;
-    private UserModel user;
+    private AccountModel user;
     /**
      * If set to true, the site search method will not perform a query to fetch the organizations accessible to the
      * user. Instead, it will use the {@link #userOrganizations} search field as the list of accessible organizations.
@@ -75,11 +75,11 @@ public class SiteSearchFilter extends SparqlSearchFilter {
     }
 
     @NotNull
-    public UserModel getUser() {
+    public AccountModel getUser() {
         return user;
     }
 
-    public SiteSearchFilter setUser(UserModel user) {
+    public SiteSearchFilter setUser(AccountModel user) {
         this.user = user;
         return this;
     }

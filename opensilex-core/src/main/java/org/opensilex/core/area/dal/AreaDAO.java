@@ -9,7 +9,7 @@
  */
 package org.opensilex.core.area.dal;
 
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.service.SPARQLService;
 
 import java.net.URI;
@@ -52,7 +52,7 @@ public class AreaDAO {
         return area.getUri();
     }
 
-    public List<AreaModel> searchByURIs(List<URI> areaURI, UserModel currentUser) throws Exception {
+    public List<AreaModel> searchByURIs(List<URI> areaURI, AccountModel currentUser) throws Exception {
         List<URI> uniqueAreasUri = areaURI.stream()
                 .distinct()
                 .collect(Collectors.toList());

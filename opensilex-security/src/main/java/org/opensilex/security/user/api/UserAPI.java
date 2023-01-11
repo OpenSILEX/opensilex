@@ -33,6 +33,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import static org.apache.jena.vocabulary.RDF.uri;
+
+import org.opensilex.security.person.dal.PersonDAO;
+import org.opensilex.security.person.dal.PersonModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.exceptions.ForbiddenException;
 import org.opensilex.server.response.ErrorDTO;
 import org.opensilex.server.response.ErrorResponse;
@@ -40,8 +44,7 @@ import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.service.SPARQLService;
-import org.opensilex.security.user.dal.UserDAO;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.SecurityModule;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
@@ -58,7 +61,8 @@ import org.opensilex.utils.ListWithPagination;
 
 /**
  * <pre>
- * User API for OpenSilex which provides:
+ * A user is basically a Person with an account
+ * User API for OpenSilex provides:
  *
  * - create: Create a user
  * - get: Get a user by URI
@@ -87,7 +91,7 @@ public class UserAPI {
     public static final String CREDENTIAL_USER_DELETE_LABEL_KEY = "credential.default.delete";
 
     @CurrentUser
-    UserModel currentUser;
+    AccountModel currentUser;
 
     @Inject
     private SPARQLService sparql;
@@ -99,15 +103,17 @@ public class UserAPI {
     private AuthenticationService authentication;
 
     /**
-     * Create a user and return it's URI
+     * Create an account and return it's URI, create by the same a Person
+     *        with the given first/last-name who is the holder of the account
      *
-     * @see org.opensilex.security.user.dal.UserDAO
+     * @see AccountDAO
+     * @see PersonDAO
      * @param userDTO user model to create
-     * @return User URI
+     * @return User URI or null if creation of account or person failed
      * @throws Exception If creation failed
      */
     @POST
-    @ApiOperation("Add an user")
+    @ApiOperation("Add a user")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_USER_MODIFICATION_ID,
@@ -121,62 +127,138 @@ public class UserAPI {
         @ApiResponse(code = 409, message = "The user already exists (duplicate email)")
     })
     public Response createUser(
+
             @ApiParam("User description") @Valid UserCreationDTO userDTO
     ) throws Exception {
-        // Check if user is admin to create a new admin user
-        if (userDTO.isAdmin() && (currentUser == null || !currentUser.isAdmin())) {
-            throw new ForbiddenException("You must be an admin to create other admin users");
+
+        AccountDAO accountDAO = new AccountDAO(sparql);
+
+        Response creatingOk = checkBeforeCreatingUser(userDTO, accountDAO);
+        if (creatingOk.getStatus() != Status.OK.getStatusCode()) {
+            return creatingOk;
         }
 
-        // Create user DAO
-        UserDAO userDAO = new UserDAO(sparql);
+        URI finalUserURI = null;
 
-        // check if user URI already exists
-        if (sparql.uriExists(UserModel.class, userDTO.getUri())) {
-            // Return error response 409 - CONFLICT if user URI already exists
+        sparql.startTransaction();
+        try {
+            PersonDAO personDAO = new PersonDAO(sparql);
+            PersonModel person = personDAO.create(
+                    null,
+                    userDTO.getFirstName(),
+                    userDTO.getLastName(),
+                    userDTO.getEmail()
+            );
+
+            AccountModel user = accountDAO.create(
+                    userDTO.getUri(),
+                    new InternetAddress(userDTO.getEmail()),
+                    userDTO.isAdmin(),
+                    authentication.getPasswordHash(userDTO.getPassword()),
+                    userDTO.getLanguage()
+            );
+            finalUserURI = user.getUri();
+
+            personDAO.setAccount(person.getUri(), finalUserURI);
+
+            sparql.commitTransaction();
+        } catch (Exception e) {
+            sparql.rollbackTransaction();
+            throw e;
+        }
+
+        return new ObjectUriResponse(Response.Status.CREATED, finalUserURI).getResponse();
+    }
+
+    /**
+     * Create a user and return it's URI, and link it to the Person's URI in parameters
+     *
+     * @see AccountDAO
+     * @param userDTO user model to create
+     * @return User URI or null if creation of account or person failed
+     * @throws Exception If creation failed
+     */
+    @POST
+    @Path("person_already_exists")
+    @ApiOperation("Add a user from an existing person")
+    @ApiProtected
+    @ApiCredential(
+            credentialId = CREDENTIAL_USER_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_USER_MODIFICATION_LABEL_KEY
+    )
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses({
+            @ApiResponse(code = 201, message = "A user is created"),
+            @ApiResponse(code = 403, message = "This current user can't create other users with given parameters"),
+            @ApiResponse(code = 404, message = "This person doesn't exist"),
+            @ApiResponse(code = 409, message = "The user already exists or the given holder already has an account"),
+    })
+    public Response createUserWithExistentPerson(
+
+            @ApiParam("User description") @Valid UserCreationWithExistantPersonDTO userDTO
+    ) throws Exception {
+
+        AccountDAO accountDAO = new AccountDAO(sparql);
+
+        Response creatingOk = checkBeforeCreatingUser(userDTO, accountDAO);
+        if (creatingOk.getStatus() != Status.OK.getStatusCode()) {
+            return creatingOk;
+        }
+
+        if (! sparql.uriExists(PersonModel.class, userDTO.getPersonHolderUri())) {
             return new ErrorResponse(
-                    Response.Status.CONFLICT,
-                    "User already exists",
-                    "Duplicated URI: " + userDTO.getUri()
+                    Status.NOT_FOUND,
+                    "Person doesn't exists",
+                    "Unexistant URI: " + userDTO.getPersonHolderUri()
             ).getResponse();
         }
 
-        // check if user email already exists
-        InternetAddress userEmail = new InternetAddress(userDTO.getEmail());
-        if (userDAO.userEmailexists(userEmail)) {
-            // Return error response 409 - CONFLICT if user already exists
+        PersonDAO personDAO = new PersonDAO(sparql);
+
+        if (personDAO.hasAnAccount(userDTO.getPersonHolderUri())) {
             return new ErrorResponse(
                     Status.CONFLICT,
-                    "User already exists",
-                    "Duplicated email: " + userEmail.toString()
+                    "The given person already has an account",
+                    "URI: " + userDTO.getPersonHolderUri() + " is already linked to an existing account"
             ).getResponse();
         }
 
-        // create new user
-        UserModel user = userDAO.create(
-                userDTO.getUri(),
-                userEmail,
-                userDTO.getFirstName(),
-                userDTO.getLastName(),
-                userDTO.isAdmin(),
-                authentication.getPasswordHash(userDTO.getPassword()),
-                userDTO.getLanguage()
-        );
-        // return user URI
-        return new ObjectUriResponse(Response.Status.CREATED, user.getUri()).getResponse();
+        URI finalUserURI = null;
+
+        sparql.startTransaction();
+        try {
+
+            AccountModel user = accountDAO.create(
+                    userDTO.getUri(),
+                    new InternetAddress(userDTO.getEmail()),
+                    userDTO.isAdmin(),
+                    authentication.getPasswordHash(userDTO.getPassword()),
+                    userDTO.getLanguage()
+            );
+            finalUserURI = user.getUri();
+
+            personDAO.setAccount(userDTO.getPersonHolderUri(), finalUserURI);
+
+            sparql.commitTransaction();
+        } catch (Exception e) {
+            sparql.rollbackTransaction();
+        }
+
+        return new ObjectUriResponse(Response.Status.CREATED, finalUserURI).getResponse();
     }
 
     /**
      * Return a user by URI
      *
-     * @see org.opensilex.security.user.dal.UserDAO
+     * @see AccountDAO
      * @param uri URI of the user
      * @return Corresponding user
      * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
      */
     @GET
     @Path("{uri}")
-    @ApiOperation("Get an user")
+    @ApiOperation("Get a user")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -186,20 +268,17 @@ public class UserAPI {
         @ApiResponse(code = 404, message = "User not found", response = ErrorDTO.class)
     })
     public Response getUser(
-            @ApiParam(value = "User URI", example = "dev-users:Admin_OpenSilex", required = true) @PathParam("uri") @NotNull URI uri
+            @ApiParam(value = "User URI", example = "http://opensilex.dev/users#jean.michel.inrae", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
-        // Get user from DAO by URI
-        UserDAO dao = new UserDAO(sparql);
-        UserModel model = dao.get(uri);
 
-        // Check if user is found
+        AccountDAO dao = new AccountDAO(sparql);
+        AccountModel model = dao.get(uri);
+
         if (model != null) {
-            // Return user converted in UserGetDTO
             return new SingleObjectResponse<>(
                     UserGetDTO.fromModel(model)
             ).getResponse();
         } else {
-            // Otherwise return a 404 - NOT_FOUND error response
             return new ErrorResponse(
                     Response.Status.NOT_FOUND,
                     "User not found",
@@ -230,21 +309,16 @@ public class UserAPI {
     public Response getUsersByURI(
             @ApiParam(value = "Users URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
     ) throws Exception {
-        // Get user list from DAO by URIs
-        UserDAO dao = new UserDAO(sparql);
-        List<UserModel> models = dao.getList(uris);
 
-        // Check if users are found
+        AccountDAO dao = new AccountDAO(sparql);
+        List<AccountModel> models = dao.getList(uris);
+
         if (!models.isEmpty()) {
-            // Return user list converted in UserGetDTO
             List<UserGetDTO> resultDTOList = new ArrayList<>(models.size());
-            models.forEach(result -> {
-                resultDTOList.add(UserGetDTO.fromModel(result));
-            });
+            models.forEach(result -> resultDTOList.add(UserGetDTO.fromModel(result)));
 
             return new PaginatedListResponse<>(resultDTOList).getResponse();
         } else {
-            // Otherwise return a 404 - NOT_FOUND error response
             return new ErrorResponse(
                     Response.Status.NOT_FOUND,
                     "Users not found",
@@ -256,7 +330,7 @@ public class UserAPI {
     /**
      * Search users
      *
-     * @see org.opensilex.security.user.dal.UserDAO
+     * @see AccountDAO
      * @param pattern Regex pattern for filtering list by names or email
      * @param orderByList List of fields to sort as an array of fieldName=asc|desc
      * @param page Page number
@@ -279,27 +353,32 @@ public class UserAPI {
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
-        // Search users with User DAO
-        UserDAO dao = new UserDAO(sparql);
-        ListWithPagination<UserModel> resultList = dao.search(
+        AccountDAO dao = new AccountDAO(sparql);
+        ListWithPagination<AccountModel> resultList = dao.search(
                 pattern,
                 orderByList,
                 page,
                 pageSize
         );
 
-        // Convert paginated list to DTO
         ListWithPagination<UserGetDTO> resultDTOList = resultList.convert(
                 UserGetDTO.class,
                 UserGetDTO::fromModel
         );
 
-        // Return paginated list of user DTO
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
 
+    /**
+     * Update a user (the account and first/last name of the person)
+     *
+     * @see AccountDAO
+     * @see PersonDAO
+     * @param userDTO : information to update user
+     * @throws Exception if update fail
+     */
     @PUT
-    @ApiOperation("Update an user")
+    @ApiOperation("Update a user")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_USER_MODIFICATION_ID,
@@ -312,26 +391,42 @@ public class UserAPI {
         @ApiResponse(code = 400, message = "Invalid parameters")
     })
     public Response updateUser(
-            @ApiParam("User description") @Valid UserUpdateDTO dto
+            @ApiParam("User description") @Valid UserUpdateDTO userDTO
     ) throws Exception {
-        UserDAO dao = new UserDAO(sparql);
+        AccountDAO accountDAO = new AccountDAO(sparql);
+        PersonDAO personDAO = new PersonDAO(sparql);
 
-        // Get user model from DTO uri
-        UserModel model = dao.get(dto.getUri());
+        AccountModel model = accountDAO.get(userDTO.getUri());
+        PersonModel holderOfTheAccount = personDAO.getPersonFromAccount(userDTO.getUri());
 
         if (model != null) {
-            // If model exists, update it
-            UserModel user = dao.update(
-                    dto.getUri(),
-                    new InternetAddress(dto.getEmail()),
-                    dto.getFirstName(),
-                    dto.getLastName(),
-                    dto.isAdmin(),
-                    authentication.getPasswordHash(dto.getPassword()),
-                    dto.getLanguage()
-            );
 
-            return new ObjectUriResponse(Response.Status.OK, user.getUri()).getResponse();
+            sparql.startTransaction();
+            try {
+                AccountModel user = accountDAO.update(
+                        userDTO.getUri(),
+                        new InternetAddress(userDTO.getEmail()),
+                        userDTO.isAdmin(),
+                        authentication.getPasswordHash(userDTO.getPassword()),
+                        userDTO.getLanguage()
+                );
+
+                if (holderOfTheAccount != null) {
+                    personDAO.update(
+                            holderOfTheAccount.getUri(),
+                            userDTO.getFirstName(),
+                            userDTO.getLastName(),
+                            holderOfTheAccount.getEmail().toString()
+                    );
+                }
+
+                sparql.commitTransaction();
+
+                return new ObjectUriResponse(Response.Status.OK, user.getUri()).getResponse();
+            } catch (Exception e){
+                sparql.rollbackTransaction();
+                return new ObjectUriResponse(Status.INTERNAL_SERVER_ERROR, userDTO.getUri()).getResponse();
+            }
         } else {
             return new ErrorResponse(
                     Response.Status.NOT_FOUND,
@@ -341,9 +436,17 @@ public class UserAPI {
         }
     }
 
+    /**
+     * Delete a user (the account and the Person)
+     *
+     * @see AccountDAO
+     * @see PersonDAO
+     * @param accountURI : URI of the account to delete
+     * @throws Exception if update fail
+     */
     @DELETE
     @Path("{uri}")
-    @ApiOperation("Delete an user")
+    @ApiOperation("Delete a user")
     @ApiProtected
     @ApiCredential(
             credentialId = CREDENTIAL_USER_DELETE_ID,
@@ -352,16 +455,34 @@ public class UserAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response deleteUser(
-            @ApiParam(value = "User URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
+            @ApiParam(value = "User URI", example = "http://opensilex.dev/users#jean.michel.inrae", required = true) @PathParam("uri") @NotNull @ValidURI URI accountURI
     ) throws Exception {
-        UserDAO dao = new UserDAO(sparql);
-        dao.delete(uri);
-        return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
+        AccountDAO accountDAO = new AccountDAO(sparql);
+        PersonDAO personDAO = new PersonDAO(sparql);
+
+        PersonModel holderOfTheAccount = personDAO.getPersonFromAccount(accountURI);
+        URI personURI = holderOfTheAccount==null ? null : holderOfTheAccount.getUri();
+
+        sparql.startTransaction();
+        try {
+            if (personURI != null){
+                personDAO.delete(personURI);
+            }
+
+            accountDAO.delete(accountURI);
+
+            sparql.commitTransaction();
+        } catch (Exception e){
+            sparql.rollbackTransaction();
+            throw e;
+        }
+
+        return new ObjectUriResponse(Response.Status.OK, accountURI).getResponse();
     }
 
     @GET
     @Path("{uri}/groups")
-    @ApiOperation("Get groups of an user")
+    @ApiOperation("Get groups of a user")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -370,13 +491,41 @@ public class UserAPI {
         @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
     })
     public Response getUserGroups(
-            @ApiParam(value = "User URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri) throws Exception {
-        // Search users with User DAO
+            @ApiParam(value = "User URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
+    ) throws Exception {
         GroupDAO dao = new GroupDAO(sparql);
         List<GroupModel> resultList = dao.getUserGroups(uri);
 
-        // Return paginated list of user DTO
         return new NamedResourcePaginatedListResponse<GroupModel>(resultList).getResponse();
     }
 
+    /**
+     * @param userDTO : user information to check before creating
+     * @param accountDAO : an instance of AccountDao used to perform verifications
+     * @return a response with the Statut Code equivalent to "OK" if the user can be created, an error response otherwise
+     */
+    private Response checkBeforeCreatingUser(UserDTO userDTO, AccountDAO accountDAO) throws Exception {
+        if (userDTO.isAdmin() && (currentUser == null || !currentUser.isAdmin())) {
+            throw new ForbiddenException("You must be an admin to create other admin users");
+        }
+
+        if (sparql.uriExists(AccountModel.class, userDTO.getUri())) {
+            return new ErrorResponse(
+                    Response.Status.CONFLICT,
+                    "User already exists",
+                    "Duplicated URI: " + userDTO.getUri()
+            ).getResponse();
+        }
+
+        InternetAddress userEmail = new InternetAddress(userDTO.getEmail());
+        if (accountDAO.accountEmailExists(userEmail)) {
+            return new ErrorResponse(
+                    Status.CONFLICT,
+                    "User already exists",
+                    "Duplicated email: " + userEmail
+            ).getResponse();
+        }
+
+        return Response.status(Status.OK.getStatusCode()).build();
+    }
 }

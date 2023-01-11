@@ -4,8 +4,8 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.opensilex.security.user.dal.UserDAO;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountDAO;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.utils.OpenSilexTestEnvironment;
 
 import javax.mail.internet.InternetAddress;
@@ -31,10 +31,10 @@ public class UserCommandsTest {
         String mail = "test.test@opensilex.org";
         InternetAddress email = new InternetAddress(mail);
 
-        UserDAO userDAO = new UserDAO(openSilexTestEnv.getSparql());
+        AccountDAO accountDAO = new AccountDAO(openSilexTestEnv.getSparql());
 
         // default admin user created in test environment
-        Assert.assertEquals(0,userDAO.getCount());
+        Assert.assertEquals(0, accountDAO.getCount());
 
         command.add(
                 "firstName",
@@ -45,9 +45,9 @@ public class UserCommandsTest {
                 "en",
                 null
         );
-        Assert.assertEquals(1,userDAO.getCount());
+        Assert.assertEquals(1, accountDAO.getCount());
 
-        UserModel user = userDAO.getByEmail(email);
+        AccountModel user = accountDAO.getByEmail(email);
         Assert.assertNotNull(user);
         Assert.assertEquals(email,user.getEmail());
         Assert.assertEquals("firstName",user.getFirstName());
@@ -66,7 +66,7 @@ public class UserCommandsTest {
                 "en",
                 null
         );
-        Assert.assertEquals(1,userDAO.getCount());
+        Assert.assertEquals(1, accountDAO.getCount());
 
     }
 

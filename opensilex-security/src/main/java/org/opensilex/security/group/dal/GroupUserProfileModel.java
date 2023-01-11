@@ -7,7 +7,7 @@ package org.opensilex.security.group.dal;
 
 import org.opensilex.security.authentication.SecurityOntology;
 import org.opensilex.security.profile.dal.ProfileModel;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -30,7 +30,7 @@ public class GroupUserProfileModel extends SPARQLResourceModel implements ClassU
             property = "hasUser",
             required = true
     )
-    private UserModel user;
+    private AccountModel user;
 
     public final static String USER_FIELD = "user";
     
@@ -43,11 +43,11 @@ public class GroupUserProfileModel extends SPARQLResourceModel implements ClassU
 
     public final static String PROFILE_FIELD = "profile";
     
-    public UserModel getUser() {
+    public AccountModel getUser() {
         return user;
     }
 
-    public void setUser(UserModel user) {
+    public void setUser(AccountModel user) {
         this.user = user;
     }
 

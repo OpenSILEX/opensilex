@@ -25,9 +25,9 @@ import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.ontology.Oeev;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.DateTimeDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -212,7 +212,7 @@ public class EventDAO<T extends EventModel> {
         sparql.delete(EventModel.class, uri);
     }
 
-    public EventModel get(URI uri, UserModel user) throws Exception {
+    public EventModel get(URI uri, AccountModel user) throws Exception {
         return sparql.loadByURI(eventGraph, EventModel.class, uri, user.getLanguage());
     }
 

@@ -8,10 +8,9 @@
  ******************************************************************************/
 package org.opensilex.core.organisation.dal.facility;
 
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.service.SparqlSearchFilter;
 
-import javax.validation.constraints.NotNull;
 import java.net.URI;
 import java.util.List;
 
@@ -19,17 +18,16 @@ import java.util.List;
  * @author Valentin Rigolle
  */
 public class FacilitySearchFilter extends SparqlSearchFilter {
-    private UserModel user;
+    private AccountModel user;
     private String pattern;
     private List<URI> facilities;
     private List<URI> organizations;
 
-    @NotNull
-    public UserModel getUser() {
+    public AccountModel getUser() {
         return user;
     }
 
-    public FacilitySearchFilter setUser(UserModel user) {
+    public FacilitySearchFilter setUser(AccountModel user) {
         this.user = user;
         return this;
     }

@@ -9,7 +9,7 @@ import io.swagger.annotations.*;
 import org.opensilex.core.URIsListPostDTO;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.exceptions.ConflictException;
 import org.opensilex.server.exceptions.NotFoundException;
 import org.opensilex.server.response.ErrorResponse;
@@ -56,7 +56,7 @@ public class OntologyAPI {
     public static final String RDF_TYPE_PROPERTY_RESTRICTION = "rdf_type_property_restriction";
 
     @CurrentUser
-    UserModel currentUser;
+    AccountModel currentUser;
 
     @Inject
     private SPARQLService sparql;

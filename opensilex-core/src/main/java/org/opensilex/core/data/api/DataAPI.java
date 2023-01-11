@@ -52,7 +52,7 @@ import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.exceptions.NotFoundException;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
@@ -149,7 +149,7 @@ public class DataAPI {
     private FileStorageService fs;
 
     @CurrentUser
-    UserModel user;
+    AccountModel user;
 
     @POST
     @ApiProtected
@@ -1218,7 +1218,7 @@ public class DataAPI {
     private final String rawdataHeader = "raw_data";
     private final String soHeader = "scientific_object";
     
-    private DataCSVValidationModel validateWholeCSV(ProvenanceModel provenance, URI experiment, InputStream file, UserModel currentUser) throws Exception {
+    private DataCSVValidationModel validateWholeCSV(ProvenanceModel provenance, URI experiment, InputStream file, AccountModel currentUser) throws Exception {
         DataCSVValidationModel csvValidation = new DataCSVValidationModel();
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
         Map<String, SPARQLNamedResourceModel> nameURITargets = new HashMap<>();

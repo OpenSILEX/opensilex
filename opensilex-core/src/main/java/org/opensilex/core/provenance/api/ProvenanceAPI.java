@@ -11,9 +11,8 @@ import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.opensilex.core.data.api.DataAPI;
 import org.opensilex.core.data.dal.DataDAO;
-import org.opensilex.core.data.dal.DataFileModel;
-import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.ontology.dal.URITypesModel;
 import org.opensilex.core.provenance.dal.AgentModel;
@@ -27,7 +26,6 @@ import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.response.*;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLService;
@@ -77,7 +75,7 @@ public class ProvenanceAPI {
     public static final String CREDENTIAL_PROVENANCE_DELETE_LABEL_KEY = "credential.default.delete";
 
     @CurrentUser
-    UserModel currentUser;
+    AccountModel currentUser;
 
     @Inject
     private MongoDBService nosql;

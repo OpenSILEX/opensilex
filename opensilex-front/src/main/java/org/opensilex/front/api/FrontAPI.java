@@ -39,7 +39,7 @@ import org.opensilex.front.theme.ThemeBuilder;
 import org.opensilex.front.theme.ThemeConfig;
 import org.opensilex.security.authentication.ApiTranslatable;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,7 +65,7 @@ public class FrontAPI {
     private SPARQLService sparql;
 
     @CurrentUser
-    UserModel user;
+    AccountModel user;
         
     @GET
     @Path("/config")

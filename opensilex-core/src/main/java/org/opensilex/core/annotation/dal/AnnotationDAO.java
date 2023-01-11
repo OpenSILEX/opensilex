@@ -19,7 +19,7 @@ import org.apache.jena.sparql.expr.ExprVar;
 import org.apache.jena.sparql.syntax.ElementFilter;
 import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.vocabulary.OA;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
@@ -84,7 +84,7 @@ public class AnnotationDAO {
         sparql.delete(AnnotationModel.class, uri);
     }
 
-    public AnnotationModel get(URI uri, UserModel user) throws Exception {
+    public AnnotationModel get(URI uri, AccountModel user) throws Exception {
         return sparql.getByURI(AnnotationModel.class, uri, user.getLanguage());
     }
 

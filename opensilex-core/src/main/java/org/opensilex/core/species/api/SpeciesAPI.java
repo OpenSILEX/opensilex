@@ -9,6 +9,7 @@ package org.opensilex.core.species.api;
 import io.swagger.annotations.*;
 import org.opensilex.core.species.dal.SpeciesDAO;
 import org.opensilex.core.species.dal.SpeciesModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.sparql.service.SPARQLService;
@@ -21,7 +22,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.opensilex.security.authentication.ApiTranslatable;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.user.dal.UserModel;
 
 /**
  * @author Renaud COLIN
@@ -38,7 +38,7 @@ public class SpeciesAPI {
     private SPARQLService sparql;
 
     @CurrentUser
-    UserModel user;
+    AccountModel user;
 
     @GET
     @ApiOperation("get species (no pagination)")

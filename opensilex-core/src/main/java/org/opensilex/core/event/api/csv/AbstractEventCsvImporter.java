@@ -7,12 +7,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.locationtech.jts.io.ParseException;
 import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.ontology.Oeev;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.csv.CSVCell;
 import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.security.authentication.NotFoundURIException;
-import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
 import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
@@ -68,9 +68,9 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
     protected final CSVValidationModel validation;
     protected final OntologyDAO ontologyDAO;
 
-    private final UserModel user;
+    private final AccountModel user;
 
-    protected AbstractEventCsvImporter(SPARQLService sparql, OntologyDAO ontologyDAO, InputStream file, UserModel user) throws SPARQLInvalidClassDefinitionException, SPARQLMapperNotFoundException {
+    protected AbstractEventCsvImporter(SPARQLService sparql, OntologyDAO ontologyDAO, InputStream file, AccountModel user) throws SPARQLInvalidClassDefinitionException, SPARQLMapperNotFoundException {
         this.ontologyDAO = ontologyDAO;
         this.file = file;
         this.user = user;

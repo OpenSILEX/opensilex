@@ -25,8 +25,8 @@ import org.opensilex.security.authentication.injection.CurrentUserResolver;
 import org.opensilex.security.extensions.LoginExtension;
 import org.opensilex.security.ontology.OesoSecurity;
 import org.opensilex.security.profile.dal.ProfileModel;
-import org.opensilex.security.user.dal.UserDAO;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountDAO;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.extensions.APIExtension;
 import org.opensilex.sparql.extensions.OntologyFileDefinition;
 import org.opensilex.sparql.extensions.SPARQLExtension;
@@ -103,8 +103,8 @@ public class SecurityModule extends OpenSilexModule implements APIExtension, Log
         LOGGER.info("Check User existence");
         SPARQLServiceFactory factory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
         SPARQLService sparql = factory.provide();
-        UserDAO userDAO = new UserDAO(sparql);
-        int userCount = userDAO.getCount();
+        AccountDAO accountDAO = new AccountDAO(sparql);
+        int userCount = accountDAO.getCount();
         factory.dispose(sparql);
         if (userCount == 0) {
             LOGGER.warn("/!\\ Caution, you don't have any user registered in OpenSilex");
@@ -126,17 +126,17 @@ public class SecurityModule extends OpenSilexModule implements APIExtension, Log
     }
 
     public static void createDefaultSuperAdmin(SPARQLService sparql, AuthenticationService authentication) throws Exception {
-        UserDAO userDAO = new UserDAO(sparql);
+        AccountDAO accountDAO = new AccountDAO(sparql);
         InternetAddress email = new InternetAddress("admin@opensilex.org");
 
-        if (!userDAO.userEmailexists(email)) {
-            userDAO.create(null, email, "Admin", "OpenSilex", true, authentication.getPasswordHash("admin"), "en");
+        if (!accountDAO.accountEmailExists(email)) {
+            accountDAO.create(null, email, true, authentication.getPasswordHash("admin"), "en");
         }
     }
 
     @Override
     public void bindServices(AbstractBinder binder) {
-        binder.bindFactory(CurrentUserFactory.class).to(UserModel.class)
+        binder.bindFactory(CurrentUserFactory.class).to(AccountModel.class)
                 .proxy(true).proxyForSameScope(false).in(RequestScoped.class);
 
         binder.bind(CurrentUserResolver.class).to(new TypeLiteral<InjectionResolver<CurrentUser>>() {

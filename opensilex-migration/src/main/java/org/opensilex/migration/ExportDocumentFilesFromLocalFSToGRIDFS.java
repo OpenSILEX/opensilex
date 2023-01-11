@@ -35,7 +35,7 @@ import org.opensilex.fs.FileStorageConfig;
 import org.opensilex.fs.FileStorageModule;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.security.authentication.NotFoundURIException;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.utils.ListWithPagination;
 
@@ -129,10 +129,10 @@ public class ExportDocumentFilesFromLocalFSToGRIDFS implements OpenSilexModuleUp
 
         try {
             LOGGER.info("Finding document");
-            UserModel userModel = new UserModel();
-            userModel.setAdmin(Boolean.TRUE);
+            AccountModel accountModel = new AccountModel();
+            accountModel.setAdmin(Boolean.TRUE);
 
-            ListWithPagination<DocumentModel> search = documentDAO.search(userModel, null, null, null, null, null, null, null, null, null, 0, 10000);
+            ListWithPagination<DocumentModel> search = documentDAO.search(accountModel, null, null, null, null, null, null, null, null, null, 0, 10000);
 
             LOGGER.info("Number of documents");
 

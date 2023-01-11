@@ -3,12 +3,13 @@
 // Copyright © INRA 2019
 // Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
-package org.opensilex.security.user.dal;
+package org.opensilex.security.account.dal;
 
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.opensilex.OpenSilex;
 import org.opensilex.security.authentication.SecurityOntology;
 import org.opensilex.security.group.dal.GroupUserProfileModel;
+import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -22,21 +23,19 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- *
  * @author Vincent Migot
  */
 @SPARQLResource(
         ontology = FOAF.class,
-        resource = "Agent",
-        graph = UserModel.GRAPH,
-        prefix = "usr"
+        resource = "OnlineAccount",
+        graph = AccountModel.GRAPH,
+        prefix = "account"
 )
-public class UserModel extends SPARQLResourceModel implements Principal, ClassURIGenerator<UserModel> {
+public class AccountModel extends SPARQLResourceModel implements Principal, ClassURIGenerator<AccountModel> {
+    public static final String GRAPH = "user";
 
-    public static final  String GRAPH = "user";
-
-    public static UserModel getAnonymous() {
-        UserModel anonymous = new UserModel();
+    public static AccountModel getAnonymous() {
+        AccountModel anonymous = new AccountModel();
         anonymous.setFirstName("Anonymous");
         anonymous.setLastName("Anonymous");
         try {
@@ -52,8 +51,8 @@ public class UserModel extends SPARQLResourceModel implements Principal, ClassUR
         return anonymous;
     }
     
-    public static UserModel getSystemUser() {
-        UserModel system = new UserModel();
+    public static AccountModel getSystemUser() {
+        AccountModel system = new AccountModel();
         system.setFirstName("System");
         system.setLastName("System");
         try {
@@ -71,23 +70,7 @@ public class UserModel extends SPARQLResourceModel implements Principal, ClassUR
 
     @SPARQLProperty(
             ontology = FOAF.class,
-            property = "firstName",
-            required = true
-    )
-    private String firstName;
-    public static final String FIRST_NAME_FIELD = "firstName";
-
-    @SPARQLProperty(
-            ontology = FOAF.class,
-            property = "lastName",
-            required = true
-    )
-    private String lastName;
-    public static final String LAST_NAME_FIELD = "lastName";
-
-    @SPARQLProperty(
-            ontology = FOAF.class,
-            property = "mbox",
+            property = "accountName",
             required = true
     )
     private InternetAddress email;
@@ -121,25 +104,18 @@ public class UserModel extends SPARQLResourceModel implements Principal, ClassUR
     )
     private List<GroupUserProfileModel> userProfiles;
 
+    @SPARQLProperty(
+            ontology = FOAF.class,
+            property = "account",
+            inverse = true
+    )
+    private PersonModel holderOfTheAccount = null;
+    public static final String HOLDER_OF_THE_ACCOUNT_FIELD = "holderOfTheAccount";
+
+
     private String token;
 
     private boolean anonymous = false;
-
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
 
     public InternetAddress getEmail() {
         return email;
@@ -174,9 +150,7 @@ public class UserModel extends SPARQLResourceModel implements Principal, ClassUR
     }
 
     @Override
-    public String getName() {
-        return getFirstName() + " " + getLastName() + " <" + getEmail().toString() + ">";
-    }
+    public String getName() { return getEmail().toString(); }
 
     public List<GroupUserProfileModel> getUserProfiles() {
         return userProfiles;
@@ -210,11 +184,35 @@ public class UserModel extends SPARQLResourceModel implements Principal, ClassUR
         this.anonymous = anonymous;
     }
 
+    public void setFirstName(String firstname) {
+        if (holderOfTheAccount != null )
+            holderOfTheAccount.setFirstName(firstname);
+    }
+    public String getFirstName() {
+        return holderOfTheAccount != null ? holderOfTheAccount.getFirstName() : null ;
+    }
+
+    public void setLastName(String lastname) {
+        if (holderOfTheAccount != null)
+            holderOfTheAccount.setLastName(lastname);
+    }
+    public String getLastName() {
+        return holderOfTheAccount != null ? holderOfTheAccount.getLastName() : null ;
+    }
+
+    public PersonModel getHolderOfTheAccount() {
+        return holderOfTheAccount;
+    }
+
+    public void setHolderOfTheAccount(PersonModel holderOfTheAccount) {
+        this.holderOfTheAccount = holderOfTheAccount;
+    }
+
     @Override
-    public String[] getInstancePathSegments(UserModel instance) {
+    public String[] getInstancePathSegments(AccountModel instance) {
         return new String[]{
-            instance.getFirstName(),
-            instance.getLastName()
+                "account",
+                instance.getEmail().toString()
         };
     }
 }

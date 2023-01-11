@@ -35,14 +35,12 @@ import org.bson.Document;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
-import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.MongoModel;
-import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.SPARQLConfig;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -228,7 +226,7 @@ public class MetricsDAO {
 
         createIndexes();
 
-        UserModel currentUser = UserModel.getSystemUser();
+        AccountModel currentUser = AccountModel.getSystemUser();
 
         ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
 
@@ -255,7 +253,7 @@ public class MetricsDAO {
 
         createIndexes();
 
-        UserModel currentUser = UserModel.getSystemUser();
+        AccountModel currentUser = AccountModel.getSystemUser();
 
         SystemSummaryModel model = new SystemSummaryModel();
         model.setCreationDate(Instant.now());
@@ -275,7 +273,7 @@ public class MetricsDAO {
 
     }
 
-    private CountListItemModel getDataCountByVariables(URI experimentURI, UserModel currentUser) throws Exception {
+    private CountListItemModel getDataCountByVariables(URI experimentURI, AccountModel currentUser) throws Exception {
         List<URI> experiments = null;
         if (experimentURI != null) {
             experiments = Arrays.asList(experimentURI);
@@ -317,7 +315,7 @@ public class MetricsDAO {
         return variablesByCount;
     }
 
-    private CountListItemModel getCountByTypeAndContext(URI contextURI, UserModel currentUser, Resource classResource, Boolean isExperimentContext) throws Exception {
+    private CountListItemModel getCountByTypeAndContext(URI contextURI, AccountModel currentUser, Resource classResource, Boolean isExperimentContext) throws Exception {
         SelectBuilder select = new SelectBuilder();
 
         Var varUri = makeVar("uri");

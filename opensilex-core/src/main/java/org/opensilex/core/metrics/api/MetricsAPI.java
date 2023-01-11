@@ -9,6 +9,7 @@ package org.opensilex.core.metrics.api;
 import io.swagger.annotations.*;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.service.SPARQLService;
@@ -29,7 +30,6 @@ import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_MINIMAL_DATE;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.exception.DateMappingExceptionResponse;
 import org.opensilex.core.exception.DateValidationException;
-import org.opensilex.core.experiment.api.ExperimentGetDTO;
 import org.opensilex.core.metrics.dal.ExperimentSummaryModel;
 import org.opensilex.core.metrics.dal.MetricsDAO;
 import org.opensilex.core.metrics.dal.SystemSummaryModel;
@@ -39,7 +39,6 @@ import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.utils.ListWithPagination;
@@ -63,7 +62,7 @@ public class MetricsAPI {
     public static final String EXPERIMENT_API_VALUE = "Metrics URI";
 
     @CurrentUser
-    UserModel currentUser;
+    AccountModel currentUser;
 
     @Inject
     private SPARQLService sparql;

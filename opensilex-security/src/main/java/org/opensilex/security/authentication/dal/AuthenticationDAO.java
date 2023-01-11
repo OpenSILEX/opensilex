@@ -16,7 +16,7 @@ import org.opensilex.security.credentials.ExtraCredentialService;
 import org.opensilex.security.credentials.config.Credential;
 import org.opensilex.security.credentials.config.CredentialConfig;
 import org.opensilex.security.credentials.config.CredentialGroup;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.service.SPARQLService;
@@ -141,12 +141,12 @@ public final class AuthenticationDAO {
         return credentialsGroups;
     }
 
-    public boolean checkUserAccess(UserModel user, String accessId) throws SPARQLException {
+    public boolean checkUserAccess(AccountModel user, String accessId) throws SPARQLException {
         Node nodeUri = SPARQLDeserializers.nodeURI(user.getUri());
         Var groupVar = makeVar("__group");
         Var profileVar = makeVar("__profile");
 
-        AskBuilder query = sparql.getUriExistsQuery(UserModel.class, user.getUri())
+        AskBuilder query = sparql.getUriExistsQuery(AccountModel.class, user.getUri())
                 .addWhere(groupVar, SecurityOntology.hasUser, nodeUri)
                 .addWhere(groupVar, SecurityOntology.hasProfile, profileVar)
                 .addWhere(profileVar, SecurityOntology.hasAccess, accessId);

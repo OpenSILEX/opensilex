@@ -22,7 +22,7 @@ import org.opensilex.server.exceptions.ForbiddenException;
 import org.opensilex.server.exceptions.UnauthorizedException;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.dal.AuthenticationDAO;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,7 +51,7 @@ import org.slf4j.LoggerFactory;
  * &#64;GET
  * &#64;Path("api-method") ...
  * &#64;Produces(MediaType.APPLICATION_JSON) public Response apiMethod(
- * &#64;Context SecurityContext securityContext ) throws Exception { UserModel
+ * &#64;Context SecurityContext securityContext ) throws Exception { AccountModel
  * currentUser = authentication.getCurrentUser(securityContext);
  *
  * ... Do stuff with current user }
@@ -76,7 +76,7 @@ public class CredentialFilter implements ContainerRequestFilter {
 
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
-        UserModel user = (UserModel) requestContext.getSecurityContext().getUserPrincipal();
+        AccountModel user = (AccountModel) requestContext.getSecurityContext().getUserPrincipal();
         Method apiMethod = resourceInfo.getResourceMethod();
 
         if (apiMethod != null) {

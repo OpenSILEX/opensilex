@@ -15,7 +15,7 @@ import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.security.authentication.SecurityOntology;
 import org.opensilex.security.group.dal.GroupModel;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
@@ -64,14 +64,14 @@ public class ExperimentModel extends SPARQLNamedResourceModel<ExperimentModel> i
             ontology = Oeso.class,
             property = "hasScientificSupervisor"
     )
-    List<UserModel> scientificSupervisors;
+    List<AccountModel> scientificSupervisors;
     public static final String SCIENTIFIC_SUPERVISOR_FIELD = "scientificSupervisor";
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasTechnicalSupervisor"
     )
-    List<UserModel> technicalSupervisors;
+    List<AccountModel> technicalSupervisors;
     public static final String TECHNICAL_SUPERVISOR_FIELD = "technicalSupervisor";
 
     @SPARQLProperty(
@@ -168,19 +168,19 @@ public class ExperimentModel extends SPARQLNamedResourceModel<ExperimentModel> i
         this.endDate = endDate;
     }
 
-    public List<UserModel> getScientificSupervisors() {
+    public List<AccountModel> getScientificSupervisors() {
         return scientificSupervisors;
     }
 
-    public void setScientificSupervisors(List<UserModel> scientificSupervisors) {
+    public void setScientificSupervisors(List<AccountModel> scientificSupervisors) {
         this.scientificSupervisors = scientificSupervisors;
     }
 
-    public List<UserModel> getTechnicalSupervisors() {
+    public List<AccountModel> getTechnicalSupervisors() {
         return technicalSupervisors;
     }
 
-    public void setTechnicalSupervisors(List<UserModel> technicalSupervisors) {
+    public void setTechnicalSupervisors(List<AccountModel> technicalSupervisors) {
         this.technicalSupervisors = technicalSupervisors;
     }
 

@@ -15,7 +15,7 @@ import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.exceptions.displayable.DisplayableBadRequestException;
 import org.opensilex.server.response.*;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -52,7 +52,7 @@ public class EntityAPI {
     private SPARQLService sparql;
 
     @CurrentUser
-    UserModel currentUser;
+    AccountModel currentUser;
 
     @POST
     @ApiOperation("Add an entity")

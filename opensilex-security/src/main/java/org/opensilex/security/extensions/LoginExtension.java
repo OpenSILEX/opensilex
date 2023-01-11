@@ -8,7 +8,7 @@ package org.opensilex.security.extensions;
 
 import com.auth0.jwt.JWTCreator;
 import org.opensilex.OpenSilexExtension;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,7 +30,7 @@ public interface LoginExtension extends OpenSilexExtension {
      * @param tokenBuilder Token builder on which to add claims
      * @throws Exception in case of login error
      */
-    public default void login(UserModel user, JWTCreator.Builder tokenBuilder) throws Exception {
+    public default void login(AccountModel user, JWTCreator.Builder tokenBuilder) throws Exception {
         LOGGER.debug(this.getClass().getCanonicalName() + " - User logged in: " + user.getEmail());
     }
 
@@ -41,7 +41,7 @@ public interface LoginExtension extends OpenSilexExtension {
      * @param user User logged out
      * @throws Exception in case of logout error
      */
-    public default void logout(UserModel user) throws Exception {
+    public default void logout(AccountModel user) throws Exception {
         LOGGER.debug(this.getClass().getCanonicalName() + " - User logged out: " + user.getEmail());
     }
 }

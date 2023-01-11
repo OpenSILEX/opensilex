@@ -37,7 +37,7 @@ import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.scientificObject.api.ScientificObjectNodeDTO;
 import org.opensilex.core.scientificObject.api.ScientificObjectNodeWithChildrenDTO;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.sparql.deserializer.*;
 import org.opensilex.sparql.exceptions.SPARQLException;
@@ -99,11 +99,11 @@ public class ScientificObjectDAO {
         }
     }
 
-    public List<ScientificObjectModel> searchByURIs(URI contextURI, List<URI> objectsURI, UserModel currentUser) throws Exception {
+    public List<ScientificObjectModel> searchByURIs(URI contextURI, List<URI> objectsURI, AccountModel currentUser) throws Exception {
         return searchByURIs(contextURI,objectsURI,currentUser,false);
     }
 
-    public List<ScientificObjectModel> searchByURIs(URI contextURI, List<URI> objectsURI, UserModel currentUser, boolean loadChildren) throws Exception {
+    public List<ScientificObjectModel> searchByURIs(URI contextURI, List<URI> objectsURI, AccountModel currentUser, boolean loadChildren) throws Exception {
 
         Map<String,Boolean> fieldsToFetch = new HashMap<>();
         fieldsToFetch.put(ScientificObjectModel.FACTOR_LEVEL_FIELD,true);
@@ -767,7 +767,7 @@ public class ScientificObjectDAO {
      * @return the URI of the created object
      * @throws DuplicateNameException if some object with the same name exist into the given graph
      */
-    public ScientificObjectModel create(URI contextURI, ExperimentModel experiment, URI soType, URI objectURI, String name, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws DuplicateNameException, Exception {
+    public ScientificObjectModel create(URI contextURI, ExperimentModel experiment, URI soType, URI objectURI, String name, List<RDFObjectRelationDTO> relations, AccountModel currentUser) throws DuplicateNameException, Exception {
         Objects.requireNonNull(contextURI);
 
         checkUniqueNameByGraph(contextURI,name,null,true);
@@ -863,7 +863,7 @@ public class ScientificObjectDAO {
      * @return the URI of the created object
      * @throws DuplicateNameException if some object with the same name exist into the given graph
      */
-    public URI update(URI contextURI, URI soType, URI objectURI, String name, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws Exception, DuplicateNameException {
+    public URI update(URI contextURI, URI soType, URI objectURI, String name, List<RDFObjectRelationDTO> relations, AccountModel currentUser) throws Exception, DuplicateNameException {
 
         checkUniqueNameByGraph(contextURI,name,objectURI,false);
 
@@ -949,7 +949,7 @@ public class ScientificObjectDAO {
         return object.getUri();
     }
 
-    private ScientificObjectModel initObject(URI contextURI, ExperimentModel xp, URI soType, String name, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws Exception {
+    private ScientificObjectModel initObject(URI contextURI, ExperimentModel xp, URI soType, String name, List<RDFObjectRelationDTO> relations, AccountModel currentUser) throws Exception {
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
         ClassModel model = ontologyDAO.getClassModel(soType, new URI(Oeso.ScientificObject.getURI()), currentUser.getLanguage());
 

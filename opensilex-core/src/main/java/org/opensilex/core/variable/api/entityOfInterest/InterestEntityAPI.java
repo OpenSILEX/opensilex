@@ -44,7 +44,7 @@ import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.response.ErrorDTO;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
@@ -74,7 +74,7 @@ public class InterestEntityAPI {
     private SPARQLService sparql;
 
     @CurrentUser
-    UserModel currentUser;
+    AccountModel currentUser;
     
     @POST
     @ApiOperation("Add an entity of interest")

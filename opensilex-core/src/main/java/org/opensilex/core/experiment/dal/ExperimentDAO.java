@@ -22,16 +22,16 @@ import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.organisation.dal.OrganizationDAO;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.facility.FacilityDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.facility.FacilitySearchFilter;
-import org.opensilex.core.organisation.dal.OrganizationDAO;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.SecurityOntology;
-import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
@@ -46,7 +46,9 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -73,35 +75,35 @@ public class ExperimentDAO {
         return instance;
     }
 
-    public ExperimentModel update(ExperimentModel instance, UserModel user) throws Exception {
+    public ExperimentModel update(ExperimentModel instance, AccountModel user) throws Exception {
         validateExperimentAccess(instance.getUri(), user);
         sparql.update(instance);
         return instance;
     }
 
-    public void updateWithVariables(URI xpUri, List<URI> variablesUris, UserModel user) throws Exception {
+    public void updateWithVariables(URI xpUri, List<URI> variablesUris, AccountModel user) throws Exception {
         validateExperimentAccess(xpUri, user);
         sparql.updateObjectRelations(SPARQLDeserializers.nodeURI(xpUri), xpUri, Oeso.measures, variablesUris);
     }
 
-    public void updateWithFactors(URI xpUri, List<URI> factorsUris, UserModel user) throws Exception {
+    public void updateWithFactors(URI xpUri, List<URI> factorsUris, AccountModel user) throws Exception {
         validateExperimentAccess(xpUri, user);
         sparql.updateSubjectRelations(SPARQLDeserializers.nodeURI(xpUri), factorsUris, Oeso.studyEffectOf, xpUri);
     }
 
-    public void delete(URI xpUri, UserModel user) throws Exception {
+    public void delete(URI xpUri, AccountModel user) throws Exception {
         validateExperimentAccess(xpUri, user);
         sparql.delete(ExperimentModel.class, xpUri);
     }
 
-    public void delete(List<URI> xpUris, UserModel user) throws Exception {
+    public void delete(List<URI> xpUris, AccountModel user) throws Exception {
         for (URI xpUri : xpUris) {
             validateExperimentAccess(xpUri, user);
         }
         sparql.delete(ExperimentModel.class, xpUris);
     }
 
-    public ExperimentModel get(URI xpUri, UserModel user) throws Exception {
+    public ExperimentModel get(URI xpUri, AccountModel user) throws Exception {
         validateExperimentAccess(xpUri, user);
         ExperimentModel xp = sparql.getByURI(ExperimentModel.class, xpUri, user.getLanguage());
         return xp;
@@ -330,7 +332,7 @@ public class ExperimentDAO {
         }
     }
 
-    public Set<URI> getUserExperiments(UserModel user) throws Exception {
+    public Set<URI> getUserExperiments(AccountModel user) throws Exception {
         String lang = user.getLanguage();
         Set<URI> userExperiments = new HashSet<>();
         List<URI> xps = sparql.searchURIs(ExperimentModel.class, lang, (SelectBuilder select) -> {
@@ -348,7 +350,7 @@ public class ExperimentDAO {
      * @return List of current experiment that are not ended
      * @throws Exception 
      */
-    public Set<URI> getRunningUserExperiments(UserModel user) throws Exception {
+    public Set<URI> getRunningUserExperiments(AccountModel user) throws Exception {
         String lang = user.getLanguage();
         Set<URI> userExperiments = new HashSet<>(); 
         
@@ -365,7 +367,7 @@ public class ExperimentDAO {
         return userExperiments;
     }
     
-    public static void appendUserExperimentsFilter(SelectBuilder select, UserModel user) throws Exception {
+    public static void appendUserExperimentsFilter(SelectBuilder select, AccountModel user) throws Exception {
         if (user == null || user.isAdmin()) {
             return;
         }
@@ -409,7 +411,7 @@ public class ExperimentDAO {
         ));
     }
 
-    public void validateExperimentAccess(URI experimentURI, UserModel user) throws Exception {
+    public void validateExperimentAccess(URI experimentURI, AccountModel user) throws Exception {
 
         if (!sparql.uriExists(ExperimentModel.class, experimentURI)) {
             throw new NotFoundURIException("Experiment URI not found: ", experimentURI);
@@ -535,7 +537,7 @@ public class ExperimentDAO {
                 .map(URIDeserializer::formatURIAsStr);  // map each facility URI in a prefixed form
     }
 
-    public List<FacilityModel> getAvailableFacilities(URI xpUri, UserModel user) throws Exception {
+    public List<FacilityModel> getAvailableFacilities(URI xpUri, AccountModel user) throws Exception {
         validateExperimentAccess(xpUri, user);
 
         ExperimentModel xp = sparql.getByURI(ExperimentModel.class, xpUri, user.getLanguage());
@@ -559,7 +561,7 @@ public class ExperimentDAO {
         }
     }
 
-    public List<ExperimentModel> getByURIs(List<URI> uris, UserModel currentUser) throws Exception {
+    public List<ExperimentModel> getByURIs(List<URI> uris, AccountModel currentUser) throws Exception {
         return sparql.getListByURIs(ExperimentModel.class, uris, currentUser.getLanguage());
     }
 

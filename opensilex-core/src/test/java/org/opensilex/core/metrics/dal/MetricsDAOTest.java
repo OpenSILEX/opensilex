@@ -42,7 +42,7 @@
 //import org.opensilex.core.variable.dal.UnitModel;
 //import org.opensilex.core.variable.dal.VariableDAO;
 //import org.opensilex.core.variable.dal.VariableModel;
-//import org.opensilex.security.user.dal.UserModel;
+//import org.opensilex.security.account.dal.AccountModel;
 //import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 //import org.opensilex.sparql.service.SPARQLQueryHelper;
 //import org.opensilex.sparql.service.SPARQLResult;
@@ -150,7 +150,7 @@
 //        ScientificObjectDAO scDAO = new ScientificObjectDAO(sparql, mongo);
 //                sparql.create( SPARQLDeserializers.nodeURI(xp.getUri()), scModel);
 //        ScientificObjectModel objectByURI = scDAO.getObjectByURI(new URI("xp:obj"),xp.getUri(),opensilex.getDefaultLanguage());
-////        scDAO.create(xp.getUri(), xp, scModel.getType(), null, scModel.getName(), null, UserModel.getAnonymous());
+////        scDAO.create(xp.getUri(), xp, scModel.getType(), null, scModel.getName(), null, AccountModel.getAnonymous());
 //
 //        ScheduleMetrics scheduleMetrics = new ScheduleMetrics();
 //

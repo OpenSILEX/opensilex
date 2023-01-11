@@ -14,7 +14,7 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.security.authentication.SecurityOntology;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
@@ -52,7 +52,7 @@ public final class GroupDAO {
         return group;
     }
 
-    public List<URI> getGroupUriList(UserModel user) throws Exception {
+    public List<URI> getGroupUriList(AccountModel user) throws Exception {
 
         return sparql.searchURIs(GroupModel.class, null, (SelectBuilder select) -> {
             Var groupUriVar = sparql.getURIFieldVar(GroupModel.class);

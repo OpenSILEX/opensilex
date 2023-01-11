@@ -10,7 +10,7 @@ import javax.inject.Named;
 import org.glassfish.hk2.api.Injectee;
 import org.glassfish.hk2.api.InjectionResolver;
 import org.glassfish.hk2.api.ServiceHandle;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 
 /**
  *
@@ -29,7 +29,7 @@ public class CurrentUserResolver implements InjectionResolver<CurrentUser> {
     @Override
     public Object resolve(Injectee injct, ServiceHandle<?> sh) {
         Class<?> clazz = (Class<?>) injct.getRequiredType();
-        if (clazz.isAssignableFrom(UserModel.class)) {
+        if (clazz.isAssignableFrom(AccountModel.class)) {
             return systemResolver.resolve(injct, sh);
         }
         return null;

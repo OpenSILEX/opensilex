@@ -14,7 +14,7 @@ import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectCsvImporter;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 
@@ -34,7 +34,7 @@ import static org.opensilex.core.scientificObject.api.ScientificObjectAPITest.GE
 public class ScientificObjectCsvImportTest extends AbstractMongoIntegrationTest {
 
     private ExperimentModel experiment;
-    private UserModel user;
+    private AccountModel user;
 
     private static final Path CSV_FILES_DIR = Paths.get("src","test","resources","scientificObject","csv");
 
@@ -46,7 +46,7 @@ public class ScientificObjectCsvImportTest extends AbstractMongoIntegrationTest 
         experiment.setStartDate(LocalDate.now());
         getSparqlService().create(experiment);
 
-        user = getSparqlService().search(UserModel.class,null).get(0);
+        user = getSparqlService().search(AccountModel.class,null).get(0);
         Objects.requireNonNull(user);
 
         // load ontology extension used for OS <-> germplasm relation handling
@@ -55,7 +55,7 @@ public class ScientificObjectCsvImportTest extends AbstractMongoIntegrationTest 
                 OpenSilex.getResourceAsStream(GERMPLASM_RESTRICTION_ONTOLOGY_PATH.toString()), Lang.RDFXML);
     }
 
-    private CSVValidationModel testImport(String csvFileName, URI experiment, UserModel user) throws Exception {
+    private CSVValidationModel testImport(String csvFileName, URI experiment, AccountModel user) throws Exception {
 
         ScientificObjectCsvImporter importer = new ScientificObjectCsvImporter(getSparqlService(),getMongoDBService(),experiment,user);
         File csvFile = CSV_FILES_DIR.resolve(csvFileName).toFile();

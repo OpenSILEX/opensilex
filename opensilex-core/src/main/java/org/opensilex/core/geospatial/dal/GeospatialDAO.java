@@ -41,7 +41,7 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
@@ -233,7 +233,7 @@ public class GeospatialDAO {
     }
 
     // All of the following methods required the presence of a 2dsphere or 2s index to support geospatial queries.
-    public FindIterable<GeospatialModel> searchIntersectsArea(Geometry geometry, UserModel currentUser, SPARQLService sparql) throws Exception {
+    public FindIterable<GeospatialModel> searchIntersectsArea(Geometry geometry, AccountModel currentUser, SPARQLService sparql) throws Exception {
         if (geometry != null) {
             OntologyDAO ontologyDAO = new OntologyDAO(sparql);
 

@@ -16,7 +16,7 @@ import org.opensilex.front.config.*;
 import org.opensilex.security.*;
 import org.opensilex.security.authentication.AuthenticationService;
 import org.opensilex.security.email.EmailService;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.ServerConfig;
 import org.opensilex.server.ServerModule;
 import org.opensilex.server.extensions.APIExtension;
@@ -89,7 +89,7 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
     private List<MenuItem> globalMenu = null;
     private URI lastUserUri = null;
 
-    public FrontConfigDTO getConfigDTO(UserModel currentUser, SPARQLService sparql) {
+    public FrontConfigDTO getConfigDTO(AccountModel currentUser, SPARQLService sparql) {
         FrontConfig frontConfig = getConfig(FrontConfig.class);
 
         // General config, valid for all users
@@ -193,7 +193,7 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
         return this.config;
     }
 
-    public UserFrontConfigDTO getUserConfigDTO(UserModel currentUser) {
+    public UserFrontConfigDTO getUserConfigDTO(AccountModel currentUser) {
         FrontConfig frontConfig = getConfig(FrontConfig.class);
         UserFrontConfigDTO userConfig = new UserFrontConfigDTO();
 

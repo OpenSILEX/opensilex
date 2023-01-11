@@ -9,6 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
@@ -21,19 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import org.apache.jena.arq.querybuilder.AskBuilder;
-import org.apache.jena.arq.querybuilder.ExprFactory;
-import org.apache.jena.graph.Node;
-import org.apache.jena.graph.NodeFactory;
-import org.apache.jena.graph.Triple;
-import org.apache.jena.vocabulary.DCTerms;
-import org.opensilex.core.experiment.dal.ExperimentDAO;
-import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.core.ontology.Oeso;
-import org.opensilex.security.authentication.ForbiddenURIAccessException;
-import org.opensilex.security.authentication.NotFoundURIException;
-import org.opensilex.security.user.dal.UserModel;
-import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
 /**
@@ -52,7 +40,7 @@ public class ProjectDAO {
         return instance;
     }
 
-    public ProjectModel update(ProjectModel instance, UserModel user) throws Exception {
+    public ProjectModel update(ProjectModel instance, AccountModel user) throws Exception {
         sparql.update(instance);
         return instance;
     }
@@ -62,11 +50,11 @@ public class ProjectDAO {
         sparql.update(instances);
     }
 
-    public void delete(URI uri, UserModel user) throws Exception {
+    public void delete(URI uri, AccountModel user) throws Exception {
         sparql.delete(ProjectModel.class, uri);
     }
 
-    public ProjectModel get(URI uri, UserModel user) throws Exception {
+    public ProjectModel get(URI uri, AccountModel user) throws Exception {
         return sparql.getByURI(ProjectModel.class, uri, user.getLanguage());
     }
 
@@ -120,7 +108,7 @@ public class ProjectDAO {
         sparql.create(ProjectModel.class, instances);
     }
 
-    public ListWithPagination<ProjectModel> search(String name, String term, String financialFunding,  Integer year, UserModel user, List<OrderBy> orderByList, int page, int pageSize) throws Exception {
+    public ListWithPagination<ProjectModel> search(String name, String term, String financialFunding, Integer year, AccountModel user, List<OrderBy> orderByList, int page, int pageSize) throws Exception {
 
         Expr stringFilter = SPARQLQueryHelper.or(
                 SPARQLQueryHelper.regexFilter(ProjectModel.SHORTNAME_FIELD, name),
@@ -183,7 +171,7 @@ public class ProjectDAO {
 
     }
 
-    public List<ProjectModel> getList(List<URI> uris, UserModel user) throws Exception {
+    public List<ProjectModel> getList(List<URI> uris, AccountModel user) throws Exception {
         return sparql.getListByURIs(ProjectModel.class, uris, user.getLanguage());
     }
 }

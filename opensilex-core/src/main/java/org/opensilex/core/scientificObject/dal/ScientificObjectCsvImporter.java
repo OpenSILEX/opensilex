@@ -15,7 +15,7 @@ import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.csv.AbstractCsvImporter;
 import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.sparql.csv.CsvOwlRestrictionValidator;
@@ -79,9 +79,9 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
      * @param sparql     SPARQL service
      * @param mongoDB    MongoDB service (used for move and geospatial handling)
      * @param experiment URI of the experiment
-     * @param user       {@link UserModel} used to determine if user has the right to access the experiment {@link ExperimentDAO#validateExperimentAccess(URI, UserModel) }
+     * @param user       {@link org.opensilex.security.account.dal.AccountModel} used to determine if user has the right to access the experiment {@link ExperimentDAO#validateExperimentAccess(URI, org.opensilex.security.account.dal.AccountModel) }
      */
-    public ScientificObjectCsvImporter(SPARQLService sparql, MongoDBService mongoDB, URI experiment, UserModel user) throws Exception {
+    public ScientificObjectCsvImporter(SPARQLService sparql, MongoDBService mongoDB, URI experiment, AccountModel user) throws Exception {
         super(
                 sparql,
                 ScientificObjectModel.class,

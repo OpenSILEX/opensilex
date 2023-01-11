@@ -24,7 +24,7 @@ import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.server.rest.validation.ValidURI;
@@ -79,7 +79,7 @@ public class VariableAPI {
 
 
     @CurrentUser
-    UserModel currentUser;
+    AccountModel currentUser;
 
     private VariableDAO getDao() throws URISyntaxException {
         return new VariableDAO(sparql,mongodb,fs);

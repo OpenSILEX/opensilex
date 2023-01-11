@@ -6,7 +6,7 @@ import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.OpenSilexTestEnvironment;
@@ -26,7 +26,7 @@ import static org.junit.Assert.*;
 public class SiteDAOTest extends AbstractMongoIntegrationTest {
 
     private static OpenSilexTestEnvironment openSilexTestEnv;
-    private static UserModel user;
+    private static AccountModel user;
     private static OrganizationModel organization;
     private static FacilityModel facilityA, facilityB;
     private static SiteModel siteA, siteB, siteC;
@@ -58,7 +58,7 @@ public class SiteDAOTest extends AbstractMongoIntegrationTest {
         sparql.create(FacilityModel.class, Arrays.asList(facilityA, facilityB));
 
         // create user
-        user = new UserModel();
+        user = new AccountModel();
         user.setUri(URI.create("test:user_test"));
         user.setLanguage("en");
         user.setAdmin(true);

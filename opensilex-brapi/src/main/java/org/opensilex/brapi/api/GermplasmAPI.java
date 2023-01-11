@@ -29,7 +29,7 @@ import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.sparql.service.SPARQLService;
@@ -67,7 +67,7 @@ public class GermplasmAPI implements BrapiCall {
     private MongoDBService nosql;
     
     @CurrentUser
-    UserModel currentUser;
+    AccountModel currentUser;
     
     @GET
     @Path("germplasm")

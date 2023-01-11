@@ -33,7 +33,7 @@ import org.opensilex.nosql.mongodb.metadata.MetaDataDao;
 import org.opensilex.nosql.mongodb.metadata.MetaDataModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.MongoModel;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.mapping.SPARQLListFetcher;
 import org.opensilex.sparql.mapping.SparqlNoProxyFetcher;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -152,7 +152,7 @@ public class GermplasmDAO {
 
     }
 
-    public GermplasmModel get(URI uri, UserModel user) throws Exception {
+    public GermplasmModel get(URI uri, AccountModel user) throws Exception {
         GermplasmModel germplasm = sparql.getByURI(GermplasmModel.class, uri, user.getLanguage());
         if (germplasm != null) {
             MetaDataModel storedAttributes = getStoredAttributes(germplasm.getUri());
@@ -427,7 +427,7 @@ public class GermplasmDAO {
     }
 
     public ListWithPagination<ExperimentModel> getExpFromGermplasm(
-            UserModel currentUser,
+            AccountModel currentUser,
             URI uri,
             String name,
             List<OrderBy> orderByList,
@@ -516,7 +516,7 @@ public class GermplasmDAO {
         }
     }
 
-    public ListWithPagination<GermplasmModel> brapiSearch(UserModel user, URI germplasmDbId, String germplasmName, String germplasmSpecies, int page, int pageSize) throws Exception {
+    public ListWithPagination<GermplasmModel> brapiSearch(AccountModel user, URI germplasmDbId, String germplasmName, String germplasmSpecies, int page, int pageSize) throws Exception {
 
         final Set<URI> speciesURIs;
         if (germplasmSpecies != null) {

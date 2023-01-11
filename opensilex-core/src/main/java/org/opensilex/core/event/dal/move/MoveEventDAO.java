@@ -29,7 +29,7 @@ import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Time;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
@@ -173,7 +173,7 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
      * @return
      * @throws Exception
      */
-    public MoveModel getMoveEventByURI(URI eventUri, UserModel user) throws Exception {
+    public MoveModel getMoveEventByURI(URI eventUri, AccountModel user) throws Exception {
 
         MoveModel model = sparql.getByURI(MoveModel.class, eventUri, user.getLanguage());
         if (model == null) {

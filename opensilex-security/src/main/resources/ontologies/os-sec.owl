@@ -18,10 +18,21 @@
             This Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/by-sa/4.0/legalcode)</rdfs:comment>
     </owl:Ontology>
 
+<owl:Class rdf:about="http://xmlns.com/foaf/0.1/Agent">
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://xmlns.com/foaf/0.1/mbox"/>
+                <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
+                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:label xml:lang="fr">Agent</rdfs:label>
+    </owl:Class>
 
-  <!-- http://xmlns.com/foaf/0.1/Agent -->
+  <!-- http://xmlns.com/foaf/0.1/Person -->
 
-    <owl:Class rdf:about="http://xmlns.com/foaf/0.1/Agent">
+    <owl:Class rdf:about="http://xmlns.com/foaf/0.1/Person">
+        <rdfs:subClassOf rdf:resource="http://xmlns.com/foaf/0.1/Agent"/>
         <rdfs:subClassOf>
             <owl:Restriction>
                 <owl:onProperty rdf:resource="http://xmlns.com/foaf/0.1/firstName"/>
@@ -43,29 +54,49 @@
                 <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
             </owl:Restriction>
         </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/security#hasLanguage"/>
-                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/security#hasPasswordHash"/>
-                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/security#isAdmin"/>
-                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:label xml:lang="fr">Agent</rdfs:label>
+        <rdfs:label xml:lang="fr">Personne</rdfs:label>
     </owl:Class>
+
+    <owl:DatatypeProperty rdf:about="http://xmlns.com/foaf/0.1/account">
+        <rdfs:domain rdf:resource="http://xmlns.com/foaf/0.1/Agent"/>
+        <rdfs:range rdf:resource="http://xmlns.com/foaf/0.1/OnlineAccount"/>
+        <rdfs:label xml:lang="fr">compte</rdfs:label>
+        <rdfs:label xml:lang="en">account</rdfs:label>
+        <rdfs:comment xml:lang="fr">indique un compte appartenant à un agent</rdfs:comment>
+        <rdfs:comment xml:lang="en">Indicates an account held by this agent</rdfs:comment>
+    </owl:DatatypeProperty>
+
+    <owl:Class rdf:about="http://xmlns.com/foaf/0.1/OnlineAccount">
+            <rdfs:subClassOf>
+                <owl:Restriction>
+                    <owl:onProperty rdf:resource="http://xmlns.com/foaf/0.1/accountName"/>
+                    <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
+                    <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+                </owl:Restriction>
+            </rdfs:subClassOf>
+            <rdfs:subClassOf>
+                <owl:Restriction>
+                    <owl:onProperty rdf:resource="http://www.opensilex.org/security#hasLanguage"/>
+                    <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+                    <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+                </owl:Restriction>
+            </rdfs:subClassOf>
+            <rdfs:subClassOf>
+                <owl:Restriction>
+                    <owl:onProperty rdf:resource="http://www.opensilex.org/security#hasPasswordHash"/>
+                    <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+                    <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+                </owl:Restriction>
+            </rdfs:subClassOf>
+            <rdfs:subClassOf>
+                <owl:Restriction>
+                    <owl:onProperty rdf:resource="http://www.opensilex.org/security#isAdmin"/>
+                    <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+                    <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+                </owl:Restriction>
+            </rdfs:subClassOf>
+            <rdfs:label xml:lang="fr">Compte utilisateur</rdfs:label>
+        </owl:Class>
 
      <!-- http://www.opensilex.org/security#hasLanguage -->
     <owl:DatatypeProperty rdf:about="http://www.opensilex.org/security#hasLanguage">

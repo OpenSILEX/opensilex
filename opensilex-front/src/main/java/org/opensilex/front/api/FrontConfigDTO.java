@@ -9,8 +9,8 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.front.config.VersionLabel;
 
-import java.util.List;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @ApiModel
 public class FrontConfigDTO {
@@ -58,6 +58,10 @@ public class FrontConfigDTO {
     List<String> menuExclusions;
 
     VersionLabel versionLabel;
+
+    String applicationName;
+
+    Boolean connectAsGuest;
 
     @ApiModelProperty(value = "Application url path prefix", example = "app")
     public String getPathPrefix() {
@@ -215,5 +219,23 @@ public class FrontConfigDTO {
 
     public void setVersionLabel(VersionLabel versionLabel) {
         this.versionLabel = versionLabel;
+    }
+
+    @ApiModelProperty(value = "Name of the application to display")
+    public String getApplicationName() {
+        return applicationName;
+    }
+
+    public void setApplicationName(String applicationName) {
+        this.applicationName = applicationName;
+    }
+
+    @ApiModelProperty(value = "Ability to be logged as guest")
+    public boolean getConnectAsGuest() {
+        return connectAsGuest;
+    }
+
+    public void setConnectAsGuest(boolean connectAsGuest) {
+        this.connectAsGuest = connectAsGuest;
     }
 }

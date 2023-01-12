@@ -54,7 +54,7 @@ public interface FrontConfig {
 
     @ConfigDescription(
             value = "Front theme identifier",
-            defaultString = "opensilex-front#phis"
+            defaultString = "opensilex-front#opensilex"
     )
     String theme();
 
@@ -78,4 +78,16 @@ public interface FrontConfig {
             value = "Version label to display at the top of the app"
     )
     String versionLabel();
+
+    @ConfigDescription(
+            value = "Name of the application to display",
+            defaultString = "OpenSILEX"
+    )
+    String applicationName();
+
+    @ConfigDescription(
+            value = "Ability to be logged as guest",
+            defaultBoolean = true
+    )
+    boolean connectAsGuest();
 }

@@ -1,20 +1,23 @@
 <template>
   <div class="header-top" header-theme="light">
-    <div class="app-logo">
-      <div class="header-brand" to="/">
-        <div class="logo-img">
-          <img
-            v-bind:src="$opensilex.getResourceURI('images/logo-phis.svg')"
-            class="header-brand-img"
-            alt="lavalite"
-          />
+    <router-link :to="{path: '/'}" :title="$t('component.menu.backToDashboard')">
+      <div class="app-logo">
+        <div class="header-brand">
+          <div class="logo-img">
+            <slot name="headerLogo">
+              <img
+                v-bind:src="$opensilex.getResourceURI('images/logo-opensilex_miniature.png')"
+                class="header-brand-img"
+                alt="lavalite"
+              />
+            </slot>
+          </div>
+          <span class="text">
+            {{ this.applicationName }}
+          </span>
         </div>
-        <span class="text">
-          PHIS
-        </span>
       </div>
-    </div>
-<!------------------------------------------------------->
+    </router-link>
 
     <div class="container-fluid boxed-layout">
       <h5 v-if="iconvalue" class="header-title">
@@ -40,8 +43,7 @@
             {{ versionLabel }}
           </div>
 
-<!---------- Burger menu start---------->
-
+      <!-- Burger menu start -->
       <button
         class="hamburger headerburger"
         type="button"
@@ -101,7 +103,7 @@
         </div>
       </div>
     </Transition>
-<!---------- Burger menu end ---------->
+    <!-- Burger menu end -->
 
           <!--help button-->
           <opensilex-HelpButton
@@ -278,6 +280,17 @@ export default class DefaultHeaderComponent extends Vue {
    */
   logout() {
     this.$store.commit("logout");
+  }
+
+  /**
+   * Gets the name of the application to display
+   */
+  get applicationName(): string {
+    if (!this.$opensilex.getConfig().applicationName) {
+      return undefined;
+    }
+
+    return this.$opensilex.getConfig().applicationName;
   }
 
   width;
@@ -569,13 +582,6 @@ export default class DefaultHeaderComponent extends Vue {
     font-size: 90%;
     margin-left: 45px;
   }
-  .header-brand-img {
-    width: 35px;
-    height: 35px;
-    transition: 1s;
-    margin-top: 8px;
-    margin-left: 40px;
-  }
 
 }
 @media (min-width: 950px) and (max-width: 1150px) {
@@ -618,7 +624,8 @@ export default class DefaultHeaderComponent extends Vue {
     margin-left: 0px;
   }
   .header-title, .title-description {
-    margin-left: -30px;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .header-title {
     font-size: 1.1em;

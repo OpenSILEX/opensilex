@@ -23,13 +23,18 @@ import org.opensilex.server.extensions.APIExtension;
 import org.opensilex.server.extensions.ServerExtension;
 import org.opensilex.server.scanner.IgnoreJarScanner;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.sparql.service.SPARQLServiceFactory;
 import org.slf4j.LoggerFactory;
 
+import javax.mail.internet.InternetAddress;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import org.opensilex.OpenSilex;
+import org.opensilex.security.authentication.dal.AuthenticationDAO;
+import org.opensilex.security.profile.dal.ProfileModel;
 
 /**
  *
@@ -108,11 +113,12 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
             config.setFooterComponent(frontConfig.footerComponent());
             config.setGeocodingService(frontConfig.geocodingService());
             config.setMenuExclusions(frontConfig.menuExclusions());
+            config.setApplicationName(frontConfig.applicationName());
+            config.setConnectAsGuest(frontConfig.connectAsGuest());
             try {
                 config.setVersionLabel(VersionLabel.valueOf(frontConfig.versionLabel().toUpperCase()));
             } catch (IllegalArgumentException ignored) {
             }
-
 
             AuthenticationService auth = getOpenSilex().getServiceInstance(AuthenticationService.DEFAULT_AUTHENTICATION_SERVICE, AuthenticationService.class);
             // OpenID configuration
@@ -120,7 +126,7 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
                 URI authURI = auth.getOpenIDAuthenticationURI();
                 if (authURI != null) {
                     config.setOpenIDAuthenticationURI(authURI.toString());
-                    OpenIDConfig openid =  getOpenSilex().getModuleConfig(SecurityModule.class, SecurityConfig.class).openID();
+                    OpenIDConfig openid = getOpenSilex().getModuleConfig(SecurityModule.class, SecurityConfig.class).openID();
                     String connectionTitle = openid.connectionTitle().get(lang);
                     config.setOpenIDConnectionTitle(connectionTitle);
                 }
@@ -147,9 +153,9 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
             try {
                 EmailService emailService = getOpenSilex().getModuleConfig(SecurityModule.class, SecurityConfig.class).email();
                 EmailConfig emailConfig = (EmailConfig) emailService.getConfig();
-                config.setActivateResetPassword(emailConfig.enable()); 
+                config.setActivateResetPassword(emailConfig.enable());
             } catch (OpenSilexModuleNotFoundException ex) {
-                 LOGGER.error("Unexpected error", ex);
+                LOGGER.error("Unexpected error", ex);
             }
 
             String[] themeId = frontConfig.theme().split("#");
@@ -189,7 +195,6 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
             userConfigService = new UserConfigService(sparql);
         }
 
-
         return this.config;
     }
 
@@ -203,5 +208,13 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
         userConfig.setUserIsAnonymous(currentUser.isAnonymous());
 
         return userConfig;
+    }
+
+    @Override
+    public void install(boolean reset) throws Exception {
+        FrontConfig frontConfig = getConfig(FrontConfig.class);
+        if (frontConfig.connectAsGuest()) {
+          getOpenSilex().getModuleByClass(SecurityModule.class).createDefaultGuestGroupUserProfile(); 
+        }
     }
 }

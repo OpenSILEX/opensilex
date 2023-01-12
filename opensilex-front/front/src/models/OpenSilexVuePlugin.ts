@@ -99,6 +99,7 @@ export default class OpenSilexVuePlugin {
         return this.baseApi;
     }
 
+    // get ressources linked to loaded theme
     getResourceURI(path: string): string {
         if (this.config.themeModule && this.config.themeName) {
             let resourceURI = this.baseApi + "/vuejs/theme/" + encodeURIComponent(this.config.themeModule) + "/" + encodeURIComponent(this.config.themeName) + "/resource";
@@ -123,6 +124,19 @@ export default class OpenSilexVuePlugin {
             }
         });
         return path;
+    }
+    
+    // get front ressources depending to a specific module theme
+    getModuleFrontResourceURI(moduleName : string, themeName :string, path: string): string {
+        if (moduleName && themeName) {
+            // if module and theme are named, get ressource from them
+            let resourceURI = this.baseApi + "/vuejs/theme/" + encodeURIComponent(moduleName) + "/" + encodeURIComponent(themeName) + "/resource";
+            return resourceURI + "?filePath=" + encodeURIComponent(path);   
+        } else {
+            // search the resource into the main module theme
+            let resourceURI = this.baseApi + "/vuejs/theme/opensilex-front/opensilex/resource";
+            return resourceURI + "?filePath=" + encodeURIComponent(path);
+        }
     }
 
     getURL(path: string): string {

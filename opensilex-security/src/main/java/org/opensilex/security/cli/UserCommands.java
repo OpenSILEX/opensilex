@@ -12,6 +12,7 @@ import org.opensilex.cli.MainCommand;
 import org.opensilex.cli.OpenSilexCommand;
 import org.opensilex.cli.HelpOption;
 import org.opensilex.cli.AbstractOpenSilexCommand;
+import org.opensilex.security.SecurityModule;
 import org.opensilex.security.person.dal.PersonDAO;
 import org.opensilex.security.person.dal.PersonModel;
 import org.slf4j.Logger;
@@ -95,6 +96,23 @@ public class UserCommands extends AbstractOpenSilexCommand implements OpenSilexC
 
         }
         factory.dispose(sparql);
+    }
+    
+    /**
+     * /**
+     * This method add a guest user to OpenSilex instance
+     *
+     * @param help Helper to generate automatically command help message
+     * @throws Exception if command fail
+     */
+    @Command(
+            name = "add-guest",
+            header = "Add an OpenSilex user"
+    )
+    public void addGuest(
+            @CommandLine.Mixin HelpOption help
+    ) throws Exception {
+        getOpenSilex().getModuleByClass(SecurityModule.class).createDefaultGuestGroupUserProfile(); 
     }
 
     public static void main(String[] args) throws Exception {

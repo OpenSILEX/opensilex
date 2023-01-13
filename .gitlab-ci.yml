@@ -479,6 +479,7 @@ update:nightly:builds:branch:
     - if [ -z "$JAVA_VERSION" ]; then echo "Missing JAVA_VERSION variable"; exit 1; fi
     - if [ -z "$MVN_VERSION" ]; then echo "Missing MVN_VERSION variable"; exit 1; fi
     - echo "with_java $JAVA_VERSION and maven $MVN_VERSION with latest version of OpenSILEX/opensilex-dev"
+    - yum install -y git
   stage: build
   image: maven:$MVN_VERSION-openjdk-$JAVA_VERSION-slim
   script:
@@ -492,63 +493,19 @@ update:nightly:builds:branch:
  
 
 .with_java11: &java11
-  before_script:
-    - yum install -y git
   variables:
     JAVA_VERSION: 11
 
-.with_java13: &java13
-  before_script:
-    - yum install -y git
-  variables:
-    JAVA_VERSION: 13
-
-.with_java14: &java14
-  before_script:
-    - yum install -y git
-  variables:
-    JAVA_VERSION: 14
-
-.with_java16: &java16
-  before_script:
-    - yum install -y git
-  variables:
-    JAVA_VERSION: 16
-
 .with_java17: &java17
-  before_script:
-    - yum install -y git
   variables:
     JAVA_VERSION: 17
-
-.with_java18: &java18
-  before_script:
-    - yum install -y git
-  variables:
-    JAVA_VERSION: 18
 
 test:build:java11:
   <<: *java11
   <<: *test_build_on_schedules
 
-test:build:java13:
-  <<: *java13
-  <<: *test_build_on_schedules
-
-test:build:java14:
-  <<: *java14
-  <<: *test_build_on_schedules
-
-test:build:java16:
-  <<: *java16
-  <<: *test_build_on_schedules
-
 test:build:java17:
   <<: *java17
-  <<: *test_build_on_schedules
-
-test:build:java18:
-  <<: *java18
   <<: *test_build_on_schedules
 
 ########################

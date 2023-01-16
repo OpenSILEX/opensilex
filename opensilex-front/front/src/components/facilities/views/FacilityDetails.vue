@@ -101,7 +101,7 @@ export default class FacilityDetails extends Vue {
             [this.uri],
             undefined,
             0,
-            20)
+            0)
         .then(
             (
               http: HttpResponse<OpenSilexResponse<Array<ExperimentGetListDTO>>>
@@ -129,7 +129,7 @@ export default class FacilityDetails extends Vue {
         undefined,
         undefined,
         0,
-        20)
+        0)
         .then(
             (
                 http: HttpResponse<OpenSilexResponse<Array<DeviceGetDTO>>>

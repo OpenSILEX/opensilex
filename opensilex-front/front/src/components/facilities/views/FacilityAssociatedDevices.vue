@@ -85,7 +85,7 @@ export default class FacilityAssociatedDevices extends Vue {
         undefined,
         undefined,
         0,
-        20)
+        0)
         .then(
             (
                 http: HttpResponse<OpenSilexResponse<Array<DeviceGetDTO>>>

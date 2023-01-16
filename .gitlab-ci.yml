@@ -479,7 +479,7 @@ update:nightly:builds:branch:
     - if [ -z "$JAVA_VERSION" ]; then echo "Missing JAVA_VERSION variable"; exit 1; fi
     - if [ -z "$MVN_VERSION" ]; then echo "Missing MVN_VERSION variable"; exit 1; fi
     - echo "with_java $JAVA_VERSION and maven $MVN_VERSION with latest version of OpenSILEX/opensilex-dev"
-    - apt-get install && apt-get install -y git
+    - apt-get update && apt-get install -y git
   stage: build
   image: maven:$MVN_VERSION-openjdk-$JAVA_VERSION-slim
   script:

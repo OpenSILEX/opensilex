@@ -25,6 +25,7 @@ import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.event.dal.move.PositionModel;
 import org.opensilex.core.exception.DuplicateNameException;
+import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.organisation.dal.OrganizationDAO;
@@ -51,6 +52,7 @@ import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
+import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
@@ -490,6 +492,29 @@ public class DeviceDAO {
                 }
             }
         }
+        return devices;
+    }
+
+    public List<DeviceModel> getDevicesByFacility(URI facilityUri) throws SPARQLException {
+        List<DeviceModel> devices = null;
+
+        SelectBuilder select = new SelectBuilder();
+
+        Node graph = sparql.getDefaultGraph(MoveModel.class);
+        Var target = makeVar("target");
+        Var subject = makeVar("s");
+        select.addVar(target);
+        select.setDistinct(true);
+
+        WhereBuilder where = new WhereBuilder()
+                .addGraph(graph, subject, Oeev.to, SPARQLDeserializers.nodeURI(facilityUri))
+                .addWhere(subject, Ontology.typeSubClassAny, Oeev.Move)
+                .addWhere(subject, Oeev.concerns, target);
+        select.addWhere(where);
+
+        List<SPARQLResult> list = sparql.executeSelectQuery(select);
+        list.forEach(l -> System.out.println(l.getStringValue("target")));
+
         return devices;
     }
 

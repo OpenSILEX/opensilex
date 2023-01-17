@@ -172,3 +172,4 @@ export default class VariableView extends Vue {
   margin-bottom: -9px
 }
 </style>
+

@@ -587,6 +587,7 @@ en:
         groupVariable: "Group of variables"
         add-groupVariable: Add a group of variables
         no-var-provided: No variable provided
+        associated-data-error: Data are associated with this variable
 
 fr:
     VariableView:
@@ -608,6 +609,7 @@ fr:
         groupVariable: "Groupe de variables"
         add-groupVariable: Ajouter un groupe de variables
         no-var-provided: Aucune variable associée
+        associated-data-error: Données sont associées à cette variable
 
 </i18n>
 

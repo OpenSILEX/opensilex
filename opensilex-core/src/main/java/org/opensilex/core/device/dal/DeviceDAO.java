@@ -398,7 +398,7 @@ public class DeviceDAO {
      *
      * **/
     public DeviceModel associateVariablesToDevice(DeviceModel device, List<URI> variables, AccountModel user) throws Exception {
-        
+
         List<SPARQLModelRelation> relations = device.getRelations();
         
         // Fix cause the addRelationQuads in SPARQLClassQueryBuilder need a not null relation type  
@@ -494,6 +494,29 @@ public class DeviceDAO {
                 }
             }
         }
+        return devices;
+    }
+
+    public List<DeviceModel> getDevicesByFacility(URI facilityUri) throws SPARQLException {
+        List<DeviceModel> devices = null;
+
+        SelectBuilder select = new SelectBuilder();
+
+        Node graph = sparql.getDefaultGraph(MoveModel.class);
+        Var target = makeVar("target");
+        Var subject = makeVar("s");
+        select.addVar(target);
+        select.setDistinct(true);
+
+        WhereBuilder where = new WhereBuilder()
+                .addGraph(graph, subject, Oeev.to, SPARQLDeserializers.nodeURI(facilityUri))
+                .addWhere(subject, Ontology.typeSubClassAny, Oeev.Move)
+                .addWhere(subject, Oeev.concerns, target);
+        select.addWhere(where);
+
+        List<SPARQLResult> list = sparql.executeSelectQuery(select);
+        list.forEach(l -> System.out.println(l.getStringValue("target")));
+
         return devices;
     }
 

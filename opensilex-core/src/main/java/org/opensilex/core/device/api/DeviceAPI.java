@@ -992,7 +992,7 @@ public class DeviceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return devices by facility", response = DeviceGetDTO.class, responseContainer = "List")
+            @ApiResponse(code = 200, message = "Return devices by facility", response = DeviceGetDTO.class)
     })
     public Response getDevicesByFacility(
             @ApiParam(value = "target URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI facilityUri
@@ -1000,16 +1000,10 @@ public class DeviceAPI {
 
         DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
 
-        List<DeviceModel> results = dao.getDevicesByFacility(facilityUri, currentUser);
+        List<DeviceModel> results = dao.getDevicesByFacility(facilityUri);
+        List<DeviceGetDTO> devices = results.stream().map(model -> DeviceGetDTO.getDTOFromModel(model)).collect(Collectors.toList());
 
-        if (results == null) {
-            return new PaginatedListResponse<>().getResponse();
-        }
-
-        ListWithPagination<DeviceModel> devices = new ListWithPagination<>(results);
-        ListWithPagination<DeviceGetDTO> dtoList = devices.convert(DeviceGetDTO.class, DeviceGetDTO::getDTOFromModel);
-
-        return new PaginatedListResponse<>(dtoList).getResponse();
+        return new PaginatedListResponse<>(devices).getResponse();
     }
 
 }

@@ -999,4 +999,25 @@ public class DeviceAPI {
         return new SingleObjectResponse<>(facility).getResponse();
     }
 
+    @GET
+    @Path("{uri}/facility_test")
+    @ApiOperation("Get devices by facility")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return devices by facility", response = DeviceGetDTO.class)
+    })
+    public Response getDevicesByFacility(
+            @ApiParam(value = "target URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI facilityUri
+    ) throws Exception {
+
+        DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
+
+        List<DeviceModel> results = dao.getDevicesByFacility(facilityUri);
+        List<DeviceGetDTO> devices = results.stream().map(model -> DeviceGetDTO.getDTOFromModel(model)).collect(Collectors.toList());
+
+        return new PaginatedListResponse<>(devices).getResponse();
+    }
+
 }

@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.opensilex.config.InvalidConfigException;
 import org.opensilex.service.BaseService;
 import org.opensilex.service.Service;
@@ -23,7 +24,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.logging.Level;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.lang3.StringUtils;
 import org.opensilex.fs.local.TempFileSystemConnection;
@@ -36,9 +36,9 @@ import org.opensilex.fs.local.TempFileSystemConnection;
 @ServiceDefaultDefinition(config = FileStorageServiceConfig.class)
 public class FileStorageService extends BaseService implements Service {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(FileStorageService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FileStorageService.class);
 
-    public final static String DEFAULT_FS_SERVICE = "fs";
+    public static final  String DEFAULT_FS_SERVICE = "fs";
 
     private final FileStorageConnection defaultFS;
 
@@ -88,7 +88,7 @@ public class FileStorageService extends BaseService implements Service {
         String tmpDefaultFS = (StringUtils.isBlank(config.defaultFS()) ? null : config.defaultFS());
 
         if (!connections.containsKey(tmpDefaultFS)) {
-            LOGGER.info("File storage connection not found: " + tmpDefaultFS + " Default temporary file system will be used on configured mongo server");
+            LOGGER.info("File storage connection not found: {}. Default temporary file system will be used on configured mongo server", tmpDefaultFS);
         }
         if (tmpDefaultFS == null) {
             TempFileSystemConnection tempFileSystemConnection = null;
@@ -176,46 +176,67 @@ public class FileStorageService extends BaseService implements Service {
     }
 
     public String readFile(String prefix, Path filePath) throws IOException {
-        LOGGER.debug("READ FILE: " + filePath.toString());
+        LOGGER.debug("READ FILE: {}", filePath);
         return getConnection(prefix).readFile(filePath);
     }
 
     public void writeFile(String prefix, Path filePath, byte[] content, URI fileURI) throws IOException {
-        LOGGER.debug("WRITE FILE: " + filePath.toString());
+        LOGGER.debug("WRITE FILE: {}", filePath);
         getConnection(prefix).writeFile(filePath, content);
     }
 
     public void writeFile(String prefix, Path filePath, File file, URI fileURI) throws IOException {
-        LOGGER.debug("WRITE FILE: " + filePath.toString());
+        LOGGER.debug("WRITE FILE: {}", filePath);
         getConnection(prefix).writeFile(filePath, file);
     }
 
     public void createDirectories(String prefix, Path directoryPath) throws IOException {
-        LOGGER.debug("CREATE DIRECTORIES: " + directoryPath.toString());
+        LOGGER.debug("CREATE DIRECTORIES: {}", directoryPath);
         getConnection(prefix).createDirectories(directoryPath);
     }
 
     public byte[] readFileAsByteArray(String prefix, Path filePath) throws IOException {
-        LOGGER.debug("READ FILE BYTES: " + filePath.toString());
+        LOGGER.debug("READ FILE BYTES: {}", filePath);
         return getConnection(prefix).readFileAsByteArray(filePath);
     }
 
     public boolean exist(String prefix, Path filePath) throws IOException {
-        LOGGER.debug("TEST FILE EXISTENCE: " + filePath.toString());
+        LOGGER.debug("TEST FILE EXISTENCE: {}", filePath);
         return getConnection(prefix).exist(filePath);
     }
 
     public void delete(String prefix, Path filePath) throws IOException {
-        LOGGER.debug("DELETE FILE: " + filePath.toString());
+        LOGGER.debug("DELETE FILE: {}", filePath);
         getConnection(prefix).delete(filePath);
     }
 
+    /**
+     * 
+     * @param prefix prefix to append at the start of the returned path
+     * @param fileURI URI the file for which a path is computed
+     * @return a Path composed of the prefix, the file URI path and a Hex encoding of the file URI
+     * 
+     * @throws IllegalArgumentException if part can't be determined from fileURI
+     * @apiNote 
+     * <ul>
+     *     <li>Use {@link URI#getPath()} if the URI is a full URI</li>
+     *     <li>Use {@link URI#getSchemeSpecificPart()} if the URI is short URI</li>
+     * </ul>
+     * 
+     * @see Hex#encodeHexString(byte[])
+     */
     public Path getFilePathFromPrefixURI(String prefix, URI fileURI) {
-        return Paths.get(prefix, fileURI.getPath(), Hex.encodeHexString(fileURI.toString().getBytes(StandardCharsets.UTF_8)));
-    }
 
-    public String readFile(String prefix, URI fileURI) throws IOException {
-        return readFile(prefix, getFilePathFromPrefixURI(prefix, fileURI));
+        // absolute URI : http://www.opensilex.com/file1, extract path -> file1
+        String path;
+        if (!StringUtils.isEmpty(fileURI.getPath())) {
+            path = fileURI.getPath();
+        } else if (!StringUtils.isEmpty(fileURI.getSchemeSpecificPart())) { // short URI : test:file1, extract scheme specific part -> file1
+            path = fileURI.getSchemeSpecificPart();
+        } else {
+            throw new IllegalArgumentException("Can't determine path or schemeSpecificPart for the following URI : " + fileURI);
+        }
+        return Paths.get(prefix, path, Hex.encodeHexString(fileURI.toString().getBytes(StandardCharsets.UTF_8)));
     }
 
     public void writeFile(String prefix, URI fileURI, byte[] content) throws IOException {

@@ -108,7 +108,6 @@
       </template>
       <!-- Name -->
       <opensilex-StringView
-        v-if="selected.name !== value.name"
         :value="value.name"
         label="component.common.name"
       ></opensilex-StringView>

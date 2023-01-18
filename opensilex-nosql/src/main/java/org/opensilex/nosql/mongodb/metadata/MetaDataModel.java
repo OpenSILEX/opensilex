@@ -12,6 +12,8 @@ public class MetaDataModel extends MongoModel {
 
     private Map<String,String> attributes;
 
+    public static final String ATTRIBUTES_FIELD = "attributes";
+
     public MetaDataModel() {
     }
 

@@ -18,19 +18,16 @@
 <script lang="ts">
 import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
-import { SecurityService } from "opensilex-security/index";
-// @ts-ignore
 import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse";
-// @ts-ignore
-import { GermplasmGetSingleDTO } from "opensilex-core/index";
+import {GermplasmService} from "opensilex-core/api/germplasm.service";
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 
 @Component
 export default class GermplasmAttributesSelector extends Vue {
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
   $store: any;
 
-  service: SecurityService;
+  service: GermplasmService;
 
   @PropSync("germplasmAttribute")
   germplasmAttributeSelected;
@@ -47,6 +44,10 @@ export default class GermplasmAttributesSelector extends Vue {
 
   @Prop()
   required;
+
+  created(){
+      this.service = this.$opensilex.getService("opensilex.GermplasmService");
+  }
  
   get lang() {
     return this.$store.getters.language;
@@ -55,16 +56,15 @@ export default class GermplasmAttributesSelector extends Vue {
   @Ref("selectForm") readonly selectForm!: any;
  
   loadOptions(query, page, pageSize) { 
-    return this.$opensilex
-      .getService("opensilex.GermplasmService")
+    return this.service
       .getGermplasmAttributes()
       .then(
-        (http: HttpResponse<OpenSilexResponse<Array<GermplasmGetSingleDTO>>>) =>
+        (http: HttpResponse<OpenSilexResponse<Array<string>>>) =>
           http.response.result
       );
   }
 
-  convertGermplasmAttribute(germplasmAttribute) { 
+  convertGermplasmAttribute(germplasmAttribute: string) {
     return {
       id: germplasmAttribute,
       label: germplasmAttribute,

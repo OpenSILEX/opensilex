@@ -136,8 +136,7 @@ public class GermplasmAPI {
             @ApiParam("Germplasm description") @Valid GermplasmCreationDTO germplasmDTO,
             @ApiParam(value = "Checking only", example = "false") @DefaultValue("false") @QueryParam("checkOnly") Boolean checkOnly
     ) throws Exception {
-        URI uri = germplasmDTO.getUri();
-              
+
         GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
 
         ErrorResponse error = check(germplasmDTO, germplasmDAO, false);
@@ -297,16 +296,35 @@ public class GermplasmAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return germplasm attributes", response = ExperimentGetListDTO.class, responseContainer = "List"),
+        @ApiResponse(code = 200, message = "Return germplasm attributes", response = String.class, responseContainer = "List"),
         @ApiResponse(code = 404, message = "Germplasm attributes not found", response = ErrorDTO.class)
     })
     public Response getGermplasmAttributes() throws Exception {
-        // Get germplasm from DAO by URI
         GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
-        List<String> distinctAttributes = germplasmDAO.getDistinctGermplasAttributes();
+        Set<String> attributes = germplasmDAO.getDistinctGermplasmAttributes();
+        return new SingleObjectResponse<>(attributes).getResponse();
+    }
 
-        // Return list of
-        return new SingleObjectResponse<>(distinctAttributes).getResponse();
+    @GET
+    @Path("attributes/{attribute}")
+    @ApiOperation("Get attribute values of all germplasm for a given attribute")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return germplasm attributes", response = String.class, responseContainer = "List"),
+            @ApiResponse(code = 404, message = "Germplasm attributes not found", response = ErrorDTO.class)
+    })
+    public Response getGermplasmAttributeValues(
+            @PathParam("attribute") @NotNull @NotEmpty String attributeKey,
+            @ApiParam(value = "Regex pattern for filtering attribute value", example = ".*") @QueryParam("name") String name,
+            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+    ) throws Exception {
+
+        GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
+        Set<String> values = germplasmDAO.getDistinctGermplasmAttributesValues(attributeKey,name,page,pageSize);
+        return new SingleObjectResponse<>(values).getResponse();
     }
 
     /**

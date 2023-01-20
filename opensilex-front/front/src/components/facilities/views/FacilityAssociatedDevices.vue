@@ -1,0 +1,125 @@
+<template>
+    <div class="row">
+      <div class="col-md-6">
+        <div class="facilityDescription">
+            <opensilex-FacilityDescription
+              :selected="selected"
+              :devices="devices"
+              :withActions="true"
+              @onUpdate="refresh"
+            >
+            </opensilex-FacilityDescription>
+        </div>
+      </div>
+    </div>
+</template>
+
+<script lang="ts">
+import { Component, Ref, Watch } from "vue-property-decorator";
+import Vue from "vue";
+import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
+import { OrganizationGetDTO } from "opensilex-core/index";
+import { ExperimentGetListDTO } from "opensilex-core/model/experimentGetListDTO";
+import { DeviceGetDTO } from "opensilex-core/model/deviceGetDTO";
+import {OrganizationsService} from "opensilex-core/api/organizations.service";
+import {ExperimentsService} from "opensilex-core/api/experiments.service";
+import {DevicesService} from "opensilex-core/api/devices.service";
+import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
+import AssociatedExperimentsList from "../../experiments/AssociatedExperimentsList.vue";
+import {PositionsService} from "opensilex-core/api/positions.service";
+import {PositionGetDTO} from "opensilex-core/model/positionGetDTO";
+
+@Component
+export default class FacilityAssociatedDevices extends Vue {
+  $opensilex: OpenSilexVuePlugin;
+
+  selected: OrganizationGetDTO = null;
+  devices: Array<DeviceGetDTO> = [];
+  uri = null;
+
+  organizationService: OrganizationsService;
+  deviceService: DevicesService;
+  positionService: PositionsService;
+
+  @Ref("infrastructureFacilityForm") readonly infrastructureFacilityForm!: any;
+
+  get user() {
+    return this.$store.state.user;
+  }
+
+  get credentials() {
+    return this.$store.state.credentials;
+  }
+
+  created() {
+    this.uri = decodeURIComponent(this.$route.params.uri);
+    this.organizationService = this.$opensilex.getService(
+      "opensilex-core.OrganizationsService"
+    );
+    this.deviceService = this.$opensilex.getService(
+        "opensilex-core.DevicesService"
+    );
+    this.positionService = this.$opensilex.getService(
+        "opensilex-core.PositionsService"
+    );
+    this.refresh();
+  }
+
+  refresh() {
+    this.organizationService
+      .getFacility(this.uri)
+      .then((http: HttpResponse<OpenSilexResponse<OrganizationGetDTO>>) => {
+        let detailDTO: OrganizationGetDTO = http.response.result;
+        this.selected = detailDTO;
+        this.loadDevices();
+      });
+  }
+
+  loadDevices() {
+    this.devices = [];
+    this.deviceService.getDevicesByFacility(this.uri)
+        .then(
+            (
+                http: HttpResponse<OpenSilexResponse<Array<DeviceGetDTO>>>
+            ) => {
+              if (http && http.response) {
+                this.devices = http.response.result;
+                this.loadPositionsHistory();
+              }
+            }
+        )
+        .catch(this.$opensilex.errorHandler);
+  }
+
+  loadPositionsHistory() {
+    this.devices.forEach(device => {
+        this.positionService.searchPositionHistory(device.uri)
+            .then(
+                (
+                    http: HttpResponse<OpenSilexResponse<Array<PositionGetDTO>>>
+                ) => {
+                  if (http && http.response) {
+                    console.log(http.response);
+                  }
+                }
+            )
+      }
+    )
+
+  }
+
+}
+</script>
+
+<style scoped lang="scss">
+.facilityDescription {
+  margin-top: -25px;
+}
+
+@media (max-width: 769px) {
+  .facilityDescription {
+    margin-top: 0;
+  }
+}
+</style>
+

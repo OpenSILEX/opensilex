@@ -43,10 +43,12 @@ import org.opensilex.security.authentication.ForbiddenURIAccessException;
 import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.DateDeserializer;
+import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLModelRelation;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
@@ -58,6 +60,7 @@ import org.opensilex.utils.ListWithPagination;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.mongodb.client.model.Filters.eq;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
@@ -491,25 +494,26 @@ public class DeviceDAO {
         return devices;
     }
 
-    public List<DeviceModel> getDevicesByFacility(URI facilityUri) throws SPARQLException {
+    public List<DeviceModel> getDevicesByFacility(URI facilityUri, AccountModel currentUser) throws Exception {
         List<DeviceModel> devices = null;
 
         SelectBuilder select = new SelectBuilder();
 
-        Node graph = sparql.getDefaultGraph(MoveModel.class);
+        sparql.getDefaultGraph(MoveModel.class);
         Var target = makeVar("target");
         Var subject = makeVar("s");
         select.addVar(target);
         select.setDistinct(true);
 
-        WhereBuilder where = new WhereBuilder()
-                .addGraph(graph, subject, Oeev.to, SPARQLDeserializers.nodeURI(facilityUri))
-                .addWhere(subject, Ontology.typeSubClassAny, Oeev.Move)
-                .addWhere(subject, Oeev.concerns, target);
-        select.addWhere(where);
+        select.addWhere(subject, Oeev.to, SPARQLDeserializers.nodeURI(facilityUri))
+            .addWhere(subject, Ontology.typeSubClassAny, Oeev.Move)
+            .addWhere(subject, Oeev.concerns, target);
 
         List<SPARQLResult> list = sparql.executeSelectQuery(select);
         list.forEach(l -> System.out.println(l.getStringValue("target")));
+
+        List<URI> deviceUris = list.stream().map((x) -> URI.create(x.getStringValue("target"))).collect(Collectors.toList());
+        devices = getDevicesByURI(deviceUris, currentUser);
 
         return devices;
     }

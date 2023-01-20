@@ -102,7 +102,7 @@ public class StudiesAPI implements BrapiCall {
         Call call4 = new Call("studies/{studyDbId}/observationunits", calldatatypes, callMethods, callVersions);
         Call call5 = new Call("studies", calldatatypes, callMethods, callVersions);
 
-        calls.add(call1);
+        calls.add(call1);//TODO calls replaced by serverinfo
         calls.add(call2);
         calls.add(call3);
         calls.add(call4);
@@ -195,7 +195,8 @@ public class StudiesAPI implements BrapiCall {
     }
 
     @GET
-    @Path("studies/{studyDbId}")
+    //@Path("studies/{studyDbId}")
+    @Path("/brapi/v2/studies/{studyDbId}")
     @ApiOperation(value = "Retrieve study details", notes = "Retrieve study details")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Retrieve study details", response = StudyDetailsDTO.class, responseContainer = "List")})

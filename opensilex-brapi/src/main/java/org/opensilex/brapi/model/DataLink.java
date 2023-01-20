@@ -7,14 +7,14 @@
 package org.opensilex.brapi.model;
 
 /**
- * @see Brapi documentation V1.3 https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3
- * @author Alice Boizet
+ * @see Brapi documentation V2.1 https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI-Core/2.1
+ * @author Alice Boizet, Bernhard Gschloessl
  */
 public class DataLink {
-    private String dataLinkName;
-    private String name;
-    private String type;
-    private String url;
+    private String dataLinkName; //v1.3 specific
+    private String name; //v2.1 : The name of the external data link MIAPPE V1.1 (DM-38) Data file description
+    private String type; //v1.3 specific
+    private String url; //v2.1 : URL describing the location of this data file to view or download MIAPPE V1.1 (DM-37) Data file link
 
     public String getDataLinkName() {
         return dataLinkName;

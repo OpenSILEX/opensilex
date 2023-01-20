@@ -13,29 +13,29 @@ import java.util.Map;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 
 /**
- * @see Brapi documentation V1.3 https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3
- * @author Alice Boizet
+ * @see Brapi documentation V2.1 https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI-Core/2.1
+ * @author Alice Boizet, Bernhard Gschloessl
  */
 public class StudyDTO {
-    private String active;
-    private Map additionalInfo;
-    private String commonCropName;
-    private String documentationURL;
-    private String endDate;
-    private String locationDbId;
-    private String locationName;
-    private String name;
-    private String programDbId;
-    private String programName;
-    private List<Season> seasons;
-    private String startDate;
-    private String studyDbId;
-    private String studyName;
-    private String studyType;
-    private String studyTypeDbId;
-    private String studyTypeName;
-    private String trialDbId;
-    private String trialName;  
+    private String active; //v2.1 : A flag to indicate if a Study is currently active and ongoing
+    private Map additionalInfo; //v2.1 : A free space containing any additional information related to a particular object.
+    private String commonCropName; //v2.1 : Common name for the crop associated with this study
+    private String documentationURL; //v2.1 : A URL to the human readable documentation of an object
+    private String endDate; //v2.1 : The date the study ends MIAPPE V1.1 (DM-15) End date of study
+    private String locationDbId; //v2.1 : The unique identifier for a Location
+    private String locationName; //v2.1 : A human readable name for this location MIAPPE V1.1 (DM-18) Experimental site name
+    private String name; //old BrAPI -> v1.3
+    private String programDbId; //old BrAPI -> v1.3
+    private String programName; //old BrAPI -> v1.3
+    private List<Season> seasons;//Attention: pas conforme avec BrAPI v2.1 (<-> List<String> seasons) : https://brapicore21.docs.apiary.io/#/reference/study/get-studies-study-db-id
+    private String startDate; //v2.1 : The date this study started MIAPPE V1.1 (DM-14) Start date of study
+    private String studyDbId; //v2.1 : The ID which uniquely identifies a study within the given database server MIAPPE V1.1 (DM-11) Study unique ID -
+    private String studyName; //v2.1 : The human readable name for a study MIAPPE V1.1 (DM-12) Study title
+    private String studyType; //v2.1 : The type of study being performed. ex. "Yield Trial", etc
+    private String studyTypeDbId; //old BrAPI -> v1.3
+    private String studyTypeName; //old BrAPI -> v1.3
+    private String trialDbId; //v2.1 : The ID which uniquely identifies a trial
+    private String trialName;  //v2.1 : The human readable name of a trial
 
     public String getActive() {
         return active;

@@ -26,6 +26,8 @@ import {ExperimentsService} from "opensilex-core/api/experiments.service";
 import {DevicesService} from "opensilex-core/api/devices.service";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import AssociatedExperimentsList from "../../experiments/AssociatedExperimentsList.vue";
+import {PositionsService} from "opensilex-core/api/positions.service";
+import {PositionGetDTO} from "opensilex-core/model/positionGetDTO";
 
 @Component
 export default class FacilityAssociatedDevices extends Vue {
@@ -37,6 +39,7 @@ export default class FacilityAssociatedDevices extends Vue {
 
   organizationService: OrganizationsService;
   deviceService: DevicesService;
+  positionService: PositionsService;
 
   @Ref("infrastructureFacilityForm") readonly infrastructureFacilityForm!: any;
 
@@ -56,6 +59,9 @@ export default class FacilityAssociatedDevices extends Vue {
     this.deviceService = this.$opensilex.getService(
         "opensilex-core.DevicesService"
     );
+    this.positionService = this.$opensilex.getService(
+        "opensilex-core.PositionsService"
+    );
     this.refresh();
   }
 
@@ -71,31 +77,35 @@ export default class FacilityAssociatedDevices extends Vue {
 
   loadDevices() {
     this.devices = [];
-    this.deviceService.searchDevices(
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        this.uri,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        0,
-        0)
+    this.deviceService.getDevicesByFacility(this.uri)
         .then(
             (
                 http: HttpResponse<OpenSilexResponse<Array<DeviceGetDTO>>>
             ) => {
               if (http && http.response) {
                 this.devices = http.response.result;
+                this.loadPositionsHistory();
               }
             }
         )
         .catch(this.$opensilex.errorHandler);
+  }
+
+  loadPositionsHistory() {
+    this.devices.forEach(device => {
+        this.positionService.searchPositionHistory(device.uri)
+            .then(
+                (
+                    http: HttpResponse<OpenSilexResponse<Array<PositionGetDTO>>>
+                ) => {
+                  if (http && http.response) {
+                    console.log(http.response);
+                  }
+                }
+            )
+      }
+    )
+
   }
 
 }

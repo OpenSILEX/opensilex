@@ -202,7 +202,7 @@ import Vue from "vue";
 import EventCsvForm from "../events/form/csv/EventCsvForm.vue";
 
 @Component
-export default class ScientificObjectView extends Vue {
+export default class ScientificObjectsView extends Vue {
   $opensilex: any;
   $store: any;
 

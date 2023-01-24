@@ -11,12 +11,8 @@
           <opensilex-UriLink
             :uri="data.item.target"
             :value="objects[data.item.target]"
-            :to="{
-              path:
-                '/scientific-objects/details/' +
-                encodeURIComponent(data.item.target),
-            }
-            "
+            @click="redirectToDetail"
+
           ></opensilex-UriLink>
       </template>
 
@@ -30,6 +26,11 @@
         <opensilex-UriLink
           :uri="data.item.provenance.uri"
           :value="provenances[data.item.provenance.uri]"
+          :to="{
+            path:
+              '/provenances/details/' + 
+              encodeURIComponent(data.item.provenance.uri)
+          }"
         ></opensilex-UriLink>
       </template>
 
@@ -308,6 +309,9 @@ export default class DataFilesList extends Vue {
     .catch(this.$opensilex.errorHandler);
   }
 
+  redirectToDetail(){
+    this.$emit("redirectToDetail")
+  }
 }
 </script>
 

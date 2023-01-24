@@ -105,7 +105,7 @@ menu:
         label: component.menu.scientificObjects
         route:
           path: /scientific-objects
-          component: opensilex-ScientificObjectView
+          component: opensilex-ScientificObjectsView
           credentials:
             - scientific-objects-access
           icon: ik#ik-target
@@ -431,10 +431,22 @@ routes:
     title: component.menu.scientificObjects
     description: ScientificObjectList.description
     rdfType: vocabulary:ScientificObject
+  - path: /scientific-objects/visualization/:uri
+    component: opensilex-ScientificObjectDetailView
+  - path: /scientific-objects/datafiles/:uri
+    component: opensilex-ScientificObjectDetailView
+  - path: /scientific-objects/events/:uri
+    component: opensilex-ScientificObjectDetailView
+  - path: /scientific-objects/positions/:uri
+    component: opensilex-ScientificObjectDetailView
+  - path: /scientific-objects/annotations/:uri
+    component: opensilex-ScientificObjectDetailView
+  - path: /scientific-objects/documents/:uri
+    component: opensilex-ScientificObjectDetailView
+    
   - path: /infrastructures/details/:uri
     component: opensilex-InfrastructureDetailView
     credentials: []
-
   - path: /provenances/details/:uri
     component: opensilex-ProvenanceDetailsPage
     credentials: []

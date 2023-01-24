@@ -469,8 +469,8 @@ import ScientificObjectModalList from './scientificObjects/ScientificObjectModal
 components["opensilex-ScientificObjectModalList"] = ScientificObjectModalList;
 import ScientificObjectModalListByExp from './scientificObjects/ScientificObjectModalListByExp.vue';
 components["opensilex-ScientificObjectModalListByExp"] = ScientificObjectModalListByExp;
-import ScientificObjectView from './scientificObjects/ScientificObjectView.vue';
-components["opensilex-ScientificObjectView"] = ScientificObjectView;
+import ScientificObjectsView from './scientificObjects/ScientificObjectsView.vue';
+components["opensilex-ScientificObjectsView"] = ScientificObjectsView;
 import UsedScientificObjectSelector from './scientificObjects/views/UsedScientificObjectSelector.vue';
 components["opensilex-UsedScientificObjectSelector"] = UsedScientificObjectSelector;
 

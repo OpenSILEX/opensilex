@@ -3,13 +3,13 @@
     <opensilex-PageActions :returnButton="withReturnButton" :tabs="true">
       <b-nav-item
         :active="isDetailsTab"
-        @click.prevent="tabsValue = ScientificObjectDetail.DETAILS_TAB"
+        @click.prevent="onTabChanged(ScientificObjectDetail.DETAILS_TAB)"
         >{{ $t("component.common.details-label") }}
       </b-nav-item>
 
       <b-nav-item
         v-if="includeTab(ScientificObjectDetail.VISUALIZATION_TAB)"
-        @click.prevent="tabsValue = ScientificObjectDetail.VISUALIZATION_TAB"
+        @click.prevent="onTabChanged(ScientificObjectDetail.VISUALIZATION_TAB)"
         :active="isVisualizationTab"
         >{{ $t("ScientificObjectVisualizationTab.visualization") }}
       </b-nav-item>
@@ -17,35 +17,35 @@
       <b-nav-item
         v-if="includeTab(ScientificObjectDetail.DATAFILES_TAB)"
         :active="isDatafilesTab"
-        @click.prevent="tabsValue = ScientificObjectDetail.DATAFILES_TAB"
+        @click.prevent="onTabChanged(ScientificObjectDetail.DATAFILES_TAB)"
         >{{ $t("ScientificObjectDataFiles.datafiles") }}
       </b-nav-item>
 
       <b-nav-item
         v-if="includeTab(ScientificObjectDetail.EVENTS_TAB)"
         :active="isEventTab"
-        @click.prevent="tabsValue = ScientificObjectDetail.EVENTS_TAB"
+        @click.prevent="onTabChanged(ScientificObjectDetail.EVENTS_TAB)"
         >{{ $t("Event.list-title") }}
       </b-nav-item>
 
       <b-nav-item
         v-if="includeTab(ScientificObjectDetail.POSITIONS_TAB)"
         :active="isPositionTab"
-        @click.prevent="tabsValue = ScientificObjectDetail.POSITIONS_TAB"
+        @click.prevent="onTabChanged(ScientificObjectDetail.POSITIONS_TAB)"
         >{{ $t("Position.list-title") }}
       </b-nav-item>
 
       <b-nav-item
         v-if="includeTab(ScientificObjectDetail.ANNOTATIONS_TAB)"
         :active="isAnnotationTab"
-        @click.prevent="tabsValue = ScientificObjectDetail.ANNOTATIONS_TAB"
+        @click.prevent="onTabChanged(ScientificObjectDetail.ANNOTATIONS_TAB)"
         >{{ $t("Annotation.list-title") }}
       </b-nav-item>
 
       <b-nav-item
         v-if="includeTab(ScientificObjectDetail.DOCUMENTS_TAB)"
         :active="isDocumentTab"
-        @click.prevent="tabsValue = ScientificObjectDetail.DOCUMENTS_TAB"
+        @click.prevent="onTabChanged(ScientificObjectDetail.DOCUMENTS_TAB)"
         >{{ $t("DocumentTabList.documents") }}
       </b-nav-item>
     </opensilex-PageActions>
@@ -63,6 +63,7 @@
     <opensilex-ScientificObjectDataFiles
       v-if="isDatafilesTab"
       :uri="selected.uri"
+      @redirectToDetail="onTabChanged(ScientificObjectDetail.DETAILS_TAB)"
     ></opensilex-ScientificObjectDataFiles>
 
     <div v-if="isAnnotationTab">
@@ -146,6 +147,11 @@ export default class ScientificObjectDetail extends Vue {
   })
   experiment;
 
+  @Prop({
+    default: ScientificObjectDetail.DETAILS_TAB
+  })
+  defaultTabsValue: string;
+
   getEventColumnToDisplay() : Set<string>{
       return this.globalView ? EventList.getDefaultColumns() : new Set(['type', 'end', 'description']) ;
   }
@@ -183,7 +189,6 @@ export default class ScientificObjectDetail extends Vue {
   public static POSITIONS_TAB = "Positions";
   public static DATAFILES_TAB = "Datafiles";
 
-  tabsIndex: number = 0;
   tabsValue: string = ScientificObjectDetail.DETAILS_TAB;
 
   @Ref("annotationList") readonly annotationList!: AnnotationList;
@@ -199,35 +204,46 @@ export default class ScientificObjectDetail extends Vue {
   }
 
   get isDetailsTab(): boolean {
-    return this.tabsValue == ScientificObjectDetail.DETAILS_TAB;
+    return this.tabsValue === ScientificObjectDetail.DETAILS_TAB;
   }
 
   get isVisualizationTab(): boolean {
-    return this.tabsValue == ScientificObjectDetail.VISUALIZATION_TAB;
+    return this.tabsValue === ScientificObjectDetail.VISUALIZATION_TAB;
   }
 
   get isAnnotationTab(): boolean {
-    return this.tabsValue == ScientificObjectDetail.ANNOTATIONS_TAB;
+    return this.tabsValue === ScientificObjectDetail.ANNOTATIONS_TAB;
   }
 
   get isDocumentTab(): boolean {
-    return this.tabsValue == ScientificObjectDetail.DOCUMENTS_TAB;
+    return this.tabsValue === ScientificObjectDetail.DOCUMENTS_TAB;
   }
 
   get isEventTab(): boolean {
-    return this.tabsValue == ScientificObjectDetail.EVENTS_TAB;
+    return this.tabsValue === ScientificObjectDetail.EVENTS_TAB;
   }
 
   get isPositionTab(): boolean {
-    return this.tabsValue == ScientificObjectDetail.POSITIONS_TAB;
+    return this.tabsValue === ScientificObjectDetail.POSITIONS_TAB;
   }
 
   get isDatafilesTab() {
-    return this.tabsValue == ScientificObjectDetail.DATAFILES_TAB;
+    return this.tabsValue === ScientificObjectDetail.DATAFILES_TAB;
+  }
+
+  created() {
+    // at start default tab is detail tab
+    this.tabsValue = this.defaultTabsValue;
   }
 
   includeTab(tab) {
     return this.tabs.indexOf(tab) >= 0;
+  }
+
+  onTabChanged(tab){
+    // overwrite with selected tab information and sent it
+    this.tabsValue = tab;
+    this.$emit("tabChanged", tab)
   }
 }
 </script>

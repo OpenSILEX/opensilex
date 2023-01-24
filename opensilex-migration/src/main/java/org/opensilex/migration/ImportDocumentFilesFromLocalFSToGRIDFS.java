@@ -19,6 +19,7 @@ import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.logging.Level;
 import org.apache.commons.codec.binary.Hex;
 import org.opensilex.OpenSilex;
 import org.opensilex.OpenSilexModuleNotFoundException;
@@ -82,11 +83,18 @@ public class ImportDocumentFilesFromLocalFSToGRIDFS implements OpenSilexModuleUp
             LOGGER.error(ex.getMessage(), ex);
         }
 
-        if (fs == null) {
-            LOGGER.error("Can't initialize");
-            System.exit(1);
+       
+        try {
+            if (fs == null) {
+                LOGGER.error("Can't initialize filesystem");
+                System.exit(1);
+            }
+            fs.startup();
+        } catch (Exception ex) {
+            LOGGER.error("Can't startup");
+            throw new OpensilexModuleUpdateException( ex.getMessage(), ex);
         }
-
+        
         String tmpDirsLocation = System.getProperty("java.io.tmpdir");
 
         // your directory
@@ -98,7 +106,7 @@ public class ImportDocumentFilesFromLocalFSToGRIDFS implements OpenSilexModuleUp
             System.exit(1);
         } else if (matchingDirectories.length == 0) {
             LOGGER.error("No directories found, process will be stopped");
-            System.exit(0);
+            System.exit(1);
         }
 
         File exportDocumentsDirPath = matchingDirectories[0];

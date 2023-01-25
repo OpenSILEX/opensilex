@@ -1,11 +1,26 @@
 <template>
   <div ref="page">
+    <opensilex-VisuImages
+        ref="visuImages"
+        v-if="showImages"
+        @imageIsHovered="onImageIsHovered"
+        @imageIsUnHovered=" onImageIsUnHovered"
+        @imageIsDeleted=" onImageIsDeleted"
+        @onImageAnnotate=" showAnnotationForm"
+        @onImageDetails=" onImageDetails"
+        @onAnnotationDetails=" onAnnotationDetails"
+        bind:class="{
+          'ScientificObjectVisualizationImage': showImages,
+          'ScientificObjectVisualizationWithoutImages': !showImages
+        }"
+    ></opensilex-VisuImages>
     <opensilex-PageContent class="pagecontent">
+
       <!-- Toggle Sidebar-->
       <div class="searchMenuContainer"
-          v-on:click="searchFiltersToggle = !searchFiltersToggle"
-          :title="searchFiltersPannel()"
-        >
+           v-on:click="searchFiltersToggle = !searchFiltersToggle"
+           :title="searchFiltersPannel()"
+      >
         <div class="searchMenuIcon">
           <i class="icon ik ik-search"></i>
         </div>
@@ -22,45 +37,35 @@
         </div>
       </Transition>
 
+      <div class="d-flex justify-content-center mb-3" v-if="!isGraphicLoaded">
+        <b-spinner label="Loading..."></b-spinner>
+      </div>
 
-    <div class="d-flex justify-content-center mb-3" v-if="!isGraphicLoaded">
-      <b-spinner label="Loading..."></b-spinner>
-    </div>
-
-    <opensilex-VisuImages
-        ref="visuImages"
-        v-if="showImages"
-        @imageIsHovered="onImageIsHovered"
-        @imageIsUnHovered=" onImageIsUnHovered"
-        @imageIsDeleted=" onImageIsDeleted"
-        @onImageAnnotate=" showAnnotationForm"
-        @onImageDetails=" onImageDetails"
-        @onAnnotationDetails=" onAnnotationDetails"
-    ></opensilex-VisuImages>
-
-    <opensilex-DataVisuGraphic
-        v-if="isGraphicLoaded"
-        ref="visuGraphic"
-        :selectedScientificObjects="scientificObject.uri"
-        @addEventIsClicked="showAddEventComponent"
-        @dataAnnotationIsClicked="showAnnotationForm"
-        v-bind:class ="{
+      <!--Visualisation-->
+      <opensilex-DataVisuGraphic
+          v-if="isGraphicLoaded"
+          ref="visuGraphic"
+          :selectedScientificObjects="scientificObject.uri"
+          @addEventIsClicked="showAddEventComponent"
+          @dataAnnotationIsClicked="showAnnotationForm"
+          v-bind:class="{
           'ScientificObjectVisualizationGraphic': searchFiltersToggle,
           'ScientificObjectVisualizationGraphicWithoutForm': !searchFiltersToggle
         }"
-    ></opensilex-DataVisuGraphic>
+      ></opensilex-DataVisuGraphic>
 
-    <opensilex-AnnotationModalForm
-        ref="annotationModalForm"
-        @onCreate="onAnnotationCreated"
-    ></opensilex-AnnotationModalForm>
 
-    <opensilex-EventModalForm
-        ref="eventsModalForm"
-        :target="target"
-        :eventCreatedTime="eventCreatedTime"
-        @onCreate="onEventCreated"
-    ></opensilex-EventModalForm>
+      <opensilex-AnnotationModalForm
+          ref="annotationModalForm"
+          @onCreate="onAnnotationCreated"
+      ></opensilex-AnnotationModalForm>
+
+      <opensilex-EventModalForm
+          ref="eventsModalForm"
+          :target="target"
+          :eventCreatedTime="eventCreatedTime"
+          @onCreate="onEventCreated"
+      ></opensilex-EventModalForm>
     </opensilex-PageContent>
   </div>
 </template>
@@ -138,10 +143,10 @@ export default class ScientificObjectVisualizationTab extends Vue {
 
   // simulate window resizing to resize the graphic when the filter panel display changes
   @Watch("searchFiltersToggle")
-  onSearchFilterToggleChange(){
-    this.$nextTick(()=> { 
+  onSearchFilterToggleChange() {
+    this.$nextTick(() => {
       window.dispatchEvent(new Event('resize'));
-    })  
+    })
   }
 
   beforeDestroy() {
@@ -221,7 +226,7 @@ export default class ScientificObjectVisualizationTab extends Vue {
   prepareGraphic() {
     if (this.form) {
       this.$opensilex.disableLoader();
-      var promises = [];
+      let promises = [];
       let promise;
       promise = this.buildDataSerie();
       promises.push(promise);
@@ -381,27 +386,27 @@ export default class ScientificObjectVisualizationTab extends Vue {
 
       let dataLength = data.length;
 
-        if (dataLength === 0){
-          this.$opensilex.showInfoToast(
-          this.$t("component.common.search.noDataFound").toString());
-        }
+      if (dataLength === 0) {
+        this.$opensilex.showInfoToast(
+            this.$t("component.common.search.noDataFound").toString());
+      }
 
-        if (dataLength >= 0) {
+      if (dataLength >= 0) {
         const {cleanData, imageData} = await this.transformDataWithImages(data);
         if (dataLength > 50000) {
-          this.$opensilex.showInfoToast(
-              this.$i18n.t(
-                  "ScientificObjectVisualizationTab.limitSizeMessageA"
-              ) +
-              " " +
-              dataLength +
-              " " +
-              this.$i18n.t(
-                  "ScientificObjectVisualizationTab.limitSizeMessageB"
-              )
-          );
-        }
-        const dataAndImage = [];
+                this.$opensilex.showInfoToast(
+                    this.$i18n.t(
+                        "ScientificObjectVisualizationTab.limitSizeMessageA"
+                    ) +
+                    " " +
+                    dataLength +
+                    " " +
+                    this.$i18n.t(
+                        "ScientificObjectVisualizationTab.limitSizeMessageB"
+                    )
+                );
+              }
+              const dataAndImage = [];
 
         const dataSerie = {
           name: this.scientificObject.name,
@@ -410,7 +415,6 @@ export default class ScientificObjectVisualizationTab extends Vue {
           visible: true
         };
         dataAndImage.push(dataSerie)
-
         if (imageData.length > 0) {
           const imageSerie = {
             type: 'flags',
@@ -461,9 +465,12 @@ export default class ScientificObjectVisualizationTab extends Vue {
             if (this.visuImages) {
               this.visuImages.onImagePointClick(toReturn);
             }
-          };
-          dataAndImage.push(imageSerie);
-        }
+                  if (this.visuImages) {
+                    this.visuImages.onImagePointClick(toReturn);
+                  }
+                };
+                dataAndImage.push(imageSerie);
+              }
 
         return dataAndImage;
       }
@@ -535,13 +542,14 @@ export default class ScientificObjectVisualizationTab extends Vue {
   }> {
     const cleanData = HighchartsDataTransformer.transformDataForHighcharts(data);
     let imageData: Array<ImagePointOptionsObject> = [];
+    var annotations = [];
 
     for (let point of cleanData) {
       if (Array.isArray(point.data.provenance.prov_used) && point.data.provenance.prov_used.length > 0) {
         const annotations = await this.getAnnotations(point.data.provenance.prov_used[0].uri);
         imageData.push({
           ...point,
-          title: "",
+          title: "I",
           prov_used: point.data.provenance.prov_used,
           imageURI: point.data.provenance.prov_used[0].uri,
           color: annotations.length > 0 ? "#FF0000" : undefined
@@ -568,17 +576,25 @@ export default class ScientificObjectVisualizationTab extends Vue {
   searchFiltersPannel() {
     return this.$t("searchfilter.label")
   }
+
 }
 </script>
 
 <style scoped lang="scss">
+.ScientificObjectVisualizationImage {
+  height: 150px;
+}
 
-.ScientificObjectVisualizationGraphic{
+.ScientificObjectVisualizationWithoutImage {
+  height: 0px;
+}
+
+.ScientificObjectVisualizationGraphic {
   min-width: calc(100% - 450px);
   max-width: calc(100vw - 380px);
 }
 
-.ScientificObjectVisualizationGraphicWithoutForm{
+.ScientificObjectVisualizationGraphicWithoutForm {
   min-width: 100%;
   max-width: 100vw;
 }
@@ -605,4 +621,3 @@ fr:
     limitSizeMessageA: "Il y a "
     limitSizeMessageB: " données .Seules les 50 000 premières valeurs sont affichées. "
 </i18n>
-

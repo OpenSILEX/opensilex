@@ -54,6 +54,7 @@
                     :filter.sync="filters.name"
                     placeholder="ExperimentScientificObjects.name-placeholder"
                     class="searchFilter"
+                    @handlingEnterKey="refresh()"
                   ></opensilex-StringFilter>
                 </b-form-group>
               </opensilex-FilterField>
@@ -71,6 +72,7 @@
                     :experimentURI="uri"
                     :key="refreshKey"
                     class="searchFilter"
+                    @handlingEnterKey="refresh()"
                   ></opensilex-ScientificObjectTypeSelector>
                 </b-form-group>
               </opensilex-FilterField>
@@ -88,6 +90,7 @@
                     :required="false"
                     :searchMethod="searchParents"
                     class="searchFilter"
+                    @handlingEnterKey="refresh()"
                   ></opensilex-SelectForm>
                 </b-form-group>
               </opensilex-FilterField>
@@ -105,6 +108,7 @@
                     :required="false"
                     :experimentURI="uri"
                     class="searchFilter"
+                    @handlingEnterKey="refresh()"
                   ></opensilex-FactorLevelSelector>
                 </b-form-group>
               </opensilex-FilterField>
@@ -328,6 +332,7 @@ export default class ExperimentScientificObjects extends Vue {
   uri: string;
   showDataVisuView = false;
   numberOfSelectedRows = 0;
+  SearchFiltersToggle : boolean = false;
 
   refreshKey = 0;
 
@@ -335,11 +340,6 @@ export default class ExperimentScientificObjects extends Vue {
     this.refreshKey += 1
   }
 
-  data(){
-    return {
-      SearchFiltersToggle : false,
-    } 
-  }
 
   
   @Ref("soForm") readonly soForm!: ScientificObjectForm;
@@ -412,6 +412,7 @@ export default class ExperimentScientificObjects extends Vue {
       this.selectAll=false;
     } 
     else {
+    this.SearchFiltersToggle = false;
     //build selectedNamedObject
       this.selectedNamedObjects = [];
       this.selectedObjects.forEach(value => {

@@ -9,6 +9,7 @@
       :optionsLoadingMethod="loadFactorLevels"
       :disableBranchNodes="true"
       placeholder="FactorLevelSelector.placeholder"
+      @keyup.enter.native="onEnter"
     ></opensilex-SelectForm>
     <opensilex-SelectForm
       v-else
@@ -20,6 +21,7 @@
       :conversionMethod="convertDetail"
       :disableBranchNodes="true"
       placeholder="FactorLevelSelector.placeholder"
+      @keyup.enter.native="onEnter"
     ></opensilex-SelectForm>
   </div>
 </template>
@@ -123,6 +125,10 @@ export default class FactorLevelSelector extends Vue {
       });
     }
     return factorNode;
+  }
+
+  onEnter() {
+    this.$emit("handlingEnterKey")
   }
 }
 </script>

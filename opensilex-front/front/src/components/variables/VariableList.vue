@@ -33,6 +33,7 @@
                                         :filter.sync="filter.name"
                                         placeholder="VariableList.name-placeholder"
                                         class="searchFilter"
+                                        @handlingEnterKey="refresh()"
                                     ></opensilex-StringFilter>
                                 </opensilex-FilterField> <br>
                             </div>
@@ -44,6 +45,7 @@
                                         label="VariableView.entity"
                                         :entity.sync="filter.entity"
                                         class="searchFilter"
+                                        @handlingEnterKey="refresh()"
                                     ></opensilex-EntitySelector>
                                 </opensilex-FilterField>
                             </div>
@@ -55,6 +57,7 @@
                                         label="VariableView.characteristic"
                                         :characteristic.sync="filter.characteristic"
                                         class="searchFilter"
+                                        @handlingEnterKey="refresh()"
                                     ></opensilex-CharacteristicSelector>
                                 </opensilex-FilterField>
                             </div>
@@ -66,6 +69,7 @@
                                         label="VariableView.groupVariable"
                                         :variableGroup.sync="filter.group"
                                         class="searchFilter"
+                                        @handlingEnterKey="refresh()"
                                     ></opensilex-GroupVariablesSelector>
                                 </opensilex-FilterField>
                             </div>
@@ -79,6 +83,7 @@
                                         label="VariableForm.interestEntity-label"
                                         :interestEntity.sync="filter.entityOfInterest"
                                         class="searchFilter"
+                                        @handlingEnterKey="refresh()"
                                     ></opensilex-InterestEntitySelector>
                                 </opensilex-FilterField>
                             </div>
@@ -90,6 +95,7 @@
                                         label="VariableView.method"
                                         :method.sync="filter.method"
                                         class="searchFilter"
+                                        @handlingEnterKey="refresh()"
                                     ></opensilex-MethodSelector>
                                 </opensilex-FilterField>
                             </div>
@@ -101,6 +107,7 @@
                                         label="VariableView.unit"
                                         :unit.sync="filter.unit"
                                         class="searchFilter"
+                                        @handlingEnterKey="refresh()"
                                     ></opensilex-UnitSelector>
                                 </opensilex-FilterField>
                             </div>
@@ -111,6 +118,7 @@
                                         label="OntologyPropertyForm.data-type"
                                         :datatype.sync="filter.dataType"
                                         class="searchFilter"
+                                        @handlingEnterKey="refresh()"
                                     ></opensilex-VariableDataTypeSelector>
                                 </opensilex-FilterField>
                             </div>
@@ -122,6 +130,7 @@
                                         label="VariableForm.time-interval"
                                         :timeinterval.sync="filter.timeInterval"
                                         class="searchFilter"
+                                        @handlingEnterKey="refresh()"
                                     ></opensilex-VariableTimeIntervalSelector>
                                 </opensilex-FilterField>
                             </div>

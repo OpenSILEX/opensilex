@@ -29,6 +29,7 @@
                     :baseType="$opensilex.Oeso.GERMPLASM_TYPE_URI"
                     placeholder="GermplasmList.filter.rdfType-placeholder"
                     class="searchFilter"
+                    @handlingEnterKey="refresh()"
                   ></opensilex-TypeForm>
                 </opensilex-FilterField>
               </div>
@@ -43,6 +44,7 @@
                     :selected.sync="filter.species"
                     :options="species"
                     class="searchFilter"
+                    @handlingEnterKey="refresh()"
                   ></opensilex-SelectForm>
                 </opensilex-FilterField>
               </div>
@@ -56,6 +58,7 @@
                     placeholder="GermplasmList.filter.year-placeholder"
                     type="number"
                     class="searchFilter"
+                    @handlingEnterKey="refresh()"
                   ></opensilex-StringFilter>
                 </opensilex-FilterField> <br>
               </div>
@@ -68,6 +71,7 @@
                     :filter.sync="filter.institute"
                     placeholder="GermplasmList.filter.institute-placeholder"
                     class="searchFilter"
+                    @handlingEnterKey="refresh()"
                   ></opensilex-StringFilter>
                 </opensilex-FilterField> <br>
               </div>
@@ -80,6 +84,7 @@
                     :filter.sync="filter.name"
                     placeholder="GermplasmList.filter.label-placeholder"
                     class="searchFilter"
+                    @handlingEnterKey="refresh()"
                   ></opensilex-StringFilter>
                 </opensilex-FilterField> <br>
               </div>
@@ -91,6 +96,7 @@
                     label="GermplasmList.filter.experiment"
                     :experiments.sync="filter.experiment"
                     class="searchFilter"
+                    @handlingEnterKey="refresh()"
                   ></opensilex-ExperimentSelector>
                 </opensilex-FilterField> 
               </div>
@@ -103,6 +109,7 @@
                     :filter.sync="filter.uri"
                     placeholder="GermplasmList.filter.uri-placeholder"
                     class="searchFilter"
+                    @handlingEnterKey="refresh()"
                   ></opensilex-StringFilter>
                 </opensilex-FilterField> <br> 
               </div>    
@@ -115,6 +122,7 @@
                   :germplasmAttribute.sync="filter.metadataKey"
                   label="GermplasmList.filter.metadataKey"
                   class="searchFilter"
+                  @handlingEnterKey="refresh()"
                   ></opensilex-GermplasmAttributesSelector> 
                 </opensilex-FilterField>
               </div>
@@ -124,6 +132,7 @@
                   <opensilex-StringFilter
                     class="searchFilter"  
                     :filter.sync="filter.metadataValue"
+                    @handlingEnterKey="refresh()"
                   ></opensilex-StringFilter>
                 </opensilex-FilterField> <br>
               </div>

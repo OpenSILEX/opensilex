@@ -257,6 +257,7 @@ export default class ExperimentDataVisuView extends Vue {
           this.selectedVariable = http.response.result;
           const datatype = this.selectedVariable.datatype.split("#")[1];
           if (datatype == "decimal" || datatype == "integer") {
+            this.searchFiltersToggle = false;
             this.showImages = true;
             this.buildColorsSOArray();
             this.loadSeries();

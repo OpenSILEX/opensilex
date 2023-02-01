@@ -29,6 +29,7 @@
           @deselect="removeItem"
           @open="showModal"
           :limit="limit"
+          @keyup.enter.native="onEnter"
         >
           <template v-slot:option-label="{ node }">
             <slot name="option-label" v-bind:node="node">{{ node.label }}</slot>
@@ -69,6 +70,8 @@
           :search-nested="searchNested"
           :show-count="showCount"
           :limit="limit"
+          @keyup.enter.native="onEnter"
+
         >
           <template v-slot:option-label="{ node }">
             <slot name="option-label" v-bind:node="node"> <div class="label" :title="node.label">{{ node.label }}</div></slot>
@@ -387,6 +390,10 @@ export default class SelectForm extends Vue {
         }
       }
     });
+  }
+
+  onEnter() {
+      this.$emit("handlingEnterKey")
   }
 
   public findInTree(tree, id) {

@@ -35,6 +35,7 @@
                   placeholder="ScientificObjectDataFiles.rdfType-placeholder"
                   class="searchFilter"
                   key="imageTypeForm"
+                  @handlingEnterKey="refresh()"
                 ></opensilex-TypeForm>
 
                 <opensilex-TypeForm
@@ -45,6 +46,7 @@
                   placeholder="ScientificObjectDataFiles.rdfType-placeholder"
                   key="datafileTypeForm"
                   class="searchFilter"
+                  @handlingEnterKey="refresh()"
                 ></opensilex-TypeForm>
               </opensilex-FilterField>
             </div>
@@ -129,6 +131,7 @@
                   :showURI="false"
                   :key="refreshKey"
                   class="searchFilter"
+                  @handlingEnterKey="refresh()"
                 ></opensilex-DatafileProvenanceSelector>
 
                 <b-collapse

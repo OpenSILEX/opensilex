@@ -68,6 +68,7 @@
                   :filter.sync="filter.name"
                   placeholder="ScientificObjectList.name-placeholder"
                   class="searchFilter"
+                  @handlingEnterKey="soList.refresh()"
                 ></opensilex-StringFilter>
                 <br>
               </opensilex-FilterField>
@@ -81,6 +82,7 @@
                   :multiple="false"
                   :experiments.sync="filter.experiment"
                   class="searchFilter"
+                  @handlingEnterKey="soList.refresh()"
                 ></opensilex-ExperimentSelector>
               </opensilex-FilterField>
               </div>
@@ -109,6 +111,7 @@
                   :germplasm.sync="filter.germplasm"
                   :experiment="filter.experiment"
                   class="searchFilter"
+                  @handlingEnterKey="soList.refresh()"
                 ></opensilex-GermplasmSelector>
               </opensilex-FilterField>
               </div>

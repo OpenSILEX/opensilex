@@ -33,6 +33,7 @@
               :filter.sync="filter.name"
               placeholder="ProvenanceView.name-placeholder"
               class="searchFilter"
+              @handlingEnterKey="refresh()"
             ></opensilex-StringFilter>
           </opensilex-FilterField> <br>
         </div>
@@ -46,6 +47,7 @@
               label="ProvenanceView.activity_type"
               placeholder="ProvenanceView.activity_type-placeholder"
               class="searchFilter"
+              @handlingEnterKey="refresh()"
             ></opensilex-TypeForm>
           </opensilex-FilterField>
         </div>
@@ -60,6 +62,7 @@
               @select="filter.agent = undefined"
               :key="lang"
               class="searchFilter"
+              @handlingEnterKey="refresh()"
             >
             </opensilex-AgentTypeSelector>
           </opensilex-FilterField>
@@ -71,6 +74,7 @@
               :users.sync="filter.agent"
               label="ProvenanceForm.agent"
               class="searchFilter"
+              @handlingEnterKey="refresh()"
             ></opensilex-UserSelector>
           </opensilex-FilterField>
 
@@ -82,6 +86,7 @@
               :multiple="false"
               :type="filter.agent_type"
               class="searchFilter"
+              @handlingEnterKey="refresh()"
             ></opensilex-DeviceSelector>
           </opensilex-FilterField>
         </div>

@@ -1,5 +1,9 @@
 <template>
-  <form ref="formRef">
+  <!--@submit prevent refresh page on submit -->
+  <form ref="formRef"
+    @submit="(event) => {event.preventDefault()}"
+  >
+        
     <b-input-group size="sm">
       <opensilex-FormInputLabelHelper
         class="mt-2 mr-2"
@@ -15,11 +19,11 @@
         :disabled="disabled"
         :value="filterValue"
         @update="update($event)"
-        debounce="300"
+        :lazy="true"
         :type="type"
         :number="type=='number'"
         :placeholder="$t(placeholder)"
-        @keydown.enter.native="(event) => {event.preventDefault()}"
+        @keyup.enter="onEnter"
       ></b-form-input>
 
       <template v-slot:append>
@@ -102,7 +106,10 @@ export default class StringFilter extends Vue {
   created() {
     this.id = this.$opensilex.generateID();
   }
- 
+
+  onEnter() {
+    this.$emit("handlingEnterKey")
+  }
 
 }
 </script>

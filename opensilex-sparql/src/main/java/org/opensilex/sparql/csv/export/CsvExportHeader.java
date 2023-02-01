@@ -2,17 +2,18 @@ package org.opensilex.sparql.csv.export;
 
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 public class CsvExportHeader {
 
-    private LinkedHashSet<String> columns;
+    private Set<String> columns;
     private List<String> headerNames;
 
-    public LinkedHashSet<String> getColumns() {
+    public Set<String> getColumns() {
         return columns;
     }
 
-    public CsvExportHeader setColumns(LinkedHashSet<String> header) {
+    public CsvExportHeader setColumns(Set<String> header) {
         this.columns = header;
         return this;
     }

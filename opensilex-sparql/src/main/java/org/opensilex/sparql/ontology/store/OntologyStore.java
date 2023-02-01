@@ -16,6 +16,7 @@ import org.opensilex.sparql.ontology.dal.*;
 
 import java.net.URI;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.BiPredicate;
 
 /**
@@ -49,7 +50,7 @@ public interface OntologyStore {
      *
      * @param classURI URI of a {@link ClassModel} (required)
      * @param ancestorURI  URI of the classURI ancestor(optional). If set then the store return true if and only if this class is a sub-classOf* of parentClass
-     * @return if true if a class exist
+     * @return true if a class exist
      */
     boolean classExist(URI classURI, URI ancestorURI) throws SPARQLException;
 
@@ -58,16 +59,48 @@ public interface OntologyStore {
      * @param classURI URI of a {@link ClassModel} (required)
      * @param ancestorURI  URI of the classURI ancestor(optional). If set then the store return a {@link ClassModel} if and only if this class is a sub-classOf* of parentClass
      * @param lang class name lang filter (only return lang which match with the given lang)
-     * @return the {@link ClassModel} which have classURI as as URI ({@link SPARQLResourceModel#getUri()})
+     * @return the {@link ClassModel} which have classURI as URI ({@link SPARQLResourceModel#getUri()})
      */
     ClassModel getClassModel(URI classURI, URI ancestorURI, String lang) throws SPARQLException;
+
+    /**
+     *
+     * @param classURI URI of the OWL class
+     * @param includeNestedRestrictions indicate if restrictions from descendant/subclasses must be returned
+     * @return the Set of all properties URI which apply on the given class, through OWL restriction
+     */
+    default Set<String> getOwlRestrictionsUris(URI classURI, boolean includeNestedRestrictions) throws SPARQLException {
+        ClassModel classModel = getClassModel(classURI,null,null);
+
+        // include properties which apply on the class
+        Set<String> properties = new TreeSet<>();
+
+        classModel.getRestrictionsByProperties().keySet()
+                .stream()
+                .map(URI::toString)
+                .forEach(properties::add);
+
+        // append properties which can apply on all subclasses
+        if (includeNestedRestrictions) {
+
+            // visit all descendant with a Breadth-first search
+            classModel.visit(descendant ->
+                            descendant.getRestrictionsByProperties().keySet()
+                                    .stream()
+                                    .map(URI::toString)
+                                    .forEach(properties::add),
+                    false
+            );
+        }
+        return properties;
+    }
 
     /**
      * @param classURI URI of a {@link ClassModel} (required)
      * @param namePattern name regex filter
      * @param lang class name lang filter (only return lang which match with the given lang)
-     * @param excludeRoot indicate if the classURI must included at the root of the {@link SPARQLTreeListModel}
-     * @return a tree-representation of all sub-classes of the given class URI
+     * @param excludeRoot indicate if the classURI must be included at the root of the {@link SPARQLTreeListModel}
+     * @return a tree-representation of all subclasses of the given class URI
      */
     SPARQLTreeListModel<ClassModel> searchSubClasses(URI classURI, String namePattern, String lang, boolean excludeRoot) throws SPARQLException;
 

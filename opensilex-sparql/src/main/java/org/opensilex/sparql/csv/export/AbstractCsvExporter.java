@@ -12,12 +12,11 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 
 import java.io.*;
-import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -70,8 +69,9 @@ public abstract class AbstractCsvExporter<T extends SPARQLResourceModel> impleme
         writeBody(header, exportOptions, csvWriter);
 
         // #TODO find a more optimized way : since internal buffer is converted into a String, and String byte array is copied also
-        byte[] content =  writer.toString().getBytes();
 
+        // use ISO_8859_1 charset for better encoding/decoding of special characters like accents etc
+        byte[] content = writer.toString().getBytes(StandardCharsets.ISO_8859_1);
         csvWriter.flush();
         csvWriter.close();
 
@@ -82,21 +82,20 @@ public abstract class AbstractCsvExporter<T extends SPARQLResourceModel> impleme
 
         CsvExportHeader exportHeader = new CsvExportHeader();
 
-        LinkedHashSet<String> columns = new LinkedHashSet<>();
+        Set<String> columns;
 
-        // use columns provided
+        // use provided column
         if (!options.columns.isEmpty()) {
-            options.columns
-                    .stream().map(SPARQLDeserializers::formatURI)
-                    .forEach(columns::add);
+            columns = options.columns
+                    .stream()
+                    .map(SPARQLDeserializers::formatURI)
+                    .collect(Collectors.toSet());
 
         } else {
             // use ontology do determine columns to use
-            ClassModel classModel = SPARQLModule.getOntologyStoreInstance().getClassModel(options.classURI, null, options.lang);
-            classModel.getRestrictionsByProperties()
-                    .keySet()
-                    .stream().map(URI::toString)
-                    .forEach(columns::add);
+            // get all properties which can be applied on the given class URI and on all it's descendant/subclasses
+            Objects.requireNonNull(options.classURI);
+            columns = SPARQLModule.getOntologyStoreInstance().getOwlRestrictionsUris(options.classURI, true);
         }
 
         exportHeader.setColumns(columns);
@@ -106,8 +105,10 @@ public abstract class AbstractCsvExporter<T extends SPARQLResourceModel> impleme
     }
 
 
-    private List<String> getHeaderNames(LinkedHashSet<String> header, String lang) throws SPARQLException {
+    // #TODO avoid the use of a request by using the OntologyStore which store class and properties name
+    private List<String> getHeaderNames(Set<String> header, String lang) throws SPARQLException {
 
+        // execute a SPARQL request in order to fetch al columns name with the good translation
         SelectBuilder select = new SelectBuilder();
         Var uriVar = makeVar("uri");
         Var nameVar = makeVar("name");
@@ -149,58 +150,70 @@ public abstract class AbstractCsvExporter<T extends SPARQLResourceModel> impleme
     private void writeBody(CsvExportHeader header, CsvExportOption<T> options, CSVWriter writer) {
 
         String[] lineBuffer = new String[header.getColumns().size() + COLUMN_OFFSET];
-        StringBuilder valueWriteBuffer = new StringBuilder();
 
-        for (T object : options.getResults()) {
-            writeUriAndType(object, lineBuffer);
-            writeRelations(object, header, lineBuffer,valueWriteBuffer);
+        // use a String builder for cell write, in case of multivalued relation
+        StringBuilder cellBuffer = new StringBuilder();
+
+        // loop over model/object, one row per model
+        for (T model : options.getResults()) {
+
+            // write URI and type
+            lineBuffer[0] = model.getUri().toString();
+            lineBuffer[1] = model.getType().toString();
+
+            int colIdx = COLUMN_OFFSET;
+
+            // loop over column
+            for (String column : header.getColumns()) {
+                // one cell per relation
+                writeRelations(colIdx, column, model, lineBuffer, cellBuffer);
+                colIdx++;
+            }
+
             writer.writeNext(lineBuffer);
         }
     }
 
-    protected void writeUriAndType(T object, String[] lineBuffer) {
-        lineBuffer[0] = object.getUri().toString();
-        lineBuffer[1] = object.getType().toString();
-    }
 
-    private void writeRelations(T object, CsvExportHeader header, String[] lineBuffer, StringBuilder valueWriteBuffer) {
+    private void writeRelations(int colIdx, String column, T object, String[] lineBuffer, StringBuilder cellBuffer) {
 
-        int i = COLUMN_OFFSET;
+        Function<T, String> customValueGenerator = customRelationWriterByProperty.get(column);
+        if (customValueGenerator != null) {
+            String customValue = customValueGenerator.apply(object);
+            lineBuffer[colIdx] = customValue;
+        } else {
+            boolean valueWritten = false;
 
-        for (String column : header.getColumns()) {
+            // #TODO find a better way to loop between models and relation, here complexity is O(n.m.k) with n object, m relations and k column
+            // indeed, for each column, all relations are read
 
-            Function<T, String> customValueGenerator = customRelationWriterByProperty.get(column);
-            if (customValueGenerator != null) {
-                String customValue = customValueGenerator.apply(object);
-                lineBuffer[i++] = customValue;
-            } else {
-                boolean valueWritten = false;
+            // loop over relation and build corresponding String
+            // in case of multivalued relation, several instance of SPARQLModelRelation have the same value
+            for (SPARQLModelRelation relation : object.getRelations()) {
+                if (SPARQLDeserializers.compareURIs(relation.getProperty().toString(), column)) {
 
-                // loop over relation and build corresponding String
-                // in case of multivalued relation, several instance of SPARQLModelRelation have the same value
-                // here, these values are separated by a character
-                for (SPARQLModelRelation relation : object.getRelations()) {
-                    if (SPARQLDeserializers.compareURIs(relation.getProperty().toString(), column)) {
-                        valueWriteBuffer.append(relation.getValue()).append(" ");
+                    // a value has already been written (in case of multivalued relation), then append separator
+                    if (valueWritten) {
+                        cellBuffer.append(getExportOptions().getMultiValuedCellSeparator());
+                    } else {
                         valueWritten = true;
-                        break;
                     }
-                }
 
-                // write value to the line
-                if (!valueWritten) {
-                    lineBuffer[i++] = null;
-                }else{
-                    // delete last space character
-                    valueWriteBuffer.setLength(valueWriteBuffer.length()-1);
-                    lineBuffer[i++] = valueWriteBuffer.toString();
+                    // juste write relation value
+                    cellBuffer.append(relation.getValue());
                 }
-
-                // reset buffer, less memory allocation than re-creating a new StringBuilder for each row/column
-                // #see https://stackoverflow.com/questions/5192512/how-can-i-clear-or-empty-a-stringbuilder
-                valueWriteBuffer.setLength(0);
             }
+
+            // write value to the line
+            if (!valueWritten) {
+                lineBuffer[colIdx] = null;
+            } else {
+                lineBuffer[colIdx] = cellBuffer.toString();
+            }
+
+            // reset buffer after each cell write, less memory allocation than re-creating a new StringBuilder for each row/column
+            // #see https://stackoverflow.com/questions/5192512/how-can-i-clear-or-empty-a-stringbuilder
+            cellBuffer.setLength(0);
         }
     }
-
 }

@@ -425,8 +425,8 @@ The event Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/by
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeev#Fertilization">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeev#AddingProduct"/>
         <rdfs:label xml:lang="en">Fertilization</rdfs:label>
+        <rdfs:label xml:lang="fr">Fertilisation</rdfs:label>
     </owl:Class>
-    
 
 
     <!-- http://www.opensilex.org/vocabulary/oeev#Harvesting -->

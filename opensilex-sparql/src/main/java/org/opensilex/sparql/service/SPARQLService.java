@@ -2208,22 +2208,45 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         executeDeleteQuery(delete);
     }
 
+    /**
+     *
+     * @param graph the SPARQL graph (optional)
+     * @param uri a specified resource URI, for which primitives are searched (optional)
+     * @param property the RDF property (required)
+     * @param valuesType object/value type (required)
+     * @return the List of primitives values
+     *
+     * @apiNote The query append a filter on datatype according the specified Class value type.
+     * So values which don't match the given datatype will not be returned by the database
+     */
     public <T> List<T> searchPrimitives(Node graph, URI uri, Property property, Class<T> valuesType) throws Exception {
-        List<T> list = new ArrayList<>();
-        SelectBuilder select = new SelectBuilder();
 
-        Var valueVar = SPARQLQueryHelper.makeVar("value");
-        select.addVar(valueVar);
-        select.addWhere(SPARQLDeserializers.nodeURI(uri), property.asNode(), valueVar);
+        ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
         SPARQLDeserializer<T> deserializer = SPARQLDeserializers.getForClass(valuesType);
-        connection.executeSelectQuery(select, results -> {
+
+        // use the specified uri, else use a variable
+        Node subject = uri != null ? SPARQLDeserializers.nodeURI(uri) : makeVar("uri");
+        Var valueVar = SPARQLQueryHelper.makeVar("value");
+        Node dataType = NodeFactory.createURI(deserializer.getDataType().getURI());
+
+        SelectBuilder select = new SelectBuilder().addVar(valueVar);
+        if(graph != null){
+            select.addGraph(graph,subject, property.asNode(), valueVar);
+        }else{
+            select.addWhere(subject, property.asNode(), valueVar);
+        }
+        select.addFilter(exprFactory.eq(exprFactory.datatype(valueVar), dataType));
+
+        // execute query and parse with expected deserializer
+        List<T> list = new ArrayList<>();
+
+        connection.executeSelectQueryAsStream(select).forEach(results -> {
             try {
                 list.add(deserializer.fromString(results.getStringValue(valueVar.getVarName())));
             } catch (Exception ex) {
-                LOGGER.warn("Error while deserializing primitive result, your database may be inconsitent (value currently ignored)", ex);
+                LOGGER.warn("Error while deserializing primitive result, your database may be inconsistent (value currently ignored)", ex);
             }
         });
-
         return list;
     }
 

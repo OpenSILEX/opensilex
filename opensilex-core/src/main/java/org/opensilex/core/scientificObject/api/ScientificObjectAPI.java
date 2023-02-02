@@ -484,8 +484,8 @@ public class ScientificObjectAPI {
 
         sparql.startTransaction();
         try {
-            ScientificObjectModel so = dao.create(contextURI, experiment, soType, descriptionDto.getUri(), descriptionDto.getName(), descriptionDto.getRelations(), currentUser);
-            URI soURI = so.getUri();
+            ScientificObjectModel model = dao.create(contextURI, experiment, soType, descriptionDto.getUri(), descriptionDto.getName(), descriptionDto.getRelations(), currentUser);
+            URI soURI = model.getUri();
 
             if (experiment != null) {
                 experimentDAO.updateExperimentSpeciesFromScientificObjects(contextURI);
@@ -493,12 +493,7 @@ public class ScientificObjectAPI {
 
             Node graphNode = SPARQLDeserializers.nodeURI(globalScientificObjectGraph);
             if (globalCopy && !sparql.uriExists(graphNode, soURI)) {
-                UpdateBuilder update = new UpdateBuilder();
-                Node soNode = SPARQLDeserializers.nodeURI(soURI);
-
-                update.addInsert(graphNode, soNode, RDF.type, SPARQLDeserializers.nodeURI(soType));
-                update.addInsert(graphNode, soNode, RDFS.label, descriptionDto.getName());
-                sparql.executeUpdateQuery(update);
+                dao.copyIntoGlobalGraph(Collections.singletonList(model));
             }
 
             if (descriptionDto.getGeometry() != null) {

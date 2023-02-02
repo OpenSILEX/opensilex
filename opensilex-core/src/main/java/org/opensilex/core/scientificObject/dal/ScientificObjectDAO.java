@@ -1203,18 +1203,29 @@ public class ScientificObjectDAO {
      * @param models
      * @throws SPARQLException
      */
-    public void copyIntoGlobalGraph(Stream<ScientificObjectModel> models) throws SPARQLException {
+    public void copyIntoGlobalGraph(Collection<ScientificObjectModel> models) throws SPARQLException {
 
         Objects.requireNonNull(models);
 
         // OS type and name COPY
         UpdateBuilder update = new UpdateBuilder();
-        models.forEach(object -> {
-            Node soNode = SPARQLDeserializers.nodeURI(object.getUri());
-            update.addInsert(defaultGraphNode, soNode, RDF.type, SPARQLDeserializers.nodeURI(object.getType()));
-            update.addInsert(defaultGraphNode, soNode, RDFS.label, object.getName());
-        });
 
-        sparql.executeUpdateQuery(update);
+        try{
+            // use serializer in order to ensure that name is well serialized as a String
+            SPARQLDeserializer<String> stringDeserializer = SPARQLDeserializers.getForClass(String.class);
+
+            for(ScientificObjectModel object : models){
+                Node uriNode = SPARQLDeserializers.nodeURI(object.getUri());
+
+                // write type and name triple
+                update.addInsert(defaultGraphNode, uriNode, RDF.type, SPARQLDeserializers.nodeURI(object.getType()))
+                      .addInsert(defaultGraphNode, uriNode, RDFS.label, stringDeserializer.getNode(object.getName()));
+            }
+
+            sparql.executeUpdateQuery(update);
+        }catch (Exception e){
+            throw new SPARQLException(e);
+        }
+
     }
 }

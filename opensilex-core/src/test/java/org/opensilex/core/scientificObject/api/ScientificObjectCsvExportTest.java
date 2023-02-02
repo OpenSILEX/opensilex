@@ -1,9 +1,13 @@
 package org.opensilex.core.scientificObject.api;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.mongodb.client.model.geojson.Geometry;
+import com.mongodb.client.model.geojson.Point;
 import com.univocity.parsers.csv.CsvParser;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.vocabulary.RDFS;
 import org.junit.*;
+import org.locationtech.jts.io.ParseException;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.core.device.dal.DeviceModel;
@@ -17,8 +21,11 @@ import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.scientificObject.dal.*;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.sparql.csv.AbstractCsvImporter;
 import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.sparql.csv.export.CsvExporter;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLService;
@@ -33,6 +40,7 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import static org.opensilex.core.scientificObject.api.ScientificObjectAPITest.GERMPLASM_RESTRICTION_ONTOLOGY_GRAPH;
 import static org.opensilex.core.scientificObject.api.ScientificObjectAPITest.GERMPLASM_RESTRICTION_ONTOLOGY_PATH;
@@ -141,31 +149,37 @@ public class ScientificObjectCsvExportTest extends AbstractMongoIntegrationTest 
     }
 
 
-    private void parseCSV(List<ScientificObjectModel> models,
-                          List<String> expectedColumns,
-                          Consumer<String[]> rowAssertion,
-                          Map<String, Consumer<String>> assertByProperty
+    private void assertCSV(List<ScientificObjectModel> models,
+                           URI graph,
+                           List<String> expectedColumns,
+                           Consumer<String[]> rowAssertion,
+                           Map<String, Consumer<String>> assertByProperty
     ) throws IOException, SPARQLException {
 
+        // Export CSV according the provided objects
         CsvExporter<ScientificObjectModel> exporter = new ScientificObjectCsvExporter(
                 sparql,
                 models,
-                experiment.getUri(),
+                graph,
                 user.getLanguage(),
                 Collections.emptyMap(),
                 Collections.emptyMap()
         );
         byte[] csvRawData = exporter.exportCSV();
 
+        // parse exported CSV
         CsvParser csvParser = new CsvParser(ClassUtils.getCSVParserDefaultSettings());
         List<String[]> rows = csvParser.parseAll(new ByteArrayInputStream(csvRawData));
 
+        // check header
         String[] header = rows.get(0);
-
         Set<String> headerSet = new HashSet<>(Arrays.asList(header));
-        Assert.assertTrue(headerSet.containsAll(expectedColumns));
 
-        List<String[]> body = rows.subList(0, rows.size());
+        Assert.assertTrue(headerSet.containsAll(expectedColumns));
+        Assert.assertEquals(header.length,expectedColumns.size());
+
+        // check body
+        List<String[]> body = rows.subList(2, rows.size());
         for (String[] row : body) {
             assertRow(row, header, rowAssertion, assertByProperty);
         }
@@ -188,23 +202,54 @@ public class ScientificObjectCsvExportTest extends AbstractMongoIntegrationTest 
     @Test
     public void testExportGlobal() throws Exception {
 
-        // export objets from global graph
-
-        // ensure that only name,type and geometry are exported
-
-
         ScientificObjectDAO dao = new ScientificObjectDAO(sparql, mongodb);
 
-        List<ScientificObjectModel> models = dao.search(
-                new ScientificObjectSearchFilter().setExperiment(experiment.getUri()),
-                Collections.singletonList(ScientificObjectModel.FACTOR_LEVEL_FIELD)
-        ).getList();
+        // search objects from global graph
+        List<ScientificObjectModel> models = dao.search(new ScientificObjectSearchFilter(), Collections.emptyList()).getList();
 
-        Consumer<String[]> rowSizeAssertion = (row -> Assert.assertEquals(4, row.length));
+        // ensure that only name,type and geometry are exported
+        List<String> expectedColumns = Arrays.asList(
+                AbstractCsvImporter.CSV_URI_KEY,
+                AbstractCsvImporter.CSV_TYPE_KEY,
+                RDFS.label.getURI(),
+                Oeso.hasGeometry.getURI()
+        );
 
+        Consumer<String[]> rowAssertion = (row -> Assert.assertEquals(4, row.length));
+
+        // check that type, name and geometry are well exported
         Map<String, Consumer<String>> assertByProperty = new HashMap<>();
-        assertByProperty.put(RDFS.label.getURI(), name -> Assert.assertTrue(name.startsWith("dffd")));
 
+        // collect models URIs
+        Set<String> uriSet = models.stream()
+                .map(model -> URIDeserializer.formatURIAsStr(model.getUri().toString()))
+                .collect(Collectors.toSet());
+
+        // check that the good OS are exported
+        assertByProperty.put(AbstractCsvImporter.CSV_URI_KEY,uri -> {
+            Assert.assertTrue(uriSet.contains(uri));
+        });
+
+        // check that type is OK
+        assertByProperty.put(AbstractCsvImporter.CSV_TYPE_KEY, type -> {
+            Assert.assertTrue(SPARQLDeserializers.compareURIs(type, "vocabulary:os_type_export_test"));
+        });
+
+        // check that name is OK
+        assertByProperty.put(RDFS.label.getURI(), name -> Assert.assertTrue(name.startsWith("os_export_test")));
+
+        // check that geometry is OK
+        assertByProperty.put(Oeso.hasGeometry.getURI(), geometry -> {
+            try {
+                Geometry parsedGeometry = GeospatialDAO.wktToGeometry(geometry);
+                Assert.assertTrue(parsedGeometry instanceof Point);
+            } catch (ParseException | JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        // export objets from global graph and evaluate assertions
+        assertCSV(models,null, expectedColumns, rowAssertion, assertByProperty);
     }
 
     @Test

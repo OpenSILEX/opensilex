@@ -30,6 +30,7 @@ variables:
   MAVEN_CLI_OPTS: "--batch-mode --show-version -c"
   MAVEN_CACHE_FOLDER: "$CI_PROJECT_DIR/.m2/repository"
   MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
+  MAVEN_OPTS_SCHUEDULES: "-Dhttps.protocols=TLSv1.2 -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=ERROR -Dorg.slf4j.simpleLogger.defaultLogLevel=error -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
   MAVEN_SKIP_TESTS: "false"
   # DEFAULT SERVER MAVEN VERSION
   MVN_VERSION: 3.6.3
@@ -483,7 +484,7 @@ update:nightly:builds:branch:
   stage: build
   image: maven:$MVN_VERSION-openjdk-$JAVA_VERSION-slim
   script:
-    - mvn clean install $MAVEN_CLI_OPTS -Drevision=$OPENSILEX_APP_REVISION
+    - mvn clean install $MAVEN_OPTS_SCHUEDULES -Drevision=$OPENSILEX_APP_REVISION
     - ls $OPENSILEX_BUILD_PATH/opensilex-release-$OPENSILEX_APP_REVISION
     - mv $OPENSILEX_BUILD_PATH/opensilex-release-$OPENSILEX_APP_REVISION $OPENSILEX_APP_REVISION
   rules:

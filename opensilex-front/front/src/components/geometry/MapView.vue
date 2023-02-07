@@ -693,7 +693,7 @@ export default class MapView extends Vue {
   $t: any;
   $i18n: VueI18n;
   $bvModal: any;
-  experimentData: ExperimentGetDTO;
+  experimentData: ExperimentGetDTO = null;
   private experiment: string;
   private experimentService: ExperimentsService;
   private ontologyService: OntologyService;
@@ -1324,10 +1324,7 @@ export default class MapView extends Vue {
       this.$opensilex.disableLoader();
       this.scientificObjectsService
           .getScientificObjectDetail(scientificObjectUri, this.experiment)
-          .then(
-              (
-                  http: HttpResponse<OpenSilexResponse<ScientificObjectDetailDTO>>
-              ) => {
+          .then((http: HttpResponse<OpenSilexResponse<ScientificObjectDetailDTO>>) => {
                 let result = http.response.result;
                 this.selectedFeatures.forEach((item) => {
                   if (item.properties.uri === result.uri) {
@@ -1335,8 +1332,7 @@ export default class MapView extends Vue {
                     this.detailsSO = true;
                   }
                 });
-              }
-          )
+          })
           .catch(this.$opensilex.errorHandler)
           .finally(() => {
             this.$opensilex.enableLoader();
@@ -1591,7 +1587,9 @@ export default class MapView extends Vue {
         geometry,
         Oeso.DEVICE_TYPE_URI,
         new Date(this.experimentData.start_date).toISOString(),
-        this.experimentData.end_date ? new Date(this.experimentData.end_date).toISOString() : undefined
+        this.experimentData.end_date ? new Date(this.experimentData.end_date).toISOString() : undefined,
+        undefined,
+        500
     )
     .then((http: HttpResponse<OpenSilexResponse<Array<TargetPositionCreationDTO>>>) => {
       const res = http.response.result as any;
@@ -1609,6 +1607,7 @@ export default class MapView extends Vue {
                properties: {
                  uri: element.targetPositions[0].target,
                  nature: "Device",
+                 event: element.uri
                }
              };
            let bool = true;
@@ -1799,7 +1798,14 @@ export default class MapView extends Vue {
               break;
           }
         })
-        .catch(this.$opensilex.errorHandler)
+        .catch((error) => {
+          if (error.response.result.title && error.response.result.title === "LINKED_DEVICE_ERROR") {
+            let message = this.$i18n.t("DeviceList.associated-device-error") + " " + error.response.result.message;
+            this.$opensilex.showErrorToast(message);
+          } else {
+            this.$opensilex.errorHandler(error);
+          }
+        })
         .finally(() => {
           this.$opensilex.hideLoader();
         });
@@ -2259,6 +2265,7 @@ p {
   box-shadow: 0 0.25em 0.5em transparentize(#000000, 0.8);
   border-radius: 5px;
   text-indent: 2px;
+  max-width: 300px;
 }
 
 ::v-deep .b-table-details .card {

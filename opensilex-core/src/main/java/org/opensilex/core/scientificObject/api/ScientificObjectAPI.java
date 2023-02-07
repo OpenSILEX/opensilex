@@ -424,7 +424,16 @@ public class ScientificObjectAPI {
         MoveModel lastMove = moveDAO.getLastMoveEvent(objectURI);
 
         for (URI contextURI : contexts) {
-            ExperimentModel experiment = getExperiment(contextURI);
+            ExperimentModel experiment;
+            URI globalScientificObjectGraph = new URI(SPARQLDeserializers.getShortURI(sparql.getDefaultGraphURI(ScientificObjectModel.class)));
+            //assign the global uri "dev:set/scientific-object" when the OS is not linked to an experiment
+           if(contextURI.equals(globalScientificObjectGraph)){
+               experiment = new ExperimentModel();
+               experiment.setUri(globalScientificObjectGraph);
+            }
+           else{
+               experiment = getExperiment(contextURI);
+           }
 
             ScientificObjectModel model = dao.getObjectByURI(objectURI, contextURI, currentUser.getLanguage());
             GeospatialModel geometryByURI = geoDAO.getGeometryByURI(objectURI, contextURI);

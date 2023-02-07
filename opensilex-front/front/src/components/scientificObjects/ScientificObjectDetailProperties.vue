@@ -54,7 +54,8 @@
 
       <div v-if="selected && selected.uri">
         <div v-for="(v, index) in typeProperties" v-bind:key="index">
-          <div v-if="!Array.isArray(v.property)" class="static-field">
+          <!-- isHosted : should be calculated and not be a property -->
+          <div v-if="!Array.isArray(v.property) && !(['vocabulary:isHosted'].indexOf( v.definition.uri ) > -1)" class="static-field">
             <span class="field-view-title">{{ v.definition.name }}</span>
             <component
               :is="v.definition.view_component"
@@ -62,9 +63,9 @@
               :experiment="experiment"
             ></component>
           </div>
-
+          <!-- isHosted : should be calculated and not be a property -->
           <div
-            v-else-if="v.property && v.property.length > 0"
+            v-else-if="v.property && v.property.length > 0 && !(['vocabulary:isHosted'].indexOf( v.definition.uri ) > -1)"
             class="static-field"
           >
             <span class="field-view-title">{{ v.definition.name }}</span>
@@ -90,6 +91,20 @@
           :value="selected.geometry"
         ></opensilex-GeometryCopy>
       </div>
+      <!--Last Position-->
+      <opensilex-StringView v-if="withBasicProperties && lastPosition.event" label="Event.lastPosition">
+          <!-- Position detail -->
+          <span>{{new Date(lastPosition.move_time).toLocaleString()}}</span>
+          <ul>
+            <li v-if="lastPosition.to">{{lastPosition.to.name}}</li>
+            <li v-if="lastPosition.position && (lastPosition.position.x || lastPosition.position.y || lastPosition.position.z)">{{customCoordinatesText(lastPosition.position)}}</li>
+            <li v-if="lastPosition.position && lastPosition.position.text">{{lastPosition.position.text}}</li>
+            <li v-if="lastPosition.position && lastPosition.position.point">
+              <opensilex-GeometryCopy label="" :value="lastPosition.position.point">
+              </opensilex-GeometryCopy>
+            </li>
+          </ul>
+      </opensilex-StringView>
     </b-card>
 
     <b-card v-for="(value, index) in objectByContext" :key="index">
@@ -163,7 +178,6 @@ export default class ScientificObjectDetailProperties extends Vue {
 
   @Prop()
   selected;
-
   typeProperties = [];
   valueByProperties = {};
   classModel: any = {};
@@ -187,7 +201,18 @@ export default class ScientificObjectDetailProperties extends Vue {
     default: null,
   })
   experiment;
-
+  lastPosition:PositionGetDTO = {
+    event: null,
+    from: null,
+    position: {
+      point: null,
+      text: null,
+      x:null,
+      y:null,
+      z:null
+    },
+    to: null
+  };
   mounted() {
     if (this.selected) {
       this.onSelectionChange();
@@ -229,15 +254,11 @@ export default class ScientificObjectDetailProperties extends Vue {
         this.$opensilex.enableLoader();
 
         this.classModel = result[0].response.result;
-        let lastMove = null;
         if (result[2] != null) {
-          lastMove = result[2].response.result;
+          this.lastPosition = result[2].response.result;
         }
 
-        let valueByProperties = this.buildValueByProperties(
-          result[1].response.result.relations,
-          lastMove
-        );
+        let valueByProperties = this.buildValueByProperties(result[1].response.result.relations);
         this.buildTypeProperties(this.typeProperties, valueByProperties);
         this.valueByProperties = valueByProperties;
       });
@@ -257,15 +278,11 @@ export default class ScientificObjectDetailProperties extends Vue {
         this.$opensilex.enableLoader();
 
         this.classModel = result[0].response.result;
-        let lastMove = null;
         if (result[1] != null) {
-          lastMove = result[1].response.result;
+          this.lastPosition = result[1].response.result;
         }
 
-        let valueByProperties = this.buildValueByProperties(
-          this.selected.relations,
-          lastMove
-        );
+        let valueByProperties = this.buildValueByProperties(this.selected.relations);
         this.buildTypeProperties(this.typeProperties, valueByProperties);
         this.valueByProperties = valueByProperties;
       });
@@ -273,11 +290,7 @@ export default class ScientificObjectDetailProperties extends Vue {
   }
 
   getCustomTypeProperties(customObjet) {
-    let valueByProperties = this.buildValueByProperties(
-      customObjet.relations,
-      null
-    );
-
+    let valueByProperties = this.buildValueByProperties(customObjet.relations);
     for (let propUri in valueByProperties) {
       if (this.valueByProperties[propUri]) {
         if (
@@ -292,7 +305,6 @@ export default class ScientificObjectDetailProperties extends Vue {
     }
     let typeProperties = [];
     this.buildTypeProperties(typeProperties, valueByProperties);
-
     return typeProperties;
   }
 
@@ -397,19 +409,11 @@ export default class ScientificObjectDetailProperties extends Vue {
   })
   }
 
-  buildValueByProperties(ungroupedRelations: Array<{property,value}>, lastMove: PositionGetDTO) {
-
+  buildValueByProperties(ungroupedRelations: Array<{property,value}>) {
     let groupedRelations = {};
 
     for (let i in ungroupedRelations) {
       let relation = ungroupedRelations[i];
-      if (
-        lastMove &&
-        lastMove.to &&
-        lastMove.to.uri 
-      ) {
-        relation.value = lastMove.to.uri;
-      }
 
       if (
         groupedRelations[relation.property] &&
@@ -443,5 +447,44 @@ export default class ScientificObjectDetailProperties extends Vue {
       })
       .catch(this.$opensilex.errorHandler);
   }
+
+  customCoordinatesText(position: any): string {
+
+    if (!position) {
+      return undefined;
+    }
+
+    let customCoordinates = "";
+
+    if (position.x) {
+      customCoordinates += "X:" + position.x;
+    }
+    if (position.y) {
+      if (customCoordinates.length > 0) {
+        customCoordinates += ", ";
+      }
+      customCoordinates += "Y:" + position.y;
+    }
+    if (position.z) {
+      if (customCoordinates.length > 0) {
+        customCoordinates += ", ";
+      }
+      customCoordinates += "Z:" + position.z;
+    }
+
+    if (customCoordinates.length == 0) {
+      return undefined;
+    }
+    return customCoordinates;
+  }
 }
 </script>
+
+<i18n>
+en:
+  Event:
+    lastPosition: Last position
+fr:
+  Event:
+    lastPosition: Dernière position
+</i18n>

@@ -23,9 +23,7 @@ import org.apache.jena.sparql.path.Path;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.OpenSilex;
-import org.opensilex.core.event.dal.move.MoveEventDAO;
-import org.opensilex.core.event.dal.move.MoveModel;
-import org.opensilex.core.event.dal.move.TargetPositionModel;
+import org.opensilex.core.event.dal.move.*;
 import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.exception.DuplicateNameListException;
 import org.opensilex.core.experiment.dal.ExperimentModel;
@@ -899,6 +897,13 @@ public class ScientificObjectDAO {
 
             MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
             MoveModel event = moveDAO.getLastMoveEvent(objectURI);
+            if(event != null){
+                //retrieve the position to the move event to link it to the new OS for the update
+                MoveEventNoSqlModel moveNoSql = moveDAO.getMoveEventNoSqlModel(event.getUri());
+                if(moveNoSql != null){
+                    event.setNoSqlModel(moveNoSql);
+                }
+            }
 
             if (hasFacilityURI) {
                 if (event != null) {

@@ -67,14 +67,16 @@ export default class ScientificObjectDetailView extends Vue {
           this.selected = http.response.result[0];
         } else {
           http.response.result.forEach((scientificObject) => {
-            if (scientificObject.experiment == null) {
-              scientificObject.relations = [];
-              this.selected = scientificObject;
-            } else {
-              this.objectByContext.push(scientificObject);
+            if (scientificObject.experiment !== null){
+              if(scientificObject.experiment.includes("set/scientific-object") ){
+                scientificObject.relations = [];
+                this.selected = scientificObject;
+              }
+              else {
+                this.objectByContext.push(scientificObject);
+              }
             }
           });
-          this.selected.geometry= this.objectByContext[0].geometry;
         }
       });
     }

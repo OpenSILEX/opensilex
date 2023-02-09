@@ -407,6 +407,8 @@ import GermplasmSelector from './germplasm/GermplasmSelector.vue';
 components["opensilex-GermplasmSelector"] = GermplasmSelector;
 import GermplasmAttributesSelector from './germplasm/GermplasmAttributesSelector.vue';
 components["opensilex-GermplasmAttributesSelector"] = GermplasmAttributesSelector;
+import GermplasmAttributesValueSelector from './germplasm/GermplasmAttributesValueSelector.vue';
+components["opensilex-GermplasmAttributesValueSelector"] = GermplasmAttributesValueSelector;
 
 // Projects
 import ProjectForm from './projects/ProjectForm.vue';

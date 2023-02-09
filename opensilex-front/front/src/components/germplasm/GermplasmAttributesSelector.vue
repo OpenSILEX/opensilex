@@ -1,88 +1,84 @@
 <template>
-  <opensilex-SelectForm
-    :key="lang"
-    ref="selectForm"
-    :label="label"
-    :selected.sync="germplasmAttributeSelected"
-    :multiple="false"
-    :required="required"
-    :optionsLoadingMethod="loadOptions"
-    :conversionMethod="convertGermplasmAttribute"
-    :placeholder="placeholder"
-    @clear="$emit('clear')"
-    @select="select"
-    @deselect="deselect"
-    @keyup.enter.native="onEnter"
-  ></opensilex-SelectForm>
+    <opensilex-SelectForm
+        :key="lang"
+        ref="selectForm"
+        :label="label"
+        :selected.sync="germplasmAttributeSelected"
+        :multiple="false"
+        :required="required"
+        :optionsLoadingMethod="loadOptions"
+        :conversionMethod="convertGermplasmAttribute"
+        :placeholder="placeholder"
+        helpMessage="GermplasmAttributesSelector.attribute-name-help"
+        @clear="$emit('clear')"
+        @select="select"
+        @deselect="deselect"
+    ></opensilex-SelectForm>
 </template>
 
 <script lang="ts">
-import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
+import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse";
+import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
 import {GermplasmService} from "opensilex-core/api/germplasm.service";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 
 @Component
 export default class GermplasmAttributesSelector extends Vue {
-  $opensilex: OpenSilexVuePlugin;
-  $store: any;
+    $opensilex: OpenSilexVuePlugin;
+    $store: any;
 
-  service: GermplasmService;
+    service: GermplasmService;
 
-  @PropSync("germplasmAttribute")
-  germplasmAttributeSelected;
+    @PropSync("germplasmAttribute")
+    germplasmAttributeSelected;
 
-  @Prop({
-    default: "GermplasmAttributesSelector.title",
-  })
-  label;
+    @Prop({
+        default: "GermplasmAttributesSelector.title",
+    })
+    label;
 
-  @Prop({
-    default: "GermplasmAttributesSelector.placeholder",
-  })
-  placeholder;
+    @Prop({
+        default: "GermplasmAttributesSelector.placeholder",
+    })
+    placeholder;
 
-  @Prop()
-  required;
+    @Prop()
+    required;
 
-  created(){
-      this.service = this.$opensilex.getService("opensilex.GermplasmService");
-  }
- 
-  get lang() {
-    return this.$store.getters.language;
-  }
+    created() {
+        this.service = this.$opensilex.getService("opensilex.GermplasmService");
+    }
 
-  @Ref("selectForm") readonly selectForm!: any;
- 
-  loadOptions(query, page, pageSize) { 
-    return this.service
-      .getGermplasmAttributes()
-      .then(
-        (http: HttpResponse<OpenSilexResponse<Array<string>>>) =>
-          http.response.result
-      );
-  }
+    get lang() {
+        return this.$store.getters.language;
+    }
 
-  convertGermplasmAttribute(germplasmAttribute: string) {
-    return {
-      id: germplasmAttribute,
-      label: germplasmAttribute,
-    };
-  }
+    @Ref("selectForm") readonly selectForm!: any;
 
-  select(value) {
-    this.$emit("select", value);
-  }
+    loadOptions(query, page, pageSize) {
+        return this.service
+            .getGermplasmAttributes()
+            .then(
+                (http: HttpResponse<OpenSilexResponse<Array<string>>>) =>
+                    http.response.result
+            ).catch(this.$opensilex.errorHandler);
+    }
 
-  deselect(value) {
-    this.$emit("deselect", value);
-  }
+    convertGermplasmAttribute(germplasmAttribute: string) {
+        return {
+            id: germplasmAttribute,
+            label: germplasmAttribute,
+        };
+    }
 
-  onEnter() {
-    this.$emit("handlingEnterKey")
-  }
+    select(value) {
+        this.$emit("select", value);
+    }
+
+    deselect(value) {
+        this.$emit("deselect", value);
+    }
 }
 </script>
 
@@ -91,13 +87,17 @@ export default class GermplasmAttributesSelector extends Vue {
 
 <i18n>
 en:
-  GermplasmAttributesSelector:
-    title: Attribut
-    placeholder: Select an germplasm attribute
+    GermplasmAttributesSelector:
+        title: Attribute
+
+
+        placeholder: Select an germplasm attribute
+        attribute-name-help: Match all germplasms which have the selected attribute
 
 fr:
-  GermplasmAttributesSelector:
-    title: Attribute
-    placeholder: Sélectionner l'attribut d'une resource génétique
+    GermplasmAttributesSelector:
+        title: Attribut
+        placeholder: Sélectionner l'attribut d'une resource génétique
+        attribute-name-help: Sélectionner les germplasms qui possèdent l'attribut selectionné
 
 </i18n>

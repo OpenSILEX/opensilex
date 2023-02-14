@@ -18,13 +18,19 @@
 
 # Querying
 
-## By target
+## Target
 
-## By variable
+## variable
 
-## By experiment
+## Experiment
 
-## By device
+## Device
+
+## Facility
+
+## Value
+
+## Timestamp
 
 ## Analysis
 

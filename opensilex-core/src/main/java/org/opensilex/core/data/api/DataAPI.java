@@ -25,6 +25,7 @@ import org.opensilex.core.data.dal.*;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.data.utils.ParsedDateTimeMongo;
 import org.opensilex.core.device.api.DeviceAPI;
+import org.opensilex.core.device.api.DeviceGetDTO;
 import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.exception.*;
@@ -40,6 +41,8 @@ import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
+import org.opensilex.core.variable.api.VariableGetDTO;
+import org.opensilex.core.variable.api.VariableWithDevicesDTO;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
@@ -738,6 +741,66 @@ public class DataAPI {
             }
         }
         return device;
+    }
+
+    @GET
+    @Path("/facility_variables")
+    @ApiOperation("Test type response")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return a map", response = java.util.Map.class, responseContainer = "List")
+    })
+    public Response getAssociatedVariables(
+            @ApiParam(value = "target URI", example = "http://example.com/", required = true) @QueryParam("uri") @NotNull URI facilityUri,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @QueryParam("order_by") List<OrderBy> orderByList
+    ) throws Exception {
+
+        DataDAO dao = new DataDAO(nosql, sparql, fs);
+        VariableDAO variableDAO = new VariableDAO(sparql, nosql, fs);
+
+        ListWithPagination<DataModel> result = dao.search(
+                user,
+                null,
+                Arrays.asList(facilityUri),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                orderByList,
+                0,
+                0);
+
+        System.out.println("result size: " + result.getList().size());
+
+        Map<URI, List<DataModel>> variablesMap = new HashMap<>();
+        Map<DataProvenanceModel, List<DataModel>> provenancesMap = new HashMap<>();
+
+        variablesMap = result.getList().stream().collect(Collectors.groupingBy(DataModel::getVariable));
+
+        List<DataSerieGetDTO> dtoList = new ArrayList<>();
+
+        for (Map.Entry<URI, List<DataModel>> entry : variablesMap.entrySet()) {
+            VariableGetDTO variable = VariableGetDTO.fromModel(variableDAO.get(entry.getKey()));
+
+            provenancesMap = entry.getValue().stream().collect(Collectors.groupingBy(DataModel::getProvenance));
+            for (Map.Entry<DataProvenanceModel, List<DataModel>> entryProv : provenancesMap.entrySet()) {
+                List<DataGetDTO> data = entryProv.getValue()
+                        .stream()
+                        .map((d) -> DataGetDTO.getDtoFromModel(d, null))
+                        .collect(Collectors.toList());
+
+                DataSerieGetDTO dataSerie = new DataSerieGetDTO(variable, entryProv.getKey(), data);
+                dtoList.add(dataSerie);
+            }
+        }
+
+        return new SingleObjectResponse<>(dtoList).getResponse();
     }
     
     

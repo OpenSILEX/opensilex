@@ -15,6 +15,7 @@ import org.apache.jena.arq.querybuilder.*;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.riot.Lang;
 import org.apache.jena.sparql.core.TriplePath;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
@@ -499,7 +500,7 @@ public class DeviceDAO {
     }
 
     public List<DeviceModel> getDevicesByFacility(URI facilityUri, AccountModel currentUser) throws Exception {
-        List<DeviceModel> devices = null;
+        List<DeviceModel> devices = new ArrayList<>();
 
         SelectBuilder select = new SelectBuilder();
 
@@ -514,12 +515,38 @@ public class DeviceDAO {
             .addWhere(subject, Oeev.concerns, target);
 
         List<SPARQLResult> list = sparql.executeSelectQuery(select);
-        list.forEach(l -> System.out.println(l.getStringValue("target")));
 
-        List<URI> deviceUris = list.stream().map((x) -> URI.create(x.getStringValue("target"))).collect(Collectors.toList());
-        devices = getDevicesByURI(deviceUris, currentUser);
+        if (!list.isEmpty()) {
+            list.forEach(l -> System.out.println(l.getStringValue("target")));
+
+            List<URI> deviceUris = list.stream().map((x) -> URI.create(x.getStringValue("target"))).collect(Collectors.toList());
+            devices = getDevicesByURI(deviceUris, currentUser);
+        }
 
         return devices;
+    }
+
+    public Map<VariableModel, List<DeviceModel>> getAssociatedVariablesMap(List<URI> deviceUris, AccountModel currentUser)
+            throws Exception {
+
+        Map<VariableModel, List<DeviceModel>> variablesMap = new HashMap<VariableModel, List<DeviceModel>>();
+
+        List<VariableModel> variables;
+        DeviceModel device;
+
+        for (URI uri : deviceUris) {
+            variables = getDeviceVariables(uri, currentUser.getLanguage());
+            device = getDeviceByURI(uri, currentUser);
+
+            for (VariableModel variable : variables) {
+                if (!variablesMap.containsKey(variable)) {
+                    variablesMap.put(variable, new ArrayList<DeviceModel>());
+                }
+                variablesMap.get(variable).add(device);
+            }
+        }
+
+        return variablesMap;
     }
 
     /**

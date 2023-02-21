@@ -1,139 +1,54 @@
 <template>
-  <opensilex-Overlay :show="!isDataLoaded && !isNoDataFound">
     <opensilex-Card
         ref="tilePanel"
-        :label="variableUri.name"
+        class="tile"
+        :label="variable.name"
         icon=""
     >
+
       <template v-slot:body>
 
-        <opensilex-TextView v-if="isNoDataFound"
-                            id="no-data-text"
-            :label="$t('FacilityAssociatedDevices.no-data')">
-        </opensilex-TextView>
-
-        <div
-            id="data-infos"
-            v-if="isDataLoaded">
-          <div class="row">
-            <!--
-            <div class="col-sm-6">
-              <opensilex-Sparkline
-                  :maxWidth="500"
-                  :maxHeight="100"
-                  :dataSerie.sync="medianSerie"
-                  v-on:click.native="showGraphic">
-              </opensilex-Sparkline>
-            </div>
-            -->
-            <div class="col" v-if="isDataOutOfReach">
-              <opensilex-TextView
-                  style="margin-bottom: 0;"
-                  v-on:click.native="showGraphic"
-                  :value="$t('VariableVisualizationTile.lastDataStored')">
-              </opensilex-TextView>
-              <opensilex-DateView
-                  style="font-size: x-large; margin-bottom: 0; color: #e53935;"
-                  v-on:click.native="showGraphic"
-                  :value.sync="lastData.date"
-                  :isDateTime="true"
-                  :useLocaleFormat="true"
-                  :dateTimeFormatOptions="{ dateStyle: 'long', timeStyle: 'long' }">
-              </opensilex-DateView>
-            </div>
-            <div class="col" v-else>
-              <opensilex-TextView
-                  style="margin-bottom: 0;"
-                  v-on:click.native="showGraphic"
-                  :value="$t('VariableVisualizationTile.lastMedianData')">
-              </opensilex-TextView>
-              <opensilex-TextView
-                  style="font-size: xx-large; margin-bottom: 0;"
-                  v-on:click.native="showGraphic"
-                  :value.sync="lastData.value"
-              >
-              </opensilex-TextView>
-              <opensilex-DateView
-                  style="font-size: x-large; margin-bottom: 0;"
-                  v-on:click.native="showGraphic"
-                :value.sync="lastData.date"
-                :isDateTime="true"
-                :useLocaleFormat="true"
-                :dateTimeFormatOptions="{ dateStyle: 'long', timeStyle: 'long' }">
-              </opensilex-DateView>
-            </div>
-          </div>
-        </div>
-
-        <b-modal
-            ref="graphic-modal"
-            size="xl"
-            :title="variableUri.name"
-            hide-footer
+        <opensilex-UriListView
+            label="Devices"
+            :list="deviceUriList"
+            :inline="true"
         >
-          <div class="text-right card-header-right">
-            <!-- Period badge-->
-            <b-badge v-if="period" pill class="greenThemeColor">
-              <opensilex-Icon icon="fa#hourglass-half"/> {{ $t("Histogram.period." + period) }}
-            </b-badge>
+        </opensilex-UriListView>
 
-            <!-- Periods & Devices selection button -->
-            <opensilex-Button
-                label=Histogram.settings
-                class="settingsButton"
-                icon="fa#cog"
-                @click="histogramSettings.show()"
-                @update="onSettingsChanged"
-            ></opensilex-Button>
-          </div>
+        <opensilex-Button
+            label="Show graphic"
+            icon=""
+            :small="false"
+            @click="prepareGraphic()"
+        >
+        </opensilex-Button>
 
-          <div class="row justify-content-center">
-            <opensilex-TextView v-if="!isDataForGraph && isGraphicLoaded"
-                                id="no-data-text"
-                                :label="$t('FacilityAssociatedDevices.no-data')">
-            </opensilex-TextView>
-          </div>
-
-          <!-- Graphic -->
-          <div class="graphicVisualisationContainer">
-            <div class="d-flex justify-content-center mb-3" v-if="!isGraphicLoaded">
-              <b-spinner label="Loading..."></b-spinner>
-            </div>
-            <opensilex-VisualisationGraphic
-                v-if="isGraphicLoaded"
-              id="graphic"
-              ref="visuGraphic"
-              :deviceType="false"
-              :lType="true"
-              :lWidth="true"
-            ></opensilex-VisualisationGraphic>
-          </div>
-
-          <!-- Modal settings component-->
-          <opensilex-FacilityHistogramSettings
-              ref="histogramSettings"
-              @update="onSettingsChanged"
-          ></opensilex-FacilityHistogramSettings>
-        </b-modal>
+        <opensilex-DataVisuGraphic
+          v-if="isGraphicLoaded"
+          ref="visuGraphic"
+          :deviceType="false"
+          class="DeviceVisualisationGraphic"
+          v-bind:class ="{
+            'DeviceVisualisationGraphic': false,
+            'DeviceVisualisationGraphicWithoutForm': true
+          }"
+        ></opensilex-DataVisuGraphic>
 
       </template>
     </opensilex-Card>
-  </opensilex-Overlay>
 </template>
 
 <script lang="ts">
 import {Component, Prop, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
-import {DataGetDTO, DevicesService, NamedResourceDTOVariableModel} from "opensilex-core/index";
+import {DataGetDTO, DevicesService, EventGetDTO, EventsService} from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import HighchartsDataTransformer from "../../../models/HighchartsDataTransformer";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import {VariablesService} from "opensilex-core/api/variables.service";
 import {DataService} from "opensilex-core/api/data.service";
+import {DeviceGetDTO} from "opensilex-core/model/deviceGetDTO";
 import {VariableDetailsDTO} from "opensilex-core/model/variableDetailsDTO";
-import {DataSerieGetDTO} from "opensilex-core/model/dataSerieGetDTO";
-import {DataVariableSeriesGetDTO} from "opensilex-core/model/dataVariableSeriesGetDTO";
-import {DataSimpleProvenanceGetDTO} from "opensilex-core/model/dataSimpleProvenanceGetDTO";
 
 
 @Component
@@ -146,73 +61,35 @@ export default class VariableVisualizationTile extends Vue {
   get credentials() {
     return this.$store.state.credentials;
   }
-  get hasCalculatedSeries() {
-    return (this.calculatedDataSeries.length > 0);
-  }
-
-  get isDataForGraph() {
-    return !(this.dataSeries.length ===0 && this.calculatedDataSeries.length === 0)
-  }
 
   @Prop()
-  variableUri: NamedResourceDTOVariableModel;
-
-  @Prop()
-  target: string;
-
-  period: string = "week";
-
-  @Prop()
-  defaultStartDate: string;
-  @Prop()
-  defaultEndDate: string;
-
-  graphicStartDate: string;
-  graphicEndDate: string;
-
-  @Watch('startDate')
-  @Watch('endDate')
-  onPropertyChanged(value: string, oldValue: string) {
-    this.loadSimplifiedData();
-  }
-
   variable: VariableDetailsDTO;
 
-  dataSeries: Array<DataSerieGetDTO> = [];
-  calculatedDataSeries: Array<DataSerieGetDTO> = [];
-  availableProvenances: Array<DataSimpleProvenanceGetDTO> = [];
+  @Prop()
+  devices: Array<DeviceGetDTO>;
 
-  medianSerie = [];
-  lastData: any;
-
-  isNoDataFound: boolean = false;
-  isDataOutOfReach: boolean = false;
-  isDataLoaded: boolean = false;
-  isGraphicLoaded: boolean = true;
-  isLoadAllProvToggled: boolean = false;
+  isGraphicLoaded = true;
+  target = [] ;
+  eventCreatedTime = "";
 
   variablesService: VariablesService;
   devicesService: DevicesService;
-  dataService: DataService;
+  eventsService: EventsService;
 
-  @Ref("graphic-modal") readonly graphicModal!: any;
   @Ref("visuGraphic") readonly visuGraphic!: any;
-  @Ref("histogramSettings") readonly histogramSettings!: any;
+  @Ref("annotationModalForm") readonly annotationModalForm!: any;
+  @Ref("eventsModalForm") readonly eventsModalForm!: any;
 
   created() {
-    this.$opensilex.hideLoader();
     this.variablesService = this.$opensilex.getService<VariablesService>(
         "opensilex.VariablesService"
     );
     this.devicesService = this.$opensilex.getService<DevicesService>(
         "opensilex.DevicesService"
     );
-    this.dataService = this.$opensilex.getService<DataService>(
-        "opensilex-core.DataService"
+    this.eventsService = this.$opensilex.getService<EventsService>(
+        "opensilex.EventsService"
     );
-
-    this.initDatePeriod();
-    this.refresh();
   }
 
   private langUnwatcher;
@@ -220,162 +97,82 @@ export default class VariableVisualizationTile extends Vue {
     this.langUnwatcher = this.$store.watch(
       () => this.$store.getters.language,
       lang => {
-        //this.prepareGraphic();
+        this.prepareGraphic();
       }
     );
   }
 
-  refresh() {
-    this.variablesService
-        .getVariable(this.variableUri.uri)
-        .then( (http: HttpResponse<OpenSilexResponse<VariableDetailsDTO>>) => {
-          if (http && http.response) {
-            this.variable = http.response.result;
-
-            this.loadSimplifiedData();
-          }
-        }
-    )
-  }
-
-  initDatePeriod() {
-    this.graphicStartDate = this.defaultStartDate;
-    this.graphicEndDate = this.defaultEndDate;
-  }
-
-  onSettingsChanged(period: string, begin: string, end: string, selectAll: boolean) {
-    this.graphicStartDate = begin;
-    this.graphicEndDate = end;
-    this.period = period;
-    this.isLoadAllProvToggled = selectAll;
-    this.loadAllData();
-  }
-
-  loadSimplifiedData() {
-    this.isNoDataFound = false;
-    this.isDataOutOfReach = false;
-    this.isDataLoaded = false;
-    this.$opensilex.disableLoader();
-
-    console.debug(this.defaultStartDate + " -> " + this.defaultEndDate);
-
-    this.dataService.getDataSeriesByFacility(
-        this.variableUri.uri,
-        this.target,
-        undefined,
-        (this.defaultStartDate != "") ? this.defaultStartDate : undefined,
-        (this.defaultEndDate != "") ? this.defaultEndDate : undefined,
-        true,
-        ["date=asc"]
-    )
-        .then(
-            (
-                http: HttpResponse<OpenSilexResponse<DataVariableSeriesGetDTO>>
-            ) => {
-              if (http && http.response) {
-                let seriesDTO: DataVariableSeriesGetDTO = http.response.result;
-
-                if (!seriesDTO.last_data_stored) {
-                  this.isNoDataFound = true;
-                  return;
-                }
-
-                if (!seriesDTO.calculated_series.length) {
-                  this.lastData = seriesDTO.last_data_stored;
-                  this.isDataOutOfReach = true;
-                  this.isDataLoaded = true;
-                  return;
-                }
-
-                this.calculatedDataSeries = seriesDTO.calculated_series;
-                this.availableProvenances = seriesDTO.provenances;
-
-                this.medianSerie = seriesDTO.calculated_series[0].data
-                    .sort((a, b) => (a.date > b.date) ? 1 : -1);
-
-                this.updateLastMedianData();
-                this.isDataLoaded = true;
-              }
-            }
-        );
-  }
-
-  loadAllData() {
-    this.isGraphicLoaded = false;
-    this.$opensilex.disableLoader();
-
-    this.dataService.getDataSeriesByFacility(
-        this.variableUri.uri,
-        this.target,
-        undefined,
-        (this.graphicStartDate != "") ? this.graphicStartDate : undefined,
-        (this.graphicEndDate != "") ? this.graphicEndDate : undefined,
-        !this.isLoadAllProvToggled,
-        ["date=asc"]
-    )
-        .then(
-            (
-                http: HttpResponse<OpenSilexResponse<DataVariableSeriesGetDTO>>
-            ) => {
-              if (http && http.response) {
-                let seriesDTO: DataVariableSeriesGetDTO = http.response.result;
-
-                this.dataSeries = seriesDTO.data_series;
-                this.calculatedDataSeries = seriesDTO.calculated_series;
-
-                this.showGraphic();
-              }
-            }
-        );
-  }
-
-  updateLastMedianData() {
-    if (this.medianSerie.length === 0) {
-      return;
+  get deviceUriList() {
+    if (!this.devices) {
+      return [];
     }
 
-    this.lastData = {
-      value: this.medianSerie[this.medianSerie.length - 1].value,
-      date: this.medianSerie[this.medianSerie.length - 1].date
-    };
-    this.lastData.value = this.lastData.value.toPrecision(4) + " " + this.variable.unit.symbol;
+    return this.devices.map(device => {
+      return {
+        uri: device.uri,
+        value: device.name,
+        to: {
+          path: "/device/details/" + encodeURIComponent(device.uri),
+        },
+      };
+    });
+  }
+
+  // simulate window resizing to resize the graphic when the filter panel display changes
+  @Watch("searchFiltersToggle")
+  onSearchFilterToggleChange(){
+    this.$nextTick(()=> { 
+      window.dispatchEvent(new Event('resize'));
+    })  
   }
 
   beforeDestroy() {
     this.langUnwatcher();
   }
 
-  showGraphic() {
-    this.graphicModal.show();
-    this.prepareGraphic();
-    this.isGraphicLoaded = true;
+  onSearch() {
+    this.isGraphicLoaded = false;
+    if (this.variable) {
+      const datatype = this.variable.datatype.split("#")[1];
+      if (datatype == "decimal" || datatype == "integer") {
+        this.prepareGraphic();
+      } else {
+
+        this.isGraphicLoaded = true;
+        this.$opensilex.showInfoToast(
+            this.$i18n.t("DeviceDataTab.datatypeMessageA") +
+            " " +
+            datatype +
+            " " +
+            this.$i18n.t("DeviceDataTab.datatypeMessageB")
+        );
+      }
+    }
   }
 
   prepareGraphic() {
-      console.debug(this.dataSeries.length + " " + this.calculatedDataSeries.length);
-
       this.$opensilex.disableLoader();
       var promises = [];
       let promise;
 
-      for (let i = 0; i < this.calculatedDataSeries.length; ++i) {
-        promise = this.buildDataSerie(this.calculatedDataSeries[i], !i);
+      this.devices.forEach((device) => {
+        promise = this.buildDataSerie(device.uri);
         promises.push(promise);
-      }
-      for (let i = 0; i < this.dataSeries.length; ++i) {
-        promise = this.buildDataSerie(this.dataSeries[i], !this.hasCalculatedSeries);
-        promises.push(promise);
-      }
+      });
+      //promise = this.buildEventsSerie();
+      //promises.push(promise);
 
       Promise.all(promises)
         .then(values => {
-          let series = [];
-          values.forEach(serie => {
-            series.push(serie);
-          });
-
           this.isGraphicLoaded = true;
-
+          let series = [];
+          if (values[0]) {
+            series.push(values[0]);
+          }
+          if (values[1]) {
+            series.push(values[1]);
+          }
+          console.log(series);
           this.$nextTick(() => {
             this.$opensilex.enableLoader();
             this.visuGraphic.reload(
@@ -390,74 +187,182 @@ export default class VariableVisualizationTile extends Vue {
         });
   }
 
-  buildDataSerie(dataSerie, isVisible: boolean) {
+  buildEventsSerie() {
+      return this.eventsService
+        .searchEvents(
+          undefined,
+          undefined,
+          undefined,
+          this.devices[0].uri,
+          undefined,
+          undefined,
+          0,
+          0
+        )
+        .then((http: HttpResponse<OpenSilexResponse<Array<EventGetDTO>>>) => {
+          const events = http.response.result as Array<EventGetDTO>;
+          if (events.length > 0) {
+            const cleanEventsData = [];
+            let convertedDate, toAdd, label, title;
 
-    var data = dataSerie.data as Array<DataGetDTO>;
-    data.sort((a, b) => (a.date > b.date) ? 1 : -1);
-    let dataLength = data.length;
+            let eventTypesColorArray = [];
+            const colorPalette = [
+              "#ca6434 ",
+              "#427775",
+              "#f2dc7c",
+              "#0f839c",
+              "#a45354",
+              "#d3b0ae",
+              "#774e42",
+              "#776942",
+              "#5c4277",
+              "#34a0ca",
+              "#9334ca",
+              "#caaf34"
+            ];
+            let index = 0;
 
-    if (dataLength === 0){
-      this.$opensilex.showInfoToast(
-      this.$t("component.common.search.noDataFound").toString());
-    }
+            events.forEach(element => {
+              if (!eventTypesColorArray[element.rdf_type]) {
+                eventTypesColorArray[element.rdf_type] = colorPalette[index];
+                index++;
+                if (index === 12) {
+                  index = 0;
+                }
+              }
+              label = element.rdf_type_name
+                ? element.rdf_type_name
+                : element.rdf_type;
+              if (element.start != null) {
+                let endTime = element.end ? element.end : "en cours..";
+                label = label + "(End: " + endTime + ")";
+              }
 
-    if (dataLength >= 0) {
-      const cleanData = HighchartsDataTransformer.transformSimpleDataForHighcharts(data, dataSerie.provenance);
-      if (dataLength > 50000) {
-        this.$opensilex.showInfoToast(
-            this.$i18n.t("VariableVisualizationTile.limitSizeMessageA") +
-            " " +
-            dataLength +
-            " " +
-            this.$i18n.t("VariableVisualizationTile.limitSizeMessageB")
-        );
-      }
+              title = label.charAt(0).toUpperCase();
 
-      let prov = dataSerie.provenance;
+              let timestamp;
+              if (element.start != null) {
+                timestamp = new Date(element.start).getTime();
+              } else {
+                timestamp = new Date(element.end).getTime();
+              }
 
-      return {
-        name: prov.name,
-        data: cleanData,
-        visible: isVisible
-      };
-    }
+              toAdd = {
+                x: timestamp,
+                title: title,
+                text: label,
+                eventUri: element.uri,
+                fillColor: eventTypesColorArray[element.rdf_type]
+              };
+
+              cleanEventsData.push(toAdd);
+            });
+            return {
+              type: "flags",
+              allowOverlapX: false,
+              name: "Events",
+              lineWidth: 1,
+              yAxis: 1,
+              data: cleanEventsData,
+              style: {
+                // text style
+                color: "white"
+              }
+            };
+          } else {
+            return undefined;
+          }
+        });
   }
 
+  buildDataSerie(deviceUri) {
+    return this.$opensilex
+        .getService<DataService>("opensilex.DataService")
+        .searchDataList(
+            undefined, // start_date
+            undefined, // end_date
+            undefined, // timezone,
+            undefined, // experiments
+            undefined, // scientific_object
+            [this.variable.uri], // variables,
+            [deviceUri], // devices
+            undefined, // min_confidence
+            undefined, // max_confidence
+            undefined,
+            undefined, //this.addMetadataFilter(),
+            ["date=asc"], //order by
+            0,
+            50000
+        )
+      .then((http: HttpResponse<OpenSilexResponse<Array<DataGetDTO>>>) => {
+        const data = http.response.result as Array<DataGetDTO>;
+        let dataLength = data.length;
+
+        if (dataLength === 0){
+          this.$opensilex.showInfoToast(
+          this.$t("component.common.search.noDataFound").toString());
+        }
+
+        if (dataLength >= 0) {
+          const cleanData = HighchartsDataTransformer.transformDataForHighcharts(data);
+          if (dataLength > 50000) {
+            this.$opensilex.showInfoToast(
+              this.$i18n.t("DeviceDataTab.limitSizeMessageA") +
+                " " +
+                dataLength +
+                " " +
+                this.$i18n.t("DeviceDataTab.limitSizeMessageB")
+            );
+          }
+
+          return {
+            name: this.variable.name,
+            data: cleanData,
+            visible: true
+          };
+        }
+      });
+  }
+
+  searchFiltersPannel() {
+    return this.$t("searchfilter.label")
+  }
 }
 </script>
 
 <style scoped lang="scss">
 
-.settingsButton {
-  color: #00A28C;
-  font-size: 1.2em;
-  border: none;
-  background: none;
+.DeviceVisualisationGraphic {
+  min-width: calc(100% - 450px);
+  max-width: calc(100vw - 380px);
 }
-.settingsButton:hover {
-  background-color: #00A28C;
-  color: #f1f1f1
+
+.DeviceVisualisationGraphicWithoutForm{
+  min-width: 100%;
+  max-width: 100vw;
 }
 </style>
 
 <i18n>
 en:
-    VariableVisualizationTile:
+    DeviceDataTab:
+        visualization: Visualization
+        data: Data
+        add: Add data
         datatypeMessageA: The variable datatype is
         datatypeMessageB: "At this time only decimal or integer are accepted"
         limitSizeMessageA : "There are "
         limitSizeMessageB : " data .Only the 50 000 first data are displayed."
-        lastMedianData: Last median value
-        lastDataStored: Last data imported on the date
 
 fr:
-    VariableVisualizationTile:
+    DeviceDataTab:
+        visualization: Visualisation
+        data: Données
+        add: Ajouter des données
         datatypeMessageA:  le type de donnée de la variable est
         datatypeMessageB: "Pour le moment, seuls les types decimal ou entier sont acceptés "
         limitSizeMessageA : "Il y a "
         limitSizeMessageB : " données .Seules les 50 000 premières valeurs sont affichées. "
-        lastMedianData: Dernière valeur médiane
-        lastDataStored: Dernière donnée importée à la date
 
 </i18n>
 

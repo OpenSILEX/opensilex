@@ -30,6 +30,9 @@ import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.organisation.api.facility.FacilityGetDTO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.scientificObject.api.ScientificObjectCsvDescriptionDTO;
+import org.opensilex.core.variable.api.VariableDetailsDTO;
+import org.opensilex.core.variable.api.VariableGetDTO;
+import org.opensilex.core.variable.api.VariableWithDevicesDTO;
 import org.opensilex.sparql.csv.CsvImporter;
 import org.opensilex.sparql.csv.DefaultCsvImporter;
 import org.opensilex.sparql.csv.CSVValidationModel;
@@ -985,6 +988,7 @@ public class DeviceAPI {
         return new SingleObjectResponse<>(facility).getResponse();
     }
 
+
     @GET
     @Path("{uri}/facility_test")
     @ApiOperation("Get devices by facility")
@@ -1002,10 +1006,49 @@ public class DeviceAPI {
 
         List<DeviceModel> results = dao.getDevicesByFacility(facilityUri, currentUser);
 
+        if (results == null) {
+            return new PaginatedListResponse<>().getResponse();
+        }
+
         ListWithPagination<DeviceModel> devices = new ListWithPagination<>(results);
         ListWithPagination<DeviceGetDTO> dtoList = devices.convert(DeviceGetDTO.class, DeviceGetDTO::getDTOFromModel);
 
         return new PaginatedListResponse<>(dtoList).getResponse();
+    }
+
+    /**
+     * TODO: remove this s***
+     */
+    @GET
+    @Path("/facility_variables")
+    @ApiOperation("Test type response")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return a map", response = java.util.Map.class, responseContainer = "List")
+    })
+    public Response getAssociatedVariables(
+            @ApiParam(value = "target URI", example = "http://example.com/", required = true) @QueryParam("uri") @NotNull URI facilityUri
+    ) throws Exception {
+
+        DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
+
+        List<DeviceModel> devices = dao.getDevicesByFacility(facilityUri, currentUser);
+        List<URI> deviceUris = devices.stream().map(DeviceModel::getUri).collect(Collectors.toList());
+
+        Map<VariableModel, List<DeviceModel>> results = dao.getAssociatedVariablesMap(deviceUris, currentUser);
+
+        List<VariableWithDevicesDTO> dtoList = new ArrayList<>();
+
+        for (Map.Entry<VariableModel, List<DeviceModel>> entry : results.entrySet()) {
+            VariableGetDTO key = VariableGetDTO.fromModel(entry.getKey());
+            List<DeviceGetDTO> values = entry.getValue().stream().map(DeviceGetDTO::getDTOFromModel).collect(Collectors.toList());
+            VariableWithDevicesDTO variable = new VariableWithDevicesDTO(key, values);
+            dtoList.add(variable);
+        }
+
+        return new SingleObjectResponse<>(dtoList).getResponse();
     }
 
 }

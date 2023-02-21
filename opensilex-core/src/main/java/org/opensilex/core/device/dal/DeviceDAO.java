@@ -500,53 +500,6 @@ public class DeviceDAO {
     }
 
     public List<DeviceModel> getDevicesByFacility(URI facilityUri, AccountModel currentUser) throws Exception {
-        List<DeviceModel> devices = null;
-
-        SelectBuilder select = new SelectBuilder();
-
-        sparql.getDefaultGraph(MoveModel.class);
-        Var target = makeVar("target");
-        Var subject = makeVar("s");
-        select.addVar(target);
-        select.setDistinct(true);
-
-        select.addWhere(subject, Oeev.to, SPARQLDeserializers.nodeURI(facilityUri))
-            .addWhere(subject, Ontology.typeSubClassAny, Oeev.Move)
-            .addWhere(subject, Oeev.concerns, target);
-
-        List<SPARQLResult> list = sparql.executeSelectQuery(select);
-        list.forEach(l -> System.out.println(l.getStringValue("target")));
-
-        List<URI> deviceUris = list.stream().map((x) -> URI.create(x.getStringValue("target"))).collect(Collectors.toList());
-        devices = getDevicesByURI(deviceUris, currentUser);
-
-        return devices;
-    }
-
-    public List<DeviceModel> getDevicesByFacility(URI facilityUri) throws SPARQLException {
-        List<DeviceModel> devices = null;
-
-        SelectBuilder select = new SelectBuilder();
-
-        Node graph = sparql.getDefaultGraph(MoveModel.class);
-        Var target = makeVar("target");
-        Var subject = makeVar("s");
-        select.addVar(target);
-        select.setDistinct(true);
-
-        WhereBuilder where = new WhereBuilder()
-                .addGraph(graph, subject, Oeev.to, SPARQLDeserializers.nodeURI(facilityUri))
-                .addWhere(subject, Ontology.typeSubClassAny, Oeev.Move)
-                .addWhere(subject, Oeev.concerns, target);
-        select.addWhere(where);
-
-        List<SPARQLResult> list = sparql.executeSelectQuery(select);
-        list.forEach(l -> System.out.println(l.getStringValue("target")));
-
-        return devices;
-    }
-
-    public List<DeviceModel> getDevicesByFacility(URI facilityUri, AccountModel currentUser) throws Exception {
         List<DeviceModel> devices = new ArrayList<>();
 
         SelectBuilder select = new SelectBuilder();

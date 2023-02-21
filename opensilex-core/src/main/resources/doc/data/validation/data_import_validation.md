@@ -1,3 +1,8 @@
+| Validation Group | Validation Sub-Group | Rule name              | Description | Link                        |
+|------------------|----------------------|------------------------|-------------|-----------------------------|
+| Variable         | Entity and target    | variable_entity_target |             | [[#variable_entity_target]] |
+|                  |                      |                        |             |                             |
+|                  |                      |                        |             |                             |
 
 # Service parameters
 
@@ -14,7 +19,7 @@
   - Check that the declared variable exists
 - **Device**: 
   - Check that device from DataProvenance exists
-  - Retrieve device `rdf:type`
+  - Retrieve device `rdf:type` and check that device is a SensingDevice or a Software
 - **Target** : 
   - Check that target exists in database
   - Retrieve target `rdf:type`
@@ -23,9 +28,12 @@
 
 ## Entity and target
 
+### variable_entity_target
+
 - The data target must be an instance of the variable entity
 
 > Rule
+
 - **Head**
     - `rdf:type(?data,oeso:Data)`
     - `oeso:hasDataTarget(?data,?target)`
@@ -41,6 +49,7 @@
 - The value of the data must have the same datatype as the data variable datatype
 
 > Rule
+
 - **Head**
   - `rdf:type(?data,oeso:Data)`
   - `oeso:hasVariable(?data,?variable)`
@@ -52,10 +61,13 @@
 
 ## Link with provenance agent type
 
+### provenance_agent_type
+
 - Inside data provenance, the device must be an instance of `oeso:SensingDevice`
 - Device must measure the data variable
 
 > Rule
+
 - **Head**
   - `rdf:type(?data,oeso:Data)`
   - `oeso:hasVariable(?data,?variable)`
@@ -122,4 +134,9 @@ or
 ```
 
 # API
+
+## JSON
+
+## CSV
+
 

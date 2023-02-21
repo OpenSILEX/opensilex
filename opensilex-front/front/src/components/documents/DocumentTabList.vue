@@ -13,6 +13,8 @@
           v-if="search"
           :filter.sync="filter.title"
           @update="updateFilters()"
+          :debounce="300"
+          :lazy="false"
           placeholder="DocumentList.filter.title-placeholder"
       ></opensilex-StringFilter>
 

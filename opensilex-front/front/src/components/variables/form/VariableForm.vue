@@ -235,7 +235,11 @@
 
                 <!-- description -->
                 <div class="col-xl-12" id="v-step-description">
-                    <opensilex-TextAreaForm :value.sync="form.description" label="component.common.description">
+                    <opensilex-TextAreaForm
+                        :value.sync="form.description"
+                        label="component.common.description"
+                        @keydown.native.enter.stop
+                    >
                     </opensilex-TextAreaForm>
                 </div>
                 

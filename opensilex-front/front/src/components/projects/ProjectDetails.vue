@@ -41,6 +41,8 @@
             v-else-if="isDocumentTab()"
             :modificationCredentialId="credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID"
             :uri="uri"
+            :debounce="300"
+            :lazy="false"
         ></opensilex-DocumentTabList>
 
         <opensilex-AnnotationList

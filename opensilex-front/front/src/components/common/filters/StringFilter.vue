@@ -3,7 +3,6 @@
   <form ref="formRef"
     @submit="(event) => {event.preventDefault()}"
   >
-        
     <b-input-group size="sm">
       <opensilex-FormInputLabelHelper
         class="mt-2 mr-2"
@@ -18,11 +17,12 @@
         class="filter"
         :disabled="disabled"
         :value="filterValue"
-        @update="update($event)"
-        :lazy="true"
         :type="type"
+        :debounce="debounce"
+        :lazy="lazy"
         :number="type=='number'"
         :placeholder="$t(placeholder)"
+        @update="update($event)"
         @keyup.enter="onEnter"
       ></b-form-input>
 
@@ -66,6 +66,12 @@ export default class StringFilter extends Vue {
 
   @Prop()
   min: number;
+
+  @Prop({ default: 0 })
+  debounce: number;
+
+  @Prop({ default : true })
+  lazy: boolean;
 
   @Ref("formRef") readonly formRef!: any;
 

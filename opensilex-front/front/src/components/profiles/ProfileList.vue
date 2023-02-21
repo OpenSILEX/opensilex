@@ -4,6 +4,8 @@
       :filter.sync="filter"
       @update="updateFilter()"
       placeholder="component.profile.filter-placeholder"
+      :debounce="300"
+      :lazy="false"
     ></opensilex-StringFilter>
 
     <opensilex-TableAsyncView ref="tableRef" :searchMethod="searchProfiles" :fields="fields">

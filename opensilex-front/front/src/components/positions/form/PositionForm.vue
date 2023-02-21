@@ -52,6 +52,7 @@
                         label="Position.textual-position"
                         helpMessage="Position.textual-position-help"
                         placeholder="Position.textual-position-placeholder"
+                        @keydown.native.enter.stop
                 ></opensilex-TextAreaForm>
             </div>
         </div>
@@ -85,7 +86,6 @@
         getEmptyForm() {
             return PositionForm.getEmptyForm();
         }
-
     }
 </script>
 

@@ -48,6 +48,7 @@
       label="DocumentForm.description"
       type="text"
       helpMessage="DocumentForm.description-help"
+      @keydown.native.enter.stop
     ></opensilex-TextAreaForm>
 
     <!-- targets -->

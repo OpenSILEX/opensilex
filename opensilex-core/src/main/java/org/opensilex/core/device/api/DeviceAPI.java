@@ -29,30 +29,34 @@ import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.organisation.api.facility.FacilityGetDTO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
+import org.opensilex.core.scientificObject.api.ScientificObjectCsvDescriptionDTO;
+import org.opensilex.sparql.csv.CsvImporter;
+import org.opensilex.sparql.csv.DefaultCsvImporter;
+import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.security.authentication.*;
+import org.opensilex.security.authentication.ApiCredential;
+import org.opensilex.security.authentication.ApiCredentialGroup;
+import org.opensilex.security.authentication.ApiProtected;
+import org.opensilex.security.authentication.ForbiddenURIAccessException;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.person.dal.PersonDAO;
-import org.opensilex.security.person.dal.PersonModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.server.rest.validation.ValidURI;
-import org.opensilex.sparql.csv.CSVValidationModel;
-import org.opensilex.sparql.csv.CsvImporter;
-import org.opensilex.sparql.csv.DefaultCsvImporter;
 import org.opensilex.sparql.csv.validation.CachedCsvImporter;
+import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
-import org.opensilex.sparql.response.CreatedUriResponse;
 import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
+import org.opensilex.utils.TokenGenerator;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -63,11 +67,14 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
+import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.time.zone.ZoneRulesException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -128,7 +135,7 @@ public class DeviceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "A device is created", response = URI.class),
+            @ApiResponse(code = 201, message = "A device is created", response = ObjectUriResponse.class),
             @ApiResponse(code = 409, message = "A device with the same URI already exists", response = ErrorResponse.class)
     })
 
@@ -137,22 +144,13 @@ public class DeviceAPI {
             @ApiParam(value = "Checking only", example = "false") @DefaultValue("false") @QueryParam("checkOnly") Boolean checkOnly
     ) throws Exception {
         DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
-
-        PersonModel personInCharge = null;
-        if (Objects.nonNull(deviceDTO.getPersonInChargeURI())){
-                PersonDAO personDAO = new PersonDAO(sparql);
-                personInCharge = personDAO.get(deviceDTO.getPersonInChargeURI());
-            if (Objects.isNull(personInCharge)){
-                throw new NotFoundURIException("Person in charge must be an existing person", deviceDTO.getPersonInChargeURI());            }
-        }
         if (!checkOnly){
             try {
                 DeviceModel devModel = new DeviceModel();
                 deviceDTO.toModel(devModel);
                 deviceDAO.initDevice(devModel, deviceDTO.getRelations(), currentUser);
-                devModel.setPersonInCharge(personInCharge);
                 URI uri = deviceDAO.create(devModel, currentUser);
-                return new CreatedUriResponse(uri).getResponse();
+                return new ObjectUriResponse(Response.Status.CREATED, uri).getResponse();
             } catch (SPARQLAlreadyExistingUriException ex) {
                 return new ErrorResponse(
                         Response.Status.CONFLICT,
@@ -258,13 +256,16 @@ public class DeviceAPI {
 
         DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
 
-            DeviceModel model = dao.getDeviceByURI(uri, currentUser);
+        DeviceModel model = dao.getDeviceByURI(uri, currentUser);
 
-            if (model != null) {
-                return new SingleObjectResponse<>(DeviceGetDetailsDTO.getDTOFromModel(model)).getResponse();
-            } else {
-                throw new NotFoundURIException(uri);
-            }
+        Response response;
+        if (model != null) {
+            response = new SingleObjectResponse<>(DeviceGetDetailsDTO.getDTOFromModel(model)).getResponse();
+        } else {
+            response = Response.status(Response.Status.NOT_FOUND.getStatusCode()).build();
+        }
+
+        return response;
     }
 
     @GET
@@ -310,7 +311,7 @@ public class DeviceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Device updated", response = URI.class)
+            @ApiResponse(code = 200, message = "Device updated", response = ObjectUriResponse.class)
     })
     public Response updateDevice(
             @ApiParam(value = "Device description", required = true)
@@ -319,21 +320,8 @@ public class DeviceAPI {
     ) throws Exception {
         DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
         DeviceModel deviceModel = dto.newModel();
+
         deviceDAO.initDevice(deviceModel, dto.getRelations(), currentUser);
-
-        if (Objects.nonNull(dto.getPersonInChargeURI())){
-                PersonDAO personDAO = new PersonDAO(sparql);
-                PersonModel personInCharge =  personDAO.get(dto.getPersonInChargeURI());
-                deviceModel.setPersonInCharge(personInCharge);
-            if (Objects.isNull(personInCharge)){
-                return new ErrorResponse(
-                        Response.Status.NOT_FOUND,
-                        "Person in charge must be an existing person",
-                        "person in charge not found with URI : " + dto.getPersonInChargeURI()
-                ).getResponse();
-            }
-        }
-
         deviceDAO.update(deviceModel, currentUser);
         return new ObjectUriResponse(Response.Status.OK, deviceModel.getUri()).getResponse();
     }
@@ -349,7 +337,7 @@ public class DeviceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Device deleted", response = URI.class),
+            @ApiResponse(code = 200, message = "Device deleted", response = ObjectUriResponse.class),
             @ApiResponse(code = 400, message = "Device is linked to some data, datafile or provenance and could not be deleted {result.title: 'LINKED_DEVICE_ERROR'}.", response = ErrorResponse.class),
             @ApiResponse(code = 404, message = "Device URI not found", response = ErrorResponse.class)
     })
@@ -584,7 +572,9 @@ public class DeviceAPI {
 
         Builder csvSchemaBuilder = CsvSchema.builder();
         JsonNode firstObject = arrayNode.elements().next();
-        firstObject.fieldNames().forEachRemaining(csvSchemaBuilder::addColumn);
+        firstObject.fieldNames().forEachRemaining(fieldName -> {
+            csvSchemaBuilder.addColumn(fieldName);
+        });
         CsvSchema csvSchema = csvSchemaBuilder.build().withHeader();
         StringWriter str = new StringWriter();
 
@@ -644,7 +634,6 @@ public class DeviceAPI {
             @ApiParam(value = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
             @ApiParam(value = "Search by provenance uri", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenance") List<URI> provenances,
             @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
-            @ApiParam(value = "Search by operators", example = DATA_EXAMPLE_OPERATOR ) @QueryParam("operators") List<URI> operators,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
@@ -697,7 +686,6 @@ public class DeviceAPI {
                 confidenceMin,
                 confidenceMax,
                 metadataFilter,
-                operators,
                 orderByList,
                 page,
                 pageSize
@@ -745,8 +733,7 @@ public class DeviceAPI {
             @ApiParam(value = "Search by minimal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("min_confidence") @Min(0) @Max(1) Float confidenceMin,
             @ApiParam(value = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
             @ApiParam(value = "Search by provenance uri", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenance") List<URI> provenances,
-            @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
-            @ApiParam(value = "Search by operators", example = DATA_EXAMPLE_OPERATOR ) @QueryParam("operators") List<URI> operators
+            @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata
 
     ) throws Exception {
         DataDAO dao = new DataDAO(nosql, sparql, null);
@@ -796,8 +783,7 @@ public class DeviceAPI {
                 endInstant,
                 confidenceMin,
                 confidenceMax,
-                metadataFilter,
-                operators
+                metadataFilter
         );
 
         return new SingleObjectResponse<>(count).getResponse();
@@ -909,14 +895,14 @@ public class DeviceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return variables list", response = NamedResourceDTO.class, responseContainer = "List")
+            @ApiResponse(code = 200, message = "Return variables list", response = VariableGetDTO.class, responseContainer = "List")
     })
     public Response getDeviceVariables(
             @ApiParam(value = "Device URI", example = DeviceAPI.DEVICE_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
         List<VariableModel> variables = dao.getDeviceVariables(uri, currentUser.getLanguage());
-        List<NamedResourceDTO> dtoList = variables.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
+        List<VariableGetDTO> dtoList = variables.stream().map(VariableGetDTO::fromModel).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();
     }
 
@@ -1015,6 +1001,10 @@ public class DeviceAPI {
         DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
 
         List<DeviceModel> results = dao.getDevicesByFacility(facilityUri, currentUser);
+
+        if (results == null) {
+            return new PaginatedListResponse<>().getResponse();
+        }
 
         ListWithPagination<DeviceModel> devices = new ListWithPagination<>(results);
         ListWithPagination<DeviceGetDTO> dtoList = devices.convert(DeviceGetDTO.class, DeviceGetDTO::getDTOFromModel);

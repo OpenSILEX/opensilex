@@ -30,6 +30,7 @@ import org.opensilex.core.data.dal.*;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.data.utils.ParsedDateTimeMongo;
 import org.opensilex.core.device.api.DeviceAPI;
+import org.opensilex.core.device.api.DeviceGetDTO;
 import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.exception.*;
@@ -49,7 +50,8 @@ import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
-import org.opensilex.core.variable.api.VariableDetailsDTO;
+import org.opensilex.core.variable.api.VariableGetDTO;
+import org.opensilex.core.variable.api.VariableWithDevicesDTO;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
@@ -789,44 +791,31 @@ public class DataAPI {
     }
 
     @GET
-    @Path("/facility")
-    @ApiOperation("Get data series by facility")
+    @Path("/facility_variables")
+    @ApiOperation("Test type response")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return a data serie", response = DataVariableSeriesGetDTO.class)
+            @ApiResponse(code = 200, message = "Return a map", response = java.util.Map.class, responseContainer = "List")
     })
-    public Response getDataSeriesByFacility(
-            @ApiParam(value = "variable URI", example = "http://example.com/", required = true) @QueryParam("variable") @NotNull URI variableUri,
-            @ApiParam(value = "target URI", example = "http://example.com/", required = true) @QueryParam("target") @NotNull URI facilityUri,
-            @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
-            @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=asc") @QueryParam("order_by") List<OrderBy> orderByList
+    public Response getAssociatedVariables(
+            @ApiParam(value = "target URI", example = "http://example.com/", required = true) @QueryParam("uri") @NotNull URI facilityUri,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @QueryParam("order_by") List<OrderBy> orderByList
     ) throws Exception {
-
-        String nameofCurrMethod = new Object() {}
-                .getClass()
-                .getEnclosingMethod()
-                .getName();
-        System.out.println(nameofCurrMethod);
 
         DataDAO dao = new DataDAO(nosql, sparql, fs);
         VariableDAO variableDAO = new VariableDAO(sparql, nosql, fs);
-
-    /// Search data
-
-        long startTime = System.currentTimeMillis();
 
         ListWithPagination<DataModel> result = dao.search(
                 user,
                 null,
                 Arrays.asList(facilityUri),
-                Arrays.asList(variableUri),
                 null,
                 null,
-                (startDate != null) ? Instant.parse(startDate) : null,
-                (endDate != null) ? Instant.parse(endDate) : null,
+                null,
+                null,
+                null,
                 null,
                 null,
                 null,
@@ -834,132 +823,33 @@ public class DataAPI {
                 0,
                 0);
 
-        List<DataModel> dataModels = result.getList();
+        System.out.println("result size: " + result.getList().size());
 
-        long stopTime = System.currentTimeMillis();
-        System.out.println("TIME EXEC query (s) = " + (stopTime - startTime)/1000);
+        Map<URI, List<DataModel>> variablesMap = new HashMap<>();
+        Map<DataProvenanceModel, List<DataModel>> provenancesMap = new HashMap<>();
 
-        VariableDetailsDTO variable = new VariableDetailsDTO(variableDAO.get(variableUri));
-        DataVariableSeriesGetDTO dto = new DataVariableSeriesGetDTO(variable);
+        variablesMap = result.getList().stream().collect(Collectors.groupingBy(DataModel::getVariable));
 
-    /// Compute median series for each provenance
+        List<DataSerieGetDTO> dtoList = new ArrayList<>();
 
-        Map<DataProvenanceModel, List<DataModel>> provenancesMap;
+        for (Map.Entry<URI, List<DataModel>> entry : variablesMap.entrySet()) {
+            VariableGetDTO variable = VariableGetDTO.fromModel(variableDAO.get(entry.getKey()));
 
-        List<DataSerieGetDTO> dataSeriesDTOs = new ArrayList<>();
-        List<DataSimpleGetDTO> medians = new ArrayList<>();
+            provenancesMap = entry.getValue().stream().collect(Collectors.groupingBy(DataModel::getProvenance));
+            for (Map.Entry<DataProvenanceModel, List<DataModel>> entryProv : provenancesMap.entrySet()) {
+                List<DataGetDTO> data = entryProv.getValue()
+                        .stream()
+                        .map((d) -> DataGetDTO.getDtoFromModel(d, null))
+                        .collect(Collectors.toList());
 
-        provenancesMap = dataModels.stream().collect(Collectors.groupingBy(DataModel::getProvenance));
-        for (Map.Entry<DataProvenanceModel, List<DataModel>> entryProv : provenancesMap.entrySet()) {
-
-            List<DataSimpleGetDTO> data = entryProv.getValue()
-                    .stream()
-                    .map((d) -> DataSimpleGetDTO.getDtoFromModel(d))
-                    .collect(Collectors.toList());
-
-            List<DataSimpleGetDTO> medianSerie = computeMedianPerHour(data);
-            medians.addAll(medianSerie);
-
-            DataSimpleProvenanceGetDTO provenance = DataSimpleProvenanceGetDTO.fromModel(entryProv.getKey());
-
-            DataSerieGetDTO dataSerie = new DataSerieGetDTO(provenance, medianSerie);
-            dataSeriesDTOs.add(dataSerie);
+                DataSerieGetDTO dataSerie = new DataSerieGetDTO(variable, entryProv.getKey(), data);
+                dtoList.add(dataSerie);
+            }
         }
 
-        dto.setDataSeries(dataSeriesDTOs);
-
-    /// Compute calculated series
-
-        if (dataSeriesDTOs.size() > 1) {
-
-            List<DataSerieGetDTO> dataCalculatedSeriesDTOs = new ArrayList<>();
-
-            DataSimpleProvenanceGetDTO provMedian = new DataSimpleProvenanceGetDTO();
-            provMedian.setUri(URI.create("median_per_hour"));
-
-            List<DataSimpleGetDTO> medianOfMedians = computeMedianPerHour(medians);
-            dataCalculatedSeriesDTOs.add(new DataSerieGetDTO(provMedian, medianOfMedians));
-
-            //TODO: trash
-            DataSimpleProvenanceGetDTO provAverage = new DataSimpleProvenanceGetDTO();
-            provAverage.setUri(URI.create("average_per_hour"));
-
-            DataSerieGetDTO averageSerie = computeAveragePerHour(dataModels);
-            averageSerie.setProvenance(provAverage);
-            dataCalculatedSeriesDTOs.add(averageSerie);
-
-            dto.setCalculatedSeries(dataCalculatedSeriesDTOs);
-        }
-
-        return new SingleObjectResponse<>(dto).getResponse();
+        return new SingleObjectResponse<>(dtoList).getResponse();
     }
 
-    /**
-     * Compute the median per hour for a given data set.
-     *
-     * @param dataSerie the data set
-     * @return the serie of median per hour
-     */
-    private List<DataSimpleGetDTO> computeMedianPerHour(List<DataSimpleGetDTO> dataSerie) {
-        List<DataSimpleGetDTO> mediansPerHour = new ArrayList<>();
-
-        Map<Long, List<DataSimpleGetDTO>> dataPerHourMap = dataSerie.stream().collect(
-                Collectors.groupingBy(d->(d.getDateTime().getEpochSecond()/3600),
-                LinkedHashMap::new,
-                Collectors.toList()));
-
-        System.out.println(dataPerHourMap.keySet());
-
-        for (Map.Entry<Long, List<DataSimpleGetDTO>> entry : dataPerHourMap.entrySet()) {
-            Instant dateTime = Instant.ofEpochSecond(entry.getKey()*3600).plus(30, ChronoUnit.MINUTES);
-
-            List<Double> data = entry.getValue().stream().map(d->(Double.valueOf(d.getValue().toString()))).collect(Collectors.toList());
-            Collections.sort(data);
-
-            DataSimpleGetDTO medianData = new DataSimpleGetDTO(entry.getValue().get(0));
-            medianData.setValue(data.get(data.size()/2));
-            medianData.updateDate(dateTime);
-
-            mediansPerHour.add(medianData);
-        }
-
-        System.out.println(mediansPerHour);
-
-        return mediansPerHour;
-    }
-
-    /**
-     * Compute the average per hour for a given data set.
-     *
-     * @param dataSerie the data set
-     * @return a
-     */
-    private DataSerieGetDTO computeAveragePerHour(List<DataModel> dataSerie) {
-        List<DataSimpleGetDTO> averagePerHour = new ArrayList<>();
-
-        Map<Long, List<DataModel>> dataPerHourMap = dataSerie.stream().collect(
-                Collectors.groupingBy(d->(d.getDate().getEpochSecond()/3600),
-                        LinkedHashMap::new,
-                        Collectors.toList()));
-
-        System.out.println(dataPerHourMap.keySet());
-
-        for (Map.Entry<Long, List<DataModel>> entry : dataPerHourMap.entrySet()) {
-            Instant dateTime = Instant.ofEpochSecond(entry.getKey()*3600).plus(30, ChronoUnit.MINUTES);
-            double avg = entry.getValue().stream().mapToDouble(d->(Double.valueOf(d.getValue().toString()))).average().orElse(Double.NaN);
-
-            DataSimpleGetDTO averageData = DataSimpleGetDTO.getDtoFromModel(entry.getValue().get(0));
-            averageData.setValue(avg);
-            averageData.updateDate(dateTime);
-
-            averagePerHour.add(averageData);
-        }
-
-        System.out.println(averagePerHour);
-
-        return new DataSerieGetDTO(null, averagePerHour);
-    }
-    
     
     /** 
      * check if variable is associated to device

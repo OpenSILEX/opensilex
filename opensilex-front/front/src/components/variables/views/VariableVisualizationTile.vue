@@ -1,68 +1,41 @@
 <template>
-  <opensilex-Overlay :show="!isDataLoaded && !isNoDataFound">
     <opensilex-Card
         ref="tilePanel"
-        :label="variableUri.name"
+        class="tile"
+        :label="variable.name"
         icon=""
     >
 
       <template v-slot:body>
 
-        <opensilex-TextView v-if="isNoDataFound"
-                            id="no-data-text"
-            :label="$t('FacilityAssociatedDevices.no-data')">
-        </opensilex-TextView>
+        <opensilex-UriListView
+            label="Devices"
+            :list="deviceUriList"
+            :inline="true"
+        >
+        </opensilex-UriListView>
 
-        <div
-            id="data-infos"
-            v-if="isDataLoaded">
-          <opensilex-TextView
-              style="font-size: xxx-large; margin-bottom: 0;"
-              v-on:click.native="showGraphic"
-              :value="lastMedianData.value + ' ' + variable.unit.symbol">
-          </opensilex-TextView>
-          <opensilex-DateView
-            :value="lastMedianData.date"
-            :isDateTime="true"
-            :useLocaleFormat="true"
-            :dateTimeFormatOptions="{ dateStyle: 'short', timeStyle: 'long' }">
-          </opensilex-DateView>
-        </div>
-
-        <!--
         <opensilex-Button
-            id="btn-show"
             label="Show graphic"
             icon=""
             :small="false"
             @click="prepareGraphic()"
         >
         </opensilex-Button>
-        -->
 
-        <b-modal
-            ref="graphic-modal"
-            size="xl"
-            :title="variableUri.name"
-        >
-          <opensilex-DataVisuGraphic
-            v-if="isGraphicLoaded"
-            id="graphic"
-            ref="visuGraphic"
-            :deviceType="false"
-            :lType="true"
-            :lWidth="2"
-            class="DeviceVisualisationGraphic"
-            v-bind:class ="{
-              'DeviceVisualisationGraphic': false,
-              'DeviceVisualisationGraphicWithoutForm': true
-            }"
-          ></opensilex-DataVisuGraphic>
-        </b-modal>
+        <opensilex-DataVisuGraphic
+          v-if="isGraphicLoaded"
+          ref="visuGraphic"
+          :deviceType="false"
+          class="DeviceVisualisationGraphic"
+          v-bind:class ="{
+            'DeviceVisualisationGraphic': false,
+            'DeviceVisualisationGraphicWithoutForm': true
+          }"
+        ></opensilex-DataVisuGraphic>
 
       </template>
     </opensilex-Card>
-  </opensilex-Overlay>
 </template>
 
 <script lang="ts">
@@ -74,10 +47,8 @@ import HighchartsDataTransformer from "../../../models/HighchartsDataTransformer
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import {VariablesService} from "opensilex-core/api/variables.service";
 import {DataService} from "opensilex-core/api/data.service";
+import {DeviceGetDTO} from "opensilex-core/model/deviceGetDTO";
 import {VariableDetailsDTO} from "opensilex-core/model/variableDetailsDTO";
-import {DataSerieGetDTO} from "opensilex-core/model/dataSerieGetDTO";
-import {DataVariableSeriesGetDTO} from "opensilex-core/model/dataVariableSeriesGetDTO";
-import {NamedResourceDTOVariableModel} from "opensilex-core/model/namedResourceDTOVariableModel";
 
 
 @Component
@@ -92,34 +63,24 @@ export default class VariableVisualizationTile extends Vue {
   }
 
   @Prop()
-  variableUri: NamedResourceDTOVariableModel;
-
-  @Prop()
-  target: string;
-
   variable: VariableDetailsDTO;
 
-  dataSeries: Array<DataSerieGetDTO>;
+  @Prop()
+  devices: Array<DeviceGetDTO>;
 
-  calculatedDataSeries: Array<DataSerieGetDTO>;
-
-  isNoDataFound: boolean = false;
-  isDataLoaded: boolean = false;
-  isGraphicLoaded: boolean = true;
+  isGraphicLoaded = true;
+  target = [] ;
   eventCreatedTime = "";
 
   variablesService: VariablesService;
   devicesService: DevicesService;
   eventsService: EventsService;
-  dataService: DataService;
 
-  @Ref("graphic-modal") readonly graphicModal!: any;
   @Ref("visuGraphic") readonly visuGraphic!: any;
   @Ref("annotationModalForm") readonly annotationModalForm!: any;
   @Ref("eventsModalForm") readonly eventsModalForm!: any;
 
   created() {
-    this.$opensilex.hideLoader();
     this.variablesService = this.$opensilex.getService<VariablesService>(
         "opensilex.VariablesService"
     );
@@ -129,10 +90,6 @@ export default class VariableVisualizationTile extends Vue {
     this.eventsService = this.$opensilex.getService<EventsService>(
         "opensilex.EventsService"
     );
-    this.dataService = this.$opensilex.getService<DataService>(
-        "opensilex-core.DataService"
-    );
-    this.refresh();
   }
 
   private langUnwatcher;
@@ -145,78 +102,19 @@ export default class VariableVisualizationTile extends Vue {
     );
   }
 
-  refresh() {
-    this.variablesService
-        .getVariable(this.variableUri.uri)
-        .then( (http: HttpResponse<OpenSilexResponse<VariableDetailsDTO>>) => {
-          if (http && http.response) {
-            this.variable = http.response.result;
-
-            this.loadData();
-          }
-        }
-    )
-  }
-
-  loadData() {
-    var today: Date = new Date();
-    var aWeekBefore: Date = new Date(today);
-    aWeekBefore.setDate(aWeekBefore.getDate() - 60);
-
-    this.dataService.getDataSeriesByFacility(
-        this.variableUri.uri,
-        this.target,
-        aWeekBefore.toISOString(),
-        today.toISOString(),
-        ["date=asc"]
-    )
-        .then(
-            (
-                http: HttpResponse<OpenSilexResponse<DataVariableSeriesGetDTO>>
-            ) => {
-              if (http && http.response) {
-                let seriesDTO: DataVariableSeriesGetDTO = http.response.result;
-
-                if (!seriesDTO.data_series.length) {
-                  this.isNoDataFound = true;
-                  return;
-                }
-
-                this.dataSeries = seriesDTO.data_series;
-                this.calculatedDataSeries = seriesDTO.calculated_series;
-
-                this.isDataLoaded = true;
-              }
-            }
-        );
-  }
-
-  get lastMedianData() {
-    let data;
-    if (this.calculatedDataSeries.length === 0) {
-      data = this.dataSeries[0].data
-    }
-    else {
-      data = this.calculatedDataSeries[0].data;
-    }
-    return data[data.length - 1];
-  }
-
   get deviceUriList() {
-    if (!this.dataSeries) {
+    if (!this.devices) {
       return [];
     }
 
-    return this.dataSeries.map(serie => {
-      if (serie.provenance) {
-        return {
-          uri: serie.provenance.prov_was_associated_with[0].uri,
-          value: serie.provenance.prov_was_associated_with[0].uri,
-          to: {
-            path: "/device/details/" + encodeURIComponent(serie.provenance.prov_was_associated_with[0].uri),
-          },
-        }
-      }
+    return this.devices.map(device => {
+      return {
+        uri: device.uri,
+        value: device.name,
+        to: {
+          path: "/device/details/" + encodeURIComponent(device.uri),
+        },
+      };
     });
   }
 
@@ -252,38 +150,29 @@ export default class VariableVisualizationTile extends Vue {
     }
   }
 
-  showGraphic() {
-    console.log("show graphic");
-    this.prepareGraphic();
-    this.graphicModal.show();
-  }
-
   prepareGraphic() {
       this.$opensilex.disableLoader();
       var promises = [];
       let promise;
 
-      for (let i = 0; i < this.calculatedDataSeries.length; ++i) {
-        console.debug(this.calculatedDataSeries[i]);
-        promise = this.buildDataSerie(this.calculatedDataSeries[i]);
+      this.devices.forEach((device) => {
+        promise = this.buildDataSerie(device.uri);
         promises.push(promise);
-      }
-      for (let i = 0; i < this.dataSeries.length; ++i) {
-        promise = this.buildDataSerie(this.dataSeries[i]);
-        promises.push(promise);
-      }
+      });
       //promise = this.buildEventsSerie();
       //promises.push(promise);
 
       Promise.all(promises)
         .then(values => {
-          let series = [];
-          values.forEach(serie => {
-            series.push(serie);
-          });
-
           this.isGraphicLoaded = true;
-
+          let series = [];
+          if (values[0]) {
+            series.push(values[0]);
+          }
+          if (values[1]) {
+            series.push(values[1]);
+          }
+          console.log(series);
           this.$nextTick(() => {
             this.$opensilex.enableLoader();
             this.visuGraphic.reload(
@@ -304,7 +193,7 @@ export default class VariableVisualizationTile extends Vue {
           undefined,
           undefined,
           undefined,
-          undefined,
+          this.devices[0].uri,
           undefined,
           undefined,
           0,
@@ -386,39 +275,53 @@ export default class VariableVisualizationTile extends Vue {
         });
   }
 
-  buildDataSerie(dataSerie) {
+  buildDataSerie(deviceUri) {
+    return this.$opensilex
+        .getService<DataService>("opensilex.DataService")
+        .searchDataList(
+            undefined, // start_date
+            undefined, // end_date
+            undefined, // timezone,
+            undefined, // experiments
+            undefined, // scientific_object
+            [this.variable.uri], // variables,
+            [deviceUri], // devices
+            undefined, // min_confidence
+            undefined, // max_confidence
+            undefined,
+            undefined, //this.addMetadataFilter(),
+            ["date=asc"], //order by
+            0,
+            50000
+        )
+      .then((http: HttpResponse<OpenSilexResponse<Array<DataGetDTO>>>) => {
+        const data = http.response.result as Array<DataGetDTO>;
+        let dataLength = data.length;
 
-    var data = dataSerie.data as Array<DataGetDTO>;
-    data.sort((a, b) => (a.date > b.date) ? 1 : -1);
-    let dataLength = data.length;
+        if (dataLength === 0){
+          this.$opensilex.showInfoToast(
+          this.$t("component.common.search.noDataFound").toString());
+        }
 
-    if (dataLength === 0){
-      this.$opensilex.showInfoToast(
-      this.$t("component.common.search.noDataFound").toString());
-    }
+        if (dataLength >= 0) {
+          const cleanData = HighchartsDataTransformer.transformDataForHighcharts(data);
+          if (dataLength > 50000) {
+            this.$opensilex.showInfoToast(
+              this.$i18n.t("DeviceDataTab.limitSizeMessageA") +
+                " " +
+                dataLength +
+                " " +
+                this.$i18n.t("DeviceDataTab.limitSizeMessageB")
+            );
+          }
 
-    if (dataLength >= 0) {
-      const cleanData = HighchartsDataTransformer.transformSimpleDataForHighcharts(data, dataSerie.provenance);
-      if (dataLength > 50000) {
-        this.$opensilex.showInfoToast(
-            this.$i18n.t("DeviceDataTab.limitSizeMessageA") +
-            " " +
-            dataLength +
-            " " +
-            this.$i18n.t("DeviceDataTab.limitSizeMessageB")
-        );
-      }
-
-      console.debug(cleanData);
-
-      let prov = dataSerie.provenance.prov_was_associated_with[0];
-
-      return {
-        name: prov.uri,
-        data: cleanData,
-        visible: (prov.uri.startsWith("dev")) ? false : true
-      };
-    }
+          return {
+            name: this.variable.name,
+            data: cleanData,
+            visible: true
+          };
+        }
+      });
   }
 
   searchFiltersPannel() {
@@ -443,20 +346,23 @@ export default class VariableVisualizationTile extends Vue {
 <i18n>
 en:
     DeviceDataTab:
+        visualization: Visualization
+        data: Data
+        add: Add data
         datatypeMessageA: The variable datatype is
         datatypeMessageB: "At this time only decimal or integer are accepted"
         limitSizeMessageA : "There are "
         limitSizeMessageB : " data .Only the 50 000 first data are displayed."
-        lastData: Last data collected
-
 
 fr:
     DeviceDataTab:
+        visualization: Visualisation
+        data: Données
+        add: Ajouter des données
         datatypeMessageA:  le type de donnée de la variable est
         datatypeMessageB: "Pour le moment, seuls les types decimal ou entier sont acceptés "
         limitSizeMessageA : "Il y a "
         limitSizeMessageB : " données .Seules les 50 000 premières valeurs sont affichées. "
-        lastData: Dernière donnée collectée
 
 </i18n>
 

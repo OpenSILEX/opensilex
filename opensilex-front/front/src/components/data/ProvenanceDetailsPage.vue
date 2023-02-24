@@ -18,12 +18,24 @@
       :active="isAnnotationTab()"
       :to="{ path: '/provenances/annotations/' + encodeURIComponent(uri) }"
       >{{ $t("Annotation.list-title") }}
+        <span
+          v-if="!annotationsCountIsLoading && annotations > 0"
+          class="tabWithElements"
+        >
+          {{$opensilex.$numberFormatter.formateResponse(annotations)}}
+        </span>
       </b-nav-item>
 
       <b-nav-item
       :active="isDocumentTab()"
       :to="{path: '/provenances/documents/' + encodeURIComponent(uri)}"
       >{{ $t('component.project.documents') }}
+        <span
+          v-if="!documentsCountIsLoading && documents > 0"
+          class="tabWithElements"
+        >
+          {{$opensilex.$numberFormatter.formateResponse(documents)}}
+        </span>
       </b-nav-item>
 
     </opensilex-PageActions>
@@ -152,18 +164,22 @@
 <script lang="ts">
 import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {
   ProvenanceGetDTO, DataService, ProvenanceUpdateDTO
 } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import AnnotationList from "../annotations/list/AnnotationList.vue";
 import DocumentTabList from "../documents/DocumentTabList.vue";
-import { UserGetDTO } from 'opensilex-security/index';
+import { UserGetDTO, SecurityService } from 'opensilex-security/index';
 
+import {AnnotationsService} from "opensilex-core/api/annotations.service";
+import {DocumentsService} from "opensilex-core/api/documents.service";
+import { OntologyService } from "../../../../../opensilex-core/front/src/lib";
 
 @Component
 export default class ProvenanceDetailsPage extends Vue {
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
   $route: any;
   $store: any;
   $router: any;
@@ -174,6 +190,15 @@ export default class ProvenanceDetailsPage extends Vue {
   uri: string = null;
   addInfo = [];
   experimentName: any = "";
+
+  $AnnotationsService: AnnotationsService
+  $DocumentsService: DocumentsService
+
+  annotations: number;
+  documents: number;
+
+  annotationsCountIsLoading: boolean = true;
+  documentsCountIsLoading: boolean = true;
 
   @Ref("annotationList") readonly annotationList!: AnnotationList;
   @Ref("documentTabList") readonly documentTabList!: DocumentTabList;
@@ -212,8 +237,12 @@ export default class ProvenanceDetailsPage extends Vue {
   }
 
   created() {
-    this.service = this.$opensilex.getService("opensilex.DataService");
+    this.service = this.$opensilex.getService<DataService>("opensilex.DataService");
     this.uri = decodeURIComponent(this.$route.params.uri);
+    this.$AnnotationsService = this.$opensilex.getService<AnnotationsService>("opensilex.AnnotationsService");
+    this.$DocumentsService = this.$opensilex.getService<DocumentsService>("opensilex.DocumentsService");
+    this.searchAnnotations();
+    this.searchDocuments();
     this.refresh();
   }
 
@@ -225,7 +254,7 @@ export default class ProvenanceDetailsPage extends Vue {
         let prov = http.response.result;
         
         if (prov.prov_activity != null && prov.prov_activity.length>0) {
-          let promiseActivity = this.$opensilex.getService("opensilex.OntologyService")
+          let promiseActivity = this.$opensilex.getService<OntologyService>("opensilex.OntologyService")
             .getURILabel(prov.prov_activity[0].rdf_type)
             .then((http: HttpResponse<OpenSilexResponse<String>>) => {
               prov.prov_activity[0]["name"] = http.response.result;
@@ -237,7 +266,7 @@ export default class ProvenanceDetailsPage extends Vue {
           for (let i = 0; i < prov.prov_agent.length; i++) {
             let promiseAgent;
             if (this.$opensilex.Oeso.checkURIs(prov.prov_agent[i].rdf_type, this.$opensilex.Oeso.OPERATOR_TYPE_URI)) {
-              promiseAgent = this.$opensilex.getService("opensilex.SecurityService")
+              promiseAgent = this.$opensilex.getService<SecurityService>("opensilex.SecurityService")
               .getUser(prov.prov_agent[i].uri)
               .then((http: HttpResponse<OpenSilexResponse<UserGetDTO>>) => {
                 prov.prov_agent[i]["name"] = http.response.result.first_name + " " + http.response.result.last_name;
@@ -245,7 +274,7 @@ export default class ProvenanceDetailsPage extends Vue {
               })
               .catch(this.$opensilex.errorHandler);
             } else {
-              promiseAgent = this.$opensilex.getService("opensilex.OntologyService")
+              promiseAgent = this.$opensilex.getService<OntologyService>("opensilex.OntologyService")
               .getURILabel(prov.prov_agent[i].uri)
               .then((http: HttpResponse<OpenSilexResponse<String>>) => {
                 prov.prov_agent[i]["name"] = http.response.result;
@@ -355,7 +384,37 @@ export default class ProvenanceDetailsPage extends Vue {
   successMessage(form) {
     return this.$t("ProvenanceView.success-message") + " " + form.name;
   }
-  
+
+  searchAnnotations() {
+    return this.$AnnotationsService
+    .countAnnotations(
+      this.uri,
+      undefined,
+      undefined
+    ).then((http: HttpResponse<OpenSilexResponse<number>>) => {
+      if(http && http.response){
+        this.annotations = http.response.result as number;
+        this.annotationsCountIsLoading = false;
+        return this.annotations
+      }
+    }).catch(this.$opensilex.errorHandler);
+  }
+
+  searchDocuments(){
+    return this.$DocumentsService
+      .countDocuments(
+        this.uri,
+        undefined,
+        undefined
+      ).then((http: HttpResponse<OpenSilexResponse<number>>) => {
+        if(http && http.response){
+          this.documents = http.response.result as number;
+          this.documentsCountIsLoading = false;
+          return this.documents
+        }
+      }
+    ).catch(this.$opensilex.errorHandler);
+  }
 }
 </script>
 

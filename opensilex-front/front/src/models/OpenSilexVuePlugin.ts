@@ -29,6 +29,7 @@ import {ResourceDagDTO} from "opensilex-core/model/resourceDagDTO";
 import {ServiceBinder} from "../services/ServiceBinder";
 import { OntologyService, VariableDatatypeDTO, VariablesService } from 'opensilex-core/index';
 import DateTimeFormatter from "./DateTimeFormatter";
+import NumberFormatter from "./NumberFormatter";
 
 declare var $cookies: VueCookies;
 
@@ -64,6 +65,7 @@ export default class OpenSilexVuePlugin {
     public $i18n: VueI18n;
     public $bvToast: any;
     public $dateTimeFormatter: DateTimeFormatter;
+    public $numberFormatter: NumberFormatter;
 
     public Oeso = Oeso;
     public Foaf = Foaf;
@@ -83,6 +85,7 @@ export default class OpenSilexVuePlugin {
         this.$store = store;
         this.$i18n = i18n;
         this.$dateTimeFormatter = new DateTimeFormatter(i18n);
+        this.$numberFormatter = new NumberFormatter(i18n);
         ApiServiceBinder.with(this.container);
         ServiceBinder.with(this.container);
     }

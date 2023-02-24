@@ -18,6 +18,12 @@
                         :active="isFactorsTab()"
                         :to="{ path: '/experiment/factors/' + encodeURIComponent(uri) }"
                 >{{ $t("ExperimentView.factors") }}
+                    <span
+                        v-if="!factorsCountIsLoading && factors > 0"
+                        class ="tabWithElements"
+                    >
+                        {{$opensilex.$numberFormatter.formateResponse(factors)}}
+                    </span>
                 </b-nav-item>
                 <b-nav-item
                         :active="isScientificObjectsTab()"
@@ -29,6 +35,12 @@
                         :active="isDataTab()"
                         :to="{ path: '/experiment/data/' + encodeURIComponent(uri) }"
                 >{{ $t("ExperimentView.data") }}
+                    <span
+                        v-if="!dataCountIsLoading && data > 0"
+                        class ="tabWithElements"
+                    >
+                        {{$opensilex.$numberFormatter.formateResponse(data)}}
+                    </span>
                 </b-nav-item
                 >
                 <b-nav-item
@@ -47,12 +59,24 @@
                         :active="isAnnotationTab()"
                         :to="{ path: '/experiment/annotations/' + encodeURIComponent(uri) }"
                 >{{ $t("Annotation.list-title") }}
+                    <span
+                        v-if="!annotationsCountIsLoading && annotations > 0"
+                        class ="tabWithElements"
+                    >
+                        {{$opensilex.$numberFormatter.formateResponse(annotations)}}
+                    </span>
                 </b-nav-item>
                 
                 <b-nav-item
                   :active="isDocumentTab()"
                   :to="{path: '/experiment/document/' + encodeURIComponent(uri)}"
                 >{{ $t('ExperimentView.document') }}
+                    <span
+                        v-if="!documentsCountIsLoading && documents > 0"
+                        class ="tabWithElements"
+                    >
+                        {{$opensilex.$numberFormatter.formateResponse(documents)}}
+                    </span>
                 </b-nav-item>
 
 
@@ -112,20 +136,41 @@
 <script lang="ts">
     import {Component, Ref} from "vue-property-decorator";
     import Vue from "vue";
+    import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
     // @ts-ignore
     import {ExperimentsService, ExperimentGetDTO} from "opensilex-core/index";
     // @ts-ignore
     import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
     import AnnotationList from "../annotations/list/AnnotationList.vue";
 
+    import {AnnotationsService} from "opensilex-core/api/annotations.service";
+    import {DocumentsService} from "opensilex-core/api/documents.service";
+    import {FactorsService} from "opensilex-core/api/factors.service";
+    import {DataService} from "opensilex-core/api/data.service";
+
     @Component
     export default class ExperimentView extends Vue {
         $route: any;
 
-        $opensilex: any;
+        $opensilex: OpenSilexVuePlugin;
         service: ExperimentsService;
         uri = null;
         name: string = "";
+
+        $AnnotationsService: AnnotationsService
+        $DocumentsService: DocumentsService
+        $FactorsService: FactorsService
+        $DataService: DataService
+
+        annotations: number;
+        documents: number;
+        factors: number;
+        data: number;
+
+        annotationsCountIsLoading: boolean = true;
+        documentsCountIsLoading: boolean = true;
+        factorsCountIsLoading: boolean = true;
+        dataCountIsLoading: boolean = true;
 
         @Ref("annotationList") readonly annotationList!: AnnotationList;
 
@@ -143,6 +188,14 @@
                         this.$opensilex.errorHandler(error);
                     });
             }
+            this.$AnnotationsService = this.$opensilex.getService<AnnotationsService>("opensilex.AnnotationsService");
+            this.$DocumentsService = this.$opensilex.getService<DocumentsService>("opensilex.DocumentsService");
+            this.$DataService = this.$opensilex.getService<DataService>("opensilex.DataService");
+            this.$FactorsService = this.$opensilex.getService<FactorsService>("opensilex.FactorsService");
+            this.searchAnnotations();
+            this.searchDocuments();
+            this.searchData();
+            this.searchFactors();
         }
 
         get user() {
@@ -185,6 +238,73 @@
             return this.$route.path.startsWith("/experiment/annotations/");
         }
 
+
+        searchAnnotations() {
+            return this.$AnnotationsService
+            .countAnnotations(
+            this.uri,
+            undefined,
+            undefined
+            ).then((http: HttpResponse<OpenSilexResponse<number>>) => {
+                if (http && http.response){
+                    this.annotations = http.response.result as number;
+                    this.annotationsCountIsLoading = false;
+                    return this.annotations
+                }
+            }).catch(this.$opensilex.errorHandler);
+        }
+
+        searchDocuments(){
+            return this.$DocumentsService
+            .countDocuments(
+                this.uri,
+                undefined,
+                undefined
+            ).then((http: HttpResponse<OpenSilexResponse<number>>) => {
+                if (http && http.response) {
+                    this.documents = http.response.result as number;
+                    this.documentsCountIsLoading = false;
+                    return this.documents
+                }
+            }).catch(this.$opensilex.errorHandler);
+        }
+
+        searchData(){
+            return this.$DataService
+            .countData(
+                undefined,
+                undefined,
+                undefined,
+                [this.uri],
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined,
+                undefined
+            ).then((http: HttpResponse<OpenSilexResponse<number>>) => {
+                if (http && http.response){
+                    this.data = http.response.result as number;
+                    this.dataCountIsLoading = false;
+                    return this.data
+                }
+            }).catch(this.$opensilex.errorHandler);
+        }
+        
+        searchFactors(){
+            return this.$FactorsService
+            .countFactors(
+                this.uri,
+                undefined,
+                undefined
+            ).then((http: HttpResponse<OpenSilexResponse<number>>) => {
+                if (http && http.response){
+                    this.factors = http.response.result as number;
+                    this.factorsCountIsLoading = false;
+                    return this.factors
+                }
+            }).catch(this.$opensilex.errorHandler);
+        }
     }
 </script>
 

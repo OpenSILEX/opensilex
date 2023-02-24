@@ -217,7 +217,7 @@ export default class DeviceDescription extends Vue {
 
     renderModalForm: boolean = false;
 
-    eventService : EventsService;
+    eventsService : EventsService;
     positionService: PositionsService;
 
     relationsFields: any[] = [
@@ -281,12 +281,12 @@ export default class DeviceDescription extends Vue {
     }
 
     created() {
-        this.service = this.$opensilex.getService("opensilex.DevicesService");
-        this.vueJsOntologyService = this.$opensilex.getService("opensilex.VueJsOntologyExtensionService");
+        this.service = this.$opensilex.getService<DevicesService>("opensilex.DevicesService");
+        this.vueJsOntologyService = this.$opensilex.getService<VueJsOntologyExtensionService>("opensilex.VueJsOntologyExtensionService");
         //Get Events Service
-        this.eventService = this.$opensilex.getService("opensilex.EventsService");
+        this.eventsService = this.$opensilex.getService<EventsService>("opensilex.EventsService");
         //Get Position Service
-        this.positionService = this.$opensilex.getService("opensilex.PositionsService");
+        this.positionService = this.$opensilex.getService<PositionsService>("opensilex.PositionsService");
 
         this.uri = decodeURIComponent(this.$route.params.uri);
         this.baseType = this.$opensilex.Oeso.DEVICE_TYPE_URI;
@@ -324,7 +324,7 @@ export default class DeviceDescription extends Vue {
 
     loadLastCalibrationEvent(){
         // Get calibration events with the device uri (target) by date in descending order
-        this.eventService.searchEvents(
+        this.eventsService.searchEvents(
             Oeev.CALIBRATION_TYPE_URI,
             undefined,
             undefined,

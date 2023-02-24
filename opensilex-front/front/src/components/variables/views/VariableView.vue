@@ -18,6 +18,12 @@
             :active="isAnnotationTab()"
             :to="{ path: '/variable/annotations/' + encodeURIComponent(uri) }"
         >{{ $t("Annotation.list-title") }}
+          <span
+            v-if="!annotationsCountIsLoading && annotations > 0"
+            class="tabWithElements"
+          >
+            {{$opensilex.$numberFormatter.formateResponse(annotations)}}
+          </span>
         </b-nav-item>
         <b-nav-item
             :active="isVisualizationTab()"
@@ -28,6 +34,12 @@
             :active="isDocumentTab()"
             :to="{ path: '/variable/documents/' + encodeURIComponent(uri) }"
         >{{ $t('component.project.documents') }}
+          <span
+            v-if="!documentsCountIsLoading && documents > 0"
+            class="tabWithElements"
+          >
+            {{$opensilex.$numberFormatter.formateResponse(documents)}}
+          </span>
         </b-nav-item>
 
       </template>
@@ -72,10 +84,13 @@
 import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
-import {VariablesService} from "opensilex-core/api/variables.service";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import AnnotationList from "../../annotations/list/AnnotationList.vue";
+
 import { VariableDetailsDTO } from 'opensilex-core/index';
+import {VariablesService} from "opensilex-core/api/variables.service";
+import {AnnotationsService} from "opensilex-core/api/annotations.service";
+import {DocumentsService} from "opensilex-core/api/documents.service";
 
 @Component
 export default class VariableView extends Vue {
@@ -89,29 +104,38 @@ export default class VariableView extends Vue {
   $t: any;
   $i18n: any;
 
-        static getEmptyDetailsDTO() : VariableDetailsDTO{
-            return {
-                uri: undefined,
-                alternative_name: undefined,
-                name: undefined,
-                entity: undefined,
-                entity_of_interest: undefined,
-                characteristic: undefined,
-                description: undefined,
-                time_interval: undefined,
-                sampling_interval: undefined,
-                datatype: undefined,
-                trait: undefined,
-                trait_name: undefined,
-                method: undefined,
-                unit: undefined,
-                exact_match: [],
-                close_match: [],
-                broad_match: [],
-                narrow_match: [],
-                species: undefined
-            };
-        }
+  $AnnotationsService: AnnotationsService
+  $DocumentsService: DocumentsService
+
+  annotations: number;
+  documents: number;
+
+  annotationsCountIsLoading: boolean = true;
+  documentsCountIsLoading: boolean = true;
+  
+  static getEmptyDetailsDTO() : VariableDetailsDTO{
+    return {
+        uri: undefined,
+        alternative_name: undefined,
+        name: undefined,
+        entity: undefined,
+        entity_of_interest: undefined,
+        characteristic: undefined,
+        description: undefined,
+        time_interval: undefined,
+        sampling_interval: undefined,
+        datatype: undefined,
+        trait: undefined,
+        trait_name: undefined,
+        method: undefined,
+        unit: undefined,
+        exact_match: [],
+        close_match: [],
+        broad_match: [],
+        narrow_match: [],
+        species: undefined
+    };
+  }
 
 
   variable: VariableDetailsDTO = VariableView.getEmptyDetailsDTO();
@@ -128,9 +152,13 @@ export default class VariableView extends Vue {
   }
 
   created() {
-    this.service = this.$opensilex.getService("opensilex.VariablesService");
+    this.service = this.$opensilex.getService<VariablesService>("opensilex.VariablesService");
     this.uri = decodeURIComponent(this.$route.params.uri);
     this.loadVariable(this.uri);
+    this.$AnnotationsService = this.$opensilex.getService<AnnotationsService>("opensilex.AnnotationsService");
+    this.$DocumentsService = this.$opensilex.getService<DocumentsService>("opensilex.DocumentsService");
+    this.searchAnnotations();
+    this.searchDocuments();
   }
 
   isDetailsTab() {
@@ -160,6 +188,37 @@ export default class VariableView extends Vue {
     this.loadVariable(this.uri);
   }
 
+  searchAnnotations() {
+    return this.$AnnotationsService
+    .countAnnotations(
+      this.uri,
+      undefined,
+      undefined
+    ).then((http: HttpResponse<OpenSilexResponse<number>>) => {
+      if(http && http.response){
+        this.annotations = http.response.result as number;
+        this.annotationsCountIsLoading = false;
+        return this.annotations
+      }
+      }
+    ).catch(this.$opensilex.errorHandler);
+  }
+
+  searchDocuments(){
+    return this.$DocumentsService
+      .countDocuments(
+        this.uri,
+        undefined,
+        undefined
+      ).then((http: HttpResponse<OpenSilexResponse<number>>) => {
+        if(http && http.response){
+          this.documents = http.response.result as number;
+          this.documentsCountIsLoading = false;
+          return this.documents
+        }
+      }
+    ).catch(this.$opensilex.errorHandler);
+  }
 }
 </script>
 

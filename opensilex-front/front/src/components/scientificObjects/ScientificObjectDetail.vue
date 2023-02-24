@@ -3,13 +3,13 @@
     <opensilex-PageActions :returnButton="withReturnButton" :tabs="true">
       <b-nav-item
         :active="isDetailsTab"
-        @click.prevent="onTabChanged(ScientificObjectDetail.DETAILS_TAB)"
+        @click.prevent="tabsValue = ScientificObjectDetail.DETAILS_TAB"
         >{{ $t("component.common.details-label") }}
       </b-nav-item>
 
       <b-nav-item
         v-if="includeTab(ScientificObjectDetail.VISUALIZATION_TAB)"
-        @click.prevent="onTabChanged(ScientificObjectDetail.VISUALIZATION_TAB)"
+        @click.prevent="tabsValue = ScientificObjectDetail.VISUALIZATION_TAB"
         :active="isVisualizationTab"
         >{{ $t("ScientificObjectVisualizationTab.visualization") }}
       </b-nav-item>
@@ -17,36 +17,66 @@
       <b-nav-item
         v-if="includeTab(ScientificObjectDetail.DATAFILES_TAB)"
         :active="isDatafilesTab"
-        @click.prevent="onTabChanged(ScientificObjectDetail.DATAFILES_TAB)"
+        @click.prevent="tabsValue = ScientificObjectDetail.DATAFILES_TAB"
         >{{ $t("ScientificObjectDataFiles.datafiles") }}
+        <span
+          v-if="!datafilesCountIsLoading && datafiles > 0"
+          class="tabWithElements"
+        >
+          {{$opensilex.$numberFormatter.formateResponse(datafiles)}}
+        </span>
       </b-nav-item>
 
       <b-nav-item
         v-if="includeTab(ScientificObjectDetail.EVENTS_TAB)"
         :active="isEventTab"
-        @click.prevent="onTabChanged(ScientificObjectDetail.EVENTS_TAB)"
+        @click.prevent="tabsValue = ScientificObjectDetail.EVENTS_TAB"
         >{{ $t("Event.list-title") }}
+        <span
+          v-if="!eventsCountIsLoading && events > 0"
+          class="tabWithElements"
+        >
+          {{$opensilex.$numberFormatter.formateResponse(events)}}
+        </span>
       </b-nav-item>
 
       <b-nav-item
         v-if="includeTab(ScientificObjectDetail.POSITIONS_TAB)"
         :active="isPositionTab"
-        @click.prevent="onTabChanged(ScientificObjectDetail.POSITIONS_TAB)"
+        @click.prevent="tabsValue = ScientificObjectDetail.POSITIONS_TAB"
         >{{ $t("Position.list-title") }}
+        <span
+          v-if="!positionsCountIsLoading && positions > 0"
+          class="tabWithElements"
+        >
+          {{$opensilex.$numberFormatter.formateResponse(positions)}}
+        </span>
       </b-nav-item>
 
       <b-nav-item
         v-if="includeTab(ScientificObjectDetail.ANNOTATIONS_TAB)"
         :active="isAnnotationTab"
-        @click.prevent="onTabChanged(ScientificObjectDetail.ANNOTATIONS_TAB)"
-        >{{ $t("Annotation.list-title") }}
+        @click.prevent="tabsValue = ScientificObjectDetail.ANNOTATIONS_TAB"
+      >{{ $t("Annotation.list-title") }}
+        <span
+          v-if="!annotationsCountIsLoading && annotations > 0"
+          class="tabWithElements"
+        >
+          {{$opensilex.$numberFormatter.formateResponse(annotations)}}
+        </span>
       </b-nav-item>
 
       <b-nav-item
         v-if="includeTab(ScientificObjectDetail.DOCUMENTS_TAB)"
         :active="isDocumentTab"
-        @click.prevent="onTabChanged(ScientificObjectDetail.DOCUMENTS_TAB)"
-        >{{ $t("DocumentTabList.documents") }}
+        @click.prevent="tabsValue = ScientificObjectDetail.DOCUMENTS_TAB"
+      >{{ $t("DocumentTabList.documents") }}
+        <span
+          v-if="!documentsCountIsLoading && documents > 0"
+          class="tabWithElements"
+        >
+          {{$opensilex.$numberFormatter.formateResponse(documents)}}
+        </span>
       </b-nav-item>
     </opensilex-PageActions>
 
@@ -114,15 +144,58 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Ref, Watch } from "vue-property-decorator";
+import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
+import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import AnnotationList from "../annotations/list/AnnotationList.vue";
+import {ScientificObjectsService} from "opensilex-core/index";
 import PositionList from "../positions/list/PositionList.vue";
 import EventList from "../events/list/EventList.vue";
 
+import {EventsService} from "opensilex-core/api/events.service";
+import {AnnotationsService} from "opensilex-core/api/annotations.service";
+import {DocumentsService} from "opensilex-core/api/documents.service";
+import {PositionsService} from "opensilex-core/api/positions.service";
+import {DataService} from "opensilex-core/api/data.service";
+
+
 @Component
 export default class ScientificObjectDetail extends Vue {
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
+  $route: any;
+  service: ScientificObjectsService;
+  uri = null;
+
+  $EventsService: EventsService
+  $AnnotationsService: AnnotationsService
+  $DocumentsService: DocumentsService
+  $PositionsService: PositionsService
+  $DataService: DataService
+
+  @Prop({
+    default: 0,
+  })
+  annotations: number;
+
+  @Prop({
+    default: 0,
+  })
+  documents: number;
+
+  @Prop({
+    default: 0,
+  })
+  events: number;
+
+  positions: number;
+  datafiles: number;
+
+  eventsCountIsLoading: boolean = true;
+  annotationsCountIsLoading: boolean = true;
+  documentsCountIsLoading: boolean = true;
+  positionsCountIsLoading: boolean = true;
+  datafilesCountIsLoading: boolean = true;
 
   @Prop()
   selected;
@@ -189,6 +262,7 @@ export default class ScientificObjectDetail extends Vue {
   public static POSITIONS_TAB = "Positions";
   public static DATAFILES_TAB = "Datafiles";
 
+  tabsIndex: number = 0;
   tabsValue: string = ScientificObjectDetail.DETAILS_TAB;
 
   @Ref("annotationList") readonly annotationList!: AnnotationList;
@@ -204,46 +278,128 @@ export default class ScientificObjectDetail extends Vue {
   }
 
   get isDetailsTab(): boolean {
-    return this.tabsValue === ScientificObjectDetail.DETAILS_TAB;
+    return this.tabsValue == ScientificObjectDetail.DETAILS_TAB;
   }
 
   get isVisualizationTab(): boolean {
-    return this.tabsValue === ScientificObjectDetail.VISUALIZATION_TAB;
+    return this.tabsValue == ScientificObjectDetail.VISUALIZATION_TAB;
   }
 
   get isAnnotationTab(): boolean {
-    return this.tabsValue === ScientificObjectDetail.ANNOTATIONS_TAB;
+    return this.tabsValue == ScientificObjectDetail.ANNOTATIONS_TAB;
   }
 
   get isDocumentTab(): boolean {
-    return this.tabsValue === ScientificObjectDetail.DOCUMENTS_TAB;
+    return this.tabsValue == ScientificObjectDetail.DOCUMENTS_TAB;
   }
 
   get isEventTab(): boolean {
-    return this.tabsValue === ScientificObjectDetail.EVENTS_TAB;
+    return this.tabsValue == ScientificObjectDetail.EVENTS_TAB;
   }
 
   get isPositionTab(): boolean {
-    return this.tabsValue === ScientificObjectDetail.POSITIONS_TAB;
+    return this.tabsValue == ScientificObjectDetail.POSITIONS_TAB;
   }
 
   get isDatafilesTab() {
-    return this.tabsValue === ScientificObjectDetail.DATAFILES_TAB;
+    return this.tabsValue == ScientificObjectDetail.DATAFILES_TAB;
   }
 
   created() {
     // at start default tab is detail tab
     this.tabsValue = this.defaultTabsValue;
+    this.service = this.$opensilex.getService("opensilex.ScientificObjectsService");
+    this.$EventsService = this.$opensilex.getService("opensilex.EventsService");
+    this.$AnnotationsService = this.$opensilex.getService("opensilex.AnnotationsService");
+    this.$DocumentsService = this.$opensilex.getService("opensilex.DocumentsService");
+    this.$PositionsService = this.$opensilex.getService("opensilex.PositionsService");
+    this.$DataService = this.$opensilex.getService("opensilex.DataService");
+    this.uri = decodeURIComponent(this.$route.params.uri);
+    this.searchEvents();
+    this.searchAnnotations();
+    this.searchDocuments();
+    this.searchPositions();
+    this.searchDatafiles(this.uri);
   }
 
   includeTab(tab) {
     return this.tabs.indexOf(tab) >= 0;
   }
 
-  onTabChanged(tab){
-    // overwrite with selected tab information and sent it
-    this.tabsValue = tab;
-    this.$emit("tabChanged", tab)
+        searchEvents() {
+        return this.$EventsService
+          .countEvents(
+            [this.selected.uri],
+            undefined,
+            undefined
+          ).then((http: HttpResponse<OpenSilexResponse<number>>) => {
+            if(http && http.response){
+              this.events = http.response.result as number;
+              this.eventsCountIsLoading = false;
+              return this.events
+            }
+          }).catch(this.$opensilex.errorHandler);
+      }
+
+    searchAnnotations() {
+      return this.$AnnotationsService
+        .countAnnotations(
+          this.selected.uri,
+          undefined,
+          undefined
+        ).then((http: HttpResponse<OpenSilexResponse<number>>) => {
+          if(http && http.response){
+            this.annotations = http.response.result as number;
+            this.annotationsCountIsLoading = false;
+            return this.annotations
+          }
+        }
+      ).catch(this.$opensilex.errorHandler);
+    }
+
+
+  searchDocuments(){
+    return this.$DocumentsService
+      .countDocuments(
+        this.selected.uri,
+        undefined,
+        undefined
+      ).then((http: HttpResponse<OpenSilexResponse<number>>) => {
+        if(http && http.response){
+          this.documents = http.response.result as number;
+          this.documentsCountIsLoading = false;
+          return this.documents
+        }
+      }).catch(this.$opensilex.errorHandler);
+  }
+
+  searchPositions(){
+    return this.$PositionsService
+      .countMoves(
+        this.selected.uri,
+        undefined,
+        undefined
+      ).then((http: HttpResponse<OpenSilexResponse<number>>) => {
+        if(http && http.response){
+          this.positions = http.response.result as number;
+          this.positionsCountIsLoading = false;
+          return this.positions
+        }
+      }).catch(this.$opensilex.errorHandler);
+  }
+
+  searchDatafiles(uri){
+    return this.$DataService
+    .countDatafiles(
+      [uri],
+      undefined
+    ).then((http: HttpResponse<OpenSilexResponse<number>>) => {
+      if(http && http.response){
+        this.datafiles = http.response.result as number;
+        this.datafilesCountIsLoading = false;
+        return this.datafiles
+      }
+    }).catch(this.$opensilex.errorHandler);
   }
 }
 </script>

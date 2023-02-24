@@ -177,12 +177,13 @@ export default class DeviceDataFiles extends Vue {
   $t: any;
   $route: any; 
   refreshKey = 0; 
+  uri = decodeURIComponent(this.$route.params.uri);
   
   visibleDetails: boolean = false;
   usedVariables: any[] = [];
   selectedProvenance: any = null;
-
   filterProvenanceLabel: string = null;
+  SearchFiltersToggle: boolean = false;
 
   filter = {
     start_date: undefined,
@@ -204,14 +205,6 @@ export default class DeviceDataFiles extends Vue {
       creationDate: undefined,
     };
 
-  data(){
-    return {
-      SearchFiltersToggle : false,
-    }
-  }
-
-  @Prop()
-  uri;
 
   @Ref("datafilesList") readonly datafilesList!: any;
   @Ref("searchField") readonly searchField!: any;
@@ -219,7 +212,6 @@ export default class DeviceDataFiles extends Vue {
   @Ref("soSelector") readonly soSelector!: any;
 
   created() {
-    this.uri = decodeURIComponent(this.$route.params.uri);
     let query: any = this.$route.query;
 
     this.loadTypes();

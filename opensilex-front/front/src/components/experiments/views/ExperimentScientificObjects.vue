@@ -272,7 +272,8 @@
           :key="selected.name"
           :selected="selected"
           :tabs="detailTabs"
-          :experiment="uri"
+          :selectedObject="uri"
+
           class="experimentDetails"/>
         </div>
       
@@ -389,6 +390,7 @@ export default class ExperimentScientificObjects extends Vue {
   };
 
   public selected = null;
+  public selectedObject = null
 
   selectedObjects = [];
   namedObjectsArray = [];
@@ -595,6 +597,7 @@ export default class ExperimentScientificObjects extends Vue {
     this.$opensilex.disableLoader();
     this.soService.getScientificObjectDetail(nodeUri, this.uri).then(http => {
       this.selected = http.response.result;
+      this.selectedObject = this.selected.uri
       this.$opensilex.enableLoader();
       this.addNamedObject(this.selected);
     });

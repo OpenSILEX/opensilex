@@ -309,6 +309,14 @@
     background-color: #fff;
 }
 
+.tabWithElements {
+    background: linear-gradient(180deg, rgba(240, 240, 240, 0.199) 50%, rgba(107, 103, 101, 0.486) 90%, rgba(41, 41, 41, 0.658) 100%);
+    border-radius: 50%;
+    padding: 1px 4px;
+    color:rgba(0, 0, 0, 0.7);
+    font-weight: bold;
+}
+
 /*************************************
 * MAIN NAVIGATION MENU
 *************************************/

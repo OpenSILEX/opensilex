@@ -9,7 +9,10 @@ import org.geojson.GeoJsonObject;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.event.dal.EventSearchFilter;
-import org.opensilex.core.event.dal.move.*;
+import org.opensilex.core.event.dal.move.MoveEventDAO;
+import org.opensilex.core.event.dal.move.MoveEventNoSqlModel;
+import org.opensilex.core.event.dal.move.MoveModel;
+import org.opensilex.core.event.dal.move.PositionModel;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -212,5 +215,23 @@ public class PositionAPI {
             return new ErrorResponse(Response.Status.BAD_REQUEST, INVALID_GEOMETRY, mongoException).getResponse();
         }
        return new PaginatedListResponse<>(lastPositionListGeo).getResponse();
+    }
+
+    @GET
+    @Path("count")
+    @ApiOperation("Count moves")
+    @ApiProtected
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return the number of moves associated to a given target", response = Integer.class)
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response countMoves(
+            @ApiParam(value = "Target URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("target") URI target) throws Exception {
+
+        MoveEventDAO dao = new MoveEventDAO(sparql, nosql);
+        int moveCount = dao.countMoves(target);
+
+        return new SingleObjectResponse<>(moveCount).getResponse();
     }
 }

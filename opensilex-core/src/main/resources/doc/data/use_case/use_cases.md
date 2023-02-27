@@ -8,14 +8,14 @@ Acquisition of a variable's value, concerning some object, at a T time, accordin
 
 > Example
 
-The **12 October 2022 at 12am,** the **temperature of the plant** **:plant/1** is **30° celcius**.
+The **12 October 2022 at 12am,** the **temperature of the plant** **:plant/1** is **30° Celsius**.
 This value has been acquired by the **temperature sensor :/DS18B20** inside the experiment **phenoarch**
 
 > Representation
 
 -   `value` : 30
 -   `date` : 12 October 2022 at 12am
--   `variable` : Plant temperature in celcius
+-   `variable` : Plant temperature in Celsius
 -   `target` : the plant **:plant/1**
 -   `provenance` :  A data acquisition with a temperature sensor
 
@@ -23,9 +23,9 @@ This value has been acquired by the **temperature sensor :/DS18B20** inside the 
 
 The value can represent an arbitrary datatype : integer, decimal, float, date, string, array or a nested object
 
-The data value type depends of the variable `datatype`
+The data value type depends on the variable `datatype`
 
-- Datatypes
+- Datatype
 	- **Numeric** : Temperature, humidity
 	- **String** : orientation (WEST, EAST, NORTH, SOUTH)
 	- **ID/reference** : ID of some resource/object (scientific object)
@@ -40,7 +40,7 @@ The data model must allow to represent this diversity in datatype and if possibl
 
 Data acquisition context, according several level of precision/granularity
 
-> General informations
+> General information
 
 - `name`: Provenance name
 - `experiment`: Experiment in which data has been produced
@@ -57,7 +57,7 @@ Data acquisition context, according several level of precision/granularity
 - `activity` (**Activity**): Description of data acquisition activity
 	- Temperature measured with a temperature sensor
 	- A software compute
-	- Mesure of a plant height by a person
+	- Measure of a plant height by a person
 
 # Value/Variable
 
@@ -77,6 +77,9 @@ Data acquisition context, according several level of precision/granularity
 > Knowledge representation
 
 
+> JSON
+
+
 
 ### data_variable_multiple_entity
 
@@ -86,7 +89,7 @@ Data acquisition context, according several level of precision/granularity
 
 > Example
 
-- Ex: mesure the distance (Euclidian distance) between a plant and a leaf
+- Ex: Measure the distance (Euclidean distance) between a plant and a leaf
 - Two entity 
 	- Plant 
 	- Leaf
@@ -106,7 +109,7 @@ Data acquisition context, according several level of precision/granularity
 	- Dimensions of the color
 		- R : red parameter
 		- G : green parameter
-		- B : blue paremeter
+		- B : blue parameter
 - Other example : the orientation of some field
 	- Dimensions
 		- Angle (ex: 25°)
@@ -154,7 +157,7 @@ Data acquisition context, according several level of precision/granularity
 
 > Example
 
-- Ex calibration of a temperature sesnor 
+- Ex calibration of a temperature sensor 
 - Target:
 	- type : temperature sensor
 	- id : **:sensing_device/1**
@@ -202,7 +205,7 @@ see [[#data_variable_multiple_entity]]
 
 > Description
 
-- Declare measures which have been acquired by an human operator
+- Declare measures which have been acquired by a human operator
 
 > Example
 
@@ -212,13 +215,13 @@ see [[#data_variable_multiple_entity]]
 		- type : Person
 		- id:  **bob
 
-- In this case several agents participates to the data acquisition:
+- In this case several agents participates in the data acquisition:
 	- The two human operator
 	- The thermometer 
 
 > **Notes**
 
-How to represent the difference between a device used by an operator, and a device which acquire a mesure ? 
+How to represent the difference between a device used by an operator, and a device which acquire a measure ? 
 - The provenance activity is different : 
 - Provenance agent ? 
 
@@ -255,32 +258,61 @@ Describe the workflow which is executed when inserting data
 
 > Description
 
-- When inserting data about a variable on several target type, the variable  observation level must be updated with all new target type
+- When inserting data about a variable on several target type, the variable observation level must be updated with all new target type
 - The old observation level are keep, only new level are added
 
 > Example
 
-- Mesure plant height on some parcel
-- Mesure plant height on some sub-parcel
-- The plant height must have parcel and sub-parcel as new observation level 
+- Measure plant height on some parcel
+- Measure plant height on some sub-parcel
+- The plant height must have plot or subplot as new observation level 
+- The `oeso:hasObservationLevel` associate a variable (domain) to some class (range)
 
-> Rule
+> Rule (Inference)
 
 - **Head**
-	- `rdf:type(?data,oeso:Data)`
-	- `oeso:hasVariable(?data,?variable)`
-	- `rdf:type(?target,?targetType)`
-	- `oeso:hasDataTarget(?data,?target)`
+	- - **[Mongo]**
+		- `rdf:type(?data,oeso:Data)`
+		- `oeso:hasVariable(?data,?variable)`
+		- `oeso:hasDataTarget(?data,?target)
+	- [**RDF**]
+		- `rdf:type(?target,?targetType)`
 - **Body**
-	- `oeso:hasObservationLevel(?variable,?targetType)`
+	- **[RDF]
+		- `oeso:hasObservationLevel(?variable,?targetType)`
 
 > Note
 
-- Instead of appying validation about target type and variable entity, the variable level is updated
+- Instead of applying validation about target type and variable entity, the variable level is updated
 	- This is done like this, in order to allow the reuse of variable, on several target type
--  The update of variable observation level must be done only if data insertion is successfull
+-  The update of variable observation level must be done only if data insertion is successful
 	- Moreover, it's ensure that only one SPARQL UPDATE query is performed by data chunk/batch (avoid one write/data)
 
+## Update variable measured by device
+
+### data_trigger_device_measured_variable
+
+> Description
+
+- When inserting data measured by some device (SensingDevice/Software), the variable measured by the device must be updated inside the RDF store
+- The `oeso:measures` associate a device (domain) to a variable (range)
+- #todo : update vocabulary ? all device
+- What to do if the link has been explicitly specified
+
+> Rule (inference) 
+
+- **Head**
+	- - **[Mongo]**
+		- `rdf:type(?data,oeso:Data)`
+		- `oeso:hasVariable(?data,?variable)`
+		- `oeso:hasDataProvenance(?data,?dataProvenance)`
+		- `prov:wasAssociatedWith(?dataProvenance?,?agent)`
+	- [**RDF**]
+		- `rdf:type(?agent,oeso:Device)
+- **Body**
+	- **[RDF]
+		- `oeso:measures(?agent,?variable)`
+		
 # Summary
 ****
 | Group               | Use case                                | Description |     |     |

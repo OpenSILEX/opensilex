@@ -1,4 +1,4 @@
-> **Description**: This document describe the contraints or inference rules which apply on Data insertion
+> **Description**: This document describes the constraints or inference rules which apply on Data insertion
 > 
 > **Author**: Renaud COLIN
 > 
@@ -12,9 +12,9 @@
 ****
 | Group               | Use case                                | Description |     |     |
 |---------------------|-----------------------------------------|-------------|-----|-----|
-| **Target**  | data_variable                           |             |     |     |
-| **Value/Variable**  | data_variable_multiple_entity           |             |     |     |
-| **Value/Variable**  | data_variable_multi_dim                 |             |     |     |
+| **Target**          | data_target_exists                      |             |     |     |
+| **Variable**        | data_variable_exists                    |             |     |     |
+| **Variable**        | data_value_variable_datatype            |             |     |     |
 | **Value/Variable**  | data_variable_multiple_entity_multi_dim |             |     |     |
 | **Target/Variable** | data_target_scientific_object           |             |     |     |
 | **Target/Variable** | data_target_device                      |             |     |     |
@@ -25,15 +25,49 @@
 | **Provenance**      | data_experiment_insert                  |             |     |     |
 ****
 
+# Data 
+
+## Required fields
+
+- `date` 
+	- We need to know, when the data was acquired
+- `variable`
+	- We need to know, what is measured
+- `target` 
+	- We need to know on which entity, the data has been measured
+- `value`
+	- Of course, if we measure something, we need to have a value/result of the measure
+- `provenance` 
+	- By default, the standard provenance is created on each OpenSILEX instance, for the users which don't need to take care of this
+
+## Optional/Recommended fields
+
+- `device`/ `provenance.agent
+	- Specify a device or any other agent (Software, Person) inside a provenance, allow to analyse the condition of acquisition of the data
+	- If allow to compare results between several sensor/agents
+
+## Unicity
+
+> Definition
+
+- For some target, we can't measure twice a variable at some time T according the same provenance
+- This constraint can be explained by ensuring an unicity on the following fields' quadruplet : 
+	- `(variable, target, provenance, date)`
+
+> Index
+
+A unique index must be implemented on the database in order to ensure the respect of this constraint.
+This can be done by using a [Compound unique Indexes](https://www.mongodb.com/docs/manual/core/index-unique/#unique-compound-index) on MongoDB
+
 # Target
 
-## Existance
+## Existence
 
 ### data_target_exists
 
 > Description
 
-- The data target must exists inside RDF store
+- The data target must exist inside RDF store
 
 > Rule
 
@@ -46,17 +80,21 @@
 > Note
 
 - The `targetType`  variable is an existentially quantified variable
-- Here we wan't to check that the target has a type, without any other assertion on this type
+- Here we want to check that the target has a type, without any other assertion on this type
+- Usually a data can be acquired on 
+	- `Scientific Object`
+	- `Facility/Site` : Sensors inside a greenhouse or a field
+	- `Device` : Calibration or in order to compare data about some devices
 
 # Variable
 
-## Existance
+## Existence
 
 ### data_variable_exists
 
 > Description
 
-- The data variable must exists inside RDF store
+- The data variable must exist inside RDF store
 
 > Rule
 
@@ -104,7 +142,7 @@ see [[use_cases#data_trigger_variable_observation_level]]
 
 ## Link with provenance agent type
 
-### provenance_agent_device_type
+### provenance_agent_device_type (NOT_IMPLEMENTED)
 
 > Description
 
@@ -117,8 +155,7 @@ see [[use_cases#data_trigger_variable_observation_level]]
 	- `oeso:hasVariable(?data,?variable)`
 	- `oeso:hasDataProvenance(?data,?dataProvenance)`
 	- `prov:wasAssociatedWith(?dataProvenance?,?agent)`
-	- `rdf:type(?agent,agentType)`
-	- `rdfs:subClassOf(?agent,oeso:Device)`
+	- `rdf:type(?agent,oeso:Device)`
 - **Body**
 	- `oeso:measures(?agent,?variable)`
 
@@ -126,7 +163,7 @@ see [[use_cases#data_trigger_variable_observation_level]]
 
 - If using an aggregation between data provenance and device, then device type can be different between the RDF store and the data store.
 - In this case, the device type is the device type in the triple store when the data were imported
-- Other option ? update the variable by adding a relation between device and measured variable
+- Other option ? update the variable by adding a relation between device and measured variable (see [[use_cases#data_trigger_device_measured_variablel]])
 
 # Provenance
 
@@ -252,7 +289,7 @@ or
 > Note
 
 - Since the name of an object inside an experiment is unique, there is no ambiguity about object resolution
-- This don't work outside of experimental context, since multiple object can have the same name in global context. So we must check that the target has an URI as identifier if the experiment is not provided for data insertion.
+- This doesn't work outside experimental context, since multiple object can have the same name in global context. So we must check that the target has a URI as identifier if the experiment is not provided for data insertion.
 
 
 

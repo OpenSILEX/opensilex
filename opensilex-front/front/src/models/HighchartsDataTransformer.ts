@@ -1,7 +1,6 @@
 import {DataGetDTO} from "opensilex-core/model/dataGetDTO";
 import Highcharts from "highcharts";
-import {DataSimpleProvenanceGetDTO} from "opensilex-core/model/dataSimpleProvenanceGetDTO";
-import {DataComputedGetDTO} from "opensilex-core/model/dataComputedGetDTO";
+import {DataSimpleGetDTO} from "opensilex-core/model/dataSimpleGetDTO";
 
 /**
  * @author Valentin RIGOLLE
@@ -49,6 +48,23 @@ function transformDataForHighcharts(data: Array<DataGetDTO>, options?: Highchart
             dateWithOffset: date.toISOString(),
             deviceUri: options?.deviceUri,
             objectUri: options?.scientificObjectUri
+        } as OpenSilexPointOptionsObject;
+    });
+}
+
+function transformSimpleDataForHighcharts(data: Array<DataSimpleGetDTO>, provenance: string): Array<OpenSilexPointOptionsObject> {
+    return data.map(element => {
+        let date = new Date(element.date);
+        let timestamp = date.getTime();
+        return {
+            x: timestamp,
+            y: element.value,
+            provenanceUri: provenance,
+            data: element,
+            dataUri: element.uri,
+            dateWithOffset: date.toISOString(),
+            deviceUri: provenance,
+            objectUri: ""
         } as OpenSilexPointOptionsObject;
     });
 }

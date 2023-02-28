@@ -8,6 +8,10 @@
 
       <template v-slot:body>
 
+        <div style="font-size: xxx-large">
+          {{computeMean + " " + variable.unit.name}}
+        </div>
+
         <opensilex-UriListView
             label="Devices"
             :list="deviceUriList"
@@ -49,6 +53,7 @@ import {VariablesService} from "opensilex-core/api/variables.service";
 import {DataService} from "opensilex-core/api/data.service";
 import {DeviceGetDTO} from "opensilex-core/model/deviceGetDTO";
 import {VariableDetailsDTO} from "opensilex-core/model/variableDetailsDTO";
+import {DataSerieGetDTO} from "opensilex-core/model/dataSerieGetDTO";
 
 
 @Component
@@ -67,6 +72,9 @@ export default class VariableVisualizationTile extends Vue {
 
   @Prop()
   devices: Array<DeviceGetDTO>;
+
+  @Prop()
+  dataSeries: Array<DataSerieGetDTO>;
 
   isGraphicLoaded = true;
   target = [] ;
@@ -100,6 +108,18 @@ export default class VariableVisualizationTile extends Vue {
         this.prepareGraphic();
       }
     );
+  }
+
+  get computeMean() {
+    var m = 0;
+    let nbSeries = this.dataSeries.length;
+
+    for (let i = 0; i < nbSeries; ++i) {
+      m += this.dataSeries[i].data[this.dataSeries[i].data.length - 1].value;
+      console.debug(this.dataSeries[i]);
+    }
+
+    return m / nbSeries;
   }
 
   get deviceUriList() {
@@ -155,10 +175,10 @@ export default class VariableVisualizationTile extends Vue {
       var promises = [];
       let promise;
 
-      this.devices.forEach((device) => {
-        promise = this.buildDataSerie(device.uri);
+      for (let i = 0; i < this.dataSeries.length; ++i) {
+        promise = this.buildDataSerie(this.dataSeries[i]);
         promises.push(promise);
-      });
+      }
       //promise = this.buildEventsSerie();
       //promises.push(promise);
 
@@ -172,7 +192,6 @@ export default class VariableVisualizationTile extends Vue {
           if (values[1]) {
             series.push(values[1]);
           }
-          console.log(series);
           this.$nextTick(() => {
             this.$opensilex.enableLoader();
             this.visuGraphic.reload(
@@ -275,53 +294,40 @@ export default class VariableVisualizationTile extends Vue {
         });
   }
 
-  buildDataSerie(deviceUri) {
-    return this.$opensilex
-        .getService<DataService>("opensilex.DataService")
-        .searchDataList(
-            undefined, // start_date
-            undefined, // end_date
-            undefined, // timezone,
-            undefined, // experiments
-            undefined, // scientific_object
-            [this.variable.uri], // variables,
-            [deviceUri], // devices
-            undefined, // min_confidence
-            undefined, // max_confidence
-            undefined,
-            undefined, //this.addMetadataFilter(),
-            ["date=asc"], //order by
-            0,
-            50000
-        )
-      .then((http: HttpResponse<OpenSilexResponse<Array<DataGetDTO>>>) => {
-        const data = http.response.result as Array<DataGetDTO>;
-        let dataLength = data.length;
+  buildDataSerie(dataSerie) {
 
-        if (dataLength === 0){
-          this.$opensilex.showInfoToast(
-          this.$t("component.common.search.noDataFound").toString());
-        }
+    if (this.variable.uri != dataSerie.variable.uri) {
+      return false;
+    }
 
-        if (dataLength >= 0) {
-          const cleanData = HighchartsDataTransformer.transformDataForHighcharts(data);
-          if (dataLength > 50000) {
-            this.$opensilex.showInfoToast(
-              this.$i18n.t("DeviceDataTab.limitSizeMessageA") +
-                " " +
-                dataLength +
-                " " +
-                this.$i18n.t("DeviceDataTab.limitSizeMessageB")
-            );
-          }
+    const data = dataSerie.data as Array<DataGetDTO>;
+    let dataLength = data.length;
 
-          return {
-            name: this.variable.name,
-            data: cleanData,
-            visible: true
-          };
-        }
-      });
+    if (dataLength === 0){
+      this.$opensilex.showInfoToast(
+      this.$t("component.common.search.noDataFound").toString());
+    }
+
+    if (dataLength >= 0) {
+      const cleanData = HighchartsDataTransformer.transformSimpleDataForHighcharts(data, (dataSerie.provenance) ? dataSerie.provenance.prov_was_associated_with[0].uri : "no provenance");
+      if (dataLength > 50000) {
+        this.$opensilex.showInfoToast(
+            this.$i18n.t("DeviceDataTab.limitSizeMessageA") +
+            " " +
+            dataLength +
+            " " +
+            this.$i18n.t("DeviceDataTab.limitSizeMessageB")
+        );
+      }
+
+      console.debug(cleanData);
+
+      return {
+        name: (dataSerie.provenance) ? dataSerie.provenance.prov_was_associated_with[0].uri : "median",
+        data: cleanData,
+        visible: true
+      };
+    }
   }
 
   searchFiltersPannel() {

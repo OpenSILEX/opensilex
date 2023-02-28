@@ -41,13 +41,15 @@ import {VariableDetailsDTO} from "opensilex-core/model/variableDetailsDTO";
 import {VariablesService} from "opensilex-core/api/variables.service";
 import VariableVisualizationTile from "../../variables/views/VariableVisualizationTile.vue";
 import {VariableGetDTO} from "opensilex-core/model/variableGetDTO";
+import {DataService} from "opensilex-core/api/data.service";
+import {DataSerieGetDTO} from "opensilex-core/model/dataSerieGetDTO";
 
 
 @Component
 export default class FacilityAssociatedDevices extends Vue {
   $opensilex: OpenSilexVuePlugin;
 
-  NB_COL = 4;
+  NB_COL = 2;
 
   selected: OrganizationGetDTO = null;
   devices: Array<DeviceGetDTO> = [];
@@ -56,6 +58,7 @@ export default class FacilityAssociatedDevices extends Vue {
   isDataLoaded: boolean = false;
 
   variables: Array<VariableGetDTO> = new Array<VariableGetDTO>();
+  dataSeries: Array<DataSerieGetDTO> = new Array<DataSerieGetDTO>();
 
   layout = [];
 
@@ -63,6 +66,7 @@ export default class FacilityAssociatedDevices extends Vue {
   deviceService: DevicesService;
   variablesService: VariablesService;
   positionService: PositionsService;
+  dataService: DataService;
 
   get user() {
     return this.$store.state.user;
@@ -86,6 +90,9 @@ export default class FacilityAssociatedDevices extends Vue {
     this.positionService = this.$opensilex.getService<PositionsService>(
         "opensilex-core.PositionsService"
     );
+    this.dataService = this.$opensilex.getService<DataService>(
+        "opensilex-core.DataService"
+    );
     this.refresh();
   }
 
@@ -95,15 +102,36 @@ export default class FacilityAssociatedDevices extends Vue {
         .then((http: HttpResponse<OpenSilexResponse<OrganizationGetDTO>>) => {
             let detailDTO: OrganizationGetDTO = http.response.result;
             this.selected = detailDTO;
-            this.loadDevices();
+            this.loadData();
         });
-    this.variablesService
-        .getVariable("dev:id/variable/abelmoschus_height_standard_method_centimetre")
-        .then((http: HttpResponse<OpenSilexResponse<VariableDetailsDTO>>) => {
-          let detailDTO: VariableDetailsDTO = http.response.result;
-          this.variable = detailDTO;
-          console.log("GET VAR ", this.variable);
-        });
+  }
+
+  loadData() {
+    this.dataService.getDataSeriesByFacility(
+        this.uri,
+        undefined,
+        undefined,
+        ["date=asc"]
+    )
+    .then(
+      (
+        http: HttpResponse<OpenSilexResponse<Array<DataSerieGetDTO>>>
+      ) => {
+        let detailsDTO: Array<DataSerieGetDTO> = http.response.result;
+        this.dataSeries = detailsDTO;
+
+        this.dataSeries.forEach((detail) => {
+          if (!this.variables.some(obj => obj.uri === detail.variable.uri)) {
+            this.variables.push(detail.variable);
+          }
+        })
+
+        // TODO: install package "underscore.js"
+        //_.groupBy(detailsDto, "variable");
+
+        this.loadTiles();
+      }
+    );
   }
 
   loadDevices() {
@@ -183,17 +211,20 @@ export default class FacilityAssociatedDevices extends Vue {
   }
 
   loadTiles() {
-    for (let i = 0; i < this.variables.length; ++i) {
+    let i = 0;
+    for (let variable of this.variables) {
       let x = i % this.NB_COL;
       let y = ~~(i / this.NB_COL);
-      let v = this.variables.find(obj => {
-        return obj.uri === this.variables[i].uri
+      let v = variable;
+      let data = this.dataSeries.filter(obj => {
+        return obj.variable.uri === variable.uri
       });
-      console.debug(v);
+
       this.layout.push({
         "x":x, "y":y, "w":1, "h":1, "i":i,
-        "content": { variable: v, devices: [...this.variablesMap.get(v.uri)]}
+        "content": { variable: v, devices: [], dataSeries: data}
       });
+      ++i;
     }
     this.isDataLoaded = true;
   }

@@ -19,13 +19,10 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 
 /**
- * This class provide a light DTO for data.
  *
  * @author brice maussang
  */
-@JsonPropertyOrder({
-        "uri", "date", "value"
-})
+@JsonPropertyOrder({"uri", "date", "value"})
 public class DataSimpleGetDTO {
     
     @ValidURI
@@ -39,10 +36,6 @@ public class DataSimpleGetDTO {
     @NotNull
     @ApiModelProperty(value = "can be decimal, integer, boolean, string or date", example = DataAPI.DATA_EXAMPLE_VALUE)
     private Object value;
-
-    private Instant dateTime;
-    private String offset;
-    private Boolean isDateTime;
 
 
     public URI getUri() {
@@ -67,27 +60,8 @@ public class DataSimpleGetDTO {
         this.value = value;
     }
 
-    public Instant getDateTime() { return dateTime; }
 
-    public void setDateTime(Instant dateTime, String offset, Boolean isDateTime) {
-        this.dateTime = dateTime;
-        this.offset = offset;
-        this.isDateTime = isDateTime;
-    }
-
-    public void updateDate(Instant dateTime) {
-        setDate(dateTime, this.offset, this.isDateTime);
-    }
-
-    /**
-     * Set date attribute by converting given parameters in a String.
-     *
-     * @param instant the date as Instant
-     * @param offset timezone offset
-     * @param isDateTime true if it's a DateTime
-     */
     public void setDate(Instant instant, String offset, Boolean isDateTime) {
-        setDateTime(instant, offset, isDateTime);
         if (isDateTime) {
             OffsetDateTime odt = instant.atOffset(ZoneOffset.of(offset));
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern(DateFormat.YMDTHMSMSX.toString());
@@ -99,12 +73,6 @@ public class DataSimpleGetDTO {
         }
     }
 
-    /**
-     * Retreive a DTO from the given model.
-     *
-     * @param model the data model
-     * @return a simple data DTO
-     */
     public static DataSimpleGetDTO getDtoFromModel(DataModel model) {
         DataSimpleGetDTO dto = new DataSimpleGetDTO();
 
@@ -114,17 +82,5 @@ public class DataSimpleGetDTO {
 
         return dto;
     }
-
-    public DataSimpleGetDTO() {
-
-    }
-
-    public DataSimpleGetDTO(DataSimpleGetDTO other) {
-        this.uri = other.uri;
-        this.date = other.date;
-        this.value = other.value;
-        this.dateTime = other.dateTime;
-        this.offset = other.offset;
-        this.isDateTime = other.isDateTime;
-    }
+    
 }

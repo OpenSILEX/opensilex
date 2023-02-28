@@ -1050,7 +1050,7 @@ public class DeviceAPI {
         for (Map.Entry<VariableModel, List<DeviceModel>> entry : results.entrySet()) {
             VariableGetDTO key = VariableGetDTO.fromModel(entry.getKey());
             List<DeviceGetDTO> values = entry.getValue().stream().map(DeviceGetDTO::getDTOFromModel).collect(Collectors.toList());
-            VariableWithDevicesDTO variable = new VariableWithDevicesDTO(key, values);
+            VariableWithDevicesDTO variable = new VariableWithDevicesDTO(key, values, null);
             dtoList.add(variable);
         }
 

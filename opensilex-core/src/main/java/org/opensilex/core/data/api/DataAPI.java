@@ -809,21 +809,31 @@ public class DataAPI {
     }
 
     @GET
-    @Path("/facility_variables")
+    @Path("/facility")
     @ApiOperation("Test type response")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return a map", response = java.util.Map.class, responseContainer = "List")
+            @ApiResponse(code = 200, message = "Return a map", response = DataSerieGetDTO.class, responseContainer = "List")
     })
-    public Response getAssociatedVariables(
+    public Response getDataSeriesByFacility(
             @ApiParam(value = "target URI", example = "http://example.com/", required = true) @QueryParam("uri") @NotNull URI facilityUri,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @QueryParam("order_by") List<OrderBy> orderByList
+            @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
+            @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=asc") @QueryParam("order_by") List<OrderBy> orderByList
     ) throws Exception {
+
+        String nameofCurrMethod = new Object() {}
+                .getClass()
+                .getEnclosingMethod()
+                .getName();
+        System.out.println(nameofCurrMethod);
 
         DataDAO dao = new DataDAO(nosql, sparql, fs);
         VariableDAO variableDAO = new VariableDAO(sparql, nosql, fs);
+
+        long startTime = System.currentTimeMillis();
 
         ListWithPagination<DataModel> result = dao.search(
                 user,
@@ -832,8 +842,8 @@ public class DataAPI {
                 null,
                 null,
                 null,
-                null,
-                null,
+                (startDate != null) ? Instant.parse(startDate) : null,
+                (endDate != null) ? Instant.parse(endDate) : null,
                 null,
                 null,
                 null,
@@ -841,10 +851,11 @@ public class DataAPI {
                 0,
                 0);
 
-        System.out.println("result size: " + result.getList().size());
+        long stopTime = System.currentTimeMillis();
+        System.out.println("TIME EXEC query (s) = " + (stopTime - startTime)/1000);
 
-        Map<URI, List<DataModel>> variablesMap = new HashMap<>();
-        Map<DataProvenanceModel, List<DataModel>> provenancesMap = new HashMap<>();
+        Map<URI, List<DataModel>> variablesMap;
+        Map<DataProvenanceModel, List<DataModel>> provenancesMap;
 
         variablesMap = result.getList().stream().collect(Collectors.groupingBy(DataModel::getVariable));
 
@@ -855,20 +866,72 @@ public class DataAPI {
 
             provenancesMap = entry.getValue().stream().collect(Collectors.groupingBy(DataModel::getProvenance));
             for (Map.Entry<DataProvenanceModel, List<DataModel>> entryProv : provenancesMap.entrySet()) {
-                List<DataGetDTO> data = entryProv.getValue()
+
+                startTime = System.currentTimeMillis();
+                List<DataModel> reducedData = reduceDataSerie(entryProv.getValue());
+                stopTime = System.currentTimeMillis();
+
+                System.out.println("TIME EXEC reduce data (s) = " + (stopTime - startTime)/1000);
+
+                List<DataSimpleGetDTO> data = reducedData
                         .stream()
-                        .map((d) -> DataGetDTO.getDtoFromModel(d, null))
+                        .map((d) -> DataSimpleGetDTO.getDtoFromModel(d))
                         .collect(Collectors.toList());
 
                 DataSerieGetDTO dataSerie = new DataSerieGetDTO(variable, entryProv.getKey(), data);
-                dtoList.add(dataSerie);
+                //dtoList.add(dataSerie);
             }
+
+            List<DataSimpleGetDTO> medianData = computeMedianPerHour(entry.getValue());
+
+            dtoList.add(new DataSerieGetDTO(variable, null, medianData));
         }
+
+
 
         return new SingleObjectResponse<>(dtoList).getResponse();
     }
 
+    private List<DataSimpleGetDTO> computeMedianPerHour(List<DataModel> dataSerie) {
+        List<DataSimpleGetDTO> mediansPerHour = new ArrayList<>();
 
+        Map<Long, List<DataModel>> dataPerHourMap = dataSerie.stream().collect(
+                Collectors.groupingBy(d->(d.getDate().getEpochSecond()/3600),
+                LinkedHashMap::new,
+                Collectors.toList()));
+
+        System.out.println(dataPerHourMap.keySet());
+
+        for (Map.Entry<Long, List<DataModel>> entry : dataPerHourMap.entrySet()) {
+            List<Double> data = entry.getValue().stream().map(d->(Double.valueOf(d.getValue().toString()))).collect(Collectors.toList());
+            Collections.sort(data);
+
+            DataSimpleGetDTO medianData = DataSimpleGetDTO.getDtoFromModel(entry.getValue().get(0));
+            medianData.setValue(data.get(data.size()/2));
+
+            mediansPerHour.add(medianData);
+        }
+
+        System.out.println(mediansPerHour);
+
+        return mediansPerHour;
+    }
+
+    private List<DataModel> reduceDataSerie(List<DataModel> dataSerie) {
+        List<DataModel> reducedData = new ArrayList<>();
+
+        boolean toKeep = true;
+        for (DataModel data : dataSerie) {
+            if (toKeep) {
+                reducedData.add(data);
+            }
+            toKeep = !toKeep;
+        }
+
+        return reducedData;
+    }
+
+    
     /** 
      * check if variable is associated to device
      * @param device

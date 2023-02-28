@@ -1,0 +1,86 @@
+//******************************************************************************
+//                          DataCreationDTO.java
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRAE 2020
+// Contact: anne.tireau@inrae.fr, pascal.neveu@inrae.fr
+//******************************************************************************
+package org.opensilex.core.data.api;
+
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import io.swagger.annotations.ApiModelProperty;
+import org.opensilex.core.data.dal.DataModel;
+import org.opensilex.server.rest.validation.DateFormat;
+import org.opensilex.server.rest.validation.Required;
+import org.opensilex.server.rest.validation.ValidURI;
+
+import javax.validation.constraints.NotNull;
+import java.net.URI;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
+
+/**
+ *
+ * @author brice maussang
+ */
+@JsonPropertyOrder({"uri", "date", "value"})
+public class DataSimpleGetDTO {
+    
+    @ValidURI
+    @ApiModelProperty(example = DataAPI.DATA_EXAMPLE_URI) 
+    protected URI uri;
+    
+    @Required
+    @ApiModelProperty(value = "date or datetime", example = DataAPI.DATA_EXAMPLE_MINIMAL_DATE, required = true)
+    private String date;
+
+    @NotNull
+    @ApiModelProperty(value = "can be decimal, integer, boolean, string or date", example = DataAPI.DATA_EXAMPLE_VALUE)
+    private Object value;
+
+
+    public URI getUri() {
+        return uri;
+    }
+
+    public void setUri(URI uri) {
+        this.uri = uri;
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) { this.date = date; }
+
+    public Object getValue() {
+        return value;
+    }
+
+    public void setValue(Object value) {
+        this.value = value;
+    }
+
+
+    public void setDate(Instant instant, String offset, Boolean isDateTime) {
+        if (isDateTime) {
+            OffsetDateTime odt = instant.atOffset(ZoneOffset.of(offset));
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern(DateFormat.YMDTHMSMSX.toString());
+            this.setDate(dtf.format(odt));
+        } else {
+            LocalDate date = ZonedDateTime.ofInstant(instant, ZoneId.of(offset)).toLocalDate();
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern(DateFormat.YMD.toString());            ;
+            this.setDate(dtf.format(date));
+        }
+    }
+
+    public static DataSimpleGetDTO getDtoFromModel(DataModel model) {
+        DataSimpleGetDTO dto = new DataSimpleGetDTO();
+
+        dto.setUri(model.getUri());
+        dto.setDate(model.getDate(), model.getOffset(), model.getIsDateTime());
+        dto.setValue(model.getValue());
+
+        return dto;
+    }
+    
+}

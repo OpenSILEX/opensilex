@@ -3,7 +3,7 @@
            :layout.sync="layout"
            :col-num="NB_COL"
            :row-height="300"
-           :is-draggable="true"
+           :is-draggable="false"
            :is-resizable="true"
            :is-mirrored="false"
            :vertical-compact="false"
@@ -43,6 +43,7 @@ import VariableVisualizationTile from "../../variables/views/VariableVisualizati
 import {VariableGetDTO} from "opensilex-core/model/variableGetDTO";
 import {DataService} from "opensilex-core/api/data.service";
 import {DataSerieGetDTO} from "opensilex-core/model/dataSerieGetDTO";
+import {DataVariableSeriesGetDTO} from "opensilex-core/model/dataVariableSeriesGetDTO";
 
 
 @Component
@@ -58,7 +59,7 @@ export default class FacilityAssociatedDevices extends Vue {
   isDataLoaded: boolean = false;
 
   variables: Array<VariableGetDTO> = new Array<VariableGetDTO>();
-  dataSeries: Array<DataSerieGetDTO> = new Array<DataSerieGetDTO>();
+  dataSeries: Array<DataVariableSeriesGetDTO> = new Array<DataVariableSeriesGetDTO>();
 
   layout = [];
 
@@ -115,16 +116,14 @@ export default class FacilityAssociatedDevices extends Vue {
     )
     .then(
       (
-        http: HttpResponse<OpenSilexResponse<Array<DataSerieGetDTO>>>
+        http: HttpResponse<OpenSilexResponse<Array<DataVariableSeriesGetDTO>>>
       ) => {
-        let detailsDTO: Array<DataSerieGetDTO> = http.response.result;
+        let detailsDTO: Array<DataVariableSeriesGetDTO> = http.response.result;
         this.dataSeries = detailsDTO;
 
         this.dataSeries.forEach((detail) => {
-          if (!this.variables.some(obj => obj.uri === detail.variable.uri)) {
             this.variables.push(detail.variable);
-          }
-        })
+        });
 
         // TODO: install package "underscore.js"
         //_.groupBy(detailsDto, "variable");
@@ -212,17 +211,16 @@ export default class FacilityAssociatedDevices extends Vue {
 
   loadTiles() {
     let i = 0;
-    for (let variable of this.variables) {
+    for (let serie of this.dataSeries) {
       let x = i % this.NB_COL;
       let y = ~~(i / this.NB_COL);
-      let v = variable;
-      let data = this.dataSeries.filter(obj => {
-        return obj.variable.uri === variable.uri
-      });
+      let v = serie.variable;
+      let data = serie.data_series;
+      let calculatedData = serie.calculated_series;
 
       this.layout.push({
         "x":x, "y":y, "w":1, "h":1, "i":i,
-        "content": { variable: v, devices: [], dataSeries: data}
+        "content": { variable: v, devices: [], dataSeries: data, calculatedDataSeries: calculatedData }
       });
       ++i;
     }

@@ -8,11 +8,8 @@ package org.opensilex.core.data.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import org.opensilex.core.variable.api.VariableDetailsDTO;
-import org.opensilex.server.rest.validation.Required;
+import org.opensilex.core.variable.api.VariableGetDTO;
 
-import javax.validation.Valid;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -25,37 +22,31 @@ import java.util.List;
 })
 public class DataVariableSeriesGetDTO {
 
-    @Valid
-    @Required
     @JsonProperty("variable")
-    private VariableDetailsDTO variable;
+    private VariableGetDTO variable;
 
-    @Valid
     @JsonProperty("data_series")
     private List<DataSerieGetDTO> dataSeries;
 
-    @Valid
     @JsonProperty("calculated_series")
     private List<DataSerieGetDTO> calculatedSeries;
 
 
-    public DataVariableSeriesGetDTO(VariableDetailsDTO variable) {
+    public DataVariableSeriesGetDTO(VariableGetDTO variable) {
         this.variable = variable;
-        this.dataSeries = new ArrayList<>();
-        this.calculatedSeries = new ArrayList<>();
     }
 
-    public DataVariableSeriesGetDTO(VariableDetailsDTO variable, List<DataSerieGetDTO> dataSeries, List<DataSerieGetDTO> calculatedSeries) {
+    public DataVariableSeriesGetDTO(VariableGetDTO variable, List<DataSerieGetDTO> dataSeries, List<DataSerieGetDTO> calculatedSeries) {
         this.variable = variable;
         this.dataSeries = dataSeries;
         this.calculatedSeries = calculatedSeries;
     }
 
-    public VariableDetailsDTO getVariable() {
+    public VariableGetDTO getVariable() {
         return variable;
     }
 
-    public void setVariable(VariableDetailsDTO variable) {
+    public void setVariable(VariableGetDTO variable) {
         this.variable = variable;
     }
 

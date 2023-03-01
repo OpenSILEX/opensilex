@@ -54,6 +54,7 @@ import {DataService} from "opensilex-core/api/data.service";
 import {DeviceGetDTO} from "opensilex-core/model/deviceGetDTO";
 import {VariableDetailsDTO} from "opensilex-core/model/variableDetailsDTO";
 import {DataSerieGetDTO} from "opensilex-core/model/dataSerieGetDTO";
+import {DataVariableSeriesGetDTO} from "opensilex-core/model/dataVariableSeriesGetDTO";
 
 
 @Component
@@ -75,6 +76,9 @@ export default class VariableVisualizationTile extends Vue {
 
   @Prop()
   dataSeries: Array<DataSerieGetDTO>;
+
+  @Prop()
+  calculatedDataSeries: Array<DataSerieGetDTO>;
 
   isGraphicLoaded = true;
   target = [] ;
@@ -175,6 +179,10 @@ export default class VariableVisualizationTile extends Vue {
       var promises = [];
       let promise;
 
+      for (let i = 0; i < this.calculatedDataSeries.length; ++i) {
+        promise = this.buildDataSerie(this.calculatedDataSeries[i]);
+        promises.push(promise);
+      }
       for (let i = 0; i < this.dataSeries.length; ++i) {
         promise = this.buildDataSerie(this.dataSeries[i]);
         promises.push(promise);
@@ -184,14 +192,13 @@ export default class VariableVisualizationTile extends Vue {
 
       Promise.all(promises)
         .then(values => {
-          this.isGraphicLoaded = true;
           let series = [];
-          if (values[0]) {
-            series.push(values[0]);
-          }
-          if (values[1]) {
-            series.push(values[1]);
-          }
+          values.forEach(serie => {
+            series.push(serie);
+          });
+
+          this.isGraphicLoaded = true;
+
           this.$nextTick(() => {
             this.$opensilex.enableLoader();
             this.visuGraphic.reload(
@@ -296,9 +303,10 @@ export default class VariableVisualizationTile extends Vue {
 
   buildDataSerie(dataSerie) {
 
+    /*
     if (this.variable.uri != dataSerie.variable.uri) {
       return false;
-    }
+    }*/
 
     const data = dataSerie.data as Array<DataGetDTO>;
     let dataLength = data.length;
@@ -323,9 +331,9 @@ export default class VariableVisualizationTile extends Vue {
       console.debug(cleanData);
 
       return {
-        name: (dataSerie.provenance) ? dataSerie.provenance.prov_was_associated_with[0].uri : "median",
+        name: (dataSerie.provenance) ? dataSerie.provenance.prov_was_associated_with[0].uri : "median (per hour)",
         data: cleanData,
-        visible: true
+        visible: (dataSerie.provenance) ? false : true
       };
     }
   }

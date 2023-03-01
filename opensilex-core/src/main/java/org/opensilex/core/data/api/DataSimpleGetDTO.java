@@ -19,6 +19,7 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 
 /**
+ * This class provide a light DTO for data.
  *
  * @author brice maussang
  */
@@ -60,7 +61,13 @@ public class DataSimpleGetDTO {
         this.value = value;
     }
 
-
+    /**
+     * Set date attribute by converting given parameters in a String.
+     *
+     * @param instant the date as Instant
+     * @param offset timezone offset
+     * @param isDateTime true if it's a DateTime
+     */
     public void setDate(Instant instant, String offset, Boolean isDateTime) {
         if (isDateTime) {
             OffsetDateTime odt = instant.atOffset(ZoneOffset.of(offset));
@@ -73,6 +80,12 @@ public class DataSimpleGetDTO {
         }
     }
 
+    /**
+     * Retreive a DTO from the given model.
+     *
+     * @param model the data model
+     * @return a simple data DTO
+     */
     public static DataSimpleGetDTO getDtoFromModel(DataModel model) {
         DataSimpleGetDTO dto = new DataSimpleGetDTO();
 

@@ -9,21 +9,18 @@ package org.opensilex.core.data.api;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import org.opensilex.core.data.dal.DataProvenanceModel;
-import org.opensilex.core.variable.api.VariableGetDTO;
 
 import java.util.List;
 
 /**
  *
+ *
  * @author brice maussang
  */
 @JsonPropertyOrder({
-        "variable", "provenance", "data"
+        "provenance", "data"
 })
 public class DataSerieGetDTO {
-
-    @JsonProperty("variable")
-    private VariableGetDTO variable;
 
     @JsonProperty("provenance")
     private DataProvenanceModel provenance;
@@ -32,18 +29,9 @@ public class DataSerieGetDTO {
     private List<DataSimpleGetDTO> data;
 
 
-    public DataSerieGetDTO(VariableGetDTO variable, DataProvenanceModel provenance, List<DataSimpleGetDTO> data) {
-        this.variable = variable;
+    public DataSerieGetDTO(DataProvenanceModel provenance, List<DataSimpleGetDTO> data) {
         this.provenance = provenance;
         this.data = data;
-    }
-
-    public VariableGetDTO getVariable() {
-        return variable;
-    }
-
-    public void setVariable(VariableGetDTO variable) {
-        this.variable = variable;
     }
 
     public DataProvenanceModel getProvenance() {

@@ -797,7 +797,7 @@ public class DataAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return a map", response = DataSerieGetDTO.class, responseContainer = "List")
+            @ApiResponse(code = 200, message = "Return a map", response = DataVariableSeriesGetDTO.class, responseContainer = "List")
     })
     public Response getDataSeriesByFacility(
             @ApiParam(value = "target URI", example = "http://example.com/", required = true) @QueryParam("uri") @NotNull URI facilityUri,
@@ -841,10 +841,12 @@ public class DataAPI {
 
         variablesMap = result.getList().stream().collect(Collectors.groupingBy(DataModel::getVariable));
 
-        List<DataSerieGetDTO> dtoList = new ArrayList<>();
+        List<DataVariableSeriesGetDTO> dtoList = new ArrayList<>();
 
         for (Map.Entry<URI, List<DataModel>> entry : variablesMap.entrySet()) {
             VariableGetDTO variable = VariableGetDTO.fromModel(variableDAO.get(entry.getKey()));
+
+            List<DataSerieGetDTO> dataSeriesDTOs = new ArrayList<>();
 
             provenancesMap = entry.getValue().stream().collect(Collectors.groupingBy(DataModel::getProvenance));
             for (Map.Entry<DataProvenanceModel, List<DataModel>> entryProv : provenancesMap.entrySet()) {
@@ -860,18 +862,64 @@ public class DataAPI {
                         .map((d) -> DataSimpleGetDTO.getDtoFromModel(d))
                         .collect(Collectors.toList());
 
-                DataSerieGetDTO dataSerie = new DataSerieGetDTO(variable, entryProv.getKey(), data);
-                //dtoList.add(dataSerie);
+                DataSerieGetDTO dataSerie = new DataSerieGetDTO(entryProv.getKey(), data);
+                dataSeriesDTOs.add(dataSerie);
             }
 
-            List<DataSimpleGetDTO> medianData = computeMedianPerHour(entry.getValue());
+            List<DataSerieGetDTO> dataCalculatedSeriesDTOs = new ArrayList<>();
 
-            dtoList.add(new DataSerieGetDTO(variable, null, medianData));
+            DataSerieGetDTO medianSerie = computeMedianPerHour(entry.getValue());
+            dataCalculatedSeriesDTOs.add(medianSerie);
+            DataSerieGetDTO averageSerie = computeAveragePerHour(entry.getValue());
+            dataCalculatedSeriesDTOs.add(averageSerie);
+
+            DataVariableSeriesGetDTO dto = new DataVariableSeriesGetDTO(variable);
+            dto.setDataSeries(dataSeriesDTOs);
+            dto.setCalculatedSeries(dataCalculatedSeriesDTOs);
+
+            dtoList.add(dto);
         }
 
-
-
         return new SingleObjectResponse<>(dtoList).getResponse();
+    }
+
+    private List<DataSimpleGetDTO> computeMedianPerHour(List<DataModel> dataSerie) {
+        List<DataSimpleGetDTO> mediansPerHour = new ArrayList<>();
+
+        Map<Long, List<DataModel>> dataPerHourMap = dataSerie.stream().collect(
+                Collectors.groupingBy(d->(d.getDate().getEpochSecond()/3600),
+                LinkedHashMap::new,
+                Collectors.toList()));
+
+        System.out.println(dataPerHourMap.keySet());
+
+        for (Map.Entry<Long, List<DataModel>> entry : dataPerHourMap.entrySet()) {
+            List<Double> data = entry.getValue().stream().map(d->(Double.valueOf(d.getValue().toString()))).collect(Collectors.toList());
+            Collections.sort(data);
+
+            DataSimpleGetDTO medianData = DataSimpleGetDTO.getDtoFromModel(entry.getValue().get(0));
+            medianData.setValue(data.get(data.size()/2));
+
+            mediansPerHour.add(medianData);
+        }
+
+        System.out.println(mediansPerHour);
+
+        return mediansPerHour;
+    }
+
+    private List<DataModel> reduceDataSerie(List<DataModel> dataSerie) {
+        List<DataModel> reducedData = new ArrayList<>();
+
+        boolean toKeep = true;
+        for (DataModel data : dataSerie) {
+            if (toKeep) {
+                reducedData.add(data);
+            }
+            toKeep = !toKeep;
+        }
+
+        return reducedData;
     }
     
     

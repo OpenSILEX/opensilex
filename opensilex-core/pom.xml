@@ -96,6 +96,12 @@
             <artifactId>opensilex-fs</artifactId>
             <version>${revision}</version>
         </dependency>
+<!--        &lt;!&ndash; OpenSilex Dataverse &ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>org.opensilex</groupId>-->
+<!--            <artifactId>opensilex-dataverse</artifactId>-->
+<!--            <version>${revision}</version>-->
+<!--        </dependency>-->
         <!-- OpenSilex File System test -->
         <dependency>
             <groupId>org.opensilex</groupId>
@@ -153,4 +159,3 @@
         </plugins>
     </build>
 </project>
-

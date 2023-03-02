@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 
 import org.opensilex.core.germplasm.api.GermplasmAPI;
 import org.opensilex.core.ontology.SKOSReferencesDTO;
+import org.opensilex.core.sharedResource.SharedResourceInstanceDTO;
 import org.opensilex.core.species.api.SpeciesDTO;
 import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.core.variable.api.entity.EntityGetDTO;
@@ -85,9 +86,13 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
 
     @JsonProperty("datatype")
     private URI dataType;
-    
+
     public VariableDetailsDTO(VariableModel model) {
-        super(model);
+        this(model, null);
+    }
+    
+    public VariableDetailsDTO(VariableModel model, SharedResourceInstanceDTO sharedResourceInstance) {
+        super(model, sharedResourceInstance);
 
         EntityModel entity = model.getEntity();
         this.entity = new EntityGetDTO(entity);
@@ -250,6 +255,35 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
 
     public void setSpecies(List<SpeciesDTO> species) {
         this.species = species;
+    }
+
+    @Override
+    public VariableModel toModel() {
+        VariableModel model = new VariableModel();
+        setBasePropertiesToModel(model);
+        model.setEntity(new EntityModel(this.getEntity().getUri()));
+
+        if (this.getEntityOfInterest() != null) {
+            model.setEntityOfInterest(new InterestEntityModel(this.getEntityOfInterest().getUri()));
+        }
+
+        model.setCharacteristic(new CharacteristicModel(this.getCharacteristic().getUri()));
+        model.setMethod(new MethodModel(this.getMethod().getUri()));
+        model.setUnit(new UnitModel(this.getUnit().getUri()));
+
+        if (this.getSpecies() != null) {
+            model.setSpecies(this.getSpecies().stream()
+                    .map(species -> new SpeciesModel(species.getUri()))
+                    .collect(Collectors.toList()));
+        }
+
+        model.setAlternativeName(this.getAlternativeName());
+        model.setDataType(this.getDataType());
+        model.setSamplingInterval(this.getSamplingInterval());
+        model.setTimeInterval(this.getTimeInterval());
+        model.setTraitName(this.getTraitName());
+        model.setTraitUri(this.getTrait());
+        return model;
     }
 
 }

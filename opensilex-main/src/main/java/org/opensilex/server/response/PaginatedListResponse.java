@@ -61,6 +61,7 @@ public class PaginatedListResponse<T> extends JsonResponse<List<T>> {
     public PaginatedListResponse(Status status, List<T> list) {
         super(status);
         setResult(list);
+        setMetadata(new MetadataDTO(new PaginationDTO(list.size(), 0, list.size())));
     }
 
     /**
@@ -75,8 +76,13 @@ public class PaginatedListResponse<T> extends JsonResponse<List<T>> {
     @Override
     public PaginatedListResponse<T> setResult(List<T> list) {
         this.result = list;
-        this.metadata = new MetadataDTO(new PaginationDTO(list.size(), 0, list.size()));
         return this;
     }
 
+    public ListWithPagination<T> getResultWithPagination() {
+        return new ListWithPagination<T>(result,
+                (int) metadata.getPagination().getCurrentPage(),
+                (int) metadata.getPagination().getPageSize(),
+                (int) metadata.getPagination().getTotalCount());
+    }
 }

@@ -511,7 +511,7 @@ export default class SelectForm extends Vue {
     this.selectedCopie = this.selectedTmp.slice();
     this.searchModal.unSelect(item);
   }
-  
+
   selectAll(selectedValues) {
     if(selectedValues){  
       // copy selected items in local variable to wait validate action and then, change the selection
@@ -623,7 +623,7 @@ export default class SelectForm extends Vue {
 
   debounceSearch;
 
-  refresh(){ 
+  refresh(){
       this.$opensilex.disableLoader();
          let query = ".*";
        this
@@ -639,7 +639,7 @@ export default class SelectForm extends Vue {
            this.$opensilex.enableLoader();
         })
         .catch(this.$opensilex.errorHandler);
- 
+
   }
 
   debounce(func, wait, immediate?): Function {

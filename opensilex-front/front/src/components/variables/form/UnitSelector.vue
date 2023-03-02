@@ -1,9 +1,11 @@
 <template>
   <opensilex-SelectForm
+    ref="selectForm"
     :label="label"
     :selected.sync="unitURI"
     :multiple="multiple"
     :searchMethod="searchUnits"
+    :itemLoadingMethod="loadUnits"
     :clearable="clearable"
     :placeholder="placeholder"
     noResultsText="component.unit.form.selector.filter-search-no-result"
@@ -15,16 +17,16 @@
 </template>
 
 <script lang="ts">
-import {Component, Prop, PropSync} from "vue-property-decorator";
+import {Component, Prop, PropSync, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
 import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
-// @ts-ignore
 import {UnitGetDTO} from "opensilex-core/index";
+import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
+import {VariablesService} from "opensilex-core/api/variables.service";
 
 @Component
 export default class UnitSelector extends Vue {
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
 
   @PropSync("unit")
   unitURI;
@@ -38,15 +40,34 @@ export default class UnitSelector extends Vue {
   @Prop()
   clearable;
 
+  @Prop()
+  sharedResourceInstance;
+
+  @Ref("selectForm") readonly selectForm!: any;
+
+  @Watch("sharedResourceInstance")
+  onSriChange() {
+    this.selectForm.refresh();
+  }
+
   get placeholder() {
     return this.multiple
       ? "component.unit.form.selector.placeholder-multiple"
       : "component.unit.form.selector.placeholder";
   }
 
-  searchUnits(name) {
-    return this.$opensilex.getService("opensilex.VariablesService")
-    .searchUnits(name, ["name=asc"], 0, 10)    
+  loadUnits(units): Promise<Array<UnitGetDTO>> {
+    return this.$opensilex.getService<VariablesService>("opensilex.VariablesService")
+      .getUnitsByURIs(units, this.sharedResourceInstance)
+      .then((http: HttpResponse<OpenSilexResponse<Array<UnitGetDTO>>>) => {
+        return http.response.result;
+      })
+      .catch(this.$opensilex.errorHandler); 
+  }
+
+  searchUnits(name): Promise<HttpResponse<OpenSilexResponse<Array<UnitGetDTO>>>> {
+    return this.$opensilex.getService<VariablesService>("opensilex.VariablesService")
+    .searchUnits(name, ["name=asc"], 0, 10, this.sharedResourceInstance)
     .then((http: HttpResponse<OpenSilexResponse<Array<UnitGetDTO>>>) => {
         return http;
     });

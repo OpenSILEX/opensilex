@@ -1,6 +1,5 @@
 <template>
   <opensilex-SelectForm
-    ref="selectForm"
     :label="label"
     :selected.sync="speciesURI"
     :multiple="multiple"
@@ -11,26 +10,29 @@
     @clear="$emit('clear')"
     @select="select"
     @deselect="deselect"
+    :key="refreshKey"
     @keyup.enter.native="onEnter"
   ></opensilex-SelectForm>
 </template>
 
 <script lang="ts">
-import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
+import {Component, Prop, PropSync, Watch} from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
-import { SecurityService, UserGetDTO } from "opensilex-security/index";
-// @ts-ignore
-import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse";
-// @ts-ignore
-import { SpeciesDTO } from "opensilex-core/index";
+import {SecurityService} from "opensilex-security/index";
+import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
+import {SpeciesDTO} from "opensilex-core/index";
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+import {SpeciesService} from "opensilex-core/api/species.service";
+import {ExperimentsService} from "opensilex-core/api/experiments.service";
 
 @Component
 export default class SpeciesSelector extends Vue {
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
   $store: any;
 
   service: SecurityService;
+
+  refreshKey = 0;
 
   @PropSync("species")
   speciesURI;
@@ -54,7 +56,13 @@ export default class SpeciesSelector extends Vue {
   @Prop()
   experimentURI;
 
-  @Ref("selectForm") readonly selectForm!: any;
+  @Prop()
+  sharedResourceInstance;
+
+  @Watch("sharedResourceInstance")
+  onResourceChange() {
+    this.refreshKey += 1;
+  }
 
   private langUnwatcher;
   mounted() {
@@ -73,15 +81,15 @@ export default class SpeciesSelector extends Vue {
   loadSpecies() {
     if (!this.experimentURI) {
       return this.$opensilex
-        .getService("opensilex.SpeciesService")
-        .getAllSpecies()
+        .getService<SpeciesService>("opensilex.SpeciesService")
+        .getAllSpecies(this.sharedResourceInstance)
         .then(
           (http: HttpResponse<OpenSilexResponse<Array<SpeciesDTO>>>) =>
             http.response.result
         );
     } else {
       return this.$opensilex
-        .getService("opensilex.ExperimentsService")
+        .getService<ExperimentsService>("opensilex.ExperimentsService")
         .getAvailableSpecies(this.experimentURI)
         .then(
           (http: HttpResponse<OpenSilexResponse<Array<SpeciesDTO>>>) =>

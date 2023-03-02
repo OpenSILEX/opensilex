@@ -308,6 +308,9 @@ components["opensilex-OntologyObjectForm"] = OntologyObjectForm;
 import OntologyRelationsForm from './ontology/OntologyRelationsForm.vue'
 components["opensilex-OntologyRelationsForm"] = OntologyRelationsForm;
 
+import SharedResourceInstanceSelector from './sharedResourceInstances/SharedResourceInstanceSelector.vue';
+components["opensilex-SharedResourceInstanceSelector"] = SharedResourceInstanceSelector;
+
 import XSDBooleanInput from './ontology/XSDBooleanInput.vue'
 components["opensilex-XSDBooleanInput"] = XSDBooleanInput;
 import XSDBooleanView from './ontology/XSDBooleanView.vue'

@@ -1075,6 +1075,14 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         }
     }
 
+    public <T extends SPARQLResourceModel> void create(Collection<T> instances) throws Exception {
+        Optional<T> anyElement = instances.stream().findAny();
+        if (!anyElement.isPresent()) {
+            return;
+        }
+        create(getDefaultGraph(anyElement.get().getClass()), instances);
+    }
+
     public <T extends SPARQLResourceModel> void create(Class<T> clazz, Collection<T> instances) throws Exception {
         create(getDefaultGraph(clazz), instances);
     }

@@ -6,6 +6,8 @@
 package org.opensilex.core.variable.api.unit;
 
 import io.swagger.annotations.*;
+import org.opensilex.core.CoreModule;
+import org.opensilex.core.external.opensilex.SharedResourceInstanceService;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.variable.api.VariableAPI;
 import org.opensilex.core.variable.dal.BaseVariableDAO;
@@ -25,14 +27,19 @@ import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 
 import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
+import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.opensilex.core.variable.api.VariableAPI.*;
@@ -46,9 +53,19 @@ import static org.opensilex.core.variable.api.VariableAPI.*;
 public class UnitAPI {
 
     public static final String PATH = "/core/units";
+    public static final String GET_BY_URIS_PATH = "by_uris";
+    public static final String GET_BY_URIS_URI_PARAM = "uris";
+
+    private static final String SHARED_RESOURCE_INSTANCE_PARAM = "sharedResourceInstance";
 
     @Inject
     private SPARQLService sparql;
+
+    @Inject
+    private CoreModule coreModule;
+
+    @Context
+    protected HttpServletRequest httpRequest;
 
     @CurrentUser
     AccountModel currentUser;
@@ -107,7 +124,7 @@ public class UnitAPI {
     }
 
     @GET
-    @Path("by_uris")
+    @Path(UnitAPI.GET_BY_URIS_PATH)
     @ApiOperation("Get detailed units by uris")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
@@ -118,23 +135,33 @@ public class UnitAPI {
         @ApiResponse(code = 404, message = "Unit not found (if any provided URIs is not found", response = ErrorDTO.class)
     })
     public Response getUnitsByURIs(
-            @ApiParam(value = "Units URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
+            @ApiParam(value = "Units URIs", required = true) @QueryParam(UnitAPI.GET_BY_URIS_URI_PARAM) @NotNull List<URI> uris,
+            @ApiParam(value = "Shared resource instance") @QueryParam(UnitAPI.SHARED_RESOURCE_INSTANCE_PARAM) URI sharedResourceInstance
     ) throws Exception {
-        
-        BaseVariableDAO<UnitModel> dao = new BaseVariableDAO<>(UnitModel.class, sparql);
+        if (sharedResourceInstance == null) {
+            BaseVariableDAO<UnitModel> dao = new BaseVariableDAO<>(UnitModel.class, sparql);
 
-        try {
-            List<UnitDetailsDTO> resultDTOList = dao.getList(uris)
-                    .stream()
-                    .map(UnitDetailsDTO::new)
-                    .collect(Collectors.toList());
+            try {
+                List<UnitDetailsDTO> resultDTOList = dao.getList(uris)
+                        .stream()
+                        .map(UnitDetailsDTO::new)
+                        .collect(Collectors.toList());
 
-            return new PaginatedListResponse<>(resultDTOList).getResponse();
+                return new PaginatedListResponse<>(resultDTOList).getResponse();
 
-        }catch (SPARQLInvalidUriListException e){
-            return new ErrorResponse(Response.Status.NOT_FOUND, "Units not found", e.getStrUris()).getResponse();
+            } catch (SPARQLInvalidUriListException e) {
+                return new ErrorResponse(Response.Status.NOT_FOUND, "Units not found", e.getStrUris()).getResponse();
+            }
         }
 
+        SharedResourceInstanceService service = new SharedResourceInstanceService(
+                coreModule.getSharedResourceInstanceConfiguration(sharedResourceInstance), currentUser.getLanguage()
+        );
+
+        ListWithPagination<UnitDetailsDTO> detailsList = service.getListByURI(Paths.get(UnitAPI.PATH, UnitAPI.GET_BY_URIS_PATH).toString(),
+                UnitAPI.GET_BY_URIS_URI_PARAM,
+                uris, UnitDetailsDTO.class);
+        return new PaginatedListResponse<>(detailsList).getResponse();
     }
     
     
@@ -197,21 +224,33 @@ public class UnitAPI {
             @ApiParam(value = "Name (regex)", example = "Centimeter") @QueryParam("name") String namePattern ,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @Min(0) int pageSize
-    ) throws Exception {
+            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @Min(0) int pageSize,
+            @ApiParam(value = "Shared resource instance") @QueryParam(UnitAPI.SHARED_RESOURCE_INSTANCE_PARAM) URI sharedResourceInstance
+            ) throws Exception {
+        if (sharedResourceInstance == null) {
+            BaseVariableDAO<UnitModel> dao = new BaseVariableDAO<>(UnitModel.class, sparql);
+            ListWithPagination<UnitModel> resultList = dao.search(
+                    namePattern,
+                    orderByList,
+                    page,
+                    pageSize,
+                    currentUser.getLanguage()
+            );
 
-        BaseVariableDAO<UnitModel> dao = new BaseVariableDAO<>(UnitModel.class, sparql);
-        ListWithPagination<UnitModel> resultList = dao.search(
-                namePattern,
-                orderByList,
-                page,
-                pageSize,
-                currentUser.getLanguage()
+            ListWithPagination<UnitGetDTO> resultDTOList = resultList.convert(
+                    UnitGetDTO.class,
+                    UnitGetDTO::new
+            );
+            return new PaginatedListResponse<>(resultDTOList).getResponse();
+        }
+
+        SharedResourceInstanceService service = new SharedResourceInstanceService(
+                coreModule.getSharedResourceInstanceConfiguration(sharedResourceInstance), currentUser.getLanguage()
         );
 
-        ListWithPagination<UnitGetDTO> resultDTOList = resultList.convert(
-                UnitGetDTO.class,
-                UnitGetDTO::new
-        );
-        return new PaginatedListResponse<>(resultDTOList).getResponse();    }
+        Map<String, String[]> searchParams = new HashMap<>(httpRequest.getParameterMap());
+        searchParams.remove(UnitAPI.SHARED_RESOURCE_INSTANCE_PARAM);
+        return new PaginatedListResponse<>(service.search(UnitAPI.PATH, searchParams, UnitGetDTO.class))
+                .getResponse();
+    }
 }

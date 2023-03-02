@@ -249,9 +249,10 @@ import {
     GermplasmSearchFilter
 } from "opensilex-core/index";
 
-import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
 import TableAsyncView from "../common/views/TableAsyncView.vue";
 import GermplasmAttributesValueSelector from "./GermplasmAttributesValueSelector.vue";
+import {GermplasmGetAllDTO} from "opensilex-core/model/germplasmGetAllDTO";
+import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 
 @Component
 export default class GermplasmList extends Vue {
@@ -262,7 +263,7 @@ export default class GermplasmList extends Vue {
     service: GermplasmService;
 
     @Ref("documentForm") readonly documentForm!: any;
-    @Ref("tableRef") readonly tableRef!: TableAsyncView;
+    @Ref("tableRef") readonly tableRef!: TableAsyncView<GermplasmGetAllDTO>;
     @Ref("attributesValueSelector") attributeValueSelector: GermplasmAttributesValueSelector;
 
     @Prop({

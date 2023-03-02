@@ -63,12 +63,14 @@ public class Oeso {
     public static final Property hasDataType = Ontology.property(NS, "hasDataType");
     public static final Property hasEntityOfInterest = Ontology.property(NS, "hasEntityOfInterest");
 
+    public static final Property fromSharedResourceInstance = Ontology.property(NS, "fromSharedResourceInstance");
+
     // ---- VARIABLES Unit ----
     public static final Property hasTimeInterval = Ontology.property(NS, "hasTimeInterval");
     public static final Property hasSamplingInterval = Ontology.property(NS, "hasSamplingInterval");
     public static final Property hasSymbol = Ontology.property(NS, "hasSymbol");
     public static final Property hasAlternativeSymbol = Ontology.property(NS, "hasAlternativeSymbol");
-    
+
     // ---- VARIABLES GROUP ----
     public static final Resource VariablesGroup = Ontology.resource(NS, "VariablesGroup");
     

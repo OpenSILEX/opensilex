@@ -6,11 +6,11 @@
 
 package org.opensilex.core.variable.api.method;
 
-import java.net.URI;
-
 import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.core.variable.api.BaseVariableDetailsDTO;
 import org.opensilex.core.variable.dal.MethodModel;
+
+import java.net.URI;
 
 
 /**
@@ -42,6 +42,13 @@ public class MethodDetailsDTO extends BaseVariableDetailsDTO<MethodModel> {
     @ApiModelProperty(example = "Based on a software")
     public String getDescription() {
         return description;
+    }
+
+    @Override
+    public MethodModel toModel() {
+        MethodModel model = new MethodModel();
+        setBasePropertiesToModel(model);
+        return model;
     }
 
 }

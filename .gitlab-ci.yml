@@ -154,7 +154,7 @@ variables:
   script:
     - apk add curl git
     # - If there is no release branch, then develop is deployed
-    # - Otherwise, nothing is deployed 
+    # - Otherwise, nothing is deployed
     - |
       if git ls-remote --exit-code --heads origin release && [[ "$CI_COMMIT_BRANCH" == "develop" ]]; then
         echo 'Branch release exists, cannot deploy develop';
@@ -277,11 +277,11 @@ test:opensilex-master:deploy:
       when: on_success
   needs:
     - opensilex-master:build
- 
+
 
 # Trigger pipeline for the deployment of the develop branch
 # - If there is no release branch, then develop is deployed
-# - Otherwise, nothing is deployed 
+# - Otherwise, nothing is deployed
 #  see deploy_opensilex_template script
 test:opensilex-develop:deploy:
   <<: *deploy_opensilex_before_script

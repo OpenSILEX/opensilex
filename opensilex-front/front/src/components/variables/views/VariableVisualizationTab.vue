@@ -128,9 +128,9 @@ export default class VariableVisualizationTab extends Vue {
   // simulate window resizing to resize the graphic when the filter panel display changes
   @Watch("searchFiltersToggle")
   onSearchFilterToggleChange(){
-    this.$nextTick(()=> { 
+    this.$nextTick(()=> {
       window.dispatchEvent(new Event('resize'));
-    })  
+    })
   }
 
   beforeDestroy() {
@@ -436,7 +436,7 @@ export default class VariableVisualizationTab extends Vue {
         .then((http: HttpResponse<OpenSilexResponse<Array<DataGetDTO>>>) => {
           const data = http.response.result as Array<DataGetDTO>;
           let dataLength = data.length;
-          
+
           if (dataLength === 0){
             this.$opensilex.showInfoToast(
             this.$t("component.common.search.noDataFound").toString());

@@ -1,9 +1,11 @@
 <template>
   <opensilex-SelectForm
+    ref="selectForm"
     :label="label"
     :selected.sync="entityURI"
     :multiple="multiple"
     :searchMethod="searchEntities"
+    :itemLoadingMethod="loadEntities"
     :clearable="clearable"
     :placeholder="placeholder"
     noResultsText="component.entity.form.selector.filter-search-no-result"
@@ -15,16 +17,16 @@
 </template>
 
 <script lang="ts">
-import {Component, Prop, PropSync} from "vue-property-decorator";
+import {Component, Prop, PropSync, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
 import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
-// @ts-ignore
 import {EntityGetDTO} from "opensilex-core/index";
+import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
+import {VariablesService} from "opensilex-core/api/variables.service";
 
 @Component
 export default class EntitySelector extends Vue {
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
 
   @PropSync("entity")
   entityURI;
@@ -38,15 +40,34 @@ export default class EntitySelector extends Vue {
   @Prop()
   clearable;
 
+  @Prop()
+  sharedResourceInstance?: string;
+
+  @Ref("selectForm") readonly selectForm!: any;
+
+  @Watch("sharedResourceInstance")
+  onSriChange() {
+    this.selectForm.refresh();
+  }
+
   get placeholder() {
     return this.multiple
       ? "component.entity.form.selector.placeholder-multiple"
       : "component.entity.form.selector.placeholder";
   }
 
-  searchEntities(name) {
-    return this.$opensilex.getService("opensilex.VariablesService")
-    .searchEntities(name, ["name=asc"], 0, 10)    
+  loadEntities(entities): Promise<Array<EntityGetDTO>> {
+    return this.$opensilex.getService<VariablesService>("opensilex.VariablesService")
+      .getEntitiesByURIs(entities, this.sharedResourceInstance)
+      .then((http: HttpResponse<OpenSilexResponse<Array<EntityGetDTO>>>) => {
+        return http.response.result;
+      })
+      .catch(this.$opensilex.errorHandler); 
+  }
+
+  searchEntities(name): Promise<HttpResponse<OpenSilexResponse<Array<EntityGetDTO>>>> {
+    return this.$opensilex.getService<VariablesService>("opensilex.VariablesService")
+    .searchEntities(name, ["name=asc"], 0, 10, this.sharedResourceInstance)
     .then((http: HttpResponse<OpenSilexResponse<Array<EntityGetDTO>>>) => {
         return http;
     });

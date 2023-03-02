@@ -98,7 +98,8 @@
                 "success-title": "Success",
                 "creation-success-message": " has been inserted",
                 "update-success-message": " has been updated",
-                "delete-success-message": "has been deleted"
+                "delete-success-message": "has been deleted",
+                "import-success-message": "{variablesCount} variables, {entitiesCount} entities, {characteristicsCount} characteristics, {methodsCount} methods, {unitsCount} units, {interestEntityCount} entity of interest have been imported."
             },
             "details": {
                 "document": "Documents",
@@ -367,6 +368,18 @@
                     "in-progress": "In-progress",
                     "public": "Public"
                 }
+            }
+        },
+        "sharedResourceInstances": {
+            "selector-placeholder":"Select a source",
+            "label": "Source",
+            "local-instance": "Local resources",
+            "variable-import-confirmation": "Do you really want to import the selected variables on your local instance ?",
+            "variable-warning-already-imported": "Warning: some of the variables are already imported. This operation will have no effect on them.",
+            "on-local": "This variable has already been imported",
+            "import": "import",
+            "import_date" : {
+                "label": "Last update"
             }
         },
         "experiment": {
@@ -751,5 +764,10 @@
         "date": "2022-01-01",
         "datetime": "2022-01-01T00:00:00Z",
         "boolean": "True or false"
+    },
+    "server": {
+        "errors": {
+            "shared-resource-instance-connection": "Could not connect to {label} ({uri}). The service may be unavailable, or the configuration is incorrect."
+        }
     }
 }

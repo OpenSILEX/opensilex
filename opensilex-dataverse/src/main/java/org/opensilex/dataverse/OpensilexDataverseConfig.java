@@ -6,13 +6,13 @@ public interface OpensilexDataverseConfig {
 
     @ConfigDescription(
             value = "External dataverse API key",
-            defaultString = "3fe10dae-faeb-48fc-8f86-3f4b8e5318c0"
+            defaultString = "d8aea8b2-7c9e-474c-8f4d-22298b2d1107"
     )
     String externalAPIKey();
 
     @ConfigDescription(
             value = "Base path for the dataverse API",
-            defaultString = "https://data-preproduction.inrae.fr/api/"
+            defaultString = "https://data-preproduction.inrae.fr"
     )
     String dataverseBasePath();
 

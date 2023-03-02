@@ -3,20 +3,25 @@ package org.opensilex.dataverse.api;
 import com.researchspace.dataverse.api.v1.*;
 import com.researchspace.dataverse.api.v1.DataverseAPI;
 import com.researchspace.dataverse.entities.Identifier;
-import com.researchspace.dataverse.entities.facade.DatasetAuthor;
-import com.researchspace.dataverse.entities.facade.DatasetFacade;
-import com.researchspace.dataverse.entities.facade.DatasetTopicClassification;
+import com.researchspace.dataverse.entities.facade.*;
+import com.researchspace.dataverse.http.DataverseAPIImpl;
 import org.apache.commons.lang3.StringUtils;
 import org.opensilex.OpenSilex;
 import org.opensilex.OpenSilexModuleNotFoundException;
+import org.opensilex.core.experiment.factor.api.FactorAPI;
 import org.opensilex.dataverse.DataverseModule;
 import org.opensilex.dataverse.OpensilexDataverseConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.ws.rs.ext.Provider;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Client for the dataverse API
@@ -25,26 +30,17 @@ import java.net.URL;
 @Provider
 public class DataverseClient {
 
-    @Inject
-    private OpenSilex opensilex;
-
-    protected DataverseAPI dataverseExternalAPI; // How to not confuse DataverseAPI?
+    protected DataverseAPIImplRDG dataverseExternalAPI = new DataverseAPIImplRDG();
     protected DataverseConfig dataverseConfig;
-    protected DatasetOperations datasetOps;
-    protected DataverseOperations dataverseOps;
-    protected MetadataOperations metadataOPs;
-    protected InfoOperations infoOps;
-    protected SearchOperations searchOps;
+    protected DataverseOperationsImplV1RDG dataverseOps;
 
     protected String dataverseBasePath;
     protected String dataverseAlias;
     protected String externalAPIKey;
 
-    public DataverseClient(String dataverseBasePath, String dataverseAlias, String externalAPIKey) throws MalformedURLException, OpenSilexModuleNotFoundException {
+    public static final Logger LOGGER = LoggerFactory.getLogger(DataverseClient.class);
 
-        OpensilexDataverseConfig opensilexDataverseConfig = opensilex.getModuleConfig(
-                DataverseModule.class, OpensilexDataverseConfig.class
-        );
+    public DataverseClient(String dataverseBasePath, String dataverseAlias, String externalAPIKey, OpensilexDataverseConfig opensilexDataverseConfig) throws MalformedURLException, OpenSilexModuleNotFoundException {
 
         if(StringUtils.isEmpty(dataverseBasePath)){
             this.dataverseBasePath = opensilexDataverseConfig.dataverseBasePath();
@@ -62,15 +58,13 @@ public class DataverseClient {
             this.externalAPIKey = externalAPIKey;
         }
 
-        this.dataverseConfig = new DataverseConfig(new URL(dataverseBasePath), externalAPIKey, dataverseAlias);
-        dataverseExternalAPI.configure(dataverseConfig);
-        this.metadataOPs = dataverseExternalAPI.getMetadataOperations();
-        this.datasetOps = dataverseExternalAPI.getDatasetOperations();
-        this.dataverseOps = dataverseExternalAPI.getDataverseOperations();
+        this.dataverseConfig = new DataverseConfig(new URL(this.dataverseBasePath), this.externalAPIKey, this.dataverseAlias);
+        this.dataverseExternalAPI.configure(this.dataverseConfig);
+        this.dataverseOps = this.dataverseExternalAPI.getDataverseOperations();
     }
 
-    public DataverseClient() throws MalformedURLException, OpenSilexModuleNotFoundException{
-        this("", "", "");
+    public DataverseClient(OpensilexDataverseConfig opensilexDataverseConfig) throws MalformedURLException, OpenSilexModuleNotFoundException{
+        this(null, null, null, opensilexDataverseConfig);
     }
 
     /**
@@ -81,23 +75,44 @@ public class DataverseClient {
     public Identifier createADataset(DataverseAPIPostDatasetDTO datasetDTO) throws MalformedURLException, URISyntaxException {
 
         DatasetFacade facade = DatasetFacade.builder()
+                .title(datasetDTO.name)
+                .contact(
+                        DatasetContact.builder()
+                                .datasetContactEmail("gabriel.besombes@inrae.fr")
+                                .build()
+                )
                 .author(
                         DatasetAuthor.builder()
                                 .authorName("test_authorName")
                                 .authorAffiliation("test_authorAffiliation")
-                                .authorIdentifierScheme("test_authorIdentifierScheme")
-                                .authorIdentifier("test_authorIdentifier")
+                                .authorIdentifierScheme("ORCID")
+                                .authorIdentifier("0000-0001-5000-0008")
                                 .build()
                 )
-                .title(datasetDTO.name)
+                .description(
+                        DatasetDescription.builder()
+                                .description("Test")
+                                .build()
+                )
+                .subject("Agricultural Sciences")
                 .topicClassification(
                         DatasetTopicClassification.builder()
                                 .topicClassValue(datasetDTO.topic)
+                                .topicClassVocab("a topic vocab")
+                                .topicClassVocabURI(new URI("https://www.vocab.org"))
                                 .build()
                 )
+                .languages(Arrays.asList("French"))
+                .depositor("Besombes, Gabriel")
                 .productionDate(datasetDTO.productionDate)
                 .build();
-        Identifier datasetId = dataverseOps.createDataset(facade, dataverseAlias);
+        Identifier datasetId = new Identifier();
+        try {
+            datasetId = this.dataverseOps.createDataset(facade, this.dataverseAlias);
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+         //wrong "createDataset" used?
         return datasetId;
     }
 

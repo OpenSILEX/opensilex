@@ -16,14 +16,17 @@ import com.researchspace.dataverse.entities.Identifier;
 import io.swagger.annotations.*;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+import org.opensilex.OpenSilex;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.dataverse.DataverseModule;
+import org.opensilex.dataverse.OpensilexDataverseConfig;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.service.SPARQLService;
@@ -52,23 +55,25 @@ import java.net.URI;
 public class DataverseAPI {
     public static final String CREDENTIAL_DATAVERSE_GROUP_ID = "dataverse";
     public static final String CREDENTIAL_DATAVERSE_GROUP_LABEL_KEY = "credential-group-dataverse";
-    public static final String DATAVERSE_EXAMPLE_API_KEY = "****-***-***-****";
+    public static final String DATAVERSE_EXAMPLE_API_KEY = ""; //"****-***-***-****";
 
     private static final String SCHEME = "https";
     private static final String BASE_URL = "data-preproduction.inrae.fr";
     private static final String SEARCH_ENDPOINT = "search";
     private static final String QUERY_PARAMETER = "q";
     private static final String FORMAT_PARAMETER = "format";
-    private static final String EXPERIMENT_EXAMPLE_URI = "dev:id/experiment/string";
-    private static final String DATAVERSE_BASEPATH_EXAMPLE_URL = "https://data-preproduction.inrae.fr";
-    private static final String DATAVERSE_EXAMPLE_URI = "opensilex-tests";
+    private static final String EXPERIMENT_EXAMPLE_URI = "test:id/experiment/bc-test-release";
+    private static final String DATAVERSE_BASEPATH_EXAMPLE_URL = ""; //"https://data-preproduction.inrae.fr";
+    private static final String DATAVERSE_EXAMPLE_URI = ""; //"opensilex-tests";
 
+    @Inject
+    private DataverseModule dataverseModule;
     @Inject
     SPARQLService sparql;
     @Inject
     MongoDBService nosql;
     @CurrentUser
-    UserModel currentUser;
+    AccountModel currentAccount;
     /**
      * Create a Dataset on a Dataverse
      *
@@ -93,52 +98,22 @@ public class DataverseAPI {
     })
     public Response createDataset(
             @ApiParam(value = "Experiment URI", example = EXPERIMENT_EXAMPLE_URI, required = true)  @QueryParam("uri") @NotNull URI xpUri,
-            @ApiParam(value = "Dataverse API base path", example = DATAVERSE_BASEPATH_EXAMPLE_URL, required = true)  @QueryParam("dataverseBasePath") @NotNull URI dataverseBasePath,
-            @ApiParam(value = "Parent dataverse's alias", example = DATAVERSE_EXAMPLE_URI, required = true)  @QueryParam("dataverseAlias") @NotNull String dataverseAlias,
-            @ApiParam(value = "Dataverse API key", example = DATAVERSE_EXAMPLE_API_KEY, required = true)  @QueryParam("externalAPIKey") @NotNull String externalAPIKey
+            @ApiParam(value = "Dataverse API base path", example = DATAVERSE_BASEPATH_EXAMPLE_URL)  @QueryParam("dataverseBasePath") URI dataverseBasePath,
+            @ApiParam(value = "Parent dataverse's alias", example = DATAVERSE_EXAMPLE_URI)  @QueryParam("dataverseAlias") String dataverseAlias,
+            @ApiParam(value = "Dataverse API key", example = DATAVERSE_EXAMPLE_API_KEY)  @QueryParam("externalAPIKey") String externalAPIKey
     ) throws Exception {
         ExperimentDAO dao = new ExperimentDAO(sparql, nosql);
-        ExperimentModel experimentModel = dao.get(xpUri, currentUser);
+        ExperimentModel experimentModel = dao.get(xpUri, currentAccount);
         DataverseAPIPostDatasetDTO datasetDTO = new DataverseAPIPostDatasetDTO(experimentModel);
-        DataverseClient dataverseClient = new DataverseClient();
-        Identifier datasetId = dataverseClient.createADataset(datasetDTO);
+        DataverseClient dataverseClient = new DataverseClient(dataverseModule.getConfig(OpensilexDataverseConfig.class));
+        Identifier datasetId = dataverseClient.createADataset(datasetDTO); //wrong error returned when this doesn't work : "Bad Request","URI is not absolute"
+
         return new SingleObjectResponse<Identifier>(datasetId).getResponse();
 //        return null;
 
 //        String xpName = model.getName();
 //        URI url = new URI("https://data-preproduction.inrae.fr/api/dataverses/opensilex-tests/datasets");
-//        // TODO : Create objects for datasetVersion, metadataBlocks, citation and fields
-//        String toPost = "{\n" +
-//                "  \"datasetVersion\":{\n" +
-//                "    \"metadataBlocks\":{\n" +
-//                "      \"citation\":{\n" +
-//                "        \"displayName\":\"Common Metadata\",\n" +
-//                "        \"fields\":[\n" +
-//                "          {\n" +
-//                "            \"typeName\":\"title\",\n" +
-//                "            \"multiple\":false,\n" +
-//                "            \"typeClass\":\"primitive\",\n" +
-//                "            \"value\":\"" + xpName + "\"\n" +
-//                "          }\n" +
-//                "        ]\n" +
-//                "      }\n" +
-//                "    }\n" +
-//                "  }\n" +
-//                "}";
-//        JSONParser parser = new JSONParser();
-//        JSONObject jsonToPost = (JSONObject) parser.parse(toPost);
-//        Form form = new Form();
-//        form.param("upload-file", toPost);
-//        Client httpClient = ClientBuilder.newClient(); // TODO : Should I make a separate class for the client?
-//        JSONObject jsonResponse = httpClient.target(url)
-//                .request(MediaType.APPLICATION_JSON_TYPE)
-//                .header("X-Dataverse-key", API_KEY)
-//                .post(Entity.json(jsonToPost), JSONObject.class);
-//
-//        String responseData = jsonResponse.get("data").toString();
-//
-//        return new SingleObjectResponse<String>(responseData).getResponse();
-
+//        TODO : Create objects for datasetVersion, metadataBlocks, citation and fields
 //        TODO : Look at API_TOKEN renewal : https://guides.dataverse.org/en/latest/api/auth.html
     }
 }

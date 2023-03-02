@@ -46,6 +46,7 @@ import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
+import org.opensilex.core.variable.api.VariableDetailsDTO;
 import org.opensilex.core.variable.api.VariableGetDTO;
 import org.opensilex.core.variable.api.VariableWithDevicesDTO;
 import org.opensilex.core.variable.dal.VariableDAO;
@@ -866,29 +867,35 @@ public class DataAPI {
             VariableGetDTO variable = VariableGetDTO.fromModel(variableDAO.get(entry.getKey()));
 
             List<DataSerieGetDTO> dataSeriesDTOs = new ArrayList<>();
+            List<DataSimpleGetDTO> medians = new ArrayList<>();
 
+            startTime = System.currentTimeMillis();
             provenancesMap = entry.getValue().stream().collect(Collectors.groupingBy(DataModel::getProvenance));
             for (Map.Entry<DataProvenanceModel, List<DataModel>> entryProv : provenancesMap.entrySet()) {
 
-                startTime = System.currentTimeMillis();
-                List<DataModel> reducedData = reduceDataSerie(entryProv.getValue());
-                stopTime = System.currentTimeMillis();
-
-                System.out.println("TIME EXEC reduce data (s) = " + (stopTime - startTime)/1000);
-
-                List<DataSimpleGetDTO> data = reducedData
+                List<DataSimpleGetDTO> data = entryProv.getValue()
                         .stream()
                         .map((d) -> DataSimpleGetDTO.getDtoFromModel(d))
                         .collect(Collectors.toList());
 
-                DataSerieGetDTO dataSerie = new DataSerieGetDTO(entryProv.getKey(), data);
+                List<DataSimpleGetDTO> medianSerie = computeMedianPerHour(data);
+                medians.addAll(medianSerie);
+
+                DataSerieGetDTO dataSerie = new DataSerieGetDTO(entryProv.getKey(), medianSerie);
                 dataSeriesDTOs.add(dataSerie);
             }
+            stopTime = System.currentTimeMillis();
+            System.out.println("TIME EXEC data series medians (s) = " + (stopTime - startTime)/1000);
 
             List<DataSerieGetDTO> dataCalculatedSeriesDTOs = new ArrayList<>();
 
-            DataSerieGetDTO medianSerie = computeMedianPerHour(entry.getValue());
-            dataCalculatedSeriesDTOs.add(medianSerie);
+            startTime = System.currentTimeMillis();
+            List<DataSimpleGetDTO> medianOfMedians = computeMedianPerHour(medians);
+
+            dataCalculatedSeriesDTOs.add(new DataSerieGetDTO(null, medianOfMedians));
+            stopTime = System.currentTimeMillis();
+            System.out.println("TIME EXEC median of medians (s) = " + (stopTime - startTime)/1000);
+
             DataSerieGetDTO averageSerie = computeAveragePerHour(entry.getValue());
             dataCalculatedSeriesDTOs.add(averageSerie);
 
@@ -908,21 +915,21 @@ public class DataAPI {
      * @param dataSerie the data set
      * @return the serie of median per hour
      */
-    private DataSerieGetDTO computeMedianPerHour(List<DataModel> dataSerie) {
+    private List<DataSimpleGetDTO> computeMedianPerHour(List<DataSimpleGetDTO> dataSerie) {
         List<DataSimpleGetDTO> mediansPerHour = new ArrayList<>();
 
-        Map<Long, List<DataModel>> dataPerHourMap = dataSerie.stream().collect(
-                Collectors.groupingBy(d->(d.getDate().getEpochSecond()/3600),
+        Map<Long, List<DataSimpleGetDTO>> dataPerHourMap = dataSerie.stream().collect(
+                Collectors.groupingBy(d->(d.getDateTime().getEpochSecond()/3600),
                 LinkedHashMap::new,
                 Collectors.toList()));
 
         System.out.println(dataPerHourMap.keySet());
 
-        for (Map.Entry<Long, List<DataModel>> entry : dataPerHourMap.entrySet()) {
+        for (Map.Entry<Long, List<DataSimpleGetDTO>> entry : dataPerHourMap.entrySet()) {
             List<Double> data = entry.getValue().stream().map(d->(Double.valueOf(d.getValue().toString()))).collect(Collectors.toList());
             Collections.sort(data);
 
-            DataSimpleGetDTO medianData = DataSimpleGetDTO.getDtoFromModel(entry.getValue().get(0));
+            DataSimpleGetDTO medianData = new DataSimpleGetDTO(entry.getValue().get(0));
             medianData.setValue(data.get(data.size()/2));
 
             mediansPerHour.add(medianData);
@@ -930,7 +937,7 @@ public class DataAPI {
 
         System.out.println(mediansPerHour);
 
-        return new DataSerieGetDTO(null, mediansPerHour);
+        return mediansPerHour;
     }
 
     /**

@@ -127,18 +127,20 @@ export default class VariableVisualizationTile extends Vue {
   }
 
   get deviceUriList() {
-    if (!this.devices) {
+    if (!this.dataSeries) {
       return [];
     }
 
-    return this.devices.map(device => {
-      return {
-        uri: device.uri,
-        value: device.name,
-        to: {
-          path: "/device/details/" + encodeURIComponent(device.uri),
-        },
-      };
+    return this.dataSeries.map(serie => {
+      if (serie.provenance) {
+        return {
+          uri: serie.provenance.prov_was_associated_with[0].uri,
+          value: serie.provenance.prov_was_associated_with[0].uri,
+          to: {
+            path: "/device/details/" + encodeURIComponent(serie.provenance.prov_was_associated_with[0].uri),
+          },
+        }
+      }
     });
   }
 
@@ -180,6 +182,7 @@ export default class VariableVisualizationTile extends Vue {
       let promise;
 
       for (let i = 0; i < this.calculatedDataSeries.length; ++i) {
+        console.debug(this.calculatedDataSeries[i]);
         promise = this.buildDataSerie(this.calculatedDataSeries[i]);
         promises.push(promise);
       }
@@ -303,12 +306,8 @@ export default class VariableVisualizationTile extends Vue {
 
   buildDataSerie(dataSerie) {
 
-    /*
-    if (this.variable.uri != dataSerie.variable.uri) {
-      return false;
-    }*/
-
-    const data = dataSerie.data as Array<DataGetDTO>;
+    var data = dataSerie.data as Array<DataGetDTO>;
+    data.sort((a, b) => (a.date > b.date) ? 1 : -1);
     let dataLength = data.length;
 
     if (dataLength === 0){

@@ -174,8 +174,8 @@ import {
   SpeciesDTO,
   SpeciesService
 } from "opensilex-core/index";
-// import {DataverseService} from "opensilex-dataverse/index";
-// import {DataverseService} from "../../../../../../opensilex-dataverse/front/src/lib/api/dataverse.service";
+
+import {DataverseService} from "../../../../../../opensilex-dataverse/front/src/lib/api/dataverse.service";
 
 import {GroupDTO, SecurityService, UserGetDTO} from "opensilex-security/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
@@ -195,7 +195,7 @@ export default class ExperimentDetail extends Vue {
   @Ref("experimentForm") readonly experimentForm!: any;
   experiment: any = null;
   service: ExperimentsService;
-  // dataverseService: DataverseService;
+  dataverseService: DataverseService;
 
   speciesList = [];
   factorsList = [];
@@ -214,7 +214,7 @@ export default class ExperimentDetail extends Vue {
 
   created() {
     this.service = this.$opensilex.getService("opensilex.ExperimentsService");
-//    this.dataverseService= this.$opensilex.getService("opensilex-dataverse.DataverseService");
+    this.dataverseService= this.$opensilex.getService("opensilex-dataverse.DataverseService");
     this.uri = decodeURIComponent(this.$route.params.uri);
     this.loadExperiment();
   }
@@ -508,7 +508,7 @@ export default class ExperimentDetail extends Vue {
   }
 
   sendToDataverse(experimentUri){
-    // ma fonction
+    this.dataverseService.createDataset(experimentUri);
   }
 }
 </script>

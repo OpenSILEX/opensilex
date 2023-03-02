@@ -38,6 +38,8 @@ public class DataSimpleGetDTO {
     @ApiModelProperty(value = "can be decimal, integer, boolean, string or date", example = DataAPI.DATA_EXAMPLE_VALUE)
     private Object value;
 
+    private Instant dateTime;
+
 
     public URI getUri() {
         return uri;
@@ -61,6 +63,10 @@ public class DataSimpleGetDTO {
         this.value = value;
     }
 
+    public Instant getDateTime() { return dateTime; }
+
+    public void setDateTime(Instant dateTime) { this.dateTime = dateTime; }
+
     /**
      * Set date attribute by converting given parameters in a String.
      *
@@ -69,6 +75,7 @@ public class DataSimpleGetDTO {
      * @param isDateTime true if it's a DateTime
      */
     public void setDate(Instant instant, String offset, Boolean isDateTime) {
+        setDateTime(instant);
         if (isDateTime) {
             OffsetDateTime odt = instant.atOffset(ZoneOffset.of(offset));
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern(DateFormat.YMDTHMSMSX.toString());
@@ -95,5 +102,15 @@ public class DataSimpleGetDTO {
 
         return dto;
     }
-    
+
+    public DataSimpleGetDTO() {
+
+    }
+
+    public DataSimpleGetDTO(DataSimpleGetDTO other) {
+        this.uri = other.uri;
+        this.date = other.date;
+        this.value = other.value;
+        this.dateTime = other.dateTime;
+    }
 }

@@ -11,16 +11,15 @@ import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.opensilex.core.data.api.DataAPI;
 import org.opensilex.core.data.dal.DataDAO;
+import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.sparql.ontology.dal.OntologyDAO;
-import org.opensilex.sparql.ontology.dal.URITypesModel;
 import org.opensilex.core.provenance.dal.AgentModel;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
@@ -28,6 +27,8 @@ import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.server.response.*;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
+import org.opensilex.sparql.ontology.dal.URITypesModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
@@ -365,7 +366,7 @@ public class ProvenanceAPI {
             return new ErrorResponse(
                     Response.Status.BAD_REQUEST,
                     "wrong activity rdf_types",
-                    "wrong activity rdf_types: " + notActivityTypes.toString()
+                    "wrong activity rdf_types: " + notActivityTypes
             );
         } else {
             return null;
@@ -374,8 +375,7 @@ public class ProvenanceAPI {
     }
 
     private ErrorResponse checkAgents(List<AgentModel> dtos) throws URISyntaxException, Exception {
-        //TODO replace FOAF.Agent by Oeso.Operator
-        List<URI> agentTypes = Arrays.asList(new URI(Oeso.Device.toString()), new URI(FOAF.Agent.toString()));
+        List<URI> agentTypes = Arrays.asList(new URI(sparql.getRDFTypeURI(DeviceModel.class)), new URI(sparql.getRDFTypeURI(AccountModel.class)));
         
         Set<URI> checkedAgentTypes = new HashSet<>();
         Set<URI> notAgentTypes = new HashSet<>();
@@ -385,14 +385,14 @@ public class ProvenanceAPI {
         for (AgentModel dto:dtos) {
             uris.add(dto.getUri());
             if (!checkedAgentTypes.contains(dto.getRdfType())) {  
-                //TODO replace FOAF.Agent by Oeso.Operator                
+                //TODO replace FOAF.Agent by Oeso.Operator | update Yvan 01/04/2023 -> there is no Oeso.Operator in database so it's impossible for now
                 boolean isAgent = sparql.executeAskQuery(new AskBuilder()
                 .addWhere(SPARQLDeserializers.nodeURI(dto.getRdfType()), Ontology.subClassAny, SPARQLDeserializers.nodeURI(FOAF.Agent.toString()))
                 );
 
                 if (!isAgent) {
                     isAgent = sparql.executeAskQuery(new AskBuilder()
-                    .addWhere(SPARQLDeserializers.nodeURI(dto.getRdfType()), Ontology.subClassAny, SPARQLDeserializers.nodeURI(Oeso.Device.toString()))
+                    .addWhere(SPARQLDeserializers.nodeURI(dto.getRdfType()), Ontology.subClassAny, sparql.getRDFType(DeviceModel.class))
                     );
                 }
 
@@ -407,7 +407,7 @@ public class ProvenanceAPI {
             return new ErrorResponse(
                     Response.Status.BAD_REQUEST,
                     "wrong agent rdfTypes",
-                    "wrong agent rdfTypes: " + notAgentTypes.toString()
+                    "wrong agent rdfTypes: " + notAgentTypes
             );
         } else {
             if (!uris.isEmpty()) {
@@ -424,7 +424,7 @@ public class ProvenanceAPI {
                     return new ErrorResponse(
                             Response.Status.BAD_REQUEST,
                             "Agent uris don't exist or given uris are not agents",
-                            "wrong agent uris: " + notAgentUris.toString()
+                            "wrong agent uris: " + notAgentUris
                     );
                 }
             }

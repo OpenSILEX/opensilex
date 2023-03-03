@@ -77,7 +77,7 @@ public class OrganizationDAO {
         Var uriVar = makeVar(OrganizationModel.URI_FIELD);
 
         AskBuilder ask = new AskBuilder();
-        ask.addWhere(uriVar, Ontology.typeSubClassAny, sparql.getMapperIndex().getForClass(OrganizationModel.class).getRDFType());
+        ask.addWhere(uriVar, Ontology.typeSubClassAny, sparql.getRDFType(OrganizationModel.class));
         ask.addFilter(SPARQLQueryHelper.eq(uriVar, SPARQLDeserializers.nodeURI(organizationURI)));
         organizationSPARQLHelper.addOrganizationAccessClause(ask, uriVar, user.getUri());
 

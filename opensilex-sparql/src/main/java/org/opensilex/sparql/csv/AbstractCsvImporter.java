@@ -135,7 +135,7 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
         this.ontologyStore = SPARQLModule.getOntologyStoreInstance();
 
         try {
-            this.rootClassURI = URIDeserializer.formatURI(sparql.getMapperIndex().getForClass(objectClass).getRDFType().getURI());
+            this.rootClassURI = URIDeserializer.formatURI(sparql.getRDFTypeURI(objectClass));
         } catch (SPARQLMapperNotFoundException | SPARQLInvalidClassDefinitionException e) {
             throw new RuntimeException(e);
         }

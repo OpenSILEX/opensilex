@@ -324,7 +324,7 @@ public class FacilityDAO {
         Var uriVar = makeVar(FacilityModel.URI_FIELD);
 
         AskBuilder ask = new AskBuilder();
-        ask.addWhere(uriVar, Ontology.typeSubClassAny, sparql.getMapperIndex().getForClass(FacilityModel.class).getRDFType());
+        ask.addWhere(uriVar, Ontology.typeSubClassAny, sparql.getRDFType(FacilityModel.class));
         ask.addFilter(SPARQLQueryHelper.eq(uriVar, SPARQLDeserializers.nodeURI(facilityURI)));
         organizationSPARQLHelper.addFacilityAccessClause(ask, uriVar, userOrganizations, userSites, accountModel.getUri());
 

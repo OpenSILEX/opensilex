@@ -2050,6 +2050,14 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         return g.getDefaultGraphURI();
     }
 
+    public <T extends SPARQLResourceModel> Resource getRDFType(Class<T> objectClass) throws SPARQLException {
+        return getMapperIndex().getForClass(objectClass).getRDFType();
+    }
+
+    public <T extends SPARQLResourceModel> String getRDFTypeURI(Class<T> objectClass) throws SPARQLException {
+        return getRDFType(objectClass).getURI();
+    }
+
     public URI getDefaultGenerationURI(Class<? extends SPARQLResourceModel> modelClass) throws SPARQLException {
         return getMapperIndex().getForClass(modelClass).getGenerationPrefixURI();
     }

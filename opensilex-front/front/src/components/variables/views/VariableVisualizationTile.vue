@@ -316,7 +316,7 @@ export default class VariableVisualizationTile extends Vue {
     }
 
     if (dataLength >= 0) {
-      const cleanData = HighchartsDataTransformer.transformSimpleDataForHighcharts(data, (dataSerie.provenance) ? dataSerie.provenance.prov_was_associated_with[0].uri : "no provenance");
+      const cleanData = HighchartsDataTransformer.transformSimpleDataForHighcharts(data, dataSerie.provenance);
       if (dataLength > 50000) {
         this.$opensilex.showInfoToast(
             this.$i18n.t("DeviceDataTab.limitSizeMessageA") +
@@ -329,10 +329,12 @@ export default class VariableVisualizationTile extends Vue {
 
       console.debug(cleanData);
 
+      let prov = dataSerie.provenance.prov_was_associated_with[0];
+
       return {
-        name: (dataSerie.provenance) ? dataSerie.provenance.prov_was_associated_with[0].uri : "median (per hour)",
+        name: prov.uri,
         data: cleanData,
-        visible: (dataSerie.provenance) ? false : true
+        visible: (prov.uri.startsWith("dev")) ? false : true
       };
     }
   }

@@ -872,11 +872,28 @@ public class DataAPI {
             startTime = System.currentTimeMillis();
             List<DataSimpleGetDTO> medianOfMedians = computeMedianPerHour(medians);
 
-            dataCalculatedSeriesDTOs.add(new DataSerieGetDTO(null, medianOfMedians));
+            //TODO: trash
+            DataProvenanceModel provMedian = new DataProvenanceModel();
+            ProvEntityModel provEntity = new ProvEntityModel();
+            provEntity.setUri(URI.create("median_per_hour"));
+            List<ProvEntityModel> provEntitys = new ArrayList<>();
+            provEntitys.add(provEntity);
+            provMedian.setProvWasAssociatedWith(provEntitys);
+
+            dataCalculatedSeriesDTOs.add(new DataSerieGetDTO(provMedian, medianOfMedians));
             stopTime = System.currentTimeMillis();
             System.out.println("TIME EXEC median of medians (s) = " + (stopTime - startTime)/1000);
 
+            //TODO: trash
+            DataProvenanceModel provAverage = new DataProvenanceModel();
+            ProvEntityModel provEntity2 = new ProvEntityModel();
+            provEntity2.setUri(URI.create("average_per_hour"));
+            List<ProvEntityModel> provEntitys2 = new ArrayList<>();
+            provEntitys2.add(provEntity2);
+            provAverage.setProvWasAssociatedWith(provEntitys2);
+
             DataSerieGetDTO averageSerie = computeAveragePerHour(entry.getValue());
+            averageSerie.setProvenance(provAverage);
             dataCalculatedSeriesDTOs.add(averageSerie);
 
             DataVariableSeriesGetDTO dto = new DataVariableSeriesGetDTO(variable);

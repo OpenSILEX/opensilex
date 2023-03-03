@@ -3,7 +3,7 @@
            :layout.sync="layout"
            :col-num="NB_COL"
            :row-height="300"
-           :is-draggable="false"
+           :is-draggable="true"
            :is-resizable="true"
            :is-mirrored="false"
            :vertical-compact="false"
@@ -110,8 +110,8 @@ export default class FacilityAssociatedDevices extends Vue {
   loadData() {
     this.dataService.getDataSeriesByFacility(
         this.uri,
-        undefined,
-        undefined,
+        "2023-02-13T00:00:00.00Z",
+        "2023-02-20T23:59:59.00Z",
         ["date=asc"]
     )
     .then(

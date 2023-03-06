@@ -29,7 +29,6 @@
       <!-- Form -->
       <Transition>
         <div v-show="searchFiltersToggle">
-          <!--Form-->
           <opensilex-ExperimentDataVisuForm
               ref="experimentDataVisuForm"
               :selectedExperiment="selectedExperiment"
@@ -220,7 +219,7 @@ export default class ExperimentDataVisuView extends Vue {
 
   buildColorsSOArray() {
     const colorPalette = [
-      "#ca6434 ",
+      "#ca6434",
       "#427775",
       "#f2dc7c",
       "#0f839c",
@@ -297,17 +296,13 @@ export default class ExperimentDataVisuView extends Vue {
 
     Promise.all(promises).then(values => {
       let series = [];
-
-      if (values[0]) {
-        values[0].forEach(serie => {
-          series.push(serie);
-        });
-      }
-
-      if (values[1]) {
-        values[1].forEach(serie => {
-          series.push(serie);
-        });
+      
+      for (let value of values) {
+        if(value) {
+          for (let serie of value){
+            series.push(serie)
+          }
+        }
       }
 
       this.showGraphicComponent = true;
@@ -329,14 +324,15 @@ export default class ExperimentDataVisuView extends Vue {
           this.showImages = true;
           let series = [];
 
-          if (values[0]) {
-            values[0].forEach(element => {
-              series.push(element);
-            })
-          }
-          if (values[1]) {
-            series.push(values[1]);
-          }
+          values.forEach(serie => {
+            if (Array.isArray(serie)) {
+              serie.forEach(element => {
+                series.push(element);
+              });
+            } else if (serie !== undefined) {
+              series.push(serie);
+            }
+          });
           this.$nextTick(() => {
             this.$opensilex.enableLoader();
             this.visuGraphic.reload(
@@ -406,13 +402,15 @@ export default class ExperimentDataVisuView extends Vue {
                 let endTime = element.end ? element.end : "en cours..";
                 label = label + "(End: " + endTime + ")";
               }
-              // if (element.end) {
-              //   if (element.is_instant) {
-              //     title = label;
-              //   } else {
-              //     title = label + "(End)";
-              //   }
-              // }
+
+              if (element.end) {
+                if (element.is_instant) {
+                  title = label;
+                } else {
+                  title = label + "(End)";
+                }
+              }
+
               title = label.charAt(0).toUpperCase();
               let timestamp;
               if (element.start != null) {
@@ -506,7 +504,6 @@ export default class ExperimentDataVisuView extends Vue {
         const dataSerie = {
           name: name,
           data: cleanData,
-          id: 'A',
           visible: true,
           color: this.eventTypesColorArray[concernedItem.uri],
           legendColor: this.eventTypesColorArray[concernedItem.uri]
@@ -518,7 +515,6 @@ export default class ExperimentDataVisuView extends Vue {
             type: 'flags',
             name: 'Image/' + name,
             data: imageData,
-            onSeries: 'A',
             width: 8,
             height: 8,
             shape: 'circlepin',

@@ -289,7 +289,7 @@ export default class ScientificObjectVisualizationTab extends Vue {
 
               let eventTypesColorArray = [];
               const colorPalette = [
-                "#ca6434 ",
+                "#ca6434",
                 "#427775",
                 "#f2dc7c",
                 "#0f839c",
@@ -411,7 +411,6 @@ export default class ScientificObjectVisualizationTab extends Vue {
         const dataSerie = {
           name: this.scientificObject.name,
           data: cleanData,
-          id: 'A',
           visible: true
         };
         dataAndImage.push(dataSerie)
@@ -420,7 +419,6 @@ export default class ScientificObjectVisualizationTab extends Vue {
             type: 'flags',
             name: 'Image/' + this.scientificObject.name,
             data: imageData,
-            onSeries: 'A',
             width: 8,
             height: 8,
             shape: 'circlepin',

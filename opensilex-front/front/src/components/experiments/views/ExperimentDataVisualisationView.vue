@@ -231,7 +231,7 @@ export default class ExperimentDataVisualisationView extends Vue {
 
   buildColorsSOArray() {
     const colorPalette = [
-      "#ca6434 ",
+      "#ca6434",
       "#427775",
       "#f2dc7c",
       "#0f839c",
@@ -334,25 +334,13 @@ export default class ExperimentDataVisualisationView extends Vue {
     Promise.all(promises).then(values => {
       let series = [];
 
-      if (values[0]) {
-        values[0].forEach(serie => {
-          series.push(serie);
-        });
-      }
-
-      if (values[1]) {
-        values[1].forEach(serie => {
-          series.push(serie);
-        });
-      }
-
-      /*for (let value of values) {
-        if (value) {
-          for (let serie of value) {
+      for (let value of values) {
+        if(value) {
+          for (let serie of value){
             series.push(serie)
           }
         }
-      }*/
+      }
 
       this.showGraphicComponent = true;
       // reload only when all datas are loaded
@@ -370,8 +358,8 @@ export default class ExperimentDataVisualisationView extends Vue {
 
   // build DataSeries with elements from each DataSerie
   buildDataSeries(selectedVariable: VariableDetailsDTO) {
-    // let series = [],
-    //     serie;
+    let series = [],
+        serie;
     let promises = [],
         promise;
 
@@ -383,16 +371,16 @@ export default class ExperimentDataVisualisationView extends Vue {
     return Promise.all(promises)
         .then(values => {
           this.showImages = true;
-          let series = [];
 
-          if (values[0]) {
-            values[0].forEach(element => {
-              series.push(element);
-            })
-          }
-          if (values[1]) {
-            series.push(values[1]);
-          }
+          values.forEach(serie => {
+            if (Array.isArray(serie)) {
+              serie.forEach(element => {
+                series.push(element);
+              });
+            } else if (serie !== undefined) {
+              series.push(serie);
+            }
+          });
 
           return series;
 
@@ -453,7 +441,6 @@ export default class ExperimentDataVisualisationView extends Vue {
         const dataSerie = {
           name: name,
           data: cleanData,
-          id: 'A',
           visible: true,
           color: this.eventTypesColorArray[concernedItem.id],
           legendColor: this.eventTypesColorArray[concernedItem.id],
@@ -465,7 +452,6 @@ export default class ExperimentDataVisualisationView extends Vue {
             type: 'flags',
             name: 'Image/' + name,
             data: imageData,
-            onSeries: 'A',
             width: 8,
             height: 8,
             shape: 'circlepin',

@@ -1,7 +1,6 @@
 <template>
     <opensilex-Card
         ref="tilePanel"
-        class="tile"
         :label="variable.name"
         icon=""
     >
@@ -9,10 +8,11 @@
       <template v-slot:body>
 
         <div style="font-size: xxx-large">
-          {{computeMean + " " + variable.unit.name}}
+          {{computeMean + " " + variable.unit.symbol}}
         </div>
 
         <opensilex-UriListView
+            id="devices-list"
             label="Devices"
             :list="deviceUriList"
             :inline="true"
@@ -20,6 +20,7 @@
         </opensilex-UriListView>
 
         <opensilex-Button
+            id="btn-show"
             label="Show graphic"
             icon=""
             :small="false"
@@ -29,8 +30,11 @@
 
         <opensilex-DataVisuGraphic
           v-if="isGraphicLoaded"
+          id="graphic"
           ref="visuGraphic"
           :deviceType="false"
+          :lType="true"
+          :lWidth="2"
           class="DeviceVisualisationGraphic"
           v-bind:class ="{
             'DeviceVisualisationGraphic': false,

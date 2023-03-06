@@ -1,14 +1,14 @@
 <template>
         <GridLayout v-if="isDataLoaded"
-           :layout.sync="layout"
-           :col-num="NB_COL"
-           :row-height="300"
-           :is-draggable="true"
-           :is-resizable="true"
-           :is-mirrored="false"
-           :vertical-compact="false"
-           :margin="[10, 10]"
-           :use-css-transforms="true">
+            :layout.sync="layout"
+            :col-num="NB_COL"
+            :is-draggable="true"
+            :is-resizable="true"
+            :is-mirrored="false"
+            :vertical-compact="true"
+            :autoSize="true"
+            :margin="[10, 10]"
+            :use-css-transforms="true">
 
             <GridItem v-for="item in layout"
                        :x="item.x"
@@ -16,9 +16,11 @@
                        :w="item.w"
                        :h="item.h"
                        :i="item.i"
-                       :key="item.i">
+                       :key="item.i"
+                :dragIgnoreFrom="'#devices-list, #graphic, #btn-show'"
+                class="tile">
               <opensilex-VariableVisualizationTile
-                  class="tile"
+                  class="tile-content"
                   v-bind="item.content">
               </opensilex-VariableVisualizationTile>
             </GridItem>
@@ -121,13 +123,6 @@ export default class FacilityAssociatedDevices extends Vue {
         let detailsDTO: Array<DataVariableSeriesGetDTO> = http.response.result;
         this.dataSeries = detailsDTO;
 
-        this.dataSeries.forEach((detail) => {
-            this.variables.push(detail.variable);
-        });
-
-        // TODO: install package "underscore.js"
-        //_.groupBy(detailsDto, "variable");
-
         this.loadTiles();
       }
     );
@@ -227,29 +222,16 @@ export default class FacilityAssociatedDevices extends Vue {
     this.isDataLoaded = true;
   }
 
-  loadPositionsHistory() {
-    this.devices.forEach(device => {
-        this.positionService.searchPositionHistory(device.uri)
-            .then(
-                (
-                    http: HttpResponse<OpenSilexResponse<Array<PositionGetDTO>>>
-                ) => {
-                  if (http && http.response) {
-                    console.debug(http);
-                  }
-                }
-            )
-      }
-    )
-
-  }
-
 }
 </script>
 
 <style scoped lang="scss">
 
 .tile {
+  display: table;
+}
+
+.tile-content {
   height: 100%;
   width: 100%;
 }

@@ -864,7 +864,7 @@ public class DataAPI {
         List<DataVariableSeriesGetDTO> dtoList = new ArrayList<>();
 
         for (Map.Entry<URI, List<DataModel>> entry : variablesMap.entrySet()) {
-            VariableGetDTO variable = VariableGetDTO.fromModel(variableDAO.get(entry.getKey()));
+            VariableDetailsDTO variable = new VariableDetailsDTO(variableDAO.get(entry.getKey()));
 
             List<DataSerieGetDTO> dataSeriesDTOs = new ArrayList<>();
             List<DataSimpleGetDTO> medians = new ArrayList<>();

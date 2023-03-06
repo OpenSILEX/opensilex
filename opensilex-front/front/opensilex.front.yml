@@ -424,7 +424,8 @@ routes:
   - path: /area/annotations/:uri
     component: opensilex-AreaDetails
 
-  - path: /scientific-objects/details/:uri
+# Optional <experiment> path
+  - path: /scientific-objects/details/:uri/:experiment?
     component: opensilex-ScientificObjectDetailView
     credentials: []
     icon: ik#ik-target

@@ -52,6 +52,7 @@
               label="component.common.description"
               helpMessage="Event.description"
               placeholder="Event.description"
+              @keydown.native.enter.stop
           >
           </opensilex-TextAreaForm>
         </div>

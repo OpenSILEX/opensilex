@@ -22,29 +22,62 @@
         <b-nav-item
           :active="isDatafilesTab()"
           :to="{ path: '/device/datafiles/' + encodeURIComponent(uri) }"
-        >{{ $t("ScientificObjectDataFiles.datafiles") }}</b-nav-item>
+        >{{ $t("ScientificObjectDataFiles.datafiles") }}
+          <span
+            v-if="!datafilesCountIsLoading && datafiles > 0"
+            class ="tabWithElements"
+          >
+            {{$opensilex.$numberFormatter.formateResponse(datafiles)}}
+          </span>
+        </b-nav-item>
 
         <b-nav-item
             :active="isEventTab()"
             :to="{ path: '/device/events/' + encodeURIComponent(uri) }"
         >{{ $t('Event.list-title') }}
+          <span
+            v-if="!eventsCountIsLoading && events > 0"
+            class ="tabWithElements"
+          >
+            {{$opensilex.$numberFormatter.formateResponse(events)}}
+          </span>
         </b-nav-item>
 
         <b-nav-item
             :active="isPositionTab()"
             :to="{ path: '/device/positions/' + encodeURIComponent(uri) }"
         >{{ $t('Position.list-title') }}
+        <span
+          v-if="!positionsCountIsLoading && positions > 0"
+          class ="tabWithElements"
+        >
+          {{$opensilex.$numberFormatter.formateResponse(positions)}}
+        </span>
         </b-nav-item>
         
         <b-nav-item
           :active="isAnnotationTab()"
           :to="{ path: '/device/annotations/' + encodeURIComponent(uri) }"
-        >{{ $t("DeviceDetails.annotation") }}</b-nav-item>
+        >{{ $t("DeviceDetails.annotation") }}
+          <span
+            v-if="!annotationsCountIsLoading && annotations > 0"
+            class ="tabWithElements"
+          >
+            {{$opensilex.$numberFormatter.formateResponse(annotations)}}
+          </span>
+        </b-nav-item>
 
         <b-nav-item
           :active="isDocumentTab()"
           :to="{ path: '/device/documents/' + encodeURIComponent(uri) }"
-        >{{ $t('DeviceDetails.documents') }}</b-nav-item>
+        >{{ $t('DeviceDetails.documents') }}
+          <span
+            v-if="!documentsCountIsLoading && documents > 0"
+            class ="tabWithElements"
+          >
+            {{$opensilex.$numberFormatter.formateResponse(documents)}}
+          </span>
+        </b-nav-item>
 
         </template>
     </opensilex-PageActions>
@@ -109,17 +142,42 @@
     import VueRouter from "vue-router";
     import {Component, Ref} from "vue-property-decorator";
     import Vue from "vue";
+    import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
     import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
     // @ts-ignore
     import {DeviceGetDTO, DevicesService} from "opensilex-core/index";
     import AnnotationList from "../annotations/list/AnnotationList.vue";
 
+    import {EventsService} from "opensilex-core/api/events.service";
+    import {AnnotationsService} from "opensilex-core/api/annotations.service";
+    import {DocumentsService} from "opensilex-core/api/documents.service";
+    import {PositionsService} from "opensilex-core/api/positions.service";
+    import {DataService} from "opensilex-core/api/data.service";
+
     @Component
     export default class DeviceDetails extends Vue {
-        $opensilex: any;
+        $opensilex: OpenSilexVuePlugin;
         $route: any;
 
         service: DevicesService;
+        $EventsService: EventsService
+        $AnnotationsService: AnnotationsService
+        $DocumentsService: DocumentsService
+        $PositionsService: PositionsService
+        $DataService: DataService
+
+        events: number;
+        annotations: number;
+        documents: number;
+        positions: number;
+        datafiles: number;
+
+        eventsCountIsLoading: boolean = true;
+        annotationsCountIsLoading: boolean = true;
+        documentsCountIsLoading: boolean = true;
+        positionsCountIsLoading: boolean = true;
+        datafilesCountIsLoading: boolean = true;
+
         uri = null;
         name: string = "";
 
@@ -152,9 +210,19 @@
         };
 
         created() {
-          this.service = this.$opensilex.getService("opensilex.DevicesService");
+          this.service = this.$opensilex.getService<DevicesService>("opensilex.DevicesService");
+          this.$EventsService = this.$opensilex.getService<EventsService>("opensilex.EventsService");
+          this.$AnnotationsService = this.$opensilex.getService<AnnotationsService>("opensilex.AnnotationsService");
+          this.$DocumentsService = this.$opensilex.getService<DocumentsService>("opensilex.DocumentsService");
+          this.$PositionsService = this.$opensilex.getService<PositionsService>("opensilex.PositionsService");
+          this.$DataService = this.$opensilex.getService<DataService>("opensilex.DataService");
           this.uri = decodeURIComponent(this.$route.params.uri);
           this.loadDevice(this.uri);
+          this.searchEvents();
+          this.searchAnnotations();
+          this.searchDocuments();
+          this.searchPositions();
+          this.searchDatafiles(this.uri);
         }
 
         loadDevice(uri: string) {
@@ -194,7 +262,82 @@
               return this.$route.path.startsWith("/device/positions/");
           }
 
+      searchEvents() {
+        return this.$EventsService
+          .countEvents(
+            [this.uri],
+            undefined,
+            undefined
+          ).then((http: HttpResponse<OpenSilexResponse<number>>) => {
+            if (http && http.response){
+              this.events = http.response.result as number;
+              this.eventsCountIsLoading = false;
+              return this.events
+            }
+          }).catch(this.$opensilex.errorHandler);
+      }
+
+    searchAnnotations() {
+      return this.$AnnotationsService
+        .countAnnotations(
+          this.uri,
+          undefined,
+          undefined
+        ).then((http: HttpResponse<OpenSilexResponse<number>>) => {
+          if (http && http.response){
+            this.annotations = http.response.result as number;
+            this.annotationsCountIsLoading = false;
+            return this.annotations
+          }
+        }
+      ).catch(this.$opensilex.errorHandler);
     }
+
+
+  searchDocuments(){
+    return this.$DocumentsService
+      .countDocuments(
+        this.uri,
+        undefined,
+        undefined
+      ).then((http: HttpResponse<OpenSilexResponse<number>>) => {
+        if (http && http.response){
+          this.documents = http.response.result as number;
+          this.documentsCountIsLoading = false;
+          return this.documents
+        }
+      }).catch(this.$opensilex.errorHandler);
+  }
+  
+  searchPositions(){
+    return this.$PositionsService
+      .countMoves(
+        this.uri,
+        undefined,
+        undefined
+      ).then((http: HttpResponse<OpenSilexResponse<number>>) => {
+        if (http && http.response){
+          this.positions = http.response.result as number;
+          this.positionsCountIsLoading = false;
+          return this.positions
+        }
+      }).catch(this.$opensilex.errorHandler);
+  }
+
+  searchDatafiles(uri){
+    return this.$DataService
+    .countDatafiles(
+      undefined,
+      [uri]
+    ).then((http: HttpResponse<OpenSilexResponse<number>>) => {
+      if (http && http.response){
+        this.datafiles = http.response.result as number;
+        this.datafilesCountIsLoading = false;
+        return this.datafiles
+      }
+    }).catch(this.$opensilex.errorHandler);
+  }
+}
 </script>
 
 <style lang="scss">

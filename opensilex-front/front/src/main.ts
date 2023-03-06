@@ -216,7 +216,7 @@ let i18nOptions = {
   silentFallbackWarn: !isDebug,
   messages: {
     "en": {
-      "dateTimeLocale": "en-US" // Necessary for date & time formatting
+      "dateTimeLocale": "en-GB" // Necessary for date & time formatting
     },
     "fr": {
       "dateTimeLocale": "fr-FR"

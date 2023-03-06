@@ -10,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.opensilex.OpenSilex;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.update.OpenSilexModuleUpdate;
+import org.opensilex.utils.AnsiUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
@@ -93,15 +94,23 @@ public class SystemCommands extends AbstractOpenSilexCommand implements OpenSile
         try {
             OpenSilexModuleUpdate update = loadModuleUpdate(updateClassPath);
 
-            LOGGER.info("[{}] Running update {description: {}, date: {} }", updateClassPath, update.getDescription(), update.getDate());
+            AnsiUtils.logDebug(LOGGER, "[{}] Running update {description: {}, date: {} }", updateClassPath, update.getDescription(), update.getDate());
             Instant begin = Instant.now();
             update.execute();
 
             long elapsedMs = Duration.between(begin, Instant.now()).toMillis();
-            LOGGER.info("[{}] Update run [OK] {time: {} ms}", updateClassPath, elapsedMs);
+            AnsiUtils.logDebug(LOGGER, "[{}] Update run [OK] {time: {} ms}", updateClassPath, elapsedMs);
 
         } catch (Exception e) {
             throw new OpensilexCommandException(this, e);
+        }
+        finally {
+            try {
+                getOpenSilex().shutdown();
+            } catch (Exception e) {
+                AnsiUtils.logError(LOGGER,"Error on OpenSILEX shutdown() : {}", e.getMessage());
+                throw new RuntimeException(e);
+            }
         }
     }
 

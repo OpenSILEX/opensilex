@@ -83,6 +83,10 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
         return sparql;
     }
 
+    public static SPARQLService newSparqlService(){
+        return getOpensilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class).provide();
+    }
+
     private AuthenticationService authentication;
 
     public AuthenticationService getAuthenticationService() {

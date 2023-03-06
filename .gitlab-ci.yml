@@ -30,6 +30,7 @@ variables:
   MAVEN_CLI_OPTS: "--batch-mode --show-version -c"
   MAVEN_CACHE_FOLDER: "$CI_PROJECT_DIR/.m2/repository"
   MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
+  MAVEN_OPTS_SCHUEDULES: "-Dhttps.protocols=TLSv1.2 -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=ERROR -Dorg.slf4j.simpleLogger.defaultLogLevel=error -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
   MAVEN_SKIP_TESTS: "false"
   # DEFAULT SERVER MAVEN VERSION
   MVN_VERSION: 3.6.3
@@ -153,7 +154,7 @@ variables:
   script:
     - apk add curl git
     # - If there is no release branch, then develop is deployed
-    # - Otherwise, nothing is deployed 
+    # - Otherwise, nothing is deployed
     - |
       if git ls-remote --exit-code --heads origin release && [[ "$CI_COMMIT_BRANCH" == "develop" ]]; then
         echo 'Branch release exists, cannot deploy develop';
@@ -276,11 +277,11 @@ test:opensilex-master:deploy:
       when: on_success
   needs:
     - opensilex-master:build
- 
+
 
 # Trigger pipeline for the deployment of the develop branch
 # - If there is no release branch, then develop is deployed
-# - Otherwise, nothing is deployed 
+# - Otherwise, nothing is deployed
 #  see deploy_opensilex_template script
 test:opensilex-develop:deploy:
   <<: *deploy_opensilex_before_script
@@ -483,7 +484,7 @@ update:nightly:builds:branch:
   stage: build
   image: maven:$MVN_VERSION-openjdk-$JAVA_VERSION-slim
   script:
-    - mvn clean install $MAVEN_CLI_OPTS -Drevision=$OPENSILEX_APP_REVISION
+    - mvn clean install $MAVEN_OPTS -Drevision=$OPENSILEX_APP_REVISION
     - ls $OPENSILEX_BUILD_PATH/opensilex-release-$OPENSILEX_APP_REVISION
     - mv $OPENSILEX_BUILD_PATH/opensilex-release-$OPENSILEX_APP_REVISION $OPENSILEX_APP_REVISION
   rules:
@@ -517,9 +518,9 @@ pages:
   script:
     - ln -s $JAVA_HOME java.home
     - cd $CI_PROJECT_DIR/opensilex-swagger-codegen-maven-plugin
-    - mvn install $MAVEN_CLI_OPTS
+    - mvn install $MAVEN_OPTS_SCHUEDULES
     - cd $CI_PROJECT_DIR
-    - mvn install site $MAVEN_CLI_OPTS -Pwith-test-report -Pwith-security-check -DskipFrontBuild
+    - mvn install site $MAVEN_OPTS_SCHUEDULES -Pwith-test-report -Pwith-security-check -DskipFrontBuild -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=ERROR
     - mkdir public
     - mv $CI_PROJECT_DIR/opensilex-doc/src/main/resources/generated/* public
   artifacts:

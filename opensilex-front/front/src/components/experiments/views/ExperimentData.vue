@@ -109,6 +109,7 @@
                       :viewHandlerDetailsVisible="visibleDetails"
                       :key="refreshKey"
                       class="searchFilter"
+                      @handlingEnterKey="refresh()"
                     ></opensilex-DataProvenanceSelector>
 
                     <b-collapse

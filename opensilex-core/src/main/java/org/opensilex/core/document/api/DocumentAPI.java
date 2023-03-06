@@ -336,4 +336,22 @@ public class DocumentAPI {
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
 
+    @GET
+    @Path("count")
+    @ApiOperation("Count documents")
+    @ApiProtected
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return the number of documents associated to a given target", response = Integer.class)
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response countDocuments(
+            @ApiParam(value = "Target URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("target") URI target) throws Exception {
+
+        DocumentDAO dao = new DocumentDAO(sparql, nosql, fs);
+        int documentCount = dao.countDocuments(target);
+
+        return new SingleObjectResponse<>(documentCount).getResponse();
+    }
+
 }

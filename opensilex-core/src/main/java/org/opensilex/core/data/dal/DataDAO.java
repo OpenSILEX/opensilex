@@ -34,6 +34,7 @@ import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;

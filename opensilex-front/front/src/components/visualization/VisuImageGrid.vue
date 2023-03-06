@@ -53,7 +53,7 @@ export default class VisuImageGrid extends Vue {
       this.visuImageSingle.forEach(element => {
         element.onImagePointClick(toReturn);
         let el = document.getElementById(toReturn.imageIndex);
-        if (el){
+        if (el) {
           el.scrollIntoView(true);
         }
       });
@@ -65,7 +65,7 @@ export default class VisuImageGrid extends Vue {
 <style scoped lang="scss">
 .row {
   margin-left: 0px;
-  margin-bottom: auto;
+  margin-bottom: 15px;
 }
 
 .images {

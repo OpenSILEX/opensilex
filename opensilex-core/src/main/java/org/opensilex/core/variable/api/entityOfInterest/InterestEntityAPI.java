@@ -5,56 +5,43 @@
 //******************************************************************************
 package org.opensilex.core.variable.api.entityOfInterest;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import javax.inject.Inject;
-import javax.validation.Valid;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
+import io.swagger.annotations.*;
+import org.opensilex.core.CoreModule;
+import org.opensilex.core.external.opensilex.SharedResourceInstanceService;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.variable.api.VariableAPI;
-import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_DELETE_ID;
-import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_DELETE_LABEL_KEY;
-import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_GROUP_ID;
-import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_MODIFICATION_ID;
-import static org.opensilex.core.variable.api.VariableAPI.CREDENTIAL_VARIABLE_MODIFICATION_LABEL_KEY;
 import org.opensilex.core.variable.dal.BaseVariableDAO;
 import org.opensilex.core.variable.dal.InterestEntityModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.server.response.ErrorDTO;
-import org.opensilex.server.response.ErrorResponse;
-import org.opensilex.server.response.ObjectUriResponse;
-import org.opensilex.server.response.PaginatedListResponse;
-import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.server.response.*;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
+
+import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.net.URI;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.opensilex.core.variable.api.VariableAPI.*;
 
 /**
  * @author Hamza IKIOU
@@ -69,9 +56,19 @@ import org.opensilex.utils.OrderBy;
 public class InterestEntityAPI {
     
     public static final String PATH = "/core/entities_of_interest";
-    
+    public static final String GET_BY_URIS_PATH = "by_uris";
+    public static final String GET_BY_URIS_URI_PARAM = "uris";
+
+    private static final String SHARED_RESOURCE_INSTANCE_PARAM = "sharedResourceInstance";
+
     @Inject
     private SPARQLService sparql;
+
+    @Inject
+    private CoreModule coreModule;
+
+    @Context
+    protected HttpServletRequest httpRequest;
 
     @CurrentUser
     AccountModel currentUser;
@@ -130,7 +127,7 @@ public class InterestEntityAPI {
     }
 
     @GET
-    @Path("by_uris")
+    @Path(InterestEntityAPI.GET_BY_URIS_PATH)
     @ApiOperation("Get detailed entities of interest by uris")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
@@ -141,26 +138,36 @@ public class InterestEntityAPI {
         @ApiResponse(code = 404, message = "Entity of interest not found (if any provided URIs is not found", response = ErrorDTO.class)
     })
     public Response getInterestEntitiesByURIs(
-            @ApiParam(value = "Entities of interest URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
+            @ApiParam(value = "Entities of interest URIs", required = true) @QueryParam(InterestEntityAPI.GET_BY_URIS_URI_PARAM) @NotNull List<URI> uris,
+            @ApiParam(value = "Shared resource instance") @QueryParam(InterestEntityAPI.SHARED_RESOURCE_INSTANCE_PARAM) URI sharedResourceInstance
     ) throws Exception {
-        
-        BaseVariableDAO<InterestEntityModel> dao = new BaseVariableDAO<>(InterestEntityModel.class, sparql);
-        List<InterestEntityModel> models = dao.getList(uris);
+        if (sharedResourceInstance == null) {
+            BaseVariableDAO<InterestEntityModel> dao = new BaseVariableDAO<>(InterestEntityModel.class, sparql);
+            List<InterestEntityModel> models = dao.getList(uris);
 
-        if (!models.isEmpty()) {
-            List<InterestEntityDetailsDTO> resultDTOList = new ArrayList<>(models.size());
-            models.forEach(result -> {
-                resultDTOList.add(new InterestEntityDetailsDTO(result));
-            });
+            if (!models.isEmpty()) {
+                List<InterestEntityDetailsDTO> resultDTOList = new ArrayList<>(models.size());
+                models.forEach(result -> {
+                    resultDTOList.add(new InterestEntityDetailsDTO(result));
+                });
 
-            return new PaginatedListResponse<>(resultDTOList).getResponse();
-        } else {
-            // Otherwise return a 404 - NOT_FOUND error response
-            return new ErrorResponse(Response.Status.NOT_FOUND, "Entities of interest not found", "Unknown entity of interest URIs").getResponse();
+                return new PaginatedListResponse<>(resultDTOList).getResponse();
+            } else {
+                return new ErrorResponse(Response.Status.NOT_FOUND, "Entities of interest not found", "Unknown entity of interest URIs").getResponse();
+            }
         }
+
+        SharedResourceInstanceService service = new SharedResourceInstanceService(
+                coreModule.getSharedResourceInstanceConfiguration(sharedResourceInstance), currentUser.getLanguage()
+        );
+
+        ListWithPagination<InterestEntityDetailsDTO> detailsList = service.getListByURI(Paths.get(InterestEntityAPI.PATH, InterestEntityAPI.GET_BY_URIS_PATH).toString(),
+                InterestEntityAPI.GET_BY_URIS_URI_PARAM,
+                uris, InterestEntityDetailsDTO.class);
+        return new PaginatedListResponse<>(detailsList).getResponse();
     }
 
-    
+
     @PUT
     @ApiOperation("Update an entity of interest")
     @ApiProtected
@@ -220,22 +227,33 @@ public class InterestEntityAPI {
             @ApiParam(value = "Name (regex)", example = "plot") @QueryParam("name") String namePattern ,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @Min(0) int pageSize
-    ) throws Exception {
+            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @Min(0) int pageSize,
+            @ApiParam(value = "Shared resource instance") @QueryParam(InterestEntityAPI.SHARED_RESOURCE_INSTANCE_PARAM) URI sharedResourceInstance
+            ) throws Exception {
+        if (sharedResourceInstance == null) {
+            BaseVariableDAO<InterestEntityModel> dao = new BaseVariableDAO<>(InterestEntityModel.class, sparql);
+            ListWithPagination<InterestEntityModel> resultList = dao.search(
+                    namePattern,
+                    orderByList,
+                    page,
+                    pageSize,
+                    currentUser.getLanguage()
+            );
 
-        BaseVariableDAO<InterestEntityModel> dao = new BaseVariableDAO<>(InterestEntityModel.class, sparql);
-        ListWithPagination<InterestEntityModel> resultList = dao.search(
-                namePattern,
-                orderByList,
-                page,
-                pageSize,
-                currentUser.getLanguage()
+            ListWithPagination<InterestEntityGetDTO> resultDTOList = resultList.convert(
+                    InterestEntityGetDTO.class,
+                    InterestEntityGetDTO::new
+            );
+            return new PaginatedListResponse<>(resultDTOList).getResponse();
+        }
+
+        SharedResourceInstanceService service = new SharedResourceInstanceService(
+                coreModule.getSharedResourceInstanceConfiguration(sharedResourceInstance), currentUser.getLanguage()
         );
 
-        ListWithPagination<InterestEntityGetDTO> resultDTOList = resultList.convert(
-                InterestEntityGetDTO.class,
-                InterestEntityGetDTO::new
-        );
-        return new PaginatedListResponse<>(resultDTOList).getResponse();
+        Map<String, String[]> searchParams = new HashMap<>(httpRequest.getParameterMap());
+        searchParams.remove(InterestEntityAPI.SHARED_RESOURCE_INSTANCE_PARAM);
+        return new PaginatedListResponse<>(service.search(InterestEntityAPI.PATH, searchParams, InterestEntityGetDTO.class))
+                .getResponse();
     }
 }

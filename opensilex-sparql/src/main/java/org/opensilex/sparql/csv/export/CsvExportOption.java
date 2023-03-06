@@ -52,6 +52,26 @@ public class CsvExportOption<T extends SPARQLResourceModel> {
         return this;
     }
 
+    public Class<T> getObjectClass() {
+        return objectClass;
+    }
+
+    public URI getClassURI() {
+        return classURI;
+    }
+
+    public String getLang() {
+        return lang;
+    }
+
+    public Set<String> getColumns() {
+        return columns;
+    }
+
+    public char getMultiValuedCellSeparator() {
+        return multiValuedCellSeparator;
+    }
+
     public CsvExportOption<T> setMultiValuedCellSeparator(char multiValuedCellSeparator) {
         this.multiValuedCellSeparator = multiValuedCellSeparator;
         return this;

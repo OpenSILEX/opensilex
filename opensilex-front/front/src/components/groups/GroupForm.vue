@@ -23,6 +23,7 @@
       :value.sync="form.description"
       label="component.common.description"
       :required="true"
+      @keydown.native.enter.stop
       placeholder="component.group.form-description-placeholder"
     ></opensilex-TextAreaForm>
 
@@ -31,6 +32,7 @@
       v-if="form.user_profiles"
       ref="userProfilesRef"
       :profiles.sync="form.user_profiles"
+      @keydown.native.enter.stop
     ></opensilex-GroupUserProfileForm>
   </b-form>
 </template>

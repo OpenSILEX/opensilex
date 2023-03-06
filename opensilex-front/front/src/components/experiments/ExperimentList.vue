@@ -33,6 +33,7 @@
                       :filter.sync="filter.name"
                       placeholder="ExperimentList.filter-label-placeholder"
                       class="searchFilter"
+                      @handlingEnterKey="refresh()"
                     ></opensilex-StringFilter>
                   </b-form-group>
                 </opensilex-FilterField>
@@ -91,6 +92,7 @@
                     :filter.sync="filter.yearFilter"
                     type="number"
                     class="searchFilter"
+                    @handlingEnterKey="refresh()"
                   ></opensilex-StringFilter>
                 </opensilex-FilterField><br>
               </div>
@@ -112,6 +114,7 @@
                     @clear="refreshProjectSelector"
                     :limit="1"
                     class="searchFilter"
+                    @handlingEnterKey="refresh()"
                   ></opensilex-SelectForm>
                 </opensilex-FilterField>
               </div>
@@ -126,6 +129,7 @@
                     :selected.sync="filter.state"
                     :options="experimentStates"
                     class="searchFilter"
+                    @handlingEnterKey="refresh()"
                   ></opensilex-SelectForm>
                 </opensilex-FilterField>
               </div>

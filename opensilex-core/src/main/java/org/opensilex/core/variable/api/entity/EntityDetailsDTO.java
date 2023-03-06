@@ -45,5 +45,10 @@ public class EntityDetailsDTO extends BaseVariableDetailsDTO<EntityModel> {
         return description;
     }
 
-
+    @Override
+    public EntityModel toModel() {
+        EntityModel model = new EntityModel();
+        setBasePropertiesToModel(model);
+        return model;
+    }
 }

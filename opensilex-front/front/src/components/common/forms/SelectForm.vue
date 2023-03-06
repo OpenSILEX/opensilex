@@ -29,6 +29,7 @@
           @deselect="removeItem"
           @open="showModal"
           :limit="limit"
+          @keyup.enter.native="onEnter"
         >
           <template v-slot:option-label="{ node }">
             <slot name="option-label" v-bind:node="node">{{ node.label }}</slot>
@@ -69,6 +70,8 @@
           :search-nested="searchNested"
           :show-count="showCount"
           :limit="limit"
+          @keyup.enter.native="onEnter"
+
         >
           <template v-slot:option-label="{ node }">
             <slot name="option-label" v-bind:node="node"> <div class="label" :title="node.label">{{ node.label }}</div></slot>
@@ -389,6 +392,10 @@ export default class SelectForm extends Vue {
     });
   }
 
+  onEnter() {
+      this.$emit("handlingEnterKey")
+  }
+
   public findInTree(tree, id) {
     for (let i in tree) {
       let item = tree[i];
@@ -504,7 +511,7 @@ export default class SelectForm extends Vue {
     this.selectedCopie = this.selectedTmp.slice();
     this.searchModal.unSelect(item);
   }
-  
+
   selectAll(selectedValues) {
     if(selectedValues){  
       // copy selected items in local variable to wait validate action and then, change the selection
@@ -616,7 +623,7 @@ export default class SelectForm extends Vue {
 
   debounceSearch;
 
-  refresh(){ 
+  refresh(){
       this.$opensilex.disableLoader();
          let query = ".*";
        this
@@ -632,7 +639,7 @@ export default class SelectForm extends Vue {
            this.$opensilex.enableLoader();
         })
         .catch(this.$opensilex.errorHandler);
- 
+
   }
 
   debounce(func, wait, immediate?): Function {

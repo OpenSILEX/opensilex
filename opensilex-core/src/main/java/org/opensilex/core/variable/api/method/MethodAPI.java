@@ -6,6 +6,8 @@
 package org.opensilex.core.variable.api.method;
 
 import io.swagger.annotations.*;
+import org.opensilex.core.CoreModule;
+import org.opensilex.core.external.opensilex.SharedResourceInstanceService;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.variable.api.VariableAPI;
 import org.opensilex.core.variable.dal.BaseVariableDAO;
@@ -25,14 +27,19 @@ import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 
 import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
+import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.opensilex.core.variable.api.VariableAPI.*;
@@ -46,9 +53,19 @@ import static org.opensilex.core.variable.api.VariableAPI.*;
 public class MethodAPI {
 
     public static final String PATH = "/core/methods";
+    public static final String GET_BY_URIS_PATH = "by_uris";
+    public static final String GET_BY_URIS_URI_PARAM = "uris";
+
+    private static final String SHARED_RESOURCE_INSTANCE_PARAM = "sharedResourceInstance";
 
     @Inject
     private SPARQLService sparql;
+
+    @Inject
+    private CoreModule coreModule;
+
+    @Context
+    protected HttpServletRequest httpRequest;
 
     @CurrentUser
     AccountModel currentUser;
@@ -111,7 +128,7 @@ public class MethodAPI {
     
     
     @GET
-    @Path("by_uris")
+    @Path(MethodAPI.GET_BY_URIS_PATH)
     @ApiOperation("Get detailed methods by uris")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
@@ -122,22 +139,33 @@ public class MethodAPI {
         @ApiResponse(code = 404, message = "Method not found (if any provided URIs is not found", response = ErrorDTO.class)
     })
     public Response getMethodsByURIs(
-            @ApiParam(value = "Methods URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
+            @ApiParam(value = "Methods URIs", required = true) @QueryParam(MethodAPI.GET_BY_URIS_URI_PARAM) @NotNull List<URI> uris,
+            @ApiParam(value = "Shared resource instance") @QueryParam(MethodAPI.SHARED_RESOURCE_INSTANCE_PARAM) URI sharedResourceInstance
     ) throws Exception {
-        
-        BaseVariableDAO<MethodModel> dao = new BaseVariableDAO<>(MethodModel.class, sparql);
+        if (sharedResourceInstance == null) {
+            BaseVariableDAO<MethodModel> dao = new BaseVariableDAO<>(MethodModel.class, sparql);
 
-        try {
-            List<MethodDetailsDTO> resultDTOList = dao.getList(uris)
-                    .stream()
-                    .map(MethodDetailsDTO::new)
-                    .collect(Collectors.toList());
+            try {
+                List<MethodDetailsDTO> resultDTOList = dao.getList(uris)
+                        .stream()
+                        .map(MethodDetailsDTO::new)
+                        .collect(Collectors.toList());
 
-            return new PaginatedListResponse<>(resultDTOList).getResponse();
+                return new PaginatedListResponse<>(resultDTOList).getResponse();
 
-        }catch (SPARQLInvalidUriListException e){
-            return new ErrorResponse(Response.Status.NOT_FOUND, "Methods not found", e.getStrUris()).getResponse();
+            } catch (SPARQLInvalidUriListException e) {
+                return new ErrorResponse(Response.Status.NOT_FOUND, "Methods not found", e.getStrUris()).getResponse();
+            }
         }
+
+        SharedResourceInstanceService service = new SharedResourceInstanceService(
+                coreModule.getSharedResourceInstanceConfiguration(sharedResourceInstance), currentUser.getLanguage()
+        );
+
+        ListWithPagination<MethodDetailsDTO> detailsList = service.getListByURI(Paths.get(MethodAPI.PATH, MethodAPI.GET_BY_URIS_PATH).toString(),
+                MethodAPI.GET_BY_URIS_URI_PARAM,
+                uris, MethodDetailsDTO.class);
+        return new PaginatedListResponse<>(detailsList).getResponse();
     }
     
     
@@ -202,22 +230,33 @@ public class MethodAPI {
             @ApiParam(value = "Name (regex)", example = "ImageAnalysis") @QueryParam("name") String namePattern,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @Min(0) int pageSize
-    ) throws Exception {
+            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @Min(0) int pageSize,
+            @ApiParam(value = "Shared resource instance") @QueryParam(MethodAPI.SHARED_RESOURCE_INSTANCE_PARAM) URI sharedResourceInstance
+            ) throws Exception {
+        if (sharedResourceInstance == null) {
+            BaseVariableDAO<MethodModel> dao = new BaseVariableDAO<>(MethodModel.class, sparql);
+            ListWithPagination<MethodModel> resultList = dao.search(
+                    namePattern,
+                    orderByList,
+                    page,
+                    pageSize,
+                    currentUser.getLanguage()
+            );
 
-        BaseVariableDAO<MethodModel> dao = new BaseVariableDAO<>(MethodModel.class, sparql);
-        ListWithPagination<MethodModel> resultList = dao.search(
-                namePattern,
-                orderByList,
-                page,
-                pageSize,
-                currentUser.getLanguage()
+            ListWithPagination<MethodGetDTO> resultDTOList = resultList.convert(
+                    MethodGetDTO.class,
+                    MethodGetDTO::new
+            );
+            return new PaginatedListResponse<>(resultDTOList).getResponse();
+        }
+
+        SharedResourceInstanceService service = new SharedResourceInstanceService(
+                coreModule.getSharedResourceInstanceConfiguration(sharedResourceInstance), currentUser.getLanguage()
         );
 
-        ListWithPagination<MethodGetDTO> resultDTOList = resultList.convert(
-                MethodGetDTO.class,
-                MethodGetDTO::new
-        );
-        return new PaginatedListResponse<>(resultDTOList).getResponse();
+        Map<String, String[]> searchParams = new HashMap<>(httpRequest.getParameterMap());
+        searchParams.remove(MethodAPI.SHARED_RESOURCE_INSTANCE_PARAM);
+        return new PaginatedListResponse<>(service.search(MethodAPI.PATH, searchParams, MethodGetDTO.class))
+                .getResponse();
     }
 }

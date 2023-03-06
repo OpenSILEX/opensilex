@@ -11,6 +11,7 @@
     noResultsText="component.user.filter-search-no-result"
     @select="select"
     @deselect="deselect"
+    @keyup.enter.native="onEnter"
   ></opensilex-SelectForm>
 </template>
 
@@ -69,6 +70,10 @@ export default class UserSelector extends Vue {
 
   deselect(value) {
     this.$emit("deselect", value);
+  }
+
+  onEnter() {
+    this.$emit("handlingEnterKey")
   }
 }
 </script>

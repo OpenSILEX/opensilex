@@ -1,29 +1,32 @@
 <template>
   <opensilex-SelectForm
+    ref="selectForm"
     :label="label"
     :selected.sync="interestEntityURI"
     :multiple="multiple"
     :searchMethod="searchInterestEntities"
+    :itemLoadingMethod="loadInterestEntities"
     :clearable="clearable"
     :placeholder="placeholder"
     noResultsText="component.interestEntity.form.selector.filter-search-no-result"
     @clear="$emit('clear')"
     @select="select"
     @deselect="deselect"
+    @keyup.enter.native="onEnter"
   ></opensilex-SelectForm>
 </template>
 
 <script lang="ts">
-import {Component, Prop, PropSync} from "vue-property-decorator";
+import {Component, Prop, PropSync, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
 import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
-// @ts-ignore
 import {InterestEntityGetDTO} from "opensilex-core/index";
+import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
+import {VariablesService} from "opensilex-core/api/variables.service";
 
 @Component
 export default class InterestEntitySelector extends Vue {
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
 
   @PropSync("interestEntity")
   interestEntityURI;
@@ -37,15 +40,34 @@ export default class InterestEntitySelector extends Vue {
   @Prop()
   clearable;
 
+  @Prop()
+  sharedResourceInstance;
+
+  @Ref("selectForm") readonly selectForm!: any;
+
+  @Watch("sharedResourceInstance")
+  onSriChange() {
+    this.selectForm.refresh();
+  }
+
   get placeholder() {
     return this.multiple
       ? "component.interestEntity.form.selector.placeholder-multiple"
       : "component.interestEntity.form.selector.placeholder";
   }
-  
-  searchInterestEntities(name) {
-    return this.$opensilex.getService("opensilex.VariablesService")
-    .searchInterestEntity(name, ["name=asc"], 0, 10)    
+
+  loadInterestEntities(interestEntities): Promise<Array<InterestEntityGetDTO>> {
+    return this.$opensilex.getService<VariablesService>("opensilex.VariablesService")
+      .getInterestEntitiesByURIs(interestEntities, this.sharedResourceInstance)
+      .then((http: HttpResponse<OpenSilexResponse<Array<InterestEntityGetDTO>>>) => {
+        return http.response.result;
+      })
+      .catch(this.$opensilex.errorHandler);
+  }
+
+  searchInterestEntities(name): Promise<HttpResponse<OpenSilexResponse<Array<InterestEntityGetDTO>>>> {
+    return this.$opensilex.getService<VariablesService>("opensilex.VariablesService")
+    .searchInterestEntity(name, ["name=asc"], 0, 10, this.sharedResourceInstance)
     .then((http: HttpResponse<OpenSilexResponse<Array<InterestEntityGetDTO>>>) => {
         return http;
     });
@@ -57,6 +79,10 @@ export default class InterestEntitySelector extends Vue {
 
   deselect(value) {
     this.$emit("deselect", value);
+  }
+
+  onEnter() {
+    this.$emit("handlingEnterKey")
   }
 }
 </script>

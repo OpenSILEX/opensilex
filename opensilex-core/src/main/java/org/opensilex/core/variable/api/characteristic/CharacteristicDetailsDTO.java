@@ -44,4 +44,11 @@ public class CharacteristicDetailsDTO extends BaseVariableDetailsDTO<Characteris
         return description;
     }
 
+    @Override
+    public CharacteristicModel toModel() {
+        CharacteristicModel model = new CharacteristicModel();
+        setBasePropertiesToModel(model);
+        return model;
+    }
+
 }

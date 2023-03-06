@@ -1,5 +1,18 @@
 <template>
-  <span>{{formatDate(value)}}</span>
+  <div class="static-field"  v-if="label">
+    <span class="field-view-title">{{ $t(label) }}</span>
+    <span
+        :title="formattedISODate"
+    >
+      {{ formattedDate }}
+    </span>
+  </div>
+  <span
+      v-else
+      :title="formattedISODate"
+  >
+    {{ formattedDate }}
+  </span>
 </template>
 
 <script lang="ts">
@@ -16,14 +29,36 @@ export default class DateView extends Vue {
   value: string;
 
   @Prop()
+  label: string;
+
+  @Prop()
   isDatetime: boolean;
 
-  formatDate(value: string): string {
-    if(this.isDatetime){
-      return this.$opensilex.$dateTimeFormatter.formatISODateTime(value);
-    }else{
-      return this.$opensilex.$dateTimeFormatter.formatISODate(value);
-    } 
+  @Prop()
+  dateTimeFormatOptions: Intl.DateTimeFormatOptions;
+
+  @Prop({default: false})
+  useLocaleFormat: boolean;
+
+  get formattedDate(): string {
+    if (this.useLocaleFormat) {
+      return this.formattedLocaleDate;
+    }
+    return this.formattedISODate;
+  }
+
+  get formattedISODate(): string {
+    if (this.isDatetime) {
+      return this.$opensilex.$dateTimeFormatter.formatISODateTime(this.value);
+    }
+    return this.$opensilex.$dateTimeFormatter.formatISODate(this.value);
+  }
+
+  get formattedLocaleDate(): string {
+    if (this.isDatetime) {
+      return this.$opensilex.$dateTimeFormatter.formatLocaleDateTime(this.value, this.dateTimeFormatOptions);
+    }
+    return this.$opensilex.$dateTimeFormatter.formatLocaleDate(this.value, this.dateTimeFormatOptions);
   }
 }
 </script>

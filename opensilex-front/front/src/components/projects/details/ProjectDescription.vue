@@ -96,6 +96,8 @@
         <opensilex-AssociatedExperimentsList
             :searchMethod="loadExperiments"
             :nameFilter.sync="experimentName"
+            :debounce="300"
+            :lazy="false"
         ></opensilex-AssociatedExperimentsList>
       </div>
     </div>

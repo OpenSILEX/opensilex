@@ -40,6 +40,7 @@
                 :filter.sync="filter.name"
                 placeholder="ScientificObjectList.name-placeholder"
                 class="searchFilter"
+                @handlingEnterKey="refresh()"
               ></opensilex-StringFilter>
             </opensilex-FilterField><br>
             </div>
@@ -52,6 +53,7 @@
                 :multiple="false"
                 :experiments.sync="filter.experiment"
                 class="searchFilter"
+                @handlingEnterKey="refresh()"
               ></opensilex-ExperimentSelector>
             </opensilex-FilterField>
             </div>
@@ -64,6 +66,7 @@
                 :types.sync="filter.types"
                 :multiple="true"
                 class="searchFilter"
+                @handlingEnterKey="refresh()"
               ></opensilex-ScientificObjectTypeSelector>
             </opensilex-FilterField>
             </div>
@@ -78,6 +81,7 @@
                 :germplasm.sync="filter.germplasm"
                 :experiment="filter.experiment"
                 class="searchFilter"
+                @handlingEnterKey="refresh()"
               ></opensilex-GermplasmSelector>
             </opensilex-FilterField>
             </div>
@@ -94,6 +98,7 @@
                   :multiple="true"
                   :required="false"
                   class="searchFilter"
+                  @handlingEnterKey="refresh()"
                 ></opensilex-FactorLevelSelector>
               </b-form-group>
             </opensilex-FilterField>

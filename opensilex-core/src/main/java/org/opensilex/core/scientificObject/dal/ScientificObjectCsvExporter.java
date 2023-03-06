@@ -14,10 +14,7 @@ import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.service.SPARQLService;
 
 import java.net.URI;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class ScientificObjectCsvExporter extends AbstractCsvExporter<ScientificObjectModel> {
 
@@ -34,20 +31,16 @@ public class ScientificObjectCsvExporter extends AbstractCsvExporter<ScientificO
     ) {
         super(sparql);
 
-        Set<String> customColumns = new LinkedHashSet<>();
-        customColumns.add(RDFS.label.toString());
-
+        final Set<String> customColumns;
         if (experiment != null) {
-            customColumns.add(Oeso.isPartOf.toString());
-            customColumns.add(Oeso.hasCreationDate.toString());
-            customColumns.add(Oeso.hasDestructionDate.toString());
-            customColumns.add(Oeso.hasFactorLevel.toString());
-            customColumns.add(Oeso.isHosted.toString());
-            customColumns.add(Oeso.hasReplication.toString());
-            customColumns.add(Oeso.isHosted.toString());
-            customColumns.add(Oeso.isPartOf.toString());
+            // just let the export find which properties are associated to an OS
+            customColumns = Collections.emptySet();
+        }else{
+            // only export name and geometry when out of experimental context
+            customColumns = new LinkedHashSet<>();
+            customColumns.add(RDFS.label.toString());
+            customColumns.add(Oeso.hasGeometry.toString());
         }
-        customColumns.add(Oeso.hasGeometry.toString());
 
         exportOptions = new CsvExportOption<ScientificObjectModel>()
                 .setClassURI(URI.create(Oeso.ScientificObject.getURI()))

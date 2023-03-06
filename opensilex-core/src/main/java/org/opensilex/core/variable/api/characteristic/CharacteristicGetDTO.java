@@ -1,12 +1,12 @@
 package org.opensilex.core.variable.api.characteristic;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.opensilex.core.variable.api.BaseVariableGetDTO;
 import org.opensilex.core.variable.dal.CharacteristicModel;
-import org.opensilex.sparql.response.ObjectNamedResourceDTO;
 
 import java.net.URI;
 
-public class CharacteristicGetDTO extends ObjectNamedResourceDTO {
+public class CharacteristicGetDTO extends BaseVariableGetDTO<CharacteristicModel> {
 
     public CharacteristicGetDTO(CharacteristicModel model) {
         super(model);

@@ -38,6 +38,8 @@
         :filter.sync="filter"
         @update="updateFilter()"
         placeholder="component.facility.filter-placeholder"
+        :debounce="300"
+        :lazy="false"
     ></opensilex-StringFilter>
 
     <b-table

@@ -1677,6 +1677,15 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
 
 
 
+    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#fromSharedResourceInstance">
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#VariableBase"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#anyURI"/>
+        <rdfs:label xml:lang="en">Comes from the shared resource instance</rdfs:label>
+        <rdfs:label xml:lang="fr">Provient de l'instance de ressources partagées</rdfs:label>
+    </owl:DatatypeProperty>
+
+
+
     <!-- http://www.opensilex.org/vocabulary/oeso#VariablesGroup -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#VariablesGroup">

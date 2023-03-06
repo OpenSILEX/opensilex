@@ -109,22 +109,6 @@
             </div>
 
           </template>            
-
-          <!-- <template v-slot:advancedSearch>
-            <opensilex-FilterField :halfWidth="true">
-              <div class="row">
-                <div class="col col-xl-6 col-md-6 col-sm-6 col-12">
-                  <label for="metadataKey">{{ $t("DataVisuForm.search.metadataKey") }}</label>
-                  <opensilex-StringFilter id="metadataKey" :filter.sync="filter.metadataKey" @update="onUpdate"></opensilex-StringFilter>
-                </div>
-                <div class="col col-xl-6 col-md-6 col-sm-6 col-12">
-                  <label for="metadataValue">{{ $t("DataVisuForm.search.metadataValue") }}</label>
-                  <opensilex-StringFilter id="metadataValue" :filter.sync="filter.metadataValue"  @update="onUpdate"></opensilex-StringFilter>
-                </div>
-              </div>
-            </opensilex-FilterField>
-          </template> -->
-          
         </opensilex-SearchFilterField>
         </div>
       </Transition>
@@ -134,7 +118,8 @@
           <opensilex-DataFilesList 
             ref="datafilesList"
             :filter="filter"
-            class="datafilesList">
+            class="datafilesList"
+            @redirectToDetail="redirectToDetail">
           </opensilex-DataFilesList>
         </div>
       </div>
@@ -316,6 +301,9 @@ export default class ScientificObjectDataFiles extends Vue {
     return  this.$t("searchfilter.label")
   }
 
+  redirectToDetail(){
+    this.$emit("redirectToDetail")
+  }
 }
 </script>
 

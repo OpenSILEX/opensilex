@@ -23,7 +23,8 @@
       :value.sync="form.description"
       label="component.common.description"
       :required="false"
-      placeholder="component.group.form-description-placeholder">
+      placeholder="component.group.form-description-placeholder"
+      @keydown.native.enter.stop>
     </opensilex-TextAreaForm>
 
     <!-- Variables -->

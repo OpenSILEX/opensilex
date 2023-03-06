@@ -6,7 +6,9 @@
 package org.opensilex.core.ontology.api;
 
 import io.swagger.annotations.*;
+import org.opensilex.core.CoreModule;
 import org.opensilex.core.URIsListPostDTO;
+import org.opensilex.core.sharedResource.SharedResourceInstanceDTO;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.account.dal.AccountModel;
@@ -53,6 +55,7 @@ import java.util.stream.Collectors;
 public class OntologyAPI {
 
     public static final String PATH = "/ontology";
+    public static final String GET_NAMESPACE_PATH = "/name_space";
     public static final String RDF_TYPE_PROPERTY_RESTRICTION = "rdf_type_property_restriction";
 
     @CurrentUser
@@ -60,6 +63,9 @@ public class OntologyAPI {
 
     @Inject
     private SPARQLService sparql;
+
+    @Inject
+    private CoreModule coreModule;
 
     public static final String PROPERTY_ALREADY_EXISTS_MSG = "A property with the same URI already exists";
     public static final String PROPERTY_NOT_FOUND_MSG = "Property not found";
@@ -546,6 +552,22 @@ public class OntologyAPI {
     }
 
     @GET
+    @Path("/shared_resource_instances")
+    @ApiOperation("Return the list of shared resource instances")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return shared resource instances", response = SharedResourceInstanceDTO.class, responseContainer = "List")
+    })
+    public Response getSharedResourceInstances(
+
+    ) {
+        return new PaginatedListResponse<>(coreModule.getSharedResourceInstancesFromConfiguration(currentUser.getLanguage()))
+                .getResponse();
+    }
+
+    @GET
     @Path("/uri_types")
     @ApiOperation("Return all rdf types of an uri")
     @ApiProtected
@@ -584,7 +606,7 @@ public class OntologyAPI {
     }
 
     @GET
-    @Path("/name_space")
+    @Path(GET_NAMESPACE_PATH)
     @ApiOperation("Return namespaces")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)

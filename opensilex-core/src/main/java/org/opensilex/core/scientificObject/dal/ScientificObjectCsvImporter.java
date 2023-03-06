@@ -337,7 +337,7 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
 
         // Global OS copy and species update inside xp
         if (withinExperiment()) {
-            scientificObjectDAO.copyIntoGlobalGraph(models.stream());
+            scientificObjectDAO.copyIntoGlobalGraph(models);
             experimentDAO.updateExperimentSpeciesFromScientificObjects(experiment);
         }
 

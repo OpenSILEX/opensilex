@@ -9,6 +9,7 @@
     @clear="$emit('clear')"
     @select="$emit('select')"
     @deselect="$emit('deselect')"
+    @keyup.enter.native="onEnter"
   ></opensilex-SelectForm>
 </template>
 
@@ -49,7 +50,9 @@ export default class AgentTypeSelector extends Vue {
     );
   }
 
-
+  onEnter() {
+    this.$emit("handlingEnterKey")
+  }
 }
 </script>
 

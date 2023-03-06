@@ -1,29 +1,32 @@
 <template>
   <opensilex-SelectForm
+    ref="selectForm"
     :label="label"
     :selected.sync="characteristicURI"
     :multiple="multiple"
     :searchMethod="searchCharacteristics"
+    :itemLoadingMethod="loadCharacteristics"
     :clearable="clearable"
     :placeholder="placeholder"
     noResultsText="component.characteristic.form.selector.filter-search-no-result"
     @clear="$emit('clear')"
     @select="select"
     @deselect="deselect"
+    @keyup.enter.native="onEnter"
   ></opensilex-SelectForm>
 </template>
 
 <script lang="ts">
-import {Component, Prop, PropSync} from "vue-property-decorator";
+import {Component, Prop, PropSync, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
 import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
-// @ts-ignore
 import {CharacteristicGetDTO} from "opensilex-core/index";
+import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
+import {VariablesService} from "opensilex-core/api/variables.service";
 
 @Component
 export default class CharacteristicSelector extends Vue {
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
 
   @PropSync("characteristic")
   characteristicURI;
@@ -37,15 +40,34 @@ export default class CharacteristicSelector extends Vue {
   @Prop()
   clearable;
 
+  @Prop()
+  sharedResourceInstance;
+
+  @Ref("selectForm") readonly selectForm!: any;
+
+  @Watch("sharedResourceInstance")
+  onSriChange() {
+    this.selectForm.refresh();
+  }
+
   get placeholder() {
     return this.multiple
       ? "component.characteristic.form.selector.placeholder-multiple"
       : "component.characteristic.form.selector.placeholder";
   }
 
-  searchCharacteristics(name) {
-    return this.$opensilex.getService("opensilex.VariablesService")
-    .searchCharacteristics(name, ["name=asc"], 0, 10)    
+  loadCharacteristics(characteristics): Promise<Array<CharacteristicGetDTO>> {
+    return this.$opensilex.getService<VariablesService>("opensilex.VariablesService")
+      .getCharacteristicsByURIs(characteristics, this.sharedResourceInstance)
+      .then((http: HttpResponse<OpenSilexResponse<Array<CharacteristicGetDTO>>>) => {
+        return http.response.result;
+      })
+      .catch(this.$opensilex.errorHandler); 
+  }
+
+  searchCharacteristics(name): Promise<HttpResponse<OpenSilexResponse<Array<CharacteristicGetDTO>>>> {
+    return this.$opensilex.getService<VariablesService>("opensilex.VariablesService")
+    .searchCharacteristics(name, ["name=asc"], 0, 10, this.sharedResourceInstance)
     .then((http: HttpResponse<OpenSilexResponse<Array<CharacteristicGetDTO>>>) => {
       return http;
     });
@@ -57,6 +79,10 @@ export default class CharacteristicSelector extends Vue {
 
   deselect(value) {
     this.$emit("deselect", value);
+  }
+
+  onEnter() {
+    this.$emit("handlingEnterKey")
   }
 }
 </script>

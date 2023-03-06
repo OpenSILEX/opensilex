@@ -139,7 +139,7 @@ public class AbstractMongoIntegrationTest extends AbstractSecurityIntegrationTes
 
     }
 
-    protected MongoDBService getMongoDBService(){
+    protected static MongoDBService getMongoDBService(){
         return getOpensilex().getServiceInstance(MongoDBService.DEFAULT_SERVICE, MongoDBService.class);
     }
 

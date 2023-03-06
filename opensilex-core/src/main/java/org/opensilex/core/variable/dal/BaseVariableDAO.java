@@ -57,6 +57,11 @@ public class BaseVariableDAO<T extends SPARQLNamedResourceModel<T>> {
         return instance;
     }
 
+    public List<T> createList(List<T> instanceList) throws Exception {
+        sparql.create(instanceList);
+        return instanceList;
+    }
+
     public T update(T instance) throws Exception {
         sparql.update(instance);
         return instance;

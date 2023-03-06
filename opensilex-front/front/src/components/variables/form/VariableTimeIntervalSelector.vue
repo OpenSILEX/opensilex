@@ -4,6 +4,7 @@
         :selected.sync="timeIntervalURI"
         :options="periodList"
         placeholder="VariableForm.time-interval-placeholder"
+        @keyup.enter.native="onEnter"
     ></opensilex-SelectForm>
 </template>
 
@@ -44,6 +45,10 @@ export default class VariableTimeIntervalSelector extends Vue {
                 label: this.$i18n.t("VariableForm.dimension-values." + value)
             })
         }
+    }
+
+    onEnter() {
+        this.$emit("handlingEnterKey")
     }
 }
 </script>

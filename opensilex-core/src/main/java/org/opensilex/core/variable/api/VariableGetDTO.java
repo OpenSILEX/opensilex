@@ -5,25 +5,26 @@
  */
 package org.opensilex.core.variable.api;
 
-import java.net.URI;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModelProperty;
+import org.opensilex.core.sharedResource.SharedResourceInstanceDTO;
+import org.opensilex.core.variable.api.characteristic.CharacteristicGetDTO;
 import org.opensilex.core.variable.api.entity.EntityGetDTO;
 import org.opensilex.core.variable.api.method.MethodGetDTO;
-import org.opensilex.core.variable.api.characteristic.CharacteristicGetDTO;
 import org.opensilex.core.variable.api.unit.UnitGetDTO;
 import org.opensilex.core.variable.dal.*;
-import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.response.NamedResourceDTO;
+
+import java.net.URI;
+import java.util.List;
 
 /**
  *
  * @author vidalmor
  */
 @JsonPropertyOrder({
-        "uri", "name", "alternative_name", "entity", "entity_of_interest", "characteristic", "method", "unit"
+        "uri", "name", "entity", "entity_of_interest", "characteristic", "method", "unit", "onLocal", "sharedResourceInstance"
 })
 public class VariableGetDTO {
 
@@ -50,6 +51,12 @@ public class VariableGetDTO {
 
     @JsonProperty("unit")
     private UnitGetDTO unit;
+
+    @JsonProperty("onLocal")
+    private boolean onLocal;
+
+    @JsonProperty("sharedResourceInstance")
+    private SharedResourceInstanceDTO sharedResourceInstance;
 
     @ApiModelProperty(example = "http://opensilex.dev/set/variables/Plant_Height")
     public URI getUri() {
@@ -109,8 +116,32 @@ public class VariableGetDTO {
         this.unit = unit;
     }
 
+    public boolean getOnLocal() {
+        return onLocal;
+    }
 
-    public static VariableGetDTO fromModel(VariableModel model) {
+    public void setOnLocal(boolean onLocal) {
+        this.onLocal = onLocal;
+    }
+
+    public SharedResourceInstanceDTO getSharedResourceInstance() {
+        return sharedResourceInstance;
+    }
+
+    public void setSharedResourceInstance(SharedResourceInstanceDTO sharedResourceInstance) {
+        this.sharedResourceInstance = sharedResourceInstance;
+    }
+
+    /**
+     * Creates a {@link VariableGetDTO} from a {@link VariableModel}. The list of shared resource instances should be
+     * provided to set the field {@link VariableGetDTO#sharedResourceInstance} correctly.
+     *
+     * @param model The source model
+     * @param sharedResourceInstanceList The list of shared resource instances, as returned by
+     * {@link org.opensilex.core.CoreModule#getSharedResourceInstancesFromConfiguration(String)}.
+     * @return The corresponding {@link VariableGetDTO}
+     */
+    public static VariableGetDTO fromModel(VariableModel model, List<SharedResourceInstanceDTO> sharedResourceInstanceList) {
 
         VariableGetDTO dto = new VariableGetDTO();
         dto.setUri(model.getUri());
@@ -134,6 +165,17 @@ public class VariableGetDTO {
         UnitModel unit = model.getUnit();
         dto.setUnit(new UnitGetDTO(unit));
 
+        URI sriUri = model.getFromSharedResourceInstance();
+        if(sriUri != null){
+            if (sharedResourceInstanceList != null) {
+                dto.setSharedResourceInstance(sharedResourceInstanceList.stream()
+                        .filter(sri -> sri.getUri().equals(sriUri))
+                        .findFirst()
+                        .orElse(new SharedResourceInstanceDTO().setUri(sriUri)));
+            } else {
+                dto.setSharedResourceInstance(new SharedResourceInstanceDTO().setUri(sriUri));
+            }
+        }
         return dto;
     }
 }

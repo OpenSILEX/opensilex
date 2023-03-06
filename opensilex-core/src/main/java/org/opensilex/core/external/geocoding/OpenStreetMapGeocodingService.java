@@ -27,7 +27,7 @@ import java.net.URI;
  * @author Valentin RIGOLLE
  */
 public class OpenStreetMapGeocodingService implements GeocodingService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(SPARQLService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(OpenStreetMapGeocodingService.class);
 
     private final Client httpClient;
 

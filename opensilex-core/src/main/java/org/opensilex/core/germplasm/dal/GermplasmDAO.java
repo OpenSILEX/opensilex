@@ -25,7 +25,6 @@ import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.SKOS;
 import org.bson.Document;
 import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.core.germplasm.api.GermplasmCreationDTO;
 import org.opensilex.core.germplasm.api.GermplasmSearchFilter;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
@@ -40,7 +39,6 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
-import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
@@ -51,9 +49,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
-import static com.mongodb.client.model.Aggregates.*;
 import static com.mongodb.client.model.Filters.eq;
-import static com.mongodb.client.model.Projections.computed;
 import static org.opensilex.core.experiment.dal.ExperimentDAO.appendUserExperimentsFilter;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
@@ -121,15 +117,6 @@ public class GermplasmDAO {
 
     }
 
-    public boolean labelExistsCaseSensitive(String label, URI rdfType) throws Exception {
-        AskBuilder askQuery = new AskBuilder()
-                .from(sparql.getDefaultGraph(GermplasmModel.class).toString())
-                .addWhere("?uri", RDF.type, SPARQLDeserializers.nodeURI(rdfType))
-                .addWhere("?uri", RDFS.label, label);
-
-        return sparql.executeAskQuery(askQuery);
-    }
-
     public GermplasmModel create(GermplasmModel model) throws Exception {
         if (model.getMetadata() != null) {
             nosql.startTransaction();
@@ -164,8 +151,7 @@ public class GermplasmDAO {
     }
 
     /**
-     *
-     * @param searchFilter search filter
+     * @param searchFilter  search filter
      * @param fetchMetadata indicate if {@link GermplasmModel#getMetadata()} must be retrieved from mongodb
      * @return a {@link ListWithPagination} of {@link GermplasmModel}
      */
@@ -175,21 +161,22 @@ public class GermplasmDAO {
 
         final Set<URI> filteredUris;
         if (searchFilter.getMetadata() != null) {
-            filteredUris = filterURIsOnAttributes(Document.parse(searchFilter.getMetadata()));
+            MetaDataDao metaDataDao = new MetaDataDao(nosql);
+            filteredUris = metaDataDao.searchUris(attributeCollection,Document.parse(searchFilter.getMetadata()));
 
             // no URI match the given metadata filter, return empty list
-            if(filteredUris.isEmpty()){
+            if (filteredUris.isEmpty()) {
                 return new ListWithPagination<>(Collections.emptyList());
             }
         } else {
             filteredUris = new HashSet<>();
         }
 
-        if(! CollectionUtils.isEmpty(searchFilter.getUris())){
-            if(filteredUris.isEmpty()){
+        if (!CollectionUtils.isEmpty(searchFilter.getUris())) {
+            if (filteredUris.isEmpty()) {
                 // only use selected uris
                 filteredUris.addAll(searchFilter.getUris());
-            }else{
+            } else {
                 // metadata URI filter + selected uris, use Set intersection
                 filteredUris.retainAll(searchFilter.getUris());
             }
@@ -264,16 +251,6 @@ public class GermplasmDAO {
             );
         }
         return models;
-    }
-
-    public List<URI> getGermplasmURIsBySpecies(List<URI> species, String lang) throws Exception {
-        return sparql.searchURIs(
-                GermplasmModel.class,
-                lang,
-                (SelectBuilder select) -> {
-                    select.addFilter(SPARQLQueryHelper.inURIFilter(GermplasmModel.SPECIES_URI_SPARQL_VAR, species));
-                }
-        );
     }
 
     private void appendRegexUriFilter(SelectBuilder select, String uri) {
@@ -358,12 +335,6 @@ public class GermplasmDAO {
         );
     }
 
-    public boolean isPlantMaterialLot(URI rdfType) throws SPARQLException {
-        return sparql.executeAskQuery(new AskBuilder()
-                .addWhere(SPARQLDeserializers.nodeURI(rdfType), Ontology.subClassAny, Oeso.PlantMaterialLot)
-        );
-    }
-
     public void delete(URI uri) throws Exception {
         MetaDataModel attributes = getStoredAttributes(uri);
         if (attributes != null) {
@@ -405,25 +376,12 @@ public class GermplasmDAO {
      *
      * @return
      */
-    public List<String> getDistinctGermplasAttributes() {
-        // Make an aggregation on ATTRIBUTES_COLLECTION
+    public Set<String> getDistinctGermplasmAttributes() {
+        return new MetaDataDao(nosql).getDistinctKeys(attributeCollection,null);
+    }
 
-        // 1.project - Transform document to multiple array elements
-        // 2.unwind - Transform multiple array elements to simple array
-        // 3.group - Return unique arrays keys only
-        Set<Document> germplasAttributesKeys = nosql.aggregate(ATTRIBUTES_COLLECTION_NAME, Arrays.asList(
-                project(computed("attributes", new Document("$objectToArray", "$attribute"))),
-                unwind("$attributes"),
-                group("$attributes.k")
-        ));
-
-        // Return a list of unique arrays keys
-        List<String> germplasAttributesKeysList = new ArrayList<>();
-        for (Document germplasAttribute : germplasAttributesKeys) {
-            germplasAttributesKeysList.add((String) germplasAttribute.get("_id"));
-        }
-        Collections.sort(germplasAttributesKeysList);
-        return germplasAttributesKeysList;
+    public Set<String> getDistinctGermplasmAttributesValues(String attribute, String attributeValue, int page, int pageSize) {
+        return new MetaDataDao(nosql).getDistinctValues(attributeCollection, attribute,attributeValue,page,pageSize);
     }
 
     public ListWithPagination<ExperimentModel> getExpFromGermplasm(
@@ -488,22 +446,6 @@ public class GermplasmDAO {
         }
         return storedAttributes;
     }
-
-    private Set<URI> filterURIsOnAttributes(Document metadata) {
-        Document filter = new Document();
-        if (metadata != null) {
-            for (String key : metadata.keySet()) {
-                Document regexFilter = new Document();
-                regexFilter.put("$regex", ".*" + Pattern.quote(metadata.get(key).toString()) + ".*");
-                // Case ignore
-                regexFilter.put("$options", "i");
-
-                filter.put("attribute." + key, regexFilter);
-            }
-        }
-        return nosql.distinct(MongoModel.URI_FIELD, URI.class, ATTRIBUTES_COLLECTION_NAME, filter);
-    }
-
     private void appendURIsFilter(SelectBuilder select, Set<URI> uris) {
         if (uris != null && !uris.isEmpty()) {
             select.addFilter(SPARQLQueryHelper.inURIFilter(GermplasmModel.URI_FIELD, uris));

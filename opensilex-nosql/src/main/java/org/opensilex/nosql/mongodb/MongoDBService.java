@@ -16,13 +16,17 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+
 import static com.mongodb.client.model.Filters.eq;
 
+import com.mongodb.client.model.Aggregates;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.geojson.codecs.GeoJsonCodecProvider;
 import com.mongodb.client.result.DeleteResult;
+
 import java.net.URI;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
@@ -139,7 +143,7 @@ public class MongoDBService extends BaseService {
     public <T extends MongoModel> void create(T instance, Class<T> instanceClass, String collectionName, String uriGenerationPrefix) throws Exception {
         LOGGER.debug("MONGO CREATE - Collection : " + collectionName);
         if (instance.getUri() == null) {
-            generateUniqueUriIfNullOrValidateCurrent(instance, true,uriGenerationPrefix, collectionName);
+            generateUniqueUriIfNullOrValidateCurrent(instance, true, uriGenerationPrefix, collectionName);
         }
         MongoCollection<T> collection = db.getCollection(collectionName, instanceClass);
         try {
@@ -157,7 +161,7 @@ public class MongoDBService extends BaseService {
         LOGGER.debug("MONGO CREATE - Collection : " + collectionName);
         for (T instance : instances) {
             if (instance.getUri() == null) {
-                generateUniqueUriIfNullOrValidateCurrent(instance, checkUriExist,prefix, collectionName);
+                generateUniqueUriIfNullOrValidateCurrent(instance, checkUriExist, prefix, collectionName);
             }
         }
 
@@ -175,26 +179,24 @@ public class MongoDBService extends BaseService {
     }
 
     /**
-     *
-     * @param instanceClass the instance class
+     * @param instanceClass  the instance class
      * @param collectionName the name of collection on which find the instance
-     * @param uri URI of the instance to find
-     * @param <T> the instance class
+     * @param uri            URI of the instance to find
+     * @param <T>            the instance class
      * @return the instance which has the given uri
      * @throws NoSQLInvalidURIException
      */
     public <T> T findByURI(Class<T> instanceClass, String collectionName, URI uri) throws NoSQLInvalidURIException {
-        LOGGER.debug("MONGO FIND BY URI - Collection : " + collectionName + " - uri : "  + uri);
+        LOGGER.debug("MONGO FIND BY URI - Collection : " + collectionName + " - uri : " + uri);
         MongoCollection<T> collection = db.getCollection(collectionName, instanceClass);
-        return this.findByURI(collection,uri,"uri");
+        return this.findByURI(collection, uri, "uri");
     }
 
     /**
-     *
      * @param collection the collection on which find an instance with the given uri
-     * @param uri URI of the instance to find
-     * @param uriField the name of the uri field
-     * @param <T> the instance class
+     * @param uri        URI of the instance to find
+     * @param uriField   the name of the uri field
+     * @param <T>        the instance class
      * @return the instance which has the given uri
      * @throws NoSQLInvalidURIException if no instance is found
      */
@@ -222,29 +224,26 @@ public class MongoDBService extends BaseService {
     }
 
     /**
-     *
-     * @param fieldName name of the field on which apply {@link Filters#in(String, Object[])}
+     * @param fieldName  name of the field on which apply {@link Filters#in(String, Object[])}
      * @param collection mongo collection
-     * @param uris {@link Stream} of URIS to pass to {@link Filters#in(String, Object[])}
-     * @param <T> {@link MongoModel} type
+     * @param uris       {@link Stream} of URIS to pass to {@link Filters#in(String, Object[])}
+     * @param <T>        {@link MongoModel} type
      * @return a {@link FindIterable} of T models from mongodb. Returned model must have the fieldName attribute and the value for this attribute must be in uris
-     *
      */
-    public <T extends MongoModel> FindIterable<T> findIterableByURIs(String fieldName, MongoCollection<T> collection, Stream<URI> uris){
+    public <T extends MongoModel> FindIterable<T> findIterableByURIs(String fieldName, MongoCollection<T> collection, Stream<URI> uris) {
         Bson filter = Filters.in(fieldName, uris::iterator);
         return collection.find(filter);
     }
 
     /**
-     *
-     * @param instanceClass the instance class
+     * @param instanceClass  the instance class
      * @param collectionName the name of collection on which find the instance
-     * @param uri URI of the instance to check
-     * @param <T> the instance class
+     * @param uri            URI of the instance to check
+     * @param <T>            the instance class
      * @return if an instance with the given uri exists
      */
     public <T> boolean uriExists(Class<T> instanceClass, String collectionName, URI uri) {
-        LOGGER.debug("MONGO URI EXISTS - Collection : " + collectionName + " - uri : "  + uri );
+        LOGGER.debug("MONGO URI EXISTS - Collection : " + collectionName + " - uri : " + uri);
         try {
             T instance = findByURI(instanceClass, collectionName, uri);
             return true;
@@ -254,11 +253,10 @@ public class MongoDBService extends BaseService {
     }
 
     /**
-     *
      * @param collection the collection on which find an instance with the given uri
-     * @param uri URI of the instance to check
-     * @param uriField the name of the uri field
-     * @param <T> the instance class
+     * @param uri        URI of the instance to check
+     * @param uriField   the name of the uri field
+     * @param <T>        the instance class
      * @return if an instance with the given uri exists
      */
     public <T> boolean uriExists(MongoCollection<T> collection, URI uri, String uriField) {
@@ -326,22 +324,22 @@ public class MongoDBService extends BaseService {
         return new ListWithPagination(results, page, pageSize, total);
 
     }
-    
-    public <T> int count( 
+
+    public <T> int count(
             Class<T> instanceClass,
             String collectionName,
             Document filter) {
-        
-        LOGGER.debug("MONGO COUNT - Collection : " + collectionName + " - Order : "  + " - Filter : " + filter.toString());
+
+        LOGGER.debug("MONGO COUNT - Collection : " + collectionName + " - Order : " + " - Filter : " + filter.toString());
 
         MongoCollection<T> collection = db.getCollection(collectionName, instanceClass);
         long resultsNumber = collection.countDocuments(filter);
         int total = (int) resultsNumber;
-        
+
         return total;
-        
+
     }
-    
+
     public <T> List<T> search(
             Class<T> instanceClass,
             String collectionName,
@@ -380,10 +378,66 @@ public class MongoDBService extends BaseService {
 
         return results;
     }
-    
-    public <Document> Set<Document> aggregate( 
+
+    /**
+     * @param collection mongo collection
+     * @param field Name of the field for which we want to retrieve distinct value (can be an embedded field)
+     * @param documentExtractor a function which return the value to extract from any {@link Document} which are returned
+     * by the aggregation
+     * @param filter an optional pre-filter on documents
+     * @param orderByList list of sort
+     * @param page page
+     * @param pageSize page size
+     * @param <T> the type of unique values to retrieve
+     * @return a Set of unique value for a given field from a collection
+     *
+     * @see <a href="https://www.mongodb.com/docs/manual/reference/operator/aggregation/group/#std-label-aggregation-group-distinct-values">
+     * Distinct with aggregation pipeline
+     */
+    public <T> Set<T> distinctWithPagination(
+            MongoCollection<?> collection,
+            String field,
+            Function<Document, T> documentExtractor,
+            Bson filter,
+            List<OrderBy> orderByList,
+            int page,
+            int pageSize
+    ) {
+
+        LOGGER.debug("MONGO DISTINCT (paginated) - Collection : {}, Field: {}", collection.getNamespace().getCollectionName(), field);
+
+        List<Bson> aggregatePipeline = new ArrayList<>();
+
+        // filtering with match
+        if (filter != null) {
+            aggregatePipeline.add(Aggregates.match(filter));
+        }
+
+        // distinct field with match
+        aggregatePipeline.add(Aggregates.group("$" + field));
+
+        // sort.
+        Document order = buildSort(orderByList);
+        aggregatePipeline.add(Aggregates.sort(order.toBsonDocument()));
+
+        // pagination : skip and limit
+        aggregatePipeline.add(Aggregates.skip(page * pageSize));
+        aggregatePipeline.add(Aggregates.limit(pageSize));
+
+        // build a set which maintains natural order between each key
+        Set<T> distinct = new HashSet<>();
+
+        // map aggregation results a Document, since the aggregation will produce a different document schema
+        collection.aggregate(aggregatePipeline, Document.class)
+                .map(documentExtractor::apply)
+                .forEach(distinct::add);
+
+        return distinct;
+    }
+
+    public <Document> Set<Document> aggregate(
             String collectionName,
-             List aggregationArgs) {
+            List aggregationArgs) {
         LOGGER.debug("MONGO SEARCH - Collection : " + collectionName + " - Aggregation pipeline : " + aggregationArgs.toString());
         Set<Document> results = new HashSet<>();
         MongoCollection collection = db.getCollection(collectionName);
@@ -397,23 +451,25 @@ public class MongoDBService extends BaseService {
         return results;
     }
 
+
     public <T extends MongoModel> void delete(Class<T> instanceClass, String collectionName, URI uri) throws NoSQLInvalidURIException {
-        LOGGER.debug("MONGO DELETE - Collection : " + collectionName + " - uri : "  + uri);
+        LOGGER.debug("MONGO DELETE - Collection : " + collectionName + " - uri : " + uri);
         MongoCollection<T> collection = db.getCollection(collectionName, instanceClass);
-        this.delete(collection,uri,"uri");
+        this.delete(collection, uri, "uri");
     }
 
 
     /**
      * delete the instance with the given uri
+     *
      * @param collection the collection on which find an instance with the given uri
-     * @param uri URI of the instance to find
-     * @param uriField the name of the uri field
-     * @param <T> the instance class
+     * @param uri        URI of the instance to find
+     * @param uriField   the name of the uri field
+     * @param <T>        the instance class
      * @throws NoSQLInvalidURIException if no instance is found
      */
-    public <T extends MongoModel> void delete(MongoCollection<T> collection , URI uri, String uriField) throws NoSQLInvalidURIException {
-        T instance = findByURI(collection,uri,uriField);
+    public <T extends MongoModel> void delete(MongoCollection<T> collection, URI uri, String uriField) throws NoSQLInvalidURIException {
+        T instance = findByURI(collection, uri, uriField);
         if (instance == null) {
             throw new NoSQLInvalidURIException(uri);
         } else {
@@ -426,7 +482,7 @@ public class MongoDBService extends BaseService {
     }
 
     public <T extends MongoModel> void delete(Class<T> instanceClass, String collectionName, List<URI> uris) throws NoSQLInvalidURIException, Exception {
-        LOGGER.debug("MONGO DELETE - Collection : " + collectionName + " - uris : "  + uris);
+        LOGGER.debug("MONGO DELETE - Collection : " + collectionName + " - uris : " + uris);
         Set<URI> notFoundedURIs = checkUriListExists(instanceClass, collectionName, (Set<URI>) uris);
 
         if (notFoundedURIs.isEmpty()) {
@@ -453,14 +509,15 @@ public class MongoDBService extends BaseService {
 
     /**
      * Update the given instance
-     * @param collection the collection on which the new instance is located
-     * @param newInstance  the instance to update
-     * @param uriField the name of the uri field
-     * @param <T> the instance class
+     *
+     * @param collection  the collection on which the new instance is located
+     * @param newInstance the instance to update
+     * @param uriField    the name of the uri field
+     * @param <T>         the instance class
      * @throws NoSQLInvalidURIException if no instance is found
      */
-    public <T extends MongoModel> void update(T newInstance,MongoCollection<T> collection, String uriField) throws NoSQLInvalidURIException {
-        T instance = findByURI(collection, newInstance.getUri(),uriField);
+    public <T extends MongoModel> void update(T newInstance, MongoCollection<T> collection, String uriField) throws NoSQLInvalidURIException {
+        T instance = findByURI(collection, newInstance.getUri(), uriField);
         if (instance == null) {
             throw new NoSQLInvalidURIException(newInstance.getUri());
         }
@@ -471,10 +528,10 @@ public class MongoDBService extends BaseService {
         LOGGER.debug("MONGO UPDATE - Collection : " + collectionName);
 
         MongoCollection<T> collection = db.getCollection(collectionName, instanceClass);
-        this.update(newInstance,collection,"uri");
+        this.update(newInstance, collection, "uri");
     }
 
-    public final MongoClient getMongoClient(){
+    public final MongoClient getMongoClient() {
         return this.mongoClient;
     }
 
@@ -530,7 +587,7 @@ public class MongoDBService extends BaseService {
      * Method to generate a valid URI for the instance
      *
      * @param <T>
-     * @param instance will be updated by a new generated URI
+     * @param instance            will be updated by a new generated URI
      * @param instanceClassPrefix
      * @param collectionName
      * @throws Exception

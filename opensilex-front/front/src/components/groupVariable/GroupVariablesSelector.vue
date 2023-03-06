@@ -1,29 +1,32 @@
 <template>
   <opensilex-SelectForm
+    ref="selectForm"
     :label="label"
     :selected.sync="vgURI"
     :multiple="multiple"
     :searchMethod="searchVariablesGroups"
+    :itemLoadingMethod="loadVariablesGroups"
     :clearable="clearable"
     :placeholder="placeholder"
     noResultsText="component.groupVariable.form.selector.filter-search-no-result"
     @clear="$emit('clear')"
     @select="select"
     @deselect="deselect"
+    @keyup.enter.native="onEnter"
   ></opensilex-SelectForm>
 </template>
 
 <script lang="ts">
-import {Component, Prop, PropSync} from "vue-property-decorator";
+import {Component, Prop, PropSync, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
 import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
-// @ts-ignore
 import {VariablesGroupGetDTO} from "opensilex-core/index";
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+import {VariablesService} from "opensilex-core/api/variables.service";
 
 @Component
 export default class GroupVariablesSelector extends Vue {
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
 
   @PropSync("variableGroup")
   vgURI;
@@ -37,15 +40,34 @@ export default class GroupVariablesSelector extends Vue {
   @Prop()
   clearable;
 
+  @Prop()
+  sharedResourceInstance;
+
+  @Ref("selectForm") readonly selectForm!: any;
+
+  @Watch("sharedResourceInstance")
+  onSriChange() {
+    this.selectForm.refresh();
+  }
+
   get placeholder() {
     return this.multiple
       ? "component.groupVariable.form.selector.placeholder-multiple"
       : "component.groupVariable.form.selector.placeholder";
   }
 
-  searchVariablesGroups(name) {
-    return this.$opensilex.getService("opensilex.VariablesService")
-    .searchVariablesGroups(name, undefined, ["name=asc"], 0, 10)    
+  loadVariablesGroups(vg): Promise<Array<VariablesGroupGetDTO>> {
+    return this.$opensilex.getService<VariablesService>("opensilex.VariablesService")
+      .getVariablesGroupByURIs(vg, this.sharedResourceInstance)
+      .then((http: HttpResponse<OpenSilexResponse<Array<VariablesGroupGetDTO>>>) => {
+        return http.response.result;
+      })
+      .catch(this.$opensilex.errorHandler); 
+  }
+
+  searchVariablesGroups(name): Promise<HttpResponse<OpenSilexResponse<Array<VariablesGroupGetDTO>>>> {
+    return this.$opensilex.getService<VariablesService>("opensilex.VariablesService")
+    .searchVariablesGroups(name, undefined, ["name=asc"], 0, 10, this.sharedResourceInstance)
     .then((http: HttpResponse<OpenSilexResponse<Array<VariablesGroupGetDTO>>>) => {
         return http;
     });
@@ -57,6 +79,10 @@ export default class GroupVariablesSelector extends Vue {
 
   deselect(value) {
     this.$emit("deselect", value);
+  }
+
+  onEnter() {
+    this.$emit("handlingEnterKey")
   }
 }
 </script>

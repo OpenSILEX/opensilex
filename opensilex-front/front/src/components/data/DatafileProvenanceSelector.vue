@@ -14,6 +14,7 @@
     @clear="$emit('clear')"
     @select="select"
     @deselect="deselect"
+    @keyup.enter.native="onEnter"
     :disableBranchNodes="true"
     :showCount="true"
     :actionHandler="actionHandler"
@@ -87,6 +88,10 @@ export default class DatafileProvenanceSelector extends Vue {
 
   deselect(value) {
     this.$emit("deselect", value);
+  }
+  
+  onEnter() {
+    this.$emit("handlingEnterKey")
   }
   
   loadProvenances() {

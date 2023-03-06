@@ -28,6 +28,7 @@
       :value.sync="form.comment_translations.en"
       label="OntologyClassForm.commentEN"
       :required="true"
+      @keydown.native.enter.stop
     ></opensilex-TextAreaForm>
 
     <opensilex-InputForm
@@ -41,6 +42,7 @@
       :value.sync="form.comment_translations.fr"
       label="OntologyClassForm.commentFR"
       :required="true"
+      @keydown.native.enter.stop
     ></opensilex-TextAreaForm>
 
     <!-- is abstract -->

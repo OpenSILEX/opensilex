@@ -30,6 +30,7 @@ import ModalForm from "../common/forms/ModalForm.vue";
 import {MultiValuedRDFObjectRelation} from "../ontology/models/MultiValuedRDFObjectRelation";
 import Oeso from "../../ontologies/Oeso";
 import Rdfs from "../../ontologies/Rdfs";
+import {ScientificObjectDetailDTO} from "opensilex-core/model/scientificObjectDetailDTO";
 
 @Component
 export default class ScientificObjectForm extends Vue {
@@ -54,8 +55,9 @@ export default class ScientificObjectForm extends Vue {
     /**
      * Inner function used to pass some properties to the OntologyObjectForm
      * @param form
+     * @param type
      */
-    initOntologyObjectForm(form: OntologyObjectForm){
+    initOntologyObjectForm(form: OntologyObjectForm, type: string){
 
         let excludedProperties = new Set<string>([
             Oeso.getShortURI(Oeso.HAS_GEOMETRY), // handle geometry manually with opensilex-GeometryForm
@@ -64,7 +66,11 @@ export default class ScientificObjectForm extends Vue {
 
         let xp: string = this.getExperimentURI();
         form.setContext(xp)
-        form.setBaseType(this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI);
+        if (!type) {
+            form.setBaseType(this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI, this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI);
+        } else {
+            form.setBaseType(type, this.$opensilex.Oeso.SCIENTIFIC_OBJECT_TYPE_URI)
+        }
         form.setExcludedProperties(excludedProperties);
 
         if(! xp){
@@ -84,7 +90,7 @@ export default class ScientificObjectForm extends Vue {
 
     createScientificObject(parentURI?) {
         let form: OntologyObjectForm = this.modalForm.getFormRef();
-        this.initOntologyObjectForm(form);
+        this.initOntologyObjectForm(form, undefined);
 
         // if parentURI property is set, then use this value as default isPartOf relation value
         form.setInitHandler((relation: MultiValuedRDFObjectRelation) => {
@@ -103,10 +109,10 @@ export default class ScientificObjectForm extends Vue {
             .getScientificObjectDetail(objectURI, this.getExperimentURI())
             .then((http) => {
                 let form: OntologyObjectForm = this.modalForm.getFormRef();
-                this.initOntologyObjectForm(form);
-                this.excludeCurrentURIFromParentSelector(objectURI, form);
+                let os: ScientificObjectDetailDTO = http.response.result;
 
-                let os: any = http.response.result;
+                this.initOntologyObjectForm(form, os.rdf_type);
+                this.excludeCurrentURIFromParentSelector(objectURI, form);
                 this.modalForm.showEditForm(os);
             });
     }

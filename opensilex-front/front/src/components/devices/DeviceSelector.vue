@@ -15,6 +15,7 @@
     @select="$emit('select')"
     @deselect="$emit('deselect')"
     :showCount="true"
+    @keyup.enter.native="onEnter"
   ></opensilex-SelectForm>
 </template>
 
@@ -117,6 +118,9 @@ export default class DeviceSelector extends Vue {
     return this.$store.getters.language;
   }
 
+  onEnter() {
+    this.$emit("handlingEnterKey")
+  }
 }
 </script>
 

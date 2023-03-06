@@ -18,12 +18,24 @@
       :active="isAnnotationTab()"
       :to="{ path: '/germplasm/annotations/' + encodeURIComponent(uri) }"
       >{{ $t("Annotation.list-title") }}
+        <span
+          v-if="!annotationsCountIsLoading && annotations > 0"
+          class="tabWithElements"
+        >
+          {{$opensilex.$numberFormatter.formateResponse(annotations)}}
+        </span>
       </b-nav-item>
 
       <b-nav-item
       :active="isDocumentTab()"
       :to="{path: '/germplasm/documents/' + encodeURIComponent(uri)}"
       >{{ $t('component.project.documents') }}
+        <span
+          v-if="!documentsCountIsLoading && documents > 0"
+          class="tabWithElements"
+        >
+          {{$opensilex.$numberFormatter.formateResponse(documents)}}
+        </span>
       </b-nav-item>
 
     </opensilex-PageActions>
@@ -170,6 +182,7 @@
 <script lang="ts">
 import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 // @ts-ignore
 import { GermplasmGetSingleDTO, GermplasmUpdateDTO, GermplasmService } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
@@ -177,10 +190,12 @@ import AnnotationList from "../annotations/list/AnnotationList.vue";
 import DocumentTabList from "../documents/DocumentTabList.vue";
 import GermplasmForm from "./GermplasmForm.vue";
 
+import {AnnotationsService} from "opensilex-core/api/annotations.service";
+import {DocumentsService} from "opensilex-core/api/documents.service";
 
 @Component
 export default class GermplasmDetails extends Vue {
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
   $route: any;
   $store: any;
   $router: any;
@@ -191,6 +206,15 @@ export default class GermplasmDetails extends Vue {
   uri: string = null;
   addInfo = [];
   experimentName: any = "";
+
+  $AnnotationsService: AnnotationsService
+  $DocumentsService: DocumentsService
+
+  annotations: number;
+  documents: number;
+
+  annotationsCountIsLoading: boolean = true;
+  documentsCountIsLoading: boolean = true;
 
   @Ref("modalRef") readonly modalRef!: any;
   @Ref("annotationList") readonly annotationList!: AnnotationList;
@@ -251,9 +275,13 @@ export default class GermplasmDetails extends Vue {
   };
 
   created() {
-    this.service = this.$opensilex.getService("opensilex.GermplasmService");
+    this.service = this.$opensilex.getService<GermplasmService>("opensilex.GermplasmService");
     this.uri = decodeURIComponent(this.$route.params.uri);
     this.loadGermplasm();
+    this.$AnnotationsService = this.$opensilex.getService<AnnotationsService>("opensilex.AnnotationsService");
+    this.$DocumentsService = this.$opensilex.getService<DocumentsService>("opensilex.DocumentsService");
+    this.searchAnnotations();
+    this.searchDocuments();
   }
 
   loadGermplasm() {
@@ -361,6 +389,36 @@ export default class GermplasmDetails extends Vue {
       .catch(this.$opensilex.errorHandler);
   }
   
+  searchAnnotations() {
+    return this.$AnnotationsService
+    .countAnnotations(
+      this.uri,
+      undefined,
+      undefined
+    ).then((http: HttpResponse<OpenSilexResponse<number>>) => {
+      if(http && http.response){
+        this.annotations = http.response.result as number;
+        this.annotationsCountIsLoading = false;
+        return this.annotations
+      }
+    }).catch(this.$opensilex.errorHandler);
+  }
+
+  searchDocuments(){
+    return this.$DocumentsService
+      .countDocuments(
+        this.uri,
+        undefined,
+        undefined
+      ).then((http: HttpResponse<OpenSilexResponse<number>>) => {
+        if(http && http.response){
+          this.documents = http.response.result as number;
+          this.documentsCountIsLoading = false;
+          return this.documents
+        }
+      }
+    ).catch(this.$opensilex.errorHandler);
+  }
 }
 </script>
 

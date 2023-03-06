@@ -36,6 +36,7 @@
             label="DeviceForm.description"
             type="text"
             helpMessage="DeviceForm.description-help"
+            @keydown.native.enter.stop
         ></opensilex-TextAreaForm>
 
         <!-- brand -->

@@ -9,12 +9,9 @@
  */
 package org.opensilex.core.experiment.factor.dal;
 
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
@@ -23,10 +20,17 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
-import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 import org.opensilex.sparql.service.SPARQLService;
-import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
+import org.opensilex.utils.OrderBy;
+
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+
+import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
 /**
  *
@@ -200,4 +204,19 @@ public class FactorDAO {
 
         return uriList;
     }
+
+    /**
+     * Count total of factors binded to a experiment URI
+     *
+     * @param experiment the URI on which find associated factors
+     * @return the number of factors associated to a target
+     */
+    public int countFactors(URI experiment) throws Exception {
+
+        Node factorGraph = sparql.getDefaultGraph(FactorModel.class);
+        return sparql.count(factorGraph, FactorModel.class,null, (SelectBuilder countBuilder) -> {
+            this.appendFilters(null, null,null, Collections.singletonList(experiment),countBuilder);
+        },null);
+    }
+    
 }

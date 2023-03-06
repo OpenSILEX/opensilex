@@ -68,7 +68,7 @@ export default class GeometryCopy extends Vue {
 <i18n>
 en:
   component:
-    geometry: Geospatial coordinates
+    geometry: Geometry
     copyGeometryGeoJSON: Copy geospatial coordinates to GeoJSON format
     copiedGeometryGeoJSON: Geospatial coordinates have been copied to GeoJSON format.
     geometryGeoJSON: GeoJSON
@@ -77,7 +77,7 @@ en:
     geometryWKT: WKT
 fr:
   component:
-    geometry: Coordonnées géospatiales
+    geometry: Géométrie
     copyGeometryGeoJSON: Copier les coordonnées géospatiales au format GeoJSON
     copiedGeometryGeoJSON: Les coordonnées géospatiales ont été copiées au format GeoJSON.
     geometryGeoJSON: GeoJSON

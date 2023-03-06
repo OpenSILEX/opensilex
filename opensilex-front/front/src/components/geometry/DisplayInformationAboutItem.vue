@@ -9,7 +9,7 @@
     </div>
     <div v-if="item.properties.nature === 'Device'">
       <opensilex-DeviceDetailsMap
-          :selected="item.properties.details"
+          :selected="item.properties"
           :showName="showName"
       />
     </div>

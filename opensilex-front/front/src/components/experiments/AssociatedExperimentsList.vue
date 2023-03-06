@@ -2,14 +2,13 @@
   <opensilex-Card label="AssociatedExperimentsList.relatedExperiments" icon="ik#ik-layers">
     
     <template v-slot:body>
-      <b-form-group
-        v-if="filter != null"> 
         <opensilex-StringFilter          
           :filter.sync="filter"
           @update="updateFilters()"
+          :debounce="300"
+          :lazy="false"
           placeholder="AssociatedExperimentsList.experimentNameFilter"
         ></opensilex-StringFilter>
-      </b-form-group>
       <opensilex-TableAsyncView
         ref="tableRef"
         :searchMethod="searchMethod"

@@ -12,6 +12,7 @@
     @deselect="deselect"
     noResultsText="component.user.filter-search-no-result"
     :helpMessage="helpMessage"
+    @handlingEnterKey="onEnter"
   ></opensilex-TypeForm>
 </template>
 
@@ -48,6 +49,11 @@ export default class FactorCategorySelector extends Vue {
   deselect(value) {
     this.$emit("deselect", value);
   }
+
+  onEnter() {
+    this.$emit("handlingEnterKey")
+  }
+
 }
 </script>
 

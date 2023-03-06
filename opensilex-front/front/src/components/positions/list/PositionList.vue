@@ -24,52 +24,26 @@
                         ref="tableRef"
                         :searchMethod="search"
                         :fields="fields"
+                        defaultSortBy="end"
+                        :defaultSortDesc="true"
                         :isSelectable="isSelectable">
 
-                        <template v-slot:cell(to)="{data}">
-                            <opensilex-UriLink v-if="data.item.to"
-                                :uri="data.item.event"
-                                :value="data.item.to.name"
-                                @click="showEventView(data.item)"
-                            ></opensilex-UriLink>
-                        </template>
-
-                        <template v-slot:cell(coordinates)="{data}">
-                            <opensilex-UriLink v-if="! data.item.to && data.item.position && data.item.position.point"
-                                :uri="data.item.event"
-                                :value="getGeometryView(data.item.position.point)"
-                                @click="showEventView(data.item)"
-                            ></opensilex-UriLink>
-                            <opensilex-GeometryView
-                                v-else-if="data.item.position && data.item.position.point"
-                                label="Position.coordinates"
-                                :value="data.item.position.point"
-                                :displayLabel="false"
-                            ></opensilex-GeometryView>
-                        </template>
-
                         <template v-slot:cell(end)="{data}">
-                            <opensilex-TextView
+                          <opensilex-UriLink
                                 v-if="data.item.move_time"
-                                :value="new Date(data.item.move_time).toLocaleString()">
-                            </opensilex-TextView>
-                        </template>
-
-
-                        <template v-slot:cell(custom_coordinates)="{data}">
-                            <opensilex-TextView :value="customCoordinatesText(data.item.position)">
-                            </opensilex-TextView>
-                        </template>
-
-                        <template v-slot:cell(textual_position)="{data}">
-                            <opensilex-TextView
-                                v-if="data.item.position && data.item.position.text"
-                                :value="data.item.position.text">
-                            </opensilex-TextView>
+                                :value="new Date(data.item.move_time).toLocaleString()"
+                                @click="showEventView(data.item)"
+                          ></opensilex-UriLink>
                         </template>
 
                         <template v-slot:cell(actions)="{data}">
                             <b-button-group size="sm">
+                                <opensilex-DetailButton
+                                    :detailVisible="data.detailsShowing"
+                                    :small="true"
+                                    label="Position.details"
+                                    @click="showDetails(data)"
+                                ></opensilex-DetailButton>
                                 <opensilex-EditButton
                                     v-if="! modificationCredentialId || user.hasCredential(modificationCredentialId)"
                                     @click="editEvent(data.item.event)"
@@ -83,6 +57,26 @@
                                 ></opensilex-DeleteButton>
                             </b-button-group>
                         </template>
+
+                        <template v-slot:row-details="{ data }">
+                          <ul>
+                            <li v-if="data.item.to">
+                              <opensilex-UriLink
+                                  :uri="data.item.to.uri"
+                                  :value="data.item.to.name"
+                                  :to="{ path:'/facility/details/'+ encodeURIComponent(data.item.to.uri),}"
+                                  target="_blank"
+                              ></opensilex-UriLink>
+                            </li>
+                            <li v-if="data.item.position && (data.item.position.x || data.item.position.y || data.item.position.z)">{{customCoordinatesText(data.item.position)}}</li>
+                            <li v-if="data.item.position && data.item.position.text">{{data.item.position.text}}</li>
+                            <li v-if="data.item.position && data.item.position.point">
+                              <opensilex-GeometryCopy label="" :value="data.item.position.point">
+                              </opensilex-GeometryCopy>
+                            </li>
+                          </ul>
+                        </template>
+
                     </opensilex-TableAsyncView>
                 </div>
             </template>
@@ -164,7 +158,7 @@ export default class PositionList extends Vue {
     columnsToDisplay: Set<string>;
 
     static getDefaultColumns(): Set<string> {
-        return new Set(["from", "to", "end", "coordinates", "custom_coordinates", "textual_position"]);
+        return new Set(["end"]);
     }
 
 
@@ -247,24 +241,9 @@ export default class PositionList extends Vue {
 
         let tableFields = [];
 
-        if (this.columnsToDisplay.has("to")) {
-            tableFields.push({key: "to", label: "Move.location", sortable: true});
-        }
-
         if (this.columnsToDisplay.has("end")) {
             tableFields.push({key: "end", label: "Position.end", sortable: true});
         }
-
-        if (this.columnsToDisplay.has("coordinates")) {
-            tableFields.push({key: "coordinates", label: "Position.coordinates", sortable: false});
-        }
-        if (this.columnsToDisplay.has("custom_coordinates")) {
-            tableFields.push({key: "custom_coordinates", label: "Position.custom-coordinates", sortable: false});
-        }
-        if (this.columnsToDisplay.has("textual_position")) {
-            tableFields.push({key: "textual_position", label: "Position.textual-position", sortable: false});
-        }
-
 
         if (this.enableActions) {
             tableFields.push({key: "actions", label: "component.common.actions", sortable: false});
@@ -296,7 +275,13 @@ export default class PositionList extends Vue {
             this.eventModalView.show();
         }).catch(this.$opensilex.errorHandler);
     }
-
+    showDetails(data) {
+      if (!data.detailsShowing) {
+        data.toggleDetails();
+      } else {
+        data.toggleDetails();
+      }
+    }
     editEvent(uri) {
         this.modalForm.showEditForm(uri, this.$opensilex.Oeev.MOVE_TYPE_URI);
     }
@@ -365,10 +350,12 @@ en:
     Position:
         list-title: Positions
         end: Arrival date
+        details: Show or hide position details
 fr:
     Position:
         list-title: Positions
         end: "Date d'arrivée"
+        details: Afficher ou masquer les détails de la position
 
 
 

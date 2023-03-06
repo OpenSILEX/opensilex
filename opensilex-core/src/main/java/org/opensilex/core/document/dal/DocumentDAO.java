@@ -26,8 +26,8 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
@@ -211,6 +211,25 @@ public class DocumentDAO {
     }
 
     /**
+     * Count total of documents binded to a target URI
+     * 
+     * @param target the URI on which find associated documents
+     * @return the number of documents associated to a target
+     */
+    public int countDocuments(URI target) throws Exception {
+
+        Node documentGraph = sparql.getDefaultGraph(DocumentModel.class);
+        return sparql.count(documentGraph, DocumentModel.class,null,countBuilder -> {
+
+            ElementGroup rootElementGroup = countBuilder.getWhereHandler().getClause();
+            ElementGroup documentGraphGroupElem = SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(rootElementGroup,documentGraph);
+
+            appendTargetsFilter(documentGraphGroupElem, target);
+            appendDeprecatedFilter(countBuilder, "false");
+        },null);
+    }
+
+    /**
      * Appends the following filter :
      *
      * <pre>
@@ -228,6 +247,7 @@ public class DocumentDAO {
             ));
         }
     }
+
 
     private void appendTitleFilter(SelectBuilder select, String title) throws Exception {
         if (!StringUtils.isEmpty(title)) {

@@ -116,6 +116,12 @@ public class ProvenanceAPITest extends AbstractMongoIntegrationTest {
         final Response postResult2 = getJsonPostResponseAsAdmin(target(createPath), prov2);
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), postResult2.getStatus());
     }
+
+    @Test
+    public void testCreateWithOperator() throws Exception {
+        final Response postResultProvenance = getJsonPostResponseAsAdmin(target(createPath), getCreationProvDTO(activityType, new URI(Oeso.Operator.getURI())));
+        assertEquals(Response.Status.CREATED.getStatusCode(), postResultProvenance.getStatus());
+    }
     
     @Test
     public void testUpdate() throws Exception {

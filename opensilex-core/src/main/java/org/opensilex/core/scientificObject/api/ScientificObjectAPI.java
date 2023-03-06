@@ -424,7 +424,16 @@ public class ScientificObjectAPI {
         MoveModel lastMove = moveDAO.getLastMoveEvent(objectURI);
 
         for (URI contextURI : contexts) {
-            ExperimentModel experiment = getExperiment(contextURI);
+            ExperimentModel experiment;
+            URI globalScientificObjectGraph = new URI(SPARQLDeserializers.getShortURI(sparql.getDefaultGraphURI(ScientificObjectModel.class)));
+            //assign the global uri "dev:set/scientific-object" when the OS is not linked to an experiment
+           if(contextURI.equals(globalScientificObjectGraph)){
+               experiment = new ExperimentModel();
+               experiment.setUri(globalScientificObjectGraph);
+            }
+           else{
+               experiment = getExperiment(contextURI);
+           }
 
             ScientificObjectModel model = dao.getObjectByURI(objectURI, contextURI, currentUser.getLanguage());
             GeospatialModel geometryByURI = geoDAO.getGeometryByURI(objectURI, contextURI);
@@ -484,8 +493,8 @@ public class ScientificObjectAPI {
 
         sparql.startTransaction();
         try {
-            ScientificObjectModel so = dao.create(contextURI, experiment, soType, descriptionDto.getUri(), descriptionDto.getName(), descriptionDto.getRelations(), currentUser);
-            URI soURI = so.getUri();
+            ScientificObjectModel model = dao.create(contextURI, experiment, soType, descriptionDto.getUri(), descriptionDto.getName(), descriptionDto.getRelations(), currentUser);
+            URI soURI = model.getUri();
 
             if (experiment != null) {
                 experimentDAO.updateExperimentSpeciesFromScientificObjects(contextURI);
@@ -493,12 +502,7 @@ public class ScientificObjectAPI {
 
             Node graphNode = SPARQLDeserializers.nodeURI(globalScientificObjectGraph);
             if (globalCopy && !sparql.uriExists(graphNode, soURI)) {
-                UpdateBuilder update = new UpdateBuilder();
-                Node soNode = SPARQLDeserializers.nodeURI(soURI);
-
-                update.addInsert(graphNode, soNode, RDF.type, SPARQLDeserializers.nodeURI(soType));
-                update.addInsert(graphNode, soNode, RDFS.label, descriptionDto.getName());
-                sparql.executeUpdateQuery(update);
+                dao.copyIntoGlobalGraph(Collections.singletonList(model));
             }
 
             if (descriptionDto.getGeometry() != null) {

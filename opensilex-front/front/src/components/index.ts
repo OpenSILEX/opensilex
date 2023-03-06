@@ -308,6 +308,9 @@ components["opensilex-OntologyObjectForm"] = OntologyObjectForm;
 import OntologyRelationsForm from './ontology/OntologyRelationsForm.vue'
 components["opensilex-OntologyRelationsForm"] = OntologyRelationsForm;
 
+import SharedResourceInstanceSelector from './sharedResourceInstances/SharedResourceInstanceSelector.vue';
+components["opensilex-SharedResourceInstanceSelector"] = SharedResourceInstanceSelector;
+
 import XSDBooleanInput from './ontology/XSDBooleanInput.vue'
 components["opensilex-XSDBooleanInput"] = XSDBooleanInput;
 import XSDBooleanView from './ontology/XSDBooleanView.vue'
@@ -407,6 +410,8 @@ import GermplasmSelector from './germplasm/GermplasmSelector.vue';
 components["opensilex-GermplasmSelector"] = GermplasmSelector;
 import GermplasmAttributesSelector from './germplasm/GermplasmAttributesSelector.vue';
 components["opensilex-GermplasmAttributesSelector"] = GermplasmAttributesSelector;
+import GermplasmAttributesValueSelector from './germplasm/GermplasmAttributesValueSelector.vue';
+components["opensilex-GermplasmAttributesValueSelector"] = GermplasmAttributesValueSelector;
 
 // Projects
 import ProjectForm from './projects/ProjectForm.vue';
@@ -469,8 +474,8 @@ import ScientificObjectModalList from './scientificObjects/ScientificObjectModal
 components["opensilex-ScientificObjectModalList"] = ScientificObjectModalList;
 import ScientificObjectModalListByExp from './scientificObjects/ScientificObjectModalListByExp.vue';
 components["opensilex-ScientificObjectModalListByExp"] = ScientificObjectModalListByExp;
-import ScientificObjectView from './scientificObjects/ScientificObjectView.vue';
-components["opensilex-ScientificObjectView"] = ScientificObjectView;
+import ScientificObjectsView from './scientificObjects/ScientificObjectsView.vue';
+components["opensilex-ScientificObjectsView"] = ScientificObjectsView;
 import UsedScientificObjectSelector from './scientificObjects/views/UsedScientificObjectSelector.vue';
 components["opensilex-UsedScientificObjectSelector"] = UsedScientificObjectSelector;
 

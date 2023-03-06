@@ -34,7 +34,8 @@
                         noResultsText="VariableForm.no-entity"
                         helpMessage="VariableForm.entity-help"
                         @select="updateEntity"
-                        :actionHandler="showEntityCreateForm"
+                        :actionHandler="editMode ? undefined : showEntityCreateForm"
+                        :disabled="editMode"
                     ></opensilex-SelectForm>
                     <opensilex-EntityCreate
                         ref="entityForm"
@@ -56,7 +57,8 @@
                         :conversionMethod="objectToSelectNode"
                         noResultsText="VariableForm.no-interestEntity"
                         helpMessage="VariableForm.interestEntity-help"
-                        :actionHandler="showInterestEntityCreateForm"
+                        :actionHandler="editMode ? undefined : showInterestEntityCreateForm"
+                        :disabled="editMode"
                     ></opensilex-SelectForm>
                     <opensilex-InterestEntityCreate
                         ref="interestEntityForm"
@@ -79,7 +81,8 @@
                         noResultsText="VariableForm.no-characteristic"
                         helpMessage="VariableForm.characteristic-help"
                         @select="updateCharacteristic"
-                        :actionHandler="showCharacteristicCreateForm"
+                        :actionHandler="editMode ? undefined : showCharacteristicCreateForm"
+                        :disabled="editMode"
                     ></opensilex-SelectForm>
                     <opensilex-CharacteristicModalForm
                         ref="characteristicForm"
@@ -112,8 +115,9 @@
                         :conversionMethod="objectToSelectNode"
                         helpMessage="VariableForm.method-help"
                         @select="updateMethod"
-                        :actionHandler="showMethodCreateForm"
+                        :actionHandler="editMode ? undefined : showMethodCreateForm"
                         noResultsText="VariableForm.no-method"
+                        :disabled="editMode"
                     ></opensilex-SelectForm>
                     <opensilex-MethodCreate
                         ref="methodForm"
@@ -160,8 +164,9 @@
                         helpMessage="VariableForm.unit-help"
                         placeholder="VariableForm.unit-placeholder"
                         @select="updateUnit"
-                        :actionHandler="showUnitCreateForm"
+                        :actionHandler="editMode ? undefined : showUnitCreateForm"
                         noResultsText="VariableForm.no-unit"
+                        :disabled="editMode"
                     ></opensilex-SelectForm>
                     <opensilex-UnitCreate
                         ref="unitForm"
@@ -235,7 +240,11 @@
 
                 <!-- description -->
                 <div class="col-xl-12" id="v-step-description">
-                    <opensilex-TextAreaForm :value.sync="form.description" label="component.common.description">
+                    <opensilex-TextAreaForm
+                        :value.sync="form.description"
+                        label="component.common.description"
+                        @keydown.native.enter.stop
+                    >
                     </opensilex-TextAreaForm>
                 </div>
                 
@@ -854,7 +863,7 @@ en:
         altName: Alternative name
         entity-help: "Observed entity or event. e.g : Leaf, canopy, wind"
         entity-placeholder: Search and select an entity
-        interestEntity-label: Observation level
+        interestEntity-label: Entity of interest
         interestEntity-help: "Optional, must be provided if its different from the observed entity. It's the entity level that is characterised. e.g : plot, plant, area, genotype..."
         interestEntity-placeholder: Search and select an observation level
         characteristic-help: "Define what is measured/observed. e.g: temperature, infection level, weight, area"
@@ -944,7 +953,7 @@ fr:
         altName: Nom alternatif
         entity-help: "Entité observée ou évènement sur lequel porte la mesure/l'observation. ex : Feuille, canopée, vent"
         entity-placeholder: Rechercher et sélectionner une entité
-        interestEntity-label: Niveau d'observation
+        interestEntity-label: Entité d'intérêt
         interestEntity-help: "Optionnelle, doit être spécifiée si différente de l'entité observée. C'est le niveau d'entité qui est caractérisé. ex : parcelle, plante, zone, génotype..."
         interestEntity-placeholder: Rechercher et sélectionner un niveau d'observation
         characteristic-help: "Ce qui est mesurée/observé. ex : Température, taux d'infection, masse, surface"

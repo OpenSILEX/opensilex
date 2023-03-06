@@ -366,7 +366,7 @@ public class SiteDAO {
         Var uriVar = makeVar(SiteModel.URI_FIELD);
 
         AskBuilder ask = new AskBuilder();
-        ask.addWhere(uriVar, Ontology.typeSubClassAny, sparql.getMapperIndex().getForClass(SiteModel.class).getRDFType());
+        ask.addWhere(uriVar, Ontology.typeSubClassAny, sparql.getRDFType(SiteModel.class));
         ask.addFilter(SPARQLQueryHelper.eq(uriVar, SPARQLDeserializers.nodeURI(siteURI)));
         organizationSPARQLHelper.addSiteAccessClause(ask, uriVar, userOrganizations, userModel.getUri());
 

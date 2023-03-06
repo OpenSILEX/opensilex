@@ -35,13 +35,14 @@
       class="searchFilterField"
     >
       <template v-slot:filters>
-        <!-- title -->
+        <!-- title and keyword -->
       <br><br>
         <div>
           <opensilex-StringFilter
             :filter.sync="filter.multiple"
             placeholder="DocumentList.filter.searchAll-placeholder"
             class="searchFilter"
+            @handlingEnterKey="refresh()"
           ></opensilex-StringFilter><br>
         </div>
       </template>
@@ -54,6 +55,7 @@
             :baseType="$opensilex.Oeso.DOCUMENT_TYPE_URI"
             placeholder="DocumentList.filter.type-placeholder"
             class="searchFilter"
+            @handlingEnterKey="refresh()"
           ></opensilex-TypeForm>
         </div>
 
@@ -64,6 +66,7 @@
             :filter.sync="filter.title"
             placeholder="DocumentList.filter.title-placeholder"
             class="searchFilter"
+            @handlingEnterKey="refresh()"
           ></opensilex-StringFilter><br>
         </div>
 
@@ -77,6 +80,7 @@
               min= "1900"
               max= "2900"
               class="searchFilter"
+              @handlingEnterKey="refresh()"
             ></opensilex-StringFilter><br>
         </div>
 
@@ -87,6 +91,7 @@
             :filter.sync="filter.targets"
             placeholder="DocumentList.filter.targets-placeholder"
             class="searchFilter"
+            @handlingEnterKey="refresh()"
           ></opensilex-StringFilter><br>
         </div>
 
@@ -97,6 +102,7 @@
               :value.sync="filter.authors"
               placeholder="DocumentList.filter.author-placeholder"
               class="searchFilter"
+              @handlingEnterKey="refresh()"
             ></opensilex-InputForm>
         </div>
 
@@ -107,6 +113,7 @@
             :value.sync="filter.keywords"
             placeholder="DocumentList.filter.keywords-placeholder"
             class="searchFilter"
+            @handlingEnterKey="refresh()"
           ></opensilex-InputForm>
         </div>  
         
@@ -175,12 +182,6 @@
             icon="ik#ik-link"
             variant="outline-info"
           ></opensilex-Button>
-          <!-- <opensilex-DeleteButton
-            v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_DELETE_ID)"
-            @click="deleteDocument(data.item.uri)"
-            label="DocumentList.delete"
-            :small="true"
-          ></opensilex-DeleteButton> -->
         </b-button-group>
       </template>
     </opensilex-TableAsyncView>

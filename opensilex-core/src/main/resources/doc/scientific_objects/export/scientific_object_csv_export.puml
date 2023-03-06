@@ -1,0 +1,81 @@
+@startuml
+'https://plantuml.com/use-case-diagram
+
+'Author: rcolin (MISTEA INRAE)'
+'Date: 30/01/2023'
+
+left to right direction
+
+'Define package for basic CSV operation'
+package "Export CSV"{
+
+    (Export URI and type) as (ExportUriType)
+    (Export data and object properties) as (ExportProperties)
+    (Export custom data and object properties) as (ExportCustomProperties)
+    (Export multivalued data and object properties) as (ExportMultiValuedProperties)
+    (Export column according a custom compute) as (ExportCustomCompute)
+
+    note right of (ExportProperties)
+    Export common properties according OWL restrictions from ontologies
+    end note
+
+    note right of (ExportCustomProperties)
+    Export custom properties according OWL restrictions from ontologies
+    end note
+
+     note right of (ExportCustomCompute)
+     An export can use a custom compute/function by mapping
+     for property or a column, a cell to a custom value.
+     end note
+
+     note right of (ExportMultiValuedProperties)
+     Several way are possible for multivalued relation export :
+     - "Repeat the column/property for each possible value of a relation"
+     - "Store all relations inside a cell, by using a specified separator"
+     end note
+}
+
+'Export in experimental context'
+package "Experimental context" {
+    actor :Experimental User: as XpUser #red;line:red;line.bold;text:red
+
+    usecase (Export scientific objects from an experiment) as (ExperimentalExport) <<Export>>
+
+    (ExperimentalExport) .up-> (ExportUriType)
+    (ExperimentalExport) .up->(ExportProperties)
+    (ExperimentalExport) .up->(ExportCustomProperties)
+    (ExperimentalExport) .up-> (ExportMultiValuedProperties)
+    (ExperimentalExport) .up-> (ExportCustomCompute)
+
+    note right of (ExperimentalExport)
+    Relations are retrieved from the experiment graph
+    end note
+
+    (XpUser) --> (ExperimentalExport)
+}
+
+'Export in Global context'
+package "Global context" {
+    actor :User: as :User: #red;line:red;line.bold;text:red
+
+    usecase (Export scientific objects from global graph) as (GlobalExport) <<Export>>
+
+    (GlobalExport) .down-> (ExportUriType)
+    (GlobalExport) .down-> (ExportProperties)
+    (GlobalExport) .down-> (ExportCustomCompute)
+
+    note right of (GlobalExport)
+    In global context, only uri,type, name and geometry are exported.
+    end note
+
+    note right of (GlobalExport)
+    Relations are retrieved from the global scientific object graph
+    end note
+
+    (User) --> (GlobalExport)
+}
+
+skinparam usecase {
+   BackgroundColor<<Export>> DarkSeaGreen
+}
+@enduml

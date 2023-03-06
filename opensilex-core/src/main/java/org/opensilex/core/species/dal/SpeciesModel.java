@@ -8,12 +8,22 @@ import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 
+import java.net.URI;
+
 @SPARQLResource(
         ontology = Oeso.class,
         resource = "Species",
         graph = GermplasmModel.GRAPH
 )
 public class SpeciesModel extends SPARQLResourceModel {
+
+    public SpeciesModel() {
+
+    }
+
+    public SpeciesModel(URI uri) {
+        this.setUri(uri);
+    }
 
     @SPARQLProperty(
             ontology = RDFS.class,

@@ -31,6 +31,8 @@
                     :filter.sync="nameFilter"
                     @update="updateFilter()"
                     placeholder="OntologyClassView.search"
+                    :debounce="300"
+                    :lazy="false"
                 ></opensilex-StringFilter>
 
                 <opensilex-OntologyClassTreeView

@@ -61,8 +61,11 @@ import static org.opensilex.security.authentication.AuthenticationService.DEFAUL
  * @author Vincent Migot
  */
 @Api(SecurityModule.REST_AUTHENTICATION_API_ID)
-@Path("/security")
+@Path(AuthenticationAPI.PATH)
 public class AuthenticationAPI {
+
+    public static final String PATH = "/security";
+    public static final String AUTHENTICATE_PATH = "authenticate";
 
     private final static Logger LOGGER = LoggerFactory.getLogger(AuthenticationAPI.class);
 
@@ -110,7 +113,7 @@ public class AuthenticationAPI {
      * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
      */
     @POST
-    @Path("authenticate")
+    @Path(AuthenticationAPI.AUTHENTICATE_PATH)
     @ApiOperation("Authenticate a user and return an access token")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "User sucessfully authenticated", response = TokenGetDTO.class),

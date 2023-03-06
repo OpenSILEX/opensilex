@@ -4,6 +4,8 @@ import org.opensilex.OpenSilex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.OffsetDateTime;
+
 public abstract class AbstractOpenSilexModuleUpdate implements OpenSilexModuleUpdate{
 
     protected final Logger logger;
@@ -18,5 +20,9 @@ public abstract class AbstractOpenSilexModuleUpdate implements OpenSilexModuleUp
        this.opensilex = opensilex;
     }
 
+    @Override
+    public OffsetDateTime getDate() {
+        return OffsetDateTime.now();
+    }
 
 }

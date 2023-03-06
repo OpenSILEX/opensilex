@@ -39,4 +39,11 @@ public class InterestEntityDetailsDTO extends BaseVariableDetailsDTO<InterestEnt
     public String getDescription() {
         return description;
     }
+
+    @Override
+    public InterestEntityModel toModel() {
+        InterestEntityModel model = new InterestEntityModel();
+        setBasePropertiesToModel(model);
+        return model;
+    }
 }

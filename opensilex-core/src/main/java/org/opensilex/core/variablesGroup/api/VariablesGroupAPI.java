@@ -5,59 +5,40 @@
 //******************************************************************************
 package org.opensilex.core.variablesGroup.api;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-
-import java.net.URI;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.inject.Inject;
-
-import javax.validation.Valid;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-
+import io.swagger.annotations.*;
+import org.opensilex.core.CoreModule;
+import org.opensilex.core.external.opensilex.SharedResourceInstanceService;
+import org.opensilex.core.variable.api.VariableAPI;
 import org.opensilex.core.variablesGroup.dal.VariablesGroupDAO;
 import org.opensilex.core.variablesGroup.dal.VariablesGroupModel;
-import org.opensilex.core.variable.api.VariableAPI;
-
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.account.dal.AccountModel;
-
-import org.opensilex.server.response.ErrorDTO;
-import org.opensilex.server.response.ErrorResponse;
-import org.opensilex.server.response.ObjectUriResponse;
-import org.opensilex.server.response.PaginatedListResponse;
-import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.server.response.*;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.service.SPARQLService;
-
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
+
+import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.net.URI;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 /**
  * @author Hamza IKIOU
  */
@@ -71,13 +52,22 @@ import org.opensilex.utils.OrderBy;
 public class VariablesGroupAPI {
     
     public static final String PATH = "/core/variables_group";
-    
+    public static final String GET_BY_URIS_PATH = "by_uris";
+    public static final String GET_BY_URIS_URI_PARAM = "uris";
+    private static final String SHARED_RESOURCE_INSTANCE_PARAM = "sharedResourceInstance";
+
     @CurrentUser
     AccountModel currentUser;
 
     @Inject
     private SPARQLService sparql;
-    
+
+    @Inject
+    private CoreModule coreModule;
+
+    @Context
+    protected HttpServletRequest httpRequest;
+
     @POST
     @ApiOperation("Add a variables group")
     @ApiProtected
@@ -105,9 +95,7 @@ public class VariablesGroupAPI {
             return new ErrorResponse(Response.Status.CONFLICT, "Variables group already exists", duplicateUriException.getMessage()).getResponse();
         }
     }
-    
-    
-    
+
     @GET
     @ApiOperation(value = "Search variables groups")
     @ApiProtected
@@ -121,27 +109,36 @@ public class VariablesGroupAPI {
             @ApiParam(value = "Variable URI") @QueryParam("variableUri") URI variableUri ,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
+            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize,
+            @ApiParam(value = "Shared resource instance") @QueryParam(VariablesGroupAPI.SHARED_RESOURCE_INSTANCE_PARAM) URI sharedResourceInstance
     ) throws Exception {
-        VariablesGroupDAO dao = new VariablesGroupDAO(sparql);
-        ListWithPagination<VariablesGroupModel> resultList = dao.search(
-                name,
-                variableUri,
-                orderByList,
-                page,
-                pageSize,
-                currentUser.getLanguage()
+        if (sharedResourceInstance == null) {
+            VariablesGroupDAO dao = new VariablesGroupDAO(sparql);
+            ListWithPagination<VariablesGroupModel> resultList = dao.search(
+                    name,
+                    variableUri,
+                    orderByList,
+                    page,
+                    pageSize,
+                    currentUser.getLanguage()
+            );
+
+            ListWithPagination<VariablesGroupGetDTO> resultDTOList = resultList.convert(
+                    VariablesGroupGetDTO.class,
+                    VariablesGroupGetDTO::fromModel
+            );
+            return new PaginatedListResponse<>(resultDTOList).getResponse();
+        }
+
+        SharedResourceInstanceService service = new SharedResourceInstanceService(
+                coreModule.getSharedResourceInstanceConfiguration(sharedResourceInstance), currentUser.getLanguage()
         );
 
-        ListWithPagination<VariablesGroupGetDTO> resultDTOList = resultList.convert(
-                VariablesGroupGetDTO.class,
-                VariablesGroupGetDTO::fromModel
-        );
-        return new PaginatedListResponse<>(resultDTOList).getResponse();
-    }    
-    
- 
-    
+        Map<String, String[]> searchParams = new HashMap<>(httpRequest.getParameterMap());
+        searchParams.remove(VariablesGroupAPI.SHARED_RESOURCE_INSTANCE_PARAM);
+        return new PaginatedListResponse<>(service.search(VariablesGroupAPI.PATH, searchParams, VariablesGroupGetDTO.class))
+                .getResponse();
+    }
    
     @GET
     @Path("{uri}")
@@ -161,12 +158,9 @@ public class VariablesGroupAPI {
         }
         return new SingleObjectResponse<>(VariablesGroupGetDTO.fromModel(model)).getResponse();
     }
-    
-    
-    
-    
+
     @GET
-    @Path("by_uris")
+    @Path(VariablesGroupAPI.GET_BY_URIS_PATH)
     @ApiOperation("Get variables groups by their URIs")
     @ApiProtected
     @ApiResponses(value = {
@@ -176,23 +170,34 @@ public class VariablesGroupAPI {
     })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)    
-    public Response getVariablesGroupByURIs(@ApiParam(value = "Variables group URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris) throws Exception {
-        VariablesGroupDAO dao = new VariablesGroupDAO(sparql);
-        List<VariablesGroupModel> models = dao.getList(uris);
+    public Response getVariablesGroupByURIs(
+            @ApiParam(value = "Variables group URIs", required = true) @QueryParam(VariablesGroupAPI.GET_BY_URIS_URI_PARAM) @NotNull List<URI> uris,
+            @ApiParam(value = "Shared resource instance") @QueryParam(VariablesGroupAPI.SHARED_RESOURCE_INSTANCE_PARAM) URI sharedResourceInstance
+    ) throws Exception {
+        if (sharedResourceInstance == null) {
+            VariablesGroupDAO dao = new VariablesGroupDAO(sparql);
+            List<VariablesGroupModel> models = dao.getList(uris);
 
-        if (!models.isEmpty()) {
-            List<VariablesGroupGetDTO> resultDTOList = new ArrayList<>(models.size());
-            models.forEach(result -> resultDTOList.add(VariablesGroupGetDTO.fromModel(result)));
+            if (!models.isEmpty()) {
+                List<VariablesGroupGetDTO> resultDTOList = new ArrayList<>(models.size());
+                models.forEach(result -> resultDTOList.add(VariablesGroupGetDTO.fromModel(result)));
 
-            return new PaginatedListResponse<>(resultDTOList).getResponse();
-        } else {
-            return new ErrorResponse(Response.Status.NOT_FOUND, "Variables group not found", "Unknown variables group URIs or variables URIs").getResponse();
+                return new PaginatedListResponse<>(resultDTOList).getResponse();
+            } else {
+                return new ErrorResponse(Response.Status.NOT_FOUND, "Variables group not found", "Unknown variables group URIs or variables URIs").getResponse();
+            }
         }
+
+        SharedResourceInstanceService service = new SharedResourceInstanceService(
+                coreModule.getSharedResourceInstanceConfiguration(sharedResourceInstance), currentUser.getLanguage()
+        );
+
+        ListWithPagination<VariablesGroupGetDTO> detailsList = service.getListByURI(Paths.get(VariablesGroupAPI.PATH, VariablesGroupAPI.GET_BY_URIS_PATH).toString(),
+                VariablesGroupAPI.GET_BY_URIS_URI_PARAM,
+                uris, VariablesGroupGetDTO.class);
+        return new PaginatedListResponse<>(detailsList).getResponse();
     }
-   
-    
-    
-    
+
     @PUT
     @ApiOperation("Update a variables group")
     @ApiProtected
@@ -211,11 +216,7 @@ public class VariablesGroupAPI {
         VariablesGroupModel model = dao.update(dto.newModel());
         return new ObjectUriResponse(Response.Status.OK, model.getUri()).getResponse();
     }
-    
-    
-    
-    
-    
+
     @DELETE
     @Path("{uri}")
     @ApiOperation("Delete a variables group")

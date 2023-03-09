@@ -963,11 +963,13 @@ public class DataAPI {
         System.out.println(dataPerHourMap.keySet());
 
         for (Map.Entry<Long, List<DataModel>> entry : dataPerHourMap.entrySet()) {
+            Instant dateTime = Instant.ofEpochSecond(entry.getKey()*3600).plus(30, ChronoUnit.MINUTES);
+
             double avg = entry.getValue().stream().mapToDouble(d->(Double.valueOf(d.getValue().toString()))).average().orElse(Double.NaN);
 
             DataSimpleGetDTO averageData = DataSimpleGetDTO.getDtoFromModel(entry.getValue().get(0));
-            averageData.updateDate(averageData.getDateTime().plus(30, ChronoUnit.MINUTES));
             averageData.setValue(avg);
+            averageData.updateDate(dateTime);
 
             averagePerHour.add(averageData);
         }

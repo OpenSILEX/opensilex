@@ -50,7 +50,7 @@ public class FrontConfigDTO {
     String samlProxyLoginURI;
 
     String samlConnectionTitle;
-    
+
     Boolean activateResetPassword;
 
     String geocodingService;
@@ -62,6 +62,8 @@ public class FrontConfigDTO {
     String applicationName;
 
     Boolean connectAsGuest;
+
+    DashboardConfigDTO dashboard;
 
     @ApiModelProperty(value = "Application url path prefix", example = "app")
     public String getPathPrefix() {
@@ -211,7 +213,7 @@ public class FrontConfigDTO {
     public void setMenuExclusions(List<String> menuExclusions) {
         this.menuExclusions = menuExclusions;
     }
-    
+
     @ApiModelProperty(value = "Version label to use in the header")
     public VersionLabel getVersionLabel() {
         return versionLabel;
@@ -219,6 +221,14 @@ public class FrontConfigDTO {
 
     public void setVersionLabel(VersionLabel versionLabel) {
         this.versionLabel = versionLabel;
+    }
+
+    public DashboardConfigDTO getDashboard() {
+        return dashboard;
+    }
+
+    public void setDashboard(DashboardConfigDTO dashboard) {
+        this.dashboard = dashboard;
     }
 
     @ApiModelProperty(value = "Name of the application to display")

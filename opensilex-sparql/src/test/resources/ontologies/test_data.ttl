@@ -3,6 +3,7 @@
 @prefix testB: <http://test.opensilex.org/b/> .
 @prefix testC: <http://test.opensilex.org/c/> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 
 testB:001
     a test:B ;
@@ -22,6 +23,7 @@ testB:001
     
 testA:001
     a test:A ;
+    rdfs:label "test A" ;
     test:hasRelationToB testB:001 ;
     test:hasString "azerty" ;
     test:hasInt 4 ;

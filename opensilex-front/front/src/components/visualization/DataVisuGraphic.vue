@@ -552,13 +552,9 @@ export default class DataVisuGraphic extends Vue {
   closeContextMenu() {
     this.contextMenuShow = false;
   }
-  // closeIntervalContextMenu() {
-  //   this.intervalContextMenuShow = false;
-  // }
 
   closeMenu() {
     this.closeContextMenu();
-    //this.closeIntervalContextMenu();
   }
 
   reload(series: Array<Highcharts.SeriesLineOptions>, variable: VariableGetDTO | Array<VariableGetDTO>, form) {
@@ -697,15 +693,6 @@ export default class DataVisuGraphic extends Vue {
   fullscreen() {
     this.highchartsRef[0].chart.fullscreen.toggle();
   }
-
-  // detailProvenanceClick() {
-  //   this.contextMenuShow = false;
-  //   let toSend = {
-  //     data: this.selectedData,
-  //     provenance: this.selectedProvenance
-  //   };
-  //  this.$emit("detailProvenanceIsClicked", toSend);
-  // }
 
   dataAnnotationClick() {
     this.contextMenuShow = false;

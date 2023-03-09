@@ -1,19 +1,32 @@
 <template>
-  <b-button
-    @click.prevent="$emit('click')"
-    :title="$t(label)"
-    :variant="variant"
-    :disabled="disabled"
+  <b-button v-if="href"
+            :title="$t(label)"
+            :disabled="disabled"
+            :href="href"
+            variant="outline-primary"
+            target="_blank"
   >
     <slot name="icon">
-      <opensilex-Icon :icon="icon" />
+      <opensilex-Icon icon="fa#external-link-alt"/>
     </slot>
-    <span class="button-label" :title="tooltip" v-if="size==='md'">{{$t(label)}}</span>
+    <span class="button-label" :title="tooltip" v-if="size==='md'">{{ $t(label) }}</span>
+  </b-button>
+
+  <b-button v-else
+            @click.prevent="$emit('click')"
+            :title="$t(label)"
+            :variant="variant"
+            :disabled="disabled"
+  >
+    <slot name="icon">
+      <opensilex-Icon :icon="icon"/>
+    </slot>
+    <span class="button-label" :title="tooltip" v-if="size==='md'">{{ $t(label) }}</span>
   </b-button>
 </template>
 
 <script lang="ts">
-import { Component, Prop } from "vue-property-decorator";
+import {Component, Prop} from "vue-property-decorator";
 import Vue from "vue";
 
 @Component
@@ -38,22 +51,22 @@ export default class Button extends Vue {
   @Prop()
   helpMessage: string;
 
-  get tooltip(){
-    if(! this.helpMessage || this.helpMessage.length == 0){
+  @Prop()
+  href: string;
+
+  get tooltip() {
+    if (!this.helpMessage || this.helpMessage.length == 0) {
       return this.label ? this.$t(this.label) : undefined;
     }
-    return  this.$t(this.helpMessage);
+    return this.$t(this.helpMessage);
   }
 
-  get size(){
-   if(this.small == undefined ||this.small == null){
-     return undefined;
-   }
-   if(this.small == true){
-  return 'sm';
-   }else{
-     return 'md';
-   } }
+  get size() {
+    if (this.small == undefined) {
+      return undefined;
+    }
+    return this.small ? 'sm' : 'md';
+  }
 }
 </script>
 

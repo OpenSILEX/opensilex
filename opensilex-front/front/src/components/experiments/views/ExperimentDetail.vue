@@ -22,6 +22,10 @@
                 )
               "
             >
+              <opensilex-FavoriteButton
+                  :uri="experiment.uri"
+              ></opensilex-FavoriteButton>
+              
               <opensilex-EditButton
                 v-if="
                   user.hasCredential(

@@ -565,6 +565,10 @@ public class ExperimentDAO {
         return sparql.getListByURIs(ExperimentModel.class, uris, currentUser.getLanguage());
     }
 
+    public int count() throws Exception {
+        return sparql.count(ExperimentModel.class);
+    }
+
     public ExperimentModel getByName(String name) throws Exception {
         //pageSize=2 in order to detect duplicated names
         ListWithPagination<ExperimentModel> results = sparql.searchWithPagination(

@@ -12,6 +12,9 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.security.account.dal.AccountModel;
 
+import java.net.URI;
+import java.util.List;
+
 /**
  * <pre>
  * DTO repensenting JSON for searching users or getting them by uri.
@@ -45,6 +48,11 @@ public class UserGetDTO extends UserDTO {
     @JsonProperty("last_name")
     protected String lastName;
 
+    /**
+     * List of favorites
+     */
+    protected List<URI> favorites;
+
     @ApiModelProperty(value = "User first name", example = "Jean")
     public String getFirstName() {
         return firstName;
@@ -61,6 +69,15 @@ public class UserGetDTO extends UserDTO {
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
+    }
+
+    @ApiModelProperty(value = "Favorites URI", example = "test")
+    public List<URI> getFavorites() {
+        return favorites;
+    }
+
+    public void setFavorites(List<URI> favorites) {
+        this.favorites = favorites;
     }
 
     /**

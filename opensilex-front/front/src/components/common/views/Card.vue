@@ -1,9 +1,9 @@
 <template>
   <div class="card">
-    <div class="card-header">
-      <h3>
+    <div v-if="!noHeader" class="card-header">
+      <h3 class="capitalize-first-letter">
         <opensilex-Icon :icon="icon" class="icon-title" />&nbsp;
-        <span class="capitalize-first-letter">{{ $t(label) }}</span> &nbsp;
+        {{ $t(label) }}
       </h3>
       <slot name="header"></slot>
       <div class="card-header-right">
@@ -13,7 +13,7 @@
     <div class="card-body">
       <slot name="body"></slot>
     </div>
-    <div class="card-footer text-center">
+    <div v-if="!noFooter" class="card-footer text-center">
       <slot name="footer"></slot>
     </div>
   </div>
@@ -31,6 +31,10 @@ export default class DescriptionCard extends Vue {
   $t: any;
   $i18n: any;
 
+  @Prop()
+  noFooter: boolean;
+  @Prop()
+  noHeader: boolean;
   @Prop()
   label: string;
   @Prop()

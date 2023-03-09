@@ -5,9 +5,6 @@
 //******************************************************************************
 package org.opensilex.security.account.dal;
 
-import java.net.URI;
-import java.util.*;
-import javax.mail.internet.InternetAddress;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
@@ -19,8 +16,12 @@ import org.opensilex.security.profile.dal.ProfileDAO;
 import org.opensilex.security.profile.dal.ProfileModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
-import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
+import org.opensilex.utils.OrderBy;
+
+import javax.mail.internet.InternetAddress;
+import java.net.URI;
+import java.util.*;
 
 /**
  * AccountDAO is used to manipulate AccountModel and CRUD foaf:OnlineAccount data in the rdf database.
@@ -60,7 +61,7 @@ public final class AccountDAO {
             String lang
     ) throws Exception {
 
-        AccountModel accountModel = buildAccountModel(uri, email, admin, passwordHash, lang);
+        AccountModel accountModel = buildAccountModel(uri, email, admin, passwordHash, lang, Collections.emptyList());
 
         sparql.create(accountModel);
 
@@ -107,10 +108,11 @@ public final class AccountDAO {
             InternetAddress email,
             boolean admin,
             String passwordHash,
-            String lang
+            String lang,
+            List<URI> favorites
     ) throws Exception {
 
-        AccountModel accountModel = buildAccountModel(uri, email, admin, passwordHash, lang);
+        AccountModel accountModel = buildAccountModel(uri, email, admin, passwordHash, lang, favorites);
 
         PersonDAO personDAO = new PersonDAO(sparql);
         sparql.startTransaction();
@@ -202,13 +204,15 @@ public final class AccountDAO {
                                            InternetAddress email,
                                            boolean admin,
                                            String passwordHash,
-                                           String lang){
+                                           String lang,
+                                           List<URI> favorites){
 
         AccountModel accountModel = new AccountModel();
         accountModel.setUri(uri);
         accountModel.setEmail(email);
         accountModel.setAdmin(admin);
         accountModel.setLocale(new Locale(lang));
+        accountModel.setFavorites(favorites);
         if (passwordHash != null) {
             accountModel.setPasswordHash(passwordHash);
         }

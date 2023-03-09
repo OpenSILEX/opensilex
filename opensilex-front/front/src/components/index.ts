@@ -273,6 +273,8 @@ import HelpButton from './common/buttons/HelpButton.vue'
 components["opensilex-HelpButton"] = HelpButton;
 import DeprecatedButton from './common/buttons/DeprecatedButton.vue'
 components["opensilex-DeprecatedButton"] = DeprecatedButton;
+import FavoriteButton from './common/buttons/FavoriteButton.vue'
+components["opensilex-FavoriteButton"] = FavoriteButton;
 
 import Dropdown from './common/dropdown/Dropdown.vue'
 components["opensilex-Dropdown"] = Dropdown;
@@ -760,6 +762,25 @@ components["opensilex-MoveForm"] = MoveForm;
 import MoveView from './events/view/MoveView.vue';
 components["opensilex-MoveView"] = MoveView;
 
+// HOME
+import HomeView from './home/HomeView.vue';
+components["opensilex-HomeView"] = HomeView;
+import Dashboard from './home/Dashboard.vue'
+components["opensilex-Dashboard"] = Dashboard;
+import Histogram from './home/dashboard/Histogram.vue'
+components["opensilex-Histogram"] = Histogram;
+import VisualisationGraphic from "./home/dashboard/VisualisationGraphic.vue"
+components["opensilex-VisualisationGraphic"] = VisualisationGraphic;
+import HistogramSettings from './home/dashboard/HistogramSettings.vue'
+components["opensilex-HistogramSettings"] = HistogramSettings;
+import Twitter from './home/dashboard/Twitter.vue'
+components["opensilex-Twitter"] = Twitter;
+import Favorites from './home/dashboard/Favorites.vue'
+components["opensilex-Favorites"] = Favorites;
+import FavoritesHelp from './home/dashboard/FavoritesHelp.vue'
+components["opensilex-FavoritesHelp"] = FavoritesHelp;
+import DataMonitoring from './home/dashboard/DataMonitoring.vue'
+components["opensilex-DataMonitoring"] = DataMonitoring;
 
 // POSITION
 import PositionForm from './positions/form/PositionForm.vue';

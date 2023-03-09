@@ -543,8 +543,7 @@ public class DataDAO {
             nosql.rollbackTransaction();
             fs.deleteIfExists(FS_FILE_PREFIX, filePath);
             throw e;
-        } 
-
+        }
     }
 
     public ListWithPagination<DataFileModel> searchFiles(
@@ -600,11 +599,14 @@ public class DataDAO {
     public List<VariableModel> getUsedVariables(AccountModel user, List<URI> experiments, List<URI> objects, List<URI> provenances, List<URI> devices) throws Exception {
         Document filter = searchFilter(user, experiments, objects, null, provenances, devices, null, null, null, null, null);
         Set<URI> variableURIs = nosql.distinct("variable", URI.class, DATA_COLLECTION_NAME, filter);
-
+        String userLanguage = null;
+        if(user != null){
+            userLanguage = user.getLanguage();
+        }
         // #TODO don't invoke Variable dao here
-        return new VariableDAO(sparql,nosql,fs).getList(new ArrayList<>(variableURIs), user.getLanguage());
+        return new VariableDAO(sparql,nosql,fs).getList(new ArrayList<>(variableURIs), userLanguage);
     }
-    
+
     public Set<URI> getUsedVariablesByExpeSoDevice(AccountModel user, List<URI> experiments, List<URI> objects, List<URI> devices) throws Exception {
         Document filter = searchFilter(user, experiments, objects, null, devices, null, null, null, null, null, null);
         Set<URI> variableURIs = nosql.distinct("variable", URI.class, DATA_COLLECTION_NAME, filter);

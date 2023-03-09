@@ -315,7 +315,8 @@ public class AuthenticationAPI {
                     user.getEmail(),
                     user.isAdmin(),
                     authentication.getPasswordHash(password),
-                    user.getLanguage()
+                    user.getLanguage(),
+                    user.getFavorites()
             );
             authentication.removeForgottenPasswordUserFromRenewToken(renewToken);
         }

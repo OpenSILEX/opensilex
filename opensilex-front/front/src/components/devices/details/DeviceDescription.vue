@@ -9,6 +9,9 @@
                         icon="ik#ik-clipboard"
                     >
                         <template v-slot:rightHeader>
+                          <opensilex-FavoriteButton
+                              :uri="device.uri"
+                          ></opensilex-FavoriteButton>
                             <opensilex-EditButton
                                 v-if="
                   user.hasCredential(

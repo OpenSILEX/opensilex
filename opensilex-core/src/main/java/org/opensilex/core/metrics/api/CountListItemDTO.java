@@ -53,7 +53,7 @@ public class CountListItemDTO {
         return items;
     }
     
-    public void setItems(List<CountItemDTO> items) {        
+    public void setItems(List<CountItemDTO> items) {
         
         this.items = items;
     }

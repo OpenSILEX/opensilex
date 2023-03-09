@@ -10,15 +10,15 @@
         <opensilex-PageActions :tabs="true" :returnButton="true">
             <template v-slot>
                 <b-nav-item
-                        :active="isDetailsTab()"
-                        :to="{ path: '/facility/details/' + encodeURIComponent(uri) }"
-                >{{ $t("FacilityView.details") }}
+                    :active="isOverviewTab()"
+                    :to="{ path: '/facility/overview/' + encodeURIComponent(uri) }"
+                >{{ $t("FacilityView.overview") }}
                 </b-nav-item>
 
                 <b-nav-item
-                    :active="isDeviceTab()"
-                    :to="{ path: '/facility/devices/' + encodeURIComponent(uri) }"
-                >{{ $t("FacilityView.devices") }}
+                        :active="isDetailsTab()"
+                        :to="{ path: '/facility/details/' + encodeURIComponent(uri) }"
+                >{{ $t("FacilityView.details") }}
                 </b-nav-item>
 
                 <b-nav-item
@@ -37,15 +37,15 @@
 
         <opensilex-PageContent>
             <template v-slot>
-                <opensilex-FacilityDetails
-                        v-if="isDetailsTab()"
-                        :uri="uri"
-                ></opensilex-FacilityDetails>
-
                 <opensilex-FacilityAssociatedDevices
-                    v-if="isDeviceTab()"
+                    v-if="isOverviewTab()"
                     :uri="uri"
                 ></opensilex-FacilityAssociatedDevices>
+
+                <opensilex-FacilityDetails
+                    v-if="isDetailsTab()"
+                    :uri="uri"
+                ></opensilex-FacilityDetails>
 
                 <opensilex-DocumentTabList
                         v-else-if="isDocumentTab()"
@@ -117,8 +117,8 @@
             return this.$route.path.startsWith("/facility/details/");
         }
 
-        isDeviceTab() {
-          return this.$route.path.startsWith("/facility/devices/");
+        isOverviewTab() {
+          return this.$route.path.startsWith("/facility/overview/");
         }
 
         isDocumentTab() {
@@ -138,12 +138,12 @@
 <i18n>
 en:
     FacilityView:
-        details: Description
-        devices: Associated devices
+        details: Details
+        overview: Overview
         document: Documents
 fr:
     FacilityView:
-        details: Description
-        devices: Appareils associés
+        details: Détail
+        overview: Aperçu
         document: Documents
 </i18n>

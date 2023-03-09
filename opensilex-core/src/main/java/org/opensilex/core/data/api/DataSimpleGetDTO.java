@@ -39,6 +39,8 @@ public class DataSimpleGetDTO {
     private Object value;
 
     private Instant dateTime;
+    private String offset;
+    private Boolean isDateTime;
 
 
     public URI getUri() {
@@ -65,7 +67,15 @@ public class DataSimpleGetDTO {
 
     public Instant getDateTime() { return dateTime; }
 
-    public void setDateTime(Instant dateTime) { this.dateTime = dateTime; }
+    public void setDateTime(Instant dateTime, String offset, Boolean isDateTime) {
+        this.dateTime = dateTime;
+        this.offset = offset;
+        this.isDateTime = isDateTime;
+    }
+
+    public void updateDate(Instant dateTime) {
+        setDate(dateTime, this.offset, this.isDateTime);
+    }
 
     /**
      * Set date attribute by converting given parameters in a String.
@@ -75,7 +85,7 @@ public class DataSimpleGetDTO {
      * @param isDateTime true if it's a DateTime
      */
     public void setDate(Instant instant, String offset, Boolean isDateTime) {
-        setDateTime(instant);
+        setDateTime(instant, offset, isDateTime);
         if (isDateTime) {
             OffsetDateTime odt = instant.atOffset(ZoneOffset.of(offset));
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern(DateFormat.YMDTHMSMSX.toString());
@@ -112,5 +122,7 @@ public class DataSimpleGetDTO {
         this.date = other.date;
         this.value = other.value;
         this.dateTime = other.dateTime;
+        this.offset = other.offset;
+        this.isDateTime = other.isDateTime;
     }
 }

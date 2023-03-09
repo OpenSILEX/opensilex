@@ -66,7 +66,7 @@
         <opensilex-UriLink
           :to="{
             path:
-              '/facility/details/' +
+              '/facility/overview/' +
               encodeURIComponent(data.item.uri),
           }"
           :uri="data.item.uri"

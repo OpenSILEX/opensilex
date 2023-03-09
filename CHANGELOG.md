@@ -5,16 +5,49 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## [1.0.0-rc+7] (Unreleased)
 
 > Warning : upgrading to this new version may require manual operations. Please
 > see the [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc+6.1.md).
 
+### New features
+
+- **[Variables]** Allow to browse and import variables from a remote instance ("shared resource instance") -> 5aa3e0482
+- **[UI]** Indication of elements number in tabs -> 5eb24aac4
+- **[UI]** Enter Key press no longer necessary in auto-complet fields -> 7dc8ff333
+- **[UI]** Add an OpenSILEX neutral UI theme -> fd2706c1
+- **[Germplasm]** Append search by attribute values on front -> a1425b118
+- **[Position]** Display the Devices/OS LastPosition on detail and map page -> 3cf14f8e2
+- **[Facilities]** Sites can now be associated to a facility from the facility creation or update form -> 845f3d1d
+- **[Data/Image]** : Visualization of Images associated to the data since from experiment -> 169cbc31d
+- **[Users]** Data model has been changed, old users are now split into accounts and persons -> 8ed0303a
+
 ### Fixed or optimized
 
+- **[Ontology]** move some subclass and properties from oeso-ext ontology (phis) to oeso-core ontology -> ac1a451c3
+- **[Data]** Fix bad redirection of scientific object inside experimental context. Fix display error in case of data with no target defined -> d9830177d
+- **[Experiment/Visualisation]** Fix graphic visualizations in experiment module -> 43dbfe29d
+- **[Provenance]** Fix creation of provenance with an operator -> abd7ba2a9
+- **[Event]** Append Fertilization  event french translation -> 2dd981f06
+- **[Scientific Object]** fix storage/search of name composed only of digit in global graph -> 3268a4bf3
+- **[Scientific Object]** fix germplasm and custom properties export -> 0ede9443d
+- **[Move/Location]** Enhance OS positions historic -> 89553d5e0
+- **[Scientific Object]** new rooting for SO tabs / fix links redirect -> c37bc6273
+- **[Scientific Objects]** Fix SO form if it contains subtype properties -> 4d8b93899
+- **[FileSystem]** Fix import from local files to mongodb import -> 9436ce94d
+- **[Scientific Object]** fix no display of object name for each experiment (if name are equals in global and experimental context) -> 1eeff0fcd
+
+- **[Germplasm]** Fix search by attributes and attributes list display -> 7b71920d
+- **[Scientific Object]** Fix form if it contains custom/subtype properties  -> 4d8b9389
+- **[FileSystem]** Fix import from local files to MongoDB import -> 9436ce94
+
+- **[Germplasm]** Fix search by attributes and attributes list display -> 7b71920d 
+- **[Document]** Fix error on Document creation when using a fixed URI -> 6e766fbe
+- **[Facility]** Fix display of associated device -> 465c364f
+- **[User/Account]** Extract Account and Person from User -> 8ed0303a
+- **[Facility]** Add tabs for facility view -> 2239fb02
+- **[Germplasm]** Allow duplicate names for accessions -> 42399304
 - **[Organizations]** The "create facility" button on site details now works as expected -> 845f3d1d
-- **[Facilities]** Sites can now be associated to a facility from the facility creation or update form -> 845f3d1d
-- **[Users]** Data model has been changed, old users are now split into accounts and persons -> 8ed0303a
 
 ## [1.0.0-rc+6]
 

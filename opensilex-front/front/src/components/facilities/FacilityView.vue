@@ -37,10 +37,10 @@
 
         <opensilex-PageContent>
             <template v-slot>
-                <opensilex-FacilityMonitoringView
+                <opensilex-FacilityAssociatedDevices
                     v-if="isOverviewTab()"
                     :uri="uri"
-                ></opensilex-FacilityMonitoringView>
+                ></opensilex-FacilityAssociatedDevices>
 
                 <opensilex-FacilityDetails
                     v-if="isDetailsTab()"
@@ -139,7 +139,7 @@
 en:
     FacilityView:
         details: Details
-        devices: Overview
+        overview: Overview
         document: Documents
 fr:
     FacilityView:

@@ -6,34 +6,32 @@
 //******************************************************************************
 package org.opensilex.core.data.dal;
 
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.model.*;
-import com.mongodb.client.result.DeleteResult;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.IndexOptions;
+import com.mongodb.client.model.Indexes;
 import com.opencsv.CSVWriter;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.XSD;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.opensilex.core.data.api.DataComputedGetDTO;
-import org.opensilex.core.data.api.CriteriaDTO;
 import org.opensilex.core.data.api.DataExportDTO;
 import org.opensilex.core.data.api.DataGetDTO;
-import org.opensilex.core.data.api.SingleCriteriaDTO;
-import org.opensilex.core.data.dal.aggregations.DataTargetAggregateModel;
-import org.opensilex.core.scientificObject.api.ScientificObjectAPI;
-import org.opensilex.core.data.utils.DataValidateUtils;
+import org.opensilex.core.datafile.dal.DataFileSearchFilter;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.utils.ExportDataIndex;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.nosql.dao.MongoReadWriteDao;
+import org.opensilex.nosql.mongodb.MongoModel;
+import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.variable.dal.MethodModel;
 import org.opensilex.core.variable.dal.UnitModel;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
-import org.opensilex.fs.service.FileStorageService;
-import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
@@ -42,22 +40,19 @@ import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
-import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
-import org.opensilex.utils.OrderBy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.File;
 import java.io.StringWriter;
 import java.net.URI;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.*;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -66,651 +61,190 @@ import java.util.stream.Collectors;
  *
  * @author sammy
  */
-public class DataDAO {
+public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
 
     public static final String DATA_COLLECTION_NAME = "data";
-    public static final String DATA_PREFIX = "data";
-
     public static final String FILE_COLLECTION_NAME = "file";
-    public static final String FILE_PREFIX = "file";
+
+    public static final String DATA_PREFIX = "data";
 
     public static final String FS_FILE_PREFIX = "datafile";
 
-    protected final MongoDBService nosql;
     protected final SPARQLService sparql;
-    protected final FileStorageService fs;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DataDAO.class);
-        
-    public DataDAO(MongoDBService nosql, SPARQLService sparql, FileStorageService fs) {
-        this.nosql = nosql;
+
+    public DataDAO(MongoDBService mongodb, SPARQLService sparql) {
+        super(mongodb, DataModel.class, DATA_COLLECTION_NAME, DATA_PREFIX);
         this.sparql = sparql;
-        this.fs = fs;
     }
 
-    public void createIndexes() {
+    @Override
+    protected void createIndexes() {
         IndexOptions unicityOptions = new IndexOptions().unique(true);
 
-        MongoCollection<DataModel> dataCollection = nosql.getDatabase()
-                .getCollection(DATA_COLLECTION_NAME, DataModel.class);
-        dataCollection.createIndex(Indexes.ascending("uri"), unicityOptions);
-        dataCollection.createIndex(Indexes.ascending(DataModel.VARIABLE_FIELD, "provenance", DataModel.TARGET_FIELD, "date"), unicityOptions);
-        dataCollection.createIndex(Indexes.ascending(DataModel.VARIABLE_FIELD, DataModel.TARGET_FIELD, "date"));
-        dataCollection.createIndex(Indexes.compoundIndex(Arrays.asList(Indexes.ascending(DataModel.VARIABLE_FIELD),Indexes.descending("date"))));
-        dataCollection.createIndex(Indexes.ascending("date"));
-        dataCollection.createIndex(Indexes.descending("date"));
+        collection.createIndex(Indexes.ascending(MongoModel.URI_FIELD), unicityOptions);
+        collection.createIndex(Indexes.ascending(DataModel.DATE_FIELD), unicityOptions);
 
-        MongoCollection<DataFileModel> fileCollection = nosql.getDatabase()
-                .getCollection(FILE_COLLECTION_NAME, DataFileModel.class);
-        fileCollection.createIndex(Indexes.ascending("uri"), unicityOptions);
-        fileCollection.createIndex(Indexes.ascending("path"), unicityOptions);
-        fileCollection.createIndex(Indexes.ascending("provenance", DataModel.TARGET_FIELD, "date"), unicityOptions);
-        fileCollection.createIndex(Indexes.ascending(DataModel.TARGET_FIELD, "date"));
-        fileCollection.createIndex(Indexes.descending("date"));
-        fileCollection.createIndex(Indexes.ascending("date"));
-    }
+        collection.createIndex(Indexes.ascending(DataModel.VARIABLE_FIELD, DataModel.PROVENANCE_FIELD, DataModel.TARGET_FIELD, DataModel.DATE_FIELD), unicityOptions);
+        collection.createIndex(Indexes.ascending(DataModel.VARIABLE_FIELD, DataModel.TARGET_FIELD, DataModel.DATE_FIELD), unicityOptions);
 
-    public DataModel create(DataModel instance) throws Exception {
-        createIndexes();
-        nosql.create(instance, DataModel.class, DATA_COLLECTION_NAME, DATA_PREFIX);
-        return instance;
-    }
-
-    public DataFileModel createFile(DataFileModel instance) throws Exception {
-        createIndexes();
-        nosql.create(instance, DataFileModel.class, FILE_COLLECTION_NAME, FILE_PREFIX);
-        return instance;
-    }
-
-    public List<DataModel> createAll(List<DataModel> instances) throws Exception {
-        createIndexes(); 
-        nosql.createAll(instances, DataModel.class, DATA_COLLECTION_NAME, DATA_PREFIX,false);
-        return instances;
-    } 
-
-    public List<DataFileModel> createAllFiles(List<DataFileModel> instances) throws Exception {
-        createIndexes();
-        nosql.createAll(instances, DataFileModel.class, FILE_COLLECTION_NAME, FILE_PREFIX,false);
-        return instances;
-    }
-
-    public DataModel update(DataModel instance) throws NoSQLInvalidURIException {
-        nosql.update(instance, DataModel.class, DATA_COLLECTION_NAME);
-        return instance;
-    }
-
-    public DataFileModel updateFile(DataFileModel instance) throws NoSQLInvalidURIException {
-        nosql.update(instance, DataFileModel.class, FILE_COLLECTION_NAME);
-        return instance;
-    }
-
-    public ListWithPagination<DataModel> search(
-            AccountModel user,
-            List<URI> experiments,
-            List<URI> targets,
-            List<URI> variables,
-            List<URI> provenances,
-            List<URI> devices,
-            Instant startDate,
-            Instant endDate,
-            Float confidenceMin,
-            Float confidenceMax,
-            Document metadata,
-            List<URI> operators,
-            List<OrderBy> orderByList,
-            Integer page,
-            Integer pageSize) throws Exception {
-
-        Document filter = searchFilter(user, experiments, targets, variables, provenances, devices, startDate, endDate, confidenceMin, confidenceMax, metadata, operators);
-
-        return nosql.searchWithPagination(DataModel.class, DATA_COLLECTION_NAME, filter, orderByList, page, pageSize);
-    }
-    
-     public int count(
-            AccountModel user,
-            List<URI> experiments,
-            List<URI> objects,
-            List<URI> variables,
-            List<URI> provenances,
-            List<URI> devices,
-            Instant startDate,
-            Instant endDate,
-            Float confidenceMin,
-            Float confidenceMax,
-            Document metadata,
-            List<URI> operators) throws Exception {
-
-        Document filter = searchFilter(user, experiments, objects, variables, provenances,devices, startDate, endDate, confidenceMin, confidenceMax, metadata, operators);
-        return nosql.count(DataModel.class, DATA_COLLECTION_NAME, filter );
-    }
-
-    public int countFiles(
-            AccountModel user,
-            List<URI> rdfTypes,
-            List<URI> experiments,
-            List<URI> objects,
-            List<URI> provenances,
-            List<URI> devices,
-            Instant startDate,
-            Instant endDate,
-            Document metadata,
-            List<URI> operators) throws Exception {
-
-        Document filter = searchFilter(user, experiments, objects, null, provenances, devices, startDate, endDate, null, null, metadata, operators);
-
-        if (rdfTypes != null && !rdfTypes.isEmpty()) {
-            Document inFilter = new Document();
-            inFilter.put("$in", rdfTypes);
-            filter.put(DataFileModel.RDF_TYPE_FIELD, inFilter);
-        }
-        return nosql.count(DataFileModel.class, FILE_COLLECTION_NAME, filter);
-    }
-    
-    /**
-     *
-     * @param deviceURI
-     * @param user
-     * @param experiments
-     * @param objects
-     * @param variables
-     * @param provenances
-     * @param startDate
-     * @param endDate
-     * @param confidenceMin
-     * @param confidenceMax
-     * @param metadata
-     * @param orderByList
-     * @param page
-     * @param pageSize
-     * @return
-     * @throws Exception
-     * @deprecated better use the method search
-     */
-    @Deprecated
-    public ListWithPagination<DataModel> searchByDevice(
-            URI deviceURI,
-            AccountModel user,
-            List<URI> experiments,
-            List<URI> objects,
-            List<URI> variables,
-            List<URI> provenances,
-            Instant startDate,
-            Instant endDate,
-            Float confidenceMin,
-            Float confidenceMax,
-            Document metadata,
-            List<URI> operators,
-            List<OrderBy> orderByList,
-            Integer page,
-            Integer pageSize) throws Exception {
-
-        Document filter = searchFilter(user, experiments, objects, variables, provenances, Arrays.asList(deviceURI), startDate, endDate, confidenceMin, confidenceMax, metadata, operators);
-
-        return nosql.searchWithPagination(DataModel.class, DATA_COLLECTION_NAME, filter, orderByList, page, pageSize);
-    }
-
-    /**
-     *
-     * @param deviceURI
-     * @param user
-     * @param experiments
-     * @param objects
-     * @param variables
-     * @param provenances
-     * @param startDate
-     * @param endDate
-     * @param confidenceMin
-     * @param confidenceMax
-     * @param metadata
-     * @return
-     * @throws Exception
-     * @deprecated better use the method count
-     */
-    @Deprecated
-    public int countByDevice(
-            URI deviceURI,
-            AccountModel user,
-            List<URI> experiments,
-            List<URI> objects,
-            List<URI> variables,
-            List<URI> provenances,
-            Instant startDate,
-            Instant endDate,
-            Float confidenceMin,
-            Float confidenceMax,
-            Document metadata,
-            List<URI> operators) throws Exception {
-        
-        Document filter = searchFilter(user, experiments, objects, variables, provenances, Arrays.asList(deviceURI), startDate, endDate, confidenceMin, confidenceMax, metadata, operators);
-
-        return nosql.count(DataModel.class, DATA_COLLECTION_NAME, filter );
-    }
-
-    public List<DataModel> search(
-            AccountModel user,
-            List<URI> experiments,
-            List<URI> objects,
-            List<URI> variables,
-            List<URI> provenances,
-            List<URI> devices,
-            Instant startDate,
-            Instant endDate,
-            Float confidenceMin,
-            Float confidenceMax,
-            Document metadata,
-            List<URI> operators,
-            List<OrderBy> orderByList) throws Exception {
-
-        Document filter = searchFilter(user, experiments, objects, variables, provenances, devices, startDate, endDate, confidenceMin, confidenceMax, metadata, operators);
-
-        return nosql.search(DataModel.class, DATA_COLLECTION_NAME, filter, orderByList);
-    }
-
-    public Document getSelectedAgents(List<URI> agents){
-
-        //Get all data that have :
-        //    provenance.provUsed.uri IN devices or operators URIs
-        // OR ( provenance.uri IN devices/operators Provenances list && provenance.provUsed.uri isEmpty or not exists)
-        ProvenanceDAO provDAO = new ProvenanceDAO(nosql, sparql);
-        Set<URI> agentProvenances = provDAO.getProvenancesURIsByAgents(agents);
-
-        Document directProvFilter = new Document("provenance.provWasAssociatedWith.uri", new Document("$in", agents));
-
-        Document globalProvUsed = new Document("provenance.uri", new Document("$in", agentProvenances));
-        globalProvUsed.put("$or", Arrays.asList(
-                new Document("provenance.provWasAssociatedWith", new Document("$exists", false)),
-                new Document("provenance.provWasAssociatedWith", new ArrayList())
-            )
+        collection.createIndex(Indexes.compoundIndex(
+                Arrays.asList(Indexes.ascending(DataModel.VARIABLE_FIELD),Indexes.descending( DataModel.DATE_FIELD)))
         );
-
-        return new Document("$or", Arrays.asList(directProvFilter, globalProvUsed));
     }
 
-    /**
-     *
-     * @param criteriaDTO
-     * @param variableDAO so we know how to fetch datatype of each variable
-     * @return Null if criteria dto had no valid criteria, empty list if valid criteria but no results,
-     * and a list of object uris if criteria were valid and results were found
-     */
-    public List<URI> getScientificObjectsThatMatchDataCriteria(CriteriaDTO criteriaDTO, URI experiment, AccountModel user ,VariableDAO variableDAO) throws Exception {
-        List<Bson> aggregationDocs= this.createCriteriaSearchAggregation(criteriaDTO, experiment,user, variableDAO);
-        Set<DataTargetAggregateModel> criteriaSearchedResult;
+    @Override
+    public List<Bson> getBsonFilters(DataSearchFilter searchFilter) throws Exception {
 
-        if(aggregationDocs.isEmpty()){
-            return null;
-        }
-
-        criteriaSearchedResult = nosql.aggregate(DataDAO.DATA_COLLECTION_NAME, aggregationDocs, DataTargetAggregateModel.class);
-        //If result is empty return an empty list otherwise take first and only element's targets value because of the
-        // mongo request always returns a single Document with a list of targets validating the criteria
-
-        if(criteriaSearchedResult.isEmpty()){
-            return Collections.emptyList();
-        } else if (criteriaSearchedResult.size() > 1) {
-            throw new IllegalStateException("Unexpected error: the aggregation should have return only one results");
-        }
-
-        // no need to check Optional#isPresent() since if the initial list is not empty, then it has an item in the corresponding Stream
-        return criteriaSearchedResult.stream().findAny()
-                .get()
-                .getTargets();
-    }
-
-    /**
-     * <p>
-     * Translates the dto into a search filter permitting the acquisition of data needed to get the right objects.
-     * Or creates error lists if there are errors in the request
-     * </p>
-     *
-     * <p>
-     * Example of a request : If we want all objects who have a Variable A > 10 and a Variable B < 5.
-     * Then we need to fetch all data concerning A where value > 10 as well as all data concerning B where value < 5.
-     * Even though in the end we will only retain objects if they have data that validates both.
-     * Precondition : criteriaDTO is of type And for first version
-     * </p>
-     *
-     * @apiNote
-     * <ul>
-     * <li> In the "group" pipeline stage, the name of the field which contains target is "targets" </li>
-     * <li> This is the mongo request that is created for an example with two criteria </li>
-     * </ul>
-     *
-     * <pre>
-     * {@code
-     *       db.getCollection('data').aggregate(
-     *          [
-     *              {$match : { $or:
-     *       	[
-     *               { $and: [
-     *                  {"variable":"http://vegetalunit.inrae.fr/vigne/id/variable/lot_weight_balance_kilogramm"} ,
-     *                  {"value":{ $lt: 1000 }}
-     *      		] },
-     *              { $and: [
-     *                      {"variable":"http://vegetalunit.inrae.fr/vigne/id/variable/must_density_hydromtre_kilogramm_per_litre"} ,
-     *                      {"value":{ $lt: 1000 }}
-     *       			] }
-     *       	] }},
-     *          {
-     *               $group : {_id : {target : "$target"},
-     *                   variables: {$addToSet: "$variable"}}
-     *               },
-     *               {
-     *                  $match: {
-     *                     $expr: {
-     *                     $eq: [{ $size: "$variables" }, 2]
-     *                   }
-     *                   }
-     *              },
-     *              {
-     *          $group: {
-     *             _id: null,
-     *             targets: { $addToSet: "$_id.target" }
-     *           }
-     *         }
-     *         ]
-     *       ).pretty();
-     * }
-     * </pre>
-     *
-     */
-    private List<Bson> createCriteriaSearchAggregation(CriteriaDTO criteriaDTO, URI experiment, AccountModel user, VariableDAO variableDAO) throws Exception {
-        final List<Bson> aggregationDocuments = new ArrayList<>();
-        ScientificObjectAPI.GetScientificObjectsByDataCriteriaRequestErrors errors = new ScientificObjectAPI.GetScientificObjectsByDataCriteriaRequestErrors();
-        //A boolean to not run pointless code if all single criteria were incomplete (A couple of incomplete criteria shouldn't throw an error)
-        boolean atLeastOneCompleteSingle = false;
-        //Some strings used to create the request :
-        final String variables = "variables";
-
-        //Data search filter
-        Document dataSearchFilter = new Document();
-        List<Document> criteriaDocuments = new ArrayList<>();
-        Map<String, List<Document>> criteriaDocumentPerVariable = new HashMap<>();
-
-        //Make the aggregation docs
-        for(SingleCriteriaDTO singleCriteriaDTO : criteriaDTO.getCriteriaList()){
-            URI currentVariableUri = singleCriteriaDTO.getVariableUri();
-            URI criteriaType = singleCriteriaDTO.getCriteria();
-            String valueString = singleCriteriaDTO.getValue();
-            if(currentVariableUri != null && criteriaType != null && !valueString.trim().isEmpty()){
-                atLeastOneCompleteSingle = true;
-                URI varDataTypeUri = null;
-                //Create variable filter and a new list of filters if this is the first time we've crossed this variable, add to existing list otherwise
-                String currentVariableStringUri = SPARQLDeserializers.getExpandedURI(currentVariableUri);
-                try{
-                    varDataTypeUri = variableDAO.get(currentVariableUri).getDataType();
-                }catch (Exception e){
-                    errors.addInvalidVariable(singleCriteriaDTO, currentVariableUri);
-                }
-
-                if(!criteriaDocumentPerVariable.containsKey(currentVariableStringUri)){
-                    Document currentCriteriaDocument = new Document();
-                    currentCriteriaDocument.put(DataModel.VARIABLE_FIELD, currentVariableStringUri);
-                    List<Document> variableDocuments = new ArrayList<>();
-                    variableDocuments.add(currentCriteriaDocument);
-                    criteriaDocumentPerVariable.put(currentVariableStringUri, variableDocuments);
-
-                }
-
-                List<Document> currentCriteriaDocuments = criteriaDocumentPerVariable.get(currentVariableStringUri);
-
-                Object parsedValue = null;
-                //Add to invalid value datatype errors if parse fails
-                try{
-                    parsedValue = DataValidateUtils.convertData(varDataTypeUri, valueString);
-                } catch(Exception e){
-                    errors.addInvalidValueDatatypeError(singleCriteriaDTO, valueString);
-                }
-
-                if(SPARQLDeserializers.compareURIs(criteriaType.toString(), Oeso.equalToo.getURI())){
-                    if(currentCriteriaDocuments != null && parsedValue != null){
-                        currentCriteriaDocuments.add(new Document(DataModel.VALUE_FIELD, parsedValue));
-                    }
-                }else{
-                    //If filterType stays null then it means the criteriaUri wasn't recognized, so add to invalid criteria uris
-                    String filterType = null;
-                    if(SPARQLDeserializers.compareURIs(criteriaType.toString(), Oeso.moreOrEqualThan.getURI())){
-                        filterType = "$gte";
-                    }else if(SPARQLDeserializers.compareURIs(criteriaType.toString(), Oeso.moreThan.getURI())){
-                        filterType = "$gt";
-                    }else if(SPARQLDeserializers.compareURIs(criteriaType.toString(), Oeso.lessThan.getURI())){
-                        filterType = "$lt";
-                    }else if(SPARQLDeserializers.compareURIs(criteriaType.toString(), Oeso.lessOrEqualThan.getURI())){
-                        filterType = "$lte";
-                    }
-                    if(filterType == null){
-                        errors.addInvalidCriteriaOperator(singleCriteriaDTO, criteriaType);
-                    } else{
-                        if(currentCriteriaDocuments != null && parsedValue != null){
-                            Document valueConstraintFilter = new Document();
-                            valueConstraintFilter.put(filterType, parsedValue);
-                            currentCriteriaDocuments.add(new Document(DataModel.VALUE_FIELD, valueConstraintFilter));
-                        }
-                    }
-                }
-            }
-        }
-        if(!atLeastOneCompleteSingle){
-            return Collections.emptyList();
-        }else if (errors.hasErrors()){
-            throw new IllegalArgumentException(errors.generateErrorMessage());
-        }
-
-        for(List<Document> varDocs : criteriaDocumentPerVariable.values()){
-            criteriaDocuments.add(new Document("$and", varDocs));
-        }
-        dataSearchFilter.put("$or", criteriaDocuments);
-        if(experiment == null){
-            aggregationDocuments.add(new Document("$match", dataSearchFilter));
-        }else{
-            Document experimentFilter = new Document();
-            appendExperimentUserAccessFilter(experimentFilter, user, Collections.singletonList(experiment));
-            List<Document> andList = new ArrayList<>();
-            andList.add(dataSearchFilter);
-            andList.add(experimentFilter);
-            Document dataSearchFilterWithExperiment = new Document("$and", andList);
-            aggregationDocuments.add(new Document("$match", dataSearchFilterWithExperiment));
-        }
-
-        //Group by target and create list of variables that have returned data for each target
-        Document groupByTargetDoc = new Document();
-        Document groupByIdDoc = new Document();
-        groupByIdDoc.put(DataModel.TARGET_FIELD, "$" + DataModel.TARGET_FIELD);
-        groupByTargetDoc.put("_id", groupByIdDoc);
-        Document groupByVarListDoc = new Document();
-        groupByVarListDoc.put("$addToSet", "$" + DataModel.VARIABLE_FIELD);
-        groupByTargetDoc.put(variables, groupByVarListDoc);
-        aggregationDocuments.add(new Document("$group", groupByTargetDoc));
-
-        //Keep only the ones that have every tested variable present
-        Document sizeExpr = new Document("$size", "$" + variables);
-        Document sizeCondition = new Document("$eq", Arrays.asList(sizeExpr, criteriaDocumentPerVariable.size()));
-        aggregationDocuments.add(new Document("$match", new Document("$expr", sizeCondition)));
-
-        //group by nothing and create a list of targets that validate the criteria
-        Document targetListCreator = new Document();
-        targetListCreator.put("_id", null);
-        targetListCreator.put(DataModel.TARGET_FIELD + "s", new Document("$addToSet", "$_id." + DataModel.TARGET_FIELD));
-        aggregationDocuments.add(new Document("$group", targetListCreator));
-
-        return aggregationDocuments;
-
-    }
-
-    public Document searchFilter(AccountModel user, List<URI> experiments, List<URI> targets, List<URI> variables, List<URI> provenances, List<URI> devices, Instant startDate, Instant endDate, Float confidenceMin, Float confidenceMax, Document metadata, List<URI> operators) throws Exception {
-
-        Document filter = new Document();
+        List<Bson> filters = super.getBsonFilters(searchFilter);
 
         // handle case some case in which some service/dao must have access to data collection, even if the user don't have direct access to xp
-        if(user != null){
-            appendExperimentUserAccessFilter(filter, user, experiments);
-        }
-
-        if (targets != null && !targets.isEmpty()) {
-            Document inFilter = new Document();
-            inFilter.put("$in", targets);
-            filter.put(DataModel.TARGET_FIELD, inFilter);
-        }
-
-        if (variables != null && !variables.isEmpty()) {
-            Document inFilter = new Document();
-            inFilter.put("$in", variables);
-            filter.put("variable", inFilter);
-        }
-
-        if (provenances != null && !provenances.isEmpty()) {
-            Document inFilter = new Document();
-            inFilter.put("$in", provenances);
-            filter.put("provenance.uri", inFilter);
-        }
-
-        if (startDate != null || endDate != null) {
-            Document dateFilter = new Document();
-            if (startDate != null) {
-                dateFilter.put("$gte", startDate);
-            }
-            if (endDate != null) {
-                dateFilter.put("$lt", endDate);
-
-            }
-            filter.put("date", dateFilter);
-        }
-
-        if (confidenceMin != null || confidenceMax != null) {
-            Document confidenceFilter = new Document();
-            if (confidenceMin != null) {
-                confidenceFilter.put("$gte", confidenceMin);
-            }
-
-            if (confidenceMax != null) {
-                confidenceFilter.put("$lte", confidenceMax);
-
-            }
-            filter.put("confidence", confidenceFilter);
-        }
-
-        if (metadata != null) {
-            for (String key:metadata.keySet()) {
-                filter.put("metadata." + key, metadata.get(key));
+        if(searchFilter.getUser() != null){
+            Bson xpFilter = appendExperimentUserAccessFilter(searchFilter.getUser(), searchFilter.getExperiments());
+            if(xpFilter != null){
+                filters.add(xpFilter);
             }
         }
 
-        List<Document> operatorAndDeviceFilters = new ArrayList<>();
-
-        if (operators != null && !operators.isEmpty()) {
-            operatorAndDeviceFilters.add(getSelectedAgents(operators));
+        if (!CollectionUtils.isEmpty(searchFilter.getTargets())) {
+            filters.add(Filters.in(DataModel.TARGET_FIELD, searchFilter.getTargets()));
+        }
+        if (!CollectionUtils.isEmpty(searchFilter.getVariables())) {
+            filters.add(Filters.in(DataModel.VARIABLE_FIELD, searchFilter.getVariables()));
+        }
+        if (!CollectionUtils.isEmpty(searchFilter.getProvenances())) {
+            filters.add(Filters.in(DataModel.PROVENANCE_URI_FIELD, searchFilter.getProvenances()));
         }
 
-        if (devices != null && !devices.isEmpty()) {
-            operatorAndDeviceFilters.add(getSelectedAgents(devices));
+        if (searchFilter.getStartDate() != null) {
+            filters.add(Filters.gte(DataModel.DATE_FIELD, searchFilter.getStartDate()));
+        }
+        if (searchFilter.getEndDate() != null) {
+            filters.add(Filters.lt(DataModel.DATE_FIELD, searchFilter.getEndDate()));
         }
 
-        if (!operatorAndDeviceFilters.isEmpty()) {
-            filter.put("$and", operatorAndDeviceFilters);
+        if (searchFilter.getConfidenceMin() != null) {
+            filters.add(Filters.gte(DataModel.CONFIDENCE_FIELD, searchFilter.getConfidenceMin()));
+        }
+        if (searchFilter.getConfidenceMax() != null) {
+            filters.add(Filters.lt(DataModel.CONFIDENCE_FIELD, searchFilter.getConfidenceMax()));
         }
 
-        return filter;
+        if (searchFilter.getMetadata() != null) {
+
+            // append an eq filter for each metadata (field,value) pair
+            List<Bson> eqFilters = new ArrayList<>(searchFilter.getMetadata().size());
+            searchFilter.getMetadata().forEach((key, value) ->
+                    eqFilters.add(Filters.eq("metadata." + key, value))
+            );
+
+            // use a logical AND since we want that document match each (field,value) provided in metadata
+            filters.add(Filters.and(eqFilters));
+        }
+
+        if (!CollectionUtils.isEmpty(searchFilter.getDevices())) {
+            //Get all data that have :
+            //    provenance.provWasAssociatedWith.uri IN deviceURIs
+            // OR ( provenance.uri IN deviceProvenances list && provenance.provWasAssociatedWith.uri isEmpty or not exists)
+            ProvenanceDAO provDAO = new ProvenanceDAO(mongodb, sparql);
+
+            // 1st case :  provenance.provWasAssociatedWith.uri IN deviceURIs
+            Bson directProvFilter = Filters.in("provenance.provWasAssociatedWith.uri",searchFilter.getDevices());
+
+            // 2nd case : provenance.uri IN deviceProvenances && no provenance.provWasAssociatedWith
+            Set<URI> deviceProvenances = provDAO.getProvenancesURIsByAgents(searchFilter.getDevices());
+
+            Bson globalProvUsed = Filters.and(
+                    Filters.in(DataModel.PROVENANCE_URI_FIELD,deviceProvenances),
+                    Filters.or(
+                            Filters.exists("provenance.provWasAssociatedWith",false),
+                            Filters.empty()
+                    )
+            );
+            filters.add(Filters.or(directProvFilter, globalProvUsed));
+        }
+
+        return filters;
     }
 
-    public void appendExperimentUserAccessFilter(Document filter, AccountModel user, List<URI> experiments) throws Exception {
+    public Bson appendExperimentUserAccessFilter(AccountModel user, List<URI> experiments) throws Exception {
         String experimentField = "provenance.experiments";
-        
+
         //user access
         if (!user.isAdmin()) {
-            ExperimentDAO expDAO = new ExperimentDAO(sparql, nosql);
-            Set<URI> userExperiments = expDAO.getUserExperiments(user);                        
+            ExperimentDAO expDAO = new ExperimentDAO(sparql, mongodb);
+            Set<URI> userExperiments = expDAO.getUserExperiments(user);
 
-            if (experiments != null && !experiments.isEmpty()) {
-                
+            if (! CollectionUtils.isEmpty(experiments)) {
+
                 //Transform experiments and userExperiments in long format to compare the two lists
                 Set<URI> longUserExp = new HashSet<>();
                 for (URI exp:userExperiments) {
                     longUserExp.add(new URI(SPARQLDeserializers.getExpandedURI(exp)));
-                }                
+                }
                 Set <URI> longExpURIs = new HashSet<>();
                 for (URI exp:experiments) {
                     longExpURIs.add(new URI(SPARQLDeserializers.getExpandedURI(exp)));
                 }
                 longExpURIs.retainAll(longUserExp); //keep in the list only the experiments the user has access to
-                
+
                 if (longExpURIs.isEmpty()) {
-                    throw new Exception("you can't access to the given experiments");
+                    throw new IllegalAccessException("you can't access to the given experiments");
                 } else {
-                    Document inFilter = new Document(); 
-                    inFilter.put("$in", longExpURIs);
-                    filter.put("provenance.experiments", inFilter);
+                    return Filters.in(experimentField,longExpURIs);
                 }
             } else {
-                Document filterOnExp = new Document(experimentField, new Document("$in", userExperiments));                
-                Document notExistingExpFilter = new Document(experimentField, new Document("$exists", false));
-                Document emptyExpFilter = new Document(experimentField, new ArrayList());                
-                List<Document> expFilter = Arrays.asList(filterOnExp, notExistingExpFilter, emptyExpFilter);
-             
-                filter.put("$or", expFilter);  
+                Bson filterOnExp = Filters.in(experimentField,userExperiments);
+                Bson notExistingExpFilter = Filters.exists(experimentField,false);
+                Bson emptyExpFilter =  Filters.empty();
+                return Filters.or(Arrays.asList(filterOnExp, notExistingExpFilter, emptyExpFilter));
             }
         } else {
-            if (experiments != null && !experiments.isEmpty()) {
-                Document inFilter = new Document();
-                inFilter.put("$in", experiments);
-                filter.put("provenance.experiments", inFilter);
+            if (! CollectionUtils.isEmpty(experiments)) {
+                return Filters.in(experimentField,experiments);
             }
         }
-    }
-
-    public DataModel get(URI uri) throws NoSQLInvalidURIException {
-        return nosql.findByURI(DataModel.class, DATA_COLLECTION_NAME, uri);
-    }
-
-    public DataFileModel getFile(URI uri) throws NoSQLInvalidURIException {
-        return nosql.findByURI(DataFileModel.class, FILE_COLLECTION_NAME, uri);
-    }
-    
-    public void delete(URI uri) throws NoSQLInvalidURIException, Exception {
-        nosql.delete(DataModel.class, DATA_COLLECTION_NAME, uri);
-    }
-
-    public void delete(List<URI> uris) throws NoSQLInvalidURIException, Exception {
-        nosql.delete(DataModel.class, DATA_COLLECTION_NAME, uris);
-    }
-
-    public void deleteFile(URI uri) throws NoSQLInvalidURIException {
-        nosql.delete(DataFileModel.class, FILE_COLLECTION_NAME, uri);
+        return null;
     }
 
     @Deprecated
     public ListWithPagination<VariableModel> getVariablesByExperiment(AccountModel user, URI xpUri, Integer page, Integer pageSize) throws Exception {
-        List<URI> experiments = new ArrayList();
-        experiments.add(xpUri);                
-        Document filter = searchFilter(user, experiments, null, null, null, null, null, null, null, null, null, null);
-        Set<URI> variableURIs = nosql.distinct(DataModel.VARIABLE_FIELD, URI.class, DATA_COLLECTION_NAME, filter);
-        
+        List<URI> experiments = Collections.singletonList(xpUri);
+
+        Document filter = filterToDocument(
+                new DataFileSearchFilter()
+                        .setUser(user)
+                        .setExperiments(experiments)
+        );
+        Set<URI> variableURIs = mongodb.distinct(DataModel.VARIABLE_FIELD, URI.class, DATA_COLLECTION_NAME, filter);
+
         if (variableURIs.isEmpty()) {
-            return new ListWithPagination(new ArrayList(), page, pageSize, 0);
-
-        } else {
-            
-            int total = variableURIs.size();
-
-            List<URI> list = new ArrayList<>(variableURIs);
-            List<URI> listToSend = new ArrayList<>();
-            if (total > 0 && (page * pageSize) < total) {
-                if (page == null || page < 0) {
-                    page = 0;
-                }                
-                int fromIndex = page*pageSize;
-                int toIndex;
-                if (total > fromIndex + pageSize) {
-                    toIndex = fromIndex + pageSize;
-                } else {
-                    toIndex = total;
-                }
-                listToSend = list.subList(fromIndex, toIndex);
-            }
-
-            List<VariableModel> variables = sparql.getListByURIs(VariableModel.class, listToSend, user.getLanguage());
-            return new ListWithPagination(variables, page, pageSize, total);
+            return new ListWithPagination<>(Collections.emptyList(), page, pageSize, 0);
         }
-    }    
+
+        int total = variableURIs.size();
+
+        List<URI> list = new ArrayList<>(variableURIs);
+        List<URI> listToSend = new ArrayList<>();
+        if (page * pageSize < total) {
+            if (page < 0) {
+                page = 0;
+            }
+            int fromIndex = page * pageSize;
+            int toIndex;
+            if (total > fromIndex + pageSize) {
+                toIndex = fromIndex + pageSize;
+            } else {
+                toIndex = total;
+            }
+            listToSend = list.subList(fromIndex, toIndex);
+        }
+
+        List<VariableModel> variables = sparql.getListByURIs(VariableModel.class, listToSend, user.getLanguage());
+        return new ListWithPagination<>(variables, page, pageSize, total);
+
+    }
 
     /**
      *
@@ -722,133 +256,71 @@ public class DataDAO {
      */
     @Deprecated
     public Set<URI> getProvenancesByExperiment(AccountModel user, URI xpUri) throws Exception {
-        List<URI> experiments = new ArrayList();
-        experiments.add(xpUri);
-        Document filter = searchFilter(user, experiments, null, null, null, null, null, null, null, null, null, null);
-        return nosql.distinct("provenance.uri", URI.class, DATA_COLLECTION_NAME, filter);
-    }
-    
-    /**
-     *
-     * @param user
-     * @param uri
-     * @param collectionName
-     * @return
-     * @throws Exception
-     * @deprecated better use directly the method getUsedProvenances
-     */
-    @Deprecated
-    public List<ProvenanceModel> getProvenancesByScientificObject(AccountModel user, URI uri, String collectionName) throws Exception {
-        List<URI> scientificObjects = new ArrayList();
-        scientificObjects.add(uri);
-        Document filter = searchFilter(user, null, scientificObjects, null, null, null, null, null, null, null, null, null);
-        Set<URI> provenancesURIs = nosql.distinct("provenance.uri", URI.class, collectionName, filter);
-        return nosql.findByURIs(ProvenanceModel.class, ProvenanceDAO.PROVENANCE_COLLECTION_NAME, new ArrayList(provenancesURIs));
+        List<URI> experiments = Collections.singletonList(xpUri);
+        Document filter = filterToDocument(
+                new DataFileSearchFilter()
+                        .setUser(user)
+                        .setExperiments(experiments)
+        );
+        return mongodb.distinct(DataModel.PROVENANCE_URI_FIELD, URI.class, DATA_COLLECTION_NAME, filter);
     }
 
-    /**
-     *
-     * @param user
-     * @param uri
-     * @param collectionName
-     * @return
-     * @throws Exception
-     * @deprecated better use directly the method getUsedProvenances
-     */
-    @Deprecated
-    public List<ProvenanceModel> getProvenancesByDevice(AccountModel user, URI uri, String collectionName) throws Exception {
-        Document filter = searchFilter(user, null, null, null, null, Arrays.asList(uri), null, null, null, null, null, null);
-        Set<URI> provenancesURIs = nosql.distinct("provenance.uri", URI.class, collectionName, filter);
-        return nosql.findByURIs(ProvenanceModel.class, ProvenanceDAO.PROVENANCE_COLLECTION_NAME, new ArrayList<>(provenancesURIs));
-    }
+//    /**
+//     *
+//     * @param user
+//     * @param uri
+//     * @param collectionName
+//     * @return
+//     * @throws Exception
+//     * @deprecated better use directly the method getUsedProvenances
+//     */
+//    @Deprecated
+//    public List<ProvenanceModel> getProvenancesByScientificObject(AccountModel user, URI uri, String collectionName) throws Exception {
+//        List<URI> scientificObjects = Collections.singletonList(uri);
+//
+//        Document filter = filterToDocument(new DataSearchFilter()
+//                .setUser(user)
+//                .setTargets(scientificObjects)
+//        );
+//        Set<URI> provenancesURIs = mongodb.distinct(DataModel.PROVENANCE_URI_FIELD, URI.class, collectionName, filter);
+//
+//        return mongodb.findByURIs(
+//                mongodb.getDatabase().getCollection(ProvenanceDAO.PROVENANCE_COLLECTION_NAME,ProvenanceModel.class),
+//                provenancesURIs
+//        );
+//    }
 
-    public <T extends DataFileModel> void insertFile(DataFileModel model, File file) throws Exception {
-        //generate URI
-        nosql.generateUniqueUriIfNullOrValidateCurrent(model, true, FILE_PREFIX, FILE_COLLECTION_NAME);
+//    /**
+//     *
+//     * @param user
+//     * @param uri
+//     * @param collectionName
+//     * @return
+//     * @throws Exception
+//     * @deprecated better use directly the method getUsedProvenances
+//     */
+//    @Deprecated
+//    public List<ProvenanceModel> getProvenancesByDevice(AccountModel user, URI uri, String collectionName) throws Exception {
+//        Document filter = filterToDocument(user, null, null, null, null, Arrays.asList(uri), null, null, null, null, null);
+//        Set<URI> provenancesURIs = mongodb.distinct(DataModel.PROVENANCE_URI_FIELD, URI.class, collectionName, filter);
+//        return mongodb.findByURIs(ProvenanceModel.class, ProvenanceDAO.PROVENANCE_COLLECTION_NAME, new ArrayList<>(provenancesURIs));
+//    }
 
-        final String filename = Base64.getEncoder().encodeToString(model.getUri().toString().getBytes());
-        Path filePath = Paths.get(FS_FILE_PREFIX, filename);
-        model.setPath(filePath.toString());
+    public List<VariableModel> getUsedVariables(DataSearchFilter searchFilter) throws Exception {
 
-        nosql.startTransaction();         
-        try {   
-            createFile(model);
-            fs.writeFile(FS_FILE_PREFIX, filePath, file);
-            nosql.commitTransaction();
-        } catch (Exception e) {
-            nosql.rollbackTransaction();
-            fs.deleteIfExists(FS_FILE_PREFIX, filePath);
-            throw e;
-        }
-    }
+        Set<URI> variableURIs = getUsedVariablesURIs(searchFilter);
 
-    public ListWithPagination<DataFileModel> searchFiles(
-            AccountModel user,
-            List<URI> rdfTypes,
-            List<URI> experiments,
-            List<URI> targets,
-            List<URI> provenances,
-            List<URI> devices,
-            Instant startDate,
-            Instant endDate,
-            Document metadata,
-            List<OrderBy> orderBy,
-            int page,
-            int pageSize) throws Exception {
-
-        Document filter = searchFilter(user, experiments, targets, null, provenances, devices, startDate, endDate, null, null, metadata, null);
-                
-        if (rdfTypes != null && !rdfTypes.isEmpty()) {
-            Document inFilter = new Document(); 
-            inFilter.put("$in", rdfTypes);
-            filter.put(DataFileModel.RDF_TYPE_FIELD, inFilter);
-        }
-
-        return nosql.searchWithPagination(DataFileModel.class, FILE_COLLECTION_NAME, filter, orderBy, page, pageSize);
-    }
-
-    public DeleteResult deleteWithFilter(AccountModel user, URI experimentUri, URI targetUri, URI variableUri, URI provenanceUri) throws Exception {
-        List<URI> provenances = new ArrayList<>();
-        if (provenanceUri != null) {
-            provenances.add(provenanceUri);
-        }
-        
-        List<URI> targets = new ArrayList<>();
-        if (targetUri != null) {
-            targets.add(targetUri);
-        }
-        
-        List<URI> variables = new ArrayList<>();
-        if (variableUri != null) {
-            variables.add(variableUri);
-        }
-
-        List<URI> experiments = new ArrayList<>();
-        if (experimentUri != null) {
-            experiments.add(experimentUri);
-        }
-        
-        Document filter = searchFilter(user, experiments, targets, variables, provenances, null, null, null, null, null, null, null);
-        return nosql.deleteOnCriteria(DataModel.class, DATA_COLLECTION_NAME, filter);
-    }
-
-    public List<VariableModel> getUsedVariables(AccountModel user, List<URI> experiments, List<URI> objects, List<URI> provenances, List<URI> devices) throws Exception {
-        Document filter = searchFilter(user, experiments, objects, null, provenances, devices, null, null, null, null, null, null);
-        Set<URI> variableURIs = nosql.distinct(DataModel.VARIABLE_FIELD, URI.class, DATA_COLLECTION_NAME, filter);
-        String userLanguage = null;
-        if(user != null){
-            userLanguage = user.getLanguage();
-        }
         // #TODO don't invoke Variable dao here
-        return new VariableDAO(sparql,nosql,fs).getList(new ArrayList<>(variableURIs), userLanguage);
+        return new VariableDAO(sparql, mongodb).getList(new ArrayList<>(variableURIs), searchFilter.getUser().getLanguage());
     }
 
-    public Set<URI> getUsedVariablesByExpeSoDevice(AccountModel user, List<URI> experiments, List<URI> objects, List<URI> devices) throws Exception {
-        Document filter = searchFilter(user, experiments, objects, null, devices, null, null, null, null, null, null, null);
-        Set<URI> variableURIs = nosql.distinct(DataModel.VARIABLE_FIELD, URI.class, DATA_COLLECTION_NAME, filter);
-        return variableURIs;
+    public Set<URI> getUsedVariablesURIs(DataSearchFilter searchFilter) throws Exception {
+        Objects.requireNonNull(searchFilter.getUser());
+
+        Document filter = filterToDocument(searchFilter);
+        return mongodb.distinct(DataModel.VARIABLE_FIELD, URI.class, DATA_COLLECTION_NAME, filter);
     }
-    
+
     public Response prepareCSVWideExportResponse(List<DataModel> resultList, AccountModel user, boolean withRawData) throws Exception {
         Instant data = Instant.now();
 
@@ -859,13 +331,13 @@ public class DataDAO {
         Map<URI, SPARQLNamedResourceModel> objects = new HashMap<>();
         Map<URI, ProvenanceModel> provenances = new HashMap<>();
         Map<Instant, Map<ExportDataIndex, List<DataExportDTO>>> dataByIndexAndInstant = new HashMap<>();
-        Map<URI, ExperimentModel> experiments = new HashMap();
-        
+        Map<URI, ExperimentModel> experiments = new HashMap<>();
+
         for (DataModel dataModel : resultList) {
             if (dataModel.getTarget() != null && !objects.containsKey(dataModel.getTarget())) {
                 objects.put(dataModel.getTarget(), null);
             }
-            
+
             if (!variables.contains(dataModel.getVariable())) {
                 variables.add(dataModel.getVariable());
             }
@@ -873,52 +345,52 @@ public class DataDAO {
             if (!provenances.containsKey(dataModel.getProvenance().getUri())) {
                 provenances.put(dataModel.getProvenance().getUri(), null);
             }
-            
+
             if (!dataByIndexAndInstant.containsKey(dataModel.getDate())) {
                 dataByIndexAndInstant.put(dataModel.getDate(), new HashMap<>());
             }
-            
+
             if (dataModel.getProvenance().getExperiments() != null) {
-                for (URI exp:dataModel.getProvenance().getExperiments()) {           
+                for (URI exp:dataModel.getProvenance().getExperiments()) {
                     if (!experiments.containsKey(exp)) {
                         experiments.put(exp, null);
                     }
-                    
+
                     ExportDataIndex exportDataIndex = new ExportDataIndex(
                             exp,
-                            dataModel.getProvenance().getUri(), 
+                            dataModel.getProvenance().getUri(),
                             dataModel.getTarget()
                     );
 
                     if (!dataByIndexAndInstant.get(dataModel.getDate()).containsKey(exportDataIndex)) {
                         dataByIndexAndInstant.get(dataModel.getDate()).put(exportDataIndex, new ArrayList<>());
-                    } 
+                    }
                     dataByIndexAndInstant.get(dataModel.getDate()).get(exportDataIndex).add(DataExportDTO.fromModel(dataModel, exp, dateVariables));
-                }                
+                }
             } else {
                 ExportDataIndex exportDataIndex = new ExportDataIndex(
                                 null,
-                                dataModel.getProvenance().getUri(), 
+                                dataModel.getProvenance().getUri(),
                                 dataModel.getTarget()
                         );
-                    
+
                 if (!dataByIndexAndInstant.get(dataModel.getDate()).containsKey(exportDataIndex)) {
                         dataByIndexAndInstant.get(dataModel.getDate()).put(exportDataIndex, new ArrayList<>());
-                    } 
+                    }
                 dataByIndexAndInstant.get(dataModel.getDate()).get(exportDataIndex).add(DataExportDTO.fromModel(dataModel, null, dateVariables));
 
             }
-            
+
         }
 
         Instant dataTransform = Instant.now();
-        LOGGER.debug("Data conversion " + Long.toString(Duration.between(data, dataTransform).toMillis()) + " milliseconds elapsed");
+        LOGGER.debug("Data conversion " + Duration.between(data, dataTransform).toMillis() + " milliseconds elapsed");
 
         List<String> defaultColumns = new ArrayList<>();
 
         // first static columns
 
-        defaultColumns.add("Experiment");        
+        defaultColumns.add("Experiment");
         defaultColumns.add("Target");
         defaultColumns.add("Date");
 
@@ -938,7 +410,7 @@ public class DataDAO {
         }
         variablesList.add("Variable");
 
-        List<VariableModel> variablesModelList = new VariableDAO(sparql,nosql,fs).getList(variables);
+        List<VariableModel> variablesModelList = new VariableDAO(sparql, mongodb).getList(variables);
 
         Map<URI, Integer> variableUriIndex = new HashMap<>();
         for (VariableModel variableModel : variablesModelList) {
@@ -974,7 +446,7 @@ public class DataDAO {
         defaultColumns.add("Provenance URI");
 
         Instant variableTime = Instant.now();
-        LOGGER.debug("Get " + variables.size() + " variable(s) " + Long.toString(Duration.between(dataTransform, variableTime).toMillis()) + " milliseconds elapsed");
+        LOGGER.debug("Get " + variables.size() + " variable(s) " + Duration.between(dataTransform, variableTime).toMillis() + " milliseconds elapsed");
         OntologyDAO ontologyDao = new OntologyDAO(sparql);
 
         // Provides the experiment as context if there is only one
@@ -988,15 +460,15 @@ public class DataDAO {
             objects.put(obj.getUri(), obj);
         }
         Instant targetTime = Instant.now();
-        LOGGER.debug("Get " + objectsList.size() + " target(s) " + Long.toString(Duration.between(variableTime, targetTime).toMillis()) + " milliseconds elapsed");
+        LOGGER.debug("Get " + objectsList.size() + " target(s) " + Duration.between(variableTime, targetTime).toMillis() + " milliseconds elapsed");
 
-        ProvenanceDAO provenanceDao = new ProvenanceDAO(nosql, sparql);
+        ProvenanceDAO provenanceDao = new ProvenanceDAO(mongodb, sparql);
             List<ProvenanceModel> listByURIs = provenanceDao.getListByURIs(new ArrayList<>(provenances.keySet()));
         for (ProvenanceModel prov : listByURIs) {
             provenances.put(prov.getUri(), prov);
         }
         Instant provenancesTime = Instant.now();
-        LOGGER.debug("Get " + listByURIs.size() + " provenance(s) " + Long.toString(Duration.between(targetTime, provenancesTime).toMillis()) + " milliseconds elapsed");
+        LOGGER.debug("Get " + listByURIs.size() + " provenance(s) " + Duration.between(targetTime, provenancesTime).toMillis() + " milliseconds elapsed");
 
         sparql.getListByURIs(ExperimentModel.class, new ArrayList<>(experiments.keySet()), user.getLanguage());
         List<ExperimentModel> listExp = sparql.getListByURIs(ExperimentModel.class, new ArrayList<>(experiments.keySet()), user.getLanguage());
@@ -1004,13 +476,13 @@ public class DataDAO {
             experiments.put(exp.getUri(), exp);
         }
         Instant expTime = Instant.now();
-        LOGGER.debug("Get " + listExp.size() + " experiment(s) " + Long.toString(Duration.between(variableTime, expTime).toMillis()) + " milliseconds elapsed");    
-        
+        LOGGER.debug("Get " + listExp.size() + " experiment(s) " + Long.toString(Duration.between(variableTime, expTime).toMillis()) + " milliseconds elapsed");
+
         // ObjectURI, ObjectName, Factor, Date, Confidence, Variable n ...
         try (StringWriter sw = new StringWriter(); CSVWriter writer = new CSVWriter(sw)) {
             // Method
             // Unit
-            // Variable 
+            // Variable
             writer.writeNext(methods.toArray(new String[methods.size()]));
             writer.writeNext(units.toArray(new String[units.size()]));
             writer.writeNext(variablesList.toArray(new String[variablesList.size()]));
@@ -1019,19 +491,19 @@ public class DataDAO {
             // headers
             writer.writeNext(defaultColumns.toArray(new String[defaultColumns.size()]));
 
-            // Search in map indexed by date for exp, prov, object and data            
+            // Search in map indexed by date for exp, prov, object and data
             for (Map.Entry<Instant, Map<ExportDataIndex, List<DataExportDTO>>> instantProvUriDataEntry : dataByIndexAndInstant.entrySet()) {
                 Map<ExportDataIndex, List<DataExportDTO>> mapProvUriData = instantProvUriDataEntry.getValue();
                 // Search in map indexed by  prov and data
                 for (Map.Entry<ExportDataIndex, List<DataExportDTO>> provUriObjectEntry : mapProvUriData.entrySet()) {
-                    List<DataExportDTO> val = provUriObjectEntry.getValue();             
+                    List<DataExportDTO> val = provUriObjectEntry.getValue();
 
                     ArrayList<String> csvRow = new ArrayList<>();
                     //first is used to have value with the same dates on the same line
                     boolean first = true;
 
                     for (DataExportDTO dataGetDTO : val) {
-                                            
+
 
                         if (first) {
 
@@ -1041,13 +513,13 @@ public class DataDAO {
                             ExperimentModel experiment = null;
                             if (dataGetDTO.getProvenance().getExperiments() != null && !dataGetDTO.getProvenance().getExperiments().isEmpty()) {
                                 experiment = experiments.get(dataGetDTO.getExperiment());
-                            } 
+                            }
 
                             if (experiment != null) {
                                 csvRow.add(experiment.getName());
-                            } else {                        
+                            } else {
                                 csvRow.add("");
-                            }                            
+                            }
 
                             // target
                             SPARQLNamedResourceModel target = null;
@@ -1063,7 +535,7 @@ public class DataDAO {
 
                             // date
                             csvRow.add(dataGetDTO.getDate());
-                            
+
                             // write blank columns for value and rawData
                             for (int i = 0; i < variables.size(); i++) {
                                 csvRow.add("");
@@ -1077,12 +549,12 @@ public class DataDAO {
                                 csvRow.add(provenances.get(dataGetDTO.getProvenance().getUri()).getName());
                             } else {
                                 csvRow.add("");
-                            }                            
+                            }
 
                             // experiment URI
                             if (experiment != null) {
                                 csvRow.add(experiment.getUri().toString());
-                            } else {                        
+                            } else {
                                 csvRow.add("");
                             }
 
@@ -1107,31 +579,31 @@ public class DataDAO {
                         } else {
                             csvRow.set(variableUriIndex.get(dataGetDTOVariable), dataGetDTO.getValue().toString());
                         }
-                        
+
                         // raw data
                         if (withRawData) {
                             if (dataGetDTO.getRawData() == null){
                                 csvRow.set(variableUriIndex.get(dataGetDTOVariable)+1, null);
                             } else {
                                 csvRow.set(variableUriIndex.get(dataGetDTOVariable)+1, Arrays.toString(dataGetDTO.getRawData().toArray()).replace("[", "").replace("]", ""));
-                            } 
+                            }
                         }
-                        
+
                     }
-                    
+
 
                     String[] row = csvRow.toArray(new String[csvRow.size()]);
-                    writer.writeNext(row);                        
-                    
+                    writer.writeNext(row);
+
                 }
             }
-            
+
             LocalDate date = LocalDate.now();
             DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyyMMdd");
             String fileName = "export_data_wide_format" + dtf.format(date) + ".csv";
 
             Instant writeCSVTime = Instant.now();
-            LOGGER.debug("Write CSV " + Long.toString(Duration.between(provenancesTime, writeCSVTime).toMillis()) + " milliseconds elapsed");
+            LOGGER.debug("Write CSV " + Duration.between(provenancesTime, writeCSVTime).toMillis() + " milliseconds elapsed");
 
             return Response.ok(sw.toString(), MediaType.TEXT_PLAIN_TYPE)
                     .header("Content-Disposition", "attachment; filename=" + fileName )
@@ -1151,7 +623,7 @@ public class DataDAO {
         Map<URI, VariableModel> variables = new HashMap<>();
         Map<URI, SPARQLNamedResourceModel> objects = new HashMap<>();
         Map<URI, ProvenanceModel> provenances = new HashMap<>();
-        Map<URI, ExperimentModel> experiments = new HashMap();
+        Map<URI, ExperimentModel> experiments = new HashMap<>();
 
         HashMap<Instant, List<DataGetDTO>> dataByInstant = new HashMap<>();
         for (DataModel dataModel : resultList) {
@@ -1166,14 +638,14 @@ public class DataDAO {
             }
             if (!dataByInstant.containsKey(dataModel.getDate())) {
                 dataByInstant.put(dataModel.getDate(), new ArrayList<>());
-            }                        
+            }
             dataByInstant.get(dataModel.getDate()).add(DataGetDTO.getDtoFromModel(dataModel, dateVariables));
             if (dataModel.getProvenance().getExperiments() != null) {
                 for (URI exp:dataModel.getProvenance().getExperiments()) {
                     if (!experiments.containsKey(exp)) {
                         experiments.put(exp, null);
                     }
-                }                
+                }
             }
         }
 
@@ -1182,7 +654,7 @@ public class DataDAO {
 
         List<String> defaultColumns = new ArrayList<>();
 
-        defaultColumns.add("Experiment"); 
+        defaultColumns.add("Experiment");
         defaultColumns.add("Target");
         defaultColumns.add("Date");
         defaultColumns.add("Variable");
@@ -1191,16 +663,16 @@ public class DataDAO {
         defaultColumns.add("Value");
         if (withRawData) {
             defaultColumns.add("Raw data");
-        }        
+        }
         defaultColumns.add("Data Description");
         defaultColumns.add("");
-        defaultColumns.add("Experiment URI"); 
+        defaultColumns.add("Experiment URI");
         defaultColumns.add("Target URI");
         defaultColumns.add("Variable URI");
         defaultColumns.add("Data Description URI");
 
         Instant variableTime = Instant.now();
-        List<VariableModel> variablesModelList = new VariableDAO(sparql,nosql,fs).getList(new ArrayList<>(variables.keySet()));
+        List<VariableModel> variablesModelList = new VariableDAO(sparql, mongodb).getList(new ArrayList<>(variables.keySet()));
         for (VariableModel variableModel : variablesModelList) {
             variables.put(new URI(SPARQLDeserializers.getShortURI(variableModel.getUri())), variableModel);
         }
@@ -1211,15 +683,15 @@ public class DataDAO {
             objects.put(obj.getUri(), obj);
         }
         Instant targetTime = Instant.now();
-        LOGGER.debug("Get " + objectsList.size() + " target(s) " + Long.toString(Duration.between(variableTime, targetTime).toMillis()) + " milliseconds elapsed");
+        LOGGER.debug("Get " + objectsList.size() + " target(s) " + Duration.between(variableTime, targetTime).toMillis() + " milliseconds elapsed");
 
-        ProvenanceDAO provenanceDao = new ProvenanceDAO(nosql, sparql);
+        ProvenanceDAO provenanceDao = new ProvenanceDAO(mongodb, sparql);
         List<ProvenanceModel> listByURIs = provenanceDao.getListByURIs(new ArrayList<>(provenances.keySet()));
         for (ProvenanceModel prov : listByURIs) {
             provenances.put(prov.getUri(), prov);
         }
         Instant provenancesTime = Instant.now();
-        LOGGER.debug("Get " + listByURIs.size() + " provenance(s) " + Long.toString(Duration.between(targetTime, provenancesTime).toMillis()) + " milliseconds elapsed");
+        LOGGER.debug("Get " + listByURIs.size() + " provenance(s) " + Duration.between(targetTime, provenancesTime).toMillis() + " milliseconds elapsed");
 
         sparql.getListByURIs(ExperimentModel.class, new ArrayList<>(experiments.keySet()), user.getLanguage());
         List<ExperimentModel> listExp = sparql.getListByURIs(ExperimentModel.class, new ArrayList<>(experiments.keySet()), user.getLanguage());
@@ -1237,7 +709,7 @@ public class DataDAO {
         //        Unit
         //        Value
         //        Data Description
-        //        
+        //
         //        Target URI
         //        Variable URI
         //        Data Description URI
@@ -1246,8 +718,8 @@ public class DataDAO {
             for (Map.Entry<Instant, List<DataGetDTO>> entry : dataByInstant.entrySet()) {
                 List<DataGetDTO> val = entry.getValue();
                 for (DataGetDTO dataGetDTO : val) {
-                    
-                    //1 row per experiment 
+
+                    //1 row per experiment
                     int maxRows = 1;
                     if (dataGetDTO.getProvenance().getExperiments() != null && dataGetDTO.getProvenance().getExperiments().size()>1) {
                         maxRows = dataGetDTO.getProvenance().getExperiments().size();
@@ -1259,14 +731,14 @@ public class DataDAO {
                         ExperimentModel experiment = null;
                         if (dataGetDTO.getProvenance().getExperiments() != null && !dataGetDTO.getProvenance().getExperiments().isEmpty()) {
                             experiment = experiments.get(dataGetDTO.getProvenance().getExperiments().get(j));
-                        } 
+                        }
 
                         if (experiment != null) {
                             csvRow.add(experiment.getName());
-                        } else {                        
+                        } else {
                             csvRow.add("");
-                        }            
-                    
+                        }
+
                         SPARQLNamedResourceModel target = null;
                         if(dataGetDTO.getTarget() != null){
                            target = objects.get(dataGetDTO.getTarget());
@@ -1296,7 +768,7 @@ public class DataDAO {
                         }else{
                             csvRow.add(dataGetDTO.getValue().toString());
                         }
-                        
+
                         // rawData
                         if (withRawData) {
                             if(dataGetDTO.getRawData() == null){
@@ -1313,11 +785,11 @@ public class DataDAO {
                             csvRow.add("");
                         }
                         csvRow.add("");
-                    
+
                         // experiment URI
                         if (experiment != null) {
                             csvRow.add(experiment.getUri().toString());
-                        } else {                        
+                        } else {
                             csvRow.add("");
                         }
 
@@ -1343,7 +815,7 @@ public class DataDAO {
             String fileName = "export_data_long_format" + dtf.format(date) + ".csv";
 
             Instant writeCSVTime = Instant.now();
-            LOGGER.debug("Write CSV " + Long.toString(Duration.between(provenancesTime, writeCSVTime).toMillis()) + " milliseconds elapsed");
+            LOGGER.debug("Write CSV " + Duration.between(provenancesTime, writeCSVTime).toMillis() + " milliseconds elapsed");
 
             return Response.ok(sw.toString(), MediaType.TEXT_PLAIN_TYPE)
                     .header("Content-Disposition", "attachment; filename=" + fileName)
@@ -1355,18 +827,11 @@ public class DataDAO {
         }
     }
 
-    public Set<URI> getUsedProvenances(String collectionName, AccountModel user, List<URI> experiments, List<URI> targets, List<URI> variables, List<URI> devices) throws Exception {
-        Document filter = searchFilter(user, experiments, targets, variables, null, devices, null, null, null, null, null, null);
-        return nosql.distinct("provenance.uri", URI.class, collectionName, filter);
+    public Set<URI> getUsedProvenancesURIs(DataSearchFilter searchFilter) throws Exception {
+        Document filter = filterToDocument(searchFilter);
+        return mongodb.distinct(DataModel.PROVENANCE_URI_FIELD, URI.class, DATA_COLLECTION_NAME, filter);
     }
-    
-    public Set<URI> getDataProvenances(AccountModel user, List<URI> experiments, List<URI> targets, List<URI> variables, List<URI> devices) throws Exception {
-        return getUsedProvenances(DATA_COLLECTION_NAME, user, experiments, targets, variables, devices);
-    }
-    
-    public Set<URI> getDatafileProvenances(AccountModel user, List<URI> experiments, List<URI> objects, List<URI> devices) throws Exception {
-        return getUsedProvenances(FILE_COLLECTION_NAME, user, experiments, objects, null, devices);
-    }
+
 
     /**
      * Fetches and return all URIs for the variable with the xsd:date datatype.

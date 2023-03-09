@@ -6,13 +6,13 @@
 //******************************************************************************
 package org.opensilex.core.data.dal;
 
-import org.bson.Document;
-import org.opensilex.nosql.mongodb.MongoModel;
-
 import java.net.URI;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+
+import org.bson.Document;
+import org.opensilex.nosql.mongodb.MongoModel;
 
 /**
  *
@@ -23,14 +23,21 @@ public class DataModel extends MongoModel {
     public static final String TARGET_FIELD = "target";
 
     private URI target;
-    
+
+    public static final String TARGET_FIELD = "target";
+
     private URI variable;
     public static final String VARIABLE_FIELD = "variable";
     
     private DataProvenanceModel provenance;
 
+    public static final String PROVENANCE_FIELD = "provenance";
+    public static final String PROVENANCE_URI_FIELD = PROVENANCE_FIELD+"."+MongoModel.URI_FIELD;
+
     private Instant date;
-    
+    public static final String DATE_FIELD = "date";
+
+
     private Boolean isDateTime;
     
     private String offset;
@@ -44,7 +51,9 @@ public class DataModel extends MongoModel {
     
     private Float confidence = null;
 
-    private Document metadata;
+    public static final String CONFIDENCE_FIELD = "confidence";
+
+    private Document metadata;  
 
     public URI getTarget() {
         return target;

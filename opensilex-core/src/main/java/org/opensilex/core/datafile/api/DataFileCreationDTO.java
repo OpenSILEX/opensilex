@@ -4,7 +4,7 @@
 // Copyright © INRAE 2020
 // Contact: alice.boizet@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
 //******************************************************************************
-package org.opensilex.core.data.api;
+package org.opensilex.core.datafile.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -12,10 +12,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
-import java.util.List;
 import javax.validation.constraints.NotNull;
 import org.bson.Document;
-import org.opensilex.core.data.dal.DataFileModel;
+import org.opensilex.core.data.api.DataAPI;
+import org.opensilex.core.datafile.dal.DataFileModel;
 import org.opensilex.core.data.dal.DataProvenanceModel;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.data.utils.ParsedDateTimeMongo;

@@ -4,12 +4,12 @@
 // Copyright © INRAE 2020
 // Contact: alice.boizet@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
 //******************************************************************************
-package org.opensilex.core.data.api;
+package org.opensilex.core.datafile.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import javax.validation.constraints.NotNull;
-import org.opensilex.core.data.dal.DataFileModel;
+import org.opensilex.core.datafile.dal.DataFileModel;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.data.utils.ParsedDateTimeMongo;
 import org.opensilex.core.exception.TimezoneAmbiguityException;

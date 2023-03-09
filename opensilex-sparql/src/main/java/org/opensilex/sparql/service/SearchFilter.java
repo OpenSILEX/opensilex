@@ -18,7 +18,7 @@ import java.util.Objects;
 /**
  * @author rcolin
  */
-public abstract class SparqlSearchFilter {
+public abstract class SearchFilter {
 
     protected Collection<URI> includedUris;
 
@@ -29,7 +29,7 @@ public abstract class SparqlSearchFilter {
     @JsonIgnore
     protected String lang;
 
-    protected SparqlSearchFilter() {
+    protected SearchFilter() {
         this.lang = OpenSilex.DEFAULT_LANGUAGE;
         this.page = 0;
         this.pageSize = 20;
@@ -41,7 +41,7 @@ public abstract class SparqlSearchFilter {
         return includedUris;
     }
 
-    public SparqlSearchFilter setIncludedUris(Collection<URI> includedUris) {
+    public SearchFilter setIncludedUris(Collection<URI> includedUris) {
         this.includedUris = includedUris;
         return this;
     }
@@ -52,7 +52,7 @@ public abstract class SparqlSearchFilter {
         return orderByList;
     }
 
-    public SparqlSearchFilter setOrderByList(List<OrderBy> orderByList) {
+    public SearchFilter setOrderByList(List<OrderBy> orderByList) {
         this.orderByList = orderByList;
         return this;
     }
@@ -62,7 +62,7 @@ public abstract class SparqlSearchFilter {
         return page;
     }
 
-    public SparqlSearchFilter setPage(Integer page) {
+    public SearchFilter setPage(Integer page) {
         this.page = page;
         return this;
     }
@@ -73,7 +73,7 @@ public abstract class SparqlSearchFilter {
         return pageSize;
     }
 
-    public SparqlSearchFilter setPageSize(Integer pageSize) {
+    public SearchFilter setPageSize(Integer pageSize) {
         this.pageSize = pageSize;
         return this;
     }
@@ -82,7 +82,7 @@ public abstract class SparqlSearchFilter {
         return lang;
     }
 
-    public SparqlSearchFilter setLang(String lang) {
+    public SearchFilter setLang(String lang) {
         this.lang = lang;
         return this;
     }

@@ -1,7 +1,10 @@
 
 <template>
   <div>
-    <div v-if="isNoDataFound">No data found</div>
+    <div v-if="isNoDataFound"
+      id="no-data-text">
+      {{$t("FacilityAssociatedDevices.no-data")}}
+    </div>
 
     <GridLayout v-if="isDataLoaded"
                 class="grid-layout"
@@ -116,10 +119,14 @@ export default class FacilityAssociatedDevices extends Vue {
   }
 
   loadData() {
+    var today: Date = new Date();
+    var aWeekBefore: Date = new Date(today);
+    aWeekBefore.setDate(aWeekBefore.getDate() - 7);
+
     this.dataService.getDataSeriesByFacility(
         this.uri,
-        "2023-02-13T00:00:00.00Z",
-        "2023-02-20T23:59:59.00Z",
+        aWeekBefore.toISOString(),
+        today.toISOString(),
         ["date=asc"]
     )
     .then(
@@ -249,5 +256,21 @@ export default class FacilityAssociatedDevices extends Vue {
   height: 100%;
   width: 100%;
 }
+
+#no-data-text {
+  margin: 10px;
+  font-size: 1em;
+  font-weight: bold;
+}
+
 </style>
 
+<i18n>
+en:
+  FacilityAssociatedDevices:
+    no-data: No data found
+
+fr:
+  FacilityAssociatedDevices:
+    no-data: Aucunes données trouvées
+</i18n>

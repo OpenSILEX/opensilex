@@ -1,6 +1,7 @@
 package org.opensilex.nosql.dao;
 
 import com.mongodb.client.ClientSession;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.FindOneAndReplaceOptions;
@@ -18,10 +19,8 @@ import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.utils.ListWithPagination;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.function.Function;
 
 public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter> implements MongoWriteDao<T,F>, MongoReadDao<T,F> {
 
@@ -68,7 +67,7 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
 
     @Override
     public InsertManyResult create(List<T> instances, ClientSession session) throws Exception {
-        return mongodb.createAll(instances, collection, session, createPrefix,true);
+        return mongodb.createAll(instances, collection, session, createPrefix, true, true);
     }
 
     public Bson getUpdateFilter(T instance) throws Exception {
@@ -128,15 +127,45 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
     }
 
     @Override
-    public ListWithPagination<T> search(F searchFilter, Bson projection) throws Exception {
+    public ListWithPagination<T> search(F filter, Bson projection) throws Exception {
         return mongodb.searchWithPagination(
                 collection,
-                filterToDocument(searchFilter),
+                filterToDocument(filter),
                 null,
-                searchFilter.getOrderByList(),
-                searchFilter.getPage(),
-                searchFilter.getPageSize()
+                filter.getOrderByList(),
+                filter.getPage(),
+                filter.getPageSize()
         );
+    }
+
+    @Override
+    public <T_CONVERTED> ListWithPagination<T_CONVERTED> search(F filter, Bson projection, Function<T, T_CONVERTED> convertFunction) throws Exception {
+
+        Objects.requireNonNull(convertFunction);
+
+        Map.Entry<FindIterable<T>,Long> resultAndCount = mongodb.findWithPagination(
+                collection,
+                filterToDocument(filter),
+                null,
+                filter.getOrderByList(),
+                filter.getPage(),
+                filter.getPageSize()
+        );
+
+        if(resultAndCount != null){
+
+            int resultCount = resultAndCount.getValue().intValue();
+
+            // iterate over MongoDB result and convert result on the fly before collect them inside a List
+            List<T_CONVERTED> convertedResults = new ArrayList<>(resultCount);
+            resultAndCount.getKey().forEach(mongoResult ->
+                    convertedResults.add(convertFunction.apply(mongoResult)
+            ));
+            return new ListWithPagination<>(convertedResults,filter.getPage(), filter.getPageSize(), resultCount);
+        }
+        return new ListWithPagination<>(Collections.emptyList());
+
+
     }
 
     protected Bson getIdFilter(URI id){

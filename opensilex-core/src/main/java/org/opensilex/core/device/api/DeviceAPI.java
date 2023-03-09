@@ -15,12 +15,15 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.opensilex.core.URIsListPostDTO;
 import org.opensilex.core.csv.api.CSVValidationDTO;
 import org.opensilex.core.csv.api.CsvImportDTO;
-import org.opensilex.core.data.api.DataFileGetDTO;
 import org.opensilex.core.data.api.DataGetDTO;
 import org.opensilex.core.data.dal.DataDAO;
-import org.opensilex.core.data.dal.DataFileModel;
 import org.opensilex.core.data.dal.DataModel;
+import org.opensilex.core.data.dal.DataSearchFilter;
 import org.opensilex.core.data.utils.DataValidateUtils;
+import org.opensilex.core.datafile.api.DataFileGetDTO;
+import org.opensilex.core.datafile.dal.DataFileDao;
+import org.opensilex.core.datafile.dal.DataFileModel;
+import org.opensilex.core.datafile.dal.DataFileSearchFilter;
 import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.device.dal.DeviceSearchFilter;
@@ -77,7 +80,6 @@ import static java.lang.Integer.max;
 import static org.opensilex.core.data.api.DataAPI.*;
 
 /**
- *
  * @author sammy
  */
 
@@ -103,7 +105,7 @@ public class DeviceAPI {
     public static final String DEVICE_EXAMPLE_TYPE = "vocabulary:SensingDevice";
     public static final String DEVICE_EXAMPLE_VARIABLE = "test:set/variables#air_temperature_thermocouple_degree-celsius";
     public static final String DEVICE_EXAMPLE_YEAR = "2017";
-    public static final String DEVICE_EXAMPLE_METADATA = "{ \"Group\" : \"weather station\",\n" +"\"Group2\" : \"A\"}";
+    public static final String DEVICE_EXAMPLE_METADATA = "{ \"Group\" : \"weather station\",\n" + "\"Group2\" : \"A\"}";
     public static final String DEVICE_EXAMPLE_URI = "http://opensilex.dev/set/device/sensingdevice-sensor_01";
 
     public static final String LINKED_DEVICE_ERROR = "LINKED_DEVICE_ERROR";
@@ -138,15 +140,7 @@ public class DeviceAPI {
             @ApiParam(value = "Checking only", example = "false") @DefaultValue("false") @QueryParam("checkOnly") Boolean checkOnly
     ) throws Exception {
         DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
-
-        PersonModel personInCharge = null;
-        if (Objects.nonNull(deviceDTO.getPersonInChargeURI())){
-                PersonDAO personDAO = new PersonDAO(sparql);
-                personInCharge = personDAO.get(deviceDTO.getPersonInChargeURI());
-            if (Objects.isNull(personInCharge)){
-                throw new NotFoundURIException("Person in charge must be an existing person", deviceDTO.getPersonInChargeURI());            }
-        }
-        if (!checkOnly){
+        if (!checkOnly) {
             try {
                 DeviceModel devModel = new DeviceModel();
                 deviceDTO.toModel(devModel);
@@ -180,7 +174,7 @@ public class DeviceAPI {
             @ApiParam(value = "Set this param to true when filtering on rdf_type to also retrieve sub-types") @DefaultValue("false") @QueryParam("include_subtypes") boolean includeSubTypes,
             @ApiParam(value = "Regex pattern for filtering by name", example = ".*") @DefaultValue(".*") @QueryParam("name") String name,
             @ApiParam(value = "Variable", example = DEVICE_EXAMPLE_VARIABLE) @QueryParam("variable") @ValidURI URI variable,
-            @ApiParam(value = "Search by year", example = DEVICE_EXAMPLE_YEAR) @QueryParam("year")  @Min(999) @Max(10000) Integer year,
+            @ApiParam(value = "Search by year", example = DEVICE_EXAMPLE_YEAR) @QueryParam("year") @Min(999) @Max(10000) Integer year,
             @ApiParam(value = "Date to filter device existence") @QueryParam("existence_date") LocalDate existenceDate,
             @ApiParam(value = "Search by facility", example = "http://example.com") @QueryParam("facility") @ValidURI URI facility,
             @ApiParam(value = "Regex pattern for filtering by brand", example = ".*") @DefaultValue("") @QueryParam("brand") String brand,
@@ -288,7 +282,7 @@ public class DeviceAPI {
             @ApiParam(value = "Device URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
     ) throws Exception {
         DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
-        List<DeviceModel> models = dao.getList(uris,currentUser);
+        List<DeviceModel> models = dao.getList(uris, currentUser);
 
         if (!models.isEmpty()) {
             List<DeviceGetDTO> resultDTOList = new ArrayList<>(models.size());
@@ -444,7 +438,7 @@ public class DeviceAPI {
             @ApiParam(value = "RDF type filter", example = DEVICE_EXAMPLE_TYPE) @QueryParam("rdf_type") @ValidURI URI rdfType,
             @ApiParam(value = "Set this param to true when filtering on rdf_type to also retrieve sub-types") @DefaultValue("false") @QueryParam("include_subtypes") boolean includeSubTypes,
             @ApiParam(value = "Regex pattern for filtering by name", example = ".*") @DefaultValue(".*") @QueryParam("name") String name,
-            @ApiParam(value = "Search by year", example = DEVICE_EXAMPLE_YEAR) @QueryParam("year")  @Min(999) @Max(10000) Integer year,
+            @ApiParam(value = "Search by year", example = DEVICE_EXAMPLE_YEAR) @QueryParam("year") @Min(999) @Max(10000) Integer year,
             @ApiParam(value = "Date to filter device existence") @QueryParam("existence_date") LocalDate existenceDate,
             @ApiParam(value = "Regex pattern for filtering by brand", example = ".*") @DefaultValue("") @QueryParam("brand") String brand,
             @ApiParam(value = "Regex pattern for filtering by model", example = ".*") @DefaultValue("") @QueryParam("model") String model,
@@ -502,7 +496,7 @@ public class DeviceAPI {
         // Convert list to DTO
         List<DeviceExportDTO> resultDTOList = new ArrayList<>();
         Set metadataKeys = new HashSet();
-        Map<URI,Integer> relationsUsed = new HashMap();
+        Map<URI, Integer> relationsUsed = new HashMap();
         for (DeviceModel device : devices) {
             DeviceExportDTO dto = DeviceExportDTO.getDTOFromModel(device);
             resultDTOList.add(dto);
@@ -512,19 +506,19 @@ public class DeviceAPI {
             }
 
             List<RDFObjectRelationDTO> relations = dto.getRelations();
-            Map<URI,Integer> relationsUsed_local = new HashMap();
-            for(RDFObjectRelationDTO relation : relations){
+            Map<URI, Integer> relationsUsed_local = new HashMap();
+            for (RDFObjectRelationDTO relation : relations) {
                 URI prop = relation.getProperty();
-                if(relationsUsed_local.containsKey(prop)){
-                    relationsUsed_local.replace(prop, relationsUsed_local.get(prop)+1);
-                }else{
+                if (relationsUsed_local.containsKey(prop)) {
+                    relationsUsed_local.replace(prop, relationsUsed_local.get(prop) + 1);
+                } else {
                     relationsUsed_local.put(prop, 1);
                 }
             }
-            for(URI prop: relationsUsed_local.keySet()){
-                if(relationsUsed.containsKey(prop)){
+            for (URI prop : relationsUsed_local.keySet()) {
+                if (relationsUsed.containsKey(prop)) {
                     relationsUsed.replace(prop, max(relationsUsed_local.get(prop), relationsUsed.get(prop)));
-                }else{
+                } else {
                     relationsUsed.put(prop, relationsUsed_local.get(prop));
                 }
             }
@@ -539,15 +533,15 @@ public class DeviceAPI {
         JsonNode jsonTree = mapper.convertValue(resultDTOList, JsonNode.class);
 
         List<JsonNode> list = new ArrayList<>();
-        if(jsonTree.isArray()) {
-            for(JsonNode jsonNode : jsonTree) {
+        if (jsonTree.isArray()) {
+            for (JsonNode jsonNode : jsonTree) {
                 ObjectNode objectNode = jsonNode.deepCopy();
                 JsonNode metadata = objectNode.get("metadata");
                 JsonNode relations = objectNode.get("relations");
                 objectNode.remove("metadata");
                 objectNode.remove("relations");
                 JsonNode value = null;
-                for (Object key:metadataKeys) {
+                for (Object key : metadataKeys) {
                     try {
                         value = metadata.get(key.toString());
 
@@ -563,22 +557,22 @@ public class DeviceAPI {
                 }
                 JsonNode property = null;
                 JsonNode propertyValue = null;
-                for( URI prop: relationsUsed.keySet()){
-                    for(int i = 1; i <= relationsUsed.get(prop); i++){
-                        objectNode.putNull(prop.toString()+"_"+i);
+                for (URI prop : relationsUsed.keySet()) {
+                    for (int i = 1; i <= relationsUsed.get(prop); i++) {
+                        objectNode.putNull(prop.toString() + "_" + i);
                     }
                 }
 
-                Map<String,Integer> relationsUsed_local = new HashMap();
-                for(JsonNode relation : relations){
+                Map<String, Integer> relationsUsed_local = new HashMap();
+                for (JsonNode relation : relations) {
                     property = relation.get("property");
-                    if(relationsUsed_local.containsKey(property.asText())){
-                        relationsUsed_local.replace(property.asText(), relationsUsed_local.get(property.asText())+1);
-                    }else{
+                    if (relationsUsed_local.containsKey(property.asText())) {
+                        relationsUsed_local.replace(property.asText(), relationsUsed_local.get(property.asText()) + 1);
+                    } else {
                         relationsUsed_local.put(property.asText(), 1);
                     }
                     propertyValue = relation.get("value");
-                    objectNode.put(property.asText()+"_"+relationsUsed_local.get(property.asText()), propertyValue.asText());
+                    objectNode.put(property.asText() + "_" + relationsUsed_local.get(property.asText()), propertyValue.asText());
                 }
 
                 list.add(objectNode);
@@ -610,7 +604,6 @@ public class DeviceAPI {
     }
 
     /**
-     *
      * @param uri
      * @param startDate
      * @param endDate
@@ -655,7 +648,7 @@ public class DeviceAPI {
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
-        DataDAO dao = new DataDAO(nosql, sparql, null);
+        DataDAO dao = new DataDAO(nosql, sparql);
         //convert dates
         Instant startInstant = null;
         Instant endInstant = null;
@@ -715,7 +708,6 @@ public class DeviceAPI {
     }
 
     /**
-     *
      * @param uri
      * @param startDate
      * @param endDate
@@ -738,7 +730,7 @@ public class DeviceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return the number of data", response = Integer.class),
+            @ApiResponse(code = 200, message = "Return the number of data", response = Long.class),
             @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
     })
     public Response countDeviceData(
@@ -755,7 +747,7 @@ public class DeviceAPI {
             @ApiParam(value = "Search by operators", example = DATA_EXAMPLE_OPERATOR ) @QueryParam("operators") List<URI> operators
 
     ) throws Exception {
-        DataDAO dao = new DataDAO(nosql, sparql, null);
+        DataFileDao dao = new DataFileDao(nosql, sparql);
         //convert dates
         Instant startInstant = null;
         Instant endInstant = null;
@@ -791,26 +783,23 @@ public class DeviceAPI {
             }
         }
 
-        int count = dao.count(
-                currentUser,
-                experiments,
-                null,
-                variables,
-                provenances,
-                Arrays.asList(uri),
-                startInstant,
-                endInstant,
-                confidenceMin,
-                confidenceMax,
-                metadataFilter,
-                operators
-        );
+        DataFileSearchFilter filter = new DataFileSearchFilter();
+        filter.setUser(currentUser)
+                .setExperiments(experiments)
+                .setProvenances(provenances)
+                .setStartDate(startInstant)
+                .setEndDate(endInstant)
+                .setConfidenceMin(confidenceMin)
+                .setConfidenceMax(confidenceMax)
+                .setMetadata(metadataFilter);
 
+        filter.setUri(uri);
+
+        long count = dao.count(filter);
         return new SingleObjectResponse<>(count).getResponse();
     }
 
     /**
-     *
      * @param uri
      * @param rdfType
      * @param startDate
@@ -852,7 +841,7 @@ public class DeviceAPI {
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
-        DataDAO dao = new DataDAO(nosql, sparql, null);
+        DataFileDao dao = new DataFileDao(nosql, sparql);
         //convert dates
         Instant startInstant = null;
         Instant endInstant = null;
@@ -888,23 +877,22 @@ public class DeviceAPI {
             }
         }
 
-        ListWithPagination<DataFileModel> resultList = dao.searchFiles(
-                currentUser,
-                rdfType == null ? null : Collections.singletonList(rdfType),
-                experiments,
-                objects,
-                provenances,
-                Collections.singletonList(uri),
-                startInstant,
-                endInstant,
-                metadataFilter,
-                orderByList,
-                page,
-                pageSize
-        );
+        DataFileSearchFilter filter = new DataFileSearchFilter();
+        filter.setUser(currentUser)
+                .setExperiments(experiments)
+                .setTargets(objects)
+                .setProvenances(provenances)
+                .setStartDate(startInstant)
+                .setEndDate(endInstant)
+                .setMetadata(metadataFilter);
 
-        ListWithPagination<DataFileGetDTO> resultDTOList = resultList.convert(DataFileGetDTO.class, DataFileGetDTO::fromModel);
+        filter.setRdfType(rdfType)
+                .setUri(uri)
+                .setPage(page)
+                .setPageSize(pageSize)
+                .setOrderByList(orderByList);
 
+        ListWithPagination<DataFileGetDTO> resultDTOList = dao.search(filter,null,DataFileGetDTO::fromModel);
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
 
@@ -927,7 +915,6 @@ public class DeviceAPI {
     }
 
     /**
-     *
      * @param uri
      * @return
      * @throws Exception
@@ -947,14 +934,13 @@ public class DeviceAPI {
             @ApiParam(value = "Device URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
 
-        DataDAO dataDAO = new DataDAO(nosql, sparql, null);
+        DataDAO dataDAO = new DataDAO(nosql, sparql);
         List<ProvenanceModel> provenances = dataDAO.getProvenancesByDevice(currentUser, uri, DataDAO.DATA_COLLECTION_NAME);
         List<ProvenanceGetDTO> resultDTOList = provenances.stream().map(ProvenanceGetDTO::fromModel).collect(Collectors.toList());
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
 
     /**
-     *
      * @param uri
      * @return
      * @throws Exception
@@ -974,7 +960,7 @@ public class DeviceAPI {
             @ApiParam(value = "Device URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
 
-        DataDAO dataDAO = new DataDAO(nosql, sparql, null);
+        DataDAO dataDAO = new DataDAO(nosql, sparql);
         List<ProvenanceModel> provenances = dataDAO.getProvenancesByDevice(currentUser, uri, DataDAO.FILE_COLLECTION_NAME);
         List<ProvenanceGetDTO> dtoList = provenances.stream().map(ProvenanceGetDTO::fromModel).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();

@@ -6,6 +6,7 @@ import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.utils.ListWithPagination;
 
 import java.net.URI;
+import java.util.function.Function;
 
 /**
  *
@@ -24,4 +25,5 @@ public interface MongoReadDao<T extends MongoModel, F extends MongoSearchFilter>
 
     ListWithPagination<T> search(F filter, Bson projection) throws Exception;
 
+    <T_CONVERTED> ListWithPagination<T_CONVERTED> search(F filter, Bson projection, Function<T,T_CONVERTED> convertFunction) throws Exception;
 }

@@ -29,7 +29,6 @@ import java.util.stream.Stream;
 
 import com.mongodb.client.result.InsertManyResult;
 import com.mongodb.client.result.InsertOneResult;
-import jdk.internal.vm.compiler.collections.Pair;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.Order;
@@ -345,7 +344,7 @@ public class MongoDBService extends BaseService {
         return sort;
     }
 
-    public  <T extends MongoModel> Pair<FindIterable<T>,Long> findWithPagination(MongoCollection<T> collection,
+    public  <T extends MongoModel> Map.Entry<FindIterable<T>,Long> findWithPagination(MongoCollection<T> collection,
                                                    Document filter,
                                                    Bson projection,
                                                    List<OrderBy> orderByList,
@@ -370,7 +369,7 @@ public class MongoDBService extends BaseService {
                 .limit(pageSize)
                 .projection(projection);
 
-        return Pair.create(queryResult,resultsNumber);
+        return new AbstractMap.SimpleImmutableEntry<>(queryResult,resultsNumber);
     }
 
     public <T extends MongoModel> ListWithPagination<T> searchWithPagination(
@@ -381,16 +380,16 @@ public class MongoDBService extends BaseService {
             int page,
             int pageSize) {
 
-        Pair<FindIterable<T>,Long> resultAndCount = findWithPagination(collection,filter,projection,orderByList,page,pageSize);
+        Map.Entry<FindIterable<T>,Long> resultAndCount = findWithPagination(collection,filter,projection,orderByList,page,pageSize);
         if(resultAndCount == null){
             return new ListWithPagination<>(Collections.emptyList());
         }
 
         // iterate over MongoDB result cursor and collect inside a List
         List<T> results = new ArrayList<>(pageSize);
-        CollectionUtils.addAll(results,resultAndCount.getLeft());
+        CollectionUtils.addAll(results,resultAndCount.getKey());
 
-        return new ListWithPagination<>(results, page, pageSize, resultAndCount.getRight().intValue());
+        return new ListWithPagination<>(results, page, pageSize, resultAndCount.getValue().intValue());
     }
 
     public <T> long count(

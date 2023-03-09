@@ -3,6 +3,7 @@ package org.opensilex.core.datafile.dal;
 import org.opensilex.core.data.dal.DataSearchFilter;
 
 import java.net.URI;
+import java.util.Collections;
 import java.util.List;
 
 public class DataFileSearchFilter extends DataSearchFilter {
@@ -17,6 +18,11 @@ public class DataFileSearchFilter extends DataSearchFilter {
 
     public DataFileSearchFilter setRdfTypes(List<URI> rdfTypes) {
         this.rdfTypes = rdfTypes;
+        return this;
+    }
+
+    public DataFileSearchFilter setRdfType(URI rdfType){
+        this.rdfTypes = rdfType == null ? null : Collections.singletonList(rdfType);
         return this;
     }
 

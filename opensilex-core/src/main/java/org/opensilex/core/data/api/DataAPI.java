@@ -110,8 +110,8 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.time.zone.ZoneRulesException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -929,11 +929,14 @@ public class DataAPI {
         System.out.println(dataPerHourMap.keySet());
 
         for (Map.Entry<Long, List<DataSimpleGetDTO>> entry : dataPerHourMap.entrySet()) {
+            Instant dateTime = Instant.ofEpochSecond(entry.getKey()*3600).plus(30, ChronoUnit.MINUTES);
+
             List<Double> data = entry.getValue().stream().map(d->(Double.valueOf(d.getValue().toString()))).collect(Collectors.toList());
             Collections.sort(data);
 
             DataSimpleGetDTO medianData = new DataSimpleGetDTO(entry.getValue().get(0));
             medianData.setValue(data.get(data.size()/2));
+            medianData.updateDate(dateTime);
 
             mediansPerHour.add(medianData);
         }
@@ -963,6 +966,7 @@ public class DataAPI {
             double avg = entry.getValue().stream().mapToDouble(d->(Double.valueOf(d.getValue().toString()))).average().orElse(Double.NaN);
 
             DataSimpleGetDTO averageData = DataSimpleGetDTO.getDtoFromModel(entry.getValue().get(0));
+            averageData.updateDate(averageData.getDateTime().plus(30, ChronoUnit.MINUTES));
             averageData.setValue(avg);
 
             averagePerHour.add(averageData);
@@ -971,20 +975,6 @@ public class DataAPI {
         System.out.println(averagePerHour);
 
         return new DataSerieGetDTO(null, averagePerHour);
-    }
-
-    private List<DataModel> reduceDataSerie(List<DataModel> dataSerie) {
-        List<DataModel> reducedData = new ArrayList<>();
-
-        boolean toKeep = true;
-        for (DataModel data : dataSerie) {
-            if (toKeep) {
-                reducedData.add(data);
-            }
-            toKeep = !toKeep;
-        }
-
-        return reducedData;
     }
 
     

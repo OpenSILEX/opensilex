@@ -894,6 +894,7 @@ public class DeviceAPI {
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
 
+    /*
     @GET
     @Path("{uri}/variables")
     @ApiOperation("Get variables linked to the device")
@@ -911,6 +912,8 @@ public class DeviceAPI {
         List<VariableGetDTO> dtoList = variables.stream().map(VariableGetDTO::fromModel).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();
     }
+
+     */
 
     /**
      *
@@ -1045,7 +1048,7 @@ public class DeviceAPI {
         List<VariableWithDevicesDTO> dtoList = new ArrayList<>();
 
         for (Map.Entry<VariableModel, List<DeviceModel>> entry : results.entrySet()) {
-            VariableGetDTO key = VariableGetDTO.fromModel(entry.getKey());
+            VariableGetDTO key = VariableGetDTO.fromModel(entry.getKey(), null);
             List<DeviceGetDTO> values = entry.getValue().stream().map(DeviceGetDTO::getDTOFromModel).collect(Collectors.toList());
             VariableWithDevicesDTO variable = new VariableWithDevicesDTO(key, values, null);
             dtoList.add(variable);

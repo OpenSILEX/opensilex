@@ -1,31 +1,36 @@
+
 <template>
-        <GridLayout v-if="isDataLoaded"
-            :layout.sync="layout"
-            :col-num="NB_COL"
-            :is-draggable="true"
-            :is-resizable="true"
-            :is-mirrored="false"
-            :vertical-compact="true"
-            :autoSize="true"
-            :margin="[10, 10]"
-            :use-css-transforms="true">
+  <div>
+    <div v-if="isNoDataFound">No data found</div>
 
-            <GridItem v-for="item in layout"
-                       :x="item.x"
-                       :y="item.y"
-                       :w="item.w"
-                       :h="item.h"
-                       :i="item.i"
-                       :key="item.i"
-                :dragIgnoreFrom="'#devices-list, #graphic, #btn-show'"
-                class="tile">
-              <opensilex-VariableVisualizationTile
-                  class="tile-content"
-                  v-bind="item.content">
-              </opensilex-VariableVisualizationTile>
-            </GridItem>
-        </GridLayout>
+    <GridLayout v-if="isDataLoaded"
+                class="grid-layout"
+        :layout.sync="layout"
+        :col-num="NB_COL"
+        :is-draggable="true"
+        :is-resizable="true"
+        :is-mirrored="false"
+        :vertical-compact="true"
+        :autoSize="true"
+        :margin="[10, 10]"
+        :use-css-transforms="true">
 
+        <GridItem v-for="item in layout"
+                   :x="item.x"
+                   :y="item.y"
+                   :w="item.w"
+                   :h="item.h"
+                   :i="item.i"
+                   :key="item.i"
+            :dragIgnoreFrom="'#devices-list, #graphic, #btn-show'"
+            class="tile">
+          <opensilex-VariableVisualizationTile
+              class="tile-content"
+              v-bind="item.content">
+          </opensilex-VariableVisualizationTile>
+        </GridItem>
+    </GridLayout>
+  </div>
 </template>
 
 <script lang="ts">
@@ -58,6 +63,7 @@ export default class FacilityAssociatedDevices extends Vue {
   devices: Array<DeviceGetDTO> = [];
   variable: VariableDetailsDTO;
   uri = null;
+  isNoDataFound: boolean = false;
   isDataLoaded: boolean = false;
 
   variables: Array<VariableGetDTO> = new Array<VariableGetDTO>();
@@ -120,10 +126,16 @@ export default class FacilityAssociatedDevices extends Vue {
       (
         http: HttpResponse<OpenSilexResponse<Array<DataVariableSeriesGetDTO>>>
       ) => {
-        let detailsDTO: Array<DataVariableSeriesGetDTO> = http.response.result;
-        this.dataSeries = detailsDTO;
-
-        this.loadTiles();
+        if (http && http.response) {
+          if (http.response.result.length === 0) {
+            console.debug("no data found");
+            this.isNoDataFound = true;
+            return;
+          }
+          let detailsDTO: Array<DataVariableSeriesGetDTO> = http.response.result;
+          this.dataSeries = detailsDTO;
+          this.loadTiles();
+        }
       }
     );
   }
@@ -158,7 +170,7 @@ export default class FacilityAssociatedDevices extends Vue {
   }
 
   getAssociatedVariables(device) {
-
+    /*
     return this.deviceService.getDeviceVariables(device.uri)
         .then(
             (
@@ -171,7 +183,7 @@ export default class FacilityAssociatedDevices extends Vue {
                 })
                 console.debug(this.variables);
                 this.addToVariablesMap(variables.map(value => value.uri), device);
-                /*
+
                 variables.forEach( value => {
                   if (!this.variablesMap.has(value)) {
                     this.variablesMap.set(value, new Set(device));
@@ -181,11 +193,13 @@ export default class FacilityAssociatedDevices extends Vue {
                   }
                 });
 
-                 */
+
               }
             }
         )
         .catch(this.$opensilex.errorHandler);
+
+     */
   }
 
   loadVariables() {

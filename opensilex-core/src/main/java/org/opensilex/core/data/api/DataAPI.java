@@ -913,7 +913,6 @@ public class DataAPI {
 
         for (Map.Entry<Long, List<DataModel>> entry : dataPerHourMap.entrySet()) {
             Instant dateTime = Instant.ofEpochSecond(entry.getKey()*3600).plus(30, ChronoUnit.MINUTES);
-
             double avg = entry.getValue().stream().mapToDouble(d->(Double.valueOf(d.getValue().toString()))).average().orElse(Double.NaN);
 
             DataSimpleGetDTO averageData = DataSimpleGetDTO.getDtoFromModel(entry.getValue().get(0));

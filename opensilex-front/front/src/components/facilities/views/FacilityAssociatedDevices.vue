@@ -60,7 +60,7 @@ import {DataVariableSeriesGetDTO} from "opensilex-core/model/dataVariableSeriesG
 export default class FacilityAssociatedDevices extends Vue {
   $opensilex: OpenSilexVuePlugin;
 
-  NB_COL = 2;
+  NB_COL = 4;
 
   selected: OrganizationGetDTO = null;
   devices: Array<DeviceGetDTO> = [];
@@ -121,7 +121,7 @@ export default class FacilityAssociatedDevices extends Vue {
   loadData() {
     var today: Date = new Date();
     var aWeekBefore: Date = new Date(today);
-    aWeekBefore.setDate(aWeekBefore.getDate() - 7);
+    aWeekBefore.setDate(aWeekBefore.getDate() - 60);
 
     this.dataService.getDataSeriesByFacility(
         this.uri,

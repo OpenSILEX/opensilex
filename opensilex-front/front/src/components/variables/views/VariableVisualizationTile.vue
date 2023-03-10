@@ -3,13 +3,15 @@
         ref="tilePanel"
         :label="variable.name"
         icon=""
+        v-on:click.native="showGraphic"
     >
 
       <template v-slot:body>
 
         <div style="font-size: xxx-large">
-          {{computeMean + " " + variable.unit.symbol}}
+          {{lastMedianData.value + " " + variable.unit.symbol}}
         </div>
+        <div style="font-size: small">{{lastMedianData.date}}</div>
 
         <opensilex-UriListView
             id="devices-list"
@@ -19,6 +21,7 @@
         >
         </opensilex-UriListView>
 
+        <!--
         <opensilex-Button
             id="btn-show"
             label="Show graphic"
@@ -27,20 +30,27 @@
             @click="prepareGraphic()"
         >
         </opensilex-Button>
+        -->
 
-        <opensilex-DataVisuGraphic
-          v-if="isGraphicLoaded"
-          id="graphic"
-          ref="visuGraphic"
-          :deviceType="false"
-          :lType="true"
-          :lWidth="2"
-          class="DeviceVisualisationGraphic"
-          v-bind:class ="{
-            'DeviceVisualisationGraphic': false,
-            'DeviceVisualisationGraphicWithoutForm': true
-          }"
-        ></opensilex-DataVisuGraphic>
+        <b-modal
+            ref="graphic-modal"
+            size="xl"
+            :title="variable.name"
+        >
+          <opensilex-DataVisuGraphic
+            v-if="isGraphicLoaded"
+            id="graphic"
+            ref="visuGraphic"
+            :deviceType="false"
+            :lType="true"
+            :lWidth="2"
+            class="DeviceVisualisationGraphic"
+            v-bind:class ="{
+              'DeviceVisualisationGraphic': false,
+              'DeviceVisualisationGraphicWithoutForm': true
+            }"
+          ></opensilex-DataVisuGraphic>
+        </b-modal>
 
       </template>
     </opensilex-Card>
@@ -92,6 +102,7 @@ export default class VariableVisualizationTile extends Vue {
   devicesService: DevicesService;
   eventsService: EventsService;
 
+  @Ref("graphic-modal") readonly graphicModal!: any;
   @Ref("visuGraphic") readonly visuGraphic!: any;
   @Ref("annotationModalForm") readonly annotationModalForm!: any;
   @Ref("eventsModalForm") readonly eventsModalForm!: any;
@@ -118,16 +129,9 @@ export default class VariableVisualizationTile extends Vue {
     );
   }
 
-  get computeMean() {
-    var m = 0;
-    let nbSeries = this.dataSeries.length;
-
-    for (let i = 0; i < nbSeries; ++i) {
-      m += this.dataSeries[i].data[this.dataSeries[i].data.length - 1].value;
-      console.debug(this.dataSeries[i]);
-    }
-
-    return m / nbSeries;
+  get lastMedianData() {
+    var data = this.calculatedDataSeries[0].data;
+    return data[data.length - 1];
   }
 
   get deviceUriList() {
@@ -178,6 +182,12 @@ export default class VariableVisualizationTile extends Vue {
         );
       }
     }
+  }
+
+  showGraphic() {
+    console.log("show graphic");
+    this.prepareGraphic();
+    this.graphicModal.show();
   }
 
   prepareGraphic() {

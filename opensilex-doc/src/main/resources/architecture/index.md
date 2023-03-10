@@ -331,7 +331,7 @@ Group are a list of associated User+Profile.
 
 User credentials correspond to the merged set of all user's profiles credentials accross all user's group.
 
-For more information on this module see [documentation](./security.md)
+For more information on this module see [documentation](../opensilex-security/security.md)
 
 ```
 +----------- opensilex-security - SecurityModule -------------+

@@ -19,7 +19,7 @@ import org.opensilex.OpenSilex;
 import org.opensilex.OpenSilexModuleNotFoundException;
 import org.opensilex.core.CoreConfig;
 import org.opensilex.core.CoreModule;
-import org.opensilex.core.metrics.dal.MetricsDAO;
+import org.opensilex.core.metrics.dal.MetricDAO;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
@@ -77,7 +77,7 @@ public class ScheduleMetrics implements ApplicationEventListener {
                     } catch (IllegalArgumentException e) {
                         throw new RuntimeException("Bad experiment time unit set" + systemTimeUnit);
                     }
-                    MetricsDAO metricsDao = new MetricsDAO(sparql, nosql);
+                    MetricDAO metricsDao = new MetricDAO(sparql, nosql);
                     scheduler.scheduleAtFixedRate(new CreateExperimentSummaries(metricsDao), experimentsTimeBeforeFirstMetric, delayBetweenExperimentsMetrics, experimentsTimeUnit);
                     scheduler.scheduleAtFixedRate(new CreateSystemSummary(metricsDao), systemTimeBeforeFirstMetric, delayBetweenSystemMetrics, systemTimeUnit);
 
@@ -108,9 +108,9 @@ public class ScheduleMetrics implements ApplicationEventListener {
      */
     private class CreateExperimentSummaries implements Runnable {
 
-        private final MetricsDAO metricsDao;
+        private final MetricDAO metricsDao;
 
-        public CreateExperimentSummaries(MetricsDAO metricsDao) {
+        public CreateExperimentSummaries(MetricDAO metricsDao) {
             this.metricsDao = metricsDao;
         }
 
@@ -130,9 +130,9 @@ public class ScheduleMetrics implements ApplicationEventListener {
      */
     private class CreateSystemSummary implements Runnable {
 
-        private final MetricsDAO metricsDao;
+        private final MetricDAO metricsDao;
 
-        public CreateSystemSummary(MetricsDAO metricsDao) {
+        public CreateSystemSummary(MetricDAO metricsDao) {
             this.metricsDao = metricsDao;
         }
 

@@ -17,6 +17,7 @@ import org.opensilex.uri.generation.ClassURIGenerator;
 
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
+import java.net.URI;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
@@ -103,6 +104,12 @@ public class AccountModel extends SPARQLResourceModel implements Principal, Clas
             ignoreUpdateIfNull = true
     )
     private List<GroupUserProfileModel> userProfiles;
+
+    @SPARQLProperty(
+            ontology = FOAF.class,
+            property = "topic_interest"
+    )
+    private List<URI> favorites;
 
     @SPARQLProperty(
             ontology = FOAF.class,
@@ -214,5 +221,13 @@ public class AccountModel extends SPARQLResourceModel implements Principal, Clas
                 "account",
                 instance.getEmail().toString()
         };
+    }
+
+    public List<URI> getFavorites() {
+        return favorites;
+    }
+
+    public void setFavorites(List<URI> favorites) {
+        this.favorites = favorites;
     }
 }

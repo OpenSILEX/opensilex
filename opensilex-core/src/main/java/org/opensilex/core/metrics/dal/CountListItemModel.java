@@ -21,7 +21,13 @@ public class CountListItemModel {
     
     private URI type;
 
+    private Integer calculatedTotalCount = null;
+
+    //private Integer countDifference = null; //difference between two CountItemModel counts
+
     private List<CountItemModel> items = new ArrayList<>();
+
+    //private List<CountItemModel> diffItems = new ArrayList<>(); //items which are only present in one of two CountItemModels
 
     public URI getType() {
         return type;
@@ -31,7 +37,24 @@ public class CountListItemModel {
         this.type = type;
     }
 
+
+    public void setCalculatedTotalCount(Integer calculatedTotalCount) {
+        this.calculatedTotalCount = calculatedTotalCount;
+    }
+
+   /* public Integer getCountDifference() {
+        return countDifference;
+    }
+
+    public Integer setCountDifference(Integer countDifference) {
+        this.countDifference = countDifference;
+        return countDifference;
+    }*/
+
     public Integer getTotalCount() {
+        if(calculatedTotalCount != null){
+            return  calculatedTotalCount;
+        }
         int totalCount = 0;
         
         for (CountItemModel item : items) {
@@ -59,6 +82,18 @@ public class CountListItemModel {
     public void setName(String name) {
         this.name = name;
     }
+
+    /*public List<CountItemModel> getDifferenceItems() {
+        return diffItems;
+    }
+
+    public void setDifferenceItems(List<CountItemModel> items) {
+        this.diffItems = items;
+    }
+
+    public void addDifferenceItem(CountItemModel item) {
+        this.diffItems.add(item);
+    }*/
 
     public static CountItemDTO getDTOFromModel(CountItemModel countItemModel) {
         CountItemDTO countItemDTO = new CountItemDTO();

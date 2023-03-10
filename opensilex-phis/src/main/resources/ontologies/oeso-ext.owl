@@ -112,15 +112,6 @@
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
     </owl:DatatypeProperty>
 
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#concerns -->
-
-    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#concerns">
-        <rdfs:label xml:lang="fr">concerne</rdfs:label>
-        <rdfs:label xml:lang="en">concerns</rdfs:label>
-    </owl:ObjectProperty>
-
     <!-- http://www.opensilex.org/vocabulary/oeso#focalLength -->
 
     <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#focalLength">
@@ -237,7 +228,7 @@
         <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#RadiometricTarget"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
     </owl:DatatypeProperty>
-    
+
 
     <!-- http://www.opensilex.org/vocabulary/oeso#hasShapeWidth -->
 
@@ -246,7 +237,7 @@
         <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#RadiometricTarget"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#decimal"/>
     </owl:DatatypeProperty>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#hasTechnicalContact -->
@@ -265,28 +256,6 @@
         <rdfs:label xml:lang="en">trait</rdfs:label>
         <rdfs:label xml:lang="fr">trait</rdfs:label>
     </owl:ObjectProperty>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#height -->
-
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#height">
-
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Camera"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
-    </owl:DatatypeProperty>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#inServiceDate -->
-
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#inServiceDate">
-
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
-    </owl:DatatypeProperty>
-    
-
 
     <!-- http://www.opensilex.org/vocabulary/oeso#maxWavelength -->
 
@@ -317,13 +286,7 @@
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#pixelSize -->
 
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#pixelSize">
-
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Camera"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
-    </owl:DatatypeProperty>
     
 
 
@@ -403,17 +366,6 @@
             </owl:Class>
         </rdfs:domain>
     </owl:DatatypeProperty>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#width -->
-
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#width">
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Camera"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
-    </owl:DatatypeProperty>
-    
-
 
     <!-- 
     ///////////////////////////////////////////////////////////////////////////////////////
@@ -422,18 +374,6 @@
     //
     ///////////////////////////////////////////////////////////////////////////////////////
      -->
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#dateOfLastCalibration -->
-
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#dateOfLastCalibration"/>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#dateOfPurchase -->
-
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#dateOfPurchase"/>
-    
 
     <!-- http://www.opensilex.org/vocabulary/oeso#focalLength -->
 
@@ -455,14 +395,6 @@
         <owl:deprecated xml:lang="fr"></owl:deprecated>
     </owl:DatatypeProperty>
     
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#hasBrand -->
-
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasBrand">
-    </owl:DatatypeProperty>
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#hasExperimentModalities -->
 
     <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasExperimentModalities">
@@ -478,14 +410,6 @@
         <rdfs:label xml:lang="en">financial reference</rdfs:label>
         <rdfs:label xml:lang="fr">référence financière</rdfs:label>
     </owl:DatatypeProperty>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#hasModel -->
-
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasModel"/>
-    
-
 
     <!-- http://www.opensilex.org/vocabulary/oeso#hasRadiometricTargetMaterial -->
 
@@ -527,14 +451,6 @@
         <rdfs:label xml:lang="fr">réplication</rdfs:label>
     </owl:DatatypeProperty>
 
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#hasSerialNumber -->
-
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasSerialNumber"/>
-    
-
-
     <!-- http://www.opensilex.org/vocabulary/oeso#hasShape -->
 
     <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasShape">
@@ -556,26 +472,6 @@
             </rdfs:Datatype>
         </rdfs:range>
     </owl:DatatypeProperty>
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#hasShortname -->
-
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasShortname">
-        <rdfs:label xml:lang="fr">acronyme</rdfs:label>
-        <rdfs:label xml:lang="en">shortname</rdfs:label>
-    </owl:DatatypeProperty>
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#personInCharge -->
-
-    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#personInCharge">
-        <rdfs:label xml:lang="en">person in charge</rdfs:label>
-        <rdfs:label xml:lang="fr">responsable</rdfs:label>
-        <rdfs:comment xml:lang="en">Person in charge of the device</rdfs:comment>
-        <rdfs:comment xml:lang="fr">Personne responsable du dispositif</rdfs:comment>
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
-        <rdfs:range rdf:resource="http://xmlns.com/foaf/0.1/Agent"/>
-    </owl:ObjectProperty>
-
 
     <!-- http://www.opensilex.org/vocabulary/oeso#status -->
 
@@ -609,15 +505,6 @@
         <rdfs:label xml:lang="en">Accession</rdfs:label>
         <rdfs:label xml:lang="fr">Accession</rdfs:label>
     </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#Actuator -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Actuator">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
-    </owl:Class>
-    
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#AgriculturalField -->
@@ -657,35 +544,6 @@
         <rdfs:label xml:lang="en">CO2 sensor</rdfs:label>
         <rdfs:label xml:lang="fr">Capteur de CO2</rdfs:label>
     </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#Camera -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Camera">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#SensingDevice"/>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#pixelSize"/>
-                <owl:minCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:minCardinality>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#height"/>
-                <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#width"/>
-                <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:label xml:lang="en">Camera</rdfs:label>
-        <rdfs:label xml:lang="fr">Camera</rdfs:label>
-    </owl:Class>
-    
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#CapacitanceSensor -->
@@ -725,75 +583,6 @@
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Datafile -->
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#startUp -->
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#startUp">
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
-        <rdfs:label xml:lang="en">Startup</rdfs:label>
-        <rdfs:label xml:lang="fr">Date de démarrage</rdfs:label>
-        <rdfs:comment xml:lang="en">Startup date of the device</rdfs:comment>
-        <rdfs:comment xml:lang="fr">Date de démarrage du dispositif</rdfs:comment>
-    </owl:DatatypeProperty>
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#removal -->
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#removal">
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
-        <rdfs:label xml:lang="en">Removal</rdfs:label>
-        <rdfs:label xml:lang="fr">Date d'enlèvement</rdfs:label>
-        <rdfs:comment xml:lang="en">Removal date of the device</rdfs:comment>
-        <rdfs:comment xml:lang="fr">Date de mise hors service du dispositif</rdfs:comment>
-    </owl:DatatypeProperty>
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#Device -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Device">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Equipement"/>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasBrand"/>
-                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasModel"/>
-                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasSerialNumber"/>
-                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#startUp"/>
-                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#removal"/>
-                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#personInCharge"/>
-                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                <owl:onClass rdf:resource="http://xmlns.com/foaf/0.1/Agent"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-    </owl:Class>
-    
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Document -->
@@ -855,23 +644,6 @@
         <rdfs:label xml:lang="en">electrical resistance thermometer</rdfs:label>
         <rdfs:label xml:lang="fr">electrical resistance thermometer</rdfs:label>
     </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#EntityOfInterest -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#EntityOfInterest">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#VariableBase"/>
-    </owl:Class>
-
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#Equipement -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Equipement">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ExperimentalCondition"/>
-    </owl:Class>
-    
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#EuropeanInfrastructure -->
@@ -882,28 +654,6 @@
         <rdfs:label xml:lang="en">european infrastructure</rdfs:label>
         <rdfs:label xml:lang="fr">infrastructure européenne</rdfs:label>
     </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#Experiment -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Experiment"/>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#ExperimentalCondition -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ExperimentalCondition"/>
-
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#Facility -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Facility">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Equipement"/>
-    </owl:Class>
-    
-
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Fan -->
 
@@ -951,18 +701,6 @@
         <rdfs:label xml:lang="en">gantry</rdfs:label>
         <rdfs:label xml:lang="fr">portique</rdfs:label>
     </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#GasSensor -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#GasSensor">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#SensingDevice"/>
-        <rdfs:label xml:lang="fr">Capteur d&apos;air</rdfs:label>
-        <rdfs:label xml:lang="en">Gas sensor</rdfs:label>
-    </owl:Class>
-    
-
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Germplasm -->
 
@@ -1014,24 +752,6 @@
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#HemisphericalCamera">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Camera"/>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#height"/>
-                <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#pixelSize"/>
-                <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#width"/>
-                <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
-            </owl:Restriction>
-        </rdfs:subClassOf>
         <rdfs:label xml:lang="fr">caméra hémisphérique</rdfs:label>
         <rdfs:label xml:lang="en">hemispherical camera</rdfs:label>
     </owl:Class>
@@ -1045,7 +765,7 @@
         <rdfs:label xml:lang="en">hemispherical image</rdfs:label>
         <rdfs:label xml:lang="fr">image hémisphérique</rdfs:label>
     </owl:Class>
-    
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#HorizontalScreen -->
@@ -1055,54 +775,14 @@
         <rdfs:label xml:lang="en">horizontal screen</rdfs:label>
         <rdfs:label xml:lang="fr">ouvrant horizontal</rdfs:label>
     </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#HumiditySensor -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#HumiditySensor">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#SensingDevice"/>
-        <rdfs:label xml:lang="fr">capteur d&apos;humidité</rdfs:label>
-        <rdfs:label xml:lang="en">humidity sensor</rdfs:label>
-    </owl:Class>
-    
-
 
     <!-- http://www.opensilex.org/vocabulary/oeso#HyperspectralCamera -->
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#HyperspectralCamera">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Camera"/>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#height"/>
-                <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#pixelSize"/>
-                <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#width"/>
-                <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
-            </owl:Restriction>
-        </rdfs:subClassOf>
         <rdfs:label xml:lang="fr">caméra hyperspectrale</rdfs:label>
         <rdfs:label xml:lang="en">hyperspectral camera</rdfs:label>
     </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#Image -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Image">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Datafile"/>
-    </owl:Class>
-    
-
 
     <!-- http://www.opensilex.org/vocabulary/oeso#ImagingCabin -->
 
@@ -1134,7 +814,15 @@
         <rdfs:label xml:lang="en">leaf</rdfs:label>
     </owl:Class>
     
+    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#focalLength">
+        <rdfs:label xml:lang="fr">longueur focale (mm)</rdfs:label>
+        <rdfs:label xml:lang="en">focal length (mm)</rdfs:label>
+    </rdf:Description>
 
+    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#halfFieldOfView">
+        <rdfs:label xml:lang="en">half field of view (°)</rdfs:label>
+        <rdfs:label xml:lang="fr">demi angle d&apos;ouverture (°)</rdfs:label>
+    </rdf:Description>
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Lens -->
 
@@ -1243,24 +931,6 @@
         </rdfs:subClassOf>
         <rdfs:subClassOf>
             <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#height"/>
-                <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#pixelSize"/>
-                <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#width"/>
-                <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
                 <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#wavelength"/>
                 <owl:maxCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">6</owl:maxCardinality>
             </owl:Restriction>
@@ -1344,18 +1014,6 @@
         <rdfs:label xml:lang="fr">parcelle</rdfs:label>
         <rdfs:label xml:lang="en">plot</rdfs:label>
     </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#PrecipitationSensor -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#PrecipitationSensor">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#SensingDevice"/>
-        <rdfs:label xml:lang="fr">capteur de précipitation</rdfs:label>
-        <rdfs:label xml:lang="en">precipitation sensor</rdfs:label>
-    </owl:Class>
-    
-
 
     <!-- http://www.opensilex.org/vocabulary/oeso#PropellerAnemometer -->
 
@@ -1415,36 +1073,8 @@
                 <owl:onClass rdf:resource="http://www.opensilex.org/vocabulary/oeso#Lens"/>
             </owl:Restriction>
         </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#height"/>
-                <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#pixelSize"/>
-                <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#width"/>
-                <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
-            </owl:Restriction>
-        </rdfs:subClassOf>
         <rdfs:label xml:lang="en">RGB camera</rdfs:label>
         <rdfs:label xml:lang="fr">caméra RGB</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#RadiationSensor -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#RadiationSensor">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#SensingDevice"/>
-        <rdfs:label xml:lang="fr">capteur de rayonnement</rdfs:label>
-        <rdfs:label xml:lang="en">radiation sensor</rdfs:label>
     </owl:Class>
     
 
@@ -1556,12 +1186,7 @@
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#SensingDevice -->
 
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#SensingDevice">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
-    </owl:Class>
-    
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Shadows -->
@@ -1679,24 +1304,6 @@
                 <owl:onClass rdf:resource="http://www.opensilex.org/vocabulary/oeso#Lens"/>
             </owl:Restriction>
         </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#height"/>
-                <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#pixelSize"/>
-                <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#width"/>
-                <owl:cardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:cardinality>
-            </owl:Restriction>
-        </rdfs:subClassOf>
         <rdfs:label xml:lang="en">IR thermal camera</rdfs:label>
         <rdfs:label xml:lang="fr">caméra infrarouge thermique</rdfs:label>
     </owl:Class>
@@ -1710,26 +1317,6 @@
         <rdfs:label xml:lang="en">IR thermal image</rdfs:label>
         <rdfs:label xml:lang="fr">image infrarouge thermique</rdfs:label>
     </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#TechnicalDocument -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#TechnicalDocument">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Document"/>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#TemperatureSensor -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#TemperatureSensor">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#SensingDevice"/>
-        <rdfs:label xml:lang="fr">capteur de température</rdfs:label>
-        <rdfs:label xml:lang="en">temperature sensor</rdfs:label>
-    </owl:Class>
-    
-
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Tensiometer -->
 
@@ -1867,16 +1454,6 @@
         <rdfs:label xml:lang="en">Variety</rdfs:label>
         <rdfs:label xml:lang="fr">Variété</rdfs:label>
     </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#Vector -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Vector">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
-    </owl:Class>
-    
-
 
     <!-- http://www.opensilex.org/vocabulary/oeso#VignettingDocument -->
 
@@ -1895,27 +1472,6 @@
         <rdfs:label xml:lang="fr">Lot de Vitroplant</rdfs:label>
         <rdfs:label xml:lang="en">Vitroplant Lot</rdfs:label>
     </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#WeighingScale -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#WeighingScale">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#SensingDevice"/>
-        <rdfs:label xml:lang="fr">balance</rdfs:label>
-        <rdfs:label xml:lang="en">weighing scale</rdfs:label>
-    </owl:Class>
-    
-
-
-    <!-- http://www.opensilex.org/vocabulary/oeso#WindSensor -->
-
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#WindSensor">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#SensingDevice"/>
-        <rdfs:label xml:lang="fr">anémomètre</rdfs:label>
-        <rdfs:label xml:lang="en">wind sensor</rdfs:label>
-    </owl:Class>
-    
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#WindVane -->
@@ -1927,16 +1483,6 @@
         <rdfs:label xml:lang="en">Wind Vane</rdfs:label>
         <rdfs:label xml:lang="fr">Wind Vane</rdfs:label>
     </owl:Class>
-
-
-
-    <!-- http://xmlns.com/foaf/0.1/Organization -->
-
-    <owl:Class rdf:about="http://xmlns.com/foaf/0.1/Organization">
-        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ExperimentalCondition"/>
-    </owl:Class>
-
-
 
     <!--
     ///////////////////////////////////////////////////////////////////////////////////////
@@ -2073,60 +1619,12 @@
         <rdfs:comment xml:lang="en">Bidirectional reflectance distribution function</rdfs:comment>
         <rdfs:comment xml:lang="en">BRDF(θ)=P1+P2cos(θ)+1/2*P3(3*cos^2θ−1)+1/2*P4(5*cos^3θ−3*cosθ)</rdfs:comment>
     </rdf:Description>
-    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#dateOfLastCalibration">
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
-        <rdfs:label xml:lang="fr">date de la dernière calibration</rdfs:label>
-        <rdfs:label xml:lang="en">date of last calibration</rdfs:label>
-    </rdf:Description>
-    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#dateOfPurchase">
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
-        <rdfs:label xml:lang="en">date of purchase</rdfs:label>
-        <rdfs:label xml:lang="fr">date d&apos;achat</rdfs:label>
-    </rdf:Description>
-    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#deviceProperty">
-        <rdfs:label xml:lang="fr">propriété d&apos;un équipement</rdfs:label>
-        <rdfs:label xml:lang="en">device property</rdfs:label>
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
-    </rdf:Description>
-    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#focalLength">
-        <rdfs:label xml:lang="fr">longueur focale (mm)</rdfs:label>
-        <rdfs:label xml:lang="en">focal length (mm)</rdfs:label>
-    </rdf:Description>
-    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#halfFieldOfView">
-        <rdfs:label xml:lang="en">half field of view (°)</rdfs:label>
-        <rdfs:label xml:lang="fr">demi angle d&apos;ouverture (°)</rdfs:label>
-    </rdf:Description>
-    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#hasBrand">
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:label xml:lang="fr">Constructeur</rdfs:label>
-        <rdfs:label xml:lang="en">Brand</rdfs:label>
-        <rdfs:comment xml:lang="fr">Marque du dispositif</rdfs:comment>
-        <rdfs:comment xml:lang="en">Brand of the device</rdfs:comment>
-    </rdf:Description>
-    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#hasModel">
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:label xml:lang="en">Model</rdfs:label>
-        <rdfs:label xml:lang="fr">Modèle</rdfs:label>
-        <rdfs:comment xml:lang="fr">Modèle constructeur du dispositif</rdfs:comment>
-        <rdfs:comment xml:lang="en">Constructor model of the device</rdfs:comment>
-    </rdf:Description>
+
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#hasRadiometricTargetMaterial">
         <rdfs:label xml:lang="fr">Matière</rdfs:label>
         <rdfs:label xml:lang="en">Material</rdfs:label>
         <rdfs:comment xml:lang="fr">La valeur doit être dans la liste suivante : Carpet, Paint, Spectralon</rdfs:comment>
         <rdfs:comment xml:lang="en">The value must be in the following list : Carpet, Paint, Spetralon</rdfs:comment>
-    </rdf:Description>
-    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#hasSerialNumber">
-        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
-        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-        <rdfs:label xml:lang="en">Serial number</rdfs:label>
-        <rdfs:label xml:lang="fr">Numéro de série</rdfs:label>
-        <rdfs:comment xml:lang="fr">Numéro de série du dispositif</rdfs:comment>
-        <rdfs:comment xml:lang="en">Serial number of the device</rdfs:comment>
     </rdf:Description>
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#hasShape">
         <rdfs:label xml:lang="en">Shape</rdfs:label>
@@ -2146,15 +1644,7 @@
         <rdfs:label xml:lang="en">Rectangle width</rdfs:label>
         <rdfs:label xml:lang="fr">Largeur du rectangle</rdfs:label>
     </rdf:Description>
-    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#height">
-        <rdfs:label xml:lang="fr">nombre de pixels en ligne (pixels)</rdfs:label>
-        <rdfs:comment>this is the number of pixels per row. The value should be in pixels.</rdfs:comment>
-        <rdfs:label xml:lang="en">height (pixels)</rdfs:label>
-    </rdf:Description>
-    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#inServiceDate">
-        <rdfs:label xml:lang="en">in service date</rdfs:label>
-        <rdfs:label xml:lang="fr">date de mise en service</rdfs:label>
-    </rdf:Description>
+
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#maxWavelength">
         <rdfs:label xml:lang="en">max wavelength (nm)</rdfs:label>
         <rdfs:label xml:lang="fr">longueur d&apos;onde maximale (nm)</rdfs:label>
@@ -2163,10 +1653,7 @@
         <rdfs:label xml:lang="en">minimum wavelength (nm)</rdfs:label>
         <rdfs:label xml:lang="fr">longueur d&apos;onde minimale (nm)</rdfs:label>
     </rdf:Description>
-    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#pixelSize">
-        <rdfs:label xml:lang="en">pixel size (μm)</rdfs:label>
-        <rdfs:label xml:lang="fr">taille du pixel en μm</rdfs:label>
-    </rdf:Description>
+
     <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#scanAngularResolution">
         <rdfs:label xml:lang="en">scan angular resolution (°)</rdfs:label>
         <rdfs:label xml:lang="fr">résolution angulaire du scan (°)</rdfs:label>
@@ -2195,10 +1682,7 @@
         <rdfs:label xml:lang="en">wavelength (nm)</rdfs:label>
         <rdfs:label xml:lang="fr">longueur d&apos;onde (nm)</rdfs:label>
     </rdf:Description>
-    <rdf:Description rdf:about="http://www.opensilex.org/vocabulary/oeso#width">
-        <rdfs:label xml:lang="en">width (pixel)</rdfs:label>
-        <rdfs:label xml:lang="fr">nombre de pixels en colonne (pixels)</rdfs:label>
-    </rdf:Description>
+
 </rdf:RDF>
 
 

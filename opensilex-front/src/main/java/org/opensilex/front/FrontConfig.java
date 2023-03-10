@@ -24,7 +24,7 @@ public interface FrontConfig {
 
     @ConfigDescription(
             value = "Front home component once logged",
-            defaultString = "opensilex-DefaultHomeComponent"
+            defaultString = "opensilex-HomeView"
     )
     String homeComponent();
 
@@ -90,4 +90,9 @@ public interface FrontConfig {
             defaultBoolean = true
     )
     boolean connectAsGuest();
+
+    @ConfigDescription(
+            value = "Dashboard component"
+    )
+    DashboardConfig dashboard();
 }

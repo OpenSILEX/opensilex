@@ -35,6 +35,7 @@ import org.eclipse.rdf4j.model.vocabulary.XSD;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.opensilex.OpenSilex;
 import org.opensilex.OpenSilexModuleNotFoundException;
+import org.opensilex.server.exceptions.NotFoundException;
 import org.opensilex.service.BaseService;
 import org.opensilex.service.Service;
 import org.opensilex.service.ServiceDefaultDefinition;
@@ -2040,6 +2041,16 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         return cnt.getRepositoryConnectionImpl();
     }
 
+    public URI getDefaultGraphURI(URI rdfType) throws NotFoundException, SPARQLInvalidClassDefinitionException {
+        try {
+            return getMapperIndex()
+                    .getForResource(Ontology.resource(SPARQLDeserializers.getExpandedURI(rdfType)))
+                    .getDefaultGraphURI();
+        } catch (SPARQLMapperNotFoundException e) {
+            throw new NotFoundException("No default graph found for RDF type <" + rdfType + ">");
+        }
+    }
+
     public Node getDefaultGraph(Class<? extends SPARQLResourceModel> modelClass) throws SPARQLException {
         return getMapperIndex().getForClass(modelClass).getDefaultGraph();
     }
@@ -2448,5 +2459,125 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         }
 
         executeUpdateQuery(update);
+    }
+
+    public URI getFavoriteRdfTypeFromURI(URI uri, List<URI> allowedTypes) throws Exception {
+        SelectBuilder select = new SelectBuilder();
+        WhereBuilder where = new WhereBuilder();
+
+        Var rdfTypeVar = makeVar("rdfType");
+
+        where.addWhere(SPARQLDeserializers.nodeURI(uri), Ontology.typeSubClassAny, rdfTypeVar);
+        SPARQLQueryHelper.inURI(where, rdfTypeVar.getVarName(), allowedTypes);
+        select.addVar(rdfTypeVar);
+        select.addWhere(where);
+        select.setDistinct(true);
+
+        List<SPARQLResult> results = this.executeSelectQuery(select);
+
+        if (CollectionUtils.isEmpty(results)) {
+            return null;
+        }
+
+        if (results.size() > 1) {
+            throw new Exception(results + "Multiple rdf types for uri " + uri);
+        }
+
+        return new URI(results.get(0).getStringValue(rdfTypeVar.getVarName()));
+    }
+
+    public String getFavoriteNameFromURI(URI uri) throws Exception {
+        SelectBuilder select = new SelectBuilder();
+        WhereBuilder where = new WhereBuilder();
+
+        Var nameVar = makeVar("name");
+
+        where.addWhere(SPARQLDeserializers.nodeURI(uri), org.apache.jena.vocabulary.RDFS.label.asNode(), nameVar);
+        select.addVar(nameVar);
+        select.addWhere(where);
+        select.setDistinct(true);
+
+        List<SPARQLResult> results = this.executeSelectQuery(select);
+
+        if (CollectionUtils.isEmpty(results)) {
+            return null;
+        }
+
+        if (results.size() > 1) {
+            throw new Exception("Multiple rdfs label for uri " + uri);
+        }
+
+        return results.get(0).getStringValue(nameVar.getVarName());
+    }
+
+    /**
+     * Returns a collection of {@link SPARQLNamedResourceModel} representing the given URI. Results are returned in a
+     * map where the key is the URI of a graph containing the triples, and the value is a named resource model
+     * containing the label and the type of the object in the corresponding graph. An example of result is shown below.
+     * The expected types must be provided with the `allowedTypes` argument (it can be a supertype of the object).
+     *
+     * <pre><code>
+     * {
+     *     "xp1": {
+     *         "label": "xp1-os1",
+     *         "type": "plot"
+     *     },
+     *     "xp2": {
+     *         "label": "xp2-os2",
+     *         "type": "subplot"
+     *     }
+     * }
+     * </code></pre>
+     *
+     * This method performs the following query :
+     *
+     * <pre><code>
+     * select ?label ?type {
+     *     allowedGraphs ?allowedGraphs {
+     *        __uri__ rdf:type ?rdfType .
+     *        __uri__ rdfs:label ?label .
+     *     }
+     *     ?rdfType rdfs:subClassOf* ?superType .
+     *     filter (?superType in (__allowedTypes__))
+     *     filter (?allowedGraphs = __graph__)
+     * }
+     * </code> </pre>
+     *
+     * @param uri
+     * @param allowedTypes
+     * @return
+     */
+    public Map<URI, SPARQLNamedResourceModel<?>> getNamedResourceModelContextMap(URI uri, Collection<URI> allowedTypes) throws Exception {
+        SelectBuilder select = new SelectBuilder();
+
+        Var labelVar = makeVar("label");
+        Var superTypeVar = makeVar("superType");
+        Var rdfTypeVar = makeVar("rdfType");
+        Var graphVar = makeVar("graph");
+
+        select.addVar(labelVar);
+        select.addVar(superTypeVar);
+        select.addVar(graphVar);
+
+        WhereBuilder graphWhere = new WhereBuilder();
+        graphWhere.addWhere(SPARQLDeserializers.nodeURI(uri), RDF.type, rdfTypeVar);
+        graphWhere.addWhere(SPARQLDeserializers.nodeURI(uri), org.apache.jena.vocabulary.RDFS.label, labelVar);
+
+        select.addGraph(graphVar, graphWhere);
+
+        select.addWhere(rdfTypeVar, Ontology.subClassAny, superTypeVar);
+        select.addFilter(SPARQLQueryHelper.inURIFilter(superTypeVar, allowedTypes));
+
+        Map<URI, SPARQLNamedResourceModel<?>> graphModelMap = new HashMap<>();
+
+        executeSelectQueryAsStream(select).forEach(result -> {
+            SPARQLNamedResourceModel<?> model = new SPARQLNamedResourceModel<>();
+            model.setUri(uri);
+            model.setName(result.getStringValue(labelVar.getVarName()));
+            model.setType(URI.create(result.getStringValue(superTypeVar.getVarName())));
+            graphModelMap.put(URI.create(result.getStringValue(graphVar.getVarName())), model);
+        });
+
+        return graphModelMap;
     }
 }

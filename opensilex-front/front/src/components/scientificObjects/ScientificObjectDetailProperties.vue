@@ -5,8 +5,11 @@
         <h3>{{ $t("ScientificObjectDetail.generalInformation") }}:</h3>
         <div class="card-header-right">
           <b-button-group>
+            <opensilex-FavoriteButton
+                :uri="selected.uri"
+            ></opensilex-FavoriteButton>
             <opensilex-EditButton
-              v-if="
+                v-if="
                 user.hasCredential(
                   credentials.CREDENTIAL_SCIENTIFIC_OBJECT_MODIFICATION_ID
                 )

@@ -15,7 +15,13 @@ import org.opensilex.nosql.mongodb.MongoModel;
 public class SystemSummaryModel extends GlobalSummaryModel {
 
     private CountListItemModel deviceByType;
+
+    private CountListItemModel experimentByType;
+
     public static final String DEVICE_BY_TYPE_FIELD = "deviceByType";
+
+    public static final String EXPERIMENT_BY_TYPE_FIELD = "experimentByType";
+
 
     private Integer facilities;
 
@@ -56,9 +62,16 @@ public class SystemSummaryModel extends GlobalSummaryModel {
     public CountListItemModel getDeviceByType() {
         return deviceByType;
     }
+    public CountListItemModel getExperimentByType() {
+        return experimentByType;
+    }
 
     public void setDeviceByType(CountListItemModel deviceByType) {
         this.deviceByType = deviceByType;
+    }
+
+    public void setExperimentByType(CountListItemModel experimentByType) {
+        this.experimentByType = experimentByType;
     }
 
     @Override

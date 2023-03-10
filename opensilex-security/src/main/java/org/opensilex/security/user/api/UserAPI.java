@@ -6,46 +6,10 @@
 //******************************************************************************
 package org.opensilex.security.user.api;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import javax.inject.Inject;
-import javax.mail.internet.InternetAddress;
-import javax.validation.Valid;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import static org.apache.jena.vocabulary.RDF.uri;
-
-import org.opensilex.security.person.dal.PersonDAO;
-import org.opensilex.security.person.dal.PersonModel;
-import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.server.exceptions.ForbiddenException;
-import org.opensilex.server.response.ErrorDTO;
-import org.opensilex.server.response.ErrorResponse;
-import org.opensilex.server.response.PaginatedListResponse;
-import org.opensilex.server.response.ObjectUriResponse;
-import org.opensilex.server.response.SingleObjectResponse;
-import org.opensilex.sparql.service.SPARQLService;
-import org.opensilex.security.account.dal.AccountDAO;
+import io.swagger.annotations.*;
 import org.opensilex.security.SecurityModule;
+import org.opensilex.security.account.dal.AccountDAO;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
@@ -53,11 +17,31 @@ import org.opensilex.security.authentication.AuthenticationService;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.group.dal.GroupDAO;
 import org.opensilex.security.group.dal.GroupModel;
+import org.opensilex.security.person.dal.PersonDAO;
+import org.opensilex.security.person.dal.PersonModel;
+import org.opensilex.server.exceptions.ForbiddenException;
+import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.response.NamedResourcePaginatedListResponse;
-import org.opensilex.utils.OrderBy;
+import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
+import org.opensilex.utils.OrderBy;
+
+import javax.inject.Inject;
+import javax.mail.internet.InternetAddress;
+import javax.validation.Valid;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.apache.jena.vocabulary.RDF.uri;
 
 /**
  * <pre>
@@ -408,7 +392,8 @@ public class UserAPI {
                         new InternetAddress(userDTO.getEmail()),
                         userDTO.isAdmin(),
                         authentication.getPasswordHash(userDTO.getPassword()),
-                        userDTO.getLanguage()
+                        userDTO.getLanguage(),
+                        userDTO.getFavorites()
                 );
 
                 if (holderOfTheAccount != null) {
@@ -527,5 +512,93 @@ public class UserAPI {
         }
 
         return Response.status(Status.OK.getStatusCode()).build();
+    }
+
+    @GET
+    @Path("favorites")
+    @ApiOperation("Get list of favorites for a user")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "OK", response = FavoriteGetDTO.class, responseContainer = "List")
+    })
+    public Response getFavorites(
+            @ApiParam(value = "Types", required = true) @QueryParam("types") @NotNull List<URI> types
+    ) throws Exception {
+        List<FavoriteGetDTO> resultList = new ArrayList<>(currentUser.getFavorites().size());
+        for (URI favoriteUri : currentUser.getFavorites()) {
+            FavoriteGetDTO dto = FavoriteGetDTO.fromNamedResourceModelContextMap(
+                    favoriteUri,
+                    sparql.getNamedResourceModelContextMap(favoriteUri, types)
+            );
+            if (!dto.getGraphNameDtoList().isEmpty()) {
+                try {
+                    URI defaultGraphURI = sparql.getDefaultGraphURI(dto.getType());
+                    dto.setDefaultLabelFromGraph(defaultGraphURI);
+                } catch (org.opensilex.server.exceptions.NotFoundException ignored) {
+                }
+                resultList.add(dto);
+            }
+        }
+        return new PaginatedListResponse<>(resultList).getResponse();
+    }
+
+    @POST
+    @Path("favorites")
+    @ApiOperation("Add a favorite")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+    })
+    public Response addFavorite(
+            @ApiParam(value = "Favorite object URI") @NotNull FavoriteCreationDTO favoriteDTO
+    ) throws Exception {
+        AccountDAO dao = new AccountDAO(sparql);
+
+        List<URI> favoriteList = currentUser.getFavorites();
+        favoriteList.add(favoriteDTO.getUri());
+
+        AccountModel user = dao.update(
+                currentUser.getUri(),
+                currentUser.getEmail(),
+                currentUser.isAdmin(),
+                currentUser.getPasswordHash(),
+                currentUser.getLanguage(),
+                favoriteList
+        );
+
+        return new ObjectUriResponse(Response.Status.OK, user.getUri()).getResponse();
+    }
+
+    @DELETE
+    @Path("favorites/{uriFavorite}")
+    @ApiOperation("Delete a favorite")
+    @ApiProtected
+    @ApiCredential(
+            credentialId = CREDENTIAL_USER_DELETE_ID,
+            credentialLabelKey = CREDENTIAL_USER_DELETE_LABEL_KEY
+    )
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response deleteFavorite(
+            @ApiParam(value = "Favorite URI", example = "http://example.com/", required = true) @PathParam("uriFavorite") @NotNull @ValidURI URI uriFavorite
+    ) throws Exception {
+        AccountDAO dao = new AccountDAO(sparql);
+
+        List<URI> favoriteList = currentUser.getFavorites();
+        favoriteList.remove(uriFavorite);
+
+        AccountModel user = dao.update(
+                currentUser.getUri(),
+                currentUser.getEmail(),
+                currentUser.isAdmin(),
+                currentUser.getPasswordHash(),
+                currentUser.getLanguage(),
+                favoriteList
+        );
+
+        return new ObjectUriResponse(Response.Status.OK, user.getUri()).getResponse();
     }
 }

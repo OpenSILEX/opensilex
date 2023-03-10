@@ -9,32 +9,26 @@ import org.apache.catalina.Context;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.OpenSilexModuleNotFoundException;
 import org.opensilex.config.ConfigManager;
-import org.opensilex.front.api.FrontConfigDTO;
-import org.opensilex.front.api.RouteDTO;
-import org.opensilex.front.api.UserFrontConfigDTO;
+import org.opensilex.front.api.*;
 import org.opensilex.front.config.*;
 import org.opensilex.security.*;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.AuthenticationService;
 import org.opensilex.security.email.EmailService;
-import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.ServerConfig;
 import org.opensilex.server.ServerModule;
 import org.opensilex.server.extensions.APIExtension;
 import org.opensilex.server.extensions.ServerExtension;
 import org.opensilex.server.scanner.IgnoreJarScanner;
 import org.opensilex.sparql.service.SPARQLService;
-import org.opensilex.sparql.service.SPARQLServiceFactory;
 import org.slf4j.LoggerFactory;
 
-import javax.mail.internet.InternetAddress;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
-import org.opensilex.OpenSilex;
-import org.opensilex.security.authentication.dal.AuthenticationDAO;
-import org.opensilex.security.profile.dal.ProfileModel;
 
 /**
  *
@@ -115,6 +109,23 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
             config.setMenuExclusions(frontConfig.menuExclusions());
             config.setApplicationName(frontConfig.applicationName());
             config.setConnectAsGuest(frontConfig.connectAsGuest());
+
+            try {
+                DashboardConfigDTO dashboard = new DashboardConfigDTO();
+                GraphConfigDTO graph1 = new GraphConfigDTO();
+                graph1.setVariable(new URI(frontConfig.dashboard().graph1().variable()));
+                dashboard.setGraph1(graph1);
+                GraphConfigDTO graph2 = new GraphConfigDTO();
+                graph2.setVariable(new URI(frontConfig.dashboard().graph2().variable()));
+                dashboard.setGraph2(graph2);
+                GraphConfigDTO graph3 = new GraphConfigDTO();
+                graph3.setVariable(new URI(frontConfig.dashboard().graph3().variable()));
+                dashboard.setGraph3(graph3);
+                config.setDashboard(dashboard);
+            }
+            catch (URISyntaxException e) {
+            }
+
             try {
                 config.setVersionLabel(VersionLabel.valueOf(frontConfig.versionLabel().toUpperCase()));
             } catch (IllegalArgumentException ignored) {
@@ -214,7 +225,7 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
     public void install(boolean reset) throws Exception {
         FrontConfig frontConfig = getConfig(FrontConfig.class);
         if (frontConfig.connectAsGuest()) {
-          getOpenSilex().getModuleByClass(SecurityModule.class).createDefaultGuestGroupUserProfile(); 
+          getOpenSilex().getModuleByClass(SecurityModule.class).createDefaultGuestGroupUserProfile();
         }
     }
 }

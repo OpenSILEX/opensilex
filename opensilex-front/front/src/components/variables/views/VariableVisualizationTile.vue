@@ -1,25 +1,35 @@
 <template>
     <opensilex-Card
         ref="tilePanel"
-        :label="variable.name"
+        :label="variableUri.name"
         icon=""
-        v-on:click.native="showGraphic"
     >
 
       <template v-slot:body>
 
-        <div style="font-size: xxx-large">
-          {{lastMedianData.value + " " + variable.unit.symbol}}
+        <div v-if="isNoDataFound"
+             id="no-data-text">
+          {{$t("FacilityAssociatedDevices.no-data")}}
         </div>
-        <div style="font-size: small">{{lastMedianData.date}}</div>
 
-        <opensilex-UriListView
-            id="devices-list"
-            label="Devices"
-            :list="deviceUriList"
-            :inline="true"
-        >
-        </opensilex-UriListView>
+        <div
+            id="data-infos"
+            v-if="isDataLoaded">
+          <opensilex-TextView
+              style="font-size: xxx-large"
+              v-on:click.native="showGraphic"
+              :value="lastMedianData.value + ' ' + variable.unit.symbol">
+          </opensilex-TextView>
+          <div style="font-size: small">{{lastMedianData.date}}</div>
+
+          <opensilex-UriListView
+              id="devices-list"
+              label="Devices"
+              :list="deviceUriList"
+              :inline="true"
+          >
+          </opensilex-UriListView>
+        </div>
 
         <!--
         <opensilex-Button
@@ -35,7 +45,7 @@
         <b-modal
             ref="graphic-modal"
             size="xl"
-            :title="variable.name"
+            :title="variableUri.name"
         >
           <opensilex-DataVisuGraphic
             v-if="isGraphicLoaded"
@@ -69,6 +79,8 @@ import {DeviceGetDTO} from "opensilex-core/model/deviceGetDTO";
 import {VariableDetailsDTO} from "opensilex-core/model/variableDetailsDTO";
 import {DataSerieGetDTO} from "opensilex-core/model/dataSerieGetDTO";
 import {DataVariableSeriesGetDTO} from "opensilex-core/model/dataVariableSeriesGetDTO";
+import {OrganizationGetDTO} from "opensilex-core/model/organizationGetDTO";
+import {NamedResourceDTOVariableModel} from "opensilex-core/model/namedResourceDTOVariableModel";
 
 
 @Component
@@ -83,24 +95,27 @@ export default class VariableVisualizationTile extends Vue {
   }
 
   @Prop()
+  variableUri: NamedResourceDTOVariableModel;
+
+  @Prop()
+  target: string;
+
+  @Prop()
   variable: VariableDetailsDTO;
 
-  @Prop()
-  devices: Array<DeviceGetDTO>;
-
-  @Prop()
   dataSeries: Array<DataSerieGetDTO>;
 
-  @Prop()
   calculatedDataSeries: Array<DataSerieGetDTO>;
 
-  isGraphicLoaded = true;
-  target = [] ;
+  isNoDataFound: boolean = false;
+  isDataLoaded: boolean = false;
+  isGraphicLoaded: boolean = true;
   eventCreatedTime = "";
 
   variablesService: VariablesService;
   devicesService: DevicesService;
   eventsService: EventsService;
+  dataService: DataService;
 
   @Ref("graphic-modal") readonly graphicModal!: any;
   @Ref("visuGraphic") readonly visuGraphic!: any;
@@ -117,6 +132,10 @@ export default class VariableVisualizationTile extends Vue {
     this.eventsService = this.$opensilex.getService<EventsService>(
         "opensilex.EventsService"
     );
+    this.dataService = this.$opensilex.getService<DataService>(
+        "opensilex-core.DataService"
+    );
+    this.refresh();
   }
 
   private langUnwatcher;
@@ -127,6 +146,53 @@ export default class VariableVisualizationTile extends Vue {
         this.prepareGraphic();
       }
     );
+  }
+
+  refresh() {
+    this.variablesService
+        .getVariable(this.variableUri.uri)
+        .then( (http: HttpResponse<OpenSilexResponse<VariableDetailsDTO>>) => {
+          if (http && http.response) {
+            this.variable = http.response.result;
+
+            this.loadData();
+          }
+        }
+    )
+  }
+
+  loadData() {
+    var today: Date = new Date();
+    var aWeekBefore: Date = new Date(today);
+    aWeekBefore.setDate(aWeekBefore.getDate() - 60);
+
+    this.dataService.getDataSeriesByFacility(
+        this.variableUri.uri,
+        this.target,
+        aWeekBefore.toISOString(),
+        today.toISOString(),
+        ["date=asc"]
+    )
+        .then(
+            (
+                http: HttpResponse<OpenSilexResponse<DataVariableSeriesGetDTO>>
+            ) => {
+              if (http && http.response) {
+                let seriesDTO: DataVariableSeriesGetDTO = http.response.result;
+
+                console.debug(seriesDTO);
+                if (!seriesDTO.data_series.length) {
+                  this.isNoDataFound = true;
+                  return;
+                }
+
+                this.dataSeries = seriesDTO.data_series;
+                this.calculatedDataSeries = seriesDTO.calculated_series;
+
+                this.isDataLoaded = true;
+              }
+            }
+        );
   }
 
   get lastMedianData() {
@@ -236,7 +302,7 @@ export default class VariableVisualizationTile extends Vue {
           undefined,
           undefined,
           undefined,
-          this.devices[0].uri,
+          undefined,
           undefined,
           undefined,
           0,

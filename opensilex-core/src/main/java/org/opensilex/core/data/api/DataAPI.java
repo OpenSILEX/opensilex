@@ -802,7 +802,8 @@ public class DataAPI {
             @ApiResponse(code = 200, message = "Return a map", response = DataVariableSeriesGetDTO.class, responseContainer = "List")
     })
     public Response getDataSeriesByFacility(
-            @ApiParam(value = "target URI", example = "http://example.com/", required = true) @QueryParam("uri") @NotNull URI facilityUri,
+            @ApiParam(value = "variable URI", example = "http://example.com/", required = true) @QueryParam("variable") @NotNull URI variableUri,
+            @ApiParam(value = "target URI", example = "http://example.com/", required = true) @QueryParam("target") @NotNull URI facilityUri,
             @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
             @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=asc") @QueryParam("order_by") List<OrderBy> orderByList
@@ -817,13 +818,15 @@ public class DataAPI {
         DataDAO dao = new DataDAO(nosql, sparql, fs);
         VariableDAO variableDAO = new VariableDAO(sparql, nosql, fs);
 
+    /// Search data
+
         long startTime = System.currentTimeMillis();
 
         ListWithPagination<DataModel> result = dao.search(
                 user,
                 null,
                 Arrays.asList(facilityUri),
-                null,
+                Arrays.asList(variableUri),
                 null,
                 null,
                 (startDate != null) ? Instant.parse(startDate) : null,
@@ -835,77 +838,68 @@ public class DataAPI {
                 0,
                 0);
 
+        List<DataModel> dataModels = result.getList();
+
         long stopTime = System.currentTimeMillis();
         System.out.println("TIME EXEC query (s) = " + (stopTime - startTime)/1000);
 
-        Map<URI, List<DataModel>> variablesMap;
+    /// Compute median series for each provenance
+
         Map<DataProvenanceModel, List<DataModel>> provenancesMap;
 
-        variablesMap = result.getList().stream().collect(Collectors.groupingBy(DataModel::getVariable));
+        List<DataSerieGetDTO> dataSeriesDTOs = new ArrayList<>();
+        List<DataSimpleGetDTO> medians = new ArrayList<>();
 
-        List<DataVariableSeriesGetDTO> dtoList = new ArrayList<>();
+        provenancesMap = dataModels.stream().collect(Collectors.groupingBy(DataModel::getProvenance));
+        for (Map.Entry<DataProvenanceModel, List<DataModel>> entryProv : provenancesMap.entrySet()) {
 
-        for (Map.Entry<URI, List<DataModel>> entry : variablesMap.entrySet()) {
-            VariableDetailsDTO variable = new VariableDetailsDTO(variableDAO.get(entry.getKey()));
+            List<DataSimpleGetDTO> data = entryProv.getValue()
+                    .stream()
+                    .map((d) -> DataSimpleGetDTO.getDtoFromModel(d))
+                    .collect(Collectors.toList());
 
-            List<DataSerieGetDTO> dataSeriesDTOs = new ArrayList<>();
-            List<DataSimpleGetDTO> medians = new ArrayList<>();
+            List<DataSimpleGetDTO> medianSerie = computeMedianPerHour(data);
+            medians.addAll(medianSerie);
 
-            startTime = System.currentTimeMillis();
-            provenancesMap = entry.getValue().stream().collect(Collectors.groupingBy(DataModel::getProvenance));
-            for (Map.Entry<DataProvenanceModel, List<DataModel>> entryProv : provenancesMap.entrySet()) {
-
-                List<DataSimpleGetDTO> data = entryProv.getValue()
-                        .stream()
-                        .map((d) -> DataSimpleGetDTO.getDtoFromModel(d))
-                        .collect(Collectors.toList());
-
-                List<DataSimpleGetDTO> medianSerie = computeMedianPerHour(data);
-                medians.addAll(medianSerie);
-
-                DataSerieGetDTO dataSerie = new DataSerieGetDTO(entryProv.getKey(), medianSerie);
-                dataSeriesDTOs.add(dataSerie);
-            }
-            stopTime = System.currentTimeMillis();
-            System.out.println("TIME EXEC data series medians (s) = " + (stopTime - startTime)/1000);
-
-            List<DataSerieGetDTO> dataCalculatedSeriesDTOs = new ArrayList<>();
-
-            startTime = System.currentTimeMillis();
-            List<DataSimpleGetDTO> medianOfMedians = computeMedianPerHour(medians);
-
-            //TODO: trash
-            DataProvenanceModel provMedian = new DataProvenanceModel();
-            ProvEntityModel provEntity = new ProvEntityModel();
-            provEntity.setUri(URI.create("median_per_hour"));
-            List<ProvEntityModel> provEntitys = new ArrayList<>();
-            provEntitys.add(provEntity);
-            provMedian.setProvWasAssociatedWith(provEntitys);
-
-            dataCalculatedSeriesDTOs.add(new DataSerieGetDTO(provMedian, medianOfMedians));
-            stopTime = System.currentTimeMillis();
-            System.out.println("TIME EXEC median of medians (s) = " + (stopTime - startTime)/1000);
-
-            //TODO: trash
-            DataProvenanceModel provAverage = new DataProvenanceModel();
-            ProvEntityModel provEntity2 = new ProvEntityModel();
-            provEntity2.setUri(URI.create("average_per_hour"));
-            List<ProvEntityModel> provEntitys2 = new ArrayList<>();
-            provEntitys2.add(provEntity2);
-            provAverage.setProvWasAssociatedWith(provEntitys2);
-
-            DataSerieGetDTO averageSerie = computeAveragePerHour(entry.getValue());
-            averageSerie.setProvenance(provAverage);
-            dataCalculatedSeriesDTOs.add(averageSerie);
-
-            DataVariableSeriesGetDTO dto = new DataVariableSeriesGetDTO(variable);
-            dto.setDataSeries(dataSeriesDTOs);
-            dto.setCalculatedSeries(dataCalculatedSeriesDTOs);
-
-            dtoList.add(dto);
+            DataSerieGetDTO dataSerie = new DataSerieGetDTO(entryProv.getKey(), medianSerie);
+            dataSeriesDTOs.add(dataSerie);
         }
 
-        return new SingleObjectResponse<>(dtoList).getResponse();
+    /// Compute calculated series
+
+        List<DataSerieGetDTO> dataCalculatedSeriesDTOs = new ArrayList<>();
+
+        List<DataSimpleGetDTO> medianOfMedians = computeMedianPerHour(medians);
+
+        //TODO: trash
+        DataProvenanceModel provMedian = new DataProvenanceModel();
+        ProvEntityModel provEntity = new ProvEntityModel();
+        provEntity.setUri(URI.create("median_per_hour"));
+        List<ProvEntityModel> provEntitys = new ArrayList<>();
+        provEntitys.add(provEntity);
+        provMedian.setProvWasAssociatedWith(provEntitys);
+
+        dataCalculatedSeriesDTOs.add(new DataSerieGetDTO(provMedian, medianOfMedians));
+
+        //TODO: trash
+        DataProvenanceModel provAverage = new DataProvenanceModel();
+        ProvEntityModel provEntity2 = new ProvEntityModel();
+        provEntity2.setUri(URI.create("average_per_hour"));
+        List<ProvEntityModel> provEntitys2 = new ArrayList<>();
+        provEntitys2.add(provEntity2);
+        provAverage.setProvWasAssociatedWith(provEntitys2);
+
+        DataSerieGetDTO averageSerie = computeAveragePerHour(dataModels);
+        averageSerie.setProvenance(provAverage);
+        dataCalculatedSeriesDTOs.add(averageSerie);
+
+        VariableDetailsDTO variable = new VariableDetailsDTO(variableDAO.get(variableUri));
+
+        DataVariableSeriesGetDTO dto = new DataVariableSeriesGetDTO(variable);
+        dto.setDataSeries(dataSeriesDTOs);
+        dto.setCalculatedSeries(dataCalculatedSeriesDTOs);
+
+        return new SingleObjectResponse<>(dto).getResponse();
     }
 
     /**

@@ -1,12 +1,12 @@
 
 <template>
   <div>
-    <div v-if="isNoDataFound"
+    <div v-if="isNoVariableFound"
       id="no-data-text">
-      {{$t("FacilityAssociatedDevices.no-data")}}
+      {{$t("FacilityAssociatedDevices.no-variable")}}
     </div>
 
-    <GridLayout v-if="isDataLoaded"
+    <GridLayout v-if="isItemsLoaded"
                 class="grid-layout"
         :layout.sync="layout"
         :col-num="NB_COL"
@@ -25,7 +25,7 @@
                    :h="item.h"
                    :i="item.i"
                    :key="item.i"
-            :dragIgnoreFrom="'#devices-list, #graphic, #btn-show'"
+            :dragIgnoreFrom="'#data-infos, #devices-list, #graphic, #btn-show'"
             class="tile">
           <opensilex-VariableVisualizationTile
               class="tile-content"
@@ -54,6 +54,7 @@ import {VariableGetDTO} from "opensilex-core/model/variableGetDTO";
 import {DataService} from "opensilex-core/api/data.service";
 import {DataSerieGetDTO} from "opensilex-core/model/dataSerieGetDTO";
 import {DataVariableSeriesGetDTO} from "opensilex-core/model/dataVariableSeriesGetDTO";
+import {NamedResourceDTOVariableModel} from "opensilex-core/model/namedResourceDTOVariableModel";
 
 
 @Component
@@ -62,17 +63,14 @@ export default class FacilityAssociatedDevices extends Vue {
 
   NB_COL = 4;
 
-  selected: OrganizationGetDTO = null;
-  devices: Array<DeviceGetDTO> = [];
-  variable: VariableDetailsDTO;
   uri = null;
-  isNoDataFound: boolean = false;
-  isDataLoaded: boolean = false;
-
-  variables: Array<VariableGetDTO> = new Array<VariableGetDTO>();
-  dataSeries: Array<DataVariableSeriesGetDTO> = new Array<DataVariableSeriesGetDTO>();
-
+  selected: OrganizationGetDTO = null;
+  usedVariables: NamedResourceDTOVariableModel[] = [];
+  isNoVariableFound: boolean = false;
+  isItemsLoaded: boolean = false;
   layout = [];
+
+  dataSeries: Array<DataVariableSeriesGetDTO> = new Array<DataVariableSeriesGetDTO>();
 
   organizationService: OrganizationsService;
   deviceService: DevicesService;
@@ -114,133 +112,51 @@ export default class FacilityAssociatedDevices extends Vue {
         .then((http: HttpResponse<OpenSilexResponse<OrganizationGetDTO>>) => {
             let detailDTO: OrganizationGetDTO = http.response.result;
             this.selected = detailDTO;
-            this.loadData();
+
+            this.loadVariables();
         });
   }
 
-  loadData() {
-    var today: Date = new Date();
-    var aWeekBefore: Date = new Date(today);
-    aWeekBefore.setDate(aWeekBefore.getDate() - 60);
+  loadVariables() {
+    this.dataService
+        .getUsedVariables(
+            null,
+            [this.uri],
+            null,
+            null)
+        .then((http) => {
+          let resultList = http.response.result;
+          this.usedVariables = [];
+          for (let i in resultList) {
+            let variable = resultList[i];
+            this.usedVariables.push({
+              uri: variable.uri,
+              name: variable.name
+            });
+          }
 
-    this.dataService.getDataSeriesByFacility(
-        this.uri,
-        aWeekBefore.toISOString(),
-        today.toISOString(),
-        ["date=asc"]
-    )
-    .then(
-      (
-        http: HttpResponse<OpenSilexResponse<Array<DataVariableSeriesGetDTO>>>
-      ) => {
-        if (http && http.response) {
-          if (http.response.result.length === 0) {
-            console.debug("no data found");
-            this.isNoDataFound = true;
+          if (this.usedVariables.length === 0) {
+            this.isNoVariableFound = true;
             return;
           }
-          let detailsDTO: Array<DataVariableSeriesGetDTO> = http.response.result;
-          this.dataSeries = detailsDTO;
-          this.loadTiles();
-        }
-      }
-    );
-  }
 
-  loadDevices() {
-    this.devices = [];
-    this.deviceService.getDevicesByFacility(this.uri)
-        .then(
-            (
-                http: HttpResponse<OpenSilexResponse<Array<DeviceGetDTO>>>
-            ) => {
-              if (http && http.response) {
-                this.devices = http.response.result;
-                this.loadVariables();
-                //this.loadPositionsHistory();
-                //this.loadTiles();
-              }
-            }
-        )
-        .catch(this.$opensilex.errorHandler);
-  }
-
-  variablesMap: Map<string, Set<DeviceGetDTO>> = new Map<string, Set<DeviceGetDTO>>();
-
-  addToVariablesMap(variables, device) {
-    variables.forEach(variable => {
-      if (!this.variablesMap.has(variable)) {
-        this.variablesMap.set(variable, new Set<DeviceGetDTO>());
-      }
-      this.variablesMap.get(variable).add(device);
-    });
-  }
-
-  getAssociatedVariables(device) {
-    /*
-    return this.deviceService.getDeviceVariables(device.uri)
-        .then(
-            (
-                http: HttpResponse<OpenSilexResponse<Array<VariableGetDTO>>>
-            ) => {
-              if (http && http.response) {
-                let variables = http.response.result as Array<VariableGetDTO>;
-                variables.forEach(value => {
-                  this.variables.push(value);
-                })
-                console.debug(this.variables);
-                this.addToVariablesMap(variables.map(value => value.uri), device);
-
-                variables.forEach( value => {
-                  if (!this.variablesMap.has(value)) {
-                    this.variablesMap.set(value, new Set(device));
-                  }
-                  else {
-                    this.variablesMap.get(value).add(device);
-                  }
-                });
-
-
-              }
-            }
-        )
-        .catch(this.$opensilex.errorHandler);
-
-     */
-  }
-
-  loadVariables() {
-    var promises = [];
-    let promise;
-
-    this.devices.forEach((device) => {
-      promise = this.getAssociatedVariables(device);
-      promises.push(promise);
-    });
-
-    Promise.all(promises)
-        .then( () => {
-          console.debug(this.variablesMap);
           this.loadTiles();
         });
   }
 
   loadTiles() {
     let i = 0;
-    for (let serie of this.dataSeries) {
+    for (let v of this.usedVariables) {
       let x = i % this.NB_COL;
       let y = ~~(i / this.NB_COL);
-      let v = serie.variable;
-      let data = serie.data_series;
-      let calculatedData = serie.calculated_series;
 
       this.layout.push({
         "x":x, "y":y, "w":1, "h":1, "i":i,
-        "content": { variable: v, devices: [], dataSeries: data, calculatedDataSeries: calculatedData }
+        "content": { target: this.uri, variableUri: v }
       });
       ++i;
     }
-    this.isDataLoaded = true;
+    this.isItemsLoaded = true;
   }
 
 }
@@ -269,8 +185,10 @@ export default class FacilityAssociatedDevices extends Vue {
 en:
   FacilityAssociatedDevices:
     no-data: No data found
+    no-variable: No environnemental variable found
 
 fr:
   FacilityAssociatedDevices:
     no-data: Aucunes données trouvées
+    no-variable: Aucunes variables environnementales trouvées
 </i18n>

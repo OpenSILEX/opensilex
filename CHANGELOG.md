@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### New features
 
+- **[Dashboard]** Append a new dashboard functionnality for metrics and data-summary visualization -> 38970ef6
 - **[Variables]** Allow to browse and import variables from a remote instance ("shared resource instance") -> 5aa3e0482
 - **[UI]** Indication of elements number in tabs -> 5eb24aac4
 - **[UI]** Enter Key press no longer necessary in auto-complet fields -> 7dc8ff333

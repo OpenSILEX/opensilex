@@ -112,7 +112,6 @@ export default class FacilityAssociatedDevices extends Vue {
         .then((http: HttpResponse<OpenSilexResponse<OrganizationGetDTO>>) => {
             let detailDTO: OrganizationGetDTO = http.response.result;
             this.selected = detailDTO;
-
             this.loadVariables();
         });
   }
@@ -143,7 +142,6 @@ export default class FacilityAssociatedDevices extends Vue {
           this.loadTiles();
         });
   }
-
   loadTiles() {
     let i = 0;
     for (let v of this.usedVariables) {

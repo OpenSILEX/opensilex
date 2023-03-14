@@ -11,10 +11,11 @@
         :layout.sync="layout"
         :col-num="NB_COL"
         :is-draggable="true"
-        :is-resizable="true"
+        :is-resizable="false"
         :is-mirrored="false"
         :vertical-compact="true"
-        :autoSize="true"
+        :is-bounded="true"
+        :autoSize="false"
         :margin="[10, 10]"
         :use-css-transforms="true">
 
@@ -149,7 +150,7 @@ export default class FacilityAssociatedDevices extends Vue {
       let y = ~~(i / this.NB_COL);
 
       this.layout.push({
-        "x":x, "y":y, "w":1, "h":1, "i":i,
+        "x":x, "y":y, "w":1, "h":2, "i":i,
         "content": { target: this.uri, variableUri: v }
       });
       ++i;

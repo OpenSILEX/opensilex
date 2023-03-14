@@ -4,7 +4,6 @@
         ref="tilePanel"
         :label="variableUri.name"
         icon=""
-
     >
 
       <template v-slot:body>
@@ -23,14 +22,6 @@
               :value="lastMedianData.value + ' ' + variable.unit.symbol">
           </opensilex-TextView>
           <div style="font-size: small">{{lastMedianData.date}}</div>
-
-          <opensilex-UriListView
-              id="devices-list"
-              label="Devices"
-              :list="deviceUriList"
-              :inline="true"
-          >
-          </opensilex-UriListView>
         </div>
 
         <!--

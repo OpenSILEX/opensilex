@@ -1,8 +1,10 @@
 <template>
+  <opensilex-Overlay :show="!isDataLoaded && !isNoDataFound">
     <opensilex-Card
         ref="tilePanel"
         :label="variableUri.name"
         icon=""
+
     >
 
       <template v-slot:body>
@@ -64,6 +66,7 @@
 
       </template>
     </opensilex-Card>
+  </opensilex-Overlay>
 </template>
 
 <script lang="ts">
@@ -123,6 +126,7 @@ export default class VariableVisualizationTile extends Vue {
   @Ref("eventsModalForm") readonly eventsModalForm!: any;
 
   created() {
+    this.$opensilex.hideLoader();
     this.variablesService = this.$opensilex.getService<VariablesService>(
         "opensilex.VariablesService"
     );
@@ -180,7 +184,6 @@ export default class VariableVisualizationTile extends Vue {
               if (http && http.response) {
                 let seriesDTO: DataVariableSeriesGetDTO = http.response.result;
 
-                console.debug(seriesDTO);
                 if (!seriesDTO.data_series.length) {
                   this.isNoDataFound = true;
                   return;

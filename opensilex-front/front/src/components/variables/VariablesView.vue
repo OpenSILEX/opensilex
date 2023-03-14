@@ -345,7 +345,7 @@ export default class VariablesView extends Vue {
     }
 
     refresh(uri? : string) {
-        this.variableStructureList.refresh(false,uri);
+        this.variableStructureList.refresh(false, uri);
     }
 
     private getForm() {

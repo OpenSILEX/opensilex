@@ -1,10 +1,10 @@
 
 <template>
   <div>
-    <div v-if="isNoVariableFound"
-      id="no-data-text">
-      {{$t("FacilityAssociatedDevices.no-variable")}}
-    </div>
+    <opensilex-TextView v-if="isNoVariableFound"
+                        id="no-data-text"
+        :label="$t('FacilityAssociatedDevices.no-variable')">
+    </opensilex-TextView>
 
     <GridLayout v-if="isItemsLoaded"
                 class="grid-layout"
@@ -19,15 +19,15 @@
         :margin="[10, 10]"
         :use-css-transforms="true">
 
-        <GridItem v-for="item in layout"
-                   :x="item.x"
-                   :y="item.y"
-                   :w="item.w"
-                   :h="item.h"
-                   :i="item.i"
-                   :key="item.i"
-            :dragIgnoreFrom="'#data-infos, #devices-list, #graphic, #btn-show'"
-            class="tile">
+        <GridItem class="tile"
+                  v-for="item in layout"
+                    :x="item.x"
+                    :y="item.y"
+                    :w="item.w"
+                    :h="item.h"
+                    :i="item.i"
+                    :key="item.i"
+                    :dragIgnoreFrom="'#data-infos, #devices-list, #graphic, #btn-show'">
           <opensilex-VariableVisualizationTile
               class="tile-content"
               v-bind="item.content">
@@ -42,19 +42,12 @@ import { Component, Ref, Watch } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
 import { OrganizationGetDTO } from "opensilex-core/index";
-import { DeviceGetDTO } from "opensilex-core/model/deviceGetDTO";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
 import {DevicesService} from "opensilex-core/api/devices.service";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import {PositionsService} from "opensilex-core/api/positions.service";
-import {PositionGetDTO} from "opensilex-core/model/positionGetDTO";
-import {VariableDetailsDTO} from "opensilex-core/model/variableDetailsDTO";
 import {VariablesService} from "opensilex-core/api/variables.service";
-import VariableVisualizationTile from "../../variables/views/VariableVisualizationTile.vue";
-import {VariableGetDTO} from "opensilex-core/model/variableGetDTO";
 import {DataService} from "opensilex-core/api/data.service";
-import {DataSerieGetDTO} from "opensilex-core/model/dataSerieGetDTO";
-import {DataVariableSeriesGetDTO} from "opensilex-core/model/dataVariableSeriesGetDTO";
 import {NamedResourceDTOVariableModel} from "opensilex-core/model/namedResourceDTOVariableModel";
 
 
@@ -64,15 +57,15 @@ export default class FacilityAssociatedDevices extends Vue {
 
   NB_COL = 4;
 
-  uri = null;
+  uri: string = null;
   selected: OrganizationGetDTO = null;
   usedVariables: NamedResourceDTOVariableModel[] = [];
-  isNoVariableFound: boolean = false;
-  isItemsLoaded: boolean = false;
   layout = [];
 
-  dataSeries: Array<DataVariableSeriesGetDTO> = new Array<DataVariableSeriesGetDTO>();
+  isNoVariableFound: boolean = false;
+  isItemsLoaded: boolean = false;
 
+  /// services
   organizationService: OrganizationsService;
   deviceService: DevicesService;
   variablesService: VariablesService;
@@ -117,6 +110,9 @@ export default class FacilityAssociatedDevices extends Vue {
         });
   }
 
+  /**
+   * Get all variables with this facility as target.
+   */
   loadVariables() {
     this.dataService
         .getUsedVariables(
@@ -143,6 +139,10 @@ export default class FacilityAssociatedDevices extends Vue {
           this.loadTiles();
         });
   }
+
+  /**
+   * Create add fill tiles according to the previously collected variables.
+   */
   loadTiles() {
     let i = 0;
     for (let v of this.usedVariables) {

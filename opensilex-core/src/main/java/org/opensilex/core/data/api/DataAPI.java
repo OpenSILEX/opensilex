@@ -1881,6 +1881,10 @@ public class DataAPI {
             if (!children.isEmpty()) {
                 childrenToRoot(children, map, agentRootType);
             }
+
+            // Push root type inside map
+            // It allow to recognize device with a type included inside the root types list
+            map.put(tree.getUri(),tree.getUri());
         }
 
         return map;

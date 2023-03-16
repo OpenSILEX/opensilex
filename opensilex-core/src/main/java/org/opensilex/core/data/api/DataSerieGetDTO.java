@@ -10,10 +10,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import org.opensilex.core.data.dal.DataProvenanceModel;
 
+import javax.validation.Valid;
 import java.util.List;
 
 /**
- *
+ * This class defines a serie of data as a list of data associated with a provenance
  *
  * @author brice maussang
  */
@@ -25,6 +26,7 @@ public class DataSerieGetDTO {
     @JsonProperty("provenance")
     private DataProvenanceModel provenance;
 
+    @Valid
     @JsonProperty("data")
     private List<DataSimpleGetDTO> data;
 

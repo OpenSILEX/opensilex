@@ -23,7 +23,9 @@ import java.time.format.DateTimeFormatter;
  *
  * @author brice maussang
  */
-@JsonPropertyOrder({"uri", "date", "value"})
+@JsonPropertyOrder({
+        "uri", "date", "value"
+})
 public class DataSimpleGetDTO {
     
     @ValidURI

@@ -10,7 +10,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import org.opensilex.core.variable.api.VariableDetailsDTO;
 import org.opensilex.core.variable.api.VariableGetDTO;
+import org.opensilex.server.rest.validation.Required;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 /**
@@ -23,12 +26,16 @@ import java.util.List;
 })
 public class DataVariableSeriesGetDTO {
 
+    @Valid
+    @Required
     @JsonProperty("variable")
     private VariableDetailsDTO variable;
 
+    @Valid
     @JsonProperty("data_series")
     private List<DataSerieGetDTO> dataSeries;
 
+    @Valid
     @JsonProperty("calculated_series")
     private List<DataSerieGetDTO> calculatedSeries;
 

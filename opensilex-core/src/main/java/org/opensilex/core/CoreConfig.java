@@ -6,6 +6,9 @@
 package org.opensilex.core;
 
 import org.opensilex.config.ConfigDescription;
+import org.opensilex.core.config.SharedResourceInstanceItem;
+
+import java.util.List;
 
 /**
  *
@@ -23,5 +26,10 @@ public interface CoreConfig {
             value = "Metrics options"
     )
     public MetricsConfig metrics();
-    
+
+    @ConfigDescription(
+            value = "List of shared resource instances"
+    )
+    List<SharedResourceInstanceItem> sharedResourceInstances();
+
 }

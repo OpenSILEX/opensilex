@@ -1,7 +1,7 @@
 package org.opensilex.core.device.dal;
 
 import org.bson.Document;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.service.SparqlSearchFilter;
 
 import java.net.URI;
@@ -19,7 +19,7 @@ public class DeviceSearchFilter extends SparqlSearchFilter {
     private String modelPattern;
     private String snPattern;
     private Document metadata;
-    private UserModel currentUser;
+    private AccountModel currentUser;
 
     public DeviceSearchFilter() {
         super();
@@ -115,11 +115,11 @@ public class DeviceSearchFilter extends SparqlSearchFilter {
         return this;
     }
 
-    public UserModel getCurrentUser() {
+    public AccountModel getCurrentUser() {
         return currentUser;
     }
 
-    public DeviceSearchFilter setCurrentUser(UserModel currentUser) {
+    public DeviceSearchFilter setCurrentUser(AccountModel currentUser) {
         this.currentUser = currentUser;
         return this;
     }

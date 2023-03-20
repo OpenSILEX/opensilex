@@ -3,10 +3,11 @@ package org.opensilex.core.variable.api;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import org.opensilex.core.ontology.SKOSReferencesDTO;
+import org.opensilex.core.sharedResource.SharedResourceInstanceDTO;
 import org.opensilex.core.variable.dal.BaseVariableModel;
-import org.opensilex.server.rest.validation.Required;
 
 import java.net.URI;
+import java.time.OffsetDateTime;
 
 @JsonPropertyOrder({
         "uri", "name", "description",
@@ -17,10 +18,16 @@ import java.net.URI;
 })
 public abstract class BaseVariableDetailsDTO<T extends BaseVariableModel<T>> extends SKOSReferencesDTO {
 
+    protected BaseVariableDetailsDTO(T model, SharedResourceInstanceDTO sharedResourceInstance) {
+        this(model);
+        setFromSharedResourceInstance(sharedResourceInstance);
+    }
+
     protected BaseVariableDetailsDTO(T model){
         uri = model.getUri();
         name = model.getName();
         description = model.getDescription();
+        setLastUpdateTime(model.getLastUpdateTime());
 
         setSkosReferencesFromModel(model);
     }
@@ -37,6 +44,12 @@ public abstract class BaseVariableDetailsDTO<T extends BaseVariableModel<T>> ext
 
     @JsonProperty("description")
     protected String description;
+
+    @JsonProperty("from_shared_resource_instance")
+    protected SharedResourceInstanceDTO fromSharedResourceInstance;
+
+    @JsonProperty("last_update_date")
+    protected OffsetDateTime lastUpdateTime;
 
     public URI getUri() {
         return uri;
@@ -62,4 +75,28 @@ public abstract class BaseVariableDetailsDTO<T extends BaseVariableModel<T>> ext
         this.description = description;
     }
 
+    public SharedResourceInstanceDTO getFromSharedResourceInstance() {
+        return fromSharedResourceInstance;
+    }
+
+    public void setFromSharedResourceInstance(SharedResourceInstanceDTO fromSharedResourceInstance) {
+        this.fromSharedResourceInstance = fromSharedResourceInstance;
+    }
+
+    public OffsetDateTime getLastUpdateTime() {
+        return lastUpdateTime;
+    }
+
+    public void setLastUpdateTime(OffsetDateTime lastUpdateTime) {
+        this.lastUpdateTime = lastUpdateTime;
+    }
+
+    protected void setBasePropertiesToModel(T model) {
+        setSkosReferencesToModel(model);
+        model.setUri(this.getUri());
+        model.setName(this.getName());
+        model.setDescription(this.getDescription());
+    }
+
+    public abstract T toModel();
 }

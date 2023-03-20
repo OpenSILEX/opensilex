@@ -8,7 +8,7 @@
           <template v-slot:rightHeader>
 
             <opensilex-EditButton
-                v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
+                v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID) && displayLocalActions"
                 label="VariableDetails.edit" variant="outline-primary"
                 @click="showEditForm"
             ></opensilex-EditButton>
@@ -20,7 +20,7 @@
             ></opensilex-VariableCreate>
 
             <opensilex-InteroperabilityButton
-                v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
+                v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID) && displayLocalActions"
                 label="VariableDetails.edit-references"
                 @click="skosReferences.show()"
             ></opensilex-InteroperabilityButton>
@@ -33,7 +33,7 @@
             ></opensilex-ExternalReferencesModalForm>
 
             <opensilex-DeleteButton
-                v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_DELETE_ID)"
+                v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_DELETE_ID) && displayLocalActions"
                 @click="deleteVariable"
                 label="component.common.list.buttons.delete"
             ></opensilex-DeleteButton>
@@ -49,6 +49,21 @@
                                               :value="variable.alternative_name"></opensilex-StringView>
                         <opensilex-TextView label="component.common.description"
                                             :value="variable.description"></opensilex-TextView>
+                        <div
+                            v-if="variable.from_shared_resource_instance"
+                        >
+                          <opensilex-UriView
+                              title="component.sharedResourceInstances.label"
+                              :uri="variable.from_shared_resource_instance.uri"
+                              :value="variable.from_shared_resource_instance.label"
+                          ></opensilex-UriView>
+                          <opensilex-DateView
+                              label="component.sharedResourceInstances.import_date.label"
+                              :value="variable.last_update_date"
+                              :isDatetime="true"
+                              :useLocaleFormat="true"
+                          ></opensilex-DateView>
+                        </div>
                     </template>
                 </opensilex-Card>
             </b-col>
@@ -57,26 +72,26 @@
                     <template v-slot:body>
                         <opensilex-UriView title="VariableView.entity" v-if="variable.entity"
                                            :value="variable.entity.name" :uri="variable.entity.uri"
-                                           :url="getEntityPageUrl()">
+                                           :to="getEntityPath()">
                         </opensilex-UriView>
 
                         <opensilex-UriView title="VariableForm.interestEntity-label"
                                            :value="variable.entity_of_interest ? variable.entity_of_interest.name: undefined"
                                            :uri="variable.entity_of_interest ? variable.entity_of_interest.uri: undefined"
-                                           :url="variable.entity_of_interest ? getInterestEntityPageUrl(): undefined">
+                                           :to="variable.entity_of_interest ? getInterestEntityPath(): undefined">
                         </opensilex-UriView>
 
                         <opensilex-UriView title="VariableView.characteristic" v-if="variable.characteristic"
                                            :value="variable.characteristic.name" :uri="variable.characteristic.uri"
-                                           :url="getCharacteristicPageUrl()">
+                                           :to="getCharacteristicPath()">
                         </opensilex-UriView>
                         <opensilex-UriView title="VariableView.method" v-if="variable.method"
                                            :value="variable.method.name" :uri="variable.method.uri"
-                                           :url="getMethodPageUrl()">
+                                           :to="getMethodPath()">
                         </opensilex-UriView>
                         <opensilex-UriView title="VariableView.unit" v-if="variable.unit"
                                            :value="variable.unit.name" :uri="variable.unit.uri"
-                                           :url="getUnitPageUrl()">
+                                           :to="getUnitPath()">
                         </opensilex-UriView>
                     </template>
                 </opensilex-Card>
@@ -133,13 +148,14 @@ import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {DataService} from "opensilex-core/api/data.service";
 import DTOConverter from "../../models/DTOConverter";
 import {VariableUpdateDTO} from "opensilex-core/index";
+import VueRouter from "vue-router";
 
 @Component
 export default class VariableDetails extends Vue {
   $opensilex: OpenSilexVuePlugin;
   $store: any;
   $route: any;
-  $router: any;
+  $router: VueRouter;
   $t: any;
   $i18n: any;
   service: VariablesService;
@@ -156,6 +172,8 @@ export default class VariableDetails extends Vue {
   @Prop({
     default: () => VariableForm.getEmptyForm()
   }) variable: VariableDetailsDTO;
+
+  @Prop() displayLocalActions: boolean;
 
   @Ref("variableForm") readonly variableForm!: VariableCreate;
 
@@ -176,7 +194,7 @@ export default class VariableDetails extends Vue {
       };
     });
   }
-  
+
   get isGermplasmMenuExcluded() {
         return this.$opensilex.getConfig().menuExclusions.includes("germplasm");
   }
@@ -243,28 +261,33 @@ export default class VariableDetails extends Vue {
         undefined);
   }
 
-  getEncodedUrlPage(elementType: string, uri: string): string {
-    return this.$opensilex.getURL("variables/?elementType=" + elementType + "&selected=" + encodeURIComponent(uri));
-  }
-
-  getEntityPageUrl(): string {
-    return this.getEncodedUrlPage(VariablesView.ENTITY_TYPE, this.variable.entity.uri);
-  }
-
-    getInterestEntityPageUrl(): string{
-        return this.getEncodedUrlPage(VariablesView.INTEREST_ENTITY_TYPE,this.variable.entity_of_interest.uri);
+  getPath(elementType: string, uri: string) {
+    if (this.$route.query.sharedResourceInstance) {
+      return undefined;
     }
-
-    getCharacteristicPageUrl(): string{
-        return this.getEncodedUrlPage(VariablesView.CHARACTERISTIC_TYPE,this.variable.characteristic.uri);
-    }
-
-  getMethodPageUrl(): string {
-    return this.getEncodedUrlPage(VariablesView.METHOD_TYPE, this.variable.method.uri);
+    return {
+      path: "/variables/?elementType=" + elementType + "&selected=" + encodeURIComponent(uri)
+    };
   }
 
-  getUnitPageUrl(): string {
-    return this.getEncodedUrlPage(VariablesView.UNIT_TYPE, this.variable.unit.uri);
+  getEntityPath() {
+    return this.getPath(VariablesView.ENTITY_TYPE, this.variable.entity.uri);
+  }
+
+  getInterestEntityPath() {
+    return this.getPath(VariablesView.INTEREST_ENTITY_TYPE, this.variable.entity_of_interest.uri);
+  }
+
+  getCharacteristicPath() {
+    return this.getPath(VariablesView.CHARACTERISTIC_TYPE, this.variable.characteristic.uri);
+  }
+
+  getMethodPath() {
+    return this.getPath(VariablesView.METHOD_TYPE, this.variable.method.uri);
+  }
+
+  getUnitPath() {
+    return this.getPath(VariablesView.UNIT_TYPE, this.variable.unit.uri);
   }
 
 }

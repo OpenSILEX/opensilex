@@ -9,14 +9,14 @@ import org.apache.catalina.Context;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.OpenSilexModuleNotFoundException;
 import org.opensilex.config.ConfigManager;
-import org.opensilex.front.api.FrontConfigDTO;
-import org.opensilex.front.api.RouteDTO;
-import org.opensilex.front.api.UserFrontConfigDTO;
+import org.opensilex.core.CoreConfig;
+import org.opensilex.core.CoreModule;
+import org.opensilex.front.api.*;
 import org.opensilex.front.config.*;
 import org.opensilex.security.*;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.AuthenticationService;
 import org.opensilex.security.email.EmailService;
-import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.ServerConfig;
 import org.opensilex.server.ServerModule;
 import org.opensilex.server.extensions.APIExtension;
@@ -26,6 +26,7 @@ import org.opensilex.sparql.service.SPARQLService;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -89,7 +90,7 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
     private List<MenuItem> globalMenu = null;
     private URI lastUserUri = null;
 
-    public FrontConfigDTO getConfigDTO(UserModel currentUser, SPARQLService sparql) {
+    public FrontConfigDTO getConfigDTO(AccountModel currentUser, SPARQLService sparql) {
         FrontConfig frontConfig = getConfig(FrontConfig.class);
 
         // General config, valid for all users
@@ -108,11 +109,29 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
             config.setFooterComponent(frontConfig.footerComponent());
             config.setGeocodingService(frontConfig.geocodingService());
             config.setMenuExclusions(frontConfig.menuExclusions());
+            config.setApplicationName(frontConfig.applicationName());
+            config.setConnectAsGuest(frontConfig.connectAsGuest());
+
+            DashboardConfigDTO dashboard = new DashboardConfigDTO();
+            try {
+                dashboard.setShowMetrics(getOpenSilex().getModuleConfig(CoreModule.class, CoreConfig.class).metrics().enableMetrics());
+                GraphConfigDTO graph1 = new GraphConfigDTO();
+                graph1.setVariable(new URI(frontConfig.dashboard().graph1().variable()));
+                dashboard.setGraph1(graph1);
+                GraphConfigDTO graph2 = new GraphConfigDTO();
+                graph2.setVariable(new URI(frontConfig.dashboard().graph2().variable()));
+                dashboard.setGraph2(graph2);
+                GraphConfigDTO graph3 = new GraphConfigDTO();
+                graph3.setVariable(new URI(frontConfig.dashboard().graph3().variable()));
+                dashboard.setGraph3(graph3);
+            } catch (URISyntaxException | OpenSilexModuleNotFoundException ignored) {
+            }
+            config.setDashboard(dashboard);
+
             try {
                 config.setVersionLabel(VersionLabel.valueOf(frontConfig.versionLabel().toUpperCase()));
             } catch (IllegalArgumentException ignored) {
             }
-
 
             AuthenticationService auth = getOpenSilex().getServiceInstance(AuthenticationService.DEFAULT_AUTHENTICATION_SERVICE, AuthenticationService.class);
             // OpenID configuration
@@ -120,7 +139,7 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
                 URI authURI = auth.getOpenIDAuthenticationURI();
                 if (authURI != null) {
                     config.setOpenIDAuthenticationURI(authURI.toString());
-                    OpenIDConfig openid =  getOpenSilex().getModuleConfig(SecurityModule.class, SecurityConfig.class).openID();
+                    OpenIDConfig openid = getOpenSilex().getModuleConfig(SecurityModule.class, SecurityConfig.class).openID();
                     String connectionTitle = openid.connectionTitle().get(lang);
                     config.setOpenIDConnectionTitle(connectionTitle);
                 }
@@ -147,9 +166,9 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
             try {
                 EmailService emailService = getOpenSilex().getModuleConfig(SecurityModule.class, SecurityConfig.class).email();
                 EmailConfig emailConfig = (EmailConfig) emailService.getConfig();
-                config.setActivateResetPassword(emailConfig.enable()); 
+                config.setActivateResetPassword(emailConfig.enable());
             } catch (OpenSilexModuleNotFoundException ex) {
-                 LOGGER.error("Unexpected error", ex);
+                LOGGER.error("Unexpected error", ex);
             }
 
             String[] themeId = frontConfig.theme().split("#");
@@ -189,11 +208,10 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
             userConfigService = new UserConfigService(sparql);
         }
 
-
         return this.config;
     }
 
-    public UserFrontConfigDTO getUserConfigDTO(UserModel currentUser) {
+    public UserFrontConfigDTO getUserConfigDTO(AccountModel currentUser) {
         FrontConfig frontConfig = getConfig(FrontConfig.class);
         UserFrontConfigDTO userConfig = new UserFrontConfigDTO();
 
@@ -203,5 +221,13 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
         userConfig.setUserIsAnonymous(currentUser.isAnonymous());
 
         return userConfig;
+    }
+
+    @Override
+    public void install(boolean reset) throws Exception {
+        FrontConfig frontConfig = getConfig(FrontConfig.class);
+        if (frontConfig.connectAsGuest()) {
+          getOpenSilex().getModuleByClass(SecurityModule.class).createDefaultGuestGroupUserProfile();
+        }
     }
 }

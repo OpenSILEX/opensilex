@@ -21,8 +21,8 @@ import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.security.group.dal.GroupUserProfileModel;
 import org.opensilex.security.profile.dal.ProfileDAO;
 import org.opensilex.security.profile.dal.ProfileModel;
-import org.opensilex.security.user.dal.UserDAO;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountDAO;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -47,9 +47,9 @@ public class GroupAPITest extends AbstractSecurityIntegrationTest {
         sparql.getDefaultGraph(GroupModel.class);
         AuthenticationService authentication = this.getAuthenticationService();
 
-        UserDAO userDao = new UserDAO(sparql);
-        userDao.create(new URI(USER1_URI), new InternetAddress("user1@opensilex.org"), "user1", "anonymous", true, authentication.getPasswordHash("azerty"), OpenSilex.DEFAULT_LANGUAGE);
-        userDao.create(new URI(USER2_URI), new InternetAddress("user2@opensilex.org"), "user2", "anonymous", false, authentication.getPasswordHash("azerty"), OpenSilex.DEFAULT_LANGUAGE);
+        AccountDAO accountDao = new AccountDAO(sparql);
+        accountDao.create(new URI(USER1_URI), new InternetAddress("user1@opensilex.org"), true, authentication.getPasswordHash("azerty"), OpenSilex.DEFAULT_LANGUAGE);
+        accountDao.create(new URI(USER2_URI), new InternetAddress("user2@opensilex.org"), false, authentication.getPasswordHash("azerty"), OpenSilex.DEFAULT_LANGUAGE);
 
         ProfileDAO profileDao = new ProfileDAO(sparql);
         profileDao.create(new URI(PROFILE1_URI), "profile1", new ArrayList<>());
@@ -233,7 +233,7 @@ public class GroupAPITest extends AbstractSecurityIntegrationTest {
         modelList.add(GroupModel.class);
         modelList.add(GroupUserProfileModel.class);
         modelList.add(ProfileModel.class);
-        modelList.add(UserModel.class);
+        modelList.add(AccountModel.class);
         return modelList;
     }
 

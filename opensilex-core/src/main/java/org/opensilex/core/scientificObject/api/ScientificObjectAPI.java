@@ -19,9 +19,6 @@ import org.bson.codecs.configuration.CodecConfigurationException;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.opensilex.core.csv.api.CSVValidationDTO;
-import org.opensilex.core.scientificObject.dal.*;
-import org.opensilex.server.exceptions.displayable.DisplayableBadRequestException;
-import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveModel;
@@ -34,18 +31,21 @@ import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
+import org.opensilex.core.scientificObject.dal.*;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.server.exceptions.displayable.DisplayableBadRequestException;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.Date;
 import org.opensilex.server.rest.validation.DateFormat;
 import org.opensilex.server.rest.validation.ValidURI;
+import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.sparql.csv.CsvImporter;
 import org.opensilex.sparql.csv.export.CsvExporter;
 import org.opensilex.sparql.csv.validation.CachedCsvImporter;
@@ -105,7 +105,7 @@ public class ScientificObjectAPI {
     public static final String SCIENTIFIC_OBJECT_EXAMPLE_NAME = "Plot 12";
 
     @CurrentUser
-    UserModel currentUser;
+    AccountModel currentUser;
 
     @Inject
     private SPARQLService sparql;
@@ -424,7 +424,16 @@ public class ScientificObjectAPI {
         MoveModel lastMove = moveDAO.getLastMoveEvent(objectURI);
 
         for (URI contextURI : contexts) {
-            ExperimentModel experiment = getExperiment(contextURI);
+            ExperimentModel experiment;
+            URI globalScientificObjectGraph = new URI(SPARQLDeserializers.getShortURI(sparql.getDefaultGraphURI(ScientificObjectModel.class)));
+            //assign the global uri "dev:set/scientific-object" when the OS is not linked to an experiment
+           if(contextURI.equals(globalScientificObjectGraph)){
+               experiment = new ExperimentModel();
+               experiment.setUri(globalScientificObjectGraph);
+            }
+           else{
+               experiment = getExperiment(contextURI);
+           }
 
             ScientificObjectModel model = dao.getObjectByURI(objectURI, contextURI, currentUser.getLanguage());
             GeospatialModel geometryByURI = geoDAO.getGeometryByURI(objectURI, contextURI);
@@ -484,8 +493,8 @@ public class ScientificObjectAPI {
 
         sparql.startTransaction();
         try {
-            ScientificObjectModel so = dao.create(contextURI, experiment, soType, descriptionDto.getUri(), descriptionDto.getName(), descriptionDto.getRelations(), currentUser);
-            URI soURI = so.getUri();
+            ScientificObjectModel model = dao.create(contextURI, experiment, soType, descriptionDto.getUri(), descriptionDto.getName(), descriptionDto.getRelations(), currentUser);
+            URI soURI = model.getUri();
 
             if (experiment != null) {
                 experimentDAO.updateExperimentSpeciesFromScientificObjects(contextURI);
@@ -493,12 +502,7 @@ public class ScientificObjectAPI {
 
             Node graphNode = SPARQLDeserializers.nodeURI(globalScientificObjectGraph);
             if (globalCopy && !sparql.uriExists(graphNode, soURI)) {
-                UpdateBuilder update = new UpdateBuilder();
-                Node soNode = SPARQLDeserializers.nodeURI(soURI);
-
-                update.addInsert(graphNode, soNode, RDF.type, SPARQLDeserializers.nodeURI(soType));
-                update.addInsert(graphNode, soNode, RDFS.label, descriptionDto.getName());
-                sparql.executeUpdateQuery(update);
+                dao.copyIntoGlobalGraph(Collections.singletonList(model));
             }
 
             if (descriptionDto.getGeometry() != null) {

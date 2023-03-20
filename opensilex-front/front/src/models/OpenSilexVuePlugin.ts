@@ -29,6 +29,7 @@ import {ResourceDagDTO} from "opensilex-core/model/resourceDagDTO";
 import {ServiceBinder} from "../services/ServiceBinder";
 import { OntologyService, VariableDatatypeDTO, VariablesService } from 'opensilex-core/index';
 import DateTimeFormatter from "./DateTimeFormatter";
+import NumberFormatter from "./NumberFormatter";
 
 declare var $cookies: VueCookies;
 
@@ -64,6 +65,7 @@ export default class OpenSilexVuePlugin {
     public $i18n: VueI18n;
     public $bvToast: any;
     public $dateTimeFormatter: DateTimeFormatter;
+    public $numberFormatter: NumberFormatter;
 
     public Oeso = Oeso;
     public Foaf = Foaf;
@@ -83,6 +85,7 @@ export default class OpenSilexVuePlugin {
         this.$store = store;
         this.$i18n = i18n;
         this.$dateTimeFormatter = new DateTimeFormatter(i18n);
+        this.$numberFormatter = new NumberFormatter(i18n);
         ApiServiceBinder.with(this.container);
         ServiceBinder.with(this.container);
     }
@@ -99,12 +102,43 @@ export default class OpenSilexVuePlugin {
         return this.baseApi;
     }
 
+    // get ressources linked to loaded theme
     getResourceURI(path: string): string {
         if (this.config.themeModule && this.config.themeName) {
             let resourceURI = this.baseApi + "/vuejs/theme/" + encodeURIComponent(this.config.themeModule) + "/" + encodeURIComponent(this.config.themeName) + "/resource";
             return resourceURI + "?filePath=" + encodeURIComponent(path);
         } else {
             return this.getURL(path);
+        }
+    }
+
+    /**
+     * Get the route's path that corresponds to a matching type within a given list.
+     *
+     * @param types the list of types to check into
+     * @return if no type matches: return an empty string. Otherwise, return the path for the matching type.
+     */
+    getPathFromUriTypes(types) {
+        let path = "";
+        types.forEach(type => {
+            let route = this.config.routes.find(route => route.rdfType == type)
+            if (route) {
+                path = route.path;
+            }
+        });
+        return path;
+    }
+    
+    // get front ressources depending to a specific module theme
+    getModuleFrontResourceURI(moduleName : string, themeName :string, path: string): string {
+        if (moduleName && themeName) {
+            // if module and theme are named, get ressource from them
+            let resourceURI = this.baseApi + "/vuejs/theme/" + encodeURIComponent(moduleName) + "/" + encodeURIComponent(themeName) + "/resource";
+            return resourceURI + "?filePath=" + encodeURIComponent(path);   
+        } else {
+            // search the resource into the main module theme
+            let resourceURI = this.baseApi + "/vuejs/theme/opensilex-front/opensilex/resource";
+            return resourceURI + "?filePath=" + encodeURIComponent(path);
         }
     }
 
@@ -553,6 +587,17 @@ export default class OpenSilexVuePlugin {
             appendToast: true,
             solid: true,
             autoHideDelay: 8000,
+            noCloseButton: true
+        });
+    }
+
+    public showInfoToastWithoutDelay(message: string) {
+        this.showToast(message, {
+            variant: "info",
+            toaster: "b-toaster-top-center",
+            appendToast: false,
+            solid: false,
+            autoHideDelay: 2000,
             noCloseButton: true
         });
     }

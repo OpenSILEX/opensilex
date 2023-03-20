@@ -13,7 +13,6 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.opensilex.OpenSilex;
-import org.opensilex.OpenSilexModule;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.Time;
@@ -22,13 +21,12 @@ import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.core.variable.dal.MethodModel;
 import org.opensilex.core.variablesGroup.dal.VariablesGroupModel;
-import org.opensilex.nosql.NoSQLModule;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.phis.ontology.OesoExt;
 import org.opensilex.security.SecurityModule;
 import org.opensilex.security.ontology.OesoSecurity;
 import org.opensilex.security.profile.dal.ProfileModel;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.rdf4j.RDF4JServiceFactory;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
@@ -128,7 +126,7 @@ public class InstallTest {
     }
 
     private void assertDefaultUserExists(SPARQLService sparql) throws Exception {
-        List<UserModel> models = sparql.search(UserModel.class,null);
+        List<AccountModel> models = sparql.search(AccountModel.class,null);
         Assert.assertFalse(CollectionUtils.isEmpty(models));
     }
 

@@ -14,9 +14,9 @@ import org.apache.jena.sparql.path.P_Link;
 import org.apache.jena.sparql.path.P_ZeroOrMore1;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
 import org.opensilex.security.authentication.NotFoundURIException;
-import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
@@ -61,7 +61,7 @@ public class OrganizationDAO {
      * @param user The user
      * @throws IllegalArgumentException If the userModel is null
      */
-    public void validateOrganizationAccess(URI organizationURI, UserModel user) throws Exception {
+    public void validateOrganizationAccess(URI organizationURI, AccountModel user) throws Exception {
         if (Objects.isNull(user)) {
             throw new IllegalArgumentException("User cannot be null");
         }
@@ -77,7 +77,7 @@ public class OrganizationDAO {
         Var uriVar = makeVar(OrganizationModel.URI_FIELD);
 
         AskBuilder ask = new AskBuilder();
-        ask.addWhere(uriVar, Ontology.typeSubClassAny, sparql.getMapperIndex().getForClass(OrganizationModel.class).getRDFType());
+        ask.addWhere(uriVar, Ontology.typeSubClassAny, sparql.getRDFType(OrganizationModel.class));
         ask.addFilter(SPARQLQueryHelper.eq(uriVar, SPARQLDeserializers.nodeURI(organizationURI)));
         organizationSPARQLHelper.addOrganizationAccessClause(ask, uriVar, user.getUri());
 
@@ -129,7 +129,7 @@ public class OrganizationDAO {
      * @param user The current user
      * @return The accessible organizations
      */
-    public List<OrganizationModel> search(String nameFilter, List<URI> restrictedOrganizations, UserModel user) throws Exception {
+    public List<OrganizationModel> search(String nameFilter, List<URI> restrictedOrganizations, AccountModel user) throws Exception {
         if (Objects.isNull(user)) {
             throw new IllegalArgumentException("User cannot be null");
         }
@@ -171,14 +171,14 @@ public class OrganizationDAO {
 
     /**
      * Gets an organization by its URI. Throws an exception if the current user does not have access to the organization.
-     * See {@link #validateOrganizationAccess(URI, UserModel)} for further information on access validation.
+     * See {@link #validateOrganizationAccess(URI, AccountModel)} for further information on access validation.
      *
      * @param uri The organization URI
      * @param user The current user
      * @return The organization
      * @throws Exception If the validation fails, or any other problem occurs
      */
-    public OrganizationModel get(URI uri, UserModel user) throws Exception {
+    public OrganizationModel get(URI uri, AccountModel user) throws Exception {
         validateOrganizationAccess(uri, user);
 
         return sparql.getByURI(OrganizationModel.class, uri, user.getLanguage());
@@ -186,13 +186,13 @@ public class OrganizationDAO {
 
     /**
      * Deletes an organization. Throws an exception if the current user does not have access to the organization.
-     * See {@link #validateOrganizationAccess(URI, UserModel)} for further information on access validation.
+     * See {@link #validateOrganizationAccess(URI, AccountModel)} for further information on access validation.
      *
      * @param uri The organization URI
      * @param user The current user
      * @throws Exception If the validation fails, or any other problem occurs
      */
-    public void delete(URI uri, UserModel user) throws Exception {
+    public void delete(URI uri, AccountModel user) throws Exception {
         validateOrganizationAccess(uri, user);
 
         sparql.delete(OrganizationModel.class, uri);
@@ -200,7 +200,7 @@ public class OrganizationDAO {
 
     /**
      * Updates an organization. Throws an exception if the current user does not have access to the organization.
-     * See {@link #validateOrganizationAccess(URI, UserModel)} for further information on access validation. Also throws
+     * See {@link #validateOrganizationAccess(URI, AccountModel)} for further information on access validation. Also throws
      * an exception if the organization hierarchy is invalid (see {@link #validateOrganizationHierarchy(OrganizationModel)}).
      *
      * @param instance The organization to update
@@ -208,7 +208,7 @@ public class OrganizationDAO {
      * @return The updated organization
      * @throws Exception If the validation fails, or any other problem occurs
      */
-    public OrganizationModel update(OrganizationModel instance, UserModel user) throws Exception {
+    public OrganizationModel update(OrganizationModel instance, AccountModel user) throws Exception {
         validateOrganizationAccess(instance.getUri(), user);
         validateOrganizationHierarchy(instance);
 

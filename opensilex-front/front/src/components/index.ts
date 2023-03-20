@@ -99,12 +99,16 @@ import FacilityPropertySelector from './facilities/FacilityPropertySelector.vue'
 components["opensilex-FacilityPropertySelector"] = FacilityPropertySelector;
 import FacilitySelector from './facilities/FacilitySelector.vue';
 components["opensilex-FacilitySelector"] = FacilitySelector;
-import FacilityDetail from './facilities/FacilityDetail.vue';
-components["opensilex-FacilityDetail"] = FacilityDetail;
 import FacilityForm from './facilities/FacilityForm.vue';
 components["opensilex-FacilityForm"] = FacilityForm;
 import FacilityView from "./facilities/FacilityView.vue";
 components["opensilex-FacilityView"] = FacilityView;
+import FacilityDetails from "./facilities/views/FacilityDetails.vue";
+components["opensilex-FacilityDetails"] = FacilityDetails;
+import FacilityDescription from "./facilities/views/FacilityDescription.vue";
+components["opensilex-FacilityDescription"] = FacilityDescription;
+import FacilityAssociatedDevices from "./facilities/views/FacilityAssociatedDevices.vue";
+components["opensilex-FacilityAssociatedDevices"] = FacilityAssociatedDevices;
 import FacilityListView from "./facilities/FacilityListView.vue";
 components["opensilex-FacilityListView"] = FacilityListView;
 
@@ -269,6 +273,8 @@ import HelpButton from './common/buttons/HelpButton.vue'
 components["opensilex-HelpButton"] = HelpButton;
 import DeprecatedButton from './common/buttons/DeprecatedButton.vue'
 components["opensilex-DeprecatedButton"] = DeprecatedButton;
+import FavoriteButton from './common/buttons/FavoriteButton.vue'
+components["opensilex-FavoriteButton"] = FavoriteButton;
 
 import Dropdown from './common/dropdown/Dropdown.vue'
 components["opensilex-Dropdown"] = Dropdown;
@@ -303,6 +309,9 @@ import OntologyObjectForm from './ontology/OntologyObjectForm.vue'
 components["opensilex-OntologyObjectForm"] = OntologyObjectForm;
 import OntologyRelationsForm from './ontology/OntologyRelationsForm.vue'
 components["opensilex-OntologyRelationsForm"] = OntologyRelationsForm;
+
+import SharedResourceInstanceSelector from './sharedResourceInstances/SharedResourceInstanceSelector.vue';
+components["opensilex-SharedResourceInstanceSelector"] = SharedResourceInstanceSelector;
 
 import XSDBooleanInput from './ontology/XSDBooleanInput.vue'
 components["opensilex-XSDBooleanInput"] = XSDBooleanInput;
@@ -403,6 +412,8 @@ import GermplasmSelector from './germplasm/GermplasmSelector.vue';
 components["opensilex-GermplasmSelector"] = GermplasmSelector;
 import GermplasmAttributesSelector from './germplasm/GermplasmAttributesSelector.vue';
 components["opensilex-GermplasmAttributesSelector"] = GermplasmAttributesSelector;
+import GermplasmAttributesValueSelector from './germplasm/GermplasmAttributesValueSelector.vue';
+components["opensilex-GermplasmAttributesValueSelector"] = GermplasmAttributesValueSelector;
 
 // Projects
 import ProjectForm from './projects/ProjectForm.vue';
@@ -465,8 +476,8 @@ import ScientificObjectModalList from './scientificObjects/ScientificObjectModal
 components["opensilex-ScientificObjectModalList"] = ScientificObjectModalList;
 import ScientificObjectModalListByExp from './scientificObjects/ScientificObjectModalListByExp.vue';
 components["opensilex-ScientificObjectModalListByExp"] = ScientificObjectModalListByExp;
-import ScientificObjectView from './scientificObjects/ScientificObjectView.vue';
-components["opensilex-ScientificObjectView"] = ScientificObjectView;
+import ScientificObjectsView from './scientificObjects/ScientificObjectsView.vue';
+components["opensilex-ScientificObjectsView"] = ScientificObjectsView;
 import UsedScientificObjectSelector from './scientificObjects/views/UsedScientificObjectSelector.vue';
 components["opensilex-UsedScientificObjectSelector"] = UsedScientificObjectSelector;
 
@@ -720,6 +731,8 @@ import  DeviceCsvForm from './devices/csv/DeviceCsvForm.vue';
 components["opensilex-DeviceCsvForm"] = DeviceCsvForm;
 import DeviceImportHelp from './devices/csv/DeviceImportHelp.vue';
 components["opensilex-DeviceImportHelp"] = DeviceImportHelp;
+import DeviceDetailsMap from './devices/DeviceDetailsMap.vue';
+components["opensilex-DeviceDetailsMap"] = DeviceDetailsMap;
 
 // EVENTS
 import EventModalForm from './events/form/EventModalForm.vue';
@@ -749,6 +762,25 @@ components["opensilex-MoveForm"] = MoveForm;
 import MoveView from './events/view/MoveView.vue';
 components["opensilex-MoveView"] = MoveView;
 
+// HOME
+import HomeView from './home/HomeView.vue';
+components["opensilex-HomeView"] = HomeView;
+import Dashboard from './home/Dashboard.vue'
+components["opensilex-Dashboard"] = Dashboard;
+import Histogram from './home/dashboard/Histogram.vue'
+components["opensilex-Histogram"] = Histogram;
+import VisualisationGraphic from "./home/dashboard/VisualisationGraphic.vue"
+components["opensilex-VisualisationGraphic"] = VisualisationGraphic;
+import HistogramSettings from './home/dashboard/HistogramSettings.vue'
+components["opensilex-HistogramSettings"] = HistogramSettings;
+import Twitter from './home/dashboard/Twitter.vue'
+components["opensilex-Twitter"] = Twitter;
+import Favorites from './home/dashboard/Favorites.vue'
+components["opensilex-Favorites"] = Favorites;
+import FavoritesHelp from './home/dashboard/FavoritesHelp.vue'
+components["opensilex-FavoritesHelp"] = FavoritesHelp;
+import DataMonitoring from './home/dashboard/DataMonitoring.vue'
+components["opensilex-DataMonitoring"] = DataMonitoring;
 
 // POSITION
 import PositionForm from './positions/form/PositionForm.vue';

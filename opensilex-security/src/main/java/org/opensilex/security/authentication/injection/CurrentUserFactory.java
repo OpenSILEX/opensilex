@@ -9,13 +9,13 @@ import javax.inject.Inject;
 import javax.ws.rs.core.SecurityContext;
 import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.api.ServiceLocator;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 
 /**
  *
  * @author vince
  */
-public class CurrentUserFactory implements Factory<UserModel> {
+public class CurrentUserFactory implements Factory<AccountModel> {
 
     private final ServiceLocator locator;
 
@@ -25,13 +25,13 @@ public class CurrentUserFactory implements Factory<UserModel> {
     }
 
     @Override
-    public UserModel provide() {
+    public AccountModel provide() {
         SecurityContext ctx = locator.getService(SecurityContext.class);
-        return (UserModel) ctx.getUserPrincipal();
+        return (AccountModel) ctx.getUserPrincipal();
     }
 
     @Override
-    public void dispose(UserModel t) {
+    public void dispose(AccountModel t) {
         //
     }
 

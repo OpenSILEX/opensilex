@@ -91,6 +91,7 @@
             :value.sync="form.comment_translations.en"
             label="OntologyPropertyForm.commentEN"
             :required="false"
+            @keydown.native.enter.stop
         ></opensilex-TextAreaForm>
 
         <opensilex-InputForm
@@ -104,6 +105,7 @@
             :value.sync="form.comment_translations.fr"
             label="OntologyPropertyForm.commentFR"
             :required="false"
+            @keydown.native.enter.stop
         ></opensilex-TextAreaForm>
 
     </b-form>

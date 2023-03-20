@@ -27,4 +27,7 @@ public interface Route {
 
     @ConfigDescription("Description of the section")
     public String description();
+
+    @ConfigDescription("Associated RDF type")
+    public String rdfType();
 }

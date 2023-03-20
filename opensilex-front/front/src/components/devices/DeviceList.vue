@@ -30,6 +30,7 @@
             :filter.sync="filter.name"
             placeholder="DeviceList.filter.namePattern-placeholder"
             class="searchFilter"
+            @handlingEnterKey="refresh()"
           ></opensilex-StringFilter><br>
         </div>
 
@@ -40,6 +41,7 @@
             :baseType="$opensilex.Oeso.DEVICE_TYPE_URI"
             placeholder="DeviceList.filter.rdfTypes-placeholder"
             class="searchFilter"
+            @handlingEnterKey="refresh()"
           ></opensilex-TypeForm>
         </div>
 
@@ -61,6 +63,7 @@
             placeholder="DeviceList.filter.start_up-placeholder"
             type="number"
             class="searchFilter"
+            @handlingEnterKey="refresh()"
           ></opensilex-StringFilter><br>
         </div>
 
@@ -73,6 +76,7 @@
                 :selected.sync="filter.facility"
                 :options="facilities"
                 class="searchFilter"
+                @handlingEnterKey="refresh()"
             ></opensilex-SelectForm>
         </div>
 
@@ -83,6 +87,7 @@
             :filter.sync="filter.brand"
             placeholder="DeviceList.filter.brand-placeholder"
             class="searchFilter"
+            @handlingEnterKey="refresh()"
           ></opensilex-StringFilter><br>
         </div>
 
@@ -93,6 +98,7 @@
             :filter.sync="filter.model"
             placeholder="DeviceList.filter.model-placeholder"
             class="searchFilter"
+            @handlingEnterKey="refresh()"
           ></opensilex-StringFilter><br>
         </div>
       </template>
@@ -104,6 +110,7 @@
             :filter.sync="filter.metadataKey"
             placeholder="DeviceList.filter.metadataKey-placeholder"
             class="searchFilter"
+            @handlingEnterKey="refresh()"
           ></opensilex-StringFilter>
         </div>
         <!-- Value --> 
@@ -113,6 +120,7 @@
             :filter.sync="filter.metadataValue"
             placeholder="DeviceList.filter.metadataValue-placeholder"
             class="searchFilter"
+            @handlingEnterKey="refresh()"
           ></opensilex-StringFilter>
           <br>
         </div>

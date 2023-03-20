@@ -109,6 +109,7 @@
                       :viewHandlerDetailsVisible="visibleDetails"
                       :key="refreshKey"
                       class="searchFilter"
+                      @handlingEnterKey="refresh()"
                     ></opensilex-DataProvenanceSelector>
 
                     <b-collapse
@@ -160,6 +161,7 @@
             <opensilex-DataList
               ref="dataList"
               :listFilter.sync="filter"
+              :contextUri="uri"
               class="dataList">
             </opensilex-DataList>
           </div>

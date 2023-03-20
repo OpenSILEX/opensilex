@@ -9,6 +9,9 @@
                         icon="ik#ik-clipboard"
                     >
                         <template v-slot:rightHeader>
+                          <opensilex-FavoriteButton
+                              :uri="device.uri"
+                          ></opensilex-FavoriteButton>
                             <opensilex-EditButton
                                 v-if="
                   user.hasCredential(
@@ -71,20 +74,18 @@
                               :value="lastCalibration"
                           ></opensilex-StringView>
                           <!--Last Position-->
-                          <opensilex-StringView label="Event.position">
-                              <div v-if="lastPosition.move_time">
+                          <opensilex-StringView label="Event.lastPosition">
                                   <!-- Position detail -->
-                                  <span>{{new Date(lastPosition.move_time).toLocaleString()}}</span>
+                                  <span v-if="lastPosition.move_time">{{new Date(lastPosition.move_time).toLocaleString()}}</span>
                                   <ul>
                                       <li v-if="lastPosition.to">{{lastPosition.to.name}}</li>
-                                      <li v-if="lastPosition.position">{{customCoordinatesText(lastPosition.position)}}</li>
+                                      <li v-if="lastPosition.position && (lastPosition.position.x || lastPosition.position.y || lastPosition.position.z)">{{customCoordinatesText(lastPosition.position)}}</li>
                                       <li v-if="lastPosition.position && lastPosition.position.text">{{lastPosition.position.text}}</li>
                                       <li v-if="lastPosition.position && lastPosition.position.point">
-                                          <opensilex-GeometryCopy :label="label" :value="lastPosition.position.point">
+                                          <opensilex-GeometryCopy label="" :value="lastPosition.position.point">
                                           </opensilex-GeometryCopy>
                                       </li>
                                   </ul>
-                              </div>
                           </opensilex-StringView>
 
                             <div :key="index" v-for="(relation, index) in device.relations">
@@ -219,7 +220,7 @@ export default class DeviceDescription extends Vue {
 
     renderModalForm: boolean = false;
 
-    eventService : EventsService;
+    eventsService : EventsService;
     positionService: PositionsService;
 
     relationsFields: any[] = [
@@ -262,11 +263,13 @@ export default class DeviceDescription extends Vue {
       from: null,
       position: {
         point: null,
-        text: null
+        text: null,
+        x: null,
+        y: null,
+        z: null
       },
       to: null
     };
-    label: string = "";
 
     get user() {
       return this.$store.state.user;
@@ -281,12 +284,12 @@ export default class DeviceDescription extends Vue {
     }
 
     created() {
-        this.service = this.$opensilex.getService("opensilex.DevicesService");
-        this.vueJsOntologyService = this.$opensilex.getService("opensilex.VueJsOntologyExtensionService");
+        this.service = this.$opensilex.getService<DevicesService>("opensilex.DevicesService");
+        this.vueJsOntologyService = this.$opensilex.getService<VueJsOntologyExtensionService>("opensilex.VueJsOntologyExtensionService");
         //Get Events Service
-        this.eventService = this.$opensilex.getService("opensilex.EventsService");
+        this.eventsService = this.$opensilex.getService<EventsService>("opensilex.EventsService");
         //Get Position Service
-        this.positionService = this.$opensilex.getService("opensilex.PositionsService");
+        this.positionService = this.$opensilex.getService<PositionsService>("opensilex.PositionsService");
 
         this.uri = decodeURIComponent(this.$route.params.uri);
         this.baseType = this.$opensilex.Oeso.DEVICE_TYPE_URI;
@@ -324,7 +327,7 @@ export default class DeviceDescription extends Vue {
 
     loadLastCalibrationEvent(){
         // Get calibration events with the device uri (target) by date in descending order
-        this.eventService.searchEvents(
+        this.eventsService.searchEvents(
             Oeev.CALIBRATION_TYPE_URI,
             undefined,
             undefined,
@@ -348,24 +351,14 @@ export default class DeviceDescription extends Vue {
     }
 
     loadLastPosition(){
-      // Get moves with the device uri (target) by date in descending order
-        this.positionService.searchPositionHistory(
-            this.device.uri,
-            undefined,
-            undefined,
-            ["end=desc"],
-            undefined,
-            undefined
-        )
-            .then((http: HttpResponse<OpenSilexResponse<Array<PositionGetDTO>>>) => {
-                  //No moves existing
-                 if( http.response.result.length === 0) {
-                   return ;
-                 }
-                 //Moves existing -> only the newest
-                 else {
-                      this.lastPosition = http.response.result[0];
-                }
+        this.positionService.getPosition(this.device.uri)
+            .then((http: HttpResponse<OpenSilexResponse<PositionGetDTO>>) => {
+              if (http.response.result.event !== null) {
+                this.lastPosition = http.response.result;
+              }
+              else{
+                return;
+              }
             })
             .catch(this.$opensilex.errorHandler);
     }
@@ -488,7 +481,7 @@ en:
         no-var-provided: No variable provided
     Event:
         calibration: Last calibration
-        position: Last position
+        lastPosition: Last position
 
 fr:
     DeviceDescription:
@@ -515,6 +508,6 @@ fr:
         no-var-provided: Aucune variable associée
     Event:
       calibration: Dernière calibration
-      position: Dernière position
+      lastPosition: Dernière position
 
 </i18n>

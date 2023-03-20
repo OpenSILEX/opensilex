@@ -17,8 +17,8 @@ import org.opensilex.security.authentication.AuthenticationService;
 import org.opensilex.security.authentication.dal.AuthenticationDAO;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.email.EmailService;
-import org.opensilex.security.user.dal.UserDAO;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountDAO;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.ServerModule;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.Required;
@@ -61,13 +61,16 @@ import static org.opensilex.security.authentication.AuthenticationService.DEFAUL
  * @author Vincent Migot
  */
 @Api(SecurityModule.REST_AUTHENTICATION_API_ID)
-@Path("/security")
+@Path(AuthenticationAPI.PATH)
 public class AuthenticationAPI {
+
+    public static final String PATH = "/security";
+    public static final String AUTHENTICATE_PATH = "authenticate";
 
     private final static Logger LOGGER = LoggerFactory.getLogger(AuthenticationAPI.class);
 
     @CurrentUser
-    UserModel currentUser;
+    AccountModel currentUser;
 
     /**
      * Inject Authentication service
@@ -104,13 +107,13 @@ public class AuthenticationAPI {
     /**
      * Authenticate a user with it's identifier (email or URI) and password returning a JWT token
      *
-     * @see org.opensilex.security.user.dal.UserDAO
+     * @see AccountDAO
      * @param authenticationDTO suer identifier and password message
      * @return user token
      * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
      */
     @POST
-    @Path("authenticate")
+    @Path(AuthenticationAPI.AUTHENTICATE_PATH)
     @ApiOperation("Authenticate a user and return an access token")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "User sucessfully authenticated", response = TokenGetDTO.class),
@@ -122,24 +125,24 @@ public class AuthenticationAPI {
             @ApiParam("User authentication informations") @Valid AuthenticationDTO authenticationDTO
     ) throws Exception {
         // Create user DAO
-        UserDAO userDAO = new UserDAO(sparql);
+        AccountDAO accountDAO = new AccountDAO(sparql);
 
         // Get user by email or by uri
-        UserModel user;
+        AccountModel user;
         try {
             InternetAddress email = new InternetAddress(authenticationDTO.getIdentifier());
-            user = userDAO.getByEmail(email);
+            user = accountDAO.getByEmail(email);
         } catch (AddressException ex2) {
             try {
                 URI uri = new URI(authenticationDTO.getIdentifier());
-                user = userDAO.get(uri);
+                user = accountDAO.get(uri);
             } catch (URISyntaxException ex1) {
                 throw new Exception("Submitted user identifier is neither a valid email or URI");
             }
         }
 
         // Authenticate found user with provided password
-        if (user != null && authentication.authenticate(user, authenticationDTO.getPassword(), userDAO.getCredentialList(user.getUri()))) {
+        if (user != null && authentication.authenticate(user, authenticationDTO.getPassword(), accountDAO.getCredentialList(user.getUri()))) {
             // Return user token
             return new SingleObjectResponse<TokenGetDTO>(new TokenGetDTO(user.getToken())).getResponse();
         } else {
@@ -151,7 +154,7 @@ public class AuthenticationAPI {
     /**
      * Renew a user token if the provided one is still valid extending it's validity
      *
-     * @see org.opensilex.security.user.dal.UserDAO
+     * @see AccountDAO
      * @param userToken actual valid token for user
      * @return Renewed JWT token
      * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
@@ -176,7 +179,7 @@ public class AuthenticationAPI {
      * Send an email to renew password
      *
      * @param identifier
-     * @see org.opensilex.security.user.dal.UserDAO
+     * @see AccountDAO
      * @return Renewed JWT token
      * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
      */
@@ -197,17 +200,17 @@ public class AuthenticationAPI {
         }
         
         // Create user DAO
-        UserDAO userDAO = new UserDAO(sparql);
+        AccountDAO accountDAO = new AccountDAO(sparql);
 
         // Get user by email or by uri
-        UserModel user;
+        AccountModel user;
         try {
             InternetAddress userEmail = new InternetAddress(identifier);
-            user = userDAO.getByEmail(userEmail);
+            user = accountDAO.getByEmail(userEmail);
         } catch (AddressException ex2) {
             try {
                 URI uri = new URI(identifier);
-                user = userDAO.get(uri);
+                user = accountDAO.get(uri);
             } catch (URISyntaxException ex1) {
                 throw new Exception("Submitted user identifier is neither a valid email or URI");
             }
@@ -239,7 +242,7 @@ public class AuthenticationAPI {
      * @throws AddressException
      * @throws IOException 
      */
-    private void sendForgotPasswordRedirectEmail(UserModel user, URI userForgottenToken) throws OpenSilexModuleNotFoundException, UnsupportedEncodingException, AddressException, IOException{
+    private void sendForgotPasswordRedirectEmail(AccountModel user, URI userForgottenToken) throws OpenSilexModuleNotFoundException, UnsupportedEncodingException, AddressException, IOException{
         Map<String,Object> infos = new HashMap<>();
         ArrayList<InternetAddress> arrayList = new ArrayList<>();
         arrayList.add(user.getEmail());
@@ -266,7 +269,7 @@ public class AuthenticationAPI {
      * @param renewToken renew token linked to user
      * @param checkOnly only check if renew token uri exist
      * @param password new password to update
-     * @see org.opensilex.security.user.dal.UserDAO
+     * @see AccountDAO
      * @return User uri
      * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
      */
@@ -302,19 +305,18 @@ public class AuthenticationAPI {
         if(userUri == null){
             return new ErrorResponse(Status.BAD_REQUEST, "Invalid token", "Token has expired").getResponse();
         }
-        UserDAO userDAO = new UserDAO(sparql);
-        UserModel user = userDAO.get(userUri);
+        AccountDAO accountDAO = new AccountDAO(sparql);
+        AccountModel user = accountDAO.get(userUri);
         if(user == null){
             return new ErrorResponse(Status.FORBIDDEN, "Invalid token", "User does not exists or forgotten password token is invalid").getResponse();
         }else{
-            userDAO.update(
+            accountDAO.update(
                     user.getUri(),
                     user.getEmail(),
-                    user.getFirstName(),
-                    user.getLastName(),
                     user.isAdmin(),
                     authentication.getPasswordHash(password),
-                    user.getLanguage()
+                    user.getLanguage(),
+                    user.getFavorites()
             );
             authentication.removeForgottenPasswordUserFromRenewToken(renewToken);
         }
@@ -324,7 +326,7 @@ public class AuthenticationAPI {
     /**
      * Logout current user
      *
-     * @see org.opensilex.security.user.dal.UserDAO
+     * @see AccountDAO
      * @return Empty ok response
      * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
      */
@@ -408,15 +410,15 @@ public class AuthenticationAPI {
             @ApiParam("Authorization code") @QueryParam("code") @Required String code
     ) throws Exception {
         // Create user DAO
-        UserDAO userDAO = new UserDAO(sparql);
+        AccountDAO accountDAO = new AccountDAO(sparql);
 
         // Authenticate user with provided openID token
-        UserModel user = authentication.authenticateWithOpenID(code, securityModule.getConfig(SecurityConfig.class).openID());
+        AccountModel user = authentication.authenticateWithOpenID(code, securityModule.getConfig(SecurityConfig.class).openID());
 
-        user = userDAO.getByEmailOrCreate(user, openSilex.getDefaultLanguage());
+        user = accountDAO.getByEmailOrCreate(user, openSilex.getDefaultLanguage());
 
         // Authenticate found user with provided password
-        if (user != null && authentication.authenticate(user, userDAO.getCredentialList(user.getUri()))) {
+        if (user != null && authentication.authenticate(user, accountDAO.getCredentialList(user.getUri()))) {
             // Return user token
             return new SingleObjectResponse<TokenGetDTO>(new TokenGetDTO(user.getToken())).getResponse();
         } else {
@@ -434,13 +436,13 @@ public class AuthenticationAPI {
     })
     @Produces(MediaType.TEXT_PLAIN)
     public Response authenticateSAML(@Context HttpServletRequest request) throws Exception {
-        UserDAO userDAO = new UserDAO(sparql);
+        AccountDAO accountDAO = new AccountDAO(sparql);
 
-        UserModel user = authentication.authenticateWithSAML(request);
+        AccountModel user = authentication.authenticateWithSAML(request);
 
-        user = userDAO.getByEmailOrCreate(user, openSilex.getDefaultLanguage());
+        user = accountDAO.getByEmailOrCreate(user, openSilex.getDefaultLanguage());
 
-        if (authentication.authenticate(user, userDAO.getCredentialList(user.getUri()))) {
+        if (authentication.authenticate(user, accountDAO.getCredentialList(user.getUri()))) {
             String token = user.getToken();
             URI samlLandingPageUri = authentication.buildSAMLLandingPageURI(token);
             return Response

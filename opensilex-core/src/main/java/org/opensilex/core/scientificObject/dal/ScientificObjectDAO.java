@@ -23,9 +23,7 @@ import org.apache.jena.sparql.path.Path;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.OpenSilex;
-import org.opensilex.core.event.dal.move.MoveEventDAO;
-import org.opensilex.core.event.dal.move.MoveModel;
-import org.opensilex.core.event.dal.move.TargetPositionModel;
+import org.opensilex.core.event.dal.move.*;
 import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.exception.DuplicateNameListException;
 import org.opensilex.core.experiment.dal.ExperimentModel;
@@ -37,7 +35,7 @@ import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.scientificObject.api.ScientificObjectNodeDTO;
 import org.opensilex.core.scientificObject.api.ScientificObjectNodeWithChildrenDTO;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.sparql.deserializer.*;
 import org.opensilex.sparql.exceptions.SPARQLException;
@@ -99,11 +97,11 @@ public class ScientificObjectDAO {
         }
     }
 
-    public List<ScientificObjectModel> searchByURIs(URI contextURI, List<URI> objectsURI, UserModel currentUser) throws Exception {
+    public List<ScientificObjectModel> searchByURIs(URI contextURI, List<URI> objectsURI, AccountModel currentUser) throws Exception {
         return searchByURIs(contextURI,objectsURI,currentUser,false);
     }
 
-    public List<ScientificObjectModel> searchByURIs(URI contextURI, List<URI> objectsURI, UserModel currentUser, boolean loadChildren) throws Exception {
+    public List<ScientificObjectModel> searchByURIs(URI contextURI, List<URI> objectsURI, AccountModel currentUser, boolean loadChildren) throws Exception {
 
         Map<String,Boolean> fieldsToFetch = new HashMap<>();
         fieldsToFetch.put(ScientificObjectModel.FACTOR_LEVEL_FIELD,true);
@@ -767,7 +765,7 @@ public class ScientificObjectDAO {
      * @return the URI of the created object
      * @throws DuplicateNameException if some object with the same name exist into the given graph
      */
-    public ScientificObjectModel create(URI contextURI, ExperimentModel experiment, URI soType, URI objectURI, String name, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws DuplicateNameException, Exception {
+    public ScientificObjectModel create(URI contextURI, ExperimentModel experiment, URI soType, URI objectURI, String name, List<RDFObjectRelationDTO> relations, AccountModel currentUser) throws DuplicateNameException, Exception {
         Objects.requireNonNull(contextURI);
 
         checkUniqueNameByGraph(contextURI,name,null,true);
@@ -863,7 +861,7 @@ public class ScientificObjectDAO {
      * @return the URI of the created object
      * @throws DuplicateNameException if some object with the same name exist into the given graph
      */
-    public URI update(URI contextURI, URI soType, URI objectURI, String name, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws Exception, DuplicateNameException {
+    public URI update(URI contextURI, URI soType, URI objectURI, String name, List<RDFObjectRelationDTO> relations, AccountModel currentUser) throws Exception, DuplicateNameException {
 
         checkUniqueNameByGraph(contextURI,name,objectURI,false);
 
@@ -899,6 +897,13 @@ public class ScientificObjectDAO {
 
             MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
             MoveModel event = moveDAO.getLastMoveEvent(objectURI);
+            if(event != null){
+                //retrieve the position to the move event to link it to the new OS for the update
+                MoveEventNoSqlModel moveNoSql = moveDAO.getMoveEventNoSqlModel(event.getUri());
+                if(moveNoSql != null){
+                    event.setNoSqlModel(moveNoSql);
+                }
+            }
 
             if (hasFacilityURI) {
                 if (event != null) {
@@ -949,7 +954,7 @@ public class ScientificObjectDAO {
         return object.getUri();
     }
 
-    private ScientificObjectModel initObject(URI contextURI, ExperimentModel xp, URI soType, String name, List<RDFObjectRelationDTO> relations, UserModel currentUser) throws Exception {
+    private ScientificObjectModel initObject(URI contextURI, ExperimentModel xp, URI soType, String name, List<RDFObjectRelationDTO> relations, AccountModel currentUser) throws Exception {
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
         ClassModel model = ontologyDAO.getClassModel(soType, new URI(Oeso.ScientificObject.getURI()), currentUser.getLanguage());
 
@@ -1203,18 +1208,29 @@ public class ScientificObjectDAO {
      * @param models
      * @throws SPARQLException
      */
-    public void copyIntoGlobalGraph(Stream<ScientificObjectModel> models) throws SPARQLException {
+    public void copyIntoGlobalGraph(Collection<ScientificObjectModel> models) throws SPARQLException {
 
         Objects.requireNonNull(models);
 
         // OS type and name COPY
         UpdateBuilder update = new UpdateBuilder();
-        models.forEach(object -> {
-            Node soNode = SPARQLDeserializers.nodeURI(object.getUri());
-            update.addInsert(defaultGraphNode, soNode, RDF.type, SPARQLDeserializers.nodeURI(object.getType()));
-            update.addInsert(defaultGraphNode, soNode, RDFS.label, object.getName());
-        });
 
-        sparql.executeUpdateQuery(update);
+        try{
+            // use serializer in order to ensure that name is well serialized as a String
+            SPARQLDeserializer<String> stringDeserializer = SPARQLDeserializers.getForClass(String.class);
+
+            for(ScientificObjectModel object : models){
+                Node uriNode = SPARQLDeserializers.nodeURI(object.getUri());
+
+                // write type and name triple
+                update.addInsert(defaultGraphNode, uriNode, RDF.type, SPARQLDeserializers.nodeURI(object.getType()))
+                      .addInsert(defaultGraphNode, uriNode, RDFS.label, stringDeserializer.getNode(object.getName()));
+            }
+
+            sparql.executeUpdateQuery(update);
+        }catch (Exception e){
+            throw new SPARQLException(e);
+        }
+
     }
 }

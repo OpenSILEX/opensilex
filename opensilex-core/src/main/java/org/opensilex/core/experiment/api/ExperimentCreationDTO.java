@@ -12,7 +12,7 @@ import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.security.group.dal.GroupModel;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -62,17 +62,17 @@ public class ExperimentCreationDTO extends ExperimentDTO {
         });
         model.setProjects(projectList);
 
-        List<UserModel> scientificList = new ArrayList<>(scientificSupervisors.size());
+        List<AccountModel> scientificList = new ArrayList<>(scientificSupervisors.size());
         scientificSupervisors.forEach((URI u) -> {
-            UserModel user = new UserModel();
+            AccountModel user = new AccountModel();
             user.setUri(u);
             scientificList.add(user);
         });
         model.setScientificSupervisors(scientificList);
 
-        List<UserModel> technicalList = new ArrayList<>(technicalSupervisors.size());
+        List<AccountModel> technicalList = new ArrayList<>(technicalSupervisors.size());
         technicalSupervisors.forEach((URI u) -> {
-            UserModel user = new UserModel();
+            AccountModel user = new AccountModel();
             user.setUri(u);
             technicalList.add(user);
         });

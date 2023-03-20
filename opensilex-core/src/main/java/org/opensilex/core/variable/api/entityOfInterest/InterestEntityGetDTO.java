@@ -6,14 +6,15 @@
 package org.opensilex.core.variable.api.entityOfInterest;
 
 import io.swagger.annotations.ApiModelProperty;
-import java.net.URI;
+import org.opensilex.core.variable.api.BaseVariableGetDTO;
 import org.opensilex.core.variable.dal.InterestEntityModel;
-import org.opensilex.sparql.response.ObjectNamedResourceDTO;
+
+import java.net.URI;
 
 /**
  * @author Hamza IKIOU
  */
-public class InterestEntityGetDTO extends ObjectNamedResourceDTO {
+public class InterestEntityGetDTO extends BaseVariableGetDTO<InterestEntityModel> {
     
     public InterestEntityGetDTO(InterestEntityModel model){
         super(model);

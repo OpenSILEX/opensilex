@@ -35,7 +35,7 @@ import org.opensilex.fs.FileStorageConfig;
 import org.opensilex.fs.FileStorageModule;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.security.authentication.NotFoundURIException;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.utils.ListWithPagination;
 
@@ -83,8 +83,10 @@ public class ExportDocumentFilesFromLocalFSToGRIDFS implements OpenSilexModuleUp
         try {
             FileStorageConfig moduleConfig = opensilex.getModuleConfig(FileStorageModule.class, FileStorageConfig.class);
             fs = moduleConfig.fs();
-        } catch (OpenSilexModuleNotFoundException ex) {
-            LOGGER.info(ex.getMessage(), ex);
+            fs.startup(); 
+        } catch (Exception ex) {
+            LOGGER.error("Can't start file system "+ ex.getMessage(), ex);
+            throw new OpensilexModuleUpdateException( ex.getMessage(), ex);
         }
 
         String tmpDirsLocation = System.getProperty("java.io.tmpdir");
@@ -110,13 +112,12 @@ public class ExportDocumentFilesFromLocalFSToGRIDFS implements OpenSilexModuleUp
             Files.createDirectories(descriptionPaths);
 
         } catch (IOException ex) {
-            LOGGER.error("Can't write temp dir ", ex);
-            java.util.logging.Logger.getLogger(ExportDocumentFilesFromLocalFSToGRIDFS.class.getName()).log(Level.SEVERE, null, ex);
+            LOGGER.error("Can't write temp dir " + ex.getMessage(), ex);
         }
 
         if (exportDocumentsDirPath == null || documentPaths == null || descriptionPaths == null) {
             LOGGER.error("Can't write temp dirs ");
-            System.exit(0);
+            System.exit(1);
         } else {
             LOGGER.info(exportDocumentsDirPath.toString() + "temp dir setted");
         }
@@ -129,10 +130,10 @@ public class ExportDocumentFilesFromLocalFSToGRIDFS implements OpenSilexModuleUp
 
         try {
             LOGGER.info("Finding document");
-            UserModel userModel = new UserModel();
-            userModel.setAdmin(Boolean.TRUE);
+            AccountModel accountModel = new AccountModel();
+            accountModel.setAdmin(Boolean.TRUE);
 
-            ListWithPagination<DocumentModel> search = documentDAO.search(userModel, null, null, null, null, null, null, null, null, null, 0, 10000);
+            ListWithPagination<DocumentModel> search = documentDAO.search(accountModel, null, null, null, null, null, null, null, null, null, 0, 10000);
 
             LOGGER.info("Number of documents");
 

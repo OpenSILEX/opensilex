@@ -123,5 +123,9 @@ h5 {
     line-height: 1.2;
     font-weight: 600;
   }
+
+  .title-title, .title-description {
+    margin-left: 30px
+  }
 }
 </style>

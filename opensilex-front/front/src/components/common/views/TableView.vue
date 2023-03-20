@@ -10,6 +10,8 @@
           <opensilex-StringFilter
             :filter.sync="filter"
             :placeholder="$t(filterPlaceholder)"
+            :debounce="300"
+            :lazy="false"
           ></opensilex-StringFilter>
         </div>
       </div>

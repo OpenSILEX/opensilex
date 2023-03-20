@@ -8,6 +8,7 @@
     placeholder="ScientificObjectTypeSelector.placeholder"
     @select="select"
     @deselect="deselect"
+    @keyup.enter.native="onEnter"
   ></opensilex-SelectForm>
 </template>
 
@@ -70,6 +71,10 @@ export default class ScientificObjectTypeSelector extends Vue {
 
   deselect(value) {
     this.$emit("deselect", value);
+  }
+
+  onEnter() {
+    this.$emit("handlingEnterKey")
   }
 }
 </script>

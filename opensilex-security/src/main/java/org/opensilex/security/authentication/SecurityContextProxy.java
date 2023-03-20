@@ -8,11 +8,11 @@ package org.opensilex.security.authentication;
 
 import java.security.Principal;
 import javax.ws.rs.core.SecurityContext;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 
 /**
  * Helper class to encapsulate an existing security context with the correct
- * User class type {@code org.opensilex.server.user.dal.UserModel}
+ * User class type {@code org.opensilex.server.user.dal.AccountModel}
  *
  * @see org.opensilex.security.authentication.filters.AuthenticationFilter
  * @author Vincent Migot
@@ -28,7 +28,7 @@ public class SecurityContextProxy implements SecurityContext {
     /**
      * User to return through {@code getPrincipal} method
      */
-    UserModel user;
+    AccountModel user;
 
     /**
      * Create security context from an existing one and a user
@@ -36,7 +36,7 @@ public class SecurityContextProxy implements SecurityContext {
      * @param parentContext parent security context to proxy
      * @param user user to return in this context
      */
-    public SecurityContextProxy(SecurityContext parentContext, UserModel user) {
+    public SecurityContextProxy(SecurityContext parentContext, AccountModel user) {
         this.parentContext = parentContext;
         this.user = user;
     }

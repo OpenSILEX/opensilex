@@ -9,34 +9,7 @@
  */
 package org.opensilex.core.experiment.factor.api;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiImplicitParam;
-import io.swagger.annotations.ApiImplicitParams;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import javax.inject.Inject;
-import javax.validation.Valid;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import io.swagger.annotations.*;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.experiment.api.ExperimentGetListDTO;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
@@ -52,7 +25,7 @@ import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.response.ErrorDTO;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
@@ -67,10 +40,23 @@ import org.opensilex.sparql.ontology.store.OntologyStore;
 import org.opensilex.sparql.response.ResourceTreeDTO;
 import org.opensilex.sparql.response.ResourceTreeResponse;
 import org.opensilex.sparql.service.SPARQLService;
-import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
+import org.opensilex.utils.OrderBy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.inject.Inject;
+import javax.validation.Valid;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import javax.ws.rs.*;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 /**
  *
@@ -104,7 +90,7 @@ public class FactorAPI {
     private MongoDBService nosql;
 
     @CurrentUser
-    UserModel currentUser;
+    AccountModel currentUser;
 
     /**
      * Create a factor model from a FactorCreationDTO object
@@ -514,5 +500,23 @@ public class FactorAPI {
 
         List<ResourceTreeDTO> treeDto = ResourceTreeDTO.fromResourceTree(treeList);
         return new ResourceTreeResponse(treeDto).getResponse();
+    }
+
+    @GET
+    @Path("count")
+    @ApiOperation("Count factors")
+    @ApiProtected
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return the number of factors associated to a given experiment", response = Integer.class)
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response countFactors(
+            @ApiParam(value = "Experiment URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("experiment") URI experiment) throws Exception {
+
+        FactorDAO dao = new FactorDAO(sparql);
+        int factorCount = dao.countFactors(experiment);
+
+        return new SingleObjectResponse<>(factorCount).getResponse();
     }
 }

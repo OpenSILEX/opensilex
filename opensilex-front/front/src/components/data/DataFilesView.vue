@@ -4,7 +4,7 @@
     class="pagecontent">
       <template v-slot>
 
-      <!-- Toggle Sidebar--> 
+      <!-- Toggle Sidebar-->
       <div class="searchMenuContainer"
         v-on:click="SearchFiltersToggle = !SearchFiltersToggle"
         :title="searchFiltersPannel()">
@@ -35,6 +35,7 @@
                   placeholder="ScientificObjectDataFiles.rdfType-placeholder"
                   class="searchFilter"
                   key="imageTypeForm"
+                  @handlingEnterKey="refresh()"
                 ></opensilex-TypeForm>
 
                 <opensilex-TypeForm
@@ -45,6 +46,7 @@
                   placeholder="ScientificObjectDataFiles.rdfType-placeholder"
                   key="datafileTypeForm"
                   class="searchFilter"
+                  @handlingEnterKey="refresh()"
                 ></opensilex-TypeForm>
               </opensilex-FilterField>
             </div>
@@ -60,7 +62,7 @@
                   @clear="updateSOFilter"
                   class="searchFilter"
                 ></opensilex-ExperimentSelector>
-              </opensilex-FilterField> 
+              </opensilex-FilterField>
             </div>
 
             <!-- Scientific objects -->
@@ -94,7 +96,7 @@
                   :value.sync="filter.start_date"
                   label="component.common.begin"
                   name="startDate"
-                  :max-date="filter.end_date ? filter.end_date : undefined" 
+                  :max-date="filter.end_date ? filter.end_date : undefined"
                   class="searchFilter"
                 ></opensilex-DateTimeForm>
               </opensilex-FilterField>
@@ -129,6 +131,7 @@
                   :showURI="false"
                   :key="refreshKey"
                   class="searchFilter"
+                  @handlingEnterKey="refresh()"
                 ></opensilex-DatafileProvenanceSelector>
 
                 <b-collapse

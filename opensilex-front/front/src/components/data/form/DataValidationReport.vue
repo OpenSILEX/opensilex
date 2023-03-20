@@ -519,7 +519,7 @@ fr:
     columnModification: Vous pouvez changer l'ordre des colonnes et en ajouter tant que vous ne modifiez pas l'identifiant de la première ligne.
     csvErrors: Erreur(s) détectée(s) lors de la validation du fichier CSV
     missingHeaders: En-tête de colonne manquant
-    duplicatedDataErrors: Données duppliquées 
+    duplicatedDataErrors: Données dupliquées
     invalidHeaderURIs: "URI d'en-tête invalide, des URIs valides sont requises sur la ligne n°1"
     datatypeErrors: Type de donnée invalide
     uriNotFoundErrors: URI non trouvée

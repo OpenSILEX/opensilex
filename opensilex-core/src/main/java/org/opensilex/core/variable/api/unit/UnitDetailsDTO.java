@@ -63,6 +63,15 @@ public class UnitDetailsDTO extends BaseVariableDetailsDTO<UnitModel> {
         return description;
     }
 
+    @Override
+    public UnitModel toModel() {
+        UnitModel model = new UnitModel();
+        setBasePropertiesToModel(model);
+        model.setSymbol(this.getSymbol());
+        model.setAlternativeSymbol(this.getAlternativeSymbol());
+        return model;
+    }
+
     @ApiModelProperty(example = "cm")
     public String getSymbol() {
         return symbol;

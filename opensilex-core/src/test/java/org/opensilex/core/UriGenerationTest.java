@@ -32,7 +32,7 @@ import org.opensilex.core.variable.dal.*;
 import org.opensilex.core.variablesGroup.dal.VariablesGroupModel;
 import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.security.profile.dal.ProfileModel;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.SPARQLConfig;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.exceptions.SPARQLException;
@@ -70,7 +70,7 @@ public class UriGenerationTest extends AbstractMongoIntegrationTest {
 
         SPARQLService sparql = getSparqlService();
 
-        Assert.assertEquals(graphPrefix+"user",sparql.getDefaultGraph(UserModel.class).toString());
+        Assert.assertEquals(graphPrefix+"user",sparql.getDefaultGraph(AccountModel.class).toString());
         Assert.assertEquals(graphPrefix+"group",sparql.getDefaultGraph(GroupModel.class).toString());
         Assert.assertEquals(graphPrefix+"profile",sparql.getDefaultGraph(ProfileModel.class).toString());
 
@@ -109,13 +109,13 @@ public class UriGenerationTest extends AbstractMongoIntegrationTest {
     @Test
     public void testUser() throws Exception {
 
-        UserModel model = new UserModel();
+        AccountModel model = new AccountModel();
         model.setEmail(new InternetAddress("UriGenerationTest@opensilex.com"));
         model.setFirstName("opensilex");
         model.setLastName("opensilex");
 
         getSparqlService().create(model);
-        String expectedUri = getOpensilexBaseURI()+"id/user/opensilex.opensilex";
+        String expectedUri = getOpensilexBaseURI()+"id/user/account.urigenerationtestopensilexcom";
         Assert.assertEquals(model.getUri().toString(),expectedUri);
     }
 

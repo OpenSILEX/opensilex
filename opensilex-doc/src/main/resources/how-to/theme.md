@@ -20,12 +20,20 @@ First way modifiy Login component.
 2. Change image path in the html tag used to define the background image
 
 ```html
-    <div
+    <slot
     class="lavalite-bg"
     v-bind:style="{ 'background-image': 'url(' + $opensilex.getResourceURI('images/opensilex-login-bg.jpg') + ')' }"
     >
 ```
 
+### Set custom application name
+
+You can update the displayed name of your application (OpenSILEX by default) by just changing your `opensilex.yml` configuration.
+
+```yaml
+front:
+    applicationName: your_custom_application_name
+```
 
 
 ### Modify a theme

@@ -12,8 +12,8 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.opensilex.front.api.MenuItemDTO;
-import org.opensilex.security.user.dal.UserDAO;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountDAO;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.service.SPARQLService;
 
 import java.net.URI;
@@ -34,23 +34,23 @@ public class UserConfigService {
         this.sparql = sparql;
     }
 
-    public List<MenuItemDTO> getUserMenu(UserModel user, List<MenuItem> menu, Map<String, String> menuLabelMap, List<String> menuExclusions, List<CustomMenuItem> customMenu) {
+    public List<MenuItemDTO> getUserMenu(AccountModel user, List<MenuItem> menu, Map<String, String> menuLabelMap, List<String> menuExclusions, List<CustomMenuItem> customMenu) {
         buildUserMenu(user, menu, menuLabelMap, menuExclusions, customMenu);
         return userMenuCache.get(user.getUri());
     }
 
-    protected void buildUserMenu(UserModel user, List<MenuItem> menu, Map<String, String> menuLabelMap, List<String> menuExclusions, List<CustomMenuItem> customMenu) {
+    protected void buildUserMenu(AccountModel user, List<MenuItem> menu, Map<String, String> menuLabelMap, List<String> menuExclusions, List<CustomMenuItem> customMenu) {
         if (false && userMenuCache.containsKey(user.getUri())) {
             return;
         }
 
-        UserDAO userDAO = new UserDAO(sparql);
+        AccountDAO accountDAO = new AccountDAO(sparql);
         Set<String> userCredentials;
         if (user.isAdmin()) {
             userCredentials = null;
         } else {
             try {
-                userCredentials = new HashSet<>(userDAO.getCredentialList(user.getUri()));
+                userCredentials = new HashSet<>(accountDAO.getCredentialList(user.getUri()));
             } catch (Exception ignored) {
                 userCredentials = Collections.emptySet();
             }

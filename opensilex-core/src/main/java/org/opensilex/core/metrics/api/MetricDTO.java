@@ -54,7 +54,7 @@ public class MetricDTO {
             this.setCreatedDate(dtf.format(odt));
         } else {
             LocalDate date = ZonedDateTime.ofInstant(instant, offset == null ? ZoneId.of(ZoneOffset.UTC.toString()) : ZoneId.of(offset)).toLocalDate();
-            DateTimeFormatter dtf = DateTimeFormatter.ofPattern(DateFormat.YMD.toString());;
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern(DateFormat.YMD.toString());
             this.setCreatedDate(dtf.format(date));
         }
     }
@@ -119,9 +119,8 @@ public class MetricDTO {
         return experimentSummaryDTO;
     }
 
-    public static MetricDTO getDTOfromSystemSummaryModel(SystemSummaryModel model) {
-        MetricDTO experimentSummaryDTO = new MetricDTO();
-        
+    public static MetricDTO getDTOfromSystemSummaryModel(SystemSummaryModel model)  {
+        MetricDTO systemSummaryDTO = new MetricDTO();
         CountListItemDTO variablesDTO = CountListItemDTO.getDTOFromModel(model.getDataByVariables());
         variablesDTO.setName(SystemSummaryModel.DATA_BY_VARIABLES);
         
@@ -133,21 +132,25 @@ public class MetricDTO {
         
         CountListItemDTO germplasmByTypeDTO = CountListItemDTO.getDTOFromModel(model.getGermplasmByType());
         germplasmByTypeDTO.setName(SystemSummaryModel.GERMPLASM_TYPE_FIELD);
-        
-        experimentSummaryDTO.addItems(variablesDTO);
-        experimentSummaryDTO.addItems(scientificObjectsByTypeDTO);
-        experimentSummaryDTO.addItems(devicesByTypeDTO);
-        experimentSummaryDTO.addItems(germplasmByTypeDTO);
-        
-        experimentSummaryDTO.setDate(model.getCreationDate(), null, true);
+
+        CountListItemDTO experimentByTypeDTO = CountListItemDTO.getDTOFromModel(model.getExperimentByType());
+        experimentByTypeDTO.setName(SystemSummaryModel.EXPERIMENT_BY_TYPE_FIELD);
+
+        systemSummaryDTO.addItems(variablesDTO);
+        systemSummaryDTO.addItems(scientificObjectsByTypeDTO);
+        systemSummaryDTO.addItems(devicesByTypeDTO);
+        systemSummaryDTO.addItems(germplasmByTypeDTO);
+        systemSummaryDTO.addItems(experimentByTypeDTO);
+        systemSummaryDTO.setDate(model.getCreationDate(), null, true);
+
         try {
-            experimentSummaryDTO.setObjectURI(new URI(model.getBaseSystemAlias() + ":system"));
+            systemSummaryDTO.setObjectURI(new URI(model.getBaseSystemAlias() + ":system"));
         } catch (URISyntaxException ex) {
             Logger.getLogger(MetricDTO.class.getName()).log(Level.SEVERE, null, ex);
         }
-        experimentSummaryDTO.setUri(model.getUri());
+        systemSummaryDTO.setUri(model.getUri());
 
-        return experimentSummaryDTO;
+        return systemSummaryDTO;
     }
 
 }

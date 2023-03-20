@@ -45,7 +45,6 @@ import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.dal.ExperimentSearchFilter;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.scientificObject.api.ScientificObjectSearchDTO;
 import org.opensilex.core.scientificObject.api.ScientificObjectNodeDTO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectSearchFilter;
@@ -55,7 +54,7 @@ import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLService;
@@ -80,7 +79,7 @@ public class StudiesAPI implements BrapiCall {
     private FileStorageService fs;
 
     @CurrentUser
-    UserModel currentUser;
+    AccountModel currentUser;
 
     /**
      * Overriding BrapiCall method

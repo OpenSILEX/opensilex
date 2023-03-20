@@ -14,6 +14,7 @@
         @change="change"
         @input="input"
         @blur="blur"
+        @keyup.enter.native="onEnter"
         :disabled="disabled"
         :type="type"
         :required="isRequired"
@@ -59,6 +60,10 @@ export default class InputForm extends Vue {
 
   blur() {
     this.$emit("blur");
+  }
+
+  onEnter() {
+    this.$emit("handlingEnterKey")
   }
 
   @Prop({

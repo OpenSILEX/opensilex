@@ -34,7 +34,7 @@ import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.SingleObjectResponse;
@@ -64,7 +64,7 @@ public class FactorLevelAPI {
     private SPARQLService sparql;
 
     @CurrentUser
-    UserModel user;
+    AccountModel user;
 
     /**
      * Retrieve factor level by uri

@@ -29,6 +29,7 @@
             :filter.sync="filter.name"
             placeholder="component.project.filter-label-placeholder"
             class="searchFilter"
+            @handlingEnterKey="refresh()"
           ></opensilex-StringFilter>
         </opensilex-FilterField><br>
         </div>
@@ -42,6 +43,7 @@
             :filter.sync="filter.year"
             type="number"
             class="searchFilter"
+            @handlingEnterKey="refresh()"
           ></opensilex-StringFilter>
         </opensilex-FilterField><br>
         </div>
@@ -55,6 +57,7 @@
             :filter.sync="filter.keyword"
             placeholder="component.project.filter-keywords-placeholder"
             class="searchFilter"
+            @handlingEnterKey="refresh()"
           ></opensilex-StringFilter>
         </opensilex-FilterField><br>
         </div>
@@ -68,6 +71,7 @@
             :filter.sync="filter.financial"
             placeholder="component.project.filter-financial-placeholder"
             class="searchFilter"
+            @handlingEnterKey="refresh()"
           ></opensilex-StringFilter>
         </opensilex-FilterField><br>
         </div>

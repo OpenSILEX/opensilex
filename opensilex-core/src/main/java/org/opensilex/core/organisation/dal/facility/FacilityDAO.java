@@ -29,9 +29,9 @@ import org.opensilex.core.organisation.dal.site.SiteModel;
 import org.opensilex.core.organisation.dal.site.SiteSearchFilter;
 import org.opensilex.core.organisation.exception.SiteFacilityInvalidAddressException;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
 import org.opensilex.security.authentication.NotFoundURIException;
-import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
@@ -76,7 +76,7 @@ public class FacilityDAO {
 
     /**
      * Creates a facility. The address is checked before the creation (it must be the same as the associated sites).
-     * See {@link #validateFacilityAddress(FacilityModel, UserModel)}.
+     * See {@link #validateFacilityAddress(FacilityModel, AccountModel)}.
      *
      * @param instance The facility to create
      * @param user The current user
@@ -84,7 +84,7 @@ public class FacilityDAO {
      * @throws SiteFacilityInvalidAddressException If the address is invalid
      * @throws Exception If any other problem occurs
      */
-    public FacilityModel create(FacilityModel instance, UserModel user) throws Exception {
+    public FacilityModel create(FacilityModel instance, AccountModel user) throws Exception {
         validateFacilityAddress(instance, user);
 
         String lang = null;
@@ -101,7 +101,7 @@ public class FacilityDAO {
     }
 
     /**
-     * Gets a facility by URI. Checks that the user has access to it beforehand. See {@link #validateFacilityAccess(URI, UserModel)}
+     * Gets a facility by URI. Checks that the user has access to it beforehand. See {@link #validateFacilityAccess(URI, AccountModel)}
      * for further information on  access validation.
      *
      * @param uri The URI of the facility
@@ -109,7 +109,7 @@ public class FacilityDAO {
      * @return The facility
      * @throws Exception If the access is not validated, or if any other problem occurs
      */
-    public FacilityModel get(URI uri, UserModel user) throws Exception {
+    public FacilityModel get(URI uri, AccountModel user) throws Exception {
         validateFacilityAccess(uri, user);
         return sparql.getByURI(FacilityModel.class, uri, user.getLanguage());
     }
@@ -123,7 +123,7 @@ public class FacilityDAO {
      * @return The facilities
      * @throws Exception If the access is not validated, or if any other problem occurs
      */
-    public List<FacilityModel> getList(List<URI> uris, UserModel user) throws Exception {
+    public List<FacilityModel> getList(List<URI> uris, AccountModel user) throws Exception {
         return search(new FacilitySearchFilter()
                 .setUser(user)
                 .setFacilities(uris)).getList();
@@ -187,14 +187,14 @@ public class FacilityDAO {
 
 
     /**
-     * Deletes a facility by URI. Checks that the user has access to it beforehand. See {@link #validateFacilityAccess(URI, UserModel)}
+     * Deletes a facility by URI. Checks that the user has access to it beforehand. See {@link #validateFacilityAccess(URI, AccountModel)}
      * for further information on  access validation.
      *
      * @param uri The URI of the facility
      * @param user The current user
      * @throws Exception If the access is not validated, or if any other problem occurs
      */
-    public void delete(URI uri, UserModel user) throws Exception {
+    public void delete(URI uri, AccountModel user) throws Exception {
         validateFacilityAccess(uri, user);
 
         FacilityModel model = sparql.getByURI(FacilityModel.class, uri, user.getLanguage());
@@ -213,8 +213,8 @@ public class FacilityDAO {
     }
 
     /**
-     * Updates the facility. Checks that the user has access to it beforehand. See {@link #validateFacilityAccess(URI, UserModel)}
-     * for further information on  access validation. Also checks that the address is valid, see {@link #validateFacilityAddress(FacilityModel, UserModel)}
+     * Updates the facility. Checks that the user has access to it beforehand. See {@link #validateFacilityAccess(URI, AccountModel)}
+     * for further information on  access validation. Also checks that the address is valid, see {@link #validateFacilityAddress(FacilityModel, AccountModel)}
      * for further information.
      *
      * @param instance the facility to update
@@ -222,7 +222,7 @@ public class FacilityDAO {
      * @return The facility
      * @throws Exception If the access is not validated, or if any other problem occurs
      */
-    public FacilityModel update(FacilityModel instance, UserModel user) throws Exception {
+    public FacilityModel update(FacilityModel instance, AccountModel user) throws Exception {
         validateFacilityAccess(instance.getUri(), user);
         validateFacilityAddress(instance, user);
 
@@ -249,7 +249,7 @@ public class FacilityDAO {
 
     /**
      * Gets the geospatial model corresponding to the given facility. There is no access check in this method, so please
-     * make sure that the user has access to the given facility (by calling {@link #get(URI, UserModel)}, for example.
+     * make sure that the user has access to the given facility (by calling {@link #get(URI, AccountModel)}, for example.
      *
      * @param facilityUri The URI of the facility
      * @return The geospatial model
@@ -294,11 +294,11 @@ public class FacilityDAO {
      * </ul>
      *
      * @param facilityURI The facility URI to check
-     * @param userModel The user
-     * @throws IllegalArgumentException If the userModel is null
+     * @param accountModel The user
+     * @throws IllegalArgumentException If the AccountModel is null
      */
-    private void validateFacilityAccess(URI facilityURI, UserModel userModel) throws Exception {
-        if (Objects.isNull(userModel)) {
+    private void validateFacilityAccess(URI facilityURI, AccountModel accountModel) throws Exception {
+        if (Objects.isNull(accountModel)) {
             throw new IllegalArgumentException("User cannot be null");
         }
 
@@ -306,16 +306,16 @@ public class FacilityDAO {
             throw new NotFoundURIException(facilityURI);
         }
 
-        if (userModel.isAdmin()) {
+        if (accountModel.isAdmin()) {
             return;
         }
 
-        final List<URI> userOrganizations = organizationDAO.search(null, null, userModel)
+        final List<URI> userOrganizations = organizationDAO.search(null, null, accountModel)
                         .stream().map(SPARQLResourceModel::getUri)
                         .collect(Collectors.toList());
 
         final List<URI> userSites = siteDAO.search(new SiteSearchFilter()
-                            .setUser(userModel)
+                            .setUser(accountModel)
                             .setUserOrganizations(userOrganizations)
                             .setSkipUserOrganizationFetch(true))
                         .getList().stream().map(SPARQLResourceModel::getUri)
@@ -324,9 +324,9 @@ public class FacilityDAO {
         Var uriVar = makeVar(FacilityModel.URI_FIELD);
 
         AskBuilder ask = new AskBuilder();
-        ask.addWhere(uriVar, Ontology.typeSubClassAny, sparql.getMapperIndex().getForClass(FacilityModel.class).getRDFType());
+        ask.addWhere(uriVar, Ontology.typeSubClassAny, sparql.getRDFType(FacilityModel.class));
         ask.addFilter(SPARQLQueryHelper.eq(uriVar, SPARQLDeserializers.nodeURI(facilityURI)));
-        organizationSPARQLHelper.addFacilityAccessClause(ask, uriVar, userOrganizations, userSites, userModel.getUri());
+        organizationSPARQLHelper.addFacilityAccessClause(ask, uriVar, userOrganizations, userSites, accountModel.getUri());
 
         if (!sparql.executeAskQuery(ask)) {
             throw new ForbiddenURIAccessException(facilityURI);
@@ -340,7 +340,7 @@ public class FacilityDAO {
      * @param user The user
      * @throws SiteFacilityInvalidAddressException If the address is invalid
      */
-    protected void validateFacilityAddress(FacilityModel facilityModel, UserModel user) throws Exception {
+    protected void validateFacilityAddress(FacilityModel facilityModel, AccountModel user) throws Exception {
         if (facilityModel.getUri() == null) {
             return;
         }

@@ -6,6 +6,8 @@
 package org.opensilex.core.variable.api.characteristic;
 
 import io.swagger.annotations.*;
+import org.opensilex.core.CoreModule;
+import org.opensilex.core.external.opensilex.SharedResourceInstanceService;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.variable.api.VariableAPI;
 import org.opensilex.core.variable.dal.BaseVariableDAO;
@@ -15,7 +17,7 @@ import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.response.*;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
@@ -25,15 +27,20 @@ import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 
 import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
+import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.opensilex.core.variable.api.VariableAPI.*;
@@ -47,12 +54,21 @@ import static org.opensilex.core.variable.api.VariableAPI.*;
 public class CharacteristicAPI {
 
     public static final String PATH = "/core/characteristics";
+    public static final String GET_BY_URIS_PATH = "by_uris";
+    public static final String GET_BY_URIS_URI_PARAM = "uris";
+    private static final String SHARED_RESOURCE_INSTANCE_PARAM = "sharedResourceInstance";
 
     @Inject
     private SPARQLService sparql;
 
+    @Inject
+    private CoreModule coreModule;
+
+    @Context
+    protected HttpServletRequest httpRequest;
+
     @CurrentUser
-    UserModel currentUser;
+    AccountModel currentUser;
 
     @POST
     @ApiOperation("Add a characteristic")
@@ -109,7 +125,7 @@ public class CharacteristicAPI {
     
     
     @GET
-    @Path("by_uris")
+    @Path(CharacteristicAPI.GET_BY_URIS_PATH)
     @ApiOperation("Get detailed characteristics by uris")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
@@ -120,22 +136,33 @@ public class CharacteristicAPI {
         @ApiResponse(code = 404, message = "Characteristic not found (if any provided URIs is not found", response = ErrorDTO.class)
     })
     public Response getCharacteristicsByURIs(
-            @ApiParam(value = "Characteristics URIs", required = true) @QueryParam("uris") @NotNull @NotEmpty List<URI> uris
+            @ApiParam(value = "Characteristics URIs", required = true) @QueryParam(CharacteristicAPI.GET_BY_URIS_URI_PARAM) @NotNull @NotEmpty List<URI> uris,
+            @ApiParam(value = "Shared resource instance") @QueryParam(CharacteristicAPI.SHARED_RESOURCE_INSTANCE_PARAM) URI sharedResourceInstance
     ) throws Exception {
-        
-        BaseVariableDAO<CharacteristicModel> dao = new BaseVariableDAO<>(CharacteristicModel.class, sparql);
+        if (sharedResourceInstance == null) {
+            BaseVariableDAO<CharacteristicModel> dao = new BaseVariableDAO<>(CharacteristicModel.class, sparql);
 
-        try {
-            List<CharacteristicDetailsDTO> resultDTOList = dao.getList(uris)
-                    .stream()
-                    .map(CharacteristicDetailsDTO::new)
-                    .collect(Collectors.toList());
+            try {
+                List<CharacteristicDetailsDTO> resultDTOList = dao.getList(uris)
+                        .stream()
+                        .map(CharacteristicDetailsDTO::new)
+                        .collect(Collectors.toList());
 
-            return new PaginatedListResponse<>(resultDTOList).getResponse();
+                return new PaginatedListResponse<>(resultDTOList).getResponse();
 
-        }catch (SPARQLInvalidUriListException e){
-            return new ErrorResponse(Response.Status.NOT_FOUND, "Characteristics not found", e.getStrUris()).getResponse();
+            } catch (SPARQLInvalidUriListException e) {
+                return new ErrorResponse(Response.Status.NOT_FOUND, "Characteristics not found", e.getStrUris()).getResponse();
+            }
         }
+
+        SharedResourceInstanceService service = new SharedResourceInstanceService(
+                coreModule.getSharedResourceInstanceConfiguration(sharedResourceInstance), currentUser.getLanguage()
+        );
+
+        ListWithPagination<CharacteristicDetailsDTO> detailsList = service.getListByURI(Paths.get(CharacteristicAPI.PATH, CharacteristicAPI.GET_BY_URIS_PATH).toString(),
+                CharacteristicAPI.GET_BY_URIS_URI_PARAM,
+                uris, CharacteristicDetailsDTO.class);
+        return new PaginatedListResponse<>(detailsList).getResponse();
     }
     
     
@@ -199,22 +226,33 @@ public class CharacteristicAPI {
             @ApiParam(value = "Name (regex)", example = "Height") @QueryParam("name") String namePattern ,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
-            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @Min(0) int pageSize
-    ) throws Exception {
+            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @Min(0) int pageSize,
+            @ApiParam(value = "Shared resource instance") @QueryParam(CharacteristicAPI.SHARED_RESOURCE_INSTANCE_PARAM) URI sharedResourceInstance
+            ) throws Exception {
+        if (sharedResourceInstance == null) {
+            BaseVariableDAO<CharacteristicModel> dao = new BaseVariableDAO<>(CharacteristicModel.class, sparql);
+            ListWithPagination<CharacteristicModel> resultList = dao.search(
+                    namePattern,
+                    orderByList,
+                    page,
+                    pageSize,
+                    currentUser.getLanguage()
+            );
 
-        BaseVariableDAO<CharacteristicModel> dao = new BaseVariableDAO<>(CharacteristicModel.class, sparql);
-        ListWithPagination<CharacteristicModel> resultList = dao.search(
-                namePattern,
-                orderByList,
-                page,
-                pageSize,
-                currentUser.getLanguage()
+            ListWithPagination<CharacteristicGetDTO> resultDTOList = resultList.convert(
+                    CharacteristicGetDTO.class,
+                    CharacteristicGetDTO::new
+            );
+            return new PaginatedListResponse<>(resultDTOList).getResponse();
+        }
+
+        SharedResourceInstanceService service = new SharedResourceInstanceService(
+                coreModule.getSharedResourceInstanceConfiguration(sharedResourceInstance), currentUser.getLanguage()
         );
 
-        ListWithPagination<CharacteristicGetDTO> resultDTOList = resultList.convert(
-                CharacteristicGetDTO.class,
-                CharacteristicGetDTO::new
-        );
-        return new PaginatedListResponse<>(resultDTOList).getResponse();
+        Map<String, String[]> searchParams = new HashMap<>(httpRequest.getParameterMap());
+        searchParams.remove(CharacteristicAPI.SHARED_RESOURCE_INSTANCE_PARAM);
+        return new PaginatedListResponse<>(service.search(CharacteristicAPI.PATH, searchParams, CharacteristicGetDTO.class))
+                .getResponse();
     }
 }

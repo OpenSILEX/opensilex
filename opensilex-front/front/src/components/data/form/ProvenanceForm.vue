@@ -25,6 +25,7 @@
       helpMessage="ProvenanceForm.description-help"
       label="ProvenanceForm.description"
       placeholder="ProvenanceForm.description-placeholder"
+      @keydown.native.enter.stop
     ></opensilex-TextAreaForm>
 
     <!--activity -->

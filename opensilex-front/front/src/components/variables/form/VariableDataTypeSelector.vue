@@ -5,6 +5,7 @@
         :options="datatypesNodes"
         :itemLoadingMethod="loadDataType"
         placeholder="VariableForm.datatype-placeholder"
+        @keyup.enter.native="onEnter"
     ></opensilex-SelectForm>
 </template>
 
@@ -72,6 +73,10 @@ export default class VariableDataTypeSelector extends Vue {
         }
         let dataType = this.datatypesNodes.find(datatypeNode => datatypeNode.id == dataTypeUri);
         return [dataType];
+    }
+
+    onEnter() {
+        this.$emit("handlingEnterKey")
     }
 }
 </script>

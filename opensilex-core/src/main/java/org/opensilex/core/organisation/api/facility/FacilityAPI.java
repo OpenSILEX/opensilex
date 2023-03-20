@@ -10,6 +10,7 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.organisation.dal.facility.FacilityDAO;
 import org.opensilex.core.organisation.dal.facility.FacilitySearchFilter;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.core.organisation.dal.OrganizationDAO;
@@ -19,7 +20,6 @@ import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.ValidURI;
@@ -71,7 +71,7 @@ public class FacilityAPI {
     private MongoDBService nosql;
 
     @CurrentUser
-    UserModel currentUser;
+    AccountModel currentUser;
 
     @POST
     @ApiOperation("Create a facility")

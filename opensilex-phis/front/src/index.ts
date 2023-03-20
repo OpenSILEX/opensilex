@@ -1,8 +1,11 @@
-import { ApiServiceBinder } from './lib';
+import PhisLoginComponent from "./components/layout/PhisLoginComponent.vue";
+import PhisHeaderComponent from "./components/layout/PhisHeaderComponent.vue";
 
 export default {
     install(Vue, options) {
-        ApiServiceBinder.with(Vue.$opensilex.getServiceContainer());
-        // TODO register components
+    },
+    components : {
+        "opensilex-phis-PhisLoginComponent" : PhisLoginComponent,
+        "opensilex-phis-PhisHeaderComponent" : PhisHeaderComponent
     }
 };

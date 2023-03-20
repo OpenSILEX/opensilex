@@ -16,7 +16,7 @@ import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.response.*;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.service.SPARQLService;
@@ -57,7 +57,7 @@ public class AnnotationAPI {
     private SPARQLService sparql;
 
     @CurrentUser
-    UserModel currentUser;
+    AccountModel currentUser;
 
     @POST
     @ApiOperation("Create an annotation")

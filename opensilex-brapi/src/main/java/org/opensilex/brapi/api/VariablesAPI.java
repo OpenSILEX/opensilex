@@ -35,7 +35,7 @@ import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
@@ -56,7 +56,7 @@ public class VariablesAPI implements BrapiCall {
     private FileStorageService fs;
     
     @CurrentUser
-    UserModel currentUser;
+    AccountModel currentUser;
     
     @Override
     public ArrayList<Call> callInfo() {

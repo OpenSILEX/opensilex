@@ -9,13 +9,15 @@ package org.opensilex.security.user.api;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import java.net.URI;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotNull;
 import org.opensilex.OpenSilex;
 import org.opensilex.server.rest.validation.NullOrNotEmpty;
 import org.opensilex.server.rest.validation.Required;
 import org.opensilex.server.rest.validation.ValidURI;
+
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotNull;
+import java.net.URI;
+import java.util.List;
 
 /**
  * <pre>
@@ -51,21 +53,26 @@ public class UserUpdateDTO extends UserGetDTO {
 
     @Email
     @Required
-    @ApiModelProperty(required = true)
+    @ApiModelProperty(value = "User email", example = "jean.michel@example.com", required = true)
     public String getEmail() {
         return super.getEmail();
     }
 
     @Required
-    @ApiModelProperty(required = true)
+    @ApiModelProperty(value = "User first name", example = "Janne", required = true)
     public String getFirstName() {
         return super.getFirstName();
     }
 
     @Required
-    @ApiModelProperty(required = true)
+    @ApiModelProperty(value = "User last name", example = "Michelle", required = true)
     public String getLastName() {
         return super.getLastName();
+    }
+
+    @ApiModelProperty()
+    public List<URI> getFavorites() {
+        return super.getFavorites();
     }
 
     @NullOrNotEmpty

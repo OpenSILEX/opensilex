@@ -43,7 +43,6 @@ import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
-import static org.opensilex.sparql.service.SPARQLQueryHelper.or;
 
 /**
  * @author vincent
@@ -766,5 +765,27 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
             A modelFromDB = search.get(i);
             assertEquals(initialModel,modelFromDB);
         }
+    }
+
+    @Test
+    public void testGetFavoriteRdfTypeFromURI() throws Exception {
+        URI aInstanceUri = new URI("http://test.opensilex.org/a/001");
+        URI aType = new URI("http://test.opensilex.org/A");
+
+        URI rdfTypeUri = sparql.getFavoriteRdfTypeFromURI(aInstanceUri, new ArrayList<URI>() {{
+            add(aType);
+        }});
+
+        assertEquals(aType, rdfTypeUri);
+    }
+
+    @Test
+    public void testGetFavoriteNameFromURI() throws Exception {
+        URI aInstanceUri = new URI("http://test.opensilex.org/a/001");
+        String name = "test A";
+
+        String nameFromURI = sparql.getFavoriteNameFromURI(aInstanceUri);
+
+        assertEquals(name, nameFromURI);
     }
 }

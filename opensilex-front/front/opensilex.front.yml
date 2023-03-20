@@ -105,7 +105,7 @@ menu:
         label: component.menu.scientificObjects
         route:
           path: /scientific-objects
-          component: opensilex-ScientificObjectView
+          component: opensilex-ScientificObjectsView
           credentials:
             - scientific-objects-access
           icon: ik#ik-target
@@ -323,6 +323,13 @@ routes:
 
   - path: /facility/details/:uri
     component: opensilex-FacilityView
+    rdfType: vocabulary:Facility
+  - path: /facility/devices/:uri
+    component: opensilex-FacilityView
+  - path: /facility/annotations/:uri
+    component: opensilex-FacilityView
+  - path: /facility/document/:uri
+    component: opensilex-FacilityView
 
   - path: /scientific-object-types/properties
     component: opensilex-ScientificObjectTypes
@@ -396,6 +403,7 @@ routes:
 
   - path: /device/details/:uri
     component: opensilex-DeviceDetails
+    rdfType: vocabulary:Device
   - path: /device/visualization/:uri
     component: opensilex-DeviceDetails
   - path: /device/datafiles/:uri
@@ -416,16 +424,30 @@ routes:
   - path: /area/annotations/:uri
     component: opensilex-AreaDetails
 
-  - path: /scientific-objects/details/:uri
+# Optional <experiment> path
+  - path: /scientific-objects/details/:uri/:experiment?
     component: opensilex-ScientificObjectDetailView
     credentials: []
     icon: ik#ik-target
     title: component.menu.scientificObjects
     description: ScientificObjectList.description
+    rdfType: vocabulary:ScientificObject
+  - path: /scientific-objects/visualization/:uri
+    component: opensilex-ScientificObjectDetailView
+  - path: /scientific-objects/datafiles/:uri
+    component: opensilex-ScientificObjectDetailView
+  - path: /scientific-objects/events/:uri
+    component: opensilex-ScientificObjectDetailView
+  - path: /scientific-objects/positions/:uri
+    component: opensilex-ScientificObjectDetailView
+  - path: /scientific-objects/annotations/:uri
+    component: opensilex-ScientificObjectDetailView
+  - path: /scientific-objects/documents/:uri
+    component: opensilex-ScientificObjectDetailView
+    
   - path: /infrastructures/details/:uri
     component: opensilex-InfrastructureDetailView
     credentials: []
-
   - path: /provenances/details/:uri
     component: opensilex-ProvenanceDetailsPage
     credentials: []

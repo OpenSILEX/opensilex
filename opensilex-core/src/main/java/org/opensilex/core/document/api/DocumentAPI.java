@@ -18,7 +18,7 @@ import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.exceptions.NotFoundException;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
@@ -64,7 +64,7 @@ public class DocumentAPI {
     protected static final String DOCUMENT_EXAMPLE_URI = "http://opensilex/set/documents/d21";
 
     @CurrentUser
-    UserModel currentUser;
+    AccountModel currentUser;
 
     @Inject
     private SPARQLService sparql;
@@ -334,6 +334,24 @@ public class DocumentAPI {
         // Convert paginated list to DTO
         ListWithPagination<DocumentGetDTO> resultDTOList = resultList.convert(DocumentGetDTO.class, DocumentGetDTO::fromModel);
         return new PaginatedListResponse<>(resultDTOList).getResponse();
+    }
+
+    @GET
+    @Path("count")
+    @ApiOperation("Count documents")
+    @ApiProtected
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return the number of documents associated to a given target", response = Integer.class)
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response countDocuments(
+            @ApiParam(value = "Target URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("target") URI target) throws Exception {
+
+        DocumentDAO dao = new DocumentDAO(sparql, nosql, fs);
+        int documentCount = dao.countDocuments(target);
+
+        return new SingleObjectResponse<>(documentCount).getResponse();
     }
 
 }

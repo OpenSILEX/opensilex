@@ -92,9 +92,10 @@ import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
 import {OrderBy} from "opensilex-core/index";
+import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
 
 @Component
-export default class TableAsyncView extends Vue {
+export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
   $opensilex: any;
   $route: any;
   $store: any;
@@ -156,7 +157,7 @@ export default class TableAsyncView extends Vue {
   @Prop()
   maximumSelectedRows; // if you need a limit of selected items
 
-  selectedItems = [];
+  selectedItems: Array<T> = [];
   selectedItem;
 
   currentPage: number = 1;
@@ -322,7 +323,7 @@ export default class TableAsyncView extends Vue {
     this.numberOfSelectedRows = this.selectedItems.length;
   }
 
-  getSelected() {
+  getSelected(): Array<T> {
     return this.selectedItems;
   }
 

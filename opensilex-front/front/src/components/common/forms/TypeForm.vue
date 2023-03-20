@@ -22,6 +22,7 @@
         @close="field.validator && field.validator.validate()"
         @input="$emit('input', $event)"
         @open="$emit('open', $event)"
+        @keyup.enter.native="onEnter"
       />
     </template>
   </opensilex-FormField>
@@ -119,6 +120,9 @@ export default class TypeForm extends Vue {
         this.$opensilex.enableLoader();
         this.$opensilex.errorHandler;
         });
+  }
+  onEnter() {
+    this.$emit("handlingEnterKey")
   }
 }
 </script>

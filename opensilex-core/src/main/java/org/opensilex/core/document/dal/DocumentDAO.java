@@ -26,8 +26,8 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.NotFoundURIException;
-import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLException;
@@ -129,16 +129,16 @@ public class DocumentDAO {
         }
     }
 
-    public DocumentModel getMetadata(URI uri, UserModel user) throws Exception {
+    public DocumentModel getMetadata(URI uri, AccountModel user) throws Exception {
         return sparql.getByURI(DocumentModel.class, uri, user.getLanguage());   
     }
 
-    public DocumentModel update(DocumentModel instance, UserModel user) throws Exception {
+    public DocumentModel update(DocumentModel instance, AccountModel user) throws Exception {
         sparql.update(instance);
         return instance;
     }
 
-    public void delete(URI uri, UserModel user) throws Exception {
+    public void delete(URI uri, AccountModel user) throws Exception {
 
         if(! fs.exist(FS_DOCUMENT_PREFIX,uri)){
             throw new NotFoundURIException(uri);
@@ -178,7 +178,7 @@ public class DocumentDAO {
      * @return
      * @throws Exception
      */
-    public ListWithPagination<DocumentModel> search(UserModel user, URI type, String title, String date, URI targets, String authors, String subject, String multiple, String deprecated, List<OrderBy> orderByList, int page, int pageSize) throws Exception {
+    public ListWithPagination<DocumentModel> search(AccountModel user, URI type, String title, String date, URI targets, String authors, String subject, String multiple, String deprecated, List<OrderBy> orderByList, int page, int pageSize) throws Exception {
         
         return sparql.searchWithPagination(
             DocumentModel.class,
@@ -211,6 +211,25 @@ public class DocumentDAO {
     }
 
     /**
+     * Count total of documents binded to a target URI
+     * 
+     * @param target the URI on which find associated documents
+     * @return the number of documents associated to a target
+     */
+    public int countDocuments(URI target) throws Exception {
+
+        Node documentGraph = sparql.getDefaultGraph(DocumentModel.class);
+        return sparql.count(documentGraph, DocumentModel.class,null,countBuilder -> {
+
+            ElementGroup rootElementGroup = countBuilder.getWhereHandler().getClause();
+            ElementGroup documentGraphGroupElem = SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(rootElementGroup,documentGraph);
+
+            appendTargetsFilter(documentGraphGroupElem, target);
+            appendDeprecatedFilter(countBuilder, "false");
+        },null);
+    }
+
+    /**
      * Appends the following filter :
      *
      * <pre>
@@ -228,6 +247,7 @@ public class DocumentDAO {
             ));
         }
     }
+
 
     private void appendTitleFilter(SelectBuilder select, String title) throws Exception {
         if (!StringUtils.isEmpty(title)) {
@@ -328,7 +348,7 @@ public class DocumentDAO {
         select.getWhereHandler().getClause().addTriplePattern(new Triple(makeVar(subjectVar), property.asNode(), makeVar(objectVar)));
     }
 
-    public void validateDocumentAccess(URI documentURI, UserModel user) throws Exception {
+    public void validateDocumentAccess(URI documentURI, AccountModel user) throws Exception {
         if (!sparql.uriExists(DocumentModel.class, documentURI)) {
             throw new NotFoundURIException("Document URI not found: ", documentURI);
         }

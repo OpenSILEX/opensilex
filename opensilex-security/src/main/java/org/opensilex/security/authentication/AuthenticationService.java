@@ -31,7 +31,7 @@ import org.opensilex.security.SAMLConfig;
 import org.opensilex.security.SecurityConfig;
 import org.opensilex.security.SecurityModule;
 import org.opensilex.security.extensions.LoginExtension;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.exceptions.ForbiddenException;
 import org.opensilex.service.BaseService;
@@ -178,7 +178,7 @@ public class AuthenticationService extends BaseService implements Service {
     /**
      * Map of registred users by URI
      */
-    private ConcurrentHashMap<URI, UserModel> userRegistry = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<URI, AccountModel> userRegistry = new ConcurrentHashMap<>();
 
     /**
      * Auto-logout thread map by users
@@ -255,7 +255,7 @@ public class AuthenticationService extends BaseService implements Service {
      * @param credentialsList Credential list to setup for user in token
      * @throws Exception in case of token generation failure
      */
-    public void generateToken(UserModel user, List<String> credentialsList) throws Exception {
+    public void generateToken(AccountModel user, List<String> credentialsList) throws Exception {
         // Set issue date a now
         Date issuedDate = new Date();
 
@@ -302,7 +302,7 @@ public class AuthenticationService extends BaseService implements Service {
      * @return true if token has been renewed and false if not (in case user has no previous token)
      * @throws Exception in case of token renew failure
      */
-    public boolean renewToken(UserModel user) throws Exception {
+    public boolean renewToken(AccountModel user) throws Exception {
         if (user.getToken() != null) {
 
             // Check and decode current user token
@@ -424,8 +424,8 @@ public class AuthenticationService extends BaseService implements Service {
      * @param securityContext Application security context
      * @return Current user
      */
-    public UserModel getCurrentUser(SecurityContext securityContext) {
-        return (UserModel) securityContext.getUserPrincipal();
+    public AccountModel getCurrentUser(SecurityContext securityContext) {
+        return (AccountModel) securityContext.getUserPrincipal();
     }
 
     /**
@@ -434,7 +434,7 @@ public class AuthenticationService extends BaseService implements Service {
      * @param user User to check
      * @return true if user is authenticated, false otherwise
      */
-    public synchronized boolean hasUser(UserModel user) {
+    public synchronized boolean hasUser(AccountModel user) {
         return hasUserURI(user.getUri());
     }
 
@@ -445,7 +445,7 @@ public class AuthenticationService extends BaseService implements Service {
      * @param expireMs authentication delay in milliseconds
      * @throws Exception in case previous user connection can't be cleared
      */
-    public synchronized void addUser(UserModel user, long expireMs) throws Exception {
+    public synchronized void addUser(AccountModel user, long expireMs) throws Exception {
         URI userURI = user.getUri();
 
         // If user already registred remove it
@@ -483,7 +483,7 @@ public class AuthenticationService extends BaseService implements Service {
      * @return removed user or null
      * @throws Exception in case user connection can't be cleared
      */
-    public synchronized UserModel removeUser(UserModel user) throws Exception {
+    public synchronized AccountModel removeUser(AccountModel user) throws Exception {
         return removeUserByURI(user.getUri());
     }
 
@@ -494,14 +494,14 @@ public class AuthenticationService extends BaseService implements Service {
      * @return removed user or null if not found
      * @throws Exception in case user connection can't be cleared
      */
-    public synchronized UserModel removeUserByURI(URI userURI) throws Exception {
+    public synchronized AccountModel removeUserByURI(URI userURI) throws Exception {
         boolean allowMultiConnection = getOpenSilex().getModuleConfig(SecurityModule.class, SecurityConfig.class).allowMultiConnection();
         if (!allowMultiConnection && hasUserURI(userURI)) {
             LOGGER.debug("Unregister user: " + userURI);
             schedulerRegistry.get(userURI).interrupt();
             schedulerRegistry.remove(userURI);
 
-            UserModel user = userRegistry.remove(userURI);
+            AccountModel user = userRegistry.remove(userURI);
 
             // Allow any module implementing LoginExtension to do something on logout
             for (LoginExtension module : getOpenSilex().getModulesImplementingInterface(LoginExtension.class)) {
@@ -530,11 +530,11 @@ public class AuthenticationService extends BaseService implements Service {
      * @param userURI User URI to get
      * @return registred user or null
      */
-    public synchronized UserModel getUserByUri(URI userURI) {
+    public synchronized AccountModel getUserByUri(URI userURI) {
         return userRegistry.get(userURI);
     }
 
-    public boolean authenticate(UserModel user, String password, List<String> accessList) throws Exception {
+    public boolean authenticate(AccountModel user, String password, List<String> accessList) throws Exception {
         if ((user != null && checkPassword(password, user.getPasswordHash()))) {
             generateToken(user, accessList);
             addUser(user, getExpireInMs());
@@ -543,13 +543,13 @@ public class AuthenticationService extends BaseService implements Service {
         return false;
     }
 
-    public boolean authenticate(UserModel user, List<String> accessList) throws Exception {
+    public boolean authenticate(AccountModel user, List<String> accessList) throws Exception {
         generateToken(user, accessList);
         addUser(user, getExpireInMs());
         return true;
     }
 
-    public boolean logout(UserModel user) throws Exception {
+    public boolean logout(AccountModel user) throws Exception {
         return (removeUser(user) != null);
     }
 
@@ -572,7 +572,7 @@ public class AuthenticationService extends BaseService implements Service {
         return providerMetadata;
     }
 
-    public UserModel authenticateWithOpenID(String code, OpenIDConfig config) throws Exception {
+    public AccountModel authenticateWithOpenID(String code, OpenIDConfig config) throws Exception {
         if (!config.enable()) {
             throw new ForbiddenException("OpenID is not enabled on this server");
         }
@@ -626,7 +626,7 @@ public class AuthenticationService extends BaseService implements Service {
         UserInfoSuccessResponse successResponse = (UserInfoSuccessResponse) userInfoResponse;
         JSONObject claims = successResponse.getUserInfo().toJSONObject();
 
-        UserModel user = new UserModel();
+        AccountModel user = new AccountModel();
         user.setEmail(new InternetAddress(claims.getAsString("email")));
         user.setFirstName(claims.getAsString("given_name"));
         user.setLastName(claims.getAsString("family_name"));
@@ -742,16 +742,16 @@ public class AuthenticationService extends BaseService implements Service {
     }
 
     /**
-     * Construct a {@link UserModel} based on the SAML attributes in the request. Attributes are retrieved using the
+     * Construct a {@link AccountModel} based on the SAML attributes in the request. Attributes are retrieved using the
      * AJP protocol, configured in the {@link org.opensilex.server.Server} class, by examining the
      * {@link HttpServletRequest} object.
      *
      * @param request The current request
-     * @return A {@link UserModel} constructed from the SAML attributes in the request
+     * @return A {@link AccountModel} constructed from the SAML attributes in the request
      * @throws Exception If SAML is not enabled on the instance, or something went wrong while trying to retrieve the
      * attributes
      */
-    public UserModel authenticateWithSAML(HttpServletRequest request) throws Exception {
+    public AccountModel authenticateWithSAML(HttpServletRequest request) throws Exception {
         SAMLConfig samlConfig = getOpenSilex()
                 .getModuleConfig(SecurityModule.class, SecurityConfig.class)
                 .saml();
@@ -788,7 +788,7 @@ public class AuthenticationService extends BaseService implements Service {
         String givenName = (String) request.getAttribute(samlConfig.attributes().firstName());
         String surname = (String) request.getAttribute(samlConfig.attributes().lastName());
 
-        UserModel user = new UserModel();
+        AccountModel user = new AccountModel();
         user.setEmail(emailAddress);
         user.setFirstName(givenName);
         user.setLastName(surname);

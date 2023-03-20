@@ -16,7 +16,7 @@ import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
 import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.service.SPARQLService;
 
 import java.io.InputStream;
@@ -45,7 +45,7 @@ public class MoveEventCsvImporter extends AbstractEventCsvImporter<MoveModel> {
             ).collect(Collectors.toCollection(LinkedHashSet::new)
     );
 
-    public MoveEventCsvImporter(SPARQLService sparql, OntologyDAO ontologyDAO, InputStream file, UserModel user) throws SPARQLInvalidClassDefinitionException, SPARQLMapperNotFoundException {
+    public MoveEventCsvImporter(SPARQLService sparql, OntologyDAO ontologyDAO, InputStream file, AccountModel user) throws SPARQLInvalidClassDefinitionException, SPARQLMapperNotFoundException {
         super(sparql,ontologyDAO,file, user);
     }
 

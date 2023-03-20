@@ -1,7 +1,7 @@
 package org.opensilex.core.experiment.dal;
 
 import org.opensilex.core.variable.dal.VariableModel;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.service.SparqlSearchFilter;
 
 import java.net.URI;
@@ -21,7 +21,7 @@ public class ExperimentSearchFilter extends SparqlSearchFilter {
     private List<URI> projects;
     private Boolean isPublic;
     private List<URI> facilities;
-    private UserModel user;
+    private AccountModel user;
 
     public ExperimentSearchFilter() {
         super();
@@ -99,11 +99,11 @@ public class ExperimentSearchFilter extends SparqlSearchFilter {
         return this;
     }
 
-    public UserModel getUser() {
+    public AccountModel getUser() {
         return user;
     }
 
-    public ExperimentSearchFilter setUser(UserModel user) {
+    public ExperimentSearchFilter setUser(AccountModel user) {
         this.user = user;
         return this;
     }

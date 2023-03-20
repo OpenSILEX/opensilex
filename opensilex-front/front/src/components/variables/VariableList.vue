@@ -3,7 +3,7 @@
         <opensilex-PageContent
         class="pagecontent">
             <template>
-            <!-- Toggle Sidebar--> 
+            <!-- Toggle Sidebar-->
                 <div class="searchMenuContainer"
 
                 v-on:click="toggleFilter()"
@@ -15,130 +15,156 @@
                 <!-- FILTERS -->
                 <Transition>
 
-                    <!-- Conditional display of filter and conditional rendering of advanced filters -->
-                    <div v-show="toggleSearchFilters">
-                        <opensilex-SearchFilterField
+                  <!-- Conditional display of filter and conditional rendering of advanced filters -->
+                  <div v-show="toggleSearchFilters">
+                    <opensilex-SearchFilterField
                         @clear="reset()"
                         @search="refresh()"
                         @toggleAdvancedSearch="loadAdvancedFilter"
                         :showAdvancedSearch="true"
                         class="searchFilterField">
-
-                        <template v-slot:filters>
+                      <template v-slot:filters>
+                        <div>
+                          <opensilex-FilterField>
+                            <opensilex-SharedResourceInstanceSelector
+                                label="component.sharedResourceInstances.label"
+                                :sharedResourceInstance.sync="filter.sharedResourceInstance"
+                                placeholder="component.sharedResourceInstances.selector-placeholder"
+                                @select="refresh"
+                                :multiple="false"
+                                class="searchFilter"
+                            ></opensilex-SharedResourceInstanceSelector>
+                          </opensilex-FilterField>
+                        </div>
                         <!-- Name -->
-                            <div>
-                                <opensilex-FilterField>
-                                    <label>{{ $t("ExperimentList.filter-label") }}</label>
-                                    <opensilex-StringFilter
-                                        :filter.sync="filter.name"
-                                        placeholder="VariableList.name-placeholder"
-                                        class="searchFilter"
-                                    ></opensilex-StringFilter>
-                                </opensilex-FilterField> <br>
-                            </div>
+                        <div>
+                            <opensilex-FilterField>
+                                <label>{{ $t("ExperimentList.filter-label") }}</label>
+                                <opensilex-StringFilter
+                                    :filter.sync="filter.name"
+                                    placeholder="VariableList.name-placeholder"
+                                    class="searchFilter"
+                                    @handlingEnterKey="refresh()"
+                                ></opensilex-StringFilter>
+                            </opensilex-FilterField>
+                        </div>
 
-                            <!-- Entity -->
-                            <div>
-                                <opensilex-FilterField>
-                                    <opensilex-EntitySelector v-if="loadSearchFilters"
-                                        label="VariableView.entity"
-                                        :entity.sync="filter.entity"
-                                        class="searchFilter"
-                                    ></opensilex-EntitySelector>
-                                </opensilex-FilterField>
-                            </div>
+                        <!-- Entity -->
+                        <div>
+                        <opensilex-FilterField>
+                            <opensilex-EntitySelector v-if="loadSearchFilters"
+                                label="VariableView.entity"
+                                :entity.sync="filter.entity"
+                                :sharedResourceInstance="filter.sharedResourceInstance"
+                                @handlingEnterKey="refresh()"
+                                class="searchFilter"
+                            ></opensilex-EntitySelector>
+                        </opensilex-FilterField>
+                        </div>
 
-                            <!-- Characteristic -->
-                            <div>
-                                <opensilex-FilterField>
-                                    <opensilex-CharacteristicSelector v-if="loadSearchFilters"
-                                        label="VariableView.characteristic"
-                                        :characteristic.sync="filter.characteristic"
-                                        class="searchFilter"
-                                    ></opensilex-CharacteristicSelector>
-                                </opensilex-FilterField>
-                            </div>
+                        <!-- Characteristic -->
+                        <div>
+                        <opensilex-FilterField>
+                            <opensilex-CharacteristicSelector v-if="loadSearchFilters"
+                                label="VariableView.characteristic"
+                                :characteristic.sync="filter.characteristic"
+                                :sharedResourceInstance="filter.sharedResourceInstance"
+                                @handlingEnterKey="refresh()"
+                                class="searchFilter"
+                            ></opensilex-CharacteristicSelector>
+                        </opensilex-FilterField>
+                        </div>
 
-                            <!-- Group of variables -->
-                            <div>
-                                <opensilex-FilterField>
-                                    <opensilex-GroupVariablesSelector v-if="loadSearchFilters"
-                                        label="VariableView.groupVariable"
-                                        :variableGroup.sync="filter.group"
-                                        class="searchFilter"
-                                    ></opensilex-GroupVariablesSelector>
-                                </opensilex-FilterField>
-                            </div>
-                        </template>
+                        <!-- Group of variables -->
+                        <div>
+                        <opensilex-FilterField>
+                            <opensilex-GroupVariablesSelector v-if="loadSearchFilters"
+                                label="VariableView.groupVariable"
+                                :variableGroup.sync="filter.group"
+                                :sharedResourceInstance="filter.sharedResourceInstance"
+                                class="searchFilter"
+                                @handlingEnterKey="refresh()"
+                            ></opensilex-GroupVariablesSelector>
+                        </opensilex-FilterField>
+                        </div>
+                    </template>
+                    <template v-slot:advancedSearch>
+                      <!-- Entity of interest -->
+                      <div>
+                        <opensilex-FilterField>
+                            <opensilex-InterestEntitySelector v-if="loadAdvancedSearchFilters"
+                                label="VariableForm.interestEntity-label"
+                                :interestEntity.sync="filter.entityOfInterest"
+                                :sharedResourceInstance="filter.sharedResourceInstance"
+                                @handlingEnterKey="refresh()"
+                                class="searchFilter"
+                            ></opensilex-InterestEntitySelector>
+                        </opensilex-FilterField>
+                      </div>
 
-                        <template v-slot:advancedSearch>
-                            <!-- Entity of interest -->
-                            <div>
-                                <opensilex-FilterField>
-                                    <opensilex-InterestEntitySelector v-if="loadAdvancedSearchFilters"
-                                        label="VariableForm.interestEntity-label"
-                                        :interestEntity.sync="filter.entityOfInterest"
-                                        class="searchFilter"
-                                    ></opensilex-InterestEntitySelector>
-                                </opensilex-FilterField>
-                            </div>
+                      <!-- Method -->
+                      <div>
+                        <opensilex-FilterField>
+                            <opensilex-MethodSelector v-if="loadAdvancedSearchFilters"
+                                label="VariableView.method"
+                                :method.sync="filter.method"
+                                :sharedResourceInstance="filter.sharedResourceInstance"
+                                class="searchFilter"
+                                @handlingEnterKey="refresh()"
+                            ></opensilex-MethodSelector>
+                        </opensilex-FilterField>
+                      </div>
 
-                            <!-- Method -->
-                            <div>
-                                <opensilex-FilterField>
-                                    <opensilex-MethodSelector v-if="loadAdvancedSearchFilters"
-                                        label="VariableView.method"
-                                        :method.sync="filter.method"
-                                        class="searchFilter"
-                                    ></opensilex-MethodSelector>
-                                </opensilex-FilterField>
-                            </div>
+                      <!-- Unit/Scale -->
+                      <div>
+                        <opensilex-FilterField>
+                            <opensilex-UnitSelector v-if="loadAdvancedSearchFilters"
+                                label="VariableView.unit"
+                                :unit.sync="filter.unit"
+                                :sharedResourceInstance="filter.sharedResourceInstance"
+                                @handlingEnterKey="refresh()"
+                                class="searchFilter"
+                            ></opensilex-UnitSelector>
+                        </opensilex-FilterField>
+                      </div>
 
-                            <!-- Unit/Scale -->
-                            <div>
-                                <opensilex-FilterField>
-                                    <opensilex-UnitSelector  v-if="loadAdvancedSearchFilters"
-                                        label="VariableView.unit"
-                                        :unit.sync="filter.unit"
-                                        class="searchFilter"
-                                    ></opensilex-UnitSelector>
-                                </opensilex-FilterField>
-                            </div>
-                            <!-- Data type-->
-                            <div>
-                                <opensilex-FilterField>
-                                    <opensilex-VariableDataTypeSelector  v-if="loadAdvancedSearchFilters"
-                                        label="OntologyPropertyForm.data-type"
-                                        :datatype.sync="filter.dataType"
-                                        class="searchFilter"
-                                    ></opensilex-VariableDataTypeSelector>
-                                </opensilex-FilterField>
-                            </div>
+                      <!-- Data type-->
+                      <div>
+                        <opensilex-FilterField>
+                            <opensilex-VariableDataTypeSelector v-if="loadAdvancedSearchFilters"
+                                label="OntologyPropertyForm.data-type"
+                                :datatype.sync="filter.dataType"
+                                @handlingEnterKey="refresh()"
+                                class="searchFilter"
+                            ></opensilex-VariableDataTypeSelector>
+                        </opensilex-FilterField>
+                      </div>
 
-                            <!-- Time interval -->
-                            <div>
-                                <opensilex-FilterField>
-                                    <opensilex-VariableTimeIntervalSelector  v-if="loadAdvancedSearchFilters"
-                                        label="VariableForm.time-interval"
-                                        :timeinterval.sync="filter.timeInterval"
-                                        class="searchFilter"
-                                    ></opensilex-VariableTimeIntervalSelector>
-                                </opensilex-FilterField>
-                            </div>
+                      <!-- Time interval -->
+                      <div>
+                        <opensilex-FilterField>
+                            <opensilex-VariableTimeIntervalSelector v-if="loadAdvancedSearchFilters"
+                                label="VariableForm.time-interval"
+                                :timeinterval.sync="filter.timeInterval"
+                                @handlingEnterKey="refresh()"
+                                class="searchFilter"
+                            ></opensilex-VariableTimeIntervalSelector>
+                        </opensilex-FilterField>
+                      </div>
 
-                            <!-- Species -->
-                            <div>
-                                <opensilex-FilterField>
-                                    <opensilex-SpeciesSelector  v-if="loadAdvancedSearchFilters"
-                                        label="SpeciesSelector.select-multiple"
-                                        placeholder="SpeciesSelector.select-multiple-placeholder"
-                                        :multiple="true"
-                                        :species.sync="filter.species"
-                                        class="searchFilter"
-                                    ></opensilex-SpeciesSelector>
-                                </opensilex-FilterField>
-                            </div>
-
+                        <!-- Species -->
+                        <div>
+                          <opensilex-FilterField>
+                            <opensilex-SpeciesSelector
+                                label="SpeciesSelector.select-multiple"
+                                placeholder="SpeciesSelector.select-multiple-placeholder"
+                                :multiple="true"
+                                :species.sync="filter.species"
+                                :sharedResourceInstance="filter.sharedResourceInstance"
+                                class="searchFilter"
+                            ></opensilex-SpeciesSelector>
+                          </opensilex-FilterField>
+                        </div>
                         </template>
                         </opensilex-SearchFilterField>
                     </div>
@@ -179,14 +205,19 @@
                             :disabled="numberOfSelectedRows == 0"
                             text="actions">
 
-                            <b-dropdown-item-button
-                                v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
-                                @click="addVariablesToGroups()">{{$t("VariableList.add-groupVariable")}}</b-dropdown-item-button>
-                            <b-dropdown-item-button
-                                v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
-                                @click="showCreateForm()">{{$t("VariableList.add-newGroupVariable")}}</b-dropdown-item-button>
-                            <b-dropdown-item-button @click="classicExportVariables()">{{$t('VariableList.export-variables')}}</b-dropdown-item-button>
-                            <b-dropdown-item-button @click="detailsExportVariables()">{{$t('VariableList.export-variables-details')}}</b-dropdown-item-button>
+                        <b-dropdown-item-button
+                            v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
+                            @click="addVariablesToGroups()">{{$t("VariableList.add-groupVariable")}}</b-dropdown-item-button>
+                        <b-dropdown-item-button
+                            v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
+                            @click="showCreateForm()">{{$t("VariableList.add-newGroupVariable")}}</b-dropdown-item-button>
+                        <b-dropdown-item-button @click="classicExportVariables()">{{$t('VariableList.export-variables')}}</b-dropdown-item-button>
+                        <b-dropdown-item-button @click="detailsExportVariables()">{{$t('VariableList.export-variables-details')}}</b-dropdown-item-button>
+                        <b-dropdown-item-button
+                            v-if="filter.sharedResourceInstance"
+                            @click="importVariablesOnLocal()"
+                        >{{$t('VariableList.import-variables-from-shared-resources')}}</b-dropdown-item-button>
+
                         </b-dropdown>
 
                     </template>
@@ -194,22 +225,15 @@
                     <template v-slot:cell(name)="{data}">
                         <span class="lowSize" v-bind:class="{ variablesCheckboxMarginHighSize: toggleSearchFilters }">
                              <opensilex-UriLink
-                                 v-if="noActions"
                                  :uri="data.item.uri"
                                  :value="data.item.name"
-                                 :url="'/variable/details/'+ encodeURIComponent(data.item.uri)"
-                             ></opensilex-UriLink>
-                             <opensilex-UriLink
-                                 v-else
-                                 :uri="data.item.uri"
-                                 :value="data.item.name"
-                                 :to="{path: '/variable/details/'+ encodeURIComponent(data.item.uri)}"
+                                 :to="{path: getDetailsPageUrl(data.item)}"
                              ></opensilex-UriLink>
                         </span >
                         <br>
                         <span class="lowSize" v-bind:class="{ variablesCheckboxMarginHighSize: toggleSearchFilters }">{{data.item.alternative_name}}</span>
                     </template>
-                    
+
                     <template v-slot:row-details="{data}">
                         <div v-if="variableGroupsList[data.item.uri] && variableGroupsList[data.item.uri].length > 0">
                             <div>{{ $t("VariableList.variablesGroup") }}:</div>
@@ -219,6 +243,22 @@
                             </ul>
                         </div>
                         <div v-else> {{ $t("VariableList.not-used-in-variablesGroup") }}</div>
+                    </template>
+                    <template v-slot:cell(db_logo)="{data}">
+                      <div v-if="data.item.onLocal">
+                        <opensilex-Icon
+                            icon="fa#database"
+                            :title="$t('component.sharedResourceInstances.on-local')"
+                        />
+                      </div>
+                    </template>
+                    <template v-slot:cell(share_logo)="{data}">
+                      <div v-if="data.item.sharedResourceInstance">
+                          <opensilex-Icon
+                              icon="fa#share-alt"
+                              :title="data.item.sharedResourceInstance.label"
+                          />
+                      </div>
                     </template>
                     <template v-slot:cell(_entity_name)="{data}">{{ data.item.entity.name }}</template>
                     <template v-slot:cell(_interest_entity_name)="{data}">
@@ -237,19 +277,19 @@
                                 :small="true"
                             ></opensilex-DetailButton>
                             <opensilex-EditButton
-                                v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
+                                v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID) && displayActions"
                                 @click="$emit('onEdit', data.item.uri)"
                                 label="component.common.list.buttons.update"
                                 :small="true"
                             ></opensilex-EditButton>
                             <opensilex-InteroperabilityButton
-                                v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
+                                v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID) && displayActions"
                                 :small="true"
                                 label="component.common.list.buttons.interoperability"
                                 @click="$emit('onInteroperability', data.item.uri)"
                             ></opensilex-InteroperabilityButton>
                             <opensilex-DeleteButton
-                                v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_DELETE_ID)"
+                                v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_DELETE_ID) && displayActions"
                                 @click="$emit('onDelete', data.item.uri)"
                                 label="component.common.list.buttons.delete"
                                 :small="true"
@@ -288,21 +328,15 @@
 
 <script lang="ts">
 import {Component, Prop, Ref} from "vue-property-decorator";
-import Vue from "vue";
-// @ts-ignore
-import {
-  CharacteristicGetDTO,
-  EntityGetDTO,
-  InterestEntityGetDTO,
-  MethodGetDTO,
-  UnitGetDTO,
-  VariablesGroupGetDTO,
-  VariablesService
-} from "opensilex-core/index";
+import Vue, { VNode } from "vue";
+import {VariablesGroupGetDTO, VariablesService} from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
 import ModalForm from "../common/forms/ModalForm.vue";
 import GroupVariablesModalList from '../groupVariable/GroupVariablesModalList.vue';
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+import {CopyResourceDTO} from "opensilex-core/model/copyResourceDTO";
+import TableAsyncView from "../common/views/TableAsyncView.vue";
+import {VariableGetDTO} from "opensilex-core/model/variableGetDTO";
 
 @Component
 export default class VariableList extends Vue {
@@ -311,6 +345,8 @@ export default class VariableList extends Vue {
     $store: any;
     $route: any;
     $i18n: any;
+
+    displayActions:boolean = true;
 
     get user() {
         return this.$store.state.user;
@@ -356,6 +392,7 @@ export default class VariableList extends Vue {
     devices;
 
     filter = {
+        sharedResourceInstance: undefined,
         name: undefined,
         entity: undefined,
         entityOfInterest: undefined,
@@ -372,7 +409,7 @@ export default class VariableList extends Vue {
     };
 
     @Ref("groupVariableSelection") readonly groupVariableSelection!: GroupVariablesModalList;
-    @Ref("tableRef") readonly tableRef!: any;
+    @Ref("tableRef") readonly tableRef!: TableAsyncView<VariableGetDTO>;
 
     get onlySelected() {
         return this.tableRef.onlySelected;
@@ -406,7 +443,6 @@ export default class VariableList extends Vue {
     @Ref("groupVariablesForm") readonly groupVariablesForm!: ModalForm;
 
     showCreateForm() {
-
         // lazy loading of form
         this.loadGroupVariablesForm = true;
         this.$nextTick(() => {
@@ -424,6 +460,7 @@ export default class VariableList extends Vue {
 
     reset() {
         this.filter = {
+            sharedResourceInstance: this.filter.sharedResourceInstance,
             name: undefined,
             entity: undefined,
             entityOfInterest: undefined,
@@ -459,14 +496,21 @@ export default class VariableList extends Vue {
         }
     }
 
-    // fix the state of the button selectAll 
+    // fix the state of the button selectAll
     onRefreshed() {
         let that = this;
         setTimeout(function() {
-            if(that.tableRef.selectAll === true && that.tableRef.selectedItems.length !== that.tableRef.totalRow) {                    
+            if(that.tableRef.selectAll === true && that.tableRef.selectedItems.length !== that.tableRef.totalRow) {
                 that.tableRef.selectAll = false;
-            } 
+            }
         }, 1);
+    }
+
+    getDetailsPageUrl(variable: VariableGetDTO) {
+      if (this.filter.sharedResourceInstance) {
+        return '/variable/details/'+ encodeURIComponent(variable.uri) + '?sharedResourceInstance=' + this.filter.sharedResourceInstance;
+      }
+      return '/variable/details/' + encodeURIComponent(variable.uri);
     }
 
     getSelected() {
@@ -498,8 +542,12 @@ export default class VariableList extends Vue {
             this.devices ? this.devices : this.filter.devices,
             options.orderBy,
             options.currentPage,
-            options.pageSize
-        );
+            options.pageSize,
+            this.filter.sharedResourceInstance
+        ).then(response => {
+          this.displayActions = this.filter.sharedResourceInstance === undefined;
+          return response;
+        });
     }
 
     classicExportVariables() {
@@ -513,6 +561,50 @@ export default class VariableList extends Vue {
         }
 
         this.$opensilex.downloadFilefromPostService(path, filename, "csv", {uris: variablesURIs}, this.lang);
+    }
+
+    async importVariablesOnLocal() {
+      let confirmMessage: Array<VNode> = [
+        this.$createElement("p", this.$t("component.sharedResourceInstances.variable-import-confirmation").toString())
+      ];
+      if (this.tableRef.getSelected().some(variable => variable.onLocal)) {
+        confirmMessage.push(this.$createElement("p", this.$t("component.sharedResourceInstances.variable-warning-already-imported").toString()));
+      }
+      const confirm = await this.$bvModal.msgBoxConfirm(
+          confirmMessage,
+          {
+            cancelTitle: this.$t("component.common.cancel").toString(),
+            okTitle: this.$t("component.sharedResourceInstances.import").toString(),
+            okVariant: "primary",
+            centered: true
+          }
+      );
+
+      if (!confirm) {
+        return;
+      }
+
+      let variablesURIs = this.tableRef.getSelected()
+          .map(variable => variable.uri);
+      let form: CopyResourceDTO = {
+        uris: variablesURIs,
+        sharedResourceInstance: this.filter.sharedResourceInstance
+      };
+      const http = await this.$service.copyFromSharedResourceInstance(form);
+
+      if (http.status === 200) {
+        this.tableRef.refresh();
+      }
+      const result = http.response.result;
+      let message = this.$i18n.t("component.common.success.import-success-message", {
+        variablesCount: result.variableUris.length,
+        entitiesCount: result.entityUris.length,
+        characteristicsCount: result.characteristicUris.length,
+        methodsCount: result.methodUris.length,
+        unitsCount: result.unitUris.length,
+        interestEntityCount: result.interestEntityUris.length
+      });
+      this.$opensilex.showSuccessToast(message);
     }
 
     detailsExportVariables() {
@@ -537,7 +629,7 @@ export default class VariableList extends Vue {
     loadVariablesGroupFromVariable(data) {
         if (!data.detailsShowing) {
             this.$opensilex.disableLoader();
-            this.$service.searchVariablesGroups(undefined, data.item.uri, ["name=asc"], undefined, undefined)
+            this.$service.searchVariablesGroups(undefined, data.item.uri, ["name=asc"],undefined, undefined, undefined)
                 .then((http: any) => {
                     let listVariableGroups = [];
                     for (let variableGroup of http.response.result) {
@@ -597,6 +689,16 @@ export default class VariableList extends Vue {
                 key: "name",
                 label: "component.common.name",
                 sortable: true
+            },
+            {
+                key: "db_logo",
+                label: "",
+                sortable: false
+            },
+            {
+              key: "share_logo",
+              label: "",
+              sortable: false
             },
             {
                 key: "_entity_name",
@@ -703,6 +805,7 @@ en:
         add-newGroupVariable: Add to a new group of variables
         export-variables: Export variable list
         export-variables-details: Export detailed variable list
+        import-variables-from-shared-resources: Import from the shared source
         variablesGroup: Variable used in one or many groups of variables
         not-used-in-variablesGroup: Variable not used in any group of variables
         selected-all: All variables
@@ -718,6 +821,7 @@ fr:
         add-newGroupVariable: Ajouter à un nouveau groupe de variables
         export-variables: Exporter la liste de variables
         export-variables-details: Exporter la liste détaillée de variables
+        import-variables-from-shared-resources: Importer depuis la source partagée
         variablesGroup: Variable utilisé dans un ou plusieurs groupe de variables
         not-used-in-variablesGroup: Variable n'est utilisé dans aucun groupe de variables
         selected-all: Toutes les variables

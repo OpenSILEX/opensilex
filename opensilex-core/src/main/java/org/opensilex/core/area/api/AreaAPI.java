@@ -17,6 +17,7 @@ import org.bson.codecs.configuration.CodecConfigurationException;
 import org.geojson.GeoJsonObject;
 import org.opensilex.core.area.dal.AreaDAO;
 import org.opensilex.core.area.dal.AreaModel;
+import org.opensilex.core.event.dal.EventSearchFilter;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.event.dal.EventDAO;
@@ -27,26 +28,25 @@ import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLService;
-
 import javax.inject.Inject;
 import javax.validation.Valid;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
-import java.net.URISyntaxException;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
-
 import static org.opensilex.core.geospatial.dal.GeospatialDAO.geoJsonToGeometry;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.server.rest.validation.date.ValidOffsetDateTime;
@@ -76,7 +76,7 @@ public class AreaAPI {
     private static final String CREDENTIAL_AREA_DELETE_ID = "area-delete";
 
     @CurrentUser
-    UserModel currentUser;
+    AccountModel currentUser;
 
     @Inject
     private SPARQLService sparql;
@@ -196,20 +196,13 @@ public class AreaAPI {
 
         // Check if area is found
         if (model != null) {
+            //create search filter
+            EventSearchFilter searchFilter = new EventSearchFilter();
+            searchFilter.setTarget(areaURI.toString())
+                    .setLang(currentUser.getLanguage());
+
             // Check if an event is linked to the area
-            ListWithPagination<EventModel> eventList = eventDAO.search(
-                    areaURI.toString(),
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    currentUser.getLanguage(),
-                    null,
-                    null,
-                    null
-            );
+            ListWithPagination<EventModel> eventList = eventDAO.search(searchFilter);
 
 
             switch (eventList.getList().size()) {
@@ -266,20 +259,13 @@ public class AreaAPI {
         nosql.startTransaction();
         sparql.startTransaction();
         try {
+            //create search filter
+            EventSearchFilter searchFilter = new EventSearchFilter();
+            searchFilter.setTarget(areaDTO.getUri().toString())
+                    .setLang(currentUser.getLanguage());
+
             // Check if an event is linked to the area
-            ListWithPagination<EventModel> eventList = eventDAO.search(
-                    areaDTO.getUri().toString(),
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    currentUser.getLanguage(),
-                    null,
-                    null,
-                    null
-            );
+            ListWithPagination<EventModel> eventList = eventDAO.search(searchFilter);
 
              if(!areaDTO.isStructuralArea){
                 //RdfType for area and geospatial is equal temporal area
@@ -358,20 +344,13 @@ public class AreaAPI {
             dao.delete(areaURI);
             geoDAO.delete(areaURI, null);
 
+            //create search filter
+            EventSearchFilter searchFilter = new EventSearchFilter();
+            searchFilter.setTarget(areaURI.toString())
+                    .setLang(currentUser.getLanguage());
+
             //search if an event is linked
-            ListWithPagination<EventModel> eventList = eventDAO.search(
-                    areaURI.toString(),
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null,
-                    currentUser.getLanguage(),
-                    null,
-                    null,
-                    null
-            );
+            ListWithPagination<EventModel> eventList = eventDAO.search(searchFilter);
 
             //If linked event exist, delete it
             switch (eventList.getList().size()){
@@ -425,7 +404,8 @@ public class AreaAPI {
         // Get geospatial List
         FindIterable<GeospatialModel> mapGeo = geoDAO.searchIntersectsArea(geoJsonToGeometry(geometry), currentUser, sparql);
 
-        // TODO: search with date : to upgrade !!!
+        List<URI> areaURIList = new ArrayList<>();
+        // TODO: search with date : to upgrade
         /*List<GeospatialModel> mapGeoTmp = new ArrayList<>();
         if (start != null || end != null) {
             // Extract URI List
@@ -491,35 +471,44 @@ public class AreaAPI {
         }*/
 
         try {
+            //get area URI list from geometry list
+            for (GeospatialModel geospatialModel: mapGeo) {
+                areaURIList.add(geospatialModel.getUri());
+            }
+            //search all areas
+            List<AreaModel> areaModelList = areaDAO.searchByURIs(areaURIList,currentUser);
+            //search all events with the target URI list and a type = area
+            EventSearchFilter searchFilter = new EventSearchFilter();
+            searchFilter.setTargets(areaURIList)
+                    .setBaseType(new URI(SPARQLDeserializers.getShortURI(Oeso.Area.getURI())));
+
+            ListWithPagination<EventModel> eventModelList = eventDAO.search(searchFilter);
+
             for (GeospatialModel geospatialModel : mapGeo) {
-
-                URI uri = geospatialModel.getUri();
-                AreaModel areaModel = areaDAO.getByURI(uri);
-
-                // Check if event is linked to the area
-                ListWithPagination<EventModel> eventList = eventDAO.search(
-                        geospatialModel.getUri().toString(),
-                        null,
-                        null,
-                        null,
-                        null,
-                        start != null ? OffsetDateTime.parse(start) : null,
-                        end != null ? OffsetDateTime.parse(end) : null,
-                        currentUser.getLanguage(),
-                        null,
-                        null,
-                        null
-                );
-
-                if(eventList.getList().size()== 1) {
-                    EventModel eventByURI = eventDAO.get(eventList.getList().get(0).getUri(), currentUser);
-                    dtoList.add(AreaGetDTO.fromModel(areaModel,geospatialModel, eventByURI));
+                String geospatial = geospatialModel.getUri().toString();
+                //Get the corresponding area
+                AreaModel areaModel = areaModelList.stream()
+                        .filter(findArea -> geospatial.equals(findArea.getUri().toString()))
+                        .reduce((a,b) -> {
+                            throw new IllegalStateException("Multiple elements: " + a + ", " + b);
+                        })
+                        .get();
+                // Get the corresponding event?
+                EventModel eventModel = eventModelList.getList().stream()
+                        .filter(findEvent -> geospatial.equals(findEvent.getTargets().get(0).toString()))
+                        .reduce((a,b) -> {
+                            throw new IllegalStateException("Multiple elements: " + a + ", " + b);
+                        })
+                        .orElse(null);
+                if(eventModel != null){
+                    //Add 3 Models
+                    dtoList.add(AreaGetDTO.fromModel(areaModel,geospatialModel, eventModel));
                 }
-                else {
+                else{
+                    //Add 2 Models
                     dtoList.add(AreaGetDTO.fromModel(areaModel,geospatialModel));
                 }
             }
-
         } catch (MongoQueryException mongoException) {
             return new ErrorResponse(Response.Status.BAD_REQUEST, INVALID_GEOMETRY, mongoException).getResponse();
         }

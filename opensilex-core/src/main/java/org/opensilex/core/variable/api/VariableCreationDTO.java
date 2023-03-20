@@ -5,10 +5,6 @@
 //******************************************************************************
 package org.opensilex.core.variable.api;
 
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModelProperty;
@@ -21,7 +17,9 @@ import org.opensilex.core.variable.dal.*;
 import org.opensilex.server.rest.validation.ValidURI;
 
 import javax.validation.constraints.NotNull;
-import org.opensilex.sparql.model.SPARQLNamedResourceModel;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author vidalmor

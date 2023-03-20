@@ -20,8 +20,6 @@ import org.apache.jena.sparql.expr.aggregate.AggregatorFactory;
 import org.apache.jena.sparql.syntax.ElementFilter;
 import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.vocabulary.RDF;
-import org.bson.BsonDocument;
-import org.bson.codecs.configuration.CodecRegistry;
 import org.bson.conversions.Bson;
 import org.opensilex.core.event.dal.EventDAO;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
@@ -29,7 +27,7 @@ import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Time;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
@@ -173,7 +171,7 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
      * @return
      * @throws Exception
      */
-    public MoveModel getMoveEventByURI(URI eventUri, UserModel user) throws Exception {
+    public MoveModel getMoveEventByURI(URI eventUri, AccountModel user) throws Exception {
 
         MoveModel model = sparql.getByURI(MoveModel.class, eventUri, user.getLanguage());
         if (model == null) {
@@ -578,5 +576,39 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
         LOGGER.debug("MongoDB search intersect:{}", query);
 
         return moveEventCollection.find(query);
+    }
+
+    private void appendTargetFilter(ElementGroup targetGraphGroupElem, URI target) throws Exception {
+        if (target != null) {
+
+            Var uriVar = SPARQLQueryHelper.makeVar(MoveModel.URI_FIELD);
+            Var targetVar = SPARQLQueryHelper.makeVar(MoveModel.TARGET_FIELD);
+
+            Triple targetTriple = new Triple(uriVar, Oeev.concerns.asNode(), targetVar);
+
+            targetGraphGroupElem.addTriplePattern(targetTriple);
+
+            Expr targetEqExpr = SPARQLQueryHelper.eq(MoveModel.TARGET_FIELD, target);
+            targetGraphGroupElem.addElementFilter(new ElementFilter(targetEqExpr));
+        }
+        
+    }
+
+    /**
+     * Count total of moves associated to a target URI
+     * 
+     * @param target the URI on which find associated move
+     * @return the number of moves associated to a target
+     */
+    public int countMoves(URI target) throws Exception {
+
+        Node moveGraph = sparql.getDefaultGraph(MoveModel.class);
+        return sparql.count(moveGraph, MoveModel.class,null,countBuilder -> {
+
+            ElementGroup rootElementGroup = countBuilder.getWhereHandler().getClause();
+            ElementGroup moveGraphGroupElem = SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(rootElementGroup,moveGraph);
+
+            appendTargetFilter(moveGraphGroupElem, target);
+        },null);
     }
 }

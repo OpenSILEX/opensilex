@@ -22,7 +22,7 @@ import java.util.Properties;
 import org.opensilex.OpenSilex;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.ServerModule;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.utils.ClassUtils;
@@ -44,7 +44,7 @@ public class SystemAPI {
     private ServerModule serverModule;
     
     @CurrentUser
-    UserModel user;
+    AccountModel user;
 
     @GET
     @Path("/info")

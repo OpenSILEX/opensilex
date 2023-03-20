@@ -59,30 +59,40 @@ export default class DateTimeFormatter {
         if (!dateTimeValue) {
             return "";
         }
-        return new Date(dateTimeValue).toISOString().substring(0, 19);
+        return new Date(dateTimeValue).toISOString();
     }
 
     /**
      * Formats a date in the current locale (which depends on the language the user chooses).
      *
      * @param dateTimeValue
+     * @param options Options for the formatter. They must be of type {@link Intl.DateTimeFormatOptions}. By default,
+     * the only parameter is `dateStyle: 'short'`.
      */
-    formatLocaleDate(dateTimeValue: DateArg): string {
-        return new Intl.DateTimeFormat(this.$i18n.t("dateTimeLocale").toString(), {
-            dateStyle: 'short'
-        } as Intl.DateTimeFormatOptions).format(new Date(dateTimeValue));
+    formatLocaleDate(dateTimeValue: DateArg, options?): string {
+        const dateTimeFormatOptions: Intl.DateTimeFormatOptions = {
+            dateStyle: 'short',
+            ...options
+        };
+        return new Intl.DateTimeFormat(this.$i18n.t("dateTimeLocale").toString(), dateTimeFormatOptions)
+            .format(new Date(dateTimeValue));
     }
 
     /**
      * Formats a date with the time and the timezone in the current locale (which depends on the language the user chooses).
      *
      * @param dateTimeValue
+     * @param options Options for the formatter. They must be of type {@link Intl.DateTimeFormatOptions}. By default,
+     * the only parameters are `dateStyle: 'short'` and `timeStyle: 'long'`.
      */
-    formatLocaleDateTime(dateTimeValue: DateArg): string {
-        return new Intl.DateTimeFormat(this.$i18n.t("dateTimeLocale").toString(), {
+    formatLocaleDateTime(dateTimeValue: DateArg, options?): string {
+        const dateTimeFormatOptions = {
             dateStyle: 'short',
-            timeStyle: 'long'
-        } as Intl.DateTimeFormatOptions).format(new Date(dateTimeValue));
+            timeStyle: 'long',
+            ...options
+        };
+        return new Intl.DateTimeFormat(this.$i18n.t("dateTimeLocale").toString(), dateTimeFormatOptions)
+            .format(new Date(dateTimeValue));
     }
 
     /**

@@ -97,7 +97,8 @@
                 "success-title": "Succès",
                 "creation-success-message": " a été crée",
                 "update-success-message": " a été modifié(e)",
-                "delete-success-message": " a été supprimé(e)"
+                "delete-success-message": " a été supprimé(e)",
+                "import-success-message": "{variablesCount} variables, {entitiesCount} entités, {variablesCount} caractéristiques, {variablesCount} méthodes, {variablesCount} unités, {variablesCount} entités d'intérêt ont bien été importés."
             },
             "details": {
                 "document": "Documents",
@@ -185,6 +186,7 @@
                 "images": "Images",
                 "visualization":"Visualisation"
             },
+            "homepage": "Accueil",
             "experiments": "Expérimentations",
             "facilities": "Installations environnementales",
             "infrastructure": "Organisations",
@@ -367,6 +369,18 @@
                     "in-progress": "Actif",
                     "public": "Données publiques"
                 }
+            }
+        },
+        "sharedResourceInstances": {
+            "selector-placeholder":"Choisir une source",
+            "label": "Sources",
+            "local-instance": "Ressources locales",
+            "variable-import-confirmation": "Voulez-vous vraiment importer les variables sélectionnées sur votre instance locale ?",
+            "variable-warning-already-imported": "Avertissement: une ou plusieurs variables ont déjà été importées. Elles ne seront pas affectées par cette opération.",
+            "on-local": "Cette variable a déjà été importée",
+            "import": "importer",
+            "import_date" : {
+                "label": "Dernière mise à jour"
             }
         },
         "experiment": {
@@ -605,7 +619,15 @@
             "warning": {
                 "facility-should-have-unique-site": "Il est déconseillé d'associer une facility à plusieurs sites. Veuillez vérifier à quel site appartient cette facility."
             },
-            "filter-placeholder": "Rechercher des installations environnementales..."
+            "filter-placeholder": "Rechercher des installations environnementales...",
+            "view": {
+                "title": "Infrastructure environnementale",
+                "list": {
+                    "previous": "Consulter l'infrastructure précédente",
+                    "next": "Consulter l'infrastructure suivante",
+                    "return": "Revenir à la liste des infrastructures"
+                }
+            }
         },
         "custom-properties" : {
             "linked-resources" : "Ressources liée(s)"
@@ -763,5 +785,10 @@
         "date": "2022-01-01",
         "datetime": "2022-01-01T00:00:00Z",
         "boolean": "vrai ou faux"
+    },
+    "server": {
+        "errors": {
+            "shared-resource-instance-connection": "Impossible de se connecter à {label} ({uri}). Le service peut-être indisponible, ou bien la configuration incorrecte."
+        }
     }
 }

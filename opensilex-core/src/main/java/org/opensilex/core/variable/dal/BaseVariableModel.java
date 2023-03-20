@@ -5,13 +5,16 @@
  */
 package org.opensilex.core.variable.dal;
 
+import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.SKOS;
+import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.SKOSReferences;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 
 import java.net.URI;
+import java.time.OffsetDateTime;
 import java.util.List;
 
 
@@ -47,6 +50,18 @@ public abstract class BaseVariableModel<T extends SPARQLNamedResourceModel<T>> e
             property = "narrowMatch"
     )
     private List<URI> narrowMatch;
+
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "fromSharedResourceInstance"
+    )
+    private URI fromSharedResourceInstance;
+
+    @SPARQLProperty(
+            ontology = DCTerms.class,
+            property = "modified"
+    )
+    private OffsetDateTime lastUpdateTime;
 
     public String getDescription() {
         return description;
@@ -94,5 +109,21 @@ public abstract class BaseVariableModel<T extends SPARQLNamedResourceModel<T>> e
     @Override
     public void setNarrowMatch(List<URI> narrowMatch) {
         this.narrowMatch = narrowMatch;
+    }
+
+    public URI getFromSharedResourceInstance() {
+        return fromSharedResourceInstance;
+    }
+
+    public void setFromSharedResourceInstance(URI fromSharedResourceInstance) {
+        this.fromSharedResourceInstance = fromSharedResourceInstance;
+    }
+
+    public OffsetDateTime getLastUpdateTime() {
+        return lastUpdateTime;
+    }
+
+    public void setLastUpdateTime(OffsetDateTime lastUpdateTime) {
+        this.lastUpdateTime = lastUpdateTime;
     }
 }

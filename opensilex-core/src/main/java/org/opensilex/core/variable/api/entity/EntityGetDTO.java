@@ -1,12 +1,12 @@
 package org.opensilex.core.variable.api.entity;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.opensilex.core.variable.api.BaseVariableGetDTO;
 import org.opensilex.core.variable.dal.EntityModel;
-import org.opensilex.sparql.response.ObjectNamedResourceDTO;
 
 import java.net.URI;
 
-public class EntityGetDTO extends ObjectNamedResourceDTO {
+public class EntityGetDTO extends BaseVariableGetDTO<EntityModel> {
 
     public EntityGetDTO(EntityModel model) {
         super(model);

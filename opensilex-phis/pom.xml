@@ -19,6 +19,11 @@
     <name>opensilex-phis</name>
     <version>${revision}</version>
 
+    <properties>
+        <revision>BUILD-SNAPSHOT</revision>
+        <skipFrontTypesGeneration>true</skipFrontTypesGeneration>
+    </properties>
+
     <parent>
         <groupId>org.opensilex</groupId>
         <artifactId>opensilex-module</artifactId>
@@ -26,4 +31,11 @@
         <relativePath>../opensilex-module/pom.xml</relativePath>
     </parent>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-core</artifactId>
+            <version>${revision}</version>
+        </dependency>  
+    </dependencies>
 </project>

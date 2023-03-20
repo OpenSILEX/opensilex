@@ -30,6 +30,7 @@ variables:
   MAVEN_CLI_OPTS: "--batch-mode --show-version -c"
   MAVEN_CACHE_FOLDER: "$CI_PROJECT_DIR/.m2/repository"
   MAVEN_OPTS: "-Dhttps.protocols=TLSv1.2 -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=WARN -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
+  MAVEN_OPTS_SCHUEDULES: "-Dhttps.protocols=TLSv1.2 -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=ERROR -Dorg.slf4j.simpleLogger.defaultLogLevel=error -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
   MAVEN_SKIP_TESTS: "false"
   # DEFAULT SERVER MAVEN VERSION
   MVN_VERSION: 3.6.3
@@ -153,7 +154,7 @@ variables:
   script:
     - apk add curl git
     # - If there is no release branch, then develop is deployed
-    # - Otherwise, nothing is deployed 
+    # - Otherwise, nothing is deployed
     - |
       if git ls-remote --exit-code --heads origin release && [[ "$CI_COMMIT_BRANCH" == "develop" ]]; then
         echo 'Branch release exists, cannot deploy develop';
@@ -276,11 +277,11 @@ test:opensilex-master:deploy:
       when: on_success
   needs:
     - opensilex-master:build
- 
+
 
 # Trigger pipeline for the deployment of the develop branch
 # - If there is no release branch, then develop is deployed
-# - Otherwise, nothing is deployed 
+# - Otherwise, nothing is deployed
 #  see deploy_opensilex_template script
 test:opensilex-develop:deploy:
   <<: *deploy_opensilex_before_script
@@ -479,10 +480,11 @@ update:nightly:builds:branch:
     - if [ -z "$JAVA_VERSION" ]; then echo "Missing JAVA_VERSION variable"; exit 1; fi
     - if [ -z "$MVN_VERSION" ]; then echo "Missing MVN_VERSION variable"; exit 1; fi
     - echo "with_java $JAVA_VERSION and maven $MVN_VERSION with latest version of OpenSILEX/opensilex-dev"
+    - apt-get update && apt-get install -y git
   stage: build
   image: maven:$MVN_VERSION-openjdk-$JAVA_VERSION-slim
   script:
-    - mvn clean install $MAVEN_CLI_OPTS -Drevision=$OPENSILEX_APP_REVISION
+    - mvn clean install $MAVEN_OPTS -Drevision=$OPENSILEX_APP_REVISION
     - ls $OPENSILEX_BUILD_PATH/opensilex-release-$OPENSILEX_APP_REVISION
     - mv $OPENSILEX_BUILD_PATH/opensilex-release-$OPENSILEX_APP_REVISION $OPENSILEX_APP_REVISION
   rules:
@@ -492,63 +494,19 @@ update:nightly:builds:branch:
  
 
 .with_java11: &java11
-  before_script:
-    - yum install -y git
   variables:
     JAVA_VERSION: 11
 
-.with_java13: &java13
-  before_script:
-    - yum install -y git
-  variables:
-    JAVA_VERSION: 13
-
-.with_java14: &java14
-  before_script:
-    - yum install -y git
-  variables:
-    JAVA_VERSION: 14
-
-.with_java16: &java16
-  before_script:
-    - yum install -y git
-  variables:
-    JAVA_VERSION: 16
-
 .with_java17: &java17
-  before_script:
-    - yum install -y git
   variables:
     JAVA_VERSION: 17
-
-.with_java18: &java18
-  before_script:
-    - yum install -y git
-  variables:
-    JAVA_VERSION: 18
 
 test:build:java11:
   <<: *java11
   <<: *test_build_on_schedules
 
-test:build:java13:
-  <<: *java13
-  <<: *test_build_on_schedules
-
-test:build:java14:
-  <<: *java14
-  <<: *test_build_on_schedules
-
-test:build:java16:
-  <<: *java16
-  <<: *test_build_on_schedules
-
 test:build:java17:
   <<: *java17
-  <<: *test_build_on_schedules
-
-test:build:java18:
-  <<: *java18
   <<: *test_build_on_schedules
 
 ########################
@@ -560,9 +518,9 @@ pages:
   script:
     - ln -s $JAVA_HOME java.home
     - cd $CI_PROJECT_DIR/opensilex-swagger-codegen-maven-plugin
-    - mvn install $MAVEN_CLI_OPTS
+    - mvn install $MAVEN_OPTS_SCHUEDULES
     - cd $CI_PROJECT_DIR
-    - mvn install site $MAVEN_CLI_OPTS -Pwith-test-report -Pwith-security-check -DskipFrontBuild
+    - mvn install site $MAVEN_OPTS_SCHUEDULES -Pwith-test-report -Pwith-security-check -DskipFrontBuild -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=ERROR
     - mkdir public
     - mv $CI_PROJECT_DIR/opensilex-doc/src/main/resources/generated/* public
   artifacts:
@@ -697,31 +655,31 @@ test:valentin:deploy:
     - valentin:build
 
 ###################################
-##  NOE-TEST-BUILD-DEPLOYMENT
+##  BERNHARD-TEST-BUILD-DEPLOYMENT
 ###################################
 
-noe:build:
+bernhard:build:
   <<: *build_template_with_opensilex
   rules:
-    - if: $CI_COMMIT_BRANCH == "noe"
+    - if: $CI_COMMIT_BRANCH == "bernhard"
 
-test:noe:deploy:
+test:bernhard:deploy:
   <<: *deploy_opensilex_before_script
   <<: *deploy_opensilex_template
   variables:
-    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/noe"
+    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/bernhard"
     INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
     OPENSILEX_JAR_ADMIN_PORT: 4091
     OPENSILEX_JAR_PORT: 8091
     REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
     REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
-    REMOTE_SERVER_RSYNC_DIR: "mistea/noe"
+    REMOTE_SERVER_RSYNC_DIR: "mistea/bernhard"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   rules:
-    - if: $CI_COMMIT_BRANCH == "noe"
+    - if: $CI_COMMIT_BRANCH == "bernhard"
       when: on_success
   needs:
-    - noe:build
+    - bernhard:build
 
 ######################################
 ##  OPTIMIZATION-TEST-BUILD-DEPLOYMENT

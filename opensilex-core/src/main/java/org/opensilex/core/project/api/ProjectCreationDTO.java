@@ -9,7 +9,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import org.opensilex.core.project.dal.ProjectModel;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 
 /**
  *
@@ -33,9 +33,9 @@ public class ProjectCreationDTO extends ProjectDTO {
         model.setHomePage(homePage);
         
         if(administrativeContacts != null){
-            List<UserModel> adminList = new ArrayList<>(administrativeContacts.size());
+            List<AccountModel> adminList = new ArrayList<>(administrativeContacts.size());
             administrativeContacts.forEach((URI u) -> {
-                UserModel user = new UserModel();
+                AccountModel user = new AccountModel();
                 user.setUri(u);
                 adminList.add(user);
             });
@@ -43,9 +43,9 @@ public class ProjectCreationDTO extends ProjectDTO {
         }
        
         if(coordinators != null){
-            List<UserModel> coordList = new ArrayList<>(coordinators.size());
+            List<AccountModel> coordList = new ArrayList<>(coordinators.size());
             coordinators.forEach((URI u) -> {
-                UserModel user = new UserModel();
+                AccountModel user = new AccountModel();
                 user.setUri(u);
                 coordList.add(user);
             });
@@ -53,9 +53,9 @@ public class ProjectCreationDTO extends ProjectDTO {
         }
 
         if(scientificContacts != null){
-            List<UserModel> scientList = new ArrayList<>(scientificContacts.size());
+            List<AccountModel> scientList = new ArrayList<>(scientificContacts.size());
             scientificContacts.forEach((URI u) -> {
-                UserModel user = new UserModel();
+                AccountModel user = new AccountModel();
                 user.setUri(u);
                 scientList.add(user);
             });

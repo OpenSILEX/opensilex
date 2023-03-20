@@ -56,7 +56,7 @@ import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.csv.CSVCell;
@@ -126,7 +126,7 @@ public class ExperimentAPI {
     public static final int CSV_NB_ERRORS_MAX = 100;
 
     @CurrentUser
-    UserModel currentUser;
+    AccountModel currentUser;
 
     @Inject
     private SPARQLService sparql;
@@ -815,7 +815,7 @@ public class ExperimentAPI {
         return new SingleObjectResponse<>(csvValidation).getResponse();
     }
 
-    private DataCSVValidationModel validateWholeCSV(URI experimentURI, ProvenanceModel provenance, InputStream file, UserModel currentUser) throws Exception {
+    private DataCSVValidationModel validateWholeCSV(URI experimentURI, ProvenanceModel provenance, InputStream file, AccountModel currentUser) throws Exception {
         DataCSVValidationModel csvValidation = new DataCSVValidationModel();
         ScientificObjectDAO scientificObjectDAO = new ScientificObjectDAO(sparql, nosql);
 

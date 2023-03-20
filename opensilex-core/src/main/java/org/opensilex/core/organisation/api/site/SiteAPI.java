@@ -11,7 +11,8 @@ import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.exceptions.displayable.DisplayableBadRequestException;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
@@ -59,7 +60,7 @@ public class SiteAPI {
     private MongoDBService nosql;
 
     @CurrentUser
-    UserModel currentUser;
+    AccountModel currentUser;
 
     @GET
     @ApiOperation("Search all sites")

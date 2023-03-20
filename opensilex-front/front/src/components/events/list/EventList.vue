@@ -57,6 +57,7 @@
                                 :ignoreRoot="false"
                                 placeholder="Event.type-placeholder"
                                 class="searchFilter"
+                                @handlingEnterKey="refresh()"
                             ></opensilex-TypeForm>
                         </opensilex-FilterField>
                     </div>
@@ -70,6 +71,7 @@
                                 :filter.sync="filter.target"
                                 placeholder="EventList.target-filter-placeholder"
                                 class="searchFilter"
+                                @handlingEnterKey="refresh()"
                             ></opensilex-StringFilter>
                         </opensilex-FilterField><br>
                     </div>
@@ -83,6 +85,7 @@
                                 :filter.sync="filter.description"
                                 placeholder="ExperimentList.filter-label-placeholder"
                                 class="searchFilter"
+                                @handlingEnterKey="refresh()"
                             ></opensilex-StringFilter>
                         </opensilex-FilterField><br>
                     </div>

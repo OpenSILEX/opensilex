@@ -42,17 +42,20 @@
                                 helpMessage="component.skos.relation-help"
                                 placeholder="component.skos.no-relation"
                                 :selected.sync="currentRelation"
-                                :options="options" 
-                                :required="true"
+                                :options="options"
+                                :requiredBlue="true"
                                 ></opensilex-SelectForm>
                             </opensilex-FilterField>
                              <!-- URI -->
                             <opensilex-FilterField :fullWidth="true">
-                            <b-form-group :required="true">
+                            <b-form-group>
+                              <div class="helperAndBlueStar"> <!-- petite triche pour faire apparaitre l'étoile en bleu -->
                                 <opensilex-FormInputLabelHelper
                                         label="component.skos.uri"
                                         helpMessage="component.skos.uri-help"
                                 ></opensilex-FormInputLabelHelper>
+                                <pre class="blueStar"> *</pre>
+                              </div>
                                 <ValidationProvider
                                         :name="$t('component.skos.uri')"
                                         :rules="{
@@ -342,5 +345,12 @@
 <style scoped lang="scss">
     a {
         color: #007bff;
+    }
+
+    .helperAndBlueStar {
+      display: flex;
+    }
+    .blueStar {
+      color: #007bff;
     }
 </style>

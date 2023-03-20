@@ -37,12 +37,12 @@ import javax.ws.rs.core.SecurityContext;
 import javax.ws.rs.ext.Provider;
 import org.apache.commons.io.IOUtils;
 import org.opensilex.OpenSilex;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.exceptions.ForbiddenException;
 import org.opensilex.server.exceptions.UnauthorizedException;
 import org.opensilex.server.exceptions.UnexpectedErrorException;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.SecurityContextProxy;
-import org.opensilex.security.user.dal.UserModel;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,7 +73,7 @@ import org.slf4j.MDC;
  * &#64;GET
  * &#64;Path("api-method") ...
  * &#64;Produces(MediaType.APPLICATION_JSON) public Response apiMethod(
- * &#64;Context SecurityContext securityContext ) throws Exception { UserModel
+ * &#64;Context SecurityContext securityContext ) throws Exception { AccountModel
  * currentUser = authentication.getCurrentUser(securityContext);
  *
  * ... Do stuff with current user }
@@ -160,7 +160,7 @@ public class AuthenticationFilter implements ContainerRequestFilter, ContainerRe
         }
 
         // Ignore user definition if no token
-        UserModel user;
+        AccountModel user;
         if (tokenValue != null) {
 
             try {
@@ -180,7 +180,7 @@ public class AuthenticationFilter implements ContainerRequestFilter, ContainerRe
                 if (isSecuredAPI) {
                     throw new UnauthorizedException();
                 } else {
-                    user = UserModel.getAnonymous();
+                    user = AccountModel.getAnonymous();
                 }
             } catch (ForbiddenException ex) {
                 throw ex;
@@ -188,7 +188,7 @@ public class AuthenticationFilter implements ContainerRequestFilter, ContainerRe
                 throw new UnexpectedErrorException(ex);
             }
         } else {
-            user = UserModel.getAnonymous();
+            user = AccountModel.getAnonymous();
         }
 
         List<Locale> locales = headers.getAcceptableLanguages();

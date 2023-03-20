@@ -9,13 +9,14 @@
 package org.opensilex.core.organisation.dal.site;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.service.SparqlSearchFilter;
 
 import javax.validation.constraints.NotNull;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author Valentin Rigolle
@@ -25,7 +26,7 @@ public class SiteSearchFilter extends SparqlSearchFilter {
     private List<URI> sites;
     private List<URI> organizations;
     private URI facility;
-    private UserModel user;
+    private AccountModel user;
     /**
      * If set to true, the site search method will not perform a query to fetch the organizations accessible to the
      * user. Instead, it will use the {@link #userOrganizations} search field as the list of accessible organizations.
@@ -74,11 +75,11 @@ public class SiteSearchFilter extends SparqlSearchFilter {
     }
 
     @NotNull
-    public UserModel getUser() {
+    public AccountModel getUser() {
         return user;
     }
 
-    public SiteSearchFilter setUser(UserModel user) {
+    public SiteSearchFilter setUser(AccountModel user) {
         this.user = user;
         return this;
     }
@@ -105,7 +106,9 @@ public class SiteSearchFilter extends SparqlSearchFilter {
     public void validate() throws IllegalArgumentException, InvocationTargetException, IllegalAccessException {
         super.validate();
 
-        if (getSkipUserOrganizationFetch() && CollectionUtils.isEmpty(getUserOrganizations())) {
+        // The fetching of user organizations can only be skipped iff a list of user organizations is provided with
+        // the filter. This list can be empty in the case where the user has access to no organization.
+        if (getSkipUserOrganizationFetch() && Objects.isNull(getUserOrganizations())) {
             throw new IllegalArgumentException("`skipUserOrganizationFetch` requires `userOrganizations` to be defined");
         }
     }

@@ -41,6 +41,8 @@
     <!-- Infrastructure filter -->
     <opensilex-StringFilter
       :filter.sync="filter"
+      :debounce="300"
+      :lazy="false"
       @update="updateFilter()"
       placeholder="InfrastructureTree.filter-placeholder"
     ></opensilex-StringFilter>

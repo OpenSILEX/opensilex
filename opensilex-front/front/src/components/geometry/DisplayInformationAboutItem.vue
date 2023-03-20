@@ -7,6 +7,12 @@
           :withBasicProperties="false"
       />
     </div>
+    <div v-if="item.properties.nature === 'Device'">
+      <opensilex-DeviceDetailsMap
+          :selected="item.properties"
+          :showName="showName"
+      />
+    </div>
     <div v-if="(item.properties.nature === 'ScientificObjects') & detailsSO">
       <template v-if="withBasicProperties">
         <opensilex-ScientificObjectDetailMap

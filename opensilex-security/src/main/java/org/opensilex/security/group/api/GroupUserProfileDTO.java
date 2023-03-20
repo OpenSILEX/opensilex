@@ -12,7 +12,7 @@ import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
 import org.opensilex.security.group.dal.GroupUserProfileModel;
 import org.opensilex.security.profile.dal.ProfileModel;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.response.ResourceDTO;
 
@@ -96,7 +96,7 @@ public class GroupUserProfileDTO extends ResourceDTO<GroupUserProfileModel> {
         profile.setName(getProfileName());
         model.setProfile(profile);
 
-        UserModel user = new UserModel();
+        AccountModel user = new AccountModel();
         user.setUri(userURI);
         model.setUser(user);
     }

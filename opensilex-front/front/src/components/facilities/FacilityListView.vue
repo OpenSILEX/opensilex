@@ -16,11 +16,11 @@
       </div>
       <div class="col-md-6">
         <!-- Facility detail -->
-        <opensilex-FacilityDetail
+        <opensilex-FacilityDescription
             :selected="selectedFacility"
             :experiments="experiments"
         >
-        </opensilex-FacilityDetail>
+        </opensilex-FacilityDescription>
       </div>
     </div>
   </div>

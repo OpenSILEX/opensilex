@@ -7,8 +7,6 @@ package org.opensilex.core.logs.filter;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Set;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -22,7 +20,7 @@ import org.opensilex.OpenSilex;
 import org.opensilex.core.logs.dal.LogModel;
 import org.opensilex.core.logs.dal.LogsDAO;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,7 +53,7 @@ public class UserAccessLogFilter implements ContainerRequestFilter {
     @Override
     public void filter(ContainerRequestContext requestContext) throws IOException {
         // 1. retreive user informations
-        UserModel user = (UserModel) requestContext.getSecurityContext().getUserPrincipal();
+        AccountModel user = (AccountModel) requestContext.getSecurityContext().getUserPrincipal();
 
         if (!user.isAnonymous()) {
             //2 . check access log configuration

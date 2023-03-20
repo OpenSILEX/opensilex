@@ -345,7 +345,7 @@ export default class VariablesView extends Vue {
     }
 
     refresh(uri? : string) {
-        this.variableStructureList.refresh(false,uri);
+        this.variableStructureList.refresh(false, uri);
     }
 
     private getForm() {
@@ -576,7 +576,7 @@ en:
         add-variable: Add variable
         entity: Entity
         add-entity: Add entity
-        entityOfInterest: Observation level
+        entityOfInterest: Entity of interest
         add-entityOfInterest: Add observation level
         characteristic: Characteristic
         add-characteristic: Add characteristic
@@ -587,6 +587,7 @@ en:
         groupVariable: "Group of variables"
         add-groupVariable: Add a group of variables
         no-var-provided: No variable provided
+        associated-data-error: Data are associated with this variable
 
 fr:
     VariableView:
@@ -597,7 +598,7 @@ fr:
         add-variable: Ajouter une variable
         entity: Entité
         add-entity: Ajouter une entité
-        entityOfInterest: Niveau d'observation
+        entityOfInterest: Entité d'intérêt
         add-entityOfInterest: Ajouter un niveau d'observation
         characteristic: Caractéristique
         add-characteristic: Ajouter une caractéristique
@@ -608,6 +609,7 @@ fr:
         groupVariable: "Groupe de variables"
         add-groupVariable: Ajouter un groupe de variables
         no-var-provided: Aucune variable associée
+        associated-data-error: Données sont associées à cette variable
 
 </i18n>
 

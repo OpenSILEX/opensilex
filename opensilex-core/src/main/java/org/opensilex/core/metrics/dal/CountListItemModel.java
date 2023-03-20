@@ -21,6 +21,8 @@ public class CountListItemModel {
     
     private URI type;
 
+    private Integer calculatedTotalCount = null;
+
     private List<CountItemModel> items = new ArrayList<>();
 
     public URI getType() {
@@ -31,7 +33,19 @@ public class CountListItemModel {
         this.type = type;
     }
 
+
+    public Integer getCalculatedTotalCount() {
+        return calculatedTotalCount;
+    }
+
+    public void setCalculatedTotalCount(Integer calculatedTotalCount) {
+        this.calculatedTotalCount = calculatedTotalCount;
+    }
+
     public Integer getTotalCount() {
+        if(calculatedTotalCount != null){
+            return  calculatedTotalCount;
+        }
         int totalCount = 0;
         
         for (CountItemModel item : items) {

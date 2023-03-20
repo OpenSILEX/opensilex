@@ -32,6 +32,8 @@
           :organization="selectedOrganization"
           :site="selectedSite"
           :isSelectable="false"
+          :debounce="300"
+          :lazy="false"
         ></opensilex-FacilitiesView>
       </div>
     </div>

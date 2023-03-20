@@ -12,12 +12,15 @@ import org.opensilex.cli.MainCommand;
 import org.opensilex.cli.OpenSilexCommand;
 import org.opensilex.cli.HelpOption;
 import org.opensilex.cli.AbstractOpenSilexCommand;
+import org.opensilex.security.SecurityModule;
+import org.opensilex.security.person.dal.PersonDAO;
+import org.opensilex.security.person.dal.PersonModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import picocli.CommandLine.Command;
 import org.opensilex.security.authentication.AuthenticationService;
-import org.opensilex.security.user.dal.UserDAO;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountDAO;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
 import picocli.CommandLine;
@@ -31,7 +34,7 @@ import picocli.CommandLine;
 )
 public class UserCommands extends AbstractOpenSilexCommand implements OpenSilexCommand {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(UserCommands.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(UserCommands.class);
 
     /**
      * /**
@@ -66,19 +69,50 @@ public class UserCommands extends AbstractOpenSilexCommand implements OpenSilexC
         SPARQLService sparql = factory.provide();
 
         AuthenticationService authentication = opensilex.getServiceInstance(AuthenticationService.DEFAULT_AUTHENTICATION_SERVICE, AuthenticationService.class);
-        String passwordHash = authentication.getPasswordHash(password);
 
-        UserDAO userDAO = new UserDAO(sparql);
-        InternetAddress userMail = new InternetAddress(email);
+        AccountDAO accountDAO = new AccountDAO(sparql);
+        PersonDAO personDAO = new PersonDAO(sparql);
 
-        if (userDAO.userEmailexists(userMail)) {
-            LOGGER.warn("An user with the email {} already exists. New user will not be created", userMail);
+        InternetAddress mailAccount = new InternetAddress(email);
+
+        if (accountDAO.accountEmailExists(mailAccount)) {
+            LOGGER.warn("An user with the email {} already exists. New user will not be created", mailAccount);
         } else {
-            UserModel user = userDAO.create(null, userMail, firstName, lastName, isAdmin, passwordHash, lang);
-            LOGGER.info("User created: {}", user.getUri());
-        }
 
+            sparql.startTransaction();
+            try {
+                String passwordHash = authentication.getPasswordHash(password);
+                AccountModel accountModel = accountDAO.create(null, new InternetAddress(email), isAdmin, passwordHash, lang);
+
+                PersonModel holderOfTheAccount = personDAO.create(null, firstName, lastName, email);
+                personDAO.setAccount(holderOfTheAccount.getUri(), accountModel.getUri());
+
+                LOGGER.info("User created: " + accountModel.getUri());
+
+                sparql.commitTransaction();
+            } catch (Exception e) {
+                sparql.rollbackTransaction();
+            }
+
+        }
         factory.dispose(sparql);
+    }
+    
+    /**
+     * /**
+     * This method add a guest user to OpenSilex instance
+     *
+     * @param help Helper to generate automatically command help message
+     * @throws Exception if command fail
+     */
+    @Command(
+            name = "add-guest",
+            header = "Add an OpenSilex user"
+    )
+    public void addGuest(
+            @CommandLine.Mixin HelpOption help
+    ) throws Exception {
+        getOpenSilex().getModuleByClass(SecurityModule.class).createDefaultGuestGroupUserProfile(); 
     }
 
     public static void main(String[] args) throws Exception {

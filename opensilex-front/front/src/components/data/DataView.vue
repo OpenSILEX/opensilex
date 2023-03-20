@@ -145,6 +145,7 @@
                         label="DataView.filter.targets"
                         helpMessage="DataView.filter.targets-help"
                         type="text"
+                        @handlingEnterKey="refresh()"
                     ></opensilex-TagInputForm>
                   </opensilex-FilterField>
                 </div>
@@ -164,6 +165,7 @@
                         :viewHandlerDetailsVisible="visibleDetails"
                         :key="refreshKey"
                         class="searchFilter"
+                        @handlingEnterKey="refresh()"
                     ></opensilex-DataProvenanceSelector>
 
                     <b-collapse

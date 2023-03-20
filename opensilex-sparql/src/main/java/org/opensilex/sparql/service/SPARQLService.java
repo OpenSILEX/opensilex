@@ -35,6 +35,7 @@ import org.eclipse.rdf4j.model.vocabulary.XSD;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import org.opensilex.OpenSilex;
 import org.opensilex.OpenSilexModuleNotFoundException;
+import org.opensilex.server.exceptions.NotFoundException;
 import org.opensilex.service.BaseService;
 import org.opensilex.service.Service;
 import org.opensilex.service.ServiceDefaultDefinition;
@@ -47,10 +48,7 @@ import org.opensilex.sparql.mapping.SPARQLClassAnalyzer;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapperIndex;
 import org.opensilex.sparql.mapping.SPARQLListFetcher;
-import org.opensilex.sparql.model.SPARQLPartialTreeListModel;
-import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.sparql.model.SPARQLTreeListModel;
-import org.opensilex.sparql.model.SPARQLTreeModel;
+import org.opensilex.sparql.model.*;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.ontology.dal.OwlRestrictionModel;
@@ -240,6 +238,9 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     @Override
     public void executeUpdateQuery(UpdateBuilder update) throws SPARQLException {
         addPrefixes(update);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("SPARQL UPDATE\n" + update.buildRequest().toString());
+        }
         connection.executeUpdateQuery(update);
     }
 
@@ -251,9 +252,9 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     @Override
     public void executeDeleteQuery(UpdateBuilder delete) throws SPARQLException {
         addPrefixes(delete);
-//        if (LOGGER.isDebugEnabled()) {
-//            LOGGER.debug("SPARQL DELETE\n" + delete.buildRequest().toString());
-//        }
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("SPARQL DELETE\n" + delete.buildRequest().toString());
+        }
         connection.executeDeleteQuery(delete);
     }
 
@@ -1075,6 +1076,14 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         }
     }
 
+    public <T extends SPARQLResourceModel> void create(Collection<T> instances) throws Exception {
+        Optional<T> anyElement = instances.stream().findAny();
+        if (!anyElement.isPresent()) {
+            return;
+        }
+        create(getDefaultGraph(anyElement.get().getClass()), instances);
+    }
+
     public <T extends SPARQLResourceModel> void create(Class<T> clazz, Collection<T> instances) throws Exception {
         create(getDefaultGraph(clazz), instances);
     }
@@ -1763,10 +1772,8 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     public static final String EXISTING_VAR = "existing";
 
     /**
-     * @param uris the {@link Collection} of URI to check in {@link String} representation
-     * @param streamSize
      * @param type the rdf:type (if null/empty then the query only search if there exist an occurrence of <b>( ?uri a ?rdfType )</b> triple pattern for each URI
-     * @param graph
+     * @param uris the {@link Collection} of URI to check in {@link String} representation
      * @return a {@link SelectBuilder} which when executed, indicate for each element of uris, if the element exist (TRUE/FALSE)
      * as an instance of the type (or as any rdf:type if no type is provided)
      *
@@ -2034,6 +2041,16 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         return cnt.getRepositoryConnectionImpl();
     }
 
+    public URI getDefaultGraphURI(URI rdfType) throws NotFoundException, SPARQLInvalidClassDefinitionException {
+        try {
+            return getMapperIndex()
+                    .getForResource(Ontology.resource(SPARQLDeserializers.getExpandedURI(rdfType)))
+                    .getDefaultGraphURI();
+        } catch (SPARQLMapperNotFoundException e) {
+            throw new NotFoundException("No default graph found for RDF type <" + rdfType + ">");
+        }
+    }
+
     public Node getDefaultGraph(Class<? extends SPARQLResourceModel> modelClass) throws SPARQLException {
         return getMapperIndex().getForClass(modelClass).getDefaultGraph();
     }
@@ -2042,6 +2059,14 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         SPARQLClassObjectMapperIndex i = getMapperIndex();
         SPARQLClassObjectMapper<SPARQLResourceModel> g = i.getForClass(modelClass);
         return g.getDefaultGraphURI();
+    }
+
+    public <T extends SPARQLResourceModel> Resource getRDFType(Class<T> objectClass) throws SPARQLException {
+        return getMapperIndex().getForClass(objectClass).getRDFType();
+    }
+
+    public <T extends SPARQLResourceModel> String getRDFTypeURI(Class<T> objectClass) throws SPARQLException {
+        return getRDFType(objectClass).getURI();
     }
 
     public URI getDefaultGenerationURI(Class<? extends SPARQLResourceModel> modelClass) throws SPARQLException {
@@ -2210,22 +2235,45 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         executeDeleteQuery(delete);
     }
 
+    /**
+     *
+     * @param graph the SPARQL graph (optional)
+     * @param uri a specified resource URI, for which primitives are searched (optional)
+     * @param property the RDF property (required)
+     * @param valuesType object/value type (required)
+     * @return the List of primitives values
+     *
+     * @apiNote The query append a filter on datatype according the specified Class value type.
+     * So values which don't match the given datatype will not be returned by the database
+     */
     public <T> List<T> searchPrimitives(Node graph, URI uri, Property property, Class<T> valuesType) throws Exception {
-        List<T> list = new ArrayList<>();
-        SelectBuilder select = new SelectBuilder();
 
-        Var valueVar = SPARQLQueryHelper.makeVar("value");
-        select.addVar(valueVar);
-        select.addWhere(SPARQLDeserializers.nodeURI(uri), property.asNode(), valueVar);
+        ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
         SPARQLDeserializer<T> deserializer = SPARQLDeserializers.getForClass(valuesType);
-        connection.executeSelectQuery(select, results -> {
+
+        // use the specified uri, else use a variable
+        Node subject = uri != null ? SPARQLDeserializers.nodeURI(uri) : makeVar("uri");
+        Var valueVar = SPARQLQueryHelper.makeVar("value");
+        Node dataType = NodeFactory.createURI(deserializer.getDataType().getURI());
+
+        SelectBuilder select = new SelectBuilder().addVar(valueVar);
+        if(graph != null){
+            select.addGraph(graph,subject, property.asNode(), valueVar);
+        }else{
+            select.addWhere(subject, property.asNode(), valueVar);
+        }
+        select.addFilter(exprFactory.eq(exprFactory.datatype(valueVar), dataType));
+
+        // execute query and parse with expected deserializer
+        List<T> list = new ArrayList<>();
+
+        connection.executeSelectQueryAsStream(select).forEach(results -> {
             try {
                 list.add(deserializer.fromString(results.getStringValue(valueVar.getVarName())));
             } catch (Exception ex) {
-                LOGGER.warn("Error while deserializing primitive result, your database may be inconsitent (value currently ignored)", ex);
+                LOGGER.warn("Error while deserializing primitive result, your database may be inconsistent (value currently ignored)", ex);
             }
         });
-
         return list;
     }
 
@@ -2411,5 +2459,125 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         }
 
         executeUpdateQuery(update);
+    }
+
+    public URI getFavoriteRdfTypeFromURI(URI uri, List<URI> allowedTypes) throws Exception {
+        SelectBuilder select = new SelectBuilder();
+        WhereBuilder where = new WhereBuilder();
+
+        Var rdfTypeVar = makeVar("rdfType");
+
+        where.addWhere(SPARQLDeserializers.nodeURI(uri), Ontology.typeSubClassAny, rdfTypeVar);
+        SPARQLQueryHelper.inURI(where, rdfTypeVar.getVarName(), allowedTypes);
+        select.addVar(rdfTypeVar);
+        select.addWhere(where);
+        select.setDistinct(true);
+
+        List<SPARQLResult> results = this.executeSelectQuery(select);
+
+        if (CollectionUtils.isEmpty(results)) {
+            return null;
+        }
+
+        if (results.size() > 1) {
+            throw new Exception(results + "Multiple rdf types for uri " + uri);
+        }
+
+        return new URI(results.get(0).getStringValue(rdfTypeVar.getVarName()));
+    }
+
+    public String getFavoriteNameFromURI(URI uri) throws Exception {
+        SelectBuilder select = new SelectBuilder();
+        WhereBuilder where = new WhereBuilder();
+
+        Var nameVar = makeVar("name");
+
+        where.addWhere(SPARQLDeserializers.nodeURI(uri), org.apache.jena.vocabulary.RDFS.label.asNode(), nameVar);
+        select.addVar(nameVar);
+        select.addWhere(where);
+        select.setDistinct(true);
+
+        List<SPARQLResult> results = this.executeSelectQuery(select);
+
+        if (CollectionUtils.isEmpty(results)) {
+            return null;
+        }
+
+        if (results.size() > 1) {
+            throw new Exception("Multiple rdfs label for uri " + uri);
+        }
+
+        return results.get(0).getStringValue(nameVar.getVarName());
+    }
+
+    /**
+     * Returns a collection of {@link SPARQLNamedResourceModel} representing the given URI. Results are returned in a
+     * map where the key is the URI of a graph containing the triples, and the value is a named resource model
+     * containing the label and the type of the object in the corresponding graph. An example of result is shown below.
+     * The expected types must be provided with the `allowedTypes` argument (it can be a supertype of the object).
+     *
+     * <pre><code>
+     * {
+     *     "xp1": {
+     *         "label": "xp1-os1",
+     *         "type": "plot"
+     *     },
+     *     "xp2": {
+     *         "label": "xp2-os2",
+     *         "type": "subplot"
+     *     }
+     * }
+     * </code></pre>
+     *
+     * This method performs the following query :
+     *
+     * <pre><code>
+     * select ?label ?type {
+     *     allowedGraphs ?allowedGraphs {
+     *        __uri__ rdf:type ?rdfType .
+     *        __uri__ rdfs:label ?label .
+     *     }
+     *     ?rdfType rdfs:subClassOf* ?superType .
+     *     filter (?superType in (__allowedTypes__))
+     *     filter (?allowedGraphs = __graph__)
+     * }
+     * </code> </pre>
+     *
+     * @param uri
+     * @param allowedTypes
+     * @return
+     */
+    public Map<URI, SPARQLNamedResourceModel<?>> getNamedResourceModelContextMap(URI uri, Collection<URI> allowedTypes) throws Exception {
+        SelectBuilder select = new SelectBuilder();
+
+        Var labelVar = makeVar("label");
+        Var superTypeVar = makeVar("superType");
+        Var rdfTypeVar = makeVar("rdfType");
+        Var graphVar = makeVar("graph");
+
+        select.addVar(labelVar);
+        select.addVar(superTypeVar);
+        select.addVar(graphVar);
+
+        WhereBuilder graphWhere = new WhereBuilder();
+        graphWhere.addWhere(SPARQLDeserializers.nodeURI(uri), RDF.type, rdfTypeVar);
+        graphWhere.addWhere(SPARQLDeserializers.nodeURI(uri), org.apache.jena.vocabulary.RDFS.label, labelVar);
+
+        select.addGraph(graphVar, graphWhere);
+
+        select.addWhere(rdfTypeVar, Ontology.subClassAny, superTypeVar);
+        select.addFilter(SPARQLQueryHelper.inURIFilter(superTypeVar, allowedTypes));
+
+        Map<URI, SPARQLNamedResourceModel<?>> graphModelMap = new HashMap<>();
+
+        executeSelectQueryAsStream(select).forEach(result -> {
+            SPARQLNamedResourceModel<?> model = new SPARQLNamedResourceModel<>();
+            model.setUri(uri);
+            model.setName(result.getStringValue(labelVar.getVarName()));
+            model.setType(URI.create(result.getStringValue(superTypeVar.getVarName())));
+            graphModelMap.put(URI.create(result.getStringValue(graphVar.getVarName())), model);
+        });
+
+        return graphModelMap;
     }
 }

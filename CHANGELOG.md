@@ -1,9 +1,105 @@
+<!-- TOC -->
+* [Changelog](#changelog)
+  * [[1.0.0-rc+7]](#100-rc7)
+    * [New features](#new-features)
+    * [Fixed or optimized](#fixed-or-optimized)
+  * [[1.0.0-rc+6]](#100-rc6)
+    * [Fixed or optimized](#fixed-or-optimized-1)
+    * [Added or changed](#added-or-changed)
+  * [[1.0.0-rc+5.2]](#100-rc52)
+    * [Fixed or optimized](#fixed-or-optimized-2)
+  * [[1.0.0-rc+5.1]](#100-rc51)
+    * [Fixed or optimized](#fixed-or-optimized-3)
+  * [[1.0.0-rc+5]](#100-rc5)
+    * [Added or changed](#added-or-changed-1)
+    * [Fixed or optimized](#fixed-or-optimized-4)
+  * [[1.0.0-rc+4.1] - 2022-07-13](#100-rc41---2022-07-13)
+    * [Fixed](#fixed)
+  * [[1.0.0-rc+4] - 2022-06-13](#100-rc4---2022-06-13)
+    * [Added or changed](#added-or-changed-2)
+    * [Fixed](#fixed-1)
+  * [[1.0.0-rc+3] - 2022-05-05](#100-rc3---2022-05-05)
+    * [Added or changed](#added-or-changed-3)
+    * [Fixed](#fixed-2)
+  * [[1.0.0-rc+2] - 2022-01-23](#100-rc2---2022-01-23)
+    * [Added](#added)
+    * [Added in pre-production](#added-in-pre-production)
+    * [Fixed or improvement](#fixed-or-improvement)
+    * [Some Known Issues](#some-known-issues)
+  * [[1.0.0-rc+1] - 2021-11-02](#100-rc1---2021-11-02)
+    * [Added](#added-1)
+    * [Fixed or optimized](#fixed-or-optimized-5)
+  * [[1.0.0-rc] - 2021-10-08](#100-rc---2021-10-08)
+    * [Added](#added-2)
+    * [Fixed or optimized](#fixed-or-optimized-6)
+    * [Changed](#changed)
+    * [Major bugs identified](#major-bugs-identified)
+  * [[1.0.0-beta+2.1] - 2021-07-27](#100-beta21---2021-07-27)
+    * [Added](#added-3)
+    * [Fixed](#fixed-3)
+  * [[1.0.0-beta+2] - 2021-05-07](#100-beta2---2021-05-07)
+    * [Added](#added-4)
+    * [Changed](#changed-1)
+  * [[1.0.0-beta+1] - 2021-04-27](#100-beta1---2021-04-27)
+    * [Fixed](#fixed-4)
+  * [[1.0.0-beta] - 2021-04-20](#100-beta---2021-04-20)
+    * [Added](#added-5)
+    * [Fixed](#fixed-5)
+  * [[1.0.0-alpha] - 2020-11-30](#100-alpha---2020-11-30)
+    * [Added](#added-6)
+<!-- TOC -->
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.0.0-rc+7]
+
+> WARNING : upgrading to this new version require manual operations. Please
+> see the [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc+7.md).
+> Also available [here](opensilex-doc%2Fsrc%2Fmain%2Fresources%2Frelease%2F1.0.0-rc%2B7.md)
+
+### New features
+
+- **[Dashboard]** Add a dashboard functionality for visualizing data, scientific objects, devices and germplasm statistics -> 38970ef6
+- **[Variables]** Allow to browse and import variables from a remote instance ("shared resource instance") -> 5aa3e0482
+- **[UI]** Indication of elements number in tabs -> 5eb24aac4
+- **[UI]** Enter Key press no longer necessary in auto-complet fields -> 7dc8ff333
+- **[UI]** Add an OpenSILEX neutral UI theme -> fd2706c1
+- **[Germplasm]** Append search by attribute values on front -> a1425b118
+- **[Position]** Display the Devices/OS LastPosition on detail and map page -> 3cf14f8e2
+- **[Facilities]** Sites can now be associated to a facility from the facility creation or update form -> 845f3d1d
+- **[Data/Image]** : Visualization of Images associated to the data since from experiment -> 169cbc31d
+- **[Users]** Data model has been changed, old users are now split into accounts and persons -> 8ed0303a
+- **[Users]** Add a command for creating a guest account -> fd2706c1
+
+### Fixed or optimized
+
+- **[Ontology]** move some subclass and properties from oeso-ext ontology (phis) to oeso-core ontology -> ac1a451c3
+- **[Data]** Fix bad redirection of scientific object inside experimental context. Fix display error in case of data with no target defined -> d9830177d
+- **[Experiment/Visualisation]** Fix graphic visualizations in experiment module -> 43dbfe29d
+- **[Provenance]** Fix creation of provenance with an operator -> abd7ba2a9
+- **[Event]** Append Fertilization  event french translation -> 2dd981f06
+- **[Scientific Object]** fix storage/search of name composed only of digit in global graph -> 3268a4bf3
+- **[Scientific Object]** fix germplasm and custom properties export -> 0ede9443d
+- **[Move/Location]** Enhance OS positions historic -> 89553d5e0
+- **[Scientific Object]** new rooting for SO tabs / fix links redirect -> c37bc6273
+- **[Scientific Objects]** Fix SO form if it contains subtype properties -> 4d8b93899
+- **[FileSystem]** Fix import from local files to mongodb import -> 9436ce94d
+- **[Scientific Object]** fix no display of object name for each experiment (if name are equals in global and experimental context) -> 1eeff0fcd
+- **[Germplasm]** Fix search by attributes and attributes list display -> 7b71920d
+- **[Scientific Object]** Fix form if it contains custom/subtype properties  -> 4d8b9389
+- **[FileSystem]** Fix import from local files to MongoDB import -> 9436ce94
+- **[Germplasm]** Fix search by attributes and attributes list display -> 7b71920d 
+- **[Document]** Fix error on Document creation when using a fixed URI -> 6e766fbe
+- **[Facility]** Fix display of associated device -> 465c364f
+- **[User/Account]** Extract Account and Person from User -> 8ed0303a
+- **[Facility]** Add tabs for facility view -> 2239fb02
+- **[Germplasm]** Allow duplicate names for accessions -> 42399304
+- **[Organizations]** The "create facility" button on site details now works as expected -> 845f3d1d
 
 ## [1.0.0-rc+6]
 

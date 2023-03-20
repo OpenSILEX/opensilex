@@ -6,10 +6,12 @@
 package org.opensilex.core.ontology.api;
 
 import io.swagger.annotations.*;
+import org.opensilex.core.CoreModule;
 import org.opensilex.core.URIsListPostDTO;
+import org.opensilex.core.sharedResource.SharedResourceInstanceDTO;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.user.dal.UserModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.exceptions.ConflictException;
 import org.opensilex.server.exceptions.NotFoundException;
 import org.opensilex.server.response.ErrorResponse;
@@ -53,13 +55,17 @@ import java.util.stream.Collectors;
 public class OntologyAPI {
 
     public static final String PATH = "/ontology";
+    public static final String GET_NAMESPACE_PATH = "/name_space";
     public static final String RDF_TYPE_PROPERTY_RESTRICTION = "rdf_type_property_restriction";
 
     @CurrentUser
-    UserModel currentUser;
+    AccountModel currentUser;
 
     @Inject
     private SPARQLService sparql;
+
+    @Inject
+    private CoreModule coreModule;
 
     public static final String PROPERTY_ALREADY_EXISTS_MSG = "A property with the same URI already exists";
     public static final String PROPERTY_NOT_FOUND_MSG = "Property not found";
@@ -545,6 +551,41 @@ public class OntologyAPI {
         return new SingleObjectResponse<>(dtoList).getResponse();
     }
 
+    @GET
+    @Path("/shared_resource_instances")
+    @ApiOperation("Return the list of shared resource instances")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return shared resource instances", response = SharedResourceInstanceDTO.class, responseContainer = "List")
+    })
+    public Response getSharedResourceInstances(
+
+    ) {
+        return new PaginatedListResponse<>(coreModule.getSharedResourceInstancesFromConfiguration(currentUser.getLanguage()))
+                .getResponse();
+    }
+
+    @GET
+    @Path("/uri_types")
+    @ApiOperation("Return all rdf types of an uri")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return URI rdf types", response = URITypesDTO.class)
+    })
+    public Response getURITypes(
+            @ApiParam(value = "URIs to get types from", required = true) @QueryParam("uri") @NotNull @ValidURI @NotEmpty List<URI> uris
+    ) throws Exception {
+        OntologyDAO dao = new OntologyDAO(sparql);
+
+        List<URITypesModel> types = dao.getSuperClassesByURI(uris);
+
+        return new SingleObjectResponse<>(types).getResponse();
+    }
+
     @POST
     @Path("/check_rdf_types")
     @ApiOperation("Check the given rdf-types on the given uris")
@@ -565,7 +606,7 @@ public class OntologyAPI {
     }
 
     @GET
-    @Path("/name_space")
+    @Path(GET_NAMESPACE_PATH)
     @ApiOperation("Return namespaces")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)

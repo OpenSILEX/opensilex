@@ -315,7 +315,7 @@ fr :
             <strong>Les colonnes \"experiment\", \"target\" et \"device\" sont optionnelles. Vous pouvez les enlever. Dans ces 3 colonnes, vous pouvez mettre des URIs ou des noms. </strong> <br /> \n
             Le target peut être un objet scientifique ou une installation ou un événement. <br /> \n
             Si vous avez déjà renseigné le device dans la provenance, alors il n'est pas nécessaire d'ajouter la colonne device au fichier. Au contraire, si aucun device n'est renseigné dans la provenance sélectionnée alors il est nécessaire de remplir la colonne \"device\" ou \"target\". <br />\n
-            Si besoin, vous pouvez dupliquer les colonnes \"experiment\" et \"device\" pour lier vos donner à plusieurs expérimentations ou équipements. <br />\n
+            Si besoin, vous pouvez dupliquer les colonnes \"experiment\" et \"device\" pour lier vos données à plusieurs expérimentations ou équipements. <br />\n
             Si besoin, vous pouvez ajouter une colonne \"raw_data\" à droite de chaque colonne variable. (Voir la génération du template) <br />\n
             Les séparateurs CSV acceptés :<strong>{comma} or {semicolon}</strong><br /> \n
             Le séparateur décimal est le suivant : <strong>\"{decimalSeparator}\"</strong><br /> \n

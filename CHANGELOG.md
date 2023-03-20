@@ -1,3 +1,54 @@
+<!-- TOC -->
+* [Changelog](#changelog)
+  * [[1.0.0-rc+7]](#100-rc7)
+    * [New features](#new-features)
+    * [Fixed or optimized](#fixed-or-optimized)
+  * [[1.0.0-rc+6]](#100-rc6)
+    * [Fixed or optimized](#fixed-or-optimized-1)
+    * [Added or changed](#added-or-changed)
+  * [[1.0.0-rc+5.2]](#100-rc52)
+    * [Fixed or optimized](#fixed-or-optimized-2)
+  * [[1.0.0-rc+5.1]](#100-rc51)
+    * [Fixed or optimized](#fixed-or-optimized-3)
+  * [[1.0.0-rc+5]](#100-rc5)
+    * [Added or changed](#added-or-changed-1)
+    * [Fixed or optimized](#fixed-or-optimized-4)
+  * [[1.0.0-rc+4.1] - 2022-07-13](#100-rc41---2022-07-13)
+    * [Fixed](#fixed)
+  * [[1.0.0-rc+4] - 2022-06-13](#100-rc4---2022-06-13)
+    * [Added or changed](#added-or-changed-2)
+    * [Fixed](#fixed-1)
+  * [[1.0.0-rc+3] - 2022-05-05](#100-rc3---2022-05-05)
+    * [Added or changed](#added-or-changed-3)
+    * [Fixed](#fixed-2)
+  * [[1.0.0-rc+2] - 2022-01-23](#100-rc2---2022-01-23)
+    * [Added](#added)
+    * [Added in pre-production](#added-in-pre-production)
+    * [Fixed or improvement](#fixed-or-improvement)
+    * [Some Known Issues](#some-known-issues)
+  * [[1.0.0-rc+1] - 2021-11-02](#100-rc1---2021-11-02)
+    * [Added](#added-1)
+    * [Fixed or optimized](#fixed-or-optimized-5)
+  * [[1.0.0-rc] - 2021-10-08](#100-rc---2021-10-08)
+    * [Added](#added-2)
+    * [Fixed or optimized](#fixed-or-optimized-6)
+    * [Changed](#changed)
+    * [Major bugs identified](#major-bugs-identified)
+  * [[1.0.0-beta+2.1] - 2021-07-27](#100-beta21---2021-07-27)
+    * [Added](#added-3)
+    * [Fixed](#fixed-3)
+  * [[1.0.0-beta+2] - 2021-05-07](#100-beta2---2021-05-07)
+    * [Added](#added-4)
+    * [Changed](#changed-1)
+  * [[1.0.0-beta+1] - 2021-04-27](#100-beta1---2021-04-27)
+    * [Fixed](#fixed-4)
+  * [[1.0.0-beta] - 2021-04-20](#100-beta---2021-04-20)
+    * [Added](#added-5)
+    * [Fixed](#fixed-5)
+  * [[1.0.0-alpha] - 2020-11-30](#100-alpha---2020-11-30)
+    * [Added](#added-6)
+<!-- TOC -->
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
@@ -5,14 +56,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.0-rc+7] (Unreleased)
+## [1.0.0-rc+7]
 
-> Warning : upgrading to this new version may require manual operations. Please
-> see the [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc+6.1.md).
+> WARNING : upgrading to this new version require manual operations. Please
+> see the [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0-rc+7.md).
+> Also available [here](opensilex-doc%2Fsrc%2Fmain%2Fresources%2Frelease%2F1.0.0-rc%2B7.md)
 
 ### New features
 
-- **[Dashboard]** Append a new dashboard functionnality for metrics and data-summary visualization -> 38970ef6
+- **[Dashboard]** Add a dashboard functionality for visualizing data, scientific objects, devices and germplasm statistics -> 38970ef6
 - **[Variables]** Allow to browse and import variables from a remote instance ("shared resource instance") -> 5aa3e0482
 - **[UI]** Indication of elements number in tabs -> 5eb24aac4
 - **[UI]** Enter Key press no longer necessary in auto-complet fields -> 7dc8ff333
@@ -22,6 +74,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **[Facilities]** Sites can now be associated to a facility from the facility creation or update form -> 845f3d1d
 - **[Data/Image]** : Visualization of Images associated to the data since from experiment -> 169cbc31d
 - **[Users]** Data model has been changed, old users are now split into accounts and persons -> 8ed0303a
+- **[Users]** Add a command for creating a guest account -> fd2706c1
 
 ### Fixed or optimized
 

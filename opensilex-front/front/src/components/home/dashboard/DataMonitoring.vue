@@ -94,7 +94,7 @@
            </span>
 
           <!-- show scientific object count -->
-           <span v-if="deltaScientificObjects > 0" id="popover-so" class="so">
+           <span v-if="deltaScientificObjects.includes('+')" id="popover-so" class="so">
              <opensilex-Icon icon="ik#ik-target"/>
               <span class="stats-underline">{{ nbScientificObjects }} ({{ deltaScientificObjects }}) {{ $t("component.menu.scientificObjects") }}</span>
              <!-- handle mouse-over events on "os" -->
@@ -216,7 +216,18 @@ export default class DataMonitoring extends Vue {
               this.nbData = this.splitIntegerByThousands(result.data_list.total_items_count);
               this.deltaData = this.getCountDeltaWthAlgebraicSign(result.data_list.total_difference_item_count);
             })
-            .catch(this.$opensilex.errorHandler);
+            .catch((http: HttpResponse<OpenSilexResponse<MetricPeriodDTO>>) => {
+              if (http.status === 404) {
+                this.nbScientificObjects = "N/A";
+                this.deltaScientificObjects = "N/A";
+                this.nbExperiments = "N/A";
+                this.deltaExperiments = "N/A";
+                this.nbData = "N/A";
+                this.deltaData = "N/A";
+              } else {
+                this.$opensilex.errorHandler(http);
+              }
+            });
   }
 
   /**
@@ -241,11 +252,11 @@ export default class DataMonitoring extends Vue {
     let addedTypes = [];
     if (Array.isArray(listItems)) {
       for (let item of listItems) {
-        if (item.count > 0) {
+        if (item.difference_count > 0) {
           if (this.$store.getters.language == "fr") {
-            addedTypes.push(`${item.name.toLowerCase()} : ${item.count}`);
+            addedTypes.push(`${item.name.toLowerCase()} : ${item.difference_count}`);
           } else {
-            addedTypes.push(`${item.name.toLowerCase()}: ${item.count}`);
+            addedTypes.push(`${item.name.toLowerCase()}: ${item.difference_count}`);
           }
         }
       }

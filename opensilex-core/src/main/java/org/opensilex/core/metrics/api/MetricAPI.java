@@ -7,6 +7,9 @@
 package org.opensilex.core.metrics.api;
 
 import io.swagger.annotations.*;
+import org.opensilex.OpenSilex;
+import org.opensilex.core.CoreConfig;
+import org.opensilex.core.CoreModule;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.exception.DateMappingExceptionResponse;
 import org.opensilex.core.exception.DateValidationException;
@@ -20,6 +23,7 @@ import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.server.exceptions.NotFoundException;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
@@ -64,6 +68,9 @@ public class MetricAPI {
 
     @CurrentUser
     AccountModel currentUser;
+
+    @Inject
+    private OpenSilex openSilex;
 
     @Inject
     private SPARQLService sparql;
@@ -180,13 +187,18 @@ public class MetricAPI {
 
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "System metrics retrieved", response = MetricPeriodDTO.class),
-            @ApiResponse(code = 404, message = "System metrics not found", response = ErrorResponse.class)
+            @ApiResponse(code = 404, message = "System metrics not found", response = ErrorResponse.class),
+            @ApiResponse(code = 503, message = "System metrics not available", response = ErrorResponse.class)
     })
     public Response getSystemMetricsSummary(
-            @ApiParam(value = "Search by minimal date", example = "MONTH, WEEK, DAY, YEAR") @QueryParam("period") String period,
+            @ApiParam(value = "Search by minimal date", example = "DAY, WEEK, MONTH, YEAR") @QueryParam("period") String period,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
+        if (!openSilex.getModuleConfig(CoreModule.class, CoreConfig.class).metrics().enableMetrics()) {
+            return new ErrorResponse(Response.Status.SERVICE_UNAVAILABLE, "Service Unavailable", "Metrics are not enabled on this instance").getResponse();
+        }
+
         Instant startInstant = null;
         Instant endInstant = Instant.now();
 
@@ -211,11 +223,16 @@ public class MetricAPI {
         List<SystemSummaryModel> firstAndLastPeriodSystemSummaries = metricsDao.getSystemSummaryFirstAndLastByPeriod(startInstant, endInstant, currentUser.getLanguage());
 
         //Calculate differences between start and end instant summaries -> substract entity-specific counts
-        MetricPeriodDTO dto =  substractMetricModel(firstAndLastPeriodSystemSummaries);
-        dto.setStartDate(startInstant);
-        dto.setEndDate(endInstant);
+        if(firstAndLastPeriodSystemSummaries != null){
+            MetricPeriodDTO dto =  substractMetricModel(firstAndLastPeriodSystemSummaries);
+            dto.setStartDate(startInstant);
+            dto.setEndDate(endInstant);
 
-        return new SingleObjectResponse<>(dto).getResponse();
+            return new SingleObjectResponse<>(dto).getResponse();
+        }
+        else{
+            throw new NotFoundException("No metrics available for selected period");
+        }
     }
 
 

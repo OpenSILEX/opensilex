@@ -2,9 +2,18 @@ package org.opensilex.front.api;
 
 public class DashboardConfigDTO {
 
+    private boolean showMetrics;
     private GraphConfigDTO graph1;
     private GraphConfigDTO graph2;
     private GraphConfigDTO graph3;
+
+    public boolean getShowMetrics() {
+        return showMetrics;
+    }
+
+    public void setShowMetrics(boolean showMetrics) {
+        this.showMetrics = showMetrics;
+    }
 
     public GraphConfigDTO getGraph1() {
         return graph1;

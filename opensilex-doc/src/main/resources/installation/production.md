@@ -11,7 +11,7 @@
 - [Installation](#installation)
   - [Set up a user](#set-up-a-user)
   - [Create directories](#create-directories)
-  - [Download & extract OpenSILEX production release](#download--extract-opensilex-production-release)
+  - [Download \& extract OpenSILEX production release](#download--extract-opensilex-production-release)
   - [Configuration](#configuration)
     - [Create main configuration file](#create-main-configuration-file)
     - [Configure logging](#configure-logging)
@@ -165,7 +165,7 @@ mkdir -p /home/opensilex/logs
 
 ## Download & extract OpenSILEX production release
 
-Please download the OpenSILEX latest release archive on [Github](https://github.com/OpenSILEX/opensilex/releases)
+Please download the OpenSILEX latest release archive on [Github](https://github.com/OpenSILEX/opensilex/releases/latest)
 In this paragraph, `<X.Y.Z>` means the OpenSILEX release version.
 Extract the downloaded zip file into `/home/opensilex/bin`
 
@@ -178,12 +178,14 @@ unzip opensilex-X.Y.Z.zip
 
 ```
 
-For latest version
+For latest version - go to [Latest version](https://github.com/OpenSILEX/opensilex/releases/latest)
 
-```
+Exemple with 1.0.0-rc+7 version
+
+```bash
 cd /home/opensilex/bin
-wget https://github.com/OpenSILEX/opensilex/releases/download/1.0.0-beta/opensilex-release-1.0.0-beta.zip
-unzip opensilex-release-1.0.0-beta.zip
+wget https://github.com/OpenSILEX/opensilex/releases/download/1.0.0-rc+7/opensilex-release-1.0.0-rc+7.zip
+unzip opensilex-release-1.0.0-rc+7.zip
 ```
 
 You should get the following directory structure:
@@ -318,10 +320,9 @@ opensilex system install
 
 This instruction creates the repository (with the name defined in the configuration file). It also creates the default administrator and imports the ontologies.
 
-
 **GraphDB**
 
-If your want to use graphDB, you must update some part of your ```opensilex.yml``` config file as following : 
+If your want to use graphDB, you must update some part of your `opensilex.yml` config file as following :
 
 ```yml
 ontologies:
@@ -335,19 +336,19 @@ ontologies:
       repositoryType: graphdb:FreeSailRepository
 ```
 
-Note the value for the setting ```repositoryType``` depends on your graphdb version (free, standard or entreprise).
+Note the value for the setting `repositoryType` depends on your graphdb version (free, standard or entreprise).
 
 You can see the following links for more details about repository configuration :
+
 - https://graphdb.ontotext.com/documentation/9.11/standard/configuring-a-repository.html#configuration-parameters
 - https://graphdb.ontotext.com/documentation/9.11/enterprise/configuring-a-repository.html#configuration-parameters
 - https://graphdb.ontotext.com/documentation/9.11/free/configuring-a-repository.html#configuration-parameters
 
-Now you can run 
+Now you can run
 
 ```bash
 opensilex system install
 ```
-
 
 **Import ontologies**
 

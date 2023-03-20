@@ -6,6 +6,27 @@ Date : 2021/11/29
 
 This document describes how to execute migration commands into OpenSILEX, the list of available migrations and how to add a new one.
 
+<!-- TOC -->
+* [Opensilex Migration Commands](#opensilex-migration-commands)
+* [Introduction](#introduction)
+  * [Running command line on OpenSILEX executable .jar file (User/Admin oriented)](#running-command-line-on-opensilex-executable-jar-file--useradmin-oriented-)
+  * [Running update inside IDE with opensilex-dev-tools module (For developers)](#running-update-inside-ide-with-opensilex-dev-tools-module--for-developers-)
+* [List](#list)
+* [Descriptions](#descriptions)
+  * [org.opensilex.migration.GraphAndCollectionMigration](#orgopensilexmigrationgraphandcollectionmigration)
+    * [Description](#description)
+    * [Usage note](#usage-note)
+  * [org.opensilex.migration.MongoCustomCoordinatesDataTypeUpdate](#orgopensilexmigrationmongocustomcoordinatesdatatypeupdate)
+    * [Description](#description-1)
+  * [org.opensilex.migration.ScientificObjectNameIntegerConvertMigration](#orgopensilexmigrationscientificobjectnameintegerconvertmigration)
+    * [Description](#description-2)
+    * [Notes](#notes)
+  * [org.opensilex.migration.AgentsMigrateToAccountAndPersons](#orgopensilexmigrationagentsmigratetoaccountandpersons)
+    * [Description](#description-3)
+* [Create an update command (For developers)](#create-an-update-command--for-developers-)
+      * [Example](#example)
+<!-- TOC -->
+
 # Introduction
 
 OpenSILEX allow to easily perform some update/migration operation by just executing commands. <br>
@@ -41,12 +62,12 @@ org.opensilex.migration.GraphAndCollectionMigration
 - To be resolvable, the `Class` must exist in one OpenSILEX module (embedded or custom module).
 
 
-| Date       | Name (id)                                                                  | OpenSILEX tag or commit                  | 
-|------------|----------------------------------------------------------------------------|------------------------------------------|
-| 2021/11/29 | <b>org.opensilex.migration.GraphAndCollectionMigration</b>                 | 46a276118a6b8c47669997c7cb5ee4aca4524141 |
-| 2022/08/03 | <b>org.opensilex.migration.MongoCustomCoordinatesDataTypeUpdate</b>        |                                          |                                                                          
-| 2023/01/24 | <b>org.opensilex.migration.ScientificObjectNameIntegerConvertMigration</b> | 1.0.0-rc+6.5                             |                                                                          
-
+| Date       | Name (id)                                                                  | Tag          | Commit ID | 
+|------------|----------------------------------------------------------------------------|--------------|-----------|
+| 2021/11/29 | <b>org.opensilex.migration.GraphAndCollectionMigration</b>                 |              | 46a27611  |
+| 2022/08/03 | <b>org.opensilex.migration.MongoCustomCoordinatesDataTypeUpdate</b>        |              |           |                                                                          
+| 2023/01/24 | <b>org.opensilex.migration.ScientificObjectNameIntegerConvertMigration</b> | 1.0.0-rc+6.5 |           |                                                                          
+| 2023/03/17 | <b>org.opensilex.migration.AgentsMigrateToAccountAndPersons</b>            | 1.0.0-rc+7   | 8ed0303a  |                                                                          
 
 # Descriptions
 
@@ -107,6 +128,14 @@ ASK WHERE {
     }
 }
 ```
+
+## org.opensilex.migration.AgentsMigrateToAccountAndPersons
+
+### Description
+
+This update changes the old Data model for User, by separating users in account and person.
+Without this migration, users will not be able to login.
+
 
 # Create an update command (For developers)
 

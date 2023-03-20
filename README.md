@@ -3,7 +3,7 @@ OpenSILEX Developper's installation
 
 This repository contains source code for Phenotyping Hybrid Information System (PHIS) as an OpenSILEX instance
 
-NOTE: OpenSILEX Production's installation available at: [https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/installation/production.m](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/installation/production.md)
+NOTE: OpenSILEX Production's installation available at: [https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/installation/production.md](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/installation/production.md)
 
 - [OpenSILEX Developper's installation](#opensilex-developpers-installation)
 - [Pre-requesite softwares](#pre-requesite-softwares)
@@ -24,7 +24,7 @@ NOTE: OpenSILEX Production's installation available at: [https://github.com/Open
 - [Start OpenSILEX development server with command line](#start-opensilex-development-server-with-command-line)
   - [For web services only (with compiled Vue.js code)](#for-web-services-only-with-compiled-vuejs-code-1)
   - [For webservices and Vue.js hot reload server](#for-webservices-and-vuejs-hot-reload-server-1)
-- [Access to OpenSilex & tools](#access-to-opensilex--tools)
+- [Access to OpenSilex \& tools](#access-to-opensilex--tools)
   - [OpenSilex Appllication](#opensilex-appllication)
   - [RDF4J workbench](#rdf4j-workbench)
   - [MongoDB](#mongodb)

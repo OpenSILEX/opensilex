@@ -72,18 +72,15 @@
 import { Component } from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
-import { VersionInfoDTO } from "opensilex-core/index"; 
+import { VersionInfoDTO } from "opensilex-core/index";
 
 @Component
 export default class PackagesView extends Vue {
-  $opensilex: any; 
+  $opensilex: any;
   versionInfo: VersionInfoDTO = {};
 
   getVersion() {
-    if (this.versionInfo.version != undefined && this.versionInfo.version.includes("SNAPSHOT")) {
-      return "/releases";
-    }
-    return "/tag/" + this.versionInfo.version;
+    return "/tags";
   }
 
   get pythonVersion() {
@@ -95,20 +92,19 @@ export default class PackagesView extends Vue {
 
   get rVersion() {
     return (
-      "https://github.com/OpenSILEX/opensilexClientToolsR/" +
-      this.getVersion()
+      "https://github.com/OpenSILEX/opensilexClientToolsR" + this.getVersion()
     );
   }
 
   get dartVersion() {
     return (
-      "https://github.com/OpenSILEX/opensilexClientToolsDart/" +
+      "https://github.com/OpenSILEX/opensilexClientToolsDart" +
       this.getVersion()
     );
   }
 
-  created() { 
-     this.versionInfo = this.$opensilex.versionInfo;
+  created() {
+    this.versionInfo = this.$opensilex.versionInfo;
   }
 }
 </script>

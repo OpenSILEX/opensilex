@@ -8,7 +8,7 @@
     ></opensilex-PageHeader>
 
       <!--DataMonitoring -->
-      <div class="dashboardDataMonitoringContainer">
+      <div class="dashboardDataMonitoringContainer" v-if="$opensilex.getConfig().dashboard.showMetrics">
         <opensilex-DataMonitoring></opensilex-DataMonitoring>
       </div>
 
@@ -62,12 +62,14 @@
 <script lang="ts">
 import { Component } from 'vue-property-decorator';
 import Vue from 'vue';
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 
 @Component
 export default class Dashboard extends Vue {
 
   width;
   $store: any;
+  $opensilex: OpenSilexVuePlugin;
 
   created() {
     // close global menu on medium / low size

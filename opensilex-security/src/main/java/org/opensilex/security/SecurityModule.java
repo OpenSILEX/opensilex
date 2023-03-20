@@ -41,13 +41,10 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import org.opensilex.security.group.api.GroupAPI;
 import org.opensilex.security.group.dal.GroupDAO;
 import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.security.group.dal.GroupUserProfileModel;
-import org.opensilex.security.profile.api.ProfileAPI;
 import org.opensilex.security.profile.dal.ProfileDAO;
-import org.opensilex.security.user.api.UserAPI;
 
 public class SecurityModule extends OpenSilexModule implements APIExtension, LoginExtension, SPARQLExtension {
 
@@ -56,6 +53,7 @@ public class SecurityModule extends OpenSilexModule implements APIExtension, Log
     public final static String REST_AUTHENTICATION_API_ID = "Authentication";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SecurityModule.class);
+    public static final String GUEST_OPENSILEX_ORG = "guest@opensilex.org";
 
     @Override
     public Class<?> getConfigClass() {
@@ -86,7 +84,7 @@ public class SecurityModule extends OpenSilexModule implements APIExtension, Log
     @Override
     public void install(boolean reset) throws Exception {
         LOGGER.info("Create default profile");
-        createDefaultProfile(reset);
+        createDefaultProfile();
     }
 
     private final static String DEFAULT_PROFILE_URI = "http://www.opensilex.org/profiles/default-profile";
@@ -100,7 +98,7 @@ public class SecurityModule extends OpenSilexModule implements APIExtension, Log
     private final static String GUEST_GROUP_DESCRIPTION = "Manage guest group persons";
 
     
-    public void createDefaultProfile(boolean reset) throws Exception {
+    public void createDefaultProfile() throws Exception {
         SPARQLServiceFactory factory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
         SPARQLService sparql = factory.provide();
 
@@ -114,10 +112,7 @@ public class SecurityModule extends OpenSilexModule implements APIExtension, Log
         factory.dispose(sparql);
     }
 
-    public void createGuestProfile(boolean reset) throws Exception {
-        SPARQLServiceFactory factory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
-        SPARQLService sparql = factory.provide();
-
+    public void createGuestProfile(SPARQLService sparql) throws Exception {
         AuthenticationDAO securityDAO = new AuthenticationDAO(sparql);
 
         ProfileModel profile = new ProfileModel();
@@ -130,7 +125,6 @@ public class SecurityModule extends OpenSilexModule implements APIExtension, Log
         profile.setCredentials(credentialsIdList);
 
         sparql.create(profile);
-        factory.dispose(sparql);
     }
 
     @Override
@@ -151,19 +145,27 @@ public class SecurityModule extends OpenSilexModule implements APIExtension, Log
         OpenSilex opensilex = getOpenSilex();
         SPARQLServiceFactory factory = opensilex.getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
         SPARQLService sparql = factory.provide();
+
+        // Transaction handling, since multiple SPARQL UPDATE are performed
+        sparql.startTransaction();
         try {
             AuthenticationService authentication = opensilex.getServiceInstance(AuthenticationService.DEFAULT_AUTHENTICATION_SERVICE, AuthenticationService.class);
             createDefaultGuestProfile(sparql);
             createDefaultGuestUser(sparql, authentication);
-            createDefaultGuestGroup(sparql); 
-        } finally {
+            createDefaultGuestGroup(sparql);
+            sparql.commitTransaction();
+        } catch (Exception e){
+            sparql.rollbackTransaction();
+            throw e;
+        }
+        finally {
             factory.dispose(sparql);
         }
     }
 
     public void createDefaultGuestUser(SPARQLService sparql, AuthenticationService authentication) throws Exception {
         AccountDAO accountDAO = new AccountDAO(sparql);
-        InternetAddress email = new InternetAddress("guest@opensilex.org");
+        InternetAddress email = new InternetAddress(GUEST_OPENSILEX_ORG);
 
         if (!accountDAO.accountEmailExists(email)) {
             accountDAO.create(null, email, false, authentication.getPasswordHash("guest"), "en");
@@ -172,7 +174,7 @@ public class SecurityModule extends OpenSilexModule implements APIExtension, Log
 
     public void createDefaultGuestProfile(SPARQLService sparql) throws Exception {
         if (!sparql.uriExists(ProfileModel.class, new URI(SecurityModule.GUEST_PROFILE_URI))) {
-            createGuestProfile(false);
+            createGuestProfile(sparql);
         }
     }
 
@@ -189,7 +191,7 @@ public class SecurityModule extends OpenSilexModule implements APIExtension, Log
             ProfileModel guestProfilModel = profileDAO.get(new URI(GUEST_PROFILE_URI));
             groupUserProfileModel.setProfile(guestProfilModel);
 
-            InternetAddress email = new InternetAddress("guest@opensilex.org");
+            InternetAddress email = new InternetAddress(GUEST_OPENSILEX_ORG);
             AccountDAO accountDAO = new AccountDAO(sparql);
             AccountModel guestUserModel = accountDAO.getByEmail(email);
             groupUserProfileModel.setUser(guestUserModel);

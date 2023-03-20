@@ -187,6 +187,7 @@
                 "images": "Images",
                 "visualization":"Visualization"
             },
+            "homepage": "Home",
             "experiments": "Experiments",
             "facilities": "Facilities",
             "variables": "Variables",

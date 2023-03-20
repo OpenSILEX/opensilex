@@ -87,7 +87,7 @@ public interface FrontConfig {
 
     @ConfigDescription(
             value = "Ability to be logged as guest",
-            defaultBoolean = true
+            defaultBoolean = false
     )
     boolean connectAsGuest();
 

@@ -8,20 +8,25 @@
 
       <template v-slot:body>
 
-        <div v-if="isNoDataFound"
-             id="no-data-text">
-          {{$t("FacilityAssociatedDevices.no-data")}}
-        </div>
+        <opensilex-TextView v-if="isNoDataFound"
+                            id="no-data-text"
+            :label="$t('FacilityAssociatedDevices.no-data')">
+        </opensilex-TextView>
 
         <div
             id="data-infos"
             v-if="isDataLoaded">
           <opensilex-TextView
-              style="font-size: xxx-large"
+              style="font-size: xxx-large; margin-bottom: 0;"
               v-on:click.native="showGraphic"
               :value="lastMedianData.value + ' ' + variable.unit.symbol">
           </opensilex-TextView>
-          <div style="font-size: small">{{lastMedianData.date}}</div>
+          <opensilex-DateView
+            :value="lastMedianData.date"
+            :isDateTime="true"
+            :useLocaleFormat="true"
+            :dateTimeFormatOptions="{ dateStyle: 'short', timeStyle: 'long' }">
+          </opensilex-DateView>
         </div>
 
         <!--
@@ -69,11 +74,9 @@ import HighchartsDataTransformer from "../../../models/HighchartsDataTransformer
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import {VariablesService} from "opensilex-core/api/variables.service";
 import {DataService} from "opensilex-core/api/data.service";
-import {DeviceGetDTO} from "opensilex-core/model/deviceGetDTO";
 import {VariableDetailsDTO} from "opensilex-core/model/variableDetailsDTO";
 import {DataSerieGetDTO} from "opensilex-core/model/dataSerieGetDTO";
 import {DataVariableSeriesGetDTO} from "opensilex-core/model/dataVariableSeriesGetDTO";
-import {OrganizationGetDTO} from "opensilex-core/model/organizationGetDTO";
 import {NamedResourceDTOVariableModel} from "opensilex-core/model/namedResourceDTOVariableModel";
 
 
@@ -94,7 +97,6 @@ export default class VariableVisualizationTile extends Vue {
   @Prop()
   target: string;
 
-  @Prop()
   variable: VariableDetailsDTO;
 
   dataSeries: Array<DataSerieGetDTO>;
@@ -190,7 +192,13 @@ export default class VariableVisualizationTile extends Vue {
   }
 
   get lastMedianData() {
-    var data = this.calculatedDataSeries[0].data;
+    let data;
+    if (this.calculatedDataSeries.length === 0) {
+      data = this.dataSeries[0].data
+    }
+    else {
+      data = this.calculatedDataSeries[0].data;
+    }
     return data[data.length - 1];
   }
 
@@ -435,23 +443,20 @@ export default class VariableVisualizationTile extends Vue {
 <i18n>
 en:
     DeviceDataTab:
-        visualization: Visualization
-        data: Data
-        add: Add data
         datatypeMessageA: The variable datatype is
         datatypeMessageB: "At this time only decimal or integer are accepted"
         limitSizeMessageA : "There are "
         limitSizeMessageB : " data .Only the 50 000 first data are displayed."
+        lastData: Last data collected
+
 
 fr:
     DeviceDataTab:
-        visualization: Visualisation
-        data: Données
-        add: Ajouter des données
         datatypeMessageA:  le type de donnée de la variable est
         datatypeMessageB: "Pour le moment, seuls les types decimal ou entier sont acceptés "
         limitSizeMessageA : "Il y a "
         limitSizeMessageB : " données .Seules les 50 000 premières valeurs sont affichées. "
+        lastData: Dernière donnée collectée
 
 </i18n>
 

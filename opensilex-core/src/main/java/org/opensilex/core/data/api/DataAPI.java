@@ -25,7 +25,6 @@ import org.opensilex.core.data.dal.*;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.data.utils.ParsedDateTimeMongo;
 import org.opensilex.core.device.api.DeviceAPI;
-import org.opensilex.core.device.api.DeviceGetDTO;
 import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.exception.*;
@@ -42,8 +41,6 @@ import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.core.variable.api.VariableDetailsDTO;
-import org.opensilex.core.variable.api.VariableGetDTO;
-import org.opensilex.core.variable.api.VariableWithDevicesDTO;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
@@ -98,7 +95,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
 import java.time.zone.ZoneRulesException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -797,6 +793,9 @@ public class DataAPI {
         long stopTime = System.currentTimeMillis();
         System.out.println("TIME EXEC query (s) = " + (stopTime - startTime)/1000);
 
+        VariableDetailsDTO variable = new VariableDetailsDTO(variableDAO.get(variableUri));
+        DataVariableSeriesGetDTO dto = new DataVariableSeriesGetDTO(variable);
+
     /// Compute median series for each provenance
 
         Map<DataProvenanceModel, List<DataModel>> provenancesMap;
@@ -819,39 +818,40 @@ public class DataAPI {
             dataSeriesDTOs.add(dataSerie);
         }
 
+        dto.setDataSeries(dataSeriesDTOs);
+
     /// Compute calculated series
 
-        List<DataSerieGetDTO> dataCalculatedSeriesDTOs = new ArrayList<>();
+        if (dataSeriesDTOs.size() > 1) {
 
-        List<DataSimpleGetDTO> medianOfMedians = computeMedianPerHour(medians);
+            List<DataSerieGetDTO> dataCalculatedSeriesDTOs = new ArrayList<>();
 
-        //TODO: trash
-        DataProvenanceModel provMedian = new DataProvenanceModel();
-        ProvEntityModel provEntity = new ProvEntityModel();
-        provEntity.setUri(URI.create("median_per_hour"));
-        List<ProvEntityModel> provEntitys = new ArrayList<>();
-        provEntitys.add(provEntity);
-        provMedian.setProvWasAssociatedWith(provEntitys);
+            List<DataSimpleGetDTO> medianOfMedians = computeMedianPerHour(medians);
 
-        dataCalculatedSeriesDTOs.add(new DataSerieGetDTO(provMedian, medianOfMedians));
+            //TODO: trash
+            DataProvenanceModel provMedian = new DataProvenanceModel();
+            ProvEntityModel provEntity = new ProvEntityModel();
+            provEntity.setUri(URI.create("median_per_hour"));
+            List<ProvEntityModel> provEntitys = new ArrayList<>();
+            provEntitys.add(provEntity);
+            provMedian.setProvWasAssociatedWith(provEntitys);
 
-        //TODO: trash
-        DataProvenanceModel provAverage = new DataProvenanceModel();
-        ProvEntityModel provEntity2 = new ProvEntityModel();
-        provEntity2.setUri(URI.create("average_per_hour"));
-        List<ProvEntityModel> provEntitys2 = new ArrayList<>();
-        provEntitys2.add(provEntity2);
-        provAverage.setProvWasAssociatedWith(provEntitys2);
+            dataCalculatedSeriesDTOs.add(new DataSerieGetDTO(provMedian, medianOfMedians));
 
-        DataSerieGetDTO averageSerie = computeAveragePerHour(dataModels);
-        averageSerie.setProvenance(provAverage);
-        dataCalculatedSeriesDTOs.add(averageSerie);
+            //TODO: trash
+            DataProvenanceModel provAverage = new DataProvenanceModel();
+            ProvEntityModel provEntity2 = new ProvEntityModel();
+            provEntity2.setUri(URI.create("average_per_hour"));
+            List<ProvEntityModel> provEntitys2 = new ArrayList<>();
+            provEntitys2.add(provEntity2);
+            provAverage.setProvWasAssociatedWith(provEntitys2);
 
-        VariableDetailsDTO variable = new VariableDetailsDTO(variableDAO.get(variableUri));
+            DataSerieGetDTO averageSerie = computeAveragePerHour(dataModels);
+            averageSerie.setProvenance(provAverage);
+            dataCalculatedSeriesDTOs.add(averageSerie);
 
-        DataVariableSeriesGetDTO dto = new DataVariableSeriesGetDTO(variable);
-        dto.setDataSeries(dataSeriesDTOs);
-        dto.setCalculatedSeries(dataCalculatedSeriesDTOs);
+            dto.setCalculatedSeries(dataCalculatedSeriesDTOs);
+        }
 
         return new SingleObjectResponse<>(dto).getResponse();
     }

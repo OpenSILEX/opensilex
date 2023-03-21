@@ -2,7 +2,7 @@
 <template>
   <div>
     <opensilex-TextView v-if="isNoVariableFound"
-                        id="no-data-text"
+                        id="no-variable-text"
         :label="$t('FacilityAssociatedDevices.no-variable')">
     </opensilex-TextView>
 

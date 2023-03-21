@@ -9,11 +9,10 @@ package org.opensilex.core.data.api;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import org.opensilex.core.variable.api.VariableDetailsDTO;
-import org.opensilex.core.variable.api.VariableGetDTO;
 import org.opensilex.server.rest.validation.Required;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -42,6 +41,8 @@ public class DataVariableSeriesGetDTO {
 
     public DataVariableSeriesGetDTO(VariableDetailsDTO variable) {
         this.variable = variable;
+        this.dataSeries = new ArrayList<>();
+        this.calculatedSeries = new ArrayList<>();
     }
 
     public DataVariableSeriesGetDTO(VariableDetailsDTO variable, List<DataSerieGetDTO> dataSeries, List<DataSerieGetDTO> calculatedSeries) {

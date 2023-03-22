@@ -748,7 +748,7 @@ public class DataAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return a map", response = DataVariableSeriesGetDTO.class, responseContainer = "List")
+            @ApiResponse(code = 200, message = "Return a data serie", response = DataVariableSeriesGetDTO.class)
     })
     public Response getDataSeriesByFacility(
             @ApiParam(value = "variable URI", example = "http://example.com/", required = true) @QueryParam("variable") @NotNull URI variableUri,

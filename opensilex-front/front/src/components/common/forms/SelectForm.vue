@@ -685,7 +685,9 @@ export default class SelectForm extends Vue {
   }
 
   refreshModalSearch() {
-    this.searchModal.refresh();
+    if (this.searchModal) {
+      this.searchModal.refresh();
+    }
   }
 
 }

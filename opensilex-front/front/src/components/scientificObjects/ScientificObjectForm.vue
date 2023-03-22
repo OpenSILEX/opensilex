@@ -95,6 +95,8 @@ export default class ScientificObjectForm extends Vue {
         let form: OntologyObjectForm = this.modalForm.getFormRef();
         this.initOntologyObjectForm(form, undefined);
 
+
+
         // if parentURI property is set, then use this value as default isPartOf relation value
         form.setInitHandler((relation: MultiValuedRDFObjectRelation) => {
             if (parentURI) {
@@ -146,6 +148,8 @@ export default class ScientificObjectForm extends Vue {
                 }
             }
         }
+
+        console.debug(form.relations);
 
         return this.soService
             .createScientificObject({

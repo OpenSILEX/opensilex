@@ -1,11 +1,11 @@
 ontologies:
-    baseURI: http://opensilex.dev/
-    baseURIAlias: dev
+    baseURI: http://opensilex.test/
+    baseURIAlias: opensilex-sandbox
     sparql:
         #        implementation: org.opensilex.sparql.rdf4j.RDF4JInMemoryServiceFactory
         config:
-            serverURI: http://localhost:8667/rdf4j-server/
-            repository: opensilex
+            serverURI: http://138.102.159.98:8080/rdf4j-server/
+            repository: optimization-dashboard
 
 file-system:
     fs:
@@ -32,9 +32,9 @@ file-system:
 big-data:
     mongodb:
         config:
-            host: localhost
+            host: 138.102.159.98
             port: 8668
-            database: opensilex
+            database: optimization-dashboard
     #            timezone: Europe/Paris
 
 phisws:
@@ -70,6 +70,32 @@ phisws:
 #  contactEmail: opensilex-help@groupes.renater.fr
 #  # Project homepage (String)
 #  projectHomepage: http://www.opensilex.org/
+
+core:
+    enableLogs: true
+    metrics:
+        # Metrics configs about system (SystemMetricsConfig)
+        enableMetrics: true
+        system:
+            # First metrics for any time depending on is time unit (int)
+            timeBeforeFirstMetric: 1
+            # Delay between whole system metrics (combined with corresponding TimeUnit) (int)
+            delayBetweenMetrics: 5
+            # Default metrics units : DAYS, HOURS, MINUTES, SECONDS are authorized (String)
+            metricsTimeUnit: DAYS
+        # Metrics configs about experiments (ExperimentsMetricsConfig)
+        experiments:
+            # First metrics for any time depending on is time unit (int)
+            timeBeforeFirstMetric: 1
+            # Delay between whole system metrics (combined with corresponding TimeUnit) (int)
+            delayBetweenMetrics: 5
+            # Default metrics units : DAYS, HOURS, MINUTES, SECONDS are authorized (String)
+            metricsTimeUnit: DAYS
+
+front:
+    dashboard:
+        graph1:
+            variable: "dev:id/variable/air_temperature_thermometer_degreecelsius"
 
 system:
     ignoredModules:

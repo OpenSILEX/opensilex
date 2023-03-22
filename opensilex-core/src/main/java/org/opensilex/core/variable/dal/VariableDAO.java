@@ -193,7 +193,11 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
     */
     public ListWithPagination<VariableModel> search(VariableSearchFilter filter) throws Exception {
 
+        long startTime = System.currentTimeMillis();
         Set<URI> variableUriList = filter.isWithAssociatedData() ? dataDAO.getUsedVariablesByExpeSoDevice(filter.getUserModel(), filter.getExperiments(), filter.getObjects(), filter.getDevices()) : null;
+        long stopTime = System.currentTimeMillis();
+        System.out.println("TIME EXEC getUsedVariablesByExpeSoDevice (s) = " + (stopTime - startTime)/1000);
+
         if(variableUriList != null && variableUriList.isEmpty()) {
             return new ListWithPagination<>(dataDAO.getUsedVariables(filter.getUserModel(), filter.getExperiments(), filter.getObjects(), null,  filter.getDevices()));
         }

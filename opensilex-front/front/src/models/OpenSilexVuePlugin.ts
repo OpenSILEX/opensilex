@@ -990,6 +990,7 @@ export default class OpenSilexVuePlugin {
     * @param name name of the returned file
     * @param extension extension of the file
     * @param method REST service method (POST or GET)
+    * @param queryParams params of get request
     * @param body body of a post request
     */
     downloadFilefromPostOrGetService(servicePath: string, name: string, extension: string, method: string, queryParams: any, body: any) {
@@ -1047,6 +1048,9 @@ export default class OpenSilexVuePlugin {
         return promise
             .then((response) => {
                 if (response.status === 500) {
+                    response.json().then((data) => {
+                        this.showErrorToast(data.result.title + ": " + data.result.message)
+                    })
                     this.errorHandler(response);
                     return undefined;
                 } else {

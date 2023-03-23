@@ -1132,6 +1132,7 @@ public class DataAPI {
      * @return
      * @throws Exception
      */
+    @Deprecated
     @GET
     @Path("export")
     @ApiOperation("Export data")

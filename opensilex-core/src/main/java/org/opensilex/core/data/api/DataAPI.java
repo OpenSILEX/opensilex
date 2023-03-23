@@ -904,6 +904,7 @@ public class DataAPI {
      * @return
      * @throws Exception
      */
+    @Deprecated
     @GET
     @Path("export")
     @ApiOperation("Export data")
@@ -979,6 +980,80 @@ public class DataAPI {
             prepareCSVExport = dao.prepareCSVLongExportResponse(resultList, user, withRawData);
         } else {
             prepareCSVExport = dao.prepareCSVWideExportResponse(resultList, user, withRawData);
+        }
+
+        Instant finish = Instant.now();
+        long timeElapsed = Duration.between(start, finish).toMillis();
+        LOGGER.debug("Export data " + Long.toString(timeElapsed) + " milliseconds elapsed");
+
+        return prepareCSVExport;
+    }
+
+    @POST
+    @Path("export")
+    @ApiOperation("Export data")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces({MediaType.TEXT_PLAIN})
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return a csv file with data list results in wide or long format"),
+            @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class)
+    })
+    public Response exportData(
+            @ApiParam("CSV export configuration") @Valid DataSearchDTO dto
+    ) throws Exception {
+        DataDAO dao = new DataDAO(nosql, sparql, fs);
+        //convert dates
+        Instant startInstant = null;
+        Instant endInstant = null;
+
+        if (dto.getStartDate() != null) {
+            try {
+                startInstant = DataValidateUtils.getDateInstant(dto.getStartDate(), dto.getTimezone(), Boolean.FALSE);
+            } catch (UnableToParseDateException e) {
+                return new ErrorResponse(e).getResponse();
+            } catch (ZoneRulesException e) {
+                return new ErrorResponse(Response.Status.BAD_REQUEST, "WRONG TIMEZONE PARAMETER", e.getMessage())
+                        .getResponse();
+            }
+        }
+
+        if (dto.getEndDate() != null) {
+            try {
+                endInstant = DataValidateUtils.getDateInstant(dto.getEndDate(), dto.getTimezone(), Boolean.TRUE);
+            } catch (UnableToParseDateException e) {
+                return new ErrorResponse(e).getResponse();
+            } catch (ZoneRulesException e) {
+                return new ErrorResponse(Response.Status.BAD_REQUEST, "WRONG TIMEZONE PARAMETER", e.getMessage())
+                        .getResponse();
+            }
+        }
+
+        Document metadataFilter = null;
+        if (dto.getMetadata() != null) {
+            try {
+                metadataFilter = Document.parse(dto.getMetadata());
+            } catch (Exception e) {
+                return new ErrorResponse(e).getResponse();
+            }
+        }
+
+        Instant start = Instant.now();
+        Response prepareCSVExport = null;
+
+        try{
+            List<DataModel> resultList = dao.search(user, dto.getExperiments(), dto.getObjects(), dto.getVariables(), dto.getProvenances(), dto.getDevices(), startInstant, endInstant, dto.getConfidenceMin(), dto.getConfidenceMax(), metadataFilter, null);
+            Instant data = Instant.now();
+            LOGGER.debug(resultList.size() + " observations retrieved " + Long.toString(Duration.between(start, data).toMillis()) + " milliseconds elapsed");
+
+            if (dto.getCsvFormat().equals("long")) {
+                prepareCSVExport = dao.prepareCSVLongExportResponse(resultList, user, dto.isWithRawData());
+            } else {
+                prepareCSVExport = dao.prepareCSVWideExportResponse(resultList, user, dto.isWithRawData());
+            }
+        } catch (Exception e) {
+            System.out.println(e);
+            return new ErrorResponse(Response.Status.INTERNAL_SERVER_ERROR, "EXPORT FAILED", e.getMessage()).getResponse();
         }
 
         Instant finish = Instant.now();

@@ -966,7 +966,7 @@ public class DataDAO {
         Instant variableTime = Instant.now();
         List<VariableModel> variablesModelList = new VariableDAO(sparql,nosql,fs).getList(new ArrayList<>(variables.keySet()));
         for (VariableModel variableModel : variablesModelList) {
-            variables.put(variableModel.getUri(), variableModel);
+            variables.put(new URI(SPARQLDeserializers.getShortURI(variableModel.getUri())), variableModel);
         }
         LOGGER.debug("Get " + variables.keySet().size() + " variable(s) " + Long.toString(Duration.between(dataTransform, variableTime).toMillis()) + " milliseconds elapsed");
         OntologyDAO ontologyDao = new OntologyDAO(sparql);

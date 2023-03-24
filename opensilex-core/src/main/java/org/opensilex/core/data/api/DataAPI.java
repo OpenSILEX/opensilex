@@ -711,8 +711,7 @@ public class DataAPI {
      * @throws Exception
      */
     private DeviceModel checkAndReturnDeviceFromDataProvenance(DataModel data, DeviceDAO deviceDAO) throws Exception{
-        
-        
+
        boolean deviceIsLinked = false; // to test if there are 2 devices
        URI agentToReturn = null;
        DeviceModel device = null;

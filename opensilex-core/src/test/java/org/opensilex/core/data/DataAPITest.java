@@ -601,10 +601,5 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
 
         assertFalse(datas.isEmpty());
     }
-
-    @Override
-    protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {
-        return Arrays.asList(AnnotationModel.class);
-    }
-
+    
 }

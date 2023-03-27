@@ -13,6 +13,7 @@ import java.net.URI;
 import java.util.ArrayList;
 
 import org.junit.After;
+import org.junit.Assert;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 
@@ -440,6 +441,9 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
         assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
 
         JsonNode node = getResult.readEntity(JsonNode.class);
+        Assert.assertNull(node.get("resultWithPagination"));
+        Assert.assertNotNull(node.get("result"));
+
         PaginatedListResponse<T> responseList = mapper.convertValue(node, typeReference);
         return responseList.getResult();
     }

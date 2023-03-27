@@ -31,6 +31,7 @@ import org.apache.jena.vocabulary.XSD;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -257,14 +258,16 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
     }
 
     private List<DataGetDTO> getSearchResponseAsDTOList(URI provenance) throws Exception {
-        final Response searchResult = getJsonGetResponseAsAdmin(appendSearchParams(target(searchPath), 0, 20, new HashMap<String, Object>() {{
-            put(SEARCH_PROVENANCES_QUERY_PARAMETER_NAME, Collections.singletonList(provenance));
-        }}));
-        assertEquals(Response.Status.OK.getStatusCode(), searchResult.getStatus());
-        JsonNode node = searchResult.readEntity(JsonNode.class);
-        PaginatedListResponse<DataGetDTO> searchResponse = mapper.convertValue(node,
-                new TypeReference<PaginatedListResponse<DataGetDTO>>() {});
-        return searchResponse.getResult();
+
+        return getSearchResultsAsAdmin(searchPath,
+                0,
+                20,
+                new HashMap<String, Object>() {{
+                    put(SEARCH_PROVENANCES_QUERY_PARAMETER_NAME, Collections.singletonList(provenance));
+                }},
+                new TypeReference<PaginatedListResponse<DataGetDTO>>() {
+                }
+        );
     }
        
     @Test
@@ -519,12 +522,9 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
         final Response getResult = appendAdminToken(searchTarget).get();
         assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
 
-        JsonNode node = getResult.readEntity(JsonNode.class);
-        PaginatedListResponse<DataGetDTO> dataListResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<DataGetDTO>>() {
-        });
-        List<DataGetDTO> datas = dataListResponse.getResult();
+        List<DataGetDTO> datas = getSearchResultsAsAdmin(searchPath,params,new TypeReference<PaginatedListResponse<DataGetDTO>>() {});
 
         assertFalse(datas.isEmpty());
     }
-    
+
 }

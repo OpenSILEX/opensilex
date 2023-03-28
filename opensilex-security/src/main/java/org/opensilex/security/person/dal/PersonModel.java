@@ -65,6 +65,14 @@ public class PersonModel extends SPARQLResourceModel implements ClassURIGenerato
     )
     private AccountModel account;
 
+    @SPARQLProperty(
+            ontology = FOAF.class,
+            property = "account",
+            ignoreUpdateIfNull = true
+            //make easier the update of persons, but harder the deletion of the link between an account and a person
+    )
+    private AccountModel account;
+
     public String getFirstName() {
         return firstName;
     }

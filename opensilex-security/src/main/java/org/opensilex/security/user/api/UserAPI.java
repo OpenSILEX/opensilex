@@ -51,7 +51,7 @@ import static org.apache.jena.vocabulary.RDF.uri;
  * - create: Create a user
  * - get: Get a user by URI
  * - search: Search a filtered, ordered and paginated list of users
- * - update: Update a user with optionnaly a new password
+ * - update: Update a user with optionally a new password
  * - delete: Delete a user
  * </pre>
  *
@@ -87,7 +87,7 @@ public class UserAPI {
     private AuthenticationService authentication;
 
     /**
-     * Create an account and return it's URI, create by the same a Person
+     * Create an account and return its URI, create by the same a Person
      *        with the given first/last-name who is the holder of the account
      *
      * @see AccountDAO
@@ -122,8 +122,6 @@ public class UserAPI {
             return creatingOk;
         }
 
-        URI finalUserURI = null;
-
         sparql.startTransaction();
         try {
             PersonDAO personDAO = new PersonDAO(sparql);
@@ -131,7 +129,8 @@ public class UserAPI {
                     null,
                     userDTO.getFirstName(),
                     userDTO.getLastName(),
-                    userDTO.getEmail()
+                    userDTO.getEmail(),
+                    null
             );
 
             AccountModel user = accountDAO.create(
@@ -139,23 +138,21 @@ public class UserAPI {
                     new InternetAddress(userDTO.getEmail()),
                     userDTO.isAdmin(),
                     authentication.getPasswordHash(userDTO.getPassword()),
-                    userDTO.getLanguage()
+                    userDTO.getLanguage(),
+                    person
             );
-            finalUserURI = user.getUri();
-
-            personDAO.setAccount(person.getUri(), finalUserURI);
-
             sparql.commitTransaction();
+
+            return new ObjectUriResponse(Response.Status.CREATED, user.getUri()).getResponse();
         } catch (Exception e) {
             sparql.rollbackTransaction();
             throw e;
         }
 
-        return new ObjectUriResponse(Response.Status.CREATED, finalUserURI).getResponse();
     }
 
     /**
-     * Create a user and return it's URI, and link it to the Person's URI in parameters
+     * Create a user and return its URI, and link it to the Person's URI in parameters
      *
      * @see AccountDAO
      * @param userDTO user model to create
@@ -190,25 +187,25 @@ public class UserAPI {
             return creatingOk;
         }
 
-        if (! sparql.uriExists(PersonModel.class, userDTO.getPersonHolderUri())) {
+        if (! sparql.uriExists(PersonModel.class, userDTO.getHolderOfTheAccount())) {
             return new ErrorResponse(
                     Status.NOT_FOUND,
                     "Person doesn't exists",
-                    "Unexistant URI: " + userDTO.getPersonHolderUri()
+                    "Nonexistent URI: " + userDTO.getHolderOfTheAccount()
             ).getResponse();
         }
 
         PersonDAO personDAO = new PersonDAO(sparql);
 
-        if (personDAO.hasAnAccount(userDTO.getPersonHolderUri())) {
+        PersonModel holderOfTheAccount = personDAO.get(userDTO.getHolderOfTheAccount());
+
+        if (holderOfTheAccount.getAccount() != null) {
             return new ErrorResponse(
                     Status.CONFLICT,
                     "The given person already has an account",
-                    "URI: " + userDTO.getPersonHolderUri() + " is already linked to an existing account"
+                    "URI: " + userDTO.getHolderOfTheAccount() + " is already linked to an existing account"
             ).getResponse();
         }
-
-        URI finalUserURI = null;
 
         sparql.startTransaction();
         try {
@@ -218,18 +215,16 @@ public class UserAPI {
                     new InternetAddress(userDTO.getEmail()),
                     userDTO.isAdmin(),
                     authentication.getPasswordHash(userDTO.getPassword()),
-                    userDTO.getLanguage()
+                    userDTO.getLanguage(),
+                    holderOfTheAccount
             );
-            finalUserURI = user.getUri();
-
-            personDAO.setAccount(userDTO.getPersonHolderUri(), finalUserURI);
-
             sparql.commitTransaction();
+
+            return new ObjectUriResponse(Response.Status.CREATED, user.getUri()).getResponse();
         } catch (Exception e) {
             sparql.rollbackTransaction();
+            throw e;
         }
-
-        return new ObjectUriResponse(Response.Status.CREATED, finalUserURI).getResponse();
     }
 
     /**
@@ -381,36 +376,40 @@ public class UserAPI {
         PersonDAO personDAO = new PersonDAO(sparql);
 
         AccountModel model = accountDAO.get(userDTO.getUri());
-        PersonModel holderOfTheAccount = personDAO.getPersonFromAccount(userDTO.getUri());
 
         if (model != null) {
 
             sparql.startTransaction();
             try {
-                AccountModel user = accountDAO.update(
+                AccountModel account = accountDAO.update(
                         userDTO.getUri(),
                         new InternetAddress(userDTO.getEmail()),
                         userDTO.isAdmin(),
                         authentication.getPasswordHash(userDTO.getPassword()),
                         userDTO.getLanguage(),
+                        //we can't change the person who is linked to this account with UserAPI
+                        null,
                         userDTO.getFavorites()
                 );
+
+                PersonModel holderOfTheAccount = account.getHolderOfTheAccount();
 
                 if (holderOfTheAccount != null) {
                     personDAO.update(
                             holderOfTheAccount.getUri(),
                             userDTO.getFirstName(),
                             userDTO.getLastName(),
-                            holderOfTheAccount.getEmail().toString()
+                            holderOfTheAccount.getEmail().toString(),
+                            account
                     );
                 }
 
                 sparql.commitTransaction();
 
-                return new ObjectUriResponse(Response.Status.OK, user.getUri()).getResponse();
+                return new ObjectUriResponse(Response.Status.OK, account.getUri()).getResponse();
             } catch (Exception e){
                 sparql.rollbackTransaction();
-                return new ObjectUriResponse(Status.INTERNAL_SERVER_ERROR, userDTO.getUri()).getResponse();
+                throw e;
             }
         } else {
             return new ErrorResponse(
@@ -439,19 +438,22 @@ public class UserAPI {
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "User deleted"),
+            @ApiResponse(code = 404, message = "URI not found")
+    })
     public Response deleteUser(
             @ApiParam(value = "User URI", example = "http://opensilex.dev/users#jean.michel.inrae", required = true) @PathParam("uri") @NotNull @ValidURI URI accountURI
     ) throws Exception {
         AccountDAO accountDAO = new AccountDAO(sparql);
         PersonDAO personDAO = new PersonDAO(sparql);
 
-        PersonModel holderOfTheAccount = personDAO.getPersonFromAccount(accountURI);
-        URI personURI = holderOfTheAccount==null ? null : holderOfTheAccount.getUri();
+        AccountModel accountModel = accountDAO.get(accountURI);
 
         sparql.startTransaction();
         try {
-            if (personURI != null){
-                personDAO.delete(personURI);
+            if (accountModel.getHolderOfTheAccount() != null){
+                personDAO.delete(accountModel.getHolderOfTheAccount().getUri());
             }
 
             accountDAO.delete(accountURI);
@@ -566,6 +568,7 @@ public class UserAPI {
                 currentUser.isAdmin(),
                 currentUser.getPasswordHash(),
                 currentUser.getLanguage(),
+                null,
                 favoriteList
         );
 
@@ -596,6 +599,7 @@ public class UserAPI {
                 currentUser.isAdmin(),
                 currentUser.getPasswordHash(),
                 currentUser.getLanguage(),
+                null,
                 favoriteList
         );
 

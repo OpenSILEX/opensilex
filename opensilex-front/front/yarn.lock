@@ -11168,11 +11168,6 @@ vue-date-fns@^2.0.1:
   dependencies:
     date-fns "^2.0.0"
 
-vue-easy-lightbox@0.17.0:
-  version "0.17.0"
-  resolved "https://registry.yarnpkg.com/vue-easy-lightbox/-/vue-easy-lightbox-0.17.0.tgz#c668fba3d2794c5dfcd58002930617dde8deef2b"
-  integrity sha512-CwFp6da7J4L00DKwLwcFNLWkV3L5ol/OduHZJLuArfREjGZ+MEbHaTJDMb3AplRqoLdB+R0ZKpz9PNlWDXCpeA==
-
 vue-eslint-parser@^7.0.0:
   version "7.5.0"
   resolved "https://registry.yarnpkg.com/vue-eslint-parser/-/vue-eslint-parser-7.5.0.tgz#b68221c55fee061899afcfb4441ec74c1495285e"

@@ -5,12 +5,10 @@
 //******************************************************************************
 package org.opensilex.security.person.api;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.*;
 import org.opensilex.security.SecurityModule;
+import org.opensilex.security.account.dal.AccountDAO;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
@@ -29,11 +27,9 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
 import java.net.URI;
 import java.util.List;
-
-import static org.apache.jena.vocabulary.RDF.uri;
+import java.util.Objects;
 
 /**
  * <pre>
@@ -96,11 +92,16 @@ public class PersonAPI {
             ).getResponse();
         }
 
+        AccountDAO accountDAO = new AccountDAO(sparql);
+        URI accountURI = personDTO.getAccount();
+        AccountModel account = accountURI == null ? null : accountDAO.get(accountURI);
+
         PersonModel person = personDAO.create(
                 personDTO.getUri(),
                 personDTO.getFirstName(),
                 personDTO.getLastName(),
-                personDTO.getEmail()
+                personDTO.getEmail(),
+                account
         );
 
         return new ObjectUriResponse(Response.Status.CREATED, person.getUri()).getResponse();
@@ -178,19 +179,30 @@ public class PersonAPI {
         PersonModel model = personDAO.get(personDTO.getUri());
 
         if (model != null) {
+
+            AccountDAO accountDAO = new AccountDAO(sparql);
+            if (Objects.nonNull(personDTO.getAccount()) && ! accountDAO.accountExists(personDTO.getAccount())){
+                return new ErrorResponse(
+                        Response.Status.NOT_FOUND,
+                        "Account not found",
+                        "Unknown account URI: " + personDTO.getAccount()
+                ).getResponse();
+            }
+            AccountModel account = Objects.isNull(personDTO.getAccount()) ? null : accountDAO.get(personDTO.getAccount());
+
             PersonModel personModel = personDAO.update(
                     personDTO.getUri(),
                     personDTO.getFirstName(),
                     personDTO.getLastName(),
-                    personDTO.getEmail()
-            );
+                    personDTO.getEmail(),
+                    account);
 
             return new ObjectUriResponse(Response.Status.OK, personModel.getUri()).getResponse();
         } else {
             return new ErrorResponse(
                     Response.Status.NOT_FOUND,
                     "Person not found",
-                    "Unknown person URI: " + uri
+                    "Unknown person URI: " + personDTO.getUri()
             ).getResponse();
         }
     }
@@ -212,6 +224,10 @@ public class PersonAPI {
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "User deleted"),
+            @ApiResponse(code = 404, message = "URI not found")
+    })
     public Response deletePerson(
             @ApiParam(value = "Person URI", example = "http://opensilex.dev/person#harold.haddock.mistea", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
     ) throws Exception {

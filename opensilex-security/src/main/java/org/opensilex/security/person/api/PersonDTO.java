@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.server.rest.validation.Required;
 
@@ -32,10 +33,10 @@ import java.util.Objects;
  * @author Yvan Roux
  */
 @ApiModel
-@JsonPropertyOrder({"uri", "first_name", "last_name", "email"})
+@JsonPropertyOrder({"uri", "first_name", "last_name", "email", "account"})
 public class PersonDTO {
 
-
+    @JsonProperty("uri")
     protected URI uri;
 
     @JsonProperty("first_name")
@@ -46,7 +47,11 @@ public class PersonDTO {
     @Required(message = "last name is required to create a person")
     protected String lastName;
 
+    @JsonProperty("email")
     protected String email;
+
+    @JsonProperty("account")
+    protected URI account;
 
     @ApiModelProperty(value = "Person URI", example = "http://opensilex.dev/person#harold.haddock.mistea")
     public URI getUri() {
@@ -84,6 +89,15 @@ public class PersonDTO {
         this.email = email;
     }
 
+    @ApiModelProperty(value = "Uri of the account if this person has one", example = "http://opensilex.dev/users#jean.michel.inrae")
+    public URI getAccount() {
+        return account;
+    }
+
+    public void setAccount(URI account) {
+        this.account = account;
+    }
+
     /**
      * convert a PersonModel into a PersonDTO.
      *
@@ -99,6 +113,10 @@ public class PersonDTO {
         InternetAddress email = personModel.getEmail();
         if (email != null) {
             personDTO.setEmail(email.toString());
+        }
+        AccountModel accountModel = personModel.getAccount();
+        if (accountModel != null){
+            personDTO.setAccount(accountModel.getUri());
         }
 
         return personDTO;

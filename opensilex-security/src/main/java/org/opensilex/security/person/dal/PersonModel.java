@@ -6,6 +6,7 @@
 package org.opensilex.security.person.dal;
 
 import org.apache.jena.sparql.vocabulary.FOAF;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -47,6 +48,14 @@ public class PersonModel extends SPARQLResourceModel implements ClassURIGenerato
     )
     private InternetAddress email;
 
+    @SPARQLProperty(
+            ontology = FOAF.class,
+            property = "account",
+            ignoreUpdateIfNull = true
+            //make easier the update of persons, but harder the deletion of the link between an account and a person
+    )
+    private AccountModel account;
+
     public String getFirstName() {
         return firstName;
     }
@@ -66,6 +75,10 @@ public class PersonModel extends SPARQLResourceModel implements ClassURIGenerato
     public InternetAddress getEmail() { return email; }
 
     public void setEmail(InternetAddress email) { this.email = email; }
+
+    public AccountModel getAccount() { return account; }
+
+    public void setAccount(AccountModel account) { this.account = account; }
 
     @Override
     public String[] getInstancePathSegments(PersonModel instance) {

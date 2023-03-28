@@ -32,6 +32,7 @@
 
     <!-- First name -->
     <opensilex-InputForm
+        v-if="form.first_name !== null"
       :value.sync="form.first_name"
       label="component.user.first-name"
       type="text"
@@ -41,6 +42,7 @@
 
     <!-- Last name -->
     <opensilex-InputForm
+        v-if="form.last_name !== null"
       :value.sync="form.last_name"
       label="component.user.last-name"
       type="text"

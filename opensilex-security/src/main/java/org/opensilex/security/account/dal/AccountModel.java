@@ -114,7 +114,9 @@ public class AccountModel extends SPARQLResourceModel implements Principal, Clas
     @SPARQLProperty(
             ontology = FOAF.class,
             property = "account",
-            inverse = true
+            inverse = true,
+            ignoreUpdateIfNull = true
+            //make easier the update of accounts, but harder the deletion of the link between an account and a person
     )
     private PersonModel holderOfTheAccount = null;
     public static final String HOLDER_OF_THE_ACCOUNT_FIELD = "holderOfTheAccount";

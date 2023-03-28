@@ -36,15 +36,9 @@ import java.util.List;
     "admin"})
 public class UserGetDTO extends UserDTO {
 
-    /**
-     * User first name
-     */
     @JsonProperty("first_name")
     protected String firstName;
 
-    /**
-     * User last name
-     */
     @JsonProperty("last_name")
     protected String lastName;
 

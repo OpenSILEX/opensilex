@@ -48,8 +48,8 @@ public class GroupAPITest extends AbstractSecurityIntegrationTest {
         AuthenticationService authentication = this.getAuthenticationService();
 
         AccountDAO accountDao = new AccountDAO(sparql);
-        accountDao.create(new URI(USER1_URI), new InternetAddress("user1@opensilex.org"), true, authentication.getPasswordHash("azerty"), OpenSilex.DEFAULT_LANGUAGE);
-        accountDao.create(new URI(USER2_URI), new InternetAddress("user2@opensilex.org"), false, authentication.getPasswordHash("azerty"), OpenSilex.DEFAULT_LANGUAGE);
+        accountDao.create(new URI(USER1_URI), new InternetAddress("user1@opensilex.org"), true, authentication.getPasswordHash("azerty"), OpenSilex.DEFAULT_LANGUAGE, null);
+        accountDao.create(new URI(USER2_URI), new InternetAddress("user2@opensilex.org"), false, authentication.getPasswordHash("azerty"), OpenSilex.DEFAULT_LANGUAGE, null);
 
         ProfileDAO profileDao = new ProfileDAO(sparql);
         profileDao.create(new URI(PROFILE1_URI), "profile1", new ArrayList<>());

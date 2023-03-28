@@ -58,13 +58,11 @@ public class UserUpdateDTO extends UserGetDTO {
         return super.getEmail();
     }
 
-    @Required
     @ApiModelProperty(value = "User first name", example = "Janne", required = true)
     public String getFirstName() {
         return super.getFirstName();
     }
 
-    @Required
     @ApiModelProperty(value = "User last name", example = "Michelle", required = true)
     public String getLastName() {
         return super.getLastName();

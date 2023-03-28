@@ -73,7 +73,7 @@ public class UserAPITest extends AbstractSecurityIntegrationTest {
         userCreation.setUri(new URI("http://opensilex.dev/id/user/default.account"));
         userCreation.setEmail("test@test.ts");
         userCreation.setPassword("pwd");
-        userCreation.setPersonHolderUri(new URI("http://opensilex.dev/id/user/default.person"));
+        userCreation.setHolderOfTheAccount(new URI("http://opensilex.dev/id/user/default.person"));
         userCreation.setAdmin(false);
         userCreation.setLanguage("en");
 
@@ -108,7 +108,7 @@ public class UserAPITest extends AbstractSecurityIntegrationTest {
 
         //create the user
         UserCreationWithExistantPersonDTO userCreation = getUserCreationWithExistantPersonDTO();
-        userCreation.setPersonHolderUri(personToLinkWith.getUri());
+        userCreation.setHolderOfTheAccount(personToLinkWith.getUri());
         postResult = getJsonPostResponseAsAdmin(target(createWithExistingPersonPath), userCreation);
         assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
 
@@ -145,7 +145,7 @@ public class UserAPITest extends AbstractSecurityIntegrationTest {
 
         //try to create a user with this same person
         UserCreationWithExistantPersonDTO userTest = getUserCreationWithExistantPersonDTO();
-        userTest.setPersonHolderUri(person.getUri());
+        userTest.setHolderOfTheAccount(person.getUri());
         postResponse = getJsonPostResponseAsAdmin(target(createWithExistingPersonPath), userTest);
         assertEquals(Response.Status.CONFLICT.getStatusCode(), postResponse.getStatus());
 
@@ -155,8 +155,9 @@ public class UserAPITest extends AbstractSecurityIntegrationTest {
 
     @Test
     public void testUpdate() throws Exception {
+        UserGetDTO createdUser = getUser1CreationDTO();
         // create the user
-        Response postResult = getJsonPostResponseAsAdmin(target(createPath), getUser1CreationDTO());
+        Response postResult = getJsonPostResponseAsAdmin(target(createPath), createdUser);
 
         // update the xp
         URI uri = extractUriFromResponse(postResult);
@@ -182,6 +183,16 @@ public class UserAPITest extends AbstractSecurityIntegrationTest {
 
         // check that the object has been updated
         compareUsersDTO(dto, dtoFromApi);
+
+        AccountDAO accountDAO = new AccountDAO(getSparqlService());
+        AccountModel accountModel = accountDAO.get(dto.getUri());
+        UserGetDTO dtoFromDatabase = UserGetDTO.fromModel(accountModel);
+        compareUsersDTO(dto, dtoFromDatabase);
+
+        //check that email of the person is not updated nor deleted by the User Update
+        PersonModel personModel = accountModel.getHolderOfTheAccount();
+        assertEquals(createdUser.getEmail(), personModel.getEmail().toString());
+
     }
 
     @Test

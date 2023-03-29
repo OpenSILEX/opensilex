@@ -598,7 +598,15 @@ public class DataDAO {
 
     public List<VariableModel> getUsedVariables(AccountModel user, List<URI> experiments, List<URI> objects, List<URI> provenances, List<URI> devices) throws Exception {
         Document filter = searchFilter(user, experiments, objects, null, provenances, devices, null, null, null, null, null);
+
+        long start, stop;
+        String methodName = Thread.currentThread().getStackTrace()[1].getMethodName();
+        start = System.currentTimeMillis();
+
         Set<URI> variableURIs = nosql.distinct("variable", URI.class, DATA_COLLECTION_NAME, filter);
+
+        stop = System.currentTimeMillis();
+        System.out.println("TIME EXEC " + methodName + " = " + (stop - start));
 
         String userLanguage = null;
         if(user != null){

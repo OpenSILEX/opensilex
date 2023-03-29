@@ -29,6 +29,17 @@
           </opensilex-DateView>
         </div>
 
+        <!--
+        <opensilex-Button
+            id="btn-show"
+            label="Show graphic"
+            icon=""
+            :small="false"
+            @click="prepareGraphic()"
+        >
+        </opensilex-Button>
+        -->
+
         <b-modal
             ref="graphic-modal"
             size="xl"
@@ -89,8 +100,8 @@ export default class VariableVisualizationTile extends Vue {
   variable: VariableDetailsDTO;
 
   dataSeries: Array<DataSerieGetDTO>;
-  calculatedDataSeries: Array<DataSerieGetDTO>;
 
+  calculatedDataSeries: Array<DataSerieGetDTO>;
 
   isNoDataFound: boolean = false;
   isDataLoaded: boolean = false;
@@ -180,10 +191,6 @@ export default class VariableVisualizationTile extends Vue {
         );
   }
 
-  get hasCalculatedSeries() {
-    return (this.calculatedDataSeries.length > 0);
-  }
-
   get lastMedianData() {
     let data;
     if (this.calculatedDataSeries.length === 0) {
@@ -193,6 +200,24 @@ export default class VariableVisualizationTile extends Vue {
       data = this.calculatedDataSeries[0].data;
     }
     return data[data.length - 1];
+  }
+
+  get deviceUriList() {
+    if (!this.dataSeries) {
+      return [];
+    }
+
+    return this.dataSeries.map(serie => {
+      if (serie.provenance) {
+        return {
+          uri: serie.provenance.prov_was_associated_with[0].uri,
+          value: serie.provenance.prov_was_associated_with[0].uri,
+          to: {
+            path: "/device/details/" + encodeURIComponent(serie.provenance.prov_was_associated_with[0].uri),
+          },
+        }
+      }
+    });
   }
 
   // simulate window resizing to resize the graphic when the filter panel display changes
@@ -240,11 +265,11 @@ export default class VariableVisualizationTile extends Vue {
 
       for (let i = 0; i < this.calculatedDataSeries.length; ++i) {
         console.debug(this.calculatedDataSeries[i]);
-        promise = this.buildDataSerie(this.calculatedDataSeries[i], true);
+        promise = this.buildDataSerie(this.calculatedDataSeries[i]);
         promises.push(promise);
       }
       for (let i = 0; i < this.dataSeries.length; ++i) {
-        promise = this.buildDataSerie(this.dataSeries[i], !this.hasCalculatedSeries);
+        promise = this.buildDataSerie(this.dataSeries[i]);
         promises.push(promise);
       }
       //promise = this.buildEventsSerie();
@@ -361,7 +386,7 @@ export default class VariableVisualizationTile extends Vue {
         });
   }
 
-  buildDataSerie(dataSerie, isVisible: boolean) {
+  buildDataSerie(dataSerie) {
 
     var data = dataSerie.data as Array<DataGetDTO>;
     data.sort((a, b) => (a.date > b.date) ? 1 : -1);
@@ -384,12 +409,15 @@ export default class VariableVisualizationTile extends Vue {
         );
       }
 
-      let prov = dataSerie.provenance;
+      console.debug(cleanData);
+
+      // TODO rework prov dto
+      let prov = dataSerie.provenance.prov_was_associated_with[0];
 
       return {
         name: prov.uri,
         data: cleanData,
-        visible: isVisible
+        visible: (prov.uri.startsWith("dev")) ? false : true
       };
     }
   }
@@ -397,7 +425,6 @@ export default class VariableVisualizationTile extends Vue {
   searchFiltersPannel() {
     return this.$t("searchfilter.label")
   }
-
 }
 </script>
 

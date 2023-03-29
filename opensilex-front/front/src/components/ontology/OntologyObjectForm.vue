@@ -122,6 +122,10 @@ export default class OntologyObjectForm extends Vue {
         this.initHandler = handler;
     }
 
+    updateRelations() {
+      this.ontologyRelationsForm.updateRelation(null, null);
+    }
+
     propertyFilter = property => property;
 
     setTypePropertyFilterHandler(handler) {

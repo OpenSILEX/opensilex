@@ -192,12 +192,28 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
         * @see UnitModel#getName
     */
     public ListWithPagination<VariableModel> search(VariableSearchFilter filter) throws Exception {
+        String methodName = Thread.currentThread().getStackTrace()[1].getMethodName();
+        long start, stop;
 
+        /*
+        start = System.currentTimeMillis();
         Set<URI> variableUriList = filter.isWithAssociatedData() ? dataDAO.getUsedVariablesByExpeSoDevice(filter.getUserModel(), filter.getExperiments(), filter.getObjects(), filter.getDevices()) : null;
         if(variableUriList != null && variableUriList.isEmpty()) {
-            return new ListWithPagination<>(dataDAO.getUsedVariables(filter.getUserModel(), filter.getExperiments(), filter.getObjects(), null,  filter.getDevices()));
+            ListWithPagination list = new ListWithPagination<>(dataDAO.getUsedVariables(filter.getUserModel(), filter.getExperiments(), filter.getObjects(), null,  filter.getDevices()));
+            stop = System.currentTimeMillis();
+            System.out.println("TIME EXEC " + methodName + " OLD = " + (stop - start));
         }
         filter.setIncludedUris(variableUriList);
+        */
+
+        if (filter.isWithAssociatedData()) {
+            start = System.currentTimeMillis();
+            ListWithPagination list = new ListWithPagination<>(dataDAO.getUsedVariables(filter.getUserModel(), filter.getExperiments(), filter.getObjects(), null,  filter.getDevices()));
+            stop = System.currentTimeMillis();
+            System.out.println("TIME EXEC " + methodName + " NEW = " + (stop - start));
+            return list;
+        }
+
 
         Map<Expr, Order> orderByExprMap = new HashMap<>();
         List<OrderBy> newOrderByList = new LinkedList<>();

@@ -80,6 +80,7 @@ We are still considering the case of import of object with `vocabulary:test_type
 | **Duplicate URI**          | A fixed URI is already used by a previous row                                | BODY   |
 | **Invalid URI**            | A URI used as value of an object property can't be parsed                    | BODY   |
 | **Invalid row size**       | Row size is different than the header size                                   | BODY   |
+| **Invalid date**           | A Start date cannot be later than End date                                   | BODY   |
 
 # Conception
 

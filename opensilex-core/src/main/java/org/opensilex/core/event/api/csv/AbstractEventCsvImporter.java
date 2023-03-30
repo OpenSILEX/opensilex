@@ -422,9 +422,16 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
             else if (StringUtils.isEmpty(start)) {
                 CSVCell cell = new CSVCell(rowIndex,colIndex.get()-2, start,"start");
                 validation.addMissingRequiredValue(cell);
-            }
+            } 
+        }
 
-        }else{
+        int resultOfDatesComparison = start.compareTo(end);
+
+        if (resultOfDatesComparison > 0) {
+            CSVCell cell = new CSVCell(rowIndex,colIndex.get(), start,EventModel.START_FIELD);
+            cell.setMessage("EventCsvForm.invalidDate");
+            validation.addInvalidDateErrors(cell);
+        } else { 
             InstantModel endModel = new InstantModel();
             try {
                 endModel.setDateTimeStamp(OffsetDateTime.parse(end));

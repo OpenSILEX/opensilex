@@ -14,21 +14,15 @@
 package org.opensilex.sparql.csv;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.opensilex.sparql.csv.error.CSVDatatypeError;
 import org.opensilex.sparql.csv.error.CSVDuplicateURIError;
 import org.opensilex.sparql.csv.error.CSVURINotFoundError;
 import org.opensilex.sparql.csv.header.CsvHeader;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
+
+import java.net.URI;
+import java.util.*;
 
 /**
  *
@@ -67,6 +61,8 @@ public class CSVValidationModel {
 
     private Map<Integer,List<CSVCell>> invalidRowSizeErrors;
 
+    private Map<Integer, List<CSVCell>> invalidDateErrors = new HashMap<>();
+
     private int nbObjectImported;
 
     private String validationToken;
@@ -79,6 +75,10 @@ public class CSVValidationModel {
 
     public Map<Integer, List<CSVDatatypeError>> getDatatypeErrors() {
         return datatypeErrors;
+    }
+
+    public Map<Integer, List<CSVCell>> getInvalidDateErrors() {
+        return invalidDateErrors;
     }
 
     public Map<Integer, List<CSVURINotFoundError>> getUriNotFoundErrors() {
@@ -141,6 +141,7 @@ public class CSVValidationModel {
     public boolean hasErrors() {
         return getMissingHeaders().size() > 0
                 || getDatatypeErrors().size() > 0
+                || getInvalidDateErrors().size() > 0
                 || getUriNotFoundErrors().size() > 0
                 || getInvalidURIErrors().size() > 0
                 || getMissingRequiredValueErrors().size() > 0
@@ -164,6 +165,12 @@ public class CSVValidationModel {
         datatypeErrors
                 .computeIfAbsent(cell.getRowIndex(), rowIndex -> new ArrayList<>())
                 .add(new CSVDatatypeError(cell, dataType));
+    }
+
+    public void addInvalidDateErrors(CSVCell cell) {
+        invalidDateErrors
+                .computeIfAbsent(cell.getRowIndex(), rowIndex -> new ArrayList<>())
+                .add(cell);
     }
 
     public void addURINotFoundError(CSVCell cell, URI subjectURI, URI objectURI) {

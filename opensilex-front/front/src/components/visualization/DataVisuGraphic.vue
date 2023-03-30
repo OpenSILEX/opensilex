@@ -602,12 +602,12 @@ export default class DataVisuGraphic extends Vue {
       serie.data.forEach((dataObject) => {
         if (dataObject.y === "NaN"){
           dataObject.y = NaN
-          this.seriesHasNaNValues = true
+          this.seriesHasNaNValues === true
         }
       })
     }
 
-    if(this.seriesHasNaNValues = true) {
+    if(this.seriesHasNaNValues === true) {
       this.$opensilex.showInfoToast(
         this.$t("DataVisuGraphic.nanValues").toString()
       )

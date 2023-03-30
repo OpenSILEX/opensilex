@@ -201,7 +201,7 @@ export default class DataVisuGraphic extends Vue {
   selectedOffset;
   variables: Array<VariableGetDTO>;
   selectedPointsCount = 0;
-  seriesHasNaNValues: boolean = false
+  seriesNanValuesCount: number = 0
 
   lineType = false;
   lineWidth = false;
@@ -602,16 +602,20 @@ export default class DataVisuGraphic extends Vue {
       serie.data.forEach((dataObject) => {
         if (dataObject.y === "NaN"){
           dataObject.y = NaN
-          this.seriesHasNaNValues === true
+          this.seriesNanValuesCount += 1 
         }
       })
     }
 
-    if(this.seriesHasNaNValues === true) {
+    if(this.seriesNanValuesCount > 0) {
+      console.log(this.seriesNanValuesCount)
       this.$opensilex.showInfoToast(
-        this.$t("DataVisuGraphic.nanValues").toString()
+        this.$i18n.t("DataVisuGraphic.nanValuesMessageA") + " " +
+        this.seriesNanValuesCount +
+        this.$i18n.t("DataVisuGraphic.nanValuesMessageB")
       )
     }
+          
     this.series = series as Array<Highcharts.SeriesLineOptions>;
   }
 
@@ -1025,7 +1029,8 @@ fr:
     fullscreen : Plein ecran
     download : Télecharger l'image
     rightClick : Click droit sur un point pour ajouter un evénement ou une annotation
-    nanValues: Les series de données selectionées contiennent des valeurs "NaN", seules les valeurs numériques sont visualisées.
+    nanValuesMessageA : "Les series de données selectionées contiennent " 
+    nanValuesMessageB : " valeurs de type 'NaN', seules les valeurs numériques sont visualisées."
 
 en:
   DataVisuGraphic:
@@ -1038,5 +1043,6 @@ en:
     fullscreen : Fullscreen
     download : Download image
     rightClick : right click on a point to add event or annotation
-    nanValues: Selected data series contain "NaN" values, only numerical values are displayed.
+    nanValuesMessageA : "Selected data series contain "
+    nanValuesMessageB : " 'NaN' type values, only numerical values are displayed."
 </i18n>

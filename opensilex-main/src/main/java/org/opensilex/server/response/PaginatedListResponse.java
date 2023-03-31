@@ -8,6 +8,8 @@ package org.opensilex.server.response;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.opensilex.utils.ListWithPagination;
 
 import javax.ws.rs.core.Response.Status;
@@ -79,8 +81,14 @@ public class PaginatedListResponse<T> extends JsonResponse<List<T>> {
         return this;
     }
 
+    /**
+     *
+     * @return
+     * Use @{@link JsonIgnore} to prevent the serialization of the method result when building a Response to an API client
+     */
+    @JsonIgnore
     public ListWithPagination<T> getResultWithPagination() {
-        return new ListWithPagination<T>(result,
+        return new ListWithPagination<>(result,
                 (int) metadata.getPagination().getCurrentPage(),
                 (int) metadata.getPagination().getPageSize(),
                 (int) metadata.getPagination().getTotalCount());

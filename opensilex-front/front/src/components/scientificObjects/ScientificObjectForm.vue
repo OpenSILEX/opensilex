@@ -97,6 +97,7 @@ export default class ScientificObjectForm extends Vue {
             if (parentURI) {
                 if (this.$opensilex.Oeso.checkURIs(relation.property.uri, this.$opensilex.Oeso.IS_PART_OF)) {
                     Vue.set(relation, "value", parentURI);
+                    form.updateRelations();
                 }
             }
         });

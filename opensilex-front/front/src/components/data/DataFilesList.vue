@@ -11,7 +11,7 @@
           <opensilex-UriLink
             :uri="data.item.target"
             :value="objects[data.item.target]"
-            @click="redirectToDetail"
+            @click="redirectToDetail(data.item.target)"
 
           ></opensilex-UriLink>
       </template>
@@ -82,6 +82,7 @@ export default class DataFilesList extends Vue {
   $opensilex: any;
   $store: any;
   service: any;
+  routeArr : string[] = this.$route.path.split('/');
 
   disabled = false;
   imageUrl = null;
@@ -309,8 +310,25 @@ export default class DataFilesList extends Vue {
     .catch(this.$opensilex.errorHandler);
   }
 
-  redirectToDetail(){
-    this.$emit("redirectToDetail")
+  redirectToDetail(uri){
+    let uriArr: string[] = uri.split('/');
+    if(uriArr[1] === "scientific-object"){
+      this.$router.push({
+        path:
+          "/scientific-objects/details/" +
+          encodeURIComponent(uri),
+      })
+    }
+    if(uriArr[1] === "device"){
+      this.$router.push({
+        path:
+          "/device/details/" +
+          encodeURIComponent(uri),
+      })
+    }
+    else {
+      this.$emit("redirectToDetail")
+    }
   }
 }
 </script>

@@ -56,6 +56,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0-rc+7.1]
+
+### Fixed
+
+- [**Event**/**Datafile**] Fix date errors on CSV imports of events / Fix lien "target" des datafiles KO -> 675262a69 (PRADO Sebastien)
+- [**VueJS**] [**BugFix**] Experiment-OS fix child creation -> 3998b4197 (MAUSSANG BRICE)
+- [**API**] Remove duplicate resultWithPagination fields in all search APIs -> 5f4e30c31 (renaud colin)
+- [**Data**] Fix export data -> b1886c13e (CHIAVARINO ALEXIA)
+
+
 ## [1.0.0-rc+7]
 
 > WARNING : upgrading to this new version require manual operations. Please

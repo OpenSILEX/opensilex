@@ -68,6 +68,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -1821,6 +1822,52 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
         // append VALUES ?uri  :uri_1 ... :uri_n
         SPARQLQueryHelper.addWhereUriStringValues(select, uriVar.getVarName(), uris, true, streamSize);
+
+        return select;
+    }
+
+    public SelectBuilder checkListQuery(
+            Stream<String> uris,
+            int streamSize,
+            String uriField,
+            Node graph,
+            String type,
+            BiFunction<Var, Var,WhereBuilder> customWhere){
+
+        Objects.requireNonNull(uris);
+
+        Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
+        Var uriFieldVar = makeVar(uriField);
+        Var typeVar = makeVar(SPARQLResourceModel.TYPE_FIELD);
+        Var existing = makeVar(SPARQLService.EXISTING_VAR);
+
+        WhereBuilder where = new WhereBuilder();
+
+        // check if URIs must have some type
+        if (! StringUtils.isEmpty(type)) {
+            where.addWhere(typeVar, Ontology.subClassAny, NodeFactory.createURI(URIDeserializer.getExpandedURI(type)));
+        }
+
+        // search inside graph, if provided
+        // If custom WHERE is set, then include it inside the where
+        if(graph != null){
+            Node expandedGraph = NodeFactory.createURI(URIDeserializer.getExpandedURI(graph.toString()));
+            where.addGraph(expandedGraph,uriVar, RDF.type, typeVar);
+            if(customWhere != null){
+                where.addWhere(customWhere.apply(uriVar, uriFieldVar));
+            }
+        }else{
+            where.addWhere(uriVar, RDF.type, typeVar);
+            if(customWhere != null){
+                where.addWhere(customWhere.apply(uriVar, uriFieldVar));
+            }
+        }
+        // add EXIST {} expression as var of SELECT
+        SelectBuilder select = new SelectBuilder()
+                .addVar(SPARQLQueryHelper.getExprFactory().exists(where), existing);
+
+        // append VALUES ?uri  :uri_1 ... :uri_n
+        SPARQLQueryHelper.addWhereUriStringValues(select, uriFieldVar.getVarName(), uris, true, streamSize);
 
         return select;
     }

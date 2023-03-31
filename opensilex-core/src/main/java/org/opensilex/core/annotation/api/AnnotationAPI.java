@@ -26,11 +26,13 @@ import org.opensilex.utils.OrderBy;
 import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
+import java.util.BitSet;
 import java.util.List;
 
 /**
@@ -183,6 +185,25 @@ public class AnnotationAPI {
                 MotivationGetDTO::new
         );
         return new PaginatedListResponse<>(resultDTOList).getResponse();
+    }
+
+    @POST
+    @Path("hasAnnotations")
+    @ApiOperation("Return a boolean array indicating if the target has annotation(true) or not(false)\"")
+    @ApiProtected
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Annotations founds", response = AnnotationExistsDTO.class),
+    })
+
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response hasAnnotations(
+            @ApiParam("Target URIs") @NotNull @NotEmpty @Valid List<URI> targets
+    ) throws Exception {
+        BitSet annotationExists = new AnnotationDAO(sparql).hasAnnotations(targets);
+        return new SingleObjectResponse<>(
+                new AnnotationExistsDTO().setTargetExists(annotationExists.toByteArray())
+        ).getResponse();
     }
 
     @GET

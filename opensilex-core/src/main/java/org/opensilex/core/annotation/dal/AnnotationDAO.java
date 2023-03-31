@@ -10,6 +10,7 @@ package org.opensilex.core.annotation.dal;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.Order;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.sparql.core.Var;
@@ -33,6 +34,8 @@ import org.opensilex.utils.OrderBy;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -195,7 +198,7 @@ public class AnnotationDAO {
     public ListWithPagination<MotivationModel> searchMotivations(String stringPattern,
                                                                  String lang,
                                                                  List<OrderBy> orderByList,
-                                                                 Integer page,
+                                                                  Integer page,
                                                                  Integer pageSize) throws Exception {
 
         return sparql.searchWithPagination(
@@ -211,6 +214,53 @@ public class AnnotationDAO {
         );
 
     }
+
+    public BitSet hasAnnotations(List<URI> targets) throws SPARQLException {
+
+        BitSet bitSet = new BitSet(targets.size());
+
+        // Set a custom where to add inside each SPARQL query
+        // This clause check which annotation are linked to the specified targets
+        BiFunction<Var, Var, WhereBuilder> annotationHasTargetWhere = (uriVar, targetVar) ->
+                new WhereBuilder().addWhere(uriVar, OA.hasTarget, targetVar);
+
+        int sparqlPageSize = 4096;
+        int nbQuery = (targets.size() / sparqlPageSize) + 1;
+        AtomicInteger currentIdx = new AtomicInteger();
+
+        // Decompose the URIs checking by running one SPARQL query per chunk/part
+        // It avoids to send a too big SPARQL query to the RDF database server
+        for (int i = 0; i < nbQuery; i++) {
+
+            int startIdx = currentIdx.get();
+            int endIdx = Math.min(startIdx + sparqlPageSize, targets.size());
+
+            // Create a chunk on URIS
+            Stream<String> targetStream = targets.subList(startIdx,endIdx)
+                    .stream()
+                    .map(URI::toString);
+
+            // Send the target stream by setting a stream size limit for the query -> the steam will be read until the specified limit is reached
+            // The steam will be still readable for the next iteration
+            SelectBuilder select = sparql.checkListQuery(
+                    targetStream,
+                    sparqlPageSize, // we give the Stream page size
+                    AnnotationModel.TARGET_FIELD,
+                    annotationGraph,
+                    OA.Annotation.getURI(),
+                    annotationHasTargetWhere
+            );
+
+            // parse result : indicate if an annotation on the specified target exist or not
+            sparql.executeSelectQueryAsStream(select).forEach(result -> {
+                boolean annotationExist = Boolean.parseBoolean(result.getStringValue(SPARQLService.EXISTING_VAR));
+                bitSet.set(currentIdx.getAndIncrement(), annotationExist);
+            });
+        }
+
+        return bitSet;
+    }
+
 
     private void addMotivationNameRegexFilter(SelectBuilder selectBuilder, String stringPattern) {
         Expr regexFilter = SPARQLQueryHelper.regexFilter(MotivationModel.NAME_FIELD, stringPattern);

@@ -215,9 +215,7 @@ public class EventAPI {
         csvImporter.readFile(true);
 
         CSVValidationModel validation = csvImporter.getValidation();
-
-        CSVValidationDTO validationDTO = new CSVValidationDTO();
-        validationDTO.setErrors(validation);
+        CSVValidationDTO validationDTO = new CSVValidationDTO(validation);
 
         if (!validation.hasErrors()) {
             String token = TokenGenerator.getValidationToken(5, ChronoUnit.MINUTES, Collections.emptyMap());

@@ -212,7 +212,8 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
         String[] row;
 
         // start at the 2nd row after two header rows
-        int rowIndex = 2;
+        int startRowIdx = 2;
+        int rowIdx = startRowIdx;
         models = new ArrayList<>();
 
         Map<URI, ClassModel> classesByType = new HashMap<>();
@@ -222,17 +223,20 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
             T model = getNewModel();
 
             AtomicInteger colIndex = new AtomicInteger(0);
-            readAndValidateRow(model,row,rowIndex,colIndex,customProperties,classesByType,missedPropertiesByType);
+            readAndValidateRow(model,row,rowIdx,colIndex,customProperties,classesByType,missedPropertiesByType);
             if(! validateOnly){
                 models.add(model);
             }
-            rowIndex++;
+            rowIdx++;
             colIndex.set(0);
         }
 
-        if(rowIndex == 2){
-            CSVCell csvCell = new CSVCell(rowIndex, 0, null, "Empty row");
+        if(rowIdx == 2){
+            CSVCell csvCell = new CSVCell(rowIdx, 0, null, "Empty row");
             validation.addMissingRequiredValue(csvCell);
+        }
+        else {
+            validation.setNbObjectImported(rowIdx - startRowIdx);
         }
     }
 
@@ -401,7 +405,7 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
         }
 
         String start = row[colIndex.getAndIncrement()];
-        if(! StringUtils.isEmpty(start)) {
+        if(!StringUtils.isEmpty(start)) {
             InstantModel startModel = new InstantModel();
             try{
                 startModel.setDateTimeStamp(OffsetDateTime.parse(start));
@@ -425,7 +429,7 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
             } 
         }
 
-        int resultOfDatesComparison = start.compareTo(end);
+        int resultOfDatesComparison = (start != null) ? start.compareTo(end) : 0;
 
         if (resultOfDatesComparison > 0) {
             CSVCell cell = new CSVCell(rowIndex,colIndex.get(), start,EventModel.START_FIELD);

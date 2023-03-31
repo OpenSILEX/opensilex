@@ -21,7 +21,7 @@
                     <button
                         type="button"
                         class="close"
-                        @click="this.hide()"
+                        @click="hide()"
                         data-dismiss="modal"
                         aria-label="Close"
                     >

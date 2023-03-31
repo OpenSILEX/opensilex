@@ -412,7 +412,11 @@ export default class VariableVisualizationTile extends Vue {
       console.debug(cleanData);
 
       // TODO rework prov dto
-      let prov = dataSerie.provenance.prov_was_associated_with[0];
+      let provenance = dataSerie.provenance.prov_was_associated_with;
+      let prov = dataSerie.provenance;
+      if (provenance) {
+        prov = dataSerie.provenance.prov_was_associated_with[0];
+      }
 
       return {
         name: prov.uri,

@@ -42,6 +42,7 @@
     <template v-slot:body>
       <!-- URI -->
       <opensilex-UriView
+          :uri="selectedFacilityOrDefault.uri"
           :uri="selected.uri"
           :value="selected.uri"
       >
@@ -156,10 +157,6 @@ export default class FacilityDescription extends Vue {
 
   refresh() {
     this.$emit("onUpdate");
-  }
-
-  get oeso() {
-      return this.$opensilex.Oeso;
   }
 
   get user() {

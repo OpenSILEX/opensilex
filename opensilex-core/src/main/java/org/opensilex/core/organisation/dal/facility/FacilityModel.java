@@ -9,6 +9,7 @@ import org.apache.jena.vocabulary.VCARD4;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.site.SiteModel;
+import org.opensilex.core.variablesGroup.dal.VariablesGroupModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLTreeModel;
@@ -67,6 +68,14 @@ public class FacilityModel extends SPARQLTreeModel<FacilityModel> {
     private FacilityAddressModel address;
     public static final String ADDRESS_FIELD = "address";
 
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "hasVariablesGroup",
+            ignoreUpdateIfNull = true
+    )
+    private List<VariablesGroupModel> variableGroups;
+    public static final String VARIABLE_GROUPS_FIELD = "variableGroups";
+
     public List<OrganizationModel> getOrganizations() {
         return organizations;
     }
@@ -99,6 +108,14 @@ public class FacilityModel extends SPARQLTreeModel<FacilityModel> {
 
     public void setAddress(FacilityAddressModel address) {
         this.address = address;
+    }
+
+    public List<VariablesGroupModel> getVariableGroups() {
+        return variableGroups;
+    }
+
+    public void setVariableGroups(List<VariablesGroupModel> variableGroups) {
+        this.variableGroups = variableGroups;
     }
 
     @Override

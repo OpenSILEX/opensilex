@@ -29,6 +29,7 @@ import org.opensilex.core.organisation.dal.site.SiteDAO;
 import org.opensilex.core.organisation.dal.site.SiteModel;
 import org.opensilex.core.organisation.dal.site.SiteSearchFilter;
 import org.opensilex.core.organisation.exception.SiteFacilityInvalidAddressException;
+import org.opensilex.core.variablesGroup.dal.VariablesGroupDAO;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
@@ -59,7 +60,8 @@ public class FacilityDAO {
 
     private final OrganizationDAO organizationDAO;
     private final SiteDAO siteDAO;
-    private final URI geometryGraphUri;
+    private final VariablesGroupDAO variableGroupDAO;
+    private final URI addressGraphURI;
 
     private final OrganizationSPARQLHelper organizationSPARQLHelper;
 
@@ -70,7 +72,8 @@ public class FacilityDAO {
         this.geospatialDAO = new GeospatialDAO(nosql);
         this.organizationDAO = organizationDAO;
         this.siteDAO = new SiteDAO(sparql, nosql, organizationDAO);
-        this.geometryGraphUri = sparql.getDefaultGraphURI(OrganizationModel.class);
+        this.addressGraphURI = sparql.getDefaultGraphURI(OrganizationModel.class);
+        this.variableGroupDAO = new VariablesGroupDAO(sparql);
 
         this.organizationSPARQLHelper = new OrganizationSPARQLHelper(sparql);
     }

@@ -42,10 +42,6 @@
       <!-- URI -->
       <opensilex-UriView
           :uri="selectedFacilityOrDefault.uri"
-          :value="selectedFacilityOrDefault.uri"
-          :to="{
-            path: '/facility/details/' + encodeURIComponent(selectedFacilityOrDefault.uri),
-          }"
       >
       </opensilex-UriView>
       <!-- Name -->

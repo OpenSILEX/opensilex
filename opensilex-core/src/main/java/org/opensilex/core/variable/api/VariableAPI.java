@@ -32,12 +32,12 @@ import org.opensilex.core.variable.api.unit.UnitDetailsDTO;
 import org.opensilex.core.variable.dal.*;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.server.rest.validation.ValidURI;
@@ -120,7 +120,7 @@ public class VariableAPI {
             credentialLabelKey = CREDENTIAL_VARIABLE_MODIFICATION_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "A variable is created", response = ObjectUriResponse.class),
+            @ApiResponse(code = 201, message = "A variable is created", response = URI.class),
             @ApiResponse(code = 409, message = "A Variable with the same URI already exists", response = ErrorResponse.class)
     })
     @Consumes(MediaType.APPLICATION_JSON)
@@ -184,7 +184,7 @@ public class VariableAPI {
             credentialLabelKey = CREDENTIAL_VARIABLE_MODIFICATION_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Variable updated", response = ObjectUriResponse.class),
+            @ApiResponse(code = 200, message = "Variable updated", response = URI.class),
             @ApiResponse(code = 404, message = "Unknown variable URI", response = ErrorResponse.class)
     })
     @Consumes(MediaType.APPLICATION_JSON)
@@ -209,7 +209,7 @@ public class VariableAPI {
             credentialLabelKey = CREDENTIAL_VARIABLE_DELETE_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Variable deleted", response = ObjectUriResponse.class),
+            @ApiResponse(code = 200, message = "Variable deleted", response = URI.class),
             @ApiResponse(code = 404, message = "Unknown variable URI", response = ErrorResponse.class)
     })
     @Consumes(MediaType.APPLICATION_JSON)

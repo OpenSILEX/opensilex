@@ -19,9 +19,10 @@ import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import ModalForm from "../../common/forms/ModalForm.vue";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
-import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
+import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
 import {AnnotationsService} from "opensilex-core/api/annotations.service";
-import {AnnotationCreationDTO, AnnotationUpdateDTO, ObjectUriResponse } from 'opensilex-core/index';
+import {AnnotationCreationDTO, AnnotationUpdateDTO} from 'opensilex-core/index';
+import AnnotationForm from "./AnnotationForm.vue";
 
 
 @Component
@@ -41,7 +42,7 @@ export default class AnnotationModalForm extends Vue {
         return this.$store.state.credentials;
     }
 
-    @Ref("modalForm") readonly modalForm!: ModalForm;
+    @Ref("modalForm") readonly modalForm!: ModalForm<AnnotationForm, AnnotationCreationDTO, AnnotationUpdateDTO>;
 
     created() {
         this.service = this.$opensilex.getService("opensilex.AnnotationsService");
@@ -63,7 +64,7 @@ export default class AnnotationModalForm extends Vue {
 
         annotation.targets = this.targets;
 
-        return this.service.createAnnotation(annotation).then((http: HttpResponse<OpenSilexResponse<ObjectUriResponse>>) => {
+        return this.service.createAnnotation(annotation).then((http: HttpResponse<OpenSilexResponse<string>>) => {
             let message = this.$i18n.t("Annotation.name") + " " + http.response.result + " " + this.$i18n.t("component.common.success.creation-success-message");
             this.$opensilex.showSuccessToast(message);
             this.$emit("onCreate", http.response.result.toString());

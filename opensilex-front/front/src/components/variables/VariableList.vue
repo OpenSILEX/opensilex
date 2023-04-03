@@ -328,15 +328,16 @@
 
 <script lang="ts">
 import {Component, Prop, Ref} from "vue-property-decorator";
-import Vue, { VNode } from "vue";
-import {VariablesGroupGetDTO, VariablesService} from "opensilex-core/index";
+import Vue, {VNode} from "vue";
+import {CopyResourceDTO, VariableGetDTO, VariablesGroupGetDTO, VariablesService} from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
 import ModalForm from "../common/forms/ModalForm.vue";
 import GroupVariablesModalList from '../groupVariable/GroupVariablesModalList.vue';
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
-import {CopyResourceDTO} from "opensilex-core/model/copyResourceDTO";
-import TableAsyncView from "../common/views/TableAsyncView.vue";
-import {VariableGetDTO} from "opensilex-core/model/variableGetDTO";
+import GroupVariablesForm from "../groupVariable/GroupVariablesForm.vue";
+import {VariablesGroupCreationDTO} from "opensilex-core/model/variablesGroupCreationDTO";
+import {VariablesGroupUpdateDTO} from "opensilex-core/model/variablesGroupUpdateDTO";
+import TableAsyncView from '../common/views/TableAsyncView.vue';
 
 @Component
 export default class VariableList extends Vue {
@@ -440,7 +441,7 @@ export default class VariableList extends Vue {
     }
 
     loadGroupVariablesForm: boolean = false;
-    @Ref("groupVariablesForm") readonly groupVariablesForm!: ModalForm;
+    @Ref("groupVariablesForm") readonly groupVariablesForm!: ModalForm<GroupVariablesForm, VariablesGroupCreationDTO, VariablesGroupUpdateDTO>;
 
     showCreateForm() {
         // lazy loading of form

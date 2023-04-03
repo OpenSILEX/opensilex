@@ -31,6 +31,9 @@ import {MultiValuedRDFObjectRelation} from "../ontology/models/MultiValuedRDFObj
 import Oeso from "../../ontologies/Oeso";
 import Rdfs from "../../ontologies/Rdfs";
 import {ScientificObjectDetailDTO} from "opensilex-core/model/scientificObjectDetailDTO";
+import {ScientificObjectCreationDTO} from "opensilex-core/model/scientificObjectCreationDTO";
+import {ScientificObjectUpdateDTO} from "opensilex-core/model/scientificObjectUpdateDTO";
+import DTOConverter from "../../models/DTOConverter";
 
 @Component
 export default class ScientificObjectForm extends Vue {
@@ -44,7 +47,7 @@ export default class ScientificObjectForm extends Vue {
     })
     context;
 
-    @Ref("modalForm") readonly modalForm!: ModalForm;
+    @Ref("modalForm") readonly modalForm!: ModalForm<OntologyObjectForm, ScientificObjectCreationDTO, ScientificObjectUpdateDTO>;
 
     created() {
         this.soService = this.$opensilex.getService(
@@ -114,7 +117,8 @@ export default class ScientificObjectForm extends Vue {
 
                 this.initOntologyObjectForm(form, os.rdf_type);
                 this.excludeCurrentURIFromParentSelector(objectURI, form);
-                this.modalForm.showEditForm(os);
+                const editDto = DTOConverter.extractURIFromResourceProperties<ScientificObjectDetailDTO, ScientificObjectUpdateDTO>(os);
+                this.modalForm.showEditForm(editDto);
             });
     }
 
@@ -125,7 +129,7 @@ export default class ScientificObjectForm extends Vue {
         return undefined;
     }
 
-    callScientificObjectCreation(form) {
+    callScientificObjectCreation(form: ScientificObjectCreationDTO) {
         let definedRelations = [];
         for (let i in form.relations) {
             let relation = form.relations[i];
@@ -158,7 +162,7 @@ export default class ScientificObjectForm extends Vue {
             });
     }
 
-    callScientificObjectUpdate(form) {
+    callScientificObjectUpdate(form: ScientificObjectUpdateDTO) {
         let definedRelations = [];
         for (let i in form.relations) {
             let relation = form.relations[i];

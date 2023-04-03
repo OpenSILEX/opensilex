@@ -174,7 +174,7 @@ export default class DeviceForm extends Vue {
         this.uriGenerated = true;
     }
 
-    create(form){
+    create(form: DeviceCreationDTO){
         form.metadata = this.attTable.pushAttributes();
         return this.service.createDevice(false, form).then((http) => {
             form.uri = http.response.result;

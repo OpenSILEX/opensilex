@@ -47,14 +47,18 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Ref } from "vue-property-decorator";
+import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+import {VariablesService} from "opensilex-core/api/variables.service";
+import {VariablesGroupCreationDTO} from "opensilex-core/model/variablesGroupCreationDTO";
+import {VariablesGroupUpdateDTO} from "opensilex-core/model/variablesGroupUpdateDTO";
 
 
 @Component
 export default class GroupVariablesForm extends Vue {
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
   $store: any;
   $i18n: any;
 
@@ -82,15 +86,15 @@ export default class GroupVariablesForm extends Vue {
     };
   }
 
-  getEmptyForm(){
+  getEmptyForm(): VariablesGroupCreationDTO {
     return GroupVariablesForm.getEmptyForm();
   }
 
-  create(form){
+  create(form: VariablesGroupCreationDTO){
     return this.$opensilex
-      .getService("opensilex.VariablesService")
+      .getService<VariablesService>("opensilex.VariablesService")
       .createVariablesGroup(form)
-      .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+      .then((http: HttpResponse<OpenSilexResponse<string>>) => {
         let message = this.$i18n.t(this.form.name) + this.$i18n.t("component.common.success.creation-success-message");
         this.$opensilex.showSuccessToast(message);
         let uri = http.response.result;
@@ -107,11 +111,11 @@ export default class GroupVariablesForm extends Vue {
       });
   }
 
-  update(form){
+  update(form: VariablesGroupUpdateDTO){
     return this.$opensilex
-      .getService("opensilex.VariablesService")
+      .getService<VariablesService>("opensilex.VariablesService")
       .updateVariablesGroup(form)
-      .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+      .then((http: HttpResponse<OpenSilexResponse<string>>) => {
         let message = this.$i18n.t(this.form.name) + this.$i18n.t("component.common.success.update-success-message");
         this.$opensilex.showSuccessToast(message);
         let uri = http.response.result;

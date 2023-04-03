@@ -17,14 +17,14 @@
 
 
 <script lang="ts">
-    import {Component, Prop, Ref} from "vue-property-decorator";
-    import Vue from "vue";
-    import {ExternalOntologies} from "../../../models/ExternalOntologies";
-    // @ts-ignore
-    import { VariablesService, EntityGetDTO, EntityCreationDTO, ObjectUriResponse } from "opensilex-core/index";
-    import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
+import {Component, Ref} from "vue-property-decorator";
+import Vue from "vue";
+import {ExternalOntologies} from "../../../models/ExternalOntologies";
+import {EntityCreationDTO, EntityGetDTO, VariablesService} from "opensilex-core/index";
+import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
+import {EntityUpdateDTO} from "opensilex-core/model/entityUpdateDTO";
 
-    @Component
+@Component
     export default class EntityCreate extends Vue {
 
         steps = [
@@ -82,10 +82,10 @@
             };
         }
 
-        create(form){
+        create(form: EntityCreationDTO){
             return this.service
                 .createEntity(form)
-                .then((http: HttpResponse<OpenSilexResponse<ObjectUriResponse>>) => {
+                .then((http: HttpResponse<OpenSilexResponse<string>>) => {
                     form.uri = http.response.result;
                     let message = this.$i18n.t("EntityForm.name") + " " + form.uri + " " + this.$i18n.t("component.common.success.creation-success-message");
                     this.$opensilex.showSuccessToast(message);
@@ -100,10 +100,10 @@
                 });
         }
 
-        update(form){
+        update(form: EntityUpdateDTO){
             return this.service
                 .updateEntity(form)
-                .then((http: HttpResponse<OpenSilexResponse<ObjectUriResponse>>) => {
+                .then((http: HttpResponse<OpenSilexResponse<string>>) => {
                     form.uri = http.response.result;
                     let message = this.$i18n.t("EntityForm.name") + " " + form.uri + " " + this.$i18n.t("component.common.success.update-success-message");
                     this.$opensilex.showSuccessToast(message);

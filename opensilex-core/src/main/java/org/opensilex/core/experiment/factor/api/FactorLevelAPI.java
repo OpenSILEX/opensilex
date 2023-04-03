@@ -9,32 +9,14 @@
  */
 package org.opensilex.core.experiment.factor.api;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-import java.net.URI;
-import javax.inject.Inject;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import static org.opensilex.core.experiment.factor.api.FactorAPI.CREDENTIAL_FACTOR_DELETE_ID;
-import static org.opensilex.core.experiment.factor.api.FactorAPI.CREDENTIAL_FACTOR_DELETE_LABEL_KEY;
-import static org.opensilex.core.experiment.factor.api.FactorAPI.FACTOR_EXAMPLE_URI;
+import io.swagger.annotations.*;
 import org.opensilex.core.experiment.factor.dal.FactorLevelDAO;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.SingleObjectResponse;
@@ -42,6 +24,15 @@ import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
 import org.opensilex.sparql.service.SPARQLService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.inject.Inject;
+import javax.validation.constraints.NotNull;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.net.URI;
+
+import static org.opensilex.core.experiment.factor.api.FactorAPI.*;
 
 /**
  *
@@ -156,7 +147,7 @@ public class FactorLevelAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Factor level deleted", response = ObjectUriResponse.class),
+        @ApiResponse(code = 200, message = "Factor level deleted", response = URI.class),
         @ApiResponse(code = 400, message = "Invalid or unknown Factor URI", response = ErrorResponse.class),
         @ApiResponse(code = 400, message = "Invalid or unknown Factor URI", response = ErrorResponse.class),
 

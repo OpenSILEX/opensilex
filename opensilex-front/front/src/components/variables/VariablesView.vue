@@ -177,6 +177,9 @@ import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import ModalForm from "../common/forms/ModalForm.vue";
 import DTOConverter from "../../models/DTOConverter";
+import {VariablesGroupCreationDTO} from "opensilex-core/model/variablesGroupCreationDTO";
+import {VariablesGroupUpdateDTO} from "opensilex-core/model/variablesGroupUpdateDTO";
+import GroupVariablesForm from "../groupVariable/GroupVariablesForm.vue";
 
 
 @Component
@@ -222,7 +225,7 @@ export default class VariablesView extends Vue {
      * Lazy loading of modal group form, this ensures to not load nested variable selected which trigger an API call
      */
     loadGroupForm: boolean = false;
-    @Ref("groupVariablesForm") readonly groupVariablesForm!: ModalForm;
+    @Ref("groupVariablesForm") readonly groupVariablesForm!: ModalForm<GroupVariablesForm, VariablesGroupCreationDTO, VariablesGroupUpdateDTO>
 
     @Ref("skosReferences") skosReferences!: ExternalReferencesModalForm;
 
@@ -481,9 +484,9 @@ export default class VariablesView extends Vue {
         }).catch(this.$opensilex.errorHandler);
     }
 
-    createVariablesGroup(form){
+    createVariablesGroup(form: VariablesGroupCreationDTO){
         return this.service.createVariablesGroup(form)
-            .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+            .then((http: HttpResponse<OpenSilexResponse<string>>) => {
             let message = this.$i18n.t(form.name) + this.$i18n.t("component.common.success.creation-success-message");
             this.$opensilex.showSuccessToast(message);
             let uri = http.response.result;
@@ -499,9 +502,9 @@ export default class VariablesView extends Vue {
       });
     }
 
-    updateVariablesGroup(form){
+    updateVariablesGroup(form: VariablesGroupUpdateDTO){
         return this.service.updateVariablesGroup(form)
-            .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+            .then((http: HttpResponse<OpenSilexResponse<string>>) => {
                 let message = this.$i18n.t(form.name) + this.$i18n.t("component.common.success.update-success-message");
                 this.$opensilex.showSuccessToast(message);
                 let uri = http.response.result;

@@ -9,9 +9,9 @@ import io.swagger.annotations.*;
 import org.opensilex.core.CoreModule;
 import org.opensilex.core.URIsListPostDTO;
 import org.opensilex.core.sharedResource.SharedResourceInstanceDTO;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.exceptions.ConflictException;
 import org.opensilex.server.exceptions.NotFoundException;
 import org.opensilex.server.response.ErrorResponse;
@@ -226,7 +226,7 @@ public class OntologyAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = PROPERTY_CREATE_MSG, response = ObjectUriResponse.class),
+            @ApiResponse(code = 201, message = PROPERTY_CREATE_MSG, response = URI.class),
             @ApiResponse(code = 409, message = PROPERTY_ALREADY_EXISTS_MSG, response = ErrorResponse.class)
     })
     public Response createProperty(
@@ -262,8 +262,8 @@ public class OntologyAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = PROPERTY_UPDATE_MSG, response = ObjectUriResponse.class),
-            @ApiResponse(code = 404, message = PROPERTY_NOT_FOUND_MSG, response = ObjectUriResponse.class),
+            @ApiResponse(code = 200, message = PROPERTY_UPDATE_MSG, response = URI.class),
+            @ApiResponse(code = 404, message = PROPERTY_NOT_FOUND_MSG, response = URI.class),
     })
 
     public Response updateProperty(
@@ -315,7 +315,7 @@ public class OntologyAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Property deleted ", response = ObjectUriResponse.class)
+            @ApiResponse(code = 200, message = "Property deleted ", response = URI.class)
     })
     public Response deleteProperty(
             @ApiParam(value = "Property URI") @QueryParam("uri") @NotNull @ValidURI URI propertyURI,
@@ -449,7 +449,7 @@ public class OntologyAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Class property restriction added", response = ObjectUriResponse.class)
+            @ApiResponse(code = 200, message = "Class property restriction added", response = URI.class)
     })
     public Response addClassPropertyRestriction(
             @ApiParam("Property description") @Valid OWLClassPropertyRestrictionDTO dto
@@ -475,7 +475,7 @@ public class OntologyAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Class property restriction deleted ", response = ObjectUriResponse.class)
+            @ApiResponse(code = 200, message = "Class property restriction deleted ", response = URI.class)
     })
     public Response deleteClassPropertyRestriction(
             @ApiParam(value = "RDF type") @QueryParam("rdf_type") @ValidURI @NotNull URI classURI,
@@ -496,7 +496,7 @@ public class OntologyAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Class property restriction updated", response = ObjectUriResponse.class)
+            @ApiResponse(code = 200, message = "Class property restriction updated", response = URI.class)
     })
     public Response updateClassPropertyRestriction(
             @ApiParam("Property description") @Valid OWLClassPropertyRestrictionDTO dto

@@ -61,7 +61,6 @@
 import {Component, Prop} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
-import { ObjectUriResponse } from 'opensilex-core/index';
 import {AreaService} from "opensilex-core/api/area.service";
 
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
@@ -157,7 +156,7 @@ export default class AreaForm extends Vue {
     console.debug(form);
     return this.areaService
         .updateArea(form)
-        .then((http: HttpResponse<OpenSilexResponse<ObjectUriResponse>>) => {
+        .then((http: HttpResponse<OpenSilexResponse<string>>) => {
           let uri = http.response.result;
           console.debug("Area updated", uri);
         })

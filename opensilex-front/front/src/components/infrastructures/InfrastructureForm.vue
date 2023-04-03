@@ -57,11 +57,15 @@
 import {Component, Prop} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
-import { ResourceDagDTO } from 'opensilex-core/index';
+import {ResourceDagDTO} from 'opensilex-core/index';
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+import {OrganizationsService} from "opensilex-core/api/organizations.service";
+import {OrganizationCreationDTO} from "opensilex-core/model/organizationCreationDTO";
+import {OrganizationUpdateDTO} from "opensilex-core/model/organizationUpdateDTO";
 
 @Component
 export default class InfrastructureForm extends Vue {
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
 
   uriGenerated = true;
 
@@ -86,7 +90,7 @@ export default class InfrastructureForm extends Vue {
     this.uriGenerated = true;
     if (this.parentInfrastructures == null) {
       this.$opensilex
-        .getService("opensilex-core.OrganizationsService")
+        .getService<OrganizationsService>("opensilex-core.OrganizationsService")
         .searchInfrastructures()
         .then(
           (http: HttpResponse<OpenSilexResponse<Array<ResourceDagDTO>>>) => {
@@ -97,7 +101,7 @@ export default class InfrastructureForm extends Vue {
     }
   }
 
-  getEmptyForm() {
+  getEmptyForm(): OrganizationCreationDTO {
     return {
       uri: null,
       rdf_type: null,
@@ -116,7 +120,7 @@ export default class InfrastructureForm extends Vue {
   init() {
     if (this.parentInfrastructures == null) {
       this.$opensilex
-        .getService("opensilex-core.OrganizationsService")
+        .getService<OrganizationsService>("opensilex-core.OrganizationsService")
         .searchInfrastructures()
         .then(
           (http: HttpResponse<OpenSilexResponse<Array<ResourceDagDTO>>>) => {
@@ -142,12 +146,12 @@ export default class InfrastructureForm extends Vue {
     form.parents = form.parents.filter(parent => parent);
   }
 
-  create(form) {
+  create(form: OrganizationCreationDTO) {
     this.cleanFormBeforeSend(form);
     return this.$opensilex
-      .getService("opensilex.OrganizationsService")
+      .getService<OrganizationsService>("opensilex.OrganizationsService")
       .createInfrastructure(form)
-      .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+      .then((http: HttpResponse<OpenSilexResponse<string>>) => {
         let uri = http.response.result;
         console.debug("Infrastructure facility created", uri);
         form.uri = uri;
@@ -166,11 +170,11 @@ export default class InfrastructureForm extends Vue {
       });
   }
 
-  update(form) {
+  update(form: OrganizationUpdateDTO) {
     this.cleanFormBeforeSend(form);
     delete form.rdf_type_name;
     return this.$opensilex
-      .getService("opensilex.OrganizationsService")
+      .getService<OrganizationsService>("opensilex.OrganizationsService")
       .updateInfrastructure(form)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         let uri = http.response.result;

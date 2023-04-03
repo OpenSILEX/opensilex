@@ -47,12 +47,12 @@ import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidUriListException;
 import org.opensilex.nosql.exceptions.NoSQLTooLargeSetException;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.exceptions.NotFoundException;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
@@ -158,7 +158,7 @@ public class DataAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Add data", response = ObjectUriResponse.class),
+            @ApiResponse(code = 201, message = "Add data", response = URI.class),
             @ApiResponse(code = 400, message = "Bad user request", response = ErrorResponse.class),
             @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
     public Response addListData(
@@ -455,7 +455,7 @@ public class DataAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Data deleted", response = ObjectUriResponse.class),
+            @ApiResponse(code = 200, message = "Data deleted", response = URI.class),
             @ApiResponse(code = 400, message = "Invalid or unknown Data URI", response = ErrorResponse.class),
             @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
     public Response deleteData(
@@ -478,7 +478,7 @@ public class DataAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Confidence update", response = ObjectUriResponse.class),
+            @ApiResponse(code = 201, message = "Confidence update", response = URI.class),
             @ApiResponse(code = 400, message = "Bad user request", response = ErrorResponse.class),
             @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
 
@@ -505,7 +505,7 @@ public class DataAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Confidence update", response = ObjectUriResponse.class),
+            @ApiResponse(code = 201, message = "Confidence update", response = URI.class),
             @ApiResponse(code = 400, message = "Bad user request", response = ErrorResponse.class),
             @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
 
@@ -541,7 +541,7 @@ public class DataAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Data deleted", response = ObjectUriResponse.class),
+            @ApiResponse(code = 200, message = "Data deleted", response = URI.class),
             @ApiResponse(code = 400, message = "Invalid or unknown Data URI", response = ErrorResponse.class),
             @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
     public Response deleteDataOnSearch(

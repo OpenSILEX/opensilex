@@ -17,14 +17,14 @@
 
 
 <script lang="ts">
-    import {Component, Prop, Ref} from "vue-property-decorator";
-    import Vue from "vue";
-    import {ExternalOntologies} from "../../../models/ExternalOntologies";
-    // @ts-ignore
-    import { VariablesService, MethodGetDTO, MethodCreationDTO, ObjectUriResponse } from "opensilex-core/index";
-    import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
+import {Component, Ref} from "vue-property-decorator";
+import Vue from "vue";
+import {ExternalOntologies} from "../../../models/ExternalOntologies";
+import {MethodCreationDTO, MethodGetDTO, VariablesService} from "opensilex-core/index";
+import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
+import {MethodUpdateDTO} from "opensilex-core/model/methodUpdateDTO";
 
-    @Component
+@Component
     export default class MethodCreate extends Vue {
 
         steps = [
@@ -82,13 +82,10 @@
             };
         }
 
-        create(form){
-            if(form.type){
-                form.type = form.type.uri;
-            }
+        create(form: MethodCreationDTO){
             return this.service
                 .createMethod(form)
-                .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+                .then((http: HttpResponse<OpenSilexResponse<string>>) => {
                     form.uri = http.response.result;
                     let message = this.$i18n.t("MethodForm.name") + " " + form.uri + " " + this.$i18n.t("component.common.success.creation-success-message");
                     this.$opensilex.showSuccessToast(message);
@@ -103,10 +100,10 @@
                 });
         }
 
-        update(form){
+        update(form: MethodUpdateDTO){
             return this.service
                 .updateMethod(form)
-                .then((http: HttpResponse<OpenSilexResponse<ObjectUriResponse>>) => {
+                .then((http: HttpResponse<OpenSilexResponse<string>>) => {
                     form.uri = http.response.result;
                     let message = this.$i18n.t("MethodForm.name") + " " + form.uri + " " + this.$i18n.t("component.common.success.update-success-message");
                     this.$opensilex.showSuccessToast(message);

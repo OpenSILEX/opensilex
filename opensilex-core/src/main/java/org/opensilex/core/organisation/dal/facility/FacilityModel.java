@@ -76,8 +76,8 @@ public class FacilityModel extends SPARQLTreeModel<FacilityModel> {
     private List<VariablesGroupModel> variableGroups;
     public static final String VARIABLE_GROUPS_FIELD = "variableGroups";
 
-    public List<OrganizationModel> getOrganizations() {
-        return organizations;
+    public List<OrganizationModel> getInfrastructures() {
+        return infrastructures;
     }
 
     public void setOrganizations(List<OrganizationModel> organizations) {

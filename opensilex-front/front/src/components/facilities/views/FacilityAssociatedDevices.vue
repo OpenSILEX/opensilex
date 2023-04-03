@@ -41,7 +41,7 @@
 import { Component, Ref, Watch } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
-import { OrganizationGetDTO } from "opensilex-core/index";
+import { FacilityGetDTO } from "opensilex-core/index";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
 import {DevicesService} from "opensilex-core/api/devices.service";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
@@ -49,6 +49,7 @@ import {PositionsService} from "opensilex-core/api/positions.service";
 import {VariablesService} from "opensilex-core/api/variables.service";
 import {DataService} from "opensilex-core/api/data.service";
 import {NamedResourceDTOVariableModel} from "opensilex-core/model/namedResourceDTOVariableModel";
+import {VariableGetDTO} from "opensilex-core/model/variableGetDTO";
 
 
 @Component
@@ -58,7 +59,7 @@ export default class FacilityAssociatedDevices extends Vue {
   NB_COL = 4;
 
   uri: string = null;
-  selected: OrganizationGetDTO = null;
+  selected: FacilityGetDTO = null;
   usedVariables: NamedResourceDTOVariableModel[] = [];
   layout = [];
 
@@ -103,8 +104,8 @@ export default class FacilityAssociatedDevices extends Vue {
   refresh() {
     this.organizationService
         .getFacility(this.uri)
-        .then((http: HttpResponse<OpenSilexResponse<OrganizationGetDTO>>) => {
-            let detailDTO: OrganizationGetDTO = http.response.result;
+        .then((http: HttpResponse<OpenSilexResponse<FacilityGetDTO>>) => {
+            let detailDTO: FacilityGetDTO = http.response.result;
             this.selected = detailDTO;
             this.loadVariables();
         });
@@ -114,6 +115,15 @@ export default class FacilityAssociatedDevices extends Vue {
    * Get all variables with this facility as target.
    */
   loadVariables() {
+    if (this.selected.variableGroups.length != 0) {
+      this.loadVariablesFromGroup();
+    }
+    else {
+      this.loadVariablesFromData();
+    }
+  }
+
+  loadVariablesFromData() {
     this.dataService
         .getUsedVariables(
             null,
@@ -121,6 +131,47 @@ export default class FacilityAssociatedDevices extends Vue {
             null,
             null)
         .then((http) => {
+          let resultList = http.response.result;
+          this.usedVariables = [];
+          for (let i in resultList) {
+            let variable = resultList[i];
+            this.usedVariables.push({
+              uri: variable.uri,
+              name: variable.name
+            });
+          }
+
+          if (this.usedVariables.length === 0) {
+            this.isNoVariableFound = true;
+            return;
+          }
+
+          this.loadTiles();
+        });
+  }
+
+  loadVariablesFromGroup() {
+    this.variablesService
+        .searchVariables(
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            this.selected.variableGroups[0].uri,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            0,
+            0)
+        .then((http: HttpResponse<OpenSilexResponse<Array<VariableGetDTO>>>) => {
+          console.debug(http.response.result);
           let resultList = http.response.result;
           this.usedVariables = [];
           for (let i in resultList) {

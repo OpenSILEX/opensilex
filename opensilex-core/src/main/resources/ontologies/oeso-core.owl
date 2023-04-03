@@ -2555,10 +2555,7 @@ Used in OpenSILEX for group things</rdfs:comment>
 
     <!-- http://www.opensilex.org/vocabulary/oeso#startDate -->
 
-    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#startDate">
-        <rdfs:label xml:lang="fr">date de début</rdfs:label>
-        <rdfs:label xml:lang="en">start date</rdfs:label>
-    </owl:NamedIndividual>
+    <owl:NamedIndividual rdf:about="http://www.opensilex.org/vocabulary/oeso#startDate"/>
 
 
 
@@ -2583,12 +2580,6 @@ Used in OpenSILEX for group things</rdfs:comment>
     <!-- http://xmlns.com/foaf/0.1/Organization -->
 
     <owl:NamedIndividual rdf:about="http://xmlns.com/foaf/0.1/Organization"/>
-    <rdf:Description>
-        <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-    </rdf:Description>
-    <rdf:Description>
-        <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-    </rdf:Description>
 
 
 

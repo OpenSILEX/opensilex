@@ -43,7 +43,7 @@ public class DataSimpleProvenanceGetDTO {
 
         List<ProvEntityModel> provEntityList = model.getProvWasAssociatedWith();
 
-        if (provEntityList != null && provEntityList.size() == 1) {
+        if (provEntityList.size() == 1) {
             dto.setUri(provEntityList.get(0).getUri());
         }
         else {

@@ -210,12 +210,15 @@ public class MetricDAO {
         Document latestSearchFilter = searchFilter(SystemSummaryModel.SUMMARY_TYPE, null, null, endInstant);
         SystemSummaryModel latestSmodel = setSystemSummaryModelForSearchResult(latestSearchFilter, orderDescendByList, currentLanguage, null, endInstant);
 
-        //oldest only
-        List<OrderBy> orderAscendByList = Arrays.asList(new OrderBy(SystemSummaryModel.CREATION_DATE_FIELD, Order.ASCENDING));
-        Document oldestSearchFilter = searchFilter(SystemSummaryModel.SUMMARY_TYPE, null, startInstant, null);
-        SystemSummaryModel oldestSmodel = setSystemSummaryModelForSearchResult(oldestSearchFilter, orderAscendByList, currentLanguage, startInstant, null);
+        if (latestSmodel != null) {
+            //oldest only
+            List<OrderBy> orderAscendByList = Arrays.asList(new OrderBy(SystemSummaryModel.CREATION_DATE_FIELD, Order.ASCENDING));
+            Document oldestSearchFilter = searchFilter(SystemSummaryModel.SUMMARY_TYPE, null, startInstant, null);
+            SystemSummaryModel oldestSmodel = setSystemSummaryModelForSearchResult(oldestSearchFilter, orderAscendByList, currentLanguage, startInstant, null);
 
-        searchFirstLast = (oldestSmodel != null) ? Arrays.asList(latestSmodel, oldestSmodel) : Arrays.asList(latestSmodel);
+            searchFirstLast = (oldestSmodel != null) ? Arrays.asList(latestSmodel, oldestSmodel) : Arrays.asList(latestSmodel);
+        }
+
         return searchFirstLast;
     }
 

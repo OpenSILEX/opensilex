@@ -38,17 +38,16 @@ import org.opensilex.server.rest.validation.ValidURI;
     "admin"})
 public class UserCreationDTO extends UserGetDTO {
 
-    /**
-     * User password
-     */
     protected String password;
 
+    @Override
     @ValidURI
-    @ApiModelProperty(value = "User URI", example = "http://opensilex.dev/users#jean.michel.inrae")
+    @ApiModelProperty(value = "Account URI", example = "http://opensilex.dev/users#jean.michel.inrae")
     public URI getUri() {
         return super.getUri();
     }
 
+    @Override
     @Email
     @Required
     @ApiModelProperty(value = "User email", example = "jean.michel@example.com", required = true)
@@ -56,20 +55,22 @@ public class UserCreationDTO extends UserGetDTO {
         return super.getEmail();
     }
 
+    @Override
     @Required
-    @ApiModelProperty(value = "User first name", example = "Jean", required = true)
+    @ApiModelProperty(value = "Person first name", example = "Jean", required = true)
     public String getFirstName() {
         return super.getFirstName();
     }
 
+    @Override
     @Required
-    @ApiModelProperty(value = "User last name", example = "Michel", required = true)
+    @ApiModelProperty(value = "Person last name", example = "Michel", required = true)
     public String getLastName() {
         return super.getLastName();
     }
 
     @Required
-    @ApiModelProperty(value = "User password", example = "azerty", required = true)
+    @ApiModelProperty(value = "Account password", example = "azerty", required = true)
     public String getPassword() {
         return password;
     }
@@ -78,14 +79,16 @@ public class UserCreationDTO extends UserGetDTO {
         this.password = password;
     }
 
+    @Override
     @NotNull
-    @ApiModelProperty(value = "User admin flag", example = "false", required = true)
+    @ApiModelProperty(value = "Account admin flag", example = "false", required = true)
     public boolean isAdmin() {
         return super.isAdmin();
     }
-    
+
+    @Override
     @NotNull
-    @ApiModelProperty(value = "User language", example = OpenSilex.DEFAULT_LANGUAGE, required = true)
+    @ApiModelProperty(value = "Account language", example = OpenSilex.DEFAULT_LANGUAGE, required = true)
     public String getLanguage() {
         return super.getLanguage();
     }

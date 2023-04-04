@@ -81,11 +81,10 @@ public class UserCommands extends AbstractOpenSilexCommand implements OpenSilexC
 
             sparql.startTransaction();
             try {
-                String passwordHash = authentication.getPasswordHash(password);
-                AccountModel accountModel = accountDAO.create(null, new InternetAddress(email), isAdmin, passwordHash, lang);
+                PersonModel holderOfTheAccount = personDAO.create(null, firstName, lastName, email, null);
 
-                PersonModel holderOfTheAccount = personDAO.create(null, firstName, lastName, email);
-                personDAO.setAccount(holderOfTheAccount.getUri(), accountModel.getUri());
+                String passwordHash = authentication.getPasswordHash(password);
+                AccountModel accountModel = accountDAO.create(null, new InternetAddress(email), isAdmin, passwordHash, lang, holderOfTheAccount);
 
                 LOGGER.info("User created: " + accountModel.getUri());
 

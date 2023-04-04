@@ -6,6 +6,7 @@
 //******************************************************************************
 package org.opensilex.security.user.api;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -30,25 +31,21 @@ import org.opensilex.server.rest.validation.Required;
  * @author Yvan Roux
  */
 @ApiModel
-@JsonPropertyOrder({"uri", "personHolderUri", "email", "language", "password",
-        "admin"})
+@JsonPropertyOrder({"uri", "account_holder", "email", "language", "password", "admin"})
 public class UserCreationWithExistantPersonDTO extends UserDTO{
 
-    /**
-     * User password
-     */
     protected String password;
-
     /**
-     * holder of the account (user = account)
+     * URI of the Person who hold the account
      */
-    protected URI personHolderUri;
+    @JsonProperty("account_holder")
+    protected URI holderOfTheAccount;
 
     @ApiModelProperty(required = true, value = "URI of the Person who will hold this account", example = "http://opensilex.dev/person#Jean.Michel.mistea")
-    public URI getPersonHolderUri(){
-        return personHolderUri;
+    public URI getHolderOfTheAccount(){
+        return holderOfTheAccount;
     }
-    public void setPersonHolderUri(URI uri){ this.personHolderUri = uri; }
+    public void setHolderOfTheAccount(URI uri){ this.holderOfTheAccount = uri; }
 
     @Required
     @ApiModelProperty(value = "User password", example = "azerty", required = true)

@@ -254,6 +254,7 @@ export default class OntologyCsvImporter extends Vue {
             let errorsByRowIndex:  Map<number, CsvError> = new Map();
 
             OntologyCsvImporter.loadErrorType("datatypeErrors", errors, errorsByRowIndex);
+            OntologyCsvImporter.loadErrorType("invalidDateErrors", errors, errorsByRowIndex);
             OntologyCsvImporter.loadErrorType("uriNotFoundErrors", errors, errorsByRowIndex);
             OntologyCsvImporter.loadErrorType("invalidURIErrors", errors, errorsByRowIndex);
             OntologyCsvImporter.loadErrorType("missingRequiredValueErrors", errors, errorsByRowIndex);
@@ -323,7 +324,6 @@ export default class OntologyCsvImporter extends Vue {
     validationErrors: Array<CsvError> = null;
 
     getValidationErrorDetail(validationError, errorType, validation: CSVValidationDTO) {
-        console.log("getValidationErrorDetail",validationError);
         switch (errorType) {
             case "missingHeaders":
                 return this.$t(
@@ -350,6 +350,8 @@ export default class OntologyCsvImporter extends Vue {
                     "OntologyCsvImporter.validationErrorDatatypeMessage",
                     validationError
                 );
+            case "invalidDateErrors":
+                return this.$t( validationError.message);
             case "invalidRowSizeErrors":
                 return this.$t(
                     "OntologyCsvImporter.validationErrorInvalidRowSizeErrorsMessage",
@@ -491,6 +493,7 @@ en:
         line: Line
         errorType: "Error type"
         detail: Detail
+        invalidDateErrors: Invalid date
 fr:
     OntologyCsvImporter:
         import: Import CSV
@@ -531,4 +534,5 @@ fr:
         line: Ligne
         errorType: "Type d'erreur"
         detail: Détail
+        invalidDateErrors: Date invalide
 </i18n>

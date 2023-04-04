@@ -64,6 +64,7 @@ import { Component, Prop, Ref } from "vue-property-decorator";
 export default class DataExportModal extends Vue {
   $opensilex: any;
   $t: any;
+  $store: any;
 
   readonly longFormat = "long";
   readonly wideFormat = "wide";
@@ -98,19 +99,19 @@ export default class DataExportModal extends Vue {
       String(today.getMonth() + 1).padStart(2, "0") +
       String(today.getDate()).padStart(2, "0");
 
-    let params = {
+    let exportDto = {
       start_date: this.filter.start_date,
       end_date: this.filter.end_date,
       targets: this.filter.scientificObjects,
       experiments: this.filter.experiments,
       variables: this.filter.variables,
-      provenances: [this.filter.provenance],
+      provenances: this.filter.provenance ? [this.filter.provenance] : null,
       mode: this.format,
       with_raw_data: this.withRawData
     }
 
     this.hide();
-    this.$opensilex.downloadFilefromService(path, filename, "csv", params)
+    this.$opensilex.downloadFilefromPostService(path, filename, "csv", exportDto, this.$store.state.lang)
     
   }
 }

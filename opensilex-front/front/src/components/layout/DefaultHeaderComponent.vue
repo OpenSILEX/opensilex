@@ -134,6 +134,11 @@
               </b-dropdown-item>
             </b-dropdown>
 
+            <!-- dashboard homepage button -->
+            <router-link :to="{path: '/'}" :title="$t('component.menu.backToDashboard')">
+              <i class="icon ik ik-home"></i>
+            </router-link>
+
             <!-- user button-->
             <b-dropdown
               v-if="user.isLoggedIn()"
@@ -483,6 +488,12 @@ export default class DefaultHeaderComponent extends Vue {
     background-color: #F0F1F5;
     border-color: #00A38D;
     color: #00A38D;
+}
+
+.ik-home{
+  font-size: 1.3em;
+  vertical-align: middle;
+  margin: -2px 0 0 12px
 }
 
 @media only screen and (min-width: 1380px) {

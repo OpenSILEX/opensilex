@@ -103,3 +103,12 @@
 </script>
 <style scoped lang="scss">
 </style>
+
+<i18n>
+en:
+    EventCsvForm:
+        invalidDate: Start date cannot be later than End date
+fr:
+    EventCsvForm:
+        invalidDate: La date de début ne peut être ultérieure à celle de fin
+</i18n>

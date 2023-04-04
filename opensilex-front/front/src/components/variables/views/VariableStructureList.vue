@@ -149,8 +149,10 @@ export default class VariableStructureList extends Vue {
                         if(first){
                             first = false;
                         }
-                    }else{
-                        if(! uriFoundInSearch && resourceTree.uri == uri){
+                    }
+                    else
+                    {
+                        if(!uriFoundInSearch && this.$opensilex.checkURIs(resourceTree.uri, uri)){
                             uriFoundInSearch = true;
                         }
                     }
@@ -158,7 +160,7 @@ export default class VariableStructureList extends Vue {
 
                 if (uri != null) {
                     // display the node detail in head on list, only if the node is not already included into the search results
-                    this.displayNodeDetail(uri, true, ! uriFoundInSearch);
+                    this.displayNodeDetail(uri, true, !uriFoundInSearch);
                 }
 
                 if (http.response.result.length == 0) {

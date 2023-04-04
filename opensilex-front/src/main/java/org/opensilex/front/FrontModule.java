@@ -9,6 +9,8 @@ import org.apache.catalina.Context;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.OpenSilexModuleNotFoundException;
 import org.opensilex.config.ConfigManager;
+import org.opensilex.core.CoreConfig;
+import org.opensilex.core.CoreModule;
 import org.opensilex.front.api.*;
 import org.opensilex.front.config.*;
 import org.opensilex.security.*;
@@ -110,8 +112,9 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
             config.setApplicationName(frontConfig.applicationName());
             config.setConnectAsGuest(frontConfig.connectAsGuest());
 
+            DashboardConfigDTO dashboard = new DashboardConfigDTO();
             try {
-                DashboardConfigDTO dashboard = new DashboardConfigDTO();
+                dashboard.setShowMetrics(getOpenSilex().getModuleConfig(CoreModule.class, CoreConfig.class).metrics().enableMetrics());
                 GraphConfigDTO graph1 = new GraphConfigDTO();
                 graph1.setVariable(new URI(frontConfig.dashboard().graph1().variable()));
                 dashboard.setGraph1(graph1);
@@ -121,10 +124,9 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
                 GraphConfigDTO graph3 = new GraphConfigDTO();
                 graph3.setVariable(new URI(frontConfig.dashboard().graph3().variable()));
                 dashboard.setGraph3(graph3);
-                config.setDashboard(dashboard);
+            } catch (URISyntaxException | OpenSilexModuleNotFoundException ignored) {
             }
-            catch (URISyntaxException e) {
-            }
+            config.setDashboard(dashboard);
 
             try {
                 config.setVersionLabel(VersionLabel.valueOf(frontConfig.versionLabel().toUpperCase()));

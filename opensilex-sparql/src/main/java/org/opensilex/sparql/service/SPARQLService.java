@@ -1846,7 +1846,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      * - Space complexity : O(n/8) with n uris, since one byte can hold true/false values for 8 incoming URIs. {{@link BitSet}}
      * </pre>
      */
-    public BitSet checkListQuery(
+    public BitSet checkList(
             List<URI> uris,
             String uriField,
             Node graph,
@@ -1869,7 +1869,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
             // Send the target stream by setting a stream size limit for the query -> the steam will be read until the specified limit is reached
             // The steam will be still readable for the next iteration
-            SelectBuilder select = checkListQuery(
+            SelectBuilder select = checkList(
                     subList.stream().map(URI::toString),
                     subList.size(),
                     uriField,
@@ -1889,7 +1889,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
     }
 
-    protected SelectBuilder checkListQuery(
+    protected SelectBuilder checkList(
             Stream<String> uris,
             int streamSize,
             String uriField,

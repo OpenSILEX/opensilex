@@ -34,7 +34,6 @@ import org.opensilex.utils.OrderBy;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -49,8 +48,8 @@ public class AnnotationDAO {
     protected final URI annotationGraphURI;
     protected final Triple targetTriple;
 
-    protected final static Var motivationNameVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getObjectNameVarName(AnnotationModel.MOTIVATION_FIELD));
-    protected final static Var motivationDefaultNameVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getObjectDefaultNameVarName(AnnotationModel.MOTIVATION_FIELD));
+    protected static final Var motivationNameVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getObjectNameVarName(AnnotationModel.MOTIVATION_FIELD));
+    protected static final Var motivationDefaultNameVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getObjectDefaultNameVarName(AnnotationModel.MOTIVATION_FIELD));
 
     public AnnotationDAO(SPARQLService sparql) throws SPARQLException, URISyntaxException {
         this.sparql = sparql;
@@ -215,6 +214,14 @@ public class AnnotationDAO {
 
     }
 
+    /**
+     *
+     * @param targets List of annotation target URIs
+     * @return a BitSet which indicate for each target, an associated annotation exists or not
+     *
+     * @see AnnotationModel#getTargets()
+     * @see SPARQLService#checkList(List, String, Node, String, BiFunction)
+     */
     public BitSet hasAnnotations(List<URI> targets) throws SPARQLException {
 
         // Set a custom where to add inside each SPARQL query
@@ -222,7 +229,7 @@ public class AnnotationDAO {
         BiFunction<Var, Var, WhereBuilder> annotationHasTargetWhere = (uriVar, targetVar) ->
                 new WhereBuilder().addWhere(uriVar, OA.hasTarget, targetVar);
 
-        return sparql.checkListQuery(
+        return sparql.checkList(
                 targets,
                 AnnotationModel.TARGET_FIELD,
                 annotationGraph,

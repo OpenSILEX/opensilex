@@ -58,8 +58,8 @@ function getUint8ArrayBit(byteArray: Uint8Array, index: number): boolean {
 
 
 const BinaryUtils = {
-    getUint8ArrayBit,
-    base64StringToUint8Array
+    getArrayBit: getUint8ArrayBit,
+    base64ToArray: base64StringToUint8Array
 }
 
 export default BinaryUtils

@@ -204,10 +204,10 @@ export default class AnnotationList extends Vue {
                   let result: string = http.response.result;
                   console.log("hasAnnotations",result);
 
-                  let binaryContent: Uint8Array = BinaryUtils.base64StringToUint8Array(result);
+                  let binaryContent: Uint8Array = BinaryUtils.base64ToArray(result);
 
                   for (let i = 0; i < targets.length; i++) {
-                      let bitValue: boolean = BinaryUtils.getUint8ArrayBit(binaryContent, i);
+                      let bitValue: boolean = BinaryUtils.getArrayBit(binaryContent, i);
                   }
                   return [];
               }

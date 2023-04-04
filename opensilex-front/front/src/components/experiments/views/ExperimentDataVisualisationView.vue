@@ -567,19 +567,21 @@ export default class ExperimentDataVisualisationView extends Vue {
             return provUser && provUser.length > 0;
         }
 
-        // Compute the list of provenance used uri
+        // Compute the set of provenance agents used inside data
         // Use reduce instead of filter + map
-        let targetsToCheck: Array<string> = cleanData.reduce((accumulator, point) => {
-            let provenance: ProvEntityModel[] = point.data.provenance.prov_used;
-            if (hasProvUsed(provenance)) {
-                accumulator.push(provenance[0].uri);
-            }
-            return accumulator;
-        }, []);
+        let nbDataWithAgent = 0;
+        let provAgentExists: Map<string, boolean> = cleanData.reduce((accumulator, point) => {
+                let dataProvAgents: ProvEntityModel[] = point.data.provenance.prov_used;
+                if (hasProvUsed(dataProvAgents)) {
+                    accumulator.set(dataProvAgents[0].uri, false);
+                    nbDataWithAgent++;
+                }
+                return accumulator;
+            }, new Map()
+        );
 
-
-        let imageData: Array<ImagePointOptionsObject> = new Array(targetsToCheck.length);
-        if(targetsToCheck.length == 0){
+        let imageData: Array<ImagePointOptionsObject> = new Array(nbDataWithAgent);
+        if(nbDataWithAgent == 0){
             return {
                 cleanData,
                 imageData
@@ -588,30 +590,40 @@ export default class ExperimentDataVisualisationView extends Vue {
 
         // Call the hasAnnotations service, this service return a Base64 encoded mask for each uris
         // It mean that each bit indicate if the target has annotation (1), or not(0)
-        this.annotationService.hasAnnotations(targetsToCheck)
-            .then((http: HttpResponse<OpenSilexResponse<string>>) => {
+        let agents: Array<string> = Array.from(provAgentExists.keys());
 
-                let base64Str: string = http.response.result;
+        this.annotationService.hasAnnotations(agents)
+            .then((http: HttpResponse<OpenSilexResponse<string>>) => {
 
                 // Encode the incoming base64 (encoded as string) into an Uint8Array
                 // Then each byte of the array, will be read bit by bit
-                let byteArrayEncodedMask: Uint8Array = BinaryUtils.base64StringToUint8Array(base64Str);
-                let i: number = 0;
+                let annotationsExits: Uint8Array = BinaryUtils.base64ToArray(http.response.result);
 
-                // Then loop over the data to transform, and check if annotations were found or not
+                // Update agent <-> exist map by iterating the map
+                // Note: this work since Map.forEach() and Map.keys() guarantee the iteration according the insertion order
+                let i: number = 0;
+                provAgentExists.forEach((oldValue,provAgent,currentMap) => {
+
+                    // Increment i in order to check the next bit at the next loop round
+                    let hasAnnotation: boolean = BinaryUtils.getArrayBit(annotationsExits, i++);
+
+                    currentMap.set(provAgent,hasAnnotation)
+                });
+
+                // Then loop over the data to transform, and check if annotations for the data provenance agents were found or not
                 cleanData.forEach(point => {
-                    let provenance: ProvEntityModel[] = point.data.provenance.prov_used;
-                    if (hasProvUsed(provenance)) {
+                    let dataProvAgents: ProvEntityModel[] = point.data.provenance.prov_used;
+                    if (hasProvUsed(dataProvAgents)) {
 
                         // check if an annotation exists or not
                         // Increment i in order to check the next bit at the next loop round
-                        let hasAnnotation: boolean = BinaryUtils.getUint8ArrayBit(byteArrayEncodedMask, i++);
+                        let hasAnnotation: boolean = provAgentExists.get(dataProvAgents[0].uri)
 
                         imageData.push({
                             ...point,
                             title: "I",
-                            prov_used: provenance,
-                            imageURI: provenance[0].uri,
+                            prov_used: dataProvAgents,
+                            imageURI: dataProvAgents[0].uri,
                             color: hasAnnotation ? "#FF0000" : undefined
                         });
                     }

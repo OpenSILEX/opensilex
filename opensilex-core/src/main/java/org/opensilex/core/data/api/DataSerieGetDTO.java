@@ -24,23 +24,23 @@ import java.util.List;
 public class DataSerieGetDTO {
 
     @JsonProperty("provenance")
-    private DataProvenanceModel provenance;
+    private DataSimpleProvenanceGetDTO provenance;
 
     @Valid
     @JsonProperty("data")
     private List<DataSimpleGetDTO> data;
 
 
-    public DataSerieGetDTO(DataProvenanceModel provenance, List<DataSimpleGetDTO> data) {
+    public DataSerieGetDTO(DataSimpleProvenanceGetDTO provenance, List<DataSimpleGetDTO> data) {
         this.provenance = provenance;
         this.data = data;
     }
 
-    public DataProvenanceModel getProvenance() {
+    public DataSimpleProvenanceGetDTO getProvenance() {
         return provenance;
     }
 
-    public void setProvenance(DataProvenanceModel provenance) {
+    public void setProvenance(DataSimpleProvenanceGetDTO provenance) {
         this.provenance = provenance;
     }
 

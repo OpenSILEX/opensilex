@@ -790,7 +790,7 @@ public class DataAPI {
 
     @GET
     @Path("/facility")
-    @ApiOperation("Test type response")
+    @ApiOperation("Get data series by facility")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -860,7 +860,9 @@ public class DataAPI {
             List<DataSimpleGetDTO> medianSerie = computeMedianPerHour(data);
             medians.addAll(medianSerie);
 
-            DataSerieGetDTO dataSerie = new DataSerieGetDTO(entryProv.getKey(), medianSerie);
+            DataSimpleProvenanceGetDTO provenance = DataSimpleProvenanceGetDTO.fromModel(entryProv.getKey());
+
+            DataSerieGetDTO dataSerie = new DataSerieGetDTO(provenance, medianSerie);
             dataSeriesDTOs.add(dataSerie);
         }
 
@@ -872,25 +874,15 @@ public class DataAPI {
 
             List<DataSerieGetDTO> dataCalculatedSeriesDTOs = new ArrayList<>();
 
+            DataSimpleProvenanceGetDTO provMedian = new DataSimpleProvenanceGetDTO();
+            provMedian.setUri(URI.create("median_per_hour"));
+
             List<DataSimpleGetDTO> medianOfMedians = computeMedianPerHour(medians);
-
-            //TODO: trash
-            DataProvenanceModel provMedian = new DataProvenanceModel();
-            ProvEntityModel provEntity = new ProvEntityModel();
-            provEntity.setUri(URI.create("median_per_hour"));
-            List<ProvEntityModel> provEntitys = new ArrayList<>();
-            provEntitys.add(provEntity);
-            provMedian.setProvWasAssociatedWith(provEntitys);
-
             dataCalculatedSeriesDTOs.add(new DataSerieGetDTO(provMedian, medianOfMedians));
 
             //TODO: trash
-            DataProvenanceModel provAverage = new DataProvenanceModel();
-            ProvEntityModel provEntity2 = new ProvEntityModel();
-            provEntity2.setUri(URI.create("average_per_hour"));
-            List<ProvEntityModel> provEntitys2 = new ArrayList<>();
-            provEntitys2.add(provEntity2);
-            provAverage.setProvWasAssociatedWith(provEntitys2);
+            DataSimpleProvenanceGetDTO provAverage = new DataSimpleProvenanceGetDTO();
+            provAverage.setUri(URI.create("average_per_hour"));
 
             DataSerieGetDTO averageSerie = computeAveragePerHour(dataModels);
             averageSerie.setProvenance(provAverage);

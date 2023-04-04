@@ -29,17 +29,6 @@
           </opensilex-DateView>
         </div>
 
-        <!--
-        <opensilex-Button
-            id="btn-show"
-            label="Show graphic"
-            icon=""
-            :small="false"
-            @click="prepareGraphic()"
-        >
-        </opensilex-Button>
-        -->
-
         <b-modal
             ref="graphic-modal"
             size="xl"
@@ -100,8 +89,8 @@ export default class VariableVisualizationTile extends Vue {
   variable: VariableDetailsDTO;
 
   dataSeries: Array<DataSerieGetDTO>;
-
   calculatedDataSeries: Array<DataSerieGetDTO>;
+
 
   isNoDataFound: boolean = false;
   isDataLoaded: boolean = false;
@@ -202,6 +191,7 @@ export default class VariableVisualizationTile extends Vue {
     return data[data.length - 1];
   }
 
+  /*
   get deviceUriList() {
     if (!this.dataSeries) {
       return [];
@@ -219,6 +209,7 @@ export default class VariableVisualizationTile extends Vue {
       }
     });
   }
+  */
 
   // simulate window resizing to resize the graphic when the filter panel display changes
   @Watch("searchFiltersToggle")
@@ -409,14 +400,7 @@ export default class VariableVisualizationTile extends Vue {
         );
       }
 
-      console.debug(cleanData);
-
-      // TODO rework prov dto
-      let provenance = dataSerie.provenance.prov_was_associated_with;
       let prov = dataSerie.provenance;
-      if (provenance) {
-        prov = dataSerie.provenance.prov_was_associated_with[0];
-      }
 
       return {
         name: prov.uri,
@@ -429,6 +413,7 @@ export default class VariableVisualizationTile extends Vue {
   searchFiltersPannel() {
     return this.$t("searchfilter.label")
   }
+
 }
 </script>
 

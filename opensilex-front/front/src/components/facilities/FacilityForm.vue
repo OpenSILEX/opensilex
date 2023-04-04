@@ -45,6 +45,13 @@
     >
     </opensilex-SiteSelector>
 
+    <opensilex-GroupVariablesSelector
+        label="VariableView.groupVariable"
+        :variableGroup.sync="form.variableGroups"
+        :multiple="true"
+    >
+    </opensilex-GroupVariablesSelector>
+
     <!-- Warning iff more than one site is associated to the facility. While it is currently accepted in the model,
      we don't currently have any use cases requiring a single facility to belong to multiple sites. This should change
      in the future. -->
@@ -137,6 +144,7 @@ export default class FacilityForm extends Vue {
       address: undefined,
       organizations: [],
       sites: [],
+      variableGroups: [],
       relations: []
     };
   }

@@ -18,6 +18,7 @@ import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.response.*;
+import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
@@ -32,6 +33,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
+import java.util.Base64;
 import java.util.BitSet;
 import java.util.List;
 
@@ -189,21 +191,27 @@ public class AnnotationAPI {
 
     @POST
     @Path("hasAnnotations")
-    @ApiOperation("Return a boolean array indicating if the target has annotation(true) or not(false)\"")
+    @ApiOperation(
+            value = "Return a Base64 encoded String, representing a binary mask for the incoming URIs list, to indicate if an annotation exist or not",
+            notes = "The Base64 String is encoded with ISO_8859_1 charset. The internal byte array use a LITTLE_ENDIAN representation of all bit"
+    )
     @ApiProtected
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Annotations founds", response = AnnotationExistsDTO.class),
+            @ApiResponse(code = 200, message = "Annotations founds", response = String.class),
     })
-
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response hasAnnotations(
-            @ApiParam("Target URIs") @NotNull @NotEmpty @Valid List<URI> targets
+            @ApiParam("Target URIs") @NotNull @NotEmpty @ValidURI List<URI> targets
     ) throws Exception {
-        BitSet annotationExists = new AnnotationDAO(sparql).hasAnnotations(targets);
-        return new SingleObjectResponse<>(
-                new AnnotationExistsDTO().setTargetExists(annotationExists.toByteArray())
-        ).getResponse();
+
+        // Compute binary mask for incoming targets
+        // if existenceMask.get(i) == true, then an annotation for targets[i] exists
+        BitSet existenceMask = new AnnotationDAO(sparql).hasAnnotations(targets);
+
+        // Convert BitSet to a Base64 String representation, since Swagger and JSON format don't allow to pass a byte array or a BitSet
+        String base64 = Base64.getEncoder().encodeToString(existenceMask.toByteArray());
+        return new SingleObjectResponse<>(base64).getResponse();
     }
 
     @GET

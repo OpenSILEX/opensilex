@@ -106,6 +106,7 @@ import {AnnotationsService} from "opensilex-core/api/annotations.service";
 import {DataFileGetDTO} from "opensilex-core/model/dataFileGetDTO";
 import {Image} from "../../visualization/image";
 import {AnnotationGetDTO} from "opensilex-core/model/annotationGetDTO";
+import BinaryUtils from "../../../models/BinaryUtils";
 
 interface ImagePointOptionsObject extends OpenSilexPointOptionsObject {
     prov_used: Array<ProvEntityModel>,
@@ -562,20 +563,61 @@ export default class ExperimentDataVisualisationView extends Vue {
         imageData: Array<ImagePointOptionsObject>
     }> {
         const cleanData: OpenSilexPointOptionsObject[] = HighchartsDataTransformer.transformDataForHighcharts(data);
-        let imageData: Array<ImagePointOptionsObject> = [];
-
-        for (let point of cleanData) {
-            if (Array.isArray(point.data.provenance.prov_used) && point.data.provenance.prov_used.length > 0) {
-                const annotations = await this.getAnnotations(point.data.provenance.prov_used[0].uri);
-                imageData.push({
-                    ...point,
-                    title: "I",
-                    prov_used: point.data.provenance.prov_used,
-                    imageURI: point.data.provenance.prov_used[0].uri,
-                    color: annotations.length > 0 ? "#FF0000" : undefined
-                });
-            }
+        let hasProvUsed = (provUser: ProvEntityModel[]) => {
+            return provUser && provUser.length > 0;
         }
+
+        // Compute the list of provenance used uri
+        // Use reduce instead of filter + map
+        let targetsToCheck: Array<string> = cleanData.reduce((accumulator, point) => {
+            let provenance: ProvEntityModel[] = point.data.provenance.prov_used;
+            if (hasProvUsed(provenance)) {
+                accumulator.push(provenance[0].uri);
+            }
+            return accumulator;
+        }, []);
+
+
+        let imageData: Array<ImagePointOptionsObject> = new Array(targetsToCheck.length);
+        if(targetsToCheck.length == 0){
+            return {
+                cleanData,
+                imageData
+            };
+        }
+
+        // Call the hasAnnotations service, this service return a Base64 encoded mask for each uris
+        // It mean that each bit indicate if the target has annotation (1), or not(0)
+        this.annotationService.hasAnnotations(targetsToCheck)
+            .then((http: HttpResponse<OpenSilexResponse<string>>) => {
+
+                let base64Str: string = http.response.result;
+
+                // Encode the incoming base64 (encoded as string) into an Uint8Array
+                // Then each byte of the array, will be read bit by bit
+                let byteArrayEncodedMask: Uint8Array = BinaryUtils.base64StringToUint8Array(base64Str);
+                let i: number = 0;
+
+                // Then loop over the data to transform, and check if annotations were found or not
+                cleanData.forEach(point => {
+                    let provenance: ProvEntityModel[] = point.data.provenance.prov_used;
+                    if (hasProvUsed(provenance)) {
+
+                        // check if an annotation exists or not
+                        // Increment i in order to check the next bit at the next loop round
+                        let hasAnnotation: boolean = BinaryUtils.getUint8ArrayBit(byteArrayEncodedMask, i++);
+
+                        imageData.push({
+                            ...point,
+                            title: "I",
+                            prov_used: provenance,
+                            imageURI: provenance[0].uri,
+                            color: hasAnnotation ? "#FF0000" : undefined
+                        });
+                    }
+                })
+
+            }).catch(this.$opensilex.errorHandler)
 
         return {
             cleanData,

@@ -96,8 +96,8 @@ import AnnotationModalForm from "../form/AnnotationModalForm.vue";
 import {SecurityService} from "opensilex-security/api/security.service";
 import {UserGetDTO} from 'opensilex-security/index';
 import {AnnotationGetDTO} from 'opensilex-core/index';
-import {AnnotationExistsDTO} from "opensilex-core/model/annotationExistsDTO";
-import BinaryUtils from 'src/models/BinaryUtils';
+import BinaryUtils from "../../../models/BinaryUtils";
+
 
 @Component
 export default class AnnotationList extends Vue {
@@ -196,19 +196,18 @@ export default class AnnotationList extends Vue {
 
   search(options) {
 
-      let targets = [this.target,this.target,this.target,this.target,this.target];
+      let targets = [this.target, this.target, "test:unknown_uri", this.target, this.target];
       this.$service
-          .hasAnnotations([this.target,this.target,this.target,this.target,this.target])
+          .hasAnnotations(targets)
           .then(
-              (http: HttpResponse<OpenSilexResponse<AnnotationExistsDTO>>) => {
-                  let result: string = http.response.result.targetExists;
+              (http: HttpResponse<OpenSilexResponse<string>>) => {
+                  let result: string = http.response.result;
                   console.log("hasAnnotations",result);
 
-                  let binaryContent = BinaryUtils.stringToUint8Array(result);
+                  let binaryContent: Uint8Array = BinaryUtils.base64StringToUint8Array(result);
 
                   for (let i = 0; i < targets.length; i++) {
                       let bitValue: boolean = BinaryUtils.getUint8ArrayBit(binaryContent, i);
-                      console.log("hasAnnotation()",bitValue);
                   }
                   return [];
               }

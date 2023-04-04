@@ -67,6 +67,7 @@ import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -1826,7 +1827,69 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         return select;
     }
 
-    public SelectBuilder checkListQuery(
+    public static final int SPARQL_CHECK_URI_PAGE_SIZE = 4096;
+
+    /**
+     * @param uris the List of URIs to check
+     * @param uriField the field for which URIs VALUES are mapped
+     * @param graph the SPARQL graph
+     * @param type the RDF type
+     * @param customWhere an optional custom condition (evaluated inside graph if both are provided)
+     * @return a BitSet which indicate for each element or uris, if the uri exist according the given type, graph, and customWHere
+     * @throws SPARQLException if an error occurs during the evaluation of one SPARQL query
+     *
+     * @apiNote
+     * <pre>
+     * - Several SPARQL queries can be evaluated inside this method. In order to avoid to send a too big query,
+     * the query is split inside several queries (with a maximum length of {@link #SPARQL_CHECK_URI_PAGE_SIZE} URIs)
+     * - Time complexity : O(n) with n uris
+     * - Space complexity : O(n/8) with n uris, since one byte can hold true/false values for 8 incoming URIs. {{@link BitSet}}
+     * </pre>
+     */
+    public BitSet checkListQuery(
+            List<URI> uris,
+            String uriField,
+            Node graph,
+            String type,
+            BiFunction<Var, Var,WhereBuilder> customWhere) throws SPARQLException {
+
+        BitSet bitSet = new BitSet(uris.size());
+
+        int nbQuery = (uris.size() / SPARQL_CHECK_URI_PAGE_SIZE) + 1;
+        AtomicInteger currentIdx = new AtomicInteger();
+
+        // Decompose the URIs checking by running one SPARQL query per chunk/part
+        // It avoids to send a too big SPARQL query to the RDF database server
+        for (int i = 0; i < nbQuery; i++) {
+            int startIdx = currentIdx.get();
+            int endIdx = Math.min(startIdx + SPARQL_CHECK_URI_PAGE_SIZE, uris.size());
+
+            // compute list chunk (the list is not copied)
+            List<URI> subList = uris.subList(startIdx,endIdx);
+
+            // Send the target stream by setting a stream size limit for the query -> the steam will be read until the specified limit is reached
+            // The steam will be still readable for the next iteration
+            SelectBuilder select = checkListQuery(
+                    subList.stream().map(URI::toString),
+                    subList.size(),
+                    uriField,
+                    graph,
+                    type,
+                    customWhere
+            );
+
+            // parse results
+            executeSelectQueryAsStream(select).forEach(result -> {
+                boolean annotationExist = Boolean.parseBoolean(result.getStringValue(SPARQLService.EXISTING_VAR));
+                bitSet.set(currentIdx.getAndIncrement(), annotationExist);
+            });
+        }
+
+        return bitSet;
+
+    }
+
+    protected SelectBuilder checkListQuery(
             Stream<String> uris,
             int streamSize,
             String uriField,

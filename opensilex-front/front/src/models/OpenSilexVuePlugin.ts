@@ -244,7 +244,6 @@ export default class OpenSilexVuePlugin {
     }
 
     public getServiceSync<T>(id: string): T | null {
-        console.debug("Get API service", this.baseApi, id);
         let idParts = this.parseServiceId(id);
         if (idParts.module == null) {
             return this.getServiceContainer().get<T>(idParts.service);

@@ -8,9 +8,12 @@ package org.opensilex.core.data.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import org.opensilex.core.data.dal.DataFileModel;
 import org.opensilex.core.data.dal.DataProvenanceModel;
+import org.opensilex.core.data.dal.ProvEntityModel;
 
 import javax.validation.Valid;
+import java.net.URI;
 import java.util.List;
 
 /**
@@ -19,37 +22,34 @@ import java.util.List;
  * @author brice maussang
  */
 @JsonPropertyOrder({
-        "provenance", "data"
+        "uri"
 })
-public class DataSerieGetDTO {
+public class DataSimpleProvenanceGetDTO {
 
-    @JsonProperty("provenance")
-    private DataSimpleProvenanceGetDTO provenance;
-
-    @Valid
-    @JsonProperty("data")
-    private List<DataSimpleGetDTO> data;
+    @JsonProperty("uri")
+    private URI uri;
 
 
-    public DataSerieGetDTO(DataSimpleProvenanceGetDTO provenance, List<DataSimpleGetDTO> data) {
-        this.provenance = provenance;
-        this.data = data;
+    public URI getUri() {
+        return uri;
     }
 
-    public DataSimpleProvenanceGetDTO getProvenance() {
-        return provenance;
+    public void setUri(URI uri) {
+        this.uri = uri;
     }
 
-    public void setProvenance(DataSimpleProvenanceGetDTO provenance) {
-        this.provenance = provenance;
-    }
+    public static DataSimpleProvenanceGetDTO fromModel(DataProvenanceModel model){
+        DataSimpleProvenanceGetDTO dto = new DataSimpleProvenanceGetDTO();
 
-    public List<DataSimpleGetDTO> getData() {
-        return data;
-    }
+        List<ProvEntityModel> provEntityList = model.getProvWasAssociatedWith();
 
-    public void setData(List<DataSimpleGetDTO> data) {
-        this.data = data;
-    }
+        if (provEntityList.size() == 1) {
+            dto.setUri(provEntityList.get(0).getUri());
+        }
+        else {
+            dto.setUri(model.getUri());
+        }
 
+        return dto;
+    }
 }

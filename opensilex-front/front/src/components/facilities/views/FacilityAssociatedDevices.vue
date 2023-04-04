@@ -1,10 +1,13 @@
 
 <template>
   <div>
-    <b-form-group v-if="hasVariableGroup">
+    <div v-if="hasVariableGroup">
+      <label for="variableGroupSelector">{{ $t("FacilityAssociatedDevices.variable-group-selector") }}</label>
       <opensilex-SelectForm
+          id="variableGroupSelector"
           :selected.sync="selectedVariableGroup"
           :searchMethod="searchVariableGroups"
+          :placeholder="$t('FacilityAssociatedDevices.no-variable-group-selected')"
           class="searchFilter"
           @clear="loadVariables"
           @onValidate="loadVariables"
@@ -12,7 +15,7 @@
           @select="loadVariables"
           @handlingEnterKey="loadVariables"
       ></opensilex-SelectForm>
-    </b-form-group>
+    </div>
 
     <opensilex-TextView
         v-if="isNoVariableFound"
@@ -281,11 +284,16 @@ export default class FacilityAssociatedDevices extends Vue {
 <i18n>
 en:
   FacilityAssociatedDevices:
+    variable-group-selector: Variable Groups
+    no-variable-group-selected: All environnemental variables
     no-data: No data found
     no-variable: No environnemental variable found
 
 fr:
   FacilityAssociatedDevices:
+    variable-group-selector: Groupes de variables
+    no-variable-group-selected: Toutes les variables environnementales
     no-data: Aucunes données trouvées
     no-variable: Aucunes variables environnementales trouvées
+
 </i18n>

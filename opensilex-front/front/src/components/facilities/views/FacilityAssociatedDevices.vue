@@ -1,9 +1,24 @@
 
 <template>
   <div>
-    <opensilex-TextView v-if="isNoVariableFound"
-                        id="no-variable-text"
-        :label="$t('FacilityAssociatedDevices.no-variable')">
+    <b-form-group v-if="hasVariableGroup">
+      <opensilex-SelectForm
+          :selected.sync="selectedVariableGroup"
+          :searchMethod="searchVariableGroups"
+          class="searchFilter"
+          @clear="loadVariables"
+          @onValidate="loadVariables"
+          @onClose="loadVariables"
+          @select="loadVariables"
+          @handlingEnterKey="loadVariables"
+      ></opensilex-SelectForm>
+    </b-form-group>
+
+    <opensilex-TextView
+        v-if="isNoVariableFound"
+        id="no-variable-text"
+        :label="$t('FacilityAssociatedDevices.no-variable')"
+    >
     </opensilex-TextView>
 
     <GridLayout v-if="isItemsLoaded"
@@ -38,7 +53,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Ref, Watch } from "vue-property-decorator";
+import { Component } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
 import { FacilityGetDTO } from "opensilex-core/index";
@@ -50,6 +65,7 @@ import {VariablesService} from "opensilex-core/api/variables.service";
 import {DataService} from "opensilex-core/api/data.service";
 import {NamedResourceDTOVariableModel} from "opensilex-core/model/namedResourceDTOVariableModel";
 import {VariableGetDTO} from "opensilex-core/model/variableGetDTO";
+import {VariablesGroupGetDTO} from "opensilex-core/model/variablesGroupGetDTO";
 
 
 @Component
@@ -61,6 +77,7 @@ export default class FacilityAssociatedDevices extends Vue {
   uri: string = null;
   selected: FacilityGetDTO = null;
   usedVariables: NamedResourceDTOVariableModel[] = [];
+  selectedVariableGroup;
   layout = [];
 
   isNoVariableFound: boolean = false;
@@ -81,6 +98,10 @@ export default class FacilityAssociatedDevices extends Vue {
     return this.$store.state.credentials;
   }
 
+  get hasVariableGroup() {
+    return this.selected && (this.selected.variableGroups.length != 0);
+  }
+
   created() {
     this.uri = decodeURIComponent(this.$route.params.uri);
     this.organizationService = this.$opensilex.getService<OrganizationsService>(
@@ -98,6 +119,7 @@ export default class FacilityAssociatedDevices extends Vue {
     this.dataService = this.$opensilex.getService<DataService>(
         "opensilex-core.DataService"
     );
+
     this.refresh();
   }
 
@@ -105,17 +127,35 @@ export default class FacilityAssociatedDevices extends Vue {
     this.organizationService
         .getFacility(this.uri)
         .then((http: HttpResponse<OpenSilexResponse<FacilityGetDTO>>) => {
-            let detailDTO: FacilityGetDTO = http.response.result;
-            this.selected = detailDTO;
-            this.loadVariables();
+          let detailDTO: FacilityGetDTO = http.response.result;
+          this.selected = detailDTO;
+          this.loadVariables();
         });
   }
 
-  /**
-   * Get all variables with this facility as target.
-   */
+  searchVariableGroups() {
+    let variableGroupsURIs = this.selected.variableGroups.map(group => group.uri);
+    return this.variablesService
+        .getVariablesGroupByURIs(variableGroupsURIs, undefined)
+        .then((http: HttpResponse<OpenSilexResponse<Array<VariablesGroupGetDTO>>>) => {
+          let nodeList = [];
+          for (let group of http.response.result) {
+            nodeList.push({
+              id: group.uri,
+              label: group.name
+            });
+          }
+          http.response.result = nodeList;
+          return http;
+        })
+        .catch(this.$opensilex.errorHandler);
+  }
+
   loadVariables() {
-    if (this.selected.variableGroups.length != 0) {
+    this.isNoVariableFound = false;
+    this.isItemsLoaded = false;
+
+    if (this.selectedVariableGroup) {
       this.loadVariablesFromGroup();
     }
     else {
@@ -123,6 +163,9 @@ export default class FacilityAssociatedDevices extends Vue {
     }
   }
 
+  /**
+   * Get all variables with this facility as target.
+   */
   loadVariablesFromData() {
     this.dataService
         .getUsedVariables(
@@ -150,6 +193,9 @@ export default class FacilityAssociatedDevices extends Vue {
         });
   }
 
+  /**
+   * Get variables contained in the selected variable group.
+   */
   loadVariablesFromGroup() {
     this.variablesService
         .searchVariables(
@@ -159,7 +205,7 @@ export default class FacilityAssociatedDevices extends Vue {
             undefined,
             undefined,
             undefined,
-            this.selected.variableGroups[0].uri,
+            this.selectedVariableGroup,
             undefined,
             undefined,
             undefined,
@@ -195,6 +241,7 @@ export default class FacilityAssociatedDevices extends Vue {
    * Create add fill tiles according to the previously collected variables.
    */
   loadTiles() {
+    this.layout = [];
     let i = 0;
     for (let v of this.usedVariables) {
       let x = i % this.NB_COL;

@@ -180,6 +180,10 @@ export default class VariableVisualizationTile extends Vue {
         );
   }
 
+  get hasCalculatedSeries() {
+    return (this.calculatedDataSeries.length > 0);
+  }
+
   get lastMedianData() {
     let data;
     if (this.calculatedDataSeries.length === 0) {
@@ -190,26 +194,6 @@ export default class VariableVisualizationTile extends Vue {
     }
     return data[data.length - 1];
   }
-
-  /*
-  get deviceUriList() {
-    if (!this.dataSeries) {
-      return [];
-    }
-
-    return this.dataSeries.map(serie => {
-      if (serie.provenance) {
-        return {
-          uri: serie.provenance.prov_was_associated_with[0].uri,
-          value: serie.provenance.prov_was_associated_with[0].uri,
-          to: {
-            path: "/device/details/" + encodeURIComponent(serie.provenance.prov_was_associated_with[0].uri),
-          },
-        }
-      }
-    });
-  }
-  */
 
   // simulate window resizing to resize the graphic when the filter panel display changes
   @Watch("searchFiltersToggle")
@@ -256,11 +240,11 @@ export default class VariableVisualizationTile extends Vue {
 
       for (let i = 0; i < this.calculatedDataSeries.length; ++i) {
         console.debug(this.calculatedDataSeries[i]);
-        promise = this.buildDataSerie(this.calculatedDataSeries[i]);
+        promise = this.buildDataSerie(this.calculatedDataSeries[i], true);
         promises.push(promise);
       }
       for (let i = 0; i < this.dataSeries.length; ++i) {
-        promise = this.buildDataSerie(this.dataSeries[i]);
+        promise = this.buildDataSerie(this.dataSeries[i], !this.hasCalculatedSeries);
         promises.push(promise);
       }
       //promise = this.buildEventsSerie();
@@ -377,7 +361,7 @@ export default class VariableVisualizationTile extends Vue {
         });
   }
 
-  buildDataSerie(dataSerie) {
+  buildDataSerie(dataSerie, isVisible: boolean) {
 
     var data = dataSerie.data as Array<DataGetDTO>;
     data.sort((a, b) => (a.date > b.date) ? 1 : -1);
@@ -405,7 +389,7 @@ export default class VariableVisualizationTile extends Vue {
       return {
         name: prov.uri,
         data: cleanData,
-        visible: (prov.uri.startsWith("dev")) ? false : true
+        visible: isVisible
       };
     }
   }

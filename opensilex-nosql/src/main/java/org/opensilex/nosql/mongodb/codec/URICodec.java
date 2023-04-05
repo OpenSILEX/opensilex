@@ -5,12 +5,14 @@
  */
 package org.opensilex.nosql.mongodb.codec;
 
+import org.apache.commons.lang3.StringUtils;
 import org.bson.BsonReader;
 import org.bson.BsonWriter;
 import org.bson.codecs.Codec;
 import org.bson.codecs.DecoderContext;
 import org.bson.codecs.EncoderContext;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,8 +23,6 @@ import java.net.URISyntaxException;
  * @author jpvert
  */
 public class URICodec implements Codec<URI> {
-
-    private final static Logger LOGGER = LoggerFactory.getLogger(URICodec.class);
 
     @Override
     public void encode(BsonWriter writer, URI value, EncoderContext encoderContext) {
@@ -36,16 +36,7 @@ public class URICodec implements Codec<URI> {
 
     @Override
     public URI decode(BsonReader reader, DecoderContext decoderContext) {
-        try {
-            String strURI = reader.readString();
-            if (strURI != null && !strURI.isEmpty()) {
-                return SPARQLDeserializers.formatURI(new URI(strURI));
-            }
-        } catch (URISyntaxException ex) {
-            LOGGER.warn("Exception while decoding mongodb URI (should never append", ex);
-        }
-
-        return null;
+        return URIDeserializer.indexedFormatURI(reader.readString());
     }
 
 }

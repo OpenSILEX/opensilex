@@ -158,8 +158,10 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         return prefixes;
     }
 
-    public static PrefixMapping getPrefixMapping() {
-        return new SPARQLPrefixMapping().setNsPrefixes(prefixes);
+    public static SPARQLPrefixMapping getPrefixMapping() {
+        SPARQLPrefixMapping prefixMapping = new SPARQLPrefixMapping();
+        prefixMapping.setNsPrefixes(prefixes);
+        return prefixMapping;
     }
 
     private static void addPrefixes(UpdateBuilder builder) {

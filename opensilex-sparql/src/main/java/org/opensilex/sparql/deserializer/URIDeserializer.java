@@ -12,13 +12,17 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
-import org.apache.jena.shared.PrefixMapping;
+import org.opensilex.sparql.service.SPARQLPrefixMapping;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author vincent
  */
 public class URIDeserializer implements SPARQLDeserializer<URI> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(URIDeserializer.class);
 
     @Override
     public URI fromString(String value) throws Exception {
@@ -45,7 +49,7 @@ public class URIDeserializer implements SPARQLDeserializer<URI> {
                 return new URI(prefixes.expandPrefix(uri.toString()));
             }
         } catch (URISyntaxException ex) {
-            // TODO log error
+            LOGGER.error("[URISyntaxException] Error while formatting URI : {}", ex.getMessage());
         }
 
         return null;
@@ -62,10 +66,26 @@ public class URIDeserializer implements SPARQLDeserializer<URI> {
                 return new URI(prefixes.expandPrefix(uri));
             }
         } catch (URISyntaxException ex) {
-            // TODO log error
+            LOGGER.error("[URISyntaxException] Error while formatting URI : {}", ex.getMessage());
         }
 
         return null;
+    }
+
+    public static URI indexedFormatURI(String uri){
+        if (StringUtils.isEmpty(uri)) {
+            return null;
+        }
+        try {
+            if (usePrefixes) {
+                return new URI(prefixes.shortFormIndexed(uri));
+            } else {
+                return new URI(prefixes.expandedFormIndexed(uri));
+            }
+        } catch (URISyntaxException ex) {
+            LOGGER.error("[URISyntaxException] Error while formatting URI : {}", ex.getMessage());
+            return null;
+        }
     }
 
     public static String formatURIAsStr(String uri){
@@ -105,13 +125,15 @@ public class URIDeserializer implements SPARQLDeserializer<URI> {
         return NodeFactory.createURI(getExpandedURI(value.toString()));
     }
 
-    private static PrefixMapping prefixes = null;
+    private static SPARQLPrefixMapping prefixes = null;
     private static boolean usePrefixes = false;
 
-    public static void setPrefixes(PrefixMapping prefixesMap, boolean usePrefixes) {
+    public static void setPrefixes(SPARQLPrefixMapping prefixesMap, boolean usePrefixes) {
         URIDeserializer.prefixes = prefixesMap;
         URIDeserializer.usePrefixes = usePrefixes;
     }
+
+
 
     public static void clearPrefixes() {
         prefixes = null;

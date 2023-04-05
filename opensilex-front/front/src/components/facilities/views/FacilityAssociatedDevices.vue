@@ -1,20 +1,24 @@
 
 <template>
-  <div style="margin-top:10px">
-    <div v-if="hasVariableGroup">
-      <label for="variableGroupSelector">{{ $t("FacilityAssociatedDevices.variable-group-selector") }}</label>
-      <opensilex-SelectForm
-          id="variableGroupSelector"
-          :selected.sync="selectedVariableGroup"
-          :searchMethod="searchVariableGroups"
-          :placeholder="$t('FacilityAssociatedDevices.no-variable-group-selected')"
-          class="searchFilter"
-          @clear="loadVariables"
-          @onValidate="loadVariables"
-          @onClose="loadVariables"
-          @select="loadVariables"
-          @handlingEnterKey="loadVariables"
-      ></opensilex-SelectForm>
+  <div>
+    <div class="d-flex">
+      <div class="mr-auto p-2">
+        <div v-if="hasVariableGroup">
+          <label for="variableGroupSelector">{{ $t("FacilityAssociatedDevices.variable-group-selector") }}</label>
+          <opensilex-SelectForm
+              id="variableGroupSelector"
+              :selected.sync="selectedVariableGroup"
+              :searchMethod="searchVariableGroups"
+              :placeholder="$t('FacilityAssociatedDevices.no-variable-group-selected')"
+              class="searchFilter"
+              @clear="loadVariables"
+              @onValidate="loadVariables"
+              @onClose="loadVariables"
+              @select="loadVariables"
+              @handlingEnterKey="loadVariables"
+          ></opensilex-SelectForm>
+        </div>
+      </div>
     </div>
 
     <opensilex-TextView

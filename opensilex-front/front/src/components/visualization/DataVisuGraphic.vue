@@ -150,6 +150,26 @@ type HighchartsOptions = Highcharts.Options & {
   }
 };
 
+/**
+ * Custom type for Highcharts point options. The field 'y' should always be a number, but
+ * in the case we get an "NaN" from the API, the type of 'y' is 'string'. So we override
+ * the 'y' property of the original interface to accept both these types. In the 'reload'
+ * method, we parse these values so that the object sent to Highcharts is of the correct
+ * type ('number').
+ */
+interface HighchartsPointOptionsObject extends Omit<Highcharts.PointOptionsObject, 'y'> {
+  y?: number | string;
+}
+
+/**
+ * Custom type for Highcharts line options. We need to override this interface so that the
+ * 'reload' method accepts lines with our custom point options. At the end of the 'reload'
+ * method, the series lines should be converted to regular Highcharts line options.
+ */
+interface HighchartsSeriesLineOptions extends Omit<Highcharts.SeriesLineOptions, 'data'> {
+  data?: Array<HighchartsPointOptionsObject>;
+}
+
 HighchartsCustomEvents(Highcharts);
 exportingInit(Highcharts);
 
@@ -181,6 +201,7 @@ export default class DataVisuGraphic extends Vue {
   selectedOffset;
   variables: Array<VariableGetDTO>;
   selectedPointsCount = 0;
+  seriesNanValuesCount: number = 0
 
   lineType = false;
   lineWidth = false;
@@ -557,7 +578,7 @@ export default class DataVisuGraphic extends Vue {
     this.closeContextMenu();
   }
 
-  reload(series: Array<Highcharts.SeriesLineOptions>, variable: VariableGetDTO | Array<VariableGetDTO>, form) {
+  reload(series: Array<HighchartsSeriesLineOptions>, variable: VariableGetDTO | Array<VariableGetDTO>, form) {
     if(form) {
       this.startDate = form.startDate;
       this.endDate = form.endDate;
@@ -576,7 +597,26 @@ export default class DataVisuGraphic extends Vue {
     if (series.length > 0) {
       this.yAxis = this.buildYAxis(this.showEvents);
     }
-    this.series = series;
+
+    for(let serie of series){
+      serie.data.forEach((dataObject) => {
+        if (dataObject.y === "NaN"){
+          dataObject.y = NaN
+          this.seriesNanValuesCount += 1 
+        }
+      })
+    }
+
+    if(this.seriesNanValuesCount > 0) {
+      console.log(this.seriesNanValuesCount)
+      this.$opensilex.showInfoToast(
+        this.$i18n.t("DataVisuGraphic.nanValuesMessageA") + " " +
+        this.seriesNanValuesCount +
+        this.$i18n.t("DataVisuGraphic.nanValuesMessageB")
+      )
+    }
+          
+    this.series = series as Array<Highcharts.SeriesLineOptions>;
   }
 
   buildYAxis(showEvents): Array<Highcharts.YAxisOptions> {
@@ -988,7 +1028,9 @@ fr:
     chartLineView : Mode courbe
     fullscreen : Plein ecran
     download : Télecharger l'image
-    rightClick : click droit sur un point pour ajouter un evénement ou une annotation
+    rightClick : Click droit sur un point pour ajouter un evénement ou une annotation
+    nanValuesMessageA : "Les series de données selectionées contiennent " 
+    nanValuesMessageB : " valeurs de type 'NaN', seules les valeurs numériques sont visualisées."
 
 en:
   DataVisuGraphic:
@@ -1001,4 +1043,6 @@ en:
     fullscreen : Fullscreen
     download : Download image
     rightClick : right click on a point to add event or annotation
+    nanValuesMessageA : "Selected data series contain "
+    nanValuesMessageB : " 'NaN' type values, only numerical values are displayed."
 </i18n>

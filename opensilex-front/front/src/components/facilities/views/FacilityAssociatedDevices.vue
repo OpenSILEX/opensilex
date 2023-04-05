@@ -1,6 +1,6 @@
 
 <template>
-  <div>
+  <div style="margin-top:10px">
     <div v-if="hasVariableGroup">
       <label for="variableGroupSelector">{{ $t("FacilityAssociatedDevices.variable-group-selector") }}</label>
       <opensilex-SelectForm

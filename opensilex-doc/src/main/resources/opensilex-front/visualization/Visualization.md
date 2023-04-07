@@ -28,7 +28,7 @@ In order to make this operation faster the following steps are done :
   to the number of data acquired by this agent
 - `[agents_annotation_checking]` :
   - A custom method is used in order to compute the subset of agents which are annotated (Don't need to fetch the annotation list for the agent set)
-  - We use a custom API `/core/annotations/hasAnnotations` which return for a list of URIs, which of these URIs has annotation or not
+  - We use a custom POST API `/core/annotations/hasAnnotations` which return for a list of URIs, which of these URIs has annotation or not
 
 ## Events
 

@@ -18,8 +18,8 @@ import org.apache.jena.shared.impl.PrefixMappingImpl;
  */
 public class SPARQLPrefixMapping extends PrefixMappingImpl {
 
-    private Map<String, String> cachedPrefixToUri;
-    private Map<String,String> cachedUriToPrefix;
+    private PatriciaTrie<String> cachedPrefixToUri;
+    private PatriciaTrie<String> cachedUriToPrefix;
 
     private TreeSet<String> uriSortedSet;
     private TreeSet<String> prefixSortedSet;
@@ -84,20 +84,22 @@ public class SPARQLPrefixMapping extends PrefixMappingImpl {
 
     public String shortFormIndexed(String uriToFormat){
         String candidateURI = uriSortedSet.floor(uriToFormat);
-        if(candidateURI != null){
+        if(candidateURI != null && uriToFormat.startsWith(candidateURI)){
             String prefix = cachedUriToPrefix.get(candidateURI);
-            String part = uriToFormat.substring(candidateURI.length());
-            return prefix + ":" + part;
+            if(prefix != null){
+                return prefix + ":" + uriToFormat.substring(candidateURI.length());
+            }
         }
         return super.shortForm(uriToFormat);
     }
 
     public String expandedFormIndexed(String uriToFormat){
         String candidatePrefix = prefixSortedSet.floor(uriToFormat);
-        if(candidatePrefix != null){
+        if(candidatePrefix != null && uriToFormat.startsWith(candidatePrefix)){
             String uri = cachedPrefixToUri.get(candidatePrefix);
-            String part = uri.substring(candidatePrefix.length());
-            return uri + "#" + part;
+            if(uri != null){
+                return uri + uriToFormat.substring(candidatePrefix.length()+1);
+            }
         }
         return super.expandPrefix(uriToFormat);
     }

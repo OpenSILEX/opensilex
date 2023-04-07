@@ -139,7 +139,7 @@ export default class ExperimentDataVisualisationView extends Vue {
     initLoader: boolean = false;
     selectedExperiment;
     selectedVariable = [];
-    selectedVariablesObjectsList = [];
+    selectedVariablesObjectsList: Array<VariableDetailsDTO> = [];
     eventTypesColorArray = [];
     selectedObjects = [];
     selectedScientificObjects = [];
@@ -165,6 +165,9 @@ export default class ExperimentDataVisualisationView extends Vue {
     soFilter;
 
     private langUnwatcher;
+
+    @Prop({default: 10000})
+    pageSize: number;
 
     mounted() {
         this.langUnwatcher = this.$store.watch(
@@ -282,7 +285,7 @@ export default class ExperimentDataVisualisationView extends Vue {
 
             this.VariablesService
                 .getVariablesByURIs(this.selectedVariable)
-                .then((http: HttpResponse<OpenSilexResponse>) => {
+                .then((http: HttpResponse<OpenSilexResponse<Array<VariableDetailsDTO>>>) => {
                         this.selectedVariablesObjectsList = http.response.result;
                         const datatype = this.selectedVariablesObjectsList[0].datatype.split("#")[1];
                         if (datatype == "decimal" || datatype == "integer") {
@@ -329,7 +332,7 @@ export default class ExperimentDataVisualisationView extends Vue {
         promises.push(this.buildEventsSeries());
 
         for (let variable of this.selectedVariablesObjectsList) {
-            promises.push(this.buildDataSeries(variable));
+            promises.push(this.buildVariableDataSeries(variable));
         }
 
         Promise.all(promises).then(values => {
@@ -358,14 +361,14 @@ export default class ExperimentDataVisualisationView extends Vue {
     }
 
     // build DataSeries with elements from each DataSerie
-    buildDataSeries(selectedVariable: VariableDetailsDTO) {
+    buildVariableDataSeries(selectedVariable: VariableDetailsDTO) {
         let series = [],
             serie;
         let promises = [],
             promise;
 
         this.selectedScientificObjectsWithLabel.forEach((element, index) => {
-            promise = this.buildDataSerie(element, selectedVariable, index);
+            promise = this.buildScientificObjectDataSerie(element, selectedVariable, index);
             promises.push(promise);
         });
 
@@ -390,7 +393,7 @@ export default class ExperimentDataVisualisationView extends Vue {
     }
 
     // Build each singular Dataserie on dataService.searchDataList format
-    async buildDataSerie(concernedItem: { id: string, label: string }, selectedVariable: VariableDetailsDTO, index) {
+    async buildScientificObjectDataSerie(concernedItem: { id: string, label: string }, selectedVariable: VariableDetailsDTO, index) {
         if (this.form) {
             let http = await this.dataService
                 .searchDataList(
@@ -407,7 +410,7 @@ export default class ExperimentDataVisualisationView extends Vue {
                     undefined, //this.addMetadataFilter(),
                     ["date=asc"],
                     0,
-                    50000
+                    this.pageSize
                 );
 
             const data = http.response.result as Array<DataGetDTO>;
@@ -415,7 +418,7 @@ export default class ExperimentDataVisualisationView extends Vue {
 
             if (dataLength === 0) {
                 this.$opensilex.showInfoToast(this.$t("component.common.search.noDataFound").toString());
-            } else if (dataLength > 50000) {
+            } else if (dataLength > this.pageSize) {
                 this.$opensilex.showInfoToast(
                     this.$i18n.t("ExperimentDataVisualisationView.limitSizeMessageA") +
                     " " +
@@ -580,6 +583,7 @@ export default class ExperimentDataVisualisationView extends Vue {
             }, new Map()
         );
 
+        // no prov agents, just return data
         let imageData: Array<ImagePointOptionsObject> = new Array(nbDataWithAgent);
         if(nbDataWithAgent == 0){
             return {
@@ -588,8 +592,9 @@ export default class ExperimentDataVisualisationView extends Vue {
             };
         }
 
-        // Call the hasAnnotations service, this service return a Base64 encoded mask for each uris
-        // It mean that each bit indicate if the target has annotation (1), or not(0)
+        // Call the hasAnnotations service in order to determine which provenance agents have an annotation
+        // This service return a Base64 encoded String mask for each uris
+        // It mean that each bit of the string indicate if the target has annotation (1), or not(0)
         let agents: Array<string> = Array.from(provAgentExists.keys());
 
         this.annotationService.hasAnnotations(agents)
@@ -606,7 +611,6 @@ export default class ExperimentDataVisualisationView extends Vue {
 
                     // Increment i in order to check the next bit at the next loop round
                     let hasAnnotation: boolean = BinaryUtils.getArrayBit(annotationsExits, i++);
-
                     currentMap.set(provAgent,hasAnnotation)
                 });
 

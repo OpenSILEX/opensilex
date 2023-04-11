@@ -29,30 +29,34 @@
               </opensilex-FilterField>
             </div>
 
-            <div>
-              <opensilex-FilterField :halfWidth="true">
                 <div>
-                  <opensilex-DateTimeForm
-                      :value.sync="filter.startDate"
-                      label="component.common.begin"
-                      name="startDate"
-                      @input="getEvents"
-                      @clear="getEvents"
-                      class="searchFilter"
-                  ></opensilex-DateTimeForm>
+                  <opensilex-FilterField :halfWidth="true">
+                    <div>
+                      <opensilex-DateTimeForm
+                          :value.sync="filter.startDate"
+                          label="component.common.begin"
+                          name="startDate"
+                          :max-date="filter.endDate ? filter.endDate : undefined"
+                          @input="getEvents"
+                          @clear="getEvents"
+                          class="searchFilter"
+                      ></opensilex-DateTimeForm>
+                    </div>
+                    <div>
+                      <opensilex-DateTimeForm
+                          :value.sync="filter.endDate"
+                          label="component.common.end"
+                          name="endDate"
+                          :min-date="filter.startDate ? filter.startDate : undefined"
+                          :minDate="filter.startDate"
+                          :maxDate="filter.endDate"
+                          @input="getEvents"
+                          @clear="getEvents"
+                          class="searchFilter"
+                      ></opensilex-DateTimeForm>
+                    </div>
+                  </opensilex-FilterField>
                 </div>
-                <div>
-                  <opensilex-DateTimeForm
-                      :value.sync="filter.endDate"
-                      label="component.common.end"
-                      name="endDate"
-                      @input="getEvents"
-                      @clear="getEvents"
-                      class="searchFilter"
-                  ></opensilex-DateTimeForm>
-                </div>
-              </opensilex-FilterField>
-            </div>
 
             <div>
               <opensilex-FilterField :halfWidth="true">

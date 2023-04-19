@@ -460,7 +460,7 @@ public class ScientificObjectAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Create a scientific object", response = ObjectUriResponse.class),
+            @ApiResponse(code = 201, message = "Create a scientific object", response = URI.class),
             @ApiResponse(code = 409, message = "A scientific object with the same URI already exists", response = ErrorResponse.class)
     })
     public Response createScientificObject(
@@ -550,7 +550,7 @@ public class ScientificObjectAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Scientific object updated", response = ObjectUriResponse.class)
+            @ApiResponse(code = 200, message = "Scientific object updated", response = URI.class)
     })
     public Response updateScientificObject(
             @ApiParam(value = "Scientific object description", required = true)
@@ -633,7 +633,7 @@ public class ScientificObjectAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Scientific object deleted", response = ObjectUriResponse.class),
+            @ApiResponse(code = 200, message = "Scientific object deleted", response = URI.class),
             @ApiResponse(code = 400, message = DELETE_ERROR_TITLE+ " (If object is involved into an experiment or if associated to any data)", response = ErrorDTO.class),
             @ApiResponse(code = 404, message = "Scientific object URI not found", response = ErrorResponse.class)
     })

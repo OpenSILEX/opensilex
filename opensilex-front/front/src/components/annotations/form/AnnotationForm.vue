@@ -130,7 +130,7 @@
             };
         }
 
-        getEmptyForm() {
+        getEmptyForm(): AnnotationCreationDTO {
             return AnnotationForm.getEmptyForm();
         }
 

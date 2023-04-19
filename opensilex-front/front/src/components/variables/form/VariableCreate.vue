@@ -17,15 +17,16 @@
 </template>
 
 <script lang="ts">
-    import {Component, Prop, Ref} from "vue-property-decorator";
-    import Vue from "vue";
-    import { VariablesService, VariableDetailsDTO, VariableCreationDTO, ObjectUriResponse, VariableUpdateDTO } from "opensilex-core/index";
-    import ModalForm from "../../common/forms/ModalForm.vue";
-    import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
-    import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
-    import DTOConverter from "../../../models/DTOConverter";
+import {Component, Prop, Ref} from "vue-property-decorator";
+import Vue from "vue";
+import {VariableCreationDTO, VariableDetailsDTO, VariablesService, VariableUpdateDTO} from "opensilex-core/index";
+import ModalForm from "../../common/forms/ModalForm.vue";
+import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
+import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
+import DTOConverter from "../../../models/DTOConverter";
+import VariableForm from "./VariableForm.vue";
 
-    @Component
+@Component
     export default class VariableCreate extends Vue {
 
         $opensilex: OpenSilexVuePlugin;
@@ -48,7 +49,7 @@
             return this.$store.state.credentials;
         }
 
-        @Ref("variableForm") readonly variableForm!: ModalForm;
+        @Ref("variableForm") readonly variableForm!: ModalForm<VariableForm, VariableCreationDTO, VariableUpdateDTO>;
 
         created() {
             this.service = this.$opensilex.getService("opensilex.VariablesService");
@@ -62,13 +63,13 @@
             });
         }
 
-        showEditForm(form,linkedDataNb) {
+        showEditForm(form, linkedDataNb) {
           form.linked_data_nb = linkedDataNb;
           this.refresh();
             this.loadForm = true;
             this.$nextTick(() => {
                 // the function extractURIFromResourceProperties transforms each nested object into uri
-                let formCopy: VariableDetailsDTO = DTOConverter.extractURIFromResourceProperties(form);
+                let formCopy = DTOConverter.extractURIFromResourceProperties<VariableDetailsDTO, VariableUpdateDTO>(form);
                 this.variableForm.showEditForm(formCopy);
             });
         }
@@ -79,12 +80,8 @@
             this.key++;
         }
 
-        create(variable) {
-
-            if(variable.dataType && variable.dataType.uri){
-                variable.dataType = variable.dataType.uri
-            }
-            this.service.createVariable(variable).then((http: HttpResponse<OpenSilexResponse<ObjectUriResponse>>) => {
+        create(variable: VariableCreationDTO) {
+            this.service.createVariable(variable).then((http: HttpResponse<OpenSilexResponse<string>>) => {
                 let message = this.$i18n.t("VariableForm.variable") + " " + variable.name + " " + this.$i18n.t("component.common.success.creation-success-message");
                 this.$opensilex.showSuccessToast(message);
                 variable.uri =  http.response.result.toString();
@@ -106,7 +103,7 @@
             return this.$i18n.t("VariableView.name") + " " + variable.name;
         }
 
-        update(variable) {
+        update(variable: VariableUpdateDTO) {
 
             this.service.updateVariable(variable).then(() => {
                 let message = this.$i18n.t("VariableForm.variable") + " " + variable.name + " " + this.$i18n.t("component.common.success.update-success-message");

@@ -57,6 +57,7 @@
                   <opensilex-DateTimeForm
                     :value.sync="filter.startDate"
                     label="component.common.begin"
+                    :max-date="filter.endDate ? filter.endDate : undefined"
                     @input="onUpdate"
                     @clear="onUpdate"
                     class="searchFilter"
@@ -68,6 +69,9 @@
                   <opensilex-DateTimeForm
                     :value.sync="filter.endDate"
                     label="component.common.end"
+                    :min-date="filter.startDate ? filter.startDate : undefined"
+                    :minDate="filter.startDate"
+                    :maxDate="filter.endDate"
                     @input="onUpdate"
                     @clear="onUpdate"
                     class="searchFilter"

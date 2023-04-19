@@ -35,7 +35,7 @@
                         helpMessage="VariableForm.entity-help"
                         @select="updateEntity"
                         :actionHandler="editMode ? undefined : showEntityCreateForm"
-                        :disabled="editMode"
+                        :disabled="false"
                     ></opensilex-SelectForm>
                     <opensilex-EntityCreate
                         ref="entityForm"
@@ -58,7 +58,7 @@
                         noResultsText="VariableForm.no-interestEntity"
                         helpMessage="VariableForm.interestEntity-help"
                         :actionHandler="editMode ? undefined : showInterestEntityCreateForm"
-                        :disabled="editMode"
+                        :disabled="false"
                     ></opensilex-SelectForm>
                     <opensilex-InterestEntityCreate
                         ref="interestEntityForm"
@@ -82,7 +82,7 @@
                         helpMessage="VariableForm.characteristic-help"
                         @select="updateCharacteristic"
                         :actionHandler="editMode ? undefined : showCharacteristicCreateForm"
-                        :disabled="editMode"
+                        :disabled="false"
                     ></opensilex-SelectForm>
                     <opensilex-CharacteristicModalForm
                         ref="characteristicForm"
@@ -117,7 +117,7 @@
                         @select="updateMethod"
                         :actionHandler="editMode ? undefined : showMethodCreateForm"
                         noResultsText="VariableForm.no-method"
-                        :disabled="editMode"
+                        :disabled="false"
                     ></opensilex-SelectForm>
                     <opensilex-MethodCreate
                         ref="methodForm"
@@ -166,7 +166,7 @@
                         @select="updateUnit"
                         :actionHandler="editMode ? undefined : showUnitCreateForm"
                         noResultsText="VariableForm.no-unit"
-                        :disabled="editMode"
+                        :disabled="false"
                     ></opensilex-SelectForm>
                     <opensilex-UnitCreate
                         ref="unitForm"
@@ -278,6 +278,7 @@ import {
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {DataService} from "opensilex-core/api/data.service";
 import SelectForm from "../../common/forms/SelectForm.vue";
+import {VariableCreationDTO} from "opensilex-core/model/variableCreationDTO";
 
 @Component
 export default class VariableForm extends Vue {
@@ -314,7 +315,7 @@ export default class VariableForm extends Vue {
     @Ref("methodForm") readonly methodForm!: any;
     @Ref("unitForm") readonly unitForm!: any;
 
-    @Ref("traitForm") readonly traitForm!: ModalForm;
+    @Ref("traitForm") readonly traitForm!: any;
 
     get isGermplasmMenuExcluded() {
         return this.$opensilex.getConfig().menuExclusions.includes("germplasm");
@@ -417,30 +418,31 @@ export default class VariableForm extends Vue {
     }
 
     updateName() {
-        let form = this.form;
-        let nameParts: string[] = [];
+        if(!this.editMode){
+            let form = this.form;
+            let nameParts: string[] = [];
 
-        if(this.selectedEntityName && this.selectedEntityName.length > 0 ){
-            let name = this.selectedEntityName.split(' ');
-            nameParts.push(name[0]);
-        }
-        if(this.selectedCharacteristicName && this.selectedCharacteristicName.length > 0 ){
-            nameParts.push(this.selectedCharacteristicName);
-        }
-        if(nameParts.length){
-            form.alternative_name = nameParts.join("_");
-        }
+            if(this.selectedEntityName && this.selectedEntityName.length > 0 ){
+                let name = this.selectedEntityName.split(' ');
+                nameParts.push(name[0]);
+            }
+            if(this.selectedCharacteristicName && this.selectedCharacteristicName.length > 0 ){
+                nameParts.push(this.selectedCharacteristicName);
+            }
+            if(nameParts.length){
+                form.alternative_name = nameParts.join("_");
+            }
 
-        if(this.selectedMethodName && this.selectedMethodName.length > 0 ){
-            nameParts.push(this.selectedMethodName);
+            if(this.selectedMethodName && this.selectedMethodName.length > 0 ){
+                nameParts.push(this.selectedMethodName);
+            }
+            if(this.selectedUnitName && this.selectedUnitName.length > 0 ){
+                nameParts.push(this.selectedUnitName);
+            }
+            if(nameParts.length){
+                form.name = nameParts.join("_");
+            }
         }
-        if(this.selectedUnitName && this.selectedUnitName.length > 0 ){
-            nameParts.push(this.selectedUnitName);
-        }
-        if(nameParts.length){
-            form.name = nameParts.join("_");
-        }
-
     }
 
     showEntityCreateForm() {
@@ -497,7 +499,7 @@ export default class VariableForm extends Vue {
       };
     }
 
-    getEmptyForm() {
+    getEmptyForm(): VariableCreationDTO {
         return VariableForm.getEmptyForm();
     }
 

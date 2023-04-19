@@ -80,7 +80,7 @@ public class EntityAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "An entity is created", response = ObjectUriResponse.class),
+            @ApiResponse(code = 201, message = "An entity is created", response = URI.class),
             @ApiResponse(code = 409, message = "An entity with the same URI already exists", response = ErrorResponse.class),
     })
     public Response createEntity(
@@ -175,7 +175,7 @@ public class EntityAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Entity updated", response = ObjectUriResponse.class),
+            @ApiResponse(code = 200, message = "Entity updated", response = URI.class),
             @ApiResponse(code = 404, message = "Unknown entity URI", response = ErrorResponse.class)
     })
     public Response updateEntity(
@@ -198,7 +198,7 @@ public class EntityAPI {
             credentialLabelKey = CREDENTIAL_VARIABLE_DELETE_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Entity deleted", response = ObjectUriResponse.class),
+            @ApiResponse(code = 200, message = "Entity deleted", response = URI.class),
             @ApiResponse(code = 404, message = "Unknown entity URI", response = ErrorResponse.class)
     })
     @Consumes(MediaType.APPLICATION_JSON)

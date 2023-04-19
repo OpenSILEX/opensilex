@@ -8,14 +8,12 @@ package org.opensilex.core.organisation.api.facility;
 import io.swagger.annotations.*;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
-import org.opensilex.core.organisation.dal.facility.FacilityDAO;
-import org.opensilex.core.organisation.dal.facility.FacilitySearchFilter;
-import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.sparql.SPARQLModule;
-import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.core.organisation.dal.OrganizationDAO;
+import org.opensilex.core.organisation.dal.facility.FacilityDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
+import org.opensilex.core.organisation.dal.facility.FacilitySearchFilter;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
@@ -23,8 +21,10 @@ import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.ValidURI;
+import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.ontology.dal.ClassModel;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
@@ -83,7 +83,7 @@ public class FacilityAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Create a facility", response = ObjectUriResponse.class),
+        @ApiResponse(code = 201, message = "Create a facility", response = URI.class),
         @ApiResponse(code = 409, message = "A facility with the same URI already exists", response = ErrorResponse.class)
     })
     public Response createFacility(
@@ -238,7 +238,7 @@ public class FacilityAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Facility deleted", response = ObjectUriResponse.class),
+        @ApiResponse(code = 200, message = "Facility deleted", response = URI.class),
         @ApiResponse(code = 404, message = "Facility URI not found", response = ErrorResponse.class)
     })
     public Response deleteFacility(
@@ -262,7 +262,7 @@ public class FacilityAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return updated facility", response = ObjectUriResponse.class),
+        @ApiResponse(code = 200, message = "Return updated facility", response = URI.class),
         @ApiResponse(code = 404, message = "Facility URI not found", response = ErrorResponse.class)
     })
     public Response updateFacility(

@@ -148,13 +148,23 @@
 import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
-import {OrganizationGetDTO, OrganizationUpdateDTO, ResourceDagDTO, SiteGetDTO, SiteUpdateDTO} from "opensilex-core/index";
+import {
+  OrganizationGetDTO,
+  OrganizationUpdateDTO,
+  ResourceDagDTO,
+  SiteGetDTO,
+  SiteUpdateDTO
+} from "opensilex-core/index";
 import OpenSilexVuePlugin, {GenericTreeOption, TreeOption} from "../../models/OpenSilexVuePlugin";
 import ModalForm from "../common/forms/ModalForm.vue";
 import {DropdownButtonOption} from "../common/dropdown/Dropdown.vue";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
 import TreeView from "../common/views/TreeView.vue";
 import DTOConverter from "../../models/DTOConverter";
+import InfrastructureForm from "./InfrastructureForm.vue";
+import {OrganizationCreationDTO} from "opensilex-core/model/organizationCreationDTO";
+import SiteForm from "./site/SiteForm.vue";
+import {SiteCreationDTO} from "opensilex-core/model/siteCreationDTO";
 
 type OrganizationOrSiteData = ResourceDagDTO & {
   isOrganization: boolean,
@@ -186,8 +196,8 @@ export default class InfrastructureTree extends Vue {
   private selectedOrganization: OrganizationGetDTO;
   private selectedSite: SiteGetDTO;
 
-  @Ref("infrastructureForm") readonly infrastructureForm!: ModalForm;
-  @Ref("siteForm") readonly siteForm!: ModalForm;
+  @Ref("infrastructureForm") readonly infrastructureForm!: ModalForm<InfrastructureForm, OrganizationCreationDTO, OrganizationUpdateDTO>;
+  @Ref("siteForm") readonly siteForm!: ModalForm<SiteForm, SiteCreationDTO, SiteUpdateDTO>;
   @Ref("treeView") readonly treeView: TreeView<OrganizationOrSiteData>;
 
   private createOptions: Array<DropdownButtonOption> = [

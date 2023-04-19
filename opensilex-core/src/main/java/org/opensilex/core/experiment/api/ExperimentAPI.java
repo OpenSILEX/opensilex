@@ -51,12 +51,12 @@ import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.exceptions.NoSQLTooLargeSetException;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.csv.CSVCell;
@@ -155,7 +155,7 @@ public class ExperimentAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "An experiment is created", response = ObjectUriResponse.class),
+        @ApiResponse(code = 201, message = "An experiment is created", response = URI.class),
         @ApiResponse(code = 409, message = "An experiment with the same URI already exists", response = ErrorResponse.class)
     })
     public Response createExperiment(
@@ -194,7 +194,7 @@ public class ExperimentAPI {
     @Produces(MediaType.APPLICATION_JSON)
 
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Experiment updated", response = ObjectUriResponse.class),
+        @ApiResponse(code = 200, message = "Experiment updated", response = URI.class),
         @ApiResponse(code = 404, message = "Experiment URI not found", response = ErrorResponse.class)
     })
     public Response updateExperiment(
@@ -313,7 +313,7 @@ public class ExperimentAPI {
     @Produces(MediaType.APPLICATION_JSON)
 
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Experiment deleted", response = ObjectUriResponse.class),
+        @ApiResponse(code = 200, message = "Experiment deleted", response = URI.class),
         @ApiResponse(code = 404, message = "Experiment URI not found", response = ErrorResponse.class)
     })
     public Response deleteExperiment(

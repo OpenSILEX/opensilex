@@ -152,8 +152,8 @@
 import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
-import { AreaGetDTO, ObjectUriResponse } from 'opensilex-core/index';
-import { UserGetDTO } from 'opensilex-security/index';
+import {AreaGetDTO} from 'opensilex-core/index';
+import {UserGetDTO} from 'opensilex-security/index';
 import {AreaService} from "opensilex-core/api/area.service";
 import {SecurityService} from "opensilex-security/api/security.service";
 import {OntologyService} from "opensilex-core/api/ontology.service";
@@ -288,7 +288,7 @@ export default class AreaDetails extends Vue {
   private deleteArea() {
     this.areaService
         .deleteArea(this.uri)
-        .then((http: HttpResponse<OpenSilexResponse<ObjectUriResponse>>) => {
+        .then((http: HttpResponse<OpenSilexResponse<string>>) => {
           let message =
               this.$i18n.t("component.area.title") +
               " " +

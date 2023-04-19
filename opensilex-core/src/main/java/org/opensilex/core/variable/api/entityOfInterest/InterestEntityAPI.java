@@ -83,7 +83,7 @@ public class InterestEntityAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "An entity of interest is created", response = ObjectUriResponse.class),
+            @ApiResponse(code = 201, message = "An entity of interest is created", response = URI.class),
             @ApiResponse(code = 409, message = "An entity of interest with the same URI already exists", response = ErrorResponse.class),
     })
     public Response createInterestEntity(
@@ -178,7 +178,7 @@ public class InterestEntityAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Entity of interest updated", response = ObjectUriResponse.class),
+            @ApiResponse(code = 200, message = "Entity of interest updated", response = URI.class),
             @ApiResponse(code = 404, message = "Unknown entity of interest URI", response = ErrorResponse.class)
     })
     public Response updateInterestEntity(
@@ -201,7 +201,7 @@ public class InterestEntityAPI {
             credentialLabelKey = CREDENTIAL_VARIABLE_DELETE_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Entity of interest deleted", response = ObjectUriResponse.class),
+            @ApiResponse(code = 200, message = "Entity of interest deleted", response = URI.class),
             @ApiResponse(code = 404, message = "Unknown entity of interest URI", response = ErrorResponse.class)
     })
     @Consumes(MediaType.APPLICATION_JSON)

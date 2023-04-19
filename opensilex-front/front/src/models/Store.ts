@@ -339,4 +339,5 @@ let store = new Vuex.Store({
 
 });
 
+export type OpenSilexStore = typeof store;
 export default store;

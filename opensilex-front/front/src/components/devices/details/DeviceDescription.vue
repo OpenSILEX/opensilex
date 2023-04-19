@@ -185,12 +185,10 @@
 <script lang="ts">
 import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
-import {DevicesService, DeviceGetDetailsDTO, RDFObjectRelationDTO} from "opensilex-core/index";
+import {DeviceGetDetailsDTO, DevicesService, RDFObjectRelationDTO} from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
 import {VueJsOntologyExtensionService, VueRDFTypeDTO} from "../../../lib";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
-import ModalForm from "../../common/forms/ModalForm.vue";
 import DeviceModalForm from "../form/DeviceModalForm.vue";
 import {EventGetDTO} from "opensilex-core/model/eventGetDTO";
 import {EventsService} from "opensilex-core/api/events.service";
@@ -216,7 +214,6 @@ export default class DeviceDescription extends Vue {
 
     @Ref("deviceForm") readonly deviceForm!: DeviceModalForm;
     @Ref("tableAtt") readonly tableAtt!: any;
-    @Ref("modalForm") readonly modalForm!: ModalForm;
 
     renderModalForm: boolean = false;
 

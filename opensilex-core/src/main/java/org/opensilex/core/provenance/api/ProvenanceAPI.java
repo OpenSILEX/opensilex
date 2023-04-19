@@ -94,7 +94,7 @@ public class ProvenanceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "A provenance is created", response = ObjectUriResponse.class),
+        @ApiResponse(code = 201, message = "A provenance is created", response = URI.class),
         @ApiResponse(code = 409, message = "A provenance with the same URI already exists", response = ErrorResponse.class)})
 
     public Response createProvenance(
@@ -217,7 +217,7 @@ public class ProvenanceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Provenance deleted", response = ObjectUriResponse.class)
+        @ApiResponse(code = 200, message = "Provenance deleted", response = URI.class)
     })
     public Response deleteProvenance(
             @ApiParam(value = "Provenance URI", example = PROVENANCE_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri) throws URISyntaxException, NamingException, IOException, ParseException, Exception {
@@ -281,7 +281,7 @@ public class ProvenanceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Provenance updated", response = ObjectUriResponse.class)
+        @ApiResponse(code = 201, message = "Provenance updated", response = URI.class)
     })
 
     public Response updateProvenance(

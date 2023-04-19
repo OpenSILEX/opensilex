@@ -214,7 +214,7 @@
                         <b-dropdown-item-button @click="classicExportVariables()">{{$t('VariableList.export-variables')}}</b-dropdown-item-button>
                         <b-dropdown-item-button @click="detailsExportVariables()">{{$t('VariableList.export-variables-details')}}</b-dropdown-item-button>
                         <b-dropdown-item-button
-                            v-if="filter.sharedResourceInstance"
+                            v-if="filter.sharedResourceInstance && user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
                             @click="importVariablesOnLocal()"
                         >{{$t('VariableList.import-variables-from-shared-resources')}}</b-dropdown-item-button>
 
@@ -302,8 +302,8 @@
                     v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID) && !noActions && loadGroupVariablesForm"
                     ref="groupVariablesForm"
                     modalSize="lg"
-                    @onCreate="refresh($event)"
-                    @onUpdate="refresh($event)"
+                    @onCreate="refresh()"
+                    @onUpdate="refresh()"
                     component="opensilex-GroupVariablesForm"
                     createTitle="GroupVariablesForm.add"
                     editTitle="GroupVariablesForm.edit"
@@ -328,21 +328,25 @@
 
 <script lang="ts">
 import {Component, Prop, Ref} from "vue-property-decorator";
-import Vue, { VNode } from "vue";
+import Vue, {VNode} from "vue";
 import {VariablesGroupGetDTO, VariablesService} from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
 import ModalForm from "../common/forms/ModalForm.vue";
 import GroupVariablesModalList from '../groupVariable/GroupVariablesModalList.vue';
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+import GroupVariablesForm from "../groupVariable/GroupVariablesForm.vue";
+import {VariablesGroupCreationDTO} from "opensilex-core/model/variablesGroupCreationDTO";
+import {VariablesGroupUpdateDTO} from "opensilex-core/model/variablesGroupUpdateDTO";
+import TableAsyncView from '../common/views/TableAsyncView.vue';
 import {CopyResourceDTO} from "opensilex-core/model/copyResourceDTO";
-import TableAsyncView from "../common/views/TableAsyncView.vue";
 import {VariableGetDTO} from "opensilex-core/model/variableGetDTO";
+import {OpenSilexStore} from "../../models/Store";
 
 @Component
 export default class VariableList extends Vue {
     $opensilex: OpenSilexVuePlugin;
     $service: VariablesService;
-    $store: any;
+    $store: OpenSilexStore;
     $route: any;
     $i18n: any;
 
@@ -440,7 +444,7 @@ export default class VariableList extends Vue {
     }
 
     loadGroupVariablesForm: boolean = false;
-    @Ref("groupVariablesForm") readonly groupVariablesForm!: ModalForm;
+    @Ref("groupVariablesForm") readonly groupVariablesForm!: ModalForm<GroupVariablesForm, VariablesGroupCreationDTO, VariablesGroupUpdateDTO>;
 
     showCreateForm() {
         // lazy loading of form

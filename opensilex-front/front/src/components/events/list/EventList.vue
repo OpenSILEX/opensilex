@@ -98,6 +98,7 @@
                             <opensilex-DateTimeForm
                                 :value.sync="filter.start"
                                 label="Event.start"
+                                :max-date="filter.end ? filter.end : undefined"
                                 :required="false"
                                 class="searchFilter"
                             ></opensilex-DateTimeForm>
@@ -110,6 +111,9 @@
                             <opensilex-DateTimeForm
                                 :value.sync="filter.end"
                                 label="Event.end"
+                                :min-date="filter.start ? filter.start : undefined"
+                                :minDate="filter.start"
+                                :maxDate="filter.end"
                                 :required="false"
                                 class="searchFilter"
                             ></opensilex-DateTimeForm>

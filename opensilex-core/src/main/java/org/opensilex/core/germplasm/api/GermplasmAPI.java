@@ -26,12 +26,12 @@ import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.server.rest.validation.ValidURI;
@@ -127,7 +127,7 @@ public class GermplasmAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Add a germplasm (variety, accession, plantMaterialLot)", response = ObjectUriResponse.class),
+        @ApiResponse(code = 201, message = "Add a germplasm (variety, accession, plantMaterialLot)", response = URI.class),
         @ApiResponse(code = 400, message = "Bad user request", response = ErrorResponse.class),
         @ApiResponse(code = 409, message = "A germplasm with the same URI already exists", response = ErrorResponse.class),
         @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
@@ -510,7 +510,7 @@ public class GermplasmAPI {
     @Produces(MediaType.APPLICATION_JSON)
 
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Germplasm updated", response = ObjectUriResponse.class),
+        @ApiResponse(code = 200, message = "Germplasm updated", response = URI.class),
         @ApiResponse(code = 400, message = "Invalid or unknown Germplasm URI", response = ErrorResponse.class)})
     public Response updateGermplasm(
             @ApiParam("Germplasm description") @Valid GermplasmUpdateDTO germplasmDTO

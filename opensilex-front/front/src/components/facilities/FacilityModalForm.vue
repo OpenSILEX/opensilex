@@ -15,13 +15,17 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Ref } from "vue-property-decorator";
+import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
+import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
 import DTOConverter from "../../models/DTOConverter";
-import { FacilityCreationDTO } from 'opensilex-core/index';
+import {FacilityCreationDTO} from 'opensilex-core/index';
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
+import {FacilityGetDTO} from "opensilex-core/model/facilityGetDTO";
+import ModalForm from "../common/forms/ModalForm.vue";
+import FacilityForm from "./FacilityForm.vue";
+import {FacilityUpdateDTO} from "opensilex-core/model/facilityUpdateDTO";
 
 @Component
 export default class FacilityModalForm extends Vue {
@@ -32,17 +36,18 @@ export default class FacilityModalForm extends Vue {
   })
   initForm: (f: FacilityCreationDTO) => {};
 
-  @Ref("facilityForm") readonly facilityForm!: any;
+  @Ref("facilityForm") readonly facilityForm!: ModalForm<FacilityForm, FacilityCreationDTO, FacilityUpdateDTO>;
 
   showEditForm(form) {
     this.$opensilex
       .getService<OrganizationsService>("opensilex.OrganizationsService")
       .getFacility(form.uri)
       .then((http) => {
+        let dto: FacilityGetDTO = http.response.result;
         this.facilityForm
           .getFormRef()
-          .setBaseType(this.$opensilex.Oeso.FACILITY_TYPE_URI);
-        let editDto = DTOConverter.extractURIFromResourceProperties(http.response.result);
+          .setBaseType(dto.rdf_type);
+        let editDto = DTOConverter.extractURIFromResourceProperties<FacilityGetDTO, FacilityUpdateDTO>(dto);
         this.facilityForm.showEditForm(editDto);
       }).catch(this.$opensilex.errorHandler);
   }
@@ -54,7 +59,7 @@ export default class FacilityModalForm extends Vue {
     this.facilityForm.showCreateForm();
   }
 
-  callInfrastructureFacilityCreation(form) {
+  callInfrastructureFacilityCreation(form: FacilityCreationDTO) {
     let definedRelations = [];
     for (let i in form.relations) {
       let relation = form.relations[i];
@@ -96,7 +101,7 @@ export default class FacilityModalForm extends Vue {
       });
   }
 
-  callInfrastructureFacilityUpdate(form) {
+  callInfrastructureFacilityUpdate(form: FacilityUpdateDTO) {
     let definedRelations = [];
     for (let i in form.relations) {
       let relation = form.relations[i];

@@ -7,12 +7,11 @@ import org.opensilex.core.organisation.dal.site.SiteDAO;
 import org.opensilex.core.organisation.dal.site.SiteModel;
 import org.opensilex.core.organisation.dal.site.SiteSearchFilter;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.exceptions.displayable.DisplayableBadRequestException;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
@@ -32,7 +31,6 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
 import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -153,7 +151,7 @@ public class SiteAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Site created", response = ObjectUriResponse.class),
+            @ApiResponse(code = 201, message = "Site created", response = URI.class),
             @ApiResponse(code = 409, message = "A site with the same URI already exists", response = ErrorResponse.class)
     })
     public Response createSite(
@@ -186,7 +184,7 @@ public class SiteAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Site updated", response = ObjectUriResponse.class),
+            @ApiResponse(code = 200, message = "Site updated", response = URI.class),
             @ApiResponse(code = 404, message = "Site URI not found", response = ErrorResponse.class)
     })
     public Response updateSite(
@@ -216,7 +214,7 @@ public class SiteAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Site deleted", response = ObjectUriResponse.class),
+            @ApiResponse(code = 200, message = "Site deleted", response = URI.class),
             @ApiResponse(code = 404, message = "Site URI not found", response = ErrorResponse.class)
     })
     public Response deleteSite(

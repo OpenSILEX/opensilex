@@ -11,9 +11,9 @@ import org.opensilex.front.vueOwlExtension.dal.VueClassExtensionModel;
 import org.opensilex.front.vueOwlExtension.dal.VueOwlExtensionDAO;
 import org.opensilex.front.vueOwlExtension.types.VueOntologyDataType;
 import org.opensilex.front.vueOwlExtension.types.VueOntologyObjectType;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
@@ -21,7 +21,10 @@ import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
-import org.opensilex.sparql.ontology.dal.*;
+import org.opensilex.sparql.ontology.dal.AbstractPropertyModel;
+import org.opensilex.sparql.ontology.dal.ClassModel;
+import org.opensilex.sparql.ontology.dal.DatatypePropertyModel;
+import org.opensilex.sparql.ontology.dal.ObjectPropertyModel;
 import org.opensilex.sparql.ontology.store.OntologyStore;
 import org.opensilex.sparql.service.SPARQLService;
 
@@ -81,7 +84,7 @@ public class VueOwlExtensionAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Create a custom class", response = ObjectUriResponse.class),
+            @ApiResponse(code = 201, message = "Create a custom class", response = URI.class),
             @ApiResponse(code = 409, message = "A class with the same URI already exists", response = ErrorResponse.class)
     })
 
@@ -110,7 +113,7 @@ public class VueOwlExtensionAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Update a RDF property", response = ObjectUriResponse.class)
+            @ApiResponse(code = 200, message = "Update a RDF property", response = URI.class)
     })
     public Response updateRDFType(
             @ApiParam("RDF type definition") @Valid VueRDFTypeDTO dto
@@ -133,7 +136,7 @@ public class VueOwlExtensionAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Define properties order", response = ObjectUriResponse.class)
+            @ApiResponse(code = 200, message = "Define properties order", response = URI.class)
     })
     public Response setRDFTypePropertiesOrder(
             @ApiParam(value = "RDF type", required = true) @QueryParam("rdf_type") @ValidURI @NotNull URI classURI,
@@ -152,7 +155,7 @@ public class VueOwlExtensionAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Class deleted ", response = ObjectUriResponse.class)
+            @ApiResponse(code = 200, message = "Class deleted ", response = URI.class)
     })
     public Response deleteRDFType(
             @ApiParam(value = "RDF type") @PathParam("uri") @NotNull @ValidURI URI classURI

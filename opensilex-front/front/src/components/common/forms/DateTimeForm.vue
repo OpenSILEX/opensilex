@@ -14,6 +14,7 @@
           :model-config="modelConfig"
           class="inline-block h-full"
           is24hr
+          :valid-hours="checkIfHourIsValid"
           mode="datetime"
           :timezone="timezone"
           @input="input"
@@ -48,12 +49,15 @@
 <script lang="ts">
 import { Component, Prop, PropSync } from "vue-property-decorator";
 import Vue from "vue";
+import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 
 @Component
 export default class DateTimeForm extends Vue {
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
   $store: any;
   $t: any;
+
+  validHour : { min: number, max: number};
 
   @Prop()
   label: string;
@@ -98,6 +102,22 @@ export default class DateTimeForm extends Vue {
 
   get user() {
     return this.$store.state.user;
+  }
+
+  get checkIfHourIsValid(){
+    const startDateObj = new Date(this.minDate);
+    const startDateDay = startDateObj.getUTCDate()
+    const startDateHour = startDateObj.getUTCHours();
+
+    const endDateObj = new Date(this.maxDate);
+    const endDateDay = endDateObj.getUTCDate();
+
+    if (startDateDay == endDateDay){
+      this.validHour = { min: startDateHour+2 , max: 24 };
+    } else {
+      this.validHour = { min: 0, max: 24 };
+    }
+    return this.validHour;      
   }
 }
 </script>

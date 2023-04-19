@@ -5,45 +5,33 @@
  */
 package org.opensilex.core.organisation.api;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-import java.net.URI;
-import java.util.List;
-import javax.inject.Inject;
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import io.swagger.annotations.*;
 import org.opensilex.core.organisation.dal.OrganizationDAO;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.server.response.ErrorResponse;
-import org.opensilex.server.response.ObjectUriResponse;
-import org.opensilex.server.response.PaginatedListResponse;
-import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.server.response.ErrorResponse;
+import org.opensilex.server.response.ObjectUriResponse;
+import org.opensilex.server.response.PaginatedListResponse;
+import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.response.ResourceDagDTO;
 import org.opensilex.sparql.response.ResourceDagDTOBuilder;
 import org.opensilex.sparql.service.SPARQLService;
+
+import javax.inject.Inject;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.net.URI;
+import java.util.List;
 
 /**
  *
@@ -85,7 +73,7 @@ public class OrganizationAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Create an organisation", response = ObjectUriResponse.class),
+        @ApiResponse(code = 201, message = "Create an organisation", response = URI.class),
         @ApiResponse(code = 409, message = "An organisation with the same URI already exists", response = ErrorResponse.class)
     })
 
@@ -135,7 +123,7 @@ public class OrganizationAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Organisation deleted", response = ObjectUriResponse.class),
+        @ApiResponse(code = 200, message = "Organisation deleted", response = URI.class),
         @ApiResponse(code = 404, message = "Organisation URI not found", response = ErrorResponse.class)
     })
     public Response deleteInfrastructure(
@@ -175,7 +163,7 @@ public class OrganizationAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return updated organisation", response = ObjectUriResponse.class),
+        @ApiResponse(code = 200, message = "Return updated organisation", response = URI.class),
         @ApiResponse(code = 404, message = "Organisation URI not found", response = ErrorResponse.class)
     })
     public Response updateInfrastructure(

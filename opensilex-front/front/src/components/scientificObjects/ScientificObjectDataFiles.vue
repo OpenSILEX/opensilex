@@ -73,6 +73,8 @@
                     label="component.common.end"
                     name="endDate"
                     :min-date="filter.start_date ? filter.start_date : undefined"
+                    :minDate="filter.start_date"
+                    :maxDate="filter.end_date"
                     class="searchFilter"
                 ></opensilex-DateTimeForm>
               </opensilex-FilterField>

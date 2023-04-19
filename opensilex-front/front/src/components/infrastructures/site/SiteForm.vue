@@ -63,13 +63,16 @@ import {Component, Prop, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
 import InfrastructureSelector from "../InfrastructureSelector.vue";
-import { SiteCreationDTO } from 'opensilex-core/index';
+import {SiteCreationDTO} from 'opensilex-core/index';
+import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
+import {OrganizationsService} from "opensilex-core/api/organizations.service";
+import {SiteUpdateDTO} from "opensilex-core/model/siteUpdateDTO";
 
 @Component
 export default class SiteForm extends Vue {
   @Ref("validatorRef") readonly validatorRef!: any;
 
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
   uriGenerated = true;
 
   @Prop({default: false})
@@ -84,7 +87,7 @@ export default class SiteForm extends Vue {
   @Ref("organizationSelector")
   organizationSelector: InfrastructureSelector;
 
-  getEmptyForm() {
+  getEmptyForm(): SiteCreationDTO {
     return SiteForm.getEmptyForm();
   }
 
@@ -119,9 +122,9 @@ export default class SiteForm extends Vue {
         : undefined;
   }
 
-  create(form) {
+  create(form: SiteCreationDTO) {
     return this.$opensilex
-        .getService("opensilex.OrganizationsService")
+        .getService<OrganizationsService>("opensilex.OrganizationsService")
         .createSite(form)
         .then((http: HttpResponse<OpenSilexResponse<string>>) => {
           let uri = http.response.result;
@@ -142,11 +145,11 @@ export default class SiteForm extends Vue {
         });
   }
 
-  update(form) {
+  update(form: SiteUpdateDTO) {
     delete form.rdf_type_name;
     console.log(form);
     return this.$opensilex
-        .getService("opensilex.OrganizationsService")
+        .getService<OrganizationsService>("opensilex.OrganizationsService")
         .updateSite(form)
         .then((http: HttpResponse<OpenSilexResponse<string>>) => {
           let uri = http.response.result;

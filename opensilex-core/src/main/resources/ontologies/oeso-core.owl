@@ -650,7 +650,6 @@ OESO</rdfs:label>
     </owl:DatatypeProperty>
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#hasFinancialFunding -->
 
     <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasFinancialFunding"/>
 
@@ -682,7 +681,30 @@ OESO</rdfs:label>
         <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Unit"/>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
     </owl:DatatypeProperty>
+    
 
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#height -->
+
+    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#height">
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Camera"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#integer"/>
+        <rdfs:comment>this is the number of pixels per row. The value should be in pixels.</rdfs:comment>
+        <rdfs:label xml:lang="en">height (pixels)</rdfs:label>
+        <rdfs:label xml:lang="fr">nombre de pixels en ligne (pixels)</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#inServiceDate -->
+
+    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#inServiceDate">
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#date"/>
+        <rdfs:label xml:lang="fr">date de mise en service</rdfs:label>
+        <rdfs:label xml:lang="en">in service date</rdfs:label>
+    </owl:DatatypeProperty>
+    
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#isPublic -->

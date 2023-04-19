@@ -536,6 +536,10 @@ public class VariableAPI {
     @Path("copy_from_shared_resource_instance")
     @ApiOperation("Copy the selected variables from the shared resource instance")
     @ApiProtected
+    @ApiCredential(
+            credentialId = CREDENTIAL_VARIABLE_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_VARIABLE_MODIFICATION_LABEL_KEY
+    )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {

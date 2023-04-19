@@ -57,7 +57,7 @@
 <script lang="ts">
 import {Component, Prop, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
-import {DataGetDTO, DevicesService, EventGetDTO, EventsService} from "opensilex-core/index";
+import {DataGetDTO, DevicesService, EventGetDTO, EventsService, NamedResourceDTOVariableModel} from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import HighchartsDataTransformer from "../../../models/HighchartsDataTransformer";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
@@ -66,7 +66,6 @@ import {DataService} from "opensilex-core/api/data.service";
 import {VariableDetailsDTO} from "opensilex-core/model/variableDetailsDTO";
 import {DataSerieGetDTO} from "opensilex-core/model/dataSerieGetDTO";
 import {DataVariableSeriesGetDTO} from "opensilex-core/model/dataVariableSeriesGetDTO";
-import {NamedResourceDTOVariableModel} from "opensilex-core/model/namedResourceDTOVariableModel";
 
 
 @Component

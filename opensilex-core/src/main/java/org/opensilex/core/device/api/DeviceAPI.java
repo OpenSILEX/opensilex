@@ -29,15 +29,10 @@ import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.organisation.api.facility.FacilityGetDTO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
-import org.opensilex.core.scientificObject.api.ScientificObjectCsvDescriptionDTO;
-import org.opensilex.core.variable.api.VariableDetailsDTO;
-import org.opensilex.core.variable.api.VariableGetDTO;
-import org.opensilex.core.variable.api.VariableWithDevicesDTO;
-import org.opensilex.sparql.csv.CsvImporter;
-import org.opensilex.sparql.csv.DefaultCsvImporter;
-import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
+import org.opensilex.core.variable.api.VariableGetDTO;
+import org.opensilex.core.variable.api.VariableWithDevicesDTO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -50,16 +45,16 @@ import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.server.rest.validation.ValidURI;
+import org.opensilex.sparql.csv.CSVValidationModel;
+import org.opensilex.sparql.csv.CsvImporter;
+import org.opensilex.sparql.csv.DefaultCsvImporter;
 import org.opensilex.sparql.csv.validation.CachedCsvImporter;
-import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
-import org.opensilex.utils.TokenGenerator;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -70,14 +65,11 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
-import java.io.InputStream;
 import java.io.StringWriter;
 import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.time.zone.ZoneRulesException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -138,7 +130,7 @@ public class DeviceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "A device is created", response = ObjectUriResponse.class),
+            @ApiResponse(code = 201, message = "A device is created", response = URI.class),
             @ApiResponse(code = 409, message = "A device with the same URI already exists", response = ErrorResponse.class)
     })
 
@@ -314,7 +306,7 @@ public class DeviceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Device updated", response = ObjectUriResponse.class)
+            @ApiResponse(code = 200, message = "Device updated", response = URI.class)
     })
     public Response updateDevice(
             @ApiParam(value = "Device description", required = true)
@@ -340,7 +332,7 @@ public class DeviceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Device deleted", response = ObjectUriResponse.class),
+            @ApiResponse(code = 200, message = "Device deleted", response = URI.class),
             @ApiResponse(code = 400, message = "Device is linked to some data, datafile or provenance and could not be deleted {result.title: 'LINKED_DEVICE_ERROR'}.", response = ErrorResponse.class),
             @ApiResponse(code = 404, message = "Device URI not found", response = ErrorResponse.class)
     })
@@ -891,7 +883,6 @@ public class DeviceAPI {
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
 
-    /*
     @GET
     @Path("{uri}/variables")
     @ApiOperation("Get variables linked to the device")
@@ -899,18 +890,16 @@ public class DeviceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return variables list", response = VariableGetDTO.class, responseContainer = "List")
+            @ApiResponse(code = 200, message = "Return variables list", response = NamedResourceDTO.class, responseContainer = "List")
     })
     public Response getDeviceVariables(
             @ApiParam(value = "Device URI", example = DeviceAPI.DEVICE_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
         List<VariableModel> variables = dao.getDeviceVariables(uri, currentUser.getLanguage());
-        List<VariableGetDTO> dtoList = variables.stream().map(VariableGetDTO::fromModel).collect(Collectors.toList());
+        List<NamedResourceDTO> dtoList = variables.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();
     }
-
-     */
 
     /**
      *

@@ -29,13 +29,6 @@ import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.organisation.api.facility.FacilityGetDTO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
-import org.opensilex.core.scientificObject.api.ScientificObjectCsvDescriptionDTO;
-import org.opensilex.core.variable.api.VariableDetailsDTO;
-import org.opensilex.core.variable.api.VariableGetDTO;
-import org.opensilex.core.variable.api.VariableWithDevicesDTO;
-import org.opensilex.sparql.csv.CsvImporter;
-import org.opensilex.sparql.csv.DefaultCsvImporter;
-import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.variable.api.VariableGetDTO;
@@ -894,7 +887,6 @@ public class DeviceAPI {
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
 
-    /*
     @GET
     @Path("{uri}/variables")
     @ApiOperation("Get variables linked to the device")
@@ -902,18 +894,16 @@ public class DeviceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return variables list", response = VariableGetDTO.class, responseContainer = "List")
+            @ApiResponse(code = 200, message = "Return variables list", response = NamedResourceDTO.class, responseContainer = "List")
     })
     public Response getDeviceVariables(
             @ApiParam(value = "Device URI", example = DeviceAPI.DEVICE_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
         DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
         List<VariableModel> variables = dao.getDeviceVariables(uri, currentUser.getLanguage());
-        List<VariableGetDTO> dtoList = variables.stream().map(VariableGetDTO::fromModel).collect(Collectors.toList());
+        List<NamedResourceDTO> dtoList = variables.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();
     }
-
-     */
 
     /**
      *

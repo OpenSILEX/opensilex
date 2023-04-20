@@ -12,7 +12,10 @@
                 <b-nav-item
                     :active="isOverviewTab()"
                     :to="{ path: '/facility/overview/' + encodeURIComponent(uri) }"
-                >{{ $t("FacilityView.overview") }}
+                > {{ $t("FacilityView.overview") }}
+                  <div style="float: right; padding-left: 5px">
+                    <img width="25" src="../../../theme/opensilex/images/construction.png">
+                  </div>
                 </b-nav-item>
 
                 <b-nav-item

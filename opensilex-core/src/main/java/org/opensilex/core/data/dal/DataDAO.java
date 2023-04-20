@@ -159,8 +159,6 @@ public class DataDAO {
 
         Document filter = searchFilter(user, experiments, targets, variables, provenances, devices, startDate, endDate, confidenceMin, confidenceMax, metadata, operators);
 
-        System.out.println(filter.toString());
-
         return nosql.searchWithPagination(DataModel.class, DATA_COLLECTION_NAME, filter, orderByList, page, pageSize);
     }
     

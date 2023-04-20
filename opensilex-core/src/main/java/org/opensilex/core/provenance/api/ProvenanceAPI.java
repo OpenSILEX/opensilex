@@ -12,7 +12,6 @@ import org.apache.jena.sparql.vocabulary.FOAF;
 import org.opensilex.core.data.api.DataAPI;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.device.dal.DeviceModel;
-import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.provenance.dal.AgentModel;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
@@ -238,6 +237,7 @@ public class ProvenanceAPI {
                 null,
                 null,
                 null,
+                null,
                 null
               
         );
@@ -248,6 +248,7 @@ public class ProvenanceAPI {
                 null,
                 null,
                 provenances,
+                null,
                 null,
                 null,
                 null,

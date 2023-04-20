@@ -128,6 +128,7 @@ public class DataAPI {
     public static final String DATA_EXAMPLE_TIMEZONE = "Europe/Paris";
     public static final String DATA_EXAMPLE_METADATA = "{ \"LabelView\" : \"side90\",\n" +
             "\"paramA\" : \"90\"}";
+    public static final String DATA_EXAMPLE_OPERATOR = "dev:id/user/isa.droits";
 
     public static final String CREDENTIAL_DATA_MODIFICATION_ID = "data-modification";
     public static final String CREDENTIAL_DATA_MODIFICATION_LABEL_KEY = "credential.default.modification";
@@ -268,6 +269,7 @@ public class DataAPI {
             @ApiParam(value = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE_MAX) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
             @ApiParam(value = "Search by provenances", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
             @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
+            @ApiParam(value = "Search by operators", example = DATA_EXAMPLE_OPERATOR ) @QueryParam("operators") List<URI> operators,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @DefaultValue("date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize,
@@ -276,7 +278,7 @@ public class DataAPI {
         if (targets == null) {
             targets = new ArrayList<>();
         }
-        return getDataList(startDate, endDate, timezone, experiments, targets, variables, devices, confidenceMin, confidenceMax, provenances, metadata, orderByList, page, pageSize);
+        return getDataList(startDate, endDate, timezone, experiments, targets, variables, devices, confidenceMin, confidenceMax, provenances, metadata, operators, orderByList, page, pageSize);
     }
 
     @GET
@@ -299,11 +301,12 @@ public class DataAPI {
             @ApiParam(value = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE_MAX) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
             @ApiParam(value = "Search by provenances", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
             @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
+            @ApiParam(value = "Search by operators", example = DATA_EXAMPLE_OPERATOR ) @QueryParam("operators") List<URI> operators,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @DefaultValue("date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
-        return getDataList(startDate, endDate, timezone, experiments, targets, variables, devices, confidenceMin, confidenceMax, provenances, metadata, orderByList, page, pageSize);
+        return getDataList(startDate, endDate, timezone, experiments, targets, variables, devices, confidenceMin, confidenceMax, provenances, metadata, operators, orderByList, page, pageSize);
     }
 
     private Response getDataList(
@@ -318,6 +321,7 @@ public class DataAPI {
             Float confidenceMax,
             List<URI> provenances,
             String metadata,
+            List<URI> operators,
             List<OrderBy> orderByList,
             int page,
             int pageSize) throws Exception{
@@ -366,6 +370,7 @@ public class DataAPI {
                 confidenceMin,
                 confidenceMax,
                 metadataFilter,
+                operators,
                 orderByList,
                 page,
                 pageSize
@@ -397,7 +402,8 @@ public class DataAPI {
             @ApiParam(value = "Search by minimal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("min_confidence") @Min(0) @Max(1) Float confidenceMin,
             @ApiParam(value = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE_MAX) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
             @ApiParam(value = "Search by provenances", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
-            @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata
+            @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
+            @ApiParam(value = "Search by operators", example = DATA_EXAMPLE_OPERATOR ) @QueryParam("operators") List<URI> operators
     ) throws Exception {
         DataDAO dao = new DataDAO(nosql, sparql, fs);
 
@@ -442,7 +448,8 @@ public class DataAPI {
                 endInstant,
                 confidenceMin,
                 confidenceMax,
-                metadataFilter
+                metadataFilter,
+                operators
         );
         return new SingleObjectResponse<>(count).getResponse();
     }
@@ -927,6 +934,7 @@ public class DataAPI {
             @ApiParam(value = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
             @ApiParam(value = "Search by provenances", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
             @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
+            @ApiParam(value = "Search by operators", example = DATA_EXAMPLE_OPERATOR ) @QueryParam("operators") List<URI> operators,
             @ApiParam(value = "Format wide or long", example = "wide") @DefaultValue("wide") @QueryParam("mode") String csvFormat,
             @ApiParam(value = "Export also raw_data") @DefaultValue("false") @QueryParam("with_raw_data") boolean withRawData,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
@@ -970,7 +978,7 @@ public class DataAPI {
         }
 
         Instant start = Instant.now();
-        List<DataModel> resultList = dao.search(user, experiments, objects, variables, provenances, devices, startInstant, endInstant, confidenceMin, confidenceMax, metadataFilter, orderByList);
+        List<DataModel> resultList = dao.search(user, experiments, objects, variables, provenances, devices, startInstant, endInstant, confidenceMin, confidenceMax, metadataFilter, operators, orderByList);
         Instant data = Instant.now();
         LOGGER.debug(resultList.size() + " observations retrieved " + Long.toString(Duration.between(start, data).toMillis()) + " milliseconds elapsed");
 
@@ -1042,7 +1050,7 @@ public class DataAPI {
         Response prepareCSVExport = null;
 
         try{
-            List<DataModel> resultList = dao.search(user, dto.getExperiments(), dto.getObjects(), dto.getVariables(), dto.getProvenances(), dto.getDevices(), startInstant, endInstant, dto.getConfidenceMin(), dto.getConfidenceMax(), metadataFilter, null);
+            List<DataModel> resultList = dao.search(user, dto.getExperiments(), dto.getObjects(), dto.getVariables(), dto.getProvenances(), dto.getDevices(), startInstant, endInstant, dto.getConfidenceMin(), dto.getConfidenceMax(), metadataFilter, null, null);
             Instant data = Instant.now();
             LOGGER.debug(resultList.size() + " observations retrieved " + Long.toString(Duration.between(start, data).toMillis()) + " milliseconds elapsed");
 

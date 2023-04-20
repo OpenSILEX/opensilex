@@ -266,7 +266,7 @@ public class DataFilesAPI {
         @ApiParam(value = "Device URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("device") List<URI> device) throws  Exception {
 
         DataDAO dao = new DataDAO(nosql, sparql, fs);
-        int datafileCount = dao.countFiles(null, null, null, target, null, device, null, null, null);
+        int datafileCount = dao.countFiles(null, null, null, target, null, device, null, null, null, null);
         return new SingleObjectResponse<>(datafileCount).getResponse();
     }
     

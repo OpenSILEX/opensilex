@@ -510,12 +510,12 @@ public class DeviceDAO {
         }
         
         DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
-        int dataCount = dataDAO.count(currentUser, null, null, null, null, Collections.singletonList(deviceURI),null, null, null, null, null);
+        int dataCount = dataDAO.count(currentUser, null, null, null, null, Collections.singletonList(deviceURI),null, null, null, null, null, null);
         if(dataCount > 0){
             throw new ForbiddenURIAccessException(deviceURI, dataCount+" data");
         }  
         
-        int dataFileCount = dataDAO.countFiles(currentUser, null, null, null, null, Collections.singletonList(deviceURI),null, null, null);
+        int dataFileCount = dataDAO.countFiles(currentUser, null, null, null, null, Collections.singletonList(deviceURI),null, null, null, null);
         if(dataFileCount > 0) {
             throw new ForbiddenURIAccessException(deviceURI, dataFileCount + " datafile(s)");
         }

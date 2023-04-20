@@ -335,6 +335,7 @@ export default class Histogram extends Vue {
         undefined,
         undefined,
         undefined,
+        undefined,
         ["date=asc"],
         0,
         50000,

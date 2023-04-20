@@ -326,6 +326,7 @@ export default class DeviceVisualizationTab extends Vue {
             undefined, // max_confidence
             this.form.provenance ? [this.form.provenance] : undefined,
             undefined, //this.addMetadataFilter(),
+            undefined,  // operators
             ["date=asc"], //order by
             0,
             50000

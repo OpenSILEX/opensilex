@@ -66,6 +66,7 @@ import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {DataService} from "opensilex-core/api/data.service";
 import {OntologyService} from "opensilex-core/api/ontology.service";
 import {VariablesService} from "opensilex-core/api/variables.service";
+import {DataGetDTO} from "opensilex-core/model/dataGetDTO";
 
 @Component
 export default class DataList extends Vue {
@@ -96,7 +97,10 @@ export default class DataList extends Vue {
                     provenance: null,
                     experiments: [],
                     scientificObjects: [],
-                    targets: []
+                    targets: [],
+                    devices: [],
+                    facilities: [],
+                    operators: []
                 };
             },
         })
@@ -228,6 +232,9 @@ export default class DataList extends Vue {
     objectsPath = {};
     variableNames = {};
     provenances = {};
+    devices = {};
+    facilities = {};
+    operators = {};
 
     searchDataList(options) {
         let provUris = this.$opensilex.prepareGetParameter(this.filter.provenance);
@@ -242,18 +249,18 @@ export default class DataList extends Vue {
                 undefined, // timezone,
                 this.filter.experiments, // experiments
                 this.$opensilex.prepareGetParameter(this.filter.variables), // variables,
-                undefined, // devices
+                this.$opensilex.prepareGetParameter(this.filter.devices), // devices
                 undefined, // min_confidence
                 undefined, // max_confidence
                 provUris, // provenance
                 undefined, // metadata
+                this.$opensilex.prepareGetParameter(this.filter.operators),
                 options.orderBy, // order_by
                 options.currentPage,
                 options.pageSize,
-                [].concat(this.filter.scientificObjects, this.filter.targets), // targets &
+                [].concat(this.filter.scientificObjects, this.filter.facilities, this.filter.targets), // targets & os & facilities
             )
                 .then((http) => {
-
                     let promiseArray = [];
                     let objectsToLoad = [];
                     let variablesToLoad = [];
@@ -277,7 +284,7 @@ export default class DataList extends Vue {
                                 provenancesToLoad.push(provenanceURI);
                             }
                         }
-
+                         
                         if (objectsToLoad.length > 0) {
                             let promiseObject = this.ontologyService
                                 .getURILabelsList(objectsToLoad, this.contextUri)
@@ -291,6 +298,24 @@ export default class DataList extends Vue {
                                 .catch(reject);
                             promiseArray.push(promiseObject);
                         }
+
+                        let promiseFacility = this.dataService
+                            .searchDataList(
+                                undefined,
+                                undefined,
+                                undefined,
+                                undefined,
+                                [this.filter.facilities]
+                            ).then((http: HttpResponse<OpenSilexResponse<Array<DataGetDTO>>>) => {
+                                if (http && http.response){
+                                    for (let j in http.response.result){
+                                        let facility = http.response.result[j];
+                                        this.facilities[facility.uri] = facility.uri;
+                                    } }
+                            })
+                            .catch(reject);
+                            promiseArray.push(promiseFacility)
+                        
 
                         if (variablesToLoad.length > 0) {
                             let promiseVariable = this.variablesService

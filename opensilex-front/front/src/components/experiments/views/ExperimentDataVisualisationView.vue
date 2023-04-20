@@ -404,6 +404,7 @@ export default class ExperimentDataVisualisationView extends Vue {
               undefined,
               this.form.provenance ? [this.form.provenance] : undefined,
               undefined, //this.addMetadataFilter(),
+              undefined,
               ["date=asc"],
               0,
               50000

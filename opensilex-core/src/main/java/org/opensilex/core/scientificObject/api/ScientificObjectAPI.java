@@ -11,7 +11,6 @@ import com.mongodb.client.model.geojson.Geometry;
 import io.swagger.annotations.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
-import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
@@ -681,7 +680,7 @@ public class ScientificObjectAPI {
             }
 
             // check that no data are associated (dao handle empty or not list)
-            int dataCount = dataDAO.count(null,xpList, osList,null,null,null,null,null,null,null,null);
+            int dataCount = dataDAO.count(null,xpList, osList,null,null,null,null,null,null,null,null, null);
             if(dataCount > 0){
                 throw new DisplayableBadRequestException(DELETE_ERROR_TITLE+" : object has associated data",
                         "component.scientificObjects.error.delete.associated-data",
@@ -690,7 +689,7 @@ public class ScientificObjectAPI {
             }
 
             // check that no data file are associated (dao handle empty or not list)
-            int dataFileCount = dataDAO.countFiles(null,null,xpList,osList,null,null,null,null,null);
+            int dataFileCount = dataDAO.countFiles(null,null,xpList,osList,null,null,null,null,null, null);
             if(dataFileCount > 0){
                 throw new DisplayableBadRequestException(DELETE_ERROR_TITLE+" : object has associated data files",
                         "component.scientificObjects.error.delete.associated-data-files",

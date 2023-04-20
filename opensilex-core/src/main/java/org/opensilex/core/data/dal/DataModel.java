@@ -6,17 +6,13 @@
 //******************************************************************************
 package org.opensilex.core.data.dal;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.bson.Document;
+import org.opensilex.nosql.mongodb.MongoModel;
+
 import java.net.URI;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
-
-import org.apache.commons.codec.digest.DigestUtils;
-import org.bson.Document;
-import org.opensilex.nosql.mongodb.MongoModel;
-import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 
 /**
  *
@@ -47,6 +43,7 @@ public class DataModel extends MongoModel {
     private Float confidence = null;
 
     private Document metadata;  
+
 
     public URI getTarget() {
         return target;

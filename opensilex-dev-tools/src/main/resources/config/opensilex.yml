@@ -1,87 +1,43 @@
 ontologies:
-    baseURI: http://opensilex.dev/
+    baseURI: http://opensilex.test/
     baseURIAlias: dev
     sparql:
         #        implementation: org.opensilex.sparql.rdf4j.RDF4JInMemoryServiceFactory
         config:
             serverURI: http://localhost:8667/rdf4j-server/
-            repository: opensilex
-
-file-system:
-    fs:
-        config:
-            defaultFS: local
-            connections:
-                local:
-                    implementation: org.opensilex.fs.local.LocalFileSystemConnection
-                    config:
-                        basePath: ../../opensilex-data
-                #     irods:
-                #         implementation: org.opensilex.fs.irods.IrodsFileSystemConnection
-                #         config:
-                #             basePath: /FranceGrillesZone/home/fg-phenome/PHIS
-                gridfs:
-                    implementation: org.opensilex.fs.gridfs.GridFSConnection
-                    config:
-                        host: localhost
-                        port: 8668
-                        database: opensilex
-            # customPath:
-            #     datafile/: irods
+            repository: insect_behaveOpt
 
 big-data:
     mongodb:
         config:
             host: localhost
             port: 8668
-            database: opensilex
+            database: insect_behaveOpt
     #            timezone: Europe/Paris
 
-phisws:
-    infrastructure: opensilex
-# Configuration for module: SecurityModule (SecurityConfig)
-# security:
-# #    Email service (EmailService)
-#    email:
-#         config:
-#             enable: true
-#             simulateSending: false
-#             # Not working
-#             sender: opensilex@mail.com
-#             smtp :
-#                 host: smtp.gmail.com
-#                 port: 587
-#                 userId : ""
-#                 userPassword : ""
+core:
+    enableLogs: true
+    enableOntologyCaching: false
+    metrics:
+        # Metrics configs about system (SystemMetricsConfig)
+        enableMetrics: true
+        system:
+            # First metrics for any time depending on is time unit (int)
+            timeBeforeFirstMetric: 1
+            # Delay between whole system metrics (combined with corresponding TimeUnit) (int)
+            delayBetweenMetrics: 30
+            # Default metrics units : DAYS, HOURS, MINUTES, SECONDS are authorized (String)
+            metricsTimeUnit: MINUTES
+        # Metrics configs about experiments (ExperimentsMetricsConfig)
+        experiments:
+            # First metrics for any time depending on is time unit (int)
+            timeBeforeFirstMetric: 1
+            # Delay between whole system metrics (combined with corresponding TimeUnit) (int)
+            delayBetweenMetrics: 30
+            # Default metrics units : DAYS, HOURS, MINUTES, SECONDS are authorized (String)
+            metricsTimeUnit: MINUTES
 
-#core:
-#    enableLogs: true
-#server:
-#    pathPrefix: /sunagri
-
-# Base system configuration OpenSilex (OpenSilexConfig)
-#system:
-#  instanceTitle: OpenSILEX
-#  # Instance description (String)
-#  instanceDescription: OpenSILEX is an ontology-driven Information System designed for life science data.
-#  # Contact name (String)
-#  contactName: OpenSILEX Team
-#  # Contact e-mail (String)
-#  contactEmail: opensilex-help@groupes.renater.fr
-#  # Project homepage (String)
-#  projectHomepage: http://www.opensilex.org/
-
-system:
-    ignoredModules:
-        org.opensilex.opensilex-mobile.MobileModule: opensilex-mobile.jar
-
-# dataverse:
-#     externalAPIKey: "****-****-****-****-****"
-#     rechercheDataGouvBasePath: https://demo.recherche.data.gouv.fr/"
-#     dataverseAlias: "opensilex-tests"
-#     dataverseLanguages:
-#         - en
-#         - fr
-#     datasetMetadataLanguages:
-#         - en
-#         - fr
+front:
+    dashboard:
+        graph1:
+            variable: http://opensilex.test/id/variable/air_temperature_datalogging_degreecelsius

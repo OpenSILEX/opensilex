@@ -13,7 +13,7 @@
                     :active="isOverviewTab()"
                     :to="{ path: '/facility/overview/' + encodeURIComponent(uri) }"
                 > {{ $t("FacilityView.overview") }}
-                  <img width="28"
+                  <img
                        v-bind:src="$opensilex.getResourceURI('images/construction.png')"
                        class="wip-icon"
                        alt="work in progress"
@@ -141,7 +141,8 @@
 
 .wip-icon {
   float: right;
-  padding-left: 5px
+  padding-left: 5px;
+  width: 28px;
 }
 
 </style>

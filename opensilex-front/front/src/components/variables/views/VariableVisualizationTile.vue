@@ -19,7 +19,7 @@
           <opensilex-TextView
               style="font-size: xxx-large; margin-bottom: 0;"
               v-on:click.native="showGraphic"
-              :value="lastMedianData.value + ' ' + variable.unit.symbol">
+              :value="lastMedianData.value.toPrecision(4) + ' ' + variable.unit.symbol">
           </opensilex-TextView>
           <opensilex-DateView
             :value="lastMedianData.date"
@@ -190,6 +190,7 @@ export default class VariableVisualizationTile extends Vue {
     }
     else {
       data = this.calculatedDataSeries[0].data;
+      data.sort((a,b) => (a.date > b.date) ? 1 : ((b.date > a.date) ? -1 : 0));
     }
     return data[data.length - 1];
   }

@@ -223,7 +223,6 @@ export default class FacilityAssociatedDevices extends Vue {
             0,
             0)
         .then((http: HttpResponse<OpenSilexResponse<Array<VariableGetDTO>>>) => {
-          console.debug(http.response.result);
           let resultList = http.response.result;
           this.usedVariables = [];
           for (let i in resultList) {

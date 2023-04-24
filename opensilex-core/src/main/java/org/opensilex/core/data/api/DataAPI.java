@@ -758,18 +758,10 @@ public class DataAPI {
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=asc") @QueryParam("order_by") List<OrderBy> orderByList
     ) throws Exception {
 
-        String nameofCurrMethod = new Object() {}
-                .getClass()
-                .getEnclosingMethod()
-                .getName();
-        System.out.println(nameofCurrMethod);
-
         DataDAO dao = new DataDAO(nosql, sparql, fs);
         VariableDAO variableDAO = new VariableDAO(sparql, nosql, fs);
 
     /// Search data
-
-        long startTime = System.currentTimeMillis();
 
         ListWithPagination<DataModel> result = dao.search(
                 user,
@@ -788,9 +780,6 @@ public class DataAPI {
                 0);
 
         List<DataModel> dataModels = result.getList();
-
-        long stopTime = System.currentTimeMillis();
-        System.out.println("TIME EXEC query (s) = " + (stopTime - startTime)/1000);
 
         VariableDetailsDTO variable = new VariableDetailsDTO(variableDAO.get(variableUri));
         DataVariableSeriesGetDTO dto = new DataVariableSeriesGetDTO(variable);
@@ -833,7 +822,6 @@ public class DataAPI {
             List<DataSimpleGetDTO> medianOfMedians = computeMedianPerHour(medians);
             dataCalculatedSeriesDTOs.add(new DataSerieGetDTO(provMedian, medianOfMedians));
 
-            //TODO: trash
             DataSimpleProvenanceGetDTO provAverage = new DataSimpleProvenanceGetDTO();
             provAverage.setUri(URI.create("average_per_hour"));
 
@@ -861,8 +849,6 @@ public class DataAPI {
                 LinkedHashMap::new,
                 Collectors.toList()));
 
-        System.out.println(dataPerHourMap.keySet());
-
         for (Map.Entry<Long, List<DataSimpleGetDTO>> entry : dataPerHourMap.entrySet()) {
             Instant dateTime = Instant.ofEpochSecond(entry.getKey()*3600).plus(30, ChronoUnit.MINUTES);
 
@@ -875,8 +861,6 @@ public class DataAPI {
 
             mediansPerHour.add(medianData);
         }
-
-        System.out.println(mediansPerHour);
 
         return mediansPerHour;
     }
@@ -895,8 +879,6 @@ public class DataAPI {
                         LinkedHashMap::new,
                         Collectors.toList()));
 
-        System.out.println(dataPerHourMap.keySet());
-
         for (Map.Entry<Long, List<DataModel>> entry : dataPerHourMap.entrySet()) {
             Instant dateTime = Instant.ofEpochSecond(entry.getKey()*3600).plus(30, ChronoUnit.MINUTES);
             double avg = entry.getValue().stream().mapToDouble(d->(Double.valueOf(d.getValue().toString()))).average().orElse(Double.NaN);
@@ -907,8 +889,6 @@ public class DataAPI {
 
             averagePerHour.add(averageData);
         }
-
-        System.out.println(averagePerHour);
 
         return new DataSerieGetDTO(null, averagePerHour);
     }

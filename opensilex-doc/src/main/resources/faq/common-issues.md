@@ -61,3 +61,14 @@ $ sudo sysctl -p
 - **How to reproduce** : This errors is returned when you try to login (via UI or via Swagger UI) and only occurs if you have a JAVA version >= 17.
 - **Cause** : It's due to the dependency [ByteBuddy](https://bytebuddy.net/)
 - **How to solve** : use a JAVA version <= 14
+
+# OpenSilex installation errors
+
+## Failure on Tests
+
+Mongo 5.0.0, used for tests, is not compatible with Ubuntu 22.04.2 LTS.
+You need to change the Mongo version to 4_0_12 in the file : `AbstractMongoIntegrationTest.java`(line 64).
+
+```sh
+$ mongoExec = runtime.prepare(MongodConfig.builder().version(Version.V4_0_12)
+```

@@ -228,7 +228,6 @@ export default class VariableVisualizationTile extends Vue {
   }
 
   showGraphic() {
-    console.log("show graphic");
     this.prepareGraphic();
     this.graphicModal.show();
   }
@@ -239,7 +238,6 @@ export default class VariableVisualizationTile extends Vue {
       let promise;
 
       for (let i = 0; i < this.calculatedDataSeries.length; ++i) {
-        console.debug(this.calculatedDataSeries[i]);
         promise = this.buildDataSerie(this.calculatedDataSeries[i], true);
         promises.push(promise);
       }

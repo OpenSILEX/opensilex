@@ -905,7 +905,7 @@ test:brice:deploy:
   <<: *deploy_opensilex_template
   variables:
     CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/brice"
-    INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
+    INSTANCE_CONFIGURATION_FILE_NAME: "opensilex.yml"
     OPENSILEX_JAR_ADMIN_PORT: 4090
     OPENSILEX_JAR_PORT: 8090
     REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"

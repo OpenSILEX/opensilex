@@ -149,7 +149,7 @@ export default class VariableVisualizationTile extends Vue {
   loadData() {
     var today: Date = new Date();
     var aWeekBefore: Date = new Date(today);
-    aWeekBefore.setDate(aWeekBefore.getDate() - 60);
+    aWeekBefore.setDate(aWeekBefore.getDate() - 7);
 
     this.dataService.getDataSeriesByFacility(
         this.variableUri.uri,

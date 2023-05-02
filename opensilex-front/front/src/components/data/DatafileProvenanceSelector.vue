@@ -25,12 +25,9 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, PropSync, Ref, Watch } from "vue-property-decorator";
+import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
-import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
-// @ts-ignore
-import { ProvenanceGetDTO } from "opensilex-core/index";
+import SelectForm from "../common/forms/SelectForm.vue";
 
 
 @Component
@@ -38,7 +35,7 @@ export default class DatafileProvenanceSelector extends Vue {
   $opensilex: any;
   $i18n: any;
 
-  @Ref("selectForm") readonly selectForm!: any;
+  @Ref("selectForm") readonly selectForm!: SelectForm;
 
   @Prop()
   actionHandler: Function;

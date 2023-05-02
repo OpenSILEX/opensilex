@@ -634,7 +634,7 @@ test:yvan:deploy:
 valentin:build:
   <<: *build_template_with_opensilex
   rules:
-    - if: $CI_COMMIT_BRANCH == "valentin"
+    - if: $CI_COMMIT_BRANCH == "test/valentin"
 
 test:valentin:deploy:
   <<: *deploy_opensilex_before_script
@@ -649,7 +649,7 @@ test:valentin:deploy:
     REMOTE_SERVER_RSYNC_DIR: "mistea/valentin"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   rules:
-    - if: $CI_COMMIT_BRANCH == "valentin"
+    - if: $CI_COMMIT_BRANCH == "test/valentin"
       when: on_success
   needs:
     - valentin:build

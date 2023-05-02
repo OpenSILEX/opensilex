@@ -23,6 +23,7 @@ import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
 import {GermplasmService} from "opensilex-core/api/germplasm.service";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+import SelectForm from "../common/forms/SelectForm.vue";
 
 @Component
 export default class GermplasmAttributesSelector extends Vue {
@@ -55,7 +56,7 @@ export default class GermplasmAttributesSelector extends Vue {
         return this.$store.getters.language;
     }
 
-    @Ref("selectForm") readonly selectForm!: any;
+    @Ref("selectForm") readonly selectForm!: SelectForm;
 
     loadOptions(query, page, pageSize) {
         return this.service

@@ -71,6 +71,7 @@
           :show-count="showCount"
           :limit="limit"
           @keyup.enter.native="onEnter"
+          :key="treeselectRefreshKey"
 
         >
           <template v-slot:option-label="{ node }">
@@ -306,6 +307,11 @@ export default class SelectForm extends Vue {
   selectedCopie = [];
   // temporary modal selection
   selectedTmp = [];
+
+    /**
+     * Refresh key for the Treeselect component. Used by the {@link refresh} method.
+     */
+  treeselectRefreshKey: number = 0;
 
   @AsyncComputedProp()
   selectedValues(): Promise<any> {
@@ -623,23 +629,11 @@ export default class SelectForm extends Vue {
 
   debounceSearch;
 
+    /**
+     * Refreshes the treeselect component & clears its cache.
+     */
   refresh(){
-      this.$opensilex.disableLoader();
-         let query = ".*";
-       this
-        .searchMethod(query, 0, this.resultLimit)
-        .then((http) => {
-          let list = http.response.result;
-          this.totalCount = http.response.metadata.pagination.totalCount;
-          this.resultCount = list.length;
-          let nodeList = [];
-          list.forEach((item) => {
-            nodeList.push(this.conversionMethod(item));
-          });
-           this.$opensilex.enableLoader();
-        })
-        .catch(this.$opensilex.errorHandler);
-
+      this.treeselectRefreshKey += 1;
   }
 
   debounce(func, wait, immediate?): Function {

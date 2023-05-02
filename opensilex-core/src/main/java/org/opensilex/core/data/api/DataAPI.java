@@ -789,13 +789,13 @@ public class DataAPI {
     }
 
     @GET
-    @Path("/facility")
-    @ApiOperation("Get data series by facility")
+    @Path("/data_serie/facility")
+    @ApiOperation("Get all data series associated with a facility")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return a data serie", response = DataVariableSeriesGetDTO.class)
+            @ApiResponse(code = 200, message = "Return a list of data serie", response = DataVariableSeriesGetDTO.class)
     })
     public Response getDataSeriesByFacility(
             @ApiParam(value = "variable URI", example = "http://example.com/", required = true) @QueryParam("variable") @NotNull URI variableUri,
@@ -808,7 +808,7 @@ public class DataAPI {
         DataDAO dao = new DataDAO(nosql, sparql, fs);
         VariableDAO variableDAO = new VariableDAO(sparql, nosql, fs);
 
-    /// Search data
+        /// Search data
 
         ListWithPagination<DataModel> result = dao.search(
                 user,
@@ -831,7 +831,7 @@ public class DataAPI {
         VariableDetailsDTO variable = new VariableDetailsDTO(variableDAO.get(variableUri));
         DataVariableSeriesGetDTO dto = new DataVariableSeriesGetDTO(variable);
 
-    /// Compute median series for each provenance
+        /// Compute median series for each provenance
 
         Map<DataProvenanceModel, List<DataModel>> provenancesMap;
 
@@ -857,7 +857,7 @@ public class DataAPI {
 
         dto.setDataSeries(dataSeriesDTOs);
 
-    /// Compute calculated series
+        /// Compute calculated series
 
         if (dataSeriesDTOs.size() > 1) {
 

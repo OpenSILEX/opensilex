@@ -5,12 +5,14 @@
         :label="variableUri.name"
         icon=""
     >
+
       <template v-slot:body>
 
         <opensilex-TextView v-if="isNoDataFound"
                             id="no-data-text"
             :label="$t('FacilityAssociatedDevices.no-data')">
         </opensilex-TextView>
+
         <div
             id="data-infos"
             v-if="isDataLoaded">
@@ -168,8 +170,8 @@ export default class VariableVisualizationTile extends Vue {
     this.dataService.getDataSeriesByFacility(
         this.variableUri.uri,
         this.target,
-        (this.startDate != "") ? this.startDate : undefined,
-        (this.endDate != "") ? this.endDate : undefined,
+        this.startDate,
+        this.endDate,
         ["date=asc"]
     )
         .then(
@@ -205,6 +207,7 @@ export default class VariableVisualizationTile extends Vue {
     }
     else {
       data = this.calculatedDataSeries[0].data;
+      data.sort((a,b) => (a.date > b.date) ? 1 : ((b.date > a.date) ? -1 : 0));
     }
 
     this.lastMedianData = {

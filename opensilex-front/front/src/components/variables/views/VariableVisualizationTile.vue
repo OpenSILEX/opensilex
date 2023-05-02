@@ -17,15 +17,22 @@
             id="data-infos"
             v-if="isDataLoaded">
           <opensilex-TextView
-              style="font-size: xxx-large; margin-bottom: 0;"
+              style="margin-bottom: 0;"
               v-on:click.native="showGraphic"
-              :value="lastMedianData.value.toPrecision(4) + ' ' + variable.unit.symbol">
+              :value="$t('VariableVisualizationTile.lastMedianData')">
+          </opensilex-TextView>
+          <opensilex-TextView
+              style="font-size: xx-large; margin-bottom: 0;"
+              v-on:click.native="showGraphic"
+              :value.sync="lastMedianData.value"
+          >
           </opensilex-TextView>
           <opensilex-DateView
-            :value="lastMedianData.date"
+              v-on:click.native="showGraphic"
+            :value.sync="lastMedianData.date"
             :isDateTime="true"
             :useLocaleFormat="true"
-            :dateTimeFormatOptions="{ dateStyle: 'short', timeStyle: 'long' }">
+            :dateTimeFormatOptions="{ dateStyle: 'long', timeStyle: 'long' }">
           </opensilex-DateView>
         </div>
 
@@ -85,16 +92,28 @@ export default class VariableVisualizationTile extends Vue {
   @Prop()
   target: string;
 
+  @Prop()
+  startDate: string;
+  @Prop()
+  endDate: string;
+
+  @Watch('startDate')
+  @Watch('endDate')
+  onPropertyChanged(value: string, oldValue: string) {
+    this.loadData();
+  }
+
+
   variable: VariableDetailsDTO;
 
   dataSeries: Array<DataSerieGetDTO>;
   calculatedDataSeries: Array<DataSerieGetDTO>;
 
+  lastMedianData: any;
 
   isNoDataFound: boolean = false;
   isDataLoaded: boolean = false;
   isGraphicLoaded: boolean = true;
-  eventCreatedTime = "";
 
   variablesService: VariablesService;
   devicesService: DevicesService;
@@ -103,8 +122,6 @@ export default class VariableVisualizationTile extends Vue {
 
   @Ref("graphic-modal") readonly graphicModal!: any;
   @Ref("visuGraphic") readonly visuGraphic!: any;
-  @Ref("annotationModalForm") readonly annotationModalForm!: any;
-  @Ref("eventsModalForm") readonly eventsModalForm!: any;
 
   created() {
     this.$opensilex.hideLoader();
@@ -147,15 +164,14 @@ export default class VariableVisualizationTile extends Vue {
   }
 
   loadData() {
-    var today: Date = new Date();
-    var aWeekBefore: Date = new Date(today);
-    aWeekBefore.setDate(aWeekBefore.getDate() - 7);
+    this.isNoDataFound = false;
+    this.isDataLoaded = false;
 
     this.dataService.getDataSeriesByFacility(
         this.variableUri.uri,
         this.target,
-        aWeekBefore.toISOString(),
-        today.toISOString(),
+        this.startDate,
+        this.endDate,
         ["date=asc"]
     )
         .then(
@@ -173,6 +189,7 @@ export default class VariableVisualizationTile extends Vue {
                 this.dataSeries = seriesDTO.data_series;
                 this.calculatedDataSeries = seriesDTO.calculated_series;
 
+                this.updateLastMedianData();
                 this.isDataLoaded = true;
               }
             }
@@ -183,7 +200,7 @@ export default class VariableVisualizationTile extends Vue {
     return (this.calculatedDataSeries.length > 0);
   }
 
-  get lastMedianData() {
+  updateLastMedianData() {
     let data;
     if (this.calculatedDataSeries.length === 0) {
       data = this.dataSeries[0].data
@@ -192,7 +209,12 @@ export default class VariableVisualizationTile extends Vue {
       data = this.calculatedDataSeries[0].data;
       data.sort((a,b) => (a.date > b.date) ? 1 : ((b.date > a.date) ? -1 : 0));
     }
-    return data[data.length - 1];
+
+    this.lastMedianData = {
+      value: data[data.length - 1].value,
+      date: data[data.length - 1].date
+    };
+    this.lastMedianData.value = this.lastMedianData.value.toPrecision(4) + " " + this.variable.unit.symbol;
   }
 
   // simulate window resizing to resize the graphic when the filter panel display changes
@@ -205,26 +227,6 @@ export default class VariableVisualizationTile extends Vue {
 
   beforeDestroy() {
     this.langUnwatcher();
-  }
-
-  onSearch() {
-    this.isGraphicLoaded = false;
-    if (this.variable) {
-      const datatype = this.variable.datatype.split("#")[1];
-      if (datatype == "decimal" || datatype == "integer") {
-        this.prepareGraphic();
-      } else {
-
-        this.isGraphicLoaded = true;
-        this.$opensilex.showInfoToast(
-            this.$i18n.t("DeviceDataTab.datatypeMessageA") +
-            " " +
-            datatype +
-            " " +
-            this.$i18n.t("DeviceDataTab.datatypeMessageB")
-        );
-      }
-    }
   }
 
   showGraphic() {
@@ -271,94 +273,6 @@ export default class VariableVisualizationTile extends Vue {
         });
   }
 
-  buildEventsSerie() {
-      return this.eventsService
-        .searchEvents(
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          0,
-          0
-        )
-        .then((http: HttpResponse<OpenSilexResponse<Array<EventGetDTO>>>) => {
-          const events = http.response.result as Array<EventGetDTO>;
-          if (events.length > 0) {
-            const cleanEventsData = [];
-            let convertedDate, toAdd, label, title;
-
-            let eventTypesColorArray = [];
-            const colorPalette = [
-              "#ca6434 ",
-              "#427775",
-              "#f2dc7c",
-              "#0f839c",
-              "#a45354",
-              "#d3b0ae",
-              "#774e42",
-              "#776942",
-              "#5c4277",
-              "#34a0ca",
-              "#9334ca",
-              "#caaf34"
-            ];
-            let index = 0;
-
-            events.forEach(element => {
-              if (!eventTypesColorArray[element.rdf_type]) {
-                eventTypesColorArray[element.rdf_type] = colorPalette[index];
-                index++;
-                if (index === 12) {
-                  index = 0;
-                }
-              }
-              label = element.rdf_type_name
-                ? element.rdf_type_name
-                : element.rdf_type;
-              if (element.start != null) {
-                let endTime = element.end ? element.end : "en cours..";
-                label = label + "(End: " + endTime + ")";
-              }
-
-              title = label.charAt(0).toUpperCase();
-
-              let timestamp;
-              if (element.start != null) {
-                timestamp = new Date(element.start).getTime();
-              } else {
-                timestamp = new Date(element.end).getTime();
-              }
-
-              toAdd = {
-                x: timestamp,
-                title: title,
-                text: label,
-                eventUri: element.uri,
-                fillColor: eventTypesColorArray[element.rdf_type]
-              };
-
-              cleanEventsData.push(toAdd);
-            });
-            return {
-              type: "flags",
-              allowOverlapX: false,
-              name: "Events",
-              lineWidth: 1,
-              yAxis: 1,
-              data: cleanEventsData,
-              style: {
-                // text style
-                color: "white"
-              }
-            };
-          } else {
-            return undefined;
-          }
-        });
-  }
-
   buildDataSerie(dataSerie, isVisible: boolean) {
 
     var data = dataSerie.data as Array<DataGetDTO>;
@@ -374,11 +288,11 @@ export default class VariableVisualizationTile extends Vue {
       const cleanData = HighchartsDataTransformer.transformSimpleDataForHighcharts(data, dataSerie.provenance);
       if (dataLength > 50000) {
         this.$opensilex.showInfoToast(
-            this.$i18n.t("DeviceDataTab.limitSizeMessageA") +
+            this.$i18n.t("VariableVisualizationTile.limitSizeMessageA") +
             " " +
             dataLength +
             " " +
-            this.$i18n.t("DeviceDataTab.limitSizeMessageB")
+            this.$i18n.t("VariableVisualizationTile.limitSizeMessageB")
         );
       }
 
@@ -390,10 +304,6 @@ export default class VariableVisualizationTile extends Vue {
         visible: isVisible
       };
     }
-  }
-
-  searchFiltersPannel() {
-    return this.$t("searchfilter.label")
   }
 
 }
@@ -414,21 +324,20 @@ export default class VariableVisualizationTile extends Vue {
 
 <i18n>
 en:
-    DeviceDataTab:
+    VariableVisualizationTile:
         datatypeMessageA: The variable datatype is
         datatypeMessageB: "At this time only decimal or integer are accepted"
         limitSizeMessageA : "There are "
         limitSizeMessageB : " data .Only the 50 000 first data are displayed."
-        lastData: Last data collected
-
+        lastMedianData: Last median value
 
 fr:
-    DeviceDataTab:
+    VariableVisualizationTile:
         datatypeMessageA:  le type de donnée de la variable est
         datatypeMessageB: "Pour le moment, seuls les types decimal ou entier sont acceptés "
         limitSizeMessageA : "Il y a "
         limitSizeMessageB : " données .Seules les 50 000 premières valeurs sont affichées. "
-        lastData: Dernière donnée collectée
+        lastMedianData: Dernière valeur médiane
 
 </i18n>
 

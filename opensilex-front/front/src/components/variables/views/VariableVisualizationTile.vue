@@ -5,14 +5,12 @@
         :label="variableUri.name"
         icon=""
     >
-
       <template v-slot:body>
 
         <opensilex-TextView v-if="isNoDataFound"
                             id="no-data-text"
             :label="$t('FacilityAssociatedDevices.no-data')">
         </opensilex-TextView>
-
         <div
             id="data-infos"
             v-if="isDataLoaded">

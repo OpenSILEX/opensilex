@@ -3,14 +3,7 @@
     <div class="d-flex">
       <div class="mr-auto p-2">
         <div v-if="hasVariableGroup">
-          <label for="variableGroupSelector">
-            {{ $t("FacilityAssociatedDevices.variable-group-selector") }}
-          </label>
-          <font-awesome-icon
-              icon="question-circle"
-              class="variable-group-help"
-              v-b-tooltip.hover.top="$t('FacilityAssociatedDevices.variable-group-help')"
-          />
+          <label for="variableGroupSelector">{{ $t("FacilityAssociatedDevices.variable-group-selector") }}</label>
           <opensilex-SelectForm
               id="variableGroupSelector"
               :selected.sync="selectedVariableGroup"
@@ -26,20 +19,8 @@
         </div>
       </div>
 
-      <opensilex-DateTimeRangePickerForm
-          :start.sync="startDate"
-          :end.sync="endDate"
-          labelStart="component.common.begin"
-          labelEnd="component.common.end"
-          helpMessageStart="FacilityAssociatedDevices.start-date-help"
-          helpMessageEnd="FacilityAssociatedDevices.end-date-help"
-          name="dateTimePeriod"
-      >
-      </opensilex-DateTimeRangePickerForm>
-
-
-      <!--
       <div class="row">
+        <!-- Start Date -->
         <opensilex-DateTimeForm
             :value.sync="startDate"
             label="component.common.begin"
@@ -47,6 +28,7 @@
             class="searchFilter"
         ></opensilex-DateTimeForm>
 
+        <!-- End Date -->
         <opensilex-DateTimeForm
             :value.sync="endDate"
             label="component.common.end"
@@ -54,7 +36,6 @@
             class="searchFilter"
         ></opensilex-DateTimeForm>
       </div>
-      -->
     </div>
 
     <opensilex-TextView
@@ -121,7 +102,7 @@ export default class FacilityAssociatedDevices extends Vue {
   uri: string = null;
   selected: FacilityGetDTO = null;
   usedVariables: NamedResourceDTOVariableModel[] = [];
-  selectedVariableGroup = null;
+  selectedVariableGroup;
   layout = [];
   startDate: string = new Date(new Date().getDate() - 7).toISOString();
   endDate: string = new Date().toISOString();
@@ -201,7 +182,7 @@ export default class FacilityAssociatedDevices extends Vue {
     this.isNoVariableFound = false;
     this.isItemsLoaded = false;
 
-    if (this.selectedVariableGroup != null) {
+    if (this.selectedVariableGroup) {
       this.loadVariablesFromGroup();
     }
     else {
@@ -330,10 +311,10 @@ en:
     no-variable-group-selected: All environnemental variables
     no-data: No data found
     no-variable: No environnemental variable found
-    start-date-help: Start date of data displayed
-    end-date-help: End date of data displayed
-    variable-group-help: Groups of variables associated with the facility. You can associate groups in the update form of the facility.
-
+    start-date: Start date
+    end-date: End date
+    start-date-help: Date
+    end-date-help: Date
 
 fr:
   FacilityAssociatedDevices:
@@ -341,8 +322,9 @@ fr:
     no-variable-group-selected: Toutes les variables environnementales
     no-data: Aucunes données trouvées
     no-variable: Aucunes variables environnementales trouvées
+    start-date: Date de début
+    end-date: Date de fin
     start-date-help: Date de début des données affichées
     end-date-help: Date de fin des données affichées
-    variable-group-help: Les groupes de variables associées à l'infrastructure. Vous pouvez associer des groupes dans le formulaire de modification de l'infrastructure.
 
 </i18n>

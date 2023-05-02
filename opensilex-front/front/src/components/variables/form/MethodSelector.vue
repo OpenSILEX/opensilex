@@ -23,6 +23,7 @@ import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
 import {MethodGetDTO} from "opensilex-core/index";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import {VariablesService} from "opensilex-core/api/variables.service";
+import SelectForm from "../../common/forms/SelectForm.vue";
 
 @Component
 export default class MethodSelector extends Vue {
@@ -43,7 +44,7 @@ export default class MethodSelector extends Vue {
   @Prop()
   sharedResourceInstance;
 
-  @Ref("selectForm") readonly selectForm!: any;
+  @Ref("selectForm") readonly selectForm!: SelectForm;
 
   @Watch("sharedResourceInstance")
   onSriChange() {

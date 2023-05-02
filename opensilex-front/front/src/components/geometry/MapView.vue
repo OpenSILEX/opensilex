@@ -59,6 +59,12 @@
 <!--------------------------- TOOLS BUTTONS ------------------------------->
     <div v-if="!editingMode" id="selected" class="d-flex">
       <div class="mr-auto p-2">
+        <!-- help button -->
+        <opensilex-HelpButton
+                class="helpButton"
+                label="component.common.help-button"
+                @click="showInstruction=true"
+        ></opensilex-HelpButton>
         <!--create area button -->
         <opensilex-CreateButton
           v-if="user.hasCredential(credentials.CREDENTIAL_AREA_MODIFICATION_ID)"
@@ -94,12 +100,6 @@
           icon="fa#stopwatch"
           label="MapView.dateRange"
           @click="handleDateRangeStatus"
-        ></opensilex-Button>
-        <!-- instruction button -->
-        <opensilex-Button
-            icon="fa#question"
-            label="MapView.help"
-            @click="showInstruction=true"
         ></opensilex-Button>
         <div>
           <br>
@@ -1196,6 +1196,7 @@ export default class MapView extends Vue {
   set filters(value) {}
 
   showFiltersDetails(filterResult: any) {
+    this.$opensilex.showLoader();
     if (filterResult.ref) {
       this.tabLayer.forEach((element, index) => {
         if (element.ref === filterResult.ref) {
@@ -1204,6 +1205,7 @@ export default class MapView extends Vue {
       });
       this.tabLayer.push(filterResult);
     }
+    this.$opensilex.hideLoader();
   }
 
   colorFeature(color) {
@@ -2385,11 +2387,25 @@ p {
     transform: translateY(0);
   }
 }
+
 .disabled{
   color:grey ;
   background-color: lightgrey;
   pointer-events: none;
 }
+
+.helpButton:hover {
+  background-color: #00A28C;
+  color: #f1f1f1;
+}
+
+.helpButton {
+  margin-left: -5px;
+  color: #00A28C;
+  font-size: 1.2em;
+  border: none;
+}
+
 </style>
 
 <i18n>
@@ -2409,7 +2425,6 @@ en:
     LegendSO: Scientific Object
     LegendStructuralArea: Structural Area
     LegendTemporalArea: Temporal Area
-    help: Instructions
     Instruction: Press Shift to <b>select item by item</b> on the map.<br> Press and hold Shift + Alt + Click and move the mouse <b>to rotate</b> the map.<br> Press Ctrl + Click while dragging to <b>select multiple scientific objects</b>.<br>Press Shift + Click while dragging to define a <b>zoom-in area</b>.
     WarningInstruction: Currently, the selection tool does not follow the rotation.
     details: Show or hide element details
@@ -2470,7 +2485,6 @@ fr:
     LegendSO: Objet scientifique
     LegendStructuralArea: Zone structurelle
     LegendTemporalArea: Zone temporaire
-    help: Instructions
     Instruction: Appuyez sur Maj pour <b>sélectionner élément par élément</b> sur la carte.<br> Appuyez et maintenez Maj +Alt + Clic puis déplacer la souris pour faire <b>pivoter</b> la carte.<br> Appuyez sur Ctrl + Clic tout en faisant glisser pour <b>sélectionner plusieurs objets scientifiques</b>.<br> Appuyez sur Maj + Clic tout en faisant glisser pour définir une <b>zone de zoom avant</b>.
     WarningInstruction: Actuellement, l'outil de sélection ne suit pas la rotation.
     details: Afficher ou masquer les détails de l'élément
@@ -2487,7 +2501,7 @@ fr:
     mapPanelAreasStructuralArea: Zone structurelle
     mapPanelAreasTemporalArea: Zone temporaire
     mapPanelFilters: Filtres
-    mapPanelDevices : Dispositifs
+    mapPanelDevices : Appareils
     create-filter: Créer un filtre
     center: Recentrer la carte
     save: Enregistrer la carte
@@ -2512,6 +2526,6 @@ fr:
     update: L'objet scientifique a été mis à jour
     display: Objets scientifiques
   Device:
-    title: Dispositif
-    update: Mise à jour du dispositif
+    title: Appareil
+    update: Mise à jour de l'appareil
 </i18n>

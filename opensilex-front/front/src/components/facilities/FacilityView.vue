@@ -151,11 +151,11 @@
 en:
     FacilityView:
         details: Details
-        overview: Overview
+        overview: Monitoring
         document: Documents
 fr:
     FacilityView:
         details: Détail
-        overview: Aperçu
+        overview: Suivi
         document: Documents
 </i18n>

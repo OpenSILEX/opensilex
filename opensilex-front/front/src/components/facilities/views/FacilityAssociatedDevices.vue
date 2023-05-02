@@ -18,6 +18,24 @@
           ></opensilex-SelectForm>
         </div>
       </div>
+
+      <div class="row">
+        <!-- Start Date -->
+        <opensilex-DateTimeForm
+            :value.sync="startDate"
+            label="component.common.begin"
+            name="startDate"
+            class="searchFilter"
+        ></opensilex-DateTimeForm>
+
+        <!-- End Date -->
+        <opensilex-DateTimeForm
+            :value.sync="endDate"
+            label="component.common.end"
+            name="endDate"
+            class="searchFilter"
+        ></opensilex-DateTimeForm>
+      </div>
     </div>
 
     <opensilex-TextView
@@ -51,7 +69,10 @@
                     :dragIgnoreFrom="'#data-infos, #devices-list, #graphic, #btn-show'">
           <opensilex-VariableVisualizationTile
               class="tile-content"
-              v-bind="item.content">
+              v-bind="item.content"
+              :startDate.sync="startDate"
+              :endDate.sync="endDate"
+          >
           </opensilex-VariableVisualizationTile>
         </GridItem>
     </GridLayout>
@@ -64,9 +85,7 @@ import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
 import { FacilityGetDTO } from "opensilex-core/index";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
-import {DevicesService} from "opensilex-core/api/devices.service";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
-import {PositionsService} from "opensilex-core/api/positions.service";
 import {VariablesService} from "opensilex-core/api/variables.service";
 import {DataService} from "opensilex-core/api/data.service";
 import {NamedResourceDTOVariableModel} from "opensilex-core/model/namedResourceDTOVariableModel";
@@ -85,15 +104,15 @@ export default class FacilityAssociatedDevices extends Vue {
   usedVariables: NamedResourceDTOVariableModel[] = [];
   selectedVariableGroup;
   layout = [];
+  startDate: string = new Date(new Date().getDate() - 7).toISOString();
+  endDate: string = new Date().toISOString();
 
   isNoVariableFound: boolean = false;
   isItemsLoaded: boolean = false;
 
   /// services
   organizationService: OrganizationsService;
-  deviceService: DevicesService;
   variablesService: VariablesService;
-  positionService: PositionsService;
   dataService: DataService;
 
   get user() {
@@ -116,16 +135,11 @@ export default class FacilityAssociatedDevices extends Vue {
     this.variablesService = this.$opensilex.getService<VariablesService>(
         "opensilex-core.VariablesService"
     );
-    this.deviceService = this.$opensilex.getService<DevicesService>(
-        "opensilex-core.DevicesService"
-    );
-    this.positionService = this.$opensilex.getService<PositionsService>(
-        "opensilex-core.PositionsService"
-    );
     this.dataService = this.$opensilex.getService<DataService>(
         "opensilex-core.DataService"
     );
 
+    this.initPeriod();
     this.refresh();
   }
 
@@ -137,6 +151,13 @@ export default class FacilityAssociatedDevices extends Vue {
           this.selected = detailDTO;
           this.loadVariables();
         });
+  }
+
+  initPeriod() {
+    this.endDate = new Date().toISOString();
+    var aWeekBefore: Date = new Date();
+    aWeekBefore.setDate(aWeekBefore.getDate() - 7);
+    this.startDate = aWeekBefore.toISOString();
   }
 
   searchVariableGroups() {
@@ -286,16 +307,24 @@ export default class FacilityAssociatedDevices extends Vue {
 <i18n>
 en:
   FacilityAssociatedDevices:
-    variable-group-selector: Variable Groups
+    variable-group-selector: Environmental variable groups
     no-variable-group-selected: All environnemental variables
     no-data: No data found
     no-variable: No environnemental variable found
+    start-date: Start date
+    end-date: End date
+    start-date-help: Date
+    end-date-help: Date
 
 fr:
   FacilityAssociatedDevices:
-    variable-group-selector: Groupes de variables
+    variable-group-selector: Groupes de variables environnementales
     no-variable-group-selected: Toutes les variables environnementales
     no-data: Aucunes données trouvées
     no-variable: Aucunes variables environnementales trouvées
+    start-date: Date de début
+    end-date: Date de fin
+    start-date-help: Date de début des données affichées
+    end-date-help: Date de fin des données affichées
 
 </i18n>

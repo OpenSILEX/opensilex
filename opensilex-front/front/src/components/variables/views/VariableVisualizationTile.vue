@@ -205,7 +205,6 @@ export default class VariableVisualizationTile extends Vue {
     }
     else {
       data = this.calculatedDataSeries[0].data;
-      data.sort((a,b) => (a.date > b.date) ? 1 : ((b.date > a.date) ? -1 : 0));
     }
 
     this.lastMedianData = {

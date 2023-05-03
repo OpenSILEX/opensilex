@@ -127,4 +127,5 @@ public class DataSimpleGetDTO {
         this.offset = other.offset;
         this.isDateTime = other.isDateTime;
     }
+
 }

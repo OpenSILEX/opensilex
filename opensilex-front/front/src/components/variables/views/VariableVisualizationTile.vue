@@ -168,8 +168,8 @@ export default class VariableVisualizationTile extends Vue {
     this.dataService.getDataSeriesByFacility(
         this.variableUri.uri,
         this.target,
-        this.startDate,
-        this.endDate,
+        (this.startDate != "") ? this.startDate : undefined,
+        (this.endDate != "") ? this.endDate : undefined,
         ["date=asc"]
     )
         .then(

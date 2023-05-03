@@ -1,13 +1,11 @@
 package org.opensilex.core.data.utils;
 
-import org.opensilex.core.data.api.DataComputedGetDTO;
+import org.opensilex.core.data.api.DataSimpleGetDTO;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static org.opensilex.core.data.utils.LineSimplification.*;
 
 public class DataMathFunctions {
 
@@ -17,16 +15,16 @@ public class DataMathFunctions {
      * @param dataSerie the data set
      * @return the serie of median per hour
      */
-    public static List<DataComputedGetDTO> computeMedianPerHour(List<DataComputedGetDTO> dataSerie) {
-        List<DataComputedGetDTO> mediansPerHour = new ArrayList<>();
+    public static List<DataSimpleGetDTO> computeMedianPerHour(List<DataSimpleGetDTO> dataSerie) {
+        List<DataSimpleGetDTO> mediansPerHour = new ArrayList<>();
 
-        Map<Long, List<DataComputedGetDTO>> dataPerHourMap = dataSerie.stream()
-                .sorted(Comparator.comparing(DataComputedGetDTO::getDateTime))
+        Map<Long, List<DataSimpleGetDTO>> dataPerHourMap = dataSerie.stream()
+                .sorted(Comparator.comparing(DataSimpleGetDTO::getDateTime))
                 .collect(Collectors.groupingBy(d->(d.getDateTime().getEpochSecond()/3600),
                         LinkedHashMap::new,
                         Collectors.toList()));
 
-        for (Map.Entry<Long, List<DataComputedGetDTO>> entry : dataPerHourMap.entrySet()) {
+        for (Map.Entry<Long, List<DataSimpleGetDTO>> entry : dataPerHourMap.entrySet()) {
             Instant dateTime = Instant.ofEpochSecond(entry.getKey()*3600).plus(30, ChronoUnit.MINUTES);
 
             List<Double> data = entry.getValue().stream().map(d->(Double.valueOf(d.getValue().toString()))).collect(Collectors.toList());
@@ -38,9 +36,9 @@ public class DataMathFunctions {
             else
                 median = data.get(data.size()/2);
 
-            DataComputedGetDTO medianData = new DataComputedGetDTO(entry.getValue().get(0));
+            DataSimpleGetDTO medianData = new DataSimpleGetDTO(entry.getValue().get(0));
             medianData.setValue(median);
-            medianData.setDateTime(dateTime);
+            medianData.updateDate(dateTime);
 
             mediansPerHour.add(medianData);
         }
@@ -49,61 +47,31 @@ public class DataMathFunctions {
     }
 
     /**
-     * Compute the average per day for a given data set.
+     * Compute the average per hour for a given data set.
      *
      * @param dataSerie the data set
      * @return a
      */
-    public static List<DataComputedGetDTO> computeAveragePerDay(List<DataComputedGetDTO> dataSerie) {
-        List<DataComputedGetDTO> averagePerHour = new ArrayList<>();
+    public static List<DataSimpleGetDTO> computeAveragePerHour(List<DataSimpleGetDTO> dataSerie) {
+        List<DataSimpleGetDTO> averagePerHour = new ArrayList<>();
 
-        Map<Long, List<DataComputedGetDTO>> dataPerHourMap = dataSerie.stream()
-                .sorted(Comparator.comparing(DataComputedGetDTO::getDateTime))
-                .collect(Collectors.groupingBy(d->(d.getDateTime().getEpochSecond()/(3600 * 24)),
+        Map<Long, List<DataSimpleGetDTO>> dataPerHourMap = dataSerie.stream()
+                .sorted(Comparator.comparing(DataSimpleGetDTO::getDateTime))
+                .collect(Collectors.groupingBy(d->(d.getDateTime().getEpochSecond()/3600),
                         LinkedHashMap::new,
                         Collectors.toList()));
 
-        for (Map.Entry<Long, List<DataComputedGetDTO>> entry : dataPerHourMap.entrySet()) {
-            Instant dateTime = Instant.ofEpochSecond(entry.getKey()*3600*24).plus(12, ChronoUnit.HOURS);
+        for (Map.Entry<Long, List<DataSimpleGetDTO>> entry : dataPerHourMap.entrySet()) {
+            Instant dateTime = Instant.ofEpochSecond(entry.getKey()*3600).plus(30, ChronoUnit.MINUTES);
             double avg = entry.getValue().stream().mapToDouble(d->(Double.valueOf(d.getValue().toString()))).average().orElse(Double.NaN);
 
-            DataComputedGetDTO averageData = new DataComputedGetDTO(entry.getValue().get(0));
+            DataSimpleGetDTO averageData = new DataSimpleGetDTO(entry.getValue().get(0));
             averageData.setValue(avg);
-            averageData.setDateTime(dateTime);
+            averageData.updateDate(dateTime);
 
             averagePerHour.add(averageData);
         }
 
         return averagePerHour;
-    }
-
-    public static List<DataComputedGetDTO> applyRamerDouglasPeucker(List<DataComputedGetDTO> dataSerie, double epsilon) {
-
-        List<DataComputedGetDTO> resultData = new ArrayList();
-        ramerDouglasPeucker(dataSerie, epsilon, resultData);
-
-        return resultData;
-    }
-
-    public static List<DataComputedGetDTO> applyGaussianSmooth(List<DataComputedGetDTO> dataSerie, int windowLength) {
-
-        List<DataComputedGetDTO> resultData = new ArrayList();
-
-        int offset = (int) Math.floor(windowLength/2);
-
-        for (int i = offset; i < (dataSerie.size() - offset); ++i) {
-            List<DataComputedGetDTO> windowList = dataSerie.subList(i - offset, i + offset);
-
-            double average = windowList.stream()
-                    .mapToDouble(d -> (Double.valueOf(d.getValue().toString())))
-                    .average()
-                    .orElse(Double.NaN);
-
-            DataComputedGetDTO newData = new DataComputedGetDTO(dataSerie.get(i));
-            newData.setValue(average);
-            resultData.add(newData);
-        }
-
-        return resultData;
     }
 }

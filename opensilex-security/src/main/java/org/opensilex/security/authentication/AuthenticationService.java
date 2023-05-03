@@ -535,7 +535,7 @@ public class AuthenticationService extends BaseService implements Service {
     }
 
     public boolean authenticate(AccountModel user, String password, List<String> accessList) throws Exception {
-        if ((user != null && checkPassword(password, user.getPasswordHash()))) {
+        if ((user != null && user.getIsEnabled() &&checkPassword(password, user.getPasswordHash()))) {
             generateToken(user, accessList);
             addUser(user, getExpireInMs());
             return true;

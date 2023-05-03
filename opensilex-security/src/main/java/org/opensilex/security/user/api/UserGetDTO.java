@@ -89,6 +89,7 @@ public class UserGetDTO extends UserDTO {
         dto.setFirstName(model.getFirstName());
         dto.setLastName(model.getLastName());
         dto.setLanguage(model.getLanguage());
+        dto.setEnable(model.getIsEnabled());
 
         return dto;
     }

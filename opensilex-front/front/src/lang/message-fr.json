@@ -204,6 +204,7 @@
             "security": {
                 "label": "Securité",
                 "users": "Utilisateurs",
+                "persons": "Personnes",
                 "groups": "Groupes",
                 "profiles": "Profils"
             },
@@ -274,20 +275,52 @@
             "add": "Ajouter un utilisateur",
             "update": "Modifier l'utilisateur",
             "delete": "Supprimer l'utilisateur",
+            "enable": "actif, cliquer pour désactiver",
+            "disable": "désactivé, cliquer pour réactiver",
             "details": "Afficher ou masquer les détails de l'utilisateur",
             "password": "mot de passe",
             "first-name": "prénom",
             "last-name": "nom",
+            "identifier": "identifiant",
             "email-address": "adresse email",
             "email": "email",
             "admin": "administrateur",
             "default-lang": "Langue par défaut",
             "user-groups": "groupes de l'utilisateur",
+            "holderLabel" : "Propriétaire du compte",
+            "successDelete" : "Utilisateur supprimé",
+            "choices": {
+                "create-person": "créer un nouveau compte et une personne",
+                "account-only": "créer un compte qui n'appartient à personne",
+                "select-person": "créer un compte et le lie à une personne"
+            },
+            "person-selector": {
+                "label": "propriétaire du compte",
+                "help-message": "Choisissez une personne qui deviendra propriétaire du compte"
+            },
             "errors": {
                 "user-already-exists": "Un utilisateur existe déjà avec cette URI ou cette adresse email."
-            },
-            "form-wizard": {
-                "funding-contacts": "Financeurs et contacts"
+            }
+        },
+        "person": {
+            "description": "Gérer les personnes",
+            "person-uri": "URI de la personne",
+            "form-first-name-placeholder": "Saisir le prénom",
+            "form-last-name-placeholder": "Saisir le nom",
+            "form-email-placeholder": "Saisir l'adresse email",
+            "filter-search-no-result": "Désolé, aucune personne ne correspond à votre recherche.",
+            "filter-placeholder": "Rechercher des personnes...",
+            "persons": "personnes",
+            "add": "Ajouter une personne",
+            "update": "Modifier la personne",
+            "delete": "Supprimer la personne",
+            "first-name": "prénom",
+            "last-name": "nom",
+            "email-address": "adresse email",
+            "email": "email",
+            "successDelete" : "Personne supprimée",
+            "errors": {
+                "person-already-exists": "Une personne existe déjà avec cette URI."
             }
         },
         "variable" : {
@@ -363,6 +396,9 @@
             "administrativeContacts":"Responsables administratifs",
             "experiments":"Expérimentations",
             "inProgress":"En cours ..",
+            "form-wizard": {
+                "funding-contacts": "Financeurs et contacts"
+            },
             "common": {
                 "status": {
                     "finished": "Terminé",
@@ -660,6 +696,7 @@
         "profiles": "Profiles",
         "projects": "Projets",
         "users": "Utilisateurs",
+        "persons": "Persons",
         "variables": "Variables",
         "factors": "Facteurs",
         "infrastructures": "Organisations",
@@ -674,7 +711,8 @@
         "facilities": "Installations techniques",
         "provenance": "Provenances",
         "vocabulary": "Vocabulaire",
-        "packages": "Librairies"
+        "packages": "Librairies",
+        "accounts": "Comptes"
     },
     "credential": {
         "default": {

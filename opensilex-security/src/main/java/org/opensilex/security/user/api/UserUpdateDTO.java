@@ -40,10 +40,9 @@ import java.util.List;
     "admin"})
 public class UserUpdateDTO extends UserGetDTO {
 
-    /**
-     * User password
-     */
     protected String password;
+
+    protected URI holderOfTheAccountURI;
 
     @ValidURI
     @NotNull
@@ -95,4 +94,12 @@ public class UserUpdateDTO extends UserGetDTO {
         return super.getLanguage();
     }
 
+    @ValidURI
+    public URI getHolderOfTheAccountURI() {
+        return holderOfTheAccountURI;
+    }
+
+    public void setHolderOfTheAccountURI(URI holderOfTheAccountURI) {
+        this.holderOfTheAccountURI = holderOfTheAccountURI;
+    }
 }

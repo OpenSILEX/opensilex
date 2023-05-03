@@ -31,9 +31,9 @@ public class PersonAPITest extends AbstractSecurityIntegrationTest {
 
     protected static String path = "security/persons";
     public static String createPath = path ;
-    protected String updatePath = path ;
-    protected String getPath = path + "/{uri}";
-    protected String deletePath = path + "/{uri}";
+    protected static String updatePath = path ;
+    protected static String getPath = path + "/{uri}";
+    public static String deletePath = path + "/{uri}";
     protected String searchPath = path ;
 
     public static PersonDTO getDefaultDTO() throws URISyntaxException {
@@ -174,6 +174,50 @@ public class PersonAPITest extends AbstractSecurityIntegrationTest {
         excpectedResult.add(getDefaultDTO());
         excpectedResult.add(get2ndDefaultDTO());
 
+        assertEquals(excpectedResult.size(), searchResult.size());
+        assertTrue(searchResult.containsAll(excpectedResult));
+    }
+
+    @Test
+    public void searchPersonsWithoutAccount() throws Exception {
+        UserCreationDTO userThatWillNotBeInSearchResponse = new UserCreationDTO();
+        userThatWillNotBeInSearchResponse.setFirstName("bli");
+        userThatWillNotBeInSearchResponse.setLastName("blo");
+        userThatWillNotBeInSearchResponse.setPassword("pass");
+        userThatWillNotBeInSearchResponse.setEmail("e@mail.valid");
+        userThatWillNotBeInSearchResponse.setLanguage("en");
+        userThatWillNotBeInSearchResponse.setAdmin(true);
+        Response userResponse = getJsonPostResponseAsAdmin(target(UserAPITest.createPath), userThatWillNotBeInSearchResponse);
+        assertEquals(Response.Status.CREATED.getStatusCode(), userResponse.getStatus());
+
+        Response result = getJsonPostResponseAsAdmin(target(createPath), getDefaultDTO());
+        assertEquals(Response.Status.CREATED.getStatusCode(), result.getStatus());
+
+        Response result2 = getJsonPostResponseAsAdmin(target(createPath), get2ndDefaultDTO());
+        assertEquals(Response.Status.CREATED.getStatusCode(), result2.getStatus());
+
+        Map<String, Object> params = new HashMap<String, Object>() {
+            {
+                put("name", ".*");
+                put("only_without_account", "true");
+            }
+        };
+
+        WebTarget target = appendSearchParams(target(searchPath), 0, 50, params);
+
+        Response searchResponse = getJsonGetResponseAsAdmin(target);
+        assertEquals(Response.Status.OK.getStatusCode(), searchResponse.getStatus());
+
+        //compare URIs
+        JsonNode node = searchResponse.readEntity(JsonNode.class);
+        PaginatedListResponse<PersonDTO> listResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<PersonDTO>>() {
+        });
+        List<PersonDTO> searchResult = listResponse.getResult();
+        List<PersonDTO> excpectedResult = new ArrayList<>();
+        excpectedResult.add(getDefaultDTO());
+        excpectedResult.add(get2ndDefaultDTO());
+
+        //the search result should contain the two default persons but not the person created like a user
         assertEquals(excpectedResult.size(), searchResult.size());
         assertTrue(searchResult.containsAll(excpectedResult));
     }

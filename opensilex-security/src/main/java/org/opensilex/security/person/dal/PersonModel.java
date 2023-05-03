@@ -47,6 +47,7 @@ public class PersonModel extends SPARQLResourceModel implements ClassURIGenerato
             property = "mbox"
     )
     private InternetAddress email;
+    public static final String EMAIL_FIELD = "email";
 
     @SPARQLProperty(
             ontology = FOAF.class,

@@ -2124,7 +2124,7 @@ public class DataAPI {
                 null,
                 null,
                 (startDate != null) ? Instant.parse(startDate) : null,
-                (endDate != null) ? Instant.parse(endDate) : null,
+                (endDate != null) ? Instant.parse(endDate) : Instant.now(),
                 null,
                 null,
                 null,

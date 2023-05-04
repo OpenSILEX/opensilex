@@ -7,9 +7,6 @@
     >
       <template v-slot:body>
 
-        <opensilex-Sparkline>
-        </opensilex-Sparkline>
-
         <opensilex-TextView v-if="isNoDataFound"
                             id="no-data-text"
             :label="$t('FacilityAssociatedDevices.no-data')">
@@ -17,24 +14,37 @@
         <div
             id="data-infos"
             v-if="isDataLoaded">
-          <opensilex-TextView
-              style="margin-bottom: 0;"
-              v-on:click.native="showGraphic"
-              :value="$t('VariableVisualizationTile.lastMedianData')">
-          </opensilex-TextView>
-          <opensilex-TextView
-              style="font-size: xx-large; margin-bottom: 0;"
-              v-on:click.native="showGraphic"
-              :value.sync="lastMedianData.value"
-          >
-          </opensilex-TextView>
-          <opensilex-DateView
-              v-on:click.native="showGraphic"
-            :value.sync="lastMedianData.date"
-            :isDateTime="true"
-            :useLocaleFormat="true"
-            :dateTimeFormatOptions="{ dateStyle: 'long', timeStyle: 'long' }">
-          </opensilex-DateView>
+          <div class="row">
+            <div class="col-sm-6">
+              <opensilex-Sparkline
+                  :maxWidth="500"
+                  :maxHeight="50"
+                  :dataSerie.sync="medianSerie"
+                  :simplify="true"
+                  v-on:click.native="showGraphic">
+              </opensilex-Sparkline>
+            </div>
+            <div class="col-sm-6">
+              <opensilex-TextView
+                  style="margin-bottom: 0;"
+                  v-on:click.native="showGraphic"
+                  :value="$t('VariableVisualizationTile.lastMedianData')">
+              </opensilex-TextView>
+              <opensilex-TextView
+                  style="font-size: xx-large; margin-bottom: 0;"
+                  v-on:click.native="showGraphic"
+                  :value.sync="lastMedianData.value"
+              >
+              </opensilex-TextView>
+              <opensilex-DateView
+                  v-on:click.native="showGraphic"
+                :value.sync="lastMedianData.date"
+                :isDateTime="true"
+                :useLocaleFormat="true"
+                :dateTimeFormatOptions="{ dateStyle: 'long', timeStyle: 'long' }">
+              </opensilex-DateView>
+            </div>
+          </div>
         </div>
 
         <b-modal
@@ -201,14 +211,17 @@ export default class VariableVisualizationTile extends Vue {
     return (this.calculatedDataSeries.length > 0);
   }
 
+  medianSerie;
+
   updateLastMedianData() {
     let data;
     if (this.calculatedDataSeries.length === 0) {
-      data = this.dataSeries[0].data
+      data = this.dataSeries[0].data;
     }
     else {
       data = this.calculatedDataSeries[0].data;
     }
+    this.medianSerie = data;
 
     this.lastMedianData = {
       value: data[data.length - 1].value,

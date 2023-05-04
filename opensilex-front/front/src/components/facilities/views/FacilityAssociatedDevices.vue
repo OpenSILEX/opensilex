@@ -36,25 +36,6 @@
           name="dateTimePeriod"
       >
       </opensilex-DateTimeRangePickerForm>
-
-
-      <!--
-      <div class="row">
-        <opensilex-DateTimeForm
-            :value.sync="startDate"
-            label="component.common.begin"
-            name="startDate"
-            class="searchFilter"
-        ></opensilex-DateTimeForm>
-
-        <opensilex-DateTimeForm
-            :value.sync="endDate"
-            label="component.common.end"
-            name="endDate"
-            class="searchFilter"
-        ></opensilex-DateTimeForm>
-      </div>
-      -->
     </div>
 
     <opensilex-TextView

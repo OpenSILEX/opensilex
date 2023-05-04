@@ -214,7 +214,10 @@ export default class ExperimentData extends Vue {
     variables: [],
     experiments: [this.uri],
     scientificObjects: [],
-    targets: []
+    targets: [],
+    devices: [],
+    facilities: [],
+    operators: []
   };
 
   soFilter = {
@@ -277,7 +280,10 @@ export default class ExperimentData extends Vue {
       variables: [],
       experiments: [this.uri],
       scientificObjects: [],
-      targets: []
+      targets: [],
+      devices: [],
+      facilities: [],
+      operators: []
     };
     // Only if search and reset button are use in list
   }

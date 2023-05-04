@@ -273,7 +273,7 @@ public class DataAPI {
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @DefaultValue("date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize,
-            @ApiParam(value = "Targets uris") List<URI> targets
+            @ApiParam(value = "Targets uris, can be an empty array but can't be null", name = "targets") List<URI> targets
     )throws Exception {
         if (targets == null) {
             targets = new ArrayList<>();

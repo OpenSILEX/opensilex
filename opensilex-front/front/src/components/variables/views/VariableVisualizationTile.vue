@@ -7,6 +7,9 @@
     >
       <template v-slot:body>
 
+        <opensilex-Sparkline>
+        </opensilex-Sparkline>
+
         <opensilex-TextView v-if="isNoDataFound"
                             id="no-data-text"
             :label="$t('FacilityAssociatedDevices.no-data')">
@@ -244,8 +247,6 @@ export default class VariableVisualizationTile extends Vue {
         promise = this.buildDataSerie(this.dataSeries[i], !this.hasCalculatedSeries);
         promises.push(promise);
       }
-      //promise = this.buildEventsSerie();
-      //promises.push(promise);
 
       Promise.all(promises)
         .then(values => {

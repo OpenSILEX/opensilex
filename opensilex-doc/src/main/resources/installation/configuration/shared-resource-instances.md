@@ -20,14 +20,14 @@ core:
         label:
             fr: "PHENOME"
             en: "PHENOME"
-        accountName: admin@opensilex.org
-        accountPassword: admin
+        accountName: guest@opensilex.org
+        accountPassword: guest
       - uri: http://138.102.159.36:8082/rest
         label:
             fr: "EMPHASIS"
             en: "EMPHASIS"
-        accountName: admin@opensilex.org
-        accountPassword: admin
+        accountName: guest@opensilex.org
+        accountPassword: guest
 ```
 
 ## Options

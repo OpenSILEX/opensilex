@@ -1,112 +1,34 @@
 <template>
-  <div class="wrapper">
-    <div class="container">
-      <div class="canvas-container">
-        <canvas ref="canvas" id="sparkline" ></canvas>
-      </div>
-    </div>
-  </div>
+  <canvas id="sparkline" :width="width" :height="height"></canvas>
 </template>
 
 <script lang="ts">
 import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
-import {DataComputedGetDTO} from "opensilex-core/model/dataComputedGetDTO";
 
 @Component
 export default class Sparkline extends Vue {
   $opensilex: OpenSilexVuePlugin;
 
   @Prop({
-    default: 300
+    default: 150
   })
-  maxWidth: number;
+  width: number;
 
   @Prop({
-    default: 100
+    default: 50
   })
-  maxHeight: number;
+  height: number;
 
-  @Prop({
-    default: []
-  })
-  dataSerie: Array<DataComputedGetDTO>;
+  created() {
 
-  data: Array<number>;
-
-  @Ref("canvas") readonly canvas!: any;
-
-  mounted() {
-    this.loadData();
-  }
-
-  loadData() {
-    this.data = this.dataSerie.map(data => {
-      return parseFloat(data.value);
-    });
-
-    this.draw();
-  }
-
-  draw() {
-    var ctx = this.canvas.getContext('2d');
-    this.canvas.width = this.canvas.width * window.devicePixelRatio;
-    this.canvas.height = this.canvas.height * window.devicePixelRatio;
-    var origW = this.canvas.width;
-    var origH = this.canvas.height;
-    this.canvas.style.maxWidth = this.maxWidth + 'px';
-    this.canvas.style.maxHeight = this.maxHeight + 'px';
-    var maxNum = Math.max.apply(null, this.data);
-    var minNum = Math.min.apply(null, this.data);
-    var offset = 2;
-    var linePerPixel = origW / this.data.length;
-    var diff = maxNum-minNum;
-    var diffPerc = (origH - offset) / maxNum;
-    //diffPerc -= 1.5;
-
-    // add some padding;
-    var bottomPadding = 4;
-    ctx.beginPath();
-    ctx.strokeStyle = 'rgb(78,141,235)';
-    ctx.lineWidth = 6;
-    ctx.moveTo(0, origH - ((this.data[0]) * diffPerc));
-    this.data.forEach(function(v,i){
-      ctx.lineTo((i+1)*linePerPixel, origH - ((v) * diffPerc));
-    });
-    ctx.stroke();
   }
 
 }
 </script>
 
 <style scoped lang="scss">
-
-.wrapper {
-  display: table;
-  padding: 0;
-  width: 100%;
-  height: 100%;
-  position: absolute;
-}
-
-.container {
-  display: table-cell;
-  vertical-align: middle;
-}
-
-.canvas-container {
-  position: relative;
-  max-width: 1024px;
-  min-width: 100px;
-  margin: 0 auto;
-}
-
-canvas {
-  width: 100%;
-  height: 100%;
-  z-index: 0;
-}
 
 </style>
 

@@ -8,6 +8,7 @@ package org.opensilex.security.user.api;
 
 import io.swagger.annotations.*;
 import org.opensilex.security.SecurityModule;
+import org.opensilex.security.account.api.AccountAPI;
 import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
@@ -19,7 +20,6 @@ import org.opensilex.security.group.dal.GroupDAO;
 import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.security.person.dal.PersonDAO;
 import org.opensilex.security.person.dal.PersonModel;
-import org.opensilex.server.exceptions.ForbiddenException;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.response.NamedResourceDTO;
@@ -36,10 +36,10 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static org.apache.jena.vocabulary.RDF.uri;
 
@@ -117,10 +117,7 @@ public class UserAPI {
 
         AccountDAO accountDAO = new AccountDAO(sparql);
 
-        Response creatingOk = checkBeforeCreatingUser(userDTO, accountDAO);
-        if (creatingOk.getStatus() != Status.OK.getStatusCode()) {
-            return creatingOk;
-        }
+        AccountAPI.checkBeforeCreatingAccount(userDTO, accountDAO, currentUser, sparql);
 
         sparql.startTransaction();
         try {
@@ -139,6 +136,7 @@ public class UserAPI {
                     userDTO.isAdmin(),
                     authentication.getPasswordHash(userDTO.getPassword()),
                     userDTO.getLanguage(),
+                    userDTO.isEnable(),
                     person
             );
             sparql.commitTransaction();
@@ -149,82 +147,6 @@ public class UserAPI {
             throw e;
         }
 
-    }
-
-    /**
-     * Create a user and return its URI, and link it to the Person's URI in parameters
-     *
-     * @see AccountDAO
-     * @param userDTO user model to create
-     * @return User URI or null if creation of account or person failed
-     * @throws Exception If creation failed
-     */
-    @POST
-    @Path("person_already_exists")
-    @ApiOperation("Add a user from an existing person")
-    @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_USER_MODIFICATION_ID,
-            credentialLabelKey = CREDENTIAL_USER_MODIFICATION_LABEL_KEY
-    )
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiResponses({
-            @ApiResponse(code = 201, message = "A user is created"),
-            @ApiResponse(code = 403, message = "This current user can't create other users with given parameters"),
-            @ApiResponse(code = 404, message = "This person doesn't exist"),
-            @ApiResponse(code = 409, message = "The user already exists or the given holder already has an account"),
-    })
-    public Response createUserWithExistentPerson(
-
-            @ApiParam("User description") @Valid UserCreationWithExistantPersonDTO userDTO
-    ) throws Exception {
-
-        AccountDAO accountDAO = new AccountDAO(sparql);
-
-        Response creatingOk = checkBeforeCreatingUser(userDTO, accountDAO);
-        if (creatingOk.getStatus() != Status.OK.getStatusCode()) {
-            return creatingOk;
-        }
-
-        if (! sparql.uriExists(PersonModel.class, userDTO.getHolderOfTheAccount())) {
-            return new ErrorResponse(
-                    Status.NOT_FOUND,
-                    "Person doesn't exists",
-                    "Nonexistent URI: " + userDTO.getHolderOfTheAccount()
-            ).getResponse();
-        }
-
-        PersonDAO personDAO = new PersonDAO(sparql);
-
-        PersonModel holderOfTheAccount = personDAO.get(userDTO.getHolderOfTheAccount());
-
-        if (holderOfTheAccount.getAccount() != null) {
-            return new ErrorResponse(
-                    Status.CONFLICT,
-                    "The given person already has an account",
-                    "URI: " + userDTO.getHolderOfTheAccount() + " is already linked to an existing account"
-            ).getResponse();
-        }
-
-        sparql.startTransaction();
-        try {
-
-            AccountModel user = accountDAO.create(
-                    userDTO.getUri(),
-                    new InternetAddress(userDTO.getEmail()),
-                    userDTO.isAdmin(),
-                    authentication.getPasswordHash(userDTO.getPassword()),
-                    userDTO.getLanguage(),
-                    holderOfTheAccount
-            );
-            sparql.commitTransaction();
-
-            return new ObjectUriResponse(Response.Status.CREATED, user.getUri()).getResponse();
-        } catch (Exception e) {
-            sparql.rollbackTransaction();
-            throw e;
-        }
     }
 
     /**
@@ -379,6 +301,12 @@ public class UserAPI {
 
         if (model != null) {
 
+            PersonModel newHolderOfTheAccount = null;
+            if (Objects.nonNull( userDTO.getHolderOfTheAccountURI() )){
+                newHolderOfTheAccount = personDAO.get(userDTO.getHolderOfTheAccountURI());
+                AccountAPI.checkHolderExistAndHasNoAccountYet(personDAO, userDTO.getHolderOfTheAccountURI());
+            }
+
             sparql.startTransaction();
             try {
                 AccountModel account = accountDAO.update(
@@ -387,19 +315,21 @@ public class UserAPI {
                         userDTO.isAdmin(),
                         authentication.getPasswordHash(userDTO.getPassword()),
                         userDTO.getLanguage(),
-                        //we can't change the person who is linked to this account with UserAPI
-                        null,
+                        userDTO.isEnable(),
+                        newHolderOfTheAccount,
                         userDTO.getFavorites()
                 );
 
                 PersonModel holderOfTheAccount = account.getHolderOfTheAccount();
 
-                if (holderOfTheAccount != null) {
+                if (Objects.isNull(newHolderOfTheAccount) && Objects.nonNull(holderOfTheAccount) ) {
+                    String email = Objects.nonNull(holderOfTheAccount.getEmail()) ? holderOfTheAccount.getEmail().toString() : null;
+
                     personDAO.update(
                             holderOfTheAccount.getUri(),
                             userDTO.getFirstName(),
                             userDTO.getLastName(),
-                            holderOfTheAccount.getEmail().toString(),
+                            email,
                             account
                     );
                 }
@@ -486,36 +416,6 @@ public class UserAPI {
         return new NamedResourcePaginatedListResponse<GroupModel>(resultList).getResponse();
     }
 
-    /**
-     * @param userDTO : user information to check before creating
-     * @param accountDAO : an instance of AccountDao used to perform verifications
-     * @return a response with the Statut Code equivalent to "OK" if the user can be created, an error response otherwise
-     */
-    private Response checkBeforeCreatingUser(UserDTO userDTO, AccountDAO accountDAO) throws Exception {
-        if (userDTO.isAdmin() && (currentUser == null || !currentUser.isAdmin())) {
-            throw new ForbiddenException("You must be an admin to create other admin users");
-        }
-
-        if (sparql.uriExists(AccountModel.class, userDTO.getUri())) {
-            return new ErrorResponse(
-                    Response.Status.CONFLICT,
-                    "User already exists",
-                    "Duplicated URI: " + userDTO.getUri()
-            ).getResponse();
-        }
-
-        InternetAddress userEmail = new InternetAddress(userDTO.getEmail());
-        if (accountDAO.accountEmailExists(userEmail)) {
-            return new ErrorResponse(
-                    Status.CONFLICT,
-                    "User already exists",
-                    "Duplicated email: " + userEmail
-            ).getResponse();
-        }
-
-        return Response.status(Status.OK.getStatusCode()).build();
-    }
-
     @GET
     @Path("favorites")
     @ApiOperation("Get list of favorites for a user")
@@ -568,6 +468,7 @@ public class UserAPI {
                 currentUser.isAdmin(),
                 currentUser.getPasswordHash(),
                 currentUser.getLanguage(),
+                currentUser.getIsEnabled(),
                 null,
                 favoriteList
         );
@@ -599,6 +500,7 @@ public class UserAPI {
                 currentUser.isAdmin(),
                 currentUser.getPasswordHash(),
                 currentUser.getLanguage(),
+                currentUser.getIsEnabled(),
                 null,
                 favoriteList
         );

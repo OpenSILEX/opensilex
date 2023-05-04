@@ -41,6 +41,16 @@ components["opensilex-UserSelector"] = UserSelector;
 import UserNameView from './users/UserNameView.vue';
 components["opensilex-UserNameView"] = UserNameView;
 
+//Persons
+import PersonView from "./persons/PersonView.vue";
+components["opensilex-PersonView"] = PersonView;
+import PersonList from "./persons/PersonList.vue";
+components["opensilex-PersonList"] = PersonList;
+import PersonForm from "./persons/PersonForm.vue";
+components["opensilex-PersonForm"] = PersonForm;
+import PersonSelector from './persons/PersonSelector.vue';
+components["opensilex-PersonSelector"] = PersonSelector;
+
 
 // Profiles
 import ProfileForm from './profiles/ProfileForm.vue';
@@ -305,6 +315,8 @@ import OntologyPropertyView from './ontology/OntologyPropertyView.vue'
 components["opensilex-OntologyPropertyView"] = OntologyPropertyView;
 import OntologyTypesView from './ontology/OntologyTypesView.vue'
 components["opensilex-OntologyTypesView"] = OntologyTypesView;
+import OntologyObjectProperties from './ontology/OntologyObjectProperties.vue'
+components["opensilex-OntologyObjectProperties"] = OntologyObjectProperties;
 import OntologyObjectForm from './ontology/OntologyObjectForm.vue'
 components["opensilex-OntologyObjectForm"] = OntologyObjectForm;
 import OntologyRelationsForm from './ontology/OntologyRelationsForm.vue'

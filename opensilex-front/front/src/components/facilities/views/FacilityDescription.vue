@@ -3,6 +3,7 @@
       icon="ik#ik-clipboard"
       :label="$t('component.common.description')"
       class="facilityDetailComponent"
+      v-if="selected"
   >
     <template v-slot:rightHeader v-if="withActions">
       <b-button-group>
@@ -41,22 +42,22 @@
     <template v-slot:body>
       <!-- URI -->
       <opensilex-UriView
-          :uri="selectedFacilityOrDefault.uri"
-          :value="selectedFacilityOrDefault.uri"
+          :uri="selected.uri"
+          :value="selected.uri"
           :to="{
-            path: '/facility/details/' + encodeURIComponent(selectedFacilityOrDefault.uri),
+            path: '/facility/details/' + encodeURIComponent(selected.uri),
           }"
       >
       </opensilex-UriView>
       <!-- Name -->
       <opensilex-StringView
-          :value="selectedFacilityOrDefault.name"
+          :value="selected.name"
           label="component.common.name"
       ></opensilex-StringView>
       <!-- Type -->
       <opensilex-TypeView
-          :type="selectedFacilityOrDefault.rdf_type"
-          :typeLabel="selectedFacilityOrDefault.rdf_type_name"
+          :type="selected.rdf_type"
+          :typeLabel="selected.rdf_type_name"
       ></opensilex-TypeView>
 
       <!-- Organisations -->
@@ -97,43 +98,19 @@
 
       <!-- Address -->
       <opensilex-AddressView
-          v-if="selectedFacilityOrDefault.address"
-          :address="selectedFacilityOrDefault.address"
-          :geometry="selectedFacilityOrDefault.geometry"
+          v-if="selected.address"
+          :address="selected.address"
+          :geometry="selected.geometry"
           noGeometryLabel="FacilityDescription.noGeometryWarning"
       >
       </opensilex-AddressView>
 
-      <div>
-        <div v-for="(v, index) in typeProperties" v-bind:key="index">
-          <div v-if="!Array.isArray(v.property)" class="static-field">
-            <span class="field-view-title">{{ v.definition.name }}</span>
-            <component
-                :is="v.definition.view_component"
-                :value="v.property"
-            ></component>
-          </div>
-
-          <div
-              v-else-if="v.property && v.property.length > 0"
-              class="static-field"
-          >
-            <span class="field-view-title">{{ v.definition.name }}</span>
-            <ul>
-              <br />
-              <li
-                  v-for="(prop, propIndex) in v.property"
-                  v-bind:key="propIndex"
-              >
-                <component
-                    :is="v.definition.view_component"
-                    :value="prop"
-                ></component>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
+      <opensilex-OntologyObjectProperties
+        :selected="selected"
+        :parentType="oeso.FACILITY_TYPE_URI"
+        :relations="selected.relations"
+      >
+      </opensilex-OntologyObjectProperties>
     </template>
   </opensilex-Card>
 </template>
@@ -180,19 +157,16 @@ export default class FacilityDescription extends Vue {
     this.$emit("onUpdate");
   }
 
+  get oeso() {
+      return this.$opensilex.Oeso;
+  }
+
   get user() {
     return this.$store.state.user;
   }
 
   get credentials() {
     return this.$store.state.credentials;
-  }
-
-  get selectedFacilityOrDefault() {
-    if (this.selected) {
-      return this.selected;
-    }
-    return {};
   }
 
   get hasOrganizations() {
@@ -288,127 +262,6 @@ export default class FacilityDescription extends Vue {
           });
         })
         .catch(this.$opensilex.errorHandler);
-  }
-
-  @Watch("selected")
-  onSelectionChange() {
-    this.typeProperties = [];
-    this.valueByProperties = {};
-    this.classModel = {};
-
-    if (!this.selected) {
-      return;
-    }
-
-    this.$opensilex
-        .getService<VueJsOntologyExtensionService>("opensilex.VueJsOntologyExtensionService")
-        .getRDFTypeProperties(
-            this.selected.rdf_type,
-            this.$opensilex.Oeso.FACILITY_TYPE_URI
-        )
-        .then((result) => {
-          this.classModel = result.response.result;
-
-          let valueByProperties = this.buildValueByProperties(
-              this.selected.relations
-          );
-          this.buildTypeProperties(this.typeProperties, valueByProperties);
-          this.valueByProperties = valueByProperties;
-        });
-  }
-
-  buildValueByProperties(relationArray) {
-    let valueByProperties = {};
-    for (let i in relationArray) {
-      let relation = relationArray[i];
-
-      if (
-          valueByProperties[relation.property] &&
-          !Array.isArray(valueByProperties[relation.property])
-      ) {
-        valueByProperties[relation.property] = [
-          valueByProperties[relation.property],
-        ];
-      }
-
-      if (Array.isArray(valueByProperties[relation.property])) {
-        valueByProperties[relation.property].push(relation.value);
-      } else {
-        valueByProperties[relation.property] = relation.value;
-      }
-    }
-
-    return valueByProperties;
-  }
-
-  buildTypeProperties(typeProperties, valueByProperties) {
-    this.loadProperties(
-        typeProperties,
-        this.classModel.data_properties,
-        valueByProperties
-    );
-    this.loadProperties(
-        typeProperties,
-        this.classModel.object_properties,
-        valueByProperties
-    );
-
-    let pOrder = this.classModel.properties_order;
-
-    typeProperties.sort((a, b) => {
-      let aProp = a.definition.property;
-      let bProp = b.definition.property;
-      if (aProp == bProp) {
-        return 0;
-      }
-
-      if (aProp == "rdfs:label") {
-        return -1;
-      }
-
-      if (bProp == "rdfs:label") {
-        return 1;
-      }
-
-      let aIndex = pOrder.indexOf(aProp);
-      let bIndex = pOrder.indexOf(bProp);
-      if (aIndex == -1) {
-        if (bIndex == -1) {
-          return aProp.localeCompare(bProp);
-        } else {
-          return -1;
-        }
-      } else {
-        if (bIndex == -1) {
-          return 1;
-        } else {
-          return aIndex - bIndex;
-        }
-      }
-    });
-  }
-
-  loadProperties(typeProperties, properties, valueByProperties) {
-    for (let i in properties) {
-      let property = properties[i];
-
-      if (valueByProperties[property.property]) {
-        if (
-            property.is_list &&
-            !Array.isArray(valueByProperties[property.property])
-        ) {
-          typeProperties.push({
-            definition: property,
-            property: [valueByProperties[property.property]],
-          });
-        } else {
-          typeProperties.push({
-            definition: property,
-            property: valueByProperties[property.property],
-          });
-        }
-      }
-    }
   }
 }
 </script>

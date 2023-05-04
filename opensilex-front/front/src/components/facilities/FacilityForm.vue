@@ -80,7 +80,7 @@
           :required="relation.property.is_required"
           :multiple="relation.property.is_list"
           :value.sync="relation.value"
-          @update:value="updateRelation($event,relation.property)"
+          @update:value="updateRelation($event, relation.property)"
       ></component>
     </div>
     <slot v-if="form.rdf_type" v-bind:form="form"></slot>
@@ -252,9 +252,9 @@ export default class FacilityForm extends Vue {
         });
   }
 
-  updateRelation(newValue,property){
+  updateRelation(newValue, property){
     let relation = this.form.relations.find(relation =>
-        relation.property == property.property
+        relation.property == property
     );
 
     if (relation) {
@@ -263,7 +263,7 @@ export default class FacilityForm extends Vue {
     }
 
     relation = {
-      property: property.property,
+      property: property.uri,
       value: newValue
     };
     this.form.relations.push(relation);

@@ -315,6 +315,8 @@ import OntologyPropertyView from './ontology/OntologyPropertyView.vue'
 components["opensilex-OntologyPropertyView"] = OntologyPropertyView;
 import OntologyTypesView from './ontology/OntologyTypesView.vue'
 components["opensilex-OntologyTypesView"] = OntologyTypesView;
+import OntologyObjectProperties from './ontology/OntologyObjectProperties.vue'
+components["opensilex-OntologyObjectProperties"] = OntologyObjectProperties;
 import OntologyObjectForm from './ontology/OntologyObjectForm.vue'
 components["opensilex-OntologyObjectForm"] = OntologyObjectForm;
 import OntologyRelationsForm from './ontology/OntologyRelationsForm.vue'

@@ -712,7 +712,7 @@ components["opensilex-DisplayInformationAboutItem"] = DisplayInformationAboutIte
 import ExportShapeModalList from "./geometry/ExportShapeModalList.vue";
 components["opensilex-ExportShapeModalList"] = ExportShapeModalList;
 
-//VISUALIZATION
+// VISUALIZATION
 
 import ImageGrid from './visualization/ImageGrid.vue';
 components["opensilex-ImageGrid"] = ImageGrid;
@@ -735,6 +735,8 @@ import DataVisuGraphic from './visualization/DataVisuGraphic.vue';
 components["opensilex-DataVisuGraphic"] = DataVisuGraphic;
 import DataVisuHelp from './visualization/DataVisuHelp.vue';
 components["opensilex-DataVisuHelp"] = DataVisuHelp;
+import Sparkline from './visualization/Sparkline.vue';
+components["opensilex-Sparkline"] = Sparkline;
 
 // ANNOTATIONS
 import AnnotationModalForm from './annotations/form/AnnotationModalForm.vue';

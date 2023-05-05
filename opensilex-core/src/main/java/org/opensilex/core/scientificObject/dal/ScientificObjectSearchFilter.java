@@ -25,7 +25,7 @@ public class ScientificObjectSearchFilter extends SparqlSearchFilter {
      */
     protected Boolean onlyFetchOsWithNoParent;
 
-    protected URI germplasm;
+    protected List<URI> germplasm;
 
     protected List<URI> factorLevels;
 
@@ -89,14 +89,15 @@ public class ScientificObjectSearchFilter extends SparqlSearchFilter {
         return this;
     }
 
-    public URI getGermplasm() {
+    public List<URI> getGermplasm() {
         return germplasm;
     }
 
-    public ScientificObjectSearchFilter setGermplasm(URI germplasm) {
+    public ScientificObjectSearchFilter setGermplasm(List<URI> germplasm) {
         this.germplasm = germplasm;
         return this;
     }
+
 
     public List<URI> getFactorLevels() {
         return factorLevels;

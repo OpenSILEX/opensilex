@@ -144,6 +144,10 @@
             :searchMethod="loadExperiments"
             :nameFilter.sync="experimentName"
           ></opensilex-AssociatedExperimentsList>
+          <opensilex-AssociatedGermplasmGroupsList
+              :searchMethod="loadGermplasmGroups"
+              :nameFilter.sync="germplasmGroupName"
+          ></opensilex-AssociatedGermplasmGroupsList>
         </b-col>
       </b-row>
 
@@ -206,6 +210,7 @@ export default class GermplasmDetails extends Vue {
   uri: string = null;
   addInfo = [];
   experimentName: any = "";
+  germplasmGroupName = "";
 
   $AnnotationsService: AnnotationsService
   $DocumentsService: DocumentsService
@@ -319,6 +324,16 @@ export default class GermplasmDetails extends Vue {
       options.orderBy,
       options.currentPage,
       options.pageSize
+    );
+  }
+
+  loadGermplasmGroups(options) {
+    return this.service.searchGermplasmGroups(
+        undefined,
+        [this.uri],
+        options.orderBy,
+        options.currentPage,
+        options.pageSize
     );
   }
 

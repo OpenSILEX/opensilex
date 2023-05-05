@@ -133,8 +133,8 @@ export default class GroupVariablesForm extends Vue {
 <i18n>
 en:
     GroupVariablesForm:
-        add: Add variables group
-        edit: Edit variables group
+        add: Add variable group
+        edit: Edit variable group
 fr:
     GroupVariablesForm:
         add: Ajouter un groupe de variables

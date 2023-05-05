@@ -1,3 +1,4 @@
+
 let components = {};
 
 // Layout
@@ -424,6 +425,25 @@ import GermplasmSelector from './germplasm/GermplasmSelector.vue';
 components["opensilex-GermplasmSelector"] = GermplasmSelector;
 import GermplasmAttributesSelector from './germplasm/GermplasmAttributesSelector.vue';
 components["opensilex-GermplasmAttributesSelector"] = GermplasmAttributesSelector;
+import GermplasmGroup from './germplasmGroup/GermplasmGroup.vue';
+components["opensilex-GermplasmGroup"] = GermplasmGroup;
+import GermplasmGlobalView from './germplasm/GermplasmGlobalView.vue';
+components["opensilex-GermplasmGlobalView"] = GermplasmGlobalView;
+import GermplasmGroupStructureDetails from './germplasmGroup/GermplasmGroupStructureDetails.vue';
+components["opensilex-GermplasmGroupStructureDetails"] = GermplasmGroupStructureDetails;
+import GroupGermplasmForm from './germplasmGroup/GroupGermplasmForm.vue';
+components["opensilex-GroupGermplasmForm"] = GroupGermplasmForm;
+import GermplasmGroupList from './germplasmGroup/GermplasmGroupList.vue';
+components["opensilex-GermplasmGroupList"] = GermplasmGroupList;
+import GermplasmSelectorWithFilter from './germplasm/GermplasmSelectorWithFilter.vue';
+components["opensilex-GermplasmSelectorWithFilter"] = GermplasmSelectorWithFilter;
+import GermplasmGroupContentList from './germplasmGroup/GermplasmGroupContentList.vue';
+components["opensilex-GermplasmGroupContentList"] = GermplasmGroupContentList;
+import GermplasmGroupSelector from './germplasmGroup/GermplasmGroupSelector.vue';
+components["opensilex-GermplasmGroupSelector"] = GermplasmGroupSelector;
+import AssociatedGermplasmGroupsList from './germplasmGroup/AssociatedGermplasmGroupsList.vue';
+components["opensilex-AssociatedGermplasmGroupsList"] = AssociatedGermplasmGroupsList;
+
 import GermplasmAttributesValueSelector from './germplasm/GermplasmAttributesValueSelector.vue';
 components["opensilex-GermplasmAttributesValueSelector"] = GermplasmAttributesValueSelector;
 

@@ -12,6 +12,7 @@ import org.opensilex.utils.OrderBy;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -204,7 +205,7 @@ public class ScientificObjectSearchDTO {
                 .setRdfTypes(rdfTypes)
                 .setPattern(pattern)
                 .setParentURI(parentURI)
-                .setGermplasm(germplasm)
+                .setGermplasm(Collections.singletonList(germplasm))
                 .setFactorLevels(factorLevels)
                 .setFacility(facility)
                 .setExistenceDate(existenceDate)

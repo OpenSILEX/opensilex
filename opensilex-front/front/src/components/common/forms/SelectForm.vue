@@ -143,6 +143,12 @@
 import { Component, Prop, PropSync, Watch, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import AsyncComputedProp from "vue-async-computed-decorator";
+import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
+
+export interface SelectableItem {
+  id: string,
+  label: string
+}
 
 @Component
 export default class SelectForm extends Vue {
@@ -154,6 +160,13 @@ export default class SelectForm extends Vue {
 
   @PropSync("selected")
   selection;
+
+  /**
+   * selection but as a list of jsons, containing at least name and uri of each selected item. Required to show labels of pre-existing elements
+   */
+  @Prop({default: null})
+  selectedInJsonFormat
+
 
   @Prop()
   multiple;
@@ -211,7 +224,7 @@ export default class SelectForm extends Vue {
       }
     }
   })
-  conversionMethod: Function;
+  conversionMethod: (dto: NamedResourceDTO) => SelectableItem;
 
   @Prop()
   label: string;
@@ -286,7 +299,7 @@ export default class SelectForm extends Vue {
   @Prop()
   maximumSelectedItems;
 
-  @Prop()
+  @Prop({default: 1})
   limit: number; // limit number of items in the input box
 
   // props for variableSelectorWithFilter
@@ -308,6 +321,8 @@ export default class SelectForm extends Vue {
   // temporary modal selection
   selectedTmp = [];
 
+  firstTimeOpening = false;
+
     /**
      * Refresh key for the Treeselect component. Used by the {@link refresh} method.
      */
@@ -318,10 +333,24 @@ export default class SelectForm extends Vue {
     return new Promise((resolve, reject) => {
       if (this.isModalSearch) {
         if (!this.selection || this.selection.length == 0) {
-          resolve([]);
+            this.firstTimeOpening = false;
+            resolve([]);
         } else if (this.currentValue) {
           resolve(this.currentValue);
         } else {
+          //Set table async view's checked items
+          let jsonSelectedItems = this._convertSelectedToJson();
+          if(this.searchModal.setInitiallySelectedItems){
+            this.searchModal.setInitiallySelectedItems(jsonSelectedItems);
+          }
+          //Set selectedTmp and selectedCopie
+            if( this.firstTimeOpening ){
+                this.firstTimeOpening = false;
+                if( this.selectedInJsonFormat ){
+                    this.selectedTmp = this.selectedInJsonFormat.map(e => this.conversionMethod(e));
+                    this.selectedCopie = this.selectedInJsonFormat.map(e => this.conversionMethod(e));
+                }
+            }
           let nodeList = [];
           this.selectedTmp.forEach((item) => {
             nodeList.push(this.conversionMethod(item));
@@ -331,6 +360,7 @@ export default class SelectForm extends Vue {
             this.loading = false;
           }
           resolve(this.currentValue);
+
         }
       } else {
         if (this.itemLoadingMethod) {
@@ -398,6 +428,10 @@ export default class SelectForm extends Vue {
     });
   }
 
+  setSelectorToFirstTimeOpen(){
+    this.firstTimeOpening = true;
+  }
+
   onEnter() {
       this.$emit("handlingEnterKey")
   }
@@ -456,11 +490,23 @@ export default class SelectForm extends Vue {
     return "";
   }
 
+  /**
+   * Converts selected prop to a new list of jsons, each json has 1 field : long uri
+   * Used to set TableAsyncView's initially selected items
+   * @private
+   */
+  private _convertSelectedToJson(){
+    let result = [];
+    for(const uri of this.selection){
+      result.push({uri:this.$opensilex.getLongUri(uri)});
+    }
+    return result;
+  }
+
  select(value) {
     if(this.isModalSearch)  {
-      // copy selected items in local variable to wait validate action and then, change the selection
-      this.selectedTmp.push(value);
-
+        // copy selected items in local variable to wait validate action and then, change the selection
+        this.selectedTmp.push(value);
       this.$emit("select", value, this.selectedTmp);
     } 
     else {
@@ -497,7 +543,6 @@ export default class SelectForm extends Vue {
       this.loading = true;
     }
     this.selectedCopie = this.selectedTmp.slice();
-
     setTimeout(() => { // fix :  time to close the modal .
       this.selection = this.selectedCopie.map(value => value.id);
       this.$emit('onValidate', this.selectedCopie);
@@ -519,9 +564,15 @@ export default class SelectForm extends Vue {
   }
 
   selectAll(selectedValues) {
-    if(selectedValues){  
+    if(selectedValues){
       // copy selected items in local variable to wait validate action and then, change the selection
-      this.selectedTmp = selectedValues.map((item => this.conversionMethod(item)));
+      // Don't push to selected temp if the conversion method failed
+      for(let next of selectedValues){
+        let convertedNext = this.conversionMethod(next);
+        if(convertedNext.label){
+          this.selectedTmp.push(convertedNext);
+        }
+      }
     }
     else {
       this.selectedTmp = null;
@@ -654,12 +705,23 @@ export default class SelectForm extends Vue {
 
   updateModal() {
     // unselect temporary items that are not in confirmed selection
-    let difference = this.selectedTmp.filter(x => !this.selectedCopie.includes(x));
+    //This line creates a new array containing elements from selectedTmp that aren't in selectedCopie
+    let difference = this.selectedTmp.filter(x => {
+      let index = 0;
+      while(index<this.selectedCopie.length){
+        let next = this.selectedCopie[index];
+        if(next.uri==x.uri){
+          return false;
+        }
+        index++;
+      }
+      return true;
+    });
     difference.forEach((item) => {
       this.searchModal.unSelect(item);
     });
     // reselect previously confirmed items that are not in temporary selection
-    difference = this.selectedCopie.filter(x => !this.selectedTmp.includes(x));
+      difference = this.selectedCopie.filter(x => !this.selectedTmp.includes(x));
     difference.forEach((item) => {
       this.searchModal.selectItem(item);
     });

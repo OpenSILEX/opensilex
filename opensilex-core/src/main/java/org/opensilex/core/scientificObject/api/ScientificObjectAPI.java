@@ -344,7 +344,7 @@ public class ScientificObjectAPI {
                 .setPattern(pattern)
                 .setRdfTypes(rdfTypes)
                 .setParentURI(parentURI)
-                .setGermplasm(germplasm)
+                .setGermplasm((germplasm!=null ? Collections.singletonList(germplasm) : null))
                 .setFactorLevels(factorLevels)
                 .setFacility(facility)
                 .setExistenceDate(existenceDate)

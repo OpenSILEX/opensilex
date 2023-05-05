@@ -7,8 +7,8 @@
               <opensilex-Icon :icon="iconNumberOfSelectedRow" class="title-icon" />
               {{$t(labelNumberOfSelectedRow)}}
             </h3>
-            <span v-if="!maximumSelectedRows" class="badge badge-pill greenThemeColor">{{numberOfSelectedRows}}</span>
-            <span v-else class="badge badge-pill badge-warning">{{numberOfSelectedRows}}/{{maximumSelectedRows}}</span>
+            <span v-if="!maximumSelectedRows && selectMode!=='single'" class="badge badge-pill greenThemeColor">{{numberOfSelectedRows}}</span>
+            <span v-else-if="selectMode!=='single'" class="badge badge-pill badge-warning">{{numberOfSelectedRows}}/{{maximumSelectedRows}}</span>
             <slot name="selectableTableButtons" v-bind:numberOfSelectedRows="numberOfSelectedRows"></slot>
         </div>
       </div>
@@ -34,6 +34,9 @@
       </div>
        <b-table
         ref="tableRef"
+        :class="{
+           singleSelectableClass: selectMode === 'single'
+        }"
         striped
         hover
         small
@@ -93,6 +96,7 @@ import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
 import {OrderBy} from "opensilex-core/index";
 import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
+import {BTable} from "bootstrap-vue";
 
 @Component
 export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
@@ -102,7 +106,7 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
   $i18n: any;
   $t : any;
 
-  @Ref("tableRef") readonly tableRef!: any;
+  @Ref("tableRef") readonly tableRef: BTable;
 
   @Prop()
   fields;
@@ -138,7 +142,7 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
   @Prop({
     default: "multi"
   })
-  selectMode;
+  selectMode: "multi" | "single";
 
   @Prop()
   labelNumberOfSelectedRow;
@@ -175,7 +179,8 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
   selectAllLimit; 
 
   created() {
-    if (this.isSelectable) {
+
+    if (this.isSelectable && this.selectMode!="single") {
       this.fields.unshift({
         key: "select",
         isSelect: true
@@ -208,6 +213,16 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
     return this.$store.state.loaderVisible;
   }
 
+  setInitiallySelectedItems(initiallySelectedItems:Array<any>):void{
+    if(Array.isArray(initiallySelectedItems) && initiallySelectedItems.length != 0){
+      //set initially selected items
+      this.selectedItems = [];
+      initiallySelectedItems.map(e=>
+          Vue.set(this.selectedItems , this.selectedItems.length, e));
+      this.update();
+    }
+  }
+
   getHeadTemplateName(key) {
     return "head(" + key + ")";
   }
@@ -219,7 +234,6 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
   //first step ( manage if limit of selected items)
   // item = clicked item : We cannot unselect the item here, cause it's not selected at this time..
   onRowClicked(item) {
-
     const idx = this.selectedItems.findIndex(it => item.uri === it.uri);
     if (idx >= 0) {
       this.selectedItems.splice(idx, 1); // the item exist ? so it's an unselect action
@@ -303,12 +317,12 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
 
   //from outside the component
   onItemUnselected(item) {
-    const unselectedItemIndex = this.tableRef.sortedItems.findIndex(it => item.id == it.uri);
+    const unselectedItemIndex = this.tableRef.sortedItems.findIndex(it => item.id === it.uri);
 
     if (unselectedItemIndex >= 0) {
       this.tableRef.unselectRow(unselectedItemIndex);
     } 
-    const index = this.selectedItems.findIndex(it => item.id == it.uri);
+    const index = this.selectedItems.findIndex(it => item.id === it.uri);
     this.selectedItems.splice(index, 1);
     this.numberOfSelectedRows = this.selectedItems.length;
   }
@@ -348,7 +362,6 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
   }
 
   loadData() {
-
     let orderBy = this.getOrderBy();
 
     if (this.useQueryParams) {
@@ -478,10 +491,14 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
     return this.selectAllLimit;
   }
 
+
+
 }
 </script>
 
 <style scoped lang="scss">
+
+
 table.b-table-selectable tbody tr td span {
   line-height: 24px;
   text-align: center;
@@ -549,6 +566,7 @@ table.b-table-selectable tbody tr.b-table-row-selected td span.checkbox:after {
   position:relative;
   top: -5px;
 }
+
 </style>
 <i18n>
 en:

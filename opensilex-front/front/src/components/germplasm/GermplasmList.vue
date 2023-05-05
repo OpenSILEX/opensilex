@@ -104,7 +104,20 @@
                                 </opensilex-FilterField>
                             </div>
 
-                            <!-- URI -->
+                          <!-- Germplasm Group -->
+                          <div>
+                            <opensilex-FilterField>
+                              <opensilex-GermplasmGroupSelector
+                                  label="GermplasmList.filter.germplasm-group"
+                                  :multiple="false"
+                                  :germplasmGroup.sync="filter.germplasm_group"
+                                  class="searchFilter"
+                                  @handlingEnterKey="refresh()"
+                              ></opensilex-GermplasmGroupSelector>
+                            </opensilex-FilterField>
+                          </div>
+
+                          <!-- URI -->
                             <div>
                                 <opensilex-FilterField>
                                     <label>{{ $t('GermplasmList.filter.uri') }}</label>
@@ -153,6 +166,9 @@
                 :fields="fields"
                 :isSelectable="true"
                 @refreshed="onRefreshed"
+                @select="$emit('select', $event)"
+                @unselect="$emit('unselect', $event)"
+                @selectall="$emit('selectall', $event)"
                 defaultSortBy="name"
                 labelNumberOfSelectedRow="GermplasmList.selected"
                 iconNumberOfSelectedRow="fa#seedling"
@@ -298,30 +314,32 @@ export default class GermplasmList extends Vue {
     experimentsList = [];
     SearchFiltersToggle: boolean = true;
 
-    filter = {
-        rdf_type: undefined,
-        name: undefined,
-        species: undefined,
-        production_year: undefined,
-        institute: undefined,
-        experiment: undefined,
-        uri: undefined,
-        metadataKey: undefined,
-        metadataValue: undefined
-    };
+  filter = {
+    rdf_type: undefined,
+    name: undefined,
+    species: undefined,
+    production_year: undefined,
+    institute: undefined,
+    experiment: undefined,
+    germplasm_group: undefined,
+    uri: undefined,
+    metadataKey: undefined,
+    metadataValue: undefined
+  };
 
-    reset() {
-        this.filter = {
-            rdf_type: undefined,
-            name: undefined,
-            species: undefined,
-            production_year: undefined,
-            institute: undefined,
-            experiment: undefined,
-            uri: undefined,
-            metadataKey: undefined,
-            metadataValue: undefined
-        };
+  reset() {
+    this.filter = {
+      rdf_type: undefined,
+      name: undefined,
+      species: undefined,
+      production_year: undefined,
+      institute: undefined,
+      experiment: undefined,
+      germplasm_group: undefined,
+      uri: undefined,
+      metadataKey: undefined,
+      metadataValue: undefined
+    };
 
         this.refresh();
     }
@@ -331,7 +349,8 @@ export default class GermplasmList extends Vue {
     }
 
     onItemSelected(row) {
-        this.tableRef.onItemSelected(row);
+        console.debug("GermplasmList selecting item, heres the row : ", row);
+      this.tableRef.onItemSelected(row);
     }
 
     clickOnlySelected() {
@@ -342,6 +361,9 @@ export default class GermplasmList extends Vue {
         this.tableRef.resetSelected();
     }
 
+  setInitiallySelectedItems(initiallySelectedItems:any){
+    this.tableRef.setInitiallySelectedItems(initiallySelectedItems);
+  }
 
     getSelected() {
         return this.tableRef.getSelected();
@@ -396,9 +418,9 @@ export default class GermplasmList extends Vue {
 
     @Ref("speciesSelector") readonly speciesSelector!: any;
 
-    refresh() {
-        this.tableRef.selectAll = false;
-        this.$opensilex.updateURLParameters(this.filter);
+  refresh() {
+    this.tableRef.selectAll = false;
+    this.$opensilex.updateURLParameters(this.filter);
 
         if (this.tableRef.onlySelected) {
             this.tableRef.onlySelected = false;
@@ -408,25 +430,26 @@ export default class GermplasmList extends Vue {
         }
     }
 
-    searchGermplasm(options) {
-        // this.updateExportFilters();
-        return this.service.searchGermplasm(
-            this.filter.uri,
-            this.filter.rdf_type,
-            this.filter.name,
-            undefined,
-            this.filter.production_year,
-            this.filter.species,
-            undefined,
-            undefined,
-            this.filter.institute,
-            this.filter.experiment,
-            this.addMetadataFilter(),
-            options.orderBy,
-            options.currentPage,
-            options.pageSize
-        );
-    }
+  searchGermplasm(options) {
+    // this.updateExportFilters();
+    return this.service.searchGermplasm(
+      this.filter.uri,
+      this.filter.rdf_type,
+      this.filter.name,
+      undefined,
+      this.filter.production_year,
+      this.filter.species,
+      undefined,
+      undefined,
+      this.filter.germplasm_group,
+      this.filter.institute,
+      this.filter.experiment,
+      this.addMetadataFilter(),
+      options.orderBy,
+      options.currentPage,
+      options.pageSize
+    );
+  }
 
     exportCSV(exportAll: boolean) {
         let path = "/core/germplasm/export";
@@ -607,25 +630,26 @@ en:
         selected-all: All Germplasm
 
         filter:
-            description: Germplasm Search
-            species: Species
-            species-placeholder: Select a species
-            year: Production year
-            year-placeholder: Enter a year
-            institute: Institute code
-            institute-placeholder: Enter an institute code
-            label: Name
-            label-placeholder: Enter germplasm name
-            rdfType: Type
-            rdfType-placeholder: Select a germplasm type
-            experiment: Experiment
-            experiment-placeholder: Select an experiment
-            uri: URI
-            uri-placeholder: Enter a part of an uri
-            search: Search
-            reset: Reset
-            metadataKey: Attribute name
-            metadataValue: Attribute value
+          description: Germplasm Search
+          species: Species
+          species-placeholder: Select a species
+          year: Production year
+          year-placeholder: Enter a year
+          institute: Institute code
+          institute-placeholder: Enter an institute code
+          label: Name
+          label-placeholder: Enter germplasm name
+          rdfType: Type
+          rdfType-placeholder: Select a germplasm type
+          experiment: Experiment
+          experiment-placeholder: Select an experiment
+          uri: URI
+          uri-placeholder: Enter a part of an uri
+          search: Search
+          reset: Reset
+          metadataKey: Attribute name
+          metadataValue: Attribute value
+          germplasm-group: Germplasm Group
 
 fr:
     GermplasmList:
@@ -643,24 +667,25 @@ fr:
 
 
         filter:
-            description: Recherche de Ressources Génétiques
-            species: Espèce
-            species-placeholder: Sélectionner une espèce
-            year: Année de production
-            year-placeholder: Entrer une année
-            institute: Code Institut
-            institute-placeholder: Entrer le code d'un institut
-            label: Nom
-            label-placeholder: Entrer un nom de germplasm
-            rdfType: Type
-            rdfType-placeholder: Sélectionner un type de germplasm
-            experiment: Expérimentation
-            experiment-placeholder: Sélectionner une expérimentation
-            uri: URI
-            uri-placeholder: Entrer une partie d'une uri
-            search: Rechercher
-            reset: Réinitialiser
-            metadataKey: Nom de l'attribut
-            metadataValue: Valeur de l'attribut
+          description: Recherche de Ressources Génétiques
+          species: Espèce
+          species-placeholder: Sélectionner une espèce
+          year: Année de production
+          year-placeholder: Entrer une année
+          institute: Code Institut
+          institute-placeholder: Entrer le code d'un institut
+          label: Nom
+          label-placeholder: Entrer un nom de germplasm
+          rdfType: Type
+          rdfType-placeholder: Sélectionner un type de germplasm
+          experiment: Expérimentation
+          experiment-placeholder: Sélectionner une expérimentation
+          uri: URI
+          uri-placeholder: Entrer une partie d'une uri
+          search: Rechercher
+          reset: Réinitialiser
+          metadataKey: Nom de l'attribut
+          metadataValue: Valeur de l'attribut
+          germplasm-group: Groupe de ressources génétiques
 
 </i18n>

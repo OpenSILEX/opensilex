@@ -73,7 +73,10 @@ public class Oeso {
 
     // ---- VARIABLES GROUP ----
     public static final Resource VariablesGroup = Ontology.resource(NS, "VariablesGroup");
-    
+
+    // ---- Germplasm GROUP ----
+    public static final Resource GermplasmGroup = Ontology.resource(NS, "GermplasmGroup");
+
     // ----- USERS ------
     public static final Resource ScientificSupervisor = Ontology.resource(NS, "ScientificSupervisor");
     public static final Resource TechnicalSupervisor = Ontology.resource(NS, "TechnicalSupervisor");

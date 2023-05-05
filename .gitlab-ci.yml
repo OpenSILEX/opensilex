@@ -549,7 +549,7 @@ demo:build:
 maximilian:build:
   <<: *build_template_with_opensilex
   rules:
-    - if: $CI_COMMIT_BRANCH == "maximilian"
+    - if: $CI_COMMIT_BRANCH == "maximilian2"
 
 test:maximilian:deploy:
   <<: *deploy_opensilex_before_script
@@ -564,7 +564,7 @@ test:maximilian:deploy:
     REMOTE_SERVER_RSYNC_DIR: "mistea/maximilian"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   rules:
-    - if: $CI_COMMIT_BRANCH == "maximilian"
+    - if: $CI_COMMIT_BRANCH == "maximilian2"
       when: on_success
   needs:
     - maximilian:build

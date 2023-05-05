@@ -31,7 +31,11 @@ import org.opensilex.core.exception.*;
 import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.experiment.dal.ExperimentSearchFilter;
 import org.opensilex.core.experiment.utils.ImportDataIndex;
+import org.opensilex.core.germplasm.api.GermplasmSearchFilter;
+import org.opensilex.core.germplasm.dal.GermplasmDAO;
+import org.opensilex.core.germplasmGroup.dal.GermplasmGroupDAO;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.provenance.api.ProvenanceAPI;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
@@ -40,6 +44,7 @@ import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
+import org.opensilex.core.scientificObject.dal.ScientificObjectSearchFilter;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
@@ -64,6 +69,7 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
@@ -269,6 +275,7 @@ public class DataAPI {
             @ApiParam(value = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE_MAX) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
             @ApiParam(value = "Search by provenances", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
             @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
+            @ApiParam(value = "Group filter") @QueryParam("group_of_germplasm") @ValidURI URI germplasmGroup,
             @ApiParam(value = "Search by operators", example = DATA_EXAMPLE_OPERATOR ) @QueryParam("operators") List<URI> operators,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @DefaultValue("date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
@@ -278,6 +285,34 @@ public class DataAPI {
         if (targets == null) {
             targets = new ArrayList<>();
         }
+        //Get scientific objects associated to germplasms inside germplasmGroup if it's not null
+        if(germplasmGroup!=null){
+
+            ScientificObjectDAO scientificObjectDAO = new ScientificObjectDAO(sparql, nosql);
+            Set<URI> finalTargetsFilter = new HashSet<>(targets);
+            //If no experiments were passed we must only look for objects in experiments that the user is allowed to see
+            ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
+            List<URI> includedExperimentsForTargetsSearch = experiments;
+            if(experiments == null || experiments.isEmpty()){
+                ExperimentSearchFilter experimentSearchFilter = new ExperimentSearchFilter();
+                experimentSearchFilter.setUser(user);
+                int xpQuantity = experimentDAO.count();
+                experimentSearchFilter.setPage(0);
+                experimentSearchFilter.setPageSize(xpQuantity);
+                includedExperimentsForTargetsSearch = experimentDAO.search(experimentSearchFilter).getList().stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList());
+            }
+
+            List<URI> targetsAssociatedWithGermplasmGroup = scientificObjectDAO
+                    .getScientificObjectUrisAssociatedWithGermplasmGroup(includedExperimentsForTargetsSearch, germplasmGroup, user.getLanguage());
+            finalTargetsFilter.addAll(targetsAssociatedWithGermplasmGroup);
+            targets = new ArrayList<>(finalTargetsFilter);
+            //if targets is still empty when a group was passed then we don't want any data to be returned
+            if(targets.isEmpty()){
+                ListWithPagination<DataGetDTO> resultDTOList = new ListWithPagination<DataGetDTO>(new ArrayList<>());
+                return new PaginatedListResponse<>(resultDTOList).getResponse();
+            }
+        }
+
         return getDataList(startDate, endDate, timezone, experiments, targets, variables, devices, confidenceMin, confidenceMax, provenances, metadata, operators, orderByList, page, pageSize);
     }
 

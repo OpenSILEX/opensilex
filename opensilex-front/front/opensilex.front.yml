@@ -45,7 +45,7 @@ menu:
           credentials:
             - facility-access
           icon: "ik#ik-globe"
-          title: "component.menu.facilities" 
+          title: "component.menu.facilities"
           description: FacilityListView.description
       - id: devices
         label: component.menu.devices
@@ -85,12 +85,9 @@ menu:
         icon: ik-cloud-rain
         route:
           path: /germplasm
-          component: opensilex-GermplasmView
+          component: opensilex-GermplasmGlobalView
           credentials:
             - germplasm-access
-          icon: fa#seedling
-          title: GermplasmView.title
-          description: GermplasmView.description
       - id: documents
         label: Documents
         route:
@@ -345,7 +342,7 @@ routes:
     component: opensilex-ScientificObjectTypes
     icon: ik#ik-settings
     title: ScientificObjectTypes.typeTitle
-    description: ScientificObjectTypes.typeDescription 
+    description: ScientificObjectTypes.typeDescription
 
   - path: /facilities-types/properties
     component: opensilex-FacilitiesTypes
@@ -358,7 +355,7 @@ routes:
 
   - path: /variable/details/:uri
     component: opensilex-VariableView
-    credentials: []
+    credentials: [ ]
   - path: /variable/annotations/:uri
     component: opensilex-VariableView
   - path: /variable/visualization/:uri
@@ -381,18 +378,19 @@ routes:
     component: opensilex-ProjectDetails
   - path: /germplasm/create
     component: opensilex-GermplasmCreate
-    credentials: [germplasm-modification]
+    credentials: [ germplasm-modification ]
     icon: fa#seedling
     title: GermplasmCreate.title
     description: GermplasmCreate.description
   - path: /germplasm/details/:uri
     component: opensilex-GermplasmDetails
-    credentials: []
+    credentials: [ ]
   - path: /germplasm/annotations/:uri
     component: opensilex-GermplasmDetails
   - path: /germplasm/documents/:uri
     component: opensilex-GermplasmDetails
-
+  - path: /germplasm/group
+    component: opensilex-GermplasmGlobalView
 
   - path: /factor/create
     component: opensilex-FactorForm
@@ -409,7 +407,7 @@ routes:
 
   - path: /document/details/:uri
     component: opensilex-DocumentDetails
-    credentials: []
+    credentials: [ ]
 
   - path: /device/details/:uri
     component: opensilex-DeviceDetails
@@ -437,7 +435,7 @@ routes:
 # Optional <experiment> path
   - path: /scientific-objects/details/:uri/:experiment?
     component: opensilex-ScientificObjectDetailView
-    credentials: []
+    credentials: [ ]
     icon: ik#ik-target
     title: component.menu.scientificObjects
     description: ScientificObjectList.description
@@ -454,13 +452,13 @@ routes:
     component: opensilex-ScientificObjectDetailView
   - path: /scientific-objects/documents/:uri
     component: opensilex-ScientificObjectDetailView
-    
+
   - path: /infrastructures/details/:uri
     component: opensilex-InfrastructureDetailView
     credentials: []
   - path: /provenances/details/:uri
     component: opensilex-ProvenanceDetailsPage
-    credentials: []
+    credentials: [ ]
   - path: /provenances/annotations/:uri
     component: opensilex-ProvenanceDetailsPage
   - path: /provenances/documents/:uri

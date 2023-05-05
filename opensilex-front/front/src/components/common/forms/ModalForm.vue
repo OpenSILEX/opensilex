@@ -59,7 +59,7 @@
     </template>
 
     <ValidationObserver ref="validatorRef">
-        <component ref="componentRef" v-bind:is="component" :editMode="editMode" :form.sync="form" :disableValidation="disableValidation">
+        <component ref="componentRef" v-bind:is="component" :editMode="editMode" :form.sync="form" :data="data" :disableValidation="disableValidation">
             <slot name="customFields" v-bind:form="form" v-bind:editMode="editMode"></slot>
         </component>
     </ValidationObserver>
@@ -77,6 +77,7 @@ export type ModalInnerForm<CreationDTOType, UpdateDTOType> = Vue & {
   update?: (dto: UpdateDTOType) => any;
   reset?: () => void;
   tutorial?: () => void;
+  setSelectorsToFirstTimeOpenAndSetLabels?: (objectsWithLabels : Array<any>) => void;
 }
 
 /**
@@ -117,6 +118,12 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
 
   @Prop({default: false})
   doNotHideOnError: boolean;
+
+  @Prop()
+  /**
+   * Arbitrary data to be passed to the inner form component
+   */
+  data: any;
 
   @Prop({
     type: Function,
@@ -217,6 +224,16 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
         this.getFormRef().reset();
       }
     });
+  }
+
+    /**
+     *
+     * @param initiallySelectedWithLabels any object type that contains the information required to set the inner-form's initially selected items (for update modals)
+     *
+     * @requires  setSelectorsToFirstTimeOpenAndSetLabels function to be defined in the form ref
+     */
+  setSelectorsToFirstTimeOpenAndSetLabels(initiallySelectedWithLabels){
+      this.getFormRef().setSelectorsToFirstTimeOpenAndSetLabels(initiallySelectedWithLabels);
   }
 
   showEditForm(form: UpdateDTOType) {

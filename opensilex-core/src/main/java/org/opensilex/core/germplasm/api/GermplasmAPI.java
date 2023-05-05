@@ -203,7 +203,7 @@ public class GermplasmAPI {
      * @return Corresponding list of germplasms
      * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
      */
-    @GET
+    @POST
     @Path("by_uris")
     @ApiOperation("Get a list of germplasms by their URIs")
     @ApiProtected
@@ -215,7 +215,7 @@ public class GermplasmAPI {
         @ApiResponse(code = 404, message = "Germplasm not found (if any provided URIs is not found", response = ErrorDTO.class)
     })
     public Response getGermplasmsByURI(
-            @ApiParam(value = "Germplasms URIs", required = true) @QueryParam("uris") @NotNull @NotEmpty  List<URI> uris
+            @ApiParam(value = "Germplasms URIs") List<URI> uris
     ) throws Exception {
         GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
 
@@ -225,7 +225,7 @@ public class GermplasmAPI {
 
         List<GermplasmModel> models = germplasmDAO.search(filter,false).getList();
 
-        if (!models.isEmpty()) {
+    if (!models.isEmpty()) {
             List<GermplasmGetAllDTO> resultDTOList = new ArrayList<>(models.size());
             models.forEach(result -> {
                 resultDTOList.add(GermplasmGetAllDTO.fromModel(result));
@@ -364,6 +364,7 @@ public class GermplasmAPI {
             @ApiParam(value = "Search by species", example = GERMPLASM_EXAMPLE_SPECIES) @QueryParam("species") URI species,
             @ApiParam(value = "Search by variety", example = GERMPLASM_EXAMPLE_VARIETY) @QueryParam("variety") URI variety,
             @ApiParam(value = "Search by accession", example = GERMPLASM_EXAMPLE_ACCESSION) @QueryParam("accession") URI accession,
+            @ApiParam(value = "Group filter") @QueryParam("group_of_germplasm") @ValidURI URI group,
             @ApiParam(value = "Search by institute", example = GERMPLASM_EXAMPLE_INSTITUTE) @QueryParam("institute") String institute,
             @ApiParam(value = "Search by experiment") @QueryParam("experiment") URI experiment,
             @ApiParam(value = "Search by metadata", example = GERMPLASM_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
@@ -382,7 +383,8 @@ public class GermplasmAPI {
                  .setInstitute(institute)
                  .setProductionYear(productionYear)
                  .setExperiment(experiment)
-                 .setMetadata(metadata);
+                 .setMetadata(metadata)
+                 .setGroup(group);
 
          searchFilter.setOrderByList(orderByList)
                  .setPage(page)
@@ -588,7 +590,6 @@ public class GermplasmAPI {
 
         // check rdfType
         boolean isType = cacheType.get(new KeyType(germplasmDTO.getRdfType()), this::checkType);
-        //boolean isType = germplasmDAO.isGermplasmType(germplasmDTO.getRdfType()); 
         if (!isType) {
             // Return error response 409 - CONFLICT if rdfType doesn't exist in the ontology
             return new ErrorResponse(

@@ -801,7 +801,6 @@ export default class GermplasmTable extends Vue {
   }
 
   created() {
-    console.debug("Loading form view...");
     this.service = this.$opensilex.getService("opensilex.GermplasmService");
   }
 

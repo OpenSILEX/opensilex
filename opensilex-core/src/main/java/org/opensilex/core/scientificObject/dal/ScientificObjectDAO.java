@@ -16,10 +16,7 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
-import org.apache.jena.sparql.path.P_Link;
-import org.apache.jena.sparql.path.P_OneOrMore1;
-import org.apache.jena.sparql.path.P_ZeroOrMore1;
-import org.apache.jena.sparql.path.Path;
+import org.apache.jena.sparql.path.*;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.OpenSilex;
@@ -28,6 +25,8 @@ import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.exception.DuplicateNameListException;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
+import org.opensilex.core.germplasm.dal.GermplasmModel;
+import org.opensilex.core.germplasmGroup.dal.GermplasmGroupModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.ontology.dal.SPARQLRelationFetcher;
@@ -512,20 +511,24 @@ public class ScientificObjectDAO {
         }
 
         // Add germplasm filter
-        if (searchFilter.getGermplasm() != null) {
-            Node germplasmNode = SPARQLDeserializers.nodeURI(searchFilter.getGermplasm());
-            builder.addWhere(
-                    new WhereBuilder()
-                            .addWhere(uriVar, Oeso.hasGermplasm, germplasmNode)
-                            .addUnion(new WhereBuilder()
-                                    .addWhere(uriVar, Oeso.hasGermplasm, makeVar("_g1"))
-                                    .addWhere(makeVar("_g1"), Oeso.fromSpecies, germplasmNode))
-                            .addUnion(new WhereBuilder()
-                                    .addWhere(uriVar, Oeso.hasGermplasm, makeVar("_g2"))
-                                    .addWhere(makeVar("_g2"), Oeso.fromVariety, germplasmNode))
-                            .addUnion(new WhereBuilder()
-                                    .addWhere(uriVar, Oeso.hasGermplasm, makeVar("_g3"))
-                                    .addWhere(makeVar("_g3"), Oeso.fromAccession, germplasmNode)));
+        List<URI> germplasmMulti = searchFilter.getGermplasm();
+        if (germplasmMulti != null && !CollectionUtils.isEmpty(germplasmMulti)) {
+            Var germplasmVar = makeVar("__germplasm");
+            if (searchFilter.getExperiment() != null) {
+                builder.addGraph(contextNode, uriVar, Oeso.hasGermplasm, germplasmVar);
+            } else {
+                builder.addWhere(uriVar, Oeso.hasGermplasm, germplasmVar)
+                        .addUnion(new WhereBuilder()
+                                .addWhere(uriVar, Oeso.hasGermplasm, makeVar("_g1"))
+                                .addWhere(makeVar("_g1"), Oeso.fromSpecies, germplasmVar))
+                        .addUnion(new WhereBuilder()
+                                .addWhere(uriVar, Oeso.hasGermplasm, makeVar("_g2"))
+                                .addWhere(makeVar("_g2"), Oeso.fromVariety, germplasmVar))
+                        .addUnion(new WhereBuilder()
+                                .addWhere(uriVar, Oeso.hasGermplasm, makeVar("_g3"))
+                                .addWhere(makeVar("_g3"), Oeso.fromAccession, germplasmVar));
+            }
+            builder.addFilter(SPARQLQueryHelper.inURIFilter(germplasmVar, germplasmMulti));
 
         }
 
@@ -578,6 +581,41 @@ public class ScientificObjectDAO {
         if (searchFilter.getCreationDate() != null) {
             builder.addFilter(exprFactory.eq(creationDateVar, dateDeserializer.getNode(searchFilter.getCreationDate())));
         }
+    }
+
+    public List<URI> getScientificObjectUrisAssociatedWithGermplasmGroup(List<URI> experiments, URI germplasmGroupUri, String lang) throws Exception {
+
+        final Node germplasmGraph = sparql.getDefaultGraph(GermplasmModel.class);
+        final Node germplasmGroupGraph = sparql.getDefaultGraph(GermplasmGroupModel.class);
+
+        Var germplasm = makeVar("germplasm");
+        Var germplasmType = makeVar("germplasm_type");
+        Var targetGermplasm = makeVar("target_germplasm");
+        Var permittedExperimentsNodeVar = makeVar("experiment_contexts");
+        Var target = makeVar(SPARQLResourceModel.URI_FIELD);
+        Var targetType = makeVar(SPARQLResourceModel.TYPE_FIELD);
+
+        Path accessionSpeciesVarietyLink = new P_ZeroOrMore1(new P_Alt( new P_Alt( new P_Link(Oeso.fromAccession.asNode()), new P_Link(Oeso.fromSpecies.asNode()) ), new P_Link(Oeso.fromVariety.asNode()) ));
+        SelectBuilder query = new SelectBuilder()
+                .addGraph(permittedExperimentsNodeVar , target, RDF.type, targetType)
+                .addGraph(permittedExperimentsNodeVar , target, Oeso.hasGermplasm, targetGermplasm)
+                .addWhere(targetType, Ontology.subClassAny, Oeso.ScientificObject)
+                .addGraph(germplasmGraph, germplasm, RDF.type, germplasmType)
+                .addGraph(germplasmGraph, targetGermplasm, accessionSpeciesVarietyLink, germplasm)
+                .addWhere(germplasmType, Ontology.subClassAny, Oeso.Germplasm)
+                .addGraph(germplasmGroupGraph, SPARQLDeserializers.nodeURI(germplasmGroupUri), RDF.type, Oeso.GermplasmGroup)
+                .addGraph(germplasmGroupGraph, SPARQLDeserializers.nodeURI(germplasmGroupUri), RDFS.member, germplasm);
+
+        SPARQLQueryHelper.addWhereUriValues(query, permittedExperimentsNodeVar.getVarName(), experiments.stream(), experiments.size());
+
+        Stream<SPARQLResult> resultStream = sparql.executeSelectQueryAsStream(query);
+        if(resultStream == null){
+            return new ArrayList<>();
+        }
+
+        List<ScientificObjectModel> results = streamToList(resultStream,fromResult(lang));
+        return results.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList());
+
     }
 
     public SPARQLNamedResourceModel getUriByNameAndGraph(Node experiment, String objectName) throws SPARQLException {

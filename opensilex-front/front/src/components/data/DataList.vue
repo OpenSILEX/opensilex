@@ -254,6 +254,7 @@ export default class DataList extends Vue {
                 undefined, // max_confidence
                 provUris, // provenance
                 undefined, // metadata
+                this.filter.germplasm_group, //Group of germs
                 this.$opensilex.prepareGetParameter(this.filter.operators),
                 options.orderBy, // order_by
                 options.currentPage,
@@ -284,7 +285,7 @@ export default class DataList extends Vue {
                                 provenancesToLoad.push(provenanceURI);
                             }
                         }
-                         
+
                         if (objectsToLoad.length > 0) {
                             let promiseObject = this.ontologyService
                                 .getURILabelsList(objectsToLoad, this.contextUri)
@@ -315,7 +316,7 @@ export default class DataList extends Vue {
                             })
                             .catch(reject);
                             promiseArray.push(promiseFacility)
-                        
+
 
                         if (variablesToLoad.length > 0) {
                             let promiseVariable = this.variablesService

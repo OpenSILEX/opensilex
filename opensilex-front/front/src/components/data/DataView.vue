@@ -63,6 +63,18 @@
             >
               <template v-slot:filters>
 
+                <!-- Germplasm Group -->
+                <div>
+                  <opensilex-FilterField>
+                    <opensilex-GermplasmGroupSelector
+                        label="GermplasmList.filter.germplasm-group"
+                        :multiple="false"
+                        :germplasmGroup.sync="filter.germplasm_group"
+                        class="searchFilter"
+                        @handlingEnterKey="refresh()"
+                    ></opensilex-GermplasmGroupSelector>
+                  </opensilex-FilterField>
+                </div>
                 <!-- Variables -->
                 <div>
                   <opensilex-FilterField quarterWidth="true">
@@ -289,6 +301,7 @@ export default class DataView extends Vue {
   @Ref("facilitySelector") readonly facilitySelector!: any;
 
   filter = {
+    germplasm_group: undefined,
     start_date: null,
     end_date: null,
     variables: [],
@@ -329,6 +342,7 @@ export default class DataView extends Vue {
 
   resetFilter() {
     this.filter = {
+      germplasm_group: undefined,
       start_date: null,
       end_date: null,
       variables: [],

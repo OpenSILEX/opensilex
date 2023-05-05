@@ -1910,6 +1910,14 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:label xml:lang="fr">Groupe de variables</rdfs:label>
     </owl:Class>
 
+        <!-- http://www.opensilex.org/vocabulary/oeso#VariablesGroup -->
+
+        <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#GermplasmGroup">
+            <rdfs:subClassOf rdf:resource="http://www.w3.org/1999/02/22-rdf-syntax-ns#Bag"/>
+            <rdfs:label xml:lang="en">Germplasm group</rdfs:label>
+            <rdfs:label xml:lang="fr">Groupe de ressources génétiques</rdfs:label>
+        </owl:Class>
+
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Vector -->

@@ -229,6 +229,11 @@ table.b-table-selectable thead tr th:first-child {
     width: 45px;
 }
 
+.singleSelectableClass table.b-table-selectable thead tr th:first-child {
+    width: auto;
+}
+
+
 
 @media (min-width: 200px) and (max-width: 1150px) {
     .customized .header-top .top-menu .dropdown .dropdown-toggle {

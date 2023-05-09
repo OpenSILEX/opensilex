@@ -91,26 +91,6 @@ menu:
           icon: fa#seedling
           title: GermplasmView.title
           description: GermplasmView.description
-      - id: documents
-        label: Documents
-        route:
-          path: /documents
-          component: opensilex-DocumentView
-          credentials:
-            - document-access
-          icon: ik#ik-file-text
-          title: DocumentView.title
-          description: DocumentView.description
-      - id: scientificObjects
-        label: component.menu.scientificObjects
-        route:
-          path: /scientific-objects
-          component: opensilex-ScientificObjectsView
-          credentials:
-            - scientific-objects-access
-          icon: ik#ik-target
-          title: component.menu.scientificObjects
-          description: ScientificObjectList.description
   - id: data-menu
     label: component.menu.data.label
     children:

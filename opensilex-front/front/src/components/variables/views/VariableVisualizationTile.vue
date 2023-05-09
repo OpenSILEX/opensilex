@@ -18,9 +18,9 @@
             <div class="col-sm-6">
               <opensilex-Sparkline
                   :maxWidth="500"
-                  :maxHeight="50"
+                  :maxHeight="100"
                   :dataSerie.sync="medianSerie"
-                  :simplify="true"
+                  :simplify="false"
                   v-on:click.native="showGraphic">
               </opensilex-Sparkline>
             </div>
@@ -111,7 +111,7 @@ export default class VariableVisualizationTile extends Vue {
   @Watch('startDate')
   @Watch('endDate')
   onPropertyChanged(value: string, oldValue: string) {
-    this.loadData();
+    this.loadSimplifiedData();
   }
 
 
@@ -156,7 +156,7 @@ export default class VariableVisualizationTile extends Vue {
     this.langUnwatcher = this.$store.watch(
       () => this.$store.getters.language,
       lang => {
-        this.prepareGraphic();
+        //this.prepareGraphic();
       }
     );
   }
@@ -168,16 +168,46 @@ export default class VariableVisualizationTile extends Vue {
           if (http && http.response) {
             this.variable = http.response.result;
 
-            this.loadData();
+            this.loadSimplifiedData();
           }
         }
     )
   }
 
-  loadData() {
+  loadSimplifiedData() {
     this.isNoDataFound = false;
     this.isDataLoaded = false;
 
+    this.dataService.getSimplifiedDataSerieByFacility(
+        this.variableUri.uri,
+        this.target,
+        (this.startDate != "") ? this.startDate : undefined,
+        (this.endDate != "") ? this.endDate : undefined,
+        5,
+        ["date=asc"]
+    )
+        .then(
+            (
+                http: HttpResponse<OpenSilexResponse<DataVariableSeriesGetDTO>>
+            ) => {
+              if (http && http.response) {
+                let seriesDTO: DataVariableSeriesGetDTO = http.response.result;
+
+                if (!seriesDTO.calculated_series.length) {
+                  this.isNoDataFound = true;
+                  return;
+                }
+
+                this.calculatedDataSeries = seriesDTO.calculated_series;
+
+                this.updateLastMedianData();
+                this.isDataLoaded = true;
+              }
+            }
+        );
+  }
+
+  loadAllData() {
     this.dataService.getDataSeriesByFacility(
         this.variableUri.uri,
         this.target,
@@ -200,8 +230,8 @@ export default class VariableVisualizationTile extends Vue {
                 this.dataSeries = seriesDTO.data_series;
                 this.calculatedDataSeries = seriesDTO.calculated_series;
 
-                this.updateLastMedianData();
-                this.isDataLoaded = true;
+                this.prepareGraphic();
+                this.graphicModal.show();
               }
             }
         );
@@ -243,8 +273,7 @@ export default class VariableVisualizationTile extends Vue {
   }
 
   showGraphic() {
-    this.prepareGraphic();
-    this.graphicModal.show();
+    this.loadAllData();
   }
 
   prepareGraphic() {

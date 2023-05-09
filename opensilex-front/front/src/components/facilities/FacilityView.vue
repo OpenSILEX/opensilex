@@ -138,12 +138,12 @@
 <i18n>
 en:
     FacilityView:
-        details: Details
+        details: Description
         devices: Associated devices
         document: Documents
 fr:
     FacilityView:
-        details: Détail
-        devices: Dispositifs associés
+        details: Description
+        devices: Appareils associés
         document: Documents
 </i18n>

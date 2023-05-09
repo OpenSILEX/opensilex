@@ -387,6 +387,14 @@ p {
 			width: 30px;
 			margin-top: 3px;
 		}
+		.header-brand-img {
+			max-width: 42px;
+			margin: 0;
+			position: absolute;
+			top: 50%;
+			-ms-transform: translateY(-50%);
+			transform: translateY(-50%);
+		}
 		.text {
 			margin-top: 10px;
 			margin-left: 21px;

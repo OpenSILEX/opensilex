@@ -12,7 +12,7 @@
       <div class="col col-xl-6" style="min-width: 400px">
         <opensilex-Card
           icon="ik#ik-clipboard"
-          :label="$t('component.experiment.description')"
+          :label="$t('component.common.informations')"
         >
           <template v-slot:rightHeader>
             <b-button-group

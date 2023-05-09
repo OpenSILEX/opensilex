@@ -57,19 +57,19 @@ menu:
           icon: ik#ik-thermometer
           title: Device.title
           description: Device.description
-      - id: events
-        label: component.menu.events
-        route:
-          path: /events
-          component: opensilex-EventsView
-          credentials:
-            - event-access
-          icon: ik#ik-activity
-          title: Event.list-title
-          description: EventsView.description
   - id: experimentalDesign
     label: component.menu.experimentalDesign.label
     children:
+      - id: scientificObjects
+        label: component.menu.scientificObjects
+        route:
+          path: /scientific-objects
+          component: opensilex-ScientificObjectsView
+          credentials:
+            - scientific-objects-access
+          icon: ik#ik-target
+          title: component.menu.scientificObjects
+          description: ScientificObjectList.description
       - id: variables
         label: component.menu.variables
         route:
@@ -88,6 +88,9 @@ menu:
           component: opensilex-GermplasmGlobalView
           credentials:
             - germplasm-access
+          icon: fa#seedling
+          title: GermplasmView.title
+          description: GermplasmView.description
       - id: documents
         label: Documents
         route:
@@ -116,16 +119,6 @@ menu:
       #   route:
       #     path: /template
       #     component: opensilex-Template
-      - id: provenances
-        label: component.menu.data.provenance
-        route:
-          path: /provenances
-          component: opensilex-ProvenanceView
-          credentials:
-            - provenance-access
-          icon: ik#ik-bar-chart-line
-          title: component.menu.data.provenance
-          description: ProvenanceView.description
       - id: data
         label: component.menu.data.tabularData
         route:
@@ -146,6 +139,36 @@ menu:
           icon: fa#file-medical-alt
           title: component.menu.data.datafiles
           description: DataFilesView.description
+      - id: provenances
+        label: component.menu.data.provenance
+        route:
+          path: /provenances
+          component: opensilex-ProvenanceView
+          credentials:
+            - provenance-access
+          icon: ik#ik-bar-chart-line
+          title: component.menu.data.provenance
+          description: ProvenanceView.description
+      - id: events
+        label: component.menu.events
+        route:
+          path: /events
+          component: opensilex-EventsView
+          credentials:
+            - event-access
+          icon: ik#ik-activity
+          title: Event.list-title
+          description: EventsView.description
+      - id: documents
+        label: Documents
+        route:
+          path: /documents
+          component: opensilex-DocumentView
+          credentials:
+            - document-access
+          icon: ik#ik-file-text
+          title: DocumentView.title
+          description: DocumentView.description
 
       # - id: equipments
       #   label: component.menu.equipments.label
@@ -177,16 +200,6 @@ menu:
   - id: vocabulary
     label: component.menu.vocabulary
     children:
-      - id: infrastructureVocabulary
-        label: component.menu.facilitiesTypes
-        route:
-          path: /facilities-types
-          component: opensilex-FacilitiesTypes
-          credentials:
-            - vocabulary-access
-          icon: ik#ik-settings
-          title: FacilitiesTypes.typeTitle
-          description: FacilitiesTypes.typeDescription
       - id: scientificObjectVocabulary
         label: component.menu.scientificObjectTypes
         route:
@@ -197,26 +210,6 @@ menu:
           icon: ik#ik-settings
           title: ScientificObjectTypes.typeTitle
           description: ScientificObjectTypes.typeDescription
-      - id: deviceVocabulary
-        label: component.menu.deviceTypes
-        route:
-          path: /device-types
-          component: opensilex-DeviceTypes
-          credentials:
-            - vocabulary-access
-          icon: ik#ik-settings
-          title: DeviceTypes.typeTitle
-          description: DeviceTypes.typeDescription
-      - id: factorCategoryVocabulary
-        label: component.menu.factorCategoryTypes
-        route:
-          path: /factor-category-types
-          component: opensilex-FactorCategoryTypes
-          credentials:
-            - vocabulary-access
-          icon: ik#ik-settings
-          title: FactorCategoryTypes.typeTitle
-          description: FactorCategoryTypes.typeDescription
       - id: eventVocabulary
         label: component.menu.eventTypes
         route:
@@ -227,6 +220,36 @@ menu:
           icon: ik#ik-settings
           title: EventTypes.typeTitle
           description: EventTypes.typeDescription
+      - id: deviceVocabulary
+        label: component.menu.deviceTypes
+        route:
+          path: /device-types
+          component: opensilex-DeviceTypes
+          credentials:
+            - vocabulary-access
+          icon: ik#ik-settings
+          title: DeviceTypes.typeTitle
+          description: DeviceTypes.typeDescription
+      - id: infrastructureVocabulary
+        label: component.menu.facilitiesTypes
+        route:
+          path: /facilities-types
+          component: opensilex-FacilitiesTypes
+          credentials:
+            - vocabulary-access
+          icon: ik#ik-settings
+          title: FacilitiesTypes.typeTitle
+          description: FacilitiesTypes.typeDescription
+      - id: factorCategoryVocabulary
+        label: component.menu.factorCategoryTypes
+        route:
+          path: /factor-category-types
+          component: opensilex-FactorCategoryTypes
+          credentials:
+            - vocabulary-access
+          icon: ik#ik-settings
+          title: FactorCategoryTypes.typeTitle
+          description: FactorCategoryTypes.typeDescription
       - id: namespacesVocabulary
         label: component.menu.namespaces
         route:

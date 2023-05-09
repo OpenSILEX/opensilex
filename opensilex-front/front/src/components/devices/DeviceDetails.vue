@@ -12,7 +12,7 @@
         <b-nav-item
           :active="isDetailsTab()"
           :to="{path: '/device/details/' + encodeURIComponent(uri)}"
-        >{{ $t('DeviceDetails.details') }}</b-nav-item>
+        >{{ $t('DeviceDetails.description') }}</b-nav-item>
 
         <b-nav-item
           :active="isVisualizationTab()"
@@ -355,7 +355,7 @@ en:
 
 fr:
   DeviceDetails:
-    title: Dispositif
+    title: Appareil
     description: Description
     details: Details
     annotations: Annotations

@@ -43,7 +43,7 @@
     <opensilex-PageContent>
       <b-row v-if="isDetailsTab()">
         <b-col>
-          <opensilex-Card label="component.common.description" icon="ik#ik-clipboard">
+          <opensilex-Card label="component.common.informations" icon="ik#ik-clipboard">
             <template v-slot:rightHeader>              
               <opensilex-EditButton
                 v-if="user.hasCredential(credentials.CREDENTIAL_PROVENANCE_MODIFICATION_ID)"

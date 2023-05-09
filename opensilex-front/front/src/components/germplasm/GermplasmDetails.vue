@@ -43,7 +43,7 @@
     <opensilex-PageContent>
       <b-row v-if="isDetailsTab()">
         <b-col>
-          <opensilex-Card label="component.common.description" icon="ik#ik-clipboard">
+          <opensilex-Card label="component.common.informations" icon="ik#ik-clipboard">
             <template v-slot:rightHeader>              
                 <opensilex-EditButton
                   v-if="user.hasCredential(credentials.CREDENTIAL_GERMPLASM_MODIFICATION_ID)"
@@ -447,7 +447,7 @@ en:
     title: Germplasm
     description: Detailed Information
     info: Germplasm Information
-    experiment: Associated experiments
+    experiment: Related experiments
     document: Associated documents
     uri: URI
     name: Name
@@ -472,7 +472,7 @@ fr:
     title: Ressource génétique
     description: Information détaillées
     info: Informations générales
-    experiment: Expérimentations associées
+    experiment: Expérimentations connexes
     document: Documents associées
     uri: URI 
     name: Nom 

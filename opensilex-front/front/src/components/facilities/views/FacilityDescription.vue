@@ -1,7 +1,7 @@
 <template>
   <opensilex-Card
       icon="ik#ik-clipboard"
-      :label="$t('component.common.description')"
+      :label="$t('component.common.informations')"
       class="facilityDetailComponent"
       v-if="selected"
   >
@@ -288,7 +288,7 @@ fr:
   FacilityDescription:
     organizations: Organisations
     expsInProgress: Experiences en cours
-    devices: Dispositifs
+    devices: Appareils
     site: "Site"
     address: "Adresse"
     noGeometryWarning: Aucune géométrie n'a pu être déterminée à partir de l'adresse. L'adresse est peut-être invalide.

@@ -132,7 +132,7 @@ en:
     no-results-text: No device found
 fr:
   DeviceSelector:
-    placeholder: Rechercher et sélectionner un ou plusieurs dispositif
-    no-results-text: Aucun dispositif trouvé
+    placeholder: Rechercher et sélectionner un ou plusieurs appareils
+    no-results-text: Aucun appareil trouvé
 
 </i18n>

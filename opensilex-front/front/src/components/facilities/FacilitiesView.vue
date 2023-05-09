@@ -307,7 +307,7 @@ en:
     add: Add facility
     facilities: Facilities
     infrastructure-facility-help: "Factilities correspond to the various fixed installations of an organization.
-                                  These can be greenhouses, cadastral plots, culture chambers, ..."
+                                  These can be greenhouses, fields, culture chambers, growth chambers ..."
 fr:
   FacilitiesView:
     update: Modifier l'installation environnementale
@@ -315,5 +315,5 @@ fr:
     add: Ajouter une installation environnementale
     facilities: Installations environnementales
     infrastructure-facility-help: "Les installations environnementales correspondent aux différentes installations fixes d'une organisation.
-                                  Il peut s'agir de serres, parcelles cadastrales, chambres de culture, ..."
+                                  Il peut s'agir de serres, champs, chambres de culture, chambres de croissance ..."
 </i18n>

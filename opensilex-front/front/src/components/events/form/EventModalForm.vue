@@ -323,7 +323,7 @@
             type-example: "oeev:Trouble"
             description: "Description de l'événement"
             targets: Concerne
-            targets-help: Objet(s) concerné(s) sont "Dispositifs" et "Objets scientifiques"
+            targets-help: Objet(s) concerné(s) sont "Appareils" et "Objets scientifiques"
             targets-example: "os-so:plant1"
             target-help: URI de l'objet concerné par l'évènement (Doit exister).
             start: Début

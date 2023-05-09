@@ -220,5 +220,5 @@ fr :
             <strong> Si vous ne spécifiez pas de zone de temps dans vos dates, le système utilisera le fuseau horaire par défaut du système (UTC).</strong>\n
             <br /> \n
             <strong>Les valeurs vides et les identifiant de colonnes inconnus seront ignorées.<br>
-            Seuls les sous-types Capteurs ou les dispositifs avec la propriété vocabulary:measures peuvent être associés à une variable."
+            Seuls les sous-types Capteurs ou les appareils avec la propriété vocabulary:measures peuvent être associés à une variable."
 </i18n>

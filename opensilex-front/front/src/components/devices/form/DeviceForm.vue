@@ -236,25 +236,25 @@ en:
 fr:
     DeviceForm:
         uri: URI
-        uri-help: Identifiant unique du dispositif généré automatiquement
+        uri-help: Identifiant unique de l'appareil généré automatiquement
         type: Type
-        type-help: Type de dispositif
-        name: Le dispositif
-        name-help: Nom du dispositif
-        brand: Marque du dispositif
-        brand-help: Marque du dispositif
+        type-help: Type d'appareil
+        name: L'appareil
+        name-help: Nom de l'apppareil
+        brand: Marque de l'appareil
+        brand-help: Marque de l'appareil
         constructor_model: Modèle constructeur
-        constructor_model-help: Modèle constructeur du dispositif
+        constructor_model-help: Modèle constructeur de l'appareil
         serial_number: Numéro de série
-        serial_number-help: Numéro de série du dispositif
+        serial_number-help: Numéro de série de l'appareil
         person_in_charge: Personne responsable
-        person_in_charge-help: Personne responsable du dispositif
+        person_in_charge-help: Personne responsable de l'appareil
         start_up: Date d'obtention
-        start_up-help: Date d'obtention du dispositif
+        start_up-help: Date d'obtention de l'appareil
         removal: Date de mise hors service
-        removal-help: Date de mise hors service du dispositif
+        removal-help: Date de mise hors service de l'appareil
         description: Description
-        description-help: Description associée au dispositif
+        description-help: Description associée à l'appareil
         variable: Variable
         variable-help: Insérer une ou plusieurs URI de variables
 </i18n>

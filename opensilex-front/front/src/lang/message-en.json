@@ -30,12 +30,13 @@
             "name": "Name",
             "term":"Term",
             "comment": "Comment",
-            "details-label": "Details",
+            "details-label": "Description",
             "list-label": "List",
             "element": "The element",
             "keyword": "Keyword",
             "keywords": "Keywords",
             "description": "Description",
+            "informations": "General informations",
             "contacts": "Contacts",
             "objective":"Objective",
             "startDate": "Start date",
@@ -103,7 +104,7 @@
             },
             "details": {
                 "document": "Documents",
-                "experiment": "Associated experiments"
+                "experiment": "Related experiments"
             },
             "import-files": {
                 "csv-file": " Load CSV",
@@ -364,7 +365,7 @@
             "selectedLabel": "Selected Project(s)",
             "project":"Project",
             "uri": "URI",
-            "details":"Details",
+            "details":"Description",
             "documents":"Documents",
             "delete": "Delete project",
             "project-uri": "Project URI",

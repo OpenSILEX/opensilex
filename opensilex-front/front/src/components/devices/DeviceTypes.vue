@@ -35,10 +35,10 @@ en:
     propertiesDescription: Manage and configure properties that can apply specifically to a device
 fr:
   DeviceTypes:
-    typeTitle: Types de dispositif
-    propertiesTitle: Propriétés des dispositifs
-    typeDescription: "Gérer et configurer les types de dispositif"
-    propertiesDescription: "Gérer et configurer les propriétés qui peuvent s'appliquer spécifiquement à un dispositif"
+    typeTitle: Types d'appareils
+    propertiesTitle: Propriétés des appareils
+    typeDescription: "Gérer et configurer les types d'appareil"
+    propertiesDescription: "Gérer et configurer les propriétés qui peuvent s'appliquer spécifiquement à un appareil"
 </i18n>
 
 

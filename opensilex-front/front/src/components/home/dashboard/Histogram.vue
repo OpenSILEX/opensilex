@@ -451,7 +451,7 @@ fr:
       week: "Derniere semaine"
       month: "Dernier mois"
       year: "Derniere année"
-    settings: "Choix de la période et des dispositifs"
+    settings: "Choix de la période et des appareils"
     noDataFound: "Pas de données pour la période choisie"
     limitSizeMessageA : "Il y a "
     limitSizeMessageB : "données pour "

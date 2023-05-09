@@ -3,7 +3,7 @@
   <div class="page">
     <b-row>
       <b-col>
-        <opensilex-Card label="component.common.description" icon="ik#ik-clipboard">
+        <opensilex-Card label="component.common.informations" icon="ik#ik-clipboard">
 
           <template v-slot:rightHeader>
 
@@ -324,5 +324,5 @@ fr:
     advanced: Informations avancées
     edit: Editer la variable
     edit-references: Editer les références
-    visualization: Visualisation des données associées à un instrument
+    visualization: Visualisation des données associées à un appareil
 </i18n>

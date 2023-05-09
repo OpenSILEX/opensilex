@@ -9,7 +9,7 @@
 
     <div v-if="project" class="row">
       <div class="col col-xl-5" style="min-width: 400px">
-        <opensilex-Card icon="ik#ik-clipboard" :label="$t('component.common.description')">
+        <opensilex-Card icon="ik#ik-clipboard" :label="$t('component.common.informations')">
           <template v-slot:rightHeader>
             <b-button-group>
               <opensilex-EditButton

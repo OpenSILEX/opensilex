@@ -5,7 +5,7 @@
                 <b-col>
 
                     <opensilex-Card
-                        label="DeviceDescription.description"
+                        label="component.common.informations"
                         icon="ik#ik-clipboard"
                     >
                         <template v-slot:rightHeader>
@@ -483,7 +483,7 @@ en:
 fr:
     DeviceDescription:
         events: Événements
-        title: Dispositif
+        title: Appareil
         description: Description
         uri: URI
         name: Nom
@@ -496,8 +496,8 @@ fr:
         localisation: Localisation
         variables: Variables
         position: Position
-        update: Modifier le dispositif
-        delete: Supprimer ce dispositif
+        update: Modifier cet appareil
+        delete: Supprimer cet appareil
         additionalInfo: Métadonnées
         removal: Date de mise hors service
         attribute: Attribut

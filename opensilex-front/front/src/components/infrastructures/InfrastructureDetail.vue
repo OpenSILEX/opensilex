@@ -4,7 +4,7 @@
       <template v-slot:header>
         <h3>
           <opensilex-Icon icon="ik#ik-clipboard" />
-          {{ $t("component.common.details-label") }}
+          {{ $t("component.common.informations") }}
         </h3>
         <div class="card-header-right" v-if="withActions">
           <b-button-group>

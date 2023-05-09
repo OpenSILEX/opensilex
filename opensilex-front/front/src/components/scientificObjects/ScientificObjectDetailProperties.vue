@@ -2,7 +2,7 @@
   <div v-if="selected && selected.uri">
     <b-card>
       <template v-slot:header v-if="globalView">
-        <h3>{{ $t("ScientificObjectDetail.generalInformation") }}:</h3>
+        <h3>{{ $t("component.common.informations") }}:</h3>
         <div class="card-header-right">
           <b-button-group>
             <opensilex-FavoriteButton

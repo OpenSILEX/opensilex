@@ -531,10 +531,10 @@ fr:
     invalidTargetErrors: Le nom ou l'uri de la cible n'existe pas
     invalidDateErrors: Format de date invalide
     invalidExperimentErrors: Le nom ou l'uri de l'expérimentation n'existe pas
-    invalidDeviceErrors: Le nom ou l'uri du dispositif n'existe pas
-    deviceChoiceAmbiguityErrors: Ambiguité sur le choix du dispositif
+    invalidDeviceErrors: Le nom ou l'uri de l'appareil n'existe pas
+    deviceChoiceAmbiguityErrors: Ambiguité sur le choix de l'appareil
     duplicatedExperimentErrors: Doublon sur le nom de l'experimentation (utilisez l'uri)
-    duplicatedDeviceErrors: Doublon sur le nom du dispositif (utilisez l'uri)
+    duplicatedDeviceErrors: Doublon sur le nom de l'appareil (utilisez l'uri)
     duplicatedObjectErrors: Doublon sur le nom de l'objet (utilisez l'uri)
     duplicatedTargetErrors: Doublon sur le nom de la cible (utilisez l'uri)
     alreadyExistingURIErrors: URI déjà existante
@@ -549,7 +549,7 @@ fr:
     invalidObjectErrorMessage: "Colonne: scientific_object - Valeur: '{value}'" 
     invalidTargetErrorMessage: "Colonne: cible - Valeur: '{value}'" 
     invalidExperimentErrorMessage: "Colonne: experiment - Valeur: '{value}'" 
-    invalidDeviceErrorMessage: "Colonne: dispositif - Valeur: '{value}'" 
+    invalidDeviceErrorMessage: "Colonne: appareil - Valeur: '{value}'" 
     invalidDateErrorMessage: "Colonne:  Date - Valeur: '{value}'" 
     invalidDataTypeErrorMessage: Le type de données attendu n'est pas valide
     CSVIsValid: La première étape de validation est un succès, cliquez OK pour continuer

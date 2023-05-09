@@ -125,8 +125,8 @@ en:
         type-example: vocabulary:SensingDevice
 fr:
     DeviceCsvForm:
-        import-title: Importer des dispositifs
-        successImportMsg: dispositifs(s) importé(s)
+        import-title: Importer des appareils
+        successImportMsg: appareil(s) importé(s)
         uri-example: http://opensilex.org/id/device/rasperry_pi_4B
         type-example: vocabulary:SensingDevice
 </i18n>

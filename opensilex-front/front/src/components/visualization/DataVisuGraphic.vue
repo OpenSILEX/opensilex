@@ -443,7 +443,10 @@ export default class DataVisuGraphic extends Vue {
                     "</b></span>" +
                     "<br/>Time:<b> " +
                     that.$opensilex.$dateTimeFormatter.formatLocaleDateTime(point.data.date) +
-                    "</b> "
+                    "</b> " +
+                    "<br/> Target: <b>" +
+                    point.data.target +
+                    "</b>"
                 );
               } else {
                 return (

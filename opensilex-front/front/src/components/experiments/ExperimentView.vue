@@ -12,7 +12,7 @@
                 <b-nav-item
                         :active="isDetailsTab()"
                         :to="{ path: '/experiment/details/' + encodeURIComponent(uri) }"
-                >{{ $t("ExperimentView.details") }}
+                >{{ $t("ExperimentView.description") }}
                 </b-nav-item>
                 <b-nav-item
                         :active="isFactorsTab()"
@@ -314,7 +314,7 @@
 <i18n>
 en:
     ExperimentView:
-        details: Details
+        description: Description
         scientific-objects: Scientific objects
         data: Data
         document: Documents
@@ -323,7 +323,7 @@ en:
         data-visualisation: Visualization
 fr:
     ExperimentView:
-        details: Détail
+        description: Description
         scientific-objects: Objets scientifiques
         data: Données
         document: Documents

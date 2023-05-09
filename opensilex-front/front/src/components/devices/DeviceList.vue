@@ -682,12 +682,12 @@ fr:
     DeviceList:
         uri: URI
         name: Nom
-        rdfTypes: Type du dispositif
+        rdfTypes: Type de l'appareil
         variable: Variable
         start_up: Date d'obtention
-        update: Editer le dispositif
-        delete: Supprimer le dispositif
-        selected: Dispositifs selectionnés
+        update: Editer l'appareil
+        delete: Supprimer l'appareil'
+        selected: Appareils selectionnés
         facility: Installation technique
         linkVariable: Lier des variables
         export: Exporter la liste
@@ -697,14 +697,14 @@ fr:
         addMove: Déplacement
         showMap: Afficher sur une carte
         alertBadDeviceType: La selection comporte un type incompatible avec l'ajout de variable
-        associated-device-error: Le dispositif est associé à
-        selected-all: Tout les dispositifs
+        associated-device-error: L'appareil est associé à
+        selected-all: Tout les appareils
 
         filter:
             namePattern: Nom
             namePattern-placeholder: Entrer un nom
             rdfTypes: Type
-            rdfTypes-placeholder: Sélectionner un type de dispositif
+            rdfTypes-placeholder: Sélectionner un type d'appareil
             variable: Variable
             variable-placeholder: Sélectionner une variable
             start_up: Date d'obtention

@@ -426,7 +426,7 @@ OESO</rdfs:label>
         <rdfs:label xml:lang="en">measures</rdfs:label>
         <rdfs:label xml:lang="fr">mesure</rdfs:label>
         <rdfs:comment xml:lang="en">Variable measured by the device</rdfs:comment>
-        <rdfs:comment xml:lang="fr">Variable mesurée par le dispositif</rdfs:comment>
+        <rdfs:comment xml:lang="fr">Variable mesurée par l'appareil</rdfs:comment>
     </owl:ObjectProperty>
 
 
@@ -1000,7 +1000,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
 
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Device">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Equipement"/>
-        <rdfs:label xml:lang="fr">Dispositif</rdfs:label>
+        <rdfs:label xml:lang="fr">Appareil</rdfs:label>
         <rdfs:label xml:lang="en">Device</rdfs:label>
         <rdfs:subClassOf>
             <owl:Restriction>
@@ -1073,7 +1073,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
         <rdfs:label xml:lang="fr">Constructeur</rdfs:label>
         <rdfs:label xml:lang="en">Brand</rdfs:label>
-        <rdfs:comment xml:lang="fr">Marque du dispositif</rdfs:comment>
+        <rdfs:comment xml:lang="fr">Marque de l'appareil</rdfs:comment>
         <rdfs:comment xml:lang="en">Brand of the device</rdfs:comment>
     </owl:DatatypeProperty>
 
@@ -1083,7 +1083,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
         <rdfs:label xml:lang="en">Model</rdfs:label>
         <rdfs:label xml:lang="fr">Modèle</rdfs:label>
-        <rdfs:comment xml:lang="fr">Modèle constructeur du dispositif</rdfs:comment>
+        <rdfs:comment xml:lang="fr">Modèle constructeur de l'appareil</rdfs:comment>
         <rdfs:comment xml:lang="en">Constructor model of the device</rdfs:comment>
     </owl:DatatypeProperty>
 
@@ -1093,7 +1093,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
         <rdfs:label xml:lang="en">Serial number</rdfs:label>
         <rdfs:label xml:lang="fr">Numéro de série</rdfs:label>
-        <rdfs:comment xml:lang="fr">Numéro de série du dispositif</rdfs:comment>
+        <rdfs:comment xml:lang="fr">Numéro de série de l'appareil</rdfs:comment>
         <rdfs:comment xml:lang="en">Serial number of the device</rdfs:comment>
     </owl:DatatypeProperty>
 
@@ -1102,7 +1102,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:label xml:lang="en">person in charge</rdfs:label>
         <rdfs:label xml:lang="fr">responsable</rdfs:label>
         <rdfs:comment xml:lang="en">Person in charge of the device</rdfs:comment>
-        <rdfs:comment xml:lang="fr">Personne responsable du dispositif</rdfs:comment>
+        <rdfs:comment xml:lang="fr">Personne responsable de l'appareil</rdfs:comment>
         <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
         <rdfs:range rdf:resource="http://xmlns.com/foaf/0.1/Agent"/>
     </owl:ObjectProperty>
@@ -1114,7 +1114,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:label xml:lang="en">Startup</rdfs:label>
         <rdfs:label xml:lang="fr">Date de démarrage</rdfs:label>
         <rdfs:comment xml:lang="en">Startup date of the device</rdfs:comment>
-        <rdfs:comment xml:lang="fr">Date de démarrage du dispositif</rdfs:comment>
+        <rdfs:comment xml:lang="fr">Date de démarrage de l'appareil</rdfs:comment>
     </owl:DatatypeProperty>
 
     <!-- http://www.opensilex.org/vocabulary/oeso#removal -->
@@ -1124,7 +1124,7 @@ Can define a zone in the physical or theoretical sense</rdfs:comment>
         <rdfs:label xml:lang="en">Removal</rdfs:label>
         <rdfs:label xml:lang="fr">Date d'enlèvement</rdfs:label>
         <rdfs:comment xml:lang="en">Removal date of the device</rdfs:comment>
-        <rdfs:comment xml:lang="fr">Date de mise hors service du dispositif</rdfs:comment>
+        <rdfs:comment xml:lang="fr">Date de mise hors service de l'appareil</rdfs:comment>
     </owl:DatatypeProperty>
 
     <!-- http://www.opensilex.org/vocabulary/oeso#dateOfLastCalibration -->

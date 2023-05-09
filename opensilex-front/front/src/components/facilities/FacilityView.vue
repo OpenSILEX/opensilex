@@ -156,6 +156,6 @@ en:
 fr:
     FacilityView:
         details: Détail
-        overview: Suivi
+        overview: Supervision
         document: Documents
 </i18n>

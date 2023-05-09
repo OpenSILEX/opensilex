@@ -202,21 +202,7 @@ export default class FacilityAssociatedDevices extends Vue {
             null)
         .then((http) => {
           let resultList = http.response.result;
-          this.usedVariables = [];
-          for (let i in resultList) {
-            let variable = resultList[i];
-            this.usedVariables.push({
-              uri: variable.uri,
-              name: variable.name
-            });
-          }
-
-          if (this.usedVariables.length === 0) {
-            this.isNoVariableFound = true;
-            return;
-          }
-
-          this.loadTiles();
+          this.setUsedVariables(resultList);
         });
   }
 
@@ -245,22 +231,26 @@ export default class FacilityAssociatedDevices extends Vue {
             0)
         .then((http: HttpResponse<OpenSilexResponse<Array<VariableGetDTO>>>) => {
           let resultList = http.response.result;
-          this.usedVariables = [];
-          for (let i in resultList) {
-            let variable = resultList[i];
-            this.usedVariables.push({
-              uri: variable.uri,
-              name: variable.name
-            });
-          }
-
-          if (this.usedVariables.length === 0) {
-            this.isNoVariableFound = true;
-            return;
-          }
-
-          this.loadTiles();
+          this.setUsedVariables(resultList);
         });
+  }
+
+  setUsedVariables(resultList) {
+    this.usedVariables = [];
+    for (let i in resultList) {
+      let variable = resultList[i];
+      this.usedVariables.push({
+        uri: variable.uri,
+        name: variable.name
+      });
+    }
+
+    if (this.usedVariables.length === 0) {
+      this.isNoVariableFound = true;
+      return;
+    }
+
+    this.loadTiles();
   }
 
   /**

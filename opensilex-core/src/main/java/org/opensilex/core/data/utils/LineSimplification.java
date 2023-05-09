@@ -1,6 +1,6 @@
 package org.opensilex.core.data.utils;
 
-import org.opensilex.core.data.api.DataComputedGetDTO;
+import org.opensilex.core.data.api.DataSimpleGetDTO;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -42,7 +42,7 @@ public class LineSimplification {
         return Math.hypot(ax, ay);
     }
 
-    public static void ramerDouglasPeucker(List<DataComputedGetDTO> pointList, double epsilon, List<DataComputedGetDTO> out) {
+    public static void ramerDouglasPeucker(List<DataSimpleGetDTO> pointList, double epsilon, List<DataSimpleGetDTO> out) {
         if (pointList.size() < 2) throw new IllegalArgumentException("Not enough points to simplify");
 
         // Find the point with the maximum distance from line between the start and end
@@ -62,10 +62,10 @@ public class LineSimplification {
 
         // If max distance is greater than epsilon, recursively simplify
         if (dmax > epsilon) {
-            List<DataComputedGetDTO> recResults1 = new ArrayList<>();
-            List<DataComputedGetDTO> recResults2 = new ArrayList<>();
-            List<DataComputedGetDTO> firstLine = pointList.subList(0, index + 1);
-            List<DataComputedGetDTO> lastLine = pointList.subList(index, pointList.size());
+            List<DataSimpleGetDTO> recResults1 = new ArrayList<>();
+            List<DataSimpleGetDTO> recResults2 = new ArrayList<>();
+            List<DataSimpleGetDTO> firstLine = pointList.subList(0, index + 1);
+            List<DataSimpleGetDTO> lastLine = pointList.subList(index, pointList.size());
             ramerDouglasPeucker(firstLine, epsilon, recResults1);
             ramerDouglasPeucker(lastLine, epsilon, recResults2);
 

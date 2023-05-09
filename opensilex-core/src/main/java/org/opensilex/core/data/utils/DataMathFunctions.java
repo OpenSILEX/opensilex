@@ -7,6 +7,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.opensilex.core.data.utils.LineSimplification.*;
+
 public class DataMathFunctions {
 
     /**
@@ -73,5 +75,13 @@ public class DataMathFunctions {
         }
 
         return averagePerHour;
+    }
+
+    public static List<DataSimpleGetDTO> applyRamerDouglasPeucker(List<DataSimpleGetDTO> dataSerie, double epsilon) {
+
+        List<DataSimpleGetDTO> resultData = new ArrayList();
+        ramerDouglasPeucker(dataSerie, epsilon, resultData);
+
+        return resultData;
     }
 }

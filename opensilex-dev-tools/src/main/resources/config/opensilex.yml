@@ -4,8 +4,8 @@ ontologies:
     sparql:
         #        implementation: org.opensilex.sparql.rdf4j.RDF4JInMemoryServiceFactory
         config:
-            serverURI: http://localhost:8667/rdf4j-server/
-            repository: opensilex
+            serverURI: http://138.102.159.37:8080/rdf4j-server/
+            repository: env-var
 
 file-system:
     fs:
@@ -34,7 +34,7 @@ big-data:
         config:
             host: localhost
             port: 8668
-            database: opensilex
+            database: env-var
     #            timezone: Europe/Paris
 
 phisws:

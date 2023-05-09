@@ -20,7 +20,6 @@
                   :maxWidth="500"
                   :maxHeight="100"
                   :dataSerie.sync="medianSerie"
-                  :simplify="false"
                   v-on:click.native="showGraphic">
               </opensilex-Sparkline>
             </div>

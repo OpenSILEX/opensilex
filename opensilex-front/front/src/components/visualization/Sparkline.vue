@@ -35,11 +35,6 @@ export default class Sparkline extends Vue {
   })
   dataSerie: Array<DataSimpleGetDTO>;
 
-  @Prop({
-    default: false
-  })
-  simplify: boolean;
-
   data: Array<number>;
 
   @Ref("canvas") readonly canvas!: any;
@@ -53,46 +48,7 @@ export default class Sparkline extends Vue {
       return parseFloat(data.value);
     });
 
-    if (this.simplify) {
-      console.debug(this.data.length);
-      let points: Array<Point>;
-      points = this.dataSerie.map((data, i) => {
-        return {x:i, y:parseFloat(data.value)};
-      });
-
-      points = this.RDP(points, 50);
-
-      this.data = points.map((p) => {
-        return p.y;
-      });
-      console.debug(this.data.length);
-    }
-
     this.draw();
-  }
-
-  /**
-   * @param {!Array<pointType>} l
-   * @param {number} eps
-   */
-  RDP (l, eps) {
-    const last = l.length - 1;
-    const p1 = l[0];
-    const p2 = l[last];
-    const x21 = p2.x - p1.x;
-    const y21 = p2.y - p1.y;
-
-    const [dMax, x] = l.slice(1, last)
-        .map(p => Math.abs(y21 * p.x - x21 * p.y + p2.x * p1.y - p2.y * p1.x))
-        .reduce((p, c, i) => {
-          const v = Math.max(p[0], c);
-          return [v, v === p[0] ? p[1] : i + 1];
-        }, [-1, 0]);
-
-    if (dMax > eps) {
-      return [...this.RDP(l.slice(0, x + 1), eps), ...this.RDP(l.slice(x), eps).slice(1)];
-    }
-    return [l[0], l[last]];
   }
 
   draw() {

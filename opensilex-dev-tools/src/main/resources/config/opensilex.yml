@@ -1,18 +1,11 @@
-#ontologies:
-#    baseURI: http://opensilex.dev/
-#    baseURIAlias: dev
-#    sparql:
-#        #        implementation: org.opensilex.sparql.rdf4j.RDF4JInMemoryServiceFactory
-#        config:
-#            serverURI: http://localhost:8667/rdf4j-server/
-#            repository: opensilex
 ontologies:
-    baseURI: http://vegetalunit.inrae.fr/vigne/
-    baseURIAlias: sixtine-vigne
+    baseURI: http://opensilex.dev/
+    baseURIAlias: dev
     sparql:
+        #        implementation: org.opensilex.sparql.rdf4j.RDF4JInMemoryServiceFactory
         config:
-            serverURI: http://138.102.159.37:8080/rdf4j-server/
-            repository: test-max
+            serverURI: http://localhost:8667/rdf4j-server/
+            repository: opensilex
 
 file-system:
     fs:
@@ -36,20 +29,13 @@ file-system:
             # customPath:
             #     datafile/: irods
 
-    #big-data:
-    #    mongodb:
-    #        config:
-    #            host: localhost
-    #            port: 8668
-    #            database: opensilex
-    #            timezone: Europe/Paris
 big-data:
     mongodb:
         config:
-            host: 138.102.159.37
-            port: 27017
-            database: test-max
-            timezone: Europe/Paris
+            host: localhost
+            port: 8668
+            database: opensilex
+    #            timezone: Europe/Paris
 
 phisws:
     infrastructure: opensilex

@@ -14,6 +14,7 @@ import Vue from "vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {DataSerieGetDTO} from "opensilex-core/model/dataSerieGetDTO";
 import {DataSimpleGetDTO} from "opensilex-core/model/dataSimpleGetDTO";
+import {Point} from "jspdf";
 
 @Component
 export default class Sparkline extends Vue {
@@ -25,7 +26,7 @@ export default class Sparkline extends Vue {
   maxWidth: number;
 
   @Prop({
-    default: 50
+    default: 100
   })
   maxHeight: number;
 
@@ -52,53 +53,46 @@ export default class Sparkline extends Vue {
       return parseFloat(data.value);
     });
 
-    console.debug(this.data.length);
-
     if (this.simplify) {
-      this.data = this.DouglasPeucker(this.data, 0.01);
-    }
+      console.debug(this.data.length);
+      let points: Array<Point>;
+      points = this.dataSerie.map((data, i) => {
+        return {x:i, y:parseFloat(data.value)};
+      });
 
-    console.debug(this.data.length);
+      points = this.RDP(points, 50);
+
+      this.data = points.map((p) => {
+        return p.y;
+      });
+      console.debug(this.data.length);
+    }
 
     this.draw();
   }
 
-  perpendicularDistance(p1, p2, p) {
-    let top = Math.abs((p2.x - p1.x)*(p1.y - p.y) - (p1.x - p.x)*(p2.y - p1.y));
-    let bottom = Math.sqrt((p2.x - p1.x)**2 + (p2.y - p1.y)**2);
-    return top / bottom;
-  }
+  /**
+   * @param {!Array<pointType>} l
+   * @param {number} eps
+   */
+  RDP (l, eps) {
+    const last = l.length - 1;
+    const p1 = l[0];
+    const p2 = l[last];
+    const x21 = p2.x - p1.x;
+    const y21 = p2.y - p1.y;
 
-  DouglasPeucker(dataList: Array<number>, epsilon) : Array<number> {
-    var dmax = 0;
-    var index = 0;
-    var end = dataList.length;
+    const [dMax, x] = l.slice(1, last)
+        .map(p => Math.abs(y21 * p.x - x21 * p.y + p2.x * p1.y - p2.y * p1.x))
+        .reduce((p, c, i) => {
+          const v = Math.max(p[0], c);
+          return [v, v === p[0] ? p[1] : i + 1];
+        }, [-1, 0]);
 
-    for (let i = 2; i < end - 1; ++i) {
-      let d = this.perpendicularDistance(
-          {x:0, y:dataList[0]},
-          {x:end-1, y:dataList[end-1]},
-          {x:i, y:dataList[i]});
-
-      if (d > dmax) {
-        index = i;
-        dmax = d;
-      }
+    if (dMax > eps) {
+      return [...this.RDP(l.slice(0, x + 1), eps), ...this.RDP(l.slice(x), eps).slice(1)];
     }
-
-    var resultList = [];
-
-    if (dmax > epsilon) {
-      var recResult1 = this.DouglasPeucker(dataList.slice(0, index), epsilon);
-      var recResult2 = this.DouglasPeucker(dataList.slice(index+1, end), epsilon);
-
-      resultList = recResult1.concat(recResult2);
-    }
-    else {
-      resultList = dataList.slice(0, end);
-    }
-
-    return resultList;
+    return [l[0], l[last]];
   }
 
   draw() {
@@ -111,20 +105,19 @@ export default class Sparkline extends Vue {
     this.canvas.style.maxHeight = this.maxHeight + 'px';
     var maxNum = Math.max.apply(null, this.data);
     var minNum = Math.min.apply(null, this.data);
-    var linePerPixel = this.canvas.width/this.data.length;
+    var linePerPixel = origW / this.data.length;
     var diff = maxNum-minNum;
-    var diffPerc = this.canvas.height / diff;
+    var diffPerc = origH / diff;
     diffPerc -= 1.5;
-    if(diff < this.canvas.height) diffPerc = 1;
 
     // add some padding;
     var bottomPadding = 4;
     ctx.beginPath();
     ctx.strokeStyle = 'rgb(78,141,235)';
-    ctx.lineWidth = 3;
-    ctx.moveTo(0, origH - (this.data[0] * diffPerc));
+    ctx.lineWidth = 6;
+    ctx.moveTo(0, origH - ((this.data[0] - minNum) * diffPerc));
     this.data.forEach(function(v,i){
-      ctx.lineTo(Math.round(i*linePerPixel), origH - (v*diffPerc) - bottomPadding);
+      ctx.lineTo((i+1)*linePerPixel, origH - ((v - minNum) * diffPerc));
     });
     ctx.stroke();
   }
@@ -156,7 +149,7 @@ export default class Sparkline extends Vue {
 
 canvas {
   width: 100%;
-  height: auto;
+  height: 100%;
   z-index: 0;
 }
 

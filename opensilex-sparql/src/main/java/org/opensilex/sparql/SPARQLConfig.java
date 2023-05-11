@@ -17,6 +17,12 @@ public interface SPARQLConfig {
     String baseURI();
 
     @ConfigDescription(
+            value = "Platform base graph URI",
+            defaultString = "http://www.opensilex.org/"
+    )
+    String baseGraphURI();
+
+    @ConfigDescription(
             value = "Platform base URI alias",
             defaultString = "local"
     )
@@ -27,13 +33,13 @@ public interface SPARQLConfig {
             defaultString = ""
     )
     String generationBaseURI();
-    
-        @ConfigDescription(
+
+    @ConfigDescription(
             value = "Base domain for auto-generated URI (default to baseURI if not specified)",
             defaultString = "id"
     )
     String generationBaseURIAlias();
-    
+
     @ConfigDescription(
             value = "SPARQL data source"
     )

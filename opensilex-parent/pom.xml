@@ -135,6 +135,7 @@
         <s3.version>2.17.290</s3.version>
         <s3.transfer-manager.version>2.17.290-PREVIEW</s3.transfer-manager.version>
         <caffeine.version>3.1.1</caffeine.version>
+        <geotools.version>29-RC1</geotools.version>
     </properties>
 
     <dependencyManagement>
@@ -453,6 +454,17 @@
             <version>${jts.version}</version>
         </dependency>
 
+        <!-- GeoTools -->
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-shapefile</artifactId>
+            <version>${geotools.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.geotools</groupId>
+            <artifactId>gt-geojson</artifactId>
+            <version>${geotools.version}</version>
+        </dependency>
 
         <!--Servlet API v4 provided by Tomcat-->
         <dependency>
@@ -607,6 +619,17 @@
         </dependency>
 
     </dependencies>
+
+    <!--  Configuration repositories  -->
+    <repositories>
+        <repository>
+            <id>osgeo</id>
+            <name>OSGeo Release Repository</name>
+            <url>https://repo.osgeo.org/repository/release/</url>
+            <snapshots><enabled>false</enabled></snapshots>
+            <releases><enabled>true</enabled></releases>
+        </repository>
+    </repositories>
 
     <build>
         <!-- define front resources folder -->

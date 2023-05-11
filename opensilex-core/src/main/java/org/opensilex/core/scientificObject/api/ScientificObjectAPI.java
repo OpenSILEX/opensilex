@@ -15,6 +15,7 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.bson.codecs.configuration.CodecConfigurationException;
+import org.geojson.GeoJsonObject;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.opensilex.core.csv.api.CSVValidationDTO;
@@ -25,8 +26,10 @@ import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.geospatial.api.GeometryDTO;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
+import org.opensilex.core.geospatial.dal.ShapeFileExporter;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
@@ -60,17 +63,19 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.File;
+import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -763,6 +768,53 @@ public class ScientificObjectAPI {
     }
 
     @POST
+    @Path("export_shp")
+    @ApiOperation("Export a given list of scientific object URIs to shapefile")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Data shapefile exported")
+    })
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    public Response exportShp(
+            @ApiParam(value = "Scientific objects") List<GeometryDTO> selectedObjects,
+            @ApiParam(value = ExperimentAPI.EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") URI contextURI,
+            @ApiParam(value = "properties selected", example = "test") @QueryParam("selected_props") List<URI> selectedProps,
+            @ApiParam(value = "Page size limited to 10,000 objects", example = "10000") @QueryParam("pageSize") @Max(10000) int pageSize
+
+    ) throws Exception {
+
+        ScientificObjectDAO soDao = new ScientificObjectDAO(sparql, nosql);
+        Map<URI, GeoJsonObject> selectedObjectsMap = new HashMap<>();
+
+        //Get OS exported URI
+        selectedObjects.forEach(o ->{
+            selectedObjectsMap.put(o.getUri(), o.getGeometry());
+        });
+
+        // Search exported OS detail according the XP and selected uris, fetch os factors
+        ScientificObjectSearchFilter searchFilter = new ScientificObjectSearchFilter()
+                .setExperiment(contextURI)
+                .setUris( new ArrayList<>(selectedObjectsMap.keySet()));
+
+        searchFilter.setLang(currentUser.getLanguage())
+                .setPageSize(10000)
+                .setPage(0);
+
+        List<ScientificObjectModel> objDetailList = soDao.search(searchFilter, Collections.singletonList(ScientificObjectModel.FACTOR_LEVEL_FIELD)).getList();
+
+        //Convert to shapefiles and create a zip file to export
+        ShapeFileExporter shpExport = new ShapeFileExporter();
+        byte[] zippedFile =shpExport.shpExport(selectedProps, objDetailList, selectedObjectsMap);
+
+        String zipName = "shpZip_" + LocalDate.now().format(DateTimeFormatter.ISO_DATE) + ".zip" ;
+
+        return Response.ok(zippedFile, MediaType.APPLICATION_OCTET_STREAM)
+                .header("Content-Disposition", "attachment; filename=\"" + zipName + "\"")
+                .build();
+    }
+
+    @POST
     @Path("export")
     @ApiOperation("Export a given list of scientific object URIs to csv data file")
     @ApiResponses(value = {
@@ -961,5 +1013,4 @@ public class ScientificObjectAPI {
         List<ProvenanceGetDTO> dtoList = provenances.stream().map(ProvenanceGetDTO::fromModel).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();
     }
-
 }

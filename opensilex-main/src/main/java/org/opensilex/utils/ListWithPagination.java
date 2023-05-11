@@ -38,7 +38,7 @@ public class ListWithPagination<T> {
     private final Integer pageSize;
 
     /**
-     * Constructor for a complete list witout pagination.
+     * Constructor for a complete list without pagination.
      *
      * @param list
      */

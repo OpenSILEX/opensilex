@@ -512,6 +512,8 @@ import ScientificObjectsView from './scientificObjects/ScientificObjectsView.vue
 components["opensilex-ScientificObjectsView"] = ScientificObjectsView;
 import UsedScientificObjectSelector from './scientificObjects/views/UsedScientificObjectSelector.vue';
 components["opensilex-UsedScientificObjectSelector"] = UsedScientificObjectSelector;
+import ScientificObjectPropertiesSelector from './scientificObjects/ScientificObjectPropertiesSelector.vue';
+components["opensilex-ScientificObjectPropertiesSelector"] = ScientificObjectPropertiesSelector;
 
 // Variables
 import VariableList from './variables/VariableList.vue';
@@ -700,6 +702,8 @@ import Timeline from './geometry/Timeline.vue'
 components["opensilex-Timeline"] = Timeline;
 import DisplayInformationAboutItem from "./geometry/DisplayInformationAboutItem.vue";
 components["opensilex-DisplayInformationAboutItem"] = DisplayInformationAboutItem;
+import ExportShapeModalList from "./geometry/ExportShapeModalList.vue";
+components["opensilex-ExportShapeModalList"] = ExportShapeModalList;
 
 //VISUALIZATION
 

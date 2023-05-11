@@ -84,7 +84,7 @@ public class UserCommands extends AbstractOpenSilexCommand implements OpenSilexC
                 PersonModel holderOfTheAccount = personDAO.create(null, firstName, lastName, email, null);
 
                 String passwordHash = authentication.getPasswordHash(password);
-                AccountModel accountModel = accountDAO.create(null, new InternetAddress(email), isAdmin, passwordHash, lang, holderOfTheAccount);
+                AccountModel accountModel = accountDAO.create(null, new InternetAddress(email), isAdmin, passwordHash, lang, null, holderOfTheAccount);
 
                 LOGGER.info("User created: " + accountModel.getUri());
 

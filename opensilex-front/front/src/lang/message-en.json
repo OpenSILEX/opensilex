@@ -205,6 +205,7 @@
             "security": {
                 "label": "Security",
                 "users": "Users",
+                "persons": "Persons",
                 "groups": "Groups",
                 "profiles": "Profiles"
             },
@@ -273,18 +274,53 @@
             "add": "Add user",
             "update": "Update user",
             "delete": "Delete user",
+            "enable": "enable, click to disable",
+            "disable": "disable, click to enable",
             "details": "Show or hide user details",
             "label": "no user | 1 user | {count} users",
             "password": "password",
             "first-name": "first name",
             "last-name": "last name",
+            "identifier": "identifier",
             "email-address": "email address",
             "email": "email",
             "admin": "administrator",
             "default-lang": "Default languages",
             "user-groups": "user groups",
+            "holderLabel" : "Holder of the account",
+            "successDelete" : "User removed",
+            "choices": {
+                "create-person": "create an account and a person",
+                "account-only": "create an account without holder",
+                "select-person": "create an account and set the selected person as holder"
+            },
+            "person-selector": {
+                "label": "Holder of the account",
+                "help-message": "Select the person who will hold the account"
+            },
             "errors": {
                 "user-already-exists": "User already exists with this URI or email address."
+            }
+        },
+        "person": {
+            "description": "Manage persons",
+            "person-uri": "Person URI",
+            "form-first-name-placeholder": "Enter person first name",
+            "form-last-name-placeholder": "Enter person last name",
+            "form-email-placeholder": "Enter person email address",
+            "filter-placeholder": "Search persons...",
+            "filter-search-no-result": "Sorry, no one is matching your research.",
+            "persons": "persons",
+            "add": "Add person",
+            "update": "Update person",
+            "delete": "Delete person",
+            "first-name": "first name",
+            "last-name": "last name",
+            "email-address": "email address",
+            "email": "email",
+            "successDelete" : "Person removed",
+            "errors": {
+                "person-already-exists": "Person already exists with this URI."
             }
         },
         "variable" : {
@@ -608,6 +644,7 @@
         "profiles": "Profiles",
         "projects": "Projects",
         "users": "Users",
+        "persons": "Persons",
         "variables": "Variables",
         "factors": "Factors",
         "infrastructures": "Organizations",
@@ -622,7 +659,8 @@
         "facilities": "Facilities",
         "provenance": "Provenances",
         "vocabulary": "Vocabulary",
-        "packages": "Packages"
+        "packages": "Packages",
+        "accounts": "Accounts"
     },
     "credential": {
         "default": {

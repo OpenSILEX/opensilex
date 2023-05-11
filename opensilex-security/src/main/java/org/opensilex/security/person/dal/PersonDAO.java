@@ -6,9 +6,14 @@
 package org.opensilex.security.person.dal;
 
 import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.arq.querybuilder.WhereBuilder;
+import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
+import org.apache.jena.sparql.expr.E_NotExists;
 import org.apache.jena.sparql.expr.Expr;
+import org.apache.jena.sparql.vocabulary.FOAF;
 import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
@@ -17,6 +22,7 @@ import org.opensilex.utils.OrderBy;
 import javax.mail.internet.InternetAddress;
 import java.net.URI;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * PersonDAO is used to manipulate PersonModel and CRUD persons data in the rdf database.
@@ -85,7 +91,7 @@ public class PersonDAO {
             sparql.update(personModel);
 
             sparql.commitTransaction();
-        } catch (Exception e){
+        } catch (SPARQLException e){
             sparql.rollbackTransaction();
         }
 
@@ -93,10 +99,22 @@ public class PersonDAO {
     }
 
     public ListWithPagination<PersonModel> search(String stringPattern, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
+        return search(stringPattern, orderByList, page, pageSize, null);
+    }
+
+    public ListWithPagination<PersonModel> searchPersonsWithoutAccount(String stringPattern, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
+        WhereBuilder where = new WhereBuilder();
+        where.addWhere(SPARQLQueryHelper.makeVar("uri"), FOAF.account.asNode(), SPARQLQueryHelper.makeVar(AccountModel.class.getSimpleName()));
+        WhereHandler whereHasNoAccount = where.getWhereHandler();
+        return search(stringPattern, orderByList, page, pageSize, new E_NotExists(whereHasNoAccount.getElement()));
+    }
+
+    private ListWithPagination<PersonModel> search(String stringPattern, List<OrderBy> orderByList, Integer page, Integer pageSize, Expr whereConditions) throws Exception {
 
         Expr stringFilter = SPARQLQueryHelper.or(
                 SPARQLQueryHelper.regexFilter(PersonModel.FIRST_NAME_FIELD, stringPattern),
-                SPARQLQueryHelper.regexFilter(PersonModel.LAST_NAME_FIELD, stringPattern)
+                SPARQLQueryHelper.regexFilter(PersonModel.LAST_NAME_FIELD, stringPattern),
+                SPARQLQueryHelper.regexFilter(PersonModel.EMAIL_FIELD, stringPattern)
         );
 
         return sparql.searchWithPagination(
@@ -106,6 +124,9 @@ public class PersonDAO {
                 (SelectBuilder select) -> {
                     if (stringFilter != null) {
                         select.addFilter(stringFilter);
+                    }
+                    if (Objects.nonNull(whereConditions) ) {
+                        select.addFilter(whereConditions);
                     }
                 },
                 null,
@@ -129,5 +150,9 @@ public class PersonDAO {
      */
     public void delete(URI uri) throws Exception{
         sparql.delete(PersonModel.class, uri);
+    }
+
+    public List<PersonModel> getList(List<URI> uri) throws Exception {
+        return sparql.getListByURIs(PersonModel.class, uri, null);
     }
 }

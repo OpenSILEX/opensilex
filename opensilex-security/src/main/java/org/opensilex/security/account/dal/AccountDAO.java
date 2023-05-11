@@ -59,11 +59,34 @@ public final class AccountDAO {
             InternetAddress email,
             boolean admin,
             String passwordHash,
+            String lang
+    ) throws Exception {
+        return create(uri,
+                email,
+                admin,
+                passwordHash,
+                lang,
+                true,
+                null);
+    }
+
+    /**
+     * save a new Account in the rdf Database
+     * @param uri URI of the Account
+     * @param email unique ID
+     * @return the AccountModel corresponding to the Account created in the dataBase
+     */
+    public AccountModel create(
+            URI uri,
+            InternetAddress email,
+            boolean admin,
+            String passwordHash,
             String lang,
+            Boolean enable,
             PersonModel holderOfTheAccount
     ) throws Exception {
 
-        AccountModel accountModel = buildAccountModel(uri, email, admin, passwordHash, lang, holderOfTheAccount, Collections.emptyList());
+        AccountModel accountModel = buildAccountModel(uri, email, admin, passwordHash, lang, enable, holderOfTheAccount, Collections.emptyList());
 
         sparql.create(accountModel);
 
@@ -118,10 +141,11 @@ public final class AccountDAO {
             boolean admin,
             String passwordHash,
             String lang,
+            Boolean enable,
             PersonModel holderOfTheAccount,
             List<URI> favorites
     ) throws Exception {
-        AccountModel accountModel = buildAccountModel(uri, email, admin, passwordHash, lang, holderOfTheAccount, favorites);
+        AccountModel accountModel = buildAccountModel(uri, email, admin, passwordHash, lang, enable, holderOfTheAccount, favorites);
         sparql.update(accountModel);
 
         return accountModel;
@@ -186,7 +210,7 @@ public final class AccountDAO {
         AccountModel loadedAccount = getByEmail(accountModel.getEmail());
 
         if (loadedAccount == null) {
-            loadedAccount = create(null, accountModel.getEmail(), false, null, defaultLang, null);
+            loadedAccount = create(null, accountModel.getEmail(), false, accountModel.getPasswordHash(), defaultLang, null, accountModel.getHolderOfTheAccount());
         }
 
         return loadedAccount;
@@ -201,8 +225,9 @@ public final class AccountDAO {
                                            boolean admin,
                                            String passwordHash,
                                            String lang,
+                                           Boolean enable,
                                            PersonModel holderOfTheAccount,
-                                           List<URI> favorites){
+                                           List<URI> favorites) {
 
         AccountModel accountModel = new AccountModel();
         accountModel.setUri(uri);
@@ -211,9 +236,14 @@ public final class AccountDAO {
         accountModel.setLocale(new Locale(lang));
         accountModel.setHolderOfTheAccount(holderOfTheAccount);
         accountModel.setFavorites(favorites);
+        accountModel.setIsEnabled(enable);
         if (passwordHash != null) {
             accountModel.setPasswordHash(passwordHash);
         }
+        if (enable != null) {
+            accountModel.setIsEnabled(enable);
+        }
+
         return accountModel;
     }
 

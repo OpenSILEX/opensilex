@@ -168,7 +168,7 @@ public class SecurityModule extends OpenSilexModule implements APIExtension, Log
         InternetAddress email = new InternetAddress(GUEST_OPENSILEX_ORG);
 
         if (!accountDAO.accountEmailExists(email)) {
-            accountDAO.create(null, email, false, authentication.getPasswordHash("guest"), "en", null);
+            accountDAO.create(null, email, false, authentication.getPasswordHash("guest"), "en", null, null);
         }
     }
 
@@ -219,7 +219,7 @@ public class SecurityModule extends OpenSilexModule implements APIExtension, Log
         InternetAddress email = new InternetAddress("admin@opensilex.org");
 
         if (!accountDAO.accountEmailExists(email)) {
-            accountDAO.create(null, email, true, authentication.getPasswordHash("admin"), "en", null);
+            accountDAO.create(null, email, true, authentication.getPasswordHash("admin"), "en", null, null);
         }
     }
 

@@ -60,6 +60,8 @@ public abstract class SPARQLServiceFactory extends ServiceFactory<SPARQLService>
 
     private URI baseURI;
 
+    private URI baseGraphURI;
+
     private URI generationPrefixURI;
 
     protected SPARQLClassObjectMapperIndex mapperIndex;
@@ -70,12 +72,14 @@ public abstract class SPARQLServiceFactory extends ServiceFactory<SPARQLService>
     public void setup() throws Exception {
         sparqlModule = getOpenSilex().getModuleByClass(SPARQLModule.class);
         baseURI = sparqlModule.getBaseURI();
+        baseGraphURI = sparqlModule.getBaseGraphURI();
         generationPrefixURI = sparqlModule.getGenerationPrefixURI();
     }
 
     @Override
     public void startup() throws Exception {
-        LOGGER.debug("Build SPARQL models for base URI: " + baseURI.toString());
+        //LOGGER.debug("Build SPARQL models for base URI: " + baseURI.toString());
+        LOGGER.debug("Build SPARQL models for base URI: " + baseGraphURI.toString());
 
         Set<Class<? extends SPARQLResourceModel>> initClasses = new HashSet<>();
 
@@ -83,7 +87,7 @@ public abstract class SPARQLServiceFactory extends ServiceFactory<SPARQLService>
             LOGGER.debug("Register model class to build: " + c.getCanonicalName());
             initClasses.add((Class<? extends SPARQLResourceModel>) c);
         });
-        mapperIndex = new SPARQLClassObjectMapperIndex(baseURI, generationPrefixURI, initClasses);
+        mapperIndex = new SPARQLClassObjectMapperIndex(baseGraphURI, generationPrefixURI, initClasses);
 
         SPARQLConfig sparqlConfig = sparqlModule.getConfig(SPARQLConfig.class);
         if (sparqlConfig.usePrefixes()) {

@@ -43,6 +43,7 @@ public class SPARQLModule extends OpenSilexModule {
     public static final String ONTOLOGY_BASE_DOMAIN = "http://www.opensilex.org/";
 
     private URI baseURI;
+    private URI baseGraphURI;
     private String baseURIAlias;
     private URI generationPrefixURI;
 
@@ -67,6 +68,7 @@ public class SPARQLModule extends OpenSilexModule {
         if (sparqlConfig != null) {
             baseURIAlias = sparqlConfig.baseURIAlias() + "-";
             baseURI = new URI(sparqlConfig.baseURI());
+            baseGraphURI = new URI(sparqlConfig.baseGraphURI());
             sparqlConfig.customPrefixes().forEach((prefix, uri) -> {
                 try {
                     if (URIDeserializer.validateURI(uri)) {
@@ -81,12 +83,13 @@ public class SPARQLModule extends OpenSilexModule {
         } else {
             baseURIAlias = "";
             baseURI = new URI(DEFAULT_BASE_URI);
+            baseGraphURI = new URI(DEFAULT_BASE_URI);
         }
 
         LOGGER.debug("Set platform URI: " + baseURI.toString());
         LOGGER.debug("Set platform URI alias: " + baseURIAlias);
 
-        generationPrefixURI = baseURI;
+        generationPrefixURI = baseGraphURI;
 
         if(sparqlConfig != null){
             // if some generation URI is provided then use it
@@ -96,7 +99,7 @@ public class SPARQLModule extends OpenSilexModule {
             // else generate URI with the provided uri generation alias
             else  if(!StringUtils.isEmpty(sparqlConfig.generationBaseURIAlias())){
                 // use UriBuilder in order to properly create URI
-                generationPrefixURI = UriBuilder.fromUri(baseURI).path(sparqlConfig.generationBaseURIAlias()).build();
+                generationPrefixURI = UriBuilder.fromUri(baseGraphURI).path(sparqlConfig.generationBaseURIAlias()).build();
             }
         }
 
@@ -111,12 +114,13 @@ public class SPARQLModule extends OpenSilexModule {
         return baseURI;
     }
 
+    public URI getBaseGraphURI() { return baseGraphURI; }
     public URI getGenerationPrefixURI() {
         return generationPrefixURI;
     }
 
     public URI getSuffixedURI(String suffix) {
-        return baseURI.resolve(suffix);
+        return baseGraphURI.resolve(suffix);
     }
 
     public Map<String, URI> getCustomPrefixes() {

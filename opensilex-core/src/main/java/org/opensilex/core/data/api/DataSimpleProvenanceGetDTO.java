@@ -11,6 +11,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import org.opensilex.core.data.dal.DataFileModel;
 import org.opensilex.core.data.dal.DataProvenanceModel;
 import org.opensilex.core.data.dal.ProvEntityModel;
+import org.opensilex.core.provenance.dal.AgentModel;
+import org.opensilex.core.provenance.dal.ProvenanceModel;
 
 import javax.validation.Valid;
 import java.net.URI;
@@ -22,13 +24,16 @@ import java.util.List;
  * @author brice maussang
  */
 @JsonPropertyOrder({
-        "uri"
+        "uri",
+        "name"
 })
 public class DataSimpleProvenanceGetDTO {
 
     @JsonProperty("uri")
     private URI uri;
 
+    @JsonProperty("name")
+    private String name;
 
     public URI getUri() {
         return uri;
@@ -38,6 +43,14 @@ public class DataSimpleProvenanceGetDTO {
         this.uri = uri;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public static DataSimpleProvenanceGetDTO fromModel(DataProvenanceModel model){
         DataSimpleProvenanceGetDTO dto = new DataSimpleProvenanceGetDTO();
 
@@ -45,11 +58,14 @@ public class DataSimpleProvenanceGetDTO {
 
         if (provEntityList != null && provEntityList.size() == 1) {
             dto.setUri(provEntityList.get(0).getUri());
+            dto.setName(dto.getUri().toString());
         }
         else {
             dto.setUri(model.getUri());
+            dto.setName(dto.getUri().toString());
         }
 
         return dto;
     }
+
 }

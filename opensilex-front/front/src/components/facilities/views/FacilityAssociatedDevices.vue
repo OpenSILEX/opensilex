@@ -1,42 +1,54 @@
 <template>
   <div>
-    <div class="d-flex">
-      <div class="mr-auto p-2">
-        <div v-if="hasVariableGroup">
-          <label for="variableGroupSelector">
-            {{ $t("FacilityAssociatedDevices.variable-group-selector") }}
-          </label>
-          <font-awesome-icon
-              icon="question-circle"
-              class="variable-group-help"
-              v-b-tooltip.hover.top="$t('FacilityAssociatedDevices.variable-group-help')"
-          />
-          <opensilex-SelectForm
-              id="variableGroupSelector"
-              :selected.sync="selectedVariableGroup"
-              :searchMethod="searchVariableGroups"
-              :placeholder="$t('FacilityAssociatedDevices.no-variable-group-selected')"
-              class="searchFilter"
-              @clear="loadVariables"
-              @onValidate="loadVariables"
-              @onClose="loadVariables"
-              @select="loadVariables"
-              @handlingEnterKey="loadVariables"
-          ></opensilex-SelectForm>
-        </div>
-      </div>
+    <opensilex-Card
+        :no-footer="true"
+        :no-header="true"
+        icon=""
+    >
+      <template v-slot:body>
+        <div class="row">
+          <div class="col-sm-6">
+            <div v-if="hasVariableGroup">
+              <label for="variableGroupSelector">
+                {{ $t("FacilityAssociatedDevices.variable-group-selector") }}
+              </label>
+              <font-awesome-icon
+                  icon="question-circle"
+                  class="variable-group-help"
+                  v-b-tooltip.hover.top="$t('FacilityAssociatedDevices.variable-group-help')"
+              />
+              <opensilex-SelectForm
+                  id="variableGroupSelector"
+                  :selected.sync="selectedVariableGroup"
+                  :searchMethod="searchVariableGroups"
+                  :placeholder="$t('FacilityAssociatedDevices.no-variable-group-selected')"
+                  class="searchFilter"
+                  @clear="loadVariables"
+                  @onValidate="loadVariables"
+                  @onClose="loadVariables"
+                  @select="loadVariables"
+                  @handlingEnterKey="loadVariables"
+              ></opensilex-SelectForm>
+            </div>
+          </div>
 
-      <opensilex-DateTimeRangePickerForm
-          :start.sync="startDate"
-          :end.sync="endDate"
-          labelStart="component.common.begin"
-          labelEnd="component.common.end"
-          helpMessageStart="FacilityAssociatedDevices.start-date-help"
-          helpMessageEnd="FacilityAssociatedDevices.end-date-help"
-          name="dateTimePeriod"
-      >
-      </opensilex-DateTimeRangePickerForm>
-    </div>
+          <div class="col-sm-6">
+            <div class="row justify-content-end">
+                <opensilex-DateTimeRangePickerForm
+                    :start.sync="startDate"
+                    :end.sync="endDate"
+                    labelStart="component.common.begin"
+                    labelEnd="component.common.end"
+                    helpMessageStart="FacilityAssociatedDevices.start-date-help"
+                    helpMessageEnd="FacilityAssociatedDevices.end-date-help"
+                    name="dateTimePeriod"
+                >
+                </opensilex-DateTimeRangePickerForm>
+              </div>
+          </div>
+        </div>
+      </template>
+    </opensilex-Card>
 
     <opensilex-TextView
         v-if="isNoVariableFound"

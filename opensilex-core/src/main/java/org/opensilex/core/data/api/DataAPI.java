@@ -68,6 +68,7 @@ import org.opensilex.sparql.csv.CSVCell;
 import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
+import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -2092,6 +2093,39 @@ public class DataAPI {
         }
     }
 
+    /**
+     * Create a DataSimpleProvenanceGetDTO with uri and name from a data provenance model.
+     * @detail
+     * Analyze the provenance from the data model and do as follows:
+     *  if there is one agent (device or operator), retreive the uri and name of the agent
+     *  otherwise, take the uri and name from the provenance model
+     * @param dataProvModel
+     * @return a simple data provenance with uri and name attributes
+     * @throws SPARQLException
+     * @throws NoSQLInvalidURIException
+     */
+    private DataSimpleProvenanceGetDTO createDataSimpleProvenance(DataProvenanceModel dataProvModel)
+            throws SPARQLException, NoSQLInvalidURIException {
+        DataSimpleProvenanceGetDTO dto = new DataSimpleProvenanceGetDTO();
+
+        List<ProvEntityModel> provEntityList = dataProvModel.getProvWasAssociatedWith();
+
+        if (provEntityList != null && provEntityList.size() == 1) {
+            OntologyDAO ontologyDao = new OntologyDAO(sparql);
+            URI uri = provEntityList.get(0).getUri();
+            dto.setUri(uri);
+            dto.setName(ontologyDao.getURILabel(uri, user.getLanguage()));
+        }
+        else {
+            ProvenanceDAO provenanceDao = new ProvenanceDAO(nosql, sparql);
+            ProvenanceModel provModel = provenanceDao.get(dataProvModel.getUri());
+            dto.setUri(provModel.getUri());
+            dto.setName(provModel.getName());
+        }
+
+        return dto;
+    }
+
 
     @GET
     @Path("/data_serie/facility")
@@ -2111,6 +2145,7 @@ public class DataAPI {
     ) throws Exception {
 
         DataDAO dao = new DataDAO(nosql, sparql, fs);
+        ProvenanceDAO provDAO = new ProvenanceDAO(nosql, sparql);
         VariableDAO variableDAO = new VariableDAO(sparql, nosql, fs);
 
         /// Search data
@@ -2159,7 +2194,7 @@ public class DataAPI {
             List<DataSimpleGetDTO> medianSerie = computeMedianPerHour(data);
             medians.addAll(medianSerie);
 
-            DataSimpleProvenanceGetDTO provenance = DataSimpleProvenanceGetDTO.fromModel(entryProv.getKey());
+            DataSimpleProvenanceGetDTO provenance = createDataSimpleProvenance(entryProv.getKey());
 
             DataSerieGetDTO dataSerie = new DataSerieGetDTO(provenance, medianSerie);
             dataSeriesDTOs.add(dataSerie);
@@ -2174,13 +2209,13 @@ public class DataAPI {
             List<DataSerieGetDTO> dataCalculatedSeriesDTOs = new ArrayList<>();
 
             DataSimpleProvenanceGetDTO provMedian = new DataSimpleProvenanceGetDTO();
-            provMedian.setUri(URI.create("median_per_hour"));
+            provMedian.setName("median_per_hour");
 
             List<DataSimpleGetDTO> medianOfMedians = computeMedianPerHour(medians);
             dataCalculatedSeriesDTOs.add(new DataSerieGetDTO(provMedian, medianOfMedians));
 
             DataSimpleProvenanceGetDTO provAverage = new DataSimpleProvenanceGetDTO();
-            provAverage.setUri(URI.create("mean_per_hour"));
+            provAverage.setName("mean_per_hour");
 
             List<DataSimpleGetDTO> averageSerie = computeAveragePerHour(dataSimpleGetDTOs);
             dataCalculatedSeriesDTOs.add(new DataSerieGetDTO(provAverage, averageSerie));
@@ -2193,7 +2228,7 @@ public class DataAPI {
 
     @GET
     @Path("/data_serie/facility/monitoring")
-    @ApiOperation("Get all data series associated with a facility")
+    @ApiOperation("Get simplified data series associated with a facility")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -2244,7 +2279,6 @@ public class DataAPI {
 
         Map<DataProvenanceModel, List<DataModel>> provenancesMap;
 
-        List<DataSerieGetDTO> dataSeriesDTOs = new ArrayList<>();
         List<DataSimpleGetDTO> medians = new ArrayList<>();
 
         provenancesMap = dataModels.stream().collect(Collectors.groupingBy(DataModel::getProvenance));
@@ -2257,21 +2291,16 @@ public class DataAPI {
 
             List<DataSimpleGetDTO> medianSerie = computeMedianPerHour(data);
             medians.addAll(medianSerie);
-
-            DataSimpleProvenanceGetDTO provenance = DataSimpleProvenanceGetDTO.fromModel(entryProv.getKey());
-
-            DataSerieGetDTO dataSerie = new DataSerieGetDTO(provenance, medianSerie);
-            dataSeriesDTOs.add(dataSerie);
         }
 
-        /// Compute calculated series
+        /// Compute median of medians
 
-        if (dataSeriesDTOs.size() != 0) {
+        if (medians.size() != 0) {
 
             List<DataSerieGetDTO> dataCalculatedSeriesDTOs = new ArrayList<>();
 
             DataSimpleProvenanceGetDTO provMedian = new DataSimpleProvenanceGetDTO();
-            provMedian.setUri(URI.create("median_per_hour"));
+            provMedian.setName("median_per_hour");
 
             List<DataSimpleGetDTO> medianOfMedians = computeMedianPerHour(medians);
             List<DataSimpleGetDTO> simplifiedSerie = applyRamerDouglasPeucker(medianOfMedians, epsilon);

@@ -53,27 +53,28 @@ export default class Sparkline extends Vue {
 
   draw() {
     var ctx = this.canvas.getContext('2d');
-    var origW = this.canvas.width;
-    var origH = this.canvas.height;
     this.canvas.width = this.canvas.width * window.devicePixelRatio;
     this.canvas.height = this.canvas.height * window.devicePixelRatio;
+    var origW = this.canvas.width;
+    var origH = this.canvas.height;
     this.canvas.style.maxWidth = this.maxWidth + 'px';
     this.canvas.style.maxHeight = this.maxHeight + 'px';
     var maxNum = Math.max.apply(null, this.data);
     var minNum = Math.min.apply(null, this.data);
+    var offset = 2;
     var linePerPixel = origW / this.data.length;
     var diff = maxNum-minNum;
-    var diffPerc = origH / diff;
-    diffPerc -= 1.5;
+    var diffPerc = (origH - offset) / maxNum;
+    //diffPerc -= 1.5;
 
     // add some padding;
     var bottomPadding = 4;
     ctx.beginPath();
     ctx.strokeStyle = 'rgb(78,141,235)';
     ctx.lineWidth = 6;
-    ctx.moveTo(0, origH - ((this.data[0] - minNum) * diffPerc));
+    ctx.moveTo(0, origH - ((this.data[0]) * diffPerc));
     this.data.forEach(function(v,i){
-      ctx.lineTo((i+1)*linePerPixel, origH - ((v - minNum) * diffPerc));
+      ctx.lineTo((i+1)*linePerPixel, origH - ((v) * diffPerc));
     });
     ctx.stroke();
   }

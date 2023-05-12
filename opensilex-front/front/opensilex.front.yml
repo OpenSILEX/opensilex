@@ -11,7 +11,7 @@ menu:
         label: component.menu.infrastructure
         route:
           path: /infrastructures
-          component: opensilex-InfrastructureView
+          component: opensilex-OrganizationView
           credentials:
             - organization-access
           icon: ik#ik-globe
@@ -310,7 +310,7 @@ menu:
 
 routes:
   - path: /infrastructure/details/:uri
-    component: opensilex-InfrastructureDetailView
+    component: opensilex-OrganizationDetailView
     icon: ik#ik-globe
   - path: /infrastructure/site/details/:uri
     component: opensilex-SiteView
@@ -457,7 +457,7 @@ routes:
     component: opensilex-ScientificObjectDetailView
 
   - path: /infrastructures/details/:uri
-    component: opensilex-InfrastructureDetailView
+    component: opensilex-OrganizationDetailView
     credentials: []
   - path: /provenances/details/:uri
     component: opensilex-ProvenanceDetailsPage

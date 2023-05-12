@@ -31,11 +31,11 @@
     ></opensilex-InputForm>
 
     <!-- Organizations -->
-    <opensilex-InfrastructureSelector
+    <opensilex-OrganizationSelector
         label="component.experiment.infrastructures"
         :infrastructures.sync="form.organizations"
         :multiple="true"
-    ></opensilex-InfrastructureSelector>
+    ></opensilex-OrganizationSelector>
 
     <!-- Site -->
     <opensilex-SiteSelector

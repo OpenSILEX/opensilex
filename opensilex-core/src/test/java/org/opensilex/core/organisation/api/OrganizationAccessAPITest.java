@@ -24,6 +24,7 @@ import org.opensilex.core.organisation.api.facility.FacilityCreationDTO;
 import org.opensilex.core.organisation.api.facility.FacilityGetDTO;
 import org.opensilex.core.organisation.api.site.SiteCreationDTO;
 import org.opensilex.core.organisation.api.site.SiteGetDTO;
+import org.opensilex.core.organisation.api.site.SiteGetListDTO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.site.SiteModel;
@@ -493,7 +494,7 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
 
     @Test
     public void testSearchSitesAsAdmin() throws Exception {
-        List<SiteGetDTO> result = getSearchResultsAsAdmin(SITE_SEARCH_PATH, null, new TypeReference<PaginatedListResponse<SiteGetDTO>>() {});
+        List<SiteGetListDTO> result = getSearchResultsAsAdmin(SITE_SEARCH_PATH, null, new TypeReference<PaginatedListResponse<SiteGetListDTO>>() {});
         assertEquals(accessibleSiteURISet.size() + forbiddenSiteURISet.size(), result.size());
     }
 
@@ -502,7 +503,7 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
         assert !accessibleSiteURISet.isEmpty();
         assert !forbiddenSiteURISet.isEmpty();
 
-        List<URI> siteSearchResult = getSearchResults(SITE_SEARCH_PATH, null, new TypeReference<PaginatedListResponse<SiteGetDTO>>() {}, USER_MAIL)
+        List<URI> siteSearchResult = getSearchResults(SITE_SEARCH_PATH, null, new TypeReference<PaginatedListResponse<SiteGetListDTO>>() {}, USER_MAIL)
                 .stream().map(ResourceDTO::getUri)
                 .collect(Collectors.toList());
 

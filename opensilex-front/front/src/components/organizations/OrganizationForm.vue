@@ -64,7 +64,7 @@ import {OrganizationCreationDTO} from "opensilex-core/model/organizationCreation
 import {OrganizationUpdateDTO} from "opensilex-core/model/organizationUpdateDTO";
 
 @Component
-export default class InfrastructureForm extends Vue {
+export default class OrganizationForm extends Vue {
   $opensilex: OpenSilexVuePlugin;
 
   uriGenerated = true;

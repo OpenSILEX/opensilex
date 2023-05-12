@@ -117,6 +117,7 @@
       @onCreate="onCreate"
       @onUpdate="onUpdate"
       :initForm="initForm"
+      :lazy="true"
     ></opensilex-FacilityModalForm>
   </b-card>
 </div>

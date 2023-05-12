@@ -18,7 +18,7 @@ import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import { ResourceDagDTO } from 'opensilex-core/index';
 
 @Component
-export default class InfrastructureSelector extends Vue {
+export default class OrganizationSelector extends Vue {
   $opensilex: any;
 
   @PropSync("infrastructures")

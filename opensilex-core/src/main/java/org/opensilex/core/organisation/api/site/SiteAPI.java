@@ -66,7 +66,7 @@ public class SiteAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Sites retrieved", response = SiteGetDTO.class, responseContainer = "List")
+            @ApiResponse(code = 200, message = "Sites retrieved", response = SiteGetListDTO.class, responseContainer = "List")
     })
     public Response searchSites(
             @ApiParam(value = "Regex pattern for filtering sites by names", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern,
@@ -77,17 +77,20 @@ public class SiteAPI {
     ) throws Exception {
         SiteDAO siteDAO = new SiteDAO(sparql, nosql);
 
-        ListWithPagination<SiteModel> siteModels = siteDAO.search((SiteSearchFilter) new SiteSearchFilter()
+        SiteSearchFilter filter = (SiteSearchFilter) new SiteSearchFilter()
                 .setNamePattern(pattern)
                 .setUser(currentUser)
-                .setOrganizations(organizations)
                 .setOrderByList(orderByList)
                 .setPage(page)
-                .setPageSize(pageSize));
+                .setPageSize(pageSize);
+        if (!organizations.isEmpty()) {
+            filter.setOrganizations(organizations);
+        }
+        ListWithPagination<SiteModel> siteModels = siteDAO.search(filter);
 
-        List<SiteGetDTO> siteDtos = siteModels.getList().stream()
+        List<SiteGetListDTO> siteDtos = siteModels.getList().stream()
                 .map(siteModel -> {
-                    SiteGetDTO siteDto = new SiteGetDTO();
+                    SiteGetListDTO siteDto = new SiteGetListDTO();
                     siteDto.fromModel(siteModel);
                     return siteDto;
                 }).collect(Collectors.toList());

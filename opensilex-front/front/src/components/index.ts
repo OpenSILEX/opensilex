@@ -74,27 +74,25 @@ import GroupSelector from './groups/GroupSelector.vue';
 components["opensilex-GroupSelector"] = GroupSelector;
 
 // Infrastructures
-import InfrastructureView from './infrastructures/InfrastructureView.vue';
-components["opensilex-InfrastructureView"] = InfrastructureView;
-import InfrastructureDetailView from './infrastructures/InfrastructureDetailView.vue';
-components["opensilex-InfrastructureDetailView"] = InfrastructureDetailView;
-import InfrastructureTree from './infrastructures/InfrastructureTree.vue';
-components["opensilex-InfrastructureTree"] = InfrastructureTree;
-import InfrastructureForm from './infrastructures/InfrastructureForm.vue';
-components["opensilex-InfrastructureForm"] = InfrastructureForm;
-import InfrastructureDetail from './infrastructures/InfrastructureDetail.vue';
-components["opensilex-InfrastructureDetail"] = InfrastructureDetail;
-import InfrastructureSelector from './infrastructures/InfrastructureSelector.vue';
-components["opensilex-InfrastructureSelector"] = InfrastructureSelector;
-import InfrastructureUriView from './infrastructures/InfrastructureUriView.vue';
-components["opensilex-InfrastructureUriView"] = InfrastructureUriView;
-import SiteDetail from './infrastructures/site/SiteDetail.vue';
+import OrganizationView from './organizations/OrganizationView.vue';
+components["opensilex-OrganizationView"] = OrganizationView;
+import OrganizationDetailView from './organizations/OrganizationDetailView.vue';
+components["opensilex-OrganizationDetailView"] = OrganizationDetailView;
+import OrganizationTree from './organizations/OrganizationTree.vue';
+components["opensilex-OrganizationTree"] = OrganizationTree;
+import OrganizationForm from './organizations/OrganizationForm.vue';
+components["opensilex-OrganizationForm"] = OrganizationForm;
+import OrganizationDetail from './organizations/OrganizationDetail.vue';
+components["opensilex-OrganizationDetail"] = OrganizationDetail;
+import OrganizationSelector from './organizations/OrganizationSelector.vue';
+components["opensilex-OrganizationSelector"] = OrganizationSelector;
+import SiteDetail from './organizations/site/SiteDetail.vue';
 components["opensilex-SiteDetail"] = SiteDetail;
-import SiteForm from './infrastructures/site/SiteForm.vue';
+import SiteForm from './organizations/site/SiteForm.vue';
 components["opensilex-SiteForm"] = SiteForm;
-import SiteView from './infrastructures/site/SiteView.vue';
+import SiteView from './organizations/site/SiteView.vue';
 components["opensilex-SiteView"] = SiteView;
-import SiteSelector from './infrastructures/site/SiteSelector.vue';
+import SiteSelector from './organizations/site/SiteSelector.vue';
 components["opensilex-SiteSelector"] = SiteSelector;
 
 // Facilities

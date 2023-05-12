@@ -20,7 +20,7 @@
 <script lang="ts">
 import {Component, Prop} from "vue-property-decorator";
 import Vue from "vue";
-import {GermplasmGroupGetDTO} from "opensilex-core/model/germplasmGroupGetDTO";
+import {GermplasmGroupGetDTO} from "../../../../../opensilex-core/front/src/lib";
 
 @Component
 export default class GermplasmGroupStructureDetails extends Vue {

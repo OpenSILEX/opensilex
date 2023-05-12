@@ -20,11 +20,11 @@
       :multiple="true"
     ></opensilex-ProjectSelector>
 
-    <opensilex-InfrastructureSelector
+    <opensilex-OrganizationSelector
       label="component.experiment.infrastructures"
       :infrastructures.sync="experiment.organisations"
       :multiple="true"
-    ></opensilex-InfrastructureSelector>
+    ></opensilex-OrganizationSelector>
 
     <opensilex-FacilitySelector
       label="component.experiment.facilities"

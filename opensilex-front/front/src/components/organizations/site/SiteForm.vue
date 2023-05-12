@@ -19,13 +19,13 @@
     ></opensilex-InputForm>
 
     <!-- Organizations -->
-    <opensilex-InfrastructureSelector
+    <opensilex-OrganizationSelector
         ref="organizationSelector"
         label="SiteForm.organizations"
         :infrastructures.sync="form.organizations"
         :multiple="true"
         :required="true"
-    ></opensilex-InfrastructureSelector>
+    ></opensilex-OrganizationSelector>
 
     <!-- Facilities -->
     <opensilex-FacilitySelector
@@ -62,7 +62,7 @@
 import {Component, Prop, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
-import InfrastructureSelector from "../InfrastructureSelector.vue";
+import OrganizationSelector from "../OrganizationSelector.vue";
 import {SiteCreationDTO} from 'opensilex-core/index';
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
@@ -85,7 +85,7 @@ export default class SiteForm extends Vue {
   hasAddress: boolean;
 
   @Ref("organizationSelector")
-  organizationSelector: InfrastructureSelector;
+  organizationSelector: OrganizationSelector;
 
   getEmptyForm(): SiteCreationDTO {
     return SiteForm.getEmptyForm();

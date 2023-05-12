@@ -179,7 +179,7 @@ public class OrganizationSPARQLHelper {
      *         }
      *         OPTIONAL {
      *             ?parents_ (vocabulary:hasPart)* ?uri .
-     *             ?parents_  os-sec:hasGroup  ?groups_}
+     *             ?parents_  os-sec:hasGroup  ?groups_
      *         }
      *         GROUP BY ?uri
      *         HAVING ( COUNT(DISTINCT ?groups_) = 0 )

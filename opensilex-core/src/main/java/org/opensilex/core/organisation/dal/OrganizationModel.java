@@ -82,6 +82,26 @@ public class OrganizationModel extends SPARQLDagModel<OrganizationModel> {
     private List<ExperimentModel> experiments;
     public static final String EXPERIMENT_FIELD = "experiments";
 
+    @Override
+    public List<OrganizationModel> getParents() {
+        return parents;
+    }
+
+    @Override
+    public void setParents(List<OrganizationModel> parents) {
+        this.parents = parents;
+    }
+
+    @Override
+    public List<OrganizationModel> getChildren() {
+        return children;
+    }
+
+    @Override
+    public void setChildren(List<OrganizationModel> children) {
+        this.children = children;
+    }
+
     public List<GroupModel> getGroups() {
         return groups;
     }

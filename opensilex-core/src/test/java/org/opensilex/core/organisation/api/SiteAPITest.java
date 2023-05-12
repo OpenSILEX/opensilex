@@ -5,7 +5,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.opensilex.core.AbstractMongoIntegrationTest;
-import org.opensilex.core.organisation.api.site.SiteGetDTO;
+import org.opensilex.core.organisation.api.site.SiteGetListDTO;
 import org.opensilex.core.organisation.api.site.SiteUpdateDTO;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.site.SiteModel;
@@ -37,7 +37,7 @@ public class SiteAPITest extends AbstractMongoIntegrationTest {
 
     protected OrganizationModel infra;
 
-    protected static final TypeReference<PaginatedListResponse<SiteGetDTO>> listTypeReference = new TypeReference<PaginatedListResponse<SiteGetDTO>>() {};
+    protected static final TypeReference<PaginatedListResponse<SiteGetListDTO>> listTypeReference = new TypeReference<PaginatedListResponse<SiteGetListDTO>>() {};
 
     @Before
     public void createInfrastructure() throws Exception {
@@ -75,7 +75,7 @@ public class SiteAPITest extends AbstractMongoIntegrationTest {
         Map<String,Object> searchParams = new HashMap<>();
         searchParams.put("pattern","site");
 
-        List<SiteGetDTO> results = getSearchResultsAsAdmin(SEARCH_PATH,searchParams,listTypeReference);
+        List<SiteGetListDTO> results = getSearchResultsAsAdmin(SEARCH_PATH,searchParams,listTypeReference);
         assertEquals(2,results.size());
         Assert.assertTrue(results.stream().anyMatch(dto -> SPARQLDeserializers.compareURIs(dto.getUri(),site1.getUri())));
         Assert.assertTrue(results.stream().anyMatch(dto -> SPARQLDeserializers.compareURIs(dto.getUri(),site2.getUri())));
@@ -114,7 +114,7 @@ public class SiteAPITest extends AbstractMongoIntegrationTest {
         Map<String,Object> searchParams = new HashMap<>();
         searchParams.put(URIS_PARAM_NAME, Arrays.asList(site1.getUri(),site2.getUri()));
 
-        List<SiteGetDTO> results = getSearchResultsAsAdmin(URIS_PATH,searchParams,listTypeReference);
+        List<SiteGetListDTO> results = getSearchResultsAsAdmin(URIS_PATH,searchParams,listTypeReference);
         assertEquals(2,results.size());
         Assert.assertTrue(results.stream().anyMatch(dto -> SPARQLDeserializers.compareURIs(dto.getUri(),site1.getUri())));
         Assert.assertTrue(results.stream().anyMatch(dto -> SPARQLDeserializers.compareURIs(dto.getUri(),site2.getUri())));
@@ -123,7 +123,7 @@ public class SiteAPITest extends AbstractMongoIntegrationTest {
         searchParams = new HashMap<>();
         searchParams.put(URIS_PARAM_NAME, Collections.singletonList(site1.getUri()));
 
-        results = results = getSearchResultsAsAdmin(URIS_PATH,searchParams,listTypeReference);
+        results = getSearchResultsAsAdmin(URIS_PATH, searchParams, listTypeReference);
         assertEquals(1,results.size());
         Assert.assertTrue(results.stream().anyMatch(dto -> SPARQLDeserializers.compareURIs(dto.getUri(),site1.getUri())));
 

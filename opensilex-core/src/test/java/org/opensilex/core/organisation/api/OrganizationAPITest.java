@@ -8,6 +8,7 @@ package org.opensilex.core.organisation.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Test;
 import org.opensilex.core.AbstractMongoIntegrationTest;
 
@@ -52,13 +53,22 @@ public class OrganizationAPITest extends AbstractMongoIntegrationTest {
         return dto;
     }
 
-    protected OrganizationUpdateDTO getUpdateDTO(URI organizationUri, List<URI> updatedParents) {
+    protected OrganizationUpdateDTO getUpdateDTO(URI organizationUri, List<URI> updatedParents, String newName) {
         OrganizationUpdateDTO dto = new OrganizationUpdateDTO();
         dto.setUri(organizationUri);
         if (updatedParents != null) {
             dto.setParents(updatedParents);
+        } else {
+            dto.setParents(Collections.emptyList());
+        }
+        if (StringUtils.isNotEmpty(newName)) {
+            dto.setName(newName);
         }
         return dto;
+    }
+
+    protected OrganizationUpdateDTO getUpdateDTO(URI organizationURI, List<URI> updatedParents) {
+        return getUpdateDTO(organizationURI, updatedParents, null);
     }
 
     @Test
@@ -150,6 +160,86 @@ public class OrganizationAPITest extends AbstractMongoIntegrationTest {
         assertEquals(1, root1Children.size());
         assertEquals(0, searchedRoot2.get().getChildren().size());
         assertTrue(SPARQLDeserializers.compareURIs(root1Child1, root1Children.get(0)));
+    }
+
+    /**
+     * Checks that the cache is correctly updated after a creation
+     */
+    @Test
+    public void testSearchAfterCreate() throws Exception {
+        Response creationResponse = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(null));
+        URI root1 = extractUriFromResponse(creationResponse);
+
+        Response getResult = getJsonGetResponseAsAdmin(target(searchPath));
+        JsonNode node = getResult.readEntity(JsonNode.class);
+        PaginatedListResponse<ResourceDagDTO<OrganizationModel>> response = mapper.convertValue(node, new TypeReference<PaginatedListResponse<ResourceDagDTO<OrganizationModel>>>() {
+        });
+
+        assertEquals(1, response.getResult().size());
+
+        creationResponse = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(null));
+        URI root2 = extractUriFromResponse(creationResponse);
+
+
+        getResult = getJsonGetResponseAsAdmin(target(searchPath));
+        node = getResult.readEntity(JsonNode.class);
+        response = mapper.convertValue(node, new TypeReference<PaginatedListResponse<ResourceDagDTO<OrganizationModel>>>() {
+        });
+
+        assertEquals(2, response.getResult().size());
+    }
+
+    /**
+     * Checks that the cache is correctly updated after an update
+     */
+    @Test
+    public void testSearchAfterUpdate() throws Exception {
+        Response creationResponse = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(null));
+        URI root1 = extractUriFromResponse(creationResponse);
+
+        Response getResult = getJsonGetResponseAsAdmin(target(searchPath));
+        JsonNode node = getResult.readEntity(JsonNode.class);
+        PaginatedListResponse<ResourceDagDTO<OrganizationModel>> response = mapper.convertValue(node, new TypeReference<PaginatedListResponse<ResourceDagDTO<OrganizationModel>>>() {
+        });
+
+        assertEquals(1, response.getResult().size());
+
+        Response updateResponse = getJsonPutResponse(target(updatePath), getUpdateDTO(root1, null, "newName"));
+        URI root2 = extractUriFromResponse(updateResponse);
+
+
+        getResult = getJsonGetResponseAsAdmin(target(searchPath));
+        node = getResult.readEntity(JsonNode.class);
+        response = mapper.convertValue(node, new TypeReference<PaginatedListResponse<ResourceDagDTO<OrganizationModel>>>() {
+        });
+
+        assertEquals(1, response.getResult().size());
+        assertEquals("newName", response.getResult().get(0).getName());
+    }
+
+    /**
+     * Checks that the cache is correctly updated after a delete
+     */
+    @Test
+    public void testSearchAfterDelete() throws Exception {
+        Response creationResponse = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(null));
+        URI root1 = extractUriFromResponse(creationResponse);
+
+        Response getResult = getJsonGetResponseAsAdmin(target(searchPath));
+        JsonNode node = getResult.readEntity(JsonNode.class);
+        PaginatedListResponse<ResourceDagDTO<OrganizationModel>> response = mapper.convertValue(node, new TypeReference<PaginatedListResponse<ResourceDagDTO<OrganizationModel>>>() {
+        });
+
+        assertEquals(1, response.getResult().size());
+
+        Response deleteResponse = getDeleteByUriResponse(target(deletePath), root1.toString());
+
+        getResult = getJsonGetResponseAsAdmin(target(searchPath));
+        node = getResult.readEntity(JsonNode.class);
+        response = mapper.convertValue(node, new TypeReference<PaginatedListResponse<ResourceDagDTO<OrganizationModel>>>() {
+        });
+
+        assertEquals(0, response.getResult().size());
     }
 
     @Override

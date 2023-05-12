@@ -90,13 +90,14 @@
     </b-card>
     <opensilex-ModalForm
         ref="infrastructureForm"
-        component="opensilex-InfrastructureForm"
+        component="opensilex-OrganizationForm"
         createTitle="InfrastructureTree.add"
         editTitle="InfrastructureTree.update"
         icon="ik#ik-globe"
         @onCreate="$emit('onCreate', $event)"
         @onUpdate="$emit('onUpdate', $event)"
         :initForm="setParents"
+        :lazy="true"
     ></opensilex-ModalForm>
   </div>
 </template>
@@ -110,7 +111,7 @@ import {OrganizationsService} from "opensilex-core/api/organizations.service";
 import DTOConverter from "../../models/DTOConverter";
 
 @Component
-export default class InfrastructureDetail extends Vue {
+export default class OrganizationDetail extends Vue {
   $opensilex: any;
   organizationService: OrganizationsService;
 

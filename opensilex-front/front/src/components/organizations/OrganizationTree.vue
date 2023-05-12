@@ -116,13 +116,14 @@
         )
       "
       ref="infrastructureForm"
-      component="opensilex-InfrastructureForm"
+      component="opensilex-OrganizationForm"
       createTitle="InfrastructureTree.add"
       editTitle="InfrastructureTree.update"
       icon="ik#ik-globe"
       @onCreate="onCreate"
       @onUpdate="onUpdate"
       :initForm="initOrganizationForm"
+      :lazy="true"
     ></opensilex-ModalForm>
     <opensilex-ModalForm
         v-if="
@@ -139,6 +140,7 @@
         @onUpdate="onUpdate"
         :initForm="initSiteForm"
         :doNotHideOnError="true"
+        :lazy="true"
     ></opensilex-ModalForm>
   </b-card>
 </div>
@@ -161,10 +163,13 @@ import {DropdownButtonOption} from "../common/dropdown/Dropdown.vue";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
 import TreeView from "../common/views/TreeView.vue";
 import DTOConverter from "../../models/DTOConverter";
-import InfrastructureForm from "./InfrastructureForm.vue";
+import OrganizationForm from "./OrganizationForm.vue";
 import {OrganizationCreationDTO} from "opensilex-core/model/organizationCreationDTO";
 import SiteForm from "./site/SiteForm.vue";
 import {SiteCreationDTO} from "opensilex-core/model/siteCreationDTO";
+import {SiteGetListDTO} from "opensilex-core/model/siteGetListDTO";
+import {OpenSilexStore} from "../../models/Store";
+import {Route} from "vue-router";
 
 type OrganizationOrSiteData = ResourceDagDTO & {
   isOrganization: boolean,
@@ -181,10 +186,10 @@ enum AddOption {
 }
 
 @Component
-export default class InfrastructureTree extends Vue {
+export default class OrganizationTree extends Vue {
   $opensilex: OpenSilexVuePlugin;
-  $store: any;
-  $route: any;
+  $store: OpenSilexStore;
+  $route: Route;
   service: OrganizationsService;
 
   nodes: Array<OrganizationOrSiteTreeNode> = [];
@@ -196,7 +201,7 @@ export default class InfrastructureTree extends Vue {
   private selectedOrganization: OrganizationGetDTO;
   private selectedSite: SiteGetDTO;
 
-  @Ref("infrastructureForm") readonly infrastructureForm!: ModalForm<InfrastructureForm, OrganizationCreationDTO, OrganizationUpdateDTO>;
+  @Ref("infrastructureForm") readonly infrastructureForm!: ModalForm<OrganizationForm, OrganizationCreationDTO, OrganizationUpdateDTO>;
   @Ref("siteForm") readonly siteForm!: ModalForm<SiteForm, SiteCreationDTO, SiteUpdateDTO>;
   @Ref("treeView") readonly treeView: TreeView<OrganizationOrSiteData>;
 
@@ -273,7 +278,7 @@ export default class InfrastructureTree extends Vue {
       this.fetchSites()
     ]).then(result => {
       let tree: Array<GenericTreeOption> = result[0];
-      let sites: Array<SiteGetDTO> = result[1];
+      let sites: Array<SiteGetListDTO> = result[1];
 
       // Keep no selection
       this.selectedOrganization = undefined;
@@ -348,11 +353,11 @@ export default class InfrastructureTree extends Vue {
     }
   }
 
-  private async fetchSites(): Promise<Array<SiteGetDTO>> {
+  private async fetchSites(): Promise<Array<SiteGetListDTO>> {
     return (await this.service.searchSites(this.filter)).response.result;
   }
 
-  private appendSitesToTree(tree: Array<GenericTreeOption>, sites: Array<SiteGetDTO>): Array<OrganizationOrSiteTreeNode> {
+  private appendSitesToTree(tree: Array<GenericTreeOption>, sites: Array<SiteGetListDTO>): Array<OrganizationOrSiteTreeNode> {
     return this.$opensilex.mapTree<GenericTreeOption, OrganizationOrSiteTreeNode>(tree, (node, mappedChildren) => {
       let orgNode: OrganizationOrSiteTreeNode = {
         ...node,
@@ -366,7 +371,7 @@ export default class InfrastructureTree extends Vue {
 
       for (let site of sites) {
         for (let org of site.organizations) {
-          if (org.uri === orgNode.id) {
+          if (org === orgNode.id) {
             if (!Array.isArray(orgNode.children)) {
               orgNode.children = [];
             }
@@ -378,13 +383,14 @@ export default class InfrastructureTree extends Vue {
               rdf_type: site.rdf_type,
               rdf_type_name: site.rdf_type_name,
               children: [],
-              parents: site.organizations.map(org => org.uri)
+              parents: site.organizations
             };
             let siteNode: OrganizationOrSiteTreeNode = {
               id: site.uri,
               children: [],
               isDefaultExpanded: true,
               isExpanded: true,
+              isDraggable: false,
               isDisabled: false,
               isLeaf: true,
               label: site.name,

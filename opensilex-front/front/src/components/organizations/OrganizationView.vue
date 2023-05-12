@@ -3,18 +3,18 @@
     <div class="row">
       <div class="col-md-6">
         <!-- Infrastructure tree -->
-        <opensilex-InfrastructureTree
+        <opensilex-OrganizationTree
           ref="infrastructureTree"
           @onSelect="onSelectedOrganizationOrSite"
-        ></opensilex-InfrastructureTree>
+        ></opensilex-OrganizationTree>
       </div>
       <div class="col-md-6">
         <!-- Infrastructure detail -->
-        <opensilex-InfrastructureDetail
+        <opensilex-OrganizationDetail
           :selected="selectedOrganization"
           @onUpdate="refreshTree"
           class="infrastructureDetailComponent"
-        ></opensilex-InfrastructureDetail>
+        ></opensilex-OrganizationDetail>
         <!-- Site detail -->
         <opensilex-SiteDetail
           :selected="selectedSite"
@@ -32,8 +32,6 @@
           :organization="selectedOrganization"
           :site="selectedSite"
           :isSelectable="false"
-          :debounce="300"
-          :lazy="false"
         ></opensilex-FacilitiesView>
       </div>
     </div>
@@ -45,16 +43,16 @@ import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import {OrganizationGetDTO, NamedResourceDTOFacilityModel, OrganizationsService, SiteGetDTO} from "opensilex-core/index";
 import Org from "../../ontologies/Org";
-import InfrastructureTree from "./InfrastructureTree.vue";
+import OrganizationTree from "./OrganizationTree.vue";
 
 @Component
-export default class InfrastructureView extends Vue {
+export default class OrganizationView extends Vue {
   $opensilex: any;
   $store: any;
   $route: any;
   service: OrganizationsService;
 
-  @Ref("infrastructureTree") readonly infrastructureTree!: InfrastructureTree;
+  @Ref("infrastructureTree") readonly infrastructureTree!: OrganizationTree;
   @Ref("organizationFacilitiesView") readonly organizationFacilitiesView!: any;
   @Ref("facilitiesView") readonly facilitiesView!: any;
 

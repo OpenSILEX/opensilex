@@ -24,7 +24,8 @@ import Vue from "vue";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
-import {NamedResourceDTO, NamedResourceDTOSiteModel } from 'opensilex-core/index';
+import {NamedResourceDTOSiteModel} from 'opensilex-core/index';
+import {SiteGetListDTO} from "opensilex-core/model/siteGetListDTO";
 
 @Component
 export default class SiteSelector extends Vue {
@@ -63,7 +64,7 @@ export default class SiteSelector extends Vue {
         undefined,
         page,
         pageSize
-    ).then((http: HttpResponse<OpenSilexResponse<Array<NamedResourceDTO>>>) => {
+    ).then((http: HttpResponse<OpenSilexResponse<Array<SiteGetListDTO>>>) => {
 
       if (http && http.response) {
         this.siteByUriCache.clear();

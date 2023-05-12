@@ -1,5 +1,6 @@
 <template>
   <b-modal
+    v-if="display"
     ref="modalRef"
     :class="(modalSize === 'full' ? 'full-screen-modal-form' : '')"
     @ok.prevent="validate"
@@ -125,6 +126,17 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
    */
   data: any;
 
+    /**
+     * Only renders the component when either {@link showEditForm} of {@link showCreateForm} is called.
+     */
+  @Prop({default: false})
+  lazy: boolean;
+
+    /**
+     * Has the modal been opened at least once ?
+     */
+  opened = false;
+
   @Prop({
     type: Function,
     default: () => {}
@@ -144,6 +156,10 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
   successMessage: string | Function;
 
   disableValidation: boolean = true;
+
+  get display(): boolean {
+      return !this.lazy || this.opened;
+  }
 
   validate() {
     this.validatorRef.validate().then(isValid => {
@@ -209,6 +225,8 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
   }
 
   showCreateForm() {
+    this.opened = true;
+
     this.editMode = false;
 
     this.$nextTick(() => {
@@ -237,6 +255,8 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
   }
 
   showEditForm(form: UpdateDTOType) {
+    this.opened = true;
+
     this.editMode = true;
 
     this.$nextTick(() => {

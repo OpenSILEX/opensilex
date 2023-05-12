@@ -21,7 +21,8 @@
         <slot name="node" v-bind:node="node">></slot>
       </span>
 
-      <b-button-group v-if="!noButtons" class="tree-button-group" size="sm">
+      <!-- Clicking on the button group does not trigger a select -->
+      <b-button-group v-if="!noButtons" class="tree-button-group" size="sm" @mouseup.prevent.stop>
         <slot name="buttons" v-bind:node="node"></slot>
       </b-button-group>
     </template>

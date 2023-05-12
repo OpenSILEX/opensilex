@@ -5,8 +5,11 @@
 //******************************************************************************
 package org.opensilex.core.organisation.dal;
 
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
+import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.clauses.WhereClause;
 import org.apache.jena.graph.Node;
 import org.apache.jena.sparql.core.Var;
@@ -19,13 +22,16 @@ import org.opensilex.security.authentication.ForbiddenURIAccessException;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.mapping.SPARQLListFetcher;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
 
 import java.net.URI;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
@@ -38,6 +44,15 @@ public class OrganizationDAO {
     protected final SPARQLService sparql;
     protected final MongoDBService nosql;
     protected final OrganizationSPARQLHelper organizationSPARQLHelper;
+
+    /**
+     * Associates a user URI to the map of their accessible organizations. The keys of the map are the URIs of all
+     * accessible organizations, and the values are the {@link OrganizationModel} corresponding to the URI. The models
+     * are retrieved using a {@link SPARQLListFetcher} for the {@link OrganizationModel#children} field, so only the
+     * URI of the children is accessible.
+     */
+    private static final Cache<URI, Map<URI, OrganizationModel>> userOrganizationCache = Caffeine.newBuilder()
+            .build();
 
     public OrganizationDAO(SPARQLService sparql, MongoDBService nosql) throws Exception {
         this.sparql = sparql;
@@ -72,6 +87,14 @@ public class OrganizationDAO {
 
         if (user.isAdmin()) {
             return;
+        }
+
+        Map<URI, OrganizationModel> userOrganizations = userOrganizationCache.getIfPresent(user.getUri());
+        if (Objects.nonNull(userOrganizations)) {
+            if (userOrganizations.containsKey(organizationURI)) {
+                return;
+            }
+            throw new ForbiddenURIAccessException(organizationURI);
         }
 
         Var uriVar = makeVar(OrganizationModel.URI_FIELD);
@@ -123,9 +146,69 @@ public class OrganizationDAO {
     }
 
     /**
+     * <p>
+     * Retrieves all organizations the user can access. If there exists a cache entry for this user, the values from
+     * the cache are returned. Otherwise, performs the SPARQL query and stores the results in the cache.
+     * </p>
+     * <p>
+     * Note that children organizations are retrieved using {@link SPARQLListFetcher}, so only the URI field will be
+     * accessible.
+     * </p>
+     *
+     * @param user The user model
+     * @return The list of organizations accessible to users
+     */
+    private List<OrganizationModel> searchWithoutFilters(AccountModel user) throws Exception {
+        Map<URI, OrganizationModel> userOrganizations = userOrganizationCache.getIfPresent(user.getUri());
+        if (Objects.nonNull(userOrganizations)) {
+            return new ArrayList<>(userOrganizations.values());
+        }
+
+        AtomicReference<SelectBuilder> initialSelect = new AtomicReference<>();
+        List<OrganizationModel> models;
+
+        if (user.isAdmin()) {
+            models = sparql.search(OrganizationModel.class, sparql.getDefaultLang(), initialSelect::set);
+        } else {
+            String lang = user.getLanguage();
+
+            models = sparql.search(OrganizationModel.class, lang, selectBuilder -> {
+                organizationSPARQLHelper.addOrganizationAccessClause(selectBuilder, makeVar(OrganizationModel.URI_FIELD), user.getUri());
+                initialSelect.set(selectBuilder);
+            });
+        }
+
+        SPARQLListFetcher<OrganizationModel> listFetcher = new SPARQLListFetcher<>(
+                sparql,
+                OrganizationModel.class,
+                sparql.getDefaultGraph(OrganizationModel.class),
+                Collections.singletonMap(OrganizationModel.CHILDREN_FIELD, true),
+                initialSelect.get(),
+                models
+        );
+        listFetcher.updateModels();
+
+        userOrganizationCache.put(user.getUri(), models.stream().collect(Collectors.toMap(
+                OrganizationModel::getUri,
+                Function.identity()
+        )));
+
+        return models;
+    }
+
+    /**
+     * <p>
      * Get all organizations accessible by a giver user. See {@link OrganizationSPARQLHelper#addOrganizationAccessClause(WhereClause, Var, URI)}
      * for further information on the conditions for an organization to be considered accessible.
+     * </p>
+     * <p>
+     * Note that children organizations are retrieved using {@link SPARQLListFetcher}, so only the URI field will be
+     * accessible.
+     * </p>
      *
+     * @param nameFilter Regex filter on the organization name. If empty, no filter is applied.
+     * @param restrictedOrganizations List of organizations to restrict the search to. If null, no filter is applied. An
+     *                                empty list will filter out all organizations and return no result.
      * @param user The current user
      * @return The accessible organizations
      */
@@ -134,37 +217,20 @@ public class OrganizationDAO {
             throw new IllegalArgumentException("User cannot be null");
         }
 
-        if (user.isAdmin()) {
-            return sparql.search(OrganizationModel.class, sparql.getDefaultLang(), selectBuilder -> {
-                if (StringUtils.isNotEmpty(nameFilter)) {
-                    selectBuilder.addFilter(SPARQLQueryHelper.regexFilter(OrganizationModel.NAME_FIELD, nameFilter));
-                }
-
-                if (restrictedOrganizations != null) {
-                    SPARQLQueryHelper.inURI(selectBuilder, OrganizationModel.URI_FIELD, restrictedOrganizations);
-                }
-            });
-        }
-
-        String lang = user.getLanguage();
-
-        return sparql.search(OrganizationModel.class, lang, selectBuilder -> {
-            if (StringUtils.isNotEmpty(nameFilter)) {
-                selectBuilder.addFilter(SPARQLQueryHelper.regexFilter(OrganizationModel.NAME_FIELD, nameFilter));
+        Set<URI> restrictedOrganizationSet = Objects.nonNull(restrictedOrganizations) ?  new HashSet<>(restrictedOrganizations) : null;
+        Pattern pattern = StringUtils.isNotEmpty(nameFilter) ? Pattern.compile(nameFilter, Pattern.CASE_INSENSITIVE) : null;
+        return searchWithoutFilters(user).stream().filter(org -> {
+            if (Objects.nonNull(pattern) && !pattern.matcher(org.getName()).find()) {
+                return false;
             }
-
-            Var orgURIVar = makeVar(OrganizationModel.URI_FIELD);
-
-            organizationSPARQLHelper.addOrganizationAccessClause(selectBuilder, orgURIVar, user.getUri());
-
-            if (restrictedOrganizations != null) {
-                SPARQLQueryHelper.inURI(selectBuilder, OrganizationModel.URI_FIELD, restrictedOrganizations);
-            }
-        });
+            return Objects.isNull(restrictedOrganizationSet) || restrictedOrganizationSet.contains(org.getUri());
+        }).collect(Collectors.toList());
     }
 
     public OrganizationModel create(OrganizationModel instance) throws Exception {
         sparql.create(instance);
+
+        userOrganizationCache.invalidateAll();
 
         return instance;
     }
@@ -196,6 +262,8 @@ public class OrganizationDAO {
         validateOrganizationAccess(uri, user);
 
         sparql.delete(OrganizationModel.class, uri);
+
+        userOrganizationCache.invalidateAll();
     }
 
     /**
@@ -213,6 +281,9 @@ public class OrganizationDAO {
         validateOrganizationHierarchy(instance);
 
         sparql.update(instance);
+
+        userOrganizationCache.invalidateAll();
+
         return instance;
     }
 }

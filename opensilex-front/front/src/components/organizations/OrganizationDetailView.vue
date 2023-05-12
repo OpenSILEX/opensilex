@@ -11,12 +11,12 @@
     <div class="row">
       <div class="col-md-6">
         <!-- Infrastructure detail -->
-        <opensilex-InfrastructureDetail
+        <opensilex-OrganizationDetail
           :selected="selected"
           :withActions="true"
           @onDelete="deleteInfrastructure"
           @onUpdate="refresh"
-        ></opensilex-InfrastructureDetail>
+        ></opensilex-OrganizationDetail>
       </div>
       <div class="col-md-6">
         <!-- Infrastructure facilities -->
@@ -43,7 +43,7 @@ import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
 import { OrganizationGetDTO } from "opensilex-core/index";
 
 @Component
-export default class InfrastructureDetailView extends Vue {
+export default class OrganizationDetailView extends Vue {
   $opensilex: any;
 
   selected: OrganizationGetDTO = null;

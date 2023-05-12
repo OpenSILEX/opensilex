@@ -11,6 +11,7 @@
     @onUpdate="$emit('onUpdate', $event)"
     :initForm="initForm"
     :doNotHideOnError="true"
+    :lazy="lazy"
   ></opensilex-ModalForm>
 </template>
 
@@ -30,6 +31,9 @@ import {FacilityUpdateDTO} from "opensilex-core/model/facilityUpdateDTO";
 @Component
 export default class FacilityModalForm extends Vue {
   $opensilex: OpenSilexVuePlugin;
+
+  @Prop()
+  lazy: boolean;
 
   @Prop({
     default: () => {}
@@ -53,10 +57,12 @@ export default class FacilityModalForm extends Vue {
   }
 
   showCreateForm() {
-    this.facilityForm
-      .getFormRef()
-      .setBaseType(this.$opensilex.Oeso.FACILITY_TYPE_URI);
     this.facilityForm.showCreateForm();
+    this.$nextTick(() => {
+        this.facilityForm
+            .getFormRef()
+            .setBaseType(this.$opensilex.Oeso.FACILITY_TYPE_URI);
+    });
   }
 
   callInfrastructureFacilityCreation(form: FacilityCreationDTO) {

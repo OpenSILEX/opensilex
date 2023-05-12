@@ -212,13 +212,16 @@ public class FacilityAPI {
         OrganizationDAO organizationDAO = new OrganizationDAO(sparql, nosql);
         FacilityDAO facilityDAO = new FacilityDAO(sparql, nosql, organizationDAO);
 
-        ListWithPagination<FacilityModel> facilities = facilityDAO.search((FacilitySearchFilter) new FacilitySearchFilter()
+        FacilitySearchFilter filter = (FacilitySearchFilter) new FacilitySearchFilter()
                 .setUser(currentUser)
                 .setPattern(pattern)
-                .setOrganizations(organizations)
                 .setOrderByList(orderByList)
                 .setPage(page)
-                .setPageSize(pageSize));
+                .setPageSize(pageSize);
+        if (!organizations.isEmpty()) {
+            filter.setOrganizations(organizations);
+        }
+        ListWithPagination<FacilityModel> facilities = facilityDAO.search(filter);
 
         List<FacilityGetDTO> dtoList = facilities.getList().stream()
                 .map((facilityModel) -> FacilityGetDTO.getDTOFromModel(facilityModel, true))

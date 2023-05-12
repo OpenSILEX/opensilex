@@ -72,10 +72,10 @@
 import Vue from "vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {VueJsOntologyExtensionService, VueRDFTypeDTO, VueRDFTypePropertyDTO} from "../../lib";
-import {RDFObjectRelationDTO} from "opensilex-core/model/rDFObjectRelationDTO";
+import {RDFObjectRelationDTO} from "../../../../../opensilex-core/front/src/lib";
 import Component from "vue-class-component";
 import {Prop, Watch} from "vue-property-decorator";
-import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
+import {NamedResourceDTO} from "../../../../../opensilex-core/front/src/lib";
 
 export interface PropertyDetail {
     detail: VueRDFTypePropertyDTO,

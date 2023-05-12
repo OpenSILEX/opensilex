@@ -144,11 +144,14 @@ public class OrganizationAPI {
     })
     public Response searchInfrastructures(
             @ApiParam(value = "Regex pattern for filtering list by names", example = ".*") @DefaultValue(".*") @QueryParam("pattern") String pattern,
-            @ApiParam(value = " organisation URIs") @QueryParam("organisation_uris") List<URI> infraURIs
+            @ApiParam(value = " organisation URIs") @QueryParam("organisation_uris") List<URI> restrictedOrganizationUris
     ) throws Exception {
         OrganizationDAO dao = new OrganizationDAO(sparql, nosql);
 
-        List<OrganizationModel> organizations = dao.search(pattern, infraURIs, currentUser);
+        List<OrganizationModel> organizations = dao.search(
+                pattern,
+                restrictedOrganizationUris.isEmpty() ? null : restrictedOrganizationUris,
+                currentUser);
         ResourceDagDTOBuilder<OrganizationModel> dtoBuilder = new ResourceDagDTOBuilder<>(organizations);
         return new PaginatedListResponse<>(dtoBuilder.build()).getResponse();
     }

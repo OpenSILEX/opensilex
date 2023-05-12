@@ -40,7 +40,7 @@ import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import {VueJsOntologyExtensionService} from "../../lib";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
-import {ScientificObjectDetailDTO} from "opensilex-core/model/scientificObjectDetailDTO";
+import {ScientificObjectDetailDTO} from "../../../../../opensilex-core/front/src/lib";
 
 @Component
 export default class ScientificObjectDetailMap extends Vue {

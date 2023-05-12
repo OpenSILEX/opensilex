@@ -128,7 +128,7 @@
 import {Component, Prop, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
 import {PositionGetDTO} from "../../../../../opensilex-core/front/src/lib";
-import {ScientificObjectDetailByExperimentsDTO} from "opensilex-core/model/scientificObjectDetailByExperimentsDTO";
+import {ScientificObjectDetailByExperimentsDTO} from "../../../../../opensilex-core/front/src/lib";
 import {RDFObjectRelationDTO} from "opensilex-core/model/rDFObjectRelationDTO";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {ScientificObjectsService} from "opensilex-core/api/scientificObjects.service";

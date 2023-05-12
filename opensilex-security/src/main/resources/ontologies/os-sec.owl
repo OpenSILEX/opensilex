@@ -120,6 +120,11 @@
         <rdfs:label xml:lang="fr">est administrateur</rdfs:label>
     </owl:DatatypeProperty>
 
+    <!-- http://www.opensilex.org/security#isEnabled -->
+    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/security#isEnabled">
+        <rdfs:label xml:lang="en">is enabled</rdfs:label>
+        <rdfs:label xml:lang="fr">est activé</rdfs:label>
+    </owl:DatatypeProperty>
 
     <owl:Class rdf:about="http://www.opensilex.org/security#Group">
         <rdfs:label xml:lang="fr">Groupe</rdfs:label>

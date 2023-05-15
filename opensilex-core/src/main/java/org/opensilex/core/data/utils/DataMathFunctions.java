@@ -84,4 +84,26 @@ public class DataMathFunctions {
 
         return resultData;
     }
+
+    public static List<DataSimpleGetDTO> applyGaussianSmooth(List<DataSimpleGetDTO> dataSerie, int windowLength) {
+
+        List<DataSimpleGetDTO> resultData = new ArrayList();
+
+        int offset = (int) Math.floor(windowLength/2);
+
+        for (int i = offset; i < (dataSerie.size() - offset); ++i) {
+            List<DataSimpleGetDTO> windowList = dataSerie.subList(i - offset, i + offset);
+
+            double average = windowList.stream()
+                    .mapToDouble(d -> (Double.valueOf(d.getValue().toString())))
+                    .average()
+                    .orElse(Double.NaN);
+
+            DataSimpleGetDTO newData = new DataSimpleGetDTO(dataSerie.get(i));
+            newData.setValue(average);
+            resultData.add(newData);
+        }
+
+        return resultData;
+    }
 }

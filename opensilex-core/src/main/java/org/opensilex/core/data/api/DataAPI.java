@@ -2196,7 +2196,8 @@ public class DataAPI {
 
             List<DataSimpleGetDTO> medianOfMedians = computeMedianPerHour(medians);
             List<DataSimpleGetDTO> simplifiedSerie = applyRamerDouglasPeucker(medianOfMedians, epsilon);
-            dataCalculatedSeriesDTOs.add(new DataSerieGetDTO(provMedian, simplifiedSerie));
+            List<DataSimpleGetDTO> smoothSerie = applyGaussianSmooth(simplifiedSerie, 3);
+            dataCalculatedSeriesDTOs.add(new DataSerieGetDTO(provMedian, smoothSerie));
 
             dto.setCalculatedSeries(dataCalculatedSeriesDTOs);
         }

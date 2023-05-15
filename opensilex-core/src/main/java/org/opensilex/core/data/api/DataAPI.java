@@ -2126,7 +2126,6 @@ public class DataAPI {
         return dto;
     }
 
-
     @GET
     @Path("/data_serie/facility")
     @ApiOperation("Get all data series associated with a facility")

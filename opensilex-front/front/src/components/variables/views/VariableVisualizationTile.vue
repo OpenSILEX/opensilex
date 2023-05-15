@@ -16,6 +16,7 @@
             id="data-infos"
             v-if="isDataLoaded">
           <div class="row">
+            <!--
             <div class="col-sm-6">
               <opensilex-Sparkline
                   :maxWidth="500"
@@ -24,7 +25,8 @@
                   v-on:click.native="showGraphic">
               </opensilex-Sparkline>
             </div>
-            <div class="col-sm-6">
+            -->
+            <div class="col">
               <opensilex-TextView
                   style="margin-bottom: 0;"
                   v-on:click.native="showGraphic"

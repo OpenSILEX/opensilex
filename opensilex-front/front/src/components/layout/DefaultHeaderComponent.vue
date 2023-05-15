@@ -6,7 +6,7 @@
           <div class="logo-img">
             <slot name="headerLogo">
               <img
-                v-bind:src="$opensilex.getResourceURI('images/logo-opensilex_miniature.png')"
+                v-bind:src="$opensilex.getModuleFrontResourceURI(null,null,'images/logo-opensilex_miniature.png')"
                 class="header-brand-img"
                 alt="lavalite"
               />

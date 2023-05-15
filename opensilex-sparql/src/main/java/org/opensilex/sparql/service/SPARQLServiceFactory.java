@@ -64,7 +64,7 @@ public abstract class SPARQLServiceFactory extends ServiceFactory<SPARQLService>
 
     protected SPARQLClassObjectMapperIndex mapperIndex;
 
-    private SPARQLModule sparqlModule;
+    protected SPARQLModule sparqlModule;
 
     @Override
     public void setup() throws Exception {

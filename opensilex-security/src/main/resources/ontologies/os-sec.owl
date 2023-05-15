@@ -59,6 +59,8 @@
         <rdfs:comment xml:lang="en">Indicates an account held by this agent</rdfs:comment>
     </owl:DatatypeProperty>
 
+          <!-- http://xmlns.com/foaf/0.1/OnlineAccount -->
+
     <owl:Class rdf:about="http://xmlns.com/foaf/0.1/OnlineAccount">
             <rdfs:subClassOf>
                 <owl:Restriction>
@@ -84,6 +86,13 @@
             <rdfs:subClassOf>
                 <owl:Restriction>
                     <owl:onProperty rdf:resource="http://www.opensilex.org/security#isAdmin"/>
+                    <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+                    <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+                </owl:Restriction>
+            </rdfs:subClassOf>
+            <rdfs:subClassOf>
+                <owl:Restriction>
+                    <owl:onProperty rdf:resource="http://www.opensilex.org/security#isEnabled"/>
                     <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
                     <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
                 </owl:Restriction>

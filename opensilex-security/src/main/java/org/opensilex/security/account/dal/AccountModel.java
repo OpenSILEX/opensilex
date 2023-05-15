@@ -121,6 +121,12 @@ public class AccountModel extends SPARQLResourceModel implements Principal, Clas
     private PersonModel holderOfTheAccount = null;
     public static final String HOLDER_OF_THE_ACCOUNT_FIELD = "holderOfTheAccount";
 
+    @SPARQLProperty(
+            ontology = SecurityOntology.class,
+            property = "isEnabled"
+    )
+    private Boolean isEnabled = Boolean.TRUE;
+
 
     private String token;
 
@@ -215,6 +221,17 @@ public class AccountModel extends SPARQLResourceModel implements Principal, Clas
 
     public void setHolderOfTheAccount(PersonModel holderOfTheAccount) {
         this.holderOfTheAccount = holderOfTheAccount;
+    }
+
+    public Boolean getIsEnabled() {
+        return isEnabled;
+    }
+
+    public void setIsEnabled(Boolean enable) {
+        if (! isAdmin())
+            isEnabled = enable;
+        else
+            isEnabled = true;
     }
 
     @Override

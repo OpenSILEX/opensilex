@@ -14,10 +14,10 @@
       :fields="fields"
       defaultSortBy="email"
     >
-      <template v-slot:cell(last_name)="{data}">
+      <template v-slot:cell(identifier)="{data}">
         <opensilex-UriLink
           :uri="data.item.uri"
-          :value="data.item.last_name"
+          :value="getIdentifier(data.item)"
           :noExternalLink="true"
           @click="data.toggleDetails()"
         ></opensilex-UriLink>
@@ -44,6 +44,16 @@
 
       <template v-slot:cell(actions)="{data}">
         <b-button-group size="sm">
+          <div class="checkEnable"
+              :title="data.item.enable ? $t('component.user.enable') : $t('component.user.disable')">
+            <b-check
+                @change="changeEnable(data.item)"
+                v-if="displayEnableButton(data.item)"
+                :checked=" data.item.enable "
+                variant="outline-success"
+                switch
+            ></b-check>
+          </div>
           <opensilex-DetailButton
             @click="data.toggleDetails()"
             label="component.user.details"
@@ -57,7 +67,7 @@
             :small="true"
           ></opensilex-EditButton>
           <opensilex-DeleteButton
-            v-if="user.hasCredential(credentials.CREDENTIAL_USER_DELETE_ID) && user.email != data.item.email"
+            v-if="user.hasCredential(credentials.CREDENTIAL_USER_DELETE_ID) && user.email !== data.item.email"
             @click="deleteUser(data.item.uri)"
             label="component.user.delete"
             :small="true"
@@ -73,6 +83,9 @@ import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
 import { SecurityService } from "opensilex-security/index";
+import {UserGetDTO} from "opensilex-security/model/userGetDTO";
+import {UserUpdateDTO} from "opensilex-security/model/userUpdateDTO";
+import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
 
 @Component
 export default class UserList extends Vue {
@@ -82,13 +95,8 @@ export default class UserList extends Vue {
   $route: any;
   fields = [
     {
-      key: "last_name",
-      label: "component.user.last-name",
-      sortable: true
-    },
-    {
-      key: "first_name",
-      label: "component.user.first-name",
+      key: "identifier",
+      label: "component.user.identifier",
       sortable: true
     },
     {
@@ -116,7 +124,7 @@ export default class UserList extends Vue {
   private filter: any = "";
   @Ref("tableRef") readonly tableRef!: any;
   currentURI = null;
-  groupDetails = [];  
+  groupDetails = [];
   created() {
     let query: any = this.$route.query;
     if (query.filter) {
@@ -166,12 +174,41 @@ export default class UserList extends Vue {
       .deleteUser(uri)
       .then(() => {
         this.refresh();
-        this.$emit("onDelete", uri);
+        this.$opensilex.showSuccessToast(this.$t('component.user.successDelete'))
       })
       .catch(this.$opensilex.errorHandler);
   }
+
+  changeEnable(dto :UserUpdateDTO){
+    dto.enable = ! dto.enable;
+    this.service
+        .updateUser(dto)
+        .catch(this.$opensilex.errorHandler);
+  }
+
+  getIdentifier(userRow){
+    if (userRow.last_name && userRow.first_name){
+      return userRow.last_name+' '+userRow.first_name
+    }
+    return userRow.uri
+  }
+
+  displayEnableButton(userRow){
+    let isUserConnected = userRow.email === this.user.email
+    return this.user.hasCredential(this.credentials.CREDENTIAL_USER_MODIFICATION_ID)
+        && ! userRow.admin
+        && ! isUserConnected
+  }
+
 }
+
 </script>
 
 <style scoped lang="scss">
+
+/* without this rules the checkbox is not center on the height of the div*/
+.checkEnable{
+  display: flex;
+  align-items: center;
+}
 </style>

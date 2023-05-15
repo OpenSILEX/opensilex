@@ -11,6 +11,7 @@
                             id="no-data-text"
             :label="$t('FacilityAssociatedDevices.no-data')">
         </opensilex-TextView>
+
         <div
             id="data-infos"
             v-if="isDataLoaded">
@@ -36,6 +37,7 @@
               >
               </opensilex-TextView>
               <opensilex-DateView
+                  style="font-size: x-large; margin-bottom: 0;"
                   v-on:click.native="showGraphic"
                 :value.sync="lastMedianData.date"
                 :isDateTime="true"
@@ -50,6 +52,7 @@
             ref="graphic-modal"
             size="xl"
             :title="variableUri.name"
+            hide-footer
         >
           <opensilex-DataVisuGraphic
             v-if="isGraphicLoaded"
@@ -74,7 +77,7 @@
 <script lang="ts">
 import {Component, Prop, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
-import {DataGetDTO, DevicesService, EventGetDTO, EventsService, NamedResourceDTOVariableModel} from "opensilex-core/index";
+import {DataGetDTO, DevicesService, NamedResourceDTOVariableModel} from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import HighchartsDataTransformer from "../../../models/HighchartsDataTransformer";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
@@ -95,6 +98,9 @@ export default class VariableVisualizationTile extends Vue {
   get credentials() {
     return this.$store.state.credentials;
   }
+  get hasCalculatedSeries() {
+    return (this.calculatedDataSeries.length > 0);
+  }
 
   @Prop()
   variableUri: NamedResourceDTOVariableModel;
@@ -113,12 +119,12 @@ export default class VariableVisualizationTile extends Vue {
     this.loadSimplifiedData();
   }
 
-
   variable: VariableDetailsDTO;
 
   dataSeries: Array<DataSerieGetDTO>;
   calculatedDataSeries: Array<DataSerieGetDTO>;
 
+  medianSerie;
   lastMedianData: any;
 
   isNoDataFound: boolean = false;
@@ -127,7 +133,6 @@ export default class VariableVisualizationTile extends Vue {
 
   variablesService: VariablesService;
   devicesService: DevicesService;
-  eventsService: EventsService;
   dataService: DataService;
 
   @Ref("graphic-modal") readonly graphicModal!: any;
@@ -140,9 +145,6 @@ export default class VariableVisualizationTile extends Vue {
     );
     this.devicesService = this.$opensilex.getService<DevicesService>(
         "opensilex.DevicesService"
-    );
-    this.eventsService = this.$opensilex.getService<EventsService>(
-        "opensilex.EventsService"
     );
     this.dataService = this.$opensilex.getService<DataService>(
         "opensilex-core.DataService"
@@ -236,12 +238,6 @@ export default class VariableVisualizationTile extends Vue {
         );
   }
 
-  get hasCalculatedSeries() {
-    return (this.calculatedDataSeries.length > 0);
-  }
-
-  medianSerie;
-
   updateLastMedianData() {
     let data;
     if (this.calculatedDataSeries.length === 0) {
@@ -259,14 +255,6 @@ export default class VariableVisualizationTile extends Vue {
     this.lastMedianData.value = this.lastMedianData.value.toPrecision(4) + " " + this.variable.unit.symbol;
   }
 
-  // simulate window resizing to resize the graphic when the filter panel display changes
-  @Watch("searchFiltersToggle")
-  onSearchFilterToggleChange(){
-    this.$nextTick(()=> { 
-      window.dispatchEvent(new Event('resize'));
-    })  
-  }
-
   beforeDestroy() {
     this.langUnwatcher();
   }
@@ -281,7 +269,7 @@ export default class VariableVisualizationTile extends Vue {
       let promise;
 
       for (let i = 0; i < this.calculatedDataSeries.length; ++i) {
-        promise = this.buildDataSerie(this.calculatedDataSeries[i], true);
+        promise = this.buildDataSerie(this.calculatedDataSeries[i], !i);
         promises.push(promise);
       }
       for (let i = 0; i < this.dataSeries.length; ++i) {
@@ -338,7 +326,7 @@ export default class VariableVisualizationTile extends Vue {
       let prov = dataSerie.provenance;
 
       return {
-        name: prov.uri,
+        name: prov.name,
         data: cleanData,
         visible: isVisible
       };

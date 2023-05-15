@@ -88,9 +88,6 @@ menu:
           component: opensilex-GermplasmGlobalView
           credentials:
             - germplasm-access
-          icon: fa#seedling
-          title: GermplasmView.title
-          description: GermplasmView.description
   - id: data-menu
     label: component.menu.data.label
     children:

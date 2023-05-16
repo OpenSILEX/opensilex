@@ -2032,6 +2032,7 @@ public class DataAPI {
             @ApiParam(value = "target URI", example = "http://example.com/", required = true) @QueryParam("target") @NotNull URI facilityUri,
             @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
             @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
+            @ApiParam(value = "Retreive calculated series only", example = "0") @QueryParam("calculated_only") Boolean calculatedOnly,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=asc") @QueryParam("order_by") List<OrderBy> orderByList
     ) throws Exception {
 
@@ -2091,7 +2092,9 @@ public class DataAPI {
             dataSeriesDTOs.add(dataSerie);
         }
 
-        dto.setDataSeries(dataSeriesDTOs);
+        if (!calculatedOnly) {
+            dto.setDataSeries(dataSeriesDTOs);
+        }
 
         /// Compute calculated series
 
@@ -2112,6 +2115,9 @@ public class DataAPI {
             dataCalculatedSeriesDTOs.add(new DataSerieGetDTO(provAverage, averageSerie));
 
             dto.setCalculatedSeries(dataCalculatedSeriesDTOs);
+        }
+        else if (calculatedOnly) {
+            dto.setCalculatedSeries(dataSeriesDTOs);
         }
 
         return new SingleObjectResponse<>(dto).getResponse();
@@ -2196,7 +2202,7 @@ public class DataAPI {
             List<DataSimpleGetDTO> medianOfMedians = computeMedianPerHour(medians);
             List<DataSimpleGetDTO> simplifiedSerie = applyRamerDouglasPeucker(medianOfMedians, epsilon);
             //List<DataSimpleGetDTO> smoothSerie = applyGaussianSmooth(simplifiedSerie, 3);
-            dataCalculatedSeriesDTOs.add(new DataSerieGetDTO(provMedian, simplifiedSerie));
+            dataCalculatedSeriesDTOs.add(new DataSerieGetDTO(provMedian, medianOfMedians));
 
             dto.setCalculatedSeries(dataCalculatedSeriesDTOs);
         }

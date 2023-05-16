@@ -23,6 +23,7 @@ import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.eclipse.rdf4j.repository.config.ConfigTemplate;
 import org.eclipse.rdf4j.repository.config.RepositoryConfig;
@@ -106,6 +107,8 @@ public class RDF4JServiceFactory extends SPARQLServiceFactory {
                     SPARQLService.addPrefix(ns.getPrefix(), ns.getName());
                 }
                 URIDeserializer.setPrefixes(SPARQLService.getPrefixMapping(), sparqlConfig.usePrefixes());
+            } catch (RepositoryException ignored) {
+                // No repository connection to establish. That is the case for example during Swagger generation.
             }
         }
     }

@@ -2,6 +2,16 @@
   <div>
     <div v-if="this.images.length === 0">{{ $t("DataFilesImagesList.no-file") }}</div>
 
+    <button 
+      v-if="showGoBackToTopButton"
+      @click="goBackToTop()"
+      id="goBackToTop"
+      class="greenThemeColor ik ik-chevrons-up"
+      icon="ik ik-chevrons-up"
+      v-b-tooltip.hover.top="$t('DataFilesImagesList.goToTopButton')"
+    >    
+    </button>
+
     <!-- Images list -->
     <opensilex-ImageGrid
         :images="images"
@@ -16,7 +26,7 @@
         :images="images"
     ></opensilex-ImageLightBox>
 
-    <strong v-if="this.images.length >= 50 && !showScrollSpinner"
+    <strong v-if="this.images.length >= 35 && !showScrollSpinner"
     >{{ $t("DataFilesImagesList.scroll-to-display") }}</strong
     >
 
@@ -52,10 +62,14 @@ export default class DataFilesImagesList extends Vue {
   currentPage: number = 0;
   pageSize = 30;
 
+  // true if sum of browser window + current scroll position >= total height of document body - 1px
+  bottomOfWindow: boolean = window.innerHeight + window.scrollY >= document.body.offsetHeight - 1;
+
   images: Array<DataFileImageDTO> = [];
   imagesURL = [];
 
   showScrollSpinner: boolean = false;
+  showGoBackToTopButton : boolean = false;
   canReload: boolean = true;
   paused = false;
   key = 0; // fix VisuImageGrid reload
@@ -104,9 +118,8 @@ export default class DataFilesImagesList extends Vue {
   }
 
   pageScroll(event) {
-    let bottomOfWindow =
-        window.innerHeight + window.scrollY >= document.body.offsetHeight - 1;
-    if (bottomOfWindow && !this.paused) {
+    this.toggleButtonDisplay()
+    if (this.bottomOfWindow && !this.paused) {
       if (this.canReload) {
         this.reload();
       }
@@ -125,7 +138,7 @@ export default class DataFilesImagesList extends Vue {
         if (this.filter.end_date === ""){
           this.filter.end_date = undefined;
         }
-
+    this.images = [];
     this.showScrollSpinner = true;
     this.currentPage = 0;
     this.loadImages();
@@ -228,13 +241,12 @@ export default class DataFilesImagesList extends Vue {
               (http: HttpResponse<OpenSilexResponse<Array<DataFileGetDTO>>>) => {
                 const result = http.response.result as Array<DataFileGetDTO>;
                 let i = 0;
-                this.images = [];
 
+                if (this.showScrollSpinner) {
+                  this.showScrollSpinner = false;
+                }
                 result.forEach((element) => {
-                  if (this.showScrollSpinner) {
-                    this.showScrollSpinner = false;
-                  }
-                  this.loadImage(element, result.length, i, reject);
+                  this.loadImage(element, result.length, i++, reject);
                 });
 
                 if (!result || result.length === 0) {
@@ -252,10 +264,36 @@ export default class DataFilesImagesList extends Vue {
           });
     });
   }
+
+  toggleButtonDisplay() {
+    if (this.bottomOfWindow) {
+      this.showGoBackToTopButton = true;
+    } else {
+      this.showGoBackToTopButton = false;
+    }
+  }
+
+  goBackToTop() {
+    document.body.scrollTop = 0; // For Safari
+    document.documentElement.scrollTop = 0;
+  }
 }
 </script>
 
 <style scoped lang="scss">
+
+#goBackToTop {
+  position: fixed;
+  bottom: 20px;
+  right: 30px;
+  z-index: 99;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 10px;
+  font-size: 18px;
+}
 </style>
 
 <i18n>
@@ -263,10 +301,12 @@ en:
   DataFilesImagesList:
     no-file: No file to display
     scroll-to-display: Scroll to see more images
+    goToTopButton: "Go back to top"
 fr:
   DataFilesImagesList:
     no-file: "Aucun fichier à afficher"
-    scroll-to-display: "Défiler pour afficher plus d'images"
+    scroll-to-display: "Faire défiler pour afficher plus d'images"
+    goToTopButton: "Retour au début"
 
 
 

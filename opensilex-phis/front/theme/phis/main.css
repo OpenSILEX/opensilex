@@ -577,12 +577,12 @@
     height: 20px
 }
 
-.downloadTemplateBtn {
+.downloadTemplateBtn, .cardAdvancedSearchIcon, .cardAnnotationIcon{
     color: #00A38D;
     border-color: #00A38D;
 }
 
-.downloadTemplateBtn:hover {
+.downloadTemplateBtn:hover, .cardAdvancedSearchIcon:hover, .cardAnnotationIcon:hover {
     background-color: #00A38D;
     color: #f1f1f1
 }

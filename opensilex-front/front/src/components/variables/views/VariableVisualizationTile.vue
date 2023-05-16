@@ -181,12 +181,12 @@ export default class VariableVisualizationTile extends Vue {
     this.isNoDataFound = false;
     this.isDataLoaded = false;
 
-    this.dataService.getSimplifiedDataSerieByFacility(
+    this.dataService.getDataSeriesByFacility(
         this.variableUri.uri,
         this.target,
         (this.startDate != "") ? this.startDate : undefined,
         (this.endDate != "") ? this.endDate : undefined,
-        5,
+        true,
         ["date=asc"]
     )
         .then(
@@ -216,6 +216,7 @@ export default class VariableVisualizationTile extends Vue {
         this.target,
         (this.startDate != "") ? this.startDate : undefined,
         (this.endDate != "") ? this.endDate : undefined,
+        false,
         ["date=asc"]
     )
         .then(
@@ -225,13 +226,13 @@ export default class VariableVisualizationTile extends Vue {
               if (http && http.response) {
                 let seriesDTO: DataVariableSeriesGetDTO = http.response.result;
 
-                if (!seriesDTO.data_series.length) {
+                this.dataSeries = seriesDTO.data_series;
+                this.calculatedDataSeries = seriesDTO.calculated_series;
+
+                if (!this.dataSeries.length && !this.calculatedDataSeries.length) {
                   this.isNoDataFound = true;
                   return;
                 }
-
-                this.dataSeries = seriesDTO.data_series;
-                this.calculatedDataSeries = seriesDTO.calculated_series;
 
                 this.prepareGraphic();
                 this.graphicModal.show();
@@ -248,7 +249,7 @@ export default class VariableVisualizationTile extends Vue {
     else {
       data = this.calculatedDataSeries[0].data;
     }
-    this.medianSerie = data;
+    this.medianSerie = data.sort((a, b) => (a.date > b.date) ? 1 : -1);
 
     this.lastMedianData = {
       value: data[data.length - 1].value,

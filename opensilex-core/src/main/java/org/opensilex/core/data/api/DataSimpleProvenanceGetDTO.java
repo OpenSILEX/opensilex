@@ -25,6 +25,7 @@ import java.util.List;
  */
 @JsonPropertyOrder({
         "uri",
+        "rdf_type",
         "name"
 })
 public class DataSimpleProvenanceGetDTO {
@@ -32,8 +33,12 @@ public class DataSimpleProvenanceGetDTO {
     @JsonProperty("uri")
     private URI uri;
 
+    @JsonProperty("rdf_type")
+    private URI rdfType;
+
     @JsonProperty("name")
     private String name;
+
 
     public URI getUri() {
         return uri;
@@ -51,6 +56,14 @@ public class DataSimpleProvenanceGetDTO {
         this.name = name;
     }
 
+    public URI getRdfType() {
+        return rdfType;
+    }
+
+    public void setRdfType(URI rdfType) {
+        this.rdfType = rdfType;
+    }
+
     public static DataSimpleProvenanceGetDTO fromModel(DataProvenanceModel model){
         DataSimpleProvenanceGetDTO dto = new DataSimpleProvenanceGetDTO();
 
@@ -58,6 +71,7 @@ public class DataSimpleProvenanceGetDTO {
 
         if (provEntityList != null && provEntityList.size() == 1) {
             dto.setUri(provEntityList.get(0).getUri());
+            dto.setRdfType(provEntityList.get(0).getType());
             dto.setName(dto.getUri().toString());
         }
         else {

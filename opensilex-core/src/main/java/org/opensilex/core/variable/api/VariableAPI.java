@@ -525,7 +525,7 @@ public class VariableAPI {
             @ApiParam(value = "List of variable URI", example = "http://opensilex.dev/set/variables/Plant_Height") URIsListPostDTO dto
     ) throws Exception {
         VariableDAO dao = getDao();
-        List<VariableModel> variableList = dao.getList(dto.getUris());
+        List<VariableModel> variableList = dao.getListForExport(dto.getUris(), currentUser.getLanguage());
 
         return buildCSVForDetailsExport(variableList);
 

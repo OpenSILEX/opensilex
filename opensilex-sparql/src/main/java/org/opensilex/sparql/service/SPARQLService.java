@@ -367,24 +367,28 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      *  @throws SPARQLInvalidUriListException if any URI from uris could not be loaded
      */
     public <T extends SPARQLResourceModel> List<T> getListByURIs(Class<T> objectClass, Collection<URI> uris, String lang) throws Exception {
-        return getListByURIs(getDefaultGraph(objectClass), objectClass, uris, lang, null);
+        return getListByURIs(getDefaultGraph(objectClass), objectClass, uris, lang, null, null);
     }
 
 
-    /*
+    /**
      *
      * @param graph object location
      * @param objectClass object class
      * @param uris object URIs
      * @param lang
      * @param resultHandler function used to convert SPARQL results in a custom way (can be null)
+     * @param listFieldsToFetch Define which data/object list fields from a {@link SPARQLResourceModel} must be fetched.
+     *                          By default these fields are lazily retrieved but you can retrieve these fields directly in a more optimized way (see {@link SPARQLListFetcher}).
+     *                          The listFieldsToFetch associate to each field name, a boolean flag to tell if the corresponding triple
+     *                          must be added into the query which fetch these fields data.
      * @return a non-null list containing all object which match uris
      * @param <T> object class/type
      * @throws SPARQLInvalidUriListException if any URI from uris could not be loaded
      */
-
     public <T extends SPARQLResourceModel> List<T> getListByURIs(Node graph, Class<T> objectClass, Collection<URI> uris, String lang,
-                                                                 ThrowingFunction<SPARQLResult, T, Exception> resultHandler
+                                                                 ThrowingFunction<SPARQLResult, T, Exception> resultHandler,
+                                                                 Map<String, Boolean> listFieldsToFetch
     ) throws Exception {
         if (CollectionUtils.isEmpty(uris)) {
             return Collections.emptyList();
@@ -408,7 +412,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                 uris,
                 lang,
                 resultHandler,
-                Collections.emptyMap()
+                listFieldsToFetch == null ? Collections.emptyMap() : listFieldsToFetch
         );
     }
 

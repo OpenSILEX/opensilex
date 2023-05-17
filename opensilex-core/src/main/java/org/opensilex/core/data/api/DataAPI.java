@@ -2203,6 +2203,9 @@ public class DataAPI {
         if (!calculatedOnly) {
             dto.setDataSeries(dataSeriesDTOs);
         }
+        else if (dataSeriesDTOs.size() == 1) {
+            dto.setCalculatedSeries(dataSeriesDTOs);
+        }
 
         /// Compute calculated series
 
@@ -2223,9 +2226,6 @@ public class DataAPI {
             dataCalculatedSeriesDTOs.add(new DataSerieGetDTO(provAverage, averageSerie));
 
             dto.setCalculatedSeries(dataCalculatedSeriesDTOs);
-        }
-        else if (calculatedOnly) {
-            dto.setCalculatedSeries(dataSeriesDTOs);
         }
 
         return new SingleObjectResponse<>(dto).getResponse();

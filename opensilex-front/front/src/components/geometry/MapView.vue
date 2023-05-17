@@ -153,6 +153,7 @@
         @created="mapCreated"
         @pointermove="onMapPointerMove"
         @moveend="zoomRestriction"
+        @click="manageCluster"
       >
         <!-- Zoom and position-->
         <vl-view
@@ -237,12 +238,20 @@
             </div>
           </vl-layer-vector>
           <!-- OS features -->
-          <vl-layer-vector v-for="layerSO in featuresOS" :key="layerSO.id">
-            <vl-source-vector
-              ref="vectorSource"
-              :features="layerSO"
-            ></vl-source-vector>
-          </vl-layer-vector>
+            <vl-layer-vector :visible="checkZoom" render-mode="image" :z-index="1">
+                <vl-source-cluster :distance="25" >
+                    <vl-source-vector
+                        ref="clusterSource" @mounted="getFeatures"
+                    ></vl-source-vector>
+                    <vl-style-func :factory="makeClusterStyleFunc"></vl-style-func>
+                </vl-source-cluster>
+            </vl-layer-vector>
+            <vl-layer-vector :opacity="opacityOS" v-for="layerSO in featuresOS" :key="layerSO.id" :z-index="0">
+                    <vl-source-vector
+                            ref="vectorSource"
+                            :features="layerSO"
+                    ></vl-source-vector>
+                </vl-layer-vector>
           <!-- Devices features -->
           <vl-layer-vector v-for="layerDevice in featuresDevice" :key="layerDevice.id">
             <vl-source-vector
@@ -443,7 +452,7 @@
             <template v-slot:node="{ node }" >
               <span class="item-icon"> </span>
               <!-- flat() method creates a new array with all sub-array elements concatenated into it recursively up to the specified depth -->
-              <span v-if="node.title === 'Areas'">{{ $t("MapView.mapPanelAreas") }} ({{ featuresArea.flat().length }})</span>
+              <span v-if="node.title === 'Areas'">{{ $t("MapView.mapPanelAreas") }} ({{ isDisabled ? $t("MapView.mapPanelNotVisible") : featuresArea.flat().length }})</span>
               <span v-else >{{ $t("MapView.mapPanelAreas" + node.title) }} ({{ getNumberByArea(node.title) }})</span>
             </template>
 
@@ -477,7 +486,7 @@
           <opensilex-TreeView :nodes.sync="devices" :class="isDisabled ? 'disabled' : ''">
             <template v-slot:node="{ node }">
               <span class="item-icon"> </span>&nbsp;
-              <span v-if="node.title === 'Devices'">{{ $t("MapView.mapPanelDevices") }} ({{ featuresDevice.flat().length }})</span>
+              <span v-if="node.title === 'Devices'">{{ $t("MapView.mapPanelDevices") }} ({{ isDisabled ? $t("MapView.mapPanelNotVisible") : featuresDevice.flat().length }})</span>
               <span v-else >{{ nameType(node.title) }} ({{ getNumberByType(node.title, featuresDevice) }})</span>
             </template>
 
@@ -604,7 +613,7 @@
 <!--------------------- TABLE ----------------------------->
     <div
       id="selectedTable"
-      v-if="selectedFeatures.length !== 0"
+      v-if="selectedFeatures.length !== 0  && !checkZoom"
       class="selected-features"
     >
       <opensilex-TableView
@@ -669,6 +678,13 @@
 <script lang="ts">
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
+import {
+  Circle as CircleStyle,
+  Fill,
+  Stroke,
+  Style,
+  Text,
+} from "ol/style";
 import { DragBox } from "ol/interaction";
 import { GeoJSON } from "ol/format";
 import { Vector } from "ol/source";
@@ -702,6 +718,7 @@ export default class MapView extends Vue {
   @Ref("mapView") readonly mapView!: any;
   @Ref("map") readonly map!: any;
   @Ref("vectorSource") readonly vectorSource!: any;
+  @Ref("clusterSource") readonly clusterSource!: any;
   @Ref("areaForm") readonly areaForm!: any;
   @Ref("filterForm") readonly filterForm!: any;
   @Ref("soForm") readonly soForm!: any;
@@ -747,17 +764,19 @@ export default class MapView extends Vue {
   ///////////// FEATURES DATA ////////////
   private endReceipt: boolean = false;
   //OS
-  featuresOS: GeoJSONFeature[] = [];
+  featuresOS: GeoJSONFeature[][] = [];
   private callSO: boolean = false;
   private scientificObjectURI: string;
+  checkZoom: boolean = true;
+  opacityOS: number = 0;
   //AREAS
-  featuresArea: GeoJSONFeature[] = [];
+  featuresArea: GeoJSONFeature[][] = [];
   temporaryArea: GeoJSONFeature[] = [];
-  temporalAreas: GeoJSONFeature[] = [];
+  temporalAreas: any[] = [];
   //DEVICES
-  featuresDevice: GeoJSONFeature[] = [];
+  featuresDevice: GeoJSONFeature[][] = [];
   //FILTERS
-  tabLayer: GeoJSONFeature[] = [];
+  tabLayer: any[] = [];
 
   ///////////// MAP ////////////
   el: "map";
@@ -1111,15 +1130,23 @@ export default class MapView extends Vue {
 
   //Show areas and devices only under zoom 9 and get the current map expansion
   private zoomRestriction() {
-    if (this.mapView.$view.getZoom() < 9) {
+    if (this.mapView.$view.getZoom() < 5) {
       this.featuresArea = [];
       this.featuresDevice = [];
       this.devices = this.initDevices();
       this.areas = this.initAreas();
       this.isDisabled = true;
+      this.checkZoom = true;
+      this.opacityOS = 0;
     } else {
+        if(this.mapView.$view.getZoom() < 15){
+            this.checkZoom = true;
+            this.opacityOS = 0;
+        } else {
+            this.checkZoom = false;
+            this.opacityOS = 1;
+        }
       this.isDisabled = false;
-
       let coordinateExtent = this.getCoordinateExtent();
 
       this.calcOverlayCoordinate(coordinateExtent);
@@ -1179,6 +1206,94 @@ export default class MapView extends Vue {
         this.devicesRecovery(geometry);
       }
     }
+  }
+
+    //get visible OS features
+  getFeatures(){
+    let clusterSource = this.clusterSource;
+    clusterSource.$source.clear();
+
+    this.$opensilex.showLoader();
+
+    let features =[];
+
+    this.vectorSource.forEach((vector) => {
+        const isVectorSourceMounted = (vector) =>
+            vector &&
+            vector.getFeatures() &&
+            vector.getFeatures() &&
+            vector.getFeatures().length > 0;
+
+        this.waitFor((_)=>
+            this.vectorSource.length === this.featuresOS.length &&
+            this.vectorSource.every(isVectorSourceMounted)
+        ).then(() => {
+            if(vector.$parent.$layer.getVisible()){
+                features.push(vector.getFeatures());
+            }
+            this.$opensilex.hideLoader();
+            clusterSource.$source.addFeatures(features.flat());
+        })
+    })
+  }
+
+  // manage behavior on click on cluster point -> zoom in
+  manageCluster(e){
+      this.map.forEachFeatureAtPixel(
+          e.pixel,
+          (feature) => {
+              //transform all geometries into points and build the new extent
+              if(feature.get('features')) {
+                  let points: any[] = [];
+                  let features = feature.get('features');
+
+                  features.forEach((feat) => {
+                      let geom = feat.getGeometry();
+                      if (geom.getType() == 'Point') {
+                          points.push(geom.getCoordinates());
+                      } else if (geom.getType() == 'Polygon') {
+                          points.push(geom.getInteriorPoint().getCoordinates());
+                      } else if (geom.getType() == 'LineString') {
+                          let point = new Point(geom.getCoordinateAt(0.5), undefined);
+                          points.push(point.getCoordinates());
+                      }
+                })
+
+              this.mapView.$view.fit(olExtent.boundingExtent(points),{ maxZoom: 17});
+              }
+          }
+      )
+  }
+
+  // cluster points style
+  makeClusterStyleFunc(){
+      const styleCache = {};
+
+      return function __clusterStyleFunc (feature) {
+              const size = feature.get('features').length;
+              let style = styleCache[size];
+              if (!style) {
+                  style = new Style({
+                      image: new CircleStyle({
+                          radius: 10,
+                          stroke: new Stroke({
+                              color: '#fff',
+                          }),
+                          fill: new Fill({
+                              color: '#00a38d',
+                          }),
+                      }),
+                      text: new Text({
+                          text: size.toString(),
+                          fill: new Fill({
+                              color: '#fff',
+                          }),
+                      }),
+                  });
+                  styleCache[size] = style;
+              }
+              return style;
+          }
   }
 
   ///////////// FILTERS METHODS ////////////
@@ -1248,6 +1363,7 @@ export default class MapView extends Vue {
   }
 
   ///////////// SO METHODS ////////////
+
   //update SO
   callScientificObjectUpdate() {
     if (this.callSO) {
@@ -2047,7 +2163,7 @@ export default class MapView extends Vue {
    }
   //get all vectors
   const layers = this.map.$map.getLayers();
-  let vectors = layers.array_.filter(el => { return el.type.includes("VECTOR")})
+  let vectors = layers.array_.filter(el => { return el.type.includes("VECTOR")});
   vectors.forEach((element) => {
       // Iterate all layers of the map (OpenLayers API) to find the ones that are linked to elements
       const source = element.getSource();
@@ -2064,7 +2180,7 @@ export default class MapView extends Vue {
                 option.isAll = node.title == "Areas";// is the 'Areas' node clicked ?
                 option.condition =  array[0].values_.nature == "Area" &&
                     (node.title == "Areas" || // If 'Areas' node is clicked
-                    (node.title == "StructuralAera" &&
+                    (node.title == "StructuralArea" &&
                     this.getType(array[0].values_.type) !== "TemporalArea") || // If 'StructuralArea' node is clicked and element is not temporal area type
                     (node.title == "TemporalArea" &&
                     this.getType(array[0].values_.type) === "TemporalArea"));
@@ -2104,6 +2220,10 @@ export default class MapView extends Vue {
         }
       }
     })
+    //update the OS cluster visibility
+    if(this.checkZoom){
+        this.getFeatures();
+    }
   }
 
   initDevices(){
@@ -2343,7 +2463,7 @@ export default class MapView extends Vue {
   ///////////// EVENT PANEL METHODS ////////////
   //select Features from timeline??
   selectFeaturesFromTimeline(uri) {
-    for (let area of this.featuresArea) {
+    for (let area of this.featuresArea.flat()) {
       if (area.properties.uri === uri) {
         for (let i = 0; i < this.selectedFeatures.length; i++) {
           if (this.selectedFeatures[i].properties.uri === uri) {
@@ -2581,6 +2701,7 @@ en:
     displayFilter: Filters ({count})
     mapPanel: Manage map panel
     mapPanelTitle: Map Panel
+    mapPanelNotVisible : not visible
     eventPanelTitle: Events Panel
     eventPanel-help: The event panel displays all the events linked to the temporal areas. They are ordered from most recent to oldest.
     mapPanelScientificObjects: Scientific Objects
@@ -2646,6 +2767,7 @@ fr:
     displayFilter: Filtres ({count})
     mapPanel: Gérer la carte
     mapPanelTitle: Données
+    mapPanelNotVisible : non visible
     eventPanelTitle: Évènements
     eventPanel-help: Le panneau des événements affiche tous les événements liés aux zones temporaires. Ils sont affichés des plus récents aux plus anciens.
     mapPanelScientificObjects: Objets Scientifiques

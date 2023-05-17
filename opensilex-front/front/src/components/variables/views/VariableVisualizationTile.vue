@@ -56,19 +56,13 @@
             :title="variableUri.name"
             hide-footer
         >
-          <opensilex-DataVisuGraphic
-            v-if="isGraphicLoaded"
+          <opensilex-VisualisationGraphic
             id="graphic"
             ref="visuGraphic"
             :deviceType="false"
             :lType="true"
-            :lWidth="2"
-            class="DeviceVisualisationGraphic"
-            v-bind:class ="{
-              'DeviceVisualisationGraphic': false,
-              'DeviceVisualisationGraphicWithoutForm': true
-            }"
-          ></opensilex-DataVisuGraphic>
+            :lWidth="true"
+          ></opensilex-VisualisationGraphic>
         </b-modal>
 
       </template>
@@ -123,8 +117,8 @@ export default class VariableVisualizationTile extends Vue {
 
   variable: VariableDetailsDTO;
 
-  dataSeries: Array<DataSerieGetDTO>;
-  calculatedDataSeries: Array<DataSerieGetDTO>;
+  dataSeries: Array<DataSerieGetDTO> = [];
+  calculatedDataSeries: Array<DataSerieGetDTO> = [];
 
   medianSerie;
   lastMedianData: any;
@@ -263,7 +257,9 @@ export default class VariableVisualizationTile extends Vue {
   }
 
   showGraphic() {
-    this.loadAllData();
+    //this.loadAllData();
+    this.prepareGraphic();
+    this.graphicModal.show();
   }
 
   prepareGraphic() {

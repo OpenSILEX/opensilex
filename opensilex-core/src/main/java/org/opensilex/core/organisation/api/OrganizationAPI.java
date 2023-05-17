@@ -20,6 +20,7 @@ import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
+import org.opensilex.sparql.response.CreatedUriResponse;
 import org.opensilex.sparql.response.ResourceDagDTO;
 import org.opensilex.sparql.response.ResourceDagDTOBuilder;
 import org.opensilex.sparql.service.SPARQLService;
@@ -86,7 +87,7 @@ public class OrganizationAPI {
             model.setCreator(currentUser.getUri());
 
             model = dao.create(model);
-            return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
+            return new CreatedUriResponse(model.getUri()).getResponse();
 
         } catch (SPARQLAlreadyExistingUriException e) {
             return new ErrorResponse(Response.Status.CONFLICT, "Organisation already exists", e.getMessage()).getResponse();

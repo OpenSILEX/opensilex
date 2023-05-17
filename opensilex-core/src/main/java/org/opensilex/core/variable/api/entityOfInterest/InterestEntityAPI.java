@@ -21,6 +21,7 @@ import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.server.response.*;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
+import org.opensilex.sparql.response.CreatedUriResponse;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
@@ -96,7 +97,7 @@ public class InterestEntityAPI {
 
             dao.create(model);
             URI shortUri = new URI(SPARQLDeserializers.getShortURI(model.getUri().toString()));
-            return new ObjectUriResponse(Response.Status.CREATED,shortUri).getResponse();
+            return new CreatedUriResponse(shortUri).getResponse();
 
         } catch (SPARQLAlreadyExistingUriException duplicateUriException) {
             return new ErrorResponse(Response.Status.CONFLICT, "Entity of interest already exists", duplicateUriException.getMessage()).getResponse();

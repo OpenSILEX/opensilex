@@ -16,6 +16,7 @@ import org.opensilex.security.person.dal.PersonDAO;
 import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.ValidURI;
+import org.opensilex.sparql.response.CreatedUriResponse;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
@@ -105,7 +106,7 @@ public class PersonAPI {
                 account
         );
 
-        return new ObjectUriResponse(Response.Status.CREATED, person.getUri()).getResponse();
+        return new CreatedUriResponse(person.getUri()).getResponse();
     }
 
     /**

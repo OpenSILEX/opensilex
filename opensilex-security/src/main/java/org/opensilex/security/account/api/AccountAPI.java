@@ -10,7 +10,7 @@ import org.opensilex.security.person.dal.PersonDAO;
 import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.server.exceptions.ConflictException;
 import org.opensilex.server.exceptions.ForbiddenException;
-import org.opensilex.server.response.ObjectUriResponse;
+import org.opensilex.sparql.response.CreatedUriResponse;
 import org.opensilex.sparql.service.SPARQLService;
 
 import javax.inject.Inject;
@@ -90,7 +90,7 @@ public class AccountAPI {
             );
 
             sparql.commitTransaction();
-            return new ObjectUriResponse(Response.Status.CREATED, account.getUri()).getResponse();
+            return new CreatedUriResponse(account.getUri()).getResponse();
         } catch (Exception e) {
             sparql.rollbackTransaction();
             throw e;

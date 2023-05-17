@@ -12,9 +12,6 @@ import org.opensilex.core.germplasm.api.GermplasmGetAllDTO;
 import org.opensilex.core.germplasm.api.GermplasmSearchFilter;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
-import org.opensilex.core.germplasmGroup.api.GermplasmGroupCreationDTO;
-import org.opensilex.core.germplasmGroup.api.GermplasmGroupGetDTO;
-import org.opensilex.core.germplasmGroup.api.GermplasmGroupUpdateDTO;
 import org.opensilex.core.germplasmGroup.dal.GermplasmGroupDAO;
 import org.opensilex.core.germplasmGroup.dal.GermplasmGroupModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -28,6 +25,7 @@ import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
+import org.opensilex.sparql.response.CreatedUriResponse;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
@@ -89,7 +87,7 @@ public class GermplasmGroupApi {
 
             model = dao.create(model);
             URI shortUri = new URI(SPARQLDeserializers.getShortURI(model.getUri().toString()));
-            return new ObjectUriResponse(Response.Status.CREATED, shortUri).getResponse();
+            return new CreatedUriResponse(shortUri).getResponse();
 
         } catch (SPARQLAlreadyExistingUriException duplicateUriException) {
             return new ErrorResponse(Response.Status.CONFLICT, "Germplasm group already exists", duplicateUriException.getMessage()).getResponse();

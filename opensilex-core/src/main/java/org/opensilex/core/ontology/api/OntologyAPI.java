@@ -27,6 +27,7 @@ import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.ontology.dal.*;
 import org.opensilex.sparql.ontology.store.OntologyStore;
+import org.opensilex.sparql.response.CreatedUriResponse;
 import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.response.ResourceTreeDTO;
 import org.opensilex.sparql.response.ResourceTreeResponse;
@@ -241,12 +242,12 @@ public class OntologyAPI {
                 DatatypePropertyModel model = getDataTypePropertyModel(ontologyStore, dto);
                 dao.createDataProperty(model);
                 SPARQLModule.getOntologyStoreInstance().reload();
-                return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
+                return new CreatedUriResponse(model.getUri()).getResponse();
             } else {
                 ObjectPropertyModel model = getObjectPropertyModel(ontologyStore, dto);
                 dao.createObjectProperty(model);
                 SPARQLModule.getOntologyStoreInstance().reload();
-                return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
+                return new CreatedUriResponse(model.getUri()).getResponse();
             }
 
         } catch (SPARQLAlreadyExistingUriException e) {

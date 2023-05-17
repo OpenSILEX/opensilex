@@ -14,11 +14,11 @@ import org.opensilex.core.document.dal.DocumentDAO;
 import org.opensilex.core.document.dal.DocumentModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.exceptions.NotFoundException;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
@@ -26,6 +26,7 @@ import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
+import org.opensilex.sparql.response.CreatedUriResponse;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
@@ -140,7 +141,7 @@ public class DocumentAPI {
                 }
 
                 documentDAO.create(documentModel, file);
-                return new ObjectUriResponse(Response.Status.CREATED, documentModel.getUri()).getResponse();
+                return new CreatedUriResponse(documentModel.getUri()).getResponse();
 
             } catch (SPARQLAlreadyExistingUriException e) {
                 // Return error response 409 - CONFLICT if document URI already exists

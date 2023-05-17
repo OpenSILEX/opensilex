@@ -16,6 +16,7 @@ import org.opensilex.sparql.service.SPARQLService;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -35,6 +36,18 @@ public class CreatedUriResponse extends ObjectUriResponse {
     public CreatedUriResponse(URI uri) {
         super(Response.Status.CREATED, uri);
 
+        checkUnknownPrefix(uri);
+    }
+
+    public CreatedUriResponse(List<URI> uriList) {
+        super(Response.Status.CREATED, uriList);
+
+        for (URI uri : uriList) {
+            checkUnknownPrefix(uri);
+        }
+    }
+
+    private void checkUnknownPrefix(URI uri) {
         if (!SPARQLService.hasKnownPrefix(uri) && Objects.isNull(uri.getAuthority())) {
             addMetadataStatus(new StatusDTO(
                     String.format(UNKNOWN_PREFIX_WARNING, uri.getScheme()),

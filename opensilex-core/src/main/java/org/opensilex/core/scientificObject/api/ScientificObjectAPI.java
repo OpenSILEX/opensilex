@@ -52,6 +52,7 @@ import org.opensilex.sparql.csv.CsvImporter;
 import org.opensilex.sparql.csv.export.CsvExporter;
 import org.opensilex.sparql.csv.validation.CachedCsvImporter;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.response.CreatedUriResponse;
 import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
@@ -69,7 +70,7 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.*;
+import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
@@ -525,7 +526,7 @@ public class ScientificObjectAPI {
 
             sparql.commitTransaction();
 
-            return new ObjectUriResponse(Response.Status.CREATED, soURI).getResponse();
+            return new CreatedUriResponse(soURI).getResponse();
         } catch (MongoWriteException | CodecConfigurationException mongoException) {
             try {
                 sparql.rollbackTransaction(mongoException);

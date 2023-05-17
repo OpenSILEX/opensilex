@@ -7,6 +7,8 @@ class HttpResponse<T = any> {
 
 export default HttpResponse
 
+//@TODO The DTOs should probably be generated automatically instead of being manually written in this file
+
 export class PaginationDTO {
 
     constructor(public pageSize: number, public currentPage: number, public totalCount: number, public totalPages: number) {
@@ -15,7 +17,17 @@ export class PaginationDTO {
 
 export class StatusDTO {
 
-    constructor(public message: string, public messageType: string) {
+    constructor(public message: string, public level: StatusDTO.LevelEnum, public translationKey?: string, public translationValues?: {[x: string]: string}) {
+    }
+}
+
+export namespace StatusDTO {
+    export type LevelEnum = 'ERROR' | 'WARNING' | 'INFO' | 'DEBUG';
+    export const LevelEnum = {
+        ERROR: 'ERROR' as LevelEnum,
+        WARNING: 'WARNING' as LevelEnum,
+        INFO: 'INFO' as LevelEnum,
+        DEBUG: 'DEBUG' as LevelEnum
     }
 }
 

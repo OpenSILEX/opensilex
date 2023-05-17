@@ -169,6 +169,21 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         builder.addPrefixes(getPrefixMapping());
     }
 
+    /**
+     * Check whether the given URI uses a prefix (scheme) defined in the prefix mapping, or if it can be shortened to
+     * a prefixed URI using the mapping. This is done by comparing the short and the expanded forms of the URI :
+     * if they are identical, the URI prefix or namespace is not known in the mapping.
+     *
+     * @param uri The URI to check
+     * @return whether `uri` uses a known prefix or namespace
+     */
+    public static boolean hasKnownPrefix(URI uri) {
+        return !Objects.equals(
+                getPrefixMapping().expandPrefix(uri.toString()),
+                getPrefixMapping().shortForm(uri.toString())
+        );
+    }
+
     public static void clearPrefixes() {
         prefixes = getDefaultPrefixes();
     }

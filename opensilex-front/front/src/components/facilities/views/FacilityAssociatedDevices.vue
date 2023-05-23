@@ -349,8 +349,8 @@ fr:
   FacilityAssociatedDevices:
     variable-group-selector: Groupes de variables environnementales
     no-variable-group-selected: Toutes les variables environnementales
-    no-data: Aucunes données trouvées pour cette periode
-    no-variable: Aucunes variables environnementales trouvées
+    no-data: Aucune donnée trouvée pour cette periode
+    no-variable: Aucune variable environnementale trouvée
     start-date-help: Date de début des données affichées
     end-date-help: Date de fin des données affichées
     variable-group-help: Les groupes de variables associées à l'infrastructure. Vous pouvez associer des groupes dans le formulaire de modification de l'infrastructure.

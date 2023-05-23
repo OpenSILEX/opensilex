@@ -9,6 +9,7 @@
 
         <opensilex-TextView v-if="isNoDataFound"
                             id="no-data-text"
+                            v-on:click.native="showGraphic"
             :label="$t('FacilityAssociatedDevices.no-data')">
         </opensilex-TextView>
 
@@ -56,19 +57,49 @@
             :title="variableUri.name"
             hide-footer
         >
-          <opensilex-DataVisuGraphic
-            v-if="isGraphicLoaded"
-            id="graphic"
-            ref="visuGraphic"
-            :deviceType="false"
-            :lType="true"
-            :lWidth="2"
-            class="DeviceVisualisationGraphic"
-            v-bind:class ="{
-              'DeviceVisualisationGraphic': false,
-              'DeviceVisualisationGraphicWithoutForm': true
-            }"
-          ></opensilex-DataVisuGraphic>
+          <div class="text-right card-header-right">
+            <!-- Period badge-->
+            <b-badge v-if="period" pill class="greenThemeColor">
+              <opensilex-Icon icon="fa#hourglass-half"/> {{ $t("Histogram.period." + period) }}
+            </b-badge>
+
+            <!-- Periods & Devices selection button -->
+            <opensilex-Button
+                label=Histogram.settings
+                class="settingsButton"
+                icon="fa#cog"
+                @click="histogramSettings.show()"
+                @update="onSettingsChanged"
+            ></opensilex-Button>
+          </div>
+
+          <div class="row justify-content-center">
+            <opensilex-TextView v-if="!isDataForGraph && isGraphicLoaded"
+                                id="no-data-text"
+                                :label="$t('FacilityAssociatedDevices.no-data')">
+            </opensilex-TextView>
+          </div>
+
+          <!-- Graphic -->
+          <div class="graphicVisualisationContainer">
+            <div class="d-flex justify-content-center mb-3" v-if="!isGraphicLoaded">
+              <b-spinner label="Loading..."></b-spinner>
+            </div>
+            <opensilex-VisualisationGraphic
+                v-if="isGraphicLoaded"
+              id="graphic"
+              ref="visuGraphic"
+              :deviceType="false"
+              :lType="true"
+              :lWidth="true"
+            ></opensilex-VisualisationGraphic>
+          </div>
+
+          <!-- Modal settings component-->
+          <opensilex-FacilityHistogramSettings
+              ref="histogramSettings"
+              @update="onSettingsChanged"
+          ></opensilex-FacilityHistogramSettings>
         </b-modal>
 
       </template>
@@ -104,16 +135,25 @@ export default class VariableVisualizationTile extends Vue {
     return (this.calculatedDataSeries.length > 0);
   }
 
+  get isDataForGraph() {
+    return !(this.dataSeries.length ===0 && this.calculatedDataSeries.length === 0)
+  }
+
   @Prop()
   variableUri: NamedResourceDTOVariableModel;
 
   @Prop()
   target: string;
 
+  period: string = "week";
+
   @Prop()
-  startDate: string;
+  defaultStartDate: string;
   @Prop()
-  endDate: string;
+  defaultEndDate: string;
+
+  graphicStartDate: string;
+  graphicEndDate: string;
 
   @Watch('startDate')
   @Watch('endDate')
@@ -123,15 +163,16 @@ export default class VariableVisualizationTile extends Vue {
 
   variable: VariableDetailsDTO;
 
-  dataSeries: Array<DataSerieGetDTO>;
-  calculatedDataSeries: Array<DataSerieGetDTO>;
+  dataSeries: Array<DataSerieGetDTO> = [];
+  calculatedDataSeries: Array<DataSerieGetDTO> = [];
 
-  medianSerie;
+  medianSerie = [];
   lastMedianData: any;
 
   isNoDataFound: boolean = false;
   isDataLoaded: boolean = false;
   isGraphicLoaded: boolean = true;
+  isLoadAllProvToggled: boolean = false;
 
   variablesService: VariablesService;
   devicesService: DevicesService;
@@ -139,6 +180,7 @@ export default class VariableVisualizationTile extends Vue {
 
   @Ref("graphic-modal") readonly graphicModal!: any;
   @Ref("visuGraphic") readonly visuGraphic!: any;
+  @Ref("histogramSettings") readonly histogramSettings!: any;
 
   created() {
     this.$opensilex.hideLoader();
@@ -151,6 +193,8 @@ export default class VariableVisualizationTile extends Vue {
     this.dataService = this.$opensilex.getService<DataService>(
         "opensilex-core.DataService"
     );
+
+    this.initDatePeriod();
     this.refresh();
   }
 
@@ -177,15 +221,31 @@ export default class VariableVisualizationTile extends Vue {
     )
   }
 
+  initDatePeriod() {
+    this.graphicStartDate = this.defaultStartDate;
+    this.graphicEndDate = this.defaultEndDate;
+  }
+
+  onSettingsChanged(period: string, begin: string, end: string, selectAll: boolean) {
+    this.graphicStartDate = begin;
+    this.graphicEndDate = end;
+    this.period = period;
+    this.isLoadAllProvToggled = selectAll;
+    this.loadAllData();
+  }
+
   loadSimplifiedData() {
     this.isNoDataFound = false;
     this.isDataLoaded = false;
+    this.$opensilex.disableLoader();
+
+    console.debug(this.defaultStartDate + " -> " + this.defaultEndDate);
 
     this.dataService.getDataSeriesByFacility(
         this.variableUri.uri,
         this.target,
-        (this.startDate != "") ? this.startDate : undefined,
-        (this.endDate != "") ? this.endDate : undefined,
+        (this.defaultStartDate != "") ? this.defaultStartDate : undefined,
+        (this.defaultEndDate != "") ? this.defaultEndDate : undefined,
         true,
         ["date=asc"]
     )
@@ -203,6 +263,9 @@ export default class VariableVisualizationTile extends Vue {
 
                 this.calculatedDataSeries = seriesDTO.calculated_series;
 
+                this.medianSerie = seriesDTO.calculated_series[0].data
+                    .sort((a, b) => (a.date > b.date) ? 1 : -1);
+
                 this.updateLastMedianData();
                 this.isDataLoaded = true;
               }
@@ -211,12 +274,15 @@ export default class VariableVisualizationTile extends Vue {
   }
 
   loadAllData() {
+    this.isGraphicLoaded = false;
+    this.$opensilex.disableLoader();
+
     this.dataService.getDataSeriesByFacility(
         this.variableUri.uri,
         this.target,
-        (this.startDate != "") ? this.startDate : undefined,
-        (this.endDate != "") ? this.endDate : undefined,
-        false,
+        (this.graphicStartDate != "") ? this.graphicStartDate : undefined,
+        (this.graphicEndDate != "") ? this.graphicEndDate : undefined,
+        !this.isLoadAllProvToggled,
         ["date=asc"]
     )
         .then(
@@ -229,31 +295,20 @@ export default class VariableVisualizationTile extends Vue {
                 this.dataSeries = seriesDTO.data_series;
                 this.calculatedDataSeries = seriesDTO.calculated_series;
 
-                if (!this.dataSeries.length && !this.calculatedDataSeries.length) {
-                  this.isNoDataFound = true;
-                  return;
-                }
-
-                this.prepareGraphic();
-                this.graphicModal.show();
+                this.showGraphic();
               }
             }
         );
   }
 
   updateLastMedianData() {
-    let data;
-    if (this.calculatedDataSeries.length === 0) {
-      data = this.dataSeries[0].data;
+    if (this.medianSerie.length === 0) {
+      return;
     }
-    else {
-      data = this.calculatedDataSeries[0].data;
-    }
-    this.medianSerie = data.sort((a, b) => (a.date > b.date) ? 1 : -1);
 
     this.lastMedianData = {
-      value: data[data.length - 1].value,
-      date: data[data.length - 1].date
+      value: this.medianSerie[this.medianSerie.length - 1].value,
+      date: this.medianSerie[this.medianSerie.length - 1].date
     };
     this.lastMedianData.value = this.lastMedianData.value.toPrecision(4) + " " + this.variable.unit.symbol;
   }
@@ -263,10 +318,14 @@ export default class VariableVisualizationTile extends Vue {
   }
 
   showGraphic() {
-    this.loadAllData();
+    this.prepareGraphic();
+    this.isGraphicLoaded = true;
+    this.graphicModal.show();
   }
 
   prepareGraphic() {
+      console.debug(this.dataSeries.length + " " + this.calculatedDataSeries.length);
+
       this.$opensilex.disableLoader();
       var promises = [];
       let promise;
@@ -341,14 +400,15 @@ export default class VariableVisualizationTile extends Vue {
 
 <style scoped lang="scss">
 
-.DeviceVisualisationGraphic {
-  min-width: calc(100% - 450px);
-  max-width: calc(100vw - 380px);
+.settingsButton {
+  color: #00A28C;
+  font-size: 1.2em;
+  border: none;
+  background: none;
 }
-
-.DeviceVisualisationGraphicWithoutForm{
-  min-width: 100%;
-  max-width: 100vw;
+.settingsButton:hover {
+  background-color: #00A28C;
+  color: #f1f1f1
 }
 </style>
 

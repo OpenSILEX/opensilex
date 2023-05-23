@@ -122,6 +122,11 @@ components["opensilex-FacilityAssociatedDevices"] = FacilityAssociatedDevices;
 import FacilityListView from "./facilities/FacilityListView.vue";
 components["opensilex-FacilityListView"] = FacilityListView;
 
+import DatePeriodPicker from "./facilities/DatePeriodPicker.vue";
+components["opensilex-DatePeriodPicker"] = DatePeriodPicker;
+import FacilityHistogramSettings from "./facilities/FacilityHistogramSettings.vue";
+components["opensilex-FacilityHistogramSettings"] = FacilityHistogramSettings;
+
 
 // Factors
 import FactorView from './experiments/factors/FactorView.vue';

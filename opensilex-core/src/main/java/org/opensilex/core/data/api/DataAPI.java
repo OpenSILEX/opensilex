@@ -2094,7 +2094,7 @@ public class DataAPI {
     }
 
     /**
-     * Create a DataSimpleProvenanceGetDTO with uri and name from a data provenance model.
+     * Create a DataSimpleProvenanceGetDTO with uri, name and rdf type from a data provenance model.
      * @detail
      * Analyze the provenance from the data model and do as follows:
      *  if there is one agent (device or operator), retreive the uri and name of the agent
@@ -2105,7 +2105,7 @@ public class DataAPI {
      * @throws NoSQLInvalidURIException
      */
     private DataSimpleProvenanceGetDTO createDataSimpleProvenance(DataProvenanceModel dataProvModel)
-            throws SPARQLException, NoSQLInvalidURIException {
+            throws Exception {
         DataSimpleProvenanceGetDTO dto = new DataSimpleProvenanceGetDTO();
 
         List<ProvEntityModel> provEntityList = dataProvModel.getProvWasAssociatedWith();
@@ -2140,7 +2140,7 @@ public class DataAPI {
             @ApiParam(value = "target URI", example = "http://example.com/", required = true) @QueryParam("target") @NotNull URI facilityUri,
             @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
             @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
-            @ApiParam(value = "Retreive calculated series only", example = "0") @QueryParam("calculated_only") Boolean calculatedOnly,
+            @ApiParam(value = "Retreive calculated series only", example = "false") @QueryParam("calculated_only") Boolean calculatedOnly,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=asc") @QueryParam("order_by") List<OrderBy> orderByList
     ) throws Exception {
 
@@ -2199,6 +2199,13 @@ public class DataAPI {
             DataSerieGetDTO dataSerie = new DataSerieGetDTO(provenance, medianSerie);
             dataSeriesDTOs.add(dataSerie);
         }
+
+        List<DataSimpleProvenanceGetDTO> provenances = dataSeriesDTOs
+                .stream()
+                .map((serie) -> serie.getProvenance())
+                .collect(Collectors.toList());
+
+        dto.setProvenances(provenances);
 
         if (!calculatedOnly) {
             dto.setDataSeries(dataSeriesDTOs);

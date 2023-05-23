@@ -10,7 +10,7 @@
         <!-- day -->
         <label class="btn periodBtn btn-toggle greenThemeColor"
           :class="{
-            active: selectedPeriod == 'day'
+            active: selectedPeriod === 'day'
           }"
         >
           <input
@@ -27,7 +27,7 @@
         <!-- week -->
         <label class="btn periodBtn btn-toggle greenThemeColor"
           :class="{
-            active: selectedPeriod == 'week'
+            active: selectedPeriod === 'week'
           }"
         >
           <input
@@ -43,7 +43,7 @@
         <!-- month -->
         <label class="btn periodBtn btn-toggle greenThemeColor"
           :class="{
-            active: selectedPeriod == 'month'
+            active: selectedPeriod === 'month'
           }"
         >
           <input
@@ -58,7 +58,7 @@
         <!-- year -->
         <label class="btn periodBtn btn-toggle greenThemeColor"
                :class="{
-            active: selectedPeriod == 'year'
+            active: selectedPeriod === 'year'
           }"
         >
           <input
@@ -127,7 +127,7 @@ export default class DatePeriodPicker extends Vue {
       this.startDate.setMonth(this.endDate.getMonth() - 1);
     }
     else if (this.selectedPeriod === "year") {
-      this.startDate.setMonth(this.endDate.getMonth() - 6);
+      this.startDate.setMonth(this.endDate.getMonth() - 12);
     }
   }
 

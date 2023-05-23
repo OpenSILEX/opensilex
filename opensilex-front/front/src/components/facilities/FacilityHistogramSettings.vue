@@ -86,14 +86,6 @@ export default class FacilityHistogramSettings extends Vue {
 
   selectAll : Boolean = false;
 
-  created() {
-    this.endDate = new Date().toISOString();
-    let begin = new Date();
-    begin.setDate(begin.getDate() - 7);
-    this.startDate = begin.toISOString();
-    console.debug(this.startDate + "->" + this.endDate);
-  }
-
   updateDatePeriod(begin: Date, end: Date) {
     this.startDate = begin.toISOString();
     this.endDate = end.toISOString();

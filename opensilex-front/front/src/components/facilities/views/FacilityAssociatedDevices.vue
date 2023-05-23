@@ -33,18 +33,28 @@
           </div>
 
           <div class="col-sm-6">
-            <div class="row justify-content-end">
-                <opensilex-DateTimeRangePickerForm
-                    :start.sync="startDate"
-                    :end.sync="endDate"
-                    labelStart="component.common.begin"
-                    labelEnd="component.common.end"
-                    helpMessageStart="FacilityAssociatedDevices.start-date-help"
-                    helpMessageEnd="FacilityAssociatedDevices.end-date-help"
-                    name="dateTimePeriod"
-                >
-                </opensilex-DateTimeRangePickerForm>
+            <!--
+            <opensilex-DatePeriodPicker
+                ref="periodPicker"
+                :period.sync="period"
+                @update="updateDatePeriod"
+            >
+            </opensilex-DatePeriodPicker>
+            -->
+              <!--
+              <div class="row justify-content-end">
+                  <opensilex-DateTimeRangePickerForm
+                      :start.sync="startDate"
+                      :end.sync="endDate"
+                      labelStart="component.common.begin"
+                      labelEnd="component.common.end"
+                      helpMessageStart="FacilityAssociatedDevices.start-date-help"
+                      helpMessageEnd="FacilityAssociatedDevices.end-date-help"
+                      name="dateTimePeriod"
+                  >
+                  </opensilex-DateTimeRangePickerForm>
               </div>
+              -->
           </div>
         </div>
       </template>
@@ -82,8 +92,8 @@
           <opensilex-VariableVisualizationTile
               class="tile-content"
               v-bind="item.content"
-              :startDate.sync="startDate"
-              :endDate.sync="endDate"
+              :defaultStartDate="startDate"
+              :defaultEndDate="endDate"
           >
           </opensilex-VariableVisualizationTile>
         </GridItem>
@@ -92,7 +102,7 @@
 </template>
 
 <script lang="ts">
-import { Component } from "vue-property-decorator";
+import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
 import { FacilityGetDTO } from "opensilex-core/index";
@@ -109,15 +119,16 @@ import {VariablesGroupGetDTO} from "opensilex-core/model/variablesGroupGetDTO";
 export default class FacilityAssociatedDevices extends Vue {
   $opensilex: OpenSilexVuePlugin;
 
+  /// GridLayout system
   NB_COL = 4;
+  layout = [];
 
   uri: string = null;
   selected: FacilityGetDTO = null;
   usedVariables: NamedResourceDTOVariableModel[] = [];
   selectedVariableGroup = null;
-  layout = [];
-  startDate: string = new Date(new Date().getDate() - 7).toISOString();
-  endDate: string = new Date().toISOString();
+  startDate: string;
+  endDate: string;
 
   isNoVariableFound: boolean = false;
   isItemsLoaded: boolean = false;
@@ -126,6 +137,9 @@ export default class FacilityAssociatedDevices extends Vue {
   organizationService: OrganizationsService;
   variablesService: VariablesService;
   dataService: DataService;
+
+  @Ref("periodPicker") readonly periodPicker!: any;
+
 
   get user() {
     return this.$store.state.user;
@@ -151,7 +165,7 @@ export default class FacilityAssociatedDevices extends Vue {
         "opensilex-core.DataService"
     );
 
-    this.initPeriod();
+    this.initDatePeriod();
     this.refresh();
   }
 
@@ -165,11 +179,12 @@ export default class FacilityAssociatedDevices extends Vue {
         });
   }
 
-  initPeriod() {
+  initDatePeriod() {
     this.endDate = new Date().toISOString();
-    var aWeekBefore: Date = new Date();
-    aWeekBefore.setDate(aWeekBefore.getDate() - 7);
-    this.startDate = aWeekBefore.toISOString();
+    let begin = new Date();
+    begin.setDate(begin.getDate() - 7);
+    this.startDate = begin.toISOString();
+    console.debug(this.startDate + "->" + this.endDate);
   }
 
   searchVariableGroups() {
@@ -304,6 +319,18 @@ export default class FacilityAssociatedDevices extends Vue {
   font-weight: bold;
 }
 
+.periodBtn{
+  border-color:#018371;
+  background: #fff;
+  color: #018371
+}
+
+.active {
+  background-color: #00A38D;
+  border-color:#00A38D;
+  color: #fff;
+}
+
 </style>
 
 <i18n>
@@ -311,7 +338,7 @@ en:
   FacilityAssociatedDevices:
     variable-group-selector: Environmental variable groups
     no-variable-group-selected: All environnemental variables
-    no-data: No data found
+    no-data: No data found for this period
     no-variable: No environnemental variable found
     start-date-help: Start date of data displayed
     end-date-help: End date of data displayed
@@ -322,7 +349,7 @@ fr:
   FacilityAssociatedDevices:
     variable-group-selector: Groupes de variables environnementales
     no-variable-group-selected: Toutes les variables environnementales
-    no-data: Aucunes données trouvées
+    no-data: Aucunes données trouvées pour cette periode
     no-variable: Aucunes variables environnementales trouvées
     start-date-help: Date de début des données affichées
     end-date-help: Date de fin des données affichées

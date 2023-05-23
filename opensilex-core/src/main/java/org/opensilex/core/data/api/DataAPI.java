@@ -2043,6 +2043,7 @@ public class DataAPI {
 
         /// Search data
 
+        Instant start = Instant.now();
         ListWithPagination<DataModel> result = dao.search(
                 user,
                 null,
@@ -2061,6 +2062,9 @@ public class DataAPI {
                 0);
 
         List<DataModel> dataModels = result.getList();
+        Instant end = Instant.now();
+        LOGGER.debug(dataModels.size() + " data retrieved from mongo : " + Long.toString(Duration.between(start, end).toMillis()) + " milliseconds elapsed");
+
         List<DataSimpleGetDTO> dataSimpleGetDTOs = dataModels
                 .stream()
                 .map((d) -> DataSimpleGetDTO.getDtoFromModel(d))
@@ -2076,7 +2080,11 @@ public class DataAPI {
         List<DataSerieGetDTO> dataSeriesDTOs = new ArrayList<>();
         List<DataSimpleGetDTO> medians = new ArrayList<>();
 
+        start = Instant.now();
         provenancesMap = dataModels.stream().collect(Collectors.groupingBy(DataModel::getProvenance));
+        end = Instant.now();
+        LOGGER.debug("Group by provenances done in " + Long.toString(Duration.between(start, end).toMillis()) + " milliseconds");
+
         for (Map.Entry<DataProvenanceModel, List<DataModel>> entryProv : provenancesMap.entrySet()) {
 
             List<DataSimpleGetDTO> data = entryProv.getValue()
@@ -2084,7 +2092,11 @@ public class DataAPI {
                     .map((d) -> DataSimpleGetDTO.getDtoFromModel(d))
                     .collect(Collectors.toList());
 
+            start = Instant.now();
             List<DataSimpleGetDTO> medianSerie = computeMedianPerHour(data);
+            end = Instant.now();
+            LOGGER.debug("compute median serie done in " + Long.toString(Duration.between(start, end).toMillis()) + " milliseconds");
+
             medians.addAll(medianSerie);
 
             DataSimpleProvenanceGetDTO provenance = createDataSimpleProvenance(entryProv.getKey());

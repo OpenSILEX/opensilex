@@ -180,7 +180,7 @@ public class GermplasmAPI {
         @ApiResponse(code = 404, message = "Germplasm not found", response = ErrorDTO.class)
     })
     public Response getGermplasm(
-            @ApiParam(value = "germplasm URI", example = GERMPLASM_EXAMPLE_SPECIES, required = true) @PathParam("uri") @NotNull URI uri
+            @ApiParam(value = "germplasm URI", example = GERMPLASM_EXAMPLE_SPECIES, required = true) @PathParam("uri") @ValidURI @NotNull URI uri
     ) throws Exception {
         // Get germplasm from DAO by URI
         GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);

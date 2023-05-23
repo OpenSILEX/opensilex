@@ -774,16 +774,15 @@ public class ScientificObjectAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response exportCSV(
-            @ApiParam("CSV export configuration") @Valid ScientificObjectSearchDTO dto
+            @ApiParam("CSV export configuration") @Valid ScientificObjectExportDTO searchFilter
     ) throws Exception {
 
-        validateContextAccess(dto.getExperiment());
+        validateContextAccess(searchFilter.getExperiment());
 
         ScientificObjectDAO soDao = new ScientificObjectDAO(sparql, nosql);
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
         MoveEventDAO moveDAO = new MoveEventDAO(sparql, nosql);
 
-        ScientificObjectSearchFilter searchFilter = dto.toModel();
         searchFilter.setLang(currentUser.getLanguage());
 
         // search objects according filtering and selected uris, fetch os factors
@@ -791,24 +790,22 @@ public class ScientificObjectAPI {
 
         // compute URI list in order to call getGeometryByUris()
         List<URI> objectsUris;
-        if (!CollectionUtils.isEmpty(dto.getUris())) {
-            objectsUris = dto.getUris();
+        if (!CollectionUtils.isEmpty(searchFilter.getUris())) {
+            objectsUris = searchFilter.getUris();
         } else {
             objectsUris = objects.getList().stream().map(ScientificObjectModel::getUri).collect(Collectors.toList());
         }
 
         // get geometry of objects
-        HashMap<String, Geometry> geospatialMap = geoDAO.getGeometryByUris(dto.getExperiment(), objectsUris);
+        HashMap<String, Geometry> geospatialMap = geoDAO.getGeometryByUris(searchFilter.getExperiment(), objectsUris);
 
         // get last location of objects
         Map<URI, URI> arrivalFacilityByOs = moveDAO.getLastLocations(objectsUris.stream(), objects.getList().size());
 
-        boolean hasExperiment = dto.getExperiment() != null;
-
         CsvExporter<ScientificObjectModel> csvExporter = new ScientificObjectCsvExporter(
                 sparql,
                 objects.getList(),
-                dto.getExperiment(),
+                searchFilter.getExperiment(),
                 currentUser.getLanguage(),
                 arrivalFacilityByOs,
                 geospatialMap

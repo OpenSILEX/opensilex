@@ -1,5 +1,8 @@
 package org.opensilex.core.scientificObject.dal;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.service.SparqlSearchFilter;
 
 import java.net.URI;
@@ -8,31 +11,52 @@ import java.util.List;
 
 public class ScientificObjectSearchFilter extends SparqlSearchFilter {
 
+    @ValidURI
+    @JsonProperty("uris")
     protected List<URI> uris;
 
+
+    @ValidURI
+    @JsonProperty("excluded_uris")
     protected List<URI> excludedUris;
 
+    @ValidURI
+    @JsonProperty("experiment")
     protected URI experiment;
 
+    @ValidURI
+    @JsonProperty("rdf_types")
     protected List<URI> rdfTypes;
 
+    @JsonProperty("name")
     protected String pattern;
 
+    @ValidURI
+    @JsonProperty("parent")
     protected URI parentURI;
 
     /**
      * Flag which indicate if only OS with no parent must be retrieved
      */
+    @JsonIgnore // Ignore this field inside API documentation
     protected Boolean onlyFetchOsWithNoParent;
 
+    @ValidURI
+    @JsonProperty("germplasm")
     protected URI germplasm;
 
+    @ValidURI
+    @JsonProperty("factor_levels")
     protected List<URI> factorLevels;
 
+    @ValidURI
+    @JsonProperty("facility")
     protected URI facility;
 
+    @JsonProperty("existence_date")
     protected LocalDate existenceDate;
 
+    @JsonProperty("creation_date")
     protected LocalDate creationDate;
 
     public List<URI> getUris() {

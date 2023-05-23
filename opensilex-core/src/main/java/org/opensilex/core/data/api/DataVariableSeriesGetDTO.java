@@ -21,7 +21,7 @@ import java.util.List;
  * @author brice maussang
  */
 @JsonPropertyOrder({
-        "variable", "data_series", "calculated_series"
+        "variable", "provenances", "data_series", "calculated_series"
 })
 public class DataVariableSeriesGetDTO {
 
@@ -29,6 +29,10 @@ public class DataVariableSeriesGetDTO {
     @Required
     @JsonProperty("variable")
     private VariableDetailsDTO variable;
+
+    @Valid
+    @JsonProperty("provenances")
+    private List<DataSimpleProvenanceGetDTO> provenances;
 
     @Valid
     @JsonProperty("data_series")
@@ -57,6 +61,14 @@ public class DataVariableSeriesGetDTO {
 
     public void setVariable(VariableDetailsDTO variable) {
         this.variable = variable;
+    }
+
+    public List<DataSimpleProvenanceGetDTO> getProvenances() {
+        return provenances;
+    }
+
+    public void setProvenances(List<DataSimpleProvenanceGetDTO> provenances) {
+        this.provenances = provenances;
     }
 
     public List<DataSerieGetDTO> getDataSeries() {

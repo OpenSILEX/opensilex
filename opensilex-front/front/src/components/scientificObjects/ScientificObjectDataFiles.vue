@@ -121,7 +121,8 @@
             ref="datafilesList"
             :filter="filter"
             class="datafilesList"
-            @redirectToDetail="redirectToDetail">
+            @redirectToDetail="redirectToDetail"
+            :hideTarget= "true">
           </opensilex-DataFilesList>
         </div>
       </div>

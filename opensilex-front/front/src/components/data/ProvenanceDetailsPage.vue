@@ -90,7 +90,7 @@
               ></opensilex-StringView>
 
               <opensilex-UriView
-                v-if="provenance.prov_activity != null && provenance.prov_activity.length>0"
+                v-if="provenance.prov_activity != null && provenance.prov_activity.length>0 && provenance.prov_activity[0].uri != null"
                 title="ProvenanceDetailsPage.activity_external_link"
                 :value="provenance.prov_activity[0].uri"
                 :uri="provenance.prov_activity[0].uri"

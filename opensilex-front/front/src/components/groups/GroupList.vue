@@ -14,7 +14,7 @@
           :uri="data.item.uri"
           :value="data.item.name"
           :noExternalLink="true"
-          @click="data.toggleDetails()"
+          :isClickable="false"
         ></opensilex-UriLink>
       </template>
 
@@ -59,7 +59,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Ref } from "vue-property-decorator";
+import { Component, Ref, Prop } from "vue-property-decorator";
 import Vue from "vue";
 
 @Component

@@ -154,7 +154,6 @@
                             v-if="data.item.rdf_type_name"
                             :uri="data.item.uri"
                             :value="data.item.rdf_type_name"
-                            @click="showEventView(data.item)"
                         ></opensilex-UriLink>
                     </template>
 
@@ -184,15 +183,22 @@
                     <template v-slot:cell(actions)="{data}">
                         <b-button-group size="sm">
 
+                            <opensilex-DetailButton
+                                v-if="user.hasCredential(modificationCredentialId)"
+                                @click="showEventView(data.item)"
+                                label="component.events.details"
+                                :small="true"
+                            ></opensilex-DetailButton>
                             <opensilex-EditButton
                                 v-if="user.hasCredential(modificationCredentialId)"
                                 @click="editEvent(data.item.uri,data.item.rdf_type)"
+                                label="component.common.list.buttons.update"
                                 :small="true"
                             ></opensilex-EditButton>
                             <opensilex-DeleteButton
                                 v-if="user.hasCredential(deleteCredentialId)"
                                 @click="deleteEvent(data.item.uri)"
-                                label="EventForm.delete"
+                                label="component.common.list.buttons.delete"
                                 :small="true"
                             ></opensilex-DeleteButton>
                         </b-button-group>

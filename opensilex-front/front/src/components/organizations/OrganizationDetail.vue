@@ -36,9 +36,6 @@
         <opensilex-UriView
           :uri="selected.uri"
           :value="selected.uri"
-          :to="{
-            path: '/infrastructure/details/' + encodeURIComponent(selected.uri),
-          }"
         ></opensilex-UriView>
         <!-- Name -->
         <opensilex-StringView

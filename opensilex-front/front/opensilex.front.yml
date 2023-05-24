@@ -14,7 +14,7 @@ menu:
           component: opensilex-OrganizationView
           credentials:
             - organization-access
-          icon: ik#ik-globe
+          icon: fa#fa-sitemap
           title: component.menu.infrastructures
           description: InfrastructureView.description
       - id: projects

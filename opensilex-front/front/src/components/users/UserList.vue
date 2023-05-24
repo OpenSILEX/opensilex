@@ -19,7 +19,7 @@
           :uri="data.item.uri"
           :value="getIdentifier(data.item)"
           :noExternalLink="true"
-          @click="data.toggleDetails()"
+          :isClickable="false"
         ></opensilex-UriLink>
       </template>
 
@@ -79,7 +79,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Ref } from "vue-property-decorator";
+import { Component, Ref, Prop } from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
 import { SecurityService } from "opensilex-security/index";
@@ -93,6 +93,7 @@ export default class UserList extends Vue {
   service: SecurityService;
   $store: any;
   $route: any;
+
   fields = [
     {
       key: "identifier",

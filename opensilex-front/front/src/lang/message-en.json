@@ -408,6 +408,9 @@
                 }
             }
         },
+        "events": {
+            "details": "View event details"
+        },
         "sharedResourceInstances": {
             "selector-placeholder":"Select a source",
             "label": "Source",

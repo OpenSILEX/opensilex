@@ -1,5 +1,6 @@
 package org.opensilex.core.scientificObject.dal;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.service.SparqlSearchFilter;
@@ -37,6 +38,7 @@ public class ScientificObjectSearchFilter extends SparqlSearchFilter {
     /**
      * Flag which indicate if only OS with no parent must be retrieved
      */
+    @JsonIgnore // Ignore this field inside API documentation
     protected Boolean onlyFetchOsWithNoParent;
 
     @ValidURI

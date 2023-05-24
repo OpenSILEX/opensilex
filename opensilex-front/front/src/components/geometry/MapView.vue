@@ -72,6 +72,16 @@
         ref="exportShapeModalList"
         @onValidate="downloadOSFeatures"
     ></opensilex-ExportShapeModalList>
+    <!-- chart modal -->
+    <b-modal id="modal-chart" size="xl" hide-footer>
+      <template #modal-title>
+        <i class="ik ik-search mr-1"></i>
+        {{ $t('component.project.filter-description') }}
+      </template>
+      <opensilex-ExperimentDataVisualisationView
+        :soFilter="soFilter"
+      ></opensilex-ExperimentDataVisualisationView>
+    </b-modal>
 
 <!--------------------------- TOOLS BUTTONS ------------------------------->
     <div v-if="!editingMode" id="selected" class="d-flex">
@@ -117,6 +127,13 @@
           icon="fa#stopwatch"
           label="MapView.dateRange"
           @click="handleDateRangeStatus"
+        ></opensilex-Button>
+        <!-- chart button -->
+        <opensilex-Button
+            icon="fa#chart-area"
+            label="MapView.chart"
+            @click="showChart"
+            :class="selectedOS.length === 0 || selectedOS.length > 15 ? 'disabled' : ''"
         ></opensilex-Button>
         <div>
           <br>
@@ -698,7 +715,7 @@ import { platformModifierKeyOnly } from "ol/events/condition";
 import * as olExt from "vuelayers/lib/ol-ext";
 import GeoJSONFeature from "vuelayers/src/ol-ext/format";
 let shpwrite = require("shp-write");
-import {AreaGetDTO, PositionsService,DevicesService, ExperimentsService, ScientificObjectsService,EventsService, ExperimentGetDTO, AreaService, ResourceTreeDTO, ScientificObjectDetailDTO, ScientificObjectNodeDTO, DeviceGetDTO, OntologyService, DataService, DataGetDTO, TargetPositionCreationDTO} from "opensilex-core/index";
+import {AreaGetDTO, PositionsService,DevicesService, ExperimentsService, ScientificObjectsService,EventsService, ExperimentGetDTO, AreaService, ResourceTreeDTO, ScientificObjectDetailDTO, ScientificObjectNodeDTO, DeviceGetDTO, OntologyService, DataService, TargetPositionCreationDTO} from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 import { transformExtent } from "vuelayers/src/ol-ext/proj";
 import { defaults, ScaleLine } from "ol/control";
@@ -711,8 +728,19 @@ import { Store } from 'vuex';
 import VueI18n from "vue-i18n";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {stringify} from "wkt";
+import ExperimentDataVisualisation from "../experiments/ExperimentDataVisualisation.vue";
 
-@Component
+//TODO: 1- Change title + icon?
+//TODO: 2- Modal size
+//TODO: 3- show selected OS in filter
+//TODO: 5- reciprocité sélection OS??
+//TODO: 8- close menu panel when modal open
+//TODO: 6- add instruction - only selected OS limited to 15
+//TODO: 7- Change size pop-up 1 selected
+
+@Component({
+  components: {ExperimentDataVisualisation}
+})
 export default class MapView extends Vue {
   @Ref("JqxRangeSelector") readonly rangeSelector: any;
   @Ref("mapView") readonly mapView!: any;
@@ -760,6 +788,16 @@ export default class MapView extends Vue {
   private displayFilters: boolean = true;
   private devices: any = this.initDevices();
   private displayDevices: boolean = true;
+  soFilter:any = {
+    name: "",
+    experiment: undefined,
+    germplasm: undefined,
+    factorLevels: [],
+    types: [],
+    existenceDate: undefined,
+    creationDate: undefined,
+  };
+  selectedOS: any[] = [];
 
   ///////////// FEATURES DATA ////////////
   private endReceipt: boolean = false;
@@ -883,6 +921,15 @@ export default class MapView extends Vue {
 
     this.retrievesNameOfType();
     this.recoveryScientificObjects();
+    this.soFilter = {
+        name: "",
+        experiment: this.experiment,
+        germplasm: undefined,
+        factorLevels: [],
+        types: [],
+        existenceDate: undefined,
+        creationDate: undefined,
+    };
   }
 
   retrievesNameOfType() {
@@ -1006,6 +1053,9 @@ export default class MapView extends Vue {
                   (feature: any) => {
                     feature = olExt.writeGeoJsonFeature(feature);
                     this.selectedFeatures.push(feature);
+                    if(feature.properties.nature === "ScientificObjects"){
+                      this.selectedOS.push(feature);
+                    }
                   }
               )
             }
@@ -1020,12 +1070,14 @@ export default class MapView extends Vue {
       let isFeatureSelected = this.map.$map.getFeaturesAtPixel(event.pixel);
       if (!isFeatureSelected && !this.editingMode) {
         this.selectedFeatures = [];
+        this.selectedOS = [];
       }
     });
 
     // clear selection when drawing a new box and when clicking on the map
     dragBox.on("boxstart", () => {
       this.selectedFeatures = [];
+      this.selectedOS = [];
     });
   }
 
@@ -1090,6 +1142,9 @@ export default class MapView extends Vue {
   updateSelectionFeatures(features) {
     if (features.length && features[0]) {
       this.selectedFeatures = features;
+      if(features[0].properties.nature === "ScientificObjects"){
+        this.selectedOS= features;
+      }
     }
     return this.selectedFeatures.length === 1
         ? this.showDetails(this.selectedFeatures[0], true)
@@ -1206,6 +1261,10 @@ export default class MapView extends Vue {
         this.devicesRecovery(geometry);
       }
     }
+  }
+  //Display chart
+  showChart(){
+    this.$bvModal.show("modal-chart");
   }
 
     //get visible OS features
@@ -2713,6 +2772,7 @@ en:
     create-filter: Create filter
     center: Refocus the map
     save: Save the map
+    chart: Display graphic
     time: See temporal(s) area(s)
     noFilter: No filter applied. To add one, use the form below the map
     save-confirmation: Do you want to export the map as PNG image, PDF or shapefile ?
@@ -2779,6 +2839,7 @@ fr:
     create-filter: Créer un filtre
     center: Recentrer la carte
     save: Enregistrer la carte
+    chart: Afficher le graphique
     time: Visualiser les zones temporaires
     noFilter: Aucun filtre appliqué. Pour en ajouter, utiliser le formulaire situé sous la carte
     save-confirmation: Voulez-vous exporter la carte au format PNG, PDF ou shapefile ?

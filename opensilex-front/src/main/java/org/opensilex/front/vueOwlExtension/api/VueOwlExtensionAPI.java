@@ -23,6 +23,7 @@ import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.ontology.dal.*;
 import org.opensilex.sparql.ontology.store.OntologyStore;
+import org.opensilex.sparql.response.CreatedUriResponse;
 import org.opensilex.sparql.service.SPARQLService;
 
 import javax.inject.Inject;
@@ -96,7 +97,7 @@ public class VueOwlExtensionAPI {
             dao.createExtendedClass(classModel, classExtModel);
             SPARQLModule.getOntologyStoreInstance().reload();
 
-            return new ObjectUriResponse(Response.Status.CREATED, classModel.getUri()).getResponse();
+            return new CreatedUriResponse(classModel.getUri()).getResponse();
 
         } catch (SPARQLAlreadyExistingUriException e) {
             return new ErrorResponse(Response.Status.CONFLICT, "Infrastructure already exists", e.getMessage()).getResponse();
@@ -123,7 +124,7 @@ public class VueOwlExtensionAPI {
         dao.updateExtendedClass(classModel, classExtModel);
         SPARQLModule.getOntologyStoreInstance().reload();
 
-        return new ObjectUriResponse(Response.Status.CREATED, classModel.getUri()).getResponse();
+        return new CreatedUriResponse(classModel.getUri()).getResponse();
     }
 
     @PUT

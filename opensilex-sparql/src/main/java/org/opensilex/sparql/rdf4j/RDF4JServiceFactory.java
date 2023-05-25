@@ -16,12 +16,15 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.pool.PoolStats;
 import org.eclipse.rdf4j.common.io.IOUtil;
 import org.eclipse.rdf4j.model.Model;
+import org.eclipse.rdf4j.model.Namespace;
 import org.eclipse.rdf4j.model.impl.LinkedHashModel;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
 import org.eclipse.rdf4j.model.util.Models;
 import org.eclipse.rdf4j.model.vocabulary.RDF;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryException;
+import org.eclipse.rdf4j.repository.RepositoryResult;
 import org.eclipse.rdf4j.repository.config.ConfigTemplate;
 import org.eclipse.rdf4j.repository.config.RepositoryConfig;
 import org.eclipse.rdf4j.repository.config.RepositoryConfigException;
@@ -39,6 +42,8 @@ import org.eclipse.rdf4j.sail.config.SailFactory;
 import org.eclipse.rdf4j.sail.config.SailRegistry;
 import org.opensilex.OpenSilex;
 import org.opensilex.service.ServiceDefaultDefinition;
+import org.opensilex.sparql.SPARQLConfig;
+import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
 import org.opensilex.utils.ClassUtils;
@@ -86,6 +91,26 @@ public class RDF4JServiceFactory extends SPARQLServiceFactory {
 
     public RDF4JConfig getImplementedConfig() {
         return (RDF4JConfig) getConfig();
+    }
+
+    @Override
+    public void startup() throws Exception {
+        super.startup();
+
+        SPARQLConfig sparqlConfig = sparqlModule.getConfig(SPARQLConfig.class);
+
+        // Add the prefixes defined only in the triple store
+        if (sparqlConfig.usePrefixes()) {
+            try (RepositoryConnection connection = this.repository.getConnection();
+                 RepositoryResult<Namespace> result = connection.getNamespaces()) {
+                for (Namespace ns : result) {
+                    SPARQLService.addPrefix(ns.getPrefix(), ns.getName());
+                }
+                URIDeserializer.setPrefixes(SPARQLService.getPrefixMapping(), sparqlConfig.usePrefixes());
+            } catch (RepositoryException ignored) {
+                // No repository connection to establish. That is the case for example during Swagger generation.
+            }
+        }
     }
 
     private int getTimeout() {

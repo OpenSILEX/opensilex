@@ -789,6 +789,9 @@
     "server": {
         "errors": {
             "shared-resource-instance-connection": "Impossible de se connecter à {label} ({uri}). Le service peut-être indisponible, ou bien la configuration incorrecte."
+        },
+        "warnings": {
+            "unknown-prefix": "Le préfixe \"{prefix}\" est inconnu : si c'est involontaire, il faut le déclarer le triple store et redémarrer l'instance."
         }
     }
 }

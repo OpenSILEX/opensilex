@@ -67,6 +67,7 @@ import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
+import org.opensilex.sparql.response.CreatedUriResponse;
 import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.response.ResourceTreeDTO;
 import org.opensilex.sparql.service.SPARQLService;
@@ -194,7 +195,7 @@ public class DataAPI {
             for (DataModel data : dataList) {
                 createdResources.add(data.getUri());
             }
-            return new ObjectUriResponse(Response.Status.CREATED, createdResources).getResponse();
+            return new CreatedUriResponse(createdResources).getResponse();
 
         } catch (NoSQLTooLargeSetException ex) {
             return new ErrorResponse(Response.Status.BAD_REQUEST, "DATA_SIZE_LIMIT",

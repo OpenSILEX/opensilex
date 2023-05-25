@@ -6,48 +6,32 @@
 //******************************************************************************
 package org.opensilex.security.profile.api;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import javax.inject.Inject;
-import javax.validation.Valid;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import static org.apache.jena.vocabulary.RDF.uri;
-
-import org.opensilex.security.user.api.UserAPI;
-import org.opensilex.server.response.ErrorResponse;
-import org.opensilex.server.response.ObjectUriResponse;
+import io.swagger.annotations.*;
 import org.opensilex.security.SecurityModule;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.profile.dal.ProfileDAO;
 import org.opensilex.security.profile.dal.ProfileModel;
-import org.opensilex.server.response.ErrorDTO;
-import org.opensilex.server.response.PaginatedListResponse;
-import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.ValidURI;
+import org.opensilex.sparql.response.CreatedUriResponse;
 import org.opensilex.sparql.service.SPARQLService;
-import org.opensilex.utils.OrderBy;
 import org.opensilex.utils.ListWithPagination;
+import org.opensilex.utils.OrderBy;
+
+import javax.inject.Inject;
+import javax.validation.Valid;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.apache.jena.vocabulary.RDF.uri;
 
 /**
  * <pre>
@@ -129,7 +113,7 @@ public class ProfileAPI {
                 profileDTO.getCredentials()
         );
         // return user URI
-        return new ObjectUriResponse(Response.Status.CREATED, profile.getUri()).getResponse();
+        return new CreatedUriResponse(profile.getUri()).getResponse();
     }
 
     @PUT

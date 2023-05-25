@@ -19,6 +19,7 @@ import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.response.*;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
+import org.opensilex.sparql.response.CreatedUriResponse;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
@@ -80,7 +81,7 @@ public class AnnotationAPI {
             model.setCreator(currentUser.getUri());
 
             model = dao.create(model);
-            return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
+            return new CreatedUriResponse(model.getUri()).getResponse();
 
         } catch (SPARQLAlreadyExistingUriException duplicateUriException) {
             return new ErrorResponse(Response.Status.CONFLICT, "Annotation already exists", duplicateUriException.getMessage()).getResponse();

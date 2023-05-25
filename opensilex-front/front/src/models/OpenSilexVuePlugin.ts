@@ -30,6 +30,7 @@ import {ServiceBinder} from "../services/ServiceBinder";
 import { OntologyService, VariableDatatypeDTO, VariablesService } from 'opensilex-core/index';
 import DateTimeFormatter from "./DateTimeFormatter";
 import NumberFormatter from "./NumberFormatter";
+import {BvToastOptions} from "bootstrap-vue/src/components/toast";
 
 declare var $cookies: VueCookies;
 
@@ -548,21 +549,14 @@ export default class OpenSilexVuePlugin {
     public showErrorToast(message: string) {
         this.showToast(message, {
             variant: "danger",
-            toaster: "b-toaster-top-center",
-            appendToast: true,
-            solid: true,
-            title: this.$i18n.t("component.common.errors.error-title")
+            title: this.$i18n.t("component.common.errors.error-title").toString()
         });
     }
 
     public showSuccessToast(message: string) {
         this.showToast(message, {
             variant: "success",
-            toaster: "b-toaster-top-center",
-            appendToast: true,
-            solid: true,
             autoHideDelay: 2500,
-            noCloseButton: true
         });
     }
 
@@ -572,48 +566,45 @@ export default class OpenSilexVuePlugin {
         }
         this.showToast(message, {
             variant: "success",
-            toaster: "b-toaster-top-center",
-            appendToast: true,
-            solid: true,
             autoHideDelay: delay,
-            noCloseButton: true
         });
     }
 
     public showInfoToast(message: string) {
         this.showToast(message, {
             variant: "info",
-            toaster: "b-toaster-top-center",
-            appendToast: true,
-            solid: true,
             autoHideDelay: 8000,
-            noCloseButton: true
         });
     }
 
     public showInfoToastWithoutDelay(message: string) {
         this.showToast(message, {
             variant: "info",
-            toaster: "b-toaster-top-center",
             appendToast: false,
             solid: false,
             autoHideDelay: 2000,
-            noCloseButton: true
         });
     }
 
     public showWarningToast(message: string) {
         this.showToast(message, {
             variant: "warning",
-            toaster: "b-toaster-top-center",
-            appendToast: true,
-            solid: true,
             autoHideDelay: 2000,
-            noCloseButton: true
         });
     }
 
-    public showToast(message: string, options: any) {
+    public showToast(message: string, options?: BvToastOptions) {
+        const defaultOptions = {
+            toaster: "b-toaster-top-center",
+            appendToast: true,
+            solid: true,
+            noCloseButton: true
+        };
+        options = {
+            ...defaultOptions,
+            ...options
+        };
+
         let toastID = this.computeToastID(message, options);
         options.id = toastID;
         let toastElement = document.getElementById(toastID);

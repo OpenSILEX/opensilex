@@ -6,7 +6,8 @@
 //******************************************************************************
 package org.opensilex.server.response;
 
-import ch.qos.logback.classic.Level;
+import java.util.Collections;
+import java.util.Map;
 
 /**
  * <pre>
@@ -24,22 +25,38 @@ public class StatusDTO {
     /**
      * Status message.
      */
-    public final String message;
+    private final String message;
+
+    /**
+     * Translation key, if status message need to be translated.
+     */
+    private final String translationKey;
+
+    /**
+     * Translation values if the translation key takes parameters.
+     */
+    private final Map<String, String> translationValues;
+
+
 
     /**
      * Status message type ERROR|WARN|INFO|DEBUG.
      */
-    public final Level messageType;
+    public final StatusLevel level;
 
-    /**
-     * Constructor for status.
-     *
-     * @param message status message
-     * @param messageType status type
-     */
-    public StatusDTO(String message, Level messageType) {
+    public StatusDTO(String message, StatusLevel level) {
+        this(message, level, null);
+    }
+
+    public StatusDTO(String message, StatusLevel level, String translationKey) {
+        this(message, level, translationKey, Collections.emptyMap());
+    }
+
+    public StatusDTO(String message, StatusLevel level, String translationKey, Map<String, String> translationValues) {
         this.message = message;
-        this.messageType = messageType;
+        this.level = level;
+        this.translationKey = translationKey;
+        this.translationValues = translationValues;
     }
 
     /**
@@ -56,7 +73,15 @@ public class StatusDTO {
      *
      * @return message type
      */
-    public Level getMessageType() {
-        return messageType;
+    public StatusLevel getLevel() {
+        return level;
+    }
+
+    public String getTranslationKey() {
+        return translationKey;
+    }
+
+    public Map<String, String> getTranslationValues() {
+        return translationValues;
     }
 }

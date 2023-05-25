@@ -52,6 +52,7 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
+import org.opensilex.sparql.response.CreatedUriResponse;
 import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
@@ -150,7 +151,7 @@ public class DeviceAPI {
                 deviceDTO.toModel(devModel);
                 deviceDAO.initDevice(devModel, deviceDTO.getRelations(), currentUser);
                 URI uri = deviceDAO.create(devModel, currentUser);
-                return new ObjectUriResponse(Response.Status.CREATED, uri).getResponse();
+                return new CreatedUriResponse(uri).getResponse();
             } catch (SPARQLAlreadyExistingUriException ex) {
                 return new ErrorResponse(
                         Response.Status.CONFLICT,

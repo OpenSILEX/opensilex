@@ -32,6 +32,7 @@ import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.response.CreatedUriResponse;
 import org.opensilex.sparql.service.SPARQLService;
 import javax.inject.Inject;
 import javax.validation.Valid;
@@ -152,7 +153,7 @@ public class AreaAPI {
             sparql.commitTransaction();
             nosql.commitTransaction();
 
-            return new ObjectUriResponse(Response.Status.CREATED, areaURI).getResponse();
+            return new CreatedUriResponse(areaURI).getResponse();
         } catch (MongoWriteException | CodecConfigurationException mongoException) {
             try {
                 sparql.rollbackTransaction(mongoException);

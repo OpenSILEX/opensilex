@@ -160,4 +160,15 @@ public abstract class JsonResponse<T> implements Serializable {
         this.result = result;
         return this;
     }
+
+    /**
+     * Utility method for `getMetadata().addStatus()`
+     *
+     * @param status Metadata status to add
+     * @return The response for chaining method calls in a 'builder' style
+     */
+    public JsonResponse<T> addMetadataStatus(StatusDTO status) {
+        this.metadata.addStatus(status);
+        return this;
+    }
 }

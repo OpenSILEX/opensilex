@@ -20,6 +20,7 @@ import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
+import org.opensilex.sparql.response.CreatedUriResponse;
 import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
@@ -168,7 +169,7 @@ public class SiteAPI {
 
             SiteModel created = siteDAO.create(siteCreationDto.newModel(), currentUser);
 
-            return new ObjectUriResponse(Response.Status.CREATED, created.getUri()).getResponse();
+            return new CreatedUriResponse(created.getUri()).getResponse();
 
         } catch (SPARQLAlreadyExistingUriException e) {
             return new ErrorResponse(Response.Status.CONFLICT, "A facility with the same URI already exists",

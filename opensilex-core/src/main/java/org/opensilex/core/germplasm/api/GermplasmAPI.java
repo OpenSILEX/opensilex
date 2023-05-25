@@ -37,6 +37,7 @@ import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
+import org.opensilex.sparql.response.CreatedUriResponse;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
@@ -151,7 +152,7 @@ public class GermplasmAPI {
                 // create new germplasm
                 GermplasmModel model = germplasmDTO.newModel();
                 GermplasmModel germplasm = germplasmDAO.create(model);
-                return new ObjectUriResponse(Response.Status.CREATED, germplasm.getUri()).getResponse();
+                return new CreatedUriResponse(germplasm.getUri()).getResponse();
             } catch (Exception e) {
                 return new ErrorResponse(e).getResponse();
             }

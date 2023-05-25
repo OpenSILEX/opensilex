@@ -25,6 +25,8 @@ import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.ontology.dal.ClassModel;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
+import org.opensilex.sparql.response.CreatedUriResponse;
 import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
@@ -109,7 +111,7 @@ public class FacilityAPI {
 
             facility = facilityDAO.create(facility, currentUser);
 
-            return new ObjectUriResponse(Response.Status.CREATED, facility.getUri()).getResponse();
+            return new CreatedUriResponse(facility.getUri()).getResponse();
 
         } catch (SPARQLAlreadyExistingUriException e) {
             return new ErrorResponse(Response.Status.CONFLICT, "Facility already exists", e.getMessage()).getResponse();

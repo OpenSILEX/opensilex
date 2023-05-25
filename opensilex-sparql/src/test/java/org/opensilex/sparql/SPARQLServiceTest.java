@@ -24,6 +24,7 @@ import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidUriListException;
 import org.opensilex.sparql.model.*;
 import org.opensilex.sparql.ontology.dal.ClassModel;
+import org.opensilex.sparql.rdf4j.RDF4JConnectionTest;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.unit.test.AbstractUnitTest;
@@ -787,5 +788,33 @@ public abstract class SPARQLServiceTest extends AbstractUnitTest {
         String nameFromURI = sparql.getFavoriteNameFromURI(aInstanceUri);
 
         assertEquals(name, nameFromURI);
+    }
+
+    /**
+     * Tests that a prefix/namespace only defined in repository (not in an ontology or in a model class) is known by
+     * the SPARQLService
+     */
+    @Test
+    public void testPrefixInRepositoryExists() {
+        String namespace = SPARQLService.getPrefixes().get(RDF4JConnectionTest.TEST_PREFIX_IN_REPOSITORY);
+
+        assertEquals(RDF4JConnectionTest.TEST_NAMESPACE_IN_REPOSITORY, namespace);
+    }
+
+    /**
+     * Tests that creating a URI with a prefix only defined in the repository (not in an ontology or in a model
+     * class) is correctly expanded with the correct namespace.
+     */
+    @Test
+    public void testCreateWithPrefixInRepository() throws Exception {
+        URI shortUri = new URI(RDF4JConnectionTest.TEST_PREFIX_IN_REPOSITORY + ":a/001");
+        URI longUri = new URI(RDF4JConnectionTest.TEST_NAMESPACE_IN_REPOSITORY + "a/001");
+
+        A a = new A();
+        a.setUri(shortUri);
+
+        sparql.create(a);
+
+        assertTrue(sparql.uriExists(A.class, longUri));
     }
 }

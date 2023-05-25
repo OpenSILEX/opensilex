@@ -62,6 +62,7 @@ import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.csv.CSVCell;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
+import org.opensilex.sparql.response.CreatedUriResponse;
 import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ClassUtils;
@@ -167,7 +168,7 @@ public class ExperimentAPI {
             model.setCreator(currentUser.getUri());
 
             model = dao.create(model);
-            return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
+            return new CreatedUriResponse(model.getUri()).getResponse();
         } catch (SPARQLAlreadyExistingUriException e) {
             // Return error response 409 - CONFLICT if experiment URI already exists
             return new ErrorResponse(

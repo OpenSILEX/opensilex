@@ -1,12 +1,22 @@
 import IHttpClient from "../lib/IHttpClient";
 import "whatwg-fetch";
-import HttpResponse from "../lib/HttpResponse";
-import { injectable, inject } from "inversify";
-import { Headers } from "../lib/Headers";
+import HttpResponse, {MetadataDTO, StatusDTO} from "../lib/HttpResponse";
+import {injectable} from "inversify";
+import {Headers} from "../lib/Headers";
 import OpenSilexVuePlugin from './OpenSilexVuePlugin';
-import { User } from './User';
+import {User} from './User';
 
 declare var window: any;
+
+/**
+ * Map the response metadata status level to a toast variant for display. The DEBUG level is not included, because it
+ * should not be displayed
+ */
+const statusLevelToastVariantMap: Map<StatusDTO.LevelEnum, string> = new Map<StatusDTO.LevelEnum, string>([
+    [StatusDTO.LevelEnum.ERROR, "danger"],
+    [StatusDTO.LevelEnum.WARNING, "warning"],
+    [StatusDTO.LevelEnum.INFO, "info"]
+]);
 
 @injectable()
 class OpenSilexHttpClient implements IHttpClient {
@@ -79,12 +89,12 @@ class OpenSilexHttpClient implements IHttpClient {
                 return response.text().then(text => {
                     let contentType = headers["content-type"] || "";
                     let content: any;
-                    let metadata: any = {};
+                    let metadata: MetadataDTO;
                     if (contentType.match("application/json")) {
                         try {
                             content = JSON.parse(text);
                             if (content.metadata) {
-                                metadata = content.metadata;
+                                metadata = content.metadata as MetadataDTO;
                             }
                         } catch (error) {
                             console.error("Error while parsing JSON request result: " + url, error);
@@ -95,6 +105,21 @@ class OpenSilexHttpClient implements IHttpClient {
                     }
 
                     let httpResponse = new HttpResponse(content, response.status, headers);
+
+                    // If present, handle the metadata status
+                    if (metadata) {
+                        for (let status of metadata.status) {
+                            if (status.translationKey && statusLevelToastVariantMap.has(status.level)) {
+                                // Status has a translation key, it probably should be shown to the user
+                                this.opensilex.showToast(
+                                    this.opensilex.$i18n.t(status.translationKey, status.translationValues).toString(),
+                                    {
+                                        variant: statusLevelToastVariantMap.get(status.level)
+                                    }
+                                );
+                            }
+                        }
+                    }
 
                     if (response.status >= 400)
                         throw httpResponse;

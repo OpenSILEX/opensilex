@@ -5,14 +5,15 @@
 //******************************************************************************
 package org.opensilex.sparql.deserializer;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.shared.PrefixMapping;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Objects;
 
 /**
  *
@@ -138,6 +139,21 @@ public class URIDeserializer implements SPARQLDeserializer<URI> {
         } catch (Exception ex) {
             return false;
         }
+    }
+
+    /**
+     * Check whether the given URI uses a prefix (scheme) defined in the prefix mapping, or if it can be shortened to
+     * a prefixed URI using the mapping. This is done by comparing the short and the expanded forms of the URI :
+     * if they are identical, the URI prefix or namespace is not known in the mapping.
+     *
+     * @param uri The URI to check
+     * @return whether `uri` uses a known prefix or namespace
+     */
+    public static boolean hasKnownPrefix(URI uri) {
+        return !Objects.equals(
+                getExpandedURI(uri.toString()),
+                getShortURI(uri.toString())
+        );
     }
 
 }

@@ -12,7 +12,9 @@ import javax.ws.rs.core.Response.Status;
 
 /**
  * <pre>
- * Simple Object URI response (for creation result by example).
+ * Simple Object URI response.
+ *
+ * For a resource CREATED response, you might want to use `CreatedUriResponse` instead (from `opensilex-sparql`).
  *
  * Automatically define datafile metadata the result body with the given URI.
  * </pre>

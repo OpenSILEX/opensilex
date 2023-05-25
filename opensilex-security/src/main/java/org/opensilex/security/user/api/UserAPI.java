@@ -22,6 +22,7 @@ import org.opensilex.security.person.dal.PersonDAO;
 import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.ValidURI;
+import org.opensilex.sparql.response.CreatedUriResponse;
 import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.response.NamedResourcePaginatedListResponse;
 import org.opensilex.sparql.service.SPARQLService;
@@ -146,7 +147,6 @@ public class UserAPI {
             sparql.rollbackTransaction();
             throw e;
         }
-
     }
 
     /**

@@ -29,6 +29,7 @@ import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.store.OntologyStore;
+import org.opensilex.sparql.response.CreatedUriResponse;
 import org.opensilex.sparql.response.ResourceTreeDTO;
 import org.opensilex.sparql.response.ResourceTreeResponse;
 import org.opensilex.sparql.service.SPARQLService;
@@ -121,7 +122,7 @@ public class FactorAPI {
             model.setAssociatedExperiments(associatedExperiment);
             dao.create(model);
 
-            return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
+            return new CreatedUriResponse(model.getUri()).getResponse();
         } catch (SPARQLAlreadyExistingUriException duplicateUriException) {
             return new ErrorResponse(Response.Status.CONFLICT, "Factor already exists",
                     duplicateUriException.getMessage()).getResponse();

@@ -28,6 +28,12 @@ import org.opensilex.core.exception.DateValidationException;
 import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.server.response.ObjectUriResponse;
+import org.opensilex.sparql.SPARQLModule;
+import org.opensilex.sparql.model.SPARQLTreeListModel;
+import org.opensilex.sparql.ontology.dal.ClassModel;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
@@ -43,7 +49,6 @@ import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.server.exceptions.NotFoundException;
 import org.opensilex.server.response.ErrorResponse;
-import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
@@ -53,6 +58,7 @@ import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.ontology.store.OntologyStore;
+import org.opensilex.sparql.response.CreatedUriResponse;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
@@ -143,7 +149,7 @@ public class DataFilesAPI {
             DataFileModel model = dto.newModel();  
             model.setFilename(fileContentDisposition.getFileName());
             dao.insertFile(model, file);
-            return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
+            return new CreatedUriResponse(model.getUri()).getResponse();
         } catch (MongoWriteException duplicateKey) {
             return new ErrorResponse(Response.Status.BAD_REQUEST, "Duplicate Data", duplicateKey.getMessage())
                 .getResponse();
@@ -224,7 +230,7 @@ public class DataFilesAPI {
                 createdResources.add(data.getUri());
             }          
 
-            return new ObjectUriResponse(Response.Status.CREATED, createdResources).getResponse();
+            return new CreatedUriResponse(createdResources).getResponse();
 
         } catch(NoSQLTooLargeSetException ex) {
             return new ErrorResponse(Response.Status.BAD_REQUEST, "DATA_SIZE_LIMIT",

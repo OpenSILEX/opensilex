@@ -16,6 +16,7 @@ import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.server.response.*;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
+import org.opensilex.sparql.response.CreatedUriResponse;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
@@ -90,7 +91,7 @@ public class ProjectAPI {
             model.setCreator(currentUser.getUri());
 
             model = dao.create(model);
-            return new ObjectUriResponse(Response.Status.CREATED, model.getUri()).getResponse();
+            return new CreatedUriResponse(model.getUri()).getResponse();
         } catch (SPARQLAlreadyExistingUriException e) {
             // Return error response 409 - CONFLICT if project URI already exists
             return new ErrorResponse(

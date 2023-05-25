@@ -28,6 +28,7 @@ import org.opensilex.server.response.*;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.ontology.dal.URITypesModel;
+import org.opensilex.sparql.response.CreatedUriResponse;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
@@ -122,7 +123,7 @@ public class ProvenanceAPI {
             ProvenanceModel model = provDTO.newModel();
             ProvenanceModel provenance = provDAO.create(model);
 
-            return new ObjectUriResponse(Response.Status.CREATED, provenance.getUri()).getResponse();
+            return new CreatedUriResponse(provenance.getUri()).getResponse();
             
         } catch (NoSQLAlreadyExistingUriException exception) {            
              // Return error response 409 - CONFLICT if experiment URI already exists

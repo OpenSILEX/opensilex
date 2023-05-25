@@ -2100,6 +2100,14 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         }
     }
 
+    public URI getBaseGraphURI() {
+        try{
+            return getOpenSilex().getModuleByClass(SPARQLModule.class).getBaseGraphURI();
+        }catch (OpenSilexModuleNotFoundException e){
+            throw new RuntimeException(e);
+        }
+    }
+
     public Var getURIFieldVar(Class<? extends SPARQLResourceModel> modelClass) throws SPARQLException {
         return getMapperIndex().getForClass(modelClass).getURIFieldVar();
     }

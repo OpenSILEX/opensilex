@@ -825,7 +825,7 @@ public class ScientificObjectAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public Response exportCSV(
-            @ApiParam("CSV export configuration") @Valid ScientificObjectSearchFilter searchFilter
+            @ApiParam("CSV export configuration") @Valid ScientificObjectExportDTO searchFilter
     ) throws Exception {
 
         validateContextAccess(searchFilter.getExperiment());

@@ -2,6 +2,7 @@ package org.opensilex.migration;
 
 import org.apache.jena.graph.Node;
 import org.opensilex.core.annotation.dal.AnnotationModel;
+import org.opensilex.core.area.dal.AreaModel;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.document.dal.DocumentModel;
 import org.opensilex.core.event.dal.EventModel;
@@ -24,6 +25,8 @@ import org.opensilex.sparql.service.SPARQLService;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
+
+import static org.opensilex.sparql.ontology.dal.OntologyDAO.CUSTOM_TYPES_AND_PROPERTIES_GRAPH;
 
 public class BaseGraphMigration extends DatabaseMigrationModuleUpdate {
 
@@ -56,7 +59,9 @@ public class BaseGraphMigration extends DatabaseMigrationModuleUpdate {
                 AnnotationModel.GRAPH,
                 DocumentModel.GRAPH,
                 ExperimentModel.GRAPH,
-                OrganizationModel.GRAPH
+                OrganizationModel.GRAPH,
+                AreaModel.GRAPH,
+                CUSTOM_TYPES_AND_PROPERTIES_GRAPH
         );
 
         for (String graph : allGraphToChange) {

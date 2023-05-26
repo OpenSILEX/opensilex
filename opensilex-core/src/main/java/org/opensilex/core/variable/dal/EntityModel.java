@@ -6,6 +6,7 @@
 package org.opensilex.core.variable.dal;
 
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 
 import java.net.URI;
@@ -22,6 +23,7 @@ public class EntityModel extends BaseVariableModel<EntityModel> {
 
     public EntityModel() {
     }
+
 
     public EntityModel(URI uri) {
         setUri(uri);

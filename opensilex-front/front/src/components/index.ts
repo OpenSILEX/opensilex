@@ -559,6 +559,11 @@ import VariableStructureDetails from './variables/views/VariableStructureDetails
 components["opensilex-VariableStructureDetails"] = VariableStructureDetails;
 import EntitySelector from './variables/form/EntitySelector.vue';
 components["opensilex-EntitySelector"] = EntitySelector;
+import LabelCreationSubForm from './variables/form/LabelCreationSubForm.vue';
+components["opensilex-LabelCreationSubForm"] = LabelCreationSubForm;
+import LabelsList from './variables/views/LabelsList.vue';
+components["opensilex-LabelsList"] = LabelCreationSubForm;
+
 
 // Entity of interest
 import InterestEntityForm from './variables/form/InterestEntityForm.vue';

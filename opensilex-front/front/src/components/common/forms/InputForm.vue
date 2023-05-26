@@ -1,7 +1,7 @@
 <template>
   <opensilex-FormField
     :rules="rules"
-    :required="required"
+    :required="isRequired"
     :label="label"
     :helpMessage="helpMessage"
     :vid="vid"

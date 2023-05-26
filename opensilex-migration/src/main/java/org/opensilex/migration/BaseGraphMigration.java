@@ -9,6 +9,7 @@ import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorModel;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.germplasmGroup.dal.GermplasmGroupModel;
+import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.core.variable.dal.VariableModel;
@@ -54,7 +55,8 @@ public class BaseGraphMigration extends DatabaseMigrationModuleUpdate {
                 GermplasmGroupModel.GRAPH,
                 AnnotationModel.GRAPH,
                 DocumentModel.GRAPH,
-                ExperimentModel.GRAPH
+                ExperimentModel.GRAPH,
+                OrganizationModel.GRAPH
         );
 
         for (String graph : allGraphToChange) {

@@ -25,6 +25,7 @@ import org.opensilex.core.data.dal.*;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.data.utils.ParsedDateTimeMongo;
 import org.opensilex.core.device.api.DeviceAPI;
+import org.opensilex.core.device.api.DeviceGetDTO;
 import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.exception.*;
@@ -95,7 +96,6 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.time.zone.ZoneRulesException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -2018,6 +2018,27 @@ public class DataAPI {
         return dto;
     }
 
+    private List<DeviceGetDTO> checkAndReturnDevicesFromDataProvenance(DataProvenanceModel provenance, DeviceDAO deviceDAO)
+            throws Exception {
+        List<DeviceGetDTO> devices = new ArrayList<>();
+
+        if(provenance.getProvWasAssociatedWith() != null && !provenance.getProvWasAssociatedWith().isEmpty()){
+            for (ProvEntityModel agent : provenance.getProvWasAssociatedWith()) {
+
+                if(agent.getType() == null) {
+                    throw new ProvenanceAgentTypeException(agent.getUri().toString());
+                }
+
+                if (deviceDAO.isDeviceType(agent.getType())) {
+                    DeviceModel device = deviceDAO.getDeviceByURI(agent.getUri(), user);
+                    devices.add(DeviceGetDTO.getDTOFromModel(device));
+                }
+            }
+        }
+
+        return devices;
+    }
+
 
     @GET
     @Path("/data_serie/facility")
@@ -2031,6 +2052,7 @@ public class DataAPI {
     public Response getDataSeriesByFacility(
             @ApiParam(value = "variable URI", example = "http://example.com/", required = true) @QueryParam("variable") @NotNull URI variableUri,
             @ApiParam(value = "target URI", example = "http://example.com/", required = true) @QueryParam("target") @NotNull URI facilityUri,
+            @ApiParam(value = "devices URIs", example = "http://example.com/") @QueryParam("devices") List<URI> devices,
             @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
             @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
             @ApiParam(value = "Retreive calculated series only", example = "false") @QueryParam("calculated_only") Boolean calculatedOnly,
@@ -2038,7 +2060,7 @@ public class DataAPI {
     ) throws Exception {
 
         DataDAO dao = new DataDAO(nosql, sparql, fs);
-        ProvenanceDAO provDAO = new ProvenanceDAO(nosql, sparql);
+        DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
         VariableDAO variableDAO = new VariableDAO(sparql, nosql, fs);
 
         /// Search data
@@ -2050,7 +2072,7 @@ public class DataAPI {
                 Arrays.asList(facilityUri),
                 Arrays.asList(variableUri),
                 null,
-                null,
+                devices,
                 (startDate != null) ? Instant.parse(startDate) : null,
                 (endDate != null) ? Instant.parse(endDate) : Instant.now(),
                 null,
@@ -2072,6 +2094,7 @@ public class DataAPI {
 
         VariableDetailsDTO variable = new VariableDetailsDTO(variableDAO.get(variableUri));
         DataVariableSeriesGetDTO dto = new DataVariableSeriesGetDTO(variable);
+        Set<DeviceGetDTO> usedDevices = new HashSet<>();
 
         /// Compute median series for each provenance
 
@@ -2087,6 +2110,7 @@ public class DataAPI {
 
         for (Map.Entry<DataProvenanceModel, List<DataModel>> entryProv : provenancesMap.entrySet()) {
 
+            usedDevices.addAll(checkAndReturnDevicesFromDataProvenance(entryProv.getKey(), deviceDAO));
             List<DataSimpleGetDTO> data = entryProv.getValue()
                     .stream()
                     .map((d) -> DataSimpleGetDTO.getDtoFromModel(d))
@@ -2104,6 +2128,8 @@ public class DataAPI {
             DataSerieGetDTO dataSerie = new DataSerieGetDTO(provenance, medianSerie);
             dataSeriesDTOs.add(dataSerie);
         }
+
+        dto.setDevices(usedDevices.stream().collect(Collectors.toList()));
 
         List<DataSimpleProvenanceGetDTO> provenances = dataSeriesDTOs
                 .stream()
@@ -2132,13 +2158,89 @@ public class DataAPI {
             dataCalculatedSeriesDTOs.add(new DataSerieGetDTO(provMedian, medianOfMedians));
 
             DataSimpleProvenanceGetDTO provAverage = new DataSimpleProvenanceGetDTO();
-            provAverage.setName("mean_per_hour");
+            provAverage.setName("mean_per_day");
 
-            List<DataSimpleGetDTO> averageSerie = computeAveragePerHour(dataSimpleGetDTOs);
+            List<DataSimpleGetDTO> averageSerie = computeAveragePerDay(dataSimpleGetDTOs);
             dataCalculatedSeriesDTOs.add(new DataSerieGetDTO(provAverage, averageSerie));
 
             dto.setCalculatedSeries(dataCalculatedSeriesDTOs);
         }
+
+        return new SingleObjectResponse<>(dto).getResponse();
+    }
+
+    @GET
+    @Path("/data_serie/facility/data_serie")
+    @ApiOperation("Get a data serie associated with a facility")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return a single data serie", response = DataSerieGetDTO.class)
+    })
+    public Response getSingleDataSerie(
+            @ApiParam(value = "variable URI", example = "http://example.com/", required = true) @QueryParam("variable") @NotNull URI variableUri,
+            @ApiParam(value = "target URI", example = "http://example.com/", required = true) @QueryParam("target") @NotNull URI facilityUri,
+            @ApiParam(value = "provenance URI", example = "http://example.com/", required = true) @QueryParam("provenance") @NotNull URI provenanceURI,
+            @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
+            @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=asc") @QueryParam("order_by") List<OrderBy> orderByList
+    ) throws Exception {
+
+        DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
+        ProvenanceDAO provDAO = new ProvenanceDAO(nosql, sparql);
+        DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
+
+        List<URI> provenances = null;
+        List<URI> devices = null;
+
+        int countProv = provDAO.count(
+                            new HashSet<>(Arrays.asList(provenanceURI)),
+                            null,
+                            null,
+                            null,
+                            null,
+                            null,
+                            null);
+
+        if (countProv > 0) {
+            provenances = Arrays.asList(provenanceURI);
+        }
+        else {
+            DeviceModel device = deviceDAO.getDeviceByURI(provenanceURI, user);
+            if (device != null) {
+                devices = Arrays.asList(provenanceURI);
+            }
+        }
+
+        ListWithPagination<DataModel> result = dataDAO.search(
+                user,
+                null,
+                Arrays.asList(facilityUri),
+                Arrays.asList(variableUri),
+                provenances,
+                devices,
+                (startDate != null) ? Instant.parse(startDate) : null,
+                (endDate != null) ? Instant.parse(endDate) : Instant.now(),
+                null,
+                null,
+                null,
+                null,
+                orderByList,
+                0,
+                0);
+
+        List<DataModel> dataModels = result.getList();
+
+        List<DataSimpleGetDTO> dataSimpleGetDTOs = dataModels
+                .stream()
+                .map((d) -> DataSimpleGetDTO.getDtoFromModel(d))
+                .collect(Collectors.toList());
+
+        List<DataSimpleGetDTO> medianSerie = computeMedianPerHour(dataSimpleGetDTOs);
+        DataSimpleProvenanceGetDTO provenance = createDataSimpleProvenance(dataModels.get(0).getProvenance());
+
+        DataSerieGetDTO dto = new DataSerieGetDTO(provenance, medianSerie);
 
         return new SingleObjectResponse<>(dto).getResponse();
     }

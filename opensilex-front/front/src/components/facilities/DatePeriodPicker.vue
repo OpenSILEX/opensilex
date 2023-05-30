@@ -127,7 +127,7 @@ export default class DatePeriodPicker extends Vue {
       this.startDate.setMonth(this.endDate.getMonth() - 1);
     }
     else if (this.selectedPeriod === "year") {
-      this.startDate.setMonth(this.endDate.getMonth() - 12);
+      this.startDate.setMonth(this.endDate.getMonth() - 6);
     }
   }
 

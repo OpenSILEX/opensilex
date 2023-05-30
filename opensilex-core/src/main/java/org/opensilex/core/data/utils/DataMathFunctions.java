@@ -54,17 +54,17 @@ public class DataMathFunctions {
      * @param dataSerie the data set
      * @return a
      */
-    public static List<DataSimpleGetDTO> computeAveragePerHour(List<DataSimpleGetDTO> dataSerie) {
+    public static List<DataSimpleGetDTO> computeAveragePerDay(List<DataSimpleGetDTO> dataSerie) {
         List<DataSimpleGetDTO> averagePerHour = new ArrayList<>();
 
         Map<Long, List<DataSimpleGetDTO>> dataPerHourMap = dataSerie.stream()
                 .sorted(Comparator.comparing(DataSimpleGetDTO::getDateTime))
-                .collect(Collectors.groupingBy(d->(d.getDateTime().getEpochSecond()/3600),
+                .collect(Collectors.groupingBy(d->(d.getDateTime().getEpochSecond()/(3600 * 24)),
                         LinkedHashMap::new,
                         Collectors.toList()));
 
         for (Map.Entry<Long, List<DataSimpleGetDTO>> entry : dataPerHourMap.entrySet()) {
-            Instant dateTime = Instant.ofEpochSecond(entry.getKey()*3600).plus(30, ChronoUnit.MINUTES);
+            Instant dateTime = Instant.ofEpochSecond(entry.getKey()*3600*24).plus(12, ChronoUnit.HOURS);
             double avg = entry.getValue().stream().mapToDouble(d->(Double.valueOf(d.getValue().toString()))).average().orElse(Double.NaN);
 
             DataSimpleGetDTO averageData = new DataSimpleGetDTO(entry.getValue().get(0));

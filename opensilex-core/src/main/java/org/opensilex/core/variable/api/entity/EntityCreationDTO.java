@@ -6,14 +6,28 @@
 
 package org.opensilex.core.variable.api.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.core.variable.api.BaseVariableCreationDTO;
+import org.opensilex.core.variable.api.VariableCreationDTO;
 import org.opensilex.core.variable.dal.EntityModel;
 
 import java.net.URI;
 
 public class EntityCreationDTO extends BaseVariableCreationDTO<EntityModel> {
+
+    @JsonProperty
+    protected VariableCreationDTO dto;
+
+    @ApiModelProperty(example = "dto")
+    public VariableCreationDTO getDto() {
+        return dto;
+    }
+
+    public void setDto(VariableCreationDTO dto) {
+        this.dto = dto;
+    }
 
     @Override
     protected EntityModel newModelInstance() {

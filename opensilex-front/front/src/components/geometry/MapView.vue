@@ -80,6 +80,9 @@
       </template>
       <opensilex-ExperimentDataVisualisationView
         :soFilter="soFilter"
+        :selected.sync="selectedOS"
+        :mapMode="mapMode"
+        :soWithLabels="soWithLabels"
       ></opensilex-ExperimentDataVisualisationView>
     </b-modal>
 
@@ -731,11 +734,10 @@ import {stringify} from "wkt";
 import ExperimentDataVisualisation from "../experiments/ExperimentDataVisualisation.vue";
 
 //TODO: 1- Change title + icon?
-//TODO: 2- Modal size
+//TODO: 2- Modal padding
 //TODO: 3- show selected OS in filter
 //TODO: 5- reciprocité sélection OS??
 //TODO: 8- close menu panel when modal open
-//TODO: 6- add instruction - only selected OS limited to 15
 //TODO: 7- Change size pop-up 1 selected
 
 @Component({
@@ -797,7 +799,7 @@ export default class MapView extends Vue {
     existenceDate: undefined,
     creationDate: undefined,
   };
-  selectedOS: any[] = [];
+  selectedOS: any =[];
 
   ///////////// FEATURES DATA ////////////
   private endReceipt: boolean = false;
@@ -866,6 +868,8 @@ export default class MapView extends Vue {
   private errorGeometry: boolean = false;
   exportedFeatures = [];
   exportedOS = [];
+  mapMode= true;
+  soWithLabels=[];
 
   ///////////// BASE METHODS ////////////
   get user() {
@@ -1054,7 +1058,8 @@ export default class MapView extends Vue {
                     feature = olExt.writeGeoJsonFeature(feature);
                     this.selectedFeatures.push(feature);
                     if(feature.properties.nature === "ScientificObjects"){
-                      this.selectedOS.push(feature);
+                      this.selectedOS.push(feature.properties.uri);
+                      this.soWithLabels.push(feature.properties);
                     }
                   }
               )
@@ -1071,6 +1076,7 @@ export default class MapView extends Vue {
       if (!isFeatureSelected && !this.editingMode) {
         this.selectedFeatures = [];
         this.selectedOS = [];
+        this.soWithLabels = [];
       }
     });
 
@@ -1078,6 +1084,7 @@ export default class MapView extends Vue {
     dragBox.on("boxstart", () => {
       this.selectedFeatures = [];
       this.selectedOS = [];
+      this.soWithLabels= [];
     });
   }
 
@@ -1140,11 +1147,16 @@ export default class MapView extends Vue {
   }
   //Check selected features and make different actions depending on the number of feature
   updateSelectionFeatures(features) {
+    this.selectedOS =[];
+    this.soWithLabels =[];
     if (features.length && features[0]) {
       this.selectedFeatures = features;
-      if(features[0].properties.nature === "ScientificObjects"){
-        this.selectedOS= features;
-      }
+      features.forEach((feature) => {
+        if(feature.properties.nature === "ScientificObjects"){
+          this.selectedOS.push(feature.properties.uri);
+          this.soWithLabels.push(feature.properties);
+        }
+      })
     }
     return this.selectedFeatures.length === 1
         ? this.showDetails(this.selectedFeatures[0], true)
@@ -2772,7 +2784,7 @@ en:
     create-filter: Create filter
     center: Refocus the map
     save: Save the map
-    chart: Display graphic
+    chart: Display graphic - limited to 15 scientific objects
     time: See temporal(s) area(s)
     noFilter: No filter applied. To add one, use the form below the map
     save-confirmation: Do you want to export the map as PNG image, PDF or shapefile ?
@@ -2839,7 +2851,7 @@ fr:
     create-filter: Créer un filtre
     center: Recentrer la carte
     save: Enregistrer la carte
-    chart: Afficher le graphique
+    chart: Afficher le graphique - limiter à 15 objets scientifiques
     time: Visualiser les zones temporaires
     noFilter: Aucun filtre appliqué. Pour en ajouter, utiliser le formulaire situé sous la carte
     save-confirmation: Voulez-vous exporter la carte au format PNG, PDF ou shapefile ?

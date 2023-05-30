@@ -166,8 +166,7 @@ export default class SelectForm extends Vue {
    * selection but as a list of jsons, containing at least name and uri of each selected item. Required to show labels of pre-existing elements
    */
   @Prop({default: null})
-  selectedInJsonFormat
-
+  selectedInJsonFormat;
 
   @Prop()
   multiple;
@@ -342,9 +341,13 @@ export default class SelectForm extends Vue {
         } else {
           //Set table async view's checked items
           let jsonSelectedItems = this._convertSelectedToJson();
-          if(this.searchModal.setInitiallySelectedItems){
-            this.searchModal.setInitiallySelectedItems(jsonSelectedItems);
-          }
+          this.waitFor((_)=>
+              this.searchModal &&
+              this.searchModal.setInitiallySelectedItems
+          ).then(() => {
+            if(this.searchModal.setInitiallySelectedItems){
+              this.searchModal.setInitiallySelectedItems(jsonSelectedItems);
+            }
           //Set selectedTmp and selectedCopie
             if( this.firstTimeOpening ){
                 this.firstTimeOpening = false;
@@ -362,7 +365,7 @@ export default class SelectForm extends Vue {
             this.loading = false;
           }
           resolve(this.currentValue);
-
+          })
         }
       } else {
         if (this.itemLoadingMethod) {
@@ -709,11 +712,13 @@ export default class SelectForm extends Vue {
     // unselect temporary items that are not in confirmed selection
     //This line creates a new array containing elements from selectedTmp that aren't in selectedCopie
       let difference = this.selectedTmp.filter(x => !this.selectedCopie.some(el => el.uri === x.uri));
+    let difference = this.selectedTmp.filter(x => !this.selectedCopie.some(el => el.uri === x.uri));
     difference.forEach((item) => {
       this.searchModal.unSelect(item);
     });
     // reselect previously confirmed items that are not in temporary selection
       difference = this.selectedCopie.filter(x => !this.selectedTmp.some(el => el.uri === x.uri));
+    difference = this.selectedCopie.filter(x => !this.selectedTmp.some(el => el.uri === x.uri));
     difference.forEach((item) => {
       this.searchModal.selectItem(item);
     });
@@ -736,6 +741,19 @@ export default class SelectForm extends Vue {
     if (this.searchModal) {
       this.searchModal.refresh();
     }
+  }
+
+  private waitFor(conditionFunction) {
+    const poll = (resolve) => {
+      if (conditionFunction()) resolve();
+      else
+        setTimeout((_) => {
+          this.$opensilex.showLoader();
+          poll(resolve);
+        }, 200);
+    };
+
+    return new Promise(poll);
   }
 
 }

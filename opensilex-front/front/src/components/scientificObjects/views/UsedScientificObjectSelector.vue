@@ -5,6 +5,7 @@
       :label="label"
       :placeholder="placeholder"
       :selected.sync="scientificObjectsURI"
+      :selectedInJsonFormat= "this.mapMode ? scObj : null"
       :filter.sync="soFilter"
       :multiple="true"
       :maximumSelectedItems="maximumSelectedRows"
@@ -21,7 +22,8 @@
 <script lang="ts">
 import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
 import Vue from "vue";
-import { NamedResourceDTO, ScientificObjectsService} from "opensilex-core/index";
+import {ScientificObjectsService} from "opensilex-core/index";
+import SelectForm, { SelectableItem } from 'src/components/common/forms/SelectForm.vue';
 
 /**
 * Selector of Scientific Objects present in an experiment.
@@ -33,6 +35,12 @@ import { NamedResourceDTO, ScientificObjectsService} from "opensilex-core/index"
 export default class UsedScientificObjectSelector extends Vue {
   $opensilex: any;
   soService: ScientificObjectsService;
+
+  @Prop()
+  mapMode: boolean;
+
+  @PropSync("scObjects")
+  scObj: Array<SelectableItem>;
 
   @PropSync("scientificObjects")
   scientificObjectsURI: any;
@@ -59,7 +67,7 @@ export default class UsedScientificObjectSelector extends Vue {
   @Prop()
   maximumSelectedRows: number;
 
-  @Ref("soSelector") readonly soSelector!: any;
+  @Ref("soSelector") readonly soSelector!: SelectForm;
 
   refreshKey = 0;
 
@@ -92,6 +100,9 @@ export default class UsedScientificObjectSelector extends Vue {
   refreshProvComponent(selection) {
     this.refreshKey += 1;
     this.$emit("onValidate", selection);
+  }
+  setSoSelectorToFirstTimeOpen(){
+    this.soSelector.setSelectorToFirstTimeOpen();
   }
 }
 </script>

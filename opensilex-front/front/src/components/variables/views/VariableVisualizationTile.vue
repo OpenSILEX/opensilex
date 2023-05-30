@@ -9,7 +9,6 @@
 
         <opensilex-TextView v-if="isNoDataFound"
                             id="no-data-text"
-                            v-on:click.native="showGraphic"
             :label="$t('FacilityAssociatedDevices.no-data')">
         </opensilex-TextView>
 
@@ -27,7 +26,22 @@
               </opensilex-Sparkline>
             </div>
             -->
-            <div class="col">
+            <div class="col" v-if="isDataOutOfReach">
+              <opensilex-TextView
+                  style="margin-bottom: 0;"
+                  v-on:click.native="showGraphic"
+                  :value="$t('VariableVisualizationTile.lastDataStored')">
+              </opensilex-TextView>
+              <opensilex-DateView
+                  style="font-size: x-large; margin-bottom: 0; color: #e53935;"
+                  v-on:click.native="showGraphic"
+                  :value.sync="lastData.date"
+                  :isDateTime="true"
+                  :useLocaleFormat="true"
+                  :dateTimeFormatOptions="{ dateStyle: 'long', timeStyle: 'long' }">
+              </opensilex-DateView>
+            </div>
+            <div class="col" v-else>
               <opensilex-TextView
                   style="margin-bottom: 0;"
                   v-on:click.native="showGraphic"
@@ -36,13 +50,13 @@
               <opensilex-TextView
                   style="font-size: xx-large; margin-bottom: 0;"
                   v-on:click.native="showGraphic"
-                  :value.sync="lastMedianData.value"
+                  :value.sync="lastData.value"
               >
               </opensilex-TextView>
               <opensilex-DateView
                   style="font-size: x-large; margin-bottom: 0;"
                   v-on:click.native="showGraphic"
-                :value.sync="lastMedianData.date"
+                :value.sync="lastData.date"
                 :isDateTime="true"
                 :useLocaleFormat="true"
                 :dateTimeFormatOptions="{ dateStyle: 'long', timeStyle: 'long' }">
@@ -169,9 +183,10 @@ export default class VariableVisualizationTile extends Vue {
   availableProvenances: Array<DataSimpleProvenanceGetDTO> = [];
 
   medianSerie = [];
-  lastMedianData: any;
+  lastData: any;
 
   isNoDataFound: boolean = false;
+  isDataOutOfReach: boolean = false;
   isDataLoaded: boolean = false;
   isGraphicLoaded: boolean = true;
   isLoadAllProvToggled: boolean = false;
@@ -238,6 +253,7 @@ export default class VariableVisualizationTile extends Vue {
 
   loadSimplifiedData() {
     this.isNoDataFound = false;
+    this.isDataOutOfReach = false;
     this.isDataLoaded = false;
     this.$opensilex.disableLoader();
 
@@ -259,8 +275,15 @@ export default class VariableVisualizationTile extends Vue {
               if (http && http.response) {
                 let seriesDTO: DataVariableSeriesGetDTO = http.response.result;
 
-                if (!seriesDTO.calculated_series.length) {
+                if (!seriesDTO.last_data_stored) {
                   this.isNoDataFound = true;
+                  return;
+                }
+
+                if (!seriesDTO.calculated_series.length) {
+                  this.lastData = seriesDTO.last_data_stored;
+                  this.isDataOutOfReach = true;
+                  this.isDataLoaded = true;
                   return;
                 }
 
@@ -311,11 +334,11 @@ export default class VariableVisualizationTile extends Vue {
       return;
     }
 
-    this.lastMedianData = {
+    this.lastData = {
       value: this.medianSerie[this.medianSerie.length - 1].value,
       date: this.medianSerie[this.medianSerie.length - 1].date
     };
-    this.lastMedianData.value = this.lastMedianData.value.toPrecision(4) + " " + this.variable.unit.symbol;
+    this.lastData.value = this.lastData.value.toPrecision(4) + " " + this.variable.unit.symbol;
   }
 
   beforeDestroy() {
@@ -425,6 +448,7 @@ en:
         limitSizeMessageA : "There are "
         limitSizeMessageB : " data .Only the 50 000 first data are displayed."
         lastMedianData: Last median value
+        lastDataStored: Last data imported on the date
 
 fr:
     VariableVisualizationTile:
@@ -433,6 +457,7 @@ fr:
         limitSizeMessageA : "Il y a "
         limitSizeMessageB : " données .Seules les 50 000 premières valeurs sont affichées. "
         lastMedianData: Dernière valeur médiane
+        lastDataStored: Dernière donnée importée à la date
 
 </i18n>
 

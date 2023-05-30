@@ -10,6 +10,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoBulkWriteException;
 import com.mongodb.MongoCommandException;
 import com.mongodb.bulk.BulkWriteError;
+import com.mongodb.client.model.Aggregates;
+import com.mongodb.client.model.Filters;
 import com.mongodb.client.result.DeleteResult;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
@@ -2059,14 +2061,14 @@ public class DataAPI {
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=asc") @QueryParam("order_by") List<OrderBy> orderByList
     ) throws Exception {
 
-        DataDAO dao = new DataDAO(nosql, sparql, fs);
+        DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
         DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
         VariableDAO variableDAO = new VariableDAO(sparql, nosql, fs);
 
         /// Search data
 
         Instant start = Instant.now();
-        ListWithPagination<DataModel> result = dao.search(
+        ListWithPagination<DataModel> result = dataDAO.search(
                 user,
                 null,
                 Arrays.asList(facilityUri),
@@ -2095,6 +2097,9 @@ public class DataAPI {
         VariableDetailsDTO variable = new VariableDetailsDTO(variableDAO.get(variableUri));
         DataVariableSeriesGetDTO dto = new DataVariableSeriesGetDTO(variable);
         Set<DeviceGetDTO> usedDevices = new HashSet<>();
+
+        DataSimpleGetDTO lastData = dataDAO.getLastDataFound(variableUri, facilityUri);
+        dto.setLastData(lastData);
 
         /// Compute median series for each provenance
 

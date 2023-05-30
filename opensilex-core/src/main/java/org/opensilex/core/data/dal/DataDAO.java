@@ -7,15 +7,17 @@
 package org.opensilex.core.data.dal;
 
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.model.IndexOptions;
-import com.mongodb.client.model.Indexes;
+import com.mongodb.client.model.*;
 import com.mongodb.client.result.DeleteResult;
 import com.opencsv.CSVWriter;
+import org.apache.jena.atlas.json.JSON;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.XSD;
 import org.bson.Document;
+import org.bson.conversions.Bson;
 import org.opensilex.core.data.api.DataExportDTO;
 import org.opensilex.core.data.api.DataGetDTO;
+import org.opensilex.core.data.api.DataSimpleGetDTO;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.utils.ExportDataIndex;
@@ -32,6 +34,7 @@ import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
@@ -1193,5 +1196,26 @@ public class DataDAO {
                 .map(dataModel -> DataGetDTO.getDtoFromModel(dataModel, dateVariables))
                 .collect(Collectors.toList());
         return new ListWithPagination<>(dtoList, modelList.getPage(), modelList.getPageSize(), modelList.getTotal());
+    }
+
+    public DataSimpleGetDTO getLastDataFound(URI variable, URI target) {
+        List<Document> aggregations = new ArrayList<>();
+
+        Document match = Document.parse(Aggregates.match(Filters.and(
+                new Document("variable", URIDeserializer.getExpandedURI(variable)),
+                new Document("target", URIDeserializer.getExpandedURI(target))
+        )).toBsonDocument().toJson());
+        Document sort = Document.parse(Aggregates.sort(new Document("date", -1)).toBsonDocument().toJson());
+        Document limit = Document.parse(Aggregates.limit(1).toBsonDocument().toJson());
+
+        aggregations.add(match);
+        aggregations.add(sort);
+        aggregations.add(limit);
+
+        Set<DataModel> results = nosql.aggregate(DataDAO.DATA_COLLECTION_NAME, aggregations, DataModel.class);
+
+        DataModel lastData = results.stream().findFirst().orElse(null);
+
+        return (lastData != null) ? DataSimpleGetDTO.getDtoFromModel(lastData) : null;
     }
 }

@@ -1,32 +1,14 @@
 package org.opensilex.migration;
 
-import org.apache.jena.graph.Node;
-import org.opensilex.core.annotation.dal.AnnotationModel;
-import org.opensilex.core.area.dal.AreaModel;
-import org.opensilex.core.device.dal.DeviceModel;
-import org.opensilex.core.document.dal.DocumentModel;
-import org.opensilex.core.event.dal.EventModel;
-import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.core.experiment.factor.dal.FactorModel;
-import org.opensilex.core.germplasm.dal.GermplasmModel;
-import org.opensilex.core.germplasmGroup.dal.GermplasmGroupModel;
-import org.opensilex.core.organisation.dal.OrganizationModel;
-import org.opensilex.core.project.dal.ProjectModel;
-import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
-import org.opensilex.core.variable.dal.VariableModel;
-import org.opensilex.core.variablesGroup.dal.VariablesGroupModel;
-import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.security.group.dal.GroupModel;
-import org.opensilex.security.profile.dal.ProfileModel;
 import org.opensilex.sparql.SPARQLConfig;
+import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLService;
+import org.reflections.Reflections;
 
 import java.net.URI;
-import java.util.Arrays;
-import java.util.List;
-
-import static org.opensilex.sparql.ontology.dal.OntologyDAO.CUSTOM_TYPES_AND_PROPERTIES_GRAPH;
+import java.util.*;
 
 public class BaseGraphMigration extends DatabaseMigrationModuleUpdate {
 
@@ -40,34 +22,37 @@ public class BaseGraphMigration extends DatabaseMigrationModuleUpdate {
         return true;
     }
 
+    /**
+     * This function renames all the graphs in OpenSilex that extend the SPARQLResourceModel class.
+     *
+     */
     @Override
     protected void sparqlOperation(SPARQLService sparql, SPARQLConfig sparqlConfig) throws SPARQLException {
 
-        List<String> allGraphToChange = Arrays.asList(
-                ProfileModel.GRAPH,
-                GroupModel.GRAPH,
-                VariableModel.GRAPH,
-                ProjectModel.GRAPH,
-                EventModel.GRAPH,
-                DeviceModel.GRAPH,
-                FactorModel.GRAPH,
-                AccountModel.GRAPH,
-                GermplasmModel.GRAPH,
-                ScientificObjectModel.GRAPH,
-                VariablesGroupModel.GRAPH,
-                GermplasmGroupModel.GRAPH,
-                AnnotationModel.GRAPH,
-                DocumentModel.GRAPH,
-                ExperimentModel.GRAPH,
-                OrganizationModel.GRAPH,
-                AreaModel.GRAPH,
-                CUSTOM_TYPES_AND_PROPERTIES_GRAPH
-        );
+        // get all the classes in the whole project that extends SPARQLResourceModel
+        Reflections reflections = new Reflections("org.opensilex");
+        Set<Class<? extends SPARQLResourceModel>> classes = reflections.getSubTypesOf(SPARQLResourceModel.class);
 
-        for (String graph : allGraphToChange) {
-            URI oldGraph = URI.create(sparql.getBaseURI() + "set/" + graph);
-            URI newGraph = URI.create(sparql.getBaseGraphURI() + "set/" + graph);
-            sparql.renameGraph(oldGraph, newGraph);
+        // create a Set that will contain all the graph of the different classes
+        Set<String> allGraphToChange = new HashSet<>();
+
+        // if the allGraphToChange is not empty we take the graph values of all the classes and put them in allGraphToChange
+        if (!classes.isEmpty()) {
+            for (Class c : classes) {
+                SPARQLResource annotation = (SPARQLResource) c.getAnnotation(SPARQLResource.class);
+                if (Objects.nonNull(annotation) && Objects.nonNull(annotation.graph()) && !Objects.equals(annotation.graph(), "")) {
+                    allGraphToChange.add(annotation.graph());
+                }
+            }
+        }
+
+        // if allGraphToChange is not empty we rename all the graph present in allGraphToChange
+        if (!allGraphToChange.isEmpty()) {
+            for (String graph : allGraphToChange) {
+                URI oldGraph = URI.create(sparql.getBaseURI() + "set/" + graph);
+                URI newGraph = URI.create(sparql.getBaseGraphURI() + "set/" + graph);
+                sparql.renameGraph(oldGraph, newGraph);
+            }
         }
 
     }

@@ -8,6 +8,7 @@ package org.opensilex.core.data.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import org.opensilex.core.device.api.DeviceGetDTO;
 import org.opensilex.core.variable.api.VariableDetailsDTO;
 import org.opensilex.server.rest.validation.Required;
 
@@ -21,7 +22,7 @@ import java.util.List;
  * @author brice maussang
  */
 @JsonPropertyOrder({
-        "variable", "provenances", "data_series", "calculated_series"
+        "variable", "provenances", "devices", "data_series", "calculated_series"
 })
 public class DataVariableSeriesGetDTO {
 
@@ -33,6 +34,10 @@ public class DataVariableSeriesGetDTO {
     @Valid
     @JsonProperty("provenances")
     private List<DataSimpleProvenanceGetDTO> provenances;
+
+    @Valid
+    @JsonProperty("devices")
+    private List<DeviceGetDTO> devices;
 
     @Valid
     @JsonProperty("data_series")
@@ -69,6 +74,14 @@ public class DataVariableSeriesGetDTO {
 
     public void setProvenances(List<DataSimpleProvenanceGetDTO> provenances) {
         this.provenances = provenances;
+    }
+
+    public List<DeviceGetDTO> getDevices() {
+        return devices;
+    }
+
+    public void setDevices(List<DeviceGetDTO> devices) {
+        this.devices = devices;
     }
 
     public List<DataSerieGetDTO> getDataSeries() {

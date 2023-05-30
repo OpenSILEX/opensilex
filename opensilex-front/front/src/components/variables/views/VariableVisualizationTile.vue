@@ -119,6 +119,7 @@ import {DataService} from "opensilex-core/api/data.service";
 import {VariableDetailsDTO} from "opensilex-core/model/variableDetailsDTO";
 import {DataSerieGetDTO} from "opensilex-core/model/dataSerieGetDTO";
 import {DataVariableSeriesGetDTO} from "opensilex-core/model/dataVariableSeriesGetDTO";
+import {DataSimpleProvenanceGetDTO} from "opensilex-core/model/dataSimpleProvenanceGetDTO";
 
 
 @Component
@@ -165,6 +166,7 @@ export default class VariableVisualizationTile extends Vue {
 
   dataSeries: Array<DataSerieGetDTO> = [];
   calculatedDataSeries: Array<DataSerieGetDTO> = [];
+  availableProvenances: Array<DataSimpleProvenanceGetDTO> = [];
 
   medianSerie = [];
   lastMedianData: any;
@@ -244,6 +246,7 @@ export default class VariableVisualizationTile extends Vue {
     this.dataService.getDataSeriesByFacility(
         this.variableUri.uri,
         this.target,
+        undefined,
         (this.defaultStartDate != "") ? this.defaultStartDate : undefined,
         (this.defaultEndDate != "") ? this.defaultEndDate : undefined,
         true,
@@ -262,6 +265,7 @@ export default class VariableVisualizationTile extends Vue {
                 }
 
                 this.calculatedDataSeries = seriesDTO.calculated_series;
+                this.availableProvenances = seriesDTO.provenances;
 
                 this.medianSerie = seriesDTO.calculated_series[0].data
                     .sort((a, b) => (a.date > b.date) ? 1 : -1);
@@ -280,6 +284,7 @@ export default class VariableVisualizationTile extends Vue {
     this.dataService.getDataSeriesByFacility(
         this.variableUri.uri,
         this.target,
+        undefined,
         (this.graphicStartDate != "") ? this.graphicStartDate : undefined,
         (this.graphicEndDate != "") ? this.graphicEndDate : undefined,
         !this.isLoadAllProvToggled,
@@ -318,9 +323,9 @@ export default class VariableVisualizationTile extends Vue {
   }
 
   showGraphic() {
+    this.graphicModal.show();
     this.prepareGraphic();
     this.isGraphicLoaded = true;
-    this.graphicModal.show();
   }
 
   prepareGraphic() {

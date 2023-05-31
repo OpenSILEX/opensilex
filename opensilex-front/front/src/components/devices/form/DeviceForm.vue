@@ -64,11 +64,11 @@
         ></opensilex-InputForm>
 
         <!--person_in_charge -->
-        <opensilex-UserSelector
-            :users.sync="form.person_in_charge"
+        <opensilex-PersonSelector
+            :persons.sync="form.person_in_charge"
             label="DeviceForm.person_in_charge"
             helpMessage="DeviceForm.person_in_charge-help"
-        ></opensilex-UserSelector>
+        ></opensilex-PersonSelector>
 
         <!-- Period -->
         <opensilex-DateRangePickerForm

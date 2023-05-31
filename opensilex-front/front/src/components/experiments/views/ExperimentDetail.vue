@@ -179,6 +179,7 @@ import {GroupDTO, SecurityService, UserGetDTO} from "opensilex-security/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import DTOConverter from "../../../models/DTOConverter";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
+import {PersonDTO} from "opensilex-security/model/personDTO";
 
 @Component
 export default class ExperimentDetail extends Vue {
@@ -202,7 +203,7 @@ export default class ExperimentDetail extends Vue {
   technicalSupervisorsList = [];
   installationsList = [];
   infrastructuresList = [];
-  recordAuthor = null;
+  recordAuthor :UserGetDTO = null;
 
   created() {
     this.service = this.$opensilex.getService("opensilex.ExperimentsService");
@@ -295,7 +296,7 @@ export default class ExperimentDetail extends Vue {
   loadExperimentDetails() {
     this.loadProjects();
     this.loadInfrastructures();
-    this.loadUsers();
+    this.loadPersons();
     this.loadGroups();
     this.loadFactors();
     this.loadSpecies();
@@ -344,7 +345,7 @@ export default class ExperimentDetail extends Vue {
     }
   }
 
-  loadUsers() {
+  loadPersons() {
     let service: SecurityService = this.$opensilex.getService(
       "opensilex.SecurityService"
     );
@@ -354,8 +355,8 @@ export default class ExperimentDetail extends Vue {
       this.experiment.scientific_supervisors.length > 0
     ) {
       service
-        .getUsersByURI(this.experiment.scientific_supervisors)
-        .then((http: HttpResponse<OpenSilexResponse<UserGetDTO[]>>) => {
+        .getPersonsByURI(this.experiment.scientific_supervisors)
+        .then((http: HttpResponse<OpenSilexResponse<PersonDTO[]>>) => {
           this.scientificSupervisorsList = http.response.result.map((item) => {
             return {
               uri: item.email,
@@ -372,8 +373,8 @@ export default class ExperimentDetail extends Vue {
       this.experiment.technical_supervisors.length > 0
     ) {
       service
-        .getUsersByURI(this.experiment.technical_supervisors)
-        .then((http: HttpResponse<OpenSilexResponse<UserGetDTO[]>>) => {
+        .getPersonsByURI(this.experiment.technical_supervisors)
+        .then((http: HttpResponse<OpenSilexResponse<PersonDTO[]>>) => {
           this.technicalSupervisorsList = http.response.result.map((item) => {
             return {
               uri: item.email,

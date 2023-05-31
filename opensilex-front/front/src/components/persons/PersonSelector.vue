@@ -51,10 +51,10 @@ export default class PersonSelector extends Vue {
       );
   }
 
-  searchPersons(searchQuery, page, pageSize) {
+  searchPersons(searchQuery, page) {
     return this.$opensilex
       .getService<SecurityService>("opensilex.SecurityService")
-      .searchPersons(searchQuery, this.getOnlyPersonsWithoutAccount, undefined, page, pageSize);
+      .searchPersons(searchQuery, this.getOnlyPersonsWithoutAccount, undefined, page, 0);
   }
 
   personToSelectNode(dto: PersonDTO) {

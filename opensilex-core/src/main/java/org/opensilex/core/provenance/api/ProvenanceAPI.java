@@ -8,10 +8,10 @@ package org.opensilex.core.provenance.api;
 
 import io.swagger.annotations.*;
 import org.apache.jena.arq.querybuilder.AskBuilder;
-import org.apache.jena.sparql.vocabulary.FOAF;
 import org.opensilex.core.data.api.DataAPI;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.device.dal.DeviceModel;
+import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.provenance.dal.AgentModel;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
@@ -24,10 +24,11 @@ import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.security.person.dal.PersonModel;
+import org.opensilex.server.exceptions.displayable.DisplayableBadRequestException;
 import org.opensilex.server.response.*;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.ontology.dal.OntologyDAO;
-import org.opensilex.sparql.ontology.dal.URITypesModel;
+import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.response.CreatedUriResponse;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
@@ -35,18 +36,15 @@ import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 
 import javax.inject.Inject;
-import javax.naming.NamingException;
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.text.ParseException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Provenance API
@@ -94,32 +92,29 @@ public class ProvenanceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "A provenance is created", response = URI.class),
-        @ApiResponse(code = 409, message = "A provenance with the same URI already exists", response = ErrorResponse.class)})
+            @ApiResponse(code = 201, message = "A provenance is created", response = URI.class),
+            @ApiResponse(code = 409, message = "A provenance with the same URI already exists", response = ErrorResponse.class)})
 
     public Response createProvenance(
             @ApiParam("Provenance description") @Valid ProvenanceCreationDTO provDTO
     ) throws Exception {
-        
+
         if (provDTO.getActivity() != null) {
             ErrorResponse actError = checkActivityTypes(provDTO.getActivity());
             if (actError != null) {
                 return actError.getResponse();
             }
-        }        
-        
+        }
+
         if (provDTO.getAgents() != null) {
             List<AgentModel> agentsWithoutDuplicates = new ArrayList<>(new HashSet<>(provDTO.getAgents()));
             provDTO.setAgents(agentsWithoutDuplicates);
-            
-            ErrorResponse error = checkAgents(provDTO.getAgents());
-            if (error != null) {
-                return error.getResponse();
-            }
+
+            checkAgents(provDTO.getAgents());
         }
-        
+
         try {
-            ProvenanceDAO provDAO = new ProvenanceDAO(nosql, sparql);                    
+            ProvenanceDAO provDAO = new ProvenanceDAO(nosql, sparql);
             ProvenanceModel model = provDTO.newModel();
             ProvenanceModel provenance = provDAO.create(model);
 
@@ -131,16 +126,12 @@ public class ProvenanceAPI {
                     Response.Status.CONFLICT,
                     "Provenance already exists",
                     "Duplicated URI: " + exception.getUri()
-            ).getResponse();            
-        } 
-        
+            ).getResponse();
+        }
+
     }
 
-    /**
-     * @param uri
-     * @return
-     * @throws java.lang.Exception
-     */
+
     @GET
     @Path("{uri}")
     @ApiOperation("Get a provenance")
@@ -148,7 +139,7 @@ public class ProvenanceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Provenance retrieved", response = ProvenanceGetDTO.class)
+            @ApiResponse(code = 200, message = "Provenance retrieved", response = ProvenanceGetDTO.class)
     })
     public Response getProvenance(
             @ApiParam(value = "Provenance URI", required = true) @PathParam("uri") @NotNull URI uri
@@ -164,24 +155,13 @@ public class ProvenanceAPI {
 
     }
 
-    /**
-     * @param name
-     * @param description
-     * @param activityType
-     * @param agentURI
-     * @param agentType
-     * @param page
-     * @param pageSize
-     * @return
-     * @throws java.lang.Exception
-     */
     @GET
     @ApiOperation("Get provenances")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return provenances list", response = ProvenanceGetDTO.class, responseContainer = "List")
+            @ApiResponse(code = 200, message = "Return provenances list", response = ProvenanceGetDTO.class, responseContainer = "List")
     })
     public Response searchProvenance(
             @ApiParam(value = "Regex pattern for filtering by name") @QueryParam("name") String name,
@@ -197,7 +177,7 @@ public class ProvenanceAPI {
 
         ProvenanceDAO dao = new ProvenanceDAO(nosql, sparql);
         ListWithPagination<ProvenanceModel> resultList = dao.search(null, name, description, activityType, activityUri, agentType, agentURI, orderByList, page, pageSize);
-        
+
         // Convert paginated list to DTO
         ListWithPagination<ProvenanceGetDTO> provenances = resultList.convert(
                 ProvenanceGetDTO.class,
@@ -217,14 +197,14 @@ public class ProvenanceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Provenance deleted", response = URI.class)
+            @ApiResponse(code = 200, message = "Provenance deleted", response = URI.class)
     })
     public Response deleteProvenance(
-            @ApiParam(value = "Provenance URI", example = PROVENANCE_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri) throws URISyntaxException, NamingException, IOException, ParseException, Exception {
+            @ApiParam(value = "Provenance URI", example = PROVENANCE_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri) throws Exception {
         ProvenanceDAO dao = new ProvenanceDAO(nosql, sparql);
 
         //check if the provenance can be deleted (not linked to data)
-        List<URI> provenances = new ArrayList();
+        List<URI> provenances = new ArrayList<>();
         provenances.add(uri);
         DataDAO dataDAO = new DataDAO(nosql, sparql, null);
         int datacount = dataDAO.count(
@@ -240,10 +220,10 @@ public class ProvenanceAPI {
                 null,
                 null,
                 null
-              
+
         );
-        
-       int datafilesCount = dataDAO.countFiles(
+
+        int datafilesCount = dataDAO.countFiles(
                 currentUser,
                 null,
                 null,
@@ -263,7 +243,7 @@ public class ProvenanceAPI {
                     "You can't delete a provenance linked to data"
             ).getResponse();
         } else {
-            try { 
+            try {
                 dao.delete(uri);
                 return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
 
@@ -283,7 +263,7 @@ public class ProvenanceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Provenance updated", response = URI.class)
+            @ApiResponse(code = 201, message = "Provenance updated", response = URI.class)
     })
 
     public Response updateProvenance(
@@ -295,17 +275,15 @@ public class ProvenanceAPI {
                 if (actError != null) {
                     return actError.getResponse();
                 }
-            }        
+            }
 
             if (dto.getAgents() != null) {
                 List<AgentModel> agentsWithoutDuplicates = new ArrayList<>(new HashSet<>(dto.getAgents()));
                 dto.setAgents(agentsWithoutDuplicates);
 
-                ErrorResponse error = checkAgents(dto.getAgents());
-                if (error != null) {
-                    return error.getResponse();
-                }
+               checkAgents(dto.getAgents());
             }
+
             ProvenanceDAO dao = new ProvenanceDAO(nosql, sparql);
             ProvenanceModel newProvenance = dto.newModel();
             newProvenance = dao.update(newProvenance);
@@ -314,7 +292,7 @@ public class ProvenanceAPI {
             throw new NotFoundURIException("Invalid or unknown provenance URI ", dto.getUri());
         }
     }
-    
+
     /**
      * * Return a list of provenancess corresponding to the given URIs
      *
@@ -329,9 +307,9 @@ public class ProvenanceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return provenancess list", response = ProvenanceGetDTO.class, responseContainer = "List"),
-        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-        @ApiResponse(code = 404, message = "Provenance not found (if any provided URIs is not found", response = ErrorDTO.class)
+            @ApiResponse(code = 200, message = "Return provenancess list", response = ProvenanceGetDTO.class, responseContainer = "List"),
+            @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
+            @ApiResponse(code = 404, message = "Provenance not found (if any provided URIs is not found", response = ErrorDTO.class)
     })
     public Response getProvenancesByURIs(
             @ApiParam(value = "Provenances URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
@@ -340,30 +318,28 @@ public class ProvenanceAPI {
         List<ProvenanceModel> models = dao.getListByURIs(uris);
 
         List<ProvenanceGetDTO> resultDTOList = new ArrayList<>(models.size());
-        models.forEach(result -> {
-            resultDTOList.add(ProvenanceGetDTO.fromModel(result));
-        });
+        models.forEach(result -> resultDTOList.add(ProvenanceGetDTO.fromModel(result)));
 
         return new PaginatedListResponse<>(resultDTOList).getResponse();
     }
 
-    private ErrorResponse checkActivityTypes(List<ActivityCreationDTO> activities) throws URISyntaxException, Exception {
-        
+    private ErrorResponse checkActivityTypes(List<ActivityCreationDTO> activities) throws Exception {
+
         Set<URI> checkedActivityTypes = new HashSet<>();
         Set<URI> notActivityTypes = new HashSet<>();
-        
-        for (ActivityCreationDTO activity:activities) {
+
+        for (ActivityCreationDTO activity : activities) {
             if (!checkedActivityTypes.contains(activity.getRdfType())) {
                 boolean exists = sparql.executeAskQuery(new AskBuilder()
-                .addWhere(SPARQLDeserializers.nodeURI(activity.getRdfType()), Ontology.subClassAny, SPARQLDeserializers.nodeURI(PROVENANCE_ACTIVITY_TYPE))
+                        .addWhere(SPARQLDeserializers.nodeURI(activity.getRdfType()), Ontology.subClassAny, SPARQLDeserializers.nodeURI(PROVENANCE_ACTIVITY_TYPE))
                 );
                 if (!exists) {
                     notActivityTypes.add(activity.getRdfType());
                 }
                 checkedActivityTypes.add(activity.getRdfType());
-            }   
+            }
         }
-        
+
         if (!notActivityTypes.isEmpty()) {
             return new ErrorResponse(
                     Response.Status.BAD_REQUEST,
@@ -373,65 +349,60 @@ public class ProvenanceAPI {
         } else {
             return null;
         }
-        
+
     }
 
-    private ErrorResponse checkAgents(List<AgentModel> dtos) throws URISyntaxException, Exception {
-        List<URI> agentTypes = Arrays.asList(new URI(sparql.getRDFTypeURI(DeviceModel.class)), new URI(sparql.getRDFTypeURI(AccountModel.class)));
-        
-        Set<URI> checkedAgentTypes = new HashSet<>();
-        Set<URI> notAgentTypes = new HashSet<>();
+    /**
+     * @param agentModels is a list of agentModel we want to ckeck before create/update a provenance
+     * @throws DisplayableBadRequestException with personalized message if agent rdf typ is not an Oeso:Operator or a subclasse of Oeso:Device
+     * or if the uri of the uri of the agent doesn't exist or don't match with the agent type.
+     */
+    private void checkAgents(List<AgentModel> agentModels) throws Exception {
+
+        List<AgentModel> devices = new ArrayList<>();
+        List<AgentModel> operators = new ArrayList<>();
+
+        checkAgentRdfTypeAndSortThemIntoDeviceAndOperator(agentModels, devices, operators);
+
         Set<URI> notAgentUris = new HashSet<>();
-        List<URI> uris = new ArrayList();
-        
-        for (AgentModel dto:dtos) {
-            uris.add(dto.getUri());
-            if (!checkedAgentTypes.contains(dto.getRdfType())) {  
-                //TODO replace FOAF.Agent by Oeso.Operator | update Yvan 01/04/2023 -> there is no Oeso.Operator in database so it's impossible for now
-                boolean isAgent = sparql.executeAskQuery(new AskBuilder()
-                .addWhere(SPARQLDeserializers.nodeURI(dto.getRdfType()), Ontology.subClassAny, SPARQLDeserializers.nodeURI(FOAF.Agent.toString()))
-                );
 
-                if (!isAgent) {
-                    isAgent = sparql.executeAskQuery(new AskBuilder()
-                    .addWhere(SPARQLDeserializers.nodeURI(dto.getRdfType()), Ontology.subClassAny, sparql.getRDFType(DeviceModel.class))
-                    );
-                }
+        Collection<URI> devicesUris = devices.stream().map(AgentModel::getUri).collect(Collectors.toList());
+        notAgentUris.addAll(sparql.getExistingUris(DeviceModel.class, devicesUris, false));
 
-                if (!isAgent) {
-                    notAgentTypes.add(dto.getRdfType());
-                }
-                checkedAgentTypes.add(dto.getRdfType());
-            }            
-        }
-        
-        if (!notAgentTypes.isEmpty()) {
-            return new ErrorResponse(
-                    Response.Status.BAD_REQUEST,
-                    "wrong agent rdfTypes",
-                    "wrong agent rdfTypes: " + notAgentTypes
+        Collection<URI> operatorsUris = operators.stream().map(AgentModel::getUri).collect(Collectors.toList());
+        notAgentUris.addAll(sparql.getExistingUris(PersonModel.class, operatorsUris, false));
+
+        if (!notAgentUris.isEmpty()) {
+            throw new DisplayableBadRequestException(
+                    "Agent uris don't exist or given uris are not agents, wrong agent uris: " + notAgentUris,
+                    null
             );
-        } else {
-            if (!uris.isEmpty()) {
-                OntologyDAO dao = new OntologyDAO(sparql);
-                List<URITypesModel> checkedTypes = dao.checkURIsTypes(uris, agentTypes);
+        }
+    }
 
-                for (URITypesModel model:checkedTypes) {
-                    if (model.getRdfTypes().isEmpty()) {
-                        notAgentUris.add(model.getUri());
-                    }
-                }
+    private void checkAgentRdfTypeAndSortThemIntoDeviceAndOperator(List<AgentModel> agentModels, List<AgentModel> devices, List<AgentModel> operators) throws SPARQLException {
+        Set<URI> notAgentTypes = new HashSet<>();
+        boolean isDevice;
+        boolean isOperator;
+        for (AgentModel agent : agentModels) {
+            isDevice = sparql.executeAskQuery(new AskBuilder()
+                    .addWhere(SPARQLDeserializers.nodeURI(agent.getRdfType()), Ontology.subClassAny, sparql.getRDFType(DeviceModel.class))
+            );
 
-                if (!notAgentUris.isEmpty()) {
-                    return new ErrorResponse(
-                            Response.Status.BAD_REQUEST,
-                            "Agent uris don't exist or given uris are not agents",
-                            "wrong agent uris: " + notAgentUris
-                    );
-                }
+            isOperator = SPARQLDeserializers.compareURIs( agent.getRdfType(), Oeso.Operator.getURI());
+
+            if (isDevice) {
+                devices.add(agent);
+            } else if (isOperator) {
+                operators.add(agent);
+            } else {
+                notAgentTypes.add(agent.getRdfType());
             }
         }
-        return null;
+
+        if ( !notAgentTypes.isEmpty() ) {
+            throw new DisplayableBadRequestException("wrong agent rdfTypes: " + notAgentTypes, null);
+        }
     }
-    
+
 }

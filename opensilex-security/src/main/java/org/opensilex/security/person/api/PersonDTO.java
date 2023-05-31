@@ -25,8 +25,10 @@ import java.util.Objects;
  * JSON representation:
  * {
  *      uri: ... optional custom uri, auto-generated if missing
- *      firstName: ... user first name
- *      lastName: ... user last name
+ *      firstName: ... required first name
+ *      lastName: ... required last name
+ *      email: ... optional email
+ *      account: ... uri of the account own by this person
  * }
  * </pre>
  *

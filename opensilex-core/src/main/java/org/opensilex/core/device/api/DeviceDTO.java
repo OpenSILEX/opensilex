@@ -5,20 +5,13 @@
  */
 package org.opensilex.core.device.api;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
 import java.net.URI;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.ontology.api.RDFObjectDTO;
-import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
-import org.opensilex.sparql.model.SPARQLLabel;
-import org.opensilex.sparql.model.SPARQLModelRelation;
-import org.opensilex.sparql.response.NamedResourceDTO;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
@@ -41,9 +34,9 @@ public class DeviceDTO extends RDFObjectDTO {
     @JsonProperty("serial_number")
     protected String serialNumber;
     
-    @ApiModelProperty(value = "Person in charge", example = "http://opensilex.dev/users#Firstname.Lastname")
+    @ApiModelProperty(value = "Person in charge", example = "http://opensilex.dev/person#Firstname.Lastname")
     @JsonProperty("person_in_charge")
-    protected URI personInCharge;
+    protected URI personInChargeURI;
     
     @ApiModelProperty(value = "Device date of start-up", example = "2018-12-12")
     @JsonProperty("start_up")
@@ -81,8 +74,8 @@ public class DeviceDTO extends RDFObjectDTO {
         this.serialNumber = serialNumber;
     }
     
-    public void setPersonInCharge(URI personInCharge){
-        this.personInCharge = personInCharge;
+    public void setPersonInChargeURI(URI personInChargeURI){
+        this.personInChargeURI = personInChargeURI;
     }
     
     public void setStartUp(LocalDate startUp){
@@ -105,8 +98,8 @@ public class DeviceDTO extends RDFObjectDTO {
         return serialNumber;
     }
     
-    public URI getPersonInCharge(){
-        return personInCharge;
+    public URI getPersonInChargeURI(){
+        return personInChargeURI;
     }
     
     public LocalDate getStartUp(){

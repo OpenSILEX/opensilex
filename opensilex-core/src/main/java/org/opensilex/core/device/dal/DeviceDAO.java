@@ -39,6 +39,8 @@ import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
+import org.opensilex.security.person.dal.PersonDAO;
+import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.DateDeserializer;
@@ -463,6 +465,7 @@ public class DeviceDAO {
     public DeviceModel getDeviceByURI(URI deviceURI, AccountModel currentUser) throws Exception {
         DeviceModel device = sparql.getByURI(DeviceModel.class, deviceURI, currentUser.getLanguage());
         if (device != null) {
+            Objects.requireNonNull(device.getUri());
             DeviceAttributeModel storedAttributes = getStoredAttributes(device.getUri());
             if (storedAttributes != null) {
                 device.setAttributes(storedAttributes.getAttribute());
@@ -470,6 +473,7 @@ public class DeviceDAO {
         }
         return device;
     }
+
 
     public List<DeviceModel> getDevicesByURI(List<URI> devicesURI, AccountModel currentUser) throws Exception {
         List<DeviceModel> devices = null;
@@ -554,7 +558,8 @@ public class DeviceDAO {
     }
 
     public List<DeviceModel> getList(List<URI> uris, AccountModel accountModel) throws Exception {
-        return sparql.getListByURIs(DeviceModel.class, uris, accountModel.getLanguage());
+        List<DeviceModel> devices = sparql.getListByURIs(DeviceModel.class, uris, accountModel.getLanguage());
+        return devices;
     }
 
     public DeviceModel getByName(String name) throws Exception {
@@ -578,7 +583,9 @@ public class DeviceDAO {
             throw new DuplicateNameException(name);
         }
 
-        return results.getList().get(0);
+        DeviceModel device = results.getList().get(0);
+    
+        return device;
     }
 
     public FacilityModel getAssociatedFacility(URI deviceURI, AccountModel currentUser) throws Exception {

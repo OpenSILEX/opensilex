@@ -9,7 +9,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
-import java.time.LocalDate;
 import java.util.Map;
 import javax.validation.constraints.NotNull;
 import org.opensilex.core.device.dal.DeviceModel;
@@ -83,9 +82,6 @@ public class DeviceCreationDTO extends DeviceDTO {
         model.setModel(getConstructorModel());
         model.setSerialNumber(getSerialNumber());
 
-        if(getPersonInCharge() != null){
-            model.setPersonInCharge(getPersonInCharge());
-        }
         
         if(getStartUp() != null){
             model.setStartUp(getStartUp());

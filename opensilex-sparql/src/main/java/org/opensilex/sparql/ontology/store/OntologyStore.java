@@ -51,6 +51,7 @@ public interface OntologyStore {
      * @param classURI URI of a {@link ClassModel} (required)
      * @param ancestorURI  URI of the classURI ancestor(optional). If set then the store return true if and only if this class is a sub-classOf* of parentClass
      * @return true if a class exist
+     * @// TODO: 30/05/2023  subclass check is done in the DefaultOntologyStore but not in the NoOntologyStore (used for tests)
      */
     boolean classExist(URI classURI, URI ancestorURI) throws SPARQLException;
 
@@ -60,6 +61,7 @@ public interface OntologyStore {
      * @param ancestorURI  URI of the classURI ancestor(optional). If set then the store return a {@link ClassModel} if and only if this class is a sub-classOf* of parentClass
      * @param lang class name lang filter (only return lang which match with the given lang)
      * @return the {@link ClassModel} which have classURI as URI ({@link SPARQLResourceModel#getUri()})
+     * @// TODO: 30/05/2023  subclass check is done in the DefaultOntologyStore but not in the NoOntologyStore (used for tests)
      */
     ClassModel getClassModel(URI classURI, URI ancestorURI, String lang) throws SPARQLException;
 

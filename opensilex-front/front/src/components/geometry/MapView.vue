@@ -411,7 +411,7 @@
     </b-sidebar>
 
 <!---------------------------- MENU SIDEBAR ----------------------------->
-    <b-sidebar id="map-sidebar" visible no-header class="sidebar-content">
+    <b-sidebar id="map-sidebar" visible no-header class="sidebar-content" ref="mapSidebar">
       <template #default="{ hide }">
         <div
           class="
@@ -733,12 +733,9 @@ import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {stringify} from "wkt";
 import ExperimentDataVisualisation from "../experiments/ExperimentDataVisualisation.vue";
 
-//TODO: 1- Change title + icon?
-//TODO: 2- Modal padding
-//TODO: 3- show selected OS in filter
+//TODO: 2- Modal responsive
+//TODO: 3- show selected OS in table
 //TODO: 5- reciprocité sélection OS??
-//TODO: 8- close menu panel when modal open
-//TODO: 7- Change size pop-up 1 selected
 
 @Component({
   components: {ExperimentDataVisualisation}
@@ -754,6 +751,7 @@ export default class MapView extends Vue {
   @Ref("soForm") readonly soForm!: any;
   @Ref("deviceForm") readonly deviceForm!: any;
   @Ref("exportShapeModalList") readonly exportShapeModalList!: any;
+  @Ref("mapSidebar") readonly mapSidebar!: any;
 
   ///////////// BASE DATA ////////////
   $opensilex: OpenSilexVuePlugin;
@@ -1059,7 +1057,7 @@ export default class MapView extends Vue {
                     this.selectedFeatures.push(feature);
                     if(feature.properties.nature === "ScientificObjects"){
                       this.selectedOS.push(feature.properties.uri);
-                      this.soWithLabels.push(feature.properties);
+                      this.soWithLabels.push({id:feature.properties.uri, label:feature.properties.name});
                     }
                   }
               )
@@ -1154,7 +1152,7 @@ export default class MapView extends Vue {
       features.forEach((feature) => {
         if(feature.properties.nature === "ScientificObjects"){
           this.selectedOS.push(feature.properties.uri);
-          this.soWithLabels.push(feature.properties);
+          this.soWithLabels.push({id:feature.properties.uri, label:feature.properties.name});
         }
       })
     }
@@ -1277,6 +1275,7 @@ export default class MapView extends Vue {
   //Display chart
   showChart(){
     this.$bvModal.show("modal-chart");
+    this.mapSidebar.hide();
   }
 
     //get visible OS features
@@ -2593,7 +2592,7 @@ p {
   box-shadow: 0 0.25em 0.5em transparentize(#000000, 0.8);
   border-radius: 5px;
   text-indent: 2px;
-  max-width: 300px;
+  max-width: 75%;
 }
 
 ::v-deep .b-table-details .card {

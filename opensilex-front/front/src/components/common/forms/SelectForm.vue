@@ -341,31 +341,31 @@ export default class SelectForm extends Vue {
         } else {
           //Set table async view's checked items
           let jsonSelectedItems = this._convertSelectedToJson();
-          this.waitFor((_)=>
-              this.searchModal &&
-              this.searchModal.setInitiallySelectedItems
-          ).then(() => {
+          setTimeout(()=>{
             if(this.searchModal.setInitiallySelectedItems){
               this.searchModal.setInitiallySelectedItems(jsonSelectedItems);
             }
-          //Set selectedTmp and selectedCopie
+            //Set selectedTmp and selectedCopie
             if( this.firstTimeOpening ){
-                this.firstTimeOpening = false;
-                if( this.selectedInJsonFormat ){
-                    this.selectedTmp = this.selectedInJsonFormat.map(e => this.conversionMethod(e));
-                    this.selectedCopie = this.selectedInJsonFormat.map(e => this.conversionMethod(e));
-                }
+              this.firstTimeOpening = false;
+              if( this.selectedInJsonFormat ){
+                this.selectedTmp = this.selectedInJsonFormat.map(e => this.conversionMethod(e));
+                this.selectedCopie = this.selectedInJsonFormat.map(e => this.conversionMethod(e));
+              }
             }
-          let nodeList = [];
-          this.selectedTmp.forEach((item) => {
-            nodeList.push(this.conversionMethod(item));
-          });
-          this.currentValue = nodeList;
-          if (this.loading) {
-            this.loading = false;
-          }
-          resolve(this.currentValue);
-          })
+            let nodeList = [];
+            this.selectedTmp.forEach((item) => {
+              nodeList.push(this.conversionMethod(item));
+            });
+            this.currentValue = nodeList;
+            if (this.loading) {
+              this.loading = false;
+            }
+            if(this.selectedInJsonFormat && this.currentValue !== []){
+              this.$emit('onValidate', this.selectedCopie);
+            }
+            resolve(this.currentValue);
+          },2000);
         }
       } else {
         if (this.itemLoadingMethod) {
@@ -741,19 +741,6 @@ export default class SelectForm extends Vue {
     if (this.searchModal) {
       this.searchModal.refresh();
     }
-  }
-
-  private waitFor(conditionFunction) {
-    const poll = (resolve) => {
-      if (conditionFunction()) resolve();
-      else
-        setTimeout((_) => {
-          this.$opensilex.showLoader();
-          poll(resolve);
-        }, 200);
-    };
-
-    return new Promise(poll);
   }
 
 }

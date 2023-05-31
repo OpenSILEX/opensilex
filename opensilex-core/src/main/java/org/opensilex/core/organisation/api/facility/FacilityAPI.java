@@ -6,6 +6,7 @@
 package org.opensilex.core.organisation.api.facility;
 
 import io.swagger.annotations.*;
+import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.organisation.dal.OrganizationDAO;
@@ -40,6 +41,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.opensilex.core.organisation.api.OrganizationAPI.CREDENTIAL_GROUP_INFRASTRUCTURE_ID;
@@ -108,7 +111,11 @@ public class FacilityAPI {
                 }
             }
 
-            facility = facilityDAO.create(facility, currentUser);
+            facility = facilityDAO.create(
+                    facility,
+                    Objects.isNull(dto.getGeometry()) ? null : GeospatialDAO.geoJsonToGeometry(dto.getGeometry()),
+                    currentUser
+            );
 
             return new CreatedUriResponse(facility.getUri()).getResponse();
 
@@ -289,7 +296,11 @@ public class FacilityAPI {
             }
         }
 
-        facility = facilityDAO.update(facility, currentUser);
+        facility = facilityDAO.update(
+                facility,
+                Objects.isNull(dto.getGeometry()) ? null : GeospatialDAO.geoJsonToGeometry(dto.getGeometry()),
+                currentUser
+        );
 
         Response response = new ObjectUriResponse(Response.Status.OK, facility.getUri()).getResponse();
 

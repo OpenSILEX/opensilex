@@ -117,7 +117,6 @@
       @onCreate="onCreate"
       @onUpdate="onUpdate"
       :initForm="initForm"
-      :lazy="true"
     ></opensilex-FacilityModalForm>
   </b-card>
 </div>
@@ -134,6 +133,7 @@ import {FacilityCreationDTO,
   FacilityGetDTO,
   NamedResourceDTOFacilityModel, NamedResourceDTOOrganizationModel, NamedResourceDTOSiteModel } from 'opensilex-core/index';
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+import DTOConverter from "../../models/DTOConverter";
 
 @Component
 export default class FacilitiesView extends Vue {
@@ -267,7 +267,7 @@ export default class FacilitiesView extends Vue {
   }
 
   editFacility(facility: FacilityGetDTO) {
-    this.facilityForm.showEditForm(facility);
+    this.facilityForm.showEditForm(DTOConverter.extractURIFromResourceProperties(facility));
   }
 
   onUpdate() {

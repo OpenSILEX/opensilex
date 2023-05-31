@@ -93,12 +93,16 @@
       >
       </opensilex-UriListView>
 
+      <!-- Geometry -->
+      <opensilex-GeometryCopy
+        v-if="selected.geometry"
+        :value="selected.geometry"
+      ></opensilex-GeometryCopy>
+
       <!-- Address -->
       <opensilex-AddressView
           v-if="selected.address"
           :address="selected.address"
-          :geometry="selected.geometry"
-          noGeometryLabel="FacilityDescription.noGeometryWarning"
       >
       </opensilex-AddressView>
 
@@ -280,7 +284,6 @@ en:
     devices: Devices
     site: "Site"
     address: "Address"
-    noGeometryWarning: No geometry was associated with the address. Maybe the address is invalid.
 fr:
   FacilityDescription:
     organizations: Organisations
@@ -288,5 +291,4 @@ fr:
     devices: Appareils
     site: "Site"
     address: "Adresse"
-    noGeometryWarning: Aucune géométrie n'a pu être déterminée à partir de l'adresse. L'adresse est peut-être invalide.
 </i18n>

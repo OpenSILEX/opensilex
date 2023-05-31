@@ -308,14 +308,7 @@ public class SiteDAO {
             return;
         }
 
-        GeospatialModel geospatialModel = new GeospatialModel();
-        geospatialModel.setUri(site.getUri());
-        geospatialModel.setName(site.getName());
-        geospatialModel.setRdfType(site.getType());
-        geospatialModel.setGraph(addressGraphURI);
-        geospatialModel.setGeometry(geom);
-
-        this.geospatialDAO.create(geospatialModel);
+        this.geospatialDAO.create(new GeospatialModel(site, addressGraphURI, geom));
     }
 
     /**

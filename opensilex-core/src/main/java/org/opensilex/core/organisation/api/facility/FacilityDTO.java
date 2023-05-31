@@ -8,6 +8,7 @@ package org.opensilex.core.organisation.api.facility;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModel;
+import org.geojson.GeoJsonObject;
 import org.opensilex.core.ontology.api.RDFObjectDTO;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
@@ -22,7 +23,6 @@ import java.util.List;
  * @author vince
  */
 @ApiModel
-@JsonPropertyOrder({"uri", "rdf_type", "name", "address"})
 public class FacilityDTO extends RDFObjectDTO {
 
     @JsonProperty("rdf_type_name")
@@ -31,6 +31,8 @@ public class FacilityDTO extends RDFObjectDTO {
     protected String name;
 
     protected FacilityAddressDTO address;
+
+    protected GeoJsonObject geometry;
 
     public String getName() {
         return name;
@@ -54,6 +56,14 @@ public class FacilityDTO extends RDFObjectDTO {
 
     public void setAddress(FacilityAddressDTO address) {
         this.address = address;
+    }
+
+    public GeoJsonObject getGeometry() {
+        return geometry;
+    }
+
+    public void setGeometry(GeoJsonObject geometry) {
+        this.geometry = geometry;
     }
 
     public void toModel(FacilityModel model) {

@@ -6,21 +6,6 @@
         :value="address.readableAddress"
         label="AddressView.address"
     ></opensilex-StringView>
-
-    <!-- Geometry -->
-    <opensilex-GeometryCopy
-        v-if="geometry"
-        :value="geometry"
-    ></opensilex-GeometryCopy>
-
-    <!-- No geometry warning -->
-    <b-alert
-        v-if="!geometry && noGeometryLabel"
-        show
-        variant="warning"
-    >
-      {{ $t(noGeometryLabel) }}
-    </b-alert>
   </div>
 </template>
 
@@ -35,12 +20,6 @@ export default class AddressView extends Vue {
   address: {
     readableAddress: string
   };
-
-  @Prop()
-  geometry;
-
-  @Prop()
-  noGeometryLabel: string;
 }
 </script>
 

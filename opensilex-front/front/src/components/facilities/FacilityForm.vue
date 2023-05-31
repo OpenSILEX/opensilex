@@ -56,6 +56,14 @@
       {{$t("component.facility.warning.facility-should-have-unique-site")}}
     </b-alert>
 
+    <!-- Geometry -->
+    <opensilex-GeometryForm
+      :value.sync="form.geometry"
+      label="component.common.geometry"
+      helpMessage="component.common.geometry-help"
+    >
+    </opensilex-GeometryForm>
+
     <!-- Address toggle -->
     <b-form-checkbox
         v-model="hasAddress"
@@ -125,6 +133,7 @@ export default class FacilityForm extends Vue {
       uri: undefined,
       rdf_type: undefined,
       name: undefined,
+      geometry: undefined,
       address: undefined,
       organizations: [],
       sites: [],

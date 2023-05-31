@@ -6,7 +6,6 @@
 package org.opensilex.core.organisation.api.facility;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModel;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.OrganizationModel;
@@ -22,9 +21,7 @@ import java.util.stream.Collectors;
  * @author vince
  */
 @ApiModel
-@JsonPropertyOrder({"uri", "rdf_type", "name","organizations", "sites", "address"})
-public
-class FacilityCreationDTO extends FacilityDTO {
+public class FacilityCreationDTO extends FacilityDTO {
     @JsonProperty("organizations")
     protected List<URI> organizations;
 
@@ -57,7 +54,7 @@ class FacilityCreationDTO extends FacilityDTO {
                 organization.setUri(organizationUri);
                 return organization;
             }).collect(Collectors.toList());
-            model.setInfrastructures(organizationList);
+            model.setOrganizations(organizationList);
         }
 
         if (Objects.nonNull(getSites())) {
@@ -73,6 +70,6 @@ class FacilityCreationDTO extends FacilityDTO {
     public void fromModel(FacilityModel model) {
         super.fromModel(model);
 
-        setOrganizations(model.getInfrastructureUris());
+        setOrganizations(model.getOrganizationUriList());
     }
 }

@@ -9,7 +9,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.annotations.ApiModel;
-import org.geojson.GeoJsonObject;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
@@ -37,9 +36,6 @@ public class FacilityGetDTO extends FacilityDTO {
     @JsonProperty("sites")
     protected List<NamedResourceDTO<SiteModel>> sites;
 
-    @JsonProperty("geometry")
-    protected GeoJsonObject geometry;
-
     @NotNull
     public List<NamedResourceDTO<OrganizationModel>> getInfrastructures() {
         return infrastructures;
@@ -57,14 +53,6 @@ public class FacilityGetDTO extends FacilityDTO {
         this.sites = sites;
     }
 
-    public GeoJsonObject getGeometry() {
-        return geometry;
-    }
-
-    public void setGeometry(GeoJsonObject geometry) {
-        this.geometry = geometry;
-    }
-
     @Override
     public void toModel(FacilityModel model) {
         super.toModel(model);
@@ -76,7 +64,7 @@ public class FacilityGetDTO extends FacilityDTO {
                 organizationModel.setUri(infrastructure.getUri());
                 organizationModels.add(organizationModel);
             });
-            model.setInfrastructures(organizationModels);
+            model.setOrganizations(organizationModels);
         }
 
         if (getSites() != null) {
@@ -93,8 +81,8 @@ public class FacilityGetDTO extends FacilityDTO {
     public void fromModel(FacilityModel model) {
         super.fromModel(model);
 
-        if (model.getInfrastructures() != null) {
-            setInfrastructures(model.getInfrastructures()
+        if (model.getOrganizations() != null) {
+            setInfrastructures(model.getOrganizations()
                     .stream()
                     .map(infrastructureModel ->
                             (NamedResourceDTO<OrganizationModel>)NamedResourceDTO.getDTOFromModel(infrastructureModel))

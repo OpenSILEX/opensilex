@@ -48,8 +48,8 @@ public class FacilityModel extends SPARQLTreeModel<FacilityModel> {
             property = "isHosted",
             inverse = true
     )
-    private List<OrganizationModel> infrastructures;
-    public static final String INFRASTRUCTURE_FIELD = "infrastructures";
+    private List<OrganizationModel> organizations;
+    public static final String ORGANIZATIONS_FIElD = "organizations";
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -67,19 +67,19 @@ public class FacilityModel extends SPARQLTreeModel<FacilityModel> {
     private FacilityAddressModel address;
     public static final String ADDRESS_FIELD = "address";
 
-    public List<OrganizationModel> getInfrastructures() {
-        return infrastructures;
+    public List<OrganizationModel> getOrganizations() {
+        return organizations;
     }
 
-    public void setInfrastructures(List<OrganizationModel> infrastructures) {
-        this.infrastructures = infrastructures;
+    public void setOrganizations(List<OrganizationModel> organizations) {
+        this.organizations = organizations;
     }
 
-    public List<URI> getInfrastructureUris() {
-        if (this.infrastructures == null) {
+    public List<URI> getOrganizationUriList() {
+        if (this.organizations == null) {
             return new ArrayList<>();
         }
-        return this.infrastructures
+        return this.organizations
                 .stream()
                 .map(OrganizationModel::getUri)
                 .collect(Collectors.toList());

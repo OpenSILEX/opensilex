@@ -1553,6 +1553,19 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     /**
+     * This Java function checks if a graph exists by executing a SPARQL ASK query.
+     * 
+     * @param graph SPARQL GRAPH to check its existence.
+     * @return return true if the graph exists.
+     */
+    public boolean graphExists(Node graph) throws SPARQLException {
+        return this.executeAskQuery(new AskBuilder().addGraph(
+                graph,
+                new WhereBuilder().addWhere(makeVar("s"), makeVar("p"), makeVar("o"))
+        ));
+    }
+
+    /**
      *
      * @param graph SPARQL GRAPH in which search for URI existence (optional)
      * @param uri URI to check (required)

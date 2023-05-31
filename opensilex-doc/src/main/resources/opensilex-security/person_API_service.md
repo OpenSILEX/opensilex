@@ -25,3 +25,12 @@ If both URI and Orcid are empty, URI will be auto-generated.
 
 ### tests
 Several integrations tests in `PersonAPITest.java` to ensure both success and error scenarios
+
+
+## futurs perspectives
+
+### delete control
+Persons are used as metadata to enrich primary data with contact information.
+Deleting a person means deleting metadata for all objects connected to this person.
+
+Idea of solution : authorize deletion only for persons that are not connected with any objects yet.

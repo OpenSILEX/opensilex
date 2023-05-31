@@ -35,11 +35,10 @@ import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.security.authentication.ApiCredential;
-import org.opensilex.security.authentication.ApiCredentialGroup;
-import org.opensilex.security.authentication.ApiProtected;
-import org.opensilex.security.authentication.ForbiddenURIAccessException;
+import org.opensilex.security.authentication.*;
 import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.security.person.dal.PersonDAO;
+import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.server.rest.validation.ValidURI;
@@ -138,11 +137,20 @@ public class DeviceAPI {
             @ApiParam(value = "Checking only", example = "false") @DefaultValue("false") @QueryParam("checkOnly") Boolean checkOnly
     ) throws Exception {
         DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
+
+        PersonModel personInCharge = null;
+        if (Objects.nonNull(deviceDTO.getPersonInChargeURI())){
+                PersonDAO personDAO = new PersonDAO(sparql);
+                personInCharge = personDAO.get(deviceDTO.getPersonInChargeURI());
+            if (Objects.isNull(personInCharge)){
+                throw new NotFoundURIException("Person in charge must be an existing person", deviceDTO.getPersonInChargeURI());            }
+        }
         if (!checkOnly){
             try {
                 DeviceModel devModel = new DeviceModel();
                 deviceDTO.toModel(devModel);
                 deviceDAO.initDevice(devModel, deviceDTO.getRelations(), currentUser);
+                devModel.setPersonInCharge(personInCharge);
                 URI uri = deviceDAO.create(devModel, currentUser);
                 return new CreatedUriResponse(uri).getResponse();
             } catch (SPARQLAlreadyExistingUriException ex) {
@@ -250,16 +258,13 @@ public class DeviceAPI {
 
         DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
 
-        DeviceModel model = dao.getDeviceByURI(uri, currentUser);
+            DeviceModel model = dao.getDeviceByURI(uri, currentUser);
 
-        Response response;
-        if (model != null) {
-            response = new SingleObjectResponse<>(DeviceGetDetailsDTO.getDTOFromModel(model)).getResponse();
-        } else {
-            response = Response.status(Response.Status.NOT_FOUND.getStatusCode()).build();
-        }
-
-        return response;
+            if (model != null) {
+                return new SingleObjectResponse<>(DeviceGetDetailsDTO.getDTOFromModel(model)).getResponse();
+            } else {
+                throw new NotFoundURIException(uri);
+            }
     }
 
     @GET
@@ -314,8 +319,21 @@ public class DeviceAPI {
     ) throws Exception {
         DeviceDAO deviceDAO = new DeviceDAO(sparql, nosql, fs);
         DeviceModel deviceModel = dto.newModel();
-
         deviceDAO.initDevice(deviceModel, dto.getRelations(), currentUser);
+
+        if (Objects.nonNull(dto.getPersonInChargeURI())){
+                PersonDAO personDAO = new PersonDAO(sparql);
+                PersonModel personInCharge =  personDAO.get(dto.getPersonInChargeURI());
+                deviceModel.setPersonInCharge(personInCharge);
+            if (Objects.isNull(personInCharge)){
+                return new ErrorResponse(
+                        Response.Status.NOT_FOUND,
+                        "Person in charge must be an existing person",
+                        "person in charge not found with URI : " + dto.getPersonInChargeURI()
+                ).getResponse();
+            }
+        }
+
         deviceDAO.update(deviceModel, currentUser);
         return new ObjectUriResponse(Response.Status.OK, deviceModel.getUri()).getResponse();
     }
@@ -566,9 +584,7 @@ public class DeviceAPI {
 
         Builder csvSchemaBuilder = CsvSchema.builder();
         JsonNode firstObject = arrayNode.elements().next();
-        firstObject.fieldNames().forEachRemaining(fieldName -> {
-            csvSchemaBuilder.addColumn(fieldName);
-        });
+        firstObject.fieldNames().forEachRemaining(csvSchemaBuilder::addColumn);
         CsvSchema csvSchema = csvSchemaBuilder.build().withHeader();
         StringWriter str = new StringWriter();
 

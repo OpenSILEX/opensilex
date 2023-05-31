@@ -5,11 +5,12 @@
  */
 package org.opensilex.core.project.api;
 
+import org.opensilex.core.project.dal.ProjectModel;
+import org.opensilex.security.person.dal.PersonModel;
+
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import org.opensilex.core.project.dal.ProjectModel;
-import org.opensilex.security.account.dal.AccountModel;
 
 /**
  *
@@ -33,31 +34,31 @@ public class ProjectCreationDTO extends ProjectDTO {
         model.setHomePage(homePage);
         
         if(administrativeContacts != null){
-            List<AccountModel> adminList = new ArrayList<>(administrativeContacts.size());
+            List<PersonModel> adminList = new ArrayList<>(administrativeContacts.size());
             administrativeContacts.forEach((URI u) -> {
-                AccountModel user = new AccountModel();
-                user.setUri(u);
-                adminList.add(user);
+                PersonModel person = new PersonModel();
+                person.setUri(u);
+                adminList.add(person);
             });
              model.setAdministrativeContacts(adminList);
         }
        
         if(coordinators != null){
-            List<AccountModel> coordList = new ArrayList<>(coordinators.size());
+            List<PersonModel> coordList = new ArrayList<>(coordinators.size());
             coordinators.forEach((URI u) -> {
-                AccountModel user = new AccountModel();
-                user.setUri(u);
-                coordList.add(user);
+                PersonModel person = new PersonModel();
+                person.setUri(u);
+                coordList.add(person);
             });
             model.setCoordinators(coordList);
         }
 
         if(scientificContacts != null){
-            List<AccountModel> scientList = new ArrayList<>(scientificContacts.size());
+            List<PersonModel> scientList = new ArrayList<>(scientificContacts.size());
             scientificContacts.forEach((URI u) -> {
-                AccountModel user = new AccountModel();
-                user.setUri(u);
-                scientList.add(user);
+                PersonModel person = new PersonModel();
+                person.setUri(u);
+                scientList.add(person);
             });
             model.setScientificContacts(scientList);
         }

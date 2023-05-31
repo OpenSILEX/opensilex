@@ -8,11 +8,11 @@ package org.opensilex.core.experiment.api;
 
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorModel;
-import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.OrganizationModel;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.security.group.dal.GroupModel;
-import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.security.person.dal.PersonModel;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -47,7 +47,7 @@ public class ExperimentCreationDTO extends ExperimentDTO {
         model.setInfrastructures(infrastructuresList);
 
         List<FacilityModel> facilityList = new ArrayList<>(facilities.size());
-        facilities.forEach((facilityUri) -> {
+        facilities.forEach( facilityUri -> {
             FacilityModel facilityModel = new FacilityModel();
             facilityModel.setUri(facilityUri);
             facilityList.add(facilityModel);
@@ -62,19 +62,19 @@ public class ExperimentCreationDTO extends ExperimentDTO {
         });
         model.setProjects(projectList);
 
-        List<AccountModel> scientificList = new ArrayList<>(scientificSupervisors.size());
+        List<PersonModel> scientificList = new ArrayList<>(scientificSupervisors.size());
         scientificSupervisors.forEach((URI u) -> {
-            AccountModel user = new AccountModel();
-            user.setUri(u);
-            scientificList.add(user);
+            PersonModel person = new PersonModel();
+            person.setUri(u);
+            scientificList.add(person);
         });
         model.setScientificSupervisors(scientificList);
 
-        List<AccountModel> technicalList = new ArrayList<>(technicalSupervisors.size());
+        List<PersonModel> technicalList = new ArrayList<>(technicalSupervisors.size());
         technicalSupervisors.forEach((URI u) -> {
-            AccountModel user = new AccountModel();
-            user.setUri(u);
-            technicalList.add(user);
+            PersonModel person = new PersonModel();
+            person.setUri(u);
+            technicalList.add(person);
         });
         model.setTechnicalSupervisors(technicalList);
 

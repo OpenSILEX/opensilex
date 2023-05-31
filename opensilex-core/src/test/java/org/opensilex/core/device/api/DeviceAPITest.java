@@ -10,7 +10,6 @@ package org.opensilex.core.device.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
-import org.apache.jena.graph.Node;
 import org.apache.jena.vocabulary.XSD;
 import org.junit.Assert;
 import org.junit.Test;
@@ -22,15 +21,11 @@ import org.opensilex.core.data.dal.DataProvenanceModel;
 import org.opensilex.core.data.dal.ProvEntityModel;
 import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.device.dal.DeviceModel;
-import org.opensilex.core.event.api.move.MoveCreationDTO;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
-import org.opensilex.core.organisation.api.FacilityApiTest;
-import org.opensilex.core.organisation.api.facility.FacilityCreationDTO;
 import org.opensilex.core.organisation.api.facility.FacilityGetDTO;
-import org.opensilex.core.organisation.api.facility.FacilityUpdateDTO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.provenance.api.ProvenanceAPI;
 import org.opensilex.core.provenance.api.ProvenanceCreationDTO;
@@ -39,7 +34,8 @@ import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.variable.api.VariableApiTest;
 import org.opensilex.core.variable.api.VariableCreationDTO;
 import org.opensilex.core.variable.dal.*;
-import org.opensilex.fs.service.FileStorageService;
+import org.opensilex.security.account.dal.AccountDAO;
+import org.opensilex.security.person.dal.PersonDAO;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -47,6 +43,7 @@ import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.model.time.InstantModel;
 import org.opensilex.sparql.service.SPARQLService;
 
+import javax.mail.internet.InternetAddress;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.time.Instant;
@@ -101,6 +98,39 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
     @Test
     public void testCreateGetAndDelete() throws Exception {
         super.testCreateGetAndDelete(createPath, getByUriPath, deletePath, getCreationDto());
+    }
+
+    @Test
+    public void create_with_personInCharge() throws Exception {
+        PersonDAO personDAO = new PersonDAO(getSparqlService());
+        URI personURI = personDAO.create(null, "test", "test", "test@test.test", null).getUri();
+
+        DeviceCreationDTO deviceDTO = getCreationDto();
+        deviceDTO.setPersonInChargeURI(personURI);
+
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), deviceDTO);
+        assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
+    }
+
+    @Test
+    public void create_with_personInCharge_doesnt_exist() throws Exception {
+        DeviceCreationDTO deviceDTO = getCreationDto();
+        deviceDTO.setPersonInChargeURI(new URI("http://fake.uri/personInCharge"));
+
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), deviceDTO);
+        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), postResult.getStatus());
+    }
+
+    @Test
+    public void create_with_personInCharge_exist_but_is_not_a_person() throws Exception {
+        AccountDAO accountDAO = new AccountDAO(getSparqlService());
+        URI accountURI = accountDAO.create(null, new InternetAddress("test@test.test"), false, "password", "fr").getUri();
+
+        DeviceCreationDTO deviceDTO = getCreationDto();
+        deviceDTO.setPersonInChargeURI(accountURI);
+
+        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), deviceDTO);
+        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), postResult.getStatus());
     }
 
     @Test

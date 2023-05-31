@@ -147,7 +147,7 @@ public class DeviceExportDTO extends RDFObjectDTO{
         }
         
         if(model.getPersonInCharge() != null){
-            setPersonInCharge(model.getPersonInCharge());
+            setPersonInCharge(model.getPersonInCharge().getUri());
         }
         
         if(model.getStartUp() != null){

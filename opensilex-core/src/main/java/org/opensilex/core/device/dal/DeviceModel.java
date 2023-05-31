@@ -10,13 +10,12 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLTreeModel;
 
-import java.net.URI;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -57,7 +56,7 @@ public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
             ontology = Oeso.class,
             property = "personInCharge"
     )
-    URI personInCharge;
+    PersonModel personInCharge;
     public static final String PERSON_IN_CHARGE_FIELD = "personInCharge";
     
     @SPARQLProperty(
@@ -107,11 +106,11 @@ public class DeviceModel extends SPARQLTreeModel<DeviceModel> {
         this.serialNumber = serialNumber;
     }
     
-    public URI getPersonInCharge() {
+    public PersonModel getPersonInCharge() {
         return personInCharge;
     }
 
-    public void setPersonInCharge(URI personInCharge) {
+    public void setPersonInCharge(PersonModel personInCharge) {
         this.personInCharge = personInCharge;
     }
     

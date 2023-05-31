@@ -228,10 +228,11 @@ public class AccountModel extends SPARQLResourceModel implements Principal, Clas
     }
 
     public void setIsEnabled(Boolean enable) {
-        if (! isAdmin())
+        if (Boolean.FALSE.equals(isAdmin())) {
             isEnabled = enable;
-        else
+        } else {
             isEnabled = true;
+        }
     }
 
     @Override

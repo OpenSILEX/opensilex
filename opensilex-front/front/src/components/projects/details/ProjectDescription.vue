@@ -267,7 +267,7 @@ export default class ProjectDescription extends Vue {
     this.scientificContactsList = [];
     if (this.project.scientific_contacts.length) {
       service
-        .getUsersByURI(this.project.scientific_contacts)
+        .getPersonsByURI(this.project.scientific_contacts)
         .then((http: HttpResponse<OpenSilexResponse<UserGetDTO[]>>) => {
           this.scientificContactsList = http.response.result.map(item => {
             return {
@@ -282,7 +282,7 @@ export default class ProjectDescription extends Vue {
     this.coordinatorsList = [];
     if (this.project.coordinators.length) {
       service
-        .getUsersByURI(this.project.coordinators)
+        .getPersonsByURI(this.project.coordinators)
         .then((http: HttpResponse<OpenSilexResponse<UserGetDTO[]>>) => {
           this.coordinatorsList = http.response.result.map(item => {
             return {
@@ -297,7 +297,7 @@ export default class ProjectDescription extends Vue {
     this.administrativeContactsList = [];
     if (this.project.administrative_contacts.length) {
       service
-        .getUsersByURI(this.project.administrative_contacts)
+        .getPersonsByURI(this.project.administrative_contacts)
         .then((http: HttpResponse<OpenSilexResponse<UserGetDTO[]>>) => {
           this.administrativeContactsList = http.response.result.map(item => {
             return {

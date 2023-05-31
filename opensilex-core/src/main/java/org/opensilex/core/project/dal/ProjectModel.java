@@ -8,7 +8,7 @@ package org.opensilex.core.project.dal;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.vocabulary.DCTerms;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
@@ -86,21 +86,21 @@ public class ProjectModel extends SPARQLNamedResourceModel<ProjectModel> impleme
             ontology = Oeso.class,
             property = "hasAdministrativeContact"
     )
-    private List<AccountModel> administrativeContacts;
+    private List<PersonModel> administrativeContacts;
     public static final String ADMINISTRATIVE_CONTACTS_FIELD = "administrativeContacts";
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasCoordinator"
     )
-    private List<AccountModel> coordinators;
+    private List<PersonModel> coordinators;
     public static final String COORDINATORS_FIELD = "coordinators";
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasScientificContact"
     )
-    private List<AccountModel> scientificContacts;
+    private List<PersonModel> scientificContacts;
     public static final String SCIENTIFIC_CONTACTS_FIELD = "scientificContacts";
 
     @SPARQLProperty(
@@ -173,27 +173,27 @@ public class ProjectModel extends SPARQLNamedResourceModel<ProjectModel> impleme
         this.homePage = homePage;
     }
 
-    public List<AccountModel> getAdministrativeContacts() {
+    public List<PersonModel> getAdministrativeContacts() {
         return administrativeContacts;
     }
 
-    public void setAdministrativeContacts(List<AccountModel> administrativeContacts) {
+    public void setAdministrativeContacts(List<PersonModel> administrativeContacts) {
         this.administrativeContacts = administrativeContacts;
     }
 
-    public List<AccountModel> getCoordinators() {
+    public List<PersonModel> getCoordinators() {
         return coordinators;
     }
 
-    public void setCoordinators(List<AccountModel> coordinators) {
+    public void setCoordinators(List<PersonModel> coordinators) {
         this.coordinators = coordinators;
     }
 
-    public List<AccountModel> getScientificContacts() {
+    public List<PersonModel> getScientificContacts() {
         return scientificContacts;
     }
 
-    public void setScientificContacts(List<AccountModel> scientificContacts) {
+    public void setScientificContacts(List<PersonModel> scientificContacts) {
         this.scientificContacts = scientificContacts;
     }
 

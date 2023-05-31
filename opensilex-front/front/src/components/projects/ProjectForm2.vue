@@ -10,28 +10,28 @@
     ></opensilex-ProjectSelector>
 
     <!--Coordinators -->
-    <opensilex-UserSelector
+    <opensilex-PersonSelector
       label="component.project.coordinators"
-      :users.sync="form.coordinators"
+      :persons.sync="form.coordinators"
       :multiple="true"
       helpMessage="ProjectForm.coordinators"
-    ></opensilex-UserSelector>
+    ></opensilex-PersonSelector>
 
     <!-- Scientific contacts -->
-    <opensilex-UserSelector
+    <opensilex-PersonSelector
       label="component.project.scientificContacts"
-      :users.sync="form.scientific_contacts"
+      :persons.sync="form.scientific_contacts"
       :multiple="true"
       helpMessage="ProjectForm.scientificContacts"
-    ></opensilex-UserSelector>
+    ></opensilex-PersonSelector>
 
     <!-- Administrative contacts -->
-    <opensilex-UserSelector
+    <opensilex-PersonSelector
       label="component.project.administrativeContacts"
-      :users.sync="form.administrative_contacts"
+      :persons.sync="form.administrative_contacts"
       :multiple="true"
       helpMessage="ProjectForm.administrativeContacts"
-    ></opensilex-UserSelector>
+    ></opensilex-PersonSelector>
 
     <!-- Objective -->
     <opensilex-TextAreaForm

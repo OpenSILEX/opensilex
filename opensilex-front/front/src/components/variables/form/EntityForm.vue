@@ -21,12 +21,13 @@
             ref="tableRef"
             :fields="fields"
             :items="labelDTOList"
+            :per-pag="pageSize"
             defaultSortBy="prefLabel"
             iconNumberOfSelectedRow="fa#vials"
             class="modalLabelsList"
         >
           <template v-slot:cell(prefLabel)="item">
-            {{ item.data.value}}
+            {{ item.data.value }}
           </template>
           <template v-slot:cell(altLabels)="item">
             <span v-for="(altLabel, index) in item.data.value" :key="index">
@@ -40,14 +41,13 @@
             {{ item.data.value }}
           </template>
 
-          <!--          <template v-slot:cell(lang)="labelDTOList">-->
-          <!--            {{ labelDTOList.item.lang }}-->
-          <!--          </template>-->
-        </opensilex-TableView>
-      </template>    </div>
-<!--onSubmitSubForm-->
-    <opensilex-LabelCreationSubForm ref="labelCreationSubForm" @onSubmitSubForm="getLabelDTOFromSubForm"/>
 
+        </opensilex-TableView>
+      </template>
+    </div>
+    <!--onSubmitSubForm-->
+
+    <opensilex-LabelCreationSubForm ref="labelCreationSubForm" @onSubmitSubForm="getLabelDTOListFromSubForm" @subFormValid="subFormValid = $event" />
     <div class="col">
       <b-form-group
           label="component.skos.semantic-resources-label" label-size="lg"
@@ -111,8 +111,9 @@ import fr from '../../../lang/message-fr.json';
 export default class EntityForm extends Vue {
 
   $opensilex: any;
-  labelDTOs: Array<LabelDTO>;
   labelDTOList: Array<LabelDTO> = [];
+
+  labelDTO: Array<LabelDTO> = [];
 
   dataLoaded: boolean = false;
 
@@ -123,36 +124,46 @@ export default class EntityForm extends Vue {
 
   emits: ['labelDTOs'];
 
+  subFormValid: boolean = false;
+
   key = 0;
 
+  @Prop({
+    default: 1
+  })
+
+
+  pageSize: number;
   created() {
 
     this.initAttributes();
 
   }
-  initAttributes(){
 
-    this.labelDTOs = [];
+  initAttributes() {
+
 
   }
 
-  getLabelDTOFromSubForm(labelDTO: LabelDTO){
+
+  getLabelDTOListFromSubForm(labelDTO: LabelDTO) {
 
     this.labelDTOList.push(labelDTO);
     this.entityDto.labelDTOs.push(labelDTO);
-    this.dataLoaded=true;
-    this.$emit('labelDTOs',this.labelDTOList);
+    this.dataLoaded = true;
+    this.$emit('labelDTOs', this.labelDTOList);
     this.key += 1;
-    console.log("this.labelDTOList",this.labelDTOList);
-    console.log("labelDTO",labelDTO);
+    console.log("**********************************  pageSize  *************************************",this.pageSize);
+
 
   }
 
+
   @Ref("tableRef") readonly tableRef!: any;
 
-  getLabelDTOsFromEntityForm(labelDTOs: Array<LabelDTO>){
+  getLabelDTOsFromEntityForm(labelDTOs: Array<LabelDTO>) {
 
-    this.labelDTOs = labelDTOs;
+    this.labelDTOList = labelDTOs;
 
   }
 
@@ -198,18 +209,28 @@ export default class EntityForm extends Vue {
   @Ref("modalRef") readonly modalRef!: any;
   @Ref("validatorRef") readonly validatorRef!: any;
 
+  handleSubFormValid(subFormValid: boolean) {
+    this.subFormValid = subFormValid;
+  }
+
   reset() {
+
     this.uriGenerated = true;
     return this.validatorRef.reset();
+
   }
 
   validate() {
-    return this.validatorRef.validate();
+
+    if (this.labelDTOList.length > 0 || this.subFormValid) {
+
+      console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+      return this.validatorRef.validate();
+
+    }
+
   }
 
-  function(){
-
-  }
 }
 </script>
 
@@ -217,6 +238,7 @@ export default class EntityForm extends Vue {
 a {
   color: #007bff;
 }
+
 .modalLabelsList {
   overflow: hidden;
 }

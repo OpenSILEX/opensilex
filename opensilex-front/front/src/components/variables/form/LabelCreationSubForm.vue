@@ -1,5 +1,3 @@
-
-
 <template>
   <div v-if="languages.length>0">
 
@@ -7,8 +5,6 @@
       <div class="row">
         <div class="col">
           <div class="sub-form-container ">
-
-<!--             :title="`language - ${currentLanguage}`"-->
 
             <b-dropdown
                 id="langDropdown"
@@ -62,7 +58,6 @@
               ></opensilex-Button>
             </div>
 
-
             <!-- Definition -->
             <opensilex-TextAreaForm
                 :value.sync="labelDTO.definition"
@@ -73,7 +68,7 @@
             </opensilex-TextAreaForm>
 
             <opensilex-CreateButton
-                @click="SaveIfIsValidSubForm"
+                @click="SaveAndRefillInAnotherLanguage"
                 :label="getTranslationOf('saveAndRefillInAnotherLanguage')"
                 class="createButton"
             ></opensilex-CreateButton>
@@ -87,7 +82,7 @@
 
 
 <script lang="ts">
-import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
+import {Component, Prop, PropSync, Ref, Watch} from "vue-property-decorator";
 import EntityCreate from "./EntityCreate.vue";
 // @ts-ignore
 import {EntityCreationDTO} from "opensilex-core/index";
@@ -109,13 +104,16 @@ export default class LabelCreationSubForm extends Vue {
 
   languages: Array<string> = Object.keys(this.$i18n.messages);
 
-  currentLanguage: string ='';
+  currentLanguage: string = '';
+
+  subFormValid: boolean = false;
+
 
   labelDTO: LabelDTO = {
-    prefLabel : null,
-    altLabels : [''],
-    definition : null,
-    lang : null,
+    prefLabel: null,
+    altLabels: [''],
+    definition: null,
+    lang: null,
   }
 
   altLabels: Array<string> = [''];
@@ -197,15 +195,15 @@ export default class LabelCreationSubForm extends Vue {
 
   }
 
-  SaveIfIsValidSubForm(){
+  IsValidSubForm(){
     let result = this.validatorRef.validate();
     if (result instanceof Promise) {
       return result
           .then((resolve) => {
 
             if(resolve){
-
-              this.SaveAndRefillInAnotherLanguage();
+              this.subFormValid = true;
+              this.$emit('subFormValid', this.subFormValid);
 
             }
           })
@@ -214,41 +212,49 @@ export default class LabelCreationSubForm extends Vue {
     } else {
       if(result){
 
-        this.SaveAndRefillInAnotherLanguage();
+        this.subFormValid = true;
 
       }
     }
   }
 
+
   SaveAndRefillInAnotherLanguage() {
 
-    this.labelDTO.lang = this.getTranslationOfLanguage(this.currentLanguage);
-    this.labelDTO.altLabels=this.altLabels;
-    this.labelDTOs.push(this.labelDTO);
-    this.$emit('onSubmitSubForm', this.labelDTO);
+    this.IsValidSubForm();
 
-    this.dataLoaded = true;
-    this.$emit('dataLoadedSubForm', this.dataLoaded);
+    if (this.subFormValid) {
+
+      this.labelDTO.lang = this.getTranslationOfLanguage(this.currentLanguage);
+      this.labelDTO.altLabels = this.altLabels;
+      this.labelDTOs.push(this.labelDTO);
+      this.$emit('onSubmitSubForm', this.labelDTO);
+
+      this.dataLoaded = true;
+      this.$emit('dataLoadedSubForm', this.dataLoaded);
 
 
-    const lowerCaseLang = (this.labelDTO.lang.toLowerCase()).substring(0, 2);
-    const index = this.languages.indexOf(lowerCaseLang);
+      const lowerCaseLang = (this.labelDTO.lang.toLowerCase()).substring(0, 2);
+      const index = this.languages.indexOf(lowerCaseLang);
 
-    if (index !== -1) {
+      if (index !== -1) {
 
-      this.languages.splice(index, 1);
-      this.setLanguage(this.languages[0]);
+        this.languages.splice(index, 1);
+        this.setLanguage(this.languages[0]);
+
+      }
+
+      this.labelDTO = {
+        prefLabel: null,
+        altLabels: [''],
+        definition: null,
+        lang: null,
+      }
+
+      this.altLabels = [''];
 
     }
 
-    this.labelDTO = {
-      prefLabel : null,
-      altLabels : [''],
-      definition : null,
-      lang : null,
-    }
-
-    this.altLabels=[''];
 
   }
 

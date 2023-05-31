@@ -512,11 +512,12 @@ public class ScientificObjectDAO {
 
         // Add germplasm filter
         List<URI> germplasmMulti = searchFilter.getGermplasm();
-        if (germplasmMulti != null && !CollectionUtils.isEmpty(germplasmMulti)) {
+        if (! CollectionUtils.isEmpty(germplasmMulti)) {
             Var germplasmVar = makeVar("__germplasm");
             if (searchFilter.getExperiment() != null) {
                 builder.addGraph(contextNode, uriVar, Oeso.hasGermplasm, germplasmVar);
             } else {
+                // in case of no XP : check germplasm inside (species, variety and accession) set union
                 builder.addWhere(uriVar, Oeso.hasGermplasm, germplasmVar)
                         .addUnion(new WhereBuilder()
                                 .addWhere(uriVar, Oeso.hasGermplasm, makeVar("_g1"))

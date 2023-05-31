@@ -1,5 +1,7 @@
 package org.opensilex.migration;
 
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
 import org.opensilex.sparql.SPARQLConfig;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.exceptions.SPARQLException;
@@ -27,33 +29,44 @@ public class BaseGraphMigration extends DatabaseMigrationModuleUpdate {
      *
      */
     @Override
-    protected void sparqlOperation(SPARQLService sparql, SPARQLConfig sparqlConfig) throws SPARQLException {
+    protected void sparqlOperation(SPARQLService sparql, SPARQLConfig sparqlConfig) {
 
         // get all the classes in the whole project that extends SPARQLResourceModel
         Reflections reflections = new Reflections("org.opensilex");
         Set<Class<? extends SPARQLResourceModel>> classes = reflections.getSubTypesOf(SPARQLResourceModel.class);
 
-        // create a Set that will contain all the graph of the different classes
-        Set<String> allGraphToChange = new HashSet<>();
+        // create a Map that will contain all the class and their graph
+        Map<Class, String> allGraphToChange = new HashMap<>();
 
-        // if the allGraphToChange is not empty we take the graph values of all the classes and put them in allGraphToChange
+        // if the classes are not empty we take the graph values of all the classes and put them in allGraphToChange
         if (!classes.isEmpty()) {
-            for (Class c : classes) {
-                SPARQLResource annotation = (SPARQLResource) c.getAnnotation(SPARQLResource.class);
-                if (Objects.nonNull(annotation) && Objects.nonNull(annotation.graph()) && !Objects.equals(annotation.graph(), "")) {
-                    allGraphToChange.add(annotation.graph());
+            for (Class classe : classes) {
+                SPARQLResource annotation = (SPARQLResource) classe.getAnnotation(SPARQLResource.class);
+                // we check that the graph is not already in the allGraphToChange
+                if (!allGraphToChange.containsValue(annotation.graph())) {
+                    // we check that the graph is not null and not an empty string
+                    if (Objects.nonNull(annotation) && Objects.nonNull(annotation.graph()) && !annotation.graph().isEmpty()) {
+                        allGraphToChange.put(classe, annotation.graph());
+                    }
                 }
             }
         }
 
         // if allGraphToChange is not empty we rename all the graph present in allGraphToChange
         if (!allGraphToChange.isEmpty()) {
-            for (String graph : allGraphToChange) {
-                URI oldGraph = URI.create(sparql.getBaseURI() + "set/" + graph);
-                URI newGraph = URI.create(sparql.getBaseGraphURI() + "set/" + graph);
-                sparql.renameGraph(oldGraph, newGraph);
-            }
+            allGraphToChange.forEach((classe, graph) -> {
+                try {
+                    Node graphNode = NodeFactory.createURI(sparql.getBaseURI() + "set/" + graph);
+                    // we check that the graph exist to avoid an unwanted behavior
+                    if (sparql.graphExists(graphNode)) {
+                        URI oldGraph = URI.create(sparql.getBaseURI() + "set/" + graph);
+                        URI newGraph = URI.create(sparql.getBaseGraphURI() + "set/" + graph);
+                        sparql.renameGraph(oldGraph, newGraph);
+                    }
+                } catch (SPARQLException e) {
+                    throw new RuntimeException(e);
+                }
+            });
         }
-
     }
 }

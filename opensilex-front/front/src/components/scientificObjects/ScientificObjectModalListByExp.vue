@@ -147,11 +147,12 @@
 
 <script lang="ts">
 import { Component, Prop, Ref } from "vue-property-decorator";
+import ScientificObjectList from './ScientificObjectList.vue';
 import ScientificObjectModalList from "./ScientificObjectModalList.vue";
 
 @Component
 export default class ScientificObjectModalListByExp extends ScientificObjectModalList {
-  @Ref("soList") readonly soList!: any;
+  @Ref("soList") readonly soList!: ScientificObjectList;
 
   @Prop()
   maximumSelectedRows: number;

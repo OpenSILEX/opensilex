@@ -73,6 +73,7 @@
         @onValidate="downloadOSFeatures"
     ></opensilex-ExportShapeModalList>
     <!-- chart modal -->
+    <!-- TODO : créer un nouveau composant? -->
     <b-modal id="modal-chart" size="xl" hide-footer>
       <template #modal-title>
         <i class="ik ik-search mr-1"></i>
@@ -793,7 +794,7 @@ export default class MapView extends Vue {
     existenceDate: undefined,
     creationDate: undefined,
   };
-  selectedOS: any =[];
+  selectedOS: string[] =[];
 
   ///////////// FEATURES DATA ////////////
   private endReceipt: boolean = false;
@@ -862,8 +863,8 @@ export default class MapView extends Vue {
   private errorGeometry: boolean = false;
   exportedFeatures = [];
   exportedOS = [];
-  mapMode= true;
-  soWithLabels=[];
+  mapMode: boolean = true;
+  soWithLabels: any[] = [];
 
   ///////////// BASE METHODS ////////////
   get user() {
@@ -1544,7 +1545,6 @@ export default class MapView extends Vue {
           .getScientificObjectDetail(scientificObjectUri, this.experiment)
           .then((http: HttpResponse<OpenSilexResponse<ScientificObjectDetailDTO>>) => {
                 let result = http.response.result;
-            console.log("result", result)
                 this.selectedFeatures.forEach((item) => {
                   if (item.properties.uri === result.uri) {
                     item.properties.OS = result;

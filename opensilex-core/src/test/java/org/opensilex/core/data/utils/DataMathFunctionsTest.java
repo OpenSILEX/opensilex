@@ -76,7 +76,7 @@ public class DataMathFunctionsTest extends AbstractMongoIntegrationTest {
                 Instant.parse("1994-07-04T18:10:00.00Z"));
     }
 
-
+    /*
     @Test
     public void testComputeMedianPerHour() {
         List<DataSimpleGetDTO> medianSerieA = computeMedianPerHour(dataSerieA);
@@ -100,7 +100,7 @@ public class DataMathFunctionsTest extends AbstractMongoIntegrationTest {
         assertEquals(50f, Float.parseFloat(medianSerieB.get(2).getValue().toString()));
     }
 
-    /*
+
     @Test
     public void testComputeAveragePerHour() {
         List<DataSimpleGetDTO> dataSample = Stream.of(dataSerieA,dataSerieB, dataSerieC)

@@ -5,10 +5,17 @@
 //******************************************************************************
 package org.opensilex.core.variable.dal;
 
+import org.apache.jena.vocabulary.RDFS;
+import org.apache.jena.vocabulary.SKOS;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.variable.api.LabelDTO;
+import org.opensilex.security.authentication.SecurityOntology;
+import org.opensilex.security.group.dal.GroupUserProfileModel;
+import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 
 import java.net.URI;
+import java.util.List;
 
 /**
  * @author vidalmor
@@ -18,7 +25,8 @@ import java.net.URI;
         resource = "Entity",
         graph = VariableModel.GRAPH
 )
-public class EntityModel extends BaseVariableModel<EntityModel> {
+public class EntityModel extends BaseIdentifierModel<EntityModel> {
+
 
     public EntityModel() {
     }
@@ -26,6 +34,7 @@ public class EntityModel extends BaseVariableModel<EntityModel> {
     public EntityModel(URI uri) {
         setUri(uri);
     }
+
 
     @Override
     public String[] getInstancePathSegments(EntityModel instance) {

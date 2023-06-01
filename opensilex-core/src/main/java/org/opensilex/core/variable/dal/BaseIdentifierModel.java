@@ -19,14 +19,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 
 
-public abstract class BaseVariableModel<T extends SPARQLNamedResourceModel<T>> extends SPARQLNamedResourceModel<T> implements SKOSReferences {
-
-    @SPARQLProperty(
-            ontology = RDFS.class,
-            property = "comment"
-    )
-    private String description;
-    public static final String DESCRIPTION_FIELD = "comment";
+public abstract class BaseIdentifierModel<T extends SPARQLNamedResourceModel<T>> extends SPARQLNamedResourceModel<T> implements SKOSReferences {
 
     @SPARQLProperty(
             ontology = SKOS.class,
@@ -59,18 +52,21 @@ public abstract class BaseVariableModel<T extends SPARQLNamedResourceModel<T>> e
     private URI fromSharedResourceInstance;
 
     @SPARQLProperty(
+            ontology = SKOS.class,
+            property = ""
+
+    )
+    private List<LabelDTO> labelDTOs;
+
+    public static final String labels_INFO = "labels_INFO";
+
+
+    @SPARQLProperty(
             ontology = DCTerms.class,
             property = "modified"
     )
     private OffsetDateTime lastUpdateTime;
 
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String comment) {
-        this.description = comment;
-    }
 
     @Override
     public List<URI> getExactMatch() {
@@ -126,6 +122,15 @@ public abstract class BaseVariableModel<T extends SPARQLNamedResourceModel<T>> e
 
     public void setLastUpdateTime(OffsetDateTime lastUpdateTime) {
         this.lastUpdateTime = lastUpdateTime;
+    }
+
+
+    public List<LabelDTO> getLabelDTOs() {
+        return labelDTOs;
+    }
+
+    public void setLabelDTOs(List<LabelDTO> labelDTOs) {
+        this.labelDTOs = labelDTOs;
     }
 
 

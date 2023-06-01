@@ -202,6 +202,7 @@ export default class GermplasmGroup extends Vue {
           let message = this.$t(form.name) + this.$i18n.t("component.common.success.update-success-message");
           this.$opensilex.showSuccessToast(message);
           this.germplasmGroupList.refresh();
+          this.displayNodeDetail(form);
         })
         .catch(this.$opensilex.errorHandler);
   }
@@ -228,12 +229,10 @@ export default class GermplasmGroup extends Vue {
   }
 
   public displayNodeDetail(data: any) {
-    if (this.selected == null || this.selected.uri != data.uri) {
-      this.searchFiltersToggle = false;
-      this.selected = data;
-      this.$opensilex.updateURLParameter("selected", this.selected.uri);
-      this.germplasmGroupContentList.refresh();
-    }
+    this.searchFiltersToggle = false;
+    this.selected = data;
+    this.$opensilex.updateURLParameter("selected", this.selected.uri);
+    this.germplasmGroupContentList.refresh();
   }
 
 }

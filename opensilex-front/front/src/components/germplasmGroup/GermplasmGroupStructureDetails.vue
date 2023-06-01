@@ -27,6 +27,8 @@ import {GermplasmGroupGetDTO} from "../../../../../opensilex-core/front/src/lib"
 export default class GermplasmGroupStructureDetails extends Vue {
   @Prop()
   selected: GermplasmGroupGetDTO;
+
+
 }
 </script>
 

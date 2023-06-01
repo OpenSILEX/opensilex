@@ -42,7 +42,6 @@ export default class GermplasmModalList extends GermplasmList {
   @Ref("germplasmSelection") readonly germplasmSelection!: any;
 
   selectItem(row) {
-    console.debug("GermplasmModalList selecting item, heres the row : ", row);
       this.germplasmSelection.onItemSelected(row);
   }
   unSelect(row) {

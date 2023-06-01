@@ -12,6 +12,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.opensilex.core.annotation.dal.AnnotationModel;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.sparql.csv.CSVCell;
 import org.opensilex.sparql.csv.CSVValidationModel;
@@ -29,6 +31,7 @@ public class DataCSVValidationModel extends CSVValidationModel {
     private Map<DeviceModel, List<URI>> variablesToDevices = new HashMap<>();
     
     private Map<Integer, List<CSVCell>> invalidObjectErrors = new HashMap<>();
+    private Map<Integer, List<CSVCell>> invalidAnnotationErrors = new HashMap<>();
     private Map<Integer, List<CSVCell>> invalidTargetErrors = new HashMap<>();
     private Map<Integer, List<CSVCell>> invalidDateErrors = new HashMap<>();
     private Map<Integer, List<CSVCell>> invalidDataTypeErrors = new HashMap<>();
@@ -47,6 +50,7 @@ public class DataCSVValidationModel extends CSVValidationModel {
        
     private List<String> headersLabels = new ArrayList<>();
 
+    private List<AnnotationModel> annotationsOnObjects = new ArrayList<>();
 
     private Integer nbLinesImported = 0;
 
@@ -210,6 +214,7 @@ public class DataCSVValidationModel extends CSVValidationModel {
                 || duplicatedTargetErrors.size() > 0
                 || invalidObjectErrors.size() > 0
                 || invalidTargetErrors.size() > 0
+                || invalidAnnotationErrors.size() > 0
                 || invalidExperimentErrors.size() > 0
                 || invalidDeviceErrors.size() > 0
                 || invalidDateErrors.size() > 0
@@ -238,6 +243,9 @@ public class DataCSVValidationModel extends CSVValidationModel {
         this.invalidObjectErrors = invalidObjectErrors;
     }
 
+    public void setInvalidAnnotationErrors(Map<Integer, List<CSVCell>> invalidAnnotationErrors) {
+        this.invalidAnnotationErrors = invalidAnnotationErrors;
+    }
 
     public void addInvalidTargetError(CSVCell cell) {
         int rowIndex = cell.getRowIndex();
@@ -373,6 +381,10 @@ public class DataCSVValidationModel extends CSVValidationModel {
         return duplicatedDeviceErrors;
     }
 
+    public Map<Integer, List<CSVCell>> getInvalidAnnotationErrors() {
+        return invalidAnnotationErrors;
+    }
+
     public void setDuplicatedDeviceErrors(Map<Integer, List<CSVCell>> duplicatedDeviceErrors) {
         this.duplicatedDeviceErrors = duplicatedDeviceErrors;
     }
@@ -384,6 +396,11 @@ public class DataCSVValidationModel extends CSVValidationModel {
             duplicatedDeviceErrors.put(rowIndex, new ArrayList<>());
         }
         duplicatedDeviceErrors.get(rowIndex).add(cell);
+    }
+
+    public void addInvalidAnnotationError(CSVCell cell){
+        int rowIndex = cell.getRowIndex();
+        invalidAnnotationErrors.computeIfAbsent(rowIndex, key -> new ArrayList<>()).add(cell);
     }
 
     public Map<Integer, List<CSVCell>> getDeviceChoiceAmbiguityErrors() {
@@ -400,6 +417,13 @@ public class DataCSVValidationModel extends CSVValidationModel {
             deviceChoiceAmbiguityErrors.put(rowIndex, new ArrayList<>());
         }
         deviceChoiceAmbiguityErrors.get(rowIndex).add(cell);
+    }
+
+    public void addToAnnotationsOnObjects(AnnotationModel annotationModel){
+        this.annotationsOnObjects.add(annotationModel);
+    }
+    public List<AnnotationModel> getAnnotationsOnObjects(){
+        return this.annotationsOnObjects;
     }
     
 }

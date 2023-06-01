@@ -108,6 +108,7 @@ export default class GenerateDataTemplateFrom extends Vue {
   readonly targetColumn = "target";
   readonly deviceColumn = "device";
   readonly soColumn = "scientific_object";
+    readonly annotationColumn = "object_annotation";
 
   @Prop()
   editMode;
@@ -118,12 +119,14 @@ export default class GenerateDataTemplateFrom extends Vue {
   options = [
     { text: this.expColumn, value: this.expColumn },
     { text: this.targetColumn, value: this.targetColumn },
-    { text: this.deviceColumn, value: this.deviceColumn }
+    { text: this.deviceColumn, value: this.deviceColumn },
+    { text: this.annotationColumn, value: this.annotationColumn }
   ];
 
 
   expeOptions = [
-    { text: this.deviceColumn, value: this.deviceColumn }
+    { text: this.deviceColumn, value: this.deviceColumn },
+    { text: this.annotationColumn, value: this.annotationColumn }
   ];
 
   @Ref("validatorRefDataTemplate") readonly validatorRefDataTemplate!: any;
@@ -308,6 +311,15 @@ export default class GenerateDataTemplateFrom extends Vue {
       this.$papa.unparse(arrData, { delimiter: this.separator }),
       "dataTemplateExample"
     );
+
+    //column annotation on object
+    if (this.selectedColumns.includes(this.annotationColumn)) {
+        line1.push(this.annotationColumn);
+        line2.push(this.$t("DataTemplate.annotationHelp"));
+        line3.push(this.$t("DataHelp.column-type-help")+
+            this.getDataTypeLabel("String"));
+        line4.push("annotation-test");
+    }
   }
 
   csvExport() {
@@ -389,6 +401,14 @@ export default class GenerateDataTemplateFrom extends Vue {
                 this.$opensilex.getVariableDatatypeLabel(element.datatype));
             }
           }
+
+          //column annotation on object
+          if (this.selectedColumns.includes(this.annotationColumn)) {
+              line1.push(this.annotationColumn);
+              line2.push(this.$t("DataTemplate.annotationHelp"));
+              line3.push(this.$t("DataHelp.column-type-help")+"String");
+          }
+
           arrData = [line1, line2, line3];
           this.$papa.download(
             this.$papa.unparse(arrData, { delimiter: this.separator }),
@@ -439,6 +459,8 @@ en :
     format-help:
       datetime: "(format: YYYY-MM-DDThh:mm:ssZ)"
       date: "(format: YYYY-MM-DD)"
+  DataTemplate:
+    annotationHelp: "Annotation (On the target object)"
 fr :
   DataTemplateForm:
     help: Le bouton est désactivé si aucune variable n'est sélectionnée
@@ -454,4 +476,6 @@ fr :
     format-help:
       datetime: "(format: AAAA-MM-JJThh:mm:ssZ)"
       date: "(format: AAAA-MM-JJ)"
+  DataTemplate:
+    annotationHelp: "Annotation (Sur l'object cible)"
  </i18n>

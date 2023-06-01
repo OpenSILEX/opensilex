@@ -14,13 +14,18 @@ import com.mongodb.client.result.DeleteResult;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 import io.swagger.annotations.*;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.graph.Node;
+import org.apache.jena.vocabulary.OA;
 import org.apache.jena.vocabulary.RDFS;
 import org.bson.Document;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.opensilex.core.annotation.dal.AnnotationDAO;
+import org.opensilex.core.annotation.dal.AnnotationModel;
+import org.opensilex.core.annotation.dal.MotivationModel;
 import org.opensilex.core.data.dal.*;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.data.utils.ParsedDateTimeMongo;
@@ -100,6 +105,8 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.zone.ZoneRulesException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -1207,6 +1214,7 @@ public class DataAPI {
             @ApiParam(value = "File", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition) throws Exception {
         DataDAO dao = new DataDAO(nosql, sparql, fs);
+        AnnotationDAO annotationDAO = new AnnotationDAO(sparql);
 
         // test prov
         ProvenanceModel provenanceModel = null;
@@ -1236,6 +1244,9 @@ public class DataAPI {
             Instant start = Instant.now();
             List<DataModel> data = new ArrayList<>(validation.getData().keySet());
             try {
+                //Transactions so that we don't create any Data or Annotations if either fail
+                nosql.startTransaction();
+                sparql.startTransaction();
                 dao.createAll(data);
                 
                 if(!validation.getVariablesToDevices().isEmpty()){
@@ -1244,10 +1255,15 @@ public class DataAPI {
                         deviceDAO.associateVariablesToDevice((DeviceModel) variablesToDevice.getKey(),(List<URI>)variablesToDevice.getValue(), user );
                     }
                 }
-                
                 validation.setNbLinesImported(data.size());
+                //If the data import was successful, post the annotations on objects
+                annotationDAO.create(validation.getAnnotationsOnObjects());
+                nosql.commitTransaction();
+                sparql.commitTransaction();
             } catch (NoSQLTooLargeSetException ex) {
                 validation.setTooLargeDataset(true);
+                nosql.rollbackTransaction();
+                sparql.rollbackTransaction();
 
             } catch (MongoBulkWriteException duplicateError) {
                 List<BulkWriteError> bulkErrors = duplicateError.getWriteErrors();
@@ -1259,13 +1275,19 @@ public class DataAPI {
                     CSVCell csvCell = new CSVCell(validation.getData().get(data.get(index)), validation.getHeaders().indexOf(dataModel.getVariable().toString()), dataModel.getValue().toString(), variableName);
                     validation.addDuplicatedDataError(csvCell);
                 }
+                nosql.rollbackTransaction();
+                sparql.rollbackTransaction();
             } catch (MongoCommandException e) {
                 CSVCell csvCell = new CSVCell(-1, -1, "Unknown value", "Unknown variable");
                 validation.addDuplicatedDataError(csvCell);
+                nosql.rollbackTransaction();
+                sparql.rollbackTransaction();
             } catch (DataTypeException e) {
                 int indexOfVariable = validation.getHeaders().indexOf(e.getVariable().toString());
                 String variableName = validation.getHeadersLabels().get(indexOfVariable) + '(' + validation.getHeaders().get(indexOfVariable) + ')';
                 validation.addInvalidDataTypeError(new CSVCell(e.getDataIndex(), indexOfVariable, e.getValue().toString(), variableName));
+                nosql.rollbackTransaction();
+                sparql.rollbackTransaction();
             }
             Instant finish = Instant.now();
             long timeElapsed = Duration.between(start, finish).toMillis();
@@ -1336,6 +1358,7 @@ public class DataAPI {
     private final String deviceHeader = "device";
     private final String rawdataHeader = "raw_data";
     private final String soHeader = "scientific_object";
+    private final String annotationHeader = "object_annotation";
     
     private DataCSVValidationModel validateWholeCSV(ProvenanceModel provenance, URI experiment, InputStream file, AccountModel currentUser) throws Exception {
         DataCSVValidationModel csvValidation = new DataCSVValidationModel();
@@ -1391,7 +1414,11 @@ public class DataAPI {
             Set<String> headers = Arrays.stream(ids).filter(Objects::nonNull).map(id -> id.toLowerCase(Locale.ENGLISH)).collect(Collectors.toSet());
             if (!headers.contains(deviceHeader) && !headers.contains(targetHeader) && !headers.contains(soHeader) && !sensingDeviceFoundFromProvenance) {
                 csvValidation.addMissingHeaders(Arrays.asList(deviceHeader + " or " + targetHeader + " or " + soHeader));
-            }  
+            }
+            // Check that there is an soHeader or a targetHeader if there is an annotationHeader otherwise create error
+            if(headers.contains(annotationHeader) && !headers.contains(targetHeader) && !headers.contains(soHeader)){
+                csvValidation.addMissingHeaders(Arrays.asList(targetHeader + " or " + soHeader));
+            }
             
             // 1. check variables
             HashMap<URI, URI> mapVariableUriDataType = new HashMap<>();
@@ -1407,7 +1434,7 @@ public class DataAPI {
                     
                         if (header.equalsIgnoreCase(expHeader) || header.equalsIgnoreCase(targetHeader) 
                             || header.equalsIgnoreCase(dateHeader) || header.equalsIgnoreCase(deviceHeader) || header.equalsIgnoreCase(soHeader)
-                            || header.equalsIgnoreCase(rawdataHeader)) {
+                            || header.equalsIgnoreCase(rawdataHeader) || header.equalsIgnoreCase(annotationHeader)) {
                             headerByIndex.put(i, header);                            
                         
                         } else {                        
@@ -1542,6 +1569,9 @@ public class DataAPI {
         Boolean missingTargetOrDevice = false;
         int targetColIndex = 0;
         int deviceColIndex = 0;
+
+        AnnotationModel annotationFromAnnotationColumn = null;
+        int annotationIndex = 0;
 
         DeviceModel deviceFromDeviceColumn = null;
         SPARQLNamedResourceModel object = null;
@@ -1721,7 +1751,21 @@ public class DataAPI {
                     }
                 }
 
-            } else if (!headerByIndex.get(colIndex).equalsIgnoreCase(rawdataHeader)) { // Variable/Value column
+            }
+            //If we are at the annotation column, and the cell isn't empty, create a new Annotation Model.
+            //Set the motivation to commenting, and leave the target for now until we're sure that the target column has already been imported
+            else if (headerByIndex.get(colIndex).equalsIgnoreCase(annotationHeader)){
+                String annotation = values[colIndex];
+                annotationIndex = colIndex;
+                if(!StringUtils.isEmpty(annotation)){
+                    annotationFromAnnotationColumn = new AnnotationModel();
+                    annotationFromAnnotationColumn.setDescription(annotation.trim());
+                    annotationFromAnnotationColumn.setCreator(user.getUri());
+                    MotivationModel motivationModel = new MotivationModel();
+                    motivationModel.setUri(URI.create(OA.commenting.getURI()));
+                    annotationFromAnnotationColumn.setMotivation(motivationModel);
+                }
+            }else if (!headerByIndex.get(colIndex).equalsIgnoreCase(rawdataHeader)) { // Variable/Value column
                 if (headerByIndex.containsKey(colIndex)) {
                     // If value is not blank and null
                     if (!StringUtils.isEmpty(values[colIndex])) {
@@ -1882,6 +1926,20 @@ public class DataAPI {
 
                         }
                     }
+                }
+            }
+        }
+        // If an AnnotationModel was created on this row as well as a target, we need to set the Annotation's target
+        if( annotationFromAnnotationColumn != null ){
+            if(target == null && object == null){
+                CSVCell annotationCell = new CSVCell(rowIndex, annotationIndex, annotationFromAnnotationColumn.getDescription(), annotationHeader);
+                csvValidation.addInvalidAnnotationError(annotationCell);
+                validRow = false;
+            }else{
+                if(validRow){
+                    annotationFromAnnotationColumn.setTargets(Collections.singletonList( target==null ? object.getUri() : target.getUri()));
+                    annotationFromAnnotationColumn.setCreated(parsedDateTimeMongo.getInstant().atOffset(ZoneOffset.ofTotalSeconds(0)));
+                    csvValidation.addToAnnotationsOnObjects(annotationFromAnnotationColumn);
                 }
             }
         }

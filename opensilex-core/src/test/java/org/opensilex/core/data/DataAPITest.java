@@ -38,12 +38,17 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.opensilex.OpenSilex;
 import org.opensilex.core.AbstractMongoIntegrationTest;
+import org.opensilex.core.annotation.api.AnnotationGetDTO;
+import org.opensilex.core.annotation.dal.AnnotationModel;
 import org.opensilex.core.data.api.DataCSVValidationDTO;
 import org.opensilex.core.data.api.DataCreationDTO;
 import org.opensilex.core.data.api.DataGetDTO;
 import org.opensilex.core.data.dal.DataProvenanceModel;
 import org.opensilex.core.data.dal.ProvEntityModel;
+import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.experiment.api.ExperimentAPITest;
+import org.opensilex.core.germplasm.dal.GermplasmModel;
+import org.opensilex.core.germplasmGroup.dal.GermplasmGroupModel;
 import org.opensilex.core.provenance.api.ProvenanceAPITest;
 import org.opensilex.core.provenance.api.ProvenanceCreationDTO;
 import org.opensilex.core.scientificObject.api.ScientificObjectAPITest;
@@ -53,6 +58,7 @@ import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.validation.DateFormat;
 import org.opensilex.server.rest.validation.DateFormatters;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 
 /**
  *
@@ -60,6 +66,7 @@ import org.opensilex.server.rest.validation.DateFormatters;
  */
 public class DataAPITest extends AbstractMongoIntegrationTest {
     public static final String path = "/core/data";
+    public static final String annotationPath = "/core/annotations";
 
     protected String uriPath = path + "/{uri}";
     protected String searchPath = path;
@@ -96,6 +103,10 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
 
     // CSV files for import tests
     private static final Path FILE_PATH_IMPORT_INTEGER = Paths.get("data", "importInteger.csv");
+    private static final Path FILE_PATH_IMPORT_ANNOTATION_NO_TARGET_COL = Paths.get("data", "importAnnotationsNoTargetColumnError.csv");
+    private static final Path FILE_PATH_IMPORT_ANNOTATION = Paths.get("data", "importAnnotation.csv");
+    private static final Path FILE_PATH_IMPORT_ANNOTATION_NO_TARGET = Paths.get("data", "importAnnotationsNoTargetError.csv");
+    private static final Path FILE_PATH_IMPORT_ANNOTATION_NOT_ON_EVERY_LINE = Paths.get("data", "importSomeAnnotations.csv");
     private static final Path FILE_PATH_IMPORT_DECIMAL = Paths.get("data", "importDecimal.csv");
     private static final Path FILE_PATH_IMPORT_BOOLEAN = Paths.get("data", "importBoolean.csv");
     private static final Path FILE_PATH_IMPORT_STRING = Paths.get("data", "importString.csv");
@@ -120,6 +131,7 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
     private URI provenanceImportIntegerDatatypeError;
     private URI provenanceImportDateDatatypeError;
     private URI provenanceImportDatetimeDatatypeError;
+    private URI provenanceImportAnnotation;
 
     private DataProvenanceModel provenance;
     private List<URI> scientificObjects;
@@ -198,6 +210,7 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
 
         // Provenances for import tests
         provenanceImportInteger = createOneProvenance("Import test : integer");
+        provenanceImportAnnotation = createOneProvenance("Import test : annotation");
         provenanceImportDecimal = createOneProvenance("Import test : decimal");
         provenanceImportBoolean = createOneProvenance("Import test : boolean");
         provenanceImportString = createOneProvenance("Import test : string");
@@ -266,6 +279,17 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
                     put(SEARCH_PROVENANCES_QUERY_PARAMETER_NAME, Collections.singletonList(provenance));
                 }},
                 new TypeReference<PaginatedListResponse<DataGetDTO>>() {
+                }
+        );
+    }
+
+    private List<AnnotationGetDTO> getSearchAnnotationsResponseAsDTOList() throws Exception {
+
+        return getSearchResultsAsAdmin(annotationPath,
+                0,
+                20,
+                new HashMap<>(),
+                new TypeReference<PaginatedListResponse<AnnotationGetDTO>>() {
                 }
         );
     }
@@ -410,6 +434,57 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
     }
 
     @Test
+    public void testImportAnnotationNoTargetColumnError() throws Exception {
+        DataCSVValidationDTO csvValidationDTO = getImportResponseAsDTO(FILE_PATH_IMPORT_ANNOTATION_NO_TARGET_COL, provenanceImportAnnotation);
+        assertFalse(csvValidationDTO.getDataErrors().getMissingHeaders().isEmpty());
+
+        List<DataGetDTO> importedDataList = getSearchResponseAsDTOList(provenanceImportAnnotation);
+        assertEquals(0, importedDataList.size());
+
+        List<AnnotationGetDTO> importedAnnotationsList = getSearchAnnotationsResponseAsDTOList();
+        assertEquals(0, importedAnnotationsList.size());
+    }
+    @Test
+    public void testImportAnnotationNoTargetError() throws Exception {
+        DataCSVValidationDTO csvValidationDTO = getImportResponseAsDTO(FILE_PATH_IMPORT_ANNOTATION_NO_TARGET, provenanceImportAnnotation);
+        assertTrue(csvValidationDTO.getDataErrors().hasErrors());
+
+        List<DataGetDTO> importedDataList = getSearchResponseAsDTOList(provenanceImportAnnotation);
+        assertEquals(0, importedDataList.size());
+
+        List<AnnotationGetDTO> importedAnnotationsList = getSearchAnnotationsResponseAsDTOList();
+        assertEquals(0, importedAnnotationsList.size());
+    }
+
+    @Test
+    public void testImportAnnotationsEveryLine() throws Exception {
+        DataCSVValidationDTO csvValidationDTO = getImportResponseAsDTO(FILE_PATH_IMPORT_ANNOTATION, provenanceImportAnnotation);
+
+        assertFalse(csvValidationDTO.getDataErrors().hasErrors());
+        assertEquals(3, csvValidationDTO.getDataErrors().getNbLinesImported().intValue());
+
+        List<DataGetDTO> importedDataList = getSearchResponseAsDTOList(provenanceImportAnnotation);
+        assertEquals(3, importedDataList.size());
+
+        List<AnnotationGetDTO> importedAnnotationsList = getSearchAnnotationsResponseAsDTOList();
+        assertEquals(3, importedAnnotationsList.size());
+    }
+
+    @Test
+    public void testImportAnnotationsOnSomeLines() throws Exception {
+        DataCSVValidationDTO csvValidationDTO = getImportResponseAsDTO(FILE_PATH_IMPORT_ANNOTATION_NOT_ON_EVERY_LINE, provenanceImportAnnotation);
+
+        assertFalse(csvValidationDTO.getDataErrors().hasErrors());
+        assertEquals(3, csvValidationDTO.getDataErrors().getNbLinesImported().intValue());
+
+        List<DataGetDTO> importedDataList = getSearchResponseAsDTOList(provenanceImportAnnotation);
+        assertEquals(3, importedDataList.size());
+
+        List<AnnotationGetDTO> importedAnnotationsList = getSearchAnnotationsResponseAsDTOList();
+        assertEquals(2, importedAnnotationsList.size());
+    }
+
+    @Test
     public void testImportDateDatatypeError() throws Exception {
         DataCSVValidationDTO csvValidationDTO = getImportResponseAsDTO(FILE_PATH_IMPORT_DATE_DATATYPE_ERROR, provenanceImportDateDatatypeError);
 
@@ -525,6 +600,11 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
         List<DataGetDTO> datas = getSearchResultsAsAdmin(searchPath,params,new TypeReference<PaginatedListResponse<DataGetDTO>>() {});
 
         assertFalse(datas.isEmpty());
+    }
+
+    @Override
+    protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {
+        return Arrays.asList(AnnotationModel.class);
     }
 
 }

@@ -328,6 +328,12 @@ export default class ExperimentData extends Vue {
         this.resultModal.setNbLinesImported(
           res.validation.dataErrors.nbLinesImported
         );
+        let annotationsOnObjects : Array<any> = res.validation.dataErrors.annotationsOnObjects;
+        if(annotationsOnObjects){
+            this.resultModal.setNbAnnotationsImported(
+                annotationsOnObjects.length
+            );
+        }
         this.resultModal.setProvenance(res.form.provenance);
         this.resultModal.show();
         this.clear();
@@ -340,6 +346,12 @@ export default class ExperimentData extends Vue {
       this.resultModal.setNbLinesImported(
         results.validation.dataErrors.nbLinesImported
       );
+      let annotationsOnObjects : Array<any> = results.validation.dataErrors.annotationsOnObjects;
+      if(annotationsOnObjects){
+          this.resultModal.setNbAnnotationsImported(
+              annotationsOnObjects.length
+          );
+      }
       this.resultModal.setProvenance(results.form.provenance);
       this.resultModal.show();
       this.clear();

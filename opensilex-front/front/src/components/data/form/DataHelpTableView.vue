@@ -17,6 +17,7 @@
             <b-th>date <span class="required"> *</span></b-th>
             <b-th>uri:variable1<span class="required"> *</span></b-th>
             <b-th>uri:variable...</b-th>
+            <b-th>Annotation</b-th>
           </b-tr>
         </b-thead>
         <b-tbody>
@@ -29,6 +30,7 @@
             <b-td>{{ $t("DataHelp.date-help") }}</b-td>
             <b-td>{{ $t("DataHelp.variable-help") }}</b-td>
             <b-td>{{ $t("DataHelp.variables-help") }}</b-td>
+            <b-td>{{ $t("DataTemplate.annotationHelp") }}</b-td>
           </b-tr>
           <b-tr>
             <b-th>3</b-th>
@@ -90,6 +92,9 @@
                 }}</strong
               ></b-td
             >
+              <b-td>{{ $t("DataHelp.column-type-help") }}
+                  <strong>{{"String"}}</strong>
+              </b-td>
           </b-tr>
           <b-tr class="alert alert-info">
             <b-th>4</b-th>
@@ -260,7 +265,8 @@ en :
             default timezone of the system.</strong>\n
             <br /> \n
             <strong>  Blank values will be ignored.<br>\n 
-            Specials values authorized : NA, null and NaN for decimal</strong>\n"
+            Specials values authorized : NA, null and NaN for decimal</strong> <br /> \n
+            The <strong>Annotation</strong> column will link an annotation to the Target or Scientific Object of the same row."
     text-help-global:  "You can insert data from this row. <br /> \n
             First three rows of CSV content will be ignored. <br /> \n
             <strong>The \"experiment\", \"target\" and \"device\" columns are optional. You can remove them. In all three columns, you can give URIs or names. </strong> <br /> \n
@@ -274,7 +280,9 @@ en :
             default timezone of the system.</strong>\n
             <br /> \n
             <strong>  Blank values will be ignored.<br>\n 
-            Specials values authorized : NA, null and NaN for decimal</strong>\n"
+            Specials values authorized : NA, null and NaN for decimal</strong> <br /> \n
+            The <strong>Annotation</strong> column will link an annotation to the Target or Scientific Object of the same row."
+
 fr :
   DataHelp:
     exceptedFormat: Format attendu
@@ -309,7 +317,8 @@ fr :
             <strong> Si vous ne spécifiez pas de zone de temps dans vos dates, le système utilisera le fuseau horaire par défaut du système (UTC).</strong>\n
             <br /> \n
             <strong>Les valeurs vides seront ignorées.<br>\n
-            Valeurs spéciales autorisées : NA, null et NaN pour les décimaux</strong> \n"
+            Valeurs spéciales autorisées : NA, null et NaN pour les décimaux</strong> <br /> \n
+            La colonne <strong>Annotation</strong> va créer une annotation qui sera liée avec la cible de cette ligne."
     text-help-global:  "Vous pouvez insérer les données à partir de cette ligne. <br /> \n
             Les trois premières lignes de contenu CSV seront ignorées. <br /> \n
             <strong>Les colonnes \"experiment\", \"target\" et \"device\" sont optionnelles. Vous pouvez les enlever. Dans ces 3 colonnes, vous pouvez mettre des URIs ou des noms. </strong> <br /> \n
@@ -322,6 +331,7 @@ fr :
             <strong> Si vous ne spécifiez pas de zone de temps dans vos dates, le système utilisera le fuseau horaire par défaut du système (UTC).</strong>\n
             <br /> \n
             <strong>Les valeurs vides seront ignorées.<br>\n
-            Valeurs spéciales autorisées : NA, null et NaN pour les décimaux</strong> \n"
+            Valeurs spéciales autorisées : NA, null et NaN pour les décimaux</strong> <br /> \n
+            La colonne <strong>Annotation</strong> va créer une annotation qui sera liée avec la cible de cette ligne."
 
 </i18n>

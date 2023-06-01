@@ -340,10 +340,11 @@ export default class SelectForm extends Vue {
           resolve(this.currentValue);
         } else {
           //Set table async view's checked items
-          let jsonSelectedItems = this._convertSelectedToJson();
+          //TODO: vérif casse pas pour autre items (ex: group de germplasm)
+          //let jsonSelectedItems = this._convertSelectedToJson();
           setTimeout(()=>{
             if(this.searchModal.setInitiallySelectedItems){
-              this.searchModal.setInitiallySelectedItems(jsonSelectedItems);
+              this.searchModal.setInitiallySelectedItems(this.selectedInJsonFormat);
             }
             //Set selectedTmp and selectedCopie
             if( this.firstTimeOpening ){
@@ -361,6 +362,7 @@ export default class SelectForm extends Vue {
             if (this.loading) {
               this.loading = false;
             }
+            //if there are items initially selected, send the event "onValidate", without the need to open and validate in the modal, to send data to the form
             if(this.selectedInJsonFormat && this.currentValue !== []){
               this.$emit('onValidate', this.selectedCopie);
             }

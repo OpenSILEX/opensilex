@@ -164,6 +164,14 @@ export default class ScientificObjectModalListByExp extends ScientificObjectModa
   searchFiltersPannel() {
     return  this.$t("searchfilter.label")
   }
+
+  selectItem(row) {
+    console.debug("ScientificObjectModalListByExp selecting item, heres the row : ", row);
+    this.soList.onItemSelected(row);
+  }
+  unSelect(row) {
+    this.soList.onItemUnselected(row);
+  }
   setInitiallySelectedItems(initiallySelectedItems:Array<any>){
     this.soList.setInitiallySelectedItems(initiallySelectedItems);
   }

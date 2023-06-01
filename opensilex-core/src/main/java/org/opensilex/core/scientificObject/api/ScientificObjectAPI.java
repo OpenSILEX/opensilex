@@ -70,7 +70,7 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.*;
+import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
@@ -225,23 +225,23 @@ public class ScientificObjectAPI {
         validateContextAccess(contextURI);
 
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
+        ScientificObjectDAO soDAO = new ScientificObjectDAO(sparql, nosql);
 
         Instant test_start = Instant.now();
         FindIterable<GeospatialModel> mapGeo = geoDAO.getGeometryByGraphList(contextURI);
         Instant test_end = Instant.now();
         
-        Collection<String> filteredUris = new HashSet<>(); 
+        Collection<String> filteredUris = new HashSet<>();
+        Collection<URI> uris = new HashSet<>();
+
+        for (GeospatialModel geospatialModel : mapGeo) {
+            ScientificObjectNodeDTO dtoFromModel = ScientificObjectNodeDTO.getDTOFromModel(geospatialModel);
+            URI uri = dtoFromModel.getUri();
+            uris.add(uri);
+        }
 
         // Date
         if (startDate != null || endDate != null) {
-            ScientificObjectDAO soDAO = new ScientificObjectDAO(sparql, nosql);
-            Collection<URI> uris = new HashSet<>();
-            
-            for (GeospatialModel geospatialModel : mapGeo) {
-                ScientificObjectNodeDTO dtoFromModel = ScientificObjectNodeDTO.getDTOFromModel(geospatialModel);
-                URI uri = dtoFromModel.getUri();
-                uris.add(uri);
-            }
             filteredUris = soDAO.getScientificObjectsByDate(contextURI, startDate, endDate, uris);
         }
 
@@ -263,8 +263,22 @@ public class ScientificObjectAPI {
             }
         }
 
+        // TODO: à améliorer/optimiser (tout le service?)
+        ScientificObjectSearchFilter searchFilter = new ScientificObjectSearchFilter()
+                .setUris(new ArrayList<>(uris))
+                .setExperiment(contextURI);
+
+        searchFilter.setLang(currentUser.getLanguage())
+                .setPageSize(100000)
+                .setPage(0);
+        ListWithPagination<ScientificObjectNodeDTO> dtoListTmp = soDAO.searchAsDto(searchFilter);
+        for (ScientificObjectNodeDTO dtoTmp :dtoListTmp.getList()) {
+            ScientificObjectNodeDTO dto= dtoList.stream().filter(o -> dtoTmp.getUri().toString().equals(o.getUri().toString())).findAny().orElse(null);
+            dtoTmp.setGeometry(dto.getGeometry());
+        }
+
         LOGGER.debug(lengthMapGeo + " space entities recovered " + Duration.between(test_start, test_end).toMillis() + " milliseconds elapsed");
-        return new PaginatedListResponse<>(dtoList).getResponse();
+        return new PaginatedListResponse<>(dtoListTmp).getResponse();
     }
 
     @GET

@@ -733,10 +733,6 @@ import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {stringify} from "wkt";
 import ExperimentDataVisualisation from "../experiments/ExperimentDataVisualisation.vue";
 
-//TODO: 2- Modal responsive
-//TODO: 3- show selected OS in table
-//TODO: 5- reciprocité sélection OS??
-
 @Component({
   components: {ExperimentDataVisualisation}
 })
@@ -1057,7 +1053,7 @@ export default class MapView extends Vue {
                     this.selectedFeatures.push(feature);
                     if(feature.properties.nature === "ScientificObjects"){
                       this.selectedOS.push(feature.properties.uri);
-                      this.soWithLabels.push({id:feature.properties.uri, label:feature.properties.name});
+                      this.soWithLabels.push(feature.properties);
                     }
                   }
               )
@@ -1152,7 +1148,7 @@ export default class MapView extends Vue {
       features.forEach((feature) => {
         if(feature.properties.nature === "ScientificObjects"){
           this.selectedOS.push(feature.properties.uri);
-          this.soWithLabels.push({id:feature.properties.uri, label:feature.properties.name});
+          this.soWithLabels.push(feature.properties);
         }
       })
     }
@@ -1450,6 +1446,10 @@ export default class MapView extends Vue {
                 name: result.name,
                 type: result.rdf_type,
                 nature: "ScientificObjects",
+                creation_date: result.creation_date,
+                destruction_date:result.destruction_date,
+                rdf_type_name: result.rdf_type_name,
+
               };
               let flatFeatures = this.featuresOS.flat();
               //Replace the updated feature
@@ -1492,11 +1492,14 @@ export default class MapView extends Vue {
               res.forEach((element) => {
                 if (element.geometry !== null) {
                   element.geometry.properties = {
+                    creation_date: element.creation_date,
+                    destruction_date:element.destruction_date,
                     uri: element.uri,
                     name: element.name,
                     type: element.rdf_type,
-                    nature: "ScientificObjects",
-                  };
+                    rdf_type_name : element.rdf_type_name,
+                    nature: "ScientificObjects"
+                  }
                   let inserted = false;
                   this.featuresOS.forEach((item) => {
                     if (item[0].properties.type === element.rdf_type) {
@@ -1541,6 +1544,7 @@ export default class MapView extends Vue {
           .getScientificObjectDetail(scientificObjectUri, this.experiment)
           .then((http: HttpResponse<OpenSilexResponse<ScientificObjectDetailDTO>>) => {
                 let result = http.response.result;
+            console.log("result", result)
                 this.selectedFeatures.forEach((item) => {
                   if (item.properties.uri === result.uri) {
                     item.properties.OS = result;

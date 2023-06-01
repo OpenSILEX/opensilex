@@ -51,7 +51,10 @@ import PersonForm from "./persons/PersonForm.vue";
 components["opensilex-PersonForm"] = PersonForm;
 import PersonSelector from './persons/PersonSelector.vue';
 components["opensilex-PersonSelector"] = PersonSelector;
-
+import PersonContact from "./persons/PersonContact.vue";
+components["opensilex-PersonContact"] = PersonContact;
+import ContactsList from "./persons/ContactsList.vue";
+components["opensilex-ContactsList"] = ContactsList;
 
 // Profiles
 import ProfileForm from './profiles/ProfileForm.vue';

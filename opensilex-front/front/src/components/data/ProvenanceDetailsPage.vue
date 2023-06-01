@@ -110,11 +110,9 @@
                 :fields="tableFields"
               >
                 <template v-slot:cell(name)="{data}">
-                  <opensilex-UriLink v-if="$opensilex.Oeso.checkURIs($opensilex.Oeso.OPERATOR_TYPE_URI, data.item.rdf_type)"
-                    :uri="data.item.uri"
-                    :value="data.item.name"
-                    :to="{path: '/users?filter='+ encodeURIComponent(data.item.last_name)}"
-                  ></opensilex-UriLink>
+                  <opensilex-PersonContact v-if="$opensilex.Oeso.checkURIs($opensilex.Oeso.OPERATOR_TYPE_URI, data.item.rdf_type)"
+                    :personContact="data.item.operator"
+                  ></opensilex-PersonContact>
                   <opensilex-UriLink v-else
                     :uri="data.item.uri"
                     :value="data.item.name"
@@ -269,8 +267,7 @@ export default class ProvenanceDetailsPage extends Vue {
               promiseAgent = this.$opensilex.getService<SecurityService>("opensilex.SecurityService")
               .getPerson(prov.prov_agent[i].uri)
               .then((http: HttpResponse<OpenSilexResponse<UserGetDTO>>) => {
-                prov.prov_agent[i]["name"] = http.response.result.first_name + " " + http.response.result.last_name;
-                prov.prov_agent[i]["last_name"] = http.response.result.last_name;
+                prov.prov_agent[i]["operator"] = http.response.result
               })
               .catch(this.$opensilex.errorHandler);
             } else {

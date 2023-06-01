@@ -141,14 +141,14 @@
           :label="$t('component.experiment.contacts')"
         >
           <template v-slot:body>
-            <opensilex-UriListView
+            <opensilex-ContactsList
               label="component.experiment.scientificSupervisors"
               :list="scientificSupervisorsList"
-            ></opensilex-UriListView>
-            <opensilex-UriListView
+            ></opensilex-ContactsList>
+            <opensilex-ContactsList
               label="component.experiment.technicalSupervisors"
               :list="technicalSupervisorsList"
-            ></opensilex-UriListView>
+            ></opensilex-ContactsList>
             <opensilex-UriView
               title="component.experiment.record_author"
               :uri="recordAuthor.uri"
@@ -179,7 +179,7 @@ import {GroupDTO, SecurityService, UserGetDTO} from "opensilex-security/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import DTOConverter from "../../../models/DTOConverter";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
-import {PersonDTO} from "opensilex-security/model/personDTO";
+import {PersonDTO} from "opensilex-security/index";
 
 @Component
 export default class ExperimentDetail extends Vue {
@@ -357,13 +357,7 @@ export default class ExperimentDetail extends Vue {
       service
         .getPersonsByURI(this.experiment.scientific_supervisors)
         .then((http: HttpResponse<OpenSilexResponse<PersonDTO[]>>) => {
-          this.scientificSupervisorsList = http.response.result.map((item) => {
-            return {
-              uri: item.email,
-              url: "mailto:" + item.email,
-              value: item.first_name + " " + item.last_name,
-            };
-          });
+          this.scientificSupervisorsList = http.response.result
         })
         .catch(this.$opensilex.errorHandler);
     }
@@ -375,13 +369,7 @@ export default class ExperimentDetail extends Vue {
       service
         .getPersonsByURI(this.experiment.technical_supervisors)
         .then((http: HttpResponse<OpenSilexResponse<PersonDTO[]>>) => {
-          this.technicalSupervisorsList = http.response.result.map((item) => {
-            return {
-              uri: item.email,
-              url: "mailto:" + item.email,
-              value: item.first_name + " " + item.last_name,
-            };
-          });
+          this.technicalSupervisorsList = http.response.result
         })
         .catch(this.$opensilex.errorHandler);
     }

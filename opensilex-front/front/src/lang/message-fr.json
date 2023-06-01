@@ -319,6 +319,7 @@
             "last-name": "nom",
             "email-address": "adresse email",
             "email": "email",
+            "mail-redirection": "envoyer un mail",
             "successDelete" : "Personne supprimée",
             "errors": {
                 "person-already-exists": "Une personne existe déjà avec cette URI."

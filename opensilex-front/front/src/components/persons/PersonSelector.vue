@@ -7,7 +7,7 @@
     :itemLoadingMethod="loadPersons"
     :searchMethod="searchPersons"
     :conversionMethod="personToSelectNode"
-    placeholder="component.user.filter-placeholder"
+    placeholder="component.person.filter-placeholder"
     noResultsText="component.person.filter-search-no-result"
     @select="select"
     @deselect="deselect"

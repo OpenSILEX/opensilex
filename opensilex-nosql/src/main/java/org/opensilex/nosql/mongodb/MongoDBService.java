@@ -437,7 +437,7 @@ public class MongoDBService extends BaseService {
 
     public <T> Set<T> aggregate(
             String collectionName,
-            List<Document> aggregationArgs,
+            List<Bson> aggregationArgs,
             Class<T> instanceClass) {
         LOGGER.debug("MONGO SEARCH - Collection : " + collectionName + " - Aggregation pipeline : " + aggregationArgs.toString());
         Set<T> results = new HashSet<>();

@@ -9,6 +9,7 @@ package org.opensilex.core.data.api;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.core.data.dal.DataModel;
+import org.opensilex.core.data.dal.DataSimpleModel;
 import org.opensilex.server.rest.validation.DateFormat;
 import org.opensilex.server.rest.validation.Required;
 import org.opensilex.server.rest.validation.ValidURI;
@@ -106,6 +107,16 @@ public class DataSimpleGetDTO {
      * @return a simple data DTO
      */
     public static DataSimpleGetDTO getDtoFromModel(DataModel model) {
+        DataSimpleGetDTO dto = new DataSimpleGetDTO();
+
+        dto.setUri(model.getUri());
+        dto.setDate(model.getDate(), model.getOffset(), model.getIsDateTime());
+        dto.setValue(model.getValue());
+
+        return dto;
+    }
+
+    public static DataSimpleGetDTO getDtoFromModel(DataSimpleModel model) {
         DataSimpleGetDTO dto = new DataSimpleGetDTO();
 
         dto.setUri(model.getUri());

@@ -1,5 +1,6 @@
 package org.opensilex.core.data.utils;
 
+import org.opensilex.core.data.api.DataComputedGetDTO;
 import org.opensilex.core.data.api.DataSimpleGetDTO;
 
 import java.time.Instant;
@@ -17,6 +18,7 @@ public class DataMathFunctions {
      * @param dataSerie the data set
      * @return the serie of median per hour
      */
+    /*
     public static List<DataSimpleGetDTO> computeMedianPerHour(List<DataSimpleGetDTO> dataSerie) {
         List<DataSimpleGetDTO> mediansPerHour = new ArrayList<>();
 
@@ -41,6 +43,38 @@ public class DataMathFunctions {
             DataSimpleGetDTO medianData = new DataSimpleGetDTO(entry.getValue().get(0));
             medianData.setValue(median);
             medianData.updateDate(dateTime);
+
+            mediansPerHour.add(medianData);
+        }
+
+        return mediansPerHour;
+    }
+    */
+
+    public static List<DataComputedGetDTO> computeMedianPerHour(List<DataComputedGetDTO> dataSerie) {
+        List<DataComputedGetDTO> mediansPerHour = new ArrayList<>();
+
+        Map<Long, List<DataComputedGetDTO>> dataPerHourMap = dataSerie.stream()
+                .sorted(Comparator.comparing(DataComputedGetDTO::getDateTime))
+                .collect(Collectors.groupingBy(d->(d.getDateTime().getEpochSecond()/3600),
+                        LinkedHashMap::new,
+                        Collectors.toList()));
+
+        for (Map.Entry<Long, List<DataComputedGetDTO>> entry : dataPerHourMap.entrySet()) {
+            Instant dateTime = Instant.ofEpochSecond(entry.getKey()*3600).plus(30, ChronoUnit.MINUTES);
+
+            List<Double> data = entry.getValue().stream().map(d->(Double.valueOf(d.getValue().toString()))).collect(Collectors.toList());
+            Collections.sort(data);
+
+            double median;
+            if (data.size() % 2 == 0)
+                median = (data.get(data.size()/2) + data.get(data.size()/2 - 1)) / 2;
+            else
+                median = data.get(data.size()/2);
+
+            DataComputedGetDTO medianData = new DataComputedGetDTO(entry.getValue().get(0));
+            medianData.setValue(median);
+            medianData.setDateTime(dateTime);
 
             mediansPerHour.add(medianData);
         }

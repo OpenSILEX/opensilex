@@ -12,6 +12,7 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.variable.api.VariableAPI;
 import org.opensilex.core.variable.dal.BaseVariableDAO;
 import org.opensilex.core.variable.dal.EntityModel;
+import org.opensilex.core.variable.dal.EntityMultiLabelModel;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
@@ -87,8 +88,8 @@ public class EntityAPI {
             @ApiParam("Entity description") @Valid EntityCreationDTO dto
     ) throws Exception {
         try {
-            BaseVariableDAO<EntityModel> dao = new BaseVariableDAO<>(EntityModel.class, sparql);
-            EntityModel model = dto.newModel();
+            BaseVariableDAO<EntityMultiLabelModel> dao = new BaseVariableDAO<>(EntityMultiLabelModel.class, sparql);
+            EntityMultiLabelModel model = dto.newModel();
             model.setCreator(currentUser.getUri());
 
             dao.create(model);
@@ -165,29 +166,29 @@ public class EntityAPI {
     }
     
     
-    @PUT
-    @ApiOperation("Update an entity")
-    @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_VARIABLE_MODIFICATION_ID,
-            credentialLabelKey = CREDENTIAL_VARIABLE_MODIFICATION_LABEL_KEY
-    )
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Entity updated", response = URI.class),
-            @ApiResponse(code = 404, message = "Unknown entity URI", response = ErrorResponse.class)
-    })
-    public Response updateEntity(
-            @ApiParam("Entity description") @Valid EntityUpdateDTO dto
-    ) throws Exception {
-        BaseVariableDAO<EntityModel> dao = new BaseVariableDAO<>(EntityModel.class, sparql);
-
-        EntityModel model = dto.newModel();
-        dao.update(model);
-        URI shortUri = new URI(SPARQLDeserializers.getShortURI(model.getUri().toString()));
-        return new ObjectUriResponse(Response.Status.OK,shortUri).getResponse();
-    }
+//    @PUT
+//    @ApiOperation("Update an entity")
+//    @ApiProtected
+//    @ApiCredential(
+//            credentialId = CREDENTIAL_VARIABLE_MODIFICATION_ID,
+//            credentialLabelKey = CREDENTIAL_VARIABLE_MODIFICATION_LABEL_KEY
+//    )
+//    @Consumes(MediaType.APPLICATION_JSON)
+//    @Produces(MediaType.APPLICATION_JSON)
+//    @ApiResponses(value = {
+//            @ApiResponse(code = 200, message = "Entity updated", response = URI.class),
+//            @ApiResponse(code = 404, message = "Unknown entity URI", response = ErrorResponse.class)
+//    })
+//    public Response updateEntity(
+//            @ApiParam("Entity description") @Valid EntityUpdateDTO dto
+//    ) throws Exception {
+//        BaseVariableDAO<EntityModel> dao = new BaseVariableDAO<>(EntityModel.class, sparql);
+//
+//        EntityModel model = dto.newModel();
+//        dao.update(model);
+//        URI shortUri = new URI(SPARQLDeserializers.getShortURI(model.getUri().toString()));
+//        return new ObjectUriResponse(Response.Status.OK,shortUri).getResponse();
+//    }
 
     @DELETE
     @Path("{uri}")

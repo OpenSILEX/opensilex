@@ -15,7 +15,7 @@ import org.opensilex.sparql.response.ResourceDTO;
 import java.net.URI;
 import java.util.ArrayList;
 
-@JsonPropertyOrder({"prefLabel", "altLabels", "definition", "lang"})
+@JsonPropertyOrder({"prefLabel", "altLabels", "definition"})
 public class LabelDTO{
 
     @JsonProperty("prefLabel")
@@ -26,9 +26,6 @@ public class LabelDTO{
 
     @JsonProperty("definition")
     protected String definition;
-
-    @JsonProperty("lang")
-    protected String lang;
 
     public String getPrefLabel() {
         return prefLabel;
@@ -54,12 +51,6 @@ public class LabelDTO{
         this.definition = definition;
     }
 
-    public String getLang() {
-        return lang;
-    }
 
-    public void setLang(String lang) {
-        this.lang = lang;
-    }
 
 }

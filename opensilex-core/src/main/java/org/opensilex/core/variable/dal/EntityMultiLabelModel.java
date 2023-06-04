@@ -5,10 +5,18 @@
 //******************************************************************************
 package org.opensilex.core.variable.dal;
 
+//******************************************************************************
+// OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+// Copyright © INRA 2019
+// Contact: vincent.migot@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+//******************************************************************************
+
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.sparql.annotations.SPARQLResource;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author vidalmor
@@ -18,20 +26,27 @@ import java.net.URI;
         resource = "Entity",
         graph = VariableModel.GRAPH
 )
-public class EntityModel extends BaseVariableModel<EntityModel> {
+public class EntityMultiLabelModel extends BaseMultiLabelIdentifierModel<EntityMultiLabelModel> {
 
-    public EntityModel() {
+    public EntityMultiLabelModel() {
+
     }
 
-    public EntityModel(URI uri) {
+    public EntityMultiLabelModel(URI uri) {
         setUri(uri);
+
     }
 
-    @Override
+
+
     public String[] getInstancePathSegments(EntityModel instance) {
         return new String[]{
                 "entity",
                 instance.getName()
         };
     }
+
+
+
 }
+

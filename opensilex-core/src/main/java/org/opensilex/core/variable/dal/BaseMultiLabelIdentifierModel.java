@@ -6,20 +6,20 @@
 package org.opensilex.core.variable.dal;
 
 import org.apache.jena.vocabulary.DCTerms;
-import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.SKOS;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.SKOSReferences;
-import org.opensilex.core.variable.api.LabelDTO;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 
 import java.net.URI;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
+//public abstract class BaseMultiLabelIdentifierModel<T extends BaseMultiLabelIdentifierModel> extends LabelModel implements SKOSReferences {
+public abstract class BaseMultiLabelIdentifierModel<T extends SPARQLNamedResourceModel<T>> extends SPARQLNamedResourceModel<T> implements SKOSReferences {
 
-public abstract class BaseIdentifierModel<T extends SPARQLNamedResourceModel<T>> extends SPARQLNamedResourceModel<T> implements SKOSReferences {
 
     @SPARQLProperty(
             ontology = SKOS.class,
@@ -53,12 +53,46 @@ public abstract class BaseIdentifierModel<T extends SPARQLNamedResourceModel<T>>
 
     @SPARQLProperty(
             ontology = SKOS.class,
-            property = ""
-
+            property = "prefLabel"
     )
-    private List<LabelDTO> labelDTOs;
+    private List<String> prefLabels = new ArrayList<String>();
 
-    public static final String labels_INFO = "labels_INFO";
+    @SPARQLProperty(
+            ontology = SKOS.class,
+            property = "altLabel"
+    )
+    private List<String> altsLabels = new ArrayList<String>();
+
+
+    @SPARQLProperty(
+            ontology = SKOS.class,
+            property = "definition"
+    )
+    private List<String> definitions  = new ArrayList<String>();
+
+    public List<String> getPrefLabels() {
+        return prefLabels;
+    }
+
+    public void setPrefLabels(List<String> prefLabels) {
+        this.prefLabels = prefLabels;
+    }
+
+    public List<String> getAltsLabels() {
+        return altsLabels;
+    }
+
+    public void setAltsLabels(List<String> altsLabels) {
+        this.altsLabels = altsLabels;
+    }
+
+    public List<String> getDefinitions() {
+        return definitions;
+    }
+
+    public void setDefinitions(List<String> definitions) {
+        this.definitions = definitions;
+    }
 
 
     @SPARQLProperty(
@@ -66,6 +100,7 @@ public abstract class BaseIdentifierModel<T extends SPARQLNamedResourceModel<T>>
             property = "modified"
     )
     private OffsetDateTime lastUpdateTime;
+
 
 
     @Override
@@ -122,15 +157,6 @@ public abstract class BaseIdentifierModel<T extends SPARQLNamedResourceModel<T>>
 
     public void setLastUpdateTime(OffsetDateTime lastUpdateTime) {
         this.lastUpdateTime = lastUpdateTime;
-    }
-
-
-    public List<LabelDTO> getLabelDTOs() {
-        return labelDTOs;
-    }
-
-    public void setLabelDTOs(List<LabelDTO> labelDTOs) {
-        this.labelDTOs = labelDTOs;
     }
 
 

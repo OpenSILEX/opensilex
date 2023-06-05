@@ -9,6 +9,8 @@ import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.SKOS;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.SKOSReferences;
+import org.opensilex.security.authentication.SecurityOntology;
+import org.opensilex.security.group.dal.GroupUserProfileModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 
@@ -18,8 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 //public abstract class BaseMultiLabelIdentifierModel<T extends BaseMultiLabelIdentifierModel> extends LabelModel implements SKOSReferences {
-public abstract class BaseMultiLabelIdentifierModel<T extends SPARQLNamedResourceModel<T>> extends SPARQLNamedResourceModel<T> implements SKOSReferences {
-
+public abstract class BaseMultiLabelIdentifierModel<T extends SPARQLNamedResourceModel<T>> extends MultiLabelModel<T> implements SKOSReferences {
 
     @SPARQLProperty(
             ontology = SKOS.class,
@@ -52,56 +53,10 @@ public abstract class BaseMultiLabelIdentifierModel<T extends SPARQLNamedResourc
     private URI fromSharedResourceInstance;
 
     @SPARQLProperty(
-            ontology = SKOS.class,
-            property = "prefLabel"
-    )
-    private List<String> prefLabels = new ArrayList<String>();
-
-    @SPARQLProperty(
-            ontology = SKOS.class,
-            property = "altLabel"
-    )
-    private List<String> altsLabels = new ArrayList<String>();
-
-
-    @SPARQLProperty(
-            ontology = SKOS.class,
-            property = "definition"
-    )
-    private List<String> definitions  = new ArrayList<String>();
-
-    public List<String> getPrefLabels() {
-        return prefLabels;
-    }
-
-    public void setPrefLabels(List<String> prefLabels) {
-        this.prefLabels = prefLabels;
-    }
-
-    public List<String> getAltsLabels() {
-        return altsLabels;
-    }
-
-    public void setAltsLabels(List<String> altsLabels) {
-        this.altsLabels = altsLabels;
-    }
-
-    public List<String> getDefinitions() {
-        return definitions;
-    }
-
-    public void setDefinitions(List<String> definitions) {
-        this.definitions = definitions;
-    }
-
-
-    @SPARQLProperty(
             ontology = DCTerms.class,
             property = "modified"
     )
     private OffsetDateTime lastUpdateTime;
-
-
 
     @Override
     public List<URI> getExactMatch() {
@@ -158,7 +113,5 @@ public abstract class BaseMultiLabelIdentifierModel<T extends SPARQLNamedResourc
     public void setLastUpdateTime(OffsetDateTime lastUpdateTime) {
         this.lastUpdateTime = lastUpdateTime;
     }
-
-
 
 }

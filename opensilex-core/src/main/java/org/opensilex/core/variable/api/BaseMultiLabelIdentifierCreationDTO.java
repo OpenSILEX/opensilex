@@ -8,9 +8,12 @@ package org.opensilex.core.variable.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import org.opensilex.core.ontology.SKOSReferences;
 import org.opensilex.core.ontology.SKOSReferencesDTO;
 import org.opensilex.core.variable.dal.BaseMultiLabelIdentifierModel;
+import org.opensilex.core.variable.dal.MultiLabelModel;
 import org.opensilex.server.rest.validation.ValidURI;
+import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -23,26 +26,17 @@ import java.util.List;
         SKOSReferencesDTO.BROAD_MATCH_JSON_PROPERTY,
         SKOSReferencesDTO.NARROW_MATCH_JSON_PROPERTY
 })
-//public abstract class BaseVariableCreationDTO<T extends BaseVariableModel<T>> extends SKOSReferencesDTO {
 public abstract class BaseMultiLabelIdentifierCreationDTO<T extends BaseMultiLabelIdentifierModel<T>> extends SKOSReferencesDTO {
 
     @JsonProperty("uri")
     protected URI uri;
 
-    @JsonProperty("prefLabels")
-    protected List<String> prefLabels;
-
-    @JsonProperty("altLabels")
-    protected List<String> altLabels;
-
-    @JsonProperty("definitions")
-    protected List<String> definitions;
+    @JsonProperty("multiLabelDTO")
+    public MultiLabelDTO multiLabelDTO;
 
     public BaseMultiLabelIdentifierCreationDTO() {
 
-        this.prefLabels = new ArrayList<String>();
-        this.altLabels = new ArrayList<String>();
-        this.definitions = new ArrayList<String>();
+
     }
 
     @ValidURI
@@ -55,28 +49,12 @@ public abstract class BaseMultiLabelIdentifierCreationDTO<T extends BaseMultiLab
         this.uri = uri;
     }
 
-    public List<String> getPrefLabels() {
-        return prefLabels;
+    public MultiLabelDTO getMultiLabelDTO() {
+        return multiLabelDTO;
     }
 
-    public void setPrefLabels(List<String> prefLabels) {
-        this.prefLabels = prefLabels;
-    }
-
-    public List<String> getAltLabels() {
-        return altLabels;
-    }
-
-    public void setAltLabels(List<String> altLabels) {
-        this.altLabels = altLabels;
-    }
-
-    public List<String> getDefinitions() {
-        return definitions;
-    }
-
-    public void setDefinitions(List<String> definitions) {
-        this.definitions = definitions;
+    public void setMultiLabelDTO(MultiLabelDTO multiLabelDTO) {
+        this.multiLabelDTO = multiLabelDTO;
     }
 
     public T newModel() {

@@ -1,22 +1,21 @@
 package org.opensilex.core.variable.dal;
 
 import org.apache.jena.vocabulary.SKOS;
-import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.ontology.SKOSReferences;
 import org.opensilex.sparql.annotations.SPARQLProperty;
-import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 
-import java.net.URI;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-public class LabelModel<T extends SPARQLNamedResourceModel<T>> extends SPARQLNamedResourceModel<T> {
+public class MultiLabelModel<T extends SPARQLNamedResourceModel<T>> extends SPARQLNamedResourceModel<T> {
+
     @SPARQLProperty(
             ontology = SKOS.class,
             property = "prefLabel"
     )
-    private List<String> prefLabels;
-
+    protected List<String> prefLabels;
     @SPARQLProperty(
             ontology = SKOS.class,
             property = "altLabel"
@@ -52,5 +51,10 @@ public class LabelModel<T extends SPARQLNamedResourceModel<T>> extends SPARQLNam
 
     public void setDefinitions(List<String> definitions) {
         this.definitions = definitions;
+    }
+    public MultiLabelModel(){
+        this.prefLabels = new ArrayList<>();
+        this.altsLabels = new ArrayList<>();
+        this.definitions = new ArrayList<>();
     }
 }

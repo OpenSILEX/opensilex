@@ -48,7 +48,7 @@ public class DataVariableSeriesGetDTO {
     private List<DataSerieGetDTO> calculatedSeries;
 
     @JsonProperty("last_data_stored")
-    private DataSimpleGetDTO lastData;
+    private DataComputedGetDTO lastData;
 
 
     public DataVariableSeriesGetDTO(VariableDetailsDTO variable) {
@@ -103,11 +103,11 @@ public class DataVariableSeriesGetDTO {
         this.calculatedSeries = calculatedSeries;
     }
 
-    public DataSimpleGetDTO getLastData() {
+    public DataComputedGetDTO getLastData() {
         return lastData;
     }
 
-    public void setLastData(DataSimpleGetDTO lastData) {
+    public void setLastData(DataComputedGetDTO lastData) {
         this.lastData = lastData;
     }
 }

@@ -14,9 +14,9 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.XSD;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.opensilex.core.data.api.DataComputedGetDTO;
 import org.opensilex.core.data.api.DataExportDTO;
 import org.opensilex.core.data.api.DataGetDTO;
-import org.opensilex.core.data.api.DataSimpleGetDTO;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.utils.ExportDataIndex;
@@ -1199,6 +1199,16 @@ public class DataDAO {
         return new ListWithPagination<>(dtoList, modelList.getPage(), modelList.getPageSize(), modelList.getTotal());
     }
 
+    /**
+     * Execute mongo query
+     * @param user
+     * @param target
+     * @param variable
+     * @param startDate
+     * @param endDate
+     * @return
+     * @throws Exception
+     */
     public List<DataComputedModel> computeAllMediansPerHour(AccountModel user,
                                                    URI target,
                                                    URI variable,
@@ -1478,7 +1488,7 @@ public class DataDAO {
         return results.stream().collect(Collectors.toList());
     }
 
-    public DataSimpleGetDTO getLastDataFound(AccountModel user,
+    public DataComputedGetDTO getLastDataFound(AccountModel user,
                                              List<URI> experiments,
                                              List<URI> targets,
                                              List<URI> variables,
@@ -1517,6 +1527,6 @@ public class DataDAO {
 
         DataModel lastData = results.stream().findFirst().orElse(null);
 
-        return (lastData != null) ? DataSimpleGetDTO.getDtoFromModel(lastData) : null;
+        return (lastData != null) ? DataComputedGetDTO.getDtoFromModel(lastData) : null;
     }
 }

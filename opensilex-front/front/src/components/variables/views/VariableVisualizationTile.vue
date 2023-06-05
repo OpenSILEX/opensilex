@@ -16,16 +16,6 @@
             id="data-infos"
             v-if="isDataLoaded">
           <div class="row">
-            <!--
-            <div class="col-sm-6">
-              <opensilex-Sparkline
-                  :maxWidth="500"
-                  :maxHeight="100"
-                  :dataSerie.sync="medianSerie"
-                  v-on:click.native="showGraphic">
-              </opensilex-Sparkline>
-            </div>
-            -->
             <div class="col" v-if="isDataOutOfReach">
               <opensilex-TextView
                   style="margin-bottom: 0;"
@@ -65,6 +55,8 @@
           </div>
         </div>
 
+        <!-- Modal for graphic -->
+
         <b-modal
             ref="graphic-modal"
             size="xl"
@@ -77,7 +69,7 @@
               <opensilex-Icon icon="fa#hourglass-half"/> {{ $t("Histogram.period." + period) }}
             </b-badge>
 
-            <!-- Periods & Devices selection button -->
+            <!-- Settings button -->
             <opensilex-Button
                 label=Histogram.settings
                 class="settingsButton"

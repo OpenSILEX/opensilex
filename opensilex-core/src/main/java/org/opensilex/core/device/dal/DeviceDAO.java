@@ -391,15 +391,13 @@ public class DeviceDAO {
     }
     
     /**
-     * Linked variables to a device by the Measure relation
+     * Linked variables to a device by the 'oeso:measures' relation
      * @param device device
      * @param variables variables to associate
      * @throws Exception if some error is encountered 
      *
      * **/
     public DeviceModel associateVariablesToDevice(DeviceModel device, List<URI> variables, AccountModel user) throws Exception {
-        
-       
         
         List<SPARQLModelRelation> relations = device.getRelations();
         
@@ -524,29 +522,6 @@ public class DeviceDAO {
         }
 
         return devices;
-    }
-
-    public Map<VariableModel, List<DeviceModel>> getAssociatedVariablesMap(List<URI> deviceUris, AccountModel currentUser)
-            throws Exception {
-
-        Map<VariableModel, List<DeviceModel>> variablesMap = new HashMap<VariableModel, List<DeviceModel>>();
-
-        List<VariableModel> variables;
-        DeviceModel device;
-
-        for (URI uri : deviceUris) {
-            variables = getDeviceVariables(uri, currentUser.getLanguage());
-            device = getDeviceByURI(uri, currentUser);
-
-            for (VariableModel variable : variables) {
-                if (!variablesMap.containsKey(variable)) {
-                    variablesMap.put(variable, new ArrayList<DeviceModel>());
-                }
-                variablesMap.get(variable).add(device);
-            }
-        }
-
-        return variablesMap;
     }
 
     /**

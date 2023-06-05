@@ -8,6 +8,8 @@
       <template v-slot:body>
         <div class="row">
           <div class="col-sm-6">
+
+            <!-- Variable Group Selector -->
             <div v-if="hasVariableGroup">
               <label for="variableGroupSelector">
                 {{ $t("FacilityAssociatedDevices.variable-group-selector") }}
@@ -31,31 +33,6 @@
               ></opensilex-SelectForm>
             </div>
           </div>
-
-          <div class="col-sm-6">
-            <!--
-            <opensilex-DatePeriodPicker
-                ref="periodPicker"
-                :period.sync="period"
-                @update="updateDatePeriod"
-            >
-            </opensilex-DatePeriodPicker>
-            -->
-              <!--
-              <div class="row justify-content-end">
-                  <opensilex-DateTimeRangePickerForm
-                      :start.sync="startDate"
-                      :end.sync="endDate"
-                      labelStart="component.common.begin"
-                      labelEnd="component.common.end"
-                      helpMessageStart="FacilityAssociatedDevices.start-date-help"
-                      helpMessageEnd="FacilityAssociatedDevices.end-date-help"
-                      name="dateTimePeriod"
-                  >
-                  </opensilex-DateTimeRangePickerForm>
-              </div>
-              -->
-          </div>
         </div>
       </template>
     </opensilex-Card>
@@ -66,6 +43,8 @@
         :label="$t('FacilityAssociatedDevices.no-variable')"
     >
     </opensilex-TextView>
+
+    <!-- Grid layout for tiles -->
 
     <GridLayout v-if="isItemsLoaded"
                 class="grid-layout"

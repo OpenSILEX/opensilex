@@ -1200,13 +1200,16 @@ public class DataDAO {
     }
 
     /**
-     * Execute mongo query
+     * Retrieve median per hour data series
+     * @details
+     *  data are collected and grouped by [target, variable, provenance].
+     *  The median per hour is then computed for each data series
      * @param user
      * @param target
      * @param variable
      * @param startDate
      * @param endDate
-     * @return
+     * @return a list of median values
      * @throws Exception
      */
     public List<DataComputedModel> computeAllMediansPerHour(AccountModel user,
@@ -1398,6 +1401,16 @@ public class DataDAO {
         return results.stream().collect(Collectors.toList());
     }
 
+    /**
+     * Compute the daily average from data
+     * @param user
+     * @param target
+     * @param variable
+     * @param startDate
+     * @param endDate
+     * @return
+     * @throws Exception
+     */
     public List<DataComputedModel> computeAllMeanPerDay(AccountModel user,
                                                             URI target,
                                                             URI variable,
@@ -1488,6 +1501,24 @@ public class DataDAO {
         return results.stream().collect(Collectors.toList());
     }
 
+    /**
+     * Return the last data stored in the system
+     * @details In the case there are multiple last data, keep only the first returned
+     * @param user
+     * @param experiments
+     * @param targets
+     * @param variables
+     * @param provenances
+     * @param devices
+     * @param startDate
+     * @param endDate
+     * @param confidenceMin
+     * @param confidenceMax
+     * @param metadata
+     * @param operators
+     * @return the last data
+     * @throws Exception
+     */
     public DataComputedGetDTO getLastDataFound(AccountModel user,
                                              List<URI> experiments,
                                              List<URI> targets,

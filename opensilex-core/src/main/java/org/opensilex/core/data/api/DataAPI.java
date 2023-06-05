@@ -757,6 +757,27 @@ public class DataAPI {
         }
         return deviceToReturn;
     }
+
+    private List<DeviceGetDTO> checkAndReturnDevicesFromDataProvenance(DataProvenanceModel provenance, DeviceDAO deviceDAO)
+            throws Exception {
+        List<DeviceGetDTO> devices = new ArrayList<>();
+
+        if(provenance.getProvWasAssociatedWith() != null && !provenance.getProvWasAssociatedWith().isEmpty()){
+            for (ProvEntityModel agent : provenance.getProvWasAssociatedWith()) {
+
+                if(agent.getType() == null) {
+                    throw new ProvenanceAgentTypeException(agent.getUri().toString());
+                }
+
+                if (deviceDAO.isDeviceType(agent.getType())) {
+                    DeviceModel device = deviceDAO.getDeviceByURI(agent.getUri(), user);
+                    devices.add(DeviceGetDTO.getDTOFromModel(device));
+                }
+            }
+        }
+
+        return devices;
+    }
     
     /** 
      * check and return Device from Data Provenance if no ambiguity
@@ -2088,8 +2109,7 @@ public class DataAPI {
      *  otherwise, take the uri and name from the provenance model
      * @param dataProvModel
      * @return a simple data provenance with uri and name attributes
-     * @throws SPARQLException
-     * @throws NoSQLInvalidURIException
+     * @throws Exception
      */
     private DataSimpleProvenanceGetDTO createDataSimpleProvenance(DataProvenanceModel dataProvModel)
             throws Exception {
@@ -2112,28 +2132,6 @@ public class DataAPI {
 
         return dto;
     }
-
-    private List<DeviceGetDTO> checkAndReturnDevicesFromDataProvenance(DataProvenanceModel provenance, DeviceDAO deviceDAO)
-            throws Exception {
-        List<DeviceGetDTO> devices = new ArrayList<>();
-
-        if(provenance.getProvWasAssociatedWith() != null && !provenance.getProvWasAssociatedWith().isEmpty()){
-            for (ProvEntityModel agent : provenance.getProvWasAssociatedWith()) {
-
-                if(agent.getType() == null) {
-                    throw new ProvenanceAgentTypeException(agent.getUri().toString());
-                }
-
-                if (deviceDAO.isDeviceType(agent.getType())) {
-                    DeviceModel device = deviceDAO.getDeviceByURI(agent.getUri(), user);
-                    devices.add(DeviceGetDTO.getDTOFromModel(device));
-                }
-            }
-        }
-
-        return devices;
-    }
-
 
     @GET
     @Path("/data_serie/facility")

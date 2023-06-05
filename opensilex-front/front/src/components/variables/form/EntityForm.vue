@@ -29,13 +29,13 @@
           <template v-slot:cell(prefLabel)="item">
             {{ item.data.value }}
           </template>
+
           <template v-slot:cell(altLabels)="item">
             <span v-for="(altLabel, index) in item.data.value" :key="index">
               {{ altLabel }}
               <br>
             </span>
           </template>
-
 
           <template v-slot:cell(definition)="item">
             {{ item.data.value }}
@@ -46,8 +46,13 @@
       </template>
     </div>
     <!--onSubmitSubForm-->
+    <div class="row">
 
-    <opensilex-LabelCreationSubForm ref="labelCreationSubForm" @onSubmitSubForm="getLabelDTOListFromSubForm" @subFormValid="subFormValid = $event" />
+      <div class="col">
+        <opensilex-LabelCreationSubForm ref="labelCreationSubForm" @onSubmitSubForm="getLabelDTOListFromSubForm"
+        />
+      </div>
+    </div>
     <div class="col">
       <b-form-group
           label="component.skos.semantic-resources-label" label-size="lg"
@@ -124,7 +129,7 @@ export default class EntityForm extends Vue {
 
   emits: ['labelDTOs'];
 
-  subFormValid: boolean = false;
+  isValidSubForm: boolean = false;
 
   key = 0;
 
@@ -134,6 +139,7 @@ export default class EntityForm extends Vue {
 
 
   pageSize: number;
+
   created() {
 
     this.initAttributes();
@@ -153,7 +159,7 @@ export default class EntityForm extends Vue {
     this.dataLoaded = true;
     this.$emit('labelDTOs', this.labelDTOList);
     this.key += 1;
-    console.log("**********************************  pageSize  *************************************",this.pageSize);
+    console.log("**********************************  pageSize  *************************************", this.pageSize);
 
 
   }
@@ -210,7 +216,16 @@ export default class EntityForm extends Vue {
   @Ref("validatorRef") readonly validatorRef!: any;
 
   handleSubFormValid(subFormValid: boolean) {
-    this.subFormValid = subFormValid;
+    this.isValidSubForm = subFormValid;
+  }
+
+  isFormValid(): boolean {
+
+    if (this.validatorRef && typeof this.validatorRef.validate === "function") {
+
+      return this.validatorRef.validate() && this.labelDTOList.length > 0;
+    }
+    return false;
   }
 
   reset() {
@@ -220,17 +235,39 @@ export default class EntityForm extends Vue {
 
   }
 
-  validate() {
+  // validate() {
+  //   return this.validatorRef.validate();
+  // }
 
-    if (this.labelDTOList.length > 0 || this.subFormValid) {
+  // validate() {
+  //
+  //   // console.log("this.validatorRef",this.validatorRef);
+  //
+  //   if (this.validatorRef || typeof this.validatorRef.validate === "function") {
+  //
+  //     return this.validatorRef.validate() || this.labelDTOList.length > 0;
+  //   }
+  //   return false;  }
 
-      console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-      return this.validatorRef.validate();
+  validate(): Promise<boolean> {
+    return new Promise((resolve) => {
+      if (this.validatorRef && typeof this.validatorRef.validate === "function") {
+        this.validatorRef.validate().then((valid) => {
 
-    }
+          console.log("valid", valid);
+          console.log("this.labelDTOList", this.labelDTOList);
 
+          if (valid || this.labelDTOList.length > 0) {
+            resolve(true);
+          } else {
+            resolve(false);
+          }
+        });
+      } else {
+        resolve(false);
+      }
+    });
   }
-
 }
 </script>
 

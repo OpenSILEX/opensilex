@@ -12,9 +12,7 @@
 import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
-import {DataSerieGetDTO} from "opensilex-core/model/dataSerieGetDTO";
-import {DataSimpleGetDTO} from "opensilex-core/model/dataSimpleGetDTO";
-import {Point} from "jspdf";
+import {DataComputedGetDTO} from "opensilex-core/model/dataComputedGetDTO";
 
 @Component
 export default class Sparkline extends Vue {
@@ -33,7 +31,7 @@ export default class Sparkline extends Vue {
   @Prop({
     default: []
   })
-  dataSerie: Array<DataSimpleGetDTO>;
+  dataSerie: Array<DataComputedGetDTO>;
 
   data: Array<number>;
 

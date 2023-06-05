@@ -1,6 +1,5 @@
 import {DataGetDTO} from "opensilex-core/model/dataGetDTO";
 import Highcharts from "highcharts";
-import {DataSimpleGetDTO} from "opensilex-core/model/dataSimpleGetDTO";
 import {DataSimpleProvenanceGetDTO} from "opensilex-core/model/dataSimpleProvenanceGetDTO";
 import {DataComputedGetDTO} from "opensilex-core/model/dataComputedGetDTO";
 

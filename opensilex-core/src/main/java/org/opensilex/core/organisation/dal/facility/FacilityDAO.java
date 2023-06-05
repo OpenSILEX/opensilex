@@ -61,7 +61,7 @@ public class FacilityDAO {
     private final OrganizationDAO organizationDAO;
     private final SiteDAO siteDAO;
     private final VariablesGroupDAO variableGroupDAO;
-    private final URI addressGraphURI;
+    private final URI geometryGraphUri;
 
     private final OrganizationSPARQLHelper organizationSPARQLHelper;
 
@@ -72,7 +72,7 @@ public class FacilityDAO {
         this.geospatialDAO = new GeospatialDAO(nosql);
         this.organizationDAO = organizationDAO;
         this.siteDAO = new SiteDAO(sparql, nosql, organizationDAO);
-        this.addressGraphURI = sparql.getDefaultGraphURI(OrganizationModel.class);
+        this.geometryGraphUri = sparql.getDefaultGraphURI(OrganizationModel.class);
         this.variableGroupDAO = new VariablesGroupDAO(sparql);
 
         this.organizationSPARQLHelper = new OrganizationSPARQLHelper(sparql);

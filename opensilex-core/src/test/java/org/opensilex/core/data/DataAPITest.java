@@ -271,14 +271,27 @@ public class DataAPITest extends AbstractMongoIntegrationTest {
     }
 
     private List<DataGetDTO> getSearchResponseAsDTOList(URI provenance) throws Exception {
-        final Response searchResult = getJsonGetResponseAsAdmin(appendSearchParams(target(searchPath), 0, 20, new HashMap<String, Object>() {{
-            put(SEARCH_PROVENANCES_QUERY_PARAMETER_NAME, Collections.singletonList(provenance));
-        }}));
-        assertEquals(Response.Status.OK.getStatusCode(), searchResult.getStatus());
-        JsonNode node = searchResult.readEntity(JsonNode.class);
-        PaginatedListResponse<DataGetDTO> searchResponse = mapper.convertValue(node,
-                new TypeReference<PaginatedListResponse<DataGetDTO>>() {});
-        return searchResponse.getResult();
+
+        return getSearchResultsAsAdmin(searchPath,
+                0,
+                20,
+                new HashMap<String, Object>() {{
+                    put(SEARCH_PROVENANCES_QUERY_PARAMETER_NAME, Collections.singletonList(provenance));
+                }},
+                new TypeReference<PaginatedListResponse<DataGetDTO>>() {
+                }
+        );
+    }
+
+    private List<AnnotationGetDTO> getSearchAnnotationsResponseAsDTOList() throws Exception {
+
+        return getSearchResultsAsAdmin(annotationPath,
+                0,
+                20,
+                new HashMap<>(),
+                new TypeReference<PaginatedListResponse<AnnotationGetDTO>>() {
+                }
+        );
     }
        
     @Test

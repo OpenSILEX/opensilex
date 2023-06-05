@@ -216,7 +216,7 @@ export default class EntityForm extends Vue {
   errorMsg: String = "";
 
   @PropSync("form")
-  entityDto: EntityCreationDTO;
+  entityDto: EntityCreationDTO ;
 
   externalOntologiesRefs: any[] = ExternalOntologies.getExternalOntologiesReferences(EntityCreate.selectedOntologies);
 

@@ -91,8 +91,7 @@
 import {Component, Prop, PropSync, Ref, Watch} from "vue-property-decorator";
 import EntityCreate from "./EntityCreate.vue";
 // @ts-ignore
-import {EntityCreationDTO} from "opensilex-core/index";
-import {LabelDTO} from "opensilex-core/model/labelDTO";
+import {EntityCreationDTO, LabelDTO, MultiLabelDTO} from "opensilex-core/index";
 
 import Vue from 'vue';
 
@@ -112,6 +111,8 @@ export default class LabelCreationSubForm extends Vue {
 
   currentLanguage: string = '';
 
+
+
   IsValidsubForm: boolean = false;
 
 
@@ -125,7 +126,7 @@ export default class LabelCreationSubForm extends Vue {
   altLabels: Array<string> = [''];
 
 
-  labelDTOs: Array<LabelDTO> = [];
+  labelDTOs: Array<MultiLabelDTO> = [];
 
   dataLoaded: boolean;
 

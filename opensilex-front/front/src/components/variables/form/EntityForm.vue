@@ -97,7 +97,7 @@ import EntityCreate from "./EntityCreate.vue";
 import {VueConstructor} from 'vue';
 
 // @ts-ignore
-import {EntityCreationDTO, LabelDTO} from "opensilex-core/index";
+import {EntityCreationDTO, LabelDTO, MultiLabelDTO} from "opensilex-core/index";
 
 import DefaultHeaderComponent from "../../layout/DefaultHeaderComponent.vue";
 
@@ -151,16 +151,28 @@ export default class EntityForm extends Vue {
 
   }
 
-
   getLabelDTOListFromSubForm(labelDTO: LabelDTO) {
+    console.log("this.entityDto",this.entityDto);
+
 
     this.labelDTOList.push(labelDTO);
+
+    this.entityDto.multiLabelDTO.prefLabels.add(labelDTO.prefLabel+'@'+labelDTO.lang.substring(0, 2));
+
+    for (let i = 0; i < labelDTO.altLabels.length; i++) {
+      const altLabel = labelDTO.altLabels[i] + '@' + labelDTO.lang.substring(0, 2);
+      this.entityDto.multiLabelDTO.altLabels.push(altLabel);
+    }
+    this.entityDto.multiLabelDTO.definitions.add(labelDTO.definition+'@'+labelDTO.lang.substring(0, 2));
+
     this.entityDto.labelDTOs.push(labelDTO);
     this.dataLoaded = true;
+
     this.$emit('labelDTOs', this.labelDTOList);
     this.key += 1;
-    console.log("**********************************  pageSize  *************************************", this.pageSize);
 
+    console.log("this.entityDto.multiLabelDTO",this.entityDto.multiLabelDTO);
+    console.log("**********************************  pageSize  *************************************", this.pageSize);
 
   }
 

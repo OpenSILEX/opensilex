@@ -1,18 +1,18 @@
 <template>
-    <opensilex-WizardForm
-            ref="wizardRef"
-            :steps="steps"
-            createTitle="EntityForm.add"
-            editTitle="EntityForm.edit"
-            icon="fa#vials"
-            modalSize="lg"
-            :initForm="getEmptyForm"
-            :createAction="create"
-            :updateAction="update"
-            :static="false"
-    >
-        <template v-slot:icon></template>
-    </opensilex-WizardForm>
+  <opensilex-WizardForm
+      ref="wizardRef"
+      :steps="steps"
+      createTitle="EntityForm.add"
+      editTitle="EntityForm.edit"
+      icon="fa#vials"
+      modalSize="lg"
+      :initForm="getEmptyForm"
+      :createAction="create"
+      :updateAction="update"
+      :static="false"
+  >
+    <template v-slot:icon></template>
+  </opensilex-WizardForm>
 </template>
 
 
@@ -23,104 +23,128 @@ import {ExternalOntologies} from "../../../models/ExternalOntologies";
 import {EntityCreationDTO, EntityGetDTO, VariablesService} from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
 import {EntityUpdateDTO} from "opensilex-core/model/entityUpdateDTO";
+import {LabelDTO} from 'opensilex-core/model/labelDTO';
+import {MultiLabelDTO} from 'opensilex-core/model/multiLabelDTO';
+
 
 @Component
-    export default class EntityCreate extends Vue {
+export default class EntityCreate extends Vue {
 
-        steps = [
-            {component: "opensilex-EntityForm"}
-            ,{component : "opensilex-EntityExternalReferencesForm"}
-        ];
+  steps = [
+    {component: "opensilex-EntityForm"}
+    , {component: "opensilex-EntityExternalReferencesForm"}
+  ];
 
-        static selectedOntologies: string[] = [
-            ExternalOntologies.AGROVOC,
-            ExternalOntologies.AGROPORTAL,
-            ExternalOntologies.BIOPORTAL,
-            ExternalOntologies.CROP_ONTOLOGY,
-            ExternalOntologies.PLANTEOME,
-            ExternalOntologies.PLANT_ONTOLOGY
-        ];
+  static selectedOntologies: string[] = [
+    ExternalOntologies.AGROVOC,
+    ExternalOntologies.AGROPORTAL,
+    ExternalOntologies.BIOPORTAL,
+    ExternalOntologies.CROP_ONTOLOGY,
+    ExternalOntologies.PLANTEOME,
+    ExternalOntologies.PLANT_ONTOLOGY
+  ];
 
-        title = "";
-        uriGenerated = true;
-        editMode = false;
-        errorMsg: String = "";
-        service: VariablesService;
+  $opensilex: any;
 
-        @Ref("wizardRef") readonly wizardRef!: any;
+  @Ref("modalRef") readonly modalRef!: any;
+  @Ref("validatorRef") readonly validatorRef!: any;
 
-        created(){
-            this.service = this.$opensilex.getService("opensilex.VariablesService");
-        }
+  title = "";
+  uriGenerated = true;
+  editMode = false;
+  errorMsg: String = "";
+  service: VariablesService;
 
-        handleErrorMessage(errorMsg: string) {
-            this.errorMsg = errorMsg;
-        }
+  multiLabelDTO: MultiLabelDTO;
 
-        showCreateForm() {
-            this.wizardRef.showCreateForm();
-        }
+  @Ref("wizardRef") readonly wizardRef!: any;
 
-        showEditForm(form : EntityGetDTO) {
-            this.wizardRef.showEditForm(form);
-        }
+  created() {
+    this.service = this.$opensilex.getService("opensilex.VariablesService");
+  }
 
-        $opensilex: any;
+  handleErrorMessage(errorMsg: string) {
+    this.errorMsg = errorMsg;
+  }
 
-        @Ref("modalRef") readonly modalRef!: any;
-        @Ref("validatorRef") readonly validatorRef!: any;
+  showCreateForm() {
+    this.wizardRef.showCreateForm();
+  }
 
-        getEmptyForm(): EntityCreationDTO {
-            return {
-                uri: null,
-                name: null,
-                description: null,
-                exact_match: [],
-                close_match: [],
-                broad_match: [],
-                narrow_match: []
-            };
-        }
+  showEditForm(form: EntityGetDTO) {
+    this.wizardRef.showEditForm(form);
+  }
 
-        create(form: EntityCreationDTO){
-            return this.service
-                .createEntity(form)
-                .then((http: HttpResponse<OpenSilexResponse<string>>) => {
-                    form.uri = http.response.result;
-                    let message = this.$i18n.t("EntityForm.name") + " " + form.uri + " " + this.$i18n.t("component.common.success.creation-success-message");
-                    this.$opensilex.showSuccessToast(message);
-                    this.$emit("onCreate", form);
-                })
-                .catch(error => {
-                    if (error.status == 409) {
-                        this.$opensilex.errorHandler(error, this.$i18n.t("component.common.errors.uri-already-exists"));
-                    } else {
-                        this.$opensilex.errorHandler(error);
-                    }
-                });
-        }
 
-        update(form: EntityUpdateDTO){
-            return this.service
-                .updateEntity(form)
-                .then((http: HttpResponse<OpenSilexResponse<string>>) => {
-                    form.uri = http.response.result;
-                    let message = this.$i18n.t("EntityForm.name") + " " + form.uri + " " + this.$i18n.t("component.common.success.update-success-message");
-                    this.$opensilex.showSuccessToast(message);
-                    this.$emit("onUpdate", form);
-                })
-                .catch(error => {
-                    this.$opensilex.errorHandler(error);
-                });
-        }
+  getEmptyForm(): EntityCreationDTO {
+    return {
+      uri: null,
+      multiLabelDTO: this.getEmptyMultiLabelDTO(),
+      exact_match: [],
+      close_match: [],
+      broad_match: [],
+      narrow_match: []
+    };
+  }
 
-        loadingWizard: boolean = false;
+  getEmptyLabelsDTO(): LabelDTO {
+    return {
+      prefLabel: null,
+      altLabels: [''],
+      definition: null,
+      lang: null
 
-        setLoading(value: boolean) {
-            this.loadingWizard = value;
-        }
+    };
+  }
 
+  getEmptyMultiLabelDTO(): MultiLabelDTO {
+    return {
+      prefLabels: [],
+      altLabels: [],
+      definitions: []
     }
+  }
+
+
+  create(form: EntityCreationDTO) {
+    return this.service
+        .createEntity(form)
+        .then((http: HttpResponse<OpenSilexResponse<string>>) => {
+          form.uri = http.response.result;
+          let message = this.$i18n.t("EntityForm.name") + " " + form.uri + " " + this.$i18n.t("component.common.success.creation-success-message");
+          this.$opensilex.showSuccessToast(message);
+          this.$emit("onCreate", form);
+        })
+        .catch(error => {
+          if (error.status == 409) {
+            this.$opensilex.errorHandler(error, this.$i18n.t("component.common.errors.uri-already-exists"));
+          } else {
+            this.$opensilex.errorHandler(error);
+          }
+        });
+  }
+
+  update(form: EntityUpdateDTO) {
+    return this.service
+        .updateEntity(form)
+        .then((http: HttpResponse<OpenSilexResponse<string>>) => {
+          form.uri = http.response.result;
+          let message = this.$i18n.t("EntityForm.name") + " " + form.uri + " " + this.$i18n.t("component.common.success.update-success-message");
+          this.$opensilex.showSuccessToast(message);
+          this.$emit("onUpdate", form);
+        })
+        .catch(error => {
+          this.$opensilex.errorHandler(error);
+        });
+  }
+
+  loadingWizard: boolean = false;
+
+  setLoading(value: boolean) {
+    this.loadingWizard = value;
+  }
+
+}
 
 </script>
 
@@ -129,19 +153,19 @@ import {EntityUpdateDTO} from "opensilex-core/model/entityUpdateDTO";
 
 <i18n>
 en:
-    EntityForm:
-        uri-help: "Uncheck this checkbox if you want to insert a concept from an existing ontology or if want to set a particular URI. Let it checked if you want to create a new entity with an auto-generated URI"
-        ontologies-help: "Click on one of these reference ontologies. If an entity matches with the desired entity, uncheck the checkbox 'URI' and copy the corresponding URI in the 'URI' field. Also copy the name to the 'Name' field."
-        name: The entity
-        add: Add entity
-        edit: Edit entity
-        name-placeholder: Plant
+  EntityForm:
+    uri-help: "Uncheck this checkbox if you want to insert a concept from an existing ontology or if want to set a particular URI. Let it checked if you want to create a new entity with an auto-generated URI"
+    ontologies-help: "Click on one of these reference ontologies. If an entity matches with the desired entity, uncheck the checkbox 'URI' and copy the corresponding URI in the 'URI' field. Also copy the name to the 'Name' field."
+    name: The entity
+    add: Add entity
+    edit: Edit entity
+    name-placeholder: Plant
 fr:
-    EntityForm:
-        uri-help: "Décocher si vous souhaitez ajouter une entité à partir d'une ontologie existante ou si vous souhaitez spécifier une URI particulière. Laisser coché si vous souhaitez ajouter une entité avec une URI auto-générée"
-        ontologies-help: "Cliquer sur une de ces ontologies de référence. Si une entité correspond à celle recherchée, décocher la checkbox 'URI' et copier l'URI correspondante dans le champ 'URI'. Copier aussi le nom de l'entité dans le champ 'Nom'."
-        name: L'entité
-        add: Ajouter une entité
-        edit: Éditer une entité
-        name-placeholder: Plante
+  EntityForm:
+    uri-help: "Décocher si vous souhaitez ajouter une entité à partir d'une ontologie existante ou si vous souhaitez spécifier une URI particulière. Laisser coché si vous souhaitez ajouter une entité avec une URI auto-générée"
+    ontologies-help: "Cliquer sur une de ces ontologies de référence. Si une entité correspond à celle recherchée, décocher la checkbox 'URI' et copier l'URI correspondante dans le champ 'URI'. Copier aussi le nom de l'entité dans le champ 'Nom'."
+    name: L'entité
+    add: Ajouter une entité
+    edit: Éditer une entité
+    name-placeholder: Plante
 </i18n>

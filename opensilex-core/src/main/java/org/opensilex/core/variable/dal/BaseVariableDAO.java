@@ -80,6 +80,7 @@ public class BaseVariableDAO<T extends SPARQLNamedResourceModel<T>> {
      * if some variable is linked to the entity, before deleting it
      */
     public void delete(URI uri, Property property) throws DisplayableBadRequestException, Exception {
+
         Objects.requireNonNull(uri);
         Objects.requireNonNull(property);
 

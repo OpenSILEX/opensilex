@@ -1,4 +1,5 @@
 <template>
+
     <opensilex-ModalForm
         v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID) && loadForm"
         ref="variableForm"

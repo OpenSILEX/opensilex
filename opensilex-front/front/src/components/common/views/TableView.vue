@@ -35,7 +35,7 @@
         :current-page="currentPage"
         :fields="fields"
         :filter="filter"
-        :items="items"
+        :items="data"
         :per-page="pageSize"
         :sort-by="sortBy"
         hover

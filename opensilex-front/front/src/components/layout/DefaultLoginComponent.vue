@@ -42,7 +42,7 @@
           <!-- Language selector -->
           <b-dropdown
             id="langDropdown"
-            :title="`language - ${this.language}`"
+            :title="`language - ${language}`"
             class="languagesDropdown"
             variant="link"
             right

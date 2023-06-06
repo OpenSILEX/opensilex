@@ -290,6 +290,7 @@
             "user-groups": "groupes de l'utilisateur",
             "holderLabel" : "Propriétaire du compte",
             "successDelete" : "Utilisateur supprimé",
+            "holderOfTheAccount" : "propriétaire du compte",
             "choices": {
                 "create-person": "créer un nouveau compte et une personne",
                 "account-only": "créer un compte qui n'appartient à personne",

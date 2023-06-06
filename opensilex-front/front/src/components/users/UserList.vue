@@ -14,13 +14,17 @@
       :fields="fields"
       defaultSortBy="email"
     >
-      <template v-slot:cell(identifier)="{data}">
+      <template v-slot:cell(uri)="{data}">
         <opensilex-UriLink
           :uri="data.item.uri"
-          :value="getIdentifier(data.item)"
+          :value="data.item.uri"
           :noExternalLink="true"
           :isClickable="false"
         ></opensilex-UriLink>
+      </template>
+
+      <template v-slot:cell(last_name)="{data}">
+        <div> {{ getHolderOfTheAccountIdentifier(data.item) }}</div>
       </template>
 
       <template v-slot:cell(email)="{data}">
@@ -79,13 +83,11 @@
 </template>
 
 <script lang="ts">
-import { Component, Ref, Prop } from "vue-property-decorator";
+import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
 import { SecurityService } from "opensilex-security/index";
-import {UserGetDTO} from "opensilex-security/model/userGetDTO";
 import {UserUpdateDTO} from "opensilex-security/model/userUpdateDTO";
-import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
 
 @Component
 export default class UserList extends Vue {
@@ -96,8 +98,12 @@ export default class UserList extends Vue {
 
   fields = [
     {
-      key: "identifier",
-      label: "component.user.identifier",
+      key: "uri",
+      label: "component.common.uri"
+    },
+    {
+      key: "last_name",
+      label: "component.user.holderOfTheAccount",
       sortable: true
     },
     {
@@ -187,11 +193,11 @@ export default class UserList extends Vue {
         .catch(this.$opensilex.errorHandler);
   }
 
-  getIdentifier(userRow){
+  getHolderOfTheAccountIdentifier(userRow){
     if (userRow.last_name && userRow.first_name){
       return userRow.last_name+' '+userRow.first_name
     }
-    return userRow.uri
+    return "any"
   }
 
   displayEnableButton(userRow){

@@ -290,6 +290,7 @@
             "user-groups": "user groups",
             "holderLabel" : "Holder of the account",
             "successDelete" : "User removed",
+            "holderOfTheAccount" : "holder of the account",
             "choices": {
                 "create-person": "create an account and a person",
                 "account-only": "create an account without holder",

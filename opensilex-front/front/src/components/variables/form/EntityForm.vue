@@ -156,16 +156,16 @@ export default class EntityForm extends Vue {
 
 
     this.labelDTOList.push(labelDTO);
+    console.log("this.entityDto.multiLabelDTO.prefLabels",this.entityDto.multiLabelDTO.prefLabels);
 
-    this.entityDto.multiLabelDTO.prefLabels.add(labelDTO.prefLabel+'@'+labelDTO.lang.substring(0, 2));
+    this.entityDto.multiLabelDTO.prefLabels.push(labelDTO.prefLabel+'@'+labelDTO.lang.substring(0, 2));
 
     for (let i = 0; i < labelDTO.altLabels.length; i++) {
       const altLabel = labelDTO.altLabels[i] + '@' + labelDTO.lang.substring(0, 2);
       this.entityDto.multiLabelDTO.altLabels.push(altLabel);
     }
-    this.entityDto.multiLabelDTO.definitions.add(labelDTO.definition+'@'+labelDTO.lang.substring(0, 2));
+    this.entityDto.multiLabelDTO.definitions.push(labelDTO.definition+'@'+labelDTO.lang.substring(0, 2));
 
-    this.entityDto.labelDTOs.push(labelDTO);
     this.dataLoaded = true;
 
     this.$emit('labelDTOs', this.labelDTOList);

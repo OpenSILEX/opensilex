@@ -25,7 +25,6 @@
 
 <script lang="ts">
 import {Component, Prop, Ref, Vue} from "vue-property-decorator";
-import {LabelDTO} from "opensilex-core/model/labelDTO";
 
 @Component
 export default class LabelsList extends Vue {

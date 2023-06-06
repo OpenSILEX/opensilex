@@ -329,7 +329,7 @@ export default class LabelCreationSubForm extends Vue {
 
 
   resetSubForm() {
-    this.$refs.validatorRef.reset();
+    this.validatorRef.reset();
     this.labelDTO = {
       prefLabel: null,
       altLabels: [''],

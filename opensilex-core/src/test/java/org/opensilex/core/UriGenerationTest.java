@@ -18,6 +18,7 @@ import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.experiment.factor.dal.FactorModel;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
+import org.opensilex.core.germplasmGroup.dal.GermplasmGroupModel;
 import org.opensilex.core.logs.dal.LogModel;
 import org.opensilex.core.logs.dal.LogsDAO;
 import org.opensilex.core.ontology.Oeso;
@@ -59,14 +60,18 @@ public class UriGenerationTest extends AbstractMongoIntegrationTest {
      */
     private final static Pattern UUID_REGEX_PATTERN = Pattern.compile("^[{]?[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}[}]?$");
 
-    private String getOpensilexBaseURI()throws OpenSilexModuleNotFoundException {
+    private String getOpensilexBaseURI() throws OpenSilexModuleNotFoundException {
+        return getOpensilex().getModuleConfig(SPARQLModule.class, SPARQLConfig.class).baseURI();
+    }
+
+    private String getOpensilexBaseGraphURI() throws OpenSilexModuleNotFoundException {
         return getOpensilex().getModuleConfig(SPARQLModule.class, SPARQLConfig.class).baseGraphURI();
     }
 
     @Test
     public void testDefaultGraphs() throws OpenSilexModuleNotFoundException, SPARQLException {
 
-        String graphPrefix = getOpensilexBaseURI()+"set/";
+        String graphPrefix = getOpensilexBaseGraphURI()+"set/";
 
         SPARQLService sparql = getSparqlService();
 
@@ -239,6 +244,17 @@ public class UriGenerationTest extends AbstractMongoIntegrationTest {
     }
 
     @Test
+    public void testInterestEntity() throws Exception {
+
+        InterestEntityModel model = new InterestEntityModel();
+        model.setName("name");
+
+        getSparqlService().create(model);
+        String expectedUri = getOpensilexBaseURI()+"id/variable/entity_of_interest.name";
+        Assert.assertEquals(model.getUri().toString(),expectedUri);
+    }
+
+    @Test
     public void testCharacteristic() throws Exception {
 
         CharacteristicModel model = new CharacteristicModel();
@@ -291,6 +307,17 @@ public class UriGenerationTest extends AbstractMongoIntegrationTest {
 
         getSparqlService().create(model);
         String expectedUri = getOpensilexBaseURI()+"id/germplasm/variety.name";
+        Assert.assertEquals(model.getUri().toString(),expectedUri);
+    }
+
+    @Test
+    public void testGermplasmGroup() throws Exception {
+
+        GermplasmGroupModel model = new GermplasmGroupModel();
+        model.setName("name");
+
+        getSparqlService().create(model);
+        String expectedUri = getOpensilexBaseURI()+"id/germplasmGroup/name";
         Assert.assertEquals(model.getUri().toString(),expectedUri);
     }
 

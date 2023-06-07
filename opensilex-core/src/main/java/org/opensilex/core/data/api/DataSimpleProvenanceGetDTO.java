@@ -11,7 +11,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import org.opensilex.core.data.dal.DataProvenanceModel;
 import org.opensilex.core.data.dal.ProvEntityModel;
 
-import javax.validation.Valid;
 import java.net.URI;
 
 /**

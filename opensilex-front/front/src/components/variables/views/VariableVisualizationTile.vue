@@ -9,7 +9,7 @@
 
         <opensilex-TextView v-if="isNoDataFound"
                             id="no-data-text"
-            :label="$t('FacilityAssociatedDevices.no-data')">
+            :label="$t('FacilityMonitoringView.no-data')">
         </opensilex-TextView>
 
         <div
@@ -82,7 +82,7 @@
           <div class="row justify-content-center">
             <opensilex-TextView v-if="!isDataForGraph && isGraphicLoaded"
                                 id="no-data-text"
-                                :label="$t('FacilityAssociatedDevices.no-data')">
+                                :label="$t('FacilityMonitoringView.no-data')">
             </opensilex-TextView>
           </div>
 

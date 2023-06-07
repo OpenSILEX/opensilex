@@ -119,8 +119,8 @@ import FacilityDetails from "./facilities/views/FacilityDetails.vue";
 components["opensilex-FacilityDetails"] = FacilityDetails;
 import FacilityDescription from "./facilities/views/FacilityDescription.vue";
 components["opensilex-FacilityDescription"] = FacilityDescription;
-import FacilityAssociatedDevices from "./facilities/views/FacilityAssociatedDevices.vue";
-components["opensilex-FacilityAssociatedDevices"] = FacilityAssociatedDevices;
+import FacilityMonitoringView from "./facilities/views/FacilityMonitoringView.vue";
+components["opensilex-FacilityMonitoringView"] = FacilityMonitoringView;
 import FacilityListView from "./facilities/FacilityListView.vue";
 components["opensilex-FacilityListView"] = FacilityListView;
 

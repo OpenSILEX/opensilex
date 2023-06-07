@@ -12,18 +12,18 @@
             <!-- Variable Group Selector -->
             <div v-if="hasVariableGroup">
               <label for="variableGroupSelector">
-                {{ $t("FacilityAssociatedDevices.variable-group-selector") }}
+                {{ $t("FacilityMonitoringView.variable-group-selector") }}
               </label>
               <font-awesome-icon
                   icon="question-circle"
                   class="variable-group-help"
-                  v-b-tooltip.hover.top="$t('FacilityAssociatedDevices.variable-group-help')"
+                  v-b-tooltip.hover.top="$t('FacilityMonitoringView.variable-group-help')"
               />
               <opensilex-SelectForm
                   id="variableGroupSelector"
                   :selected.sync="selectedVariableGroup"
                   :searchMethod="searchVariableGroups"
-                  :placeholder="$t('FacilityAssociatedDevices.no-variable-group-selected')"
+                  :placeholder="$t('FacilityMonitoringView.no-variable-group-selected')"
                   class="searchFilter"
                   @clear="loadVariables"
                   @onValidate="loadVariables"
@@ -40,7 +40,7 @@
     <opensilex-TextView
         v-if="isNoVariableFound"
         id="no-variable-text"
-        :label="$t('FacilityAssociatedDevices.no-variable')"
+        :label="$t('FacilityMonitoringView.no-variable')"
     >
     </opensilex-TextView>
 
@@ -95,7 +95,7 @@ import {VariablesGroupGetDTO} from "opensilex-core/model/variablesGroupGetDTO";
 
 
 @Component
-export default class FacilityAssociatedDevices extends Vue {
+export default class FacilityMonitoringView extends Vue {
   $opensilex: OpenSilexVuePlugin;
 
   /// GridLayout system
@@ -314,7 +314,7 @@ export default class FacilityAssociatedDevices extends Vue {
 
 <i18n>
 en:
-  FacilityAssociatedDevices:
+  FacilityMonitoringView:
     variable-group-selector: Environmental variable groups
     no-variable-group-selected: All environnemental variables
     no-data: No data found for this period
@@ -325,7 +325,7 @@ en:
 
 
 fr:
-  FacilityAssociatedDevices:
+  FacilityMonitoringView:
     variable-group-selector: Groupes de variables environnementales
     no-variable-group-selected: Toutes les variables environnementales
     no-data: Aucune donnée trouvée pour cette periode

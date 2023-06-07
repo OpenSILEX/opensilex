@@ -22,6 +22,7 @@
       createTitle="UserView.create"
       editTitle="UserView.update"
       icon="ik#ik-user"
+      :lazy="true"
       @onCreate="userList.refresh()"
       @onUpdate="userList.refresh()"
     ></opensilex-ModalForm>

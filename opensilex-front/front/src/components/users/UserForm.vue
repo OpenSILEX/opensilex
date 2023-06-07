@@ -133,11 +133,13 @@ import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {SecurityService} from "opensilex-security/api/security.service";
+import {OpenSilexStore} from "../../models/Store";
 
 @Component
 export default class UserForm extends Vue {
 $opensilex: OpenSilexVuePlugin
 $securityService : SecurityService
+$store: OpenSilexStore
 
   get user() {
     return this.$store.state.user;

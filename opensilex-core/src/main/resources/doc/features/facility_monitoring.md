@@ -196,7 +196,7 @@ Prend la forme d'un petit encadré affichant le nom de la variable ansi que la d
 affiche la date de la dernière donnée enregistrée dans le système pour cette variable.
 
 En cliquant sur la tuile, ouvre un modal avec le graphique. Seules les séries calculées sont chargées et la médiane
-des médianes et affiché par défaut. Un menu d'option et disponible pour changer la période des données à afficher
+des médianes et affiché par défaut. Un menu d'option est disponible pour changer la période des données à afficher
 et une case à cocher pour charger ou non l'intégralité des séries de médianes individuelles.
 
 ### D) Ontologie

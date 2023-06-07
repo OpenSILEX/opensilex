@@ -12,6 +12,7 @@ import org.opensilex.core.data.dal.DataProvenanceModel;
 import org.opensilex.core.data.dal.ProvEntityModel;
 
 import java.net.URI;
+import java.util.List;
 
 /**
  * This class defines a serie of data as a list of data associated with a provenance

@@ -10,7 +10,7 @@
         <!-- day -->
         <label class="btn periodBtn btn-toggle greenThemeColor"
           :class="{
-            active: selectedPeriod === 'day'
+            active: selectedPeriod == 'day'
           }"
         >
           <input
@@ -27,7 +27,7 @@
         <!-- week -->
         <label class="btn periodBtn btn-toggle greenThemeColor"
           :class="{
-            active: selectedPeriod === 'week'
+            active: selectedPeriod == 'week'
           }"
         >
           <input
@@ -43,7 +43,7 @@
         <!-- month -->
         <label class="btn periodBtn btn-toggle greenThemeColor"
           :class="{
-            active: selectedPeriod === 'month'
+            active: selectedPeriod == 'month'
           }"
         >
           <input
@@ -58,7 +58,7 @@
         <!-- year -->
         <label class="btn periodBtn btn-toggle greenThemeColor"
                :class="{
-            active: selectedPeriod === 'year'
+            active: selectedPeriod == '6-month'
           }"
         >
           <input
@@ -68,7 +68,7 @@
               value="year"
               v-model="selectedPeriod"
           >
-          {{$t('DatePeriodPicker.year')}}
+          {{$t('DatePeriodPicker.6-month')}}
         </label>
       </div>
     </div>
@@ -95,7 +95,7 @@ export default class DatePeriodPicker extends Vue {
       { text: this.$i18n.t("HistogramSettings.day"), value: 'day'},
       { text: this.$i18n.t("HistogramSettings.week"), value: 'week'},
       { text: this.$i18n.t("HistogramSettings.month"), value: 'month'},
-      { text: this.$i18n.t("HistogramSettings.year"), value: 'year'},
+      { text: this.$i18n.t("HistogramSettings.year"), value: '6-month'},
     ];
   }
 
@@ -125,6 +125,9 @@ export default class DatePeriodPicker extends Vue {
     }
     else if (this.selectedPeriod === "month") {
       this.startDate.setMonth(this.endDate.getMonth() - 1);
+    }
+    else if (this.selectedPeriod === "6-month") {
+      this.startDate.setMonth(this.endDate.getMonth() - 6);
     }
     else if (this.selectedPeriod === "year") {
       this.startDate.setMonth(this.endDate.getMonth() - 12);
@@ -172,6 +175,7 @@ en:
     day: Day
     week: Week
     month: Month
+    6-month: 6 Month
     year: Year
     help: Uncheck to use bellow selector
 
@@ -188,7 +192,8 @@ fr:
     day: Jour
     week: Semaine
     month: Mois
-    year: année
+    6-month: 6 Mois
+    year: Année
     help: Décochez pour utiliser le sélecteur ci-dessous
 
 </i18n>

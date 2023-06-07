@@ -8,15 +8,11 @@ package org.opensilex.core.data.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import org.opensilex.core.data.dal.DataFileModel;
 import org.opensilex.core.data.dal.DataProvenanceModel;
 import org.opensilex.core.data.dal.ProvEntityModel;
-import org.opensilex.core.provenance.dal.AgentModel;
-import org.opensilex.core.provenance.dal.ProvenanceModel;
 
 import javax.validation.Valid;
 import java.net.URI;
-import java.util.List;
 
 /**
  * This class defines a serie of data as a list of data associated with a provenance

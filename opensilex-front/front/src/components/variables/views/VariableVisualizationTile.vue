@@ -254,11 +254,9 @@ export default class VariableVisualizationTile extends Vue {
     this.dataService.getDataSeriesByFacility(
         this.variableUri.uri,
         this.target,
-        undefined,
         (this.defaultStartDate != "") ? this.defaultStartDate : undefined,
         (this.defaultEndDate != "") ? this.defaultEndDate : undefined,
-        true,
-        ["date=asc"]
+        true
     )
         .then(
             (
@@ -299,11 +297,9 @@ export default class VariableVisualizationTile extends Vue {
     this.dataService.getDataSeriesByFacility(
         this.variableUri.uri,
         this.target,
-        undefined,
         (this.graphicStartDate != "") ? this.graphicStartDate : undefined,
         (this.graphicEndDate != "") ? this.graphicEndDate : undefined,
-        !this.isLoadAllProvToggled,
-        ["date=asc"]
+        !this.isLoadAllProvToggled
     )
         .then(
             (

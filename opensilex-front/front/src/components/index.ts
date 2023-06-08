@@ -740,8 +740,6 @@ import DataVisuGraphic from './visualization/DataVisuGraphic.vue';
 components["opensilex-DataVisuGraphic"] = DataVisuGraphic;
 import DataVisuHelp from './visualization/DataVisuHelp.vue';
 components["opensilex-DataVisuHelp"] = DataVisuHelp;
-import Sparkline from './visualization/Sparkline.vue';
-components["opensilex-Sparkline"] = Sparkline;
 
 // ANNOTATIONS
 import AnnotationModalForm from './annotations/form/AnnotationModalForm.vue';

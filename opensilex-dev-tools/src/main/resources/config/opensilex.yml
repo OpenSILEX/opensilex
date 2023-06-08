@@ -32,8 +32,8 @@ file-system:
 big-data:
     mongodb:
         config:
-            host: localhost
-            port: 8668
+            host: 138.102.159.37
+            port: 27017
             database: env-var
     #            timezone: Europe/Paris
 

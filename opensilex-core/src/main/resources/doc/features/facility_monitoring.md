@@ -10,21 +10,27 @@ Developer(s): Brice Maussang
 Version: Opensilex 1.0.0-rc+7
 
 
-# Table of contents
-1. [Needs](#needs)
-2. [Definitions](#definitions)
-3. [Solution](#solution)
-4. [Spécification techniques](#specifications)
-   1. [General functionning](#general)
-   2. [API](#api)
-   3. [Frontend](#frontend)
-   4. [Ontology](#ontology)
-   5. [Tests](#tests)
-   6. [Environment changes](#environment)
-5. [Possible improvments](#improvments)
+<!-- TOC -->
+## Table of contents
+* [Needs](#needs)
+* [Definitions](#definitions)
+* [Solution](#solution)
+* [Technical specifications](#technical-specifications)
+  * [General functioning](#general-functioning)
+  * [API](#api)
+    * [Web service](#web-service)
+    * [Models and DTOs](#models-and-dtos)
+  * [Frontend](#frontend)
+  * [Ontology](#ontology)
+  * [Tests](#tests)
+  * [Environment changes](#environment-changes)
+* [Limitations and Improvements](#limitations-and-improvements)
+  * [Limitations](#limitations)
+  * [Possible improvements](#possible-improvements)
+<!-- TOC -->
 
 
-## <div id='needs'></div> Needs
+## Needs
 
 Facilities represent the different installations that can be used for the experiments. That includes for example
 fields, greenhouses or growth chambers.
@@ -34,7 +40,7 @@ Data can characterize the environmental conditions of a facility (ex: temperatur
 - Use case #1 : As a user, I want to observe the environmental conditions of a facility.
 
 
-## <div id='definitions'></div> Definitions
+## Definitions
 
 **Environmental data**:
 
@@ -49,7 +55,7 @@ Variables associated to an environmental data.
 Is considered as the whole data which share the same variable and the same provenance.
 
 
-## <div id='solution'></div> Solution
+## Solution
 
 Add a 'Monitoring' tab in the facility view (open by default) which can display environmental data.
 
@@ -68,9 +74,9 @@ Add a selector filled with previously associated variable groups on top of the p
 Display only variables which are contained in the selected group.
 
 
-## <div id='specifications'></div> Technical specifications
+## Technical specifications
 
-### <div id='general'></div> General functioning
+### General functioning
 
 Environmental data are grouped by the couple variable/provenance that gives us multiple data series.
 
@@ -87,7 +93,7 @@ of all median series (cf. [Figure 3](#median_of_medians)).
 The mean per day is also computed. It is formed by gathering all raw data (not the medians)
 and calculate the mean for each day.
 
-### <div id='api'></div> API
+### API
 
 #### Web service
 
@@ -167,7 +173,7 @@ of this agent.
         ...
      }
 
-### <div id='frontend'></div> Frontend
+### Frontend
 
 `FacilityMonitoringView`
 
@@ -192,7 +198,7 @@ Clicking on the tile opens a modal with the graph. Only the calculated series ar
 of the medians is displayed by default. An option menu is available to change the period of data 
 to be displayed and a checkbox for loading or not loading all individual medians.
 
-### <div id='ontology'></div> Ontology
+### Ontology
 
 In order to associate groups of variables with an infrastructure, a property
 *oeso#hasVariablesGroup* has been added to the ontology.
@@ -209,7 +215,7 @@ In order to associate groups of variables with an infrastructure, a property
 ![](images/modif_ontologie.png)
 
 
-### <div id='tests'></div> Tests
+### Tests
 
 Tests are located in `DataMathFunctionsTest`.
 
@@ -217,14 +223,14 @@ Following tests check if the calculations results are correct:
 - `testComputeMedianPerHour`
 - `testComputeAveragePerDay`
 
-### <div id='environment'></div> Environment changes[](#environment)
+### Environment changes
 
 **Vue-grid-layout (v2.4.0)**: Add a grid layout system for VueJS.
 https://jbaysolutions.github.io/vue-grid-layout/
 
-## <div id='improvments'></div> Possible improvments
+## Limitations and Improvements
 
-### <div id='issues'></div> Issues
+### Limitations
 
 At the moment, the datetime considered for calculations is the content of the field `date` from the data.
 the service does not consider the `offset` field, which will lead to potential further issues.
@@ -233,7 +239,7 @@ Also, the service assumes the `date` is a datetime with no verifications.
 The data values must be numbers, but there is no verifications.
 The service's behaviour with other types is unknown.
 
-### <div id='...'></div> Already discussed improvements
+### Possible improvements
 
 Display the median of medians directly on the tile as a simplified curve.
 This will grant a better overview without having to click on the tiles.

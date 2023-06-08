@@ -1,81 +1,98 @@
 
-# [Facilities] Visualisation de données environnementales
+# [Facilities] Environmental data visualization
 
-Auteur: Brice Maussang
+Author: Brice Maussang
 
 Date: 30/05/2023
 
-Developpeureuse(s): Brice Maussang
+Developer(s): Brice Maussang
 
-Versions: Opensilex 1.0.0-rc+7
+Version: Opensilex 1.0.0-rc+7
 
 
-# Table des matières
-1. [Besoin](#besoin)
-2. [Solution retenue](#solution-retenue)
-3. [Spécification techniques](#specifications)
-   1. [Définitions clés](#definitions)
+# Table of contents
+1. [Needs](#needs)
+2. [Definitions](#definitions)
+3. [Solution](#solution)
+4. [Spécification techniques](#specifications)
+   1. [General functionning](#general)
    2. [API](#api)
    3. [Frontend](#frontend)
-   4. [Ontologie](#ontology)
-   5. [Tests implémentés](#tests)
-   6. [Modifications de l'environnement](#environment)
-4. [Améliorations](#improvments)
-
-## I. Besoin
-
-Un utilisateur doit être en mesure de visualiser rapidement "l'état" d’une infrastructure
-(ex: serre, chambre de culture, …) en observant des données environnementales rattachées 
-à celle-ci (ex: température, humidité, …).
-
-## II. Solution retenue
-
-Ajouter un onglet "Supervision" dans la page d’une infrastructure (ouvert par défaut)
-qui affiche les différentes données environnementales.
-
-Possibilité d’associer un ou plusieurs groupes de variables à une infrastructure dans 
-le formulaire de création et de modification.
-Un bandeau présent en haut de page met à disposition un sélecteur de groupe de variables 
-(parmi ceux associés à l’infrastructure). En sélectionnant un groupe, seules les variables présentes dans celui-ci 
-
-Regrouper les données par variables sous la forme de petits encadrés.
-Chacun représente une variable et affiche la dernière donnée calculé sur la dernière semaine
-(médiane des médianes).
-S’il n’y a pas de données sur cette période, affiche la date de la dernière donnée 
-enregistrée dans le système.
-
-Pouvoir visualiser le graphique complet contenant les séries de données calculées
-ainsi que l’ensemble des séries de données. Le graphique s’affiche en cliquant sur la tuile, 
-seules les séries de données calculées sont visibles.
-Un bouton de paramètre offre la possibilité de changer la période des données à afficher
-et de sélectionner si oui on non afficher toutes les séries de données individuelles.
-
-## III. Spécification techniques
-
-### A) Définitions clés
-
-**Variable environnementale**:
-
-Est considérée comme une variable environnementale toute variable ayant des données rattachées
-qui pointent vers une infrastructure (via le champ "target").
-
-**Série de données**:
-
-Une série de données est un ensemble de données possédant la même variable ainsi que la même provenance.
+   4. [Ontology](#ontology)
+   5. [Tests](#tests)
+   6. [Environment changes](#environment)
+5. [Possible improvments](#improvments)
 
 
-### B) API
+## <div id='needs'></div> Needs
 
-#### 1) Architecture générale
+Facilities represent the different installations that can be used for the experiments. That includes for example
+fields, greenhouses or growth chambers.
 
-<center><img src="images/facility_architecture.png"></center>
-<center><i>Figure 1 - architecture des dossiers</i></center>
+Data can characterize the environmental conditions of a facility (ex: temperature, humidity, ...).
 
-#### 2) Web service
+- Use case #1 : As a user, I want to observe the environmental conditions of a facility.
 
-Le web service récupère toutes les séries de données pour une variable et une infrastructure.
-Ce service est appelé lorsque l’utilisateur souhaite voir en détail les données associées à
-une variable environnementale.
+
+## <div id='definitions'></div> Definitions
+
+**Environmental data**:
+
+A data with its *target* field set to a facility URI.
+
+**Environmental variable**:
+
+Variables associated to an environmental data.
+
+**Data series**:
+
+Is considered as the whole data which share the same variable and the same provenance.
+
+
+## <div id='solution'></div> Solution
+
+Add a 'Monitoring' tab in the facility view (open by default) which can display environmental data.
+
+Environmental data are grouped by variables. Each variable are display as a tile within a grid,
+showing the variable's name and the last calculated data from past week (median of medians) (see [API](#below)).
+If there is no data found for this period, display the last stored data in the system (in red).
+
+On click on a tile, display the graphic representation of all data series.
+By default, only calculated data series are accessible (median of medians, daily mean).
+Make possible the display of all data series and the change of the period date by using a settings button.
+
+Possibility to associate one or more variable groups to a facility (at creation or modification
+using facility forms) to allow restricted observation of variables.
+
+Add a selector filled with previously associated variable groups on top of the page.
+Display only variables which are contained in the selected group.
+
+
+## <div id='specifications'></div> Technical specifications
+
+### <div id='general'></div> General functioning
+
+Environmental data are grouped by the couple variable/provenance that gives us multiple data series.
+
+For each data series, the hourly median is constructed.
+It consists of retrieving the median value of each hour (cf. [Figure 2](#median_serie)).
+
+![](images/median_serie.png)
+
+After obtaining individual median series, the process is repeated to gather the hourly median
+of all median series (cf. [Figure 3](#median_of_medians)).
+
+![](images/median_of_medians.png)
+
+The mean per day is also computed. It is formed by gathering all raw data (not the medians)
+and calculate the mean for each day.
+
+### <div id='api'></div> API
+
+#### Web service
+
+The service is located in `DataAPI`.
+It retrieves all data series for given variable and facility.
 
     public Response getDataSeriesByFacility(
         @NotNull URI variableUri,
@@ -85,67 +102,43 @@ une variable environnementale.
         Boolean calculatedOnly
     )
 
-*variableUri* et *facilityUri* spécifient l'infrastructure observée et la variable concernée.
+*variableUri* and *facilityUri* specifies the concerned variable and the observed facility.
 
-*startDate* et *endDate* définissent la période à prendre en compte pour la collecte de données.
-Si *endDate* est null, le service considère la date actuelle comme date de fin.
+*startDate* and *endDate* defines the period to be taken into account for data collection.
+If *endDate* is not specified, the service consider the actual date as the end date.
 
-*calculatedOnly* contraint le service à retourner uniquement les séries calculées.
+*calculatedOnly* restrict the service to return calculated series only.
 
-Le service recherche toutes les données associées à la variable et l’infrastructure passés en paramètres,
-puis les regroupent par série de données brutes (couple variable/provenance).
+Only the hourly median of individual data series are returned, never the raw data.
+Calculated series are computed only if there is more than one individual data series.
 
-Pour chaque série, seule la médiane horaire est conservée, c-à-d la médiane des valeurs comprises entre
-chaque intervalle d’une heure (cf. [Figure 2](#median_serie)).
+The class `DataMathFunctions` was added in the `/utils` folder to externalize calculation methods
+such as median and mean.
 
-![](images/median_serie.png)
-
-[//]: <> (<center><img src="images/median_serie.png"></center>)
-[//]: <> (<center><i>Figure 2 - construction d'une série de médianes horaires</i></center>)
-
-S’il y a plusieurs séries de données, deux séries supplémentaires sont alors calculées: 
-la médiane des médianes horaire et la moyenne horaire.
-- La médiane des médianes horaire: correspond à la médiane des séries médianes calculées précédemment 
-  (médiane des médianes) (cf. [Figure 3](#median_of_medians)).
-- La moyenne journalière: correspond à la moyenne par jour des séries de données brutes.
-
-![](images/median_of_medians.png)
-
-#### 3) Modèles et DTOs
+#### Models and DTOs
 
 ![](images/dataSeriesPattern.png)
-
-Les informations retournées par le services sont organisées selon le format ci-dessous:
     
-**DataVariableSeriesGetDTO**
+`DataVariableSeriesGetDTO` contains detailed information on the variable concerned, as well as two lists of data series.
+One contains the hourly medians for each provenance, the other the calculated data series
+(median of medians and mean).
+The last data recorded in the system is also stored, used if there is no data for the chosen period.
 
-Contient les informations détaillées de la variable concernée ainsi que deux listes de série de données.
-L’une contient les médianes horaires de chaque provenance, l’autre les série de données calculées 
-(médiane des médianes et moyenne).
-On stocke également la dernière donnée enregistrée dans le system,
-pour le cas où il n'y a aucune donées pour la période choisie.
+`DataSerieGetDTO` defines a data series. Contains the provenance (sensor or complete provenance) and the list of data.
 
-**DataSerieGetDTO**
+`DataComputedGetDTO` is a lighter version of `DataGetDTO` that stores only the information needed for calculations and visualisation.
 
-Défini une série de donnée. Contient la provenance (capteur ou provenance) et la liste des données.
+`DataSimpleProvenanceGetDTO` defines a provenance with just a URI and a name.
 
-**DataComputedGetDTO**
+The provenance model contained in a data item can contain variable information.
+The list of agents (sensors/operators) in the *provWasAssociatedWith* field can be empty or contain
+an indefinite number of elements (cf. [code below](#codeprov).
 
-Une version allégée de DataGetDTO qui stocke uniquement les informations nécessaires aux calculs et à la visualisation.
-
-**DataSimpleProvenanceGetDTO**
-
-Défini une provenance avec seulement une URI et un nom.
-
-Le modèle de provenance contenu dans une data peut contenir des informations variables.
-La liste d'agent (capteurs/opérateurs) du champ *provWasAssociatedWith* peut être vide ou contenir
-un nombre indéfini d'élément (cf. [code ci-dessous](#codeprov).
-
-Afin de simplifier et d'uniformiser l'information retournée par le service, un *DataSimpleProvenanceGetDTO*
-est généré pour chaque série (chaque provenance) à partir du *DataProvenanceModel* selon ces règles:
-- Si le champ *provWasAssociatedWith* contient un seul agent, récupère l'URI et le nom
-de cet agent.
-- Si la provenance contient une liste de plusieurs agents, l'URI et le nom de la provenance est utilisé.
+To simplify and standardise the information returned by the service, a *DataSimpleProvenanceGetDTO* 
+is generated for each provenance from the *DataProvenanceModel* according to these rules:
+- If the *provWasAssociatedWith* field contains a single agent, retrieves the URI and name
+of this agent.
+- If the provenance contains a list of several agents, the URI and the name of the provenance are used.
 
 
      /** DataProvenance example **/
@@ -174,35 +167,35 @@ de cet agent.
         ...
      }
 
-### C) Frontend
+### <div id='frontend'></div> Frontend
 
-**FacilityMonitoringView**
+`FacilityMonitoringView`
 
-La vue principale de l'onglet "Supervision".
-Contient:
-- un *GridLayout* pour représenter les variables par tuiles
-- un sélecteur de groupe de variable
+The main view of the "Supervision" tab.
+Contains:
+- a *GridLayout* to represent variables in tiles
+- a variable group selector
 
-A la création du composant, charge l'ensemble des variables utilisée par l'infrastructure.
-Si un groupe de variable est sélectionné, récupère les variables présentes dans ce groupe.
-Sinon, récupère les variables associées à des données elle-même associées à une infrastructure
-(via le champ *target*).
+When the component is created, loads all the variables used by the infrastructure.
+If a variable group is selected, retrieves the variables present in this group.
+Otherwise, retrieves the variables associated with data which is itself associated with an infrastructure
+(using the *target* field).
 
-**VariableVisualizationTile**
+`VariableVisualizationTile`
 
-Un *GridItem* qui représente une tuile pour une variable.
-Prend la forme d'un petit encadré affichant le nom de la variable ansi que la dernière donnée calculé
-(médiane des médianes) pour la dernière semaine (valeur et date). S'il n'y a aucune donnée pour cette période,
-affiche la date de la dernière donnée enregistrée dans le système pour cette variable.
+A *GridItem* which represents a tile for a variable.
+Takes the form of a small box displaying the name of the variable and the latest data calculated
+(median of medians) for the last week. If there is no data for this period, displays the date 
+of the last data recorded in the system for this variable.
 
-En cliquant sur la tuile, ouvre un modal avec le graphique. Seules les séries calculées sont chargées et la médiane
-des médianes et affiché par défaut. Un menu d'option est disponible pour changer la période des données à afficher
-et une case à cocher pour charger ou non l'intégralité des séries de médianes individuelles.
+Clicking on the tile opens a modal with the graph. Only the calculated series are loaded and the median
+of the medians is displayed by default. An option menu is available to change the period of data 
+to be displayed and a checkbox for loading or not loading all individual medians.
 
-### D) Ontologie
+### <div id='ontology'></div> Ontology
 
-Afin de pouvoir associer des groupes de variables à une infrastructure, une propriété 
-*oeso#hasVariablesGroup* a été ajouté à l'ontologie.
+In order to associate groups of variables with an infrastructure, a property
+*oeso#hasVariablesGroup* has been added to the ontology.
 
     /** oeso-core.owl **/
 
@@ -215,13 +208,34 @@ Afin de pouvoir associer des groupes de variables à une infrastructure, une pro
 
 ![](images/modif_ontologie.png)
 
-### E) Tests implémentés
 
+### <div id='tests'></div> Tests
 
+Tests are located in `DataMathFunctionsTest`.
 
-### F) Modifications de l'environnement
+Following tests check if the calculations results are correct:
+- `testComputeMedianPerHour`
+- `testComputeAveragePerDay`
 
-**Vue-grid-layout (v2.4.0)**: Ajout d’un système de disposition en grille pour VueJS
+### <div id='environment'></div> Environment changes[](#environment)
+
+**Vue-grid-layout (v2.4.0)**: Add a grid layout system for VueJS.
 https://jbaysolutions.github.io/vue-grid-layout/
 
-## IV. Améliorations
+## <div id='improvments'></div> Possible improvments
+
+### <div id='issues'></div> Issues
+
+At the moment, the datetime considered for calculations is the content of the field `date` from the data.
+the service does not consider the `offset` field, which will lead to potential further issues.
+Also, the service assumes the `date` is a datetime with no verifications.
+
+The data values must be numbers, but there is no verifications.
+The service's behaviour with other types is unknown.
+
+### <div id='...'></div> Already discussed improvements
+
+Display the median of medians directly on the tile as a simplified curve.
+This will grant a better overview without having to click on the tiles.
+
+Being able to select individual devices to display in the graph.

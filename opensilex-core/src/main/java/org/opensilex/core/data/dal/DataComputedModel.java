@@ -13,7 +13,7 @@ import java.util.UUID;
 
 /**
  *
- * @author brice
+ * @author brice maussang
  */
 public class DataComputedModel extends MongoModel {
 

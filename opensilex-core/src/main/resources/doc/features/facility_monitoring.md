@@ -60,7 +60,7 @@ Is considered as the whole data which share the same variable and the same prove
 Add a 'Monitoring' tab in the facility view (open by default) which can display environmental data.
 
 Environmental data are grouped by variables. Each variable are display as a tile within a grid,
-showing the variable's name and the last calculated data from past week (median of medians) (see [API](#below)).
+showing the variable's name and the last calculated data from past week (median of medians) (see [General_functioning](#general)).
 If there is no data found for this period, display the last stored data in the system (in red).
 
 On click on a tile, display the graphic representation of all data series.

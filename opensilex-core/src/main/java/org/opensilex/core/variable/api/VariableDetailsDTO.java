@@ -29,12 +29,10 @@ import org.opensilex.core.variable.api.entityOfInterest.InterestEntityGetDTO;
 import org.opensilex.core.variable.api.method.MethodGetDTO;
 import org.opensilex.core.variable.api.characteristic.CharacteristicGetDTO;
 import org.opensilex.core.variable.api.unit.UnitDetailsDTO;
-import org.opensilex.core.variable.api.unit.UnitGetDTO;
 import org.opensilex.core.variable.dal.*;
 import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.response.NamedResourceDTO;
 
 
 /**

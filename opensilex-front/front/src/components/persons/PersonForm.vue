@@ -9,15 +9,20 @@
       :generated.sync="uriGenerated"
     ></opensilex-UriForm>
 
-    <!-- Email -->
-    <opensilex-InputForm
-      :value.sync="form.email"
-      label="component.person.email-address"
-      type="email"
-      rules="email"
-      placeholder="component.person.form-email-placeholder"
-      autocomplete="new-password"
-    ></opensilex-InputForm>
+    <!-- orcid -->
+    <div>
+    <opensilex-FormInputLabelHelper
+        label="component.person.orcid"
+        helpMessage="component.person.orcid-help-message"
+        class="checkbox">
+    </opensilex-FormInputLabelHelper>
+    <b-form-input
+        v-model="form.orcid"
+        type="text"
+        :disabled="disable_orcid_field"
+        :placeholder="$t('component.person.orcid-placeholder')"
+    ></b-form-input>
+    </div>
 
     <!-- First name -->
     <opensilex-InputForm
@@ -35,6 +40,32 @@
       type="text"
       :required="true"
       placeholder="component.person.form-last-name-placeholder"
+    ></opensilex-InputForm>
+
+    <!-- Email -->
+    <opensilex-InputForm
+        :value.sync="form.email"
+        label="component.person.email-address"
+        type="email"
+        rules="email"
+        placeholder="component.person.form-email-placeholder"
+        autocomplete="new-password"
+    ></opensilex-InputForm>
+
+    <!-- First name -->
+    <opensilex-InputForm
+        :value.sync="form.organization"
+        label="component.person.organization"
+        placeholder="component.person.form-organization-placeholder"
+        type="text"
+    ></opensilex-InputForm>
+
+    <!-- Last name -->
+    <opensilex-InputForm
+        :value.sync="form.phone_number"
+        label="component.person.phone_number"
+        placeholder="component.person.form-phone-placeholder"
+        type="text"
     ></opensilex-InputForm>
 
   </b-form>
@@ -63,13 +94,20 @@ export default class PersonForm extends Vue {
         email: "",
         first_name: "",
         last_name: "",
+        organization: "",
+        phone_number: ""
       };
     }
   })
   form;
 
+  disable_orcid_field : boolean = false
+
   reset() {
     this.uriGenerated = true;
+    this.$nextTick( () => {
+      this.disable_orcid_field = this.editMode && this.form.orcid !== null
+    })
   }
 
   getEmptyForm() {
@@ -78,12 +116,18 @@ export default class PersonForm extends Vue {
       email: null,
       first_name: "",
       last_name: "",
+      organization: "",
+      phone_number: ""
     };
   }
 
   create(form) {
     if (form.email === ""){
       form.email = null;
+    }
+
+    if (form.orcid === ""){
+      form.orcid = null;
     }
 
     return this.$opensilex
@@ -120,5 +164,6 @@ export default class PersonForm extends Vue {
 </script>
 
 <style scoped lang="scss">
+
 </style>
 

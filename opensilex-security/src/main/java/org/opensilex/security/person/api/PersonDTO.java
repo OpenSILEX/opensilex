@@ -13,6 +13,7 @@ import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.server.rest.validation.Required;
+import org.opensilex.server.rest.validation.ValidURI;
 
 import javax.mail.internet.InternetAddress;
 import java.net.URI;
@@ -35,7 +36,7 @@ import java.util.Objects;
  * @author Yvan Roux
  */
 @ApiModel
-@JsonPropertyOrder({"uri", "first_name", "last_name", "email", "account"})
+@JsonPropertyOrder({"uri", "first_name", "last_name", "email", "organization", "phone_number", "orcid", "account"})
 public class PersonDTO {
 
     @JsonProperty("uri")
@@ -51,6 +52,17 @@ public class PersonDTO {
 
     @JsonProperty("email")
     protected String email;
+
+    @JsonProperty("organization")
+    protected String organization;
+
+    @JsonProperty("phone_number")
+    protected String phoneNumber;
+
+    @JsonProperty("orcid")
+    @ValidURI
+    protected URI orcid;
+
 
     @JsonProperty("account")
     protected URI account;
@@ -91,6 +103,29 @@ public class PersonDTO {
         this.email = email;
     }
 
+    @ApiModelProperty(value = "organization", example = "MISTEA")
+    public String getOrganization() {
+        return organization;
+    }
+
+    public void setOrganization(String organization) {
+        this.organization = organization;
+    }
+
+    @ApiModelProperty(value = "phone number", example = "+33-1-42-75-90-00")
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    @ApiModelProperty(value = "orcid", example = "https://orcid.org/0000-0003-4189-7793")
+    public URI getOrcid() { return orcid; }
+
+    public void setOrcid(URI orcid) { this.orcid = orcid; }
+
     @ApiModelProperty(value = "Uri of the account if this person has one", example = "http://opensilex.dev/users#jean.michel.inrae")
     public URI getAccount() {
         return account;
@@ -112,12 +147,17 @@ public class PersonDTO {
         personDTO.setUri(personModel.getUri());
         personDTO.setFirstName(personModel.getFirstName());
         personDTO.setLastName(personModel.getLastName());
+        personDTO.setOrganization(personModel.getOrganization());
+        personDTO.setOrcid(personModel.getOrcid());
         InternetAddress email = personModel.getEmail();
+        if ( Objects.nonNull(personModel.getPhoneNumber())){
+            personDTO.setPhoneNumber(personModel.getPhoneNumber().getSchemeSpecificPart());
+        }
         if (email != null) {
             personDTO.setEmail(email.toString());
         }
         AccountModel accountModel = personModel.getAccount();
-        if (accountModel != null){
+        if (accountModel != null) {
             personDTO.setAccount(accountModel.getUri());
         }
 

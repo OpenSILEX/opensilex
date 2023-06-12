@@ -13,6 +13,20 @@
         defaultSortBy="email"
     >
 
+      <template v-slot:cell(last_name)="{data}">
+        <opensilex-PersonContact
+            :personContact="data.item"
+            :customDisplayableName="data.item.last_name"
+        ></opensilex-PersonContact>
+      </template>
+
+      <template v-slot:cell(orcid)="{data}">
+        <opensilex-UriLink
+            v-if="data.item.orcid"
+            :uri="data.item.orcid"
+        />
+      </template>
+
       <template v-slot:cell(email)="{data}">
         <a :href="'mailto:' + data.item.email">{{ data.item.email }}</a>
       </template>
@@ -51,6 +65,8 @@ export default class PersonList extends Vue {
   service: SecurityService;
   $store: OpenSilexStore;
   $route: Route;
+  $t: any
+
   fields = [
     {
       key: "last_name",
@@ -68,8 +84,20 @@ export default class PersonList extends Vue {
       sortable: true
     },
     {
-      label: "component.common.actions",
+      key: "orcid",
+      label: "component.person.orcid"
+    },
+    {
+      key: "organization",
+      label: "component.person.organization"
+    },
+    {
+      key: "phone_number",
+      label: "component.person.phone_number"
+    },
+    {
       key: "actions",
+      label: "component.common.actions",
       class: "table-actions"
     }
   ];
@@ -115,7 +143,7 @@ export default class PersonList extends Vue {
         .deletePerson(uri)
         .then(() => {
           this.refresh();
-          this.$opensilex.showSuccessToast(this.$t('component.person.successDelete').toString())
+          this.$opensilex.showSuccessToast(this.$t('component.person.successDelete'))
         })
         .catch(this.$opensilex.errorHandler);
   }
@@ -123,4 +151,5 @@ export default class PersonList extends Vue {
 </script>
 
 <style scoped lang="scss">
+
 </style>

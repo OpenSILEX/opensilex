@@ -1,124 +1,134 @@
 <?xml version="1.0"?>
-<rdf:RDF
-    xml:base="https://sixtine.inrae.fr/ontology"
-    xmlns:oeso="http://www.opensilex.org/vocabulary/oeso#"
-    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-    xmlns:owl="http://www.w3.org/2002/07/owl#"
-    xmlns:xml="http://www.w3.org/XML/1998/namespace"
-    xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
-    xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
-    xmlns:time="http://www.w3.org/2006/time#"
-    xmlns:dc="http://purl.org/dc/elements/1.1/">
+<rdf:RDF xmlns="http://www.opensilex.org/security#"
+     xml:base="http://www.opensilex.org/security"
+     xmlns:dc="http://purl.org/dc/elements/1.1/"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:xml="http://www.w3.org/XML/1998/namespace"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:oeso="http://www.opensilex.org/vocabulary/oeso#"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     xmlns:time="http://www.w3.org/2006/time#">
     <owl:Ontology rdf:about="http://www.opensilex.org/security">
         <dc:creator>Vincent Migot, Anne Tireau,Pascal Neveu (INRAE Montpellier)</dc:creator>
-        <owl:versionInfo>Version 1.0 (2020-04-01) created by INRAE</owl:versionInfo>
-        <rdfs:label xml:lang="en">OpenSILEX - Security</rdfs:label>
         <rdfs:comment>INRAE MISTEA
             Copyright © - INRAE - 2020
             This Ontology is licensed by CC 4.0 (http://creativecommons.org/licenses/by-sa/4.0/legalcode)</rdfs:comment>
+        <rdfs:label xml:lang="en">OpenSILEX - Security</rdfs:label>
+        <owl:versionInfo>Version 1.0 (2020-04-01) created by INRAE</owl:versionInfo>
     </owl:Ontology>
 
-<owl:Class rdf:about="http://xmlns.com/foaf/0.1/Agent">
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://xmlns.com/foaf/0.1/mbox"/>
-                <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
-                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:label xml:lang="fr">Agent</rdfs:label>
-    </owl:Class>
 
-  <!-- http://xmlns.com/foaf/0.1/Person -->
 
-    <owl:Class rdf:about="http://xmlns.com/foaf/0.1/Person">
-        <rdfs:subClassOf rdf:resource="http://xmlns.com/foaf/0.1/Agent"/>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://xmlns.com/foaf/0.1/firstName"/>
-                <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
-                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:subClassOf>
-            <owl:Restriction>
-                <owl:onProperty rdf:resource="http://xmlns.com/foaf/0.1/lastName"/>
-                <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
-                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-            </owl:Restriction>
-        </rdfs:subClassOf>
-        <rdfs:label xml:lang="fr">Personne</rdfs:label>
-    </owl:Class>
+    <!--
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Annotation properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
 
-    <owl:DatatypeProperty rdf:about="http://xmlns.com/foaf/0.1/account">
+
+
+
+    <!-- http://purl.org/dc/elements/1.1/creator -->
+
+    <owl:AnnotationProperty rdf:about="http://purl.org/dc/elements/1.1/creator"/>
+
+
+
+    <!-- http://www.w3.org/2002/07/owl#maxQualifiedCardinality -->
+
+    <owl:AnnotationProperty rdf:about="http://www.w3.org/2002/07/owl#maxQualifiedCardinality"/>
+
+
+
+    <!-- http://www.w3.org/2002/07/owl#qualifiedCardinality -->
+
+    <owl:AnnotationProperty rdf:about="http://www.w3.org/2002/07/owl#qualifiedCardinality"/>
+
+
+
+    <!--
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Object Properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+
+
+
+    <!-- http://xmlns.com/foaf/0.1/account -->
+
+    <owl:ObjectProperty rdf:about="http://xmlns.com/foaf/0.1/account">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
         <rdfs:domain rdf:resource="http://xmlns.com/foaf/0.1/Agent"/>
         <rdfs:range rdf:resource="http://xmlns.com/foaf/0.1/OnlineAccount"/>
-        <rdfs:label xml:lang="fr">compte</rdfs:label>
-        <rdfs:label xml:lang="en">account</rdfs:label>
-        <rdfs:comment xml:lang="fr">indique un compte appartenant à un agent</rdfs:comment>
         <rdfs:comment xml:lang="en">Indicates an account held by this agent</rdfs:comment>
-    </owl:DatatypeProperty>
+        <rdfs:comment xml:lang="fr">Indique un compte appartenant à un agent</rdfs:comment>
+        <rdfs:label xml:lang="en">account</rdfs:label>
+        <rdfs:label xml:lang="fr">compte</rdfs:label>
+    </owl:ObjectProperty>
 
-          <!-- http://xmlns.com/foaf/0.1/OnlineAccount -->
 
-    <owl:Class rdf:about="http://xmlns.com/foaf/0.1/OnlineAccount">
-            <rdfs:subClassOf>
-                <owl:Restriction>
-                    <owl:onProperty rdf:resource="http://xmlns.com/foaf/0.1/accountName"/>
-                    <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
-                    <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-                </owl:Restriction>
-            </rdfs:subClassOf>
-            <rdfs:subClassOf>
-                <owl:Restriction>
-                    <owl:onProperty rdf:resource="http://www.opensilex.org/security#hasLanguage"/>
-                    <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                    <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-                </owl:Restriction>
-            </rdfs:subClassOf>
-            <rdfs:subClassOf>
-                <owl:Restriction>
-                    <owl:onProperty rdf:resource="http://www.opensilex.org/security#hasPasswordHash"/>
-                    <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                    <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
-                </owl:Restriction>
-            </rdfs:subClassOf>
-            <rdfs:subClassOf>
-                <owl:Restriction>
-                    <owl:onProperty rdf:resource="http://www.opensilex.org/security#isAdmin"/>
-                    <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                    <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
-                </owl:Restriction>
-            </rdfs:subClassOf>
-            <rdfs:subClassOf>
-                <owl:Restriction>
-                    <owl:onProperty rdf:resource="http://www.opensilex.org/security#isEnabled"/>
-                    <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
-                    <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
-                </owl:Restriction>
-            </rdfs:subClassOf>
-            <rdfs:label xml:lang="fr">Compte utilisateur</rdfs:label>
-        </owl:Class>
 
-     <!-- http://www.opensilex.org/security#hasLanguage -->
+    <!--
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Data properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+
+
+
+    <!-- http://www.opensilex.org/security#hasLanguage -->
+
     <owl:DatatypeProperty rdf:about="http://www.opensilex.org/security#hasLanguage">
-        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
-        <rdfs:label xml:lang="en">lang</rdfs:label>
+        <rdfs:domain rdf:resource="http://xmlns.com/foaf/0.1/OnlineAccount"/>
+        <rdfs:label xml:lang="en">language</rdfs:label>
         <rdfs:label xml:lang="fr">langue</rdfs:label>
     </owl:DatatypeProperty>
 
 
-    <!-- http://www.opensilex.org/security#hasPasswordHash -->
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/security#hasPasswordHash">
-        <rdfs:label xml:lang="en">password hash</rdfs:label>
-        <rdfs:label xml:lang="fr">empreinte de mot de passe</rdfs:label>
+    <!-- http://www.opensilex.org/security#hasOrcid -->
+
+    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/security#hasOrcid">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+        <rdfs:domain rdf:resource="http://xmlns.com/foaf/0.1/Person"/>
+        <rdfs:label>ORCID</rdfs:label>
     </owl:DatatypeProperty>
 
-    <!-- http://www.opensilex.org/security#isAdmin -->
-    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/security#isAdmin">
-        <rdfs:label xml:lang="en">is admin</rdfs:label>
-        <rdfs:label xml:lang="fr">est administrateur</rdfs:label>
+
+    <!-- http://www.opensilex.org/security#memberOf -->
+
+    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/security#memberOf">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+        <rdfs:domain rdf:resource="http://xmlns.com/foaf/0.1/Person"/>
+        <rdfs:label>Member</rdfs:label>
     </owl:DatatypeProperty>
+
+
+    <!-- http://www.opensilex.org/security#hasPasswordHash -->
+
+    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/security#hasPasswordHash">
+        <rdfs:domain rdf:resource="http://xmlns.com/foaf/0.1/OnlineAccount"/>
+        <rdfs:label xml:lang="fr">empreinte de mot de passe</rdfs:label>
+        <rdfs:label xml:lang="en">password hash</rdfs:label>
+    </owl:DatatypeProperty>
+
+
+    <!-- http://www.opensilex.org/security#isAdmin -->
+
+    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/security#isAdmin">
+        <rdfs:domain rdf:resource="http://xmlns.com/foaf/0.1/OnlineAccount"/>
+        <rdfs:label xml:lang="fr">est administrateur</rdfs:label>
+        <rdfs:label xml:lang="en">is admin</rdfs:label>
+    </owl:DatatypeProperty>
+
 
     <!-- http://www.opensilex.org/security#isEnabled -->
     <owl:DatatypeProperty rdf:about="http://www.opensilex.org/security#isEnabled">
@@ -126,18 +136,151 @@
         <rdfs:label xml:lang="fr">est activé</rdfs:label>
     </owl:DatatypeProperty>
 
+
+    <!-- http://www.opensilex.org/security#isEnabled -->
+
+    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/security#isEnabled">
+        <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#FunctionalProperty"/>
+        <rdfs:domain rdf:resource="http://xmlns.com/foaf/0.1/OnlineAccount"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#boolean"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://xmlns.com/foaf/0.1/accountName -->
+
+    <owl:DatatypeProperty rdf:about="http://xmlns.com/foaf/0.1/accountName">
+        <rdfs:domain rdf:resource="http://xmlns.com/foaf/0.1/OnlineAccount"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://xmlns.com/foaf/0.1/firstName -->
+
+    <owl:DatatypeProperty rdf:about="http://xmlns.com/foaf/0.1/firstName">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topDataProperty"/>
+        <rdfs:domain rdf:resource="http://xmlns.com/foaf/0.1/Person"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://xmlns.com/foaf/0.1/lastName -->
+
+    <owl:DatatypeProperty rdf:about="http://xmlns.com/foaf/0.1/lastName">
+        <rdfs:domain rdf:resource="http://xmlns.com/foaf/0.1/Person"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://xmlns.com/foaf/0.1/mbox -->
+
+    <owl:DatatypeProperty rdf:about="http://xmlns.com/foaf/0.1/mbox">
+        <rdfs:domain rdf:resource="http://xmlns.com/foaf/0.1/Person"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- http://xmlns.com/foaf/0.1/phone -->
+
+    <owl:DatatypeProperty rdf:about="http://xmlns.com/foaf/0.1/phone">
+        <rdfs:domain rdf:resource="http://xmlns.com/foaf/0.1/Person"/>
+    </owl:DatatypeProperty>
+
+
+
+    <!-- https://www.w3.org/TR/rdf12-schema/member -->
+
+    <owl:DatatypeProperty rdf:about="https://www.w3.org/TR/rdf12-schema/member"/>
+
+
+
+    <!--
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Classes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+
+
+
+    <!-- http://www.opensilex.org/security#Group -->
+
     <owl:Class rdf:about="http://www.opensilex.org/security#Group">
-        <rdfs:label xml:lang="fr">Groupe</rdfs:label>
         <rdfs:label xml:lang="en">Group</rdfs:label>
+        <rdfs:label xml:lang="fr">Groupe</rdfs:label>
     </owl:Class>
-    
-    <owl:Class rdf:about="http://www.opensilex.org/security#Profile">
-        <rdfs:label xml:lang="fr">Profil</rdfs:label>
-        <rdfs:label xml:lang="en">Profile</rdfs:label>
-    </owl:Class>
+
+
+
+    <!-- http://www.opensilex.org/security#GroupUserProfile -->
 
     <owl:Class rdf:about="http://www.opensilex.org/security#GroupUserProfile">
         <rdfs:label xml:lang="fr">Profil utilisateur</rdfs:label>
         <rdfs:label xml:lang="en">User profile</rdfs:label>
     </owl:Class>
+
+
+
+    <!-- http://www.opensilex.org/security#Profile -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/security#Profile">
+        <rdfs:label xml:lang="fr">Profil</rdfs:label>
+        <rdfs:label xml:lang="en">Profile</rdfs:label>
+    </owl:Class>
+
+
+
+    <!-- http://xmlns.com/foaf/0.1/Agent -->
+
+    <owl:Class rdf:about="http://xmlns.com/foaf/0.1/Agent">
+        <rdfs:label xml:lang="fr">Agent</rdfs:label>
+    </owl:Class>
+
+
+
+    <!-- http://xmlns.com/foaf/0.1/OnlineAccount -->
+
+    <owl:Class rdf:about="http://xmlns.com/foaf/0.1/OnlineAccount">
+        <rdfs:label xml:lang="fr">Compte utilisateur</rdfs:label>
+        <rdfs:label xml:lang="en">User account</rdfs:label>
+    </owl:Class>
+
+
+
+    <!-- http://xmlns.com/foaf/0.1/Person -->
+
+    <owl:Class rdf:about="http://xmlns.com/foaf/0.1/Person">
+        <rdfs:subClassOf rdf:resource="http://xmlns.com/foaf/0.1/Agent"/>
+        <rdfs:label xml:lang="fr">Personne</rdfs:label>
+    </owl:Class>
+    <rdf:Description>
+        <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
+    </rdf:Description>
+    <rdf:Description>
+        <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
+    </rdf:Description>
+    <rdf:Description>
+        <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
+    </rdf:Description>
+    <rdf:Description>
+        <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+    </rdf:Description>
+    <rdf:Description>
+        <owl:qualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:qualifiedCardinality>
+    </rdf:Description>
+    <rdf:Description>
+        <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+    </rdf:Description>
+    <rdf:Description>
+        <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+    </rdf:Description>
+    <rdf:Description>
+        <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+    </rdf:Description>
 </rdf:RDF>
+
+
+
+<!-- Generated by the OWL API (version 4.5.9.2019-02-01T07:24:44Z) https://github.com/owlcs/owlapi -->

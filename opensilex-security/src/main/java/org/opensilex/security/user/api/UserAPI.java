@@ -18,6 +18,7 @@ import org.opensilex.security.authentication.AuthenticationService;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.group.dal.GroupDAO;
 import org.opensilex.security.group.dal.GroupModel;
+import org.opensilex.security.person.api.PersonDTO;
 import org.opensilex.security.person.dal.PersonDAO;
 import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.server.response.*;
@@ -123,13 +124,7 @@ public class UserAPI {
         sparql.startTransaction();
         try {
             PersonDAO personDAO = new PersonDAO(sparql);
-            PersonModel person = personDAO.create(
-                    null,
-                    userDTO.getFirstName(),
-                    userDTO.getLastName(),
-                    userDTO.getEmail(),
-                    null
-            );
+            PersonModel person = personDAO.create(userDTO.toPersonDTO());
 
             AccountModel user = accountDAO.create(
                     userDTO.getUri(),
@@ -323,15 +318,11 @@ public class UserAPI {
                 PersonModel holderOfTheAccount = account.getHolderOfTheAccount();
 
                 if (Objects.isNull(newHolderOfTheAccount) && Objects.nonNull(holderOfTheAccount) ) {
+                    PersonDTO holderToUpdate = userDTO.toPersonDTO();
                     String email = Objects.nonNull(holderOfTheAccount.getEmail()) ? holderOfTheAccount.getEmail().toString() : null;
+                    holderToUpdate.setEmail(email);
 
-                    personDAO.update(
-                            holderOfTheAccount.getUri(),
-                            userDTO.getFirstName(),
-                            userDTO.getLastName(),
-                            email,
-                            account
-                    );
+                    personDAO.update(holderToUpdate);
                 }
 
                 sparql.commitTransaction();

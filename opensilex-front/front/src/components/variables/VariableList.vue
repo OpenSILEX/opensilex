@@ -78,13 +78,28 @@
                         <!-- Group of variables -->
                         <div>
                         <opensilex-FilterField>
-                            <opensilex-GroupVariablesSelector v-if="loadSearchFilters"
+                            <opensilex-GroupVariablesSelector v-if="loadSearchFilters && withoutGroup !== true"
                                 label="VariableView.groupVariable"
-                                :variableGroup.sync="filter.group"
+                                :variableGroup.sync="filter.includedGroup"
                                 :sharedResourceInstance="filter.sharedResourceInstance"
                                 class="searchFilter"
                                 @handlingEnterKey="refresh()"
                             ></opensilex-GroupVariablesSelector>
+
+                            <opensilex-GroupVariablesSelector v-if="loadSearchFilters && withoutGroup === true"
+                                label="VariableView.groupVariable"
+                                :variableGroup.sync="filter.notIncludedGroup"
+                                :sharedResourceInstance="filter.sharedResourceInstance"
+                                class="searchFilter"
+                                @handlingEnterKey="refresh()"
+                            ></opensilex-GroupVariablesSelector>
+                            
+                            <opensilex-CheckboxForm
+                                title="VariableList.withoutGroup"
+                                helpMessage="VariableList.withoutGroup-info"
+                                :value.sync="withoutGroup"
+                                class="searchFilter"
+                            ></opensilex-CheckboxForm>
                         </opensilex-FilterField>
                         </div>
                     </template>
@@ -327,7 +342,7 @@
 </template>
 
 <script lang="ts">
-import {Component, Prop, Ref} from "vue-property-decorator";
+import {Component, Prop, Ref, Watch} from "vue-property-decorator";
 import Vue, {VNode} from "vue";
 import {VariablesGroupGetDTO, VariablesService} from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
@@ -403,7 +418,8 @@ export default class VariableList extends Vue {
         characteristic: undefined,
         method: undefined,
         unit: undefined,
-        group: undefined,
+        includedGroup: undefined,
+        notIncludedGroup: undefined,
         dataType: undefined,
         timeInterval: undefined,
         experiment: undefined,
@@ -411,6 +427,19 @@ export default class VariableList extends Vue {
         devices: undefined,
         species: []
     };
+
+    withoutGroup: boolean = false; //checkbox for the group filter
+
+    @Watch("withoutGroup")
+    onWithoutGroupChange() {
+        if(this.withoutGroup === true) {
+            this.filter.notIncludedGroup = this.filter.includedGroup;
+            this.filter.includedGroup = undefined;
+        } else{
+            this.filter.includedGroup = this.filter.notIncludedGroup;
+            this.filter.notIncludedGroup = undefined;
+        }
+    }
 
     @Ref("groupVariableSelection") readonly groupVariableSelection!: GroupVariablesModalList;
     @Ref("tableRef") readonly tableRef!: TableAsyncView<VariableGetDTO>;
@@ -471,7 +500,8 @@ export default class VariableList extends Vue {
             characteristic: undefined,
             method: undefined,
             unit: undefined,
-            group: undefined,
+            includedGroup: undefined,
+            notIncludedGroup: undefined,
             dataType: undefined,
             timeInterval: undefined,
             experiment: undefined,
@@ -479,6 +509,7 @@ export default class VariableList extends Vue {
             devices: undefined,
             species: []
         };
+        this.withoutGroup = false;
         this.refresh();
         this.$emit("onReset");
     }
@@ -536,7 +567,8 @@ export default class VariableList extends Vue {
             this.filter.characteristic,
             this.filter.method,
             this.filter.unit,
-            this.filter.group,
+            this.filter.includedGroup,
+            this.filter.notIncludedGroup,
             this.filter.dataType,
             this.filter.timeInterval,
             this.filter.species,
@@ -814,6 +846,8 @@ en:
         not-used-in-variablesGroup: Variable not used in any group of variables
         selected-all: All variables
         display: Display
+        withoutGroup: Not in group
+        withoutGroup-info: Select the checkbox to filter the variables that are not included in the selected group 
 fr:
     VariableList:
         name-placeholder: Entrer un nom de variable
@@ -830,5 +864,7 @@ fr:
         not-used-in-variablesGroup: Variable n'est utilisé dans aucun groupe de variables
         selected-all: Toutes les variables
         display: Affichage
+        withoutGroup: Pas dans ce groupe
+        withoutGroup-info: Cocher la case pour filtrer les variables qui n'appartiennent pas au groupe sélectionné 
 
 </i18n>

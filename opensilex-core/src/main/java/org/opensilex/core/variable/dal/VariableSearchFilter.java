@@ -18,7 +18,8 @@ public class VariableSearchFilter extends SparqlSearchFilter {
     private URI characteristic;
     private URI method;
     private URI unit;
-    private URI group;
+    private URI includedInGroup;
+    private URI notIncludedInGroup;
     private URI dataType;
     private String timeInterval;
     private List<URI> species;
@@ -90,12 +91,21 @@ public class VariableSearchFilter extends SparqlSearchFilter {
         return this;
     }
 
-    public URI getGroup() {
-        return group;
+    public URI getIncludedInGroup() {
+        return includedInGroup;
     }
 
-    public VariableSearchFilter setGroup(URI group) {
-        this.group = group;
+    public VariableSearchFilter setIncludedInGroup(URI group) {
+        this.includedInGroup = group;
+        return this;
+    }
+
+    public URI getNotIncludedInGroup() {
+        return notIncludedInGroup;
+    }
+
+    public VariableSearchFilter setNotIncludedInGroup(URI group) {
+        this.notIncludedInGroup = group;
         return this;
     }
 

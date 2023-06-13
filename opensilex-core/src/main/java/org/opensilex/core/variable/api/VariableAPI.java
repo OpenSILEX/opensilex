@@ -245,7 +245,8 @@ public class VariableAPI {
             @ApiParam(value = "Characteristic filter") @QueryParam("characteristic") @ValidURI URI characteristic,
             @ApiParam(value = "Method filter") @QueryParam("method") @ValidURI URI method,
             @ApiParam(value = "Unit filter") @QueryParam("unit") @ValidURI URI unit,
-            @ApiParam(value = "Group filter") @QueryParam("group_of_variables") @ValidURI URI group,
+            @ApiParam(value = "Included in group filter") @QueryParam("included_in_group_of_variables") @ValidURI URI includedIngroup,
+            @ApiParam(value = "Not included in group filter") @QueryParam("not_included_in_group_of_variables") @ValidURI URI notIncluedInGroup,
             @ApiParam(value = "Data type filter") @QueryParam("data_type") @ValidURI URI dataType,
             @ApiParam(value = "Time interval filter") @QueryParam("time_interval") String timeInterval,
             @ApiParam(value = "Species filter") @QueryParam("species") List<URI> species,
@@ -266,7 +267,8 @@ public class VariableAPI {
                     .setCharacteristic(characteristic)
                     .setMethod(method)
                     .setUnit(unit)
-                    .setGroup(group)
+                    .setIncludedInGroup(includedIngroup)
+                    .setNotIncludedInGroup(notIncluedInGroup)
                     .setDataType(dataType)
                     .setTimeInterval(timeInterval)
                     .setSpecies(species)

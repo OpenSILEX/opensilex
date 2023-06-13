@@ -378,8 +378,14 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
             select.addFilter(SPARQLQueryHelper.eq(VariableModel.UNIT_FIELD_NAME, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(filter.getUnit().toString()))));
         }
 
-        if (filter.getGroup() != null) {
-            select.addWhere(SPARQLDeserializers.nodeURI(filter.getGroup()), RDFS.member, makeVar(SPARQLResourceModel.URI_FIELD));
+        if (filter.getIncludedInGroup() != null) {
+            select.addWhere(SPARQLDeserializers.nodeURI(filter.getIncludedInGroup()), RDFS.member, makeVar(SPARQLResourceModel.URI_FIELD));
+        }
+
+        if (filter.getNotIncludedInGroup() != null) {
+            select.addFilter(SPARQLQueryHelper.getExprFactory().notexists(
+                    new WhereBuilder().addWhere(SPARQLDeserializers.nodeURI(filter.getNotIncludedInGroup()), RDFS.member, makeVar(SPARQLResourceModel.URI_FIELD))
+            ));
         }
 
         if (filter.getDataType() != null) {

@@ -95,7 +95,7 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
         super(model, sharedResourceInstance);
 
         EntityModel entity = model.getEntity();
-        this.entity = new EntityGetDTO(entity);
+//        this.entity = new EntityGetDTO(entity);
         
         InterestEntityModel entityOfInterest = model.getEntityOfInterest();
         if(entityOfInterest != null){

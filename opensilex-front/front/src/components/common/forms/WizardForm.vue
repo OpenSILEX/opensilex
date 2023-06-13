@@ -160,10 +160,15 @@ export default class WizardForm extends Vue {
   nextStepHandler(props) {
     return this.validateStep(props)
       .then(isValid => {
+        let currentStepComponent: any = this.$refs[
+        "step" + props.activeTabIndex
+            ][0];
+        console.log("from nextStepHandler ");
+        if (currentStepComponent.beforeNext) {
+          currentStepComponent.beforeNext();
+        }
         if (isValid && this.nextStepAction) {
-          let currentStepComponent: any = this.$refs[
-            "step" + props.activeTabIndex
-          ][0];
+
           let nextStepComponent: any = this.$refs[
             "step" + (props.activeTabIndex + 1)
           ][0];

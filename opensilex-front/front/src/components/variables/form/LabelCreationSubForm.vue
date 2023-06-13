@@ -13,8 +13,8 @@
               >
                 <template v-slot:button-content>
                   <i class="icon ik ik-globe"></i>
-                  <span class="hidden-phone">{{ getTranslationOfLanguage(currentLanguage) }}</span>
-                  <span class="show-phone">{{ getTranslationOfLanguage(currentLanguage).substring(0, 2) }}</span>
+                  <span class="hidden-phone">{{ getTranslationOfLanguage(i18nLabels.locale) }}</span>
+                  <span class="show-phone">{{ getTranslationOfLanguage(i18nLabels.locale).substring(0, 2) }}</span>
                   <i class="ik ik-chevron-down"></i>
                 </template>
 
@@ -39,12 +39,13 @@
                 type="text"
                 :required="true"
                 class="wide-input"
+
             ></opensilex-InputForm>
             <!-- placeholder="EntityForm.prefLabel-placeholder"-->
             <!-- AltLabels -->
 
-            <div class="form-group alt-labels d-flex align-items-center"  v-for="(altLabel, i) in altLabels" :key="i">              <opensilex-InputForm
-                  v-model="altLabels[i]"
+            <div class="form-group alt-labels d-flex align-items-center"  v-for="(altLabel, i) in labelDTO.altLabels" :key="i">              <opensilex-InputForm
+                  v-model="labelDTO.altLabels[i]"
                   :label="getTranslationOf('altLabel')"
                   type="text"
                   :required="false"
@@ -109,21 +110,14 @@ export default class LabelCreationSubForm extends Vue {
 
   languages: Array<string>;
 
-  currentLanguage: string = '';
-
-
-
   IsValidsubForm: boolean = false;
-
 
   labelDTO: LabelDTO = {
     prefLabel: null,
     altLabels: [''],
     definition: null,
-    lang: null,
+    lang : this.$i18n.locale,
   }
-
-  altLabels: Array<string> = [''];
 
 
   labelDTOs: Array<MultiLabelDTO> = [];
@@ -160,7 +154,7 @@ export default class LabelCreationSubForm extends Vue {
           altLabels: 'Alternative labels',
           definition: 'Definition',
           lang: 'Language',
-          saveAndRefillInAnotherLanguage: 'Save and refill',
+          saveAndRefillInAnotherLanguage: 'Save and refill in another language',
         },
         fr: {
           language: {
@@ -174,7 +168,7 @@ export default class LabelCreationSubForm extends Vue {
           altLabels: 'Les labels alternatives',
           definition: 'Définition',
           lang: 'Langue',
-          saveAndRefillInAnotherLanguage: 'Enregistrer et re-remplir',
+          saveAndRefillInAnotherLanguage: 'Enregistrer et re-remplir dans une autre langue',
         },
         es: {
           language: {
@@ -188,7 +182,7 @@ export default class LabelCreationSubForm extends Vue {
           altLabels: 'Etiquetas alternativas',
           definition: 'Definición',
           lang: 'Idioma',
-          saveAndRefillInAnotherLanguage: 'Guardar y rellenar',
+          saveAndRefillInAnotherLanguage: 'Guardar y rellenar en otro idioma',
         },
         it: {
           language: {
@@ -202,14 +196,12 @@ export default class LabelCreationSubForm extends Vue {
           altLabels: 'Etichette alternative',
           definition: 'Definizione',
           lang: 'Lingua',
-          saveAndRefillInAnotherLanguage: 'Salva e ricarica',
+          saveAndRefillInAnotherLanguage: 'Salva e ricarica in un altra lingua',
         },
       },
     });
 
-
-    this.currentLanguage = this.$i18n.locale;
-
+    this.i18nLabels.locale = this.$i18n.locale;
 
     this.labelDTOs = [];
     this.dataLoaded = false;
@@ -233,6 +225,10 @@ export default class LabelCreationSubForm extends Vue {
 
     return this.i18nLabels.messages[lang].language[lang];
 
+  }
+
+  getLabelDTO(){
+    return this.labelDTO;
   }
 
   CheckIfIsValidSubForm() {
@@ -265,6 +261,13 @@ export default class LabelCreationSubForm extends Vue {
     }
   }
 
+  updateLabelDTO(){
+
+    console.log(this.labelDTO.prefLabel);
+    this.labelDTO.lang = this.i18nLabels.locale;
+
+  }
+
 
   SaveAndRefillInAnotherLanguage() {
 
@@ -273,8 +276,8 @@ export default class LabelCreationSubForm extends Vue {
 
       if (this.IsValidsubForm) {
 
-        this.labelDTO.lang = this.getTranslationOfLanguage(this.currentLanguage);
-        this.labelDTO.altLabels = this.altLabels;
+        this.updateLabelDTO();
+
         this.labelDTOs.push(this.labelDTO);
         this.$emit('onSubmitSubForm', this.labelDTO);
 
@@ -296,10 +299,9 @@ export default class LabelCreationSubForm extends Vue {
           prefLabel: null,
           altLabels: [''],
           definition: null,
-          lang: null,
+          lang: this.languages[0],
         }
 
-        this.altLabels = [''];
 
       }
     });
@@ -309,14 +311,17 @@ export default class LabelCreationSubForm extends Vue {
 
   addAltLabel() {
 
-    this.altLabels.splice(this.altLabels.length);
-    Vue.set(this.altLabels, this.altLabels.length, '');
+    this.labelDTO.altLabels.splice(this.labelDTO.altLabels.length);
+    Vue.set(this.labelDTO.altLabels, this.labelDTO.altLabels.length, '');
+
   }
 
 
   setLanguage(lang: string) {
+
     this.i18nLabels.locale = lang;
-    this.currentLanguage = this.i18nLabels.locale;
+    this.labelDTO.lang = lang;
+
   }
 
   language() {
@@ -336,6 +341,7 @@ export default class LabelCreationSubForm extends Vue {
       definition: null,
       lang: null,
     };
+
     this.altLabels = [''];
   }
 

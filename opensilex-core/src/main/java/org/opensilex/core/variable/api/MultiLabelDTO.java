@@ -8,16 +8,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@JsonPropertyOrder({"prefLabel", "altLabels", "definition"})
+@JsonPropertyOrder({"prefLabels", "altLabels", "definitions"})
 public class MultiLabelDTO {
 
-    @JsonProperty("prefLabel")
+    @JsonProperty("prefLabels")
     protected List<String> prefLabels;
 
     @JsonProperty("altLabels")
     protected List<String> altLabels;
 
-    @JsonProperty("definition")
+    @JsonProperty("definitions")
     protected List<String> definitions;
 
     public MultiLabelDTO(){

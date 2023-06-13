@@ -15,8 +15,6 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.sparql.annotations.SPARQLResource;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author vidalmor
@@ -26,7 +24,7 @@ import java.util.List;
         resource = "Entity",
         graph = VariableModel.GRAPH
 )
-public class EntityMultiLabelModel extends BaseMultiLabelIdentifierModel<EntityMultiLabelModel> {
+public class EntityMultiLabelModel extends BaseMultiLabeledIdentifierModel<EntityMultiLabelModel> {
 
     public EntityMultiLabelModel() {
 
@@ -38,14 +36,13 @@ public class EntityMultiLabelModel extends BaseMultiLabelIdentifierModel<EntityM
     }
 
 
-
     public String[] getInstancePathSegments(EntityMultiLabelModel instance) {
+        System.out.println(instance);
         return new String[]{
                 "entity",
                 instance.getAltsLabels().get(0)
         };
     }
-
 
 
 }

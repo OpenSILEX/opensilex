@@ -29,7 +29,7 @@ import java.util.*;
  *
  * @author vidalmor
  */
-public class BaseVariableDAO<T extends SPARQLNamedResourceModel<T>> {
+public class BaseMultiLabeledIdentifierDAO<T extends SPARQLMultiNamedResourceModel<T>> {
 
     protected final SPARQLService sparql;
     protected final Class<T> objectClass;
@@ -41,7 +41,7 @@ public class BaseVariableDAO<T extends SPARQLNamedResourceModel<T>> {
      */
     protected final SparqlNoProxyFetcher<T> fetcher;
 
-    public BaseVariableDAO(Class<T> objectClass, SPARQLService sparql) {
+    public BaseMultiLabeledIdentifierDAO(Class<T> objectClass, SPARQLService sparql) {
         this.sparql = sparql;
         this.objectClass = objectClass;
         try{
@@ -108,7 +108,7 @@ public class BaseVariableDAO<T extends SPARQLNamedResourceModel<T>> {
                     translationValues
             );
         }
-       sparql.delete(objectClass,uri);
+        sparql.delete(objectClass,uri);
     }
 
     public T get(URI instanceURI) throws Exception {

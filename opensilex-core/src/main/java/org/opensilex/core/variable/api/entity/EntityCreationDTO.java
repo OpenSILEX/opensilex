@@ -6,18 +6,13 @@
 
 package org.opensilex.core.variable.api.entity;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
-import org.opensilex.core.variable.api.BaseMultiLabelIdentifierCreationDTO;
-import org.opensilex.core.variable.api.MultiLabelDTO;
+import org.opensilex.core.variable.api.BaseMultiLabeledIdentifierCreationDTO;
 import org.opensilex.core.variable.dal.EntityMultiLabelModel;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
 
-public class EntityCreationDTO extends BaseMultiLabelIdentifierCreationDTO<EntityMultiLabelModel> {
-
+public class EntityCreationDTO extends BaseMultiLabeledIdentifierCreationDTO<EntityMultiLabelModel> {
 
     @ApiModelProperty(example = "http://opensilex.dev/set/variables/entity/Plant")
     public URI getUri() {
@@ -33,8 +28,10 @@ public class EntityCreationDTO extends BaseMultiLabelIdentifierCreationDTO<Entit
     public EntityCreationDTO() {
 
     }
+
     @Override
     public EntityMultiLabelModel newModel() {
+
         EntityMultiLabelModel model = super.newModel();
 
         model.setPrefLabels(this.multiLabelDTO.getPrefLabels());
@@ -42,7 +39,8 @@ public class EntityCreationDTO extends BaseMultiLabelIdentifierCreationDTO<Entit
         model.setDefinitions(this.multiLabelDTO.getDefinitions());
 
         return model;
-}
+    }
+
     @Override
     protected EntityMultiLabelModel newModelInstance() {
         return new EntityMultiLabelModel();

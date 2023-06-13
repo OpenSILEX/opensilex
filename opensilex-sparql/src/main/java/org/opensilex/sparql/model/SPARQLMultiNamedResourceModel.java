@@ -1,16 +1,13 @@
-package org.opensilex.core.variable.dal;
+package org.opensilex.sparql.model;
 
+import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.SKOS;
 import org.opensilex.sparql.annotations.SPARQLProperty;
-import org.opensilex.sparql.model.SPARQLMultiNamedResourceModel;
-import org.opensilex.sparql.model.SPARQLNamedResourceModel;
+import org.opensilex.uri.generation.ClassURIGenerator;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-public class MultiLabelModel<T extends SPARQLMultiNamedResourceModel<T>> extends SPARQLMultiNamedResourceModel<T> {
+public class SPARQLMultiNamedResourceModel <T extends SPARQLMultiNamedResourceModel> extends SPARQLResourceModel implements ClassURIGenerator<T> {
 
     @SPARQLProperty(
             ontology = SKOS.class,
@@ -29,6 +26,8 @@ public class MultiLabelModel<T extends SPARQLMultiNamedResourceModel<T>> extends
             property = "definition"
     )
     private List<String> definitions;
+    public static final String NAME_FIELD = "name";
+
 
     public List<String> getPrefLabels() {
         return prefLabels;
@@ -53,9 +52,12 @@ public class MultiLabelModel<T extends SPARQLMultiNamedResourceModel<T>> extends
     public void setDefinitions(List<String> definitions) {
         this.definitions = definitions;
     }
-    public MultiLabelModel(){
-        this.prefLabels = new ArrayList<>();
-        this.altsLabels = new ArrayList<>();
-        this.definitions = new ArrayList<>();
+
+    @Override
+    public String[] getInstancePathSegments(T instance) {
+        return new String[]{
+
+//                instance.getName()
+        };
     }
 }

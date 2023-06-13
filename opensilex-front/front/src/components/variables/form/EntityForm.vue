@@ -104,6 +104,7 @@ import DefaultHeaderComponent from "../../layout/DefaultHeaderComponent.vue";
 import VueI18n from "vue-i18n";
 import en from '../../../lang/message-en.json';
 import fr from '../../../lang/message-fr.json';
+import LabelCreationSubForm from "./LabelCreationSubForm.vue";
 
 @Component({
   computed: {
@@ -118,7 +119,7 @@ export default class EntityForm extends Vue {
   $opensilex: any;
   labelDTOList: Array<LabelDTO> = [];
 
-  labelDTO: Array<LabelDTO> = [];
+
 
   dataLoaded: boolean = false;
 
@@ -127,15 +128,26 @@ export default class EntityForm extends Vue {
   title = "";
   uriGenerated = true;
 
-  emits: ['labelDTOs'];
-
   isValidSubForm: boolean = false;
+
+  @Ref("labelCreationSubForm")
+  labelCreationSubForm: LabelCreationSubForm;
 
   key = 0;
 
   @Prop({
     default: 1
   })
+
+  @Prop()
+  editMode;
+
+  errorMsg: String = "";
+
+  @PropSync("form")
+  entityDto: EntityCreationDTO ;
+
+  @Ref("tableRef") readonly tableRef!: any;
 
 
   pageSize: number;
@@ -151,37 +163,35 @@ export default class EntityForm extends Vue {
 
   }
 
-  getLabelDTOListFromSubForm(labelDTO: LabelDTO) {
-    console.log("this.entityDto",this.entityDto);
+  beforeNext() {
 
+    console.log("this.labelCreationSubForm.getLabelDTO()",JSON.stringify(this.labelCreationSubForm.getLabelDTO()));
+    this.addLabelsToMultiLabelDTO(this.labelCreationSubForm.getLabelDTO());
 
-    this.labelDTOList.push(labelDTO);
-    console.log("this.entityDto.multiLabelDTO.prefLabels",this.entityDto.multiLabelDTO.prefLabels);
+  }
 
+  addLabelsToMultiLabelDTO(labelDTO) {
     this.entityDto.multiLabelDTO.prefLabels.push(labelDTO.prefLabel+'@'+labelDTO.lang.substring(0, 2));
 
     for (let i = 0; i < labelDTO.altLabels.length; i++) {
       const altLabel = labelDTO.altLabels[i] + '@' + labelDTO.lang.substring(0, 2);
       this.entityDto.multiLabelDTO.altLabels.push(altLabel);
     }
+
     this.entityDto.multiLabelDTO.definitions.push(labelDTO.definition+'@'+labelDTO.lang.substring(0, 2));
-
-    this.dataLoaded = true;
-
-    this.$emit('labelDTOs', this.labelDTOList);
-    this.key += 1;
-
-    console.log("this.entityDto.multiLabelDTO",this.entityDto.multiLabelDTO);
-    console.log("**********************************  pageSize  *************************************", this.pageSize);
-
   }
 
 
-  @Ref("tableRef") readonly tableRef!: any;
+  getLabelDTOListFromSubForm(labelDTO: LabelDTO) {
 
-  getLabelDTOsFromEntityForm(labelDTOs: Array<LabelDTO>) {
+    this.labelDTOList.push(labelDTO);
 
-    this.labelDTOList = labelDTOs;
+    // this.addLabelsToMultiLabelDTO(LabelDTO);
+
+    this.dataLoaded = true;
+
+    this.key += 1;
+
 
   }
 
@@ -210,13 +220,7 @@ export default class EntityForm extends Vue {
     ];
   }
 
-  @Prop()
-  editMode;
 
-  errorMsg: String = "";
-
-  @PropSync("form")
-  entityDto: EntityCreationDTO ;
 
   externalOntologiesRefs: any[] = ExternalOntologies.getExternalOntologiesReferences(EntityCreate.selectedOntologies);
 

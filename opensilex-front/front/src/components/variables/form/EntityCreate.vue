@@ -25,6 +25,7 @@ import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
 import {EntityUpdateDTO} from "opensilex-core/model/entityUpdateDTO";
 import {LabelDTO} from 'opensilex-core/model/labelDTO';
 import {MultiLabelDTO} from 'opensilex-core/model/multiLabelDTO';
+import LabelCreationSubForm from './LabelCreationSubForm.vue';
 
 
 @Component
@@ -55,12 +56,15 @@ export default class EntityCreate extends Vue {
   errorMsg: String = "";
   service: VariablesService;
 
+  @Ref("labelCreationSubForm") readonly labelCreationSubForm!: LabelCreationSubForm;
+
   multiLabelDTO: MultiLabelDTO;
 
   @Ref("wizardRef") readonly wizardRef!: any;
 
   created() {
     this.service = this.$opensilex.getService("opensilex.VariablesService");
+    // this.labelCreationSubForm = this.$refs.labelCreationSubForm;
   }
 
   handleErrorMessage(errorMsg: string) {
@@ -87,15 +91,10 @@ export default class EntityCreate extends Vue {
     };
   }
 
-  getEmptyLabelsDTO(): LabelDTO {
-    return {
-      prefLabel: null,
-      altLabels: [''],
-      definition: null,
-      lang: null
-
-    };
+  getLabelDTO(): LabelDTO {
+    return this.labelCreationSubForm.labelDTO;
   }
+
 
   getEmptyMultiLabelDTO(): MultiLabelDTO {
     return {
@@ -107,11 +106,11 @@ export default class EntityCreate extends Vue {
 
 
   create(form: EntityCreationDTO) {
+    
     return this.service
         .createEntity(form)
         .then((http: HttpResponse<OpenSilexResponse<string>>) => {
-          form.uri = http.response.result;
-          let message = this.$i18n.t("EntityForm.name") + " " + form.uri + " " + this.$i18n.t("component.common.success.creation-success-message");
+          let message = this.$i18n.t("EntityForm.uri") + " " + form.uri + " " + this.$i18n.t("component.common.success.creation-success-message");
           this.$opensilex.showSuccessToast(message);
           this.$emit("onCreate", form);
         })
@@ -122,6 +121,7 @@ export default class EntityCreate extends Vue {
             this.$opensilex.errorHandler(error);
           }
         });
+
   }
 
   update(form: EntityUpdateDTO) {

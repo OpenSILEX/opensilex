@@ -10,6 +10,7 @@ import org.opensilex.core.CoreModule;
 import org.opensilex.core.external.opensilex.SharedResourceInstanceService;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.variable.api.VariableAPI;
+import org.opensilex.core.variable.dal.BaseMultiLabeledIdentifierDAO;
 import org.opensilex.core.variable.dal.BaseVariableDAO;
 import org.opensilex.core.variable.dal.EntityModel;
 import org.opensilex.core.variable.dal.EntityMultiLabelModel;
@@ -88,7 +89,7 @@ public class EntityAPI {
             @ApiParam("Entity description") @Valid EntityCreationDTO dto
     ) throws Exception {
         try {
-            BaseVariableDAO<EntityMultiLabelModel> dao = new BaseVariableDAO<>(EntityMultiLabelModel.class, sparql);
+            BaseMultiLabeledIdentifierDAO<EntityMultiLabelModel> dao = new BaseMultiLabeledIdentifierDAO<>(EntityMultiLabelModel.class, sparql);
             EntityMultiLabelModel model = dto.newModel();
             model.setCreator(currentUser.getUri());
 
@@ -115,8 +116,8 @@ public class EntityAPI {
             @ApiParam(value = "Entity URI", example = "http://opensilex.dev/set/variables/entity/Plant", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
 
-        BaseVariableDAO<EntityModel> dao = new BaseVariableDAO<>(EntityModel.class, sparql);
-        EntityModel model = dao.get(uri);
+        BaseMultiLabeledIdentifierDAO<EntityMultiLabelModel> dao = new BaseMultiLabeledIdentifierDAO<>(EntityMultiLabelModel.class, sparql);
+        EntityMultiLabelModel model = dao.get(uri);
         if (model != null) {
             return new SingleObjectResponse<>(new EntityDetailsDTO(model)).getResponse();
         } else {
@@ -140,7 +141,7 @@ public class EntityAPI {
             @ApiParam(value = "Shared resource instance") @QueryParam(EntityAPI.SHARED_RESOURCE_INSTANCE_PARAM) URI sharedResourceInstance
     ) throws Exception {
         if (sharedResourceInstance == null) {
-            BaseVariableDAO<EntityModel> dao = new BaseVariableDAO<>(EntityModel.class, sparql);
+            BaseMultiLabeledIdentifierDAO<EntityMultiLabelModel> dao = new BaseMultiLabeledIdentifierDAO<>(EntityMultiLabelModel.class, sparql);
 
             try {
                 List<EntityDetailsDTO> resultDTOList = dao.getList(uris)
@@ -238,9 +239,9 @@ public class EntityAPI {
                     currentUser.getLanguage()
             );
 
-            ListWithPagination<EntityGetDTO> resultDTOList = resultList.convert(
-                    EntityGetDTO.class,
-                    EntityGetDTO::new
+            ListWithPagination<OldEntityGetDTO> resultDTOList = resultList.convert(
+                    OldEntityGetDTO.class,
+                    OldEntityGetDTO::new
             );
             return new PaginatedListResponse<>(resultDTOList).getResponse();
         }

@@ -581,8 +581,8 @@ public class VariableAPI {
         try {
             sparql.startTransaction();
 
-            resultDto.setEntityUris(new ArrayList<>(
-                    createIfMissing(EntityModel.class, EntityDetailsDTO.class, entityUris, service, EntityAPI.PATH)));
+//            resultDto.setEntityUris(new ArrayList<>(
+//                    createIfMissing(EntityModel.class, EntityDetailsDTO.class, entityUris, service, EntityAPI.PATH)));
             resultDto.setInterestEntityUris(new ArrayList<>(
                     createIfMissing(InterestEntityModel.class, InterestEntityDetailsDTO.class, entityOfInterestUris, service, InterestEntityAPI.PATH)));
             resultDto.setCharacteristicUris(new ArrayList<>(

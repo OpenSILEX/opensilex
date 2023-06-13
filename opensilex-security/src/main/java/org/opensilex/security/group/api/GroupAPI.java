@@ -104,7 +104,6 @@ public class GroupAPI {
                     "Duplicated URI: " + dto.getUri()
             ).getResponse();
         }
-
         // check if group name already exists
         if (dao.groupNameExists(dto.getName())) {
             // Return error response 409 - CONFLICT if profile name already exists

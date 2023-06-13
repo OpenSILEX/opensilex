@@ -9,18 +9,15 @@ import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.SKOS;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.SKOSReferences;
-import org.opensilex.security.authentication.SecurityOntology;
-import org.opensilex.security.group.dal.GroupUserProfileModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
-import org.opensilex.sparql.model.SPARQLNamedResourceModel;
+import org.opensilex.sparql.model.SPARQLMultiNamedResourceModel;
 
 import java.net.URI;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 //public abstract class BaseMultiLabelIdentifierModel<T extends BaseMultiLabelIdentifierModel> extends LabelModel implements SKOSReferences {
-public abstract class BaseMultiLabelIdentifierModel<T extends SPARQLNamedResourceModel<T>> extends MultiLabelModel<T> implements SKOSReferences {
+public abstract class BaseMultiLabeledIdentifierModel<T extends SPARQLMultiNamedResourceModel<T>> extends MultiLabelModel<T> implements SKOSReferences {
 
     @SPARQLProperty(
             ontology = SKOS.class,

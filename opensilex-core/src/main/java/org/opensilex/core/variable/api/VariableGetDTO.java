@@ -149,7 +149,7 @@ public class VariableGetDTO {
         dto.setAlternativeName(model.getAlternativeName());
 
         EntityModel entity = model.getEntity();
-        dto.setEntity(new EntityGetDTO(entity));
+//        dto.setEntity(new EntityGetDTO(entity));
 
         InterestEntityModel entityOfInterest = model.getEntityOfInterest();
         if(entityOfInterest != null){

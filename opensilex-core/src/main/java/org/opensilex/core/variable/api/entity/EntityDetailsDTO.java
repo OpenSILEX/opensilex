@@ -7,10 +7,14 @@
 package org.opensilex.core.variable.api.entity;
 
 import java.net.URI;
+import java.util.List;
 
 import io.swagger.annotations.ApiModelProperty;
+import org.opensilex.core.variable.api.BaseMultiLabeledIdentifierDetailsDTO;
 import org.opensilex.core.variable.api.BaseVariableDetailsDTO;
+import org.opensilex.core.variable.api.MultiLabelDTO;
 import org.opensilex.core.variable.dal.EntityModel;
+import org.opensilex.core.variable.dal.EntityMultiLabelModel;
 
 
 /**
@@ -18,9 +22,9 @@ import org.opensilex.core.variable.dal.EntityModel;
  * @author vidalmor
  */
 
-public class EntityDetailsDTO extends BaseVariableDetailsDTO<EntityModel> {
+public class EntityDetailsDTO extends BaseMultiLabeledIdentifierDetailsDTO<EntityMultiLabelModel> {
 
-    public EntityDetailsDTO(EntityModel model) {
+    public EntityDetailsDTO(EntityMultiLabelModel model) {
         super(model);
     }
 
@@ -32,22 +36,20 @@ public class EntityDetailsDTO extends BaseVariableDetailsDTO<EntityModel> {
     public URI getUri() {
         return uri;
     }
-
     @Override
-    @ApiModelProperty(example = "Plant")
-    public String getName() {
-        return name;
+    public MultiLabelDTO getMultiLabelDTO() {
+        return multiLabelDTO;
+    }
+    @Override
+    public void setMultiLabelDTO(MultiLabelDTO multiLabelDTO) {
+        this.multiLabelDTO = multiLabelDTO;
     }
 
-    @Override
-    @ApiModelProperty(example = "The entity which describe a plant")
-    public String getDescription() {
-        return description;
-    }
+
 
     @Override
-    public EntityModel toModel() {
-        EntityModel model = new EntityModel();
+    public EntityMultiLabelModel toModel() {
+        EntityMultiLabelModel model = new EntityMultiLabelModel();
         setBasePropertiesToModel(model);
         return model;
     }

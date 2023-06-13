@@ -134,7 +134,7 @@
 
             }).catch((error) => {
                 if (error.status == 409) {
-                    this.$opensilex.errorHandler(error, this.$i18n.t("component.user.errors.user-already-exists"));
+                    this.$opensilex.errorHandler(error, this.$i18n.t("component.account.errors.user-already-exists"));
                 } else {
                     this.$opensilex.errorHandler(error,error.response.result.message);
                 }

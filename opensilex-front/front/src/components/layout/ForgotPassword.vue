@@ -34,7 +34,7 @@
               type="email"
               :required="true"
               rules="email"
-              placeholder="component.user.form-email-placeholder"
+              placeholder="component.account.form-email-placeholder"
             ></opensilex-InputForm>
 
             <b-row>

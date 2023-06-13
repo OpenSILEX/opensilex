@@ -3,7 +3,7 @@
     <opensilex-StringFilter
         :filter.sync="filter"
         @update="updateFilter()"
-        placeholder="component.user.filter-placeholder"
+        placeholder="component.account.filter-placeholder"
         :debounce="300"
         :lazy="false"
     ></opensilex-StringFilter>
@@ -37,7 +37,7 @@
       </template>
 
       <template v-slot:row-details="{data}">
-        <strong class="capitalize-first-letter">{{ $t("component.user.user-groups") }}:</strong>
+        <strong class="capitalize-first-letter">{{ $t("component.account.user-groups") }}:</strong>
         <ul>
           <li
               v-for="groupDetail in  data.item.groupDetails"
@@ -50,7 +50,7 @@
       <template v-slot:cell(actions)="{data}">
         <b-button-group size="sm">
           <div class="checkEnable"
-               :title="data.item.enable ? $t('component.user.enable') : $t('component.user.disable')">
+               :title="data.item.enable ? $t('component.account.enable') : $t('component.account.disable')">
             <b-check
                 @change="changeEnable(data.item)"
                 v-if="displayEnableButton(data.item)"
@@ -61,20 +61,20 @@
           </div>
           <opensilex-DetailButton
               @click="showUsersGroups(data)"
-              label="component.user.details"
+              label="component.account.details"
               :detailVisible="data.detailsShowing"
               :small="true"
           ></opensilex-DetailButton>
           <opensilex-EditButton
               v-if="user.hasCredential(credentials.CREDENTIAL_USER_MODIFICATION_ID)"
               @click="$emit('onEdit', data.item)"
-              label="component.user.update"
+              label="component.account.update"
               :small="true"
           ></opensilex-EditButton>
           <opensilex-DeleteButton
               v-if="user.hasCredential(credentials.CREDENTIAL_USER_DELETE_ID) && user.email !== data.item.email"
               @click="deleteUser(data.item.uri)"
-              label="component.user.delete"
+              label="component.account.delete"
               :small="true"
           ></opensilex-DeleteButton>
         </b-button-group>
@@ -104,17 +104,17 @@ export default class UserList extends Vue {
     },
     {
       key: "last_name",
-      label: "component.user.holderOfTheAccount",
+      label: "component.account.holderOfTheAccount",
       sortable: true
     },
     {
       key: "email",
-      label: "component.user.email",
+      label: "component.account.email",
       sortable: true
     },
     {
       key: "admin",
-      label: "component.user.admin",
+      label: "component.account.admin",
       sortable: true
     },
     {
@@ -175,7 +175,7 @@ export default class UserList extends Vue {
         .deleteUser(uri)
         .then(() => {
           this.refresh();
-          this.$opensilex.showSuccessToast(this.$t('component.user.successDelete'))
+          this.$opensilex.showSuccessToast(this.$t('component.account.successDelete'))
         })
         .catch(this.$opensilex.errorHandler);
   }

@@ -171,7 +171,6 @@ public final class AccountDAO {
 
         Map<String, WhereHandler> customHandlerByFields = new HashMap<>();
         WhereBuilder whereGraph = new WhereBuilder();
-        whereGraph.addGraph(sparql.getDefaultGraph(PersonModel.class), SPARQLQueryHelper.makeVar(AccountModel.HOLDER_OF_THE_ACCOUNT_FIELD), FOAF.firstName.asNode(), SPARQLQueryHelper.makeVar(PersonModel.FIRST_NAME_FIELD));
         whereGraph.addGraph(sparql.getDefaultGraph(PersonModel.class), SPARQLQueryHelper.makeVar(AccountModel.HOLDER_OF_THE_ACCOUNT_FIELD), FOAF.lastName.asNode(), SPARQLQueryHelper.makeVar(PersonModel.LAST_NAME_FIELD));
         WhereBuilder whereOptional = new WhereBuilder();
         whereOptional.addOptional(whereGraph);

@@ -262,6 +262,13 @@ public class AuthenticationService extends BaseService implements Service {
         // Compute expiration date
         Date expirationDate = Date.from(issuedDate.toInstant().plus(TOKEN_VALIDITY_DURATION, TOKEN_VALIDITY_DURATION_UNIT));
 
+        String firstName = null;
+        String lastName = null;
+        if (Objects.nonNull(user.getHolderOfTheAccount())){
+            firstName = user.getHolderOfTheAccount().getFirstName();
+            lastName = user.getHolderOfTheAccount().getLastName();
+        }
+
         // Create token
         JWTCreator.Builder tokenBuilder = JWT.create()
                 // Standardized claims
@@ -269,8 +276,8 @@ public class AuthenticationService extends BaseService implements Service {
                 .withSubject(user.getUri().toString())
                 .withIssuedAt(issuedDate)
                 .withExpiresAt(expirationDate)
-                .withClaim(CLAIM_FIRST_NAME, user.getFirstName())
-                .withClaim(CLAIM_LAST_NAME, user.getLastName())
+                .withClaim(CLAIM_FIRST_NAME,firstName)
+                .withClaim(CLAIM_LAST_NAME, lastName)
                 .withClaim(CLAIM_EMAIL, user.getEmail().toString())
                 .withClaim(CLAIM_FULL_NAME, user.getName())
                 .withClaim(CLAIM_LOCALE, user.getLanguage())
@@ -628,8 +635,6 @@ public class AuthenticationService extends BaseService implements Service {
 
         AccountModel user = new AccountModel();
         user.setEmail(new InternetAddress(claims.getAsString("email")));
-        user.setFirstName(claims.getAsString("given_name"));
-        user.setLastName(claims.getAsString("family_name"));
 
         return user;
     }
@@ -790,8 +795,6 @@ public class AuthenticationService extends BaseService implements Service {
 
         AccountModel user = new AccountModel();
         user.setEmail(emailAddress);
-        user.setFirstName(givenName);
-        user.setLastName(surname);
 
         return user;
     }

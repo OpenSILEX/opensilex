@@ -2135,8 +2135,8 @@ public class DataAPI {
         ListWithPagination<DataModel> result = dao.search(
                 user,
                 null,
-                Arrays.asList(facilityUri),
-                Arrays.asList(variableUri),
+                Collections.singletonList(facilityUri),
+                Collections.singletonList(variableUri),
                 null,
                 null,
                 (startDate != null) ? Instant.parse(startDate) : null,

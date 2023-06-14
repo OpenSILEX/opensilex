@@ -7,6 +7,7 @@ package org.opensilex.sparql.response;
 
         import java.net.URI;
         import java.util.List;
+        import java.util.Map;
 
 
 @JsonPropertyOrder({
@@ -18,22 +19,22 @@ public class ObjectMultiNamedResourceDTO {
     protected URI uri;
 
     @JsonProperty("prefLabels")
-    protected List<String> prefLabels;
+    protected Map<String,String> prefLabels;
 
     @JsonProperty("altLabels")
-    protected List<String> altLabels;
+    protected Map<String,String> altLabels;
 
     @JsonProperty("definitions")
-    protected List<String> definitions;
+    protected Map<String,String> definitions;
 
     public ObjectMultiNamedResourceDTO() {
     }
 
     public ObjectMultiNamedResourceDTO(SPARQLMultiNamedResourceModel<?> model) {
         this.uri = model.getUri();
-        this.prefLabels = model.getPrefLabels();
-        this.altLabels = model.getAltsLabels();
-        this.definitions = model.getDefinitions();
+        this.prefLabels = model.getPrefLabels().getAllTranslations();
+        this.altLabels = model.getAltsLabels().getAllTranslations();
+        this.definitions = model.getDefinitions().getAllTranslations();
     }
 
     public URI getUri() {
@@ -44,37 +45,30 @@ public class ObjectMultiNamedResourceDTO {
         this.uri = uri;
     }
 
-    public List<String> getPrefLabels() {
+    public Map<String,String> getPrefLabels() {
         return prefLabels;
     }
 
-    public void setPrefLabels(List<String> prefLabels) {
+    public void setPrefLabels(Map<String,String> prefLabels) {
         this.prefLabels = prefLabels;
     }
 
-    public List<String> getAltLabels() {
+    public Map<String,String> getAltLabels() {
         return altLabels;
     }
 
-    public void setAltLabels(List<String> altLabels) {
+    public void setAltLabels(Map<String,String> altLabels) {
         this.altLabels = altLabels;
     }
 
-    public List<String> getDefinitions() {
+    public Map<String,String> getDefinitions() {
         return definitions;
     }
 
-    public void setDefinitions(List<String> definitions) {
+    public void setDefinitions(Map<String,String> definitions) {
         this.definitions = definitions;
     }
 
-    //    public String getName() {
-//        return name;
-//    }
-//
-//    public void setName(String name) {
-//        this.name = name;
-//    }
 
 
 }

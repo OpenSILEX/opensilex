@@ -5,6 +5,7 @@ import org.opensilex.sparql.model.SPARQLMultiNamedResourceModel;
 import org.opensilex.sparql.response.ObjectMultiNamedResourceDTO;
 
 import java.util.List;
+import java.util.Map;
 
 
 public abstract class BaseMultiLabeledIdentifierGetDTO<T extends BaseMultiLabeledIdentifierModel<T>> extends ObjectMultiNamedResourceDTO {
@@ -16,10 +17,10 @@ public abstract class BaseMultiLabeledIdentifierGetDTO<T extends BaseMultiLabele
         super(model);
     }
 
-    public abstract List<String> getPrefLabels();
+    public abstract Map<String,String> getPrefLabels();
 
-    public abstract List<String> getAltLabels();
+    public abstract Map<String,String> getAltLabels();
 
-    public abstract List<String> getDefinitions();
+    public abstract Map<String,String> getDefinitions();
 
 }

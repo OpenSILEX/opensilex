@@ -12,43 +12,43 @@ import java.util.Map;
 public class MultiLabelDTO {
 
     @JsonProperty("prefLabels")
-    protected List<String> prefLabels;
+    protected Map<String,String> prefLabels;
 
     @JsonProperty("altLabels")
-    protected List<String> altLabels;
+    protected Map<String,List<String>> altLabels;
 
     @JsonProperty("definitions")
-    protected List<String> definitions;
+    protected Map<String,String> definitions;
 
     public MultiLabelDTO(){
 
-        this.prefLabels = new ArrayList<>();
-        this.altLabels = new ArrayList<>();
-        this.definitions = new ArrayList<>();
+        this.prefLabels = new HashMap<>();
+        this.altLabels = new HashMap<>();
+        this.definitions = new HashMap<>();
 
     }
 
-    public List<String> getPrefLabels() {
+    public Map<String,String> getPrefLabels() {
         return prefLabels;
     }
 
-    public void setPrefLabels(List<String> prefLabels) {
+    public void setPrefLabels(Map<String,String> prefLabels) {
         this.prefLabels = prefLabels;
     }
 
-    public void setAltLabels(List<String> altLabels) {
+    public void setAltLabels(Map<String,List<String>> altLabels) {
         this.altLabels = altLabels;
     }
 
-    public void setDefinitions(List<String> definitions) {
+    public void setDefinitions(Map<String,String> definitions) {
         this.definitions = definitions;
     }
 
-    public List<String> getAltLabels() {
+    public Map<String,List<String>> getAltLabels() {
         return altLabels;
     }
 
-    public List<String> getDefinitions() {
+    public Map<String,String> getDefinitions() {
         return definitions;
     }
 

@@ -3,48 +3,51 @@
 
     <ValidationObserver ref="validatorRef">
       <div class="row">
-          <div class="sub-form-container ">
-            <div class="languagesDropdown float-right">
+        <div class="sub-form-container ">
+          <div class="languagesDropdown float-right">
 
-              <b-dropdown
-                  id="langDropdown"
-                  variant="link"
-                  right
+            <b-dropdown
+                id="langDropdown"
+                variant="link"
+                right
+            >
+              <template v-slot:button-content>
+                <i class="icon ik ik-globe"></i>
+                <span class="hidden-phone">{{ getTranslationOfLanguage(i18nSubFormLabels.locale) }}</span>
+                <span class="show-phone">{{ getTranslationOfLanguage(i18nSubFormLabels.locale).substring(0, 2) }}</span>
+                <i class="ik ik-chevron-down"></i>
+              </template>
+
+              <b-dropdown-item
+                  v-for="item in languages"
+                  :key="`language-${item}`"
+                  href="#"
+                  @click.prevent="setLanguage(item)"
               >
-                <template v-slot:button-content>
-                  <i class="icon ik ik-globe"></i>
-                  <span class="hidden-phone">{{ getTranslationOfLanguage(i18nLabels.locale) }}</span>
-                  <span class="show-phone">{{ getTranslationOfLanguage(i18nLabels.locale).substring(0, 2) }}</span>
-                  <i class="ik ik-chevron-down"></i>
-                </template>
+                {{ getTranslationOfLanguage(item) }}
+              </b-dropdown-item>
+            </b-dropdown>
+          </div>
 
-                <b-dropdown-item
-                    v-for="item in languages"
-                    :key="`language-${item}`"
-                    href="#"
-                    @click.prevent="setLanguage(item)"
-                >
-                  {{ getTranslationOfLanguage(item) }}
-                </b-dropdown-item>
-              </b-dropdown>
-            </div>
-
-            <!-- PrefLabel -->
-            <!-- :value.sync="form.labelsDTO.prefLabel"-->
+          <!-- PrefLabel -->
+          <!-- :value.sync="form.labelsDTO.prefLabel"-->
 
 
-            <opensilex-InputForm
-                v-model="labelDTO.prefLabel"
-                :label="getTranslationOf('prefLabel')"
-                type="text"
-                :required="true"
-                class="wide-input"
+          <opensilex-InputForm
+              v-model="labelDTO.prefLabel"
+              :label="getTranslationOf('prefLabel')"
+              type="text"
+              :required="true"
+              class="wide-input"
 
-            ></opensilex-InputForm>
-            <!-- placeholder="EntityForm.prefLabel-placeholder"-->
-            <!-- AltLabels -->
+          ></opensilex-InputForm>
+          <!-- placeholder="EntityForm.prefLabel-placeholder"-->
+          <!-- AltLabels -->
 
-            <div class="form-group alt-labels d-flex align-items-center"  v-for="(altLabel, i) in labelDTO.altLabels" :key="i">              <opensilex-InputForm
+
+            <div class="form-group alt-labels d-flex align-items-center" v-for="(altLabel, i) in labelDTO.altLabels"
+                 :key="i">
+              <opensilex-InputForm
                   v-model="labelDTO.altLabels[i]"
                   :label="getTranslationOf('altLabel')"
                   type="text"
@@ -60,27 +63,29 @@
                   class="greenThemeColor ml-0 align-self-center"
                   icon="ik#ik-plus"
               ></opensilex-Button>
+
             </div>
 
-            <!-- Definition -->
-            <opensilex-TextAreaForm
-                :value.sync="labelDTO.definition"
-                :label="getTranslationOf('definition')"
-                type="text"
-                :required="true"
-                class="wide-input"
 
-            >
-            </opensilex-TextAreaForm>
-            <hr/>
+          <!-- Definition -->
+          <opensilex-TextAreaForm
+              :value.sync="labelDTO.definition"
+              :label="getTranslationOf('definition')"
+              type="text"
+              :required="true"
+              class="wide-input"
 
-              <opensilex-CreateButton
-                  @click="SaveAndRefillInAnotherLanguage"
-                  :label="getTranslationOf('saveAndRefillInAnotherLanguage')"
-                  class="createButton float-right"
-              ></opensilex-CreateButton>
+          >
+          </opensilex-TextAreaForm>
+          <hr/>
 
-          </div>
+          <opensilex-CreateButton
+              @click="SaveAndRefillInAnotherLanguage"
+              :label="getTranslationOf('saveAndRefillInAnotherLanguage')"
+              class="createButton float-right"
+          ></opensilex-CreateButton>
+
+        </div>
       </div>
     </ValidationObserver>
   </div>
@@ -106,7 +111,7 @@ export default class LabelCreationSubForm extends Vue {
 
   @Ref("validatorRef") readonly validatorRef!: any;
 
-  i18nLabels: VueI18n;
+  i18nSubFormLabels: VueI18n;
 
   languages: Array<string>;
 
@@ -116,7 +121,7 @@ export default class LabelCreationSubForm extends Vue {
     prefLabel: null,
     altLabels: [''],
     definition: null,
-    lang : this.$i18n.locale,
+    lang: this.$i18n.locale,
   }
 
 
@@ -139,74 +144,15 @@ export default class LabelCreationSubForm extends Vue {
 
   initAttributs() {
 
-    this.i18nLabels = new VueI18n({
-      locale: this.$i18n.locale, // Langue par défaut
-      messages: {
-        en: {
-          language: {
-            en: 'English',
-            fr: 'French',
-            es: 'Spanish', // Nouvelle traduction pour l'espagnol
-            it: 'Italian', // Nouvelle traduction pour l'italien
-          },
-          prefLabel: 'Preferred label',
-          altLabel: 'Alternative label',
-          altLabels: 'Alternative labels',
-          definition: 'Definition',
-          lang: 'Language',
-          saveAndRefillInAnotherLanguage: 'Save and refill in another language',
-        },
-        fr: {
-          language: {
-            en: 'Anglais',
-            fr: 'Français',
-            es: 'Espagnol', // Nouvelle traduction pour l'espagnol
-            it: 'Italien', // Nouvelle traduction pour l'italien
-          },
-          prefLabel: 'Label préféré',
-          altLabel: 'Label alternatif',
-          altLabels: 'Les labels alternatives',
-          definition: 'Définition',
-          lang: 'Langue',
-          saveAndRefillInAnotherLanguage: 'Enregistrer et re-remplir dans une autre langue',
-        },
-        es: {
-          language: {
-            en: 'Inglés',
-            fr: 'Francés',
-            es: 'Español',
-            it: 'Italiano',
-          },
-          prefLabel: 'Etiqueta preferida',
-          altLabel: 'Etiqueta alternativa',
-          altLabels: 'Etiquetas alternativas',
-          definition: 'Definición',
-          lang: 'Idioma',
-          saveAndRefillInAnotherLanguage: 'Guardar y rellenar en otro idioma',
-        },
-        it: {
-          language: {
-            en: 'Inglese',
-            fr: 'Francese',
-            es: 'Spagnolo',
-            it: 'Italiano',
-          },
-          prefLabel: 'Etichetta preferita',
-          altLabel: 'Etichetta alternativa',
-          altLabels: 'Etichette alternative',
-          definition: 'Definizione',
-          lang: 'Lingua',
-          saveAndRefillInAnotherLanguage: 'Salva e ricarica in un altra lingua',
-        },
-      },
-    });
+    this.initi18nSubFormLabels();
 
-    this.i18nLabels.locale = this.$i18n.locale;
+
+    this.i18nSubFormLabels.locale = this.$i18n.locale;
 
     this.labelDTOs = [];
     this.dataLoaded = false;
 
-    this.languages = Object.keys(this.i18nLabels.messages);
+    this.languages = Object.keys(this.i18nSubFormLabels.messages);
 
 
     // ca va pas
@@ -215,19 +161,43 @@ export default class LabelCreationSubForm extends Vue {
 
   }
 
-  getTranslationOf(element: string) {
+  initi18nSubFormLabels(){
+    const supportedLanguages = Object.keys(this.$i18n.messages);
 
-    return this.i18nLabels.t(element);
+    const i18nSubFormLabelsMessages = supportedLanguages.reduce((messages, lang) => {
+      messages[lang] = {
+        prefLabel: this.$i18n.t('Preferred label', lang),
+        altLabel: this.$i18n.t('altLabel', lang),
+        altLabels: this.$i18n.t('altLabels', lang),
+        definition: this.$i18n.t('definition', lang),
+        lang: this.$i18n.t('lang', lang),
+        saveAndRefillInAnotherLanguage: this.$i18n.t('saveAndRefillInAnotherLanguage', lang),
+      };
+      return messages;
+    }, {});
+
+    this.i18nSubFormLabels = new VueI18n({
+      locale: this.$i18n.locale, // Langue par défaut
+      messages: i18nSubFormLabelsMessages,
+    });
+  }
+
+  getTranslationOf(element: string) {
+    console.log("this.i18nSubFormLabels", JSON.stringify(this.i18nSubFormLabels));
+
+    return this.i18nSubFormLabels.t(element);
 
   }
 
   getTranslationOfLanguage(lang: string) {
 
-    return this.i18nLabels.messages[lang].language[lang];
+    console.log("this.i18nSubFormLabels", JSON.stringify(this.i18nSubFormLabels));
+
+    return this.i18nSubFormLabels.messages[lang].language[lang];
 
   }
 
-  getLabelDTO(){
+  getLabelDTO() {
     return this.labelDTO;
   }
 
@@ -250,22 +220,15 @@ export default class LabelCreationSubForm extends Vue {
           .catch((reject) => {
           });
     } else {
+
       if (result) {
 
         console.log("IsValidsubForm dans check else ", this.IsValidsubForm);
-
 
         this.IsValidsubForm = true;
 
       }
     }
-  }
-
-  updateLabelDTO(){
-
-    console.log(this.labelDTO.prefLabel);
-    this.labelDTO.lang = this.i18nLabels.locale;
-
   }
 
 
@@ -276,7 +239,7 @@ export default class LabelCreationSubForm extends Vue {
 
       if (this.IsValidsubForm) {
 
-        this.updateLabelDTO();
+        this.labelDTO.lang = this.i18nSubFormLabels.locale;
 
         this.labelDTOs.push(this.labelDTO);
         this.$emit('onSubmitSubForm', this.labelDTO);
@@ -284,22 +247,21 @@ export default class LabelCreationSubForm extends Vue {
         this.dataLoaded = true;
         this.$emit('dataLoadedSubForm', this.dataLoaded);
 
-
         const lowerCaseLang = (this.labelDTO.lang.toLowerCase()).substring(0, 2);
         const index = this.languages.indexOf(lowerCaseLang);
 
         if (index !== -1) {
-
+          console.log("this.languages", JSON.stringify(this.languages));
           this.languages.splice(index, 1);
           this.setLanguage(this.languages[0]);
-
+          console.log("this.languages", JSON.stringify(this.languages));
         }
 
         this.labelDTO = {
           prefLabel: null,
           altLabels: [''],
           definition: null,
-          lang: this.languages[0],
+          lang: this.i18nSubFormLabels.locale,
         }
 
 
@@ -319,13 +281,12 @@ export default class LabelCreationSubForm extends Vue {
 
   setLanguage(lang: string) {
 
-    this.i18nLabels.locale = lang;
-    this.labelDTO.lang = lang;
+    this.i18nSubFormLabels.locale = lang;
 
   }
 
   language() {
-    return this.i18nLabels;
+    return this.i18nSubFormLabels;
   }
 
   emitIsValidSubForm() {
@@ -342,7 +303,6 @@ export default class LabelCreationSubForm extends Vue {
       lang: null,
     };
 
-    this.altLabels = [''];
   }
 
 

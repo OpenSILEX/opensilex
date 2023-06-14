@@ -2,6 +2,8 @@ package org.opensilex.core.variable.dal;
 
 import org.apache.jena.vocabulary.SKOS;
 import org.opensilex.sparql.annotations.SPARQLProperty;
+import org.opensilex.sparql.model.SPARQLLabel;
+import org.opensilex.sparql.model.SPARQLMultiLabels;
 import org.opensilex.sparql.model.SPARQLMultiNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 
@@ -12,50 +14,55 @@ import java.util.Map;
 
 public class MultiLabelModel<T extends SPARQLMultiNamedResourceModel<T>> extends SPARQLMultiNamedResourceModel<T> {
 
+
+
     @SPARQLProperty(
             ontology = SKOS.class,
             property = "prefLabel"
     )
-    protected List<String> prefLabels;
+    protected SPARQLLabel prefLabels;
+
     @SPARQLProperty(
             ontology = SKOS.class,
             property = "altLabel"
     )
-    private List<String> altsLabels;
+    private SPARQLLabel altsLabels;
 
 
     @SPARQLProperty(
             ontology = SKOS.class,
             property = "definition"
     )
-    private List<String> definitions;
+    private SPARQLLabel definitions;
 
-    public List<String> getPrefLabels() {
+    public SPARQLLabel getPrefLabels() {
         return prefLabels;
     }
 
-    public void setPrefLabels(List<String> prefLabels) {
+    public void setPrefLabels(SPARQLLabel prefLabels) {
         this.prefLabels = prefLabels;
     }
 
-    public List<String> getAltsLabels() {
+    public SPARQLLabel getAltsLabels() {
         return altsLabels;
     }
 
-    public void setAltsLabels(List<String> altsLabels) {
+    public void setAltsLabels(SPARQLLabel altsLabels) {
         this.altsLabels = altsLabels;
     }
 
-    public List<String> getDefinitions() {
+    public SPARQLLabel getDefinitions() {
         return definitions;
     }
 
-    public void setDefinitions(List<String> definitions) {
+    public void setDefinitions(SPARQLLabel definitions) {
         this.definitions = definitions;
     }
+
     public MultiLabelModel(){
-        this.prefLabels = new ArrayList<>();
-        this.altsLabels = new ArrayList<>();
-        this.definitions = new ArrayList<>();
+        this.prefLabels = new SPARQLLabel();
+        this.altsLabels = new SPARQLLabel();
+        this.definitions = new SPARQLLabel();
+
     }
 }

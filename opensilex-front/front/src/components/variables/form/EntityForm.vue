@@ -49,7 +49,7 @@
     <div class="row">
 
       <div class="col">
-        <opensilex-LabelCreationSubForm ref="labelCreationSubForm" @onSubmitSubForm="getLabelDTOListFromSubForm"
+        <opensilex-LabelCreationSubForm ref="labelCreationSubForm" @onSubmitSubForm="getConfimedLabelsDTOFromSubForm"
         />
       </div>
     </div>
@@ -117,15 +117,13 @@ import LabelCreationSubForm from "./LabelCreationSubForm.vue";
 export default class EntityForm extends Vue {
 
   $opensilex: any;
+
   labelDTOList: Array<LabelDTO> = [];
-
-
 
   dataLoaded: boolean = false;
 
-  tableData: Array<string>;
-
   title = "";
+
   uriGenerated = true;
 
   isValidSubForm: boolean = false;
@@ -145,7 +143,7 @@ export default class EntityForm extends Vue {
   errorMsg: String = "";
 
   @PropSync("form")
-  entityDto: EntityCreationDTO ;
+  entityDto: EntityCreationDTO;
 
   @Ref("tableRef") readonly tableRef!: any;
 
@@ -160,33 +158,41 @@ export default class EntityForm extends Vue {
 
   initAttributes() {
 
-
   }
 
   beforeNext() {
 
-    console.log("this.labelCreationSubForm.getLabelDTO()",JSON.stringify(this.labelCreationSubForm.getLabelDTO()));
+    console.log("this.labelCreationSubForm.getLabelDTO()", JSON.stringify(this.labelCreationSubForm.getLabelDTO()));
     this.addLabelsToMultiLabelDTO(this.labelCreationSubForm.getLabelDTO());
 
   }
 
   addLabelsToMultiLabelDTO(labelDTO) {
-    this.entityDto.multiLabelDTO.prefLabels.push(labelDTO.prefLabel+'@'+labelDTO.lang.substring(0, 2));
-
-    for (let i = 0; i < labelDTO.altLabels.length; i++) {
-      const altLabel = labelDTO.altLabels[i] + '@' + labelDTO.lang.substring(0, 2);
-      this.entityDto.multiLabelDTO.altLabels.push(altLabel);
+    if (!this.entityDto.multiLabelDTO.altLabels) {
+      this.entityDto.multiLabelDTO.altLabels = {};
     }
 
-    this.entityDto.multiLabelDTO.definitions.push(labelDTO.definition+'@'+labelDTO.lang.substring(0, 2));
+    this.entityDto.multiLabelDTO.prefLabels[labelDTO.lang] = labelDTO.prefLabel;
+
+    if (!this.entityDto.multiLabelDTO.altLabels[labelDTO.lang]) {
+      this.entityDto.multiLabelDTO.altLabels[labelDTO.lang] = [];
+    }
+
+    for (let i = 0; i < labelDTO.altLabels.length; i++) {
+      this.entityDto.multiLabelDTO.altLabels[labelDTO.lang].push(labelDTO.altLabels[i]);
+    }
+
+    this.entityDto.multiLabelDTO.definitions[labelDTO.lang] = labelDTO.definition;
+
+    console.log("this.entityDto.multiLabelDTO", JSON.stringify(this.entityDto.multiLabelDTO));
   }
 
 
-  getLabelDTOListFromSubForm(labelDTO: LabelDTO) {
+  getConfimedLabelsDTOFromSubForm(labelDTO: LabelDTO) {
 
     this.labelDTOList.push(labelDTO);
 
-    // this.addLabelsToMultiLabelDTO(LabelDTO);
+    this.addLabelsToMultiLabelDTO(labelDTO);
 
     this.dataLoaded = true;
 
@@ -221,7 +227,6 @@ export default class EntityForm extends Vue {
   }
 
 
-
   externalOntologiesRefs: any[] = ExternalOntologies.getExternalOntologiesReferences(EntityCreate.selectedOntologies);
 
   handleErrorMessage(errorMsg: string) {
@@ -250,20 +255,6 @@ export default class EntityForm extends Vue {
     return this.validatorRef.reset();
 
   }
-
-  // validate() {
-  //   return this.validatorRef.validate();
-  // }
-
-  // validate() {
-  //
-  //   // console.log("this.validatorRef",this.validatorRef);
-  //
-  //   if (this.validatorRef || typeof this.validatorRef.validate === "function") {
-  //
-  //     return this.validatorRef.validate() || this.labelDTOList.length > 0;
-  //   }
-  //   return false;  }
 
   validate(): Promise<boolean> {
     return new Promise((resolve) => {

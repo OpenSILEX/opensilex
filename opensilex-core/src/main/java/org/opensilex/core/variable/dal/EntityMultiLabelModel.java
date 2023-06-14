@@ -35,12 +35,11 @@ public class EntityMultiLabelModel extends BaseMultiLabeledIdentifierModel<Entit
 
     }
 
-
     public String[] getInstancePathSegments(EntityMultiLabelModel instance) {
         System.out.println(instance);
         return new String[]{
                 "entity",
-                instance.getAltsLabels().get(0)
+                instance.getPrefLabels().getTranslations().values().stream().findAny().get()
         };
     }
 

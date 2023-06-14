@@ -6,6 +6,7 @@ import org.opensilex.core.variable.dal.EntityMultiLabelModel;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 
 
 public class EntityGetDTO extends BaseMultiLabeledIdentifierGetDTO<EntityMultiLabelModel> {
@@ -24,25 +25,19 @@ public class EntityGetDTO extends BaseMultiLabeledIdentifierGetDTO<EntityMultiLa
     }
 
     @Override
-    public List<String> getPrefLabels() {
+    public Map<String,String> getPrefLabels() {
         return prefLabels;
     }
 
     @Override
-    public List<String> getAltLabels() {
+    public Map<String,String> getAltLabels() {
         return altLabels;
     }
 
     @Override
-    public List<String> getDefinitions() {
+    public Map<String,String> getDefinitions() {
         return definitions;
     }
-
-//    @Override
-//    @ApiModelProperty(example = "Plant")
-//    public String getName() {
-//        return name;
-//    }
 
 
 

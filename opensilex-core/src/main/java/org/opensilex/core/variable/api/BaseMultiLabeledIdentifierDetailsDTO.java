@@ -25,12 +25,13 @@ public abstract class BaseMultiLabeledIdentifierDetailsDTO<T extends BaseMultiLa
     }
 
     protected BaseMultiLabeledIdentifierDetailsDTO(T model){
+
         uri = model.getUri();
         this.multiLabelDTO = new MultiLabelDTO();
         System.out.println(this.multiLabelDTO);
-        multiLabelDTO.setPrefLabels(model.getPrefLabels());
-        multiLabelDTO.setAltLabels(model.getAltsLabels());
-        multiLabelDTO.setDefinitions(model.getDefinitions());
+        multiLabelDTO.setPrefLabels(model.getPrefLabels().getAllTranslations());
+        multiLabelDTO.setAltLabels(model.getAltsLabels().getAllAltLabelsTranslations());
+        multiLabelDTO.setDefinitions(model.getDefinitions().getAllTranslations());
         setLastUpdateTime(model.getLastUpdateTime());
 
         setSkosReferencesFromModel(model);
@@ -45,7 +46,6 @@ public abstract class BaseMultiLabeledIdentifierDetailsDTO<T extends BaseMultiLa
 
     @JsonProperty("MultiLabelDTO")
     protected MultiLabelDTO multiLabelDTO;
-
 
     @JsonProperty("from_shared_resource_instance")
     protected SharedResourceInstanceDTO fromSharedResourceInstance;
@@ -86,12 +86,12 @@ public abstract class BaseMultiLabeledIdentifierDetailsDTO<T extends BaseMultiLa
     }
 
     protected void setBasePropertiesToModel(T model) {
+
         setSkosReferencesToModel(model);
         model.setUri(this.getUri());
-        model.setPrefLabels(this.multiLabelDTO.getPrefLabels());
-        model.setAltsLabels(this.multiLabelDTO.getAltLabels());
-        model.setDefinitions(this.multiLabelDTO.getDefinitions());
-
+        model.getPrefLabels().addAllTranslations(this.multiLabelDTO.getPrefLabels());
+        model.getAltsLabels().addAllAltLabelsTranslations(this.multiLabelDTO.getAltLabels());
+        model.getDefinitions().addAllTranslations(this.multiLabelDTO.getDefinitions());
 
     }
 

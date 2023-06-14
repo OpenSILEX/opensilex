@@ -98,10 +98,10 @@ export default class EntityCreate extends Vue {
 
   getEmptyMultiLabelDTO(): MultiLabelDTO {
     return {
-      prefLabels: [],
-      altLabels: [],
-      definitions: []
-    }
+      prefLabels: {},
+      altLabels: {},
+      definitions: {}
+    };
   }
 
 

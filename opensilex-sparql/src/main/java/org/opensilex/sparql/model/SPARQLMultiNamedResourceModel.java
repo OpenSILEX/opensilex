@@ -6,6 +6,7 @@ import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.uri.generation.ClassURIGenerator;
 
 import java.util.List;
+import java.util.Map;
 
 public class SPARQLMultiNamedResourceModel <T extends SPARQLMultiNamedResourceModel> extends SPARQLResourceModel implements ClassURIGenerator<T> {
 
@@ -13,43 +14,43 @@ public class SPARQLMultiNamedResourceModel <T extends SPARQLMultiNamedResourceMo
             ontology = SKOS.class,
             property = "prefLabel"
     )
-    protected List<String> prefLabels;
+    protected SPARQLLabel prefLabels;
     @SPARQLProperty(
             ontology = SKOS.class,
             property = "altLabel"
     )
-    private List<String> altsLabels;
+    private SPARQLLabel altsLabels;
 
 
     @SPARQLProperty(
             ontology = SKOS.class,
             property = "definition"
     )
-    private List<String> definitions;
+    private SPARQLLabel definitions;
     public static final String NAME_FIELD = "name";
 
 
-    public List<String> getPrefLabels() {
+    public SPARQLLabel getPrefLabels() {
         return prefLabels;
     }
 
-    public void setPrefLabels(List<String> prefLabels) {
+    public void setPrefLabels(SPARQLLabel prefLabels) {
         this.prefLabels = prefLabels;
     }
 
-    public List<String> getAltsLabels() {
+    public SPARQLLabel getAltsLabels() {
         return altsLabels;
     }
 
-    public void setAltsLabels(List<String> altsLabels) {
+    public void setAltsLabels(SPARQLLabel altsLabels) {
         this.altsLabels = altsLabels;
     }
 
-    public List<String> getDefinitions() {
+    public SPARQLLabel getDefinitions() {
         return definitions;
     }
 
-    public void setDefinitions(List<String> definitions) {
+    public void setDefinitions(SPARQLLabel definitions) {
         this.definitions = definitions;
     }
 

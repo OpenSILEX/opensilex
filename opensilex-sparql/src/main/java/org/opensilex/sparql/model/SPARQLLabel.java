@@ -9,6 +9,7 @@ import org.apache.commons.collections4.MapUtils;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -22,9 +23,14 @@ public class SPARQLLabel {
     private String defaultLang;
 
     private Map<String, String> translations;
+    private Map<String, List<String>> translationsOfAltLabels;
+
 
     public SPARQLLabel() {
+
         translations = new HashMap<>();
+        translationsOfAltLabels = new HashMap<>();
+
     }
 
     public SPARQLLabel(String value, String lang) {
@@ -69,12 +75,27 @@ public class SPARQLLabel {
         this.translations = translations;
     }
 
+    public Map<String, List<String>> getTranslationsOfAltLabels() {
+        return translationsOfAltLabels;
+    }
+
+    public void setTranslationsOfAltLabels(Map<String, List<String>> translationsOfAltLabels) {
+        this.translationsOfAltLabels = translationsOfAltLabels;
+    }
+
     public Map<String, String> getAllTranslations() {
         Map<String, String> allTranslations = new HashMap<>();
         allTranslations.putAll(translations);
         if (defaultLang != null && defaultValue != null) {
             allTranslations.put(defaultLang, defaultValue);
         }
+        return allTranslations;
+    }
+
+    public Map<String, List<String>> getAllAltLabelsTranslations() {
+        Map<String, List<String>> allTranslations = new HashMap<>();
+        allTranslations.putAll(translationsOfAltLabels);
+
         return allTranslations;
     }
 
@@ -85,6 +106,10 @@ public class SPARQLLabel {
     public void addAllTranslations(Map<String, String> labelTranslations) {
         translations.putAll(labelTranslations);
     }
+    public void addAllAltLabelsTranslations(Map<String, List<String>> labelTranslations) {
+        translationsOfAltLabels.putAll(labelTranslations);
+    }
+
 
     @Override
     public String toString() {

@@ -747,6 +747,22 @@ class SPARQLClassQueryBuilder {
                     quad = new Quad(graph, triple);
                     tripleHandler.accept(quad, field);
                 }
+                for (Map.Entry<String, List<String>> translation : label.getTranslationsOfAltLabels().entrySet()) {
+                    String language = translation.getKey();
+                    List<String> translationValues = translation.getValue();
+
+                    for (String translationValue : translationValues) {
+                        Node translationNode = NodeFactory.createLiteral(translationValue, language);
+                        if (analyzer.isReverseRelation(field)) {
+                            triple = new Triple(translationNode, property.asNode(), uriNode);
+                        } else {
+                            triple = new Triple(uriNode, property.asNode(), translationNode);
+                        }
+                        quad = new Quad(graph, triple);
+                        tripleHandler.accept(quad, field);
+                    }
+                }
+
             }
         }
 

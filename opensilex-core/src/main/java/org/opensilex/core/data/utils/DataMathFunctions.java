@@ -1,13 +1,12 @@
 package org.opensilex.core.data.utils;
 
-import org.opensilex.core.data.api.DataSimpleGetDTO;
+import org.opensilex.core.data.api.DataComputedGetDTO;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static org.opensilex.core.data.utils.LineSimplification.*;
+import java.util.stream.DoubleStream;
 
 public class DataMathFunctions {
 
@@ -17,30 +16,34 @@ public class DataMathFunctions {
      * @param dataSerie the data set
      * @return the serie of median per hour
      */
-    public static List<DataSimpleGetDTO> computeMedianPerHour(List<DataSimpleGetDTO> dataSerie) {
-        List<DataSimpleGetDTO> mediansPerHour = new ArrayList<>();
+    public static List<DataComputedGetDTO> computeMedianPerHour(List<DataComputedGetDTO> dataSerie) {
+        List<DataComputedGetDTO> mediansPerHour = new ArrayList<>();
 
-        Map<Long, List<DataSimpleGetDTO>> dataPerHourMap = dataSerie.stream()
-                .sorted(Comparator.comparing(DataSimpleGetDTO::getDateTime))
+        Map<Long, List<DataComputedGetDTO>> dataPerHourMap = dataSerie.stream()
+                .sorted(Comparator.comparing(DataComputedGetDTO::getDateTime))
                 .collect(Collectors.groupingBy(d->(d.getDateTime().getEpochSecond()/3600),
                         LinkedHashMap::new,
                         Collectors.toList()));
 
-        for (Map.Entry<Long, List<DataSimpleGetDTO>> entry : dataPerHourMap.entrySet()) {
+        for (Map.Entry<Long, List<DataComputedGetDTO>> entry : dataPerHourMap.entrySet()) {
             Instant dateTime = Instant.ofEpochSecond(entry.getKey()*3600).plus(30, ChronoUnit.MINUTES);
 
-            List<Double> data = entry.getValue().stream().map(d->(Double.valueOf(d.getValue().toString()))).collect(Collectors.toList());
-            Collections.sort(data);
+            int size = entry.getValue().size();
+            // Stream of sorted data values
+            DoubleStream sortedValues = entry.getValue().stream()
+                    .mapToDouble(d -> ((Number) d.getValue()).doubleValue())
+                    .sorted();
+            // Depending on the odd/even size, either a stream of the only or both middle values
+            DoubleStream middleValues = (size % 2 == 0)
+                    ? sortedValues.skip(size / 2 - 1).limit(2)
+                    : sortedValues.skip(size / 2).limit(1);
+            // Average of the middle value(s) gives the median
+            double median = middleValues.average()
+                    .orElse(Double.NaN);
 
-            double median;
-            if (data.size() % 2 == 0)
-                median = (data.get(data.size()/2) + data.get(data.size()/2 - 1)) / 2;
-            else
-                median = data.get(data.size()/2);
-
-            DataSimpleGetDTO medianData = new DataSimpleGetDTO(entry.getValue().get(0));
+            DataComputedGetDTO medianData = new DataComputedGetDTO();
             medianData.setValue(median);
-            medianData.updateDate(dateTime);
+            medianData.setDateTime(dateTime);
 
             mediansPerHour.add(medianData);
         }
@@ -49,27 +52,30 @@ public class DataMathFunctions {
     }
 
     /**
-     * Compute the average per hour for a given data set.
+     * Compute the mean per day for a given data set.
      *
      * @param dataSerie the data set
      * @return a
      */
-    public static List<DataSimpleGetDTO> computeAveragePerHour(List<DataSimpleGetDTO> dataSerie) {
-        List<DataSimpleGetDTO> averagePerHour = new ArrayList<>();
+    public static List<DataComputedGetDTO> computeAveragePerDay(List<DataComputedGetDTO> dataSerie) {
+        List<DataComputedGetDTO> averagePerHour = new ArrayList<>();
 
-        Map<Long, List<DataSimpleGetDTO>> dataPerHourMap = dataSerie.stream()
-                .sorted(Comparator.comparing(DataSimpleGetDTO::getDateTime))
-                .collect(Collectors.groupingBy(d->(d.getDateTime().getEpochSecond()/3600),
+        Map<Long, List<DataComputedGetDTO>> dataPerHourMap = dataSerie.stream()
+                .sorted(Comparator.comparing(DataComputedGetDTO::getDateTime))
+                .collect(Collectors.groupingBy(d->(d.getDateTime().getEpochSecond()/(3600 * 24)),
                         LinkedHashMap::new,
                         Collectors.toList()));
 
-        for (Map.Entry<Long, List<DataSimpleGetDTO>> entry : dataPerHourMap.entrySet()) {
-            Instant dateTime = Instant.ofEpochSecond(entry.getKey()*3600).plus(30, ChronoUnit.MINUTES);
-            double avg = entry.getValue().stream().mapToDouble(d->(Double.valueOf(d.getValue().toString()))).average().orElse(Double.NaN);
+        for (Map.Entry<Long, List<DataComputedGetDTO>> entry : dataPerHourMap.entrySet()) {
+            Instant dateTime = Instant.ofEpochSecond(entry.getKey()*3600*24).plus(12, ChronoUnit.HOURS);
+            double avg = entry.getValue().stream()
+                    .mapToDouble(d -> ((Number) d.getValue()).doubleValue())
+                    .average()
+                    .orElse(Double.NaN);
 
-            DataSimpleGetDTO averageData = new DataSimpleGetDTO(entry.getValue().get(0));
+            DataComputedGetDTO averageData = new DataComputedGetDTO();
             averageData.setValue(avg);
-            averageData.updateDate(dateTime);
+            averageData.setDateTime(dateTime);
 
             averagePerHour.add(averageData);
         }
@@ -77,33 +83,4 @@ public class DataMathFunctions {
         return averagePerHour;
     }
 
-    public static List<DataSimpleGetDTO> applyRamerDouglasPeucker(List<DataSimpleGetDTO> dataSerie, double epsilon) {
-
-        List<DataSimpleGetDTO> resultData = new ArrayList();
-        ramerDouglasPeucker(dataSerie, epsilon, resultData);
-
-        return resultData;
-    }
-
-    public static List<DataSimpleGetDTO> applyGaussianSmooth(List<DataSimpleGetDTO> dataSerie, int windowLength) {
-
-        List<DataSimpleGetDTO> resultData = new ArrayList();
-
-        int offset = (int) Math.floor(windowLength/2);
-
-        for (int i = offset; i < (dataSerie.size() - offset); ++i) {
-            List<DataSimpleGetDTO> windowList = dataSerie.subList(i - offset, i + offset);
-
-            double average = windowList.stream()
-                    .mapToDouble(d -> (Double.valueOf(d.getValue().toString())))
-                    .average()
-                    .orElse(Double.NaN);
-
-            DataSimpleGetDTO newData = new DataSimpleGetDTO(dataSerie.get(i));
-            newData.setValue(average);
-            resultData.add(newData);
-        }
-
-        return resultData;
-    }
 }

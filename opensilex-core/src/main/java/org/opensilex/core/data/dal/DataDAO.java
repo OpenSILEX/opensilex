@@ -1554,8 +1554,9 @@ public class DataDAO {
 
         Set<DataModel> results = nosql.aggregate(DataDAO.DATA_COLLECTION_NAME, aggregations, DataModel.class);
 
-        DataModel lastData = results.stream().findFirst().orElse(null);
+        return results.stream().findFirst()
+                .map(DataComputedGetDTO::getDtoFromModel)
+                .orElse(null);
 
-        return (lastData != null) ? DataComputedGetDTO.getDtoFromModel(lastData) : null;
     }
 }

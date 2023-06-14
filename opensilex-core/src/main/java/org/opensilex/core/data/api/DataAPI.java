@@ -750,27 +750,6 @@ public class DataAPI {
         return deviceToReturn;
     }
 
-    private List<DeviceGetDTO> checkAndReturnDevicesFromDataProvenance(DataProvenanceModel provenance, DeviceDAO deviceDAO)
-            throws Exception {
-        List<DeviceGetDTO> devices = new ArrayList<>();
-
-        if(provenance.getProvWasAssociatedWith() != null && !provenance.getProvWasAssociatedWith().isEmpty()){
-            for (ProvEntityModel agent : provenance.getProvWasAssociatedWith()) {
-
-                if(agent.getType() == null) {
-                    throw new ProvenanceAgentTypeException(agent.getUri().toString());
-                }
-
-                if (deviceDAO.isDeviceType(agent.getType())) {
-                    DeviceModel device = deviceDAO.getDeviceByURI(agent.getUri(), user);
-                    devices.add(DeviceGetDTO.getDTOFromModel(device));
-                }
-            }
-        }
-
-        return devices;
-    }
-
     /** 
      * check and return Device from Data Provenance if no ambiguity
      * Exception if two devices as provenance agent
@@ -2148,7 +2127,10 @@ public class DataAPI {
         ProvenanceDAO provDAO = new ProvenanceDAO(nosql, sparql);
         VariableDAO variableDAO = new VariableDAO(sparql, nosql, fs);
 
-        /// Search data
+        Instant start, end;
+
+        VariableDetailsDTO variable = new VariableDetailsDTO(variableDAO.get(variableUri));
+        DataVariableSeriesGetDTO dto = new DataVariableSeriesGetDTO(variable);
 
         ListWithPagination<DataModel> result = dao.search(
                 user,
@@ -2173,8 +2155,15 @@ public class DataAPI {
                 .map((d) -> DataSimpleGetDTO.getDtoFromModel(d))
                 .collect(Collectors.toList());
 
-        VariableDetailsDTO variable = new VariableDetailsDTO(variableDAO.get(variableUri));
-        DataVariableSeriesGetDTO dto = new DataVariableSeriesGetDTO(variable);
+        start = Instant.now();
+        List<DataComputedModel> dataModels = dataDAO.computeAllMediansPerHour(
+                user,
+                facilityUri,
+                variableUri,
+                (startDate != null) ? Instant.parse(startDate) : null,
+                (endDate != null) ? Instant.parse(endDate) : Instant.now());
+        end = Instant.now();
+        LOGGER.debug(dataModels.size() + " data retrieved from mongo : " + Long.toString(Duration.between(start, end).toMillis()) + " milliseconds elapsed");
 
         /// Compute median series for each provenance
 
@@ -2183,8 +2172,10 @@ public class DataAPI {
         List<DataSerieGetDTO> dataSeriesDTOs = new ArrayList<>();
         List<DataSimpleGetDTO> medians = new ArrayList<>();
 
-        provenancesMap = dataModels.stream().collect(Collectors.groupingBy(DataModel::getProvenance));
-        for (Map.Entry<DataProvenanceModel, List<DataModel>> entryProv : provenancesMap.entrySet()) {
+        start = Instant.now();
+        provenancesMap = dataModels.stream().collect(Collectors.groupingBy(DataComputedModel::getProvenance));
+        end = Instant.now();
+        LOGGER.debug("Group by provenances done in " + Long.toString(Duration.between(start, end).toMillis()) + " milliseconds");
 
             List<DataSimpleGetDTO> data = entryProv.getValue()
                     .stream()
@@ -2256,47 +2247,13 @@ public class DataAPI {
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=asc") @QueryParam("order_by") List<OrderBy> orderByList
     ) throws Exception {
 
-        DataDAO dao = new DataDAO(nosql, sparql, fs);
-        VariableDAO variableDAO = new VariableDAO(sparql, nosql, fs);
-
-        /// Search data
-
-        ListWithPagination<DataModel> result = dao.search(
-                user,
-                null,
-                Arrays.asList(facilityUri),
-                Arrays.asList(variableUri),
-                null,
-                null,
-                (startDate != null) ? Instant.parse(startDate) : null,
-                (endDate != null) ? Instant.parse(endDate) : Instant.now(),
-                null,
-                null,
-                null,
-                null,
-                orderByList,
-                0,
-                0);
-
-        List<DataModel> dataModels = result.getList();
-        List<DataSimpleGetDTO> dataSimpleGetDTOs = dataModels
-                .stream()
-                .map((d) -> DataSimpleGetDTO.getDtoFromModel(d))
-                .collect(Collectors.toList());
-
-        VariableDetailsDTO variable = new VariableDetailsDTO(variableDAO.get(variableUri));
-        DataVariableSeriesGetDTO dto = new DataVariableSeriesGetDTO(variable);
-
-        /// Compute median series for each provenance
-
-        Map<DataProvenanceModel, List<DataModel>> provenancesMap;
-
-        List<DataSimpleGetDTO> medians = new ArrayList<>();
-
-        provenancesMap = dataModels.stream().collect(Collectors.groupingBy(DataModel::getProvenance));
-        for (Map.Entry<DataProvenanceModel, List<DataModel>> entryProv : provenancesMap.entrySet()) {
-
-            List<DataSimpleGetDTO> data = entryProv.getValue()
+            List<DataComputedModel> averageSerie = dataDAO.computeAllMeanPerDay(
+                    user,
+                    facilityUri,
+                    variableUri,
+                    (startDate != null) ? Instant.parse(startDate) : null,
+                    (endDate != null) ? Instant.parse(endDate) : Instant.now());
+            List<DataComputedGetDTO> averageSerieDtos = averageSerie
                     .stream()
                     .map((d) -> DataSimpleGetDTO.getDtoFromModel(d))
                     .collect(Collectors.toList());

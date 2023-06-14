@@ -9,7 +9,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.annotations.ApiModel;
-import org.geojson.GeoJsonObject;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
@@ -29,7 +28,7 @@ import java.util.stream.Collectors;
  * @author vince
  */
 @ApiModel
-@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "organizations", "sites", "address", "geometry", "variableGroups"})
+@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "organizations", "sites", "address", "variableGroups"})
 public class FacilityGetDTO extends FacilityDTO {
 
     @JsonProperty("organizations")
@@ -37,9 +36,6 @@ public class FacilityGetDTO extends FacilityDTO {
 
     @JsonProperty("sites")
     protected List<NamedResourceDTO<SiteModel>> sites;
-
-    @JsonProperty("geometry")
-    protected GeoJsonObject geometry;
 
     @JsonProperty("variableGroups")
     protected List<NamedResourceDTO<VariablesGroupModel>> variablesGroups;
@@ -59,14 +55,6 @@ public class FacilityGetDTO extends FacilityDTO {
 
     public void setSites(List<NamedResourceDTO<SiteModel>> sites) {
         this.sites = sites;
-    }
-
-    public GeoJsonObject getGeometry() {
-        return geometry;
-    }
-
-    public void setGeometry(GeoJsonObject geometry) {
-        this.geometry = geometry;
     }
 
     public List<NamedResourceDTO<VariablesGroupModel>> getVariablesGroups() {

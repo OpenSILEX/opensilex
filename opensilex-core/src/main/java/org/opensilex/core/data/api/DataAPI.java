@@ -2076,7 +2076,7 @@ public class DataAPI {
      * Create a DataSimpleProvenanceGetDTO with uri, name and rdf type from a data provenance model.
      * @detail
      * Analyze the provenance from the data model and do as follows:
-     *  if there is one agent (device or operator), retreive the uri and name of the agent
+     *  if there is one agent (device or operator), retrieve the uri and name of the agent
      *  otherwise, take the uri and name from the provenance model
      * @param dataProvModel
      * @return a simple data provenance with uri and name attributes

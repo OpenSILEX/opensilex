@@ -191,7 +191,7 @@ export default class UserList extends Vue {
     if (userRow.last_name && userRow.first_name) {
       return userRow.last_name + ' ' + userRow.first_name
     }
-    return "any"
+    return null
   }
 
   displayEnableButton(userRow) {

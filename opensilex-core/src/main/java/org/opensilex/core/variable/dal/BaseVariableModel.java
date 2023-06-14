@@ -57,13 +57,15 @@ public abstract class BaseVariableModel<T extends SPARQLNamedResourceModel<T>> e
 
     @SPARQLProperty(
             ontology = Oeso.class,
-            property = "fromSharedResourceInstance"
+            property = "fromSharedResourceInstance",
+            ignoreUpdateIfNull = true
     )
     private URI fromSharedResourceInstance;
 
     @SPARQLProperty(
             ontology = DCTerms.class,
-            property = "modified"
+            property = "modified",
+            ignoreUpdateIfNull = true
     )
     private OffsetDateTime lastUpdateTime;
 

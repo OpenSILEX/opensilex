@@ -2155,8 +2155,8 @@ public class DataAPI {
         DataComputedGetDTO lastData = dataDAO.getLastDataFound(
                 user,
                 null,
-                Arrays.asList(facilityUri),
-                Arrays.asList(variableUri),
+                Collections.singletonList(facilityUri),
+                Collections.singletonList(variableUri),
                 null,
                 null,
                 null,

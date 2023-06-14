@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.security.person.api.PersonDTO;
 
 import java.net.URI;
 import java.util.List;
@@ -94,4 +95,13 @@ public class UserGetDTO extends UserDTO {
         return dto;
     }
 
+    public PersonDTO toPersonDTO() {
+        PersonDTO personDTO = new PersonDTO();
+        personDTO.setFirstName(firstName);
+        personDTO.setLastName(lastName);
+        personDTO.setEmail(email);
+        personDTO.setAccount(uri);
+
+        return personDTO;
+    }
 }

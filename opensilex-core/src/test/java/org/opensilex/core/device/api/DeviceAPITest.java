@@ -35,6 +35,7 @@ import org.opensilex.core.variable.api.VariableApiTest;
 import org.opensilex.core.variable.api.VariableCreationDTO;
 import org.opensilex.core.variable.dal.*;
 import org.opensilex.security.account.dal.AccountDAO;
+import org.opensilex.security.person.api.PersonDTO;
 import org.opensilex.security.person.dal.PersonDAO;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.SingleObjectResponse;
@@ -103,7 +104,12 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
     @Test
     public void create_with_personInCharge() throws Exception {
         PersonDAO personDAO = new PersonDAO(getSparqlService());
-        URI personURI = personDAO.create(null, "test", "test", "test@test.test", null).getUri();
+
+        PersonDTO personDTO = new PersonDTO();
+        personDTO.setFirstName("test");
+        personDTO.setLastName("test");
+        personDTO.setEmail("test@test.test");
+        URI personURI = personDAO.create(personDTO).getUri();
 
         DeviceCreationDTO deviceDTO = getCreationDto();
         deviceDTO.setPersonInChargeURI(personURI);

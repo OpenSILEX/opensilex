@@ -30,24 +30,26 @@ import static org.junit.Assert.*;
 public class PersonAPITest extends AbstractSecurityIntegrationTest {
 
     protected static String path = "security/persons";
-    public static String createPath = path ;
-    protected static String updatePath = path ;
+    public static String createPath = path;
+    protected static String updatePath = path;
     protected static String getPath = path + "/{uri}";
     public static String deletePath = path + "/{uri}";
-    protected String searchPath = path ;
+    protected String searchPath = path;
 
     public static PersonDTO getDefaultDTO() throws URISyntaxException {
-        PersonDTO  personDTO = new PersonDTO();
+        PersonDTO personDTO = new PersonDTO();
         personDTO.setUri(new URI("http://opensilex.dev/id/user/default.default"));
         personDTO.setFirstName("Default");
         personDTO.setLastName("DEFAULT");
         personDTO.setEmail("default@inrae.fr");
+        personDTO.setOrganization("MISTEA");
+        personDTO.setPhoneNumber("+33--142-75-90-00");
 
         return personDTO;
     }
 
     protected PersonDTO get2ndDefaultDTO() throws URISyntaxException {
-        PersonDTO  personDTO = new PersonDTO();
+        PersonDTO personDTO = new PersonDTO();
         personDTO.setUri(new URI("http://opensilex.dev/id/user/default2.default2"));
         personDTO.setFirstName("Default2");
         personDTO.setLastName("DEFAULT2");
@@ -90,6 +92,33 @@ public class PersonAPITest extends AbstractSecurityIntegrationTest {
     }
 
     @Test
+    public void createWithOrcidChangeTheUri() throws Exception {
+        URI orcid = new URI("https://orcid.org/0009-0006-6636-4715");
+
+        PersonDTO personWithOrcid = getDefaultDTO();
+        personWithOrcid.setUri(new URI("http://should-be-overwritten"));
+        personWithOrcid.setOrcid(orcid);
+
+        Response result = getJsonPostResponseAsAdmin(target(createPath), personWithOrcid);
+        assertEquals(Response.Status.CREATED.getStatusCode(), result.getStatus());
+
+        URI createdPersonURI = extractUriFromResponse(result);
+
+        assertEquals(orcid, createdPersonURI);
+    }
+
+    @Test
+    public void createWithOrcidBadSyntax()throws Exception {
+        URI orcid = new URI("http://orcid.org");
+
+        PersonDTO personWithOrcid = getDefaultDTO();
+        personWithOrcid.setOrcid(orcid);
+
+        Response result = getJsonPostResponseAsAdmin(target(createPath), personWithOrcid);
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), result.getStatus());
+    }
+
+    @Test
     public void createNeedsAtLeastFirstAndLastName() throws Exception {
         PersonDTO withoutLast = new PersonDTO();
         withoutLast.setUri(new URI("http://opensilex.dev/id/user/default.default"));
@@ -115,18 +144,20 @@ public class PersonAPITest extends AbstractSecurityIntegrationTest {
         getJsonPostResponseAsAdmin(target(createPath), person2);
 
         //call to get service and extract the result
-            //extract first result
+        //extract first result
         Response getResult = getJsonGetByUriResponseAsAdmin(target(getPath), person1.getUri().toString());
         assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
         JsonNode node = getResult.readEntity(JsonNode.class);
-        SingleObjectResponse<PersonDTO> getObjectResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<PersonDTO>>() {});
+        SingleObjectResponse<PersonDTO> getObjectResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<PersonDTO>>() {
+        });
         PersonDTO resultPerson1 = getObjectResponse.getResult();
 
-            //extract second result
+        //extract second result
         getResult = getJsonGetByUriResponseAsAdmin(target(getPath), person2.getUri().toString());
         assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
         node = getResult.readEntity(JsonNode.class);
-        getObjectResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<PersonDTO>>() {});
+        getObjectResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<PersonDTO>>() {
+        });
         PersonDTO resultPerson2 = getObjectResponse.getResult();
 
         //compare dtos to ensure we've got the good person
@@ -241,7 +272,8 @@ public class PersonAPITest extends AbstractSecurityIntegrationTest {
         //extract the dto after data was updated
         Response getResult = getJsonGetByUriResponseAsAdmin(target(getPath), dtoUpdate.getUri().toString());
         JsonNode node = getResult.readEntity(JsonNode.class);
-        SingleObjectResponse<PersonDTO> getObjectResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<PersonDTO>>() {});
+        SingleObjectResponse<PersonDTO> getObjectResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<PersonDTO>>() {
+        });
         PersonDTO resultDto = getObjectResponse.getResult();
 
         //compare dtos to ensure update worked
@@ -249,7 +281,7 @@ public class PersonAPITest extends AbstractSecurityIntegrationTest {
     }
 
     @Test
-    public void updateDontChangeDatabaseIfURIDoesntExist() throws Exception{
+    public void updateDontChangeDatabaseIfURIDoesntExist() throws Exception {
         //trying update someone who doesn't exist in the dataBase
         PersonDTO dtoUpdate = getDefaultDTO();
 
@@ -259,6 +291,67 @@ public class PersonAPITest extends AbstractSecurityIntegrationTest {
         //verify that update doesn't create the Person
         Response getResult = getJsonGetByUriResponseAsAdmin(target(getPath), dtoUpdate.getUri().toString());
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
+    }
+
+    @Test
+    public void updateAllowToAddOrcidWhenNotSetYet() throws Exception{
+        Response postResult = getJsonPostResponseAsAdmin(target(createPath), getDefaultDTO());
+
+        //update the person
+        URI uriCreated = extractUriFromResponse(postResult);
+        PersonDTO dtoUpdate = new PersonDTO();
+        dtoUpdate.setUri(uriCreated);
+        dtoUpdate.setOrcid( new URI("https://orcid.org/0009-0006-6636-471X") );
+        dtoUpdate.setFirstName(getDefaultDTO().getFirstName());
+        dtoUpdate.setLastName(getDefaultDTO().getLastName());
+
+        Response putResult = getJsonPutResponse(target(updatePath), dtoUpdate);
+        assertEquals(Response.Status.OK.getStatusCode(), putResult.getStatus());
+
+        //extract the dto after data was updated
+        Response getResult = getJsonGetByUriResponseAsAdmin(target(getPath), dtoUpdate.getUri().toString());
+        JsonNode node = getResult.readEntity(JsonNode.class);
+        SingleObjectResponse<PersonDTO> getObjectResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<PersonDTO>>() {
+        });
+        PersonDTO resultDto = getObjectResponse.getResult();
+
+        //compare dtos to ensure update worked
+        comparePersonDTO(dtoUpdate, resultDto);
+    }
+
+    @Test
+    public void updateWithOrcidAlreadyExists() throws Exception{
+        PersonDTO personWithOrcid = getDefaultDTO();
+        personWithOrcid.setOrcid( new URI("https://orcid.org/0009-0006-6636-4715") );
+
+        Response postResult = getJsonPostResponseAsAdmin(target(createPath), personWithOrcid);
+        assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
+
+        PersonDTO personWithoutOrcid = get2ndDefaultDTO();
+
+        postResult = getJsonPostResponseAsAdmin(target(createPath), personWithoutOrcid);
+        assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
+
+        personWithoutOrcid.setOrcid(personWithOrcid.getOrcid());
+        Response putResult = getJsonPutResponse(target(updatePath), personWithoutOrcid);
+        assertEquals(Response.Status.CONFLICT.getStatusCode(), putResult.getStatus());
+    }
+
+    @Test
+    public void updateDoNotAllowToChangeOrcid() throws Exception {
+        PersonDTO personWithOrcid = getDefaultDTO();
+        personWithOrcid.setUri(new URI("http://should-be-overwritten"));
+        personWithOrcid.setOrcid( new URI("https://orcid.org/0009-0006-6636-4715") );
+
+        Response result = getJsonPostResponseAsAdmin(target(createPath), personWithOrcid);
+        assertEquals(Response.Status.CREATED.getStatusCode(), result.getStatus());
+
+        URI createdPersonURI = extractUriFromResponse(result);
+        personWithOrcid.setUri(createdPersonURI);
+        personWithOrcid.setOrcid( new URI("https://orcid.org/0009-0006-6636-4719") );
+
+        Response putResult = getJsonPutResponse(target(updatePath), personWithOrcid);
+        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), putResult.getStatus());
     }
 
     @Test
@@ -343,11 +436,13 @@ public class PersonAPITest extends AbstractSecurityIntegrationTest {
         getOpensilex().getModuleByClass(SecurityModule.class).createDefaultSuperAdmin();
     }
 
-    private void comparePersonDTO(PersonDTO dto1, PersonDTO dto2){
+    private void comparePersonDTO(PersonDTO dto1, PersonDTO dto2) {
         assertEquals(dto1.getUri(), dto2.getUri());
         assertEquals(dto1.getFirstName(), dto2.getFirstName());
         assertEquals(dto1.getLastName(), dto2.getLastName());
         assertEquals(dto1.getEmail(), dto2.getEmail());
+        assertEquals(dto1.getOrganization(), dto2.getOrganization());
+        assertEquals(dto1.getPhoneNumber(), dto2.getPhoneNumber());
     }
 
 

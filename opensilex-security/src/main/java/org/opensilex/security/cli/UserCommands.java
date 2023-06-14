@@ -13,6 +13,7 @@ import org.opensilex.cli.OpenSilexCommand;
 import org.opensilex.cli.HelpOption;
 import org.opensilex.cli.AbstractOpenSilexCommand;
 import org.opensilex.security.SecurityModule;
+import org.opensilex.security.person.api.PersonDTO;
 import org.opensilex.security.person.dal.PersonDAO;
 import org.opensilex.security.person.dal.PersonModel;
 import org.slf4j.Logger;
@@ -34,7 +35,7 @@ import picocli.CommandLine;
 )
 public class UserCommands extends AbstractOpenSilexCommand implements OpenSilexCommand {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(UserCommands.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(UserCommands.class);
 
     /**
      * /**
@@ -81,7 +82,11 @@ public class UserCommands extends AbstractOpenSilexCommand implements OpenSilexC
 
             sparql.startTransaction();
             try {
-                PersonModel holderOfTheAccount = personDAO.create(null, firstName, lastName, email, null);
+                PersonDTO personDTO = new PersonDTO();
+                personDTO.setFirstName(firstName);
+                personDTO.setLastName(lastName);
+                personDTO.setEmail(email);
+                PersonModel holderOfTheAccount = personDAO.create(personDTO);
 
                 String passwordHash = authentication.getPasswordHash(password);
                 AccountModel accountModel = accountDAO.create(null, new InternetAddress(email), isAdmin, passwordHash, lang, null, holderOfTheAccount);

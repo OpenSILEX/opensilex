@@ -4,7 +4,7 @@
           id="name"
           @click="showPopup"
           variant="link">
-        {{ first_name + " " + last_name }}
+        {{ displayableName }}
       </b-button>
 
       <a v-if="personHasMail" :href="mailToUrl">
@@ -36,9 +36,28 @@
         <p>  {{ uri }} </p>
       </div>
 
+      <div class="champ-popup" v-if="orcid">
+        <p class="title-popup">{{ $t("component.person.orcid") }} :</p>
+        <opensilex-UriLink
+            :url="orcid"
+            :value="orcid"
+            class="personOrcid"
+        />
+      </div>
+
       <div class="champ-popup" v-if="mail">
         <p class="title-popup">{{ $t("component.person.email") }} :</p>
         <p>  {{ mail }} </p>
+      </div>
+
+      <div class="champ-popup" v-if="organization">
+        <p class="title-popup">{{ $t("component.person.organization") }} :</p>
+        <p>  {{ organization }} </p>
+      </div>
+
+      <div class="champ-popup" v-if="phone">
+        <p class="title-popup">{{ $t("component.person.phone_number") }} :</p>
+        <p>  {{ phone }} </p>
       </div>
 
     </b-modal>
@@ -59,6 +78,14 @@ export default class PersonContact extends Vue {
   @Prop()
   personContact: PersonDTO
 
+  @Prop()
+  customDisplayableName: String
+
+  get displayableName(): String {
+    return this.customDisplayableName ?
+        this.customDisplayableName :
+        this.first_name + " " + this.last_name
+  }
 
   get mailToUrl() {
     return this.mail ? "mailto:" + this.mail : null
@@ -76,15 +103,28 @@ export default class PersonContact extends Vue {
     return this.personContact.first_name
   }
 
+  get orcid(): string {
+    return this.personContact.orcid
+  }
+
   get mail(): string {
     return this.personContact.email
   }
 
-  get personHasMail(): boolean{
+  get personHasMail(): boolean {
     return this.mail != null && this.mail != ""
   }
 
-  showPopup(){
+  get organization(): string {
+    return this.personContact.organization
+  }
+
+  get phone(): string {
+    return this.personContact.phone_number
+  }
+
+
+  showPopup() {
     let modalRef: any = this.$refs.popup
     modalRef.show()
   }
@@ -101,7 +141,7 @@ export default class PersonContact extends Vue {
 </script>
 
 <style scoped lang="scss">
-#name{
+#name {
   padding: 0;
 }
 
@@ -141,11 +181,14 @@ export default class PersonContact extends Vue {
   display: flex;
 }
 
-.title-popup{
+.title-popup {
   font-weight: bold;
   padding-right: 1%;
 }
 
+.champ-popup a:hover {
+  text-decoration: underline;
+}
 </style>
 
 

@@ -8,7 +8,6 @@ package org.opensilex.security.person.api;
 import io.swagger.annotations.*;
 import org.opensilex.security.SecurityModule;
 import org.opensilex.security.account.dal.AccountDAO;
-import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
@@ -86,25 +85,7 @@ public class PersonAPI {
     ) throws Exception {
         PersonDAO personDAO = new PersonDAO(sparql);
 
-        if (sparql.uriExists(PersonModel.class, personDTO.getUri())) {
-            return new ErrorResponse(
-                    Response.Status.CONFLICT,
-                    "Person already exists",
-                    "Duplicated URI: " + personDTO.getUri()
-            ).getResponse();
-        }
-
-        AccountDAO accountDAO = new AccountDAO(sparql);
-        URI accountURI = personDTO.getAccount();
-        AccountModel account = accountURI == null ? null : accountDAO.get(accountURI);
-
-        PersonModel person = personDAO.create(
-                personDTO.getUri(),
-                personDTO.getFirstName(),
-                personDTO.getLastName(),
-                personDTO.getEmail(),
-                account
-        );
+        PersonModel person = personDAO.create(personDTO);
 
         return new CreatedUriResponse(person.getUri()).getResponse();
     }
@@ -202,14 +183,8 @@ public class PersonAPI {
                         "Unknown account URI: " + personDTO.getAccount()
                 ).getResponse();
             }
-            AccountModel account = Objects.isNull(personDTO.getAccount()) ? null : accountDAO.get(personDTO.getAccount());
 
-            PersonModel personModel = personDAO.update(
-                    personDTO.getUri(),
-                    personDTO.getFirstName(),
-                    personDTO.getLastName(),
-                    personDTO.getEmail(),
-                    account);
+            PersonModel personModel = personDAO.update(personDTO);
 
             return new ObjectUriResponse(Response.Status.OK, personModel.getUri()).getResponse();
         } else {

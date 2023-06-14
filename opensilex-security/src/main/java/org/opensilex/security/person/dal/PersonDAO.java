@@ -8,24 +8,28 @@ package org.opensilex.security.person.dal;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
+import org.apache.jena.graph.Node;
 import org.apache.jena.sparql.expr.E_NotExists;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.security.person.api.PersonDTO;
+import org.opensilex.server.exceptions.BadRequestException;
+import org.opensilex.server.exceptions.ConflictException;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 
-import javax.mail.internet.InternetAddress;
 import java.net.URI;
 import java.util.List;
 import java.util.Objects;
 
 /**
  * PersonDAO is used to manipulate PersonModel and CRUD persons data in the rdf database.
+ *
  * @author Yvan Roux
  */
 public class PersonDAO {
@@ -37,36 +41,53 @@ public class PersonDAO {
     }
 
     /**
-     *  create a Person in dataBase with the given uri, firstname, lastname and email, only email could be NULL.
-     * @param email : optional information only, not used for any user or account authentication
+     * create a Person in dataBase with the given PersonDTO information.
+     * if orcid is given, it will be the uri of the person.
+     *
      * @return the personModel of the created Person.
      */
-    public PersonModel create(
-            URI uri,
-            String firstName,
-            String lastName,
-            String email,
-            AccountModel account
-    ) throws Exception {
-        PersonModel person = new PersonModel();
-        person.setUri(uri);
-        person.setFirstName(firstName);
-        person.setLastName(lastName);
-        if (email != null) {
-            person.setEmail(new InternetAddress(email));
+    public PersonModel create(PersonDTO personDTO) throws Exception {
+        PersonModel person = PersonModel.fromDTO(personDTO, sparql);
+
+        if (checkOrcidIsNonNullAndWellFormed(person.getOrcid())) {
+            person.setUri(person.getOrcid());
         }
-        person.setAccount(account);
+
+        if (person.getUri() != null && sparql.uriExists((Node) null, person.getUri())) {
+            throw new ConflictException("Duplicated URI: " + person.getUri());
+        }
 
         sparql.create(person);
 
         return person;
     }
 
-    /** @return  the Person linked to an account if this person exists, null otherwise. */
+    /**
+     * @param orcid to check for
+     * @return false if ORCID is null, true otherwise
+     * @throws BadRequestException if orcid is not a well-formed URL
+     */
+    private boolean checkOrcidIsNonNullAndWellFormed(URI orcid) throws BadRequestException, ConflictException, SPARQLException {
+        if (Objects.isNull(orcid)) {
+            return false;
+        }
+        if ( ! orcid.toString().matches("https://orcid\\.org/(?:[\\d]{4}-){3}[\\d]{3}[\\dX]")) {
+            throw new BadRequestException("orcid is not valid");
+        }
+        if (sparql.uriExists((Node) null, orcid)) {
+            throw new ConflictException("Duplicated ORCID: " + orcid);
+        }
+
+        return true;
+    }
+
+    /**
+     * @return the Person linked to an account if this person exists, null otherwise.
+     */
     public PersonModel getPersonFromAccount(URI accountURI) throws Exception {
         AccountDAO accountDAO = new AccountDAO(sparql);
         AccountModel accountModel = accountDAO.get(accountURI);
-        if (accountModel == null){
+        if (accountModel == null) {
             return null;
         }
         return accountModel.getHolderOfTheAccount();
@@ -74,26 +95,24 @@ public class PersonDAO {
 
     /**
      * update the Person with the given information
+     * orcid can't be updated
+     *
      * @return the updated PersonModel
      */
-    public PersonModel update(URI uri, String firstName, String lastName, String email, AccountModel account) throws Exception {
-        PersonModel personModel = new PersonModel();
-        personModel.setUri(uri);
-        personModel.setFirstName(firstName);
-        personModel.setLastName(lastName);
-        personModel.setAccount(account);
+    public PersonModel update(PersonDTO personDTO) throws Exception {
+        if (Objects.nonNull(personDTO.getOrcid())) {
 
-        sparql.startTransaction();
-        try {
-            if (email != null)
-                personModel.setEmail(new InternetAddress(email));
+            checkOrcidIsNonNullAndWellFormed(personDTO.getOrcid());
 
-            sparql.update(personModel);
-
-            sparql.commitTransaction();
-        } catch (SPARQLException e){
-            sparql.rollbackTransaction();
+            PersonModel originalPerson = get(personDTO.getUri());
+            if (Objects.nonNull(originalPerson.getOrcid())) {
+                throw new BadRequestException("Orcid can't be updated : " + personDTO.getUri() + " already has an Orcid");
+            }
         }
+
+        PersonModel personModel = PersonModel.fromDTO(personDTO, sparql);
+
+        sparql.update(personModel);
 
         return personModel;
     }
@@ -125,7 +144,7 @@ public class PersonDAO {
                     if (stringFilter != null) {
                         select.addFilter(stringFilter);
                     }
-                    if (Objects.nonNull(whereConditions) ) {
+                    if (Objects.nonNull(whereConditions)) {
                         select.addFilter(whereConditions);
                     }
                 },
@@ -141,14 +160,14 @@ public class PersonDAO {
      * @param uri URI of the Person you are looking for
      * @return PersonModel corresponding to the URI uri
      */
-    public PersonModel get(URI uri) throws Exception{
+    public PersonModel get(URI uri) throws Exception {
         return sparql.getByURI(PersonModel.class, uri, null);
     }
 
     /**
      * @param uri : URI of the Person to delete
      */
-    public void delete(URI uri) throws Exception{
+    public void delete(URI uri) throws Exception {
         sparql.delete(PersonModel.class, uri);
     }
 

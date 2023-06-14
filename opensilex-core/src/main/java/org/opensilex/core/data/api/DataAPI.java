@@ -749,27 +749,6 @@ public class DataAPI {
         }
         return deviceToReturn;
     }
-
-    private List<DeviceGetDTO> checkAndReturnDevicesFromDataProvenance(DataProvenanceModel provenance, DeviceDAO deviceDAO)
-            throws Exception {
-        List<DeviceGetDTO> devices = new ArrayList<>();
-
-        if(provenance.getProvWasAssociatedWith() != null && !provenance.getProvWasAssociatedWith().isEmpty()){
-            for (ProvEntityModel agent : provenance.getProvWasAssociatedWith()) {
-
-                if(agent.getType() == null) {
-                    throw new ProvenanceAgentTypeException(agent.getUri().toString());
-                }
-
-                if (deviceDAO.isDeviceType(agent.getType())) {
-                    DeviceModel device = deviceDAO.getDeviceByURI(agent.getUri(), user);
-                    devices.add(DeviceGetDTO.getDTOFromModel(device));
-                }
-            }
-        }
-
-        return devices;
-    }
     
     /** 
      * check and return Device from Data Provenance if no ambiguity
@@ -2147,6 +2126,9 @@ public class DataAPI {
 
         Instant start, end;
 
+        Instant startInstant = (startDate != null) ? Instant.parse(startDate) : null;
+        Instant endInstant = (endDate != null) ? Instant.parse(endDate) : Instant.now();
+
         VariableDetailsDTO variable = new VariableDetailsDTO(variableDAO.get(variableUri));
         DataVariableSeriesGetDTO dto = new DataVariableSeriesGetDTO(variable);
 
@@ -2175,8 +2157,8 @@ public class DataAPI {
                 user,
                 facilityUri,
                 variableUri,
-                (startDate != null) ? Instant.parse(startDate) : null,
-                (endDate != null) ? Instant.parse(endDate) : Instant.now());
+                startInstant,
+                endInstant);
         end = Instant.now();
         LOGGER.debug(dataModels.size() + " data retrieved from mongo : " + Long.toString(Duration.between(start, end).toMillis()) + " milliseconds elapsed");
 
@@ -2185,10 +2167,7 @@ public class DataAPI {
         List<DataSerieGetDTO> dataSeriesDTOs = new ArrayList<>();
         List<DataComputedGetDTO> medians = new ArrayList<>();
 
-        start = Instant.now();
         provenancesMap = dataModels.stream().collect(Collectors.groupingBy(DataComputedModel::getProvenance));
-        end = Instant.now();
-        LOGGER.debug("Group by provenances done in " + Long.toString(Duration.between(start, end).toMillis()) + " milliseconds");
 
         for (Map.Entry<DataProvenanceModel, List<DataComputedModel>> entryProv : provenancesMap.entrySet()) {
 
@@ -2232,8 +2211,8 @@ public class DataAPI {
                     user,
                     facilityUri,
                     variableUri,
-                    (startDate != null) ? Instant.parse(startDate) : null,
-                    (endDate != null) ? Instant.parse(endDate) : Instant.now());
+                    startInstant,
+                    endInstant);
             List<DataComputedGetDTO> averageSerieDtos = averageSerie
                     .stream()
                     .map((d) -> DataComputedGetDTO.getDtoFromModel(d))

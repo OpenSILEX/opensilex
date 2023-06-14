@@ -60,22 +60,4 @@ public class DataSimpleProvenanceGetDTO {
         this.rdfType = rdfType;
     }
 
-    public static DataSimpleProvenanceGetDTO fromModel(DataProvenanceModel model){
-        DataSimpleProvenanceGetDTO dto = new DataSimpleProvenanceGetDTO();
-
-        List<ProvEntityModel> provEntityList = model.getProvWasAssociatedWith();
-
-        if (provEntityList != null && provEntityList.size() == 1) {
-            dto.setUri(provEntityList.get(0).getUri());
-            dto.setRdfType(provEntityList.get(0).getType());
-            dto.setName(dto.getUri().toString());
-        }
-        else {
-            dto.setUri(model.getUri());
-            dto.setName(dto.getUri().toString());
-        }
-
-        return dto;
-    }
-
 }

@@ -19,7 +19,7 @@ import static junit.framework.TestCase.*;
 import static org.opensilex.core.data.utils.DataMathFunctions.computeAveragePerDay;
 import static org.opensilex.core.data.utils.DataMathFunctions.computeMedianPerHour;
 
-public class DataMathFunctionsTest extends AbstractMongoIntegrationTest {
+public class DataMathFunctionsTest {
 
     private List<DataComputedGetDTO> dataSerieA, dataSerieB, dataSerieC;
 

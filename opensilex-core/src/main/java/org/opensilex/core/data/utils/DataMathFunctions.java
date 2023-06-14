@@ -6,8 +6,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static org.opensilex.core.data.utils.LineSimplification.*;
+import java.util.stream.DoubleStream;
 
 public class DataMathFunctions {
 
@@ -29,16 +28,20 @@ public class DataMathFunctions {
         for (Map.Entry<Long, List<DataComputedGetDTO>> entry : dataPerHourMap.entrySet()) {
             Instant dateTime = Instant.ofEpochSecond(entry.getKey()*3600).plus(30, ChronoUnit.MINUTES);
 
-            List<Double> data = entry.getValue().stream().map(d->(Double.valueOf(d.getValue().toString()))).collect(Collectors.toList());
-            Collections.sort(data);
+            int size = entry.getValue().size();
+            // Stream of sorted data values
+            DoubleStream sortedValues = entry.getValue().stream()
+                    .mapToDouble(d -> ((Number) d.getValue()).doubleValue())
+                    .sorted();
+            // Depending on the odd/even size, either a stream of the only or both middle values
+            DoubleStream middleValues = (size % 2 == 0)
+                    ? sortedValues.skip(size / 2 - 1).limit(2)
+                    : sortedValues.skip(size / 2).limit(1);
+            // Average of the middle value(s) gives the median
+            double median = middleValues.average()
+                    .orElse(Double.NaN);
 
-            double median;
-            if (data.size() % 2 == 0)
-                median = (data.get(data.size()/2) + data.get(data.size()/2 - 1)) / 2;
-            else
-                median = data.get(data.size()/2);
-
-            DataComputedGetDTO medianData = new DataComputedGetDTO(entry.getValue().get(0));
+            DataComputedGetDTO medianData = new DataComputedGetDTO();
             medianData.setValue(median);
             medianData.setDateTime(dateTime);
 
@@ -49,7 +52,7 @@ public class DataMathFunctions {
     }
 
     /**
-     * Compute the average per day for a given data set.
+     * Compute the mean per day for a given data set.
      *
      * @param dataSerie the data set
      * @return a
@@ -65,9 +68,12 @@ public class DataMathFunctions {
 
         for (Map.Entry<Long, List<DataComputedGetDTO>> entry : dataPerHourMap.entrySet()) {
             Instant dateTime = Instant.ofEpochSecond(entry.getKey()*3600*24).plus(12, ChronoUnit.HOURS);
-            double avg = entry.getValue().stream().mapToDouble(d->(Double.valueOf(d.getValue().toString()))).average().orElse(Double.NaN);
+            double avg = entry.getValue().stream()
+                    .mapToDouble(d -> ((Number) d.getValue()).doubleValue())
+                    .average()
+                    .orElse(Double.NaN);
 
-            DataComputedGetDTO averageData = new DataComputedGetDTO(entry.getValue().get(0));
+            DataComputedGetDTO averageData = new DataComputedGetDTO();
             averageData.setValue(avg);
             averageData.setDateTime(dateTime);
 
@@ -77,33 +83,4 @@ public class DataMathFunctions {
         return averagePerHour;
     }
 
-    public static List<DataComputedGetDTO> applyRamerDouglasPeucker(List<DataComputedGetDTO> dataSerie, double epsilon) {
-
-        List<DataComputedGetDTO> resultData = new ArrayList();
-        ramerDouglasPeucker(dataSerie, epsilon, resultData);
-
-        return resultData;
-    }
-
-    public static List<DataComputedGetDTO> applyGaussianSmooth(List<DataComputedGetDTO> dataSerie, int windowLength) {
-
-        List<DataComputedGetDTO> resultData = new ArrayList();
-
-        int offset = (int) Math.floor(windowLength/2);
-
-        for (int i = offset; i < (dataSerie.size() - offset); ++i) {
-            List<DataComputedGetDTO> windowList = dataSerie.subList(i - offset, i + offset);
-
-            double average = windowList.stream()
-                    .mapToDouble(d -> (Double.valueOf(d.getValue().toString())))
-                    .average()
-                    .orElse(Double.NaN);
-
-            DataComputedGetDTO newData = new DataComputedGetDTO(dataSerie.get(i));
-            newData.setValue(average);
-            resultData.add(newData);
-        }
-
-        return resultData;
-    }
 }

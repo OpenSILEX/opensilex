@@ -164,10 +164,20 @@ public class VariableAPI {
             if (variable == null) {
                 throw new NotFoundURIException(uri);
             }
-            SharedResourceInstanceDTO sharedResourceInstanceDTO = variable.getFromSharedResourceInstance() != null
-                    ? coreModule.getSharedResourceInstanceDTO(variable.getFromSharedResourceInstance(), currentUser.getLanguage())
-                    : null;
-            return new SingleObjectResponse<>(new VariableDetailsDTO(variable, sharedResourceInstanceDTO)).getResponse();
+
+            // This code might be reused later if the SRI mechanic is extended to resources other than variables
+            // In that case, the logic can be moved into the response object to avoid code duplication
+            SharedResourceInstanceDTO sharedResourceInstanceDTO = coreModule.tryGetSharedResourceInstanceDTO(
+                    variable.getFromSharedResourceInstance(), currentUser.getLanguage());
+            if (variable.getFromSharedResourceInstance() != null && sharedResourceInstanceDTO == null) {
+                return new SingleObjectResponse<>(new VariableDetailsDTO(variable)).addMetadataStatus(new StatusDTO(
+                        "Missing SRI from configuration : " + variable.getFromSharedResourceInstance(),
+                        StatusLevel.WARNING,
+                        "server.warnings.shared-resource-instance-unknown",
+                        Collections.singletonMap("uri", variable.getFromSharedResourceInstance().toString()))).getResponse();
+            } else {
+                return new SingleObjectResponse<>(new VariableDetailsDTO(variable, sharedResourceInstanceDTO)).getResponse();
+            }
         }
 
         SharedResourceInstanceService service = new SharedResourceInstanceService(

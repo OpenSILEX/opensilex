@@ -821,7 +821,8 @@
             "shared-resource-instance-connection": "Could not connect to {label} ({uri}). The service may be unavailable, or the configuration is incorrect."
         },
         "warnings": {
-            "unknown-prefix": "Prefix \"{prefix}\" is unknown : you may have forgotten to declare it as a namespace in the triple store, or may need to restart the instance."
+            "unknown-prefix": "Prefix \"{prefix}\" is unknown : you may have forgotten to declare it as a namespace in the triple store, or may need to restart the instance.",
+            "shared-resource-instance-unknown": "The resource is from an unknown Shared Resource Instance : {uri}. The configuration of your instance may be incorrect."
         }
     }
 }

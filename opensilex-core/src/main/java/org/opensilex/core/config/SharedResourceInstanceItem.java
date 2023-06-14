@@ -6,8 +6,11 @@ import java.util.Map;
 
 public interface SharedResourceInstanceItem {
 
-    @ConfigDescription("Shared Resource Instance API base URI (should end with '/rest/')")
+    @ConfigDescription("Unique identifier for the SRI")
     String uri();
+
+    @ConfigDescription("Shared Resource Instance API base URI (should end with '/rest/')")
+    String apiUrl();
 
     @ConfigDescription("SRI label")
     Map<String, String> label();

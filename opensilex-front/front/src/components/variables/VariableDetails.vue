@@ -54,7 +54,7 @@
                         >
                           <opensilex-UriView
                               title="component.sharedResourceInstances.label"
-                              :uri="variable.from_shared_resource_instance.uri"
+                              :uri="variable.from_shared_resource_instance.apiUrl"
                               :value="variable.from_shared_resource_instance.label"
                           ></opensilex-UriView>
                           <opensilex-DateView

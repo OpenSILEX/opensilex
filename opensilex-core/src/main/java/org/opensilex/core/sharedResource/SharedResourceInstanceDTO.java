@@ -17,6 +17,9 @@ public class SharedResourceInstanceDTO {
     @JsonProperty("uri")
     protected URI uri;
 
+    @JsonProperty("apiUrl")
+    protected URI apiUrl;
+
     @JsonProperty("label")
     protected String label;
 
@@ -26,6 +29,7 @@ public class SharedResourceInstanceDTO {
         try {
             return new SharedResourceInstanceDTO()
                     .setUri(new URI(sharedResourceInstanceItem.uri()))
+                    .setApiUrl(new URI(sharedResourceInstanceItem.apiUrl()))
                     .setLabel(label);
         } catch (URISyntaxException e) {
             throw new RuntimeException("The URL " + sharedResourceInstanceItem.uri() + " is not valid for this shared resource : " + sharedResourceInstanceItem.label(), e);
@@ -38,6 +42,15 @@ public class SharedResourceInstanceDTO {
 
     public SharedResourceInstanceDTO setUri(URI uri) {
         this.uri = uri;
+        return this;
+    }
+
+    public URI getApiUrl() {
+        return apiUrl;
+    }
+
+    public SharedResourceInstanceDTO setApiUrl(URI apiUrl) {
+        this.apiUrl = apiUrl;
         return this;
     }
 

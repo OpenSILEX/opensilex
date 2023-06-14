@@ -7,24 +7,14 @@ package org.opensilex.core;
 
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoDatabase;
-
-import java.net.URI;
-
+import org.apache.jena.riot.Lang;
+import org.apache.jena.vocabulary.OA;
 import org.eclipse.rdf4j.model.vocabulary.DCTERMS;
 import org.eclipse.rdf4j.model.vocabulary.OWL;
 import org.opensilex.OpenSilexModule;
-
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import org.apache.jena.riot.Lang;
-import org.apache.jena.vocabulary.OA;
 import org.opensilex.core.config.SharedResourceInstanceItem;
-import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.Oeev;
+import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.Time;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
@@ -48,6 +38,11 @@ import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.service.SPARQLServiceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.net.URI;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Core OpenSILEX module implementation
@@ -120,6 +115,25 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
     public SharedResourceInstanceDTO getSharedResourceInstanceDTO(URI uri, String lang) {
         SharedResourceInstanceItem sharedResourceInstanceItem = getSharedResourceInstanceConfiguration(uri);
         return SharedResourceInstanceDTO.fromConfig(sharedResourceInstanceItem, lang);
+    }
+
+    /**
+     * Similar to {@link #getSharedResourceInstanceDTO(URI, String)}, but returns `null` instead of throwing an exception
+     * if no configuration matches the given URI.
+     *
+     * @param uri URI of the SRI
+     * @param lang The user language
+     * @return The SRI as a DTO, or `null` if no matching DTO is found
+     */
+    public SharedResourceInstanceDTO tryGetSharedResourceInstanceDTO(URI uri, String lang) {
+        if (Objects.isNull(uri)) {
+            return null;
+        }
+        try {
+            return getSharedResourceInstanceDTO(uri, lang);
+        } catch (BadRequestException ignored) {
+            return null;
+        }
     }
 
     @Override

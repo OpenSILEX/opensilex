@@ -841,7 +841,8 @@
             "shared-resource-instance-connection": "Impossible de se connecter à {label} ({uri}). Le service peut-être indisponible, ou bien la configuration incorrecte."
         },
         "warnings": {
-            "unknown-prefix": "Le préfixe \"{prefix}\" est inconnu : si c'est involontaire, il faut le déclarer le triple store et redémarrer l'instance."
+            "unknown-prefix": "Le préfixe \"{prefix}\" est inconnu : si c'est involontaire, il faut le déclarer le triple store et redémarrer l'instance.",
+            "shared-resource-instance-unknown": "La ressource semble provenir d'une Instance de Resources partagées inconnue : {uri}. La configuration de l'instance est peut-être incorrecte."
         }
     }
 }

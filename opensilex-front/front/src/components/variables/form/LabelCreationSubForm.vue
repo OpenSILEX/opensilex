@@ -144,7 +144,29 @@ export default class LabelCreationSubForm extends Vue {
 
   initAttributs() {
 
-    this.initi18nSubFormLabels();
+    this.i18nSubFormLabels = new VueI18n({
+      locale: this.$i18n.locale, // Langue par défaut
+      messages: {
+        en: {
+          prefLabel: this.$i18n.t('prefLabel', 'en'),
+          altLabel: this.$i18n.t('altLabel', 'en'),
+          altLabels: this.$i18n.t('altLabels', 'en'),
+          definition: this.$i18n.t('definition', 'en'),
+          lang: this.$i18n.t('lang', 'en'),
+          saveAndRefillInAnotherLanguage: this.$i18n.t('saveAndRefillInAnotherLanguage', 'en'),
+        },
+        fr: {
+          prefLabel: this.$i18n.t('prefLabel', 'fr'),
+          altLabel: this.$i18n.t('altLabel', 'fr'),
+          altLabels: this.$i18n.t('altLabels', 'fr'),
+          definition: this.$i18n.t('definition', 'fr'),
+          lang: this.$i18n.t('lang', 'fr'),
+          saveAndRefillInAnotherLanguage: this.$i18n.t('saveAndRefillInAnotherLanguage', 'fr'),
+        },
+        // Ajoutez d'autres langues ici avec leurs traductions correspondantes
+      },
+    });
+
 
 
     this.i18nSubFormLabels.locale = this.$i18n.locale;
@@ -161,37 +183,13 @@ export default class LabelCreationSubForm extends Vue {
 
   }
 
-  initi18nSubFormLabels(){
-    const supportedLanguages = Object.keys(this.$i18n.messages);
-
-    const i18nSubFormLabelsMessages = supportedLanguages.reduce((messages, lang) => {
-      messages[lang] = {
-        prefLabel: this.$i18n.t('Preferred label', lang),
-        altLabel: this.$i18n.t('altLabel', lang),
-        altLabels: this.$i18n.t('altLabels', lang),
-        definition: this.$i18n.t('definition', lang),
-        lang: this.$i18n.t('lang', lang),
-        saveAndRefillInAnotherLanguage: this.$i18n.t('saveAndRefillInAnotherLanguage', lang),
-      };
-      return messages;
-    }, {});
-
-    this.i18nSubFormLabels = new VueI18n({
-      locale: this.$i18n.locale, // Langue par défaut
-      messages: i18nSubFormLabelsMessages,
-    });
-  }
-
   getTranslationOf(element: string) {
-    console.log("this.i18nSubFormLabels", JSON.stringify(this.i18nSubFormLabels));
 
     return this.i18nSubFormLabels.t(element);
 
   }
 
   getTranslationOfLanguage(lang: string) {
-
-    console.log("this.i18nSubFormLabels", JSON.stringify(this.i18nSubFormLabels));
 
     return this.i18nSubFormLabels.messages[lang].language[lang];
 

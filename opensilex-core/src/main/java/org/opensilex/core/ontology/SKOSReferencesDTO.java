@@ -23,7 +23,8 @@ public abstract class SKOSReferencesDTO {
     public final static String CLOSE_MATCH_JSON_PROPERTY = "close_match";
     public final static String BROAD_MATCH_JSON_PROPERTY = "broad_match";
     public final static String NARROW_MATCH_JSON_PROPERTY = "narrow_match";
-    
+
+
     @ValidURI
     @JsonProperty(EXACT_MATCH_JSON_PROPERTY)
     private List<URI> exactMatch = new ArrayList<>();

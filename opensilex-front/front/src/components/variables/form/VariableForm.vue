@@ -527,7 +527,7 @@ export default class VariableForm extends Vue {
 
     setLoadedEntity(created: EntityCreationDTO) {
         this.form.entity = created.uri;
-        this.entitySelectForm.select({id: created.uri, label: created.name});
+        this.entitySelectForm.select({id: created.uri, label: created.multiLabelDTO.prefLabels['en']});
     }
 
     searchInterestEntities(name: string, page, pageSize){

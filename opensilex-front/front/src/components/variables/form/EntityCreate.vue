@@ -106,7 +106,7 @@ export default class EntityCreate extends Vue {
 
 
   create(form: EntityCreationDTO) {
-    
+
     return this.service
         .createEntity(form)
         .then((http: HttpResponse<OpenSilexResponse<string>>) => {
@@ -125,17 +125,17 @@ export default class EntityCreate extends Vue {
   }
 
   update(form: EntityUpdateDTO) {
-    return this.service
-        .updateEntity(form)
-        .then((http: HttpResponse<OpenSilexResponse<string>>) => {
-          form.uri = http.response.result;
-          let message = this.$i18n.t("EntityForm.name") + " " + form.uri + " " + this.$i18n.t("component.common.success.update-success-message");
-          this.$opensilex.showSuccessToast(message);
-          this.$emit("onUpdate", form);
-        })
-        .catch(error => {
-          this.$opensilex.errorHandler(error);
-        });
+    //   return this.service
+    //       .updateEntity(form)
+    //       .then((http: HttpResponse<OpenSilexResponse<string>>) => {
+    //         form.uri = http.response.result;
+    //         let message = this.$i18n.t("EntityForm.name") + " " + form.uri + " " + this.$i18n.t("component.common.success.update-success-message");
+    //         this.$opensilex.showSuccessToast(message);
+    //         this.$emit("onUpdate", form);
+    //       })
+    //       .catch(error => {
+    //         this.$opensilex.errorHandler(error);
+    //       });
   }
 
   loadingWizard: boolean = false;

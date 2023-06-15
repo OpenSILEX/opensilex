@@ -20,4 +20,6 @@ public interface SKOSReferences {
     List<URI> getNarrowMatch();
 
     void setNarrowMatch(List<URI> narrowMatch);
+
+
 }

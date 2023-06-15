@@ -111,12 +111,8 @@ public class DataMathFunctionsTest {
         assertNotNull(averageSerie);
         assertEquals(2, averageSerie.size());
         assertEquals(Instant.parse("1994-07-04T12:00:00.00Z"), averageSerie.get(0).getDate());
-        value = new BigDecimal(Float.parseFloat(averageSerie.get(0).getValue().toString()))
-                .setScale(2, RoundingMode.HALF_UP);
-        assertEquals(17.28f, value.floatValue());
+        assertTrue(Math.abs((double) averageSerie.get(0).getValue() - 17.28d) < 0.001);
         assertEquals(Instant.parse("1994-07-05T12:00:00.00Z"), averageSerie.get(1).getDate());
-        value = new BigDecimal(Float.parseFloat(averageSerie.get(1).getValue().toString()))
-                .setScale(2, RoundingMode.HALF_UP);;
-        assertEquals(21.72f, value.floatValue());
+        assertTrue(Math.abs((double) averageSerie.get(0).getValue() - 21.72d) < 0.001);
     }
 }

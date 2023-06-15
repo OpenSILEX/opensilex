@@ -24,6 +24,18 @@ export interface OpenSilexPointOptionsObject extends Highcharts.PointOptionsObje
 }
 
 /**
+ * @author Brice MAUSSANG
+ */
+export interface OpenSilexSimplePointOptionsObject extends Highcharts.PointOptionsObject {
+    provenanceUri: string,
+    data: DataComputedGetDTO,
+    dataUri: string,
+    dateWithOffset: string,
+    deviceUri?: string,
+    objectUri?: string
+}
+
+/**
  * Transform data points into Highcharts-compatible data points. An x value is provided using the timestamp of the
  * date, and the y value is the value of the data. A 'data' property is passed to keep a reference to the object.
  *
@@ -53,9 +65,12 @@ function transformDataForHighcharts(data: Array<DataGetDTO>, options?: Highchart
     });
 }
 
-function transformSimpleDataForHighcharts(data: Array<DataComputedGetDTO>, provenance: DataSimpleProvenanceGetDTO): Array<OpenSilexPointOptionsObject> {
+/**
+ * @author Brice MAUSSANG
+ */
+function transformSimpleDataForHighcharts(data: Array<DataComputedGetDTO>, provenance: DataSimpleProvenanceGetDTO): Array<OpenSilexSimplePointOptionsObject> {
     return data.map(element => {
-        let date = new Date(element.date);
+        let date = element.date;
         let timestamp = date.getTime();
         return {
             x: timestamp,
@@ -66,7 +81,7 @@ function transformSimpleDataForHighcharts(data: Array<DataComputedGetDTO>, prove
             dateWithOffset: date.toISOString(),
             deviceUri: provenance,
             objectUri: ""
-        } as OpenSilexPointOptionsObject;
+        } as OpenSilexSimplePointOptionsObject;
     });
 }
 

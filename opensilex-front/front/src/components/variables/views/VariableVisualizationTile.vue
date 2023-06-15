@@ -126,6 +126,7 @@ import {VariableDetailsDTO} from "opensilex-core/model/variableDetailsDTO";
 import {DataSerieGetDTO} from "opensilex-core/model/dataSerieGetDTO";
 import {DataVariableSeriesGetDTO} from "opensilex-core/model/dataVariableSeriesGetDTO";
 import {DataSimpleProvenanceGetDTO} from "opensilex-core/model/dataSimpleProvenanceGetDTO";
+import {DataComputedGetDTO} from "opensilex-core/model/dataComputedGetDTO";
 
 
 @Component
@@ -380,7 +381,7 @@ export default class VariableVisualizationTile extends Vue {
 
   buildDataSerie(dataSerie, isVisible: boolean) {
 
-    var data = dataSerie.data as Array<DataGetDTO>;
+    var data = dataSerie.data as Array<DataComputedGetDTO>;
     data.sort((a, b) => (a.date > b.date) ? 1 : -1);
     let dataLength = data.length;
 

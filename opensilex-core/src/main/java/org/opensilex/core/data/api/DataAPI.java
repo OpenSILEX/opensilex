@@ -29,7 +29,6 @@ import org.opensilex.core.data.dal.*;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.data.utils.ParsedDateTimeMongo;
 import org.opensilex.core.device.api.DeviceAPI;
-import org.opensilex.core.device.api.DeviceGetDTO;
 import org.opensilex.core.device.dal.DeviceDAO;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.exception.*;
@@ -2165,23 +2164,25 @@ public class DataAPI {
         Map<DataProvenanceModel, List<DataComputedModel>> provenancesMap;
 
         List<DataSerieGetDTO> dataSeriesDTOs = new ArrayList<>();
-        List<DataComputedGetDTO> medians = new ArrayList<>();
+        List<DataComputedModel> medians = new ArrayList<>();
 
         provenancesMap = dataModels.stream().collect(Collectors.groupingBy(DataComputedModel::getProvenance));
 
         for (Map.Entry<DataProvenanceModel, List<DataComputedModel>> entryProv : provenancesMap.entrySet()) {
 
-            List<DataComputedGetDTO> medianSerie = entryProv.getValue()
+            List<DataComputedModel> medianSerie = entryProv.getValue()
                     .stream()
-                    .map((d) -> DataComputedGetDTO.getDtoFromModel(d))
-                    .sorted(Comparator.comparing(DataComputedGetDTO::getDateTime))
+                    .sorted(Comparator.comparing(DataComputedModel::getDate))
                     .collect(Collectors.toList());
 
             medians.addAll(medianSerie);
 
             DataSimpleProvenanceGetDTO provenance = createDataSimpleProvenance(entryProv.getKey());
 
-            DataSerieGetDTO dataSerie = new DataSerieGetDTO(provenance, medianSerie);
+            List<DataComputedGetDTO> medianSerieDTO = medianSerie.stream()
+                    .map(DataComputedGetDTO::getDtoFromModel)
+                    .collect(Collectors.toList());
+            DataSerieGetDTO dataSerie = new DataSerieGetDTO(provenance, medianSerieDTO);
             dataSeriesDTOs.add(dataSerie);
         }
 
@@ -2201,8 +2202,11 @@ public class DataAPI {
             DataSimpleProvenanceGetDTO provMedian = new DataSimpleProvenanceGetDTO();
             provMedian.setName("median_per_hour");
 
-            List<DataComputedGetDTO> medianOfMedians = computeMedianPerHour(medians);
-            dataCalculatedSeriesDTOs.add(new DataSerieGetDTO(provMedian, medianOfMedians));
+            List<DataComputedModel> medianOfMedians = computeMedianPerHour(medians);
+            List<DataComputedGetDTO> medianOfMediansDTO = medians.stream()
+                    .map(DataComputedGetDTO::getDtoFromModel)
+                    .collect(Collectors.toList());
+            dataCalculatedSeriesDTOs.add(new DataSerieGetDTO(provMedian, medianOfMediansDTO));
 
             DataSimpleProvenanceGetDTO provAverage = new DataSimpleProvenanceGetDTO();
             provAverage.setName("mean_per_day");
@@ -2216,7 +2220,7 @@ public class DataAPI {
             List<DataComputedGetDTO> averageSerieDtos = averageSerie
                     .stream()
                     .map((d) -> DataComputedGetDTO.getDtoFromModel(d))
-                    .sorted(Comparator.comparing(DataComputedGetDTO::getDateTime))
+                    .sorted(Comparator.comparing(DataComputedGetDTO::getDate))
                     .collect(Collectors.toList());
             dataCalculatedSeriesDTOs.add(new DataSerieGetDTO(provAverage, averageSerieDtos));
 

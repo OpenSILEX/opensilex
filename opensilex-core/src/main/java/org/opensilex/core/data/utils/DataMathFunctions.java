@@ -1,6 +1,7 @@
 package org.opensilex.core.data.utils;
 
 import org.opensilex.core.data.api.DataComputedGetDTO;
+import org.opensilex.core.data.dal.DataComputedModel;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -16,16 +17,16 @@ public class DataMathFunctions {
      * @param dataSerie the data set
      * @return the serie of median per hour
      */
-    public static List<DataComputedGetDTO> computeMedianPerHour(List<DataComputedGetDTO> dataSerie) {
-        List<DataComputedGetDTO> mediansPerHour = new ArrayList<>();
+    public static List<DataComputedModel> computeMedianPerHour(List<DataComputedModel> dataSerie) {
+        List<DataComputedModel> mediansPerHour = new ArrayList<>();
 
-        Map<Long, List<DataComputedGetDTO>> dataPerHourMap = dataSerie.stream()
-                .sorted(Comparator.comparing(DataComputedGetDTO::getDateTime))
-                .collect(Collectors.groupingBy(d->(d.getDateTime().getEpochSecond()/3600),
+        Map<Long, List<DataComputedModel>> dataPerHourMap = dataSerie.stream()
+                .sorted(Comparator.comparing(DataComputedModel::getDate))
+                .collect(Collectors.groupingBy(d->(d.getDate().getEpochSecond()/3600),
                         LinkedHashMap::new,
                         Collectors.toList()));
 
-        for (Map.Entry<Long, List<DataComputedGetDTO>> entry : dataPerHourMap.entrySet()) {
+        for (Map.Entry<Long, List<DataComputedModel>> entry : dataPerHourMap.entrySet()) {
             Instant dateTime = Instant.ofEpochSecond(entry.getKey()*3600).plus(30, ChronoUnit.MINUTES);
 
             int size = entry.getValue().size();
@@ -41,9 +42,9 @@ public class DataMathFunctions {
             double median = middleValues.average()
                     .orElse(Double.NaN);
 
-            DataComputedGetDTO medianData = new DataComputedGetDTO();
+            DataComputedModel medianData = new DataComputedModel();
             medianData.setValue(median);
-            medianData.setDateTime(dateTime);
+            medianData.setDate(dateTime);
 
             mediansPerHour.add(medianData);
         }
@@ -57,25 +58,25 @@ public class DataMathFunctions {
      * @param dataSerie the data set
      * @return a
      */
-    public static List<DataComputedGetDTO> computeAveragePerDay(List<DataComputedGetDTO> dataSerie) {
-        List<DataComputedGetDTO> averagePerHour = new ArrayList<>();
+    public static List<DataComputedModel> computeAveragePerDay(List<DataComputedModel> dataSerie) {
+        List<DataComputedModel> averagePerHour = new ArrayList<>();
 
-        Map<Long, List<DataComputedGetDTO>> dataPerHourMap = dataSerie.stream()
-                .sorted(Comparator.comparing(DataComputedGetDTO::getDateTime))
-                .collect(Collectors.groupingBy(d->(d.getDateTime().getEpochSecond()/(3600 * 24)),
+        Map<Long, List<DataComputedModel>> dataPerHourMap = dataSerie.stream()
+                .sorted(Comparator.comparing(DataComputedModel::getDate))
+                .collect(Collectors.groupingBy(d->(d.getDate().getEpochSecond()/(3600 * 24)),
                         LinkedHashMap::new,
                         Collectors.toList()));
 
-        for (Map.Entry<Long, List<DataComputedGetDTO>> entry : dataPerHourMap.entrySet()) {
+        for (Map.Entry<Long, List<DataComputedModel>> entry : dataPerHourMap.entrySet()) {
             Instant dateTime = Instant.ofEpochSecond(entry.getKey()*3600*24).plus(12, ChronoUnit.HOURS);
             double avg = entry.getValue().stream()
                     .mapToDouble(d -> ((Number) d.getValue()).doubleValue())
                     .average()
                     .orElse(Double.NaN);
 
-            DataComputedGetDTO averageData = new DataComputedGetDTO();
+            DataComputedModel averageData = new DataComputedModel();
             averageData.setValue(avg);
-            averageData.setDateTime(dateTime);
+            averageData.setDate(dateTime);
 
             averagePerHour.add(averageData);
         }

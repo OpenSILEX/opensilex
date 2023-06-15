@@ -27,20 +27,12 @@ public class DataComputedGetDTO {
 
     @Required
     @ApiModelProperty(value = "date or datetime", example = DataAPI.DATA_EXAMPLE_MINIMAL_DATE, required = true)
-    private String date;
+    private ZonedDateTime date;
 
     @NotNull
     @ApiModelProperty(value = "can be decimal, integer, boolean, string or date", example = DataAPI.DATA_EXAMPLE_VALUE)
     private Object value;
 
-    private Instant dateTime;
-
-
-    public String getDate() {
-        return date;
-    }
-
-    public void setDate(String date) { this.date = date; }
 
     public Object getValue() {
         return value;
@@ -50,11 +42,10 @@ public class DataComputedGetDTO {
         this.value = value;
     }
 
-    public Instant getDateTime() { return dateTime; }
+    public ZonedDateTime getDate() { return date; }
 
-    public void setDateTime(Instant dateTime) {
-        this.dateTime = dateTime;
-        this.setDate(this.dateTime.toString());
+    public void setDate(ZonedDateTime date) {
+        this.date = date;
     }
 
     /**
@@ -66,7 +57,7 @@ public class DataComputedGetDTO {
     public static DataComputedGetDTO getDtoFromModel(DataComputedModel model) {
         DataComputedGetDTO dto = new DataComputedGetDTO();
 
-        dto.setDateTime(model.getDate());
+        dto.setDate(ZonedDateTime.ofInstant(model.getDate(), ZoneId.systemDefault()));
         dto.setValue(model.getValue());
 
         return dto;
@@ -75,7 +66,7 @@ public class DataComputedGetDTO {
     public static DataComputedGetDTO getDtoFromModel(DataModel model) {
         DataComputedGetDTO dto = new DataComputedGetDTO();
 
-        dto.setDateTime(model.getDate());
+        dto.setDate(ZonedDateTime.ofInstant(model.getDate(), ZoneId.of(model.getOffset())));
         dto.setValue(model.getValue());
 
         return dto;
@@ -88,7 +79,6 @@ public class DataComputedGetDTO {
     public DataComputedGetDTO(DataComputedGetDTO other) {
         this.date = other.date;
         this.value = other.value;
-        this.dateTime = other.dateTime;
     }
 
 }

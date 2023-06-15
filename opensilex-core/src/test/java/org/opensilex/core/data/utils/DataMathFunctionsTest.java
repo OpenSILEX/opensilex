@@ -2,8 +2,7 @@ package org.opensilex.core.data.utils;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.opensilex.core.AbstractMongoIntegrationTest;
-import org.opensilex.core.data.api.DataComputedGetDTO;
+import org.opensilex.core.data.dal.DataComputedModel;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -19,36 +18,35 @@ import static junit.framework.TestCase.*;
 import static org.opensilex.core.data.utils.DataMathFunctions.computeAveragePerDay;
 import static org.opensilex.core.data.utils.DataMathFunctions.computeMedianPerHour;
 
-public class DataMathFunctionsTest extends AbstractMongoIntegrationTest {
+public class DataMathFunctionsTest {
 
-    private List<DataComputedGetDTO> dataSerieA, dataSerieB, dataSerieC;
+    private List<DataComputedModel> dataSerieA, dataSerieB, dataSerieC;
 
-    private static DataComputedGetDTO createDataSimpleDTO(int id,
-                                                          Object value,
-                                                          Instant date) {
+    private static DataComputedModel createDataComputedModel(int id,
+                                                             Object value,
+                                                             Instant date) {
 
-        DataComputedGetDTO dto = new DataComputedGetDTO();
+        DataComputedModel dto = new DataComputedModel();
 
         dto.setValue(value);
-        dto.setDateTime(date);
+        dto.setDate(date);
 
         return dto;
     }
 
 
-    private static List<DataComputedGetDTO> createDataSerieSample(int sampleSize,
-                                                                  float startValue,
-                                                                  float step,
-                                                                  Instant startDate) {
+    private static List<DataComputedModel> createDataSerieSample(int sampleSize,
+                                                                 float startValue,
+                                                                 float step,
+                                                                 Instant startDate) {
 
-        List<DataComputedGetDTO> dataSerie = new ArrayList<>();
+        List<DataComputedModel> dataSerie = new ArrayList<>();
         float value = startValue;
 
         for (int i = 0; i < sampleSize; ++i) {
-            dataSerie.add(createDataSimpleDTO(i, value, startDate));
-            startDate = startDate.plus(10, ChronoUnit.MINUTES);
-            value += step;
+            dataSerie.add(createDataComputedModel(i, startValue + step * i, startDate.plus(10L * i, ChronoUnit.MINUTES)));
         }
+
 
         return dataSerie;
     }
@@ -79,44 +77,42 @@ public class DataMathFunctionsTest extends AbstractMongoIntegrationTest {
 
     @Test
     public void testComputeMedianPerHour() {
-        List<DataComputedGetDTO> medianSerieA = computeMedianPerHour(dataSerieA);
+        List<DataComputedModel> medianSerieA = computeMedianPerHour(dataSerieA);
 
         assertNotNull(medianSerieA);
         assertEquals(2, medianSerieA.size());
-        assertEquals(Instant.parse("1994-07-04T23:30:00.00Z"), medianSerieA.get(0).getDateTime());
+        assertEquals(Instant.parse("1994-07-04T23:30:00.00Z"), medianSerieA.get(0).getDate());
         assertEquals(3.5f, Float.parseFloat(medianSerieA.get(0).getValue().toString()));
-        assertEquals(Instant.parse("1994-07-05T00:30:00.00Z"), medianSerieA.get(1).getDateTime());
+        assertEquals(Instant.parse("1994-07-05T00:30:00.00Z"), medianSerieA.get(1).getDate());
         assertEquals(9.5f, Float.parseFloat(medianSerieA.get(1).getValue().toString()));
 
-        List<DataComputedGetDTO> medianSerieB = computeMedianPerHour(dataSerieB);
+        List<DataComputedModel> medianSerieB = computeMedianPerHour(dataSerieB);
 
         assertNotNull(medianSerieB);
         assertEquals(3, medianSerieB.size());
-        assertEquals(Instant.parse("1994-07-04T22:30:00.00Z"), medianSerieB.get(0).getDateTime());
+        assertEquals(Instant.parse("1994-07-04T22:30:00.00Z"), medianSerieB.get(0).getDate());
         assertEquals(5f, Float.parseFloat(medianSerieB.get(0).getValue().toString()));
-        assertEquals(Instant.parse("1994-07-04T23:30:00.00Z"), medianSerieB.get(1).getDateTime());
+        assertEquals(Instant.parse("1994-07-04T23:30:00.00Z"), medianSerieB.get(1).getDate());
         assertEquals(22.5f, Float.parseFloat(medianSerieB.get(1).getValue().toString()));
-        assertEquals(Instant.parse("1994-07-05T00:30:00.00Z"), medianSerieB.get(2).getDateTime());
+        assertEquals(Instant.parse("1994-07-05T00:30:00.00Z"), medianSerieB.get(2).getDate());
         assertEquals(50f, Float.parseFloat(medianSerieB.get(2).getValue().toString()));
     }
 
 
     @Test
     public void testComputeAveragePerDay() {
-        List<DataComputedGetDTO> dataSample = Stream.of(dataSerieA, dataSerieB, dataSerieC)
+        List<DataComputedModel> dataSample = Stream.of(dataSerieA, dataSerieB, dataSerieC)
                 .flatMap(Collection::stream)
                 .collect(Collectors.toList());
 
-        List<DataComputedGetDTO> averageSerie = computeAveragePerDay(dataSample);
+        List<DataComputedModel> averageSerie = computeAveragePerDay(dataSample);
         BigDecimal value;
 
         assertNotNull(averageSerie);
         assertEquals(2, averageSerie.size());
-        assertEquals(Instant.parse("1994-07-04T12:00:00.00Z"), averageSerie.get(0).getDateTime());
-        assertTrue(Math.abs((double) averageSerie.get(0).getValue() - 17.28d) < 0.001);
-        assertEquals(Instant.parse("1994-07-05T12:00:00.00Z"), averageSerie.get(1).getDateTime());
-        value = new BigDecimal(Float.parseFloat(averageSerie.get(1).getValue().toString()))
-                .setScale(2, RoundingMode.HALF_UP);;
-        assertEquals(21.72f, value.floatValue());
+        assertEquals(Instant.parse("1994-07-04T12:00:00.00Z"), averageSerie.get(0).getDate());
+        assertTrue(Math.abs(((Number) averageSerie.get(0).getValue()).doubleValue() - 17.28d) < 0.01);
+        assertEquals(Instant.parse("1994-07-05T12:00:00.00Z"), averageSerie.get(1).getDate());
+        assertTrue(Math.abs(((Number) averageSerie.get(1).getValue()).doubleValue() - 21.72d) < 0.01);
     }
 }

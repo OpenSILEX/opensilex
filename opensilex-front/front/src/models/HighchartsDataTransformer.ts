@@ -1,7 +1,7 @@
 import {DataGetDTO} from "opensilex-core/model/dataGetDTO";
 import Highcharts from "highcharts";
-import {DataSimpleGetDTO} from "opensilex-core/model/dataSimpleGetDTO";
 import {DataSimpleProvenanceGetDTO} from "opensilex-core/model/dataSimpleProvenanceGetDTO";
+import {DataComputedGetDTO} from "opensilex-core/model/dataComputedGetDTO";
 
 /**
  * @author Valentin RIGOLLE
@@ -17,6 +17,18 @@ export interface HighchartsDataTransformerOptions {
 export interface OpenSilexPointOptionsObject extends Highcharts.PointOptionsObject {
     provenanceUri: string,
     data: DataGetDTO,
+    dataUri: string,
+    dateWithOffset: string,
+    deviceUri?: string,
+    objectUri?: string
+}
+
+/**
+ * @author Brice MAUSSANG
+ */
+export interface OpenSilexSimplePointOptionsObject extends Highcharts.PointOptionsObject {
+    provenanceUri: string,
+    data: DataComputedGetDTO,
     dataUri: string,
     dateWithOffset: string,
     deviceUri?: string,
@@ -53,20 +65,23 @@ function transformDataForHighcharts(data: Array<DataGetDTO>, options?: Highchart
     });
 }
 
-function transformSimpleDataForHighcharts(data: Array<DataSimpleGetDTO>, provenance: DataSimpleProvenanceGetDTO): Array<OpenSilexPointOptionsObject> {
+/**
+ * @author Brice MAUSSANG
+ */
+function transformSimpleDataForHighcharts(data: Array<DataComputedGetDTO>, provenance: DataSimpleProvenanceGetDTO): Array<OpenSilexSimplePointOptionsObject> {
     return data.map(element => {
-        let date = new Date(element.date);
+        let date = element.date;
         let timestamp = date.getTime();
         return {
             x: timestamp,
             y: element.value,
             provenanceUri: provenance.uri,
             data: element,
-            dataUri: element.uri,
+            dataUri: undefined,
             dateWithOffset: date.toISOString(),
             deviceUri: provenance,
             objectUri: ""
-        } as OpenSilexPointOptionsObject;
+        } as OpenSilexSimplePointOptionsObject;
     });
 }
 

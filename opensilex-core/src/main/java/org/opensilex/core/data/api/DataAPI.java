@@ -2170,16 +2170,18 @@ public class DataAPI {
         Map<DataProvenanceModel, List<DataModel>> provenancesMap;
 
         List<DataSerieGetDTO> dataSeriesDTOs = new ArrayList<>();
-        List<DataSimpleGetDTO> medians = new ArrayList<>();
+        List<DataComputedModel> medians = new ArrayList<>();
 
         start = Instant.now();
         provenancesMap = dataModels.stream().collect(Collectors.groupingBy(DataComputedModel::getProvenance));
         end = Instant.now();
         LOGGER.debug("Group by provenances done in " + Long.toString(Duration.between(start, end).toMillis()) + " milliseconds");
 
-            List<DataSimpleGetDTO> data = entryProv.getValue()
+        for (Map.Entry<DataProvenanceModel, List<DataComputedModel>> entryProv : provenancesMap.entrySet()) {
+
+            List<DataComputedModel> medianSerie = entryProv.getValue()
                     .stream()
-                    .map((d) -> DataSimpleGetDTO.getDtoFromModel(d))
+                    .sorted(Comparator.comparing(DataComputedModel::getDate))
                     .collect(Collectors.toList());
 
             List<DataSimpleGetDTO> medianSerie = computeMedianPerHour(data);
@@ -2187,7 +2189,10 @@ public class DataAPI {
 
             DataSimpleProvenanceGetDTO provenance = createDataSimpleProvenance(entryProv.getKey());
 
-            DataSerieGetDTO dataSerie = new DataSerieGetDTO(provenance, medianSerie);
+            List<DataComputedGetDTO> medianSerieDTO = medianSerie.stream()
+                    .map(DataComputedGetDTO::getDtoFromModel)
+                    .collect(Collectors.toList());
+            DataSerieGetDTO dataSerie = new DataSerieGetDTO(provenance, medianSerieDTO);
             dataSeriesDTOs.add(dataSerie);
         }
 
@@ -2214,8 +2219,11 @@ public class DataAPI {
             DataSimpleProvenanceGetDTO provMedian = new DataSimpleProvenanceGetDTO();
             provMedian.setName("median_per_hour");
 
-            List<DataSimpleGetDTO> medianOfMedians = computeMedianPerHour(medians);
-            dataCalculatedSeriesDTOs.add(new DataSerieGetDTO(provMedian, medianOfMedians));
+            List<DataComputedModel> medianOfMedians = computeMedianPerHour(medians);
+            List<DataComputedGetDTO> medianOfMediansDTO = medians.stream()
+                    .map(DataComputedGetDTO::getDtoFromModel)
+                    .collect(Collectors.toList());
+            dataCalculatedSeriesDTOs.add(new DataSerieGetDTO(provMedian, medianOfMediansDTO));
 
             DataSimpleProvenanceGetDTO provAverage = new DataSimpleProvenanceGetDTO();
             provAverage.setName("mean_per_hour");
@@ -2255,7 +2263,8 @@ public class DataAPI {
                     (endDate != null) ? Instant.parse(endDate) : Instant.now());
             List<DataComputedGetDTO> averageSerieDtos = averageSerie
                     .stream()
-                    .map((d) -> DataSimpleGetDTO.getDtoFromModel(d))
+                    .map((d) -> DataComputedGetDTO.getDtoFromModel(d))
+                    .sorted(Comparator.comparing(DataComputedGetDTO::getDate))
                     .collect(Collectors.toList());
 
             List<DataSimpleGetDTO> medianSerie = computeMedianPerHour(data);

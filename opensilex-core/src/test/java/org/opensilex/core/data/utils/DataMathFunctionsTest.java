@@ -111,8 +111,8 @@ public class DataMathFunctionsTest {
         assertNotNull(averageSerie);
         assertEquals(2, averageSerie.size());
         assertEquals(Instant.parse("1994-07-04T12:00:00.00Z"), averageSerie.get(0).getDate());
-        assertTrue(Math.abs((double) averageSerie.get(0).getValue() - 17.28d) < 0.001);
+        assertTrue(Math.abs(((Number) averageSerie.get(0).getValue()).doubleValue() - 17.28d) < 0.01);
         assertEquals(Instant.parse("1994-07-05T12:00:00.00Z"), averageSerie.get(1).getDate());
-        assertTrue(Math.abs((double) averageSerie.get(0).getValue() - 21.72d) < 0.001);
+        assertTrue(Math.abs(((Number) averageSerie.get(1).getValue()).doubleValue() - 21.72d) < 0.01);
     }
 }

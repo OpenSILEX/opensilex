@@ -70,7 +70,7 @@ function transformDataForHighcharts(data: Array<DataGetDTO>, options?: Highchart
  */
 function transformSimpleDataForHighcharts(data: Array<DataComputedGetDTO>, provenance: DataSimpleProvenanceGetDTO): Array<OpenSilexSimplePointOptionsObject> {
     return data.map(element => {
-        let date = element.date;
+        let date = new Date(element.date);
         let timestamp = date.getTime();
         return {
             x: timestamp,

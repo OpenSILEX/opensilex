@@ -44,10 +44,9 @@ public class DataMathFunctionsTest {
         float value = startValue;
 
         for (int i = 0; i < sampleSize; ++i) {
-            dataSerie.add(createDataComputedModel(i, value, startDate));
-            startDate = startDate.plus(10, ChronoUnit.MINUTES);
-            value += step;
+            dataSerie.add(createDataComputedModel(i, startValue + step * i, startDate.plus(10L * i, ChronoUnit.MINUTES)));
         }
+
 
         return dataSerie;
     }

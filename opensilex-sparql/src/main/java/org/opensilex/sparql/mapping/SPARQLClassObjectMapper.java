@@ -256,7 +256,17 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
                 SPARQLProxyLabel proxy = new SPARQLProxyLabel(mapperIndex, graph, strValue, uri, classAnalizer.getLabelPropertyByField(field), classAnalizer.isReverseRelation(field), lang, service);
                 setter.invoke(instance, proxy.getInstance());
             }
+        }
 
+        for (Field field : classAnalizer.getMultiLabelPropertyFields()) {
+            Method setter = classAnalizer.getSetterFromField(field);
+
+//            String strValue = result.getStringValue(field.getName());
+
+//            if (strValue != null) {
+            SPARQLProxyMultiLabel proxy = new SPARQLProxyMultiLabel(mapperIndex, graph, lang, service, uri, classAnalizer.getMultiLabelPropertyByField(field), classAnalizer.isReverseRelation(field));
+                setter.invoke(instance, proxy.getInstance());
+//            }
         }
 
         for (Field field : classAnalizer.getDataListPropertyFields()) {

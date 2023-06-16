@@ -35,7 +35,7 @@ public class EntityCreationDTO extends BaseMultiLabeledIdentifierCreationDTO<Ent
         EntityMultiLabelModel model = super.newModel();
 
         model.getPrefLabels().addAllTranslations(this.multiLabelDTO.getPrefLabels());
-        model.getAltsLabels().addAllAltLabelsTranslations(this.multiLabelDTO.getAltLabels());
+        model.getAltsLabels().addAllTranslations(this.multiLabelDTO.getAltLabels());
         model.getDefinitions().addAllTranslations(this.multiLabelDTO.getDefinitions());
 
         return model;

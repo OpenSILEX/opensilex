@@ -105,6 +105,9 @@ public class EntityAPI {
     @GET
     @Path("{uri}")
     @ApiOperation("Get an entity")
+
+
+
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)

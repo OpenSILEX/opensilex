@@ -22,9 +22,7 @@ import org.apache.jena.vocabulary.*;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
 import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
-import org.opensilex.sparql.model.SPARQLModelRelation;
-import org.opensilex.sparql.model.SPARQLNamedResourceModel;
-import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.model.*;
 import org.opensilex.sparql.model.time.InstantModel;
 import org.opensilex.sparql.model.time.Time;
 import org.opensilex.sparql.utils.Ontology;
@@ -48,7 +46,6 @@ import org.apache.jena.sparql.core.Quad;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.vocabulary.OWL2;
 import org.apache.jena.vocabulary.RDFS;
-import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
@@ -119,6 +116,7 @@ class SPARQLClassQueryBuilder {
         analyzer.forEachLabelProperty((Field field, Property property) -> {
             selectBuilder.addVar(field.getName());
         });
+
 
         initializeQueryBuilder(selectBuilder, graph, lang,customHandlerByFields);
         if(filterHandler != null){
@@ -747,16 +745,18 @@ class SPARQLClassQueryBuilder {
                     quad = new Quad(graph, triple);
                     tripleHandler.accept(quad, field);
                 }
-                for (Map.Entry<String, List<String>> translation : label.getTranslationsOfAltLabels().entrySet()) {
+                SPARQLMultiLabels multiLabels = (SPARQLMultiLabels) fieldValue;
+                Property propertyMultiLabels = analyzer.getMultiLabelPropertyByField(field);
+                for (Map.Entry<String, List<String>> translation : multiLabels.getTranslationsOfAltLabels().entrySet()) {
                     String language = translation.getKey();
                     List<String> translationValues = translation.getValue();
 
                     for (String translationValue : translationValues) {
                         Node translationNode = NodeFactory.createLiteral(translationValue, language);
                         if (analyzer.isReverseRelation(field)) {
-                            triple = new Triple(translationNode, property.asNode(), uriNode);
+                            triple = new Triple(translationNode, propertyMultiLabels.asNode(), uriNode);
                         } else {
-                            triple = new Triple(uriNode, property.asNode(), translationNode);
+                            triple = new Triple(uriNode, propertyMultiLabels.asNode(), translationNode);
                         }
                         quad = new Quad(graph, triple);
                         tripleHandler.accept(quad, field);

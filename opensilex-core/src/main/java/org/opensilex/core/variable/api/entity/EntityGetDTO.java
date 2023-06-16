@@ -30,7 +30,7 @@ public class EntityGetDTO extends BaseMultiLabeledIdentifierGetDTO<EntityMultiLa
     }
 
     @Override
-    public Map<String,String> getAltLabels() {
+    public Map<String,List<String>> getAltLabels() {
         return altLabels;
     }
 

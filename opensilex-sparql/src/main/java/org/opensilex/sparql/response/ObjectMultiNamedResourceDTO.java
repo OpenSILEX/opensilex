@@ -22,7 +22,7 @@ public class ObjectMultiNamedResourceDTO {
     protected Map<String,String> prefLabels;
 
     @JsonProperty("altLabels")
-    protected Map<String,String> altLabels;
+    protected Map<String,List<String>> altLabels;
 
     @JsonProperty("definitions")
     protected Map<String,String> definitions;
@@ -33,7 +33,7 @@ public class ObjectMultiNamedResourceDTO {
     public ObjectMultiNamedResourceDTO(SPARQLMultiNamedResourceModel<?> model) {
         this.uri = model.getUri();
         this.prefLabels = model.getPrefLabels().getAllTranslations();
-        this.altLabels = model.getAltsLabels().getAllTranslations();
+        this.altLabels = model.getAltsLabels().getTranslationsOfAltLabels();
         this.definitions = model.getDefinitions().getAllTranslations();
     }
 
@@ -53,11 +53,11 @@ public class ObjectMultiNamedResourceDTO {
         this.prefLabels = prefLabels;
     }
 
-    public Map<String,String> getAltLabels() {
+    public Map<String, List<String>> getAltLabels() {
         return altLabels;
     }
 
-    public void setAltLabels(Map<String,String> altLabels) {
+    public void setAltLabels(Map<String, List<String>> altLabels) {
         this.altLabels = altLabels;
     }
 

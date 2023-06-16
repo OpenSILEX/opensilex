@@ -15,6 +15,7 @@ import org.opensilex.sparql.annotations.*;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
 import org.opensilex.sparql.model.SPARQLLabel;
+import org.opensilex.sparql.model.SPARQLMultiLabels;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.uri.generation.URIGenerator;
 import org.opensilex.utils.ClassUtils;
@@ -60,6 +61,7 @@ public final class SPARQLClassAnalyzer {
     private final Map<String, Property> objectPropertiesLists = new HashMap<>();
 
     private final Map<String, Property> labelProperties = new HashMap<>();
+    private final Map<String, Property> multiLabelProperties = new HashMap<>();
 
     private final Map<String, Property> propertiesByField = new HashMap<>();
 
@@ -245,6 +247,7 @@ public final class SPARQLClassAnalyzer {
         propertiesByField.putAll(dataProperties);
         propertiesByField.putAll(objectProperties);
         propertiesByField.putAll(labelProperties);
+        propertiesByField.putAll(multiLabelProperties);
         propertiesByField.putAll(dataPropertiesLists);
         propertiesByField.putAll(objectPropertiesLists);
 
@@ -311,7 +314,13 @@ public final class SPARQLClassAnalyzer {
         } else if ((Class<?>) fType == SPARQLLabel.class) {
             LOGGER.debug("Field " + field.getName() + " is a label of: " + objectClass.getName());
             labelProperties.put(field.getName(), property);
-        } else if (SPARQLDeserializers.existsForClass((Class<?>) fType)) {
+        }
+        else if ((Class<?>) fType == SPARQLMultiLabels.class) {
+            LOGGER.debug("Field " + field.getName() + " is a SPARQLMultiLabels of: " + objectClass.getName());
+            multiLabelProperties.put(field.getName(), property);
+        }
+
+        else if (SPARQLDeserializers.existsForClass((Class<?>) fType)) {
             LOGGER.debug("Field " + field.getName() + " is a data property of: " + objectClass.getName());
             dataProperties.put(field.getName(), property);
         } else if (mapperIndex.existsForClass((Class<? extends SPARQLResourceModel>) fType)) {
@@ -541,6 +550,12 @@ public final class SPARQLClassAnalyzer {
         });
     }
 
+    public void forEachMultiLabelProperty(BiConsumer<Field, Property> lambda) {
+        multiLabelProperties.forEach((fieldName, property) -> {
+            lambda.accept(getFieldFromName(fieldName), property);
+        });
+    }
+
     public boolean hasLabelProperty() {
         return labelProperties.size() > 0;
     }
@@ -681,8 +696,19 @@ public final class SPARQLClassAnalyzer {
         return set;
     }
 
+    public Set<Field> getMultiLabelPropertyFields() {
+        Set<Field> set = new HashSet<>();
+        multiLabelProperties.keySet().stream().forEach(fieldName -> {
+            set.add(getFieldFromName(fieldName));
+        });
+        return set;
+    }
+
     public Property getLabelPropertyByField(Field field) {
         return labelProperties.get(field.getName());
+    }
+    public Property getMultiLabelPropertyByField(Field field) {
+        return multiLabelProperties.get(field.getName());
     }
 
     public URI getURI(Object instance) {

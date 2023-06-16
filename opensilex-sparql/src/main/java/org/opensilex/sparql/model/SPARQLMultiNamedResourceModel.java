@@ -19,7 +19,7 @@ public class SPARQLMultiNamedResourceModel <T extends SPARQLMultiNamedResourceMo
             ontology = SKOS.class,
             property = "altLabel"
     )
-    private SPARQLLabel altsLabels;
+    private SPARQLMultiLabels altsLabels;
 
 
     @SPARQLProperty(
@@ -38,11 +38,11 @@ public class SPARQLMultiNamedResourceModel <T extends SPARQLMultiNamedResourceMo
         this.prefLabels = prefLabels;
     }
 
-    public SPARQLLabel getAltsLabels() {
+    public SPARQLMultiLabels getAltsLabels() {
         return altsLabels;
     }
 
-    public void setAltsLabels(SPARQLLabel altsLabels) {
+    public void setAltsLabels(SPARQLMultiLabels altsLabels) {
         this.altsLabels = altsLabels;
     }
 

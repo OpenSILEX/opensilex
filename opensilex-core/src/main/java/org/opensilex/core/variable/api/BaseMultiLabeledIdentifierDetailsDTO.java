@@ -90,7 +90,7 @@ public abstract class BaseMultiLabeledIdentifierDetailsDTO<T extends BaseMultiLa
         setSkosReferencesToModel(model);
         model.setUri(this.getUri());
         model.getPrefLabels().addAllTranslations(this.multiLabelDTO.getPrefLabels());
-        model.getAltsLabels().addAllAltLabelsTranslations(this.multiLabelDTO.getAltLabels());
+        model.getAltsLabels().addAllTranslations(this.multiLabelDTO.getAltLabels());
         model.getDefinitions().addAllTranslations(this.multiLabelDTO.getDefinitions());
 
     }

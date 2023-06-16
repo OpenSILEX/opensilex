@@ -7,10 +7,12 @@ package org.opensilex.sparql.mapping;
 
 import java.lang.reflect.Method;
 import java.net.URI;
+import java.util.List;
 import java.util.Map;
 import org.apache.jena.graph.Node;
 import org.apache.jena.rdf.model.Property;
 import org.opensilex.sparql.model.SPARQLLabel;
+import org.opensilex.sparql.model.SPARQLMultiLabels;
 import org.opensilex.sparql.service.SPARQLService;
 
 /**
@@ -35,6 +37,7 @@ class SPARQLProxyLabel extends SPARQLProxy<SPARQLLabel> {
     @Override
     protected SPARQLLabel loadData() throws Exception {
         Map<String, String> translations = service.getTranslations(graph, resourceURI, labelProperty, reverseRelation);
+
         translations.remove(lang);
         SPARQLLabel label = new SPARQLLabel(defaultValue, lang);
         label.setTranslations(translations);

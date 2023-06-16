@@ -19,7 +19,7 @@ public abstract class BaseMultiLabeledIdentifierGetDTO<T extends BaseMultiLabele
 
     public abstract Map<String,String> getPrefLabels();
 
-    public abstract Map<String,String> getAltLabels();
+    public abstract Map<String,List<String>> getAltLabels();
 
     public abstract Map<String,String> getDefinitions();
 

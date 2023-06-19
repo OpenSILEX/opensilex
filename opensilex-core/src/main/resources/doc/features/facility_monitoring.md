@@ -239,6 +239,8 @@ Also, the service assumes the `date` is a datetime with no verifications.
 The data values must be numbers, but there is no verifications.
 The service's behaviour with other types is unknown.
 
+The package 'vue-grid-layout' is not supported by Vue3.
+
 ### Possible improvements
 
 Display the median of medians directly on the tile as a simplified curve.

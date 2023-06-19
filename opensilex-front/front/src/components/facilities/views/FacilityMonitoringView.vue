@@ -92,6 +92,7 @@ import {DataService} from "opensilex-core/api/data.service";
 import {NamedResourceDTOVariableModel} from "opensilex-core/model/namedResourceDTOVariableModel";
 import {VariableGetDTO} from "opensilex-core/model/variableGetDTO";
 import {VariablesGroupGetDTO} from "opensilex-core/model/variablesGroupGetDTO";
+import {GridItemData} from "vue-grid-layout";
 
 
 @Component
@@ -100,7 +101,7 @@ export default class FacilityMonitoringView extends Vue {
 
   /// GridLayout system
   NB_COL = 4;
-  layout = [];
+  layout: Array<GridItemData> = [];
 
   uri: string = null;
   selected: FacilityGetDTO = null;
@@ -267,7 +268,7 @@ export default class FacilityMonitoringView extends Vue {
     let i = 0;
     for (let v of this.usedVariables) {
       let x = i % this.NB_COL;
-      let y = ~~(i / this.NB_COL);
+      let y = Math.floor(i / this.NB_COL);
 
       this.layout.push({
         "x":x, "y":y, "w":1, "h":2, "i":i,

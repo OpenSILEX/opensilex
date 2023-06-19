@@ -344,7 +344,7 @@ export default class VariableVisualizationTile extends Vue {
       console.debug(this.dataSeries.length + " " + this.calculatedDataSeries.length);
 
       this.$opensilex.disableLoader();
-      var promises = [];
+      let promises = [];
       let promise;
 
       for (let i = 0; i < this.calculatedDataSeries.length; ++i) {

@@ -328,7 +328,7 @@ fr:
   FacilityMonitoringView:
     variable-group-selector: Groupes de variables environnementales
     no-variable-group-selected: Toutes les variables environnementales
-    no-data: Aucune donnée trouvée pour cette periode
+    no-data: Aucune donnée trouvée pour cette période
     no-variable: Aucune variable environnementale trouvée
     start-date-help: Date de début des données affichées
     end-date-help: Date de fin des données affichées

@@ -257,7 +257,13 @@ export default class ProvenanceDetailsPage extends Vue {
             .then((http: HttpResponse<OpenSilexResponse<String>>) => {
               prov.prov_activity[0]["name"] = http.response.result;
             })
-            .catch(this.$opensilex.errorHandler);
+            .catch((http: HttpResponse<OpenSilexResponse<string>>) => {
+              if (http.status === 404) {
+                prov.prov_activity[0]["name"] = prov.prov_activity[0].rdf_type;
+              } else {
+                this.$opensilex.errorHandler(http);
+              }
+            });
           promiseArray.push(promiseActivity);
         }
         if (prov.prov_agent != null) {
@@ -276,7 +282,13 @@ export default class ProvenanceDetailsPage extends Vue {
               .then((http: HttpResponse<OpenSilexResponse<String>>) => {
                 prov.prov_agent[i]["name"] = http.response.result;
               })
-              .catch(this.$opensilex.errorHandler);
+              .catch((http: HttpResponse<OpenSilexResponse<string>>) => {
+                if (http.status === 404) {
+                  prov.prov_agent[i]["name"] = prov.prov_agent[i].uri;
+                } else {
+                  this.$opensilex.errorHandler(http);
+                }
+              });
             }
             promiseArray.push(promiseAgent);
           }

@@ -204,7 +204,7 @@
             },
             "security": {
                 "label": "Securité",
-                "users": "Utilisateurs",
+                "users": "Comptes",
                 "persons": "Personnes",
                 "groups": "Groupes",
                 "profiles": "Profils"
@@ -264,8 +264,8 @@
         "account": {
             "description": "Gérer et configurer les comptes",
             "account-uri": "URI du compte",
-            "form-first-name-placeholder": "Saisir le prénom du propriétaire du compte",
-            "form-last-name-placeholder": "Saisir le nom de lu propriétaire du compte",
+            "form-first-name-placeholder": "Saisir le prénom de la personne liée",
+            "form-last-name-placeholder": "Saisir le nom de de la personne liée",
             "form-email-placeholder": "Saisir l'adresse email du compte",
             "form-password-placeholder": "Saisir le mot de passe du compte",
             "form-admin-option-label": "Activer cette option pour créer un super-administrateur",
@@ -288,17 +288,15 @@
             "admin": "administrateur",
             "default-lang": "Langue par défaut",
             "user-groups": "groupes de l'utilisateur",
-            "holderLabel" : "Propriétaire du compte",
             "successDelete" : "compte supprimé",
-            "holderOfTheAccount" : "propriétaire du compte",
+            "linked-person" : "personne liée",
             "choices": {
                 "create-person": "créer un nouveau compte et une personne",
                 "account-only": "créer un compte qui n'appartient à personne",
                 "select-person": "créer un compte et le lie à une personne"
             },
             "person-selector": {
-                "label": "propriétaire du compte",
-                "help-message": "Choisissez une personne qui deviendra propriétaire du compte"
+                "help-message": "Choisissez une personne à lier au compte"
             },
             "errors": {
                 "user-already-exists": "Un utilisateur existe déjà avec cette URI ou cette adresse email."

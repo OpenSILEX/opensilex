@@ -288,17 +288,15 @@
             "admin": "administrator",
             "default-lang": "Default languages",
             "user-groups": "user groups",
-            "holderLabel" : "Holder of the account",
             "successDelete" : "Account removed",
-            "holderOfTheAccount" : "holder of the account",
+            "linked-person" : "linked person",
             "choices": {
                 "create-person": "create an account and a person",
-                "account-only": "create an account without holder",
-                "select-person": "create an account and set the selected person as holder"
+                "account-only": "create an account without linked person",
+                "select-person": "create an account and link it to the selected person"
             },
             "person-selector": {
-                "label": "Holder of the account",
-                "help-message": "Select the person who will hold the account"
+                "help-message": "Select the person to link with"
             },
             "errors": {
                 "user-already-exists": "Account already exists with this URI or email address."

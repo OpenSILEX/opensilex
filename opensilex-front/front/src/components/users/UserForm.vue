@@ -48,7 +48,7 @@
     ></opensilex-CheckboxForm>
 
     <!-- choices about holder of the account -->
-      <b-form-group :label="$t('component.account.holderLabel')" v-slot="{ ariaDescribedby }">
+      <b-form-group :label="$t('component.account.linked-person')" v-slot="{ ariaDescribedby }">
 
         <div id="choixPerson">
 
@@ -99,7 +99,7 @@
     <opensilex-PersonSelector
         v-if="selected === 'selectPerson'"
         :persons.sync="form.holderOfTheAccountURI"
-        label="component.account.person-selector.label"
+        label="component.account.linked-person"
         helpMessage="component.account.person-selector.help-message"
         getOnlyPersonsWithoutAccount="true"
     ></opensilex-PersonSelector>

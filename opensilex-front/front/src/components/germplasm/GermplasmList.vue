@@ -327,19 +327,19 @@ export default class GermplasmList extends Vue {
     metadataValue: undefined
   };
 
-  reset() {
-    this.filter = {
-      rdf_type: undefined,
-      name: undefined,
-      species: undefined,
-      production_year: undefined,
-      institute: undefined,
-      experiment: undefined,
-      germplasm_group: undefined,
-      uri: undefined,
-      metadataKey: undefined,
-      metadataValue: undefined
-    };
+    reset() {
+        this.filter = {
+          rdf_type: undefined,
+          name: undefined,
+          species: undefined,
+          production_year: undefined,
+          institute: undefined,
+          experiment: undefined,
+          germplasm_group: undefined,
+          uri: undefined,
+          metadataKey: undefined,
+          metadataValue: undefined
+        };
 
         this.refresh();
     }

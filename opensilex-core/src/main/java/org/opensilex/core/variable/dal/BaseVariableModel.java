@@ -62,13 +62,6 @@ public abstract class BaseVariableModel<T extends SPARQLNamedResourceModel<T>> e
     )
     private URI fromSharedResourceInstance;
 
-    @SPARQLProperty(
-            ontology = DCTerms.class,
-            property = "modified",
-            ignoreUpdateIfNull = true
-    )
-    private OffsetDateTime lastUpdateTime;
-
     public String getDescription() {
         return description;
     }
@@ -123,13 +116,5 @@ public abstract class BaseVariableModel<T extends SPARQLNamedResourceModel<T>> e
 
     public void setFromSharedResourceInstance(URI fromSharedResourceInstance) {
         this.fromSharedResourceInstance = fromSharedResourceInstance;
-    }
-
-    public OffsetDateTime getLastUpdateTime() {
-        return lastUpdateTime;
-    }
-
-    public void setLastUpdateTime(OffsetDateTime lastUpdateTime) {
-        this.lastUpdateTime = lastUpdateTime;
     }
 }

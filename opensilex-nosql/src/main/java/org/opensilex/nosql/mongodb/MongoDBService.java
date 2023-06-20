@@ -25,6 +25,7 @@ import com.mongodb.client.result.DeleteResult;
 
 import java.io.IOException;
 import java.net.URI;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -224,6 +225,11 @@ public class MongoDBService extends BaseService {
         if (instance.getUri() == null) {
             generateUniqueUriIfNullOrValidateCurrent(instance, true, uriGenerationPrefix, collectionName);
         }
+
+        if (instance.getPublicationDate() == null) {
+            instance.setPublicationDate(Instant.now());
+        }
+
         MongoCollection<T> collection = db.getCollection(collectionName, instanceClass);
         try {
             if (session != null) {
@@ -241,6 +247,10 @@ public class MongoDBService extends BaseService {
         for (T instance : instances) {
             if (instance.getUri() == null) {
                 generateUniqueUriIfNullOrValidateCurrent(instance, checkUriExist, prefix, collectionName);
+            }
+
+            if (instance.getPublicationDate() == null) {
+                instance.setPublicationDate(Instant.now());
             }
         }
 
@@ -599,6 +609,12 @@ public class MongoDBService extends BaseService {
         if (instance == null) {
             throw new NoSQLInvalidURIException(newInstance.getUri());
         }
+
+        if (newInstance.getPublicationDate() == null) {
+            newInstance.setPublicationDate(instance.getPublicationDate());
+        }
+
+        newInstance.setLastUpdateDate(Instant.now());
         collection.findOneAndReplace(eq(uriField, newInstance.getUri()), newInstance);
     }
 

@@ -40,6 +40,14 @@ public class GermplasmGroupGetDTO extends GermplasmGroupDTO {
         dto.setName(model.getName());
         dto.setDescription(model.getDescription());
 
+        if (model.getPublicationDate() != null) {
+            dto.setPublicationDate(model.getPublicationDate());
+        }
+
+        if (model.getLastUpdateDate() != null) {
+            dto.setLastUpdatedDate(model.getLastUpdateDate());
+        }
+
         return dto;
     }
 }

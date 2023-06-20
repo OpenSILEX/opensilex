@@ -57,13 +57,14 @@
                               :uri="variable.from_shared_resource_instance.apiUrl"
                               :value="variable.from_shared_resource_instance.label"
                           ></opensilex-UriView>
-                          <opensilex-DateView
-                              label="component.sharedResourceInstances.import_date.label"
-                              :value="variable.last_update_date"
-                              :isDatetime="true"
-                              :useLocaleFormat="true"
-                          ></opensilex-DateView>
                         </div>
+                        <opensilex-MetadataView
+                          v-if="variable.publisher && variable.publisher.uri"
+                          :publisher="variable.publisher"
+                          :publicationDate="variable.publication_date"
+                          :lastUpdatedDate="variable.last_updated_date" 
+                        >
+                        </opensilex-MetadataView>
                     </template>
                 </opensilex-Card>
             </b-col>
@@ -204,7 +205,6 @@ export default class VariableDetails extends Vue {
     this.dataService = this.$opensilex.getService("opensilex-core.DataService");
   }
 
-
   showEditForm() {
 
     this.getCountDataPromise(this.variable.uri).then(countResult => {
@@ -298,6 +298,7 @@ export default class VariableDetails extends Vue {
 .page {
   margin-top : 20px;
 }
+
 </style>
 
 <i18n>

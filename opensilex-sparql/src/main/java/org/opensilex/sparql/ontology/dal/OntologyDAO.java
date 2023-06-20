@@ -739,7 +739,7 @@ public final class OntologyDAO {
         List<OwlRestrictionModel> results = getClassPropertyRestriction(null, classURI, restriction.getOnProperty(), lang);
 
         if (results.isEmpty()) {
-            sparql.create(customGraph, restriction, false, true, (create, node) -> {
+            sparql.create(customGraph, restriction, false, false, true, (create, node) -> {
                 create.addInsert(customGraph, SPARQLDeserializers.nodeURI(classURI), RDFS.subClassOf, node);
             });
             return true;

@@ -12,6 +12,16 @@
                         label="OntologyClassView.add"
                         class="createButton">
                     </opensilex-CreateButton>
+                    &nbsp;
+                    <opensilex-Button
+                        v-if="user.isAdmin()"
+                        @click="reloadCache()"
+                        label="OntologyClassView.cache"
+                        :small="true"
+                        icon="fa#sync-alt"
+                        class="greenThemeColor"
+                    >
+                    </opensilex-Button>
 
                     <opensilex-ModalForm
                         ref="classForm"
@@ -104,6 +114,10 @@ export default class OntologyClassView extends Vue {
 
     parentURI;
 
+    reloadCache() {
+        this.vueJsOntologyService.reloadCache().then(http => { this.refresh() });
+    }
+
     showCreateForm(parentURI?) {
         this.parentURI = parentURI;
         this.classForm.getFormRef().setParentTypes(this.classesTree.getTree());
@@ -185,12 +199,13 @@ en:
         add: Create type
         update: Update type
         search: Search and select a type
+        cache: Reload cache
 fr:
     OntologyClassView:
         the-type: Le type
         add: Créer un type
         update: Mettre à jour le type
         search: Rechercher et sélectioner un type
-
+        cache: Recharger le cache
 </i18n>
 

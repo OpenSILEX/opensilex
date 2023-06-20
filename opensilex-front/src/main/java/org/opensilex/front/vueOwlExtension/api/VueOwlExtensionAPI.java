@@ -14,13 +14,11 @@ import org.opensilex.front.vueOwlExtension.types.VueOntologyObjectType;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.server.response.ErrorResponse;
-import org.opensilex.server.response.ObjectUriResponse;
-import org.opensilex.server.response.PaginatedListResponse;
-import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
+import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.ontology.dal.AbstractPropertyModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.DatatypePropertyModel;
@@ -272,5 +270,24 @@ public class VueOwlExtensionAPI {
         List<VueRDFTypeParameterDTO> dtoList = extendedClasses.stream().map(VueRDFTypeParameterDTO::getDTOFromModel).collect(Collectors.toList());
 
         return new PaginatedListResponse<>(dtoList).getResponse();
+    }
+
+    @POST
+    @Path(RDF_TYPE_PATH + "/reload_cache")
+    @ApiOperation("Reload cache")
+    @ApiProtected(adminOnly = true)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Reload cache"),
+            @ApiResponse(code = 409, message = "An error occurred while reloading the cache", response = ErrorResponse.class)
+    })
+    public Response reloadCache()  {
+        try {
+            SPARQLModule.getOntologyStoreInstance().reload();
+            return new SingleObjectResponse<>(Response.Status.OK).getResponse();
+        } catch (SPARQLException e) {
+            return new ErrorResponse(e).getResponse();
+        }
     }
 }

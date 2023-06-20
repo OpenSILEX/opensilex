@@ -14,10 +14,7 @@ import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.server.exceptions.ConflictException;
 import org.opensilex.server.exceptions.NotFoundException;
-import org.opensilex.server.response.ErrorResponse;
-import org.opensilex.server.response.ObjectUriResponse;
-import org.opensilex.server.response.PaginatedListResponse;
-import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
@@ -41,10 +38,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 
@@ -549,7 +543,19 @@ public class OntologyAPI {
         List<SPARQLNamedResourceModel> results = dao.getURILabels(uris, currentUser.getLanguage(), context);
         List<NamedResourceDTO> dtoList = results.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
 
-        return new SingleObjectResponse<>(dtoList).getResponse();
+        SingleObjectResponse<List<NamedResourceDTO>> response = new SingleObjectResponse<>(dtoList);
+
+        Set<URI> foundUriSet = dtoList.stream().map(NamedResourceDTO::getUri).collect(Collectors.toSet());
+        for (URI uri : uris) {
+            if (!foundUriSet.contains(uri)) {
+                response.addMetadataStatus(new StatusDTO(
+                        String.format(OntologyDAO.NO_LABEL_FOR_URI_MESSAGE, uri),
+                        StatusLevel.WARNING
+                ));
+            }
+        }
+
+        return response.getResponse();
     }
 
     @GET

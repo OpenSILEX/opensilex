@@ -135,7 +135,10 @@ export default class VariableView extends Vue {
         close_match: [],
         broad_match: [],
         narrow_match: [],
-        species: undefined
+        species: undefined,
+        publisher: undefined,
+        publication_date: undefined,
+        last_updated_date: undefined
     };
   }
 

@@ -18,12 +18,14 @@ import org.opensilex.core.germplasmGroup.api.GermplasmGroupUpdateDTO;
 import org.opensilex.core.germplasmGroup.dal.GermplasmGroupDAO;
 import org.opensilex.core.germplasmGroup.dal.GermplasmGroupModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -42,6 +44,7 @@ import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import static org.opensilex.core.germplasmGroup.api.GermplasmGroupApi.PATH;
 
@@ -86,6 +89,7 @@ public class GermplasmGroupApi {
             GermplasmGroupDAO dao = new GermplasmGroupDAO(sparql);
             GermplasmGroupModel model = dto.newModel();
             model.setCreator(currentUser.getUri());
+            model.setPublisher(currentUser.getUri());
 
             model = dao.create(model);
             URI shortUri = new URI(SPARQLDeserializers.getShortURI(model.getUri().toString()));
@@ -114,6 +118,7 @@ public class GermplasmGroupApi {
     ) throws Exception {
         GermplasmGroupDAO dao = new GermplasmGroupDAO(sparql);
         GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
+        AccountDAO accountDAO = new AccountDAO(sparql);
         ListWithPagination<GermplasmGroupModel> resultList = dao.search(
                 name,
                 germplasm,
@@ -129,6 +134,9 @@ public class GermplasmGroupApi {
                     GermplasmGroupGetDTO next = GermplasmGroupGetDTO.fromModel(model);
                     try {
                         next.setGermplasmCount(germplasmDAO.countInGroup(next.getUri(), currentUser.getLanguage()));
+                        if (Objects.nonNull(model.getPublisher())) {
+                            next.setPublisher(UserGetDTO.fromModel(accountDAO.get(model.getPublisher())));
+                        }
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
@@ -153,11 +161,15 @@ public class GermplasmGroupApi {
             ) throws Exception {
         GermplasmGroupDAO dao = new GermplasmGroupDAO(sparql);
         GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
+        AccountDAO accountDAO = new AccountDAO(sparql);
         GermplasmGroupModel model = dao.get(uri, currentUser.getLanguage(), false);
         if(model!=null){
             GermplasmGroupGetDTO result = GermplasmGroupGetDTO.fromModel(model);
             try {
                 result.setGermplasmCount(germplasmDAO.countInGroup(result.getUri(), currentUser.getLanguage()));
+                if (Objects.nonNull(model.getPublisher())) {
+                    result.setPublisher(UserGetDTO.fromModel(accountDAO.get(model.getPublisher())));
+                }
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

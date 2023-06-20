@@ -13,6 +13,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModelProperty;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +30,7 @@ import org.opensilex.core.variable.api.method.MethodGetDTO;
 import org.opensilex.core.variable.api.characteristic.CharacteristicGetDTO;
 import org.opensilex.core.variable.api.unit.UnitGetDTO;
 import org.opensilex.core.variable.dal.*;
+import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.response.NamedResourceDTO;
@@ -40,7 +42,7 @@ import org.opensilex.sparql.response.NamedResourceDTO;
  */
 
 @JsonPropertyOrder({
-        "uri", "name", "alternative_name", "description",
+        "uri", "name", "alternative_name", "description", "publisher", "publication_date", "last_updated_date",
         "entity", "entity_of_interest","characteristic", "trait", "trait_name", "method", "unit",
         "species","time_interval", "sampling_interval", "datatype",
         SKOSReferencesDTO.EXACT_MATCH_JSON_PROPERTY,
@@ -53,6 +55,15 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
 
     @JsonProperty("alternative_name")
     private String alternativeName;
+
+    @JsonProperty("publisher")
+    private UserGetDTO publisher;
+
+    @JsonProperty("publication_date")
+    private OffsetDateTime publicationDate;
+
+    @JsonProperty("last_updated_date")
+    private OffsetDateTime lastUpdatedDate;
 
     @JsonProperty("entity")
     private EntityGetDTO entity;
@@ -113,6 +124,14 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
 
         this.alternativeName = model.getAlternativeName();
 
+        if (model.getPublicationDate() != null) {
+            this.publicationDate = model.getPublicationDate();
+        }
+
+        if (model.getLastUpdateDate() != null) {
+            this.lastUpdatedDate = model.getLastUpdateDate();
+        }
+
         if(model.getSpecies() != null){
             List<SpeciesDTO> dtos = new ArrayList<>();
             for (SpeciesModel species : model.getSpecies()){
@@ -157,6 +176,30 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
 
     public void setAlternativeName(String alternativeName) {
         this.alternativeName = alternativeName;
+    }
+
+    public UserGetDTO getPublisher() {
+        return publisher;
+    }
+
+    public void setPublisher(UserGetDTO publisher) {
+        this.publisher = publisher;
+    }
+
+    public OffsetDateTime getPublicationDate() {
+        return publicationDate;
+    }
+
+    public void setPublicationDate(OffsetDateTime publicationDate) {
+        this.publicationDate = publicationDate;
+    }
+
+    public OffsetDateTime getLastUpdatedDate() {
+        return lastUpdatedDate;
+    }
+
+    public void setLastUpdatedDate(OffsetDateTime lastUpdatedDate) {
+        this.lastUpdatedDate = lastUpdatedDate;
     }
 
     @Override

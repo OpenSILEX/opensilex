@@ -32,12 +32,14 @@ import org.opensilex.core.variable.api.unit.UnitDetailsDTO;
 import org.opensilex.core.variable.dal.*;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.server.rest.validation.ValidURI;
@@ -134,6 +136,7 @@ public class VariableAPI {
             VariableDAO dao = getDao();
             VariableModel model = dto.newModel();
             model.setCreator(currentUser.getUri());
+            model.setPublisher(currentUser.getUri());
 
             model = dao.create(model);
             URI shortUri = new URI(SPARQLDeserializers.getShortURI(model.getUri().toString()));
@@ -164,10 +167,28 @@ public class VariableAPI {
             if (variable == null) {
                 throw new NotFoundURIException(uri);
             }
-            SharedResourceInstanceDTO sharedResourceInstanceDTO = variable.getFromSharedResourceInstance() != null
-                    ? coreModule.getSharedResourceInstanceDTO(variable.getFromSharedResourceInstance(), currentUser.getLanguage())
-                    : null;
-            return new SingleObjectResponse<>(new VariableDetailsDTO(variable, sharedResourceInstanceDTO)).getResponse();
+
+            // This code might be reused later if the SRI mechanic is extended to resources other than variables
+            // In that case, the logic can be moved into the response object to avoid code duplication
+            SharedResourceInstanceDTO sharedResourceInstanceDTO = coreModule.tryGetSharedResourceInstanceDTO(
+                    variable.getFromSharedResourceInstance(), currentUser.getLanguage());
+            if (variable.getFromSharedResourceInstance() != null && sharedResourceInstanceDTO == null) {
+                VariableDetailsDTO dto = new VariableDetailsDTO(variable);
+                if (Objects.nonNull(variable.getPublisher())) {
+                    dto.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(variable.getPublisher())));
+                }
+                return new SingleObjectResponse<>(dto).addMetadataStatus(new StatusDTO(
+                        "Missing SRI from configuration : " + variable.getFromSharedResourceInstance(),
+                        StatusLevel.WARNING,
+                        "server.warnings.shared-resource-instance-unknown",
+                        Collections.singletonMap("uri", variable.getFromSharedResourceInstance().toString()))).getResponse();
+            } else {
+                VariableDetailsDTO dto = new VariableDetailsDTO(variable, sharedResourceInstanceDTO);
+                if (Objects.nonNull(variable.getPublisher())) {
+                    dto.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(variable.getPublisher())));
+                }
+                return new SingleObjectResponse<>(dto).getResponse();
+            }
         }
 
         SharedResourceInstanceService service = new SharedResourceInstanceService(
@@ -627,7 +648,6 @@ public class VariableAPI {
             T model = detailsDto.toModel();
             model.setCreator(currentUser.getUri());
             model.setFromSharedResourceInstance(service.getSharedResourceInstanceURI());
-            model.setLastUpdateTime(OffsetDateTime.now());
             return model;
         }).collect(Collectors.toList());
 

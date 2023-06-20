@@ -6,6 +6,7 @@
 package org.opensilex.sparql.model;
 
 import java.net.URI;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -48,6 +49,27 @@ public class SPARQLResourceModel implements SPARQLModel {
 
     @SPARQLProperty(
             ontology = DCTerms.class,
+            property = "publisher"
+    )
+    protected URI publisher;
+    public static final String PUBLISHER_FIELD = "publisher";
+
+    @SPARQLProperty(
+            ontology = DCTerms.class,
+            property = "issued"
+    )
+    protected OffsetDateTime publicationDate;
+    public static final String PUBLICATION_DATE_FIELD = "publicationDate";
+
+    @SPARQLProperty(
+            ontology = DCTerms.class,
+            property = "modified"
+    )
+    protected OffsetDateTime lastUpdateDate;
+    public static final String LAST_UPDATE_DATE_FIELD = "lastUpdateDate";
+
+    @SPARQLProperty(
+            ontology = DCTerms.class,
             property = "creator"
     )
     protected URI creator;
@@ -78,6 +100,18 @@ public class SPARQLResourceModel implements SPARQLModel {
     public void setTypeLabel(SPARQLLabel typeLabel) {
         this.rdfTypeName = typeLabel;
     }
+
+    public URI getPublisher() { return publisher; }
+
+    public void setPublisher(URI publisher) { this.publisher = publisher; }
+
+    public OffsetDateTime getPublicationDate() { return publicationDate; }
+
+    public void setPublicationDate(OffsetDateTime publicationDate) { this.publicationDate = publicationDate; }
+
+    public OffsetDateTime getLastUpdateDate() { return lastUpdateDate; }
+
+    public void setLastUpdateDate(OffsetDateTime lastUpdateDate) { this.lastUpdateDate = lastUpdateDate; }
 
     public List<SPARQLModelRelation> getRelations() {
         return relations;

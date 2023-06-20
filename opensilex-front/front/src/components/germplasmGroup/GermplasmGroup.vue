@@ -99,18 +99,11 @@ export default class GermplasmGroup extends Vue {
   service: GermplasmService;
   $i18n: any;
   public nodes = [];
-    selected = {
-        uri: undefined,
-        name: undefined,
-        comment: undefined,
-        type: undefined,
-        typeLabel: undefined,
-        exact_match: [],
-        close_match: [],
-        broad_match: [],
-        narrow_match: []
+    selected: GermplasmGroupGetDTO = {
+      uri: undefined,
+      name: undefined,
+      description: undefined
     }
-
 
     relationsFields: any[] = [
     {
@@ -202,7 +195,7 @@ export default class GermplasmGroup extends Vue {
           let message = this.$t(form.name) + this.$i18n.t("component.common.success.update-success-message");
           this.$opensilex.showSuccessToast(message);
           this.germplasmGroupList.refresh();
-          this.displayNodeDetail(form);
+          this.afterUpdateGermplasmGroup(form.uri);
         })
         .catch(this.$opensilex.errorHandler);
   }
@@ -226,6 +219,14 @@ export default class GermplasmGroup extends Vue {
 
   get user() {
     return this.$store.state.user;
+  }
+
+  afterUpdateGermplasmGroup(uri) {
+    this.service.getGermplasmGroup(uri)
+    .then((http) => {
+      this.selected = http.response.result;
+    })
+    .catch(this.$opensilex.errorHandler);
   }
 
   public displayNodeDetail(data: any) {

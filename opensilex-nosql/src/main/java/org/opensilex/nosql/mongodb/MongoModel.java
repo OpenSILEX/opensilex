@@ -9,6 +9,7 @@ package org.opensilex.nosql.mongodb;
 import org.opensilex.uri.generation.ClassURIGenerator;
 
 import java.net.URI;
+import java.time.Instant;
 
 /**
  *
@@ -18,6 +19,9 @@ public class MongoModel implements ClassURIGenerator<MongoModel> {
 
     protected URI baseURI;
     protected URI uri;
+    protected URI publisher;
+    protected Instant publicationDate;
+    protected Instant lastUpdateDate;
 
     public static final String URI_FIELD = "uri";
     public static final String MONGO_ID_FIELD = "_id";
@@ -29,6 +33,30 @@ public class MongoModel implements ClassURIGenerator<MongoModel> {
 
     public void setUri(URI uri) {
         this.uri = uri;
+    }
+
+    public URI getPublisher() {
+        return publisher;
+    }
+
+    public void setPublisher(URI publisher) {
+        this.publisher = publisher;
+    }
+
+    public Instant getPublicationDate() {
+        return publicationDate;
+    }
+
+    public void setPublicationDate(Instant publicationDate) {
+        this.publicationDate = publicationDate;
+    }
+
+    public Instant getLastUpdateDate() {
+        return lastUpdateDate;
+    }
+
+    public void setLastUpdateDate(Instant lastUpdateDate) {
+        this.lastUpdateDate = lastUpdateDate;
     }
 
     @Override

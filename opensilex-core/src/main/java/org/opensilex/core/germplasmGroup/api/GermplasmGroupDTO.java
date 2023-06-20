@@ -7,9 +7,11 @@ package org.opensilex.core.germplasmGroup.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
+import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.rest.validation.Required;
 
 import java.net.URI;
+import java.time.OffsetDateTime;
 
 /**
  * @author Maximilian HART
@@ -24,6 +26,15 @@ public abstract class GermplasmGroupDTO {
 
     @JsonProperty("description")
     protected String description;
+
+    @JsonProperty("publisher")
+    private UserGetDTO publisher;
+
+    @JsonProperty("publication_date")
+    private OffsetDateTime publicationDate;
+
+    @JsonProperty("last_updated_date")
+    private OffsetDateTime lastUpdatedDate;
 
     public URI getUri() {
         return uri;
@@ -50,6 +61,30 @@ public abstract class GermplasmGroupDTO {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public UserGetDTO getPublisher() {
+        return publisher;
+    }
+
+    public void setPublisher(UserGetDTO publisher) {
+        this.publisher = publisher;
+    }
+
+    public OffsetDateTime getPublicationDate() {
+        return publicationDate;
+    }
+
+    public void setPublicationDate(OffsetDateTime publicationDate) {
+        this.publicationDate = publicationDate;
+    }
+
+    public OffsetDateTime getLastUpdatedDate() {
+        return lastUpdatedDate;
+    }
+
+    public void setLastUpdatedDate(OffsetDateTime lastUpdatedDate) {
+        this.lastUpdatedDate = lastUpdatedDate;
     }
     
 }

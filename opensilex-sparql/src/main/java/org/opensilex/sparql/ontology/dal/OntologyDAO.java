@@ -72,6 +72,8 @@ public final class OntologyDAO {
      */
     public static final String CUSTOM_TYPES_AND_PROPERTIES_GRAPH = "properties";
 
+    public static final String NO_LABEL_FOR_URI_MESSAGE = "No label found for URI <%s>";
+
     private final Node customGraph;
 
     public OntologyDAO(SPARQLService sparql) {
@@ -739,7 +741,7 @@ public final class OntologyDAO {
         List<OwlRestrictionModel> results = getClassPropertyRestriction(null, classURI, restriction.getOnProperty(), lang);
 
         if (results.isEmpty()) {
-            sparql.create(customGraph, restriction, false, true, (create, node) -> {
+            sparql.create(customGraph, restriction, false, false, true, (create, node) -> {
                 create.addInsert(customGraph, SPARQLDeserializers.nodeURI(classURI), RDFS.subClassOf, node);
             });
             return true;
@@ -800,14 +802,12 @@ public final class OntologyDAO {
         Locale locale = Locale.forLanguageTag(language);
         select.addFilter(SPARQLQueryHelper.langFilterWithDefault(nameField, locale.getLanguage()));
         List<SPARQLResult> results = sparql.executeSelectQuery(select);
-        String name;
-        if (results.size() >= 1) {
-            name = results.get(0).getStringValue(nameField);
-        } else {
-            name = SPARQLDeserializers.formatURI(uri).toString();
-        }
 
-        return name;
+        if (results.size() >= 1) {
+            return results.get(0).getStringValue(nameField);
+        } else {
+            throw new NotFoundException(String.format(NO_LABEL_FOR_URI_MESSAGE, uri));
+        }
     }
 
     /**

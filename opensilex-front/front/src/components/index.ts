@@ -225,6 +225,8 @@ import TextView from './common/views/TextView.vue'
 components["opensilex-TextView"] = TextView;
 import DateView from './common/views/DateView.vue'
 components["opensilex-DateView"] = DateView;
+import MetadataView from './common/views/MetadataView.vue'
+components["opensilex-MetadataView"] = MetadataView;
 import BooleanView from './common/views/BooleanView.vue'
 components["opensilex-BooleanView"] = BooleanView;
 import IconView from './common/views/IconView.vue'

@@ -43,7 +43,7 @@ public class VueOwlExtensionDAO {
         try {
             sparql.startTransaction();
             ontologyDAO.create(instance);
-            sparql.create(instanceExtension,false); // reuse the same URI as the ClassModel -> no need to check URI
+            sparql.create(instanceExtension,false, false); // reuse the same URI as the ClassModel -> no need to check URI
             sparql.commitTransaction();
         } catch (Exception ex) {
             sparql.rollbackTransaction(ex);

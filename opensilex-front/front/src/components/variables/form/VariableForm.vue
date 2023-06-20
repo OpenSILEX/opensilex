@@ -495,7 +495,6 @@ export default class VariableForm extends Vue {
         narrow_match: [],
         species: undefined,
         linked_data_nb: 0
-//        variablesGroup: []
       };
     }
 

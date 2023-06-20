@@ -157,10 +157,11 @@ import {UserGetDTO} from 'opensilex-security/index';
 import {AreaService} from "opensilex-core/api/area.service";
 import {SecurityService} from "opensilex-security/api/security.service";
 import {OntologyService} from "opensilex-core/api/ontology.service";
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 
 @Component
 export default class AreaDetails extends Vue {
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
   $store: any;
   $t: any;
   $i18n: any;
@@ -266,13 +267,21 @@ export default class AreaDetails extends Vue {
   private rdfTypeLabel() {
     if (this.rdf_type) {
       this.$opensilex
-          .getService("opensilex.OntologyService")
+          .getService<OntologyService>("opensilex.OntologyService")
           .getURILabel(this.rdf_type)
           .then((http: HttpResponse<OpenSilexResponse<string>>) => {
             this.area.rdf_type = http.response.result;
           })
-          .catch(this.$opensilex.errorHandler);
-    } else this.area.rdf_type = "";
+          .catch((http: HttpResponse<OpenSilexResponse<string>>) => {
+            if (http.status === 404) {
+              this.area.rdf_type = this.rdf_type;
+            } else {
+              this.$opensilex.errorHandler(http);
+            }
+          });
+    } else {
+      this.area.rdf_type = "";
+    }
   }
 
   private editArea() {

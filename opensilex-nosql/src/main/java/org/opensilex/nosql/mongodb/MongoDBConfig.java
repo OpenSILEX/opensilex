@@ -7,8 +7,9 @@
 package org.opensilex.nosql.mongodb;
 
 import java.util.Map;
-
+import java.util.concurrent.TimeUnit;
 import org.opensilex.config.ConfigDescription;
+import org.opensilex.nosql.mongodb.auth.MongoAuthenticationService;
 import org.opensilex.service.ServiceConfig;
 
 /**
@@ -24,7 +25,7 @@ public interface MongoDBConfig extends ServiceConfig {
             value = "MongoDB main host",
             defaultString = "localhost"
     )
-    public String host();
+    String host();
 
     @ConfigDescription(
             value = "MongoDB main host port",
@@ -39,19 +40,9 @@ public interface MongoDBConfig extends ServiceConfig {
     String database();
 
     @ConfigDescription(
-            value = "MongoDB username"
+            value = "Mongo authentication method"
     )
-    String username();
-
-    @ConfigDescription(
-            value = "MongoDB password"
-    )
-    String password();
-
-    @ConfigDescription(
-            value = "MongoDB authentication database"
-    )
-    String authDB();
+    MongoAuthenticationService authentication();
 
     @ConfigDescription(
             value = "MongoDB other connection options"
@@ -63,4 +54,32 @@ public interface MongoDBConfig extends ServiceConfig {
             defaultString = "UTC"
     )
     String timezone();
+
+    /**
+     * @see com.mongodb.connection.SocketSettings#getConnectTimeout(TimeUnit)
+     */
+    @ConfigDescription(
+            value = "Max socket connect timeout",
+            defaultInt = 10000
+    )
+    int connectTimeoutMs();
+
+    /**
+     * @see com.mongodb.connection.ClusterSettings#getServerSelectionTimeout(TimeUnit)
+     */
+    @ConfigDescription(
+            value = "Max MongoDB server selection timeout",
+            defaultInt = 10000
+    )
+    int serverSelectionTimeout();
+
+    /**
+     * @see com.mongodb.connection.SocketSettings#getReadTimeout(TimeUnit)
+     */
+    @ConfigDescription(
+            value = "Max socket read timeout",
+            defaultInt = 30000
+    )
+    int readTimeoutMs();
+
 }

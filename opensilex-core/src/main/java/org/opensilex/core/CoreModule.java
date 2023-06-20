@@ -98,7 +98,7 @@ public class CoreModule extends OpenSilexModule implements APIExtension, SPARQLE
     public SharedResourceInstanceItem getSharedResourceInstanceConfiguration(URI uri) {
         return getConfig(CoreConfig.class)
                 .sharedResourceInstances()
-                .stream().filter(config -> uri.equals(URI.create(config.uri())))
+                .stream().filter(config -> SPARQLDeserializers.compareURIs(uri, URI.create(config.uri())))
                 .findFirst()
                 .orElseThrow(() -> new BadRequestException("No SRI found in configuration for " + uri));
     }

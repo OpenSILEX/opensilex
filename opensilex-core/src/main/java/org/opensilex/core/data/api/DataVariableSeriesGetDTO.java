@@ -8,6 +8,7 @@ package org.opensilex.core.data.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import org.opensilex.core.device.api.DeviceGetDTO;
 import org.opensilex.core.variable.api.VariableDetailsDTO;
 import org.opensilex.server.rest.validation.Required;
 
@@ -21,7 +22,7 @@ import java.util.List;
  * @author brice maussang
  */
 @JsonPropertyOrder({
-        "variable", "provenances", "data_series", "calculated_series"
+        "variable", "provenances", "devices", "data_series", "calculated_series", "last_data_stored"
 })
 public class DataVariableSeriesGetDTO {
 
@@ -35,12 +36,19 @@ public class DataVariableSeriesGetDTO {
     private List<DataSimpleProvenanceGetDTO> provenances;
 
     @Valid
+    @JsonProperty("devices")
+    private List<DeviceGetDTO> devices;
+
+    @Valid
     @JsonProperty("data_series")
     private List<DataSerieGetDTO> dataSeries;
 
     @Valid
     @JsonProperty("calculated_series")
     private List<DataSerieGetDTO> calculatedSeries;
+
+    @JsonProperty("last_data_stored")
+    private DataComputedGetDTO lastData;
 
 
     public DataVariableSeriesGetDTO(VariableDetailsDTO variable) {
@@ -71,6 +79,14 @@ public class DataVariableSeriesGetDTO {
         this.provenances = provenances;
     }
 
+    public List<DeviceGetDTO> getDevices() {
+        return devices;
+    }
+
+    public void setDevices(List<DeviceGetDTO> devices) {
+        this.devices = devices;
+    }
+
     public List<DataSerieGetDTO> getDataSeries() {
         return dataSeries;
     }
@@ -85,5 +101,13 @@ public class DataVariableSeriesGetDTO {
 
     public void setCalculatedSeries(List<DataSerieGetDTO> calculatedSeries) {
         this.calculatedSeries = calculatedSeries;
+    }
+
+    public DataComputedGetDTO getLastData() {
+        return lastData;
+    }
+
+    public void setLastData(DataComputedGetDTO lastData) {
+        this.lastData = lastData;
     }
 }

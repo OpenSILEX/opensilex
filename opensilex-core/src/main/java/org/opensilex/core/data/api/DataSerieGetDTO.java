@@ -8,7 +8,6 @@ package org.opensilex.core.data.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import org.opensilex.core.data.dal.DataProvenanceModel;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -28,10 +27,10 @@ public class DataSerieGetDTO {
 
     @Valid
     @JsonProperty("data")
-    private List<DataSimpleGetDTO> data;
+    private List<DataComputedGetDTO> data;
 
 
-    public DataSerieGetDTO(DataSimpleProvenanceGetDTO provenance, List<DataSimpleGetDTO> data) {
+    public DataSerieGetDTO(DataSimpleProvenanceGetDTO provenance, List<DataComputedGetDTO> data) {
         this.provenance = provenance;
         this.data = data;
     }
@@ -44,11 +43,11 @@ public class DataSerieGetDTO {
         this.provenance = provenance;
     }
 
-    public List<DataSimpleGetDTO> getData() {
+    public List<DataComputedGetDTO> getData() {
         return data;
     }
 
-    public void setData(List<DataSimpleGetDTO> data) {
+    public void setData(List<DataComputedGetDTO> data) {
         this.data = data;
     }
 

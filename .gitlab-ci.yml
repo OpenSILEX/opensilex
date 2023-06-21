@@ -528,8 +528,10 @@ pages:
     paths:
       - public
       - logs
+    when: always
   rules:
     - if: $NIGHTLY_BUILD == "true"
+  allow_failure: true
 
 # ##########################################
 # ##  BUILD & DEPLOY FOR MISTEA TEAM

@@ -111,7 +111,7 @@ export default class OpenSilexVuePlugin {
                 for (let ext of acceptedExt) {
                     args += "&acceptedExtensions=" + encodeURIComponent(ext)
                 }
-            return resourceURI + args;         
+            return resourceURI + args;
         } else {
             return this.getURL(path);
         }

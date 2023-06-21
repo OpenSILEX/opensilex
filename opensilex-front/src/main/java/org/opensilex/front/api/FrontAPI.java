@@ -295,6 +295,20 @@ public Response getThemeResource(
             throw new NotFoundException("No matching file found with one of the supported extensions");
         }
 
+        if (CollectionUtils.isNotEmpty(acceptedExtensions)) {
+            for (String ext : acceptedExtensions) {
+                String filePathWithExtension = themeFilePath + "." + ext;
+                String mimeType = module.getFileMimeType(filePathWithExtension);
+                if (module.fileExists(filePathWithExtension)) {
+                    return Response
+                    .ok(module.getFileInputStream(filePathWithExtension), mimeType)
+                    .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
+                    .build();
+                }
+            }
+            throw new NotFoundException("No matching file found with one of the supported extensions");
+        }
+
         if (module.fileExists(themeFilePath)) {
             String mimeType = module.getFileMimeType(themeFilePath);
 

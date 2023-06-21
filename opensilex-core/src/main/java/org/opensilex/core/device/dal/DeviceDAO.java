@@ -25,6 +25,7 @@ import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.event.dal.move.PositionModel;
 import org.opensilex.core.exception.DuplicateNameException;
+import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.organisation.dal.OrganizationDAO;
@@ -39,6 +40,8 @@ import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
+import org.opensilex.security.person.dal.PersonDAO;
+import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.DateDeserializer;
@@ -49,6 +52,7 @@ import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
+import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
@@ -391,7 +395,7 @@ public class DeviceDAO {
      *
      * **/
     public DeviceModel associateVariablesToDevice(DeviceModel device, List<URI> variables, AccountModel user) throws Exception {
-
+        
         List<SPARQLModelRelation> relations = device.getRelations();
         
         // Fix cause the addRelationQuads in SPARQLClassQueryBuilder need a not null relation type  
@@ -487,6 +491,33 @@ public class DeviceDAO {
                 }
             }
         }
+        return devices;
+    }
+
+    public List<DeviceModel> getDevicesByFacility(URI facilityUri, AccountModel currentUser) throws Exception {
+        List<DeviceModel> devices = new ArrayList<>();
+
+        SelectBuilder select = new SelectBuilder();
+
+        sparql.getDefaultGraph(MoveModel.class);
+        Var target = makeVar("target");
+        Var subject = makeVar("s");
+        select.addVar(target);
+        select.setDistinct(true);
+
+        select.addWhere(subject, Oeev.to, SPARQLDeserializers.nodeURI(facilityUri))
+            .addWhere(subject, Ontology.typeSubClassAny, Oeev.Move)
+            .addWhere(subject, Oeev.concerns, target);
+
+        List<SPARQLResult> list = sparql.executeSelectQuery(select);
+
+        if (!list.isEmpty()) {
+            list.forEach(l -> System.out.println(l.getStringValue("target")));
+
+            List<URI> deviceUris = list.stream().map((x) -> URI.create(x.getStringValue("target"))).collect(Collectors.toList());
+            devices = getDevicesByURI(deviceUris, currentUser);
+        }
+
         return devices;
     }
 

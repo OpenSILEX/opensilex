@@ -106,7 +106,7 @@ export default class Dashboard extends Vue {
   justify-items: stretch;
   grid-template-areas: 
     "favorites graph1 graph1 twitter"
-    "favorites graph1 graph1 twitter"; 
+    "favorites graph1 graph1 twitter";
   width: 100%;
 }
 
@@ -133,7 +133,7 @@ export default class Dashboard extends Vue {
 
 /** Mozilla Firefox */
 @supports (-moz-appearance:none) {
-  .logoContainer { 
+  .logoContainer {
     height: 80%;
   }
 }
@@ -144,7 +144,7 @@ export default class Dashboard extends Vue {
   }
   /**Media Querry for Mozilla */
   @supports (-moz-appearance:none) {
-    .dashboardCentralLogo { 
+    .dashboardCentralLogo {
       margin-top: 0%;
     }
   }
@@ -153,7 +153,7 @@ export default class Dashboard extends Vue {
 @media only screen and (min-width: 2000px) {
   .dashboardCentralLogo{
     margin-top: 5%
-  } 
+  }
 }
 @media (max-width: 1180px) {
   .gridMainContainer {

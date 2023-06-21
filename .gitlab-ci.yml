@@ -497,17 +497,26 @@ update:nightly:builds:branch:
   variables:
     JAVA_VERSION: 11
 
-.with_java17: &java17
+.with_java14: &java14
   variables:
-    JAVA_VERSION: 17
+    JAVA_VERSION: 14
+
+#.with_java17: &java17
+#  variables:
+#    JAVA_VERSION: 17
+
 
 test:build:java11:
   <<: *java11
   <<: *test_build_on_schedules
 
-test:build:java17:
-  <<: *java17
+test:build:java14:
+  <<: *java14
   <<: *test_build_on_schedules
+
+#test:build:java17:
+#  <<: *java17
+#  <<: *test_build_on_schedules
 
 ########################
 ##  BUILD - GITLAB PAGES DOCS

@@ -54,6 +54,10 @@ public class OrganizationDAO {
     private static final Cache<URI, Map<URI, OrganizationModel>> userOrganizationCache = Caffeine.newBuilder()
             .build();
 
+    public static Cache<URI, Map<URI, OrganizationModel>> getUserOrganizationCache() {
+        return OrganizationDAO.userOrganizationCache;
+    }
+
     public OrganizationDAO(SPARQLService sparql, MongoDBService nosql) throws Exception {
         this.sparql = sparql;
         this.nosql = nosql;

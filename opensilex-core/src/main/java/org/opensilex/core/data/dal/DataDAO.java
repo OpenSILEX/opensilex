@@ -1305,61 +1305,34 @@ public class DataDAO {
         sizeProj.put("middlePoint", new Document("$trunc", divide));
         Bson projectArraySize = Aggregates.project(sizeProj);
 
-        //$project
+        //$addFields
         //{
-        //  values: 1,
-        //  date: 1,
-        //  isEvenLength: 1,
-        //  middlePoint: 1,
         //  beginMiddle: { "$subtract": [ "$middlePoint", 1] },
         //  endMiddle: "$middlePoint"
         //}
-        Document middleProj = new Document();
-        middleProj.put("values", 1);
-        middleProj.put("date", 1);
-        middleProj.put("isEvenLength", 1);
-        middleProj.put("middlePoint", 1);
         Document subtract = new Document("$subtract", Arrays.asList("$middlePoint", 1));
-        middleProj.put("beginMiddle", subtract);
-        middleProj.put("endMiddle", "$middlePoint");
-        Bson projectMiddle = Aggregates.project(middleProj);
+        Field beginMiddle = new Field("beginMiddle", subtract);
+        Field endMiddle = new Field("endMiddle", "$middlePoint");
+        Bson projectMiddle = Aggregates.addFields(beginMiddle, endMiddle);
 
-        //$project
+        //$addFields
         //{
-        //  "values": 1,
-        //  "date": 1,
-        //  "middlePoint": 1,
         //  "beginValue": { "$arrayElemAt": ["$values", "$beginMiddle"] },
-        //  "endValue": { "$arrayElemAt": ["$values", "$endMiddle"] },
-        //  "isEvenLength": 1
+        //  "endValue": { "$arrayElemAt": ["$values", "$endMiddle"] }
         //}
-        Document middleValuesProj = new Document();
-        middleValuesProj.put("values", 1);
-        middleValuesProj.put("date", 1);
-        middleValuesProj.put("isEvenLength", 1);
-        middleValuesProj.put("middlePoint", 1);
         Document arrayElemAtBegin = new Document("$arrayElemAt", Arrays.asList("$values", "$beginMiddle"));
         Document arrayElemAtEnd = new Document("$arrayElemAt", Arrays.asList("$values", "$endMiddle"));
-        middleValuesProj.put("beginValue", arrayElemAtBegin);
-        middleValuesProj.put("endValue", arrayElemAtEnd);
-        Bson projectMiddleValues = Aggregates.project(middleValuesProj);
+        Field beginValue = new Field("beginValue", arrayElemAtBegin);
+        Field endValue = new Field("endValue", arrayElemAtEnd);
+        Bson projectMiddleValues = Aggregates.addFields(beginValue, endValue);
 
-        //$project
+        //$addFields
         //{
-        //  "values": 1,
-        //  "date": 1,
-        //  "middlePoint": 1,
-        //  "middleSum": { "$add": ["$beginValue", "$endValue"] },
-        //  "isEvenLength": 1
+        //  "middleSum": { "$add": ["$beginValue", "$endValue"] }
         //}
-        Document middleSumProj = new Document();
-        middleSumProj.put("values", 1);
-        middleSumProj.put("date", 1);
-        middleSumProj.put("isEvenLength", 1);
-        middleSumProj.put("middlePoint", 1);
         Document sum = new Document("$add", Arrays.asList("$beginValue", "$endValue"));
-        middleSumProj.put("middleSum", sum);
-        Bson projectMiddleSum = Aggregates.project(middleSumProj);
+        Field middleSum = new Field("middleSum", sum);
+        Bson projectMiddleSum = Aggregates.addFields(middleSum);
 
         //$project
         //{

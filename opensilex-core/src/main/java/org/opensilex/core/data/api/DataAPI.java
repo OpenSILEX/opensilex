@@ -2203,7 +2203,7 @@ public class DataAPI {
             provMedian.setName("median_per_hour");
 
             List<DataComputedModel> medianOfMedians = computeMedianPerHour(medians);
-            List<DataComputedGetDTO> medianOfMediansDTO = medians.stream()
+            List<DataComputedGetDTO> medianOfMediansDTO = medianOfMedians.stream()
                     .map(DataComputedGetDTO::getDtoFromModel)
                     .collect(Collectors.toList());
             dataCalculatedSeriesDTOs.add(new DataSerieGetDTO(provMedian, medianOfMediansDTO));

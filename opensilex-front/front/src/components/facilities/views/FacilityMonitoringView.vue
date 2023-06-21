@@ -271,7 +271,7 @@ export default class FacilityMonitoringView extends Vue {
       let y = Math.floor(i / this.NB_COL);
 
       this.layout.push({
-        "x":x, "y":y, "w":1, "h":2, "i":i,
+        "x":x, "y":y, "w":1, "h":2, "i":''+i,
         "content": { target: this.uri, variableUri: v }
       });
       ++i;

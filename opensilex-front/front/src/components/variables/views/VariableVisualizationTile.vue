@@ -394,11 +394,7 @@ export default class VariableVisualizationTile extends Vue {
       const cleanData = HighchartsDataTransformer.transformSimpleDataForHighcharts(data, dataSerie.provenance);
       if (dataLength > 50000) {
         this.$opensilex.showInfoToast(
-            this.$i18n.t("VariableVisualizationTile.limitSizeMessageA") +
-            " " +
-            dataLength +
-            " " +
-            this.$i18n.t("VariableVisualizationTile.limitSizeMessageB")
+            this.$t("VariableVisualizationTile.limitSizeMessage", {count: dataLength }).toString()
         );
       }
 
@@ -434,8 +430,7 @@ en:
     VariableVisualizationTile:
         datatypeMessageA: The variable datatype is
         datatypeMessageB: "At this time only decimal or integer are accepted"
-        limitSizeMessageA : "There are "
-        limitSizeMessageB : " data .Only the 50 000 first data are displayed."
+        limitSizeMessage : "There are {count} data. Only the 50 000 first data are displayed."
         lastMedianData: Last median value
         lastDataStored: Last data imported on the date
 
@@ -443,8 +438,7 @@ fr:
     VariableVisualizationTile:
         datatypeMessageA:  le type de donnée de la variable est
         datatypeMessageB: "Pour le moment, seuls les types decimal ou entier sont acceptés "
-        limitSizeMessageA : "Il y a "
-        limitSizeMessageB : " données .Seules les 50 000 premières valeurs sont affichées. "
+        limitSizeMessage : "Il y a {count} données. Seules les 50 000 premières valeurs sont affichées."
         lastMedianData: Dernière valeur médiane
         lastDataStored: Dernière donnée importée à la date
 

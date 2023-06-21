@@ -74,12 +74,14 @@ import {Component, Ref, Prop, PropSync, Watch} from "vue-property-decorator";
 import Vue from "vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 
+export type Period = "day" | "week" | "month" | "6month" | "year";
+
 @Component
 export default class DatePeriodPicker extends Vue {
   $opensilex: OpenSilexVuePlugin;
 
   @PropSync("period")
-  selectedPeriod;
+  selectedPeriod: Period;
 
   startDate: Date;
   endDate: Date;

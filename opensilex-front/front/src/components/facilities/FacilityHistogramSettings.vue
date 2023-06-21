@@ -71,7 +71,7 @@
 import { Component, Ref, Prop , PropSync} from "vue-property-decorator";
 import Vue from "vue";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
-import DatePeriodPicker from "./DatePeriodPicker.vue";
+import DatePeriodPicker, {Period} from "./DatePeriodPicker.vue";
 
 @Component
 export default class FacilityHistogramSettings extends Vue {
@@ -80,7 +80,7 @@ export default class FacilityHistogramSettings extends Vue {
   @Ref("modal") readonly modal!: any;
   @Ref("periodPicker") readonly periodPicker!: DatePeriodPicker;
 
-  period: string = "week";
+  period: Period = "week";
   startDate: string;
   endDate: string;
 

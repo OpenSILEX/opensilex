@@ -127,6 +127,7 @@ import {DataSerieGetDTO} from "opensilex-core/model/dataSerieGetDTO";
 import {DataVariableSeriesGetDTO} from "opensilex-core/model/dataVariableSeriesGetDTO";
 import {DataSimpleProvenanceGetDTO} from "opensilex-core/model/dataSimpleProvenanceGetDTO";
 import {DataComputedGetDTO} from "opensilex-core/model/dataComputedGetDTO";
+import {Period} from "../../facilities/DatePeriodPicker.vue";
 
 
 @Component
@@ -153,7 +154,7 @@ export default class VariableVisualizationTile extends Vue {
   @Prop()
   target: string;
 
-  period: string = "week";
+  period: Period = "week";
 
   @Prop()
   defaultStartDate: string;
@@ -236,7 +237,7 @@ export default class VariableVisualizationTile extends Vue {
     this.graphicEndDate = this.defaultEndDate;
   }
 
-  onSettingsChanged(period: string, begin: string, end: string, selectAll: boolean) {
+  onSettingsChanged(period: Period, begin: string, end: string, selectAll: boolean) {
     this.graphicStartDate = begin;
     this.graphicEndDate = end;
     this.period = period;

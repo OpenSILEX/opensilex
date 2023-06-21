@@ -181,4 +181,23 @@ public class OrganizationAPI {
 
         return response;
     }
+
+    @POST
+    @Path("reload_cache")
+    @ApiOperation("Reload user organization cache")
+    @ApiProtected(adminOnly = true)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Reload cache"),
+            @ApiResponse(code = 409, message = "An error occurred while reloading the cache", response = ErrorResponse.class)
+    })
+    public Response reloadCache() {
+        try {
+            OrganizationDAO.getUserOrganizationCache().invalidateAll();
+            return new SingleObjectResponse<>(Response.Status.OK).getResponse();
+        } catch (Exception e) {
+            return new ErrorResponse(e).getResponse();
+        }
+    }
 }

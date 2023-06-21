@@ -21,6 +21,16 @@
             label="OrganizationTree.addSite"
             class="createButton"
           ></opensilex-CreateButton>
+          &nbsp;
+          <opensilex-Button
+            v-if="user.isAdmin()"
+            @click="reloadCache()"
+            label="OntologyClassView.cache"
+            :small="true"
+            icon="fa#sync-alt"
+            class="greenThemeColor"
+          >
+          </opensilex-Button>
         </div>
   <b-card>
     <!-- Card header -->
@@ -270,6 +280,10 @@ export default class OrganizationTree extends Vue {
 
   beforeDestroy() {
     this.langUnwatcher();
+  }
+
+  reloadCache() {
+    this.service.reloadCache().then(http => { this.refresh() });
   }
 
   refresh(uri?): Promise<void> {

@@ -883,15 +883,12 @@ OESO</rdfs:label>
     </owl:Class>
 
 
-
     <!-- http://www.opensilex.org/vocabulary/oeso#Actuator -->
-
     <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Actuator">
         <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Device"/>
         <rdfs:label xml:lang="fr">Actionneur</rdfs:label>
         <rdfs:label xml:lang="en">Actuator</rdfs:label>
     </owl:Class>
-
 
 
     <!-- http://www.opensilex.org/vocabulary/oeso#AdministrativeDocument -->

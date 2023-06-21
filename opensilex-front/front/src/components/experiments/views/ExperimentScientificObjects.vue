@@ -111,21 +111,6 @@
               </opensilex-FilterField>
             </div>
 
-            <!-- Germplasm -->
-            <div>
-              <opensilex-FilterField>
-                <b-form-group>
-                  <opensilex-GermplasmSelector
-                    :multiple="false"
-                    :germplasm.sync="filters.germplasm"
-                    :experiment="uri"
-                    class="searchFilter"
-                    @handlingEnterKey="refresh()"
-                  ></opensilex-GermplasmSelector>
-                </b-form-group>
-              </opensilex-FilterField>
-            </div>
-
             <!-- Factor Level -->
             <div>
               <opensilex-FilterField>

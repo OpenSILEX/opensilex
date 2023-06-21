@@ -388,6 +388,8 @@ export default class GenerateDataTemplateFrom extends Vue {
               variableHelp += " " + this.$t("DataTemplateForm.format-help.date");
             } else if (this.$opensilex.checkURIs(element.datatype, Xsd.DATETIME)) {
               variableHelp += " " + this.$t("DataTemplateForm.format-help.datetime");
+            } else if (this.$opensilex.checkURIs(element.datatype, Xsd.BOOLEAN)) {
+              variableHelp += " " + this.$t("DataTemplateForm.format-help.boolean");
             }
             line3.push(variableHelp);
 
@@ -459,6 +461,7 @@ en :
     format-help:
       datetime: "(format: YYYY-MM-DDThh:mm:ssZ)"
       date: "(format: YYYY-MM-DD)"
+      boolean: "(format: true/false)"
   DataTemplate:
     annotationHelp: "Annotation (On the target object)"
 fr :
@@ -476,6 +479,7 @@ fr :
     format-help:
       datetime: "(format: AAAA-MM-JJThh:mm:ssZ)"
       date: "(format: AAAA-MM-JJ)"
+      boolean: "(format: true/false)"
   DataTemplate:
     annotationHelp: "Annotation (Sur l'object cible)"
  </i18n>

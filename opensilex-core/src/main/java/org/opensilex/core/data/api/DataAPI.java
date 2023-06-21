@@ -102,7 +102,9 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAdjusters;
 import java.time.zone.ZoneRulesException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -2184,7 +2186,12 @@ public class DataAPI {
                     .sorted(Comparator.comparing(DataComputedModel::getDate))
                     .collect(Collectors.toList());
 
-            List<DataSimpleGetDTO> medianSerie = computeMedianPerHour(data);
+            // adjust datetime for median data by setting it to the middle of the hour it represents
+            medianSerie.forEach(data -> {
+                Instant middleDate = data.getDate().truncatedTo(ChronoUnit.HOURS);
+                data.setDate(middleDate.plus(30, ChronoUnit.MINUTES));
+            });
+
             medians.addAll(medianSerie);
 
             DataSimpleProvenanceGetDTO provenance = createDataSimpleProvenance(entryProv.getKey());

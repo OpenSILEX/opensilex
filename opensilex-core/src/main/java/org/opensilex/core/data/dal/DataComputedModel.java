@@ -12,7 +12,8 @@ import java.time.Instant;
 import java.util.UUID;
 
 /**
- *
+ * Provides a lightweight data model for data calculations.
+ * Only keeps the fields date, value and provenance.
  * @author brice maussang
  */
 public class DataComputedModel extends MongoModel {
@@ -22,7 +23,6 @@ public class DataComputedModel extends MongoModel {
     private Instant date;
 
     private Object value;
-    public static final String VALUE_FIELD = "value";
 
 
     public DataProvenanceModel getProvenance() {

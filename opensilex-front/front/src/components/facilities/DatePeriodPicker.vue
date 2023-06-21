@@ -1,11 +1,5 @@
 <template>
     <div>
-      <!-- periods -->
-      <b-form-group
-          :label="$t('DatePeriodPicker.display_by') + ':'"
-      >
-      </b-form-group>
-
       <div class="btn-group btn-group-toggle btnsGroup" data-toggle="buttons" :options="periods">
         <!-- day -->
         <label class="btn periodBtn btn-toggle greenThemeColor"

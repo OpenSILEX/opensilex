@@ -84,6 +84,11 @@ public class DataProvenanceModel {
         this.settings = settings;
     }
 
+
+    /*
+        Implementation of 'equals' and 'hashCode' methods
+        Used for grouping data by provenance
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

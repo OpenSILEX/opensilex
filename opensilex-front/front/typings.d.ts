@@ -21,5 +21,6 @@ declare module 'vue-grid-layout' {
         w: number;
         h: number;
         i: string;
+        content: any;
     }
 }

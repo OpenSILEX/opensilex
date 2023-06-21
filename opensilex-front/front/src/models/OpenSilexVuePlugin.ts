@@ -104,10 +104,14 @@ export default class OpenSilexVuePlugin {
     }
 
     // get ressources linked to loaded theme
-    getResourceURI(path: string): string {
+    getResourceURI(path: string, acceptedExt: Array<string>=[]): string {
         if (this.config.themeModule && this.config.themeName) {
             let resourceURI = this.baseApi + "/vuejs/theme/" + encodeURIComponent(this.config.themeModule) + "/" + encodeURIComponent(this.config.themeName) + "/resource";
-            return resourceURI + "?filePath=" + encodeURIComponent(path);
+            let args = "?filePath=" + encodeURIComponent(path);
+                for (let ext of acceptedExt) {
+                    args += "&acceptedExtensions=" + encodeURIComponent(ext)
+                }
+            return resourceURI + args;         
         } else {
             return this.getURL(path);
         }

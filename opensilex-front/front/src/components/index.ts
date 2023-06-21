@@ -670,6 +670,8 @@ import DataList from './data/DataList.vue';
 components["opensilex-DataList"] = DataList;
 import DataFilesList from './data/DataFilesList.vue';
 components["opensilex-DataFilesList"] = DataFilesList;
+import DataDetails from './data/DataDetails.vue';
+components["opensilex-DataDetails"] = DataDetails;
 
 import DataFilesImagesList from './data/DataFilesImagesList.vue';
 components["opensilex-DataFilesImagesList"] = DataFilesImagesList;

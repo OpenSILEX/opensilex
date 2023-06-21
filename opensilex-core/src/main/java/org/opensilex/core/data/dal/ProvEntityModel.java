@@ -49,11 +49,11 @@ public class ProvEntityModel {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ProvEntityModel that = (ProvEntityModel) o;
-        return Objects.equals(type, that.type) && Objects.equals(uri, that.uri);
+        return Objects.equals(uri, that.uri);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(type, uri);
+        return Objects.hash(uri);
     }
 }

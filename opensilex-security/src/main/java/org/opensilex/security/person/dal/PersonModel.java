@@ -6,13 +6,19 @@
 package org.opensilex.security.person.dal;
 
 import org.apache.jena.sparql.vocabulary.FOAF;
+import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.security.authentication.SecurityOntology;
+import org.opensilex.security.person.api.PersonDTO;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.uri.generation.ClassURIGenerator;
 
 import javax.mail.internet.InternetAddress;
+import java.net.URI;
+import java.util.Objects;
 
 /**
  *  Person model is used to stock data representing someone.
@@ -50,12 +56,56 @@ public class PersonModel extends SPARQLResourceModel implements ClassURIGenerato
     public static final String EMAIL_FIELD = "email";
 
     @SPARQLProperty(
+            ontology = SecurityOntology.class,
+            property = "memberOf"
+    )
+    private String organization;
+
+    @SPARQLProperty(
+            ontology = FOAF.class,
+            property = "phone"
+    )
+    private URI phoneNumber;
+
+    /**
+     * orcid of the person, set has the URI of the person at its creation. Can't be updated.
+     */
+    @SPARQLProperty(
+            ontology = SecurityOntology.class,
+            property = "hasOrcid",
+            ignoreUpdateIfNull = true
+    )
+    private URI orcid;
+
+    @SPARQLProperty(
             ontology = FOAF.class,
             property = "account",
             ignoreUpdateIfNull = true
             //make easier the update of persons, but harder the deletion of the link between an account and a person
     )
     private AccountModel account;
+
+    public static PersonModel fromDTO(PersonDTO personDTO, SPARQLService sparql) throws Exception {
+        PersonModel person = new PersonModel();
+        person.setUri(personDTO.getUri());
+        person.setFirstName(personDTO.getFirstName());
+        person.setLastName(personDTO.getLastName());
+        person.setOrganization(personDTO.getOrganization());
+        person.setOrcid(personDTO.getOrcid());
+        if ( Objects.nonNull(personDTO.getPhoneNumber()) ){
+            URI phone = new URI( "tel:" + personDTO.getPhoneNumber());
+            person.setPhoneNumber(phone);
+        }
+        if (personDTO.getEmail() != null) {
+            person.setEmail(new InternetAddress(personDTO.getEmail()));
+        }
+
+        AccountDAO accountDAO = new AccountDAO(sparql);
+        AccountModel account = Objects.isNull(personDTO.getAccount()) ? null : accountDAO.get(personDTO.getAccount());
+        person.setAccount(account);
+
+        return person;
+    }
 
     public String getFirstName() {
         return firstName;
@@ -76,6 +126,30 @@ public class PersonModel extends SPARQLResourceModel implements ClassURIGenerato
     public InternetAddress getEmail() { return email; }
 
     public void setEmail(InternetAddress email) { this.email = email; }
+
+    public String getOrganization() {
+        return organization;
+    }
+
+    public void setOrganization(String organization) {
+        this.organization = organization;
+    }
+
+    public URI getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(URI phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public URI getOrcid() {
+        return orcid;
+    }
+
+    public void setOrcid(URI orcid) {
+        this.orcid = orcid;
+    }
 
     public AccountModel getAccount() { return account; }
 

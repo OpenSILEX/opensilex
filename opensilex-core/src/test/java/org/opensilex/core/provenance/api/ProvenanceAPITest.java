@@ -15,6 +15,7 @@ import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.core.device.api.DeviceCreationDTO;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.provenance.dal.AgentModel;
+import org.opensilex.security.person.api.PersonDTO;
 import org.opensilex.security.person.dal.PersonDAO;
 import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.server.response.PaginatedListResponse;
@@ -144,7 +145,10 @@ public class ProvenanceAPITest extends AbstractMongoIntegrationTest {
     @Test
     public void create_with_sensor_but_it_is_the_uri_of_a_person() throws Exception {
         PersonDAO personDAO = new PersonDAO(getSparqlService());
-        PersonModel personModel = personDAO.create(null, "personne", "personne", null, null);
+        PersonDTO personDTO = new PersonDTO();
+        personDTO.setFirstName("personne");
+        personDTO.setLastName("personne");
+        PersonModel personModel = personDAO.create(personDTO);
 
         ProvenanceCreationDTO provenanceDTO = getCreationProvDTO();
         AgentModel operatorAgentModel = new AgentModel();
@@ -183,7 +187,10 @@ public class ProvenanceAPITest extends AbstractMongoIntegrationTest {
     @Test
     public void createWithOperator() throws Exception {
         PersonDAO personDAO = new PersonDAO(getSparqlService());
-        PersonModel operator = personDAO.create(null, "operator", "operator", null, null);
+        PersonDTO personDTO = new PersonDTO();
+        personDTO.setFirstName("operator");
+        personDTO.setLastName("operator");
+        PersonModel operator = personDAO.create(personDTO);
 
         ProvenanceCreationDTO provenanceDTO = getCreationProvDTO();
         AgentModel operatorAgentModel = new AgentModel();
@@ -200,7 +207,10 @@ public class ProvenanceAPITest extends AbstractMongoIntegrationTest {
     @Test
     public void createWithOperator_badRDFType() throws Exception{
         PersonDAO personDAO = new PersonDAO(getSparqlService());
-        PersonModel operator = personDAO.create(null, "operator", "operator", null, null);
+        PersonDTO personDTO = new PersonDTO();
+        personDTO.setFirstName("operator");
+        personDTO.setLastName("operator");
+        PersonModel operator = personDAO.create(personDTO);
 
         ProvenanceCreationDTO provenanceDTO = getCreationProvDTO();
         AgentModel operatorAgentModel = new AgentModel();

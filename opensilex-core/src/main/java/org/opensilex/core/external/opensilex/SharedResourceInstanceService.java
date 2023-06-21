@@ -124,7 +124,7 @@ public class SharedResourceInstanceService {
         authenticationDTO.setIdentifier(config.accountName());
         authenticationDTO.setPassword(config.accountPassword());
 
-        try (Response response = httpClient.target(config.uri())
+        try (Response response = httpClient.target(config.apiUrl())
                 .path(authenticationApiPath)
                 .path(authenticationServiceEndpoint)
                 .request(MediaType.APPLICATION_JSON)
@@ -155,7 +155,7 @@ public class SharedResourceInstanceService {
     }
 
     private void fetchPrefixMapping() {
-        WebTarget target = httpClient.target(config.uri())
+        WebTarget target = httpClient.target(config.apiUrl())
                 .path(OntologyAPI.PATH)
                 .path(OntologyAPI.GET_NAMESPACE_PATH);
 
@@ -273,7 +273,7 @@ public class SharedResourceInstanceService {
     //region Short-hand methods for common queries
 
     public <T> ListWithPagination<T> search(String path, Map<String, String[]> parameters, Class<T> type) {
-        WebTarget target = httpClient.target(config.uri())
+        WebTarget target = httpClient.target(config.apiUrl())
                 .path(path);
 
         PaginatedListResponse<T> response = get(target, parameters, genericType(PaginatedListResponse.class, javaType(type)), true);
@@ -282,7 +282,7 @@ public class SharedResourceInstanceService {
 
     public <T> T getByURI(String path, URI uri, Class<T> type) {
         try {
-            WebTarget target = httpClient.target(config.uri())
+            WebTarget target = httpClient.target(config.apiUrl())
                     .path(path)
                     .path(URLEncoder.encode(uri.toString(), StandardCharsets.UTF_8.toString()));
 
@@ -298,7 +298,7 @@ public class SharedResourceInstanceService {
             return new ListWithPagination<>(Collections.emptyList());
         }
 
-        WebTarget target = httpClient.target(config.uri())
+        WebTarget target = httpClient.target(config.apiUrl())
                 .path(path);
 
         Map<String, String[]> parameters = Collections.singletonMap(uriParam, uriCollection.stream()

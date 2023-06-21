@@ -30,6 +30,14 @@ public class ValidURIValidator implements ConstraintValidator<ValidURI, URI> {
             return true;
         }
 
-        return value.isAbsolute();
+        if (value.isAbsolute()) {
+            return true;
+        }
+
+        context.disableDefaultConstraintViolation();
+        context.buildConstraintViolationWithTemplate(value + " is not a valid URI")
+                .addConstraintViolation();
+
+        return false;
     }
 }

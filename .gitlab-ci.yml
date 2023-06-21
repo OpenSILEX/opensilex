@@ -517,17 +517,21 @@ pages:
   <<: *test_build_on_schedules
   script:
     - ln -s $JAVA_HOME java.home
+    - mkdir logs
     - cd $CI_PROJECT_DIR/opensilex-swagger-codegen-maven-plugin
-    - mvn install $MAVEN_OPTS_SCHUEDULES
+    - mvn install $MAVEN_OPTS_SCHUEDULES 1> $CI_PROJECT_DIR/logs/mvn-install-swagger.log
     - cd $CI_PROJECT_DIR
-    - mvn install site $MAVEN_OPTS_SCHUEDULES -Pwith-test-report -Pwith-security-check -DskipFrontBuild -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=ERROR
+    - mvn install site $MAVEN_OPTS_SCHUEDULES -Pwith-test-report -Pwith-security-check -DskipFrontBuild 1> $CI_PROJECT_DIR/logs/mvn-install-site.log
     - mkdir public
     - mv $CI_PROJECT_DIR/opensilex-doc/src/main/resources/generated/* public
   artifacts:
     paths:
       - public
+      - logs
+    when: always
   rules:
     - if: $NIGHTLY_BUILD == "true"
+  allow_failure: true
 
 # ##########################################
 # ##  BUILD & DEPLOY FOR MISTEA TEAM
@@ -877,7 +881,6 @@ test:emilie:deploy:
 # ##########################################
 # ##  BUILD & DEPLOY FOR PARTNERS TEAMS
 # ##########################################
-
 
 ###################################
 ##  BRICE-TEST-BUILD-DEPLOYMENT

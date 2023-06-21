@@ -22,10 +22,13 @@ import {
   Watch,
 } from "vue-property-decorator";
 import Vue from "vue";
+import {OntologyService} from "opensilex-core/api/ontology.service";
+import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 
 @Component
 export default class ScientificObjectUriView extends Vue {
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
 
   @Prop()
   value;
@@ -40,13 +43,17 @@ export default class ScientificObjectUriView extends Vue {
   onValueChange() {
     if (this.value) {
       this.$opensilex
-        .getService("opensilex.OntologyService")
+        .getService<OntologyService>("opensilex.OntologyService")
         .getURILabel(this.value)
-        .then((http) => {
+        .then(http => {
           this.label = http.response.result;
         })
-        .catch(() => {
-          this.label = this.value;
+        .catch((http: HttpResponse<OpenSilexResponse<string>>) => {
+          if (http.status === 404) {
+            this.label = this.value;
+          } else {
+            this.$opensilex.errorHandler(http);
+          }
         });
     }
   }

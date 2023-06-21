@@ -7,7 +7,8 @@
 package org.opensilex.core.data.dal;
 
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.model.*;
+import com.mongodb.client.model.IndexOptions;
+import com.mongodb.client.model.Indexes;
 import com.mongodb.client.result.DeleteResult;
 import com.opencsv.CSVWriter;
 import org.apache.jena.sparql.core.Var;

@@ -739,6 +739,16 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
             newInstance.setType(oldInstance.getType());
         }
 
+        if (oldInstance.getPublisher() != null && newInstance.getPublisher() == null) {
+            newInstance.setPublisher(oldInstance.getPublisher());
+        }
+
+        if (newInstance.getPublicationDate() == null) {
+            newInstance.setPublicationDate(oldInstance.getPublicationDate());
+        }
+
+        newInstance.setLastUpdateDate(OffsetDateTime.now());
+
         if (oldInstance.getCreator() != null && newInstance.getCreator() == null) {
             newInstance.setCreator(oldInstance.getCreator());
         }

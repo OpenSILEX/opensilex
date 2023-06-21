@@ -266,7 +266,7 @@ public class GermplasmDAO {
     }
 
     private void appendRegexUriFilter(SelectBuilder select, String uri) {
-        if (uri != null) {
+        if (!StringUtils.isEmpty(uri)) {
             try {
                 uri = NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(uri)).toString();
             } catch (Exception e) {

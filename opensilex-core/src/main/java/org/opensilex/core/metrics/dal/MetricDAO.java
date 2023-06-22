@@ -433,8 +433,9 @@ public class MetricDAO {
         // 2.group - Group variables with number of data  
         Set<Document> variablesWithDataCount = nosql.aggregate(
                 DataDAO.DATA_COLLECTION_NAME,
-                Arrays.asList(match(filter), group("$variable", Accumulators.sum("count", 1))
-                ));
+                Arrays.asList(match(filter),
+                    group("$variable", Accumulators.sum("count", 1))),
+                    Document.class);
         CountListItemModel variablesByCount = new CountListItemModel();
         variablesByCount.setType(new URI(Oeso.Variable.getURI()));
         variablesByCount.setName(Oeso.Variable.getLocalName());

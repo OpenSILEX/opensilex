@@ -523,16 +523,17 @@ public class MongoDBService extends BaseService {
         return distinct;
     }
 
-    public <Document> Set<Document> aggregate(
+    public <T> Set<T> aggregate(
             String collectionName,
-            List aggregationArgs) {
+            List<Bson> aggregationArgs,
+            Class<T> instanceClass) {
         LOGGER.debug("MONGO SEARCH - Collection : " + collectionName + " - Aggregation pipeline : " + aggregationArgs.toString());
-        Set<Document> results = new HashSet<>();
-        MongoCollection collection = db.getCollection(collectionName);
+        Set<T> results = new HashSet<>();
+        MongoCollection<T> collection = db.getCollection(collectionName, instanceClass);
 
-        AggregateIterable<Document> aggregate = collection.aggregate(aggregationArgs);
+        AggregateIterable<T> aggregate = collection.aggregate(aggregationArgs, instanceClass);
 
-        for (Document res : aggregate) {
+        for (T res : aggregate) {
             results.add(res);
         }
 

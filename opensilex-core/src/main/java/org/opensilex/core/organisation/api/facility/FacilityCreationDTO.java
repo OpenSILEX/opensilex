@@ -6,10 +6,12 @@
 package org.opensilex.core.organisation.api.facility;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModel;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.site.SiteModel;
+import org.opensilex.core.variablesGroup.dal.VariablesGroupModel;
 
 import java.net.URI;
 import java.util.List;
@@ -21,12 +23,17 @@ import java.util.stream.Collectors;
  * @author vince
  */
 @ApiModel
-public class FacilityCreationDTO extends FacilityDTO {
+@JsonPropertyOrder({"uri", "rdf_type", "name","organizations", "sites", "address", "variableGroups"})
+public
+class FacilityCreationDTO extends FacilityDTO {
     @JsonProperty("organizations")
     protected List<URI> organizations;
 
     @JsonProperty("sites")
     protected List<URI> sites;
+
+    @JsonProperty("variableGroups")
+    protected List<URI> variableGroups;
 
     public List<URI> getOrganizations() {
         return organizations;
@@ -42,6 +49,14 @@ public class FacilityCreationDTO extends FacilityDTO {
 
     public void setSites(List<URI> sites) {
         this.sites = sites;
+    }
+
+    public List<URI> getVariableGroups() {
+        return variableGroups;
+    }
+
+    public void setVariableGroups(List<URI> variableGroups) {
+        this.variableGroups = variableGroups;
     }
 
     @Override
@@ -62,6 +77,14 @@ public class FacilityCreationDTO extends FacilityDTO {
                 SiteModel site = new SiteModel();
                 site.setUri(siteURI);
                 return site;
+            }).collect(Collectors.toList()));
+        }
+
+        if (Objects.nonNull(getVariableGroups())) {
+            model.setVariableGroups(getVariableGroups().stream().map(groupURI -> {
+                VariablesGroupModel group = new VariablesGroupModel();
+                group.setUri(groupURI);
+                return group;
             }).collect(Collectors.toList()));
         }
     }

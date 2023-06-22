@@ -23,7 +23,7 @@
           v-b-tooltip.hover.top="$t(helpMessage)"
         />
       </b-form-checkbox>
-      
+
     </template>
   </opensilex-FormField>
 </template>

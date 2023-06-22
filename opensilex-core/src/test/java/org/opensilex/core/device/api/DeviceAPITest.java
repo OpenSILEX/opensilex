@@ -38,8 +38,10 @@ import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.person.api.PersonDTO;
 import org.opensilex.security.person.dal.PersonDAO;
 import org.opensilex.server.response.ErrorResponse;
+import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.model.time.InstantModel;
 import org.opensilex.sparql.service.SPARQLService;
@@ -382,29 +384,31 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
         MoveModel moveModel = createMove(deviceDto.getUri(), facilityA, facilityB, OffsetDateTime.now().toString());
 
         // test get associated facility
-        Response getResult = getJsonGetByUriResponseAsAdmin(target(facilityPath), deviceDto.getUri().toString());
+        Response getResult = getJsonGetByUriResponseAsAdmin(target(facilityPath), facilityB.getUri().toString());
         JsonNode node = getResult.readEntity(JsonNode.class);
 
-        SingleObjectResponse<FacilityGetDTO> getResponse = mapper.convertValue(
+        PaginatedListResponse<DeviceGetDTO> getResponse = mapper.convertValue(
                 node,
-                new TypeReference<SingleObjectResponse<FacilityGetDTO>>() {}
+                new TypeReference<PaginatedListResponse<DeviceGetDTO>>() {}
         );
-        FacilityGetDTO facilityGetDto = getResponse.getResult();
-        assertEquals(facilityGetDto.getUri(), facilityB.getUri());
+        List<DeviceGetDTO> deviceDtoList = getResponse.getResult();
+        assertEquals(deviceDtoList.size(), 1);
+        assertEquals(URIDeserializer.getExpandedURI(deviceDtoList.get(0).getUri().toString()), deviceDto.getUri().toString());
 
         // create new move
         moveModel = createMove(deviceDto.getUri(), facilityB, facilityA, OffsetDateTime.now().plusDays(1).toString());
 
         // test get associated facility for new move
-        getResult = getJsonGetByUriResponseAsAdmin(target(facilityPath), deviceDto.getUri().toString());
+        getResult = getJsonGetByUriResponseAsAdmin(target(facilityPath), facilityA.getUri().toString());
         node = getResult.readEntity(JsonNode.class);
 
         getResponse = mapper.convertValue(
                 node,
-                new TypeReference<SingleObjectResponse<FacilityGetDTO>>() {}
+                new TypeReference<PaginatedListResponse<DeviceGetDTO>>() {}
         );
-        facilityGetDto = getResponse.getResult();
-        assertEquals(facilityGetDto.getUri(), facilityA.getUri());
+        deviceDtoList = getResponse.getResult();
+        assertEquals(deviceDtoList.size(), 1);
+        assertEquals(URIDeserializer.getExpandedURI(deviceDtoList.get(0).getUri().toString()), deviceDto.getUri().toString());
     }
 
     @Override

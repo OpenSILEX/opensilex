@@ -62,7 +62,7 @@
                           v-if="variable.publisher && variable.publisher.uri"
                           :publisher="variable.publisher"
                           :publicationDate="variable.publication_date"
-                          :lastUpdatedDate="variable.last_updated_date" 
+                          :lastUpdatedDate="variable.last_updated_date"
                         >
                         </opensilex-MetadataView>
                     </template>

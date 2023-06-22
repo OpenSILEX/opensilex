@@ -11,6 +11,7 @@ import org.opensilex.server.rest.validation.ValidURI;
 
 import javax.validation.constraints.NotNull;
 import java.net.URI;
+import java.util.Objects;
 
 /**
  * Entity model used in "prov:used"
@@ -42,5 +43,17 @@ public class ProvEntityModel {
     public void setUri(URI uri) {
         this.uri = uri;
     }
-        
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ProvEntityModel that = (ProvEntityModel) o;
+        return Objects.equals(uri, that.uri);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(uri);
+    }
 }

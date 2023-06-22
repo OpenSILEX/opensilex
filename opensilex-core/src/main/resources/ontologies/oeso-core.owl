@@ -394,6 +394,18 @@ OESO</rdfs:label>
     </owl:ObjectProperty>
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#hasVariablesGroup -->
+
+    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasVariablesGroup">
+        <rdfs:domain rdf:resource="http://www.opensilex.org/vocabulary/oeso#Installation"/>
+        <rdfs:range rdf:resource="http://www.opensilex.org/vocabulary/oeso#VariablesGroup"/>
+        <rdfs:label xml:lang="fr">a un groupe de variables</rdfs:label>
+        <rdfs:label xml:lang="en">has variable group</rdfs:label>
+        <rdfs:comment xml:lang="en">Indicates environmental variable groups associated with a facility</rdfs:comment>
+        <rdfs:comment xml:lang="fr">Indique les groupes de variable environnementale associés à une installation</rdfs:comment>
+    </owl:ObjectProperty>
+
+
 
     <!-- http://www.opensilex.org/vocabulary/oeso#hasVariety -->
 

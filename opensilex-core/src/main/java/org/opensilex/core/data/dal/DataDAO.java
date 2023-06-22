@@ -7,13 +7,14 @@
 package org.opensilex.core.data.dal;
 
 import com.mongodb.client.MongoCollection;
-import com.mongodb.client.model.IndexOptions;
-import com.mongodb.client.model.Indexes;
+import com.mongodb.client.model.*;
 import com.mongodb.client.result.DeleteResult;
 import com.opencsv.CSVWriter;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.XSD;
 import org.bson.Document;
+import org.bson.conversions.Bson;
+import org.opensilex.core.data.api.DataComputedGetDTO;
 import org.opensilex.core.data.api.DataExportDTO;
 import org.opensilex.core.data.api.DataGetDTO;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
@@ -32,6 +33,7 @@ import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
@@ -1193,5 +1195,341 @@ public class DataDAO {
                 .map(dataModel -> DataGetDTO.getDtoFromModel(dataModel, dateVariables))
                 .collect(Collectors.toList());
         return new ListWithPagination<>(dtoList, modelList.getPage(), modelList.getPageSize(), modelList.getTotal());
+    }
+
+    /**
+     * Retrieve median per hour data series
+     * @details
+     *  data are collected and grouped by [target, variable, provenance].
+     *  The median per hour is then computed for each data series
+     * @param user
+     * @param target
+     * @param variable
+     * @param startDate
+     * @param endDate
+     * @return a list of median values
+     * @throws Exception
+     */
+    public List<DataComputedModel> computeAllMediansPerHour(AccountModel user,
+                                                   URI target,
+                                                   URI variable,
+                                                   Instant startDate,
+                                                   Instant endDate) throws Exception {
+
+        List<Bson> aggregations = new ArrayList<>();
+
+        //$match
+        //{
+        //	variable: "http://opensilex.dev/id/variable/air_temprature_degree_celsius",
+        //	target: "http://opensilex.dev/id/organization/facility.phenoarch",
+        //	date:
+        //	{
+        //		"$gte": ISODate("2022-05-31T11:26:16.856Z"),
+        //		"$lt": ISODate("2023-05-31T11:26:16.856Z")
+        //	}
+        //}
+        Document filter = new Document();
+        filter.put("variable", URIDeserializer.getExpandedURI(variable));
+        filter.put("target", URIDeserializer.getExpandedURI(target));
+        if (startDate != null || endDate != null) {
+            Document dateFilter = new Document();
+            if (startDate != null) {
+                dateFilter.put("$gte", startDate);
+            }
+            if (endDate != null) {
+                dateFilter.put("$lt", endDate);
+            }
+            filter.put("date", dateFilter);
+        }
+        Bson match = Aggregates.match(filter);
+
+        //$project
+        //{
+        //  "y":{"$year":"$date"},
+        //  "m":{"$month":"$date"},
+        //  "d":{"$dayOfMonth":"$date"},
+        //  "h":{"$hour":"$date"},
+        //  "date": "$date",
+        //  "value": "$value"
+        //}
+        Document splitDateProj = new Document();
+        splitDateProj.put("y", new Document("$year", "$date"));
+        splitDateProj.put("m", new Document("$month", "$date"));
+        splitDateProj.put("d", new Document("$dayOfMonth", "$date"));
+        splitDateProj.put("h", new Document("$hour", "$date"));
+        splitDateProj.put("provenance", "$provenance");
+        splitDateProj.put("date", "$date");
+        splitDateProj.put("value", "$value");
+        Bson projectSplitDate = Aggregates.project(splitDateProj);
+
+        //$group
+        //{
+        //  _id: {"year":"$y","month":"$m","day":"$d","hour":"$h","provenance":"$provenance"},
+        //  count: {
+        //    $sum: 1
+        //  },
+        //  dates: {
+        //    $push: "$date"
+        //  },
+        //  values: {
+        //    $push: "$value"
+        //  }
+        //}
+        Document groupDateAndProvId = new Document();
+        groupDateAndProvId.put("year", "$y");
+        groupDateAndProvId.put("month", "$m");
+        groupDateAndProvId.put("day", "$d");
+        groupDateAndProvId.put("hour", "$h");
+        groupDateAndProvId.put("provenance", "$provenance");
+        BsonField sizeAcc = new BsonField("size", new Document("$sum", 1));
+        BsonField datesAcc = new BsonField("dates", new Document("$push", "$date"));
+        BsonField valuesAcc = new BsonField("values", new Document("$push", "$value"));
+        Bson groupDateAndProv = Aggregates.group(groupDateAndProvId, sizeAcc, datesAcc, valuesAcc);
+
+        //$project
+        //{
+        //  size: 1,
+        //  values: 1,
+        //  date: { "$arrayElemAt": ["$values", 0] },
+        //  isEvenLength: { "$eq": [{ "$mod": ["$size", 2] }, 0 ] },
+        //  middlePoint: { "$trunc": { "$divide": ["$size", 2] } }
+        //}
+        Document sizeProj = new Document();
+        sizeProj.put("size", 1);
+        sizeProj.put("values", 1);
+        sizeProj.put("date", new Document("$arrayElemAt", Arrays.asList("$dates", 0)));
+        Document mod = new Document("$mod", Arrays.asList("$size", 2));
+        Document eq = new Document("eq", Arrays.asList(mod, 0));
+        sizeProj.put("isEvenLength", eq);
+        Document divide = new Document("$divide", Arrays.asList("$size", 2));
+        sizeProj.put("middlePoint", new Document("$trunc", divide));
+        Bson projectArraySize = Aggregates.project(sizeProj);
+
+        //$addFields
+        //{
+        //  beginMiddle: { "$subtract": [ "$middlePoint", 1] },
+        //  endMiddle: "$middlePoint"
+        //}
+        Document subtract = new Document("$subtract", Arrays.asList("$middlePoint", 1));
+        Field beginMiddle = new Field("beginMiddle", subtract);
+        Field endMiddle = new Field("endMiddle", "$middlePoint");
+        Bson projectMiddle = Aggregates.addFields(beginMiddle, endMiddle);
+
+        //$addFields
+        //{
+        //  "beginValue": { "$arrayElemAt": ["$values", "$beginMiddle"] },
+        //  "endValue": { "$arrayElemAt": ["$values", "$endMiddle"] }
+        //}
+        Document arrayElemAtBegin = new Document("$arrayElemAt", Arrays.asList("$values", "$beginMiddle"));
+        Document arrayElemAtEnd = new Document("$arrayElemAt", Arrays.asList("$values", "$endMiddle"));
+        Field beginValue = new Field("beginValue", arrayElemAtBegin);
+        Field endValue = new Field("endValue", arrayElemAtEnd);
+        Bson projectMiddleValues = Aggregates.addFields(beginValue, endValue);
+
+        //$addFields
+        //{
+        //  "middleSum": { "$add": ["$beginValue", "$endValue"] }
+        //}
+        Document sum = new Document("$add", Arrays.asList("$beginValue", "$endValue"));
+        Field middleSum = new Field("middleSum", sum);
+        Bson projectMiddleSum = Aggregates.addFields(middleSum);
+
+        //$project
+        //{
+        //  date: 1,
+        //  value: {
+        //    "$cond": {
+        //      if: "$isEvenLength",
+        //      then: { "$divide": ["$middleSum", 2] },
+        //      else:  { "$arrayElemAt": ["$values", "$middlePoint"] }
+        //    }
+        //  }
+        //}
+        Document finalProj = new Document();
+        finalProj.put("_id", 0);
+        finalProj.put("date", 1);
+        finalProj.put("provenance", "$_id.provenance");
+        Document condContent = new Document();
+        condContent.put("if", "$isEvenLength");
+        condContent.put("then", new Document("$divide", Arrays.asList("$middleSum", 2)));
+        condContent.put("else", new Document("$arrayElemAt", Arrays.asList("$values", "$middlePoint")));
+        Document cond = new Document("$cond", condContent);
+        finalProj.put("value", cond);
+        Bson projectFinal = Aggregates.project(finalProj);
+
+
+        aggregations.add(match);
+        aggregations.add(projectSplitDate);
+        aggregations.add(groupDateAndProv);
+        aggregations.add(projectArraySize);
+        aggregations.add(projectMiddle);
+        aggregations.add(projectMiddleValues);
+        aggregations.add(projectMiddleSum);
+        aggregations.add(projectFinal);
+
+        Set<DataComputedModel> results = nosql.aggregate(DataDAO.DATA_COLLECTION_NAME, aggregations, DataComputedModel.class);
+
+        return results.stream().collect(Collectors.toList());
+    }
+
+    /**
+     * Compute the daily average from data
+     * @param user
+     * @param target
+     * @param variable
+     * @param startDate
+     * @param endDate
+     * @return
+     * @throws Exception
+     */
+    public List<DataComputedModel> computeAllMeanPerDay(AccountModel user,
+                                                            URI target,
+                                                            URI variable,
+                                                            Instant startDate,
+                                                            Instant endDate) throws Exception {
+
+        List<Bson> aggregations = new ArrayList<>();
+
+        //$match
+        //{
+        //	variable: "http://opensilex.dev/id/variable/air_temprature_degree_celsius",
+        //	target: "http://opensilex.dev/id/organization/facility.phenoarch",
+        //  date:
+        //	{
+        //		"$gte": ISODate("2022-05-31T11:26:16.856Z"),
+        //		"$lt": ISODate("2023-05-31T11:26:16.856Z")
+        //	}
+        //}
+        Document filter = new Document();
+        filter.put("variable", URIDeserializer.getExpandedURI(variable));
+        filter.put("target", URIDeserializer.getExpandedURI(target));
+        if (startDate != null || endDate != null) {
+            Document dateFilter = new Document();
+            if (startDate != null) {
+                dateFilter.put("$gte", startDate);
+            }
+            if (endDate != null) {
+                dateFilter.put("$lt", endDate);
+            }
+            filter.put("date", dateFilter);
+        }
+        Bson match = Aggregates.match(filter);
+
+        //$project
+        //{
+        //  "y":{"$year":"$date"},
+        //  "m":{"$month":"$date"},
+        //  "d":{"$dayOfMonth":"$date"},
+        //  "date": "$date",
+        //  "value": "$value"
+        //}
+        Document splitDateProj = new Document();
+        splitDateProj.put("y", new Document("$year", "$date"));
+        splitDateProj.put("m", new Document("$month", "$date"));
+        splitDateProj.put("d", new Document("$dayOfMonth", "$date"));
+        splitDateProj.put("date", "$date");
+        splitDateProj.put("value", "$value");
+        Bson projectSplitDate = Aggregates.project(splitDateProj);
+
+        //$group
+        //{
+        //  _id: {"year":"$y","month":"$m","day":"$d"},
+        //  dates: {
+        //    $push: "$date"
+        //  },
+        //  value: {
+        //    $avg: "$value"
+        //  }
+        //}
+        Document groupDateAndProvId = new Document();
+        groupDateAndProvId.put("year", "$y");
+        groupDateAndProvId.put("month", "$m");
+        groupDateAndProvId.put("day", "$d");
+        BsonField datesAcc = new BsonField("dates", new Document("$push", "$date"));
+        BsonField avgAcc = new BsonField("value", new Document("$avg", "$value"));
+        Bson groupDateAndProv = Aggregates.group(groupDateAndProvId, datesAcc, avgAcc);
+
+        //$project
+        //{
+        //  _id: 0,
+        //  date: { "$arrayElemAt": ["$dates", 0]},
+        //  value: 1
+        //}
+        Document finalProj = new Document();
+        finalProj.put("_id", 0);
+        finalProj.put("date", new Document("$arrayElemAt", Arrays.asList("$dates", 0)));
+        finalProj.put("value", 1);
+        Bson projectFinal = Aggregates.project(finalProj);
+
+
+        aggregations.add(match);
+        aggregations.add(projectSplitDate);
+        aggregations.add(groupDateAndProv);
+        aggregations.add(projectFinal);
+
+        Set<DataComputedModel> results = nosql.aggregate(DataDAO.DATA_COLLECTION_NAME, aggregations, DataComputedModel.class);
+
+        return results.stream().collect(Collectors.toList());
+    }
+
+    /**
+     * Return the last data stored in the system
+     * @details In the case there are multiple last data, keep only the first returned
+     * @param user
+     * @param experiments
+     * @param targets
+     * @param variables
+     * @param provenances
+     * @param devices
+     * @param startDate
+     * @param endDate
+     * @param confidenceMin
+     * @param confidenceMax
+     * @param metadata
+     * @param operators
+     * @return the last data
+     * @throws Exception
+     */
+    public DataComputedGetDTO getLastDataFound(AccountModel user,
+                                             List<URI> experiments,
+                                             List<URI> targets,
+                                             List<URI> variables,
+                                             List<URI> provenances,
+                                             List<URI> devices,
+                                             Instant startDate,
+                                             Instant endDate,
+                                             Float confidenceMin,
+                                             Float confidenceMax,
+                                             Document metadata,
+                                             List<URI> operators) throws Exception {
+
+        List<Bson> aggregations = new ArrayList<>();
+
+        Bson match = Aggregates.match(searchFilter(
+                user,
+                experiments,
+                targets,
+                variables,
+                provenances,
+                devices,
+                startDate,
+                endDate,
+                confidenceMin,
+                confidenceMax,
+                metadata,
+                operators));
+        Bson sort = Aggregates.sort(new Document("date", -1));
+        Bson limit = Aggregates.limit(1);
+
+        aggregations.add(match);
+        aggregations.add(sort);
+        aggregations.add(limit);
+
+        Set<DataModel> results = nosql.aggregate(DataDAO.DATA_COLLECTION_NAME, aggregations, DataModel.class);
+
+        return results.stream().findFirst()
+                .map(DataComputedGetDTO::getDtoFromModel)
+                .orElse(null);
+
     }
 }

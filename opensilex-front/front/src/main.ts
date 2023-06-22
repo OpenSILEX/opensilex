@@ -364,6 +364,10 @@ configure({
 import JqxRangeSelector from 'jqwidgets-scripts/jqwidgets-vue/vue_jqxrangeselector.vue';
 Vue.component('JqxRangeSelector', JqxRangeSelector);
 
+import { GridLayout, GridItem, GridItemData } from 'vue-grid-layout';
+Vue.component('GridLayout', GridLayout);
+Vue.component('GridItem', GridItem);
+
 // Load vue draggable component
 import draggable from 'vuedraggable'
 Vue.component('draggable', draggable);

@@ -24,7 +24,11 @@
       </template>
 
       <template v-slot:cell(last_name)="{data}">
-        <div> {{ getHolderOfTheAccountIdentifier(data.item) }}</div>
+        <opensilex-PersonContact
+            v-if="personByAccountUri[data.item.uri]"
+            :personContact="personByAccountUri[data.item.uri]"
+        />
+        <div v-else/>
       </template>
 
       <template v-slot:cell(email)="{data}">
@@ -89,6 +93,7 @@ import Vue from "vue";
 // @ts-ignore
 import {SecurityService} from "opensilex-security/index";
 import {UserUpdateDTO} from "opensilex-security/model/userUpdateDTO";
+import {PersonDTO} from "opensilex-security/model/personDTO";
 
 @Component
 export default class UserList extends Vue {
@@ -123,6 +128,10 @@ export default class UserList extends Vue {
       class: "table-actions"
     }
   ];
+
+  personByAccountUri :{
+    [id: string]: PersonDTO;
+  } =  {}
 
   get user() {
     return this.$store.state.user;
@@ -163,11 +172,26 @@ export default class UserList extends Vue {
             options.pageSize
         )
 
-    usersResponse.response.result.forEach( user => {
-      user.groupDetails = null
+    let key_personUri_value_accountUri : {[id: string]: string} = {}
+
+    usersResponse.response.result.forEach( account => {
+      if (account.holderOfTheAccountURI) {
+        key_personUri_value_accountUri[account.holderOfTheAccountURI] = account.uri
+      }
+      account.groupDetails = null
     });
 
+    await this.mapPersonsWithAccount(key_personUri_value_accountUri)
+
     return usersResponse
+  }
+
+  async mapPersonsWithAccount(key_personUri_value_accountUri : {[id: string]: string}){
+    let personsResponse =  await this.service.getPersonsByURI( Object.keys(key_personUri_value_accountUri) )
+    personsResponse.response.result.forEach( person => {
+      let accountUri = key_personUri_value_accountUri[person.uri]
+      this.personByAccountUri[accountUri] = person
+    })
   }
 
   deleteUser(uri: string) {
@@ -187,13 +211,6 @@ export default class UserList extends Vue {
         .catch(this.$opensilex.errorHandler);
   }
 
-  getHolderOfTheAccountIdentifier(userRow) {
-    if (userRow.last_name && userRow.first_name) {
-      return userRow.last_name + ' ' + userRow.first_name
-    }
-    return null
-  }
-
   displayEnableButton(userRow) {
     let isUserConnected = userRow.email === this.user.email
     return this.user.hasCredential(this.credentials.CREDENTIAL_USER_MODIFICATION_ID)
@@ -202,7 +219,6 @@ export default class UserList extends Vue {
   }
 
   async showUsersGroups(data: any) {
-    console.log(data.item.groupDetails)
     if (data.item.groupDetails === null) {
       await this.service
           .getUserGroups(data.item.uri)

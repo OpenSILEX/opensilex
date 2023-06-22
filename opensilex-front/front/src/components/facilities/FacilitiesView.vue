@@ -219,6 +219,8 @@ export default class FacilitiesView extends Vue {
       .getService<OrganizationsService>("opensilex.OrganizationsService")
       .deleteFacility(uri)
       .then(() => {
+        let message = this.$i18n.t("InfrastructureFacilityForm.name") + " " + uri + " " + this.$i18n.t("component.common.success.delete-success-message");
+        this.$opensilex.showSuccessToast(message);
         this.$emit("onDelete", uri);
       });
   }

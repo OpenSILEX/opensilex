@@ -90,6 +90,8 @@ export default class FacilityModalForm extends Vue {
       .createFacility(form)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         let uri = http.response.result;
+        let message = this.$i18n.t("InfrastructureFacilityForm.name") + " " + form.name + " " + this.$i18n.t("component.common.success.creation-success-message");
+        this.$opensilex.showSuccessToast(message);
         console.debug("Infrastructure facility created", uri);
       })
       .catch((error) => {
@@ -131,6 +133,8 @@ export default class FacilityModalForm extends Vue {
       .updateFacility(form)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         let uri = http.response.result;
+        let message = this.$i18n.t("InfrastructureFacilityForm.name") + " " + form.name + " " + this.$i18n.t("component.common.success.update-success-message");
+        this.$opensilex.showSuccessToast(message);
         console.debug("Infrastructure facility updated", uri);
       })
       .catch(this.$opensilex.errorHandler);
@@ -144,12 +148,14 @@ export default class FacilityModalForm extends Vue {
 <i18n>
 en:
   InfrastructureFacilityForm:
+    name: The infrastructure
     facility-uri: Infrastructure facility URI
     form-name-placeholder: Enter infrastructure facility name
     form-type-placeholder: Select infrastructure facility type
     infrastructure-facility-already-exists: Infrastructure facility already exists with this URI
 fr:
   InfrastructureFacilityForm:
+    name: L'installation
     facility-uri: URI de l'installation environnementale
     form-name-placeholder: Saisir le nom de l'installation environnementale
     form-type-placeholder: Sélectionner le type de l'installation environnementale

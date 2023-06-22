@@ -184,6 +184,8 @@ export default class ProjectDescription extends Vue {
     this.service
       .deleteProject(uri)
       .then(() => {
+        let message = this.$i18n.t("ProjectList.name") + " " + uri + " " + this.$i18n.t("component.common.success.delete-success-message");
+        this.$opensilex.showSuccessToast(message);
         this.$router.push({
           path: "/projects"
         });

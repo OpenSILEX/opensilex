@@ -8,7 +8,7 @@ import org.opensilex.server.rest.validation.ValidURI;
 import javax.validation.constraints.Email;
 import java.net.URI;
 
-public class AccountWithoutHolderDTO {
+public class AccountDTO {
 
     protected URI uri;
 
@@ -20,6 +20,8 @@ public class AccountWithoutHolderDTO {
     protected String language;
 
     protected Boolean enable;
+
+    protected URI holderOfTheAccountURI;
 
     @ValidURI
     @ApiModelProperty(value = "Account URI", example = "http://opensilex.dev/users#jean.michel.inrae")
@@ -65,5 +67,15 @@ public class AccountWithoutHolderDTO {
 
     public void setEnable(Boolean enable) {
         this.enable = enable;
+    }
+
+    @ValidURI
+    @ApiModelProperty(value = "URI of the Person linked to this account", example = "http://opensilex.dev/person#Jean.Michel.mistea")
+    public URI getHolderOfTheAccountURI() {
+        return holderOfTheAccountURI;
+    }
+
+    public void setHolderOfTheAccountURI(URI uri) {
+        this.holderOfTheAccountURI = uri;
     }
 }

@@ -23,7 +23,6 @@ import org.opensilex.security.person.dal.PersonDAO;
 import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.ValidURI;
-import org.opensilex.sparql.response.CreatedUriResponse;
 import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.response.NamedResourcePaginatedListResponse;
 import org.opensilex.sparql.service.SPARQLService;
@@ -124,7 +123,7 @@ public class UserAPI {
         sparql.startTransaction();
         try {
             PersonDAO personDAO = new PersonDAO(sparql);
-            PersonModel person = personDAO.create(userDTO.toPersonDTO());
+            PersonModel person = personDAO.create(userDTO.createCorrespondingPersonDTO());
 
             AccountModel user = accountDAO.create(
                     userDTO.getUri(),
@@ -318,7 +317,7 @@ public class UserAPI {
                 PersonModel holderOfTheAccount = account.getHolderOfTheAccount();
 
                 if (Objects.isNull(newHolderOfTheAccount) && Objects.nonNull(holderOfTheAccount) ) {
-                    PersonDTO holderToUpdate = userDTO.toPersonDTO();
+                    PersonDTO holderToUpdate = userDTO.createCorrespondingPersonDTO();
                     String email = Objects.nonNull(holderOfTheAccount.getEmail()) ? holderOfTheAccount.getEmail().toString() : null;
                     holderToUpdate.setEmail(email);
 

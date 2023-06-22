@@ -120,7 +120,7 @@ public class AccountAPI {
      * @param accountDAO : an instance of AccountDao used to perform verifications
      * @throws ConflictException with personalised message if another account already has this uri or this email
      */
-    public static void checkBeforeCreatingAccount(AccountWithoutHolderDTO accountDTO, AccountDAO accountDAO, AccountModel currentUser, SPARQLService sparql) throws Exception {
+    public static void checkBeforeCreatingAccount(AccountDTO accountDTO, AccountDAO accountDAO, AccountModel currentUser, SPARQLService sparql) throws Exception {
         if (accountDTO.isAdmin() && (currentUser == null || !currentUser.isAdmin())) {
             throw new ForbiddenException("You must be an admin to create other admin accounts");
         }

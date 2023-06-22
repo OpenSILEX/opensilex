@@ -234,6 +234,7 @@ export default class FacilityMonitoringView extends Vue {
             undefined,
             undefined,
             undefined,
+            undefined,
             0,
             0)
         .then((http: HttpResponse<OpenSilexResponse<Array<VariableGetDTO>>>) => {

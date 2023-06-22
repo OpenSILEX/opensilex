@@ -504,6 +504,8 @@ export default class OrganizationTree extends Vue {
       .deleteInfrastructure(uri)
       .then(() => {
         this.$emit("onDelete");
+        let message = this.$i18n.t("InfrastructureForm.name") + " " + uri + " " + this.$i18n.t("component.common.success.delete-success-message");
+        this.$opensilex.showSuccessToast(message);
         this.refresh();
       })
       .catch(this.$opensilex.errorHandler);

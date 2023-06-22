@@ -394,6 +394,8 @@ export default class DeviceDescription extends Vue {
         .then(() => {
           this.$router.go(-1);
           this.$emit("onDelete", uri);
+          let message = this.$i18n.t("DeviceForm.name") + " " + uri + " " + this.$i18n.t("component.common.success.delete-success-message");
+          this.$opensilex.showSuccessToast(message);
         })
         .catch((error) => {
           if (error.response.result.title && error.response.result.title === "LINKED_DEVICE_ERROR") {

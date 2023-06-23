@@ -147,10 +147,10 @@ $store: OpenSilexStore
 
   get languages() {
     let langs = [];
-    Object.keys(this.$i18n.messages).forEach(([key, value]) => {
+    Object.keys(this.$i18n.messages).forEach(key => {
       langs.push({
         id: key,
-        label: value
+        label: this.$t("component.header.language." + key)
       });
     });
     return langs;

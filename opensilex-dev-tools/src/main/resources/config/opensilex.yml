@@ -1,11 +1,11 @@
 ontologies:
-    baseURI: http://www.phenome-fppn.fr/
+    baseURI: http://opensilex.dev/
     baseURIAlias: dev
     sparql:
         #        implementation: org.opensilex.sparql.rdf4j.RDF4JInMemoryServiceFactory
         config:
-            serverURI: http://138.102.159.37:8080/rdf4j-server/
-            repository: test-gabriel
+            serverURI: http://localhost:8667/rdf4j-server/
+            repository: opensilex
 
 file-system:
     fs:
@@ -20,16 +20,21 @@ file-system:
                 #         implementation: org.opensilex.fs.irods.IrodsFileSystemConnection
                 #         config:
                 #             basePath: /FranceGrillesZone/home/fg-phenome/PHIS
-
+                gridfs:
+                    implementation: org.opensilex.fs.gridfs.GridFSConnection
+                    config:
+                        host: localhost
+                        port: 8668
+                        database: opensilex
             # customPath:
             #     datafile/: irods
 
 big-data:
     mongodb:
         config:
-            host: 138.102.159.37
-            port: 27017
-            database: phis-test
+            host: localhost
+            port: 8668
+            database: opensilex
     #            timezone: Europe/Paris
 
 phisws:
@@ -69,16 +74,3 @@ phisws:
 system:
     ignoredModules:
         org.opensilex.opensilex-mobile.MobileModule: opensilex-mobile.jar
-        org.opensilex.opensilex-dataverse.DataverseModule: opensilex-dataverse.jar
-
-
-# dataverse:
-#     externalAPIKey: "****-****-****-****-****"
-#     rechercheDataGouvBasePath: "https://data-preproduction.inrae.fr"
-#     dataverseAlias: "opensilex-tests"
-#     dataverseLanguages:
-#         - en
-#         - fr
-#     datasetMetadataLanguages:
-#         - en
-#         - fr

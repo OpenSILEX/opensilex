@@ -96,6 +96,7 @@ import {UserUpdateDTO} from "opensilex-security/model/userUpdateDTO";
 import {PersonDTO} from "opensilex-security/model/personDTO";
 import {UserGetDTO} from "opensilex-security/model/userGetDTO";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
+import {SlotDetails} from "../common/views/TableAsyncView.vue";
 import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
 
 @Component
@@ -137,7 +138,7 @@ export default class UserList extends Vue {
   } =  {}
 
   groupDetailsByAccountUri :{
-    [id: string]: [NamedResourceDTO];
+    [id: string]: NamedResourceDTO[];
   } =  {}
 
   get user() {
@@ -224,13 +225,13 @@ export default class UserList extends Vue {
         && !isUserConnected
   }
 
-  async showUsersGroups(data: any) {
+  async showUsersGroups(data: SlotDetails<UserGetDTO>) {
 
     let accountUri :string = data.item.uri
 
     if ( !this.groupDetailsByAccountUri[accountUri] ) {
       let groupResponse :HttpResponse<OpenSilexResponse<Array<NamedResourceDTO>>> = await this.service.getUserGroups(accountUri)
-      let groups :[NamedResourceDTO] = groupResponse.response.result
+      let groups :NamedResourceDTO[] = groupResponse.response.result
       this.groupDetailsByAccountUri[accountUri] = groups
     }
 

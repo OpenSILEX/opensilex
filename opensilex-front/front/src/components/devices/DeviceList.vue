@@ -711,7 +711,7 @@ fr:
             variable-placeholder: Sélectionner une variable
             start_up: Date d'obtention
             start_up-placeholder: Entrer une année
-            facility: Infrastructure environnementale
+            facility: Installation environnementale
             facility-placeholder: Sélectionner une infrastructure
             brand: Marque
             brand-placeholder: Entrer une marque

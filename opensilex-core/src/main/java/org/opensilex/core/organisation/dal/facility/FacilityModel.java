@@ -23,7 +23,8 @@ import java.util.stream.Collectors;
         ontology = Oeso.class,
         resource = "Facility",
         graph = OrganizationModel.GRAPH,
-        prefix = "infra"
+        prefix = "infra",
+        handleCustomProperties = true
 )
 public class FacilityModel extends SPARQLTreeModel<FacilityModel> {
 

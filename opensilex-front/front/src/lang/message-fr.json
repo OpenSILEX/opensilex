@@ -669,7 +669,7 @@
             },
             "filter-placeholder": "Rechercher des installations environnementales...",
             "view": {
-                "title": "Infrastructure environnementale",
+                "title": "Installation environnementale",
                 "list": {
                     "previous": "Consulter l'infrastructure précédente",
                     "next": "Consulter l'infrastructure suivante",

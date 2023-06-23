@@ -44,7 +44,7 @@
         <strong class="capitalize-first-letter">{{ $t("component.account.user-groups") }}:</strong>
         <ul>
           <li
-              v-for="groupDetail in  data.item.groupDetails"
+              v-for="groupDetail in  groupDetailsByAccountUri[data.item.uri]"
               v-bind:key="groupDetail.uri"
           >{{ groupDetail.name }}
           </li>
@@ -94,6 +94,9 @@ import Vue from "vue";
 import {SecurityService} from "opensilex-security/index";
 import {UserUpdateDTO} from "opensilex-security/model/userUpdateDTO";
 import {PersonDTO} from "opensilex-security/model/personDTO";
+import {UserGetDTO} from "opensilex-security/model/userGetDTO";
+import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
+import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
 
 @Component
 export default class UserList extends Vue {
@@ -133,6 +136,10 @@ export default class UserList extends Vue {
     [id: string]: PersonDTO;
   } =  {}
 
+  groupDetailsByAccountUri :{
+    [id: string]: [NamedResourceDTO];
+  } =  {}
+
   get user() {
     return this.$store.state.user;
   }
@@ -164,7 +171,7 @@ export default class UserList extends Vue {
   }
 
   async searchUsers(options) {
-    let usersResponse : any = await this.service
+    let usersResponse : HttpResponse<OpenSilexResponse<UserGetDTO[]>> = await this.service
         .searchUsers(
             this.filter,
             options.orderBy,
@@ -174,11 +181,10 @@ export default class UserList extends Vue {
 
     let key_personUri_value_accountUri : {[id: string]: string} = {}
 
-    usersResponse.response.result.forEach( account => {
+     usersResponse.response.result.forEach( account => {
       if (account.holderOfTheAccountURI) {
         key_personUri_value_accountUri[account.holderOfTheAccountURI] = account.uri
       }
-      account.groupDetails = null
     });
 
     await this.mapPersonsWithAccount(key_personUri_value_accountUri)
@@ -219,14 +225,15 @@ export default class UserList extends Vue {
   }
 
   async showUsersGroups(data: any) {
-    if (data.item.groupDetails === null) {
-      await this.service
-          .getUserGroups(data.item.uri)
-          .then((groupsResponse: any) => {
-            data.item.groupDetails = groupsResponse.response.result;
-          });
 
+    let accountUri :string = data.item.uri
+
+    if ( !this.groupDetailsByAccountUri[accountUri] ) {
+      let groupResponse :HttpResponse<OpenSilexResponse<Array<NamedResourceDTO>>> = await this.service.getUserGroups(accountUri)
+      let groups :[NamedResourceDTO] = groupResponse.response.result
+      this.groupDetailsByAccountUri[accountUri] = groups
     }
+
     data.toggleDetails()
   }
 

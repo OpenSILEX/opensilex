@@ -3,3 +3,5 @@
 export * from './{{{ classFilename }}}';
 {{/model}}
 {{/models}}
+// This is used to circumvent cases where the front is generated but there are no models to generate. Otherwise model/models.ts isn't recognised as a ts module.
+export const __fakeExport = "";

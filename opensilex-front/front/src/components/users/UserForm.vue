@@ -145,10 +145,10 @@ $securityService : SecurityService
 
   get languages() {
     let langs = [];
-    Object.keys(this.$i18n.messages).forEach(key => {
+    Object.keys(this.$i18n.messages).forEach(([key, value]) => {
       langs.push({
         id: key,
-        label: this.$t("component.header.language." + key)
+        label: value
       });
     });
     return langs;

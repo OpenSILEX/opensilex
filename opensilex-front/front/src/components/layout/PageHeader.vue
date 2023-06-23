@@ -1,7 +1,8 @@
 <template>
   <div class="page-header">
+      <opensilex-Icon v-if="hasIcon" :icon="icon" class="title-icon" />
+      <img v-else-if="hasImage" v-bind:src="imageSrc" class="title-image"/>
 
-      <opensilex-Icon :icon="icon" class="title-icon" />
       <div class="header-title">
     <h5>
       <span class="title-title"><slot name="title">&nbsp;{{ $t(title) }}</slot></span>
@@ -33,6 +34,15 @@ export default class PageHeader extends Vue {
 
   @Prop({default: false})
   isExperimentalFeature: boolean;
+
+  @Prop({default: true})
+  hasIcon: boolean;
+
+  @Prop({default: false})
+  hasImage: boolean;
+
+  @Prop()
+  imageSrc: string;
 }
 </script>
 
@@ -41,6 +51,7 @@ export default class PageHeader extends Vue {
 .page-header{
   z-index: 1030;
 }
+
 .title-icon {
   float: left;
   width: 40px;
@@ -55,6 +66,17 @@ export default class PageHeader extends Vue {
   align-items: center;
   box-shadow: 0 2px 12px -3px rgba(0, 0, 0, 0.5);
   background-color: #00a38d;
+}
+
+.title-image{
+    float: left;
+    /*height: 40px;*/
+    width: 9em;
+    margin-right: 20px;
+    vertical-align: middle;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
 }
 
 h5 {
@@ -85,7 +107,7 @@ h5 {
     height: 37px;
     overflow: hidden;
   }
-    .header-desc{
+  .header-desc{
     width: 65%;
     height: 20px;
     overflow: hidden;
@@ -127,5 +149,11 @@ h5 {
   .title-title, .title-description {
     margin-left: 30px
   }
+}
+
+@media (min-width: 200px) and (max-width: 675px) {
+    .title-image{
+        display: none;
+    }
 }
 </style>

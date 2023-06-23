@@ -39,7 +39,10 @@ export default class PersonSelector extends Vue {
   helpMessage: string;
 
   @Prop()
-  getOnlyPersonsWithoutAccount: boolean
+  getOnlyPersonsWithoutAccount: boolean;
+
+  @Prop()
+  personPropertyExistsCondition : string;
 
   loadPersons(personsURI) {
     return this.$opensilex
@@ -51,20 +54,50 @@ export default class PersonSelector extends Vue {
       );
   }
 
-  searchPersons(searchQuery, page) {
+  searchPersons(searchQuery, page, pageSize) {
     return this.$opensilex
       .getService<SecurityService>("opensilex.SecurityService")
-      .searchPersons(searchQuery, this.getOnlyPersonsWithoutAccount, undefined, page, 0);
+      .searchPersons(searchQuery, this.getOnlyPersonsWithoutAccount, undefined, page, pageSize)
+      .then( (http: HttpResponse<OpenSilexResponse<Array<PersonDTO>>>) =>{
+      if (this.personPropertyExistsCondition){
+          let tmp = http.response.result.map(value => {
+              if (!value[this.personPropertyExistsCondition]){
+                  return {
+                      email : value.email,
+                      uri : value.uri,
+                      account : value.account,
+                      first_name : value.first_name,
+                      last_name : value.last_name,
+                      isDisabled : true
+                  }
+              } else {
+                  return {
+                      email : value.email,
+                      uri : value.uri,
+                      account : value.account,
+                      first_name : value.first_name,
+                      last_name : value.last_name,
+                      isDisabled : false
+                  }
+              }
+          })
+          http.response.result = tmp
+          return http;
+      } else {
+          return http
+      }
+      });
   }
 
-  personToSelectNode(dto: PersonDTO) {
+  personToSelectNode(dto) {
     let personLabel = dto.first_name + " " + dto.last_name;
     if ( dto.email !== null ){
       personLabel += " <" + dto.email + ">";
     }
     return {
       label: personLabel,
-      id: dto.uri
+      id: dto.uri,
+      isDisabled: dto.isDisabled
     };
   }
 

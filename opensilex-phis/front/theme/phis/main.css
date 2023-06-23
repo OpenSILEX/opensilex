@@ -243,6 +243,18 @@
     padding-top: 8px;
 }
 
+a.external-url-link {
+    color:LinkText;
+}
+
+a.external-url-link:visited{
+    color: VisitedText;
+}
+
+a.external-url-link:hover {
+    text-decoration: underline ;
+}
+
 /*************************************
 * TABLES
 *************************************/
@@ -702,6 +714,15 @@
 
 .datafilesList, .experimentScientificObjectsList, .dataList {
     width: 100%;
+}
+
+.b-tooltip .tooltip-inner a {
+    color: white;
+    text-decoration: underline dashed;
+}
+
+.b-tooltip .tooltip-inner a:hover {
+    text-decoration: underline ;
 }
 
 /********************************

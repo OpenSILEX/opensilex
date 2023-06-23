@@ -155,6 +155,11 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
   })
   successMessage: string | Function;
 
+  @Prop({
+      default: false
+  })
+  overrideSuccessMessage: boolean;
+
   disableValidation: boolean = true;
 
   get display(): boolean {
@@ -209,14 +214,17 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
     } else {
       successMessage = this.$i18n.t(this.successMessage);
     }
-    if (this.editMode) {
-      successMessage =
-        successMessage +
-        this.$i18n.t("component.common.success.update-success-message");
-    } else {
-      successMessage =
-        successMessage +
-        this.$i18n.t("component.common.success.creation-success-message");
+
+    if (!this.overrideSuccessMessage){
+        if (this.editMode) {
+            successMessage =
+                successMessage +
+                this.$i18n.t("component.common.success.update-success-message");
+        } else {
+            successMessage =
+                successMessage +
+                this.$i18n.t("component.common.success.creation-success-message");
+        }
     }
     this.$opensilex.showSuccessToast(successMessage);
   }

@@ -27,7 +27,6 @@ import org.opensilex.core.device.dal.DeviceSearchFilter;
 import org.opensilex.core.exception.UnableToParseDateException;
 import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
-import org.opensilex.core.organisation.api.facility.FacilityGetDTO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
@@ -976,27 +975,29 @@ public class DeviceAPI {
 
     @GET
     @Path("{uri}/facility")
-    @ApiOperation("Get device facility")
+    @ApiOperation("Get devices by facility")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return facility where the device is set", response = FacilityGetDTO.class)
+            @ApiResponse(code = 200, message = "Return devices by facility", response = DeviceGetDTO.class, responseContainer = "List")
     })
-    public Response getDeviceFacility(
-            @ApiParam(value = "Device URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI uri
+    public Response getDevicesByFacility(
+            @ApiParam(value = "target URI", example = "http://example.com/", required = true) @PathParam("uri") @NotNull URI facilityUri
     ) throws Exception {
 
         DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
 
-        FacilityGetDTO facility = null;
+        List<DeviceModel> results = dao.getDevicesByFacility(facilityUri, currentUser);
 
-        FacilityModel facilityModel = dao.getAssociatedFacility(uri, currentUser);
-        if (facilityModel != null) {
-            facility = FacilityGetDTO.getDTOFromModel(facilityModel, true);
+        if (results == null) {
+            return new PaginatedListResponse<>().getResponse();
         }
 
-        return new SingleObjectResponse<>(facility).getResponse();
+        ListWithPagination<DeviceModel> devices = new ListWithPagination<>(results);
+        ListWithPagination<DeviceGetDTO> dtoList = devices.convert(DeviceGetDTO.class, DeviceGetDTO::getDTOFromModel);
+
+        return new PaginatedListResponse<>(dtoList).getResponse();
     }
 
 }

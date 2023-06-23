@@ -6,45 +6,34 @@
 package org.opensilex.front.api;
 
 import com.google.common.hash.Hashing;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
+import com.nimbusds.oauth2.sdk.util.CollectionUtils;
+import io.swagger.annotations.*;
+import org.apache.http.HttpStatus;
+import org.opensilex.OpenSilex;
+import org.opensilex.OpenSilexModule;
+import org.opensilex.config.ConfigManager;
+import org.opensilex.front.FrontModule;
+import org.opensilex.front.theme.ThemeBuilder;
+import org.opensilex.front.theme.ThemeConfig;
+import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.security.authentication.ApiTranslatable;
+import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.server.exceptions.NotFoundException;
+import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.sparql.service.SPARQLService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.inject.Inject;
+import javax.validation.constraints.Pattern;
+import javax.ws.rs.*;
+import javax.ws.rs.core.*;
+import javax.ws.rs.core.Response.ResponseBuilder;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.util.List;
-import javax.inject.Inject;
-import javax.validation.constraints.Pattern;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.CacheControl;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.EntityTag;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Request;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
-import org.apache.http.HttpStatus;
-import org.opensilex.OpenSilex;
-import org.opensilex.front.FrontModule;
-import org.opensilex.OpenSilexModule;
-import org.opensilex.config.ConfigManager;
-import org.opensilex.front.theme.ThemeBuilder;
-import org.opensilex.front.theme.ThemeConfig;
-import org.opensilex.security.authentication.ApiTranslatable;
-import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.sparql.service.SPARQLService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.opensilex.server.exceptions.NotFoundException;
-import org.opensilex.server.response.SingleObjectResponse;
 
 /**
  * Service to produce angular application configuration
@@ -280,16 +269,31 @@ public class FrontAPI {
         @ApiResponse(code = 200, message = "Return the resource", response = File.class)
     })
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
-    public Response getThemeResource(
+public Response getThemeResource(
             @PathParam("moduleId") @ApiParam(value = "Module identifier", example = "opensilex-front") @Pattern(regexp = "([a-zA-Z0-9-]+$)") String moduleId,
             @PathParam("themeId") @ApiParam(value = "Theme identifier", example = "phis") @Pattern(regexp = "([a-zA-Z0-9-]+$)") String themeId,
-            @ApiParam(value = "Resource path", example = "images/opensilex.png") @QueryParam("filePath") String filePath
+            @ApiParam(value = "Resource path", example = "images/opensilex.png") @QueryParam("filePath") String filePath,
+            @ApiParam(value = "List of supported file extensions", example = "png") @QueryParam("acceptedExtensions") List<String> acceptedExtensions
     ) throws Exception {
 
         OpenSilexModule module = getModule(moduleId);
 
         String themeFilePath = getModuleFrontThemeResourcePath(themeId, filePath);
         String fileName = getFileName(filePath);
+        
+        if (CollectionUtils.isNotEmpty(acceptedExtensions)) {
+            for (String ext : acceptedExtensions) {
+                String filePathWithExtension = themeFilePath + "." + ext;
+                String mimeType = module.getFileMimeType(filePathWithExtension);
+                if (module.fileExists(filePathWithExtension)) {
+                    return Response
+                    .ok(module.getFileInputStream(filePathWithExtension), mimeType)
+                    .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
+                    .build();
+                }
+            }
+            throw new NotFoundException("No matching file found with one of the supported extensions");
+        }
 
         if (module.fileExists(themeFilePath)) {
             String mimeType = module.getFileMimeType(themeFilePath);

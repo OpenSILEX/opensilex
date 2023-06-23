@@ -1,0 +1,78 @@
+{
+    "component": {
+        "menu": {
+            "publication" : {
+                "label": "Science ouverte",
+                "dataverse": {
+                    "label": "Recherche Data Gouv",
+                    "description": "Module d'intégration aux \"Dataset\" de Recherche Data Gouv"
+                }
+            }
+        }
+    },
+    "DatasetForm": {
+        "experiment": "Experimentation",
+        "uri": "URI ou URL",
+        "uri-help": "Identifiant unique du document généré automatiquement OU décochez la case pour lier une URL de fichier externe",
+        "title": "Titre",
+        "title-help": "Titre de la ressource. Ce titre sera utilisé à la fois sur OpenSILEX et Recherche Data Gouv.",
+        "authors": "Auteurs",
+        "authors-help": "Entités à l'origine de la creation du dataset. Ces personnes doivent avoir été créées au préalable dans le menu 'Administration>Personnes'",
+        "contacts": "Contacts",
+        "contacts-help": "Entités à contacter pour obtenir plus d'informations sur le dataset. Ces personnes doivent avoir été créées au préalable dans le menu 'Administration>Personnes' et avoir une adresse email",
+        "datasetLanguage": "Langue Dataset",
+        "datasetLanguage-help": "Langue du dataset = langue des données de ce dataset (ex: une colonne 'couleur' contient les mots 'bleu', 'rouge' et 'vert' si la langue du dataset est 'français' ou 'blue', 'red', 'green' si c'est 'anglais')",
+        "placeholder-datasetLanguage": "français",
+        "datasetMetadataLanguage": "Langue Métadonnées Dataset",
+        "datasetMetadataLanguage-help": "Langue des métadonnées du dataset (ex: le titre et la description du dataset sont en français)",
+        "placeholder-datasetMetadataLanguage": "français",
+        "productionDate": "Date Production",
+        "productionDate-help": "Date de production du dataset",
+        "keywords": "Mots-clés",
+        "keywords-help": "Le(s) sujet(s) de la ressource. En règle générale, le sujet sera représenté à l'aide de mots-clés, d'expressions clés ou de codes de classification. La pratique recommandée consiste à utiliser un vocabulaire contrôlé et en anglais.",
+        "deprecated": "Obsolète",
+        "deprecated-help": "Est-ce que le dataset est obsolète ou non",
+        "deprecated-title": " Sélectionnez cette option pour rendre le dataset obsolète",
+        "dataverseAlias": "Alias Dataverse",
+        "placeholder-dataverseAlias": "opensilex-tests",
+        "dataverseAlias-help": "L'alias de la collection dataverse dans laquelle créer le dataset. Elle doit avoir été créée au préalable sur Recherche Data Gouv et vous devez avoir le droit d'y créer un dataset.",
+        "dataverseAPIKey": "Clé d'API Dataverse",
+        "placeholder-dataverseAPIKey": "****-***-***-****",
+        "dataverseAPIKey-help": "Votre clé API est disponible ici : <a target=\"_blank\" rel=\"noopener noreferrer\" href={rechercheDataGouvAnchor}>Token API Recherche Data Gouv</a>. Vous aurez peut-être besoin de vous créer un compte et de vous connecter si ce n'est pas déjà fait",
+        "error": {
+            "document-already-exists": "Le document existe déjà",
+            "file-name-too-long": "Le nom du fichier est trop long"
+        }
+    },
+    "DatasetList": {
+        "help-button": "Aide",
+        "title": "Titre",
+        "productionDate": "Date de production",
+        "add": "Ajouter un dataset",
+        "author": "Auteurs",
+        "deprecated": "Obsolète",
+        "cancelDeprecated": "Annuler Obsolète",
+        "browseSource": "Naviguer à la source",
+        "experiment": "Experimentation",
+        "success-message": "Le draft de Dataset : '{datasetDraftURI}' a été créé avec succès. Vous pouvez maintenant vous rendre sur le site de Recherche Data Gouv pour compléter les métadonnées, ajouter des données et publier le dataset.",
+        "filter": {
+            "title-placeholder": "Saisir un titre",
+            "search": "Rechercher",
+            "reset": "Réinitialiser",
+            "deprecated": "Obsolète",
+            "experiment": "Experimentation",
+            "experiment-placeholder": "Choisissez une experimentation",
+            "author": "Auteur",
+            "author-placeholder": "Saisissez le nom d'un Auteur"
+        }
+    },
+    "icon": {
+        "component": {
+            "menu": {
+                "publication": {
+                    "label": "ik-share-2"
+                }
+            }
+        }
+    }
+}

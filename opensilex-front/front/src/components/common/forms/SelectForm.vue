@@ -147,7 +147,8 @@ import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
 
 export interface SelectableItem {
   id: string,
-  label: string
+  label: string,
+  isDisabled?: boolean
 }
 
 @Component
@@ -214,10 +215,11 @@ export default class SelectForm extends Vue {
   @Prop({
     type: Function,
     default: function (e) {
-      if (e && e.name) {
+        if (e && e.name) {
         return {
             id: e.uri,
-            label: e.name
+            label: e.name,
+            isDisabled: e.isDisabled ?? false
           };
       } else {
         return e;

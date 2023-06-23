@@ -86,5 +86,5 @@ public abstract class GermplasmGroupDTO {
     public void setLastUpdatedDate(OffsetDateTime lastUpdatedDate) {
         this.lastUpdatedDate = lastUpdatedDate;
     }
-    
+
 }

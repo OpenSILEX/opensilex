@@ -543,6 +543,8 @@ export default class ExperimentList extends Vue {
       .deleteExperiment(uri)
       .then(() => {
         this.refresh();
+        let message = this.$i18n.t("ExperimentList.name") + " " + uri + " " + this.$i18n.t("component.common.success.delete-success-message");
+        this.$opensilex.showSuccessToast(message);
       })
       .catch(this.$opensilex.errorHandler);
   }
@@ -605,6 +607,7 @@ export default class ExperimentList extends Vue {
 <i18n>
 en:
   ExperimentList:
+    name: The experiment
     filter-label: Name
     filter-label-placeholder: Enter a name
     filter-year: Year
@@ -624,6 +627,7 @@ en:
 
 fr:
   ExperimentList:
+    name: L'expérimentation
     filter-label: Nom
     filter-label-placeholder: Saisir un nom
     filter-year: Année

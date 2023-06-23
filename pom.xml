@@ -52,6 +52,9 @@
         
         <!-- Extension modules -->
         <!--<module>inrae-sixtine</module>-->
+
+        <!-- Dataverse module -->
+        <!--<module>opensilex-dataverse</module>-->
             
         <!-- Development module -->
         <module>opensilex-dev-tools</module>
@@ -140,11 +143,18 @@
 
         
         <!--Other extension modules must be declared as dependencies-->
-<!--        <dependency>
+<!--    <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>inrae-sixtine</artifactId>
             <version>${revision}</version>
         </dependency> -->
+
+        <!-- Dataverse dependency -->
+        <!--<dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-dataverse</artifactId>
+            <version>${revision}</version>
+        </dependency>-->
     </dependencies>
       
     <build>

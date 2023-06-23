@@ -1,0 +1,12 @@
+menu:
+  - id: publication
+    label: component.menu.publication.label
+    icon: fa#fa-lines-leaning
+    children:
+      - id: dataverse
+        label: component.menu.publication.dataverse.label
+        route:
+          path: /dataverse
+          component: opensilex-dataverse-DatasetList
+          credentials:
+            - dataverse-access

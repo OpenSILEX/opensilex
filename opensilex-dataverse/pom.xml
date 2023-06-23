@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+******************************************************************************
+ OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
+ Copyright © INRA 2019
+ Contact: gabriel.besombes@inrae.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+ 
+ OpenSilex Dataverse pom.xml
+ This module includes all core concepts for dataverses.
+******************************************************************************
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>opensilex-dataverse</artifactId>
+    <packaging>jar</packaging>
+    <name>opensilex-dataverse</name>
+    
+    <url>https://www.opensilex.org/</url>
+    <version>${revision}</version>
+
+    <parent>
+        <groupId>org.opensilex</groupId>
+        <artifactId>opensilex-module</artifactId>
+        <version>${revision}</version>
+        <relativePath>../opensilex-module/pom.xml</relativePath>
+    </parent>
+
+    <repositories>
+        <repository>
+            <id>jitpack.io</id>
+            <name>Jitpack Repository</name>
+            <url>https://jitpack.io</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <dependency>
+            <!--TODO : fork it on the opensilex team -->
+            <groupId>com.github.Gabriel-Besombes</groupId>
+            <artifactId>dataverse-client-java</artifactId>
+            <version>15e3e170862dfa4b66cf587947db0626825b274a</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.servlet</groupId>
+                    <artifactId>servlet-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-web</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.springframework</groupId>
+                    <artifactId>spring-context</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <version>2.6</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+            <version>5.2.20.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+            <version>5.2.20.RELEASE</version>
+        </dependency>
+
+    </dependencies>
+
+    <build>
+        <resources>
+            <resource>
+                <directory>front</directory>
+                <excludes>
+                    <exclude>**</exclude>
+                </excludes>
+            </resource>
+        </resources>
+        <plugins>
+            <!-- Generate swagger.json file -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>${maven.exec.plugin.version}</version>
+            </plugin>
+            <!-- Generate TypeScript library from swagger.json file -->
+            <plugin>
+                <groupId>org.opensilex</groupId>
+                <artifactId>opensilex-swagger-codegen-maven-plugin</artifactId>
+                <version>${revision}</version>
+            </plugin>
+
+            <!-- Allow to extends SPARQL deserializers -->
+            <plugin>
+                <groupId>eu.somatik.serviceloader-maven-plugin</groupId>
+                <artifactId>serviceloader-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>opensilex-vue-types-services</id>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <services>
+                                <param>org.opensilex.front.vueOwlExtension.types.VueOntologyType</param>
+                            </services>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

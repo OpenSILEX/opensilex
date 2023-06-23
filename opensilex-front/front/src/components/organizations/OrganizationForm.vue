@@ -179,6 +179,8 @@ export default class OrganizationForm extends Vue {
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         let uri = http.response.result;
         console.debug("Infrastructure updated", uri);
+        let message = this.$i18n.t("InfrastructureForm.name") + " " + form.name + " " + this.$i18n.t("component.common.success.update-success-message");
+        this.$opensilex.showSuccessToast(message);
       })
       .catch(this.$opensilex.errorHandler);
   }
@@ -191,6 +193,7 @@ export default class OrganizationForm extends Vue {
 <i18n>
 en:
   InfrastructureForm:
+    name: The organization
     infrastructure-uri: Organization URI
     form-name-placeholder: Enter organization name
     form-type-placeholder: Select organization type
@@ -200,6 +203,7 @@ en:
     form-facilities-label: Facilities
 fr:
   InfrastructureForm:
+    name: L'organisation
     infrastructure-uri: URI de l'organisation
     form-name-placeholder: Saisir le nom de l'organisation
     form-type-placeholder: Sélectionner le type d'organisation

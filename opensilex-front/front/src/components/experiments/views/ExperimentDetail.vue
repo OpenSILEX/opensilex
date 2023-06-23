@@ -264,6 +264,8 @@ export default class ExperimentDetail extends Vue {
     this.service
       .deleteExperiment(uri)
       .then(() => {
+        let message = this.$i18n.t("ExperimentList.name") + " " + uri + " " + this.$i18n.t("component.common.success.delete-success-message");
+        this.$opensilex.showSuccessToast(message);
         this.$router.push({
           path: "/experiments",
         });

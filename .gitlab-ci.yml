@@ -948,15 +948,15 @@ test:brice:deploy:
     - brice:build
 
 ###################################
-##  GUILHEM-TEST-SNAPSHOT-DEPLOYMENT
+##  MARIEM-TEST-SNAPSHOT-DEPLOYMENT
 ###################################
 
-guilhem:build:
+mariem:build:
   <<: *build_template_with_opensilex
   rules:
     - if: $CI_COMMIT_BRANCH == "mariem"
 
-test:guilhem:deploy:
+test:mariem:deploy:
   <<: *deploy_opensilex_before_script
   <<: *deploy_opensilex_template
   variables:
@@ -972,7 +972,7 @@ test:guilhem:deploy:
     - if: $CI_COMMIT_BRANCH == "mariem"
       when: on_success
   needs:
-    - guilhem:build
+    - mariem:build
 
 ######################################
 ##  PHENO3C-PROD-BUILD-DEPLOYMENT

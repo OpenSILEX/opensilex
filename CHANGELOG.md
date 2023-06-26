@@ -79,6 +79,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [Experiment] Added a germplasm filter for searching scientific objects in an experiment -> 25f5c93f
 - [API] All resources now have a publisher, publication date and last update date -> 2a3140bd
 - [Dashboard] You can now display a media in the dashboard if the graph component is not configured -> d1aa16ef
+- [Recherche Data Gouv] Added the possibility to create a `Dataset` draft on Recherche Data Gouv from OpenSILEX -> 63251bc2
 
 ### Fixed or optimized
 

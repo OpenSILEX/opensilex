@@ -88,8 +88,8 @@ export default class PersonList extends Vue {
       label: "component.person.orcid"
     },
     {
-      key: "organization",
-      label: "component.person.organization"
+      key: "affiliation",
+      label: "component.person.affiliation"
     },
     {
       key: "phone_number",

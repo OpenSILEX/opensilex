@@ -50,9 +50,9 @@
         <p>  {{ mail }} </p>
       </div>
 
-      <div class="champ-popup" v-if="organization">
-        <p class="title-popup">{{ $t("component.person.organization") }} :</p>
-        <p>  {{ organization }} </p>
+      <div class="champ-popup" v-if="affiliation">
+        <p class="title-popup">{{ $t("component.person.affiliation") }} :</p>
+        <p>  {{ affiliation }} </p>
       </div>
 
       <div class="champ-popup" v-if="phone">
@@ -115,8 +115,8 @@ export default class PersonContact extends Vue {
     return this.mail != null && this.mail != ""
   }
 
-  get organization(): string {
-    return this.personContact.organization
+  get affiliation(): string {
+    return this.personContact.affiliation
   }
 
   get phone(): string {

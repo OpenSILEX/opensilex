@@ -14,10 +14,11 @@ import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.security.authentication.SecurityOntology;
 import org.opensilex.security.person.api.PersonDTO;
 import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.exceptions.ConflictException;
-import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
@@ -49,8 +50,11 @@ public class PersonDAO {
     public PersonModel create(PersonDTO personDTO) throws Exception {
         PersonModel person = PersonModel.fromDTO(personDTO, sparql);
 
-        if (checkOrcidIsNonNullAndWellFormed(person.getOrcid())) {
-            person.setUri(person.getOrcid());
+        if (orcidIsNonNullAndWellFormed(person.getOrcid())) {
+            requireOrcidIsUnique(person.getOrcid());
+            if ( ! sparql.uriExists((Node) null, person.getOrcid())) {
+                person.setUri(person.getOrcid());
+            }
         }
 
         if (person.getUri() != null && sparql.uriExists((Node) null, person.getUri())) {
@@ -67,18 +71,31 @@ public class PersonDAO {
      * @return false if ORCID is null, true otherwise
      * @throws BadRequestException if orcid is not a well-formed URL
      */
-    private boolean checkOrcidIsNonNullAndWellFormed(URI orcid) throws BadRequestException, ConflictException, SPARQLException {
+    private boolean orcidIsNonNullAndWellFormed(URI orcid) throws BadRequestException {
         if (Objects.isNull(orcid)) {
             return false;
         }
+        //commence par "https://orcid.org/" et est suivi de 3 séquences de 4 chiffres séparées par un tiret puis une séquence de 4 chiffres ou 3 chiffres et un X
+        //exemples validés : https://orcid.org/0009-0006-6636-4714 ou https://orcid.org/0009-0006-6636-471X
         if ( ! orcid.toString().matches("https://orcid\\.org/(?:[\\d]{4}-){3}[\\d]{3}[\\dX]")) {
-            throw new BadRequestException("orcid is not valid");
-        }
-        if (sparql.uriExists((Node) null, orcid)) {
-            throw new ConflictException("Duplicated ORCID: " + orcid);
+            throw new BadRequestException("orcid is not valid : "+ orcid);
         }
 
         return true;
+    }
+
+    /**
+     * @param orcid to check for
+     * @throws ConflictException If Orcid is already taken
+     */
+    private void requireOrcidIsUnique(URI orcid) throws Exception, ConflictException{
+        boolean orcidisAlreadytaken;
+
+        orcidisAlreadytaken = sparql.existsByUniquePropertyValue(PersonModel.class, SecurityOntology.hasOrcid, orcid);
+
+        if (orcidisAlreadytaken) {
+            throw new ConflictException("Duplicated ORCID: " + orcid);
+        }
     }
 
     /**
@@ -102,12 +119,17 @@ public class PersonDAO {
     public PersonModel update(PersonDTO personDTO) throws Exception {
         if (Objects.nonNull(personDTO.getOrcid())) {
 
-            checkOrcidIsNonNullAndWellFormed(personDTO.getOrcid());
-
             PersonModel originalPerson = get(personDTO.getUri());
-            if (Objects.nonNull(originalPerson.getOrcid())) {
-                throw new BadRequestException("Orcid can't be updated : " + personDTO.getUri() + " already has an Orcid");
+            if (Objects.isNull(originalPerson.getOrcid())) {
+                orcidIsNonNullAndWellFormed(personDTO.getOrcid());
+                requireOrcidIsUnique(personDTO.getOrcid());
+            } else {
+                boolean dtoOrcidIsTheSameAsOriginalOrcid = SPARQLDeserializers.compareURIs(originalPerson.getOrcid(), personDTO.getOrcid());
+                if ( ! dtoOrcidIsTheSameAsOriginalOrcid) {
+                    throw new BadRequestException("Orcid can't be updated : " + personDTO.getUri() + " already has an Orcid");
+                }
             }
+
         }
 
         PersonModel personModel = PersonModel.fromDTO(personDTO, sparql);

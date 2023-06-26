@@ -42,7 +42,7 @@ public class PersonAPITest extends AbstractSecurityIntegrationTest {
         personDTO.setFirstName("Default");
         personDTO.setLastName("DEFAULT");
         personDTO.setEmail("default@inrae.fr");
-        personDTO.setOrganization("MISTEA");
+        personDTO.setAffiliation("MISTEA");
         personDTO.setPhoneNumber("+33--142-75-90-00");
 
         return personDTO;
@@ -441,7 +441,7 @@ public class PersonAPITest extends AbstractSecurityIntegrationTest {
         assertEquals(dto1.getFirstName(), dto2.getFirstName());
         assertEquals(dto1.getLastName(), dto2.getLastName());
         assertEquals(dto1.getEmail(), dto2.getEmail());
-        assertEquals(dto1.getOrganization(), dto2.getOrganization());
+        assertEquals(dto1.getAffiliation(), dto2.getAffiliation());
         assertEquals(dto1.getPhoneNumber(), dto2.getPhoneNumber());
     }
 

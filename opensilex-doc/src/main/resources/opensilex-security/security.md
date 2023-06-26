@@ -23,21 +23,23 @@ User can get a token by calling `/security/authenticate` POST API method with va
 
 If user token is not verified, then incoming request is automatically rejected.
 
+In Opensilex there is no user entity, what we call user is an Account, with or without a Holder (a Person with a name...)
+
 JWT token contains following claims:
 - iss: opensilex (issuer)
-- sub: User URI (subject)
+- sub: Account URI (subject)
 - iat: Date of token creation (issued at)
 - exp: Date of token expiration (expires at)
-- given_name: User first name
-- family_name: User last name
-- email: User email
-- name: User displayed name
-- is_admin: Boolean to determine if user is admin
-- credentials_list: Array of credentials allowed to this user
+- given_name: Holder first name (if account has a holder)
+- family_name: Holder last name (if account has a holder)
+- email: Account email
+- name: User displayed name (email)
+- is_admin: Boolean to determine if Account is admin
+- credentials_list: Array of credentials allowed to this Account
 
 If user is admin then accept incoming request.
 
-Otherwise if the requested API method is annotated with `@ApiCredential` then accept incoming request ONLY if defined credential ID is in user `credentials_list`
+Otherwise if the requested API method is annotated with `@ApiCredential` then accept incoming request ONLY if defined credential ID is in Account `credentials_list`
 
 See: `org.opensilex.rest.authentication.AuthenticationFilter`
 See: `org.opensilex.rest.authentication.AuthenticationService`

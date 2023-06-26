@@ -310,7 +310,7 @@
             "form-last-name-placeholder": "Enter person last name",
             "orcid-placeholder": "https://orcid.org/0000-0003-4189-7793",
             "form-email-placeholder": "Enter person email address",
-            "form-organization-placeholder" : "Enter an organization name",
+            "form-affiliation-placeholder" : "Enter your affiliation",
             "form-phone-placeholder" : "Enter a phone number (+33-65...)",
             "filter-placeholder": "Search persons...",
             "filter-search-no-result": "Sorry, no one is matching your research.",
@@ -325,7 +325,7 @@
             "email-address": "email address",
             "email": "email",
             "mail-redirection": "send an email",
-            "organization": "organization",
+            "affiliation": "affiliation",
             "phone_number": "phone number",
             "successDelete" : "Person removed",
             "errors": {

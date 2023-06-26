@@ -289,7 +289,7 @@
             "default-lang": "Langue par défaut",
             "user-groups": "groupes de l'utilisateur",
             "successDelete" : "compte supprimé",
-            "linked-person" : "personne liée",
+            "linked-person" : "Personne",
             "choices": {
                 "create-person": "créer un nouveau compte et une personne",
                 "account-only": "créer un compte qui n'appartient à personne",

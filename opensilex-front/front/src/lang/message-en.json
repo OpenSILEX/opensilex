@@ -289,7 +289,7 @@
             "default-lang": "Default languages",
             "user-groups": "user groups",
             "successDelete" : "Account removed",
-            "linked-person" : "linked person",
+            "linked-person" : "Person",
             "choices": {
                 "create-person": "create an account and a person",
                 "account-only": "create an account without linked person",

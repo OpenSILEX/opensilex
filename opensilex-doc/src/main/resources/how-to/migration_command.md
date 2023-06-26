@@ -134,8 +134,22 @@ ASK WHERE {
 ### Description
 
 This update changes the old Data model for User, by separating users in account and person.
-Without this migration, users will not be able to login.
+Without this migration, users will not be able to log in.
 
+
+## org.opensilex.migration.ObjectMigrationFromAccountToPerson
+
+### Description
+
+This migration change the predicate (link) of many subjects, in order to have Person and not Account as object.
+So, many subjects which were linked to accounts, are now linked to persons.
+This migration ensure that your actual data changes with the data model.
+
+following predicates are concerned :
+- projects : Oeso:hasAdministrativeContact, Oeso:hasScientificContact, Oeso:hasCoordinator
+- experiment : Oeso:hasScientificSupervisor, Oeso:hasTechnicalSupervisor
+- device : Oeso:personInCharge
+- Provenance : operator (this is not a predicate since it's store in the NoSQl database, but it also has to be migrated)
 
 # Create an update command (For developers)
 

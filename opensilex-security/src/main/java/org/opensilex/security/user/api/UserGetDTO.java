@@ -101,6 +101,7 @@ public class UserGetDTO extends UserDTO {
 
     public PersonDTO createCorrespondingPersonDTO() {
         PersonDTO personDTO = new PersonDTO();
+        personDTO.setUri(holderOfTheAccountURI);
         personDTO.setFirstName(firstName);
         personDTO.setLastName(lastName);
         personDTO.setEmail(email);

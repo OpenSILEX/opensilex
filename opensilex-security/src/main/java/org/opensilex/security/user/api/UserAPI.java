@@ -322,7 +322,7 @@ public class UserAPI {
 
                 if (Objects.isNull(newHolderOfTheAccount) && Objects.nonNull(holderOfTheAccount) ) {
                     PersonDTO holderToUpdate = userDTO.createCorrespondingPersonDTO();
-                    String email = Objects.nonNull(holderOfTheAccount.getEmail()) ? holderOfTheAccount.getEmail().toString() : null;
+                    String email =  Objects.nonNull(holderOfTheAccount.getEmail()) ? holderOfTheAccount.getEmail().toString() : null;
                     holderToUpdate.setEmail(email);
 
                     personDAO.update(holderToUpdate);

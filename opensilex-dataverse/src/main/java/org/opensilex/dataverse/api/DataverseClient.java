@@ -95,7 +95,7 @@ public class DataverseClient {
                 .languages(Collections.singletonList(datasetDTO.getDatasetLanguage().getDisplayLanguage(datasetDTO.getDatasetMetadataLanguage().getLocale())));
 
         if(datasetDTO.getCurrentAccount().getHolderOfTheAccount() != null){
-            facadeBuilder.depositor(datasetDTO.getCurrentAccount().getFirstName() + " " + datasetDTO.getCurrentAccount().getLastName().toUpperCase());
+            facadeBuilder.depositor(datasetDTO.getCurrentAccount().getHolderOfTheAccount().getFirstName() + " " + datasetDTO.getCurrentAccount().getHolderOfTheAccount().getLastName().toUpperCase());
         }else {
             facadeBuilder.depositor(datasetDTO.getCurrentAccount().getEmail().toString());
         }

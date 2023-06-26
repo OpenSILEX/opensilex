@@ -23,6 +23,8 @@ This document describes how to execute migration commands into OpenSILEX, the li
     * [Notes](#notes)
   * [org.opensilex.migration.AgentsMigrateToAccountAndPersons](#orgopensilexmigrationagentsmigratetoaccountandpersons)
     * [Description](#description-3)
+  * [org.opensilex.migration.ObjectMigrationFromAccountToPerson][##org.opensilex.migration.ObjectMigrationFromAccountToPerson]
+    * [Description](#description-4)
 * [Create an update command (For developers)](#create-an-update-command--for-developers-)
       * [Example](#example)
 <!-- TOC -->
@@ -67,7 +69,8 @@ org.opensilex.migration.GraphAndCollectionMigration
 | 2021/11/29 | <b>org.opensilex.migration.GraphAndCollectionMigration</b>                 |              | 46a27611  |
 | 2022/08/03 | <b>org.opensilex.migration.MongoCustomCoordinatesDataTypeUpdate</b>        |              |           |                                                                          
 | 2023/01/24 | <b>org.opensilex.migration.ScientificObjectNameIntegerConvertMigration</b> | 1.0.0-rc+6.5 |           |                                                                          
-| 2023/03/17 | <b>org.opensilex.migration.AgentsMigrateToAccountAndPersons</b>            | 1.0.0-rc+7   | 8ed0303a  |                                                                          
+| 2023/03/17 | <b>org.opensilex.migration.AgentsMigrateToAccountAndPersons</b>            | 1.0.0-rc+7   | 8ed0303a  |
+| 2023/06/26 | <b> org.opensilex.migration.ObjectMigrationFromAccountToPerson </b>        | 1.0.0        | 613f6d59  |
 
 # Descriptions
 

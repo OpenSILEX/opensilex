@@ -63,6 +63,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.0]
 
+> WARNING : upgrading to this new version require manual operations. Please
+> see the [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0.md).
+> Also available [here](opensilex-doc%2Fsrc%2Fmain%2Fresources%2Frelease%2F1.0.0.md)
+
 ### New features
 
 - [MongoDB] You can now specify credentials to connect to a MongoDB server -> d02b3c8d
@@ -75,6 +79,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [User / Person / Account] The web interface now reflects the changes in the API, where the `User` concept was split in
   two `Person` and `Account` concepts -> b8457f7b
 - [Person] A person can now have an ORCID, a phone number and an organization -> 0718f5e5
+- [Person] Everal links to Users are replaced by links to Persons (for projects, experiments, provenances and devices)
 - [Variable] Added a "not included in group" filter for searching variables -> 98fde231
 - [Experiment] Added a germplasm filter for searching scientific objects in an experiment -> 25f5c93f
 - [API] All resources now have a publisher, publication date and last update date -> 2a3140bd
@@ -109,7 +114,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [Data] Added an indication to the CSV template to specify the expected format when using a boolean variable -> e318a0ea
 - [Datafile] Image datafiles can now be visualized without problems -> 28c38f05
 - [Map] When zooming out, scientific objects are grouped into clusters to enhance performance and visibility -> c394c7fc
-- [Person] Enhanced display of persons of contact (for projects, experiments, devices and provenances) -> 70daab17
+- [Person] Enhanced display of persons of contact (for accounts, projects, experiments, devices and provenances) -> 70daab17
 - [Germplasm] Searching a germplasm by URI now works correctly -> aad496dc
 
 ## [1.0.0-rc+7]

@@ -23,6 +23,7 @@ import org.opensilex.security.person.dal.PersonDAO;
 import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.ValidURI;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.response.NamedResourcePaginatedListResponse;
 import org.opensilex.sparql.service.SPARQLService;
@@ -296,7 +297,10 @@ public class UserAPI {
         if (model != null) {
 
             PersonModel newHolderOfTheAccount = null;
-            if (Objects.nonNull( userDTO.getHolderOfTheAccountURI() )){
+            boolean addHolderOfTheAccount = Objects.nonNull( userDTO.getHolderOfTheAccountURI() ) && Objects.isNull(model.getHolderOfTheAccount());
+            boolean changeHolderOfTheAccount = Objects.nonNull( userDTO.getHolderOfTheAccountURI() ) && Objects.nonNull(model.getHolderOfTheAccount())
+                    && ! SPARQLDeserializers.compareURIs(userDTO.getHolderOfTheAccountURI(), model.getHolderOfTheAccount().getUri());
+                if (addHolderOfTheAccount || changeHolderOfTheAccount){
                 newHolderOfTheAccount = personDAO.get(userDTO.getHolderOfTheAccountURI());
                 AccountAPI.checkHolderExistAndHasNoAccountYet(personDAO, userDTO.getHolderOfTheAccountURI());
             }

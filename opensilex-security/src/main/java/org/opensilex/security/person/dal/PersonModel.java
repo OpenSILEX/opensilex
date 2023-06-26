@@ -59,7 +59,7 @@ public class PersonModel extends SPARQLResourceModel implements ClassURIGenerato
             ontology = SecurityOntology.class,
             property = "memberOf"
     )
-    private String organization;
+    private String affiliation;
 
     @SPARQLProperty(
             ontology = FOAF.class,
@@ -90,7 +90,7 @@ public class PersonModel extends SPARQLResourceModel implements ClassURIGenerato
         person.setUri(personDTO.getUri());
         person.setFirstName(personDTO.getFirstName());
         person.setLastName(personDTO.getLastName());
-        person.setOrganization(personDTO.getOrganization());
+        person.setAffiliation(personDTO.getAffiliation());
         person.setOrcid(personDTO.getOrcid());
         if ( Objects.nonNull(personDTO.getPhoneNumber()) ){
             URI phone = new URI( "tel:" + personDTO.getPhoneNumber());
@@ -127,12 +127,12 @@ public class PersonModel extends SPARQLResourceModel implements ClassURIGenerato
 
     public void setEmail(InternetAddress email) { this.email = email; }
 
-    public String getOrganization() {
-        return organization;
+    public String getAffiliation() {
+        return affiliation;
     }
 
-    public void setOrganization(String organization) {
-        this.organization = organization;
+    public void setAffiliation(String affiliation) {
+        this.affiliation = affiliation;
     }
 
     public URI getPhoneNumber() {

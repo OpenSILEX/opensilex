@@ -20,7 +20,7 @@ Account are used to manage personal credentials and store login and password for
 ![data model of an account](img/account_data_model.png)
 
 ### specific behaviors
-- isEnabled allow the admin to deactivate an account without deletion. Deleting an Account means probably loss the traceability of creations and updates of data.
+- `isEnabled` allow the admin to deactivate an account without deletion. Deleting an Account means probably loss the traceability of creations and updates of data.
 - Account that are admins can't be deleted nor disabled.
 - Account that are admins has automatically unrestricted credentials.
 - An account is not necessarily linked to a Person.

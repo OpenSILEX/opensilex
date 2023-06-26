@@ -16,6 +16,9 @@ example of use-cases :
 
 ### model of a person
 ![data model of a person](img/person_data_model.png)
+#### specification of the model :
+* ORCID is stored as a URI
+* PhoneNumber is stored as a URI with the tel:scheme ex: tel:+33-1-42-75-90-00
 
 ### specifications of the service
 - POST : name and first_name are required. If Orcid is given, it will be used as the URI of the person, even if URI is also given.

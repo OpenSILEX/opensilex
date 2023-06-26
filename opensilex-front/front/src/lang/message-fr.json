@@ -164,7 +164,7 @@
                 "fr": "Français",
                 "en": "Anglais"
             },
-            "user": {
+            "account": {
                 "admin": "Admin",
                 "logout": "Déconnexion"
             },
@@ -204,7 +204,7 @@
             },
             "security": {
                 "label": "Securité",
-                "users": "Utilisateurs",
+                "users": "Comptes",
                 "persons": "Personnes",
                 "groups": "Groupes",
                 "profiles": "Profils"
@@ -261,24 +261,24 @@
         "footer": {
             "copyright": "Copyright © 2021 INRAE Tous Droits Déservés. PHIS {version} "
         },
-        "user": {
-            "description": "Gérer et configurer les utilisateurs",
-            "user-uri": "URI de l'utilisateur",
-            "form-first-name-placeholder": "Saisir le prénom de l'utilisateur",
-            "form-last-name-placeholder": "Saisir le nom de l'utilisateur",
-            "form-email-placeholder": "Saisir l'adresse email de l'utilisateur",
-            "form-password-placeholder": "Saisir le mot de passe de l'utilisateur",
+        "account": {
+            "description": "Gérer et configurer les comptes",
+            "account-uri": "URI du compte",
+            "form-first-name-placeholder": "Saisir le prénom de la personne liée",
+            "form-last-name-placeholder": "Saisir le nom de de la personne liée",
+            "form-email-placeholder": "Saisir l'adresse email du compte",
+            "form-password-placeholder": "Saisir le mot de passe du compte",
             "form-admin-option-label": "Activer cette option pour créer un super-administrateur",
-            "filter-search-no-result": "Désolé, aucun utilisateur ne correspond à votre recherche.",
-            "filter-placeholder": "Rechercher des utilisateurs...",
-            "users": "utilisateurs",
-            "label": "aucun utilisateur | 1 utilisateur | {count} utilisateurs",
-            "add": "Ajouter un utilisateur",
-            "update": "Modifier l'utilisateur",
-            "delete": "Supprimer l'utilisateur",
+            "filter-search-no-result": "Désolé, aucun compte ne correspond à votre recherche.",
+            "filter-placeholder": "Rechercher des comptes...",
+            "accounts": "comptes",
+            "label": "aucun compte | 1 compte | {count} comptes",
+            "add": "Ajouter un compte",
+            "update": "Modifier le compte",
+            "delete": "Supprimer le compte",
             "enable": "actif, cliquer pour désactiver",
             "disable": "désactivé, cliquer pour réactiver",
-            "details": "Afficher ou masquer les détails de l'utilisateur",
+            "details": "Afficher ou masquer les détails du compte",
             "password": "mot de passe",
             "first-name": "prénom",
             "last-name": "nom",
@@ -288,16 +288,15 @@
             "admin": "administrateur",
             "default-lang": "Langue par défaut",
             "user-groups": "groupes de l'utilisateur",
-            "holderLabel" : "Propriétaire du compte",
-            "successDelete" : "Utilisateur supprimé",
+            "successDelete" : "compte supprimé",
+            "linked-person" : "Personne",
             "choices": {
                 "create-person": "créer un nouveau compte et une personne",
                 "account-only": "créer un compte qui n'appartient à personne",
                 "select-person": "créer un compte et le lie à une personne"
             },
             "person-selector": {
-                "label": "propriétaire du compte",
-                "help-message": "Choisissez une personne qui deviendra propriétaire du compte"
+                "help-message": "Choisissez une personne à lier au compte"
             },
             "errors": {
                 "user-already-exists": "Un utilisateur existe déjà avec cette URI ou cette adresse email."
@@ -748,7 +747,7 @@
             "modification": "Ajout / Modification des projets",
             "delete": "Suppression des projets"
         },
-        "user": {
+        "account": {
             "modification": "Ajout / Modification des utilisateurs",
             "delete": "Suppression des utilisateurs"
         },

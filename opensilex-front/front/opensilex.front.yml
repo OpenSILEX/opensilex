@@ -7,6 +7,16 @@ menu:
   - id: scientific-organisation
     label: component.menu.scientific-organisation
     children:
+      - id: persons
+        label: component.menu.security.persons
+        route:
+          path: /persons
+          component: opensilex-PersonView
+          credentials:
+            - person-access
+          icon: ik#ik-user
+          title: PersonView.title
+          description: PersonView.description
       - id: infrastructures
         label: component.menu.infrastructure
         route:
@@ -250,16 +260,6 @@ menu:
           icon: ik#ik-user
           title: UserView.title
           description: UserView.description
-      - id: persons
-        label: component.menu.security.persons
-        route:
-          path: /persons
-          component: opensilex-PersonView
-          credentials:
-            - person-access
-          icon: ik#ik-user
-          title: PersonView.title
-          description: PersonView.description
       - id: groups
         label: component.menu.security.groups
         route:

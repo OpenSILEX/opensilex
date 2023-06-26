@@ -14,7 +14,7 @@
                 type="password"
                 vid="password-first"
                 :required="true"
-                placeholder="component.user.form-password-placeholder"
+                placeholder="component.account.form-password-placeholder"
                 autocomplete="new-password"
               ></opensilex-InputForm>
               <opensilex-InputForm
@@ -24,7 +24,7 @@
                 type="password"
                 :required="true"
                 rules="required|confirmed:password-first"
-                placeholder="component.user.form-password-placeholder"
+                placeholder="component.account.form-password-placeholder"
                 autocomplete="new-password"
               ></opensilex-InputForm>
 

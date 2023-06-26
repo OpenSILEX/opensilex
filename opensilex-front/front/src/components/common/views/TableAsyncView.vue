@@ -98,6 +98,11 @@ import {OrderBy} from "opensilex-core/index";
 import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
 import {BTable} from "bootstrap-vue";
 
+export interface SlotDetails<T extends NamedResourceDTO> {
+  item: T,
+  toggleDetails: () => void
+}
+
 @Component
 export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
   $opensilex: any;

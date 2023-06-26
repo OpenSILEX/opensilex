@@ -10,7 +10,7 @@
     @clear="$emit('clear')"
     @select="select"
     @deselect="deselect"
-    noResultsText="component.user.filter-search-no-result"
+    noResultsText="component.account.filter-search-no-result"
     :helpMessage="helpMessage"
     @handlingEnterKey="onEnter"
   ></opensilex-TypeForm>

@@ -15,6 +15,7 @@ import org.opensilex.security.person.api.PersonDTO;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * <pre>
@@ -33,8 +34,8 @@ import java.util.List;
  * @author Vincent Migot
  */
 @ApiModel
-@JsonPropertyOrder({"uri", "first_name", "last_name", "email", "language",
-    "admin"})
+@JsonPropertyOrder({"uri", "email", "language",
+    "admin", "first_name", "last_name", "linked_person"})
 public class UserGetDTO extends UserDTO {
 
     @JsonProperty("first_name")
@@ -87,16 +88,20 @@ public class UserGetDTO extends UserDTO {
         dto.setUri(model.getUri());
         dto.setAdmin(model.isAdmin());
         dto.setEmail(model.getEmail().toString());
-        dto.setFirstName(model.getFirstName());
-        dto.setLastName(model.getLastName());
         dto.setLanguage(model.getLanguage());
         dto.setEnable(model.getIsEnabled());
+        if (Objects.nonNull(model.getHolderOfTheAccount()) ){
+            dto.setFirstName(model.getHolderOfTheAccount().getFirstName());
+            dto.setLastName(model.getHolderOfTheAccount().getLastName());
+            dto.setHolderOfTheAccountURI(model.getHolderOfTheAccount().getUri());
+        }
 
         return dto;
     }
 
-    public PersonDTO toPersonDTO() {
+    public PersonDTO createCorrespondingPersonDTO() {
         PersonDTO personDTO = new PersonDTO();
+        personDTO.setUri(holderOfTheAccountURI);
         personDTO.setFirstName(firstName);
         personDTO.setLastName(lastName);
         personDTO.setEmail(email);

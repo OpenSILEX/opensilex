@@ -111,8 +111,6 @@ public class UriGenerationTest extends AbstractMongoIntegrationTest {
 
         AccountModel model = new AccountModel();
         model.setEmail(new InternetAddress("UriGenerationTest@opensilex.com"));
-        model.setFirstName("opensilex");
-        model.setLastName("opensilex");
 
         getSparqlService().create(model);
         String expectedUri = getOpensilexBaseURI()+"id/user/account.urigenerationtestopensilexcom";

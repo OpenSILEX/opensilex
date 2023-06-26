@@ -36,13 +36,11 @@ import java.util.List;
  * @author Vincent Migot
  */
 @ApiModel
-@JsonPropertyOrder({"uri", "first_name", "last_name", "email", "language", "password",
-    "admin"})
+@JsonPropertyOrder({"uri", "first_name", "language", "password",
+    "admin", "last_name", "email", "holderOfTheAccountURI"})
 public class UserUpdateDTO extends UserGetDTO {
 
     protected String password;
-
-    protected URI holderOfTheAccountURI;
 
     @ValidURI
     @NotNull
@@ -92,14 +90,5 @@ public class UserUpdateDTO extends UserGetDTO {
     @ApiModelProperty(value = "User language", example = OpenSilex.DEFAULT_LANGUAGE, required = true)
     public String getLanguage() {
         return super.getLanguage();
-    }
-
-    @ValidURI
-    public URI getHolderOfTheAccountURI() {
-        return holderOfTheAccountURI;
-    }
-
-    public void setHolderOfTheAccountURI(URI holderOfTheAccountURI) {
-        this.holderOfTheAccountURI = holderOfTheAccountURI;
     }
 }

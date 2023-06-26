@@ -167,12 +167,15 @@ public final class AccountDAO {
      */
     public ListWithPagination<AccountModel> search(String stringPattern, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
 
-        Expr stringFilter = SPARQLQueryHelper.regexFilter(AccountModel.EMAIL_FIELD, stringPattern);
+        Expr stringFilter = SPARQLQueryHelper.or(
+                SPARQLQueryHelper.regexFilter(AccountModel.EMAIL_FIELD, stringPattern),
+                SPARQLQueryHelper.regexFilter(PersonModel.LAST_NAME_FIELD, stringPattern)
+        );
 
         Map<String, WhereHandler> customHandlerByFields = new HashMap<>();
         WhereBuilder whereGraph = new WhereBuilder();
-        whereGraph.addGraph(sparql.getDefaultGraph(PersonModel.class), SPARQLQueryHelper.makeVar(AccountModel.HOLDER_OF_THE_ACCOUNT_FIELD), FOAF.firstName.asNode(), SPARQLQueryHelper.makeVar(PersonModel.FIRST_NAME_FIELD));
         whereGraph.addGraph(sparql.getDefaultGraph(PersonModel.class), SPARQLQueryHelper.makeVar(AccountModel.HOLDER_OF_THE_ACCOUNT_FIELD), FOAF.lastName.asNode(), SPARQLQueryHelper.makeVar(PersonModel.LAST_NAME_FIELD));
+        whereGraph.addGraph(sparql.getDefaultGraph(PersonModel.class), SPARQLQueryHelper.makeVar(AccountModel.HOLDER_OF_THE_ACCOUNT_FIELD), FOAF.firstName.asNode(), SPARQLQueryHelper.makeVar(PersonModel.FIRST_NAME_FIELD));
         WhereBuilder whereOptional = new WhereBuilder();
         whereOptional.addOptional(whereGraph);
         customHandlerByFields.put(AccountModel.HOLDER_OF_THE_ACCOUNT_FIELD, whereOptional.getWhereHandler());

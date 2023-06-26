@@ -3,7 +3,7 @@
     <!-- URI -->
     <opensilex-UriForm
         :uri.sync="form.uri"
-        label="component.user.user-uri"
+        label="component.account.account-uri"
         helpMessage="component.common.uri-help-message"
         :editMode="editMode"
         :generated.sync="uriGenerated"
@@ -12,21 +12,21 @@
     <!-- Email -->
     <opensilex-InputForm
         :value.sync="form.email"
-        label="component.user.email-address"
+        label="component.account.email-address"
         type="email"
         :required="true"
         rules="email"
-        placeholder="component.user.form-email-placeholder"
+        placeholder="component.account.form-email-placeholder"
         autocomplete="new-password"
     ></opensilex-InputForm>
 
     <!-- Password -->
     <opensilex-InputForm
         :value.sync="form.password"
-        label="component.user.password"
+        label="component.account.password"
         type="password"
         :required="!this.editMode"
-        placeholder="component.user.form-password-placeholder"
+        placeholder="component.account.form-password-placeholder"
         autocomplete="new-password"
     ></opensilex-InputForm>
 
@@ -35,7 +35,7 @@
         :selected.sync="form.language"
         :options="languages"
         :required="true"
-        label="component.user.default-lang"
+        label="component.account.default-lang"
         placeholder="component.common.select-lang"
     ></opensilex-SelectForm>
 
@@ -43,16 +43,16 @@
     <opensilex-CheckboxForm
         v-if="user.admin"
         :value.sync="form.admin"
-        label="component.user.admin"
-        title="component.user.form-admin-option-label"
+        label="component.account.admin"
+        title="component.account.form-admin-option-label"
     ></opensilex-CheckboxForm>
 
     <!-- choices about holder of the account -->
-      <b-form-group :label="$t('component.user.holderLabel')" v-slot="{ ariaDescribedby }">
+      <b-form-group :label="$t('component.account.linked-person')" v-slot="{ ariaDescribedby }">
 
         <div id="choixPerson">
 
-          <div v-if="hasHolder" class="boutonChoix" :title="$t('component.user.choices.create-person')">
+          <div v-if="hasHolder" class="boutonChoix" :title="$t('component.account.choices.create-person')">
             <b-form-radio
                 button
                 button-variant="outline-info"
@@ -64,7 +64,7 @@
             </b-form-radio>
           </div>
 
-          <div class="boutonChoix" :title="$t('component.user.choices.select-person')">
+          <div class="boutonChoix" :title="$t('component.account.choices.select-person')">
             <b-form-radio
                 class="boutonChoix"
                 button
@@ -77,7 +77,7 @@
             </b-form-radio>
           </div>
 
-          <div class="boutonChoix" :title="$t('component.user.choices.account-only')">
+          <div class="boutonChoix" :title="$t('component.account.choices.account-only')">
             <b-form-radio
                 class="boutonChoix"
                 button
@@ -99,8 +99,8 @@
     <opensilex-PersonSelector
         v-if="selected === 'selectPerson'"
         :persons.sync="form.holderOfTheAccountURI"
-        label="component.user.person-selector.label"
-        helpMessage="component.user.person-selector.help-message"
+        label="component.account.linked-person"
+        helpMessage="component.account.person-selector.help-message"
         getOnlyPersonsWithoutAccount="true"
     ></opensilex-PersonSelector>
 
@@ -108,20 +108,20 @@
     <opensilex-InputForm
         v-if="selected === 'addPerson'"
         :value.sync="form.first_name"
-        label="component.user.first-name"
+        label="component.account.first-name"
         type="text"
         :required="true"
-        placeholder="component.user.form-first-name-placeholder"
+        placeholder="component.account.form-first-name-placeholder"
     ></opensilex-InputForm>
 
     <!-- Last name -->
     <opensilex-InputForm
         v-if="selected === 'addPerson'"
         :value.sync="form.last_name"
-        label="component.user.last-name"
+        label="component.account.last-name"
         type="text"
         :required="true"
-        placeholder="component.user.form-last-name-placeholder"
+        placeholder="component.account.form-last-name-placeholder"
     ></opensilex-InputForm>
   </b-form>
 </template>
@@ -133,11 +133,13 @@ import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {SecurityService} from "opensilex-security/api/security.service";
+import {OpenSilexStore} from "../../models/Store";
 
 @Component
 export default class UserForm extends Vue {
 $opensilex: OpenSilexVuePlugin
 $securityService : SecurityService
+$store: OpenSilexStore
 
   get user() {
     return this.$store.state.user;

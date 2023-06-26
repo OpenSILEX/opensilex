@@ -8,7 +8,7 @@
 
 Manipulate [account](./account_API_service.md) and [person](./person_API_service.md) simultaneously for a better comprehension of users.
 
-> Warning : the user concept is a representative concept only, there is no user objects in database nor classes.
+> Warning : the user concept is a representative concept only, there is no user objects in database or classes.
 >
 > A while ago, we were using user object for authentication, credentials and contact information.
 After a rework, this concept were split between [account](./account_API_service.md) and [person](./person_API_service.md).

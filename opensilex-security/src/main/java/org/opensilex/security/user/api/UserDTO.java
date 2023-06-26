@@ -2,11 +2,11 @@ package org.opensilex.security.user.api;
 
 import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.OpenSilex;
-import org.opensilex.security.account.api.AccountWithoutHolderDTO;
+import org.opensilex.security.account.api.AccountDTO;
 
 import java.net.URI;
 
-public class UserDTO extends AccountWithoutHolderDTO {
+public class UserDTO extends AccountDTO {
 
     @Override
     @ApiModelProperty(value = "User URI", example = "http://opensilex.dev/users#jean.michel.inrae")

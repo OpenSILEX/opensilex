@@ -954,22 +954,22 @@ test:brice:deploy:
 guilhem:build:
   <<: *build_template_with_opensilex
   rules:
-    - if: $CI_COMMIT_BRANCH == "guilhem"
+    - if: $CI_COMMIT_BRANCH == "mariem"
 
 test:guilhem:deploy:
   <<: *deploy_opensilex_before_script
   <<: *deploy_opensilex_template
   variables:
-    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/guilhem"
+    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/mariem"
     INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
     OPENSILEX_JAR_ADMIN_PORT: 4098
     OPENSILEX_JAR_PORT: 8098
     REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
     REMOTE_SERVER_IP: $REMOTE_TEST_SERVER_IP
-    REMOTE_SERVER_RSYNC_DIR: "mistea/guilhem"
+    REMOTE_SERVER_RSYNC_DIR: "mistea/mariem"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   rules:
-    - if: $CI_COMMIT_BRANCH == "guilhem"
+    - if: $CI_COMMIT_BRANCH == "mariem"
       when: on_success
   needs:
     - guilhem:build

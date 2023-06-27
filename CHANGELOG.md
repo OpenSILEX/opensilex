@@ -70,7 +70,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### New features
 
 - [MongoDB] You can now specify credentials to connect to a MongoDB server -> d02b3c8d
-- [Facility] Environmental data can be visualized in the facility detail page, including mean and median graphs ->  fb8795b2
+- [Facility] Environmental data can be visualized in the facility detail page, including mean and median graphs ->  d9a705bf
 - [Data] Added new filters for data search : devices, facilities, operators -> ea0cc36b
 - [Data] Scientific objects can now be annotated during data import by adding an "annotation" column in the CSV -> 816f5ecf
 - [Map] Various enhancements -> 89ce4fa6

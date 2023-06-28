@@ -80,14 +80,6 @@
     </dependencies>
 
     <build>
-        <resources>
-            <resource>
-                <directory>front</directory>
-                <excludes>
-                    <exclude>**</exclude>
-                </excludes>
-            </resource>
-        </resources>
         <plugins>
             <!-- Generate swagger.json file -->
             <plugin>

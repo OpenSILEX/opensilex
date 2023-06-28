@@ -264,6 +264,7 @@ import {User} from "../../models/User";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
 import {FacilityGetDTO} from "opensilex-core/index";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+import {ExperimentsService} from "opensilex-core/api/experiments.service";
 
 @Component
 export default class ExperimentList extends Vue {
@@ -378,7 +379,7 @@ export default class ExperimentList extends Vue {
     }
 
     return this.$opensilex
-      .getService("opensilex.ExperimentsService")
+      .getService<ExperimentsService>("opensilex.ExperimentsService")
       .searchExperiments(
         this.filter.name, // label
         this.filter.yearFilter, // year
@@ -487,7 +488,7 @@ export default class ExperimentList extends Vue {
         .catch(this.$opensilex.errorHandler);
   }
 
-  getSpeciesName(uri: String): String {
+  getSpeciesName(uri: string): String {
     return this.speciesByUri.get(this.$opensilex.getLongUri(uri))?.name;
   }
 
@@ -541,7 +542,7 @@ export default class ExperimentList extends Vue {
 
   deleteExperiment(uri: string) {
     this.$opensilex
-      .getService("opensilex.ExperimentsService")
+      .getService<ExperimentsService>("opensilex.ExperimentsService")
       .deleteExperiment(uri)
       .then(() => {
         this.refresh();

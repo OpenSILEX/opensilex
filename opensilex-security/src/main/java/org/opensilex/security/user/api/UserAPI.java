@@ -324,6 +324,9 @@ public class UserAPI {
                     PersonDTO holderToUpdate = userDTO.createCorrespondingPersonDTO();
                     String email = Objects.nonNull(holderOfTheAccount.getEmail()) ? holderOfTheAccount.getEmail().toString() : null;
                     holderToUpdate.setEmail(email);
+                    holderToUpdate.setPhoneNumber(holderOfTheAccount.getPhoneNumber().getSchemeSpecificPart());
+                    holderToUpdate.setOrcid(holderOfTheAccount.getOrcid());
+                    holderToUpdate.setAffiliation(holderOfTheAccount.getAffiliation());
 
                     personDAO.update(holderToUpdate);
                 }

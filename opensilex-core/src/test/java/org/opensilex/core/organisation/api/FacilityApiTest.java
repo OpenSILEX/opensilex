@@ -84,6 +84,14 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
         return dto;
     }
 
+    public FacilityUpdateDTO getUpdateDTOWithGeometry(URI uri, FacilityAddressDTO address, GeoJsonObject geoJson) {
+        FacilityUpdateDTO dto = new FacilityUpdateDTO();
+        dto.setUri(uri);
+        dto.setAddress(address);
+        dto.setGeometry(geoJson);
+        return dto;
+    }
+
     @Test
     public void testSearchByName() throws Exception {
 
@@ -231,6 +239,48 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
         SingleObjectResponse<FacilityGetDTO> singleObjectResponse = mapper.convertValue(response.readEntity(JsonNode.class), singleObjectResponseTypeReference);
         assertNull(singleObjectResponse.getResult().getGeometry());
         assertNull(singleObjectResponse.getResult().getAddress());
+    }
+
+    @Test
+    public void testUpdateWithGeometry() throws Exception {
+        FacilityCreationDTO dto = getCreationDTOWithGeometry("test", null, null);
+        Response response = getJsonPostResponseAsAdmin(target(CREATE_PATH), dto);
+        assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
+        ObjectUriResponse objectUriResponse = mapper.convertValue(response.readEntity(JsonNode.class), objectUriResponseTypeReference);
+        URI createdUri = new URI(objectUriResponse.getResult());
+
+        FacilityUpdateDTO updateDto = getUpdateDTOWithGeometry(createdUri, null, new Point(49, 3));
+        response = getJsonPutResponse(target(UPDATE_PATH), updateDto);
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+
+        response = getJsonGetByUriResponseAsAdmin(target(URI_PATH), createdUri.toString());
+        SingleObjectResponse<FacilityGetDTO> singleObjectResponse = mapper.convertValue(response.readEntity(JsonNode.class), singleObjectResponseTypeReference);
+        Feature feature = (Feature) singleObjectResponse.getResult().getGeometry();
+        assertEquals(new Point(49, 3), feature.getGeometry());
+    }
+
+    @Test
+    public void testUpdateWithAddress() throws Exception {
+        FacilityCreationDTO dto = getCreationDTOWithGeometry("test", null, null);
+        Response response = getJsonPostResponseAsAdmin(target(CREATE_PATH), dto);
+        assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
+        ObjectUriResponse objectUriResponse = mapper.convertValue(response.readEntity(JsonNode.class), objectUriResponseTypeReference);
+        URI createdUri = new URI(objectUriResponse.getResult());
+
+        FacilityUpdateDTO updateDto = getUpdateDTOWithGeometry(createdUri, getFacilityAddressDTO(
+                "France",
+                "Montpellier",
+                "34000",
+                "Occitanie",
+                "2 place Pierre Viala"
+        ), null);
+        response = getJsonPutResponse(target(UPDATE_PATH), updateDto);
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+
+        response = getJsonGetByUriResponseAsAdmin(target(URI_PATH), createdUri.toString());
+        SingleObjectResponse<FacilityGetDTO> singleObjectResponse = mapper.convertValue(response.readEntity(JsonNode.class), singleObjectResponseTypeReference);
+        assertNotNull(singleObjectResponse.getResult().getGeometry());
+        assertNotNull(singleObjectResponse.getResult().getAddress());
     }
 
 

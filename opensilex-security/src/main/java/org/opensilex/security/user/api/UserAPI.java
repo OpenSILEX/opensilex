@@ -320,7 +320,7 @@ public class UserAPI {
 
                 PersonModel holderOfTheAccount = account.getHolderOfTheAccount();
 
-                if (Objects.isNull(newHolderOfTheAccount) && Objects.nonNull(holderOfTheAccount) ) {
+                if (Objects.isNull(newHolderOfTheAccount) && Objects.nonNull(holderOfTheAccount) && Objects.nonNull(userDTO.getHolderOfTheAccountURI())) {
                     PersonDTO holderToUpdate = userDTO.createCorrespondingPersonDTO();
                     String email = Objects.nonNull(holderOfTheAccount.getEmail()) ? holderOfTheAccount.getEmail().toString() : null;
                     holderToUpdate.setEmail(email);

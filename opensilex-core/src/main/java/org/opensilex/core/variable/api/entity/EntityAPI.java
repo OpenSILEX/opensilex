@@ -5,6 +5,11 @@
 //******************************************************************************
 package org.opensilex.core.variable.api.entity;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import io.swagger.annotations.*;
 import org.opensilex.core.CoreModule;
 import org.opensilex.core.external.opensilex.SharedResourceInstanceService;
@@ -36,11 +41,15 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.URI;
+import java.net.URL;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.opensilex.core.variable.api.VariableAPI.*;
@@ -254,4 +263,77 @@ public class EntityAPI {
         return new PaginatedListResponse<>(service.search(EntityAPI.PATH, searchParams, EntityGetDTO.class))
                 .getResponse();
     }
+
+    /**
+     * TEST Agroportal link
+     */
+
+    static final String REST_URL = "https://data.agroportal.lirmm.fr";
+    static final String API_KEY = "bcfa713e-007c-418b-b7b3-57ce40fd7721";
+    static final ObjectMapper mapper = new ObjectMapper();
+    static final ObjectWriter writer = mapper.writerWithDefaultPrettyPrinter();
+
+    @GET
+    @Path("/search_agroportal")
+    @ApiOperation("Search through agroportal")
+    @ApiProtected
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return entities", response = EntityGetDTO.class, responseContainer = "List"),
+            @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response searchThroughAgroportal(
+            @ApiParam(value = "Name (regex)", example = "plant") @QueryParam("name") String namePattern ,
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @Min(0) int pageSize
+    ) throws Exception {
+
+        JsonNode searchResult = jsonToNode(get(REST_URL + "/search?q=" + namePattern)).get("collection");
+
+        List<EntityAgroportalModel> entities = mapper.readValue(searchResult.traverse(), new TypeReference<List<EntityAgroportalModel>>(){});
+
+        System.out.println(writer.writeValueAsString(searchResult));
+
+        return new SingleObjectResponse<>(entities)
+                .getResponse();
+    }
+
+    private static JsonNode jsonToNode(String json) {
+        JsonNode root = null;
+        try {
+            root = mapper.readTree(json);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return root;
+    }
+
+    private static String get(String urlToGet) {
+        URL url;
+        HttpURLConnection conn;
+        BufferedReader rd;
+        String line;
+        String result = "";
+        try {
+            url = new URL(urlToGet);
+            conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("Authorization", "apikey token=" + API_KEY);
+            conn.setRequestProperty("Accept", "application/json");
+            rd = new BufferedReader(
+                    new InputStreamReader(conn.getInputStream()));
+            while ((line = rd.readLine()) != null) {
+                result += line;
+            }
+            rd.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
 }

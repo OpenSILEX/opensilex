@@ -124,7 +124,9 @@ public class UserAPI {
         sparql.startTransaction();
         try {
             PersonDAO personDAO = new PersonDAO(sparql);
-            PersonModel person = personDAO.create(userDTO.createCorrespondingPersonDTO());
+            PersonDTO personDTO = userDTO.createCorrespondingPersonDTO();
+            personDTO.setUri(null);
+            PersonModel person = personDAO.create(personDTO );
 
             AccountModel user = accountDAO.create(
                     userDTO.getUri(),

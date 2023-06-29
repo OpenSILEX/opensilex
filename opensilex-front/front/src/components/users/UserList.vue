@@ -113,8 +113,7 @@ export default class UserList extends Vue {
     },
     {
       key: "last_name",
-      label: "component.account.linked-person",
-      sortable: true
+      label: "component.account.linked-person"
     },
     {
       key: "email",

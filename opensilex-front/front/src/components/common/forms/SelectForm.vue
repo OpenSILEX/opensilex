@@ -342,7 +342,7 @@ export default class SelectForm extends Vue {
           //Set table async view's checked items
           //TODO: vérif casse pas pour autre items (ex: group de germplasm)
           //let jsonSelectedItems = this._convertSelectedToJson();
-          setTimeout(()=>{
+          this.$nextTick(()=> {
             if(this.searchModal.setInitiallySelectedItems){
               this.searchModal.setInitiallySelectedItems(this.selectedInJsonFormat);
             }
@@ -367,7 +367,7 @@ export default class SelectForm extends Vue {
               this.$emit('onValidate', this.selectedCopie);
             }
             resolve(this.currentValue);
-          },2000);
+          });
         }
       } else {
         if (this.itemLoadingMethod) {

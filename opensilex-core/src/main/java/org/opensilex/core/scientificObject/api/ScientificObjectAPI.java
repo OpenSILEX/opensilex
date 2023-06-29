@@ -222,63 +222,36 @@ public class ScientificObjectAPI {
             @ApiParam(value = "Search by maximal date", example = "2020-08-22") @QueryParam("end_date") @Date(DateFormat.YMD) String endDate
     ) throws Exception {
 
-        validateContextAccess(contextURI);
-
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
         ScientificObjectDAO soDAO = new ScientificObjectDAO(sparql, nosql);
+        List<ScientificObjectNodeDTO> dtoMapGeo = new ArrayList<>();
+        int lengthMapGeo = 0;
+
+        //1- Get SO with geometry for the experiment (MongoDB - collection geospatial)
+        validateContextAccess(contextURI);
 
         Instant test_start = Instant.now();
         FindIterable<GeospatialModel> mapGeo = geoDAO.getGeometryByGraphList(contextURI);
         Instant test_end = Instant.now();
-        
-        Collection<String> filteredUris = new HashSet<>();
-        Collection<URI> uris = new HashSet<>();
 
+        //2- Filter OS with date and get OS detail ( uri, name, rdfType, rdfTypeLabel, destruction date, creation date) ( RDF4J) - SONodeDTO
+        //for each SO,get the uri
         for (GeospatialModel geospatialModel : mapGeo) {
-            ScientificObjectNodeDTO dtoFromModel = ScientificObjectNodeDTO.getDTOFromModel(geospatialModel);
-            URI uri = dtoFromModel.getUri();
-            uris.add(uri);
+            dtoMapGeo.add(ScientificObjectNodeDTO.getDTOFromModel(geospatialModel));
+            lengthMapGeo++;
         }
 
-        // Date
-        if (startDate != null || endDate != null) {
-            filteredUris = soDAO.getScientificObjectsByDate(contextURI, startDate, endDate, uris);
-        }
+        //get SO uris between 2 dates for an experiment
+        List<ScientificObjectNodeDTO> dtoList = soDAO.getScientificObjectsByDate(contextURI, startDate, endDate, currentUser.getLanguage(), dtoMapGeo.stream().map(ScientificObjectNodeDTO::getUri).collect(Collectors.toList()));
 
-        List<ScientificObjectNodeDTO> dtoList = new ArrayList<>();
-        int lengthMapGeo = 0;
-
-        for (GeospatialModel geospatialModel : mapGeo) {
-            if (startDate != null || endDate != null) {
-                String uri = geospatialModel.getUri().toString();
-                if (filteredUris.contains(uri) == true) {
-                    ScientificObjectNodeDTO dtoFromModel = ScientificObjectNodeDTO.getDTOFromModel(geospatialModel);
-                    dtoList.add(dtoFromModel);
-                    lengthMapGeo++;
-                }
-            } else {
-                ScientificObjectNodeDTO dtoFromModel = ScientificObjectNodeDTO.getDTOFromModel(geospatialModel);
-                dtoList.add(dtoFromModel);
-                lengthMapGeo++;
-            }
-        }
-
-        // TODO: à améliorer/optimiser (tout le service?)
-        ScientificObjectSearchFilter searchFilter = new ScientificObjectSearchFilter()
-                .setUris(new ArrayList<>(uris))
-                .setExperiment(contextURI);
-
-        searchFilter.setLang(currentUser.getLanguage())
-                .setPageSize(100000)
-                .setPage(0);
-        ListWithPagination<ScientificObjectNodeDTO> dtoListTmp = soDAO.searchAsDto(searchFilter);
-        for (ScientificObjectNodeDTO dtoTmp :dtoListTmp.getList()) {
-            ScientificObjectNodeDTO dto= dtoList.stream().filter(o -> dtoTmp.getUri().toString().equals(o.getUri().toString())).findAny().orElse(null);
-            dtoTmp.setGeometry(dto.getGeometry());
+        //3- set the geometry from MongoDB in SO from RDF4J
+        for(ScientificObjectNodeDTO dto : dtoList){
+            dto.setGeometry(dtoMapGeo.stream().filter(o -> dto.getUri().toString().equals(o.getUri().toString())).findAny().orElse(null).getGeometry());
         }
 
         LOGGER.debug(lengthMapGeo + " space entities recovered " + Duration.between(test_start, test_end).toMillis() + " milliseconds elapsed");
-        return new PaginatedListResponse<>(dtoListTmp).getResponse();
+
+        return new PaginatedListResponse<>(dtoList).getResponse();
     }
 
     @GET

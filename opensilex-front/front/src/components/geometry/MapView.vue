@@ -137,7 +137,7 @@
             icon="fa#chart-area"
             label="MapView.chart"
             @click="showChart"
-            :class="selectedOS.length === 0 || selectedOS.length > 15 ? 'disabled' : ''"
+            :disabled="selectedOS.length === 0 || selectedOS.length > 15 ? true : false"
         ></opensilex-Button>
         <div>
           <br>

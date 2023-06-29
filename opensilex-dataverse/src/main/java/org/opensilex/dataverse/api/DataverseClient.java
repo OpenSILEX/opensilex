@@ -77,7 +77,6 @@ public class DataverseClient {
                 )
                 .authors(
                         datasetDTO.getDatasetAuthors().stream().map(author -> {
-                            DatasetAuthor.DatasetAuthorBuilder datasetAuthor = DatasetAuthor.builder();
                             if (author.getLastName() == null || author.getFirstName() == null){
                                 throw new BadRequestException("Dataset authors must have a full name with a first and last name '" + author.getUri() + "' doesn't");
                             }
@@ -92,7 +91,7 @@ public class DataverseClient {
                                 .build()
                 )
                 .subject("Agricultural Sciences")
-                .languages(Collections.singletonList(datasetDTO.getDatasetLanguage().getDisplayLanguage(datasetDTO.getDatasetMetadataLanguage().getLocale())));
+                .languages(Collections.singletonList(datasetDTO.getDatasetLanguage().getDisplayLanguage(Locale.ENGLISH)));
 
         if(datasetDTO.getCurrentAccount().getHolderOfTheAccount() != null){
             facadeBuilder.depositor(datasetDTO.getCurrentAccount().getHolderOfTheAccount().getFirstName() + " " + datasetDTO.getCurrentAccount().getHolderOfTheAccount().getLastName().toUpperCase());

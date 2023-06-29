@@ -366,7 +366,7 @@ export default class DatasetList extends Vue {
                         identifier: document.identifier,
                         rdf_type: document.rdf_type,
                         title: document.title,
-                        productionDate: document.date,
+                        date: document.date,
                         description: document.description,
                         targets: document.targets,
                         authors: document.authors,

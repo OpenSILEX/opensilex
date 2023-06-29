@@ -82,14 +82,14 @@
                             </div>
 
                             <!-- authors -->
-                            <div> <!-- TODO : Should use a PersonSelector instead but issue with the get documents service -->
+                            <div>
                                 <label>{{ $t('DatasetList.filter.author') }}</label>
-                                <opensilex-InputForm
-                                    :value.sync="filters.authors"
+                                <opensilex-PersonSelector
+                                    :persons.sync="filters.authors"
                                     class="searchFilter"
                                     placeholder="DatasetList.filter.author-placeholder"
                                     @handlingEnterKey="refresh()"
-                                ></opensilex-InputForm>
+                                ></opensilex-PersonSelector>
                             </div>
 
                             <!-- deprecated -->

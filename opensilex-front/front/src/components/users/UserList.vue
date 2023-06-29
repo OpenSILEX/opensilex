@@ -194,11 +194,13 @@ export default class UserList extends Vue {
   }
 
   async mapPersonsWithAccount(key_personUri_value_accountUri : {[id: string]: string}){
-    let personsResponse =  await this.service.getPersonsByURI( Object.keys(key_personUri_value_accountUri) )
-    personsResponse.response.result.forEach( person => {
-      let accountUri = key_personUri_value_accountUri[person.uri]
-      this.personByAccountUri[accountUri] = person
-    })
+    if ( Object.keys(key_personUri_value_accountUri).length !== 0 ) {
+      let personsResponse = await this.service.getPersonsByURI(Object.keys(key_personUri_value_accountUri))
+      personsResponse.response.result.forEach(person => {
+        let accountUri = key_personUri_value_accountUri[person.uri]
+        this.personByAccountUri[accountUri] = person
+      })
+    }
   }
 
   deleteUser(uri: string) {

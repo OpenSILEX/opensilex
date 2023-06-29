@@ -263,10 +263,12 @@ import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {User} from "../../models/User";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
 import {FacilityGetDTO} from "opensilex-core/index";
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+import {ExperimentsService} from "opensilex-core/api/experiments.service";
 
 @Component
 export default class ExperimentList extends Vue {
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
   $i18n: any;
   $store: any;
   SearchFiltersToggle: boolean = false;
@@ -298,6 +300,10 @@ export default class ExperimentList extends Vue {
 
   facilities = [];
   species = [];
+
+  /**
+   * The key is the URI in extended form
+   */
   speciesByUri: Map<String, SpeciesDTO> = new Map<String, SpeciesDTO>();
 
   @Ref("tableRef") readonly tableRef!: any;
@@ -373,7 +379,7 @@ export default class ExperimentList extends Vue {
     }
 
     return this.$opensilex
-      .getService("opensilex.ExperimentsService")
+      .getService<ExperimentsService>("opensilex.ExperimentsService")
       .searchExperiments(
         this.filter.name, // label
         this.filter.yearFilter, // year
@@ -452,7 +458,7 @@ export default class ExperimentList extends Vue {
         this.species = [];
         for (let i = 0; i < http.response.result.length; i++) {
           this.speciesByUri.set(
-            http.response.result[i].uri,
+            this.$opensilex.getLongUri(http.response.result[i].uri),
             http.response.result[i]
           );
           this.species.push({
@@ -482,11 +488,8 @@ export default class ExperimentList extends Vue {
         .catch(this.$opensilex.errorHandler);
   }
 
-  getSpeciesName(uri: String): String {
-    if (this.speciesByUri.has(uri)) {
-      return this.speciesByUri.get(uri).name;
-    }
-    return null;
+  getSpeciesName(uri: string): String {
+    return this.speciesByUri.get(this.$opensilex.getLongUri(uri))?.name;
   }
 
   isEnded(experiment) {
@@ -539,7 +542,7 @@ export default class ExperimentList extends Vue {
 
   deleteExperiment(uri: string) {
     this.$opensilex
-      .getService("opensilex.ExperimentsService")
+      .getService<ExperimentsService>("opensilex.ExperimentsService")
       .deleteExperiment(uri)
       .then(() => {
         this.refresh();

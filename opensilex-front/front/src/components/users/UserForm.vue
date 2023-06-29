@@ -181,6 +181,9 @@ $store: OpenSilexStore
 
   hasHolder = false
 
+  originalFirstName: string
+  originalLastName: string
+
   created(){
     this.$securityService = this.$opensilex.getService("opensilex.SecurityService")
   }
@@ -190,6 +193,8 @@ $store: OpenSilexStore
     this.$nextTick(() => {
       this.hasHolder = !this.editMode || (this.editMode && this.form.first_name != null)
       this.selected = this.hasHolder ? 'addPerson' : 'noOne'
+      this.originalFirstName = this.form.first_name
+      this.originalLastName = this.form.last_name
     });
   }
 
@@ -234,13 +239,21 @@ $store: OpenSilexStore
     if (form.password === "") {
       form.password = null;
     }
+    if (form.first_name === "" || form.first_name === null){
+      form.first_name = this.originalFirstName
+    }
+    if (form.last_name === "" || form.last_name === null){
+      form.last_name = this.originalLastName
+    }
     return this.$securityService
         .updateUser(form)
         .then((http: HttpResponse<OpenSilexResponse<any>>) => {
           let uri = http.response.result;
           console.debug("User updated", uri);
         })
-        .catch(this.$opensilex.errorHandler);
+        .catch(error => {
+          this.$opensilex.errorHandler(error);
+        });
   }
 
 }

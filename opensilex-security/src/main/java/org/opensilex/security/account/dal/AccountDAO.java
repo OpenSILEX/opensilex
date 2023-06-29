@@ -169,7 +169,8 @@ public final class AccountDAO {
 
         Expr stringFilter = SPARQLQueryHelper.or(
                 SPARQLQueryHelper.regexFilter(AccountModel.EMAIL_FIELD, stringPattern),
-                SPARQLQueryHelper.regexFilter(PersonModel.LAST_NAME_FIELD, stringPattern)
+                SPARQLQueryHelper.regexFilter(PersonModel.LAST_NAME_FIELD, stringPattern),
+                SPARQLQueryHelper.regexFilter(PersonModel.FIRST_NAME_FIELD, stringPattern)
         );
 
         Map<String, WhereHandler> customHandlerByFields = new HashMap<>();

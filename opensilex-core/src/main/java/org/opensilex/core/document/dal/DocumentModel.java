@@ -106,7 +106,8 @@ public class DocumentModel extends SPARQLResourceModel implements ClassURIGenera
 
     @SPARQLProperty(
         ontology = DCTerms.class,
-        property = "source"
+        property = "source",
+        ignoreUpdateIfNull = true
     )
     URI source;
     public static final String SOURCE_FIELD = "source";

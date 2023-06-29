@@ -83,8 +83,8 @@
                 ref="groupVariablesForm"
                 modalSize="lg"
                 :tutorial="false"
-                :createAction="createVariablesGroup"
-                :updateAction="updateVariablesGroup"
+                @onCreate="refresh()"
+                @onUpdate="refresh()"
                 component="opensilex-GroupVariablesForm"
                 createTitle="GroupVariablesForm.add"
                 editTitle="GroupVariablesForm.edit"
@@ -482,35 +482,6 @@ export default class VariablesView extends Vue {
             let message = this.$i18n.t("VariableView.name") + " " + formattedVariable.name + " " + this.$i18n.t("component.common.success.update-success-message");
             this.$opensilex.showSuccessToast(message);
         }).catch(this.$opensilex.errorHandler);
-    }
-
-    createVariablesGroup(form: VariablesGroupCreationDTO){
-        return this.service.createVariablesGroup(form)
-            .then((http: HttpResponse<OpenSilexResponse<string>>) => {
-            let message = this.$i18n.t(form.name) + this.$i18n.t("component.common.success.creation-success-message");
-            this.$opensilex.showSuccessToast(message);
-            let uri = http.response.result;
-            this.refresh(uri);
-      })
-      .catch(error => {
-        if (error.status == 409) {
-          console.error("Variables group already exists", error);
-          this.$opensilex.errorHandler(error, "Variables group already exists");
-        } else {
-          this.$opensilex.errorHandler(error);
-        }
-      });
-    }
-
-    updateVariablesGroup(form: VariablesGroupUpdateDTO){
-        return this.service.updateVariablesGroup(form)
-            .then((http: HttpResponse<OpenSilexResponse<string>>) => {
-                let message = this.$i18n.t(form.name) + this.$i18n.t("component.common.success.update-success-message");
-                this.$opensilex.showSuccessToast(message);
-                let uri = http.response.result;
-                this.refresh(uri);
-        })
-        .catch(this.$opensilex.errorHandler);
     }
 
     deleteVariable(uri: string) {

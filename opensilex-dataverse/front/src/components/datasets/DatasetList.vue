@@ -335,14 +335,14 @@ export default class DatasetList extends Vue {
             let promises = [];
 
             experimentSet.forEach(experiment => {
-                if (!this.experimentMap.has(experiment)){
+                if (!this.experimentMap.has(experiment) && experiment !== undefined){
                     promises.push(this.experimentsService.getExperiment(experiment).then(response => {
                         this.experimentMap.set(experiment, response.response.result.name)
                     }));
                 }
             })
             authorSet.forEach(author => {
-                if (!this.authorMap.has(author)){
+                if (!this.authorMap.has(author) && author !== undefined){
                     promises.push(this.securityService.getPerson(author).then(response => {
                         this.authorMap.set(author, response.response.result)
                     }));

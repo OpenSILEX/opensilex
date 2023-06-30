@@ -5,6 +5,7 @@
     :selected.sync="personsURI"
     :multiple="multiple"
     :itemLoadingMethod="loadPersons"
+    :required="required"
     :searchMethod="searchPersons"
     :conversionMethod="personToSelectNode"
     placeholder="component.person.filter-placeholder"
@@ -31,6 +32,9 @@ export default class PersonSelector extends Vue {
 
   @Prop()
   label;
+
+  @Prop()
+  required;
 
   @Prop()
   multiple;

@@ -163,6 +163,7 @@ export default class DataValidationReport extends Vue {
     this.loadErrorType("duplicatedObjectErrors", errors, globalErrors);
     this.loadErrorType("duplicatedTargetErrors", errors, globalErrors);
     this.loadErrorType("duplicatedDeviceErrors", errors, globalErrors);
+    this.loadErrorType("invalidAnnotationErrors", errors, globalErrors);
 
     this.loadErrorType("alreadyExistingURIErrors", errors, globalErrors);
     this.loadErrorType("duplicateURIErrors", errors, globalErrors);
@@ -178,6 +179,13 @@ export default class DataValidationReport extends Vue {
       generalErrors.listSize++;
       if (!generalErrors.firstErrorType) {
         generalErrors.firstErrorType = "missingHeaders";
+      }
+    }
+    if (errors.invalidAnnotationErrors.length > 0) {
+      generalErrors.list.invalidAnnotationErrors = errors.invalidAnnotationErrors;
+      generalErrors.listSize++;
+      if (!generalErrors.firstErrorType) {
+        generalErrors.firstErrorType = "invalidAnnotationErrors";
       }
     }
     if (errors.emptyHeaders.length > 0) {

@@ -511,6 +511,7 @@ en:
     OBJECT_NAME_AMBIGUITY_IN_GLOBAL_CONTEXT: "Object can't be referenced by name when importing outside of experimental context"
     generalErrors: "General errors"
     tooLargeDataset: "Too large data :'{sizeMax}' observations expected, '{nbLinesToImport}' observations submitted"
+    invalidAnnotationErrors: "The target column must be filled to annotate."
 
 fr:
   DataValidationReport:
@@ -573,4 +574,5 @@ fr:
     OBJECT_NAME_AMBIGUITY_IN_GLOBAL_CONTEXT: "L'objet scientifique ne peut être réferencé par son nom lors d'un import en dehors du cadre experimental"
     generalErrors: "Erreurs générales"
     tooLargeDataset: "Jeu de données trop volumineux : '{sizeMax}' observations attendues, '{nbLinesToImport}' observations soumises"
+    invalidAnnotationErrors: "La colonne cible (Target) doit être remplie pour annoter."
 </i18n>

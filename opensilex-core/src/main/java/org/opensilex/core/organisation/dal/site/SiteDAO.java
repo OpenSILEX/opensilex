@@ -4,6 +4,7 @@ import com.mongodb.client.model.geojson.Geometry;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
+import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.clauses.WhereClause;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.ORG;
@@ -26,6 +27,7 @@ import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.server.exceptions.NotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.mapping.SPARQLListFetcher;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
@@ -34,8 +36,10 @@ import org.opensilex.utils.ListWithPagination;
 
 import java.net.URI;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
@@ -73,7 +77,8 @@ public class SiteDAO {
 
     /**
      * Search the sites among the ones accessible to the user. See {@link OrganizationSPARQLHelper#addSiteAccessClause(WhereClause, Var, Collection, URI)}
-     * for further information on access validation.
+     * for further information on access validation. Organizations are retrieved using {@link SPARQLListFetcher}, so
+     * only the URI field is accessible for the parent orgs.
      *
      * @param filter The search filters
      * @return The list of sites
@@ -88,7 +93,8 @@ public class SiteDAO {
                 .stream().map(SPARQLResourceModel::getUri)
                 .collect(Collectors.toList());
 
-        return sparql.searchWithPagination(SiteModel.class, filter.getUser().getLanguage(), select -> {
+        AtomicReference<SelectBuilder> initialSelect = new AtomicReference<>();
+        ListWithPagination<SiteModel> models = sparql.searchWithPagination(SiteModel.class, filter.getUser().getLanguage(), select -> {
             Var uriVar = makeVar(SiteModel.URI_FIELD);
             Var organizationsVar = makeVar("__" + SiteModel.ORGANIZATION_FIELD);
 
@@ -110,7 +116,21 @@ public class SiteDAO {
             if (Objects.nonNull(filter.getFacility())) {
                 select.addWhere(SPARQLDeserializers.nodeURI(filter.getFacility()), Oeso.withinSite, uriVar);
             }
+
+            initialSelect.set(select);
         }, filter.getOrderByList(), filter.getPage(), filter.getPageSize());
+
+        SPARQLListFetcher<SiteModel> listFetcher = new SPARQLListFetcher<>(
+                sparql,
+                SiteModel.class,
+                sparql.getDefaultGraph(SiteModel.class),
+                Collections.singletonMap(SiteModel.ORGANIZATION_FIELD, true),
+                initialSelect.get(),
+                models.getList()
+        );
+        listFetcher.updateModels();
+
+        return models;
     }
 
     /**
@@ -288,14 +308,7 @@ public class SiteDAO {
             return;
         }
 
-        GeospatialModel geospatialModel = new GeospatialModel();
-        geospatialModel.setUri(site.getUri());
-        geospatialModel.setName(site.getName());
-        geospatialModel.setRdfType(site.getType());
-        geospatialModel.setGraph(addressGraphURI);
-        geospatialModel.setGeometry(geom);
-
-        this.geospatialDAO.create(geospatialModel);
+        this.geospatialDAO.create(new GeospatialModel(site, addressGraphURI, geom));
     }
 
     /**

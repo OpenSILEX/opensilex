@@ -317,7 +317,7 @@ export default class FactorForm extends Vue {
           console.error("Factor already exists", error);
           this.$opensilex.errorHandler(
             error,
-            this.$i18n.t("component.user.errors.user-already-exists")
+            this.$i18n.t("component.account.errors.user-already-exists")
           );
         } else {
           this.$opensilex.errorHandler(error);

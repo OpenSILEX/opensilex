@@ -94,7 +94,7 @@ public class DocumentAPI {
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Document Inserted", response = ObjectUriResponse.class),
+        @ApiResponse(code = 201, message = "Document Inserted", response = URI.class),
         @ApiResponse(code = 409, message = "A document with the same URI already exists", response = ErrorResponse.class)
     })
 
@@ -229,7 +229,7 @@ public class DocumentAPI {
     @PUT
     @ApiOperation(value = "Update document's description")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Document's metadata updated", response = ObjectUriResponse.class),
+        @ApiResponse(code = 200, message = "Document's metadata updated", response = URI.class),
         @ApiResponse(code = 404, message = "Document URI not found", response = ErrorResponse.class)
     })
     @ApiProtected
@@ -276,7 +276,7 @@ public class DocumentAPI {
     @Produces(MediaType.APPLICATION_JSON)
 
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Document deleted", response = ObjectUriResponse.class),
+        @ApiResponse(code = 200, message = "Document deleted", response = URI.class),
         @ApiResponse(code = 404, message = "Document URI not found", response = ErrorResponse.class)
     })
     public Response deleteDocument(

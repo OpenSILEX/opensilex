@@ -11,7 +11,7 @@
           <template v-slot:filters>
             <!-- Variables -->
             <div>
-              <opensilex-FilterField :halfWidth="true">
+              <opensilex-FilterField>
                 <opensilex-VariableSelectorWithFilter
                   placeholder="VariableSelectorWithFilter.placeholder"
                   :variables.sync="filter.variable"
@@ -27,25 +27,29 @@
 
             <!-- Dates -->
             <div>
-              <opensilex-FilterField :halfWidth="true">
-                <div>
+              <opensilex-FilterField>
                   <opensilex-DateTimeForm
                     :value.sync="filter.startDate"
                     label="component.common.begin"
+                    :max-date="filter.endDate ? filter.endDate : undefined" 
                     @input="onDateChange"
                     @clear="onDateChange"
                     class="searchFilter"
                   ></opensilex-DateTimeForm>
+              </opensilex-FilterField>
                 </div>
                 <div>
+                  <opensilex-FilterField>
                   <opensilex-DateTimeForm
                     :value.sync="filter.endDate"
                     label="component.common.end"
+                    :min-date="filter.startDate ? filter.startDate : undefined"
+                    :minDate="filter.startDate"
+                    :maxDate="filter.endDate"
                     @input="onDateChange"
                     @clear="onDateChange"
                     class="searchFilter"
                   ></opensilex-DateTimeForm>
-                </div>
             </opensilex-FilterField>
             </div>
 
@@ -106,6 +110,8 @@ import { EventGetDTO, ProvenanceGetDTO } from "opensilex-core/index";
 // @ts-ignore
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 
+let lastWeekDate = new Date(new Date((new Date).setDate(new Date().getDate() - 7)).setHours(0,0,0,0))
+
 @Component
 export default class ExperimentDataVisuForm extends Vue {
   $opensilex: any;
@@ -119,7 +125,7 @@ export default class ExperimentDataVisuForm extends Vue {
   @Ref("provSelector") readonly provSelector!: any;
   filter = {
     variable: [],
-    startDate: undefined,
+    startDate: lastWeekDate.toISOString(),
     endDate: undefined,
     provenance: undefined,
     showEvents: false

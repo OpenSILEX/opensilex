@@ -1,18 +1,18 @@
 <template>
   <ValidationObserver ref="validatorRef">
-    <opensilex-UserSelector
+    <opensilex-PersonSelector
       label="component.experiment.scientificSupervisors"
-      :users.sync="experiment.scientific_supervisors"
+      :persons.sync="experiment.scientific_supervisors"
       :multiple="true"
       helpMessage="ExperimentForm.scientificSupervisors"
-    ></opensilex-UserSelector>
+    ></opensilex-PersonSelector>
 
-    <opensilex-UserSelector
+    <opensilex-PersonSelector
       label="component.experiment.technicalSupervisors"
-      :users.sync="experiment.technical_supervisors"
+      :persons.sync="experiment.technical_supervisors"
       :multiple="true"
       helpMessage="ExperimentForm.technicalSupervisors"
-    ></opensilex-UserSelector>
+    ></opensilex-PersonSelector>
 
     <opensilex-ProjectSelector
       label="component.experiment.projects"
@@ -20,11 +20,11 @@
       :multiple="true"
     ></opensilex-ProjectSelector>
 
-    <opensilex-InfrastructureSelector
+    <opensilex-OrganizationSelector
       label="component.experiment.infrastructures"
       :infrastructures.sync="experiment.organisations"
       :multiple="true"
-    ></opensilex-InfrastructureSelector>
+    ></opensilex-OrganizationSelector>
 
     <opensilex-FacilitySelector
       label="component.experiment.facilities"

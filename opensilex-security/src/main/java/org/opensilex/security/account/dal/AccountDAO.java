@@ -10,10 +10,11 @@ import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.vocabulary.FOAF;
-import org.opensilex.security.person.dal.PersonDAO;
+import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.security.profile.dal.ProfileDAO;
 import org.opensilex.security.profile.dal.ProfileModel;
+import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
@@ -51,7 +52,7 @@ public final class AccountDAO {
      * save a new Account in the rdf Database
      * @param uri URI of the Account
      * @param email unique ID
-     * @return the AccountModel corresponding to the Accounte created in the dataBase
+     * @return the AccountModel corresponding to the Account created in the dataBase
      */
     public AccountModel create(
             URI uri,
@@ -60,8 +61,32 @@ public final class AccountDAO {
             String passwordHash,
             String lang
     ) throws Exception {
+        return create(uri,
+                email,
+                admin,
+                passwordHash,
+                lang,
+                true,
+                null);
+    }
 
-        AccountModel accountModel = buildAccountModel(uri, email, admin, passwordHash, lang, Collections.emptyList());
+    /**
+     * save a new Account in the rdf Database
+     * @param uri URI of the Account
+     * @param email unique ID
+     * @return the AccountModel corresponding to the Account created in the dataBase
+     */
+    public AccountModel create(
+            URI uri,
+            InternetAddress email,
+            boolean admin,
+            String passwordHash,
+            String lang,
+            Boolean enable,
+            PersonModel holderOfTheAccount
+    ) throws Exception {
+
+        AccountModel accountModel = buildAccountModel(uri, email, admin, passwordHash, lang, enable, holderOfTheAccount, Collections.emptyList());
 
         sparql.create(accountModel);
 
@@ -69,7 +94,7 @@ public final class AccountDAO {
     }
 
     /**
-     * @return true if the Email email is already used by an Account in the dataBase
+     * @return true if the email is already used by an Account in the dataBase
      */
     public boolean accountEmailExists(InternetAddress email) throws Exception {
         return sparql.existsByUniquePropertyValue(
@@ -81,7 +106,7 @@ public final class AccountDAO {
 
     /**
      * @param uri URI of the Account you are looking for
-     * @return AccountModel corresponding to the URI uri
+     * @return AccountModel corresponding to the URI
      */
     public AccountModel get(URI uri) throws Exception {
         return sparql.getByURI(AccountModel.class, uri, null);
@@ -96,12 +121,19 @@ public final class AccountDAO {
      * @param instanceURI uri of the Account to delete
      */
     public void delete(URI instanceURI) throws Exception {
-        sparql.delete(AccountModel.class, instanceURI);
+        Objects.requireNonNull(instanceURI);
+        try {
+            sparql.delete(AccountModel.class, instanceURI);
+        } catch (NullPointerException e){
+            // TODO: 30/01/2023 if the deletion is not done because any model match this URI, the SparqlService.delete may throws an exception
+            throw new NotFoundURIException(instanceURI);
+        }
     }
 
     /**
-     * update the Account with the URI uri with the given information
+     * update the Account with the given information
      * @return the updated Account
+     *
      */
     public AccountModel update(
             URI uri,
@@ -109,24 +141,12 @@ public final class AccountDAO {
             boolean admin,
             String passwordHash,
             String lang,
+            Boolean enable,
+            PersonModel holderOfTheAccount,
             List<URI> favorites
     ) throws Exception {
-
-        AccountModel accountModel = buildAccountModel(uri, email, admin, passwordHash, lang, favorites);
-
-        PersonDAO personDAO = new PersonDAO(sparql);
-        sparql.startTransaction();
-        try {
-            //save the potential link between the person and its account, because sparql.update() delete it
-            PersonModel holderOfTheAccount = personDAO.getPersonFromAccount(uri);
-            sparql.update(accountModel);
-            if (holderOfTheAccount != null)
-                personDAO.setAccount(holderOfTheAccount.getUri(), accountModel.getUri());
-
-            sparql.commitTransaction();
-        } catch (Exception e) {
-            sparql.rollbackTransaction();
-        }
+        AccountModel accountModel = buildAccountModel(uri, email, admin, passwordHash, lang, enable, holderOfTheAccount, favorites);
+        sparql.update(accountModel);
 
         return accountModel;
     }
@@ -147,12 +167,16 @@ public final class AccountDAO {
      */
     public ListWithPagination<AccountModel> search(String stringPattern, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
 
-        Expr stringFilter = SPARQLQueryHelper.regexFilter(AccountModel.EMAIL_FIELD, stringPattern);
+        Expr stringFilter = SPARQLQueryHelper.or(
+                SPARQLQueryHelper.regexFilter(AccountModel.EMAIL_FIELD, stringPattern),
+                SPARQLQueryHelper.regexFilter(PersonModel.LAST_NAME_FIELD, stringPattern),
+                SPARQLQueryHelper.regexFilter(PersonModel.FIRST_NAME_FIELD, stringPattern)
+        );
 
         Map<String, WhereHandler> customHandlerByFields = new HashMap<>();
         WhereBuilder whereGraph = new WhereBuilder();
-        whereGraph.addGraph(sparql.getDefaultGraph(PersonModel.class), SPARQLQueryHelper.makeVar(AccountModel.HOLDER_OF_THE_ACCOUNT_FIELD), FOAF.firstName.asNode(), SPARQLQueryHelper.makeVar(PersonModel.FIRST_NAME_FIELD));
         whereGraph.addGraph(sparql.getDefaultGraph(PersonModel.class), SPARQLQueryHelper.makeVar(AccountModel.HOLDER_OF_THE_ACCOUNT_FIELD), FOAF.lastName.asNode(), SPARQLQueryHelper.makeVar(PersonModel.LAST_NAME_FIELD));
+        whereGraph.addGraph(sparql.getDefaultGraph(PersonModel.class), SPARQLQueryHelper.makeVar(AccountModel.HOLDER_OF_THE_ACCOUNT_FIELD), FOAF.firstName.asNode(), SPARQLQueryHelper.makeVar(PersonModel.FIRST_NAME_FIELD));
         WhereBuilder whereOptional = new WhereBuilder();
         whereOptional.addOptional(whereGraph);
         customHandlerByFields.put(AccountModel.HOLDER_OF_THE_ACCOUNT_FIELD, whereOptional.getWhereHandler());
@@ -190,7 +214,7 @@ public final class AccountDAO {
         AccountModel loadedAccount = getByEmail(accountModel.getEmail());
 
         if (loadedAccount == null) {
-            loadedAccount = create(null, accountModel.getEmail(), false, null, defaultLang);
+            loadedAccount = create(null, accountModel.getEmail(), false, accountModel.getPasswordHash(), defaultLang, null, accountModel.getHolderOfTheAccount());
         }
 
         return loadedAccount;
@@ -205,17 +229,29 @@ public final class AccountDAO {
                                            boolean admin,
                                            String passwordHash,
                                            String lang,
-                                           List<URI> favorites){
+                                           Boolean enable,
+                                           PersonModel holderOfTheAccount,
+                                           List<URI> favorites) {
 
         AccountModel accountModel = new AccountModel();
         accountModel.setUri(uri);
         accountModel.setEmail(email);
         accountModel.setAdmin(admin);
         accountModel.setLocale(new Locale(lang));
+        accountModel.setHolderOfTheAccount(holderOfTheAccount);
         accountModel.setFavorites(favorites);
+        accountModel.setIsEnabled(enable);
         if (passwordHash != null) {
             accountModel.setPasswordHash(passwordHash);
         }
+        if (enable != null) {
+            accountModel.setIsEnabled(enable);
+        }
+
         return accountModel;
+    }
+
+    public boolean accountExists(URI accountURI) throws SPARQLException {
+        return sparql.uriExists(sparql.getDefaultGraph(AccountModel.class), accountURI);
     }
 }

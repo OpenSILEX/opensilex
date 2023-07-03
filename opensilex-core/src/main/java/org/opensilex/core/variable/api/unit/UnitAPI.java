@@ -12,12 +12,12 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.variable.api.VariableAPI;
 import org.opensilex.core.variable.dal.BaseVariableDAO;
 import org.opensilex.core.variable.dal.UnitModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.response.*;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
@@ -81,7 +81,7 @@ public class UnitAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "An unit is created", response = ObjectUriResponse.class),
+            @ApiResponse(code = 201, message = "An unit is created", response = URI.class),
             @ApiResponse(code = 409, message = "An unit with the same URI already exists", response = ErrorResponse.class),
     })
     public Response createUnit(
@@ -176,7 +176,7 @@ public class UnitAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Unit updated", response = ObjectUriResponse.class),
+            @ApiResponse(code = 200, message = "Unit updated", response = URI.class),
             @ApiResponse(code = 404, message = "Unknown unit URI", response = ErrorResponse.class)
     })
     public Response updateUnit(
@@ -198,7 +198,7 @@ public class UnitAPI {
             credentialLabelKey = CREDENTIAL_VARIABLE_DELETE_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Unit deleted", response = ObjectUriResponse.class),
+            @ApiResponse(code = 200, message = "Unit deleted", response = URI.class),
             @ApiResponse(code = 404, message = "Unknown unit URI", response = ErrorResponse.class)
     })
     @Consumes(MediaType.APPLICATION_JSON)

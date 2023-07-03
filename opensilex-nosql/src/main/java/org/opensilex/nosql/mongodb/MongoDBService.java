@@ -6,8 +6,7 @@
 //******************************************************************************
 package org.opensilex.nosql.mongodb;
 
-import com.mongodb.ConnectionString;
-import com.mongodb.MongoClientSettings;
+import com.mongodb.*;
 import com.mongodb.client.AggregateIterable;
 import com.mongodb.client.ClientSession;
 import com.mongodb.client.DistinctIterable;
@@ -24,13 +23,18 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.geojson.codecs.GeoJsonCodecProvider;
 import com.mongodb.client.result.DeleteResult;
 
+import java.io.IOException;
 import java.net.URI;
+import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.Order;
+import org.bson.BsonBoolean;
+import org.bson.BsonDocument;
+import org.bson.BsonInt32;
 import org.bson.Document;
 import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
@@ -40,6 +44,7 @@ import org.opensilex.OpenSilexModuleNotFoundException;
 import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidUriListException;
+import org.opensilex.nosql.mongodb.auth.MongoAuthenticationService;
 import org.opensilex.nosql.mongodb.codec.ObjectCodec;
 import org.opensilex.nosql.mongodb.codec.URICodec;
 import org.opensilex.service.BaseService;
@@ -74,11 +79,42 @@ public class MongoDBService extends BaseService {
         defaultTimezone = config.timezone();
     }
 
+    /**
+     * Test if the connection to the MongoDB server is OK
+     * @param config MongoDB configuration
+     * @throws MongoTimeoutException If the server is inaccessible after a timeout (in milliseconds) defined by {@link MongoDBConfig#serverSelectionTimeout()}
+     * @throws MongoSecurityException If the execution of this command is unauthorized by the MongoDB server
+     *
+     * @see <a href="https://www.mongodb.com/docs/manual/reference/command/ping/">MongoDB ping</a>
+     */
+    private void checkConnection(MongoDBConfig config) throws MongoTimeoutException, MongoSecurityException {
+
+        // check that network connection is OK by running ping command, throw MongoTimeoutException else
+        final Bson pingCommand = new BsonDocument("ping", new BsonInt32(1));
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("[CHECK_MONGO_SERVER_CONNECTION] timeout: {}ms [START]", config.connectTimeoutMs());
+        }
+        Document checkConnectionResults = db.runCommand(pingCommand);
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("[CHECK_MONGO_SERVER_CONNECTION {} [OK]", checkConnectionResults);
+        }
+    }
+
     @Override
-    public void startup() throws OpenSilexModuleNotFoundException {
+    public void startup() throws OpenSilexModuleNotFoundException, IOException {
         mongoClient = buildMongoDBClient();
         generationPrefixURI = getGenerationPrefixURI();
         db = mongoClient.getDatabase(dbName);
+
+        // check connection and close connection in case of connection/authentication error
+        try {
+            if (!getOpenSilex().isTest() && !getOpenSilex().isReservedProfile()) {
+                checkConnection(getImplementedConfig());
+            }
+        } catch (MongoTimeoutException | MongoSecurityException e) {
+            mongoClient.close();
+            throw e;
+        }
     }
 
     @Override
@@ -86,6 +122,50 @@ public class MongoDBService extends BaseService {
         if (mongoClient != null) {
             mongoClient.close();
         }
+    }
+
+    public final MongoClient getMongoClient() {
+        return this.mongoClient;
+    }
+
+    public final MongoClient buildMongoDBClient() throws IOException {
+        return buildMongoDBClient(getImplementedConfig());
+    }
+
+    /**
+     * @see <a href="https://www.mongodb.com/docs/drivers/java/sync/current/fundamentals/connection/mongoclientsettings/">MongoClient Settings</a>
+     */
+    public static MongoClient buildMongoDBClient(MongoDBConfig config) throws IOException {
+
+        // Define custom codec registry for URI, Object and GeoJson
+        CodecRegistry codecRegistry = CodecRegistries.fromRegistries(
+                MongoClientSettings.getDefaultCodecRegistry(),
+                CodecRegistries.fromCodecs(new URICodec(), new ObjectCodec()),
+                CodecRegistries.fromProviders(
+                        new GeoJsonCodecProvider(),
+                        PojoCodecProvider.builder().register(URI.class).automatic(true).build()
+                )
+        );
+
+        // Build client : set server, codec and socket settings
+        MongoClientSettings.Builder clientBuilder = MongoClientSettings.builder()
+                .applyToClusterSettings(builder -> builder
+                        .hosts(Collections.singletonList(new ServerAddress(config.host(), config.port())))
+                        .serverSelectionTimeout(config.serverSelectionTimeout(),TimeUnit.MILLISECONDS)
+                ).codecRegistry(codecRegistry)
+                .applyToSocketSettings(builder -> builder
+                        .connectTimeout(config.connectTimeoutMs(), TimeUnit.MILLISECONDS)
+                        .readTimeout(config.readTimeoutMs(), TimeUnit.MILLISECONDS)
+                );
+
+        // Handle authentication
+        MongoAuthenticationService auth = config.authentication();
+        if (auth != null) {
+            MongoCredential mongoCredentials = auth.readCredentials();
+            clientBuilder.credential(mongoCredentials);
+        }
+        return MongoClients.create(clientBuilder.build());
+
     }
 
     public URI getGenerationPrefixURI() throws OpenSilexModuleNotFoundException {
@@ -145,6 +225,11 @@ public class MongoDBService extends BaseService {
         if (instance.getUri() == null) {
             generateUniqueUriIfNullOrValidateCurrent(instance, true, uriGenerationPrefix, collectionName);
         }
+
+        if (instance.getPublicationDate() == null) {
+            instance.setPublicationDate(Instant.now());
+        }
+
         MongoCollection<T> collection = db.getCollection(collectionName, instanceClass);
         try {
             if (session != null) {
@@ -162,6 +247,10 @@ public class MongoDBService extends BaseService {
         for (T instance : instances) {
             if (instance.getUri() == null) {
                 generateUniqueUriIfNullOrValidateCurrent(instance, checkUriExist, prefix, collectionName);
+            }
+
+            if (instance.getPublicationDate() == null) {
+                instance.setPublicationDate(Instant.now());
             }
         }
 
@@ -380,17 +469,16 @@ public class MongoDBService extends BaseService {
     }
 
     /**
-     * @param collection mongo collection
-     * @param field Name of the field for which we want to retrieve distinct value (can be an embedded field)
+     * @param collection        mongo collection
+     * @param field             Name of the field for which we want to retrieve distinct value (can be an embedded field)
      * @param documentExtractor a function which return the value to extract from any {@link Document} which are returned
-     * by the aggregation
-     * @param filter an optional pre-filter on documents
-     * @param orderByList list of sort
-     * @param page page
-     * @param pageSize page size
-     * @param <T> the type of unique values to retrieve
+     *                          by the aggregation
+     * @param filter            an optional pre-filter on documents
+     * @param orderByList       list of sort
+     * @param page              page
+     * @param pageSize          page size
+     * @param <T>               the type of unique values to retrieve
      * @return a Set of unique value for a given field from a collection
-     *
      * @see <a href="https://www.mongodb.com/docs/manual/reference/operator/aggregation/group/#std-label-aggregation-group-distinct-values">
      * Distinct with aggregation pipeline
      */
@@ -435,16 +523,17 @@ public class MongoDBService extends BaseService {
         return distinct;
     }
 
-    public <Document> Set<Document> aggregate(
+    public <T> Set<T> aggregate(
             String collectionName,
-            List aggregationArgs) {
+            List<Bson> aggregationArgs,
+            Class<T> instanceClass) {
         LOGGER.debug("MONGO SEARCH - Collection : " + collectionName + " - Aggregation pipeline : " + aggregationArgs.toString());
-        Set<Document> results = new HashSet<>();
-        MongoCollection collection = db.getCollection(collectionName);
+        Set<T> results = new HashSet<>();
+        MongoCollection<T> collection = db.getCollection(collectionName, instanceClass);
 
-        AggregateIterable<Document> aggregate = collection.aggregate(aggregationArgs);
+        AggregateIterable<T> aggregate = collection.aggregate(aggregationArgs, instanceClass);
 
-        for (Document res : aggregate) {
+        for (T res : aggregate) {
             results.add(res);
         }
 
@@ -521,6 +610,12 @@ public class MongoDBService extends BaseService {
         if (instance == null) {
             throw new NoSQLInvalidURIException(newInstance.getUri());
         }
+
+        if (newInstance.getPublicationDate() == null) {
+            newInstance.setPublicationDate(instance.getPublicationDate());
+        }
+
+        newInstance.setLastUpdateDate(Instant.now());
         collection.findOneAndReplace(eq(uriField, newInstance.getUri()), newInstance);
     }
 
@@ -529,58 +624,6 @@ public class MongoDBService extends BaseService {
 
         MongoCollection<T> collection = db.getCollection(collectionName, instanceClass);
         this.update(newInstance, collection, "uri");
-    }
-
-    public final MongoClient getMongoClient() {
-        return this.mongoClient;
-    }
-
-    public final MongoClient buildMongoDBClient() {
-        return buildMongoDBClient(getImplementedConfig());
-    }
-
-    public static MongoClient buildMongoDBClient(MongoDBConfig cfg) {
-        String connectionString = "mongodb://";
-
-        if (cfg.username() != null && cfg.password() != null && !cfg.username().isEmpty() && !cfg.password().isEmpty()) {
-            connectionString += cfg.username() + ":" + cfg.password() + "@";
-        }
-        connectionString += cfg.host() + ":" + cfg.port();
-        connectionString += "/" + cfg.database();
-
-        Map<String, String> options = new HashMap<>();
-        options.putAll(cfg.options());
-        if (!StringUtils.isEmpty(cfg.authDB())) {
-            options.put("authSource", cfg.authDB());
-        }
-        if (options.size() > 0) {
-            connectionString += "?";
-            Set<String> keys = options.keySet();
-            int i = 0;
-            for (String key : keys) {
-                String value = options.get(key);
-                connectionString += key + "=" + value;
-                i++;
-
-                if (i < options.size()) {
-                    connectionString += "&";
-                }
-            }
-        }
-        CodecRegistry codecRegistry = CodecRegistries.fromRegistries(
-                MongoClientSettings.getDefaultCodecRegistry(),
-                CodecRegistries.fromCodecs(new URICodec(), new ObjectCodec()),
-                CodecRegistries.fromProviders(
-                        new GeoJsonCodecProvider(),
-                        PojoCodecProvider.builder().register(URI.class).automatic(true).build()
-                )
-        );
-
-        MongoClientSettings clientSettings = MongoClientSettings.builder()
-                .applyConnectionString(new ConnectionString(connectionString))
-                .codecRegistry(codecRegistry)
-                .build();
-        return MongoClients.create(clientSettings);
     }
 
     /**

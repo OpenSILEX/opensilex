@@ -18,6 +18,12 @@
                     class="createButton"
                 ></opensilex-CreateButton>
 
+                <font-awesome-icon
+                    icon="question-circle"
+                    class="devicesHelp"
+                    v-b-tooltip.hover.top="$t('Device.devices-help')"
+                />
+
                 <opensilex-DeviceModalForm
                     ref="modalForm"
                     @onCreate="displayAfterCreation($event)"
@@ -107,22 +113,32 @@ export default class DeviceView extends Vue {
   margin-left: 0;
   margin-right: 5px;
 }
+
+.devicesHelp{
+  font-size: 1.8em;
+  background: #f1f1f1;
+  color: #00A38D;
+  border-radius: 50%;
+    margin-top: -10px;
+}
 </style>
 
 <i18n>
 en:
     Device:
-        title: Device
-        description: Manage Device
+        title: Devices
+        description: Manage Devices
         add: Add device
         update: Update device
         delete: Delete device
+        devices-help: Devices include objects, machines, electrical, electronic or mechanical devices, etc.
 fr:
     Device:
-        title: Dispositif
-        description: Gestion des dispositifs
-        add: Ajouter un dispositif
-        update: Editer un dispositif
-        delete: Supprimer un dispositif
+        title: Appareils
+        description: Gestion des appareils
+        add: Ajouter un appareil
+        update: Editer un appareil
+        delete: Supprimer un appareil
+        devices-help: Les appareils sont des objets, machines, dispositifs électriques, électroniques, mécaniques, etc.
 
 </i18n>

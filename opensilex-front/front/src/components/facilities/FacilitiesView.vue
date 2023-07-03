@@ -66,7 +66,7 @@
         <opensilex-UriLink
           :to="{
             path:
-              '/facility/details/' +
+              '/facility/overview/' +
               encodeURIComponent(data.item.uri),
           }"
           :uri="data.item.uri"
@@ -133,6 +133,7 @@ import {FacilityCreationDTO,
   FacilityGetDTO,
   NamedResourceDTOFacilityModel, NamedResourceDTOOrganizationModel, NamedResourceDTOSiteModel } from 'opensilex-core/index';
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+import DTOConverter from "../../models/DTOConverter";
 
 @Component
 export default class FacilitiesView extends Vue {
@@ -218,6 +219,8 @@ export default class FacilitiesView extends Vue {
       .getService<OrganizationsService>("opensilex.OrganizationsService")
       .deleteFacility(uri)
       .then(() => {
+        let message = this.$i18n.t("InfrastructureFacilityForm.name") + " " + uri + " " + this.$i18n.t("component.common.success.delete-success-message");
+        this.$opensilex.showSuccessToast(message);
         this.$emit("onDelete", uri);
       });
   }
@@ -266,7 +269,7 @@ export default class FacilitiesView extends Vue {
   }
 
   editFacility(facility: FacilityGetDTO) {
-    this.facilityForm.showEditForm(facility);
+    this.facilityForm.showEditForm(DTOConverter.extractURIFromResourceProperties(facility));
   }
 
   onUpdate() {
@@ -307,7 +310,7 @@ en:
     add: Add facility
     facilities: Facilities
     infrastructure-facility-help: "Factilities correspond to the various fixed installations of an organization.
-                                  These can be greenhouses, cadastral plots, culture chambers, ..."
+                                  These can be greenhouses, fields, culture chambers, growth chambers ..."
 fr:
   FacilitiesView:
     update: Modifier l'installation environnementale
@@ -315,5 +318,5 @@ fr:
     add: Ajouter une installation environnementale
     facilities: Installations environnementales
     infrastructure-facility-help: "Les installations environnementales correspondent aux différentes installations fixes d'une organisation.
-                                  Il peut s'agir de serres, parcelles cadastrales, chambres de culture, ..."
+                                  Il peut s'agir de serres, champs, chambres de culture, chambres de croissance ..."
 </i18n>

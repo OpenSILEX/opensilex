@@ -335,6 +335,7 @@ export default class Histogram extends Vue {
         undefined,
         undefined,
         undefined,
+        undefined,
         ["date=asc"],
         0,
         50000,
@@ -426,6 +427,7 @@ en:
       day: "Last 24 hours"
       week: "Last week"
       month: "Last month"
+      6month: "Last 6 month"
       year: "Last year"
     settings: "Choice of period and devices"
     noDataFound : "No data found at the selected period for : "
@@ -449,8 +451,9 @@ fr:
       day: "24 dernieres heures"
       week: "Derniere semaine"
       month: "Dernier mois"
+      6month: "6 dernier mois"
       year: "Derniere année"
-    settings: "Choix de la période et des dispositifs"
+    settings: "Choix de la période et des appareils"
     noDataFound: "Pas de données pour la période choisie"
     limitSizeMessageA : "Il y a "
     limitSizeMessageB : "données pour "

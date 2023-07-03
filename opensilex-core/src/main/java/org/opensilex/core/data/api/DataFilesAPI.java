@@ -18,10 +18,7 @@ import org.apache.jena.graph.Node;
 import org.bson.Document;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
-import static org.opensilex.core.data.api.DataAPI.DATA_EXAMPLE_OBJECTURI;
-
 import org.opensilex.core.data.dal.DataDAO;
-import static org.opensilex.core.data.dal.DataDAO.FS_FILE_PREFIX;
 import org.opensilex.core.data.dal.DataFileModel;
 import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.data.utils.DataValidateUtils;
@@ -45,6 +42,7 @@ import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidUriListException;
 import org.opensilex.nosql.exceptions.NoSQLTooLargeSetException;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
@@ -135,7 +133,7 @@ public class DataFilesAPI {
             + "\"metadata\":" +  DataAPI.DATA_EXAMPLE_METADATA + "}"
     )
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Data file and metadata saved", response = ObjectUriResponse.class)})
+        @ApiResponse(code = 201, message = "Data file and metadata saved", response = URI.class)})
     @ApiProtected
     @Consumes(MediaType.MULTIPART_FORM_DATA)
     @Produces(MediaType.APPLICATION_JSON)
@@ -192,7 +190,7 @@ public class DataFilesAPI {
     @Path("description")
     @ApiOperation(value = "Describe datafiles and give their relative paths in the configured storage system. In the case of already stored datafiles.")
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Data file(s) metadata(s) saved", response = ObjectUriResponse.class)})
+        @ApiResponse(code = 201, message = "Data file(s) metadata(s) saved", response = URI.class)})
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -274,7 +272,7 @@ public class DataFilesAPI {
         @ApiParam(value = "Device URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("device") List<URI> device) throws  Exception {
 
         DataDAO dao = new DataDAO(nosql, sparql, fs);
-        int datafileCount = dao.countFiles(null, null, null, target, null, device, null, null, null);
+        int datafileCount = dao.countFiles(null, null, null, target, null, device, null, null, null, null);
         return new SingleObjectResponse<>(datafileCount).getResponse();
     }
     
@@ -453,7 +451,7 @@ public class DataFilesAPI {
             @ApiParam(value = "Search by maximal date", example = DataAPI.DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
             @ApiParam(value = "Precise the timezone corresponding to the given dates", example = DataAPI.DATA_EXAMPLE_TIMEZONE) @QueryParam("timezone") String timezone,
             @ApiParam(value = "Search by experiments", example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiments") List<URI> experiments,
-            @ApiParam(value = "Search by targets uris list", example = DataAPI.DATA_EXAMPLE_OBJECTURI) @QueryParam("targets") List<URI> targets,
+            @ApiParam(value = "Search by targets uris list", example = DATA_EXAMPLE_OBJECTURI) @QueryParam("targets") List<URI> targets,
             @ApiParam(value = "Search by devices uris", example = DeviceAPI.DEVICE_EXAMPLE_URI) @QueryParam("devices") List<URI> devices,
             @ApiParam(value = "Search by provenance uris list", example = DataAPI.DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
             @ApiParam(value = "Search by metadata", example = DataAPI.DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
@@ -486,7 +484,7 @@ public class DataFilesAPI {
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @DefaultValue("date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize,
-            @ApiParam(value = "Search by targets uris list")  List<URI> targets
+            @ApiParam(value = "Targets uris, can be an empty array but can't be null", name = "targets")  List<URI> targets
             ) throws Exception {
 
         if (targets == null) {

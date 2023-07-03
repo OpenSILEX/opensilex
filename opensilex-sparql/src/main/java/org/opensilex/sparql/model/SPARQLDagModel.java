@@ -9,25 +9,15 @@ import java.util.List;
  * @author Valentin RIGOLLE
  */
 public abstract class SPARQLDagModel<T extends SPARQLDagModel<T>> extends SPARQLNamedResourceModel<T> {
-    protected List<T> parents;
     public static final String PARENTS_FIELD = "parents";
 
-    protected List<T> children;
     public static final String CHILDREN_FIELD = "children";
 
-    public List<T> getParents() {
-        return parents;
-    }
+    public abstract List<T> getParents();
 
-    public void setParents(List<T> parents) {
-        this.parents = parents;
-    }
+    public abstract void setParents(List<T> parents);
 
-    public List<T> getChildren() {
-        return children;
-    }
+    public abstract List<T> getChildren();
 
-    public void setChildren(List<T> children) {
-        this.children = children;
-    }
+    public abstract void setChildren(List<T> children);
 }

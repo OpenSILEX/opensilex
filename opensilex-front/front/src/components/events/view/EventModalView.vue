@@ -12,7 +12,7 @@
         <div class="card-body" v-if="event">
             <opensilex-UriView :uri="event.uri"></opensilex-UriView>
             <opensilex-TypeView :type="event.rdf_type" :typeLabel="event.rdf_type_name"></opensilex-TypeView>
-            <opensilex-TextView label="component.common.description" :value="event.description"></opensilex-TextView>
+            <opensilex-TextView label="component.common.description" :value="event.description"></opensilex-TextView><br>
 
             <opensilex-StringView label="Event.start"  v-if="event.start" :value="new Date(event.start).toLocaleString()">
             </opensilex-StringView>

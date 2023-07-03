@@ -152,10 +152,12 @@
       </Transition>
       
           <opensilex-DataFilesList 
-          ref="datafilesList"
-          :filter="filter"
-          :device="uri"
-          class=datafilesList>
+            ref="datafilesList"
+            :filter="filter"
+            :device="uri"
+            class=datafilesList
+            :hideTarget= "true"
+          >
         </opensilex-DataFilesList>
 
     </opensilex-PageContent>

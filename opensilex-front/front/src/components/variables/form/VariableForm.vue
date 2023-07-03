@@ -278,6 +278,7 @@ import {
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {DataService} from "opensilex-core/api/data.service";
 import SelectForm from "../../common/forms/SelectForm.vue";
+import {VariableCreationDTO} from "opensilex-core/model/variableCreationDTO";
 
 @Component
 export default class VariableForm extends Vue {
@@ -314,7 +315,7 @@ export default class VariableForm extends Vue {
     @Ref("methodForm") readonly methodForm!: any;
     @Ref("unitForm") readonly unitForm!: any;
 
-    @Ref("traitForm") readonly traitForm!: ModalForm;
+    @Ref("traitForm") readonly traitForm!: any;
 
     get isGermplasmMenuExcluded() {
         return this.$opensilex.getConfig().menuExclusions.includes("germplasm");
@@ -494,11 +495,10 @@ export default class VariableForm extends Vue {
         narrow_match: [],
         species: undefined,
         linked_data_nb: 0
-//        variablesGroup: []
       };
     }
 
-    getEmptyForm() {
+    getEmptyForm(): VariableCreationDTO {
         return VariableForm.getEmptyForm();
     }
 

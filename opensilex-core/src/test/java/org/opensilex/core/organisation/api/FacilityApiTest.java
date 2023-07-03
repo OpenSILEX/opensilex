@@ -1,24 +1,34 @@
 package org.opensilex.core.organisation.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import org.geojson.Feature;
+import org.geojson.GeoJsonObject;
+import org.geojson.Point;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.opensilex.core.AbstractMongoIntegrationTest;
+import org.opensilex.core.geospatial.dal.GeospatialDAO;
+import org.opensilex.core.organisation.api.facility.FacilityAddressDTO;
+import org.opensilex.core.organisation.api.facility.FacilityCreationDTO;
 import org.opensilex.core.organisation.api.facility.FacilityGetDTO;
 import org.opensilex.core.organisation.api.facility.FacilityUpdateDTO;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
+import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
+import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 
 import javax.ws.rs.core.Response;
+import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
 
-import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.*;
 
 public class FacilityApiTest extends AbstractMongoIntegrationTest {
 
@@ -34,6 +44,7 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
 
     // TypeReference used to parse Response into a List of FacilityGetDTO
     protected static final TypeReference<PaginatedListResponse<FacilityGetDTO>> listTypeReference = new TypeReference<PaginatedListResponse<FacilityGetDTO>>() {};
+    protected static final TypeReference<SingleObjectResponse<FacilityGetDTO>> singleObjectResponseTypeReference = new TypeReference<SingleObjectResponse<FacilityGetDTO>>() {};
 
     @Before
     public void createInfrastructure() throws Exception {
@@ -53,6 +64,32 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
         infraUris.add(infra.getUri());
         facility.setOrganizations(infraUris);
         return facility;
+    }
+
+    public FacilityAddressDTO getFacilityAddressDTO(String countryName, String locality, String postalCode, String region, String streetAddress) {
+        FacilityAddressDTO dto = new FacilityAddressDTO();
+        dto.setCountryName(countryName);
+        dto.setLocality(locality);
+        dto.setPostalCode(postalCode);
+        dto.setRegion(region);
+        dto.setStreetAddress(streetAddress);
+        return dto;
+    }
+
+    public FacilityCreationDTO getCreationDTOWithGeometry(String name, FacilityAddressDTO address, GeoJsonObject geoJson) {
+        FacilityCreationDTO dto = new FacilityCreationDTO();
+        dto.setName(name);
+        dto.setAddress(address);
+        dto.setGeometry(geoJson);
+        return dto;
+    }
+
+    public FacilityUpdateDTO getUpdateDTOWithGeometry(URI uri, FacilityAddressDTO address, GeoJsonObject geoJson) {
+        FacilityUpdateDTO dto = new FacilityUpdateDTO();
+        dto.setUri(uri);
+        dto.setAddress(address);
+        dto.setGeometry(geoJson);
+        return dto;
     }
 
     @Test
@@ -134,9 +171,126 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
         Assert.assertTrue(results.stream().anyMatch(dto -> SPARQLDeserializers.compareURIs(dto.getUri(),facility2.getUri())));
     }
 
+    @Test
+    public void testCreateWithAddress() throws Exception {
+        FacilityCreationDTO dto = getCreationDTOWithGeometry("test", getFacilityAddressDTO(
+                "France",
+                "Montpellier",
+                "34000",
+                "Occitanie",
+                "2 place Pierre Viala"
+        ), null);
+        Response response = getJsonPostResponseAsAdmin(target(CREATE_PATH), dto);
+        assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
+        ObjectUriResponse objectUriResponse = mapper.convertValue(response.readEntity(JsonNode.class), objectUriResponseTypeReference);
+        URI createdUri = new URI(objectUriResponse.getResult());
+
+        response = getJsonGetByUriResponseAsAdmin(target(URI_PATH), createdUri.toString());
+        SingleObjectResponse<FacilityGetDTO> singleObjectResponse = mapper.convertValue(response.readEntity(JsonNode.class), singleObjectResponseTypeReference);
+        assertNotNull(singleObjectResponse.getResult().getGeometry());
+        assertNotNull(singleObjectResponse.getResult().getAddress());
+    }
+
+    @Test
+    public void testCreateWithGeometry() throws Exception {
+        FacilityCreationDTO dto = getCreationDTOWithGeometry("test", null, new Point(49, 3));
+        Response response = getJsonPostResponseAsAdmin(target(CREATE_PATH), dto);
+        assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
+        ObjectUriResponse objectUriResponse = mapper.convertValue(response.readEntity(JsonNode.class), objectUriResponseTypeReference);
+        URI createdUri = new URI(objectUriResponse.getResult());
+
+        response = getJsonGetByUriResponseAsAdmin(target(URI_PATH), createdUri.toString());
+        SingleObjectResponse<FacilityGetDTO> singleObjectResponse = mapper.convertValue(response.readEntity(JsonNode.class), singleObjectResponseTypeReference);
+        Feature feature = (Feature) singleObjectResponse.getResult().getGeometry();
+        assertEquals(new Point(49, 3), feature.getGeometry());
+        assertNull(singleObjectResponse.getResult().getAddress());
+    }
+
+    @Test
+    public void testCreateWithAddressAndGeometry() throws Exception {
+        FacilityCreationDTO dto = getCreationDTOWithGeometry("test", getFacilityAddressDTO(
+                "France",
+                "Montpellier",
+                "34000",
+                "Occitanie",
+                "2 place Pierre Viala"
+        ), new Point(49, 3));
+        Response response = getJsonPostResponseAsAdmin(target(CREATE_PATH), dto);
+        assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
+        ObjectUriResponse objectUriResponse = mapper.convertValue(response.readEntity(JsonNode.class), objectUriResponseTypeReference);
+        URI createdUri = new URI(objectUriResponse.getResult());
+
+        response = getJsonGetByUriResponseAsAdmin(target(URI_PATH), createdUri.toString());
+        SingleObjectResponse<FacilityGetDTO> singleObjectResponse = mapper.convertValue(response.readEntity(JsonNode.class), singleObjectResponseTypeReference);
+        Feature feature = (Feature) singleObjectResponse.getResult().getGeometry();
+        assertEquals(new Point(49, 3), feature.getGeometry());
+        assertNotNull(singleObjectResponse.getResult().getAddress());
+    }
+
+    @Test
+    public void testCreateWithoutAddressOrGeometry() throws Exception {
+        FacilityCreationDTO dto = getCreationDTOWithGeometry("test", null, null);
+        Response response = getJsonPostResponseAsAdmin(target(CREATE_PATH), dto);
+        assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
+        ObjectUriResponse objectUriResponse = mapper.convertValue(response.readEntity(JsonNode.class), objectUriResponseTypeReference);
+        URI createdUri = new URI(objectUriResponse.getResult());
+
+        response = getJsonGetByUriResponseAsAdmin(target(URI_PATH), createdUri.toString());
+        SingleObjectResponse<FacilityGetDTO> singleObjectResponse = mapper.convertValue(response.readEntity(JsonNode.class), singleObjectResponseTypeReference);
+        assertNull(singleObjectResponse.getResult().getGeometry());
+        assertNull(singleObjectResponse.getResult().getAddress());
+    }
+
+    @Test
+    public void testUpdateWithGeometry() throws Exception {
+        FacilityCreationDTO dto = getCreationDTOWithGeometry("test", null, null);
+        Response response = getJsonPostResponseAsAdmin(target(CREATE_PATH), dto);
+        assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
+        ObjectUriResponse objectUriResponse = mapper.convertValue(response.readEntity(JsonNode.class), objectUriResponseTypeReference);
+        URI createdUri = new URI(objectUriResponse.getResult());
+
+        FacilityUpdateDTO updateDto = getUpdateDTOWithGeometry(createdUri, null, new Point(49, 3));
+        response = getJsonPutResponse(target(UPDATE_PATH), updateDto);
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+
+        response = getJsonGetByUriResponseAsAdmin(target(URI_PATH), createdUri.toString());
+        SingleObjectResponse<FacilityGetDTO> singleObjectResponse = mapper.convertValue(response.readEntity(JsonNode.class), singleObjectResponseTypeReference);
+        Feature feature = (Feature) singleObjectResponse.getResult().getGeometry();
+        assertEquals(new Point(49, 3), feature.getGeometry());
+    }
+
+    @Test
+    public void testUpdateWithAddress() throws Exception {
+        FacilityCreationDTO dto = getCreationDTOWithGeometry("test", null, null);
+        Response response = getJsonPostResponseAsAdmin(target(CREATE_PATH), dto);
+        assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
+        ObjectUriResponse objectUriResponse = mapper.convertValue(response.readEntity(JsonNode.class), objectUriResponseTypeReference);
+        URI createdUri = new URI(objectUriResponse.getResult());
+
+        FacilityUpdateDTO updateDto = getUpdateDTOWithGeometry(createdUri, getFacilityAddressDTO(
+                "France",
+                "Montpellier",
+                "34000",
+                "Occitanie",
+                "2 place Pierre Viala"
+        ), null);
+        response = getJsonPutResponse(target(UPDATE_PATH), updateDto);
+        assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
+
+        response = getJsonGetByUriResponseAsAdmin(target(URI_PATH), createdUri.toString());
+        SingleObjectResponse<FacilityGetDTO> singleObjectResponse = mapper.convertValue(response.readEntity(JsonNode.class), singleObjectResponseTypeReference);
+        assertNotNull(singleObjectResponse.getResult().getGeometry());
+        assertNotNull(singleObjectResponse.getResult().getAddress());
+    }
+
+
     @Override
     protected List<Class<? extends SPARQLResourceModel>> getModelsToClean() {
         return Collections.singletonList(FacilityModel.class);
     }
 
+    @Override
+    protected List<String> getCollectionsToClearNames() {
+        return Collections.singletonList(GeospatialDAO.GEOSPATIAL_COLLECTION_NAME);
+    }
 }

@@ -11,8 +11,9 @@
           <opensilex-UriLink
             :uri="data.item.target"
             :value="objects[data.item.target]"
-            @click="redirectToDetail(data.item.target)"
-
+            :to="{
+              path: getTargetPath(data.item.target)
+            }"
           ></opensilex-UriLink>
       </template>
 
@@ -76,12 +77,14 @@ import { Prop, Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import { ProvenanceGetDTO, ResourceTreeDTO } from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
+import {OntologyService} from "opensilex-core/api/ontology.service";
 
 @Component
 export default class DataFilesList extends Vue {
   $opensilex: any;
   $store: any;
   service: any;
+  ontologyService: OntologyService;
   routeArr : string[] = this.$route.path.split('/');
 
   disabled = false;
@@ -104,6 +107,15 @@ export default class DataFilesList extends Vue {
   @Prop()
   device;
 
+  @Prop({
+    default: "",
+  })
+  contextUri: string;
+
+
+  @Prop()
+  hideTarget: boolean;
+
   get user() {
     return this.$store.state.user;
   }
@@ -119,10 +131,6 @@ export default class DataFilesList extends Vue {
 
   get fields() {
     let fields: any = [
-      {
-        key: "target",
-        label: "DataView.list.object",
-      },
       {
         key: "date",
         label: "DataView.list.date",
@@ -143,7 +151,14 @@ export default class DataFilesList extends Vue {
         label: "component.common.actions"
       }
     ];
-
+    if(!this.hideTarget) {
+      fields.unshift(
+      {
+        key: "target",
+        label: "DataView.list.object"
+      }
+      )
+    }
     return fields;
   }
 
@@ -156,6 +171,7 @@ export default class DataFilesList extends Vue {
 
   created() {
     this.service = this.$opensilex.getService("opensilex.DataService");
+    this.ontologyService = this.$opensilex.getService("opensilex.OntologyService");
     this.loadTypes();
     this.$opensilex.updateFiltersFromURL(this.$route.query, this.filter); 
   }
@@ -184,8 +200,47 @@ export default class DataFilesList extends Vue {
     });    
   }
 
+     /**
+     * Construct paths for each target's UriLink components according to their type.
+     */
+    loadObjectsPath() {
+      // ensure that at least one object has been loaded (in case where all data in the page have no target)
+      let objectURIs = Object.keys(this.objects);
+      if (!objectURIs || objectURIs.length == 0) {
+        return;
+      }
+
+      return this.ontologyService
+        .getURITypes(objectURIs)
+        .then((httpObj) => {
+          for (let j in httpObj.response.result) {
+            let obj = httpObj.response.result[j];
+            this.objectsPath[obj.uri] = this.$opensilex.getPathFromUriTypes(obj.rdfTypes);
+          }
+        }
+      );
+    }
+
+
+    getTargetPath(uri: string) {
+    let defaultOsPath: string = this.objectsPath[uri];
+    if(! defaultOsPath){
+        return "";
+    }
+
+    let osPath = defaultOsPath.replace(':uri', encodeURIComponent(uri))
+
+    // pass encoded experiment inside OS path URL
+    if(this.contextUri && this.contextUri.length > 0){
+        return osPath.replace(':experiment', encodeURIComponent(this.contextUri));
+    }else{ // no experiment passed
+        return osPath.replace(':experiment', "");
+    }
+  }
+
   objects = {};
   provenances = {};
+  objectsPath = {};
 
   searchDatafiles(options) {
     let provUris = this.$opensilex.prepareGetParameter(this.filter.provenance);
@@ -230,7 +285,7 @@ export default class DataFilesList extends Vue {
             if (objectsToLoad.length > 0) {
               let promiseObject = this.$opensilex
                 .getService("opensilex.OntologyService")
-                .getURILabelsList(objectsToLoad)
+                .getURILabelsList(objectsToLoad, this.contextUri)
                 .then((httpObj) => {
                   for (let j in httpObj.response.result) {
                     let obj = httpObj.response.result[j];
@@ -257,7 +312,9 @@ export default class DataFilesList extends Vue {
             }
 
             Promise.all(promiseArray).then((values) => {
-              resolve(http);
+                this.loadObjectsPath().then((value) => {
+                    resolve(http);
+                })
             });
 
         } else {

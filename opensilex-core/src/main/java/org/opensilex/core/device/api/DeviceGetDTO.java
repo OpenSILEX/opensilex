@@ -51,7 +51,7 @@ public class DeviceGetDTO extends DeviceDTO{
         }
         
         if(model.getPersonInCharge() != null){
-            setPersonInCharge(model.getPersonInCharge());
+            setPersonInChargeURI(model.getPersonInCharge().getUri());
         }
         
         if(model.getStartUp() != null){

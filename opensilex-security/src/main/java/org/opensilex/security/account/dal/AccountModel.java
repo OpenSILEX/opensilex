@@ -37,8 +37,6 @@ public class AccountModel extends SPARQLResourceModel implements Principal, Clas
 
     public static AccountModel getAnonymous() {
         AccountModel anonymous = new AccountModel();
-        anonymous.setFirstName("Anonymous");
-        anonymous.setLastName("Anonymous");
         try {
             anonymous.setEmail(new InternetAddress("no@email.com"));
         } catch (AddressException ex) {
@@ -54,8 +52,6 @@ public class AccountModel extends SPARQLResourceModel implements Principal, Clas
     
     public static AccountModel getSystemUser() {
         AccountModel system = new AccountModel();
-        system.setFirstName("System");
-        system.setLastName("System");
         try {
             system.setEmail(new InternetAddress("opensilex@gmail.com"));
         } catch (AddressException ex) {
@@ -114,10 +110,18 @@ public class AccountModel extends SPARQLResourceModel implements Principal, Clas
     @SPARQLProperty(
             ontology = FOAF.class,
             property = "account",
-            inverse = true
+            inverse = true,
+            ignoreUpdateIfNull = true
+            //make easier the update of accounts, but harder the deletion of the link between an account and a person
     )
     private PersonModel holderOfTheAccount = null;
     public static final String HOLDER_OF_THE_ACCOUNT_FIELD = "holderOfTheAccount";
+
+    @SPARQLProperty(
+            ontology = SecurityOntology.class,
+            property = "isEnabled"
+    )
+    private Boolean isEnabled = Boolean.TRUE;
 
 
     private String token;
@@ -191,28 +195,24 @@ public class AccountModel extends SPARQLResourceModel implements Principal, Clas
         this.anonymous = anonymous;
     }
 
-    public void setFirstName(String firstname) {
-        if (holderOfTheAccount != null )
-            holderOfTheAccount.setFirstName(firstname);
-    }
-    public String getFirstName() {
-        return holderOfTheAccount != null ? holderOfTheAccount.getFirstName() : null ;
-    }
-
-    public void setLastName(String lastname) {
-        if (holderOfTheAccount != null)
-            holderOfTheAccount.setLastName(lastname);
-    }
-    public String getLastName() {
-        return holderOfTheAccount != null ? holderOfTheAccount.getLastName() : null ;
-    }
-
     public PersonModel getHolderOfTheAccount() {
         return holderOfTheAccount;
     }
 
     public void setHolderOfTheAccount(PersonModel holderOfTheAccount) {
         this.holderOfTheAccount = holderOfTheAccount;
+    }
+
+    public Boolean getIsEnabled() {
+        return isEnabled;
+    }
+
+    public void setIsEnabled(Boolean enable) {
+        if (Boolean.FALSE.equals(isAdmin())) {
+            isEnabled = enable;
+        } else {
+            isEnabled = true;
+        }
     }
 
     @Override

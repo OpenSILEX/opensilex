@@ -27,7 +27,6 @@ public abstract class BaseVariableDetailsDTO<T extends BaseVariableModel<T>> ext
         uri = model.getUri();
         name = model.getName();
         description = model.getDescription();
-        setLastUpdateTime(model.getLastUpdateTime());
 
         setSkosReferencesFromModel(model);
     }
@@ -47,9 +46,6 @@ public abstract class BaseVariableDetailsDTO<T extends BaseVariableModel<T>> ext
 
     @JsonProperty("from_shared_resource_instance")
     protected SharedResourceInstanceDTO fromSharedResourceInstance;
-
-    @JsonProperty("last_update_date")
-    protected OffsetDateTime lastUpdateTime;
 
     public URI getUri() {
         return uri;
@@ -81,14 +77,6 @@ public abstract class BaseVariableDetailsDTO<T extends BaseVariableModel<T>> ext
 
     public void setFromSharedResourceInstance(SharedResourceInstanceDTO fromSharedResourceInstance) {
         this.fromSharedResourceInstance = fromSharedResourceInstance;
-    }
-
-    public OffsetDateTime getLastUpdateTime() {
-        return lastUpdateTime;
-    }
-
-    public void setLastUpdateTime(OffsetDateTime lastUpdateTime) {
-        this.lastUpdateTime = lastUpdateTime;
     }
 
     protected void setBasePropertiesToModel(T model) {

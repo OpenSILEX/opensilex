@@ -12,7 +12,7 @@
       <div class="col col-xl-6" style="min-width: 400px">
         <opensilex-Card
           icon="ik#ik-clipboard"
-          :label="$t('component.experiment.description')"
+          :label="$t('component.common.informations')"
         >
           <template v-slot:rightHeader>
             <b-button-group
@@ -141,14 +141,14 @@
           :label="$t('component.experiment.contacts')"
         >
           <template v-slot:body>
-            <opensilex-UriListView
+            <opensilex-ContactsList
               label="component.experiment.scientificSupervisors"
               :list="scientificSupervisorsList"
-            ></opensilex-UriListView>
-            <opensilex-UriListView
+            ></opensilex-ContactsList>
+            <opensilex-ContactsList
               label="component.experiment.technicalSupervisors"
               :list="technicalSupervisorsList"
-            ></opensilex-UriListView>
+            ></opensilex-ContactsList>
             <opensilex-UriView
               title="component.experiment.record_author"
               :uri="recordAuthor.uri"
@@ -179,6 +179,7 @@ import {GroupDTO, SecurityService, UserGetDTO} from "opensilex-security/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import DTOConverter from "../../../models/DTOConverter";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
+import {PersonDTO} from "opensilex-security/index";
 
 @Component
 export default class ExperimentDetail extends Vue {
@@ -202,7 +203,7 @@ export default class ExperimentDetail extends Vue {
   technicalSupervisorsList = [];
   installationsList = [];
   infrastructuresList = [];
-  recordAuthor = null;
+  recordAuthor :UserGetDTO = null;
 
   created() {
     this.service = this.$opensilex.getService("opensilex.ExperimentsService");
@@ -263,6 +264,8 @@ export default class ExperimentDetail extends Vue {
     this.service
       .deleteExperiment(uri)
       .then(() => {
+        let message = this.$i18n.t("ExperimentList.name") + " " + uri + " " + this.$i18n.t("component.common.success.delete-success-message");
+        this.$opensilex.showSuccessToast(message);
         this.$router.push({
           path: "/experiments",
         });
@@ -295,7 +298,7 @@ export default class ExperimentDetail extends Vue {
   loadExperimentDetails() {
     this.loadProjects();
     this.loadInfrastructures();
-    this.loadUsers();
+    this.loadPersons();
     this.loadGroups();
     this.loadFactors();
     this.loadSpecies();
@@ -344,7 +347,7 @@ export default class ExperimentDetail extends Vue {
     }
   }
 
-  loadUsers() {
+  loadPersons() {
     let service: SecurityService = this.$opensilex.getService(
       "opensilex.SecurityService"
     );
@@ -354,15 +357,9 @@ export default class ExperimentDetail extends Vue {
       this.experiment.scientific_supervisors.length > 0
     ) {
       service
-        .getUsersByURI(this.experiment.scientific_supervisors)
-        .then((http: HttpResponse<OpenSilexResponse<UserGetDTO[]>>) => {
-          this.scientificSupervisorsList = http.response.result.map((item) => {
-            return {
-              uri: item.email,
-              url: "mailto:" + item.email,
-              value: item.first_name + " " + item.last_name,
-            };
-          });
+        .getPersonsByURI(this.experiment.scientific_supervisors)
+        .then((http: HttpResponse<OpenSilexResponse<PersonDTO[]>>) => {
+          this.scientificSupervisorsList = http.response.result
         })
         .catch(this.$opensilex.errorHandler);
     }
@@ -372,15 +369,9 @@ export default class ExperimentDetail extends Vue {
       this.experiment.technical_supervisors.length > 0
     ) {
       service
-        .getUsersByURI(this.experiment.technical_supervisors)
-        .then((http: HttpResponse<OpenSilexResponse<UserGetDTO[]>>) => {
-          this.technicalSupervisorsList = http.response.result.map((item) => {
-            return {
-              uri: item.email,
-              url: "mailto:" + item.email,
-              value: item.first_name + " " + item.last_name,
-            };
-          });
+        .getPersonsByURI(this.experiment.technical_supervisors)
+        .then((http: HttpResponse<OpenSilexResponse<PersonDTO[]>>) => {
+          this.technicalSupervisorsList = http.response.result
         })
         .catch(this.$opensilex.errorHandler);
     }
@@ -407,7 +398,7 @@ export default class ExperimentDetail extends Vue {
           for (let i = 0; i < http.response.result.length; i++) {
             if (
               this.experiment.species.find(
-                (species) => species == http.response.result[i].uri
+                (species) => this.$opensilex.checkURIs(species, http.response.result[i].uri)
               )
             ) {
               this.speciesList.push(http.response.result[i]);

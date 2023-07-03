@@ -48,6 +48,9 @@ export default class DateView extends Vue {
   }
 
   get formattedISODate(): string {
+    if(!this.value) {
+      return undefined;
+    }
     if (this.isDatetime) {
       return this.$opensilex.$dateTimeFormatter.formatISODateTime(this.value);
     }
@@ -55,6 +58,9 @@ export default class DateView extends Vue {
   }
 
   get formattedLocaleDate(): string {
+    if(!this.value) {
+      return undefined;
+    }
     if (this.isDatetime) {
       return this.$opensilex.$dateTimeFormatter.formatLocaleDateTime(this.value, this.dateTimeFormatOptions);
     }

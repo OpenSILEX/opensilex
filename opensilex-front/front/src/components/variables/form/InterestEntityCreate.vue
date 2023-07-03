@@ -17,14 +17,14 @@
 
 
 <script lang="ts">
-    import {Component, Ref} from "vue-property-decorator";
-    import Vue from "vue";
-    import {ExternalOntologies} from "../../../models/ExternalOntologies";
-    // @ts-ignore
-    import { VariablesService, InterestEntityGetDTO, InterestEntityCreationDTO, ObjectUriResponse } from "opensilex-core/index";
-    import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
+import {Component, Ref} from "vue-property-decorator";
+import Vue from "vue";
+import {ExternalOntologies} from "../../../models/ExternalOntologies";
+import {InterestEntityCreationDTO, InterestEntityGetDTO, VariablesService} from "opensilex-core/index";
+import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
+import {InterestEntityUpdateDTO} from "opensilex-core/model/interestEntityUpdateDTO";
 
-    @Component
+@Component
     export default class InterestEntityCreate extends Vue {
 
         steps = [
@@ -82,10 +82,10 @@
             };
         }
 
-        create(form){
+        create(form: InterestEntityCreationDTO){
             return this.service
                 .createInterestEntity(form)
-                .then((http: HttpResponse<OpenSilexResponse<ObjectUriResponse>>) => {
+                .then((http: HttpResponse<OpenSilexResponse<string>>) => {
                     form.uri = http.response.result;
                     let message = this.$i18n.t("InterestEntityForm.name") + " " + form.uri + " " + this.$i18n.t("component.common.success.creation-success-message");
                     this.$opensilex.showSuccessToast(message);
@@ -100,10 +100,10 @@
                 });
         }
 
-        update(form){
+        update(form: InterestEntityUpdateDTO){
             return this.service
                 .updateInterestEntity(form)
-                .then((http: HttpResponse<OpenSilexResponse<ObjectUriResponse>>) => {
+                .then((http: HttpResponse<OpenSilexResponse<string>>) => {
                     form.uri = http.response.result;
                     let message = this.$i18n.t("InterestEntityForm.name") + " " + form.uri + " " + this.$i18n.t("component.common.success.update-success-message");
                     this.$opensilex.showSuccessToast(message);

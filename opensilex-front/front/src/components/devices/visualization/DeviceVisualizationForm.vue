@@ -39,6 +39,7 @@
                           :value.sync="filter.startDate"
                           label="component.common.begin"
                           name="startDate"
+                          :max-date="filter.endDate ? filter.endDate : undefined"
                           @input="getEvents"
                           @clear="getEvents"
                           class="searchFilter"
@@ -49,6 +50,9 @@
                           :value.sync="filter.endDate"
                           label="component.common.end"
                           name="endDate"
+                          :min-date="filter.startDate ? filter.startDate : undefined"
+                          :minDate="filter.startDate"
+                          :maxDate="filter.endDate"
                           @input="getEvents"
                           @clear="getEvents"
                           class="searchFilter"
@@ -114,6 +118,8 @@ import {
 // @ts-ignore
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 
+let lastWeekDate = new Date(new Date((new Date).setDate(new Date().getDate() - 7)).setHours(0,0,0,0))
+
 @Component
 export default class DeviceVisualizationForm extends Vue {
   $opensilex: any;
@@ -124,7 +130,7 @@ export default class DeviceVisualizationForm extends Vue {
   countIsLoading: boolean = false;
   filter = {
     variable: [],
-    startDate: undefined,
+    startDate: lastWeekDate.toISOString(),
     endDate: undefined,
     provenance: undefined,
     showEvents: false

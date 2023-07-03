@@ -1,0 +1,4 @@
+device;Date;__DATETIME_VARIABLE__;object_annotation
+Device name or URI;Acquisition date of the data (format: AAAA-MM-DDTHH:mm:ssZ or AAAA-MM-DD);datetime_variable;Annotation (On the target object)
+Column data type: Short string;"Date
+Required : yes";Column data type: Datetime;Column data type: String

@@ -20,7 +20,7 @@
                     ref="devSelector"
                     :devices.sync="filter.device"
                     :variable="[variable]"
-                    label="DeviceDetails.title"
+                    label="VariableVisualizationForm.devicesSelector"
                     :multiple="true"
                     :showURI="false"
                     @select="getTotalEventsCount"
@@ -37,6 +37,7 @@
                     <opensilex-DateTimeForm
                         :value.sync="filter.startDate"
                         label="component.common.begin"
+                        :max-date="filter.endDate ? filter.endDate : undefined"
                         @input="onDateChange"
                         @clear="onDateChange"
                         class="searchFilter"
@@ -48,6 +49,9 @@
                         :value.sync="filter.endDate"
                         label="component.common.end"
                         name="endDate"
+                        :min-date="filter.startDate ? filter.startDate : undefined"
+                        :minDate="filter.startDate"
+                        :maxDate="filter.endDate"
                         @input="onDateChange"
                         @clear="onDateChange"
                         class="searchFilter"
@@ -118,7 +122,7 @@ import {
 // @ts-ignore
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 
-let yesterday = new Date((new Date()).setHours(0, 0, 0, 0) - 1000 * 60 * 60 * 24)
+let lastWeekDate = new Date(new Date((new Date).setDate(new Date().getDate() - 7)).setHours(0,0,0,0))
 
 @Component
 export default class VariableVisualizationForm extends Vue {
@@ -134,7 +138,7 @@ export default class VariableVisualizationForm extends Vue {
 
   filter = {
     variable: null,
-    startDate: yesterday.toISOString(),
+    startDate: lastWeekDate.toISOString(),
     endDate: undefined,
     device: [],
     provenance: undefined,
@@ -279,3 +283,13 @@ export default class VariableVisualizationForm extends Vue {
   margin-bottom: 0px;
 }
 </style>
+
+<i18n>
+en:
+  VariableVisualizationForm:
+    devicesSelector: Devices
+
+fr:
+  VariableVisualizationForm:
+    devicesSelector: Appareils
+</i18n>

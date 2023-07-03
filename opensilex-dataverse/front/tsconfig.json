@@ -1,0 +1,50 @@
+{
+    "compilerOptions": {
+        "target": "esnext",
+        "module": "esnext",
+        "strict": true,
+        "jsx": "preserve",
+        "importHelpers": true,
+        "moduleResolution": "node",
+        "experimentalDecorators": true,
+        "esModuleInterop": true,
+        "allowSyntheticDefaultImports": true,
+        "strictPropertyInitialization": false,
+        "noImplicitAny": false,
+        "strictNullChecks": false,
+        "sourceMap": true,
+        "baseUrl": ".",
+        "typeRoots": ["node_modules"],
+        "types": [
+            "webpack-env"
+        ],
+        "paths": {
+            "opensilex-security": ["../../opensilex-security/front/src"],
+            "opensilex-core": ["../../opensilex-core/front/src"],
+            "@/*": [
+                "src/*"
+            ]
+        },
+        "lib": [
+            "esnext",
+            "dom",
+            "dom.iterable",
+            "scripthost"
+        ]
+    },
+    "include": [
+        "src/**/*.ts",
+        "src/**/*.tsx",
+        "src/**/*.vue",
+        "tests/**/*.ts",
+        "tests/**/*.tsx"
+    ],
+    "exclude": [
+        "node_modules"
+    ],
+    "files": [
+        "./typings.d.ts",
+        "../../opensilex-security/front/types/opensilex-security.d.ts",
+        "../../opensilex-core/front/types/opensilex-core.d.ts"
+    ]
+}

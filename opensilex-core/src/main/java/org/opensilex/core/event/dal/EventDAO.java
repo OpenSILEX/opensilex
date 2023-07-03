@@ -131,7 +131,7 @@ public class EventDAO<T extends EventModel> {
     }
 
     public T create(T model) throws Exception {
-        sparql.create(eventGraph, model, false);
+        sparql.create(eventGraph, model, false, false);
         return model;
     }
 

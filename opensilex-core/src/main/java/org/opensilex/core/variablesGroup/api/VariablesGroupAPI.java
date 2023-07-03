@@ -77,7 +77,7 @@ public class VariablesGroupAPI {
             credentialLabelKey = VariableAPI.CREDENTIAL_VARIABLE_MODIFICATION_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "A variables group is created", response = ObjectUriResponse.class),
+            @ApiResponse(code = 201, message = "A variables group is created", response = URI.class),
             @ApiResponse(code = 409, message = "A variables group with the same URI already exists", response = ErrorResponse.class)
     })
     @Consumes(MediaType.APPLICATION_JSON)
@@ -207,7 +207,7 @@ public class VariablesGroupAPI {
             credentialLabelKey = VariableAPI.CREDENTIAL_VARIABLE_MODIFICATION_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Variables group updated", response = ObjectUriResponse.class),
+            @ApiResponse(code = 200, message = "Variables group updated", response = URI.class),
             @ApiResponse(code = 404, message = "Unknown variables group URI", response = ErrorResponse.class)
     })
     @Consumes(MediaType.APPLICATION_JSON)
@@ -227,7 +227,7 @@ public class VariablesGroupAPI {
             credentialLabelKey = VariableAPI.CREDENTIAL_VARIABLE_DELETE_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Variables group deleted", response = ObjectUriResponse.class),
+            @ApiResponse(code = 200, message = "Variables group deleted", response = URI.class),
             @ApiResponse(code = 404, message = "Unknown variables group URI", response = ErrorResponse.class)
     })
     @Consumes(MediaType.APPLICATION_JSON)

@@ -1,36 +1,44 @@
 OpenSilex Vue.JS components
 ===========================
 
-- [OpenSilex Vue.JS components](#opensilex-vuejs-components)
-  - [Icons](#icons)
-  - [Buttons](#buttons)
-    - [Generic button](#generic-button)
-    - [Create button](#create-button)
-    - [Delete button](#delete-button)
-    - [Edit button](#edit-button)
-    - [Details button](#details-button)
-    - [Add child button](#add-child-button)
-    - [HelpButton](#helpbutton)
-  - [Forms fields components](#forms-fields-components)
-    - [Generic form field label](#generic-form-field-label)
-    - [Generic form field](#generic-form-field)
-    - [Input form field](#input-form-field)
-    - [Textarea form field](#textarea-form-field)
-    - [Checkbox form field](#checkbox-form-field)
-    - [Select form field](#select-form-field)
-    - [URI form field](#uri-form-field)
-    - [Type form field](#type-form-field)
-    - [CSV file input](#csv-file-input)
-    - [File input form field](#file-input-form-field)
-    - [Tags input form field](#tags-input-form-field)
-    - [Datetime input form field](#datetime-input-form-field)
-  - [Forms containers](#forms-containers)
-    - [Modal form](#modal-form)
-    - [Wizard form](#wizard-form)
-  - [View component](#view-component)
-    - [Uri link](#uri-link)
-    - [TableView](#tableview)
-    - [TableAsyncView](#tableasyncview)
+<!-- TOC -->
+* [OpenSilex Vue.JS components](#opensilex-vuejs-components)
+  * [Icons](#icons)
+  * [Buttons](#buttons)
+    * [Generic button](#generic-button)
+    * [Create button](#create-button)
+    * [Delete button](#delete-button)
+    * [Edit button](#edit-button)
+    * [Details button](#details-button)
+    * [Add child button](#add-child-button)
+    * [HelpButton](#helpbutton)
+  * [Forms fields components](#forms-fields-components)
+    * [Generic form field label](#generic-form-field-label)
+    * [Generic form field](#generic-form-field)
+    * [Input form field](#input-form-field)
+    * [Textarea form field](#textarea-form-field)
+    * [Checkbox form field](#checkbox-form-field)
+    * [Select form field](#select-form-field)
+    * [URI form field](#uri-form-field)
+    * [Type form field](#type-form-field)
+    * [CSV file input](#csv-file-input)
+    * [File input form field](#file-input-form-field)
+    * [Tags input form field](#tags-input-form-field-)
+    * [Datetime input form field](#datetime-input-form-field-)
+  * [Forms containers](#forms-containers)
+    * [Modal form](#modal-form)
+      * [Properties](#properties)
+      * [Events](#events)
+      * [Typing](#typing)
+    * [Wizard form](#wizard-form)
+  * [View component](#view-component)
+    * [Uri link](#uri-link)
+    * [TableView](#tableview)
+    * [TableAsyncView](#tableasyncview)
+  * [Ontology Components](#ontology-components)
+    * [OntologyObjectForm](#ontologyobjectform)
+    * [OntologyObjectProperties](#ontologyobjectproperties)
+<!-- TOC -->
 
 ## Icons
 
@@ -52,10 +60,10 @@ Icons are referenced by their identifier:
 
 Properties:
 
-ID | Type | Default value | Description
---- | --- | --- | ---
-icon | string | *ik#ik-folder* | Icon identifier in format library-id#icon-class
-size | string | *sm* | Size class used by fontawesome (given class will also be added to IkonKit markup)
+| ID   | Type   | Default value  | Description                                                                       |
+|------|--------|----------------|-----------------------------------------------------------------------------------|
+| icon | string | *ik#ik-folder* | Icon identifier in format library-id#icon-class                                   |
+| size | string | *sm*           | Size class used by fontawesome (given class will also be added to IkonKit markup) |
 
 ## Buttons
 
@@ -71,13 +79,13 @@ Other buttons described in this documentation are a predefined variation of this
 
 Properties:
 
-ID | Type | Default value | Description
---- | --- | --- | ---
-label | string | *-* | Translation key of the button label (should always be present even if not visible for accessibility purpose)
-variant | string | *-* | [Bootstrap button variant](https://getbootstrap.com/docs/4.1/components/buttons/)
-small | boolean | *true* | Flag to determine if button should be small (equivalent to bootstrap "sm" class)
-disabled | boolean | *false* | Flag to determine if button is disabled or not
-icon | string | *-* | Button icon identifier see [icon component](#Icons) for more information
+| ID       | Type    | Default value | Description                                                                                                  |
+|----------|---------|---------------|--------------------------------------------------------------------------------------------------------------|
+| label    | string  | *-*           | Translation key of the button label (should always be present even if not visible for accessibility purpose) |
+| variant  | string  | *-*           | [Bootstrap button variant](https://getbootstrap.com/docs/4.1/components/buttons/)                            |
+| small    | boolean | *true*        | Flag to determine if button should be small (equivalent to bootstrap "sm" class)                             |
+| disabled | boolean | *false*       | Flag to determine if button is disabled or not                                                               |
+| icon     | string  | *-*           | Button icon identifier see [icon component](#Icons) for more information                                     |
 
 Slots:
 Name | Props | Description
@@ -99,11 +107,11 @@ Button component for "Create" action.
 
 Properties:
 
-ID | Type | Default value | Description
---- | --- | --- | ---
-label | string | *-* | Translation key of the button label (should always be present even if not visible for accessibility purpose)
-small | boolean | *true* | Flag to determine if button should be small (equivalent to bootstrap "sm" class)
-disabled | boolean | *false* | Flag to determine if button is disabled or not
+| ID       | Type    | Default value | Description                                                                                                  |
+|----------|---------|---------------|--------------------------------------------------------------------------------------------------------------|
+| label    | string  | *-*           | Translation key of the button label (should always be present even if not visible for accessibility purpose) |
+| small    | boolean | *true*        | Flag to determine if button should be small (equivalent to bootstrap "sm" class)                             |
+| disabled | boolean | *false*       | Flag to determine if button is disabled or not                                                               |
 
 Events:
 ID | Parameter | Description
@@ -120,11 +128,11 @@ Button component for "Delete" action, this component displays a confirmation mes
 
 Properties:
 
-ID | Type | Default value | Description
---- | --- | --- | ---
-label | string | *-* | Translation key of the button label (should always be present even if not visible for accessibility purpose)
-small | boolean | *true* | Flag to determine if button should be small (equivalent to bootstrap "sm" class)
-disabled | boolean | *false* | Flag to determine if button is disabled or not
+| ID       | Type    | Default value | Description                                                                                                  |
+|----------|---------|---------------|--------------------------------------------------------------------------------------------------------------|
+| label    | string  | *-*           | Translation key of the button label (should always be present even if not visible for accessibility purpose) |
+| small    | boolean | *true*        | Flag to determine if button should be small (equivalent to bootstrap "sm" class)                             |
+| disabled | boolean | *false*       | Flag to determine if button is disabled or not                                                               |
 
 Events:
 ID | Parameter | Description
@@ -141,11 +149,11 @@ Button component for "Edit" action.
 
 Properties:
 
-ID | Type | Default value | Description
---- | --- | --- | ---
-label | string | *-* | Translation key of the button label (should always be present even if not visible for accessibility purpose)
-small | boolean | *true* | Flag to determine if button should be small (equivalent to bootstrap "sm" class)
-disabled | boolean | *false* | Flag to determine if button is disabled or not
+| ID       | Type    | Default value | Description                                                                                                  |
+|----------|---------|---------------|--------------------------------------------------------------------------------------------------------------|
+| label    | string  | *-*           | Translation key of the button label (should always be present even if not visible for accessibility purpose) |
+| small    | boolean | *true*        | Flag to determine if button should be small (equivalent to bootstrap "sm" class)                             |
+| disabled | boolean | *false*       | Flag to determine if button is disabled or not                                                               |
 
 Events:
 ID | Parameter | Description
@@ -162,12 +170,12 @@ Button component for "Show details/Hide details" action.
 
 Properties:
 
-ID | Type | Default value | Description
---- | --- | --- | ---
-label | string | *-* | Translation key of the button label (should always be present even if not visible for accessibility purpose)
-small | boolean | *true* | Flag to determine if button should be small (equivalent to bootstrap "sm" class)
-disabled | boolean | *false* | Flag to determine if button is disabled or not
-detailVisible | boolean | *false* | Flag to determine detail button state
+| ID            | Type    | Default value | Description                                                                                                  |
+|---------------|---------|---------------|--------------------------------------------------------------------------------------------------------------|
+| label         | string  | *-*           | Translation key of the button label (should always be present even if not visible for accessibility purpose) |
+| small         | boolean | *true*        | Flag to determine if button should be small (equivalent to bootstrap "sm" class)                             |
+| disabled      | boolean | *false*       | Flag to determine if button is disabled or not                                                               |
+| detailVisible | boolean | *false*       | Flag to determine detail button state                                                                        |
 
 Events:
 ID | Parameter | Description
@@ -184,11 +192,11 @@ Button component for "Add child" action, this component could be usefull for tre
 
 Properties:
 
-ID | Type | Default value | Description
---- | --- | --- | ---
-label | string | *-* | Translation key of the button label (should always be present even if not visible for accessibility purpose)
-small | boolean | *true* | Flag to determine if button should be small (equivalent to bootstrap "sm" class)
-disabled | boolean | *false* | Flag to determine if button is disabled or not
+| ID       | Type    | Default value | Description                                                                                                  |
+|----------|---------|---------------|--------------------------------------------------------------------------------------------------------------|
+| label    | string  | *-*           | Translation key of the button label (should always be present even if not visible for accessibility purpose) |
+| small    | boolean | *true*        | Flag to determine if button should be small (equivalent to bootstrap "sm" class)                             |
+| disabled | boolean | *false*       | Flag to determine if button is disabled or not                                                               |
 
 Events:
 ID | Parameter | Description
@@ -205,11 +213,11 @@ Button component for "Help" action, this component could be usefull to get help 
 
 Properties:
 
-ID | Type | Default value | Description
---- | --- | --- | ---
-label | string | *-* | Translation key of the button label (should always be present even if not visible for accessibility purpose)
-small | boolean | *true* | Flag to determine if button should be small (equivalent to bootstrap "sm" class)
-disabled | boolean | *false* | Flag to determine if button is disabled or not
+| ID       | Type    | Default value | Description                                                                                                  |
+|----------|---------|---------------|--------------------------------------------------------------------------------------------------------------|
+| label    | string  | *-*           | Translation key of the button label (should always be present even if not visible for accessibility purpose) |
+| small    | boolean | *true*        | Flag to determine if button should be small (equivalent to bootstrap "sm" class)                             |
+| disabled | boolean | *false*       | Flag to determine if button is disabled or not                                                               |
 
 Events:
 ID | Parameter | Description
@@ -230,11 +238,11 @@ This component should not be use directly, prefer use of [FormField](#Generic%20
 
 Properties:
 
-ID | Type | Default value | Description
---- | --- | --- | ---
-label | string | *-* | Translation key of the form label
-labelFor | string | *-* | Name of the corresponding input (should always be present for accessibility purpose, "for" property)
-helpMessage | string | *-* | Optional translation key for tooltip help message
+| ID          | Type   | Default value | Description                                                                                          |
+|-------------|--------|---------------|------------------------------------------------------------------------------------------------------|
+| label       | string | *-*           | Translation key of the form label                                                                    |
+| labelFor    | string | *-*           | Name of the corresponding input (should always be present for accessibility purpose, "for" property) |
+| helpMessage | string | *-*           | Optional translation key for tooltip help message                                                    |
 
 ### Generic form field
 
@@ -257,17 +265,18 @@ This component is an abstraction which should be used by all form components imp
 
 Properties:
 
-ID | Type | Default value | Description
---- | --- | --- | ---
-label | string | *-* | Translation key of the form label
-helpMessage | string | *-* | Optional translation key for tooltip help message
-required | boolean | *false* | Flag to determine if form field is required
-rules | string or function | *-* | [vee-validate rules](https://logaretm.github.io/vee-validate/guide/rules.html#rules) or function returning validation rules
+| ID          | Type               | Default value | Description                                                                                                                 |
+|-------------|--------------------|---------------|-----------------------------------------------------------------------------------------------------------------------------|
+| label       | string             | *-*           | Translation key of the form label                                                                                           |
+| helpMessage | string             | *-*           | Optional translation key for tooltip help message                                                                           |
+| required    | boolean            | *false*       | Flag to determine if form field is required                                                                                 |
+| rules       | string or function | *-*           | [vee-validate rules](https://logaretm.github.io/vee-validate/guide/rules.html#rules) or function returning validation rules |
 
 Slots:
-Name | Props | Description
---- | --- | ---
-field | *id*: form input id, *validator*: reference vee-validate validator | This slot allows to define real form field implementation (input, textarea, ...)
+
+| Name  | Props                                                              | Description                                                                      |
+|-------|--------------------------------------------------------------------|----------------------------------------------------------------------------------|
+| field | *id*: form input id, *validator*: reference vee-validate validator | This slot allows to define real form field implementation (input, textarea, ...) |
 
 ### Input form field
 
@@ -279,17 +288,17 @@ Component used to display a form input field.
 
 Properties:
 
-ID | Type | Default value | Description
---- | --- | --- | ---
-value | string | *-* | Input field value (generally used with "sync" flag)
-type | string | *text* | HTML input type
-label | string | *-* | Translation key of the input form label
-helpMessage | string | *-* | Optional translation key for tooltip help message
-placeholder | string | *-* | Optional translation key for input placeholder
-disabled | boolean | *false* | Flag to determine if form field is disabled or not
-required | boolean | *false* | Flag to determine if form field is required
-rules | string or function | *-* | [vee-validate rules](https://logaretm.github.io/vee-validate/guide/rules.html#rules) or function returning validation rules
-autocomplete | string | *-* | HTML input field ["autocomplete" property value](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/autocomplete)
+| ID           | Type               | Default value | Description                                                                                                                 |
+|--------------|--------------------|---------------|-----------------------------------------------------------------------------------------------------------------------------|
+| value        | string             | *-*           | Input field value (generally used with "sync" flag)                                                                         |
+| type         | string             | *text*        | HTML input type                                                                                                             |
+| label        | string             | *-*           | Translation key of the input form label                                                                                     |
+| helpMessage  | string             | *-*           | Optional translation key for tooltip help message                                                                           |
+| placeholder  | string             | *-*           | Optional translation key for input placeholder                                                                              |
+| disabled     | boolean            | *false*       | Flag to determine if form field is disabled or not                                                                          |
+| required     | boolean            | *false*       | Flag to determine if form field is required                                                                                 |
+| rules        | string or function | *-*           | [vee-validate rules](https://logaretm.github.io/vee-validate/guide/rules.html#rules) or function returning validation rules |
+| autocomplete | string             | *-*           | HTML input field ["autocomplete" property value](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/autocomplete) |
 
 ### Textarea form field
 
@@ -301,16 +310,16 @@ Component used to display a form textarea field.
 
 Properties:
 
-ID | Type | Default value | Description
---- | --- | --- | ---
-value | string | *-* | Textarea field value (generally used with "sync" flag)
-label | string | *-* | Translation key of the textarea form label
-helpMessage | string | *-* | Optional translation key for tooltip help message
-placeholder | string | *-* | Optional translation key for textarea placeholder
-disabled | boolean | *false* | Flag to determine if form field is disabled or not
-required | boolean | *false* | Flag to determine if form field is required
-rules | string or function | *-* | [vee-validate rules](https://logaretm.github.io/vee-validate/guide/rules.html#rules) or function returning validation rules
-autocomplete | string | *-* | HTML textarea field ["autocomplete" property value](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/autocomplete)
+| ID           | Type               | Default value | Description                                                                                                                    |
+|--------------|--------------------|---------------|--------------------------------------------------------------------------------------------------------------------------------|
+| value        | string             | *-*           | Textarea field value (generally used with "sync" flag)                                                                         |
+| label        | string             | *-*           | Translation key of the textarea form label                                                                                     |
+| helpMessage  | string             | *-*           | Optional translation key for tooltip help message                                                                              |
+| placeholder  | string             | *-*           | Optional translation key for textarea placeholder                                                                              |
+| disabled     | boolean            | *false*       | Flag to determine if form field is disabled or not                                                                             |
+| required     | boolean            | *false*       | Flag to determine if form field is required                                                                                    |
+| rules        | string or function | *-*           | [vee-validate rules](https://logaretm.github.io/vee-validate/guide/rules.html#rules) or function returning validation rules    |
+| autocomplete | string             | *-*           | HTML textarea field ["autocomplete" property value](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/autocomplete) |
 
 ### Checkbox form field
 
@@ -322,16 +331,16 @@ Component used to display a form checkbox field.
 
 Properties:
 
-ID | Type | Default value | Description
---- | --- | --- | ---
-value | string | *-* | Checkbox field value (generally used with "sync" flag)
-title | string | *-* | Translation key of the checkbox title (Text of the checkbox option)
-label | string | *-* | Translation key of the checkbox form label
-helpMessage | string | *-* | Optional translation key for tooltip help message
-placeholder | string | *-* | Optional translation key for checkbox placeholder
-disabled | boolean | *false* | Flag to determine if form field is disabled or not
-required | boolean | *false* | Flag to determine if form field is required
-rules | string or function | *-* | [vee-validate rules](https://logaretm.github.io/vee-validate/guide/rules.html#rules) or function returning validation rules
+| ID          | Type               | Default value | Description                                                                                                                 |
+|-------------|--------------------|---------------|-----------------------------------------------------------------------------------------------------------------------------|
+| value       | string             | *-*           | Checkbox field value (generally used with "sync" flag)                                                                      |
+| title       | string             | *-*           | Translation key of the checkbox title (Text of the checkbox option)                                                         |
+| label       | string             | *-*           | Translation key of the checkbox form label                                                                                  |
+| helpMessage | string             | *-*           | Optional translation key for tooltip help message                                                                           |
+| placeholder | string             | *-*           | Optional translation key for checkbox placeholder                                                                           |
+| disabled    | boolean            | *false*       | Flag to determine if form field is disabled or not                                                                          |
+| required    | boolean            | *false*       | Flag to determine if form field is required                                                                                 |
+| rules       | string or function | *-*           | [vee-validate rules](https://logaretm.github.io/vee-validate/guide/rules.html#rules) or function returning validation rules |
 
 ### Select form field
 
@@ -357,23 +366,23 @@ If result of async calls are not returning vue-treeselect nodes, you must define
 
 Properties:
 
-ID | Type | Default value | Description
---- | --- | --- | ---
-selection | string or array | *-* | Select field value string is expected if multiple="true" and array otherwise
-multiple | boolean | *false* | Determine if this select allow multiple item selection or not
-label | string | *-* | Translation key of the select form label
-helpMessage | string | *-* | Optional translation key for tooltip help message
-placeholder | string | *-* | Optional translation key for select placeholder
-disabled | boolean | *false* | Flag to determine if form field is disabled or not
-required | boolean | *false* | Flag to determine if form field is required
-rules | string or function | *-* | [vee-validate rules](https://logaretm.github.io/vee-validate/guide/rules.html#rules) or function returning validation rules
-options | array | *-* | Array of static nodes options
-optionsLoadingMethod | function | *-* | Method reference to async call for options list loading
-searchMethod | function | *-* | Method reference to async call for options list searching to use in conjonction with *itemLoadingMethod*
-itemLoadingMethod | function | *-* | Method reference to async call for selected item loading (used to display elements labels for select using *searchMethod* to get options)
-conversionMethod | function | *identity()* | Method used to transform async loaded options and selected items into vue-treeselect nodes
-noResultsText | string | *-* | Translation key for message when no results are found with *searchMethod*
-flat | boolean | true | Option to determine tree selection behavior (unused when selecting a simple list), see [vue-treeselect documentation](https://vue-treeselect.js.org/#flat-mode-and-sort-values) for more information.
+| ID                   | Type               | Default value | Description                                                                                                                                                                                           |
+|----------------------|--------------------|---------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| selection            | string or array    | *-*           | Select field value string is expected if multiple="true" and array otherwise                                                                                                                          |
+| multiple             | boolean            | *false*       | Determine if this select allow multiple item selection or not                                                                                                                                         |
+| label                | string             | *-*           | Translation key of the select form label                                                                                                                                                              |
+| helpMessage          | string             | *-*           | Optional translation key for tooltip help message                                                                                                                                                     |
+| placeholder          | string             | *-*           | Optional translation key for select placeholder                                                                                                                                                       |
+| disabled             | boolean            | *false*       | Flag to determine if form field is disabled or not                                                                                                                                                    |
+| required             | boolean            | *false*       | Flag to determine if form field is required                                                                                                                                                           |
+| rules                | string or function | *-*           | [vee-validate rules](https://logaretm.github.io/vee-validate/guide/rules.html#rules) or function returning validation rules                                                                           |
+| options              | array              | *-*           | Array of static nodes options                                                                                                                                                                         |
+| optionsLoadingMethod | function           | *-*           | Method reference to async call for options list loading                                                                                                                                               |
+| searchMethod         | function           | *-*           | Method reference to async call for options list searching to use in conjonction with *itemLoadingMethod*                                                                                              |
+| itemLoadingMethod    | function           | *-*           | Method reference to async call for selected item loading (used to display elements labels for select using *searchMethod* to get options)                                                             |
+| conversionMethod     | function           | *identity()*  | Method used to transform async loaded options and selected items into vue-treeselect nodes                                                                                                            |
+| noResultsText        | string             | *-*           | Translation key for message when no results are found with *searchMethod*                                                                                                                             |
+| flat                 | boolean            | true          | Option to determine tree selection behavior (unused when selecting a simple list), see [vue-treeselect documentation](https://vue-treeselect.js.org/#flat-mode-and-sort-values) for more information. |
 
 ### URI form field
 
@@ -385,12 +394,12 @@ Component used to display optional URI field for semantic element creation or up
 
 Properties:
 
-ID | Type | Default value | Description
---- | --- | --- | ---
-uri | string | *-* | URI value (generally used with "sync" flag)
-editMode | boolean | *false* | Flag to determine if URI field is displayed for creation (possibility to be changed) or edition (simply display disabled input with URI value)
-label | string | *-* | Translation key of the checkbox form label
-uriGenerated | boolean | *-* | Flag to determine if URI value must be generated or is user defined (generally used with "sync" flag)
+| ID           | Type    | Default value | Description                                                                                                                                    |
+|--------------|---------|---------------|------------------------------------------------------------------------------------------------------------------------------------------------|
+| uri          | string  | *-*           | URI value (generally used with "sync" flag)                                                                                                    |
+| editMode     | boolean | *false*       | Flag to determine if URI field is displayed for creation (possibility to be changed) or edition (simply display disabled input with URI value) |
+| label        | string  | *-*           | Translation key of the checkbox form label                                                                                                     |
+| uriGenerated | boolean | *-*           | Flag to determine if URI value must be generated or is user defined (generally used with "sync" flag)                                          |
 
 ### Type form field
 
@@ -402,14 +411,14 @@ Component used to display a single selection of an Ontological concept subclass.
 
 Properties:
 
-ID | Type | Default value | Description
---- | --- | --- | ---
-type | string | *-* | Ontology selected type URI value (generally used with "sync" flag)
-baseType | string | *-* | Ontology type URI to get all subclasses options
-placeholder | string | *-* | Optional translation key for type placeholder
-disabled | boolean | *false* | Flag to determine if form field is disabled or not
-required | boolean | *false* | Flag to determine if form field is required
-rules | string or function | *-* | [vee-validate rules](https://logaretm.github.io/vee-validate/guide/rules.html#rules) or function returning validation rules
+| ID          | Type               | Default value | Description                                                                                                                 |
+|-------------|--------------------|---------------|-----------------------------------------------------------------------------------------------------------------------------|
+| type        | string             | *-*           | Ontology selected type URI value (generally used with "sync" flag)                                                          |
+| baseType    | string             | *-*           | Ontology type URI to get all subclasses options                                                                             |
+| placeholder | string             | *-*           | Optional translation key for type placeholder                                                                               |
+| disabled    | boolean            | *false*       | Flag to determine if form field is disabled or not                                                                          |
+| required    | boolean            | *false*       | Flag to determine if form field is required                                                                                 |
+| rules       | string or function | *-*           | [vee-validate rules](https://logaretm.github.io/vee-validate/guide/rules.html#rules) or function returning validation rules |
 
 ### CSV file input
 
@@ -420,15 +429,15 @@ Description:
 Component used to load csv data.
 Properties:
 
-ID | Type | Default value | Description
---- | --- | --- | ---
-headersToCheck | Array[String] | [] | Headers to check
+| ID             | Type          | Default value | Description      |
+|----------------|---------------|---------------|------------------|
+| headersToCheck | Array[String] | []            | Headers to check |
 
 Events:
 
-ID | Type | Default value | Description
---- | --- | --- | ---
-updated | Array[Any] | *-* | Emit only if is the data has been loaded
+| ID      | Type       | Default value | Description                              |
+|---------|------------|---------------|------------------------------------------|
+| updated | Array[Any] | *-*           | Emit only if is the data has been loaded |
 
 Usage:
 
@@ -458,9 +467,9 @@ Properties:
 
 Inherited properties of [Generic form field](#generic-form-field)
 
-ID | Type | Default value | Description
---- | --- | --- | ---
-file | File | *-* | file value (generally used with "sync" flag)
+| ID   | Type | Default value | Description                                  |
+|------|------|---------------|----------------------------------------------|
+| file | File | *-*           | file value (generally used with "sync" flag) |
 
 * In template :
   
@@ -484,15 +493,15 @@ Properties:
 
 Inherited properties of [Generic form field](#generic-form-field)
 
-ID | Type | Default value | Description
---- | --- | --- | ---
-value | Array[String] | *-* | Input field value (generally used with "sync" flag)
-label | string | *-* | Translation key of the input form label
-helpMessage | string | *-* | Optional translation key for tooltip help message
-placeholder | string | *-* | Optional translation key for input placeholder
-disabled | boolean | *false* | Flag to determine if form field is disabled or not
-required | boolean | *false* | Flag to determine if form field is required
-variant | string | - | [Bootstrap color variant](https://getbootstrap.com/docs/4.1/components/buttons/)
+| ID          | Type          | Default value | Description                                                                      |
+|-------------|---------------|---------------|----------------------------------------------------------------------------------|
+| value       | Array[String] | *-*           | Input field value (generally used with "sync" flag)                              |
+| label       | string        | *-*           | Translation key of the input form label                                          |
+| helpMessage | string        | *-*           | Optional translation key for tooltip help message                                |
+| placeholder | string        | *-*           | Optional translation key for input placeholder                                   |
+| disabled    | boolean       | *false*       | Flag to determine if form field is disabled or not                               |
+| required    | boolean       | *false*       | Flag to determine if form field is required                                      |
+| variant     | string        | -             | [Bootstrap color variant](https://getbootstrap.com/docs/4.1/components/buttons/) |
 
 * In template :
   
@@ -517,37 +526,34 @@ Based on vue-datetime component (https://github.com/mariomka/vue-datetime).
 
 **Events:**
 
-ID | Parameter | Description
---- | --- | ---
-input | - | Event called after input
-close | - | Event called after pickup close
+| ID    | Parameter | Description                     |
+|-------|-----------|---------------------------------|
+| input | -         | Event called after input        |
+| close | -         | Event called after pickup close |
 
 **Properties:**
 
 Inherited properties of [Generic form field](#generic-form-field)
 
-ID | Type | Default value | Description
---- | --- | --- | ---
-value | string | *-* | Input field value (generally used with "sync" flag)
-label | string | *-* | Translation key of the input form label
-helpMessage | string | *-* | Optional translation key for tooltip help message
-disabled | boolean | *false* | Flag to determine if form field is disabled or not
-required | boolean | *false* | Flag to determine if form field is required
-minDate | Date | *-* | Used to deactivate the days before the specified date
-maxDate | Date | *-* | Used to disable days after the specified date
-variant | string | - | [Bootstrap color variant](https://getbootstrap.com/docs/4.1/components/buttons/)
+| ID          | Type    | Default value | Description                                                                      |
+|-------------|---------|---------------|----------------------------------------------------------------------------------|
+| value       | string  | *-*           | Input field value (generally used with "sync" flag)                              |
+| label       | string  | *-*           | Translation key of the input form label                                          |
+| helpMessage | string  | *-*           | Optional translation key for tooltip help message                                |
+| disabled    | boolean | *false*       | Flag to determine if form field is disabled or not                               |
+| required    | boolean | *false*       | Flag to determine if form field is required                                      |
+| minDate     | Date    | *-*           | Used to deactivate the days before the specified date                            |
+| maxDate     | Date    | *-*           | Used to disable days after the specified date                                    |
+| variant     | string  | -             | [Bootstrap color variant](https://getbootstrap.com/docs/4.1/components/buttons/) |
 
 Overloaded properties of vue-datetime
 
-ID | Type | Default value | Description
---- | --- | --- | ---
-type | string | datetime | Picker type: date, datetime or time.
-value-zone | string | local | Time zone for the value.
-zone | string | local | Time zone for the picker.
-format | string | dd-MMM-yyyy HH:mm ZZ | Input date format. Luxon presets or tokens. ([Moment formatting with tokens](https://moment.github.io/luxon/docs/manual/formatting.html#formatting-with-tokens--strings-for-cthulhu-))
-
-
-
+| ID         | Type   | Default value        | Description                                                                                                                                                                            |
+|------------|--------|----------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| type       | string | datetime             | Picker type: date, datetime or time.                                                                                                                                                   |
+| value-zone | string | local                | Time zone for the value.                                                                                                                                                               |
+| zone       | string | local                | Time zone for the picker.                                                                                                                                                              |
+| format     | string | dd-MMM-yyyy HH:mm ZZ | Input date format. Luxon presets or tokens. ([Moment formatting with tokens](https://moment.github.io/luxon/docs/manual/formatting.html#formatting-with-tokens--strings-for-cthulhu-)) |
 
 * In template :
   
@@ -572,39 +578,54 @@ Description:
 Component used to display a validated form component in a modal box for creation and update.
 
 Form component should implement the following properties:
+
 - editMode: boolean flag to define if form is displayed in create or update mode
-- form: syncronized form object
+- form: synchronized form object
 
-Form component must implements the following methods:
-- getEmptyForm: Method returning an empty form corresponding to form component fields
-- reset: Method reseting form component values before modal display (for both creation and update)
+Form component must implement the following methods:
 
-Form component could also implements the following methods:
-- create: Method taking "form" object as parameter to realize an action when form is validated and edit mode is false
-- update: Method taking "form" object as parameter to realize an action when form is validated and edit mode is true
+- getEmptyForm: Returns an empty form corresponding to form component fields
+- reset: Resets form to its initial values (for both creation and update)
+
+Form component can also implement the following methods:
+
+- create: Method taking "form" object as parameter to realize an action when form is validated and edit mode is false.
+  Only called if the `createAction` prop is not defined.
+- update: Method taking "form" object as parameter to realize an action when form is validated and edit mode is true.
+- Only called if the `updateAction` prop is not defined.
 
 If these methods are not defined "createAction" and/or "updateAction" properties must be defined.
 
 To interact with ModalForm component, use "showCreateForm()" and "showEditForm(form)" methods.
 
-Properties:
+#### Properties
 
-ID | Type | Default value | Description
---- | --- | --- | ---
-component | string | *-* | Form component to display in modal for edition and creation
-createTitle | string | *-* | Translation key for modal creation form title
-editTitle | string | *-* | Translation key for modal edition form title
-icon | string | *-* | Icon identifier for modal title, see [IconForm](#Icons) form more information
-modalSize | string | *md* | Bootstrap vue modal size ('sm', 'md', 'lg', or 'xl')
-createAction | function | *-* | Optional method reference taking "form" object as parameter to realize action when form is validated and edit mode is false, use component "create" method by default.
-updateAction | function | *-* | Method reference taking "form" object as parameter to realize action when form is validated and edit mode is true, use component "update" method by default.
-initForm | function | *identity()* | Optional method reference taking "form" object as parameter to correctly initialize this object on form creation if needed (add constant values by example)
+| ID            | Type     | Default value | Description                                                                                                                                                            |
+|---------------|----------|---------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **component** | string   | *-*           | Form component to display in modal for edition and creation.                                                                                                           |
+| createTitle   | string   | *-*           | Translation key for modal creation form title                                                                                                                          |
+| editTitle     | string   | *-*           | Translation key for modal edition form title                                                                                                                           |
+| icon          | string   | *-*           | Icon identifier for modal title, see [IconForm](#Icons) form more information                                                                                          |
+| modalSize     | string   | *md*          | Bootstrap vue modal size ('sm', 'md', 'lg', or 'xl')                                                                                                                   |
+| createAction  | function | *-*           | Optional method reference taking "form" object as parameter to realize action when form is validated and edit mode is false, use component "create" method by default. |
+| updateAction  | function | *-*           | Method reference taking "form" object as parameter to realize action when form is validated and edit mode is true, use component "update" method by default.           |
+| initForm      | function | *identity()*  | Optional method reference taking "form" object as parameter to correctly initialize this object on form creation if needed (add constant values by example)            |
 
-Events:
-ID | Parameter | Description
---- | --- | ---
-onCreate | *form* | Event called after sucessfully create action
-onUpdate | *form* | Event called after sucessfully update action
+#### Events
+
+| ID       | Parameter | Description                                   |
+|----------|-----------|-----------------------------------------------|
+| onCreate | *form*    | Event called after successfully create action |
+| onUpdate | *form*    | Event called after successfully update action |
+
+#### Typing
+
+When using a modal form in another component, you must specify three generic types : `InnerFormType`, `CreationDTOType`
+and `UpdateDTOType`. For example, a Modal Form reference could look like this :
+
+```typescript
+@Ref("facilityForm") readonly facilityForm!: ModalForm<FacilityForm, FacilityCreationDTO, FacilityUpdateDTO>;
+```
 
 ### Wizard form
 
@@ -626,16 +647,16 @@ To interact with WizardForm component, use "showCreateForm()" and "showEditForm(
 
 Properties:
 
-ID | Type | Default value | Description
---- | --- | --- | ---
-steps | array | *-* | Array of {title, component} representing wizard steps where title is the options translation key for step title and component is the component id of the step.
-createTitle | string | *-* | Translation key for modal creation form title
-editTitle | string | *-* | Translation key for modal edition form title
-icon | string | *-* | Icon identifier for modal title, see [IconForm](#Icons) form more information
-modalSize | string | *md* | Bootstrap vue modal size ('sm', 'md', 'lg', or 'xl')
-initForm | function | *-* | Method reference returning empty "form" object to display in steps
-createAction | function | *-* | Method reference taking "form" object as parameter to realize action when all steps are validated and edit mode is false.
-updateAction | function | *-* | Method reference taking "form" object as parameter to realize action when all steps are validated and edit mode is true.
+| ID           | Type     | Default value | Description                                                                                                                                                    |
+|--------------|----------|---------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| steps        | array    | *-*           | Array of {title, component} representing wizard steps where title is the options translation key for step title and component is the component id of the step. |
+| createTitle  | string   | *-*           | Translation key for modal creation form title                                                                                                                  |
+| editTitle    | string   | *-*           | Translation key for modal edition form title                                                                                                                   |
+| icon         | string   | *-*           | Icon identifier for modal title, see [IconForm](#Icons) form more information                                                                                  |
+| modalSize    | string   | *md*          | Bootstrap vue modal size ('sm', 'md', 'lg', or 'xl')                                                                                                           |
+| initForm     | function | *-*           | Method reference returning empty "form" object to display in steps                                                                                             |
+| createAction | function | *-*           | Method reference taking "form" object as parameter to realize action when all steps are validated and edit mode is false.                                      |
+| updateAction | function | *-*           | Method reference taking "form" object as parameter to realize action when all steps are validated and edit mode is true.                                       |
 
 Events:
 ID | Parameter | Description
@@ -659,12 +680,12 @@ The clickable link appears by mouse hovering.
 
 Properties:
 
-ID | Type | Default value | Description
---- | --- | --- | ---
-uri | string | *-* | Uri to copy or/and to show
-value | string | *-* | Identifier value to show if null uri will be showed
-url | string | *-* | External Url to go to
-to | string | *-* | Vue Router path to go to
+| ID    | Type   | Default value | Description                                         |
+|-------|--------|---------------|-----------------------------------------------------|
+| uri   | string | *-*           | Uri to copy or/and to show                          |
+| value | string | *-*           | Identifier value to show if null uri will be showed |
+| url   | string | *-*           | External Url to go to                               |
+| to    | string | *-*           | Vue Router path to go to                            |
 
 Events:
 ID | Parameter | Description
@@ -693,10 +714,10 @@ See [TableViewAsync](#tableasyncview) for API and asynchronous data.
 
 Properties:
 
-ID | Type | Default value | Description
---- | --- | --- | ---
-fields | array | *-* | b-table fields format
-items | array | [] | b-table items format 
+| ID     | Type  | Default value | Description           |
+|--------|-------|---------------|-----------------------|
+| fields | array | *-*           | b-table fields format |
+| items  | array | []            | b-table items format  |
 
 Events:
 
@@ -723,3 +744,37 @@ Events:
 ### TableAsyncView
 
 // TODO
+
+
+## Ontology Components
+
+### OntologyObjectForm
+
+//TODO
+
+### OntologyObjectProperties
+
+Identifier: `opensilex-OntologyObjectProperties`
+
+This component is used to render custom properties within description cards. 
+
+| ID                   | Type                        | Default value | Description                                                                     |
+|----------------------|-----------------------------|---------------|---------------------------------------------------------------------------------|
+| selected*            | NamedResourceDTO            |               | Concerned object                                                                |
+| parentType*          | string                      |               | Supertype of the object (e.g. "vocabulary:ScientificObject")                    |
+| relations*           | Array<RDFObjectRelationDTO> |               | List of relations to render (will often be `selected.relations`)                |
+| ignoredProperties    | Array<string>               | []            | List of properties to ignore during render                                      |
+| additionalFieldProps | { [key: string]: string }   | {}            | Additional props to be passed to the field components                           |
+| showIncoming         | boolean                     | true          | Show or hide the incoming properties (i.e. "Properties targetting this object") |
+
+Example usage (from `ScientificObjectDetailProperties`)
+
+```vue
+<opensilex-OntologyObjectProperties
+    :selected="selected"
+    :parentType="oeso.SCIENTIFIC_OBJECT_TYPE_URI"
+    :relations="relations"
+    :ignoredProperties="[oeso.IS_HOSTED]"
+    :additionalFieldProps="{ experiment }"
+></opensilex-OntologyObjectProperties>
+```

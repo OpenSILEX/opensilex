@@ -22,7 +22,8 @@ import ModalForm from "../../common/forms/ModalForm.vue";
 import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
 import DeviceForm from "./DeviceForm.vue";
 import {DevicesService} from "opensilex-core/api/devices.service";
-import {DeviceCreationDTO, DeviceGetDetailsDTO } from 'opensilex-core/index';
+import {DeviceCreationDTO, DeviceGetDetailsDTO} from 'opensilex-core/index';
+import DTOConverter from "../../../models/DTOConverter";
 
 @Component
 export default class DeviceModalForm extends Vue {
@@ -32,7 +33,7 @@ export default class DeviceModalForm extends Vue {
     $store: any;
 
     renderModalForm: boolean = false;
-    @Ref("modalForm") readonly modalForm!: ModalForm;
+    @Ref("modalForm") readonly modalForm!: ModalForm<DeviceForm, DeviceCreationDTO, DeviceCreationDTO>;
 
     created() {
         this.service = this.$opensilex.getService("opensilex.DevicesService");
@@ -65,7 +66,8 @@ export default class DeviceModalForm extends Vue {
                     let form: DeviceForm = this.modalForm.getFormRef();
                     form.readAttributes(device.metadata)
                     form.typeSwitch(device.rdf_type, true);
-                    this.modalForm.showEditForm(device);
+                    const editDto = DTOConverter.extractURIFromResourceProperties<DeviceGetDetailsDTO, DeviceCreationDTO>(device);
+                    this.modalForm.showEditForm(editDto);
                 });
             }).catch(this.$opensilex.errorHandler);
     }

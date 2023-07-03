@@ -16,18 +16,20 @@ subsection, as shown in the example below :
 ```yaml
 core:
     sharedResourceInstances:
-      - uri: http://138.102.159.36:8083/rest
+      - uri: http://phenome.inrae.fr/resources
+        apiUrl: http://phenome.inrae.fr/resources/rest
         label:
             fr: "PHENOME"
             en: "PHENOME"
-        accountName: admin@opensilex.org
-        accountPassword: admin
-      - uri: http://138.102.159.36:8082/rest
+        accountName: guest@opensilex.org
+        accountPassword: guest
+      - uri: http://138.102.159.36:8082/
+        apiUrl: http://138.102.159.36:8082/rest
         label:
             fr: "EMPHASIS"
             en: "EMPHASIS"
-        accountName: admin@opensilex.org
-        accountPassword: admin
+        accountName: guest@opensilex.org
+        accountPassword: guest
 ```
 
 ## Options
@@ -36,7 +38,8 @@ All the fields are required, except `label` (but it is still recommended to prov
 
 | field             | type                  | description                                                                                                                                                         |
 |-------------------|-----------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `uri`             | `String`              | Unique identifier of the SRI, and access point for the REST API. For example, `http://138.102.159.36:8083/rest` is a valid value.                                   |
+| `uri`             | `String`              | Unique identifier of the SRI, must be a URI. For example, `http://phenome.inrae.fr/resources` is a valid value.                                                     |
+| `apiUrl`          | `String`              | Access point for the REST API (ending with `/rest`). For example, `http://phenome.inrae.fr/resources/rest` is a valid value.                                        |
 | `label`           | `Map<String, String>` | List of labels of the IRP. Supported keys are only `fr` and `en` at the moment. If the requested language is not found in the labels, the URI will be used instead. |
 | `accountName`     | `String`              | The identifier of the account that will be used to connect to the SRI.                                                                                              |
 | `accountPassword` | `String`              | The password of the account that will be used to connect to the SRI.                                                                                                |

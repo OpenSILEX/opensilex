@@ -24,6 +24,7 @@ import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.SKOS;
 import org.bson.Document;
+import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.germplasm.api.GermplasmSearchFilter;
 import org.opensilex.core.ontology.Oeso;
@@ -182,13 +183,9 @@ public class GermplasmDAO {
             }
         }
 
-        // Filter by experiment if it has any species. Otherwise, don't apply any filter on experiments (because it
-        // doesn't make sens).
         final URI finalExperiment;
         if (searchFilter.getExperiment() != null) {
-            AskBuilder askExperimentHasSpecies = sparql.getUriExistsQuery(ExperimentModel.class, searchFilter.getExperiment())
-                    .addWhere(SPARQLDeserializers.nodeURI(searchFilter.getExperiment()), Oeso.hasSpecies, makeVar(ExperimentModel.SPECIES_FIELD));
-            finalExperiment = sparql.executeAskQuery(askExperimentHasSpecies) ? searchFilter.getExperiment() : null;
+            finalExperiment = searchFilter.getExperiment();
         } else {
             finalExperiment = null;
         }
@@ -213,6 +210,7 @@ public class GermplasmDAO {
                     appendRegexInstituteFilter(select, searchFilter.getInstitute());
                     appendProductionYearFilter(select, searchFilter.getProductionYear());
                     appendURIsFilter(select, filteredUris);
+                    appendGroupFilter(select, searchFilter.getGroup());
 
                     appendExperimentFilter(select, finalExperiment);
 
@@ -253,14 +251,32 @@ public class GermplasmDAO {
         return models;
     }
 
+    public int countInGroup(URI group, String lang) throws Exception {
+        return sparql.count(
+                defaultGraph,
+                GermplasmModel.class,
+                lang,
+                (SelectBuilder select) -> {
+                    appendGroupFilter(select, group);
+                },
+                null
+        );
+    }
+
     private void appendRegexUriFilter(SelectBuilder select, String uri) {
-        if (uri != null) {
+        if (!StringUtils.isEmpty(uri)) {
             try {
                 uri = NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(uri)).toString();
             } catch (Exception e) {
             } finally {
                 select.addFilter(SPARQLQueryHelper.regexFilterOnURI(GermplasmModel.URI_FIELD, uri, "i"));
             }
+        }
+    }
+
+    private void appendGroupFilter(SelectBuilder select, URI group){
+        if (group != null) {
+            select.addWhere(SPARQLDeserializers.nodeURI(group), RDFS.member, makeVar(SPARQLResourceModel.URI_FIELD));
         }
     }
 

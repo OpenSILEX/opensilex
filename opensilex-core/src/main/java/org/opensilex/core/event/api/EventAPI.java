@@ -25,28 +25,28 @@ import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
-import org.opensilex.sparql.csv.CSVCell;
-import org.opensilex.sparql.csv.CSVValidationModel;
-import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.validation.date.ValidOffsetDateTime;
+import org.opensilex.sparql.csv.CSVCell;
+import org.opensilex.sparql.csv.CSVValidationModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriListException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidUriListException;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
@@ -110,7 +110,7 @@ public class EventAPI {
             credentialLabelKey = CREDENTIAL_EVENT_MODIFICATION_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Create a list of event", response = ObjectUriResponse.class),
+            @ApiResponse(code = 201, message = "Create a list of event", response = URI.class),
             @ApiResponse(code = 409, message = "An event with the same URI already exists", response = ErrorResponse.class)
     })
     @Consumes(MediaType.APPLICATION_JSON)
@@ -290,7 +290,7 @@ public class EventAPI {
             credentialLabelKey = CREDENTIAL_EVENT_MODIFICATION_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return updated event", response = ObjectUriResponse.class),
+            @ApiResponse(code = 200, message = "Return updated event", response = URI.class),
             @ApiResponse(code = 404, message = "Event URI not found", response = ErrorResponse.class)
     })
     @Consumes(MediaType.APPLICATION_JSON)
@@ -326,7 +326,7 @@ public class EventAPI {
             credentialLabelKey = CREDENTIAL_EVENT_DELETE_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Event deleted", response = ObjectUriResponse.class),
+            @ApiResponse(code = 200, message = "Event deleted", response = URI.class),
             @ApiResponse(code = 404, message = "Event URI not found", response = ErrorResponse.class)
     })
     @Consumes(MediaType.APPLICATION_JSON)
@@ -448,7 +448,7 @@ public class EventAPI {
             credentialLabelKey = CREDENTIAL_EVENT_MODIFICATION_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Create a list of move", response = ObjectUriResponse.class),
+            @ApiResponse(code = 201, message = "Create a list of move", response = URI.class),
             @ApiResponse(code = 409, message = "A move with the same URI already exists", response = ErrorResponse.class)
     })
     @Consumes(MediaType.APPLICATION_JSON)
@@ -586,7 +586,7 @@ public class EventAPI {
             credentialLabelKey = CREDENTIAL_EVENT_MODIFICATION_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return updated move", response = ObjectUriResponse.class),
+            @ApiResponse(code = 200, message = "Return updated move", response = URI.class),
             @ApiResponse(code = 404, message = "Move URI not found", response = ErrorResponse.class)
     })
     @Consumes(MediaType.APPLICATION_JSON)
@@ -644,7 +644,7 @@ public class EventAPI {
             credentialLabelKey = CREDENTIAL_EVENT_DELETE_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Move deleted", response = ObjectUriResponse.class),
+            @ApiResponse(code = 200, message = "Move deleted", response = URI.class),
             @ApiResponse(code = 404, message = "Move URI not found", response = ErrorResponse.class)
     })
     @Consumes(MediaType.APPLICATION_JSON)

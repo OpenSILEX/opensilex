@@ -1,5 +1,6 @@
 <template>
   <b-modal
+    v-if="display"
     ref="modalRef"
     :class="(modalSize === 'full' ? 'full-screen-modal-form' : '')"
     @ok.prevent="validate"
@@ -59,7 +60,7 @@
     </template>
 
     <ValidationObserver ref="validatorRef">
-        <component ref="componentRef" v-bind:is="component" :editMode="editMode" :form.sync="form" :disableValidation="disableValidation">
+        <component ref="componentRef" v-bind:is="component" :editMode="editMode" :form.sync="form" :data="data" :disableValidation="disableValidation">
             <slot name="customFields" v-bind:form="form" v-bind:editMode="editMode"></slot>
         </component>
     </ValidationObserver>
@@ -67,12 +68,28 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Ref } from "vue-property-decorator";
+import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
+import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 
+export type ModalInnerForm<CreationDTOType, UpdateDTOType> = Vue & {
+  getEmptyForm: () => CreationDTOType;
+  create?: (dto: CreationDTOType) => any;
+  update?: (dto: UpdateDTOType) => any;
+  reset?: () => void;
+  tutorial?: () => void;
+  setSelectorsToFirstTimeOpenAndSetLabels?: (objectsWithLabels : Array<any>) => void;
+}
+
+/**
+ * Represents a modal form used to create or update a resource. The prop `component` represents the inner form and can
+ * be any type of Vue component as long as it implements a `getEmptyForm` method (see {@link ModalInnerForm}). If neither
+ * of the props `createAction` or `updateAction` are given, then the `component` must implement a `create` or `update`
+ * method.
+ */
 @Component
-export default class ModalForm extends Vue {
-  $opensilex: any;
+export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOType, UpdateDTOType>, CreationDTOType, UpdateDTOType> extends Vue {
+  $opensilex: OpenSilexVuePlugin;
   $i18n;
 
   @Ref("modalRef") readonly modalRef!: any;
@@ -80,13 +97,13 @@ export default class ModalForm extends Vue {
 
   editMode = false;
 
-  form = {};
+  form: CreationDTOType | UpdateDTOType | {} = {};
 
   @Prop({ default: false })
   tutorial :boolean;
 
   @Prop()
-  component;
+  component: string;
 
   @Prop()
   editTitle;
@@ -103,17 +120,34 @@ export default class ModalForm extends Vue {
   @Prop({default: false})
   doNotHideOnError: boolean;
 
+  @Prop()
+  /**
+   * Arbitrary data to be passed to the inner form component
+   */
+  data: any;
+
+    /**
+     * Only renders the component when either {@link showEditForm} of {@link showCreateForm} is called.
+     */
+  @Prop({default: false})
+  lazy: boolean;
+
+    /**
+     * Has the modal been opened at least once ?
+     */
+  opened = false;
+
   @Prop({
     type: Function,
-    default: function(f) {}
+    default: () => {}
   })
-  initForm: Function;
+  initForm: (form: CreationDTOType) => CreationDTOType;
 
   @Prop()
-  createAction: Function;
+  createAction: (dto: CreationDTOType) => void;
 
   @Prop()
-  updateAction: Function;
+  updateAction: (dto: UpdateDTOType) => void;
 
   @Prop({
     type: [String, Function],
@@ -121,12 +155,21 @@ export default class ModalForm extends Vue {
   })
   successMessage: string | Function;
 
+  @Prop({
+      default: false
+  })
+  overrideSuccessMessage: boolean;
+
   disableValidation: boolean = true;
+
+  get display(): boolean {
+      return !this.lazy || this.opened;
+  }
 
   validate() {
     this.validatorRef.validate().then(isValid => {
       if (isValid) {
-        let submitMethod: any = this.getFormRef()["create"];
+        let submitMethod: any = this.getFormRef().create;
         if (this.createAction) {
           submitMethod = this.createAction;
         }
@@ -135,7 +178,7 @@ export default class ModalForm extends Vue {
           if (this.updateAction) {
             submitMethod = this.updateAction;
           } else {
-            submitMethod = this.getFormRef()["update"];
+            submitMethod = this.getFormRef().update;
           }
 
           successEvent = "onUpdate";
@@ -171,27 +214,32 @@ export default class ModalForm extends Vue {
     } else {
       successMessage = this.$i18n.t(this.successMessage);
     }
-    if (this.editMode) {
-      successMessage =
-        successMessage +
-        this.$i18n.t("component.common.success.update-success-message");
-    } else {
-      successMessage =
-        successMessage +
-        this.$i18n.t("component.common.success.creation-success-message");
+
+    if (!this.overrideSuccessMessage){
+        if (this.editMode) {
+            successMessage =
+                successMessage +
+                this.$i18n.t("component.common.success.update-success-message");
+        } else {
+            successMessage =
+                successMessage +
+                this.$i18n.t("component.common.success.creation-success-message");
+        }
     }
     this.$opensilex.showSuccessToast(successMessage);
   }
-  getFormRef(): any {
-    return this.$refs.componentRef;
+  getFormRef(): InnerFormType {
+    return this.$refs.componentRef as InnerFormType;
   }
 
   showCreateForm() {
+    this.opened = true;
+
     this.editMode = false;
 
     this.$nextTick(() => {
       this.form = this.getFormRef().getEmptyForm();
-      let form = this.initForm(this.form);
+      let form = this.initForm(this.form as CreationDTOType);
       if (form) {
         this.form = form;
       }
@@ -204,7 +252,19 @@ export default class ModalForm extends Vue {
     });
   }
 
-  showEditForm(form) {
+    /**
+     *
+     * @param initiallySelectedWithLabels any object type that contains the information required to set the inner-form's initially selected items (for update modals)
+     *
+     * @requires  setSelectorsToFirstTimeOpenAndSetLabels function to be defined in the form ref
+     */
+  setSelectorsToFirstTimeOpenAndSetLabels(initiallySelectedWithLabels){
+      this.getFormRef().setSelectorsToFirstTimeOpenAndSetLabels(initiallySelectedWithLabels);
+  }
+
+  showEditForm(form: UpdateDTOType) {
+    this.opened = true;
+
     this.editMode = true;
 
     this.$nextTick(() => {

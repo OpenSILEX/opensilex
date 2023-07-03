@@ -1,6 +1,6 @@
 <template>
   <opensilex-StringView :label="label">
-    <div class="static-field">
+    <div>
       <b-badge
           :title="$t('component.copyGeometryWKT')"
           class="mr-2 copy"

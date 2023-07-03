@@ -147,7 +147,7 @@ public class AuthenticationAPI {
             return new SingleObjectResponse<TokenGetDTO>(new TokenGetDTO(user.getToken())).getResponse();
         } else {
             // Otherwise return a 403 - FORBIDDEN error response
-            return new ErrorResponse(Status.FORBIDDEN, "Invalid credentials", "User does not exists or password is invalid").getResponse();
+            return new ErrorResponse(Status.FORBIDDEN, "Invalid credentials", "User does not exists, is disabled or password is invalid").getResponse();
         }
     }
 
@@ -247,7 +247,10 @@ public class AuthenticationAPI {
         ArrayList<InternetAddress> arrayList = new ArrayList<>();
         arrayList.add(user.getEmail());
         // get address
-        String username = StringUtils.capitalize(user.getFirstName() ) + " "  + StringUtils.capitalize(user.getLastName());
+        String username = null;
+        if ( Objects.nonNull(user.getHolderOfTheAccount())) {
+            username = StringUtils.capitalize(user.getHolderOfTheAccount().getFirstName()) + " " + StringUtils.capitalize(user.getHolderOfTheAccount().getLastName());
+        }
         infos.put(EMAIL_USERNAME_KEY, username); 
         // get getForgotPasswordRedirectUrl address
         String redirectUrl = getForgotPasswordRedirectUrl(userForgottenToken); 
@@ -316,6 +319,8 @@ public class AuthenticationAPI {
                     user.isAdmin(),
                     authentication.getPasswordHash(password),
                     user.getLanguage(),
+                    user.getIsEnabled(),
+                    null,
                     user.getFavorites()
             );
             authentication.removeForgottenPasswordUserFromRenewToken(renewToken);

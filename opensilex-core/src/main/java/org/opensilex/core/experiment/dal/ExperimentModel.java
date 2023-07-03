@@ -9,13 +9,13 @@ package org.opensilex.core.experiment.dal;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.experiment.factor.dal.FactorModel;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.OrganizationModel;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.core.species.dal.SpeciesModel;
 import org.opensilex.security.authentication.SecurityOntology;
 import org.opensilex.security.group.dal.GroupModel;
-import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
@@ -64,14 +64,14 @@ public class ExperimentModel extends SPARQLNamedResourceModel<ExperimentModel> i
             ontology = Oeso.class,
             property = "hasScientificSupervisor"
     )
-    List<AccountModel> scientificSupervisors;
+    List<PersonModel> scientificSupervisors;
     public static final String SCIENTIFIC_SUPERVISOR_FIELD = "scientificSupervisor";
 
     @SPARQLProperty(
             ontology = Oeso.class,
             property = "hasTechnicalSupervisor"
     )
-    List<AccountModel> technicalSupervisors;
+    List<PersonModel> technicalSupervisors;
     public static final String TECHNICAL_SUPERVISOR_FIELD = "technicalSupervisor";
 
     @SPARQLProperty(
@@ -168,19 +168,19 @@ public class ExperimentModel extends SPARQLNamedResourceModel<ExperimentModel> i
         this.endDate = endDate;
     }
 
-    public List<AccountModel> getScientificSupervisors() {
+    public List<PersonModel> getScientificSupervisors() {
         return scientificSupervisors;
     }
 
-    public void setScientificSupervisors(List<AccountModel> scientificSupervisors) {
+    public void setScientificSupervisors(List<PersonModel> scientificSupervisors) {
         this.scientificSupervisors = scientificSupervisors;
     }
 
-    public List<AccountModel> getTechnicalSupervisors() {
+    public List<PersonModel> getTechnicalSupervisors() {
         return technicalSupervisors;
     }
 
-    public void setTechnicalSupervisors(List<AccountModel> technicalSupervisors) {
+    public void setTechnicalSupervisors(List<PersonModel> technicalSupervisors) {
         this.technicalSupervisors = technicalSupervisors;
     }
 

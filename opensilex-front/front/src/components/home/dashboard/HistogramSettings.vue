@@ -302,8 +302,8 @@ fr:
     cancel: Annuler
     display_by: Afficher par
     filter: Filtrer la selection
-    all_devices: Tout les dispositifs
-    select_devices: Choisir des dispositifs
+    all_devices: Tout les appareils
+    select_devices: Choisir des appareils
     hour: Heure
     day: Jour
     week: Semaine

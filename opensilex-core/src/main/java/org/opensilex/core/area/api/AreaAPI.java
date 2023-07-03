@@ -17,41 +17,39 @@ import org.bson.codecs.configuration.CodecConfigurationException;
 import org.geojson.GeoJsonObject;
 import org.opensilex.core.area.dal.AreaDAO;
 import org.opensilex.core.area.dal.AreaModel;
+import org.opensilex.core.event.dal.EventDAO;
+import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.event.dal.EventSearchFilter;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
-import org.opensilex.core.event.dal.EventDAO;
-import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.ontology.Oeev;
+import org.opensilex.core.ontology.Oeso;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.ValidURI;
+import org.opensilex.server.rest.validation.date.ValidOffsetDateTime;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.response.CreatedUriResponse;
 import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.utils.ListWithPagination;
+
 import javax.inject.Inject;
 import javax.validation.Valid;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 import static org.opensilex.core.geospatial.dal.GeospatialDAO.geoJsonToGeometry;
-import org.opensilex.core.ontology.Oeso;
-import org.opensilex.server.rest.validation.date.ValidOffsetDateTime;
-import org.opensilex.utils.ListWithPagination;
 
 /**
  * Area API
@@ -103,7 +101,7 @@ public class AreaAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Add an area", response = ObjectUriResponse.class),
+        @ApiResponse(code = 201, message = "Add an area", response = URI.class),
         @ApiResponse(code = 400, message = "Bad user request", response = ErrorResponse.class),
         @ApiResponse(code = 409, message = "An area with the same URI already exists", response = ErrorResponse.class),
         @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)
@@ -245,7 +243,7 @@ public class AreaAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Update an area", response = ObjectUriResponse.class)
+        @ApiResponse(code = 200, message = "Update an area", response = URI.class)
     })
     public Response updateArea(
             @ApiParam(value = "Area description", required = true) @NotNull @Valid AreaUpdateDTO areaDTO
@@ -329,7 +327,7 @@ public class AreaAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Delete an area", response = ObjectUriResponse.class),
+        @ApiResponse(code = 200, message = "Delete an area", response = URI.class),
         @ApiResponse(code = 404, message = "The URI for the area was not found.", response = ErrorResponse.class)
     })
     public Response deleteArea(

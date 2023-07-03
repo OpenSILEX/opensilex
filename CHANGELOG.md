@@ -1,18 +1,23 @@
 <!-- TOC -->
 * [Changelog](#changelog)
-  * [[1.0.0-rc+7]](#100-rc7)
+  * [[1.0.0]](#100)
     * [New features](#new-features)
     * [Fixed or optimized](#fixed-or-optimized)
-  * [[1.0.0-rc+6]](#100-rc6)
+      * [API](#api)
+      * [Web client](#web-client)
+  * [[1.0.0-rc+7]](#100-rc7)
+    * [New features](#new-features-1)
     * [Fixed or optimized](#fixed-or-optimized-1)
+  * [[1.0.0-rc+6]](#100-rc6)
+    * [Fixed or optimized](#fixed-or-optimized-2)
     * [Added or changed](#added-or-changed)
   * [[1.0.0-rc+5.2]](#100-rc52)
-    * [Fixed or optimized](#fixed-or-optimized-2)
-  * [[1.0.0-rc+5.1]](#100-rc51)
     * [Fixed or optimized](#fixed-or-optimized-3)
+  * [[1.0.0-rc+5.1]](#100-rc51)
+    * [Fixed or optimized](#fixed-or-optimized-4)
   * [[1.0.0-rc+5]](#100-rc5)
     * [Added or changed](#added-or-changed-1)
-    * [Fixed or optimized](#fixed-or-optimized-4)
+    * [Fixed or optimized](#fixed-or-optimized-5)
   * [[1.0.0-rc+4.1] - 2022-07-13](#100-rc41---2022-07-13)
     * [Fixed](#fixed)
   * [[1.0.0-rc+4] - 2022-06-13](#100-rc4---2022-06-13)
@@ -28,10 +33,10 @@
     * [Some Known Issues](#some-known-issues)
   * [[1.0.0-rc+1] - 2021-11-02](#100-rc1---2021-11-02)
     * [Added](#added-1)
-    * [Fixed or optimized](#fixed-or-optimized-5)
+    * [Fixed or optimized](#fixed-or-optimized-6)
   * [[1.0.0-rc] - 2021-10-08](#100-rc---2021-10-08)
     * [Added](#added-2)
-    * [Fixed or optimized](#fixed-or-optimized-6)
+    * [Fixed or optimized](#fixed-or-optimized-7)
     * [Changed](#changed)
     * [Major bugs identified](#major-bugs-identified)
   * [[1.0.0-beta+2.1] - 2021-07-27](#100-beta21---2021-07-27)
@@ -56,15 +61,61 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.0-rc+7.1]
+## [1.0.0]
 
-### Fixed
+> WARNING : upgrading to this new version require manual operations. Please
+> see the [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0.md).
+> Also available [here](opensilex-doc%2Fsrc%2Fmain%2Fresources%2Frelease%2F1.0.0.md)
 
-- [**Event**/**Datafile**] Fix date errors on CSV imports of events / Fix lien "target" des datafiles KO -> 675262a69 (PRADO Sebastien)
-- [**VueJS**] [**BugFix**] Experiment-OS fix child creation -> 3998b4197 (MAUSSANG BRICE)
-- [**API**] Remove duplicate resultWithPagination fields in all search APIs -> 5f4e30c31 (renaud colin)
-- [**Data**] Fix export data -> b1886c13e (CHIAVARINO ALEXIA)
+### New features
 
+- [MongoDB] You can now specify credentials to connect to a MongoDB server -> d02b3c8d
+- [Facility] Environmental data can be visualized in the facility detail page, including mean and median graphs ->  d9a705bf
+- [Data] Added new filters for data search : devices, facilities, operators -> ea0cc36b
+- [Data] Scientific objects can now be annotated during data import by adding an "annotation" column in the CSV -> 816f5ecf
+- [Map] Various enhancements -> 89ce4fa6
+- [Map] Scientific objects can now be exported as Shapefiles with the selected properties -> fa9fb97e
+- [Germplasm] Germplasm groups can be created to manage a set of germplasms at the same type -> bc29624d
+- [User / Person / Account] The web interface now reflects the changes in the API, where the `User` concept was split in
+  two `Person` and `Account` concepts -> b8457f7b
+- [Person] A person can now have an ORCID, a phone number and an organization -> 0718f5e5
+- [Person] Everal links to Users are replaced by links to Persons (for projects, experiments, provenances and devices)
+- [Variable] Added a "not included in group" filter for searching variables -> 98fde231
+- [Experiment] Added a germplasm filter for searching scientific objects in an experiment -> 25f5c93f
+- [API] All resources now have a publisher, publication date and last update date -> 2a3140bd
+- [Dashboard] You can now display a media in the dashboard if the graph component is not configured -> d1aa16ef
+- [Recherche Data Gouv] Added the possibility to create a `Dataset` draft on Recherche Data Gouv from OpenSILEX -> 63251bc2
+
+### Fixed or optimized
+
+#### API
+
+- [Data] Fixed export when sending too many parameters (e.g. a variable URI list) -> 1bc02a68
+- [Data] Exporting data with a "long" format without selecting a variable first now correctly works -> 1bc02a68
+- [API] Services returning a paginated list now only returns the list once -> e1b01648
+- [Event] When importing a CSV file containing events, the beginning and end date are now checked to be coherent -> 94cf74db
+- [Organization] Organization and site search now uses an internal cache to improve performance -> 2f077837
+- [Variable] SKOS references are now included in detailed export -> aa969f05
+- [Variable] Fixed some errors when using variables from a shared resource instance -> b18d55fd, cd848c61
+- [SPARQL] Namespaces defined in the triple store are now taken into account by the app -> 2df69a7e
+- [Facility] Facilities can now have a custom geometry -> 152efe01
+- [Ontology] The `GET /uri_label` service new returns a 404 when the URI or label is not found ->  4c664cdf
+
+#### Web client
+
+- Multiple ergonomic changes -> 05162e38, 2bc8dce7, b4f72a5a
+
+- [Experiment] Fixed "isPartOf" relation when creating a Scientific Object with the "+" button in experiment -> 46211dbc
+- [Visualization] Graphs now display even if the data series contains only NaN values -> 4e1ce841
+- [Forms] Date selectors now checks that the end date is after the beginning date -> 2d8c1da0
+- [Details] Incoming custom properties are now clearly displayed in a distinct section (for scientific objects and
+  facilities) -> 167130fb
+- [Variable] Changing the source instance now reloads all the filters correctly -> e5997c5d
+- [Data] Added an indication to the CSV template to specify the expected format when using a boolean variable -> e318a0ea
+- [Datafile] Image datafiles can now be visualized without problems -> 28c38f05
+- [Map] When zooming out, scientific objects are grouped into clusters to enhance performance and visibility -> c394c7fc
+- [Person] Enhanced display of persons of contact (for accounts, projects, experiments, devices and provenances) -> 70daab17
+- [Germplasm] Searching a germplasm by URI now works correctly -> aad496dc
 
 ## [1.0.0-rc+7]
 

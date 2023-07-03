@@ -61,7 +61,6 @@
 import {Component, Prop} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
-import { ObjectUriResponse } from 'opensilex-core/index';
 import {AreaService} from "opensilex-core/api/area.service";
 
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
@@ -157,7 +156,7 @@ export default class AreaForm extends Vue {
     console.debug(form);
     return this.areaService
         .updateArea(form)
-        .then((http: HttpResponse<OpenSilexResponse<ObjectUriResponse>>) => {
+        .then((http: HttpResponse<OpenSilexResponse>) => {
           let uri = http.response.result;
           console.debug("Area updated", uri);
         })
@@ -221,7 +220,7 @@ export default class AreaForm extends Vue {
             console.error("Area of Geometry already exists", error);
             this.$opensilex.errorHandler(
                 error,
-                this.$i18n.t("component.user.errors.user-already-exists")
+                this.$i18n.t("component.account.errors.user-already-exists")
             );
           } else {
             this.$opensilex.errorHandler(error);
@@ -254,7 +253,7 @@ en:
     description: description
     description-help: Description associated with this geometry (protocol quantity)
     description-placeholder: Protocol n°1289 - Amount of water 5 ml/Days.
-    name-placeholder: Limestone Mineral Zone, Southern Clay Zone, ...
+    name-placeholder: Limestone Mineral Zone, area invaded by pests, ...
     area: annotation
     area-help: Annotation associated with this geometry
     area-placeholder: Description of the nature of the event.
@@ -277,7 +276,7 @@ fr:
     description: description
     description-help: Description associée à cette géométrie (protocole quantité)
     description-placeholder: Protocole n°1289 - Apport d'eau de 5 ml/jour.
-    name-placeholder: Zone minérale calcaire, zone argileuse méridionale, ...
+    name-placeholder: Zone minérale calcaire, zone envahie par des parasites, ...
     area: Annotation
     area-help: Zone associée à cette géométrie
     area-placeholder: Description de la nature de l'événement.

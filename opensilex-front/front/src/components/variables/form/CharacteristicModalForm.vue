@@ -17,14 +17,14 @@
 
 
 <script lang="ts">
-    import {Component, Prop, Ref} from "vue-property-decorator";
-    import Vue from "vue";
-    import {ExternalOntologies} from "../../../models/ExternalOntologies";
-    // @ts-ignore
-    import { VariablesService, CharacteristicGetDTO, CharacteristicCreationDTO, ObjectUriResponse } from "opensilex-core/index";
-    import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
+import {Component, Ref} from "vue-property-decorator";
+import Vue from "vue";
+import {ExternalOntologies} from "../../../models/ExternalOntologies";
+import {CharacteristicCreationDTO, CharacteristicGetDTO, VariablesService} from "opensilex-core/index";
+import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
+import {CharacteristicUpdateDTO} from "opensilex-core/model/characteristicUpdateDTO";
 
-    @Component
+@Component
     export default class CharacteristicModalForm extends Vue {
 
         steps = [
@@ -82,10 +82,7 @@
             };
         }
 
-        create(form){
-            if(form.type){
-                form.type = form.type.uri;
-            }
+        create(form: CharacteristicCreationDTO){
             return this.service
                 .createCharacteristic(form)
                 .then((http: HttpResponse<OpenSilexResponse>) => {
@@ -103,10 +100,10 @@
                 });
         }
 
-        update(form){
+        update(form: CharacteristicUpdateDTO){
             return this.service
                 .updateCharacteristic(form)
-                .then((http: HttpResponse<OpenSilexResponse<ObjectUriResponse>>) => {
+                .then((http: HttpResponse<OpenSilexResponse<string>>) => {
                     form.uri = http.response.result;
                     let message = this.$i18n.t("CharacteristicForm.name") + " " + form.uri + " " + this.$i18n.t("component.common.success.update-success-message");
                     this.$opensilex.showSuccessToast(message);

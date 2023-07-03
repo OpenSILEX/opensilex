@@ -55,12 +55,26 @@
                 ref="searchField"
                 @search="refresh()"
                 @clear="reset()"
+                @toggleAdvancedSearch="loadAdvancedFilter"
+                :showAdvancedSearch="true"
                 label="DataView.filter.label"
                 :showTitle="false"
                 class="searchFilterField"
             >
               <template v-slot:filters>
 
+                <!-- Germplasm Group -->
+                <div>
+                  <opensilex-FilterField>
+                    <opensilex-GermplasmGroupSelector
+                        label="GermplasmList.filter.germplasm-group"
+                        :multiple="false"
+                        :germplasmGroup.sync="filter.germplasm_group"
+                        class="searchFilter"
+                        @handlingEnterKey="refresh()"
+                    ></opensilex-GermplasmGroupSelector>
+                  </opensilex-FilterField>
+                </div>
                 <!-- Variables -->
                 <div>
                   <opensilex-FilterField quarterWidth="true">
@@ -87,32 +101,6 @@
                   </opensilex-FilterField>
                 </div>
 
-                <!-- Start Date -->
-                <div>
-                  <opensilex-FilterField quarterWidth="true">
-                    <opensilex-DateTimeForm
-                        :value.sync="filter.start_date"
-                        label="component.common.begin"
-                        name="startDate"
-                        :max-date="filter.end_date ? filter.end_date : undefined"
-                        class="searchFilter"
-                    ></opensilex-DateTimeForm>
-                  </opensilex-FilterField>
-                </div>
-
-                <!-- End Date -->
-                <div>
-                  <opensilex-FilterField quarterWidth="true">
-                    <opensilex-DateTimeForm
-                        :value.sync="filter.end_date"
-                        label="component.common.end"
-                        name="endDate"
-                        :min-date="filter.start_date ? filter.start_date : undefined"
-                        class="searchFilter"
-                    ></opensilex-DateTimeForm>
-                  </opensilex-FilterField>
-                </div>
-
                 <!-- Scientific objects -->
                 <div>
                   <opensilex-FilterField quarterWidth="true">
@@ -136,17 +124,68 @@
                   </opensilex-FilterField>
                 </div>
 
-                <!-- Targets -->
+                <!-- Devices in provenance-->
                 <div>
                   <opensilex-FilterField quarterWidth="true">
-                    <opensilex-TagInputForm
+                    <opensilex-DeviceSelector
+                      ref="deviceSelector"
+                      :multiple="true"
+                      :value.sync='filter.devices'
+                      class="searchFilter"
+                      @handlingEnterKey="refresh()"
+                    ></opensilex-DeviceSelector>
+                  </opensilex-FilterField>
+                </div>
+
+                <!-- Operator -->
+                <div>
+                  <opensilex-FilterField>
+                    <opensilex-UserSelector
+                      :users.sync="filter.operators"
+                      label="DataView.filter.operator"
+                      class="searchFilter"
+                      @handlingEnterKey="refresh()"
+                      :multiple="true"
+                    ></opensilex-UserSelector>
+                  </opensilex-FilterField>
+                </div>
+
+                <!-- Facility -->
+                <div>
+                  <opensilex-FilterField quarterWidth="true">
+                    <opensilex-FacilitySelector
+                      ref="facilitySelector"
+                      label="InfrastructureForm.form-facilities-label"
+                      :facilities.sync="filter.facilities"
+                      :multiple="true"
+                      class="searchFilter"
+                    ></opensilex-FacilitySelector>
+                  </opensilex-FilterField>
+                </div>
+
+                <!-- Start Date -->
+                <div>
+                  <opensilex-FilterField quarterWidth="true">
+                    <opensilex-DateTimeForm
+                        :value.sync="filter.start_date"
+                        label="component.common.begin"
+                        name="startDate"
+                        :max-date="filter.end_date ? filter.end_date : undefined"
                         class="searchFilter"
-                        :value.sync="filter.targets"
-                        label="DataView.filter.targets"
-                        helpMessage="DataView.filter.targets-help"
-                        type="text"
-                        @handlingEnterKey="refresh()"
-                    ></opensilex-TagInputForm>
+                    ></opensilex-DateTimeForm>
+                  </opensilex-FilterField>
+                </div>
+
+                <!-- End Date -->
+                <div>
+                  <opensilex-FilterField quarterWidth="true">
+                    <opensilex-DateTimeForm
+                        :value.sync="filter.end_date"
+                        label="component.common.end"
+                        name="endDate"
+                        :min-date="filter.start_date ? filter.start_date : undefined"
+                        class="searchFilter"
+                    ></opensilex-DateTimeForm>
                   </opensilex-FilterField>
                 </div>
 
@@ -177,6 +216,22 @@
                           :provenance="getSelectedProv"
                       ></opensilex-ProvenanceDetails>
                     </b-collapse>
+                  </opensilex-FilterField>
+                </div>
+              </template>
+              <template v-slot:advancedSearch>
+                <!-- Targets -->
+                <div>
+                  <opensilex-FilterField quarterWidth="true">
+                    <opensilex-TagInputForm
+                        v-if="loadAdvancedSearchFilters"
+                        class="searchFilter"
+                        :value.sync="filter.targets"
+                        label="DataView.filter.targets"
+                        helpMessage="DataView.filter.targets-help"
+                        type="text"
+                        @handlingEnterKey="refresh()"
+                    ></opensilex-TagInputForm>
                   </opensilex-FilterField>
                 </div>
               </template>
@@ -229,6 +284,10 @@ export default class DataView extends Vue {
     return this.$store.state.credentials;
   }
 
+  get lang() {
+    return this.$store.getters.language;
+  }
+
   @Ref("templateForm") readonly templateForm!: any;
   @Ref("dataList") readonly dataList!: any;
   @Ref("modalDataForm") readonly modalDataForm!: any;
@@ -238,15 +297,21 @@ export default class DataView extends Vue {
   @Ref("soSelector") readonly soSelector!: any;
   @Ref("varSelector") readonly varSelector!: any;
   @Ref("exportModal") readonly exportModal!: any;
+  @Ref("deviceSelector") readonly deviceSelector!: any;
+  @Ref("facilitySelector") readonly facilitySelector!: any;
 
   filter = {
+    germplasm_group: undefined,
     start_date: null,
     end_date: null,
     variables: [],
     provenance: null,
     experiments: [],
     scientificObjects: [],
-    targets: []
+    targets: [],
+    devices: [],
+    facilities: [],
+    operators: []
   };
 
   soFilter = {
@@ -277,13 +342,17 @@ export default class DataView extends Vue {
 
   resetFilter() {
     this.filter = {
+      germplasm_group: undefined,
       start_date: null,
       end_date: null,
       variables: [],
       provenance: null,
       experiments: [],
       scientificObjects: [],
-      targets: []
+      targets: [],
+      devices: [],
+      facilities: [],
+      operators: []
     };
 
     this.soSelector.refreshModalSearch();
@@ -341,6 +410,12 @@ export default class DataView extends Vue {
         this.resultModal.setNbLinesImported(
             res.validation.dataErrors.nbLinesImported
         );
+        let annotationsOnObjects : Array<any> = res.validation.dataErrors.annotationsOnObjects;
+        if(annotationsOnObjects){
+            this.resultModal.setNbAnnotationsImported(
+                annotationsOnObjects.length
+            );
+        }
         this.resultModal.setProvenance(res.form.provenance);
         this.resultModal.show();
         this.refreshKey += 1;
@@ -351,6 +426,12 @@ export default class DataView extends Vue {
       this.resultModal.setNbLinesImported(
           results.validation.dataErrors.nbLinesImported
       );
+      let annotationsOnObjects : Array<any> = results.validation.dataErrors.annotationsOnObjects;
+      if(annotationsOnObjects){
+          this.resultModal.setNbAnnotationsImported(
+              annotationsOnObjects.length
+          );
+      }
       this.resultModal.setProvenance(results.form.provenance);
       this.resultModal.show();
       this.refreshKey += 1;
@@ -376,6 +457,20 @@ export default class DataView extends Vue {
 
   searchFiltersPannel() {
     return this.$t("searchfilter.label")
+  }
+
+  loadAdvancedSearchFilters: boolean = false;
+
+  /**
+   * Show or hide the advanced search filter (v-show) on the filter div
+   * Trigger render of advanced search filters selector (v-if)
+   * This ensures that API methods corresponding with the selector are not executed
+   * at the render of this component but only at the first toggle of the advanced filter
+   */
+  loadAdvancedFilter(){
+      if(! this.loadAdvancedSearchFilters){
+          this.loadAdvancedSearchFilters = true;
+      }
   }
 }
 </script>
@@ -409,9 +504,12 @@ en:
       variables: Variable(s)
       scientificObjects: Scientific object(s)
       scientificObjects-placeholder: Select scientific objects
+      devices: Device(s)
+      devices-placeholder:  Select devices
       provenance: Provenance
       targets: Target(s)
       targets-help: Copy target's URI here
+      operator: Operators
 
 fr:
   DataView:
@@ -432,8 +530,11 @@ fr:
       variables: Variable(s)
       scientificObjects: Objet(s) scientifique(s)
       scientificObjects-placeholder: Sélectionner des objets scientifiques
+      devices: Dispositifs
+      devices-placeholder: Sélectionner les dispositifs
       provenance: Provenance
       targets: Cible(s)
       targets-help: Copier les URI des cibles ici
+      operator: Opérateurs
 
 </i18n>

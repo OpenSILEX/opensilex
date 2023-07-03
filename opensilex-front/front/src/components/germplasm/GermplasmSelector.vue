@@ -24,6 +24,7 @@ import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {GermplasmService} from "opensilex-core/api/germplasm.service";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {GermplasmGetAllDTO} from "opensilex-core/model/germplasmGetAllDTO";
+import SelectForm from "../common/forms/SelectForm.vue";
 
 @Component
 export default class GermplasmSelector extends Vue {
@@ -62,7 +63,7 @@ export default class GermplasmSelector extends Vue {
     return this.$store.getters.language;
   }
 
-  @Ref("selectForm") readonly selectForm!: any;
+  @Ref("selectForm") readonly selectForm!: SelectForm;
 
   search(query, page, pageSize) {
     return this.$service
@@ -75,6 +76,7 @@ export default class GermplasmSelector extends Vue {
         undefined, //species?: string
         undefined, //variety?: string
         undefined, //accession?: string
+        undefined, //GermplasmGroup?: String
         undefined, //institute?: string
         this.experiment || undefined, //experiment?: string
         undefined, //metadata?: string

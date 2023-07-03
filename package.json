@@ -11,9 +11,11 @@
         "check:security": "yarn audit || cd ."
     },
     "dependencies": {
-        "@fortawesome/fontawesome-svg-core": "1.2.32",
-        "@fortawesome/free-solid-svg-icons": "5.15.1",
-        "@fortawesome/vue-fontawesome": "2.0.6",
+        "@fortawesome/fontawesome-svg-core": "^6.4.0",
+        "@fortawesome/free-brands-svg-icons": "^6.4.0",
+        "@fortawesome/free-regular-svg-icons": "^6.4.0",
+        "@fortawesome/free-solid-svg-icons": "^6.4.0",
+        "@fortawesome/vue-fontawesome": "^2.0.10",
         "core-js": "3.6.5",
         "csv-string": "^4.0.1",
         "inversify": "^5.0.1",

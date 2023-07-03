@@ -14,7 +14,16 @@
         :required="required"
         :unchecked-value="false"
         switches
-      >{{$t(title)}}</b-form-checkbox>
+      >
+        {{$t(title)}}
+        <font-awesome-icon
+          v-if="!label && title && helpMessage"
+          tabindex="0"
+          icon="question-circle"
+          v-b-tooltip.hover.top="$t(helpMessage)"
+        />
+      </b-form-checkbox>
+
     </template>
   </opensilex-FormField>
 </template>

@@ -9,15 +9,12 @@ import io.swagger.annotations.*;
 import org.opensilex.core.CoreModule;
 import org.opensilex.core.URIsListPostDTO;
 import org.opensilex.core.sharedResource.SharedResourceInstanceDTO;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.exceptions.ConflictException;
 import org.opensilex.server.exceptions.NotFoundException;
-import org.opensilex.server.response.ErrorResponse;
-import org.opensilex.server.response.ObjectUriResponse;
-import org.opensilex.server.response.PaginatedListResponse;
-import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
@@ -41,10 +38,7 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 
@@ -227,7 +221,7 @@ public class OntologyAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = PROPERTY_CREATE_MSG, response = ObjectUriResponse.class),
+            @ApiResponse(code = 201, message = PROPERTY_CREATE_MSG, response = URI.class),
             @ApiResponse(code = 409, message = PROPERTY_ALREADY_EXISTS_MSG, response = ErrorResponse.class)
     })
     public Response createProperty(
@@ -263,8 +257,8 @@ public class OntologyAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = PROPERTY_UPDATE_MSG, response = ObjectUriResponse.class),
-            @ApiResponse(code = 404, message = PROPERTY_NOT_FOUND_MSG, response = ObjectUriResponse.class),
+            @ApiResponse(code = 200, message = PROPERTY_UPDATE_MSG, response = URI.class),
+            @ApiResponse(code = 404, message = PROPERTY_NOT_FOUND_MSG, response = URI.class),
     })
 
     public Response updateProperty(
@@ -316,7 +310,7 @@ public class OntologyAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Property deleted ", response = ObjectUriResponse.class)
+            @ApiResponse(code = 200, message = "Property deleted ", response = URI.class)
     })
     public Response deleteProperty(
             @ApiParam(value = "Property URI") @QueryParam("uri") @NotNull @ValidURI URI propertyURI,
@@ -450,7 +444,7 @@ public class OntologyAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Class property restriction added", response = ObjectUriResponse.class)
+            @ApiResponse(code = 200, message = "Class property restriction added", response = URI.class)
     })
     public Response addClassPropertyRestriction(
             @ApiParam("Property description") @Valid OWLClassPropertyRestrictionDTO dto
@@ -476,7 +470,7 @@ public class OntologyAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Class property restriction deleted ", response = ObjectUriResponse.class)
+            @ApiResponse(code = 200, message = "Class property restriction deleted ", response = URI.class)
     })
     public Response deleteClassPropertyRestriction(
             @ApiParam(value = "RDF type") @QueryParam("rdf_type") @ValidURI @NotNull URI classURI,
@@ -497,7 +491,7 @@ public class OntologyAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Class property restriction updated", response = ObjectUriResponse.class)
+            @ApiResponse(code = 200, message = "Class property restriction updated", response = URI.class)
     })
     public Response updateClassPropertyRestriction(
             @ApiParam("Property description") @Valid OWLClassPropertyRestrictionDTO dto
@@ -549,7 +543,19 @@ public class OntologyAPI {
         List<SPARQLNamedResourceModel> results = dao.getURILabels(uris, currentUser.getLanguage(), context);
         List<NamedResourceDTO> dtoList = results.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
 
-        return new SingleObjectResponse<>(dtoList).getResponse();
+        SingleObjectResponse<List<NamedResourceDTO>> response = new SingleObjectResponse<>(dtoList);
+
+        Set<URI> foundUriSet = dtoList.stream().map(NamedResourceDTO::getUri).collect(Collectors.toSet());
+        for (URI uri : uris) {
+            if (!foundUriSet.contains(uri)) {
+                response.addMetadataStatus(new StatusDTO(
+                        String.format(OntologyDAO.NO_LABEL_FOR_URI_MESSAGE, uri),
+                        StatusLevel.WARNING
+                ));
+            }
+        }
+
+        return response.getResponse();
     }
 
     @GET

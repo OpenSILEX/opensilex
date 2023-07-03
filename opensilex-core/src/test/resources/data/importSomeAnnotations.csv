@@ -1,0 +1,7 @@
+target;Date;__DECIMAL_VARIABLE__;object_annotation
+"Target (ex: scientific object) name or URI ";Acquisition date of the data (format: AAAA-MM-DDTHH:mm:ssZ or AAAA-MM-DD);decimal_variable;Annotation (On the target object)
+Column data type: Short string;"Date
+Required : yes";Column data type: Decimal number;Column data type: String
+__TARGET__;2023-05-26T00:00Z;3.14;annotation1
+__TARGET__;2023-05-26T00:01Z;3.15;
+__TARGET__;2023-05-26T00:02Z;3.16;annotation3

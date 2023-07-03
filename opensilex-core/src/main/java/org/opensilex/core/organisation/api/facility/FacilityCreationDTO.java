@@ -11,6 +11,7 @@ import io.swagger.annotations.ApiModel;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.site.SiteModel;
+import org.opensilex.core.variablesGroup.dal.VariablesGroupModel;
 
 import java.net.URI;
 import java.util.List;
@@ -22,7 +23,7 @@ import java.util.stream.Collectors;
  * @author vince
  */
 @ApiModel
-@JsonPropertyOrder({"uri", "rdf_type", "name","organizations", "sites", "address"})
+@JsonPropertyOrder({"uri", "rdf_type", "name","organizations", "sites", "address", "variableGroups"})
 public
 class FacilityCreationDTO extends FacilityDTO {
     @JsonProperty("organizations")
@@ -30,6 +31,9 @@ class FacilityCreationDTO extends FacilityDTO {
 
     @JsonProperty("sites")
     protected List<URI> sites;
+
+    @JsonProperty("variableGroups")
+    protected List<URI> variableGroups;
 
     public List<URI> getOrganizations() {
         return organizations;
@@ -47,6 +51,14 @@ class FacilityCreationDTO extends FacilityDTO {
         this.sites = sites;
     }
 
+    public List<URI> getVariableGroups() {
+        return variableGroups;
+    }
+
+    public void setVariableGroups(List<URI> variableGroups) {
+        this.variableGroups = variableGroups;
+    }
+
     @Override
     public void toModel(FacilityModel model) {
         super.toModel(model);
@@ -57,7 +69,7 @@ class FacilityCreationDTO extends FacilityDTO {
                 organization.setUri(organizationUri);
                 return organization;
             }).collect(Collectors.toList());
-            model.setInfrastructures(organizationList);
+            model.setOrganizations(organizationList);
         }
 
         if (Objects.nonNull(getSites())) {
@@ -67,12 +79,20 @@ class FacilityCreationDTO extends FacilityDTO {
                 return site;
             }).collect(Collectors.toList()));
         }
+
+        if (Objects.nonNull(getVariableGroups())) {
+            model.setVariableGroups(getVariableGroups().stream().map(groupURI -> {
+                VariablesGroupModel group = new VariablesGroupModel();
+                group.setUri(groupURI);
+                return group;
+            }).collect(Collectors.toList()));
+        }
     }
 
     @Override
     public void fromModel(FacilityModel model) {
         super.fromModel(model);
 
-        setOrganizations(model.getInfrastructureUris());
+        setOrganizations(model.getOrganizationUriList());
     }
 }

@@ -66,6 +66,7 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -367,24 +368,28 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      *  @throws SPARQLInvalidUriListException if any URI from uris could not be loaded
      */
     public <T extends SPARQLResourceModel> List<T> getListByURIs(Class<T> objectClass, Collection<URI> uris, String lang) throws Exception {
-        return getListByURIs(getDefaultGraph(objectClass), objectClass, uris, lang, null);
+        return getListByURIs(getDefaultGraph(objectClass), objectClass, uris, lang, null, null);
     }
 
 
-    /*
+    /**
      *
      * @param graph object location
      * @param objectClass object class
      * @param uris object URIs
      * @param lang
      * @param resultHandler function used to convert SPARQL results in a custom way (can be null)
+     * @param listFieldsToFetch Define which data/object list fields from a {@link SPARQLResourceModel} must be fetched.
+     *                          By default these fields are lazily retrieved but you can retrieve these fields directly in a more optimized way (see {@link SPARQLListFetcher}).
+     *                          The listFieldsToFetch associate to each field name, a boolean flag to tell if the corresponding triple
+     *                          must be added into the query which fetch these fields data.
      * @return a non-null list containing all object which match uris
      * @param <T> object class/type
      * @throws SPARQLInvalidUriListException if any URI from uris could not be loaded
      */
-
     public <T extends SPARQLResourceModel> List<T> getListByURIs(Node graph, Class<T> objectClass, Collection<URI> uris, String lang,
-                                                                 ThrowingFunction<SPARQLResult, T, Exception> resultHandler
+                                                                 ThrowingFunction<SPARQLResult, T, Exception> resultHandler,
+                                                                 Map<String, Boolean> listFieldsToFetch
     ) throws Exception {
         if (CollectionUtils.isEmpty(uris)) {
             return Collections.emptyList();
@@ -408,7 +413,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                 uris,
                 lang,
                 resultHandler,
-                Collections.emptyMap()
+                listFieldsToFetch == null ? Collections.emptyMap() : listFieldsToFetch
         );
     }
 
@@ -984,19 +989,27 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     public <T extends SPARQLResourceModel> void create(Node graph, T instance) throws Exception {
-        create(graph, instance, true);
+        create(graph, instance, true, true);
     }
 
     public <T extends SPARQLResourceModel> void create(T instance, boolean checkUriExist) throws Exception {
-        create(getDefaultGraph(instance.getClass()), instance, checkUriExist);
+        create(getDefaultGraph(instance.getClass()), instance, checkUriExist, true);
+    }
+
+    public <T extends SPARQLResourceModel> void create(T instance, boolean checkUriExist, boolean setPublicationDate) throws Exception {
+        create(getDefaultGraph(instance.getClass()), instance, checkUriExist, setPublicationDate);
     }
 
     public <T extends SPARQLResourceModel> void create(Node graph, T instance, boolean checkUriExist) throws Exception {
-        create(graph, instance, null, null, checkUriExist, false, null);
+        create(graph, instance, null, null, checkUriExist, true, false, null);
     }
 
-    public <T extends SPARQLResourceModel> void create(Node graph, T instance, boolean checkUriExist, boolean blankNode, BiConsumer<UpdateBuilder, Node> createExtension) throws Exception {
-        create(graph, instance, null, null, checkUriExist, blankNode, createExtension);
+    public <T extends SPARQLResourceModel> void create(Node graph, T instance, boolean checkUriExist, boolean setPublicationDate) throws Exception {
+        create(graph, instance, null, null, checkUriExist, setPublicationDate, false, null);
+    }
+
+    public <T extends SPARQLResourceModel> void create(Node graph, T instance, boolean checkUriExist, boolean setPublicationDate, boolean blankNode, BiConsumer<UpdateBuilder, Node> createExtension) throws Exception {
+        create(graph, instance, null, null, checkUriExist, setPublicationDate, blankNode, createExtension);
     }
 
 
@@ -1005,6 +1018,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      * @param instance        the instance to create
      * @param updateBuilder   an UpdateBuilder which can be updated by adding new statements if not null
      * @param checkUriExist   indicate if the service must check if instances already exist
+     * @param setPublicationDate indicate if the service must set the publicationDate
      * @param blankNode       indicate if the instance URI must be a blank node
      * @param createExtension additional modification to the UpdateBuilder
      * @param <T>             the SPARQLResourceModel type
@@ -1014,8 +1028,13 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                                                           SPARQLResourceModel parent,
                                                           UpdateBuilder updateBuilder,
                                                           boolean checkUriExist,
+                                                          boolean setPublicationDate,
                                                           boolean blankNode,
                                                           BiConsumer<UpdateBuilder, Node> createExtension) throws Exception {
+
+        if (instance.getPublicationDate() == null && setPublicationDate) {
+            instance.setPublicationDate(OffsetDateTime.now());
+        }
 
         SPARQLClassObjectMapperIndex mapperIndex = getMapperIndex();
         SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(instance.getClass());
@@ -1071,7 +1090,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             Node subGraphNode = subGraph != null ? SPARQLDeserializers.nodeURI(subGraph) : null;
 
             for (SPARQLResourceModel subInstance :  entry.getValue()) {
-                create(subGraphNode, subInstance, instance, subInstanceUpdateBuilder, checkUriExist, blankNode, null);
+                create(subGraphNode, subInstance, instance, subInstanceUpdateBuilder, checkUriExist, false, blankNode, null);
             }
         }
     }
@@ -1328,7 +1347,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             // delete and create new instance
             UpdateBuilder delete = mapper.getDeleteBuilder(graph, oldInstance);
             executeDeleteQuery(delete);
-            create(graph, instance, false);
+            create(graph, instance, false, false);
 
             commitTransaction();
         } catch (Exception ex) {

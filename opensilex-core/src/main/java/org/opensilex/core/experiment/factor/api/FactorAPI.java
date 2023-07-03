@@ -19,18 +19,10 @@ import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.experiment.factor.dal.FactorModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.security.authentication.ApiCredential;
-import org.opensilex.security.authentication.ApiCredentialGroup;
-import org.opensilex.security.authentication.ApiProtected;
-import org.opensilex.security.authentication.ForbiddenURIAccessException;
-import org.opensilex.security.authentication.NotFoundURIException;
-import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.server.response.ErrorDTO;
-import org.opensilex.server.response.ErrorResponse;
-import org.opensilex.server.response.ObjectUriResponse;
-import org.opensilex.server.response.PaginatedListResponse;
-import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.security.authentication.*;
+import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.server.response.*;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
@@ -349,7 +341,7 @@ public class FactorAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Factor deleted", response = ObjectUriResponse.class),
+        @ApiResponse(code = 200, message = "Factor deleted", response = URI.class),
         @ApiResponse(code = 400, message = "Invalid or unknown Factor URI", response = ErrorResponse.class),
         @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
     public Response deleteFactor(
@@ -395,7 +387,7 @@ public class FactorAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Factor updated", response = ObjectUriResponse.class),
+        @ApiResponse(code = 200, message = "Factor updated", response = URI.class),
         @ApiResponse(code = 400, message = "Invalid or unknown Experiment URI", response = ErrorResponse.class),
         @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
     public Response updateFactor(@ApiParam("Factor description") @Valid FactorUpdateDTO dto) {

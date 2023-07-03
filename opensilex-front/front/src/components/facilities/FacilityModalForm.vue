@@ -11,50 +11,61 @@
     @onUpdate="$emit('onUpdate', $event)"
     :initForm="initForm"
     :doNotHideOnError="true"
+    :lazy="lazy"
   ></opensilex-ModalForm>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Ref } from "vue-property-decorator";
+import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
-import HttpResponse, { OpenSilexResponse } from "../../lib/HttpResponse";
+import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
 import DTOConverter from "../../models/DTOConverter";
-import { FacilityCreationDTO } from 'opensilex-core/index';
+import {FacilityCreationDTO} from 'opensilex-core/index';
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
+import {FacilityGetDTO} from "opensilex-core/model/facilityGetDTO";
+import ModalForm from "../common/forms/ModalForm.vue";
+import FacilityForm from "./FacilityForm.vue";
+import {FacilityUpdateDTO} from "opensilex-core/model/facilityUpdateDTO";
 
 @Component
 export default class FacilityModalForm extends Vue {
   $opensilex: OpenSilexVuePlugin;
+
+  @Prop()
+  lazy: boolean;
 
   @Prop({
     default: () => {}
   })
   initForm: (f: FacilityCreationDTO) => {};
 
-  @Ref("facilityForm") readonly facilityForm!: any;
+  @Ref("facilityForm") readonly facilityForm!: ModalForm<FacilityForm, FacilityCreationDTO, FacilityUpdateDTO>;
 
   showEditForm(form) {
     this.$opensilex
       .getService<OrganizationsService>("opensilex.OrganizationsService")
       .getFacility(form.uri)
       .then((http) => {
+        let dto: FacilityGetDTO = http.response.result;
         this.facilityForm
           .getFormRef()
-          .setBaseType(this.$opensilex.Oeso.FACILITY_TYPE_URI);
-        let editDto = DTOConverter.extractURIFromResourceProperties(http.response.result);
+          .typeSwitch(dto.rdf_type, true);
+        let editDto = DTOConverter.extractURIFromResourceProperties<FacilityGetDTO, FacilityUpdateDTO>(dto);
         this.facilityForm.showEditForm(editDto);
       }).catch(this.$opensilex.errorHandler);
   }
 
   showCreateForm() {
-    this.facilityForm
-      .getFormRef()
-      .setBaseType(this.$opensilex.Oeso.FACILITY_TYPE_URI);
     this.facilityForm.showCreateForm();
+    this.$nextTick(() => {
+        this.facilityForm
+            .getFormRef()
+            .setBaseType(this.$opensilex.Oeso.FACILITY_TYPE_URI);
+    });
   }
 
-  callInfrastructureFacilityCreation(form) {
+  callInfrastructureFacilityCreation(form: FacilityCreationDTO) {
     let definedRelations = [];
     for (let i in form.relations) {
       let relation = form.relations[i];
@@ -77,17 +88,17 @@ export default class FacilityModalForm extends Vue {
     return this.$opensilex
       .getService<OrganizationsService>("opensilex.OrganizationsService")
       .createFacility(form)
-      .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-        let uri = http.response.result;
-        console.debug("Infrastructure facility created", uri);
+      .then((http: HttpResponse<OpenSilexResponse<string>>) => {
+        let message = this.$i18n.t("FacilityModalForm.name") + " " + form.name + " " + this.$i18n.t("component.common.success.creation-success-message");
+        this.$opensilex.showSuccessToast(message);
       })
       .catch((error) => {
-        if (error.status == 409) {
-          console.error("Infrastructure facility already exists", error);
+        if (error.status === 409) {
+          console.error("Facility already exists", error);
           this.$opensilex.errorHandler(
             error,
             this.$t(
-              "InfrastructureFacilityForm.infrastructure-facility-already-exists"
+              "FacilityModalForm.facility-already-exists"
             )
           );
         } else {
@@ -96,7 +107,7 @@ export default class FacilityModalForm extends Vue {
       });
   }
 
-  callInfrastructureFacilityUpdate(form) {
+  callInfrastructureFacilityUpdate(form: FacilityUpdateDTO) {
     let definedRelations = [];
     for (let i in form.relations) {
       let relation = form.relations[i];
@@ -118,9 +129,9 @@ export default class FacilityModalForm extends Vue {
     return this.$opensilex
       .getService<OrganizationsService>("opensilex.OrganizationsService")
       .updateFacility(form)
-      .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-        let uri = http.response.result;
-        console.debug("Infrastructure facility updated", uri);
+      .then((http: HttpResponse<OpenSilexResponse<string>>) => {
+        let message = this.$i18n.t("FacilityModalForm.name") + " " + form.name + " " + this.$i18n.t("component.common.success.update-success-message");
+        this.$opensilex.showSuccessToast(message);
       })
       .catch(this.$opensilex.errorHandler);
   }
@@ -132,15 +143,17 @@ export default class FacilityModalForm extends Vue {
 
 <i18n>
 en:
-  InfrastructureFacilityForm:
+  FacilityModalForm:
+    name: The facility
     facility-uri: Infrastructure facility URI
     form-name-placeholder: Enter infrastructure facility name
     form-type-placeholder: Select infrastructure facility type
-    infrastructure-facility-already-exists: Infrastructure facility already exists with this URI
+    facility-already-exists: Infrastructure facility already exists with this URI
 fr:
-  InfrastructureFacilityForm:
+  FacilityModalForm:
+    name: L'installation environnementale
     facility-uri: URI de l'installation environnementale
     form-name-placeholder: Saisir le nom de l'installation environnementale
     form-type-placeholder: Sélectionner le type de l'installation environnementale
-    infrastructure-facility-already-exists: Une installation environnementale existe déjà avec cette URI
+    facility-already-exists: Une installation environnementale existe déjà avec cette URI
 </i18n>

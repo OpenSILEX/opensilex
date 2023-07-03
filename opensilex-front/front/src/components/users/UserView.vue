@@ -22,6 +22,7 @@
       createTitle="UserView.create"
       editTitle="UserView.update"
       icon="ik#ik-user"
+      :lazy="true"
       @onCreate="userList.refresh()"
       @onUpdate="userList.refresh()"
     ></opensilex-ModalForm>
@@ -65,15 +66,15 @@ export default class UserView extends Vue {
 <i18n>
 en:
   UserView:
-    title: Users
-    description: Manage and configure users
-    create: Add user
-    update: Update user
+    title: Accounts
+    description: Manage and configure accounts
+    create: Add account
+    update: Update account
 
 fr:
   UserView:
-    title: Utilisateurs
-    description: Gérer et configurer les utilisateurs
-    create: Ajouter un utilisateur
-    update: Modifier l'utilisateur
+    title: Comptes
+    description: Gérer et configurer les comptes
+    create: Ajouter un compte
+    update: Modifier le compte
 </i18n>

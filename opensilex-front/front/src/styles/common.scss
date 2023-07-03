@@ -31,6 +31,10 @@ label::first-letter {
   float: left;
 }
 
+.field-view-title.multiple-values {
+  width: 100%;
+}
+
 .field-view-title::first-letter {
   text-transform: capitalize;
 }

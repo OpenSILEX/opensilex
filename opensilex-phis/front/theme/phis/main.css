@@ -189,6 +189,10 @@
     color: inherit;
 }
 
+.personOrcid a {
+    color: #007bff;
+}
+
 .card .card-header .card-options a.view-nav {
     width: inherit;
     color: #3C76F4;
@@ -237,6 +241,18 @@
 
 .data-filter .filter-action {
     padding-top: 8px;
+}
+
+a.external-url-link {
+    color:LinkText;
+}
+
+a.external-url-link:visited{
+    color: VisitedText;
+}
+
+a.external-url-link:hover {
+    text-decoration: underline ;
 }
 
 /*************************************
@@ -577,12 +593,12 @@
     height: 20px
 }
 
-.downloadTemplateBtn {
+.downloadTemplateBtn, .cardAdvancedSearchIcon, .cardAnnotationIcon{
     color: #00A38D;
     border-color: #00A38D;
 }
 
-.downloadTemplateBtn:hover {
+.downloadTemplateBtn:hover, .cardAdvancedSearchIcon:hover, .cardAnnotationIcon:hover {
     background-color: #00A38D;
     color: #f1f1f1
 }
@@ -698,6 +714,15 @@
 
 .datafilesList, .experimentScientificObjectsList, .dataList {
     width: 100%;
+}
+
+.b-tooltip .tooltip-inner a {
+    color: white;
+    text-decoration: underline dashed;
+}
+
+.b-tooltip .tooltip-inner a:hover {
+    text-decoration: underline ;
 }
 
 /********************************

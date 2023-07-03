@@ -31,7 +31,10 @@
     import MoveForm from "./MoveForm.vue";
     import {VueJsOntologyExtensionService} from "../../../lib";
     import EventForm from "./EventForm.vue";
-    import { EventCreationDTO, MoveCreationDTO, ObjectUriResponse, PositionCreationDTO } from 'opensilex-core/index';
+    import {EventCreationDTO, MoveCreationDTO, PositionCreationDTO} from 'opensilex-core/index';
+    import {EventUpdateDTO} from "opensilex-core/model/eventUpdateDTO";
+    import DTOConverter from '../../../models/DTOConverter';
+    import {EventDetailsDTO} from "opensilex-core/model/eventDetailsDTO";
 
     @Component
     export default class EventModalForm extends Vue {
@@ -66,7 +69,7 @@
         }
 
         renderModalForm: boolean = false;
-        @Ref("modalForm") readonly modalForm!: ModalForm;
+        @Ref("modalForm") readonly modalForm!: ModalForm<EventForm, EventCreationDTO, EventUpdateDTO>;
 
         created() {
             this.service = this.$opensilex.getService("opensilex.EventsService");
@@ -105,8 +108,8 @@
                     let form: EventForm = this.modalForm.getFormRef();
                     form.typeSwitch(dto.rdf_type,true);
                     form.setContext(this.context);
-
-                    this.modalForm.showEditForm(dto);
+                    const editDto = DTOConverter.extractURIFromResourceProperties<EventDetailsDTO, EventUpdateDTO>(dto);
+                    this.modalForm.showEditForm(editDto);
                 })
             });
 
@@ -121,7 +124,7 @@
                 this.service.createMoves(events) :
                 this.service.createEvents(events);
 
-            return createPromise.then((http: HttpResponse<OpenSilexResponse<ObjectUriResponse>>) => {
+            return createPromise.then((http: HttpResponse<OpenSilexResponse<string>>) => {
 
                 let message = this.$i18n.t("Event.name") + " " + http.response.result + " " + this.$i18n.t("component.common.success.creation-success-message");
                 this.$opensilex.showSuccessToast(message);
@@ -131,14 +134,14 @@
 
             }).catch((error) => {
                 if (error.status == 409) {
-                    this.$opensilex.errorHandler(error, this.$i18n.t("component.user.errors.user-already-exists"));
+                    this.$opensilex.errorHandler(error, this.$i18n.t("component.account.errors.user-already-exists"));
                 } else {
                     this.$opensilex.errorHandler(error,error.response.result.message);
                 }
             });
         }
 
-        update(event) {
+        update(event: EventUpdateDTO) {
 
             let isMove = this.isMove(event.rdf_type);
 
@@ -320,7 +323,7 @@
             type-example: "oeev:Trouble"
             description: "Description de l'événement"
             targets: Concerne
-            targets-help: Objet(s) concerné(s) sont "Dispositifs" et "Objets scientifiques"
+            targets-help: Objet(s) concerné(s) sont "Appareils" et "Objets scientifiques"
             targets-example: "os-so:plant1"
             target-help: URI de l'objet concerné par l'évènement (Doit exister).
             start: Début

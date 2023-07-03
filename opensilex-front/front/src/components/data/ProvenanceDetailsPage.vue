@@ -43,7 +43,7 @@
     <opensilex-PageContent>
       <b-row v-if="isDetailsTab()">
         <b-col>
-          <opensilex-Card label="component.common.description" icon="ik#ik-clipboard">
+          <opensilex-Card label="component.common.informations" icon="ik#ik-clipboard">
             <template v-slot:rightHeader>              
               <opensilex-EditButton
                 v-if="user.hasCredential(credentials.CREDENTIAL_PROVENANCE_MODIFICATION_ID)"
@@ -90,7 +90,7 @@
               ></opensilex-StringView>
 
               <opensilex-UriView
-                v-if="provenance.prov_activity != null && provenance.prov_activity.length>0"
+                v-if="provenance.prov_activity != null && provenance.prov_activity.length>0 && provenance.prov_activity[0].uri != null"
                 title="ProvenanceDetailsPage.activity_external_link"
                 :value="provenance.prov_activity[0].uri"
                 :uri="provenance.prov_activity[0].uri"
@@ -110,11 +110,9 @@
                 :fields="tableFields"
               >
                 <template v-slot:cell(name)="{data}">
-                  <opensilex-UriLink v-if="$opensilex.Oeso.checkURIs($opensilex.Oeso.OPERATOR_TYPE_URI, data.item.rdf_type)"
-                    :uri="data.item.uri"
-                    :value="data.item.name"
-                    :to="{path: '/users?filter='+ encodeURIComponent(data.item.last_name)}"
-                  ></opensilex-UriLink>
+                  <opensilex-PersonContact v-if="$opensilex.Oeso.checkURIs($opensilex.Oeso.OPERATOR_TYPE_URI, data.item.rdf_type)"
+                    :personContact="data.item.operator"
+                  ></opensilex-PersonContact>
                   <opensilex-UriLink v-else
                     :uri="data.item.uri"
                     :value="data.item.name"
@@ -259,7 +257,13 @@ export default class ProvenanceDetailsPage extends Vue {
             .then((http: HttpResponse<OpenSilexResponse<String>>) => {
               prov.prov_activity[0]["name"] = http.response.result;
             })
-            .catch(this.$opensilex.errorHandler);
+            .catch((http: HttpResponse<OpenSilexResponse<string>>) => {
+              if (http.status === 404) {
+                prov.prov_activity[0]["name"] = prov.prov_activity[0].rdf_type;
+              } else {
+                this.$opensilex.errorHandler(http);
+              }
+            });
           promiseArray.push(promiseActivity);
         }
         if (prov.prov_agent != null) {
@@ -267,10 +271,9 @@ export default class ProvenanceDetailsPage extends Vue {
             let promiseAgent;
             if (this.$opensilex.Oeso.checkURIs(prov.prov_agent[i].rdf_type, this.$opensilex.Oeso.OPERATOR_TYPE_URI)) {
               promiseAgent = this.$opensilex.getService<SecurityService>("opensilex.SecurityService")
-              .getUser(prov.prov_agent[i].uri)
+              .getPerson(prov.prov_agent[i].uri)
               .then((http: HttpResponse<OpenSilexResponse<UserGetDTO>>) => {
-                prov.prov_agent[i]["name"] = http.response.result.first_name + " " + http.response.result.last_name;
-                prov.prov_agent[i]["last_name"] = http.response.result.last_name;
+                prov.prov_agent[i]["operator"] = http.response.result
               })
               .catch(this.$opensilex.errorHandler);
             } else {
@@ -279,7 +282,13 @@ export default class ProvenanceDetailsPage extends Vue {
               .then((http: HttpResponse<OpenSilexResponse<String>>) => {
                 prov.prov_agent[i]["name"] = http.response.result;
               })
-              .catch(this.$opensilex.errorHandler);
+              .catch((http: HttpResponse<OpenSilexResponse<string>>) => {
+                if (http.status === 404) {
+                  prov.prov_agent[i]["name"] = prov.prov_agent[i].uri;
+                } else {
+                  this.$opensilex.errorHandler(http);
+                }
+              });
             }
             promiseArray.push(promiseAgent);
           }

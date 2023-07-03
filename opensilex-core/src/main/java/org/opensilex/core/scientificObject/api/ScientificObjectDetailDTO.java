@@ -167,11 +167,13 @@ public class ScientificObjectDetailDTO extends NamedResourceDTO<ScientificObject
             relationsDTO.add(RDFObjectRelationDTO.getDTOFromModel(relation));
         }
 
-        for (FactorLevelModel level : model.getFactorLevels()) {
-            SPARQLModelRelation relation = new SPARQLModelRelation();
-            relation.setProperty(Oeso.hasFactorLevel);
-            relation.setValue(level.getUri().toString());
-            relationsDTO.add(RDFObjectRelationDTO.getDTOFromModel(relation));
+        if(model.getFactorLevels() != null){
+            for (FactorLevelModel level : model.getFactorLevels()) {
+                SPARQLModelRelation relation = new SPARQLModelRelation();
+                relation.setProperty(Oeso.hasFactorLevel);
+                relation.setValue(level.getUri().toString());
+                relationsDTO.add(RDFObjectRelationDTO.getDTOFromModel(relation));
+            }
         }
 
         setRelations(relationsDTO);

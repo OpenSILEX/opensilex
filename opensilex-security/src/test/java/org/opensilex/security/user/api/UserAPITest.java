@@ -3,12 +3,6 @@ package org.opensilex.security.user.api;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.Test;
-import javax.ws.rs.core.Response;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.*;
-import javax.ws.rs.client.WebTarget;
-
 import org.opensilex.OpenSilex;
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 import org.opensilex.security.SecurityModule;
@@ -19,9 +13,16 @@ import org.opensilex.security.person.api.PersonDTO;
 import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
+import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 
-import static junit.framework.TestCase.*;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.Response;
+import java.net.URI;
+import java.util.*;
+
+import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertFalse;
 
 public class UserAPITest extends AbstractSecurityIntegrationTest {
 
@@ -33,7 +34,6 @@ public class UserAPITest extends AbstractSecurityIntegrationTest {
 //    }
     public static String path = "security/users";
     public static String createPath = path ;
-    public String createWithExistingPersonPath = path + "/person_already_exists";
     public String updatePath = path ;
     public static String getPath = path + "/{uri}";
     public String deletePath = path + "/{uri}";
@@ -68,18 +68,6 @@ public class UserAPITest extends AbstractSecurityIntegrationTest {
         return dto;
     }
 
-    protected UserCreationWithExistantPersonDTO getUserCreationWithExistantPersonDTO() throws URISyntaxException {
-        UserCreationWithExistantPersonDTO userCreation = new UserCreationWithExistantPersonDTO();
-        userCreation.setUri(new URI("http://opensilex.dev/id/user/default.account"));
-        userCreation.setEmail("test@test.ts");
-        userCreation.setPassword("pwd");
-        userCreation.setPersonHolderUri(new URI("http://opensilex.dev/id/user/default.person"));
-        userCreation.setAdmin(false);
-        userCreation.setLanguage("en");
-
-        return userCreation;
-    }
-
     @Test
     public void testCreate() throws Exception {
         Response postResult = getJsonPostResponseAsAdmin(target(createPath), getUser1CreationDTO());
@@ -100,63 +88,10 @@ public class UserAPITest extends AbstractSecurityIntegrationTest {
     }
 
     @Test
-    public void testCreateWithAnExistingPerson() throws Exception {
-        //create the person
-        PersonDTO personToLinkWith = PersonAPITest.getDefaultDTO();
-        Response postResult = getJsonPostResponseAsAdmin(target(PersonAPITest.createPath), personToLinkWith);
-        assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
-
-        //create the user
-        UserCreationWithExistantPersonDTO userCreation = getUserCreationWithExistantPersonDTO();
-        userCreation.setPersonHolderUri(personToLinkWith.getUri());
-        postResult = getJsonPostResponseAsAdmin(target(createWithExistingPersonPath), userCreation);
-        assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
-
-        //check that account (user URI) and person are linked
-        AccountDAO accountDAO = new AccountDAO(getSparqlService());
-        AccountModel createdUser = accountDAO.get(userCreation.getUri());
-        assertEquals(createdUser.getHolderOfTheAccount().getUri(), personToLinkWith.getUri());
-    }
-
-    @Test
-    public void testCreateWithAnExistingPerson_personDoesntExist() throws Exception {
-        UserCreationWithExistantPersonDTO userCreation = getUserCreationWithExistantPersonDTO();
-
-        //check that API return the right code
-        Response postResult = getJsonPostResponseAsAdmin(target(createWithExistingPersonPath), userCreation);
-        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), postResult.getStatus());
-
-        //check that the user (account) was not insert in the dataBase
-        Response getResult = getJsonGetByUriResponseAsAdmin(target(getPath), userCreation.getUri().toString());
-        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
-    }
-
-    @Test
-    public void testCreateWithAnExistingPerson_personAlreadyHasAnAccount() throws Exception {
-        //creation of a user (account + person)
-        UserCreationDTO user = getUser1CreationDTO();
-        user.setUri(new URI("http://opensilex.dev/id/user/account.willBeCreated"));
-        Response postResponse = getJsonPostResponseAsAdmin(target(createPath), user);
-        assertEquals(Response.Status.CREATED.getStatusCode(), postResponse.getStatus());
-
-        //get the person created
-        AccountDAO accountDAO = new AccountDAO(getSparqlService());
-        PersonModel person = accountDAO.get(user.getUri()).getHolderOfTheAccount();
-
-        //try to create a user with this same person
-        UserCreationWithExistantPersonDTO userTest = getUserCreationWithExistantPersonDTO();
-        userTest.setPersonHolderUri(person.getUri());
-        postResponse = getJsonPostResponseAsAdmin(target(createWithExistingPersonPath), userTest);
-        assertEquals(Response.Status.CONFLICT.getStatusCode(), postResponse.getStatus());
-
-        //check that the account(user) was not created
-        assertNull(accountDAO.get(userTest.getUri()));
-    }
-
-    @Test
-    public void testUpdate() throws Exception {
+    public void testUpdate_accountHasNoHolderAndWillNotHave() throws Exception {
+        UserGetDTO createdUser = getUser1CreationDTO();
         // create the user
-        Response postResult = getJsonPostResponseAsAdmin(target(createPath), getUser1CreationDTO());
+        Response postResult = getJsonPostResponseAsAdmin(target(createPath), createdUser);
 
         // update the xp
         URI uri = extractUriFromResponse(postResult);
@@ -182,6 +117,44 @@ public class UserAPITest extends AbstractSecurityIntegrationTest {
 
         // check that the object has been updated
         compareUsersDTO(dto, dtoFromApi);
+
+        AccountDAO accountDAO = new AccountDAO(getSparqlService());
+        AccountModel accountModel = accountDAO.get(dto.getUri());
+        UserGetDTO dtoFromDatabase = UserGetDTO.fromModel(accountModel);
+        compareUsersDTO(dto, dtoFromDatabase);
+
+        //check that email of the person is not updated nor deleted by the User Update
+        PersonModel personModel = accountModel.getHolderOfTheAccount();
+        assertEquals(createdUser.getEmail(), personModel.getEmail().toString());
+    }
+
+    @Test
+    public void updateAndSetANewPerson() throws Exception {
+        PersonDTO newHolder = new PersonDTO();
+        newHolder.setFirstName("bib");
+        newHolder.setLastName("elot");
+        Response personCreated = getJsonPostResponseAsAdmin(target(PersonAPITest.createPath), newHolder);
+        assertEquals(Response.Status.CREATED.getStatusCode(), personCreated.getStatus());
+        URI newHolderURI = extractUriFromResponse(personCreated);
+
+        UserGetDTO createdUser = getUser1CreationDTO();
+        Response userCreated = getJsonPostResponseAsAdmin(target(createPath), createdUser);
+        assertEquals(Response.Status.CREATED.getStatusCode(), userCreated.getStatus());
+        URI userURI = extractUriFromResponse(userCreated);
+
+
+        UserUpdateDTO updateDTO = new UserUpdateDTO();
+        updateDTO.setUri(userURI);
+        updateDTO.setHolderOfTheAccountURI(newHolderURI);
+        updateDTO.setEmail(createdUser.getEmail());
+        updateDTO.setAdmin(createdUser.isAdmin());
+        updateDTO.setLanguage(createdUser.getLanguage());
+
+        final Response putResult = getJsonPutResponse(target(updatePath), updateDTO);
+        assertEquals(Response.Status.OK.getStatusCode(), putResult.getStatus());
+
+        AccountModel updatedAccount = new AccountDAO(getSparqlService()).get(userURI);
+        assertEquals(URIDeserializer.formatURI(newHolderURI), URIDeserializer.formatURI( updatedAccount.getHolderOfTheAccount().getUri() ));
     }
 
     @Test

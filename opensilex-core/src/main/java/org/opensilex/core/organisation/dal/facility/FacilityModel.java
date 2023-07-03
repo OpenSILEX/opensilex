@@ -9,6 +9,7 @@ import org.apache.jena.vocabulary.VCARD4;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.site.SiteModel;
+import org.opensilex.core.variablesGroup.dal.VariablesGroupModel;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 import org.opensilex.sparql.model.SPARQLTreeModel;
@@ -22,7 +23,8 @@ import java.util.stream.Collectors;
         ontology = Oeso.class,
         resource = "Facility",
         graph = OrganizationModel.GRAPH,
-        prefix = "infra"
+        prefix = "infra",
+        handleCustomProperties = true
 )
 public class FacilityModel extends SPARQLTreeModel<FacilityModel> {
 
@@ -48,8 +50,8 @@ public class FacilityModel extends SPARQLTreeModel<FacilityModel> {
             property = "isHosted",
             inverse = true
     )
-    private List<OrganizationModel> infrastructures;
-    public static final String INFRASTRUCTURE_FIELD = "infrastructures";
+    private List<OrganizationModel> organizations;
+    public static final String ORGANIZATIONS_FIElD = "organizations";
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -67,19 +69,27 @@ public class FacilityModel extends SPARQLTreeModel<FacilityModel> {
     private FacilityAddressModel address;
     public static final String ADDRESS_FIELD = "address";
 
-    public List<OrganizationModel> getInfrastructures() {
-        return infrastructures;
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "hasVariablesGroup",
+            ignoreUpdateIfNull = true
+    )
+    private List<VariablesGroupModel> variableGroups;
+    public static final String VARIABLE_GROUPS_FIELD = "variableGroups";
+
+    public List<OrganizationModel> getOrganizations() {
+        return organizations;
     }
 
-    public void setInfrastructures(List<OrganizationModel> infrastructures) {
-        this.infrastructures = infrastructures;
+    public void setOrganizations(List<OrganizationModel> organizations) {
+        this.organizations = organizations;
     }
 
-    public List<URI> getInfrastructureUris() {
-        if (this.infrastructures == null) {
+    public List<URI> getOrganizationUriList() {
+        if (this.organizations == null) {
             return new ArrayList<>();
         }
-        return this.infrastructures
+        return this.organizations
                 .stream()
                 .map(OrganizationModel::getUri)
                 .collect(Collectors.toList());
@@ -99,6 +109,14 @@ public class FacilityModel extends SPARQLTreeModel<FacilityModel> {
 
     public void setAddress(FacilityAddressModel address) {
         this.address = address;
+    }
+
+    public List<VariablesGroupModel> getVariableGroups() {
+        return variableGroups;
+    }
+
+    public void setVariableGroups(List<VariablesGroupModel> variableGroups) {
+        this.variableGroups = variableGroups;
     }
 
     @Override

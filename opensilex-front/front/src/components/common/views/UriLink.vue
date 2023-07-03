@@ -1,5 +1,6 @@
 <template>
   <span>
+    <!-- Redirection on click -->
     <router-link
       v-if="to"
       :target="target"
@@ -20,7 +21,15 @@
         <opensilex-Icon icon="ik#ik-copy" />
       </button>
     </router-link>
-    <a v-if="computeURL" :href="computeURL" class="uri" :title="uri" target="about:blank">
+
+    <!-- Redirection to url or external uri -->
+    <a
+      v-if="computeURL"
+      :href="computeURL"
+      class="uri"
+      :title="uri"
+      target="about:blank"
+    >
       <span>{{value || uri}}</span>
       &nbsp;
       <button
@@ -32,8 +41,30 @@
         <opensilex-Icon icon="ik#ik-copy" />
       </button>
     </a>
+    
+    <!-- No redirection only copy is possible -->
+    <span
+      v-if="!computeURL && !to && !isClickable"
+      href="#"
+      v-on:click.prevent.stop="copyURI(uri)"
+      :title="uri"
+      class="uri onlyCopyAllowed"
+    >
+      <span>{{value || uri}}</span>
+      &nbsp;
+      <button
+        v-if="allowCopy"
+        v-on:click.prevent.stop="copyURI(uri)"
+        class="uri-copy-visible"
+        :title="$t('component.copyToClipboard.copyUri')"
+      >
+        <opensilex-Icon icon="ik#ik-copy" />
+      </button>
+    </span>
+
+    <!-- No redirection but can open something -->
     <a
-      v-if="!computeURL && !to"
+      v-if="isClickable"
       href="#"
       @click.prevent="$emit('click', uri)"
       :title="uri"
@@ -95,6 +126,11 @@ export default class UriLink extends Vue {
   })
   target: string;
 
+  @Prop({
+    default: false
+  })
+  isClickable: boolean;
+
   get computeURL() {
     if (this.to) {
       return null;
@@ -130,9 +166,13 @@ export default class UriLink extends Vue {
 </script>
 
 <style scoped lang="scss">
-.uri-copy {
+.uri-copy, .uri-copy-visible{
   text-decoration: none !important;
   background-color: transparent !important;
+}
+
+.uri-copy:hover, .uri-copy-visible:hover{
+  background: #e6eceb !important;
 }
 
 .uri {
@@ -163,15 +203,37 @@ export default class UriLink extends Vue {
   top: -3px;
 }
 
+.uri .uri-copy-visible {
+  border: 1px solid #d8dde5;
+  border-radius: 5px;
+  color: #212121;
+  padding: 3px 5px 0;
+  position: absolute;
+  right: 0;
+  top: -3px;
+}
+
 .uri:hover .uri-copy,
 .uri:focus .uri-copy,
-.uri:hover .uri-copy {
+.uri:hover .uri-copy-visible,
+.uri:focus .uri-copy-visible {
   display: inline;
 }
 
 .uri:hover {
   color: #212121;
   text-decoration: underline;
+}
+
+
+.onlyCopyAllowed  {
+  color: #000 !important;
+  cursor: pointer;
+}
+
+.onlyCopyAllowed:hover {
+  text-decoration: none !important;
+  color: #018371 !important;
 }
 </style>
 

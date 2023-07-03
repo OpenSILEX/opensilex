@@ -6,16 +6,15 @@
 package org.opensilex.core.organisation.api.facility;
 
 import io.swagger.annotations.*;
+import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
-import org.opensilex.core.organisation.dal.facility.FacilityDAO;
-import org.opensilex.core.organisation.dal.facility.FacilitySearchFilter;
-import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.sparql.SPARQLModule;
-import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.core.organisation.dal.OrganizationDAO;
+import org.opensilex.core.organisation.dal.facility.FacilityDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
+import org.opensilex.core.organisation.dal.facility.FacilitySearchFilter;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
@@ -23,6 +22,7 @@ import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.ValidURI;
+import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
@@ -41,6 +41,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.opensilex.core.organisation.api.OrganizationAPI.CREDENTIAL_GROUP_INFRASTRUCTURE_ID;
@@ -85,7 +87,7 @@ public class FacilityAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "Create a facility", response = ObjectUriResponse.class),
+        @ApiResponse(code = 201, message = "Create a facility", response = URI.class),
         @ApiResponse(code = 409, message = "A facility with the same URI already exists", response = ErrorResponse.class)
     })
     public Response createFacility(
@@ -109,7 +111,11 @@ public class FacilityAPI {
                 }
             }
 
-            facility = facilityDAO.create(facility, currentUser);
+            facility = facilityDAO.create(
+                    facility,
+                    Objects.isNull(dto.getGeometry()) ? null : GeospatialDAO.geoJsonToGeometry(dto.getGeometry()),
+                    currentUser
+            );
 
             return new CreatedUriResponse(facility.getUri()).getResponse();
 
@@ -214,13 +220,16 @@ public class FacilityAPI {
         OrganizationDAO organizationDAO = new OrganizationDAO(sparql, nosql);
         FacilityDAO facilityDAO = new FacilityDAO(sparql, nosql, organizationDAO);
 
-        ListWithPagination<FacilityModel> facilities = facilityDAO.search((FacilitySearchFilter) new FacilitySearchFilter()
+        FacilitySearchFilter filter = (FacilitySearchFilter) new FacilitySearchFilter()
                 .setUser(currentUser)
                 .setPattern(pattern)
-                .setOrganizations(organizations)
                 .setOrderByList(orderByList)
                 .setPage(page)
-                .setPageSize(pageSize));
+                .setPageSize(pageSize);
+        if (!organizations.isEmpty()) {
+            filter.setOrganizations(organizations);
+        }
+        ListWithPagination<FacilityModel> facilities = facilityDAO.search(filter);
 
         List<FacilityGetDTO> dtoList = facilities.getList().stream()
                 .map((facilityModel) -> FacilityGetDTO.getDTOFromModel(facilityModel, true))
@@ -240,7 +249,7 @@ public class FacilityAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Facility deleted", response = ObjectUriResponse.class),
+        @ApiResponse(code = 200, message = "Facility deleted", response = URI.class),
         @ApiResponse(code = 404, message = "Facility URI not found", response = ErrorResponse.class)
     })
     public Response deleteFacility(
@@ -264,7 +273,7 @@ public class FacilityAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return updated facility", response = ObjectUriResponse.class),
+        @ApiResponse(code = 200, message = "Return updated facility", response = URI.class),
         @ApiResponse(code = 404, message = "Facility URI not found", response = ErrorResponse.class)
     })
     public Response updateFacility(
@@ -287,7 +296,11 @@ public class FacilityAPI {
             }
         }
 
-        facility = facilityDAO.update(facility, currentUser);
+        facility = facilityDAO.update(
+                facility,
+                Objects.isNull(dto.getGeometry()) ? null : GeospatialDAO.geoJsonToGeometry(dto.getGeometry()),
+                currentUser
+        );
 
         Response response = new ObjectUriResponse(Response.Status.OK, facility.getUri()).getResponse();
 

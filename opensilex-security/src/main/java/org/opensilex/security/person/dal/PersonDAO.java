@@ -6,25 +6,31 @@
 package org.opensilex.security.person.dal;
 
 import org.apache.jena.arq.querybuilder.SelectBuilder;
-import org.apache.jena.arq.querybuilder.UpdateBuilder;
+import org.apache.jena.arq.querybuilder.WhereBuilder;
+import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Node;
+import org.apache.jena.sparql.expr.E_NotExists;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.vocabulary.FOAF;
+import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.security.authentication.SecurityOntology;
+import org.opensilex.security.person.api.PersonDTO;
+import org.opensilex.server.exceptions.BadRequestException;
+import org.opensilex.server.exceptions.ConflictException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.exceptions.SPARQLException;
-import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 
-import javax.mail.internet.InternetAddress;
 import java.net.URI;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * PersonDAO is used to manipulate PersonModel and CRUD persons data in the rdf database.
+ *
  * @author Yvan Roux
  */
 public class PersonDAO {
@@ -36,113 +42,120 @@ public class PersonDAO {
     }
 
     /**
-     *  create a Person in dataBase with the given uri, firstname, lastname and email, only email could be NULL.
-     * @param email : optional information only, not used for any user or account authentication
+     * create a Person in dataBase with the given PersonDTO information.
+     * if orcid is given, it will be the uri of the person.
+     *
      * @return the personModel of the created Person.
      */
-    public PersonModel create(
-            URI uri,
-            String firstName,
-            String lastName,
-            String email
-    ) throws Exception {
-        PersonModel person = new PersonModel();
-        person.setUri(uri);
-        person.setFirstName(firstName);
-        person.setLastName(lastName);
-        if (email != null) {
-            person.setEmail(new InternetAddress(email));
+    public PersonModel create(PersonDTO personDTO) throws Exception {
+        PersonModel person = PersonModel.fromDTO(personDTO, sparql);
+
+        if (orcidIsNonNullAndWellFormed(person.getOrcid())) {
+            requireOrcidIsUnique(person.getOrcid());
+            if ( ! sparql.uriExists((Node) null, person.getOrcid())) {
+                person.setUri(person.getOrcid());
+            }
         }
+
+        if (person.getUri() != null && sparql.uriExists((Node) null, person.getUri())) {
+            throw new ConflictException("Duplicated URI: " + person.getUri());
+        }
+
         sparql.create(person);
 
         return person;
     }
 
-    /** @return  the Person linked to an account if this person exist, null otherwise. */
-    public PersonModel getPersonFromAccount(URI accountURI) throws Exception {
-        SPARQLClassObjectMapper<PersonModel> mapper = sparql.getForClass(PersonModel.class);
-        List<PersonModel> results =  sparql.search(
-                PersonModel.class,
-                null,
-                (SelectBuilder select ) -> select.addWhere(mapper.getURIFieldVar(), FOAF.account, SPARQLDeserializers.nodeURI(accountURI))
-        );
-        if (results.isEmpty()) {
-            return null;
+    /**
+     * @param orcid to check for
+     * @return false if ORCID is null, true otherwise
+     * @throws BadRequestException if orcid is not a well-formed URL
+     */
+    private boolean orcidIsNonNullAndWellFormed(URI orcid) throws BadRequestException {
+        if (Objects.isNull(orcid)) {
+            return false;
+        }
+        //commence par "https://orcid.org/" et est suivi de 3 séquences de 4 chiffres séparées par un tiret puis une séquence de 4 chiffres ou 3 chiffres et un X
+        //exemples validés : https://orcid.org/0009-0006-6636-4714 ou https://orcid.org/0009-0006-6636-471X
+        if ( ! orcid.toString().matches("https://orcid\\.org/(?:[\\d]{4}-){3}[\\d]{3}[\\dX]")) {
+            throw new BadRequestException("orcid is not valid : "+ orcid);
         }
 
-        return results.get(0);
-    }
-
-    /** @return  the account linked to a Person if this account exist, null otherwise. */
-    public AccountModel getAccountFromPerson(URI personURI) throws Exception {
-        SPARQLClassObjectMapper<AccountModel> mapper = sparql.getForClass(AccountModel.class);
-        List<AccountModel> results =  sparql.search(
-                AccountModel.class,
-                null,
-                (SelectBuilder select ) -> select.addWhere(SPARQLDeserializers.nodeURI(personURI), FOAF.account, mapper.getURIFieldVar())
-        );
-        if (results.isEmpty())
-            return null;
-
-        return results.get(0);
-    }
-
-    /** link a Person and its account with the foaf:account predicate in the rdf database*/
-    public void setAccount(URI personURI, URI accountURI) throws Exception {
-        UpdateBuilder update = new UpdateBuilder();
-        update.addInsert(sparql.getDefaultGraph(PersonModel.class), SPARQLDeserializers.nodeURI(personURI), FOAF.account, SPARQLDeserializers.nodeURI(accountURI));
-        sparql.executeUpdateQuery(update);
-    }
-
-    public boolean hasAnAccount(URI personURI) throws Exception {
-        return getAccountFromPerson(personURI) != null;
-    }
-
-    /** Delete the following triplet -> personUri, foaf:account, accountUri */
-    private void deleteAccountLink(URI personUri, URI accountUri) throws SPARQLException {
-        Node usersGraphNode = SPARQLDeserializers.nodeURI(sparql.getDefaultGraphURI(PersonModel.class));
-        Node personUriNode = SPARQLDeserializers.nodeURI(personUri);
-        Node accountUriNode = SPARQLDeserializers.nodeURI(accountUri);
-
-        UpdateBuilder deleteAccountLink = new UpdateBuilder();
-        deleteAccountLink.addDelete(usersGraphNode, personUriNode, FOAF.account.asNode(), accountUriNode);
-
-        sparql.executeDeleteQuery(deleteAccountLink);
+        return true;
     }
 
     /**
-     * update the Person with the URI uri with the given information
+     * @param orcid to check for
+     * @throws ConflictException If Orcid is already taken
+     */
+    private void requireOrcidIsUnique(URI orcid) throws Exception, ConflictException{
+        boolean orcidisAlreadytaken;
+
+        orcidisAlreadytaken = sparql.existsByUniquePropertyValue(PersonModel.class, SecurityOntology.hasOrcid, orcid);
+
+        if (orcidisAlreadytaken) {
+            throw new ConflictException("Duplicated ORCID: " + orcid);
+        }
+    }
+
+    /**
+     * @return the Person linked to an account if this person exists, null otherwise.
+     */
+    public PersonModel getPersonFromAccount(URI accountURI) throws Exception {
+        AccountDAO accountDAO = new AccountDAO(sparql);
+        AccountModel accountModel = accountDAO.get(accountURI);
+        if (accountModel == null) {
+            return null;
+        }
+        return accountModel.getHolderOfTheAccount();
+    }
+
+    /**
+     * update the Person with the given information
+     * orcid can't be updated
+     *
      * @return the updated PersonModel
      */
-    public PersonModel update(URI uri, String firstName, String lastName, String email) throws Exception {
-        PersonModel personModel = new PersonModel();
-        personModel.setUri(uri);
-        personModel.setFirstName(firstName);
-        personModel.setLastName(lastName);
+    public PersonModel update(PersonDTO personDTO) throws Exception {
+        if (Objects.nonNull(personDTO.getOrcid())) {
 
-        sparql.startTransaction();
-        try {
-            if (email != null)
-                personModel.setEmail(new InternetAddress(email));
-            //save the potential link between the person and its account, because sparql.update() delete it
-            AccountModel accountModel = getAccountFromPerson(uri);
-            sparql.update(personModel);
-            if (accountModel != null )
-                setAccount(personModel.getUri(), accountModel.getUri());
+            PersonModel originalPerson = get(personDTO.getUri());
+            if (Objects.isNull(originalPerson.getOrcid())) {
+                orcidIsNonNullAndWellFormed(personDTO.getOrcid());
+                requireOrcidIsUnique(personDTO.getOrcid());
+            } else {
+                boolean dtoOrcidIsTheSameAsOriginalOrcid = SPARQLDeserializers.compareURIs(originalPerson.getOrcid(), personDTO.getOrcid());
+                if ( ! dtoOrcidIsTheSameAsOriginalOrcid) {
+                    throw new BadRequestException("Orcid can't be updated : " + personDTO.getUri() + " already has an Orcid");
+                }
+            }
 
-            sparql.commitTransaction();
-        } catch (Exception e){
-            sparql.rollbackTransaction();
         }
+
+        PersonModel personModel = PersonModel.fromDTO(personDTO, sparql);
+
+        sparql.update(personModel);
 
         return personModel;
     }
 
     public ListWithPagination<PersonModel> search(String stringPattern, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
+        return search(stringPattern, orderByList, page, pageSize, null);
+    }
+
+    public ListWithPagination<PersonModel> searchPersonsWithoutAccount(String stringPattern, List<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
+        WhereBuilder where = new WhereBuilder();
+        where.addWhere(SPARQLQueryHelper.makeVar("uri"), FOAF.account.asNode(), SPARQLQueryHelper.makeVar(AccountModel.class.getSimpleName()));
+        WhereHandler whereHasNoAccount = where.getWhereHandler();
+        return search(stringPattern, orderByList, page, pageSize, new E_NotExists(whereHasNoAccount.getElement()));
+    }
+
+    private ListWithPagination<PersonModel> search(String stringPattern, List<OrderBy> orderByList, Integer page, Integer pageSize, Expr whereConditions) throws Exception {
 
         Expr stringFilter = SPARQLQueryHelper.or(
                 SPARQLQueryHelper.regexFilter(PersonModel.FIRST_NAME_FIELD, stringPattern),
-                SPARQLQueryHelper.regexFilter(PersonModel.LAST_NAME_FIELD, stringPattern)
+                SPARQLQueryHelper.regexFilter(PersonModel.LAST_NAME_FIELD, stringPattern),
+                SPARQLQueryHelper.regexFilter(PersonModel.EMAIL_FIELD, stringPattern)
         );
 
         return sparql.searchWithPagination(
@@ -152,6 +165,9 @@ public class PersonDAO {
                 (SelectBuilder select) -> {
                     if (stringFilter != null) {
                         select.addFilter(stringFilter);
+                    }
+                    if (Objects.nonNull(whereConditions)) {
+                        select.addFilter(whereConditions);
                     }
                 },
                 null,
@@ -166,20 +182,23 @@ public class PersonDAO {
      * @param uri URI of the Person you are looking for
      * @return PersonModel corresponding to the URI uri
      */
-    public PersonModel get(URI uri) throws Exception{
+    public PersonModel get(URI uri) throws Exception {
         return sparql.getByURI(PersonModel.class, uri, null);
+    }
+
+    /**
+     * @param uriList List of the URIs of the Persons you are looking for
+     * @return List<PersonModel> corresponding to the URIs in uriList
+     * @throws Exception
+     */
+    public List<PersonModel> getList(List<URI> uriList) throws Exception{
+        return sparql.getListByURIs(PersonModel.class, uriList, null);
     }
 
     /**
      * @param uri : URI of the Person to delete
      */
-    public void delete(URI uri) throws Exception{
+    public void delete(URI uri) throws Exception {
         sparql.delete(PersonModel.class, uri);
-
-        //supression du lien foaf:account entre la foaf:Person et le foaf:OnlineAccount
-        AccountModel account = getAccountFromPerson(uri);
-        if ( account != null) {
-            deleteAccountLink(uri, account.getUri());
-        }
     }
 }

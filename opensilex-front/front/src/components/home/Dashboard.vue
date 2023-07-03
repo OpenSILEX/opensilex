@@ -20,7 +20,7 @@
         </div>
 
 
-        <!-- Graphic (1)-->
+        <!-- Graphic-->
         <div class="graph1"
              v-if="$opensilex.getConfig().dashboard.graph1.variable"
         >
@@ -30,29 +30,20 @@
           </opensilex-Histogram>
         </div>
 
+        <!-- Logo -->
+        <div class="graph1 logoContainer"
+             v-if="!$opensilex.getConfig().dashboard.graph1.variable"
+        >
+          <img
+            v-bind:src="$opensilex.getResourceURI('images/dashboardLogo', ['png', 'svg', 'jpg'])"
+            class="dashboardCentralLogo"
+            alt
+          />
+        </div>
+
         <!-- Twitter -->
         <div class="twitter">
           <opensilex-Twitter></opensilex-Twitter>
-        </div>
-
-         <!-- Graphic (2)-->
-        <div class="graph2"
-          v-if="$opensilex.getConfig().dashboard.graph2.variable"
-        >
-          <opensilex-Histogram
-            :variableChoice="$opensilex.getConfig().dashboard.graph2.variable"
-          >
-          </opensilex-Histogram>
-        </div>
-
-       <!-- Graphic (3)-->
-        <div class="graph3"
-          v-if="$opensilex.getConfig().dashboard.graph3.variable"
-        >
-          <opensilex-Histogram
-            :variableChoice="$opensilex.getConfig().dashboard.graph3.variable"
-          >
-          </opensilex-Histogram>
         </div>
     </div>
   </div>
@@ -115,8 +106,7 @@ export default class Dashboard extends Vue {
   justify-items: stretch;
   grid-template-areas: 
     "favorites graph1 graph1 twitter"
-    "favorites graph1 graph1 twitter"
-    "graph2 graph2 graph3 ."; 
+    "favorites graph1 graph1 twitter";
   width: 100%;
 }
 
@@ -126,17 +116,54 @@ export default class Dashboard extends Vue {
 
 .graph1 { grid-area: graph1; }
 
-.graph2 { grid-area: graph2; }
+.logoContainer{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  min-height: 60vh;
+}
 
-.graph3 { grid-area: graph3; }
+.dashboardCentralLogo{
+  opacity: 0.4;
+  min-height: 35vh;
+  max-height: 50%;
+  max-width: 80%;
+}
 
+/** Mozilla Firefox */
+@supports (-moz-appearance:none) {
+  .logoContainer {
+    height: 80%;
+  }
+}
 
+@media (max-height: 700px) {
+  .dashboardCentralLogo{
+    margin-top : 20%;
+  }
+  /**Media Querry for Mozilla */
+  @supports (-moz-appearance:none) {
+    .dashboardCentralLogo {
+      margin-top: 0%;
+    }
+  }
+}
+
+@media only screen and (min-width: 2000px) {
+  .dashboardCentralLogo{
+    margin-top: 5%
+  }
+}
 @media (max-width: 1180px) {
   .gridMainContainer {
     display: block;
   }
   .favorites, .twitter, .graph1{
     width: 100%;
+  }
+  .logoContainer{
+    display: none;
   }
 }
 </style>

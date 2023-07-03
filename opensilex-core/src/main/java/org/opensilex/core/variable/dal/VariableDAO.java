@@ -12,7 +12,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.*;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
-import org.apache.jena.rdf.model.Property;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.lang.sparql_11.ParseException;
@@ -23,7 +22,6 @@ import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.species.dal.SpeciesModel;
-import org.opensilex.core.variablesGroup.dal.VariablesGroupModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
@@ -109,7 +107,7 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
     }
 
     protected int getLinkedDataNb(URI uri) throws Exception {
-        return dataDAO.count(null, null, null, Collections.singletonList(uri), null, null, null, null, null, null, null);
+        return dataDAO.count(null, null, null, Collections.singletonList(uri), null, null, null, null, null, null, null, null);
     }
 
     @Override
@@ -380,8 +378,14 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
             select.addFilter(SPARQLQueryHelper.eq(VariableModel.UNIT_FIELD_NAME, NodeFactory.createURI(SPARQLDeserializers.getExpandedURI(filter.getUnit().toString()))));
         }
 
-        if (filter.getGroup() != null) {
-            select.addWhere(SPARQLDeserializers.nodeURI(filter.getGroup()), RDFS.member, makeVar(SPARQLResourceModel.URI_FIELD));
+        if (filter.getIncludedInGroup() != null) {
+            select.addWhere(SPARQLDeserializers.nodeURI(filter.getIncludedInGroup()), RDFS.member, makeVar(SPARQLResourceModel.URI_FIELD));
+        }
+
+        if (filter.getNotIncludedInGroup() != null) {
+            select.addFilter(SPARQLQueryHelper.getExprFactory().notexists(
+                    new WhereBuilder().addWhere(SPARQLDeserializers.nodeURI(filter.getNotIncludedInGroup()), RDFS.member, makeVar(SPARQLResourceModel.URI_FIELD))
+            ));
         }
 
         if (filter.getDataType() != null) {

@@ -14,16 +14,16 @@
           :uri="data.item.uri"
           :value="data.item.name"
           :noExternalLink="true"
-          @click="data.toggleDetails()"
+          :isClickable="false"
         ></opensilex-UriLink>
       </template>
 
       <template v-slot:cell(user_profiles)="{data}">
-        <div>{{$tc("component.user.label", data.item.user_profiles.length, {count: data.item.user_profiles.length})}}</div>
+        <div>{{$tc("component.account.label", data.item.user_profiles.length, {count: data.item.user_profiles.length})}}</div>
       </template>
 
       <template v-slot:row-details="{data}">
-        <strong class="capitalize-first-letter">{{$t("component.user.users")}}:</strong>
+        <strong class="capitalize-first-letter">{{$t("component.account.accounts")}}:</strong>
         <ul>
           <li
             v-for="userProfile in data.item.user_profiles"
@@ -59,7 +59,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Ref } from "vue-property-decorator";
+import { Component, Ref, Prop } from "vue-property-decorator";
 import Vue from "vue";
 
 @Component
@@ -102,7 +102,7 @@ export default class GroupList extends Vue {
       sortable: true
     },
     {
-      label: "component.user.users",
+      label: "component.account.accounts",
       key: "user_profiles"
     },
     {

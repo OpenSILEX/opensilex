@@ -179,6 +179,6 @@ en:
 fr:
   AssociatedExperimentsList:
     experimentNameFilter: Chercher sur le nom de l'expérimentation
-    relatedExperiments: Expérimentations Liées
+    relatedExperiments: Expérimentations connexes
 
 </i18n>

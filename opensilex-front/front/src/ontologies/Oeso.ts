@@ -27,6 +27,7 @@ let ontologies = {
     HAS_VARIETY: OESO_URI + "#hasVariety",
     HAS_SPECIES: OESO_URI + "#hasSpecies",
     HAS_GEOMETRY: OESO_URI + "#hasGeometry",
+    HAS_VARIABLES_GROUP: OESO_URI + "#hasVariablesGroup",
     IS_HOSTED: OESO_URI + "#isHosted",
     ENTITY_TYPE_URI: OESO_URI + "#Entity",
     QUALITY_TYPE_URI: OESO_URI + "#Quality",

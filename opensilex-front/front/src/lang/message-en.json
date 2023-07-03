@@ -30,12 +30,13 @@
             "name": "Name",
             "term":"Term",
             "comment": "Comment",
-            "details-label": "Details",
+            "details-label": "Description",
             "list-label": "List",
             "element": "The element",
             "keyword": "Keyword",
             "keywords": "Keywords",
             "description": "Description",
+            "informations": "General informations",
             "contacts": "Contacts",
             "objective":"Objective",
             "startDate": "Start date",
@@ -103,7 +104,7 @@
             },
             "details": {
                 "document": "Documents",
-                "experiment": "Associated experiments"
+                "experiment": "Related experiments"
             },
             "import-files": {
                 "csv-file": " Load CSV",
@@ -164,7 +165,7 @@
                 "fr": "French",
                 "en": "English"
             },
-            "user": {
+            "account": {
                 "admin": "Admin",
                 "logout": "Logout"
             },
@@ -204,7 +205,8 @@
             },
             "security": {
                 "label": "Security",
-                "users": "Users",
+                "users": "Accounts",
+                "persons": "Persons",
                 "groups": "Groups",
                 "profiles": "Profiles"
             },
@@ -259,32 +261,74 @@
         "footer": {
             "copyright": "Copyright © 2021 INRAE All Rights Reserved. PHIS {version}"
         },
-        "user": {
-            "description": "Manage and configure users",
-            "user-uri": "User URI",
-            "form-first-name-placeholder": "Enter user first name",
-            "form-last-name-placeholder": "Enter user last name",
-            "form-email-placeholder": "Enter user email address",
-            "form-password-placeholder": "Enter user password",
+        "account": {
+            "description": "Manage and configure accounts",
+            "account-uri": "Account URI",
+            "form-first-name-placeholder": "Enter holder of the account first name",
+            "form-last-name-placeholder": "Enter holder of the account last name",
+            "form-email-placeholder": "Enter email address",
+            "form-password-placeholder": "Enter password",
             "form-admin-option-label": "Enable this option to create a super administrator",
-            "filter-placeholder": "Search users...",
-            "filter-search-no-result": "Sorry, no user is matching your research.",
-            "users": "users",
-            "add": "Add user",
-            "update": "Update user",
-            "delete": "Delete user",
-            "details": "Show or hide user details",
-            "label": "no user | 1 user | {count} users",
+            "filter-placeholder": "Search account...",
+            "filter-search-no-result": "Sorry, no account is matching your research.",
+            "accounts": "accounts",
+            "add": "Add account",
+            "update": "Update account",
+            "delete": "Delete account",
+            "enable": "enable, click to disable",
+            "disable": "disable, click to enable",
+            "details": "Show or hide account details",
+            "label": "no account | 1 account | {count} accounts",
             "password": "password",
             "first-name": "first name",
             "last-name": "last name",
+            "identifier": "identifier",
             "email-address": "email address",
             "email": "email",
             "admin": "administrator",
             "default-lang": "Default languages",
             "user-groups": "user groups",
+            "successDelete" : "Account removed",
+            "linked-person" : "Person",
+            "choices": {
+                "create-person": "create an account and a person",
+                "account-only": "create an account without linked person",
+                "select-person": "create an account and link it to the selected person"
+            },
+            "person-selector": {
+                "help-message": "Select the person to link with"
+            },
             "errors": {
-                "user-already-exists": "User already exists with this URI or email address."
+                "user-already-exists": "Account already exists with this URI or email address."
+            }
+        },
+        "person": {
+            "description": "Manage persons",
+            "person-uri": "Person URI",
+            "form-first-name-placeholder": "Enter person first name",
+            "form-last-name-placeholder": "Enter person last name",
+            "orcid-placeholder": "https://orcid.org/0000-0003-4189-7793",
+            "form-email-placeholder": "Enter person email address",
+            "form-affiliation-placeholder" : "Enter your affiliation",
+            "form-phone-placeholder" : "Enter a phone number (+33-65...)",
+            "filter-placeholder": "Search persons...",
+            "filter-search-no-result": "Sorry, no one is matching your research.",
+            "orcid-help-message": "if filled, ORCID will be used as URI during creation. This field can't be updated",
+            "persons": "persons",
+            "add": "Add person",
+            "update": "Update person",
+            "delete": "Delete person",
+            "first-name": "first name",
+            "last-name": "last name",
+            "orcid":  "ORCID",
+            "email-address": "email address",
+            "email": "email",
+            "mail-redirection": "send an email",
+            "affiliation": "affiliation",
+            "phone_number": "phone number",
+            "successDelete" : "Person removed",
+            "errors": {
+                "person-already-exists": "Person already exists with this URI."
             }
         },
         "variable" : {
@@ -328,7 +372,7 @@
             "selectedLabel": "Selected Project(s)",
             "project":"Project",
             "uri": "URI",
-            "details":"Details",
+            "details":"Description",
             "documents":"Documents",
             "delete": "Delete project",
             "project-uri": "Project URI",
@@ -370,6 +414,9 @@
                     "public": "Public"
                 }
             }
+        },
+        "events": {
+            "details": "View event details"
         },
         "sharedResourceInstances": {
             "selector-placeholder":"Select a source",
@@ -608,6 +655,7 @@
         "profiles": "Profiles",
         "projects": "Projects",
         "users": "Users",
+        "persons": "Persons",
         "variables": "Variables",
         "factors": "Factors",
         "infrastructures": "Organizations",
@@ -622,7 +670,8 @@
         "facilities": "Facilities",
         "provenance": "Provenances",
         "vocabulary": "Vocabulary",
-        "packages": "Packages"
+        "packages": "Packages",
+        "accounts": "Accounts"
     },
     "credential": {
         "default": {
@@ -646,7 +695,7 @@
             "modification": "Add / update projects",
             "delete": "Delete projects"
         },
-        "user": {
+        "account": {
             "modification": "Add / update users",
             "delete": "Delete users"
         },
@@ -771,7 +820,8 @@
             "shared-resource-instance-connection": "Could not connect to {label} ({uri}). The service may be unavailable, or the configuration is incorrect."
         },
         "warnings": {
-            "unknown-prefix": "Prefix \"{prefix}\" is unknown : you may have forgotten to declare it as a namespace in the triple store, or may need to restart the instance."
+            "unknown-prefix": "Prefix \"{prefix}\" is unknown : you may have forgotten to declare it as a namespace in the triple store, or may need to restart the instance.",
+            "shared-resource-instance-unknown": "The resource is from an unknown Shared Resource Instance : {uri}. The configuration of your instance may be incorrect."
         }
     }
 }

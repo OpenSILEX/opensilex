@@ -43,7 +43,7 @@
     <opensilex-PageContent>
       <b-row v-if="isDetailsTab()">
         <b-col>
-          <opensilex-Card label="component.common.description" icon="ik#ik-clipboard">
+          <opensilex-Card label="component.common.informations" icon="ik#ik-clipboard">
             <template v-slot:rightHeader>              
                 <opensilex-EditButton
                   v-if="user.hasCredential(credentials.CREDENTIAL_GERMPLASM_MODIFICATION_ID)"
@@ -144,6 +144,10 @@
             :searchMethod="loadExperiments"
             :nameFilter.sync="experimentName"
           ></opensilex-AssociatedExperimentsList>
+          <opensilex-AssociatedGermplasmGroupsList
+              :searchMethod="loadGermplasmGroups"
+              :nameFilter.sync="germplasmGroupName"
+          ></opensilex-AssociatedGermplasmGroupsList>
         </b-col>
       </b-row>
 
@@ -206,6 +210,7 @@ export default class GermplasmDetails extends Vue {
   uri: string = null;
   addInfo = [];
   experimentName: any = "";
+  germplasmGroupName = "";
 
   $AnnotationsService: AnnotationsService
   $DocumentsService: DocumentsService
@@ -322,6 +327,16 @@ export default class GermplasmDetails extends Vue {
     );
   }
 
+  loadGermplasmGroups(options) {
+    return this.service.searchGermplasmGroups(
+        undefined,
+        [this.uri],
+        options.orderBy,
+        options.currentPage,
+        options.pageSize
+    );
+  }
+
   attributeFields = [
     {
       key: "attribute",
@@ -432,7 +447,7 @@ en:
     title: Germplasm
     description: Detailed Information
     info: Germplasm Information
-    experiment: Associated experiments
+    experiment: Related experiments
     document: Associated documents
     uri: URI
     name: Name
@@ -457,7 +472,7 @@ fr:
     title: Ressource génétique
     description: Information détaillées
     info: Informations générales
-    experiment: Expérimentations associées
+    experiment: Expérimentations connexes
     document: Documents associées
     uri: URI 
     name: Nom 

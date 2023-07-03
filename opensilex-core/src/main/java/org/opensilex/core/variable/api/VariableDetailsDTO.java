@@ -13,9 +13,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModelProperty;
 
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.opensilex.core.germplasm.api.GermplasmAPI;
@@ -27,11 +27,11 @@ import org.opensilex.core.variable.api.entity.EntityGetDTO;
 import org.opensilex.core.variable.api.entityOfInterest.InterestEntityGetDTO;
 import org.opensilex.core.variable.api.method.MethodGetDTO;
 import org.opensilex.core.variable.api.characteristic.CharacteristicGetDTO;
-import org.opensilex.core.variable.api.unit.UnitGetDTO;
+import org.opensilex.core.variable.api.unit.UnitDetailsDTO;
 import org.opensilex.core.variable.dal.*;
+import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.response.NamedResourceDTO;
 
 
 /**
@@ -40,7 +40,7 @@ import org.opensilex.sparql.response.NamedResourceDTO;
  */
 
 @JsonPropertyOrder({
-        "uri", "name", "alternative_name", "description",
+        "uri", "name", "alternative_name", "description", "publisher", "publication_date", "last_updated_date",
         "entity", "entity_of_interest","characteristic", "trait", "trait_name", "method", "unit",
         "species","time_interval", "sampling_interval", "datatype",
         SKOSReferencesDTO.EXACT_MATCH_JSON_PROPERTY,
@@ -53,6 +53,15 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
 
     @JsonProperty("alternative_name")
     private String alternativeName;
+
+    @JsonProperty("publisher")
+    private UserGetDTO publisher;
+
+    @JsonProperty("publication_date")
+    private OffsetDateTime publicationDate;
+
+    @JsonProperty("last_updated_date")
+    private OffsetDateTime lastUpdatedDate;
 
     @JsonProperty("entity")
     private EntityGetDTO entity;
@@ -67,7 +76,7 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
     private MethodGetDTO method;
 
     @JsonProperty("unit")
-    private UnitGetDTO unit;
+    private UnitDetailsDTO unit;
 
     @JsonProperty("trait")
     private URI trait;
@@ -109,9 +118,17 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
         this.method = new MethodGetDTO(method);
 
         UnitModel unit = model.getUnit();
-        this.unit = new UnitGetDTO(unit);
+        this.unit = new UnitDetailsDTO(unit);
 
         this.alternativeName = model.getAlternativeName();
+
+        if (model.getPublicationDate() != null) {
+            this.publicationDate = model.getPublicationDate();
+        }
+
+        if (model.getLastUpdateDate() != null) {
+            this.lastUpdatedDate = model.getLastUpdateDate();
+        }
 
         if(model.getSpecies() != null){
             List<SpeciesDTO> dtos = new ArrayList<>();
@@ -159,6 +176,30 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
         this.alternativeName = alternativeName;
     }
 
+    public UserGetDTO getPublisher() {
+        return publisher;
+    }
+
+    public void setPublisher(UserGetDTO publisher) {
+        this.publisher = publisher;
+    }
+
+    public OffsetDateTime getPublicationDate() {
+        return publicationDate;
+    }
+
+    public void setPublicationDate(OffsetDateTime publicationDate) {
+        this.publicationDate = publicationDate;
+    }
+
+    public OffsetDateTime getLastUpdatedDate() {
+        return lastUpdatedDate;
+    }
+
+    public void setLastUpdatedDate(OffsetDateTime lastUpdatedDate) {
+        this.lastUpdatedDate = lastUpdatedDate;
+    }
+
     @Override
     @ApiModelProperty(example = "Describe the height of a plant.")
     public String getDescription() {
@@ -193,11 +234,11 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
         this.method = method;
     }
 
-    public UnitGetDTO getUnit() {
+    public UnitDetailsDTO getUnit() {
         return unit;
     }
 
-    public void setUnit(UnitGetDTO unit) {
+    public void setUnit(UnitDetailsDTO unit) {
         this.unit = unit;
     }
 

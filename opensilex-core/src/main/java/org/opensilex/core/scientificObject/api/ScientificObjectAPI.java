@@ -11,11 +11,11 @@ import com.mongodb.client.model.geojson.Geometry;
 import io.swagger.annotations.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
-import org.apache.jena.arq.querybuilder.UpdateBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.bson.codecs.configuration.CodecConfigurationException;
+import org.geojson.GeoJsonObject;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.opensilex.core.csv.api.CSVValidationDTO;
@@ -26,8 +26,10 @@ import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.geospatial.api.GeometryDTO;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
+import org.opensilex.core.geospatial.dal.ShapeFileExporter;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
@@ -62,17 +64,19 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.validation.Valid;
+import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.File;
+import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -346,7 +350,7 @@ public class ScientificObjectAPI {
                 .setPattern(pattern)
                 .setRdfTypes(rdfTypes)
                 .setParentURI(parentURI)
-                .setGermplasm(germplasm)
+                .setGermplasm((germplasm!=null ? Collections.singletonList(germplasm) : null))
                 .setFactorLevels(factorLevels)
                 .setFacility(facility)
                 .setExistenceDate(existenceDate)
@@ -461,7 +465,7 @@ public class ScientificObjectAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Create a scientific object", response = ObjectUriResponse.class),
+            @ApiResponse(code = 201, message = "Create a scientific object", response = URI.class),
             @ApiResponse(code = 409, message = "A scientific object with the same URI already exists", response = ErrorResponse.class)
     })
     public Response createScientificObject(
@@ -551,7 +555,7 @@ public class ScientificObjectAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Scientific object updated", response = ObjectUriResponse.class)
+            @ApiResponse(code = 200, message = "Scientific object updated", response = URI.class)
     })
     public Response updateScientificObject(
             @ApiParam(value = "Scientific object description", required = true)
@@ -634,7 +638,7 @@ public class ScientificObjectAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Scientific object deleted", response = ObjectUriResponse.class),
+            @ApiResponse(code = 200, message = "Scientific object deleted", response = URI.class),
             @ApiResponse(code = 400, message = DELETE_ERROR_TITLE+ " (If object is involved into an experiment or if associated to any data)", response = ErrorDTO.class),
             @ApiResponse(code = 404, message = "Scientific object URI not found", response = ErrorResponse.class)
     })
@@ -682,7 +686,7 @@ public class ScientificObjectAPI {
             }
 
             // check that no data are associated (dao handle empty or not list)
-            int dataCount = dataDAO.count(null,xpList, osList,null,null,null,null,null,null,null,null);
+            int dataCount = dataDAO.count(null,xpList, osList,null,null,null,null,null,null,null,null, null);
             if(dataCount > 0){
                 throw new DisplayableBadRequestException(DELETE_ERROR_TITLE+" : object has associated data",
                         "component.scientificObjects.error.delete.associated-data",
@@ -691,7 +695,7 @@ public class ScientificObjectAPI {
             }
 
             // check that no data file are associated (dao handle empty or not list)
-            int dataFileCount = dataDAO.countFiles(null,null,xpList,osList,null,null,null,null,null);
+            int dataFileCount = dataDAO.countFiles(null,null,xpList,osList,null,null,null,null,null, null);
             if(dataFileCount > 0){
                 throw new DisplayableBadRequestException(DELETE_ERROR_TITLE+" : object has associated data files",
                         "component.scientificObjects.error.delete.associated-data-files",
@@ -762,6 +766,53 @@ public class ScientificObjectAPI {
             nosql.rollbackTransaction();
             throw e;
         }
+    }
+
+    @POST
+    @Path("export_shp")
+    @ApiOperation("Export a given list of scientific object URIs to shapefile")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Data shapefile exported")
+    })
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_OCTET_STREAM)
+    public Response exportShp(
+            @ApiParam(value = "Scientific objects") List<GeometryDTO> selectedObjects,
+            @ApiParam(value = ExperimentAPI.EXPERIMENT_API_VALUE, example = ExperimentAPI.EXPERIMENT_EXAMPLE_URI) @QueryParam("experiment") URI contextURI,
+            @ApiParam(value = "properties selected", example = "test") @QueryParam("selected_props") List<URI> selectedProps,
+            @ApiParam(value = "Page size limited to 10,000 objects", example = "10000") @QueryParam("pageSize") @Max(10000) int pageSize
+
+    ) throws Exception {
+
+        ScientificObjectDAO soDao = new ScientificObjectDAO(sparql, nosql);
+        Map<URI, GeoJsonObject> selectedObjectsMap = new HashMap<>();
+
+        //Get OS exported URI
+        selectedObjects.forEach(o ->{
+            selectedObjectsMap.put(o.getUri(), o.getGeometry());
+        });
+
+        // Search exported OS detail according the XP and selected uris, fetch os factors
+        ScientificObjectSearchFilter searchFilter = new ScientificObjectSearchFilter()
+                .setExperiment(contextURI)
+                .setUris( new ArrayList<>(selectedObjectsMap.keySet()));
+
+        searchFilter.setLang(currentUser.getLanguage())
+                .setPageSize(10000)
+                .setPage(0);
+
+        List<ScientificObjectModel> objDetailList = soDao.search(searchFilter, Collections.singletonList(ScientificObjectModel.FACTOR_LEVEL_FIELD)).getList();
+
+        //Convert to shapefiles and create a zip file to export
+        ShapeFileExporter shpExport = new ShapeFileExporter();
+        byte[] zippedFile =shpExport.shpExport(selectedProps, objDetailList, selectedObjectsMap);
+
+        String zipName = "shpZip_" + LocalDate.now().format(DateTimeFormatter.ISO_DATE) + ".zip" ;
+
+        return Response.ok(zippedFile, MediaType.APPLICATION_OCTET_STREAM)
+                .header("Content-Disposition", "attachment; filename=\"" + zipName + "\"")
+                .build();
     }
 
     @POST
@@ -960,5 +1011,4 @@ public class ScientificObjectAPI {
         List<ProvenanceGetDTO> dtoList = provenances.stream().map(ProvenanceGetDTO::fromModel).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();
     }
-
 }

@@ -51,12 +51,12 @@ import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.exceptions.NoSQLTooLargeSetException;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.csv.CSVCell;
@@ -156,7 +156,7 @@ public class ExperimentAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 201, message = "An experiment is created", response = ObjectUriResponse.class),
+        @ApiResponse(code = 201, message = "An experiment is created", response = URI.class),
         @ApiResponse(code = 409, message = "An experiment with the same URI already exists", response = ErrorResponse.class)
     })
     public Response createExperiment(
@@ -195,7 +195,7 @@ public class ExperimentAPI {
     @Produces(MediaType.APPLICATION_JSON)
 
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Experiment updated", response = ObjectUriResponse.class),
+        @ApiResponse(code = 200, message = "Experiment updated", response = URI.class),
         @ApiResponse(code = 404, message = "Experiment URI not found", response = ErrorResponse.class)
     })
     public Response updateExperiment(
@@ -314,7 +314,7 @@ public class ExperimentAPI {
     @Produces(MediaType.APPLICATION_JSON)
 
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Experiment deleted", response = ObjectUriResponse.class),
+        @ApiResponse(code = 200, message = "Experiment deleted", response = URI.class),
         @ApiResponse(code = 404, message = "Experiment URI not found", response = ErrorResponse.class)
     })
     public Response deleteExperiment(
@@ -467,6 +467,7 @@ public class ExperimentAPI {
             @ApiParam(value = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
             @ApiParam(value = "Search by provenance uri", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
             @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
+            @ApiParam(value = "Search by operators", example = DATA_EXAMPLE_OPERATOR ) @QueryParam("operators") List<URI> operators,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
@@ -527,6 +528,7 @@ public class ExperimentAPI {
                 confidenceMin,
                 confidenceMax,
                 metadataFilter,
+                operators,
                 orderByList,
                 page,
                 pageSize
@@ -579,6 +581,7 @@ public class ExperimentAPI {
             @ApiParam(value = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
             @ApiParam(value = "Search by provenance uri", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenance") @ValidURI URI provenanceUri,
             @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
+            @ApiParam(value = "Search by operators", example = DATA_EXAMPLE_OPERATOR ) @QueryParam("operators") List<URI> operators,
             @ApiParam(value = "Format wide or long", example = "wide") @DefaultValue("wide") @QueryParam("mode") String csvFormat,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
@@ -661,7 +664,7 @@ public class ExperimentAPI {
         }
 
         Instant start = Instant.now();
-        List<DataModel> resultList = dao.search(currentUser, experiments, objects, variables, provenancesArrayList, null, startInstant, endInstant, confidenceMin, confidenceMax, metadataFilter, orderByList);
+        List<DataModel> resultList = dao.search(currentUser, experiments, objects, variables, provenancesArrayList, null, startInstant, endInstant, confidenceMin, confidenceMax, metadataFilter, operators, orderByList);
         Instant data = Instant.now();
         LOGGER.debug(resultList.size() + " observations retrieved " + Long.toString(Duration.between(start, data).toMillis()) + " milliseconds elapsed");
 

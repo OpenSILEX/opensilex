@@ -16,6 +16,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.net.URI;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Provenance model used in DataModel
@@ -82,5 +83,22 @@ public class DataProvenanceModel {
     public void setSettings(Document settings) {
         this.settings = settings;
     }
-    
+
+
+    /*
+        Implementation of 'equals' and 'hashCode' methods
+        Used for grouping data by provenance
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        DataProvenanceModel that = (DataProvenanceModel) o;
+        return Objects.equals(uri, that.uri) && Objects.equals(experiments, that.experiments) && Objects.equals(provUsed, that.provUsed) && Objects.equals(provWasAssociatedWith, that.provWasAssociatedWith) && Objects.equals(settings, that.settings);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(uri, experiments, provUsed, provWasAssociatedWith, settings);
+    }
 }

@@ -43,7 +43,7 @@ public class ScientificObjectSearchFilter extends SparqlSearchFilter {
 
     @ValidURI
     @JsonProperty("germplasm")
-    protected URI germplasm;
+    protected List<URI> germplasm;
 
     @ValidURI
     @JsonProperty("factor_levels")
@@ -113,14 +113,15 @@ public class ScientificObjectSearchFilter extends SparqlSearchFilter {
         return this;
     }
 
-    public URI getGermplasm() {
+    public List<URI> getGermplasm() {
         return germplasm;
     }
 
-    public ScientificObjectSearchFilter setGermplasm(URI germplasm) {
+    public ScientificObjectSearchFilter setGermplasm(List<URI> germplasm) {
         this.germplasm = germplasm;
         return this;
     }
+
 
     public List<URI> getFactorLevels() {
         return factorLevels;

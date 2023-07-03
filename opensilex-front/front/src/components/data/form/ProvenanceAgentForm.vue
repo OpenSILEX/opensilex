@@ -23,13 +23,13 @@
       <div class="col">
 
         <!-- agent -->
-        <opensilex-UserSelector
+        <opensilex-PersonSelector
             v-if="agent.rdf_type === 'vocabulary:Operator'"
-            :users.sync="agent.uris"
+            :persons.sync="agent.uris"
             label="ProvenanceForm.agent"
             helpMessage="ProvenanceForm.agent-help"
             :multiple="true"
-        ></opensilex-UserSelector>
+        ></opensilex-PersonSelector>
 
         <opensilex-DeviceSelector
             v-else-if="agent.rdf_type"

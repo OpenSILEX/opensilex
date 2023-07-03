@@ -97,7 +97,7 @@
               </template>
               <b-dropdown-item href="#" @click.prevent="logout">
                 <i class="ik ik-log-out dropdown-icon"></i>
-                {{ $t("component.header.user.logout") }}
+                {{ $t("component.header.account.logout") }}
               </b-dropdown-item>
             </b-dropdown>
         </div>
@@ -152,7 +152,7 @@
               </template>
               <b-dropdown-item href="#" @click.prevent="logout">
                 <i class="ik ik-log-out dropdown-icon"></i>
-                {{ $t("component.header.user.logout") }}
+                {{ $t("component.header.account.logout") }}
               </b-dropdown-item>
             </b-dropdown>
           </span>

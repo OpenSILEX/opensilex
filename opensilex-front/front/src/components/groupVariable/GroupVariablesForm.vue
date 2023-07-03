@@ -47,14 +47,18 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Ref } from "vue-property-decorator";
+import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
+import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+import {VariablesService} from "opensilex-core/api/variables.service";
+import {VariablesGroupCreationDTO} from "opensilex-core/model/variablesGroupCreationDTO";
+import {VariablesGroupUpdateDTO} from "opensilex-core/model/variablesGroupUpdateDTO";
 
 
 @Component
 export default class GroupVariablesForm extends Vue {
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
   $store: any;
   $i18n: any;
 
@@ -82,18 +86,22 @@ export default class GroupVariablesForm extends Vue {
     };
   }
 
-  getEmptyForm(){
+  getEmptyForm(): VariablesGroupCreationDTO {
     return GroupVariablesForm.getEmptyForm();
   }
 
-  create(form){
+  create(form: VariablesGroupCreationDTO){
+    this.$opensilex.enableLoader();
+    this.$opensilex.showLoader();
     return this.$opensilex
-      .getService("opensilex.VariablesService")
+      .getService<VariablesService>("opensilex.VariablesService")
       .createVariablesGroup(form)
-      .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+      .then((http: HttpResponse<OpenSilexResponse<string>>) => {
         let message = this.$i18n.t(this.form.name) + this.$i18n.t("component.common.success.creation-success-message");
         this.$opensilex.showSuccessToast(message);
         let uri = http.response.result;
+        this.$opensilex.hideLoader();
+        this.$opensilex.disableLoader();
         this.$emit("onCreate", uri);
         this.$router.push({path: "/variables?elementType=VariableGroup&selected=" + encodeURIComponent(uri)});
       })
@@ -107,14 +115,18 @@ export default class GroupVariablesForm extends Vue {
       });
   }
 
-  update(form){
+  update(form: VariablesGroupUpdateDTO){
+    this.$opensilex.enableLoader();
+    this.$opensilex.showLoader();
     return this.$opensilex
-      .getService("opensilex.VariablesService")
+      .getService<VariablesService>("opensilex.VariablesService")
       .updateVariablesGroup(form)
-      .then((http: HttpResponse<OpenSilexResponse<any>>) => {
+      .then((http: HttpResponse<OpenSilexResponse<string>>) => {
         let message = this.$i18n.t(this.form.name) + this.$i18n.t("component.common.success.update-success-message");
         this.$opensilex.showSuccessToast(message);
         let uri = http.response.result;
+        this.$opensilex.hideLoader();
+        this.$opensilex.disableLoader();
         this.$emit("onUpdate", uri);
       })
       .catch(this.$opensilex.errorHandler);
@@ -129,8 +141,8 @@ export default class GroupVariablesForm extends Vue {
 <i18n>
 en:
     GroupVariablesForm:
-        add: Add variables group
-        edit: Edit variables group
+        add: Add variable group
+        edit: Edit variable group
 fr:
     GroupVariablesForm:
         add: Ajouter un groupe de variables

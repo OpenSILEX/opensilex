@@ -1,26 +1,34 @@
 <template>
   <div>
     <opensilex-StringFilter
-      :filter.sync="filter"
-      @update="updateFilter()"
-      placeholder="component.user.filter-placeholder"
-      :debounce="300"
-      :lazy="false"
+        :filter.sync="filter"
+        @update="updateFilter()"
+        placeholder="component.account.filter-placeholder"
+        :debounce="300"
+        :lazy="false"
     ></opensilex-StringFilter>
 
     <opensilex-TableAsyncView
-      ref="tableRef"
-      :searchMethod="searchUsers"
-      :fields="fields"
-      defaultSortBy="email"
+        ref="tableRef"
+        :searchMethod="searchUsers"
+        :fields="fields"
+        defaultSortBy="email"
     >
-      <template v-slot:cell(last_name)="{data}">
+      <template v-slot:cell(uri)="{data}">
         <opensilex-UriLink
-          :uri="data.item.uri"
-          :value="data.item.last_name"
-          :noExternalLink="true"
-          @click="data.toggleDetails()"
+            :uri="data.item.uri"
+            :value="data.item.uri"
+            :noExternalLink="true"
+            :isClickable="false"
         ></opensilex-UriLink>
+      </template>
+
+      <template v-slot:cell(last_name)="{data}">
+        <opensilex-PersonContact
+            v-if="personByAccountUri[data.item.uri]"
+            :personContact="personByAccountUri[data.item.uri]"
+        />
+        <div v-else/>
       </template>
 
       <template v-slot:cell(email)="{data}">
@@ -28,39 +36,50 @@
       </template>
 
       <template v-slot:cell(admin)="{data}">
-        <span class="capitalize-first-letter" v-if="data.item.admin">{{$t("component.common.yes")}}</span>
-        <span class="capitalize-first-letter" v-if="!data.item.admin">{{$t("component.common.no")}}</span>
+        <span class="capitalize-first-letter" v-if="data.item.admin">{{ $t("component.common.yes") }}</span>
+        <span class="capitalize-first-letter" v-if="!data.item.admin">{{ $t("component.common.no") }}</span>
       </template>
 
       <template v-slot:row-details="{data}">
-        <strong class="capitalize-first-letter">{{$t("component.user.user-groups")}}:</strong>
+        <strong class="capitalize-first-letter">{{ $t("component.account.user-groups") }}:</strong>
         <ul>
           <li
-            v-for="groupDetail in  data.item.groupDetails"
-            v-bind:key="groupDetail.uri"
-          >{{groupDetail.name}}</li>
+              v-for="groupDetail in  groupDetailsByAccountUri[data.item.uri]"
+              v-bind:key="groupDetail.uri"
+          >{{ groupDetail.name }}
+          </li>
         </ul>
       </template>
 
       <template v-slot:cell(actions)="{data}">
         <b-button-group size="sm">
+          <div class="checkEnable"
+               :title="data.item.enable ? $t('component.account.enable') : $t('component.account.disable')">
+            <b-check
+                @change="changeEnable(data.item)"
+                v-if="displayEnableButton(data.item)"
+                :checked=" data.item.enable "
+                variant="outline-success"
+                switch
+            ></b-check>
+          </div>
           <opensilex-DetailButton
-            @click="data.toggleDetails()"
-            label="component.user.details"
-            :detailVisible="data.detailsShowing"
-            :small="true"
+              @click="showUsersGroups(data)"
+              label="component.account.details"
+              :detailVisible="data.detailsShowing"
+              :small="true"
           ></opensilex-DetailButton>
           <opensilex-EditButton
-            v-if="user.hasCredential(credentials.CREDENTIAL_USER_MODIFICATION_ID)"
-            @click="$emit('onEdit', data.item)"
-            label="component.user.update"
-            :small="true"
+              v-if="user.hasCredential(credentials.CREDENTIAL_USER_MODIFICATION_ID)"
+              @click="$emit('onEdit', data.item)"
+              label="component.account.update"
+              :small="true"
           ></opensilex-EditButton>
           <opensilex-DeleteButton
-            v-if="user.hasCredential(credentials.CREDENTIAL_USER_DELETE_ID) && user.email != data.item.email"
-            @click="deleteUser(data.item.uri)"
-            label="component.user.delete"
-            :small="true"
+              v-if="user.hasCredential(credentials.CREDENTIAL_USER_DELETE_ID) && user.email !== data.item.email"
+              @click="deleteUser(data.item.uri)"
+              label="component.account.delete"
+              :small="true"
           ></opensilex-DeleteButton>
         </b-button-group>
       </template>
@@ -69,10 +88,16 @@
 </template>
 
 <script lang="ts">
-import { Component, Ref } from "vue-property-decorator";
+import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
-import { SecurityService } from "opensilex-security/index";
+import {SecurityService} from "opensilex-security/index";
+import {UserUpdateDTO} from "opensilex-security/model/userUpdateDTO";
+import {PersonDTO} from "opensilex-security/model/personDTO";
+import {UserGetDTO} from "opensilex-security/model/userGetDTO";
+import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
+import {SlotDetails} from "../common/views/TableAsyncView.vue";
+import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
 
 @Component
 export default class UserList extends Vue {
@@ -80,25 +105,24 @@ export default class UserList extends Vue {
   service: SecurityService;
   $store: any;
   $route: any;
+
   fields = [
     {
-      key: "last_name",
-      label: "component.user.last-name",
-      sortable: true
+      key: "uri",
+      label: "component.common.uri"
     },
     {
-      key: "first_name",
-      label: "component.user.first-name",
-      sortable: true
+      key: "last_name",
+      label: "component.account.linked-person"
     },
     {
       key: "email",
-      label: "component.user.email",
+      label: "component.account.email",
       sortable: true
     },
     {
       key: "admin",
-      label: "component.user.admin",
+      label: "component.account.admin",
       sortable: true
     },
     {
@@ -107,16 +131,28 @@ export default class UserList extends Vue {
       class: "table-actions"
     }
   ];
+
+  personByAccountUri :{
+    [id: string]: PersonDTO;
+  } =  {}
+
+  groupDetailsByAccountUri :{
+    [id: string]: NamedResourceDTO[];
+  } =  {}
+
   get user() {
     return this.$store.state.user;
   }
+
   get credentials() {
     return this.$store.state.credentials;
   }
+
   private filter: any = "";
   @Ref("tableRef") readonly tableRef!: any;
   currentURI = null;
-  groupDetails = [];  
+  groupDetails = [];
+
   created() {
     let query: any = this.$route.query;
     if (query.filter) {
@@ -134,44 +170,84 @@ export default class UserList extends Vue {
     this.tableRef.refresh();
   }
 
-  searchUsers(options) {
-    let toReturn;
-    return this.service
-      .searchUsers(
-        this.filter,
-        options.orderBy,
-        options.currentPage,
-        options.pageSize
-      )
-      .then((http: any) => {
-        let promises = [],
-          promise;
-        toReturn = http;
-        toReturn.response.result.forEach((element, index) => {
-          promise = this.service
-            .getUserGroups(element.uri)
-            .then((http2: any) => {
-              element.groupDetails = http2.response.result;
-            });
-          promises.push(promise);
-        });
-        return Promise.all(promises).then(values => {
-          return toReturn;
-        });
-      });
+  async searchUsers(options) {
+    let usersResponse : HttpResponse<OpenSilexResponse<UserGetDTO[]>> = await this.service
+        .searchUsers(
+            this.filter,
+            options.orderBy,
+            options.currentPage,
+            options.pageSize
+        )
+
+    let key_personUri_value_accountUri : {[id: string]: string} = {}
+
+     usersResponse.response.result.forEach( account => {
+      if (account.holderOfTheAccountURI) {
+        key_personUri_value_accountUri[account.holderOfTheAccountURI] = account.uri
+      }
+    });
+
+    await this.mapPersonsWithAccount(key_personUri_value_accountUri)
+
+    return usersResponse
+  }
+
+  async mapPersonsWithAccount(key_personUri_value_accountUri : {[id: string]: string}){
+    if ( Object.keys(key_personUri_value_accountUri).length !== 0 ) {
+      let personsResponse = await this.service.getPersonsByURI(Object.keys(key_personUri_value_accountUri))
+      personsResponse.response.result.forEach(person => {
+        let accountUri = key_personUri_value_accountUri[person.uri]
+        this.personByAccountUri[accountUri] = person
+      })
+    }
   }
 
   deleteUser(uri: string) {
     this.service
-      .deleteUser(uri)
-      .then(() => {
-        this.refresh();
-        this.$emit("onDelete", uri);
-      })
-      .catch(this.$opensilex.errorHandler);
+        .deleteUser(uri)
+        .then(() => {
+          this.refresh();
+          this.$opensilex.showSuccessToast(this.$t('component.account.successDelete'))
+        })
+        .catch(this.$opensilex.errorHandler);
   }
+
+  changeEnable(dto: UserUpdateDTO) {
+    dto.enable = !dto.enable;
+    this.service
+        .updateUser(dto)
+        .catch(this.$opensilex.errorHandler);
+  }
+
+  displayEnableButton(userRow) {
+    let isUserConnected = userRow.email === this.user.email
+    return this.user.hasCredential(this.credentials.CREDENTIAL_USER_MODIFICATION_ID)
+        && !userRow.admin
+        && !isUserConnected
+  }
+
+  async showUsersGroups(data: SlotDetails<UserGetDTO>) {
+
+    let accountUri :string = data.item.uri
+
+    if ( !this.groupDetailsByAccountUri[accountUri] ) {
+      let groupResponse :HttpResponse<OpenSilexResponse<Array<NamedResourceDTO>>> = await this.service.getUserGroups(accountUri)
+      let groups :NamedResourceDTO[] = groupResponse.response.result
+      this.groupDetailsByAccountUri[accountUri] = groups
+    }
+
+    data.toggleDetails()
+  }
+
 }
+
 </script>
 
 <style scoped lang="scss">
+
+/* without this rules the checkbox is not center on the height of the div*/
+.checkEnable {
+  display: flex;
+  align-items: center;
+}
 </style>

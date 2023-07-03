@@ -8,6 +8,7 @@
  ******************************************************************************/
 package org.opensilex.core.organisation.dal.facility;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.client.model.geojson.Geometry;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -28,6 +29,7 @@ import org.opensilex.core.organisation.dal.site.SiteDAO;
 import org.opensilex.core.organisation.dal.site.SiteModel;
 import org.opensilex.core.organisation.dal.site.SiteSearchFilter;
 import org.opensilex.core.organisation.exception.SiteFacilityInvalidAddressException;
+import org.opensilex.core.variablesGroup.dal.VariablesGroupDAO;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
@@ -58,7 +60,7 @@ public class FacilityDAO {
 
     private final OrganizationDAO organizationDAO;
     private final SiteDAO siteDAO;
-    private final URI addressGraphURI;
+    private final URI geometryGraphUri;
 
     private final OrganizationSPARQLHelper organizationSPARQLHelper;
 
@@ -69,7 +71,7 @@ public class FacilityDAO {
         this.geospatialDAO = new GeospatialDAO(nosql);
         this.organizationDAO = organizationDAO;
         this.siteDAO = new SiteDAO(sparql, nosql, organizationDAO);
-        this.addressGraphURI = sparql.getDefaultGraphURI(OrganizationModel.class);
+        this.geometryGraphUri = sparql.getDefaultGraphURI(OrganizationModel.class);
 
         this.organizationSPARQLHelper = new OrganizationSPARQLHelper(sparql);
     }
@@ -84,18 +86,18 @@ public class FacilityDAO {
      * @throws SiteFacilityInvalidAddressException If the address is invalid
      * @throws Exception If any other problem occurs
      */
-    public FacilityModel create(FacilityModel instance, AccountModel user) throws Exception {
+    public FacilityModel create(FacilityModel instance, Geometry geometry, AccountModel user) throws Exception {
         validateFacilityAddress(instance, user);
 
         String lang = null;
         if (user != null) {
             lang = user.getLanguage();
         }
-        List<OrganizationModel> organizationModels = sparql.getListByURIs(OrganizationModel.class, instance.getInfrastructureUris(), lang);
-        instance.setInfrastructures(organizationModels);
+        List<OrganizationModel> organizationModels = sparql.getListByURIs(OrganizationModel.class, instance.getOrganizationUriList(), lang);
+        instance.setOrganizations(organizationModels);
         sparql.create(instance);
 
-        createFacilityGeospatialModel(instance);
+        createFacilityGeospatialModel(instance, geometry);
 
         return instance;
     }
@@ -170,8 +172,8 @@ public class FacilityDAO {
 
                     // Organization filter
                     if (CollectionUtils.isNotEmpty(filter.getOrganizations())) {
-                        select.addWhere(makeVar(FacilityModel.INFRASTRUCTURE_FIELD), Oeso.isHosted, uriVar);
-                        select.addFilter(SPARQLQueryHelper.inURIFilter(makeVar(FacilityModel.INFRASTRUCTURE_FIELD), filter.getOrganizations()));
+                        select.addWhere(makeVar(FacilityModel.ORGANIZATIONS_FIElD), Oeso.isHosted, uriVar);
+                        select.addFilter(SPARQLQueryHelper.inURIFilter(makeVar(FacilityModel.ORGANIZATIONS_FIElD), filter.getOrganizations()));
                     }
 
                     if (!StringUtils.isEmpty(filter.getPattern())) {
@@ -198,14 +200,10 @@ public class FacilityDAO {
         validateFacilityAccess(uri, user);
 
         FacilityModel model = sparql.getByURI(FacilityModel.class, uri, user.getLanguage());
-        URI graphUri = sparql.getDefaultGraphURI(OrganizationModel.class);
 
-        // Must delete the associated address if there is one
-        if (model.getAddress() != null) {
-            if (this.geospatialDAO.getGeometryByURI(uri, graphUri) != null) {
-                this.geospatialDAO.delete(uri, graphUri);
-            }
+        deleteFacilityGeospatialModel(uri);
 
+        if (Objects.nonNull(model.getAddress())) {
             sparql.delete(FacilityAddressModel.class, model.getAddress().getUri());
         }
 
@@ -222,26 +220,24 @@ public class FacilityDAO {
      * @return The facility
      * @throws Exception If the access is not validated, or if any other problem occurs
      */
-    public FacilityModel update(FacilityModel instance, AccountModel user) throws Exception {
+    public FacilityModel update(FacilityModel instance, Geometry geometry, AccountModel user) throws Exception {
         validateFacilityAccess(instance.getUri(), user);
         validateFacilityAddress(instance, user);
 
-        List<OrganizationModel> organizationModels = sparql.getListByURIs(OrganizationModel.class, instance.getInfrastructureUris(), user.getLanguage());
-        instance.setInfrastructures(organizationModels);
-
-        URI graphUri = sparql.getDefaultGraphURI(OrganizationModel.class);
+        List<OrganizationModel> organizationModels = sparql.getListByURIs(OrganizationModel.class, instance.getOrganizationUriList(), user.getLanguage());
+        instance.setOrganizations(organizationModels);
 
         FacilityModel existingModel = sparql.getByURI(FacilityModel.class, instance.getUri(), user.getLanguage());
 
-        if (existingModel.getAddress() != null) {
-            if (this.geospatialDAO.getGeometryByURI(instance.getUri(), graphUri) != null) {
-                this.geospatialDAO.delete(instance.getUri(), graphUri);
-            }
+        if (Objects.nonNull(existingModel.getAddress()) || Objects.nonNull(geometry)) {
+            deleteFacilityGeospatialModel(instance.getUri());
 
-            sparql.delete(FacilityAddressModel.class, existingModel.getAddress().getUri());
+            if (Objects.nonNull(existingModel.getAddress())) {
+                sparql.delete(FacilityAddressModel.class, existingModel.getAddress().getUri());
+            }
         }
 
-        createFacilityGeospatialModel(instance);
+        createFacilityGeospatialModel(instance, geometry);
 
         sparql.update(instance);
         return instance;
@@ -255,31 +251,32 @@ public class FacilityDAO {
      * @return The geospatial model
      */
     public GeospatialModel getFacilityGeospatialModel(URI facilityUri) {
-        return geospatialDAO.getGeometryByURI(facilityUri, addressGraphURI);
+        return geospatialDAO.getGeometryByURI(facilityUri, geometryGraphUri);
     }
 
-    private void createFacilityGeospatialModel(FacilityModel facility) {
-        if (facility.getAddress() == null) {
+    private void deleteFacilityGeospatialModel(URI facilityUri) {
+        if (this.geospatialDAO.getGeometryByURI(facilityUri, geometryGraphUri) != null) {
+            this.geospatialDAO.delete(facilityUri, geometryGraphUri);
+        }
+    }
+
+    private void createFacilityGeospatialModel(FacilityModel facility, Geometry geometry) throws JsonProcessingException {
+        if (Objects.isNull(geometry) && Objects.isNull(facility.getAddress())) {
+            deleteFacilityGeospatialModel(facility.getUri());
             return;
         }
 
-        FacilityAddressDTO addressDto = new FacilityAddressDTO();
-        addressDto.fromModel(facility.getAddress());
+        if (Objects.isNull(geometry)) {
+            FacilityAddressDTO addressDto = new FacilityAddressDTO();
+            addressDto.fromModel(facility.getAddress());
 
-        Geometry geom = geocodingService.getPointFromAddress(addressDto.toReadableAddress());
-
-        if (geom == null) {
-            return;
+            geometry = geocodingService.getPointFromAddress(addressDto.toReadableAddress());
+            if (Objects.isNull(geometry)) {
+                return;
+            }
         }
 
-        GeospatialModel geospatialModel = new GeospatialModel();
-        geospatialModel.setUri(facility.getUri());
-        geospatialModel.setName(facility.getName());
-        geospatialModel.setRdfType(facility.getType());
-        geospatialModel.setGraph(addressGraphURI);
-        geospatialModel.setGeometry(geom);
-
-        this.geospatialDAO.create(geospatialModel);
+        this.geospatialDAO.create(new GeospatialModel(facility, geometryGraphUri, geometry));
     }
 
     /**

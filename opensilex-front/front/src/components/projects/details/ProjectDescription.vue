@@ -9,7 +9,7 @@
 
     <div v-if="project" class="row">
       <div class="col col-xl-5" style="min-width: 400px">
-        <opensilex-Card icon="ik#ik-clipboard" :label="$t('component.common.description')">
+        <opensilex-Card icon="ik#ik-clipboard" :label="$t('component.common.informations')">
           <template v-slot:rightHeader>
             <b-button-group>
               <opensilex-EditButton
@@ -82,15 +82,18 @@
       <div class="col col-xl-7">
         <opensilex-Card label="component.common.contacts" icon="ik#ik-users">
           <template v-slot:body>
-            <opensilex-UriListView
+            <opensilex-ContactsList
               label="component.project.scientificContacts"
               :list="scientificContactsList"
-            ></opensilex-UriListView>
-            <opensilex-UriListView label="component.project.coordinators" :list="coordinatorsList"></opensilex-UriListView>
-            <opensilex-UriListView
+            ></opensilex-ContactsList>
+            <opensilex-ContactsList
+                label="component.project.coordinators"
+                :list="coordinatorsList"
+            ></opensilex-ContactsList>
+            <opensilex-ContactsList
               label="component.project.administrativeContacts"
               :list="administrativeContactsList"
-            ></opensilex-UriListView>
+            ></opensilex-ContactsList>
           </template>
         </opensilex-Card>
         <opensilex-AssociatedExperimentsList
@@ -109,7 +112,7 @@ import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
 import {ProjectGetDetailDTO, ProjectsService} from "opensilex-core/index";
-import {SecurityService, UserGetDTO} from "opensilex-security/index";
+import {SecurityService, PersonDTO} from "opensilex-security/index";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import {ExperimentsService} from "opensilex-core/api/experiments.service";
 
@@ -181,6 +184,8 @@ export default class ProjectDescription extends Vue {
     this.service
       .deleteProject(uri)
       .then(() => {
+        let message = this.$i18n.t("ProjectList.name") + " " + uri + " " + this.$i18n.t("component.common.success.delete-success-message");
+        this.$opensilex.showSuccessToast(message);
         this.$router.push({
           path: "/projects"
         });
@@ -197,7 +202,7 @@ export default class ProjectDescription extends Vue {
           this.project.start_date,
           this.project.end_date
         );
-        this.loadUsers();
+        this.loadPersonsContact();
         this.loadRelatedProject();
       })
       .catch(this.$opensilex.errorHandler);
@@ -260,52 +265,34 @@ export default class ProjectDescription extends Vue {
       });
     }
   }
-  loadUsers() {
+  loadPersonsContact() {
     let service: SecurityService = this.$opensilex.getService(
       "opensilex.SecurityService"
     );
     this.scientificContactsList = [];
     if (this.project.scientific_contacts.length) {
       service
-        .getUsersByURI(this.project.scientific_contacts)
-        .then((http: HttpResponse<OpenSilexResponse<UserGetDTO[]>>) => {
-          this.scientificContactsList = http.response.result.map(item => {
-            return {
-              uri: item.email,
-              url: "mailto:" + item.email,
-              value: item.first_name + " " + item.last_name
-            };
-          });
+        .getPersonsByURI(this.project.scientific_contacts)
+        .then((http: HttpResponse<OpenSilexResponse<PersonDTO[]>>) => {
+          this.scientificContactsList = http.response.result
         })
         .catch(this.$opensilex.errorHandler);
     }
     this.coordinatorsList = [];
     if (this.project.coordinators.length) {
       service
-        .getUsersByURI(this.project.coordinators)
-        .then((http: HttpResponse<OpenSilexResponse<UserGetDTO[]>>) => {
-          this.coordinatorsList = http.response.result.map(item => {
-            return {
-              uri: item.email,
-              url: "mailto:" + item.email,
-              value: item.first_name + " " + item.last_name
-            };
-          });
+        .getPersonsByURI(this.project.coordinators)
+        .then((http: HttpResponse<OpenSilexResponse<PersonDTO[]>>) => {
+          this.coordinatorsList = http.response.result
         })
         .catch(this.$opensilex.errorHandler);
     }
     this.administrativeContactsList = [];
     if (this.project.administrative_contacts.length) {
       service
-        .getUsersByURI(this.project.administrative_contacts)
-        .then((http: HttpResponse<OpenSilexResponse<UserGetDTO[]>>) => {
-          this.administrativeContactsList = http.response.result.map(item => {
-            return {
-              uri: item.email,
-              url: "mailto:" + item.email,
-              value: item.first_name + " " + item.last_name
-            };
-          });
+        .getPersonsByURI(this.project.administrative_contacts)
+        .then((http: HttpResponse<OpenSilexResponse<PersonDTO[]>>) => {
+          this.administrativeContactsList = http.response.result
         })
         .catch(this.$opensilex.errorHandler);
     }

@@ -34,9 +34,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
-import static org.opensilex.sparql.service.SPARQLQueryHelper.regexFilterOnURI;
 
 /**
  * <pre>
@@ -360,7 +360,10 @@ public class SPARQLListFetcher<T extends SPARQLResourceModel> {
             boolean appendTriple = fieldsToFetch.get(field.getName());
             if (appendTriple) {
                 // add the BGP (?uri <field_to_fetch_property> ?field_to_fetch)
-                Triple triple = new Triple(uriVar, property.asNode(), fieldVar);
+                // or the reversed relation if needed
+                Triple triple = mapper.classAnalizer.isReverseRelation(field)
+                    ? new Triple(fieldVar, property.asNode(), uriVar)
+                    : new Triple(uriVar, property.asNode(), fieldVar);
 
                 if (mapper.classAnalizer.isOptional(field)) {
                     ElementTriplesBlock elementTriple = new ElementTriplesBlock();
@@ -387,18 +390,21 @@ public class SPARQLListFetcher<T extends SPARQLResourceModel> {
         int fieldIndex = 0;
 
         for (String concatFieldName : concatVarNameByFields.values()) {
-
             // parse multivalued property grouped by a separator
             String parsedValue = result.getStringValue(concatFieldName);
-            if (StringUtils.isEmpty(parsedValue)) {
-                continue;
-            }
 
-            String[] stringValues = parsedValue.split(GROUP_CONCAT_SEPARATOR);
-            if (stringValues.length > 0) {
+            List<Object> listPropertyValues;
+
+            if (StringUtils.isEmpty(parsedValue)) {
+                // An empty string should be treated as an empty list (String::split on an empty string returns
+                // a singleton array containing an empty string, instead of an empty array, that's why this case
+                // is handled separately)
+                listPropertyValues = Collections.emptyList();
+            } else  {
+                String[] stringValues = parsedValue.split(GROUP_CONCAT_SEPARATOR);
                 SPARQLClassObjectMapper<?> objectMapper = objectMappersByConcatVarName.get(concatFieldName);
 
-                List<Object> listPropertyValues = new ArrayList<>(stringValues.length);
+                listPropertyValues = new ArrayList<>(stringValues.length);
 
                 for (String strValue : stringValues) {
                     // if value correspond to some object URI, then create new object
@@ -410,13 +416,12 @@ public class SPARQLListFetcher<T extends SPARQLResourceModel> {
                         listPropertyValues.add(deserializersByConcatFields.get(concatFieldName).fromString(strValue));
                     }
                 }
-
-                // update model
-                Method setter = listSetters.get(fieldIndex);
-                setter.invoke(initialModel, listPropertyValues);
-                fieldIndex++;
             }
 
+            // update model
+            Method setter = listSetters.get(fieldIndex);
+            setter.invoke(initialModel, listPropertyValues);
+            fieldIndex++;
         }
     }
 

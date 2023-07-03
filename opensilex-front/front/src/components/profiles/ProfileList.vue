@@ -36,6 +36,7 @@
           :uri="data.item.uri"
           :value="data.item.name"
           :noExternalLink="true"
+          :isClickable="isClickable"
           @click="data.toggleDetails()"
         ></opensilex-UriLink>
       </template>
@@ -75,6 +76,9 @@ export default class ProfileList extends Vue {
   $opensilex: any;
   $store: any;
   $route: any;
+
+  @Prop()
+  isClickable;
 
   get user() {
     return this.$store.state.user;

@@ -71,20 +71,21 @@ export default class VariableSelector extends Vue {
         }
 
         return this.service.searchVariables(
-            this.filterLabel,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
+            this.filterLabel, //name
+            undefined, //entity
+            undefined, //entity of interest
+            undefined, //characteristic
+            undefined, //method
+            undefined, //unit
+            undefined, //included group
+            undefined, //not included group
+            undefined, //datatype
+            undefined, //time interval
+            undefined, //species
+            undefined, //with associated data
+            undefined, //experiment
+            undefined, //object
+            undefined, //devices
             ["name=asc"],
             page,
             pageSize

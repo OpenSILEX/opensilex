@@ -211,6 +211,8 @@ At first connection, you must configure RDF4J server URL with this value: `http:
 
 MongoDB is accessible on port 8668
 
+You could download MongoDB Compass to manage your database
+
 # Generate documentation
 
 ```

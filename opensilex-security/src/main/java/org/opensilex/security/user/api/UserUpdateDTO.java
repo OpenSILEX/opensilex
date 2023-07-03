@@ -36,13 +36,10 @@ import java.util.List;
  * @author Vincent Migot
  */
 @ApiModel
-@JsonPropertyOrder({"uri", "first_name", "last_name", "email", "language", "password",
-    "admin"})
+@JsonPropertyOrder({"uri", "first_name", "language", "password",
+    "admin", "last_name", "email", "holderOfTheAccountURI"})
 public class UserUpdateDTO extends UserGetDTO {
 
-    /**
-     * User password
-     */
     protected String password;
 
     @ValidURI
@@ -58,13 +55,11 @@ public class UserUpdateDTO extends UserGetDTO {
         return super.getEmail();
     }
 
-    @Required
     @ApiModelProperty(value = "User first name", example = "Janne", required = true)
     public String getFirstName() {
         return super.getFirstName();
     }
 
-    @Required
     @ApiModelProperty(value = "User last name", example = "Michelle", required = true)
     public String getLastName() {
         return super.getLastName();
@@ -96,5 +91,4 @@ public class UserUpdateDTO extends UserGetDTO {
     public String getLanguage() {
         return super.getLanguage();
     }
-
 }

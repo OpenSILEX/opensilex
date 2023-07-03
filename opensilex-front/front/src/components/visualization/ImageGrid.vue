@@ -1,6 +1,6 @@
 
 <template>
-    <div class="row">
+    <div class="imagesGrid">
       <opensilex-ImageSingle
         v-for="(image, index) in images"
         v-bind:key="index"
@@ -25,4 +25,8 @@ export default class ImageGrid extends Vue {
 </script>
 
 <style scoped lang="scss">
+.imagesGrid {
+  display: flex;
+  flex-wrap: wrap;
+}
 </style>

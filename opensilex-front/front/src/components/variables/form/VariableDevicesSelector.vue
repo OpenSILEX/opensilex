@@ -30,6 +30,7 @@ import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import {DeviceGetDTO} from "opensilex-core/index";
 import {DevicesService} from "opensilex-core/index";
+import SelectForm from "../../common/forms/SelectForm.vue";
 
 @Component
 export default class VariableDevicesSelector extends Vue {
@@ -37,7 +38,7 @@ export default class VariableDevicesSelector extends Vue {
   $i18n: any;
   $service: DevicesService;
 
-  @Ref("selectForm") readonly selectForm!: any;
+  @Ref("selectForm") readonly selectForm!: SelectForm;
 
   @Prop()
   actionHandler: Function;

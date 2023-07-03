@@ -5,6 +5,7 @@
  */
 package org.opensilex.core;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.mongodb.BasicDBList;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
@@ -34,6 +35,7 @@ import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.server.response.ObjectUriResponse;
 
 /**
  *
@@ -48,6 +50,11 @@ public class AbstractMongoIntegrationTest extends AbstractSecurityIntegrationTes
     public static final int MONGO_PORT = 28018;
     public static final String MONGO_DATABASE = "admin";
     public static final String MONGO_HOST = "localhost";
+
+    /**
+     * Type reference for reading results from "create" queries
+     */
+    protected static final TypeReference<ObjectUriResponse> objectUriResponseTypeReference = new TypeReference<ObjectUriResponse>() {};
 
     @BeforeClass
     public static void initMongo() throws IOException {

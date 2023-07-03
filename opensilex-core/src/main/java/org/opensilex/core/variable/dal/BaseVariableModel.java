@@ -32,36 +32,35 @@ public abstract class BaseVariableModel<T extends SPARQLNamedResourceModel<T>> e
             property = "exactMatch"
     )
     private List<URI> exactMatch;
+    public static final String EXACT_MATCH_FIELD = "exactMatch";
 
     @SPARQLProperty(
             ontology = SKOS.class,
             property = "closeMatch"
     )
     private List<URI> closeMatch;
+    public static final String CLOSE_MATCH_FIELD = "closeMatch";
 
     @SPARQLProperty(
             ontology = SKOS.class,
             property = "broadMatch"
     )
     private List<URI> broadMatch;
+    public static final String BROAD_MATCH_FIELD = "broadMatch";
 
     @SPARQLProperty(
             ontology = SKOS.class,
             property = "narrowMatch"
     )
     private List<URI> narrowMatch;
+    public static final String NARROW_MATCH_FIELD = "narrowMatch";
 
     @SPARQLProperty(
             ontology = Oeso.class,
-            property = "fromSharedResourceInstance"
+            property = "fromSharedResourceInstance",
+            ignoreUpdateIfNull = true
     )
     private URI fromSharedResourceInstance;
-
-    @SPARQLProperty(
-            ontology = DCTerms.class,
-            property = "modified"
-    )
-    private OffsetDateTime lastUpdateTime;
 
     public String getDescription() {
         return description;
@@ -117,13 +116,5 @@ public abstract class BaseVariableModel<T extends SPARQLNamedResourceModel<T>> e
 
     public void setFromSharedResourceInstance(URI fromSharedResourceInstance) {
         this.fromSharedResourceInstance = fromSharedResourceInstance;
-    }
-
-    public OffsetDateTime getLastUpdateTime() {
-        return lastUpdateTime;
-    }
-
-    public void setLastUpdateTime(OffsetDateTime lastUpdateTime) {
-        this.lastUpdateTime = lastUpdateTime;
     }
 }

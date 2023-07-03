@@ -17,10 +17,14 @@ import io.swagger.annotations.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.graph.Node;
+import org.apache.jena.vocabulary.OA;
 import org.apache.jena.vocabulary.RDFS;
 import org.bson.Document;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.opensilex.core.annotation.dal.AnnotationDAO;
+import org.opensilex.core.annotation.dal.AnnotationModel;
+import org.opensilex.core.annotation.dal.MotivationModel;
 import org.opensilex.core.data.dal.*;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.data.utils.ParsedDateTimeMongo;
@@ -31,6 +35,7 @@ import org.opensilex.core.exception.*;
 import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.experiment.dal.ExperimentSearchFilter;
 import org.opensilex.core.experiment.utils.ImportDataIndex;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.provenance.api.ProvenanceAPI;
@@ -40,6 +45,7 @@ import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
+import org.opensilex.core.variable.api.VariableDetailsDTO;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
@@ -47,12 +53,12 @@ import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidUriListException;
 import org.opensilex.nosql.exceptions.NoSQLTooLargeSetException;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.exceptions.NotFoundException;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
@@ -64,6 +70,7 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
+import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
@@ -94,9 +101,13 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.time.zone.ZoneRulesException;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static org.opensilex.core.data.utils.DataMathFunctions.*;
 
 
 /**
@@ -129,6 +140,7 @@ public class DataAPI {
     public static final String DATA_EXAMPLE_TIMEZONE = "Europe/Paris";
     public static final String DATA_EXAMPLE_METADATA = "{ \"LabelView\" : \"side90\",\n" +
             "\"paramA\" : \"90\"}";
+    public static final String DATA_EXAMPLE_OPERATOR = "dev:id/user/isa.droits";
 
     public static final String CREDENTIAL_DATA_MODIFICATION_ID = "data-modification";
     public static final String CREDENTIAL_DATA_MODIFICATION_LABEL_KEY = "credential.default.modification";
@@ -159,7 +171,7 @@ public class DataAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Add data", response = ObjectUriResponse.class),
+            @ApiResponse(code = 201, message = "Add data", response = URI.class),
             @ApiResponse(code = 400, message = "Bad user request", response = ErrorResponse.class),
             @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
     public Response addListData(
@@ -269,15 +281,45 @@ public class DataAPI {
             @ApiParam(value = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE_MAX) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
             @ApiParam(value = "Search by provenances", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
             @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
+            @ApiParam(value = "Group filter") @QueryParam("group_of_germplasm") @ValidURI URI germplasmGroup,
+            @ApiParam(value = "Search by operators", example = DATA_EXAMPLE_OPERATOR ) @QueryParam("operators") List<URI> operators,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @DefaultValue("date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize,
-            @ApiParam(value = "Targets uris") List<URI> targets
+            @ApiParam(value = "Targets uris, can be an empty array but can't be null", name = "targets") List<URI> targets
     )throws Exception {
         if (targets == null) {
             targets = new ArrayList<>();
         }
-        return getDataList(startDate, endDate, timezone, experiments, targets, variables, devices, confidenceMin, confidenceMax, provenances, metadata, orderByList, page, pageSize);
+        //Get scientific objects associated to germplasms inside germplasmGroup if it's not null
+        if(germplasmGroup!=null){
+
+            ScientificObjectDAO scientificObjectDAO = new ScientificObjectDAO(sparql, nosql);
+            Set<URI> finalTargetsFilter = new HashSet<>(targets);
+            //If no experiments were passed we must only look for objects in experiments that the user is allowed to see
+            ExperimentDAO experimentDAO = new ExperimentDAO(sparql, nosql);
+            List<URI> includedExperimentsForTargetsSearch = experiments;
+            if(experiments == null || experiments.isEmpty()){
+                ExperimentSearchFilter experimentSearchFilter = new ExperimentSearchFilter();
+                experimentSearchFilter.setUser(user);
+                int xpQuantity = experimentDAO.count();
+                experimentSearchFilter.setPage(0);
+                experimentSearchFilter.setPageSize(xpQuantity);
+                includedExperimentsForTargetsSearch = experimentDAO.search(experimentSearchFilter).getList().stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList());
+            }
+
+            List<URI> targetsAssociatedWithGermplasmGroup = scientificObjectDAO
+                    .getScientificObjectUrisAssociatedWithGermplasmGroup(includedExperimentsForTargetsSearch, germplasmGroup, user.getLanguage());
+            finalTargetsFilter.addAll(targetsAssociatedWithGermplasmGroup);
+            targets = new ArrayList<>(finalTargetsFilter);
+            //if targets is still empty when a group was passed then we don't want any data to be returned
+            if(targets.isEmpty()){
+                ListWithPagination<DataGetDTO> resultDTOList = new ListWithPagination<DataGetDTO>(new ArrayList<>());
+                return new PaginatedListResponse<>(resultDTOList).getResponse();
+            }
+        }
+
+        return getDataList(startDate, endDate, timezone, experiments, targets, variables, devices, confidenceMin, confidenceMax, provenances, metadata, operators, orderByList, page, pageSize);
     }
 
     @GET
@@ -300,11 +342,12 @@ public class DataAPI {
             @ApiParam(value = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE_MAX) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
             @ApiParam(value = "Search by provenances", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
             @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
+            @ApiParam(value = "Search by operators", example = DATA_EXAMPLE_OPERATOR ) @QueryParam("operators") List<URI> operators,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @DefaultValue("date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
-        return getDataList(startDate, endDate, timezone, experiments, targets, variables, devices, confidenceMin, confidenceMax, provenances, metadata, orderByList, page, pageSize);
+        return getDataList(startDate, endDate, timezone, experiments, targets, variables, devices, confidenceMin, confidenceMax, provenances, metadata, operators, orderByList, page, pageSize);
     }
 
     private Response getDataList(
@@ -319,6 +362,7 @@ public class DataAPI {
             Float confidenceMax,
             List<URI> provenances,
             String metadata,
+            List<URI> operators,
             List<OrderBy> orderByList,
             int page,
             int pageSize) throws Exception{
@@ -367,6 +411,7 @@ public class DataAPI {
                 confidenceMin,
                 confidenceMax,
                 metadataFilter,
+                operators,
                 orderByList,
                 page,
                 pageSize
@@ -398,7 +443,8 @@ public class DataAPI {
             @ApiParam(value = "Search by minimal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("min_confidence") @Min(0) @Max(1) Float confidenceMin,
             @ApiParam(value = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE_MAX) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
             @ApiParam(value = "Search by provenances", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
-            @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata
+            @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
+            @ApiParam(value = "Search by operators", example = DATA_EXAMPLE_OPERATOR ) @QueryParam("operators") List<URI> operators
     ) throws Exception {
         DataDAO dao = new DataDAO(nosql, sparql, fs);
 
@@ -443,7 +489,8 @@ public class DataAPI {
                 endInstant,
                 confidenceMin,
                 confidenceMax,
-                metadataFilter
+                metadataFilter,
+                operators
         );
         return new SingleObjectResponse<>(count).getResponse();
     }
@@ -456,7 +503,7 @@ public class DataAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Data deleted", response = ObjectUriResponse.class),
+            @ApiResponse(code = 200, message = "Data deleted", response = URI.class),
             @ApiResponse(code = 400, message = "Invalid or unknown Data URI", response = ErrorResponse.class),
             @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
     public Response deleteData(
@@ -479,7 +526,7 @@ public class DataAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Confidence update", response = ObjectUriResponse.class),
+            @ApiResponse(code = 201, message = "Confidence update", response = URI.class),
             @ApiResponse(code = 400, message = "Bad user request", response = ErrorResponse.class),
             @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
 
@@ -506,7 +553,7 @@ public class DataAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Confidence update", response = ObjectUriResponse.class),
+            @ApiResponse(code = 201, message = "Confidence update", response = URI.class),
             @ApiResponse(code = 400, message = "Bad user request", response = ErrorResponse.class),
             @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
 
@@ -542,7 +589,7 @@ public class DataAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Data deleted", response = ObjectUriResponse.class),
+            @ApiResponse(code = 200, message = "Data deleted", response = URI.class),
             @ApiResponse(code = 400, message = "Invalid or unknown Data URI", response = ErrorResponse.class),
             @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
     public Response deleteDataOnSearch(
@@ -702,7 +749,7 @@ public class DataAPI {
         }
         return deviceToReturn;
     }
-    
+
     /** 
      * check and return Device from Data Provenance if no ambiguity
      * Exception if two devices as provenance agent
@@ -712,8 +759,7 @@ public class DataAPI {
      * @throws Exception
      */
     private DeviceModel checkAndReturnDeviceFromDataProvenance(DataModel data, DeviceDAO deviceDAO) throws Exception{
-        
-        
+
        boolean deviceIsLinked = false; // to test if there are 2 devices
        URI agentToReturn = null;
        DeviceModel device = null;
@@ -740,7 +786,6 @@ public class DataAPI {
         }
         return device;
     }
-    
     
     /** 
      * check if variable is associated to device
@@ -928,6 +973,7 @@ public class DataAPI {
             @ApiParam(value = "Search by maximal confidence index", example = DATA_EXAMPLE_CONFIDENCE) @QueryParam("max_confidence") @Min(0) @Max(1) Float confidenceMax,
             @ApiParam(value = "Search by provenances", example = DATA_EXAMPLE_PROVENANCEURI) @QueryParam("provenances") List<URI> provenances,
             @ApiParam(value = "Search by metadata", example = DATA_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
+            @ApiParam(value = "Search by operators", example = DATA_EXAMPLE_OPERATOR ) @QueryParam("operators") List<URI> operators,
             @ApiParam(value = "Format wide or long", example = "wide") @DefaultValue("wide") @QueryParam("mode") String csvFormat,
             @ApiParam(value = "Export also raw_data") @DefaultValue("false") @QueryParam("with_raw_data") boolean withRawData,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "date=desc") @QueryParam("order_by") List<OrderBy> orderByList,
@@ -971,7 +1017,7 @@ public class DataAPI {
         }
 
         Instant start = Instant.now();
-        List<DataModel> resultList = dao.search(user, experiments, objects, variables, provenances, devices, startInstant, endInstant, confidenceMin, confidenceMax, metadataFilter, orderByList);
+        List<DataModel> resultList = dao.search(user, experiments, objects, variables, provenances, devices, startInstant, endInstant, confidenceMin, confidenceMax, metadataFilter, operators, orderByList);
         Instant data = Instant.now();
         LOGGER.debug(resultList.size() + " observations retrieved " + Long.toString(Duration.between(start, data).toMillis()) + " milliseconds elapsed");
 
@@ -1043,7 +1089,7 @@ public class DataAPI {
         Response prepareCSVExport = null;
 
         try{
-            List<DataModel> resultList = dao.search(user, dto.getExperiments(), dto.getObjects(), dto.getVariables(), dto.getProvenances(), dto.getDevices(), startInstant, endInstant, dto.getConfidenceMin(), dto.getConfidenceMax(), metadataFilter, null);
+            List<DataModel> resultList = dao.search(user, dto.getExperiments(), dto.getObjects(), dto.getVariables(), dto.getProvenances(), dto.getDevices(), startInstant, endInstant, dto.getConfidenceMin(), dto.getConfidenceMax(), metadataFilter, null, null);
             Instant data = Instant.now();
             LOGGER.debug(resultList.size() + " observations retrieved " + Long.toString(Duration.between(start, data).toMillis()) + " milliseconds elapsed");
 
@@ -1164,6 +1210,7 @@ public class DataAPI {
             @ApiParam(value = "File", required = true, type = "file") @NotNull @FormDataParam("file") InputStream file,
             @FormDataParam("file") FormDataContentDisposition fileContentDisposition) throws Exception {
         DataDAO dao = new DataDAO(nosql, sparql, fs);
+        AnnotationDAO annotationDAO = new AnnotationDAO(sparql);
 
         // test prov
         ProvenanceModel provenanceModel = null;
@@ -1193,6 +1240,9 @@ public class DataAPI {
             Instant start = Instant.now();
             List<DataModel> data = new ArrayList<>(validation.getData().keySet());
             try {
+                //Transactions so that we don't create any Data or Annotations if either fail
+                nosql.startTransaction();
+                sparql.startTransaction();
                 dao.createAll(data);
                 
                 if(!validation.getVariablesToDevices().isEmpty()){
@@ -1201,10 +1251,15 @@ public class DataAPI {
                         deviceDAO.associateVariablesToDevice((DeviceModel) variablesToDevice.getKey(),(List<URI>)variablesToDevice.getValue(), user );
                     }
                 }
-                
                 validation.setNbLinesImported(data.size());
+                //If the data import was successful, post the annotations on objects
+                annotationDAO.create(validation.getAnnotationsOnObjects());
+                nosql.commitTransaction();
+                sparql.commitTransaction();
             } catch (NoSQLTooLargeSetException ex) {
                 validation.setTooLargeDataset(true);
+                nosql.rollbackTransaction();
+                sparql.rollbackTransaction();
 
             } catch (MongoBulkWriteException duplicateError) {
                 List<BulkWriteError> bulkErrors = duplicateError.getWriteErrors();
@@ -1216,13 +1271,19 @@ public class DataAPI {
                     CSVCell csvCell = new CSVCell(validation.getData().get(data.get(index)), validation.getHeaders().indexOf(dataModel.getVariable().toString()), dataModel.getValue().toString(), variableName);
                     validation.addDuplicatedDataError(csvCell);
                 }
+                nosql.rollbackTransaction();
+                sparql.rollbackTransaction();
             } catch (MongoCommandException e) {
                 CSVCell csvCell = new CSVCell(-1, -1, "Unknown value", "Unknown variable");
                 validation.addDuplicatedDataError(csvCell);
+                nosql.rollbackTransaction();
+                sparql.rollbackTransaction();
             } catch (DataTypeException e) {
                 int indexOfVariable = validation.getHeaders().indexOf(e.getVariable().toString());
                 String variableName = validation.getHeadersLabels().get(indexOfVariable) + '(' + validation.getHeaders().get(indexOfVariable) + ')';
                 validation.addInvalidDataTypeError(new CSVCell(e.getDataIndex(), indexOfVariable, e.getValue().toString(), variableName));
+                nosql.rollbackTransaction();
+                sparql.rollbackTransaction();
             }
             Instant finish = Instant.now();
             long timeElapsed = Duration.between(start, finish).toMillis();
@@ -1293,7 +1354,8 @@ public class DataAPI {
     private final String deviceHeader = "device";
     private final String rawdataHeader = "raw_data";
     private final String soHeader = "scientific_object";
-    
+    private final String annotationHeader = "object_annotation";
+
     private DataCSVValidationModel validateWholeCSV(ProvenanceModel provenance, URI experiment, InputStream file, AccountModel currentUser) throws Exception {
         DataCSVValidationModel csvValidation = new DataCSVValidationModel();
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
@@ -1348,7 +1410,11 @@ public class DataAPI {
             Set<String> headers = Arrays.stream(ids).filter(Objects::nonNull).map(id -> id.toLowerCase(Locale.ENGLISH)).collect(Collectors.toSet());
             if (!headers.contains(deviceHeader) && !headers.contains(targetHeader) && !headers.contains(soHeader) && !sensingDeviceFoundFromProvenance) {
                 csvValidation.addMissingHeaders(Arrays.asList(deviceHeader + " or " + targetHeader + " or " + soHeader));
-            }  
+            }
+            // Check that there is an soHeader or a targetHeader if there is an annotationHeader otherwise create error
+            if(headers.contains(annotationHeader) && !headers.contains(targetHeader) && !headers.contains(soHeader)){
+                csvValidation.addMissingHeaders(Arrays.asList(targetHeader + " or " + soHeader));
+            }
             
             // 1. check variables
             HashMap<URI, URI> mapVariableUriDataType = new HashMap<>();
@@ -1364,7 +1430,7 @@ public class DataAPI {
                     
                         if (header.equalsIgnoreCase(expHeader) || header.equalsIgnoreCase(targetHeader) 
                             || header.equalsIgnoreCase(dateHeader) || header.equalsIgnoreCase(deviceHeader) || header.equalsIgnoreCase(soHeader)
-                            || header.equalsIgnoreCase(rawdataHeader)) {
+                            || header.equalsIgnoreCase(rawdataHeader) || header.equalsIgnoreCase(annotationHeader)) {
                             headerByIndex.put(i, header);                            
                         
                         } else {                        
@@ -1499,6 +1565,9 @@ public class DataAPI {
         Boolean missingTargetOrDevice = false;
         int targetColIndex = 0;
         int deviceColIndex = 0;
+
+        AnnotationModel annotationFromAnnotationColumn = null;
+        int annotationIndex = 0;
 
         DeviceModel deviceFromDeviceColumn = null;
         SPARQLNamedResourceModel object = null;
@@ -1678,7 +1747,21 @@ public class DataAPI {
                     }
                 }
 
-            } else if (!headerByIndex.get(colIndex).equalsIgnoreCase(rawdataHeader)) { // Variable/Value column
+            }
+            //If we are at the annotation column, and the cell isn't empty, create a new Annotation Model.
+            //Set the motivation to commenting, and leave the target for now until we're sure that the target column has already been imported
+            else if (headerByIndex.get(colIndex).equalsIgnoreCase(annotationHeader)){
+                String annotation = values[colIndex];
+                annotationIndex = colIndex;
+                if(!StringUtils.isEmpty(annotation)){
+                    annotationFromAnnotationColumn = new AnnotationModel();
+                    annotationFromAnnotationColumn.setDescription(annotation.trim());
+                    annotationFromAnnotationColumn.setCreator(user.getUri());
+                    MotivationModel motivationModel = new MotivationModel();
+                    motivationModel.setUri(URI.create(OA.commenting.getURI()));
+                    annotationFromAnnotationColumn.setMotivation(motivationModel);
+                }
+            }else if (!headerByIndex.get(colIndex).equalsIgnoreCase(rawdataHeader)) { // Variable/Value column
                 if (headerByIndex.containsKey(colIndex)) {
                     // If value is not blank and null
                     if (!StringUtils.isEmpty(values[colIndex])) {
@@ -1842,7 +1925,23 @@ public class DataAPI {
                 }
             }
         }
-        
+        // If an AnnotationModel was created on this row as well as a target, we need to set the Annotation's target
+        if( annotationFromAnnotationColumn != null ){
+            if(target == null && object == null){
+                CSVCell annotationCell = new CSVCell(rowIndex, annotationIndex, annotationFromAnnotationColumn.getDescription(), annotationHeader);
+                csvValidation.addInvalidAnnotationError(annotationCell);
+                validRow = false;
+            }else{
+                if(validRow){
+                    annotationFromAnnotationColumn.setTargets(Collections.singletonList( target==null ? object.getUri() : target.getUri()));
+                    String onlyDateString = parsedDateTimeMongo.getInstant().toString().substring(0, 11);
+                    String setToMidday = onlyDateString + "12:00:00Z";
+                    annotationFromAnnotationColumn.setCreated(Instant.parse( setToMidday ).atOffset(ZoneOffset.ofTotalSeconds(0)));
+                    csvValidation.addToAnnotationsOnObjects(annotationFromAnnotationColumn);
+                }
+            }
+        }
+
         if (missingTargetOrDevice) {
             //the device or the target is mandatory if there is no device in the provenance
             CSVCell cell1 = new CSVCell(rowIndex, deviceColIndex, null, deviceHeader);
@@ -1973,6 +2072,171 @@ public class DataAPI {
                 childrenToRoot(child, map, agentRootType);
             }
         }
+    }
+
+    /**
+     * Create a DataSimpleProvenanceGetDTO with uri and name from a data provenance model.
+     * @detail
+     * Analyze the provenance from the data model and do as follows:
+     *  if there is one agent (device or operator), retrieve the uri and name of the agent
+     *  otherwise, take the uri and name from the provenance model
+     * @param dataProvModel
+     * @return a simple data provenance with uri and name attributes
+     * @throws Exception
+     */
+    private DataSimpleProvenanceGetDTO createDataSimpleProvenance(DataProvenanceModel dataProvModel)
+            throws Exception {
+        DataSimpleProvenanceGetDTO dto = new DataSimpleProvenanceGetDTO();
+
+        List<ProvEntityModel> provEntityList = dataProvModel.getProvWasAssociatedWith();
+
+        if (provEntityList != null && provEntityList.size() == 1) {
+            OntologyDAO ontologyDao = new OntologyDAO(sparql);
+            URI uri = provEntityList.get(0).getUri();
+            dto.setUri(uri);
+            dto.setName(ontologyDao.getURILabel(uri, user.getLanguage()));
+        }
+        else {
+            ProvenanceDAO provenanceDao = new ProvenanceDAO(nosql, sparql);
+            ProvenanceModel provModel = provenanceDao.get(dataProvModel.getUri());
+            dto.setUri(provModel.getUri());
+            dto.setName(provModel.getName());
+        }
+
+        return dto;
+    }
+
+    @GET
+    @Path("/data_serie/facility")
+    @ApiOperation("Get all data series associated with a facility")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return a list of data serie", response = DataVariableSeriesGetDTO.class)
+    })
+    public Response getDataSeriesByFacility(
+            @ApiParam(value = "variable URI", example = "http://example.com/", required = true) @QueryParam("variable") @NotNull URI variableUri,
+            @ApiParam(value = "target URI", example = "http://example.com/", required = true) @QueryParam("target") @NotNull URI facilityUri,
+            @ApiParam(value = "Search by minimal date", example = DATA_EXAMPLE_MINIMAL_DATE) @QueryParam("start_date") String startDate,
+            @ApiParam(value = "Search by maximal date", example = DATA_EXAMPLE_MAXIMAL_DATE) @QueryParam("end_date") String endDate,
+            @ApiParam(value = "Retreive calculated series only", example = "false") @QueryParam("calculated_only") Boolean calculatedOnly
+    ) throws Exception {
+
+        DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
+        VariableDAO variableDAO = new VariableDAO(sparql, nosql, fs);
+
+        Instant start, end;
+
+        Instant startInstant = (startDate != null) ? Instant.parse(startDate) : null;
+        Instant endInstant = (endDate != null) ? Instant.parse(endDate) : Instant.now();
+
+        VariableDetailsDTO variable = new VariableDetailsDTO(variableDAO.get(variableUri));
+        DataVariableSeriesGetDTO dto = new DataVariableSeriesGetDTO(variable);
+
+        /// Get last stored data
+
+        DataComputedGetDTO lastData = dataDAO.getLastDataFound(
+                user,
+                null,
+                Collections.singletonList(facilityUri),
+                Collections.singletonList(variableUri),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+        );
+        dto.setLastData(lastData);
+
+        /// Retrieve median series
+
+        start = Instant.now();
+        List<DataComputedModel> dataModels = dataDAO.computeAllMediansPerHour(
+                user,
+                facilityUri,
+                variableUri,
+                startInstant,
+                endInstant);
+        end = Instant.now();
+        LOGGER.debug(dataModels.size() + " data retrieved from mongo : " + Long.toString(Duration.between(start, end).toMillis()) + " milliseconds elapsed");
+
+        Map<DataProvenanceModel, List<DataComputedModel>> provenancesMap;
+
+        List<DataSerieGetDTO> dataSeriesDTOs = new ArrayList<>();
+        List<DataComputedModel> medians = new ArrayList<>();
+
+        provenancesMap = dataModels.stream().collect(Collectors.groupingBy(DataComputedModel::getProvenance));
+
+        for (Map.Entry<DataProvenanceModel, List<DataComputedModel>> entryProv : provenancesMap.entrySet()) {
+
+            List<DataComputedModel> medianSerie = entryProv.getValue()
+                    .stream()
+                    .sorted(Comparator.comparing(DataComputedModel::getDate))
+                    .collect(Collectors.toList());
+
+            // adjust datetime for median data by setting it to the middle of the hour it represents
+            medianSerie.forEach(data -> {
+                Instant middleDate = data.getDate().truncatedTo(ChronoUnit.HOURS);
+                data.setDate(middleDate.plus(30, ChronoUnit.MINUTES));
+            });
+
+            medians.addAll(medianSerie);
+
+            DataSimpleProvenanceGetDTO provenance = createDataSimpleProvenance(entryProv.getKey());
+
+            List<DataComputedGetDTO> medianSerieDTO = medianSerie.stream()
+                    .map(DataComputedGetDTO::getDtoFromModel)
+                    .collect(Collectors.toList());
+            DataSerieGetDTO dataSerie = new DataSerieGetDTO(provenance, medianSerieDTO);
+            dataSeriesDTOs.add(dataSerie);
+        }
+
+        if (!calculatedOnly) {
+            dto.setDataSeries(dataSeriesDTOs);
+        }
+        else if (dataSeriesDTOs.size() == 1) {
+            dto.setCalculatedSeries(dataSeriesDTOs);
+        }
+
+        /// Compute calculated series
+
+        if (dataSeriesDTOs.size() > 1) {
+
+            List<DataSerieGetDTO> dataCalculatedSeriesDTOs = new ArrayList<>();
+
+            DataSimpleProvenanceGetDTO provMedian = new DataSimpleProvenanceGetDTO();
+            provMedian.setName("median_per_hour");
+
+            List<DataComputedModel> medianOfMedians = computeMedianPerHour(medians);
+            List<DataComputedGetDTO> medianOfMediansDTO = medianOfMedians.stream()
+                    .map(DataComputedGetDTO::getDtoFromModel)
+                    .collect(Collectors.toList());
+            dataCalculatedSeriesDTOs.add(new DataSerieGetDTO(provMedian, medianOfMediansDTO));
+
+            DataSimpleProvenanceGetDTO provAverage = new DataSimpleProvenanceGetDTO();
+            provAverage.setName("mean_per_day");
+
+            List<DataComputedModel> averageSerie = dataDAO.computeAllMeanPerDay(
+                    user,
+                    facilityUri,
+                    variableUri,
+                    startInstant,
+                    endInstant);
+            List<DataComputedGetDTO> averageSerieDtos = averageSerie
+                    .stream()
+                    .map((d) -> DataComputedGetDTO.getDtoFromModel(d))
+                    .sorted(Comparator.comparing(DataComputedGetDTO::getDate))
+                    .collect(Collectors.toList());
+            dataCalculatedSeriesDTOs.add(new DataSerieGetDTO(provAverage, averageSerieDtos));
+
+            dto.setCalculatedSeries(dataCalculatedSeriesDTOs);
+        }
+
+        return new SingleObjectResponse<>(dto).getResponse();
     }
 
 }

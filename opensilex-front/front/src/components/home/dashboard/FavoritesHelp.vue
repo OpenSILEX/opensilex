@@ -68,6 +68,6 @@ en:
 fr:
   FavoritesHelp:
     title: A propos des favoris
-    body: Vous pouvez ajouter un objet scientifique, une experimentation ou un dispositif comme favoris en vous rendant sur sa description et en cliquant sur l'icone 
+    body: Vous pouvez ajouter un objet scientifique, une experimentation ou un appareil comme favoris en vous rendant sur sa description et en cliquant sur l'icone 
 
 </i18n>

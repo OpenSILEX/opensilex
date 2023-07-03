@@ -25,6 +25,7 @@ import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.event.dal.move.PositionModel;
 import org.opensilex.core.exception.DuplicateNameException;
+import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.organisation.dal.OrganizationDAO;
@@ -39,6 +40,8 @@ import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
+import org.opensilex.security.person.dal.PersonDAO;
+import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.DateDeserializer;
@@ -49,6 +52,7 @@ import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
+import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.sparql.utils.Ontology;
 import org.opensilex.utils.ListWithPagination;
@@ -56,6 +60,7 @@ import org.opensilex.utils.ListWithPagination;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.mongodb.client.model.Filters.eq;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
@@ -383,15 +388,13 @@ public class DeviceDAO {
     }
     
     /**
-     * Linked variables to a device by the Measure relation
+     * Linked variables to a device by the 'oeso:measures' relation
      * @param device device
      * @param variables variables to associate
      * @throws Exception if some error is encountered 
      *
      * **/
     public DeviceModel associateVariablesToDevice(DeviceModel device, List<URI> variables, AccountModel user) throws Exception {
-        
-       
         
         List<SPARQLModelRelation> relations = device.getRelations();
         
@@ -463,6 +466,7 @@ public class DeviceDAO {
     public DeviceModel getDeviceByURI(URI deviceURI, AccountModel currentUser) throws Exception {
         DeviceModel device = sparql.getByURI(DeviceModel.class, deviceURI, currentUser.getLanguage());
         if (device != null) {
+            Objects.requireNonNull(device.getUri());
             DeviceAttributeModel storedAttributes = getStoredAttributes(device.getUri());
             if (storedAttributes != null) {
                 device.setAttributes(storedAttributes.getAttribute());
@@ -470,6 +474,7 @@ public class DeviceDAO {
         }
         return device;
     }
+
 
     public List<DeviceModel> getDevicesByURI(List<URI> devicesURI, AccountModel currentUser) throws Exception {
         List<DeviceModel> devices = null;
@@ -486,6 +491,33 @@ public class DeviceDAO {
                 }
             }
         }
+        return devices;
+    }
+
+    public List<DeviceModel> getDevicesByFacility(URI facilityUri, AccountModel currentUser) throws Exception {
+        List<DeviceModel> devices = new ArrayList<>();
+
+        SelectBuilder select = new SelectBuilder();
+
+        sparql.getDefaultGraph(MoveModel.class);
+        Var target = makeVar("target");
+        Var subject = makeVar("s");
+        select.addVar(target);
+        select.setDistinct(true);
+
+        select.addWhere(subject, Oeev.to, SPARQLDeserializers.nodeURI(facilityUri))
+            .addWhere(subject, Ontology.typeSubClassAny, Oeev.Move)
+            .addWhere(subject, Oeev.concerns, target);
+
+        List<SPARQLResult> list = sparql.executeSelectQuery(select);
+
+        if (!list.isEmpty()) {
+            list.forEach(l -> System.out.println(l.getStringValue("target")));
+
+            List<URI> deviceUris = list.stream().map((x) -> URI.create(x.getStringValue("target"))).collect(Collectors.toList());
+            devices = getDevicesByURI(deviceUris, currentUser);
+        }
+
         return devices;
     }
 
@@ -510,12 +542,12 @@ public class DeviceDAO {
         }
         
         DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
-        int dataCount = dataDAO.count(currentUser, null, null, null, null, Collections.singletonList(deviceURI),null, null, null, null, null);
+        int dataCount = dataDAO.count(currentUser, null, null, null, null, Collections.singletonList(deviceURI),null, null, null, null, null, null);
         if(dataCount > 0){
             throw new ForbiddenURIAccessException(deviceURI, dataCount+" data");
         }  
         
-        int dataFileCount = dataDAO.countFiles(currentUser, null, null, null, null, Collections.singletonList(deviceURI),null, null, null);
+        int dataFileCount = dataDAO.countFiles(currentUser, null, null, null, null, Collections.singletonList(deviceURI),null, null, null, null);
         if(dataFileCount > 0) {
             throw new ForbiddenURIAccessException(deviceURI, dataFileCount + " datafile(s)");
         }
@@ -554,7 +586,8 @@ public class DeviceDAO {
     }
 
     public List<DeviceModel> getList(List<URI> uris, AccountModel accountModel) throws Exception {
-        return sparql.getListByURIs(DeviceModel.class, uris, accountModel.getLanguage());
+        List<DeviceModel> devices = sparql.getListByURIs(DeviceModel.class, uris, accountModel.getLanguage());
+        return devices;
     }
 
     public DeviceModel getByName(String name) throws Exception {
@@ -578,7 +611,9 @@ public class DeviceDAO {
             throw new DuplicateNameException(name);
         }
 
-        return results.getList().get(0);
+        DeviceModel device = results.getList().get(0);
+
+        return device;
     }
 
     public FacilityModel getAssociatedFacility(URI deviceURI, AccountModel currentUser) throws Exception {

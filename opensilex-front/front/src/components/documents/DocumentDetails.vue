@@ -13,7 +13,7 @@
     <opensilex-PageContent>
       <b-row>
         <b-col sm="5">
-          <opensilex-Card label="DocumentDetails.description" icon="ik#ik-clipboard">            
+          <opensilex-Card label="component.common.informations" icon="ik#ik-clipboard">            
           <template v-slot:rightHeader>
             <span
               v-if="document.deprecated"

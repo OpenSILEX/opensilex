@@ -46,6 +46,19 @@
               class="searchFilterField"
             >
               <template v-slot:filters>
+                <!-- Germplasm Group -->
+                <div>
+                  <opensilex-FilterField>
+                    <opensilex-GermplasmGroupSelector
+                        label="GermplasmList.filter.germplasm-group"
+                        :multiple="false"
+                        :germplasmGroup.sync="filter.germplasm_group"
+                        class="searchFilter"
+                        @handlingEnterKey="refresh()"
+                    ></opensilex-GermplasmGroupSelector>
+                  </opensilex-FilterField>
+                </div>
+
                 <!-- targets -->
                 <div>
                   <opensilex-FilterField halfWidth="true">
@@ -208,13 +221,17 @@ export default class ExperimentData extends Vue {
   refreshKey = 0;
 
   filter = {
+    germplasm_group: undefined,
     start_date: null,
     end_date: null,
     provenance: null,
     variables: [],
     experiments: [this.uri],
     scientificObjects: [],
-    targets: []
+    targets: [],
+    devices: [],
+    facilities: [],
+    operators: []
   };
 
   soFilter = {
@@ -271,13 +288,17 @@ export default class ExperimentData extends Vue {
 
   resetFilters() {
     this.filter = {
+      germplasm_group: undefined,
       start_date: null,
       end_date: null,
       provenance: null,
       variables: [],
       experiments: [this.uri],
       scientificObjects: [],
-      targets: []
+      targets: [],
+      devices: [],
+      facilities: [],
+      operators: []
     };
     // Only if search and reset button are use in list
   }
@@ -307,6 +328,12 @@ export default class ExperimentData extends Vue {
         this.resultModal.setNbLinesImported(
           res.validation.dataErrors.nbLinesImported
         );
+        let annotationsOnObjects : Array<any> = res.validation.dataErrors.annotationsOnObjects;
+        if(annotationsOnObjects){
+            this.resultModal.setNbAnnotationsImported(
+                annotationsOnObjects.length
+            );
+        }
         this.resultModal.setProvenance(res.form.provenance);
         this.resultModal.show();
         this.clear();
@@ -319,6 +346,12 @@ export default class ExperimentData extends Vue {
       this.resultModal.setNbLinesImported(
         results.validation.dataErrors.nbLinesImported
       );
+      let annotationsOnObjects : Array<any> = results.validation.dataErrors.annotationsOnObjects;
+      if(annotationsOnObjects){
+          this.resultModal.setNbAnnotationsImported(
+              annotationsOnObjects.length
+          );
+      }
       this.resultModal.setProvenance(results.form.provenance);
       this.resultModal.show();
       this.clear();

@@ -95,6 +95,21 @@
                 </b-form-group>
               </opensilex-FilterField>
             </div>
+            
+            <!-- Germplasm -->
+            <div>
+              <opensilex-FilterField>
+                <b-form-group>
+                  <opensilex-GermplasmSelector
+                    :multiple="false"
+                    :germplasm.sync="filters.germplasm"
+                    :experiment="uri"
+                    class="searchFilter"
+                    @handlingEnterKey="refresh()"
+                  ></opensilex-GermplasmSelector>
+                </b-form-group>
+              </opensilex-FilterField>
+            </div>
 
             <!-- Factor Level -->
             <div>
@@ -386,6 +401,7 @@ export default class ExperimentScientificObjects extends Vue {
     name: "",
     types: [],
     parent: undefined,
+    germplasm: undefined,
     factorLevels: []
   };
 
@@ -486,6 +502,7 @@ export default class ExperimentScientificObjects extends Vue {
       name: "",
       types: [],
       parent: undefined,
+      germplasm: undefined,
       factorLevels: []
     };
     // Only if search and reset button are use in list
@@ -527,13 +544,13 @@ export default class ExperimentScientificObjects extends Vue {
   searchMethod(nodeURI, page, pageSize) {
 
     let orderBy = ["name=asc"];
-    if(this.filters.parent || this.filters.types.length !== 0 || this.filters.factorLevels.length !== 0||  this.filters.name.length !== 0) {
+    if(this.filters.parent || this.filters.types.length !== 0 || this.filters.factorLevels.length !== 0 || this.filters.name.length !== 0 || this.filters.germplasm) {
        return this.soService.searchScientificObjects(
         this.uri, // experiment uri?: string,
         this.filters.types, 
         this.filters.name, 
         this.filters.parent ? this.filters.parent : nodeURI, 
-        undefined, // Germplasm
+        this.filters.germplasm, // Germplasm
         this.filters.factorLevels, 
         undefined, // facility?: string,
         undefined,

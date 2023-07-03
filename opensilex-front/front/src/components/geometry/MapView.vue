@@ -5,12 +5,24 @@
     <!-- save map modal -->
     <b-modal id="modal-save-map">
       <template #default>
+          <!-- help button -->
+          <opensilex-HelpButton
+                  class="helpButton"
+                  label="component.common.help-button"
+                  @click="showInstructionShp=true"
+          ></opensilex-HelpButton>
+        <div>
+            <br>
+            <b-alert v-model="showInstructionShp" dismissible>
+                <p v-html="$t('instruction')"></p>
+            </b-alert>
+        </div>
         <p>{{ $t("MapView.save-confirmation") }}</p>
       </template>
       <template #modal-footer>
         <b-button variant="danger" @click="savePDF(titleFile)">PDF</b-button>
         <b-button variant="info" @click="savePNG(titleFile)">PNG</b-button>
-        <b-button variant="success" @click="saveShapefile(titleFile)">Shapefile</b-button>
+        <b-button variant="success" @click="saveShapefile()">Shapefile</b-button>
       </template>
     </b-modal>
     <!--editing area modal -->
@@ -55,10 +67,21 @@
         @onCreate="showFiltersDetails"
         successMessage="Filter.created"
     ></opensilex-ModalForm>
+    <!-- export shape modal-->
+    <opensilex-ExportShapeModalList
+        ref="exportShapeModalList"
+        @onValidate="downloadOSFeatures"
+    ></opensilex-ExportShapeModalList>
 
 <!--------------------------- TOOLS BUTTONS ------------------------------->
     <div v-if="!editingMode" id="selected" class="d-flex">
       <div class="mr-auto p-2">
+        <!-- help button -->
+        <opensilex-HelpButton
+                class="helpButton"
+                label="component.common.help-button"
+                @click="showInstructionMap=true"
+        ></opensilex-HelpButton>
         <!--create area button -->
         <opensilex-CreateButton
           v-if="user.hasCredential(credentials.CREDENTIAL_AREA_MODIFICATION_ID)"
@@ -95,15 +118,9 @@
           label="MapView.dateRange"
           @click="handleDateRangeStatus"
         ></opensilex-Button>
-        <!-- instruction button -->
-        <opensilex-Button
-            icon="fa#question"
-            label="MapView.help"
-            @click="showInstruction=true"
-        ></opensilex-Button>
         <div>
           <br>
-          <b-alert v-model="showInstruction" dismissible>
+          <b-alert v-model="showInstructionMap" dismissible>
             <p v-html="$t('MapView.Instruction')"></p>
           </b-alert>
         </div>
@@ -136,6 +153,7 @@
         @created="mapCreated"
         @pointermove="onMapPointerMove"
         @moveend="zoomRestriction"
+        @click="manageCluster"
       >
         <!-- Zoom and position-->
         <vl-view
@@ -220,12 +238,20 @@
             </div>
           </vl-layer-vector>
           <!-- OS features -->
-          <vl-layer-vector v-for="layerSO in featuresOS" :key="layerSO.id">
-            <vl-source-vector
-              ref="vectorSource"
-              :features="layerSO"
-            ></vl-source-vector>
-          </vl-layer-vector>
+            <vl-layer-vector :visible="checkZoom" render-mode="image" :z-index="1">
+                <vl-source-cluster :distance="25" >
+                    <vl-source-vector
+                        ref="clusterSource" @mounted="getFeatures"
+                    ></vl-source-vector>
+                    <vl-style-func :factory="makeClusterStyleFunc"></vl-style-func>
+                </vl-source-cluster>
+            </vl-layer-vector>
+            <vl-layer-vector :opacity="opacityOS" v-for="layerSO in featuresOS" :key="layerSO.id" :z-index="0">
+                    <vl-source-vector
+                            ref="vectorSource"
+                            :features="layerSO"
+                    ></vl-source-vector>
+                </vl-layer-vector>
           <!-- Devices features -->
           <vl-layer-vector v-for="layerDevice in featuresDevice" :key="layerDevice.id">
             <vl-source-vector
@@ -426,7 +452,7 @@
             <template v-slot:node="{ node }" >
               <span class="item-icon"> </span>
               <!-- flat() method creates a new array with all sub-array elements concatenated into it recursively up to the specified depth -->
-              <span v-if="node.title === 'Areas'">{{ $t("MapView.mapPanelAreas") }} ({{ featuresArea.flat().length }})</span>
+              <span v-if="node.title === 'Areas'">{{ $t("MapView.mapPanelAreas") }} ({{ isDisabled ? $t("MapView.mapPanelNotVisible") : featuresArea.flat().length }})</span>
               <span v-else >{{ $t("MapView.mapPanelAreas" + node.title) }} ({{ getNumberByArea(node.title) }})</span>
             </template>
 
@@ -460,7 +486,7 @@
           <opensilex-TreeView :nodes.sync="devices" :class="isDisabled ? 'disabled' : ''">
             <template v-slot:node="{ node }">
               <span class="item-icon"> </span>&nbsp;
-              <span v-if="node.title === 'Devices'">{{ $t("MapView.mapPanelDevices") }} ({{ featuresDevice.flat().length }})</span>
+              <span v-if="node.title === 'Devices'">{{ $t("MapView.mapPanelDevices") }} ({{ isDisabled ? $t("MapView.mapPanelNotVisible") : featuresDevice.flat().length }})</span>
               <span v-else >{{ nameType(node.title) }} ({{ getNumberByType(node.title, featuresDevice) }})</span>
             </template>
 
@@ -587,7 +613,7 @@
 <!--------------------- TABLE ----------------------------->
     <div
       id="selectedTable"
-      v-if="selectedFeatures.length !== 0"
+      v-if="selectedFeatures.length !== 0  && !checkZoom"
       class="selected-features"
     >
       <opensilex-TableView
@@ -652,6 +678,13 @@
 <script lang="ts">
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
+import {
+  Circle as CircleStyle,
+  Fill,
+  Stroke,
+  Style,
+  Text,
+} from "ol/style";
 import { DragBox } from "ol/interaction";
 import { GeoJSON } from "ol/format";
 import { Vector } from "ol/source";
@@ -659,10 +692,13 @@ import Feature from "ol/Feature";
 import * as olExtent from "ol/extent";
 import Polygon from "ol/geom/Polygon";
 import Point from "ol/geom/Point";
+import LineString from "ol/geom/LineString";
+import Geometry from "ol/geom/Geometry";
 import { platformModifierKeyOnly } from "ol/events/condition";
 import * as olExt from "vuelayers/lib/ol-ext";
+import GeoJSONFeature from "vuelayers/src/ol-ext/format";
 let shpwrite = require("shp-write");
-import {AreaGetDTO, PositionsService,DevicesService, ExperimentsService, ScientificObjectsService,EventsService, ExperimentGetDTO, AreaService, ResourceTreeDTO, ScientificObjectDetailDTO, ScientificObjectNodeDTO, DeviceGetDTO, OntologyService } from "opensilex-core/index";
+import {AreaGetDTO, PositionsService,DevicesService, ExperimentsService, ScientificObjectsService,EventsService, ExperimentGetDTO, AreaService, ResourceTreeDTO, ScientificObjectDetailDTO, ScientificObjectNodeDTO, DeviceGetDTO, OntologyService, DataService, DataGetDTO, TargetPositionCreationDTO} from "opensilex-core/index";
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 import { transformExtent } from "vuelayers/src/ol-ext/proj";
 import { defaults, ScaleLine } from "ol/control";
@@ -671,10 +707,10 @@ import Oeev from "../../ontologies/Oeev";
 import * as turf from "@turf/turf";
 import { jsPDF } from "jspdf";
 import { saveAs } from "file-saver";
-import {TargetPositionCreationDTO} from "opensilex-core/model/targetPositionCreationDTO";
 import { Store } from 'vuex';
 import VueI18n from "vue-i18n";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+import {stringify} from "wkt";
 
 @Component
 export default class MapView extends Vue {
@@ -682,10 +718,12 @@ export default class MapView extends Vue {
   @Ref("mapView") readonly mapView!: any;
   @Ref("map") readonly map!: any;
   @Ref("vectorSource") readonly vectorSource!: any;
+  @Ref("clusterSource") readonly clusterSource!: any;
   @Ref("areaForm") readonly areaForm!: any;
   @Ref("filterForm") readonly filterForm!: any;
   @Ref("soForm") readonly soForm!: any;
   @Ref("deviceForm") readonly deviceForm!: any;
+  @Ref("exportShapeModalList") readonly exportShapeModalList!: any;
 
   ///////////// BASE DATA ////////////
   $opensilex: OpenSilexVuePlugin;
@@ -702,6 +740,7 @@ export default class MapView extends Vue {
   private positionService: PositionsService;
   private eventsService: EventsService;
   private devicesService: DevicesService;
+  private dataService: DataService;
   private temporalAreaType: String;
   private structuralAreaType: String;
   private editingMode: boolean = false;
@@ -725,15 +764,17 @@ export default class MapView extends Vue {
   ///////////// FEATURES DATA ////////////
   private endReceipt: boolean = false;
   //OS
-  featuresOS: any[] = [];
+  featuresOS: GeoJSONFeature[][] = [];
   private callSO: boolean = false;
   private scientificObjectURI: string;
+  checkZoom: boolean = true;
+  opacityOS: number = 0;
   //AREAS
-  featuresArea: any[] = [];
-  temporaryArea: any[] = [];
+  featuresArea: GeoJSONFeature[][] = [];
+  temporaryArea: GeoJSONFeature[] = [];
   temporalAreas: any[] = [];
   //DEVICES
-  featuresDevice: any[] = [];
+  featuresDevice: GeoJSONFeature[][] = [];
   //FILTERS
   tabLayer: any[] = [];
 
@@ -766,7 +807,8 @@ export default class MapView extends Vue {
   private detailsSO: boolean = false;
 
   ///////////// TOOLS BUTTONS ////////////
-  showInstruction: boolean = false;
+  showInstructionMap: boolean = false;
+  showInstructionShp: boolean = false;
 
   ///////////// EVENT PANEL ////////////
   timelineSidebarVisibility: boolean = false;
@@ -784,6 +826,8 @@ export default class MapView extends Vue {
   ///////////// MODAL ////////////
   private showArea: boolean = false;
   private errorGeometry: boolean = false;
+  exportedFeatures = [];
+  exportedOS = [];
 
   ///////////// BASE METHODS ////////////
   get user() {
@@ -825,6 +869,7 @@ export default class MapView extends Vue {
     this.eventsService = this.$opensilex.getService("opensilex.EventsService");
     this.devicesService = this.$opensilex.getService("opensilex.DevicesService");
     this.experimentService = this.$opensilex.getService("opensilex.ExperimentsService")
+    this.dataService = this.$opensilex.getService("opensilex.DataService")
 
     // this.$opensilex.updateFiltersFromURL(this.$route.query, this.filter);
     this.experiment = decodeURIComponent(this.$route.params.uri);
@@ -842,7 +887,7 @@ export default class MapView extends Vue {
 
   retrievesNameOfType() {
     let typeLabel: { uri: string; name: string }[] = [];
-    let baseTypes = [Oeso.SCIENTIFIC_OBJECT_TYPE_URI,Oeso.AREA_TYPE_URI,Oeso.DEVICE_TYPE_URI,Oeev.EVENT_TYPE_URI];
+    let baseTypes = [Oeso.SCIENTIFIC_OBJECT_TYPE_URI, Oeso.AREA_TYPE_URI, Oeso.DEVICE_TYPE_URI, Oeev.EVENT_TYPE_URI];
 
     this.lang = this.user.locale;
     this.ontologyService = this.$opensilex.getService("opensilex.OntologyService");
@@ -853,7 +898,7 @@ export default class MapView extends Vue {
       name: this.$i18n.t("Device.title").toString()
     });
 
-    baseTypes.forEach((baseType)=>{
+    baseTypes.forEach((baseType) => {
       this.ontologyService
           .getSubClassesOf(baseType, true)
           .then((http: HttpResponse<OpenSilexResponse<Array<ResourceTreeDTO>>>) => {
@@ -881,7 +926,7 @@ export default class MapView extends Vue {
       res: Array<ResourceTreeDTO>,
       typeLabel: { uri: string; name: string }[]
   ) {
-    res.forEach(({ name, uri, children }) => {
+    res.forEach(({name, uri, children}) => {
       typeLabel.push({
         uri: uri,
         name: name.substr(0, 1).toUpperCase() + name.substr(1),
@@ -892,7 +937,7 @@ export default class MapView extends Vue {
     });
   }
 
-  removeFromFeatures(uri, features){
+  removeFromFeatures(uri, features) {
     features.splice(features.findIndex(feature => feature.properties.uri === uri), 1)
     return features;
   }
@@ -910,7 +955,7 @@ export default class MapView extends Vue {
     }
   }
   // Gets the name when the cursor hovers over the item.
-  onMapPointerMove({ pixel }: any) {
+  onMapPointerMove({pixel}: any) {
     const hitFeature = this.map.forEachFeatureAtPixel(
         pixel,
         (feature) => feature
@@ -921,7 +966,7 @@ export default class MapView extends Vue {
         type: this.nameType(hitFeature.values_.type),
       };
     } else {
-      this.selectPointerMove = { name: null, type: null };
+      this.selectPointerMove = {name: null, type: null};
     }
   }
   // Used to display details on the map and in the table
@@ -942,7 +987,7 @@ export default class MapView extends Vue {
     }
   }
   // Select multi-features (OS, Areas, devices and Filters)
-  private multiSelect(map){
+  private multiSelect(map) {
     // a DragBox interaction used to select features by drawing boxes
     const dragBox = new DragBox({
       condition: platformModifierKeyOnly,
@@ -951,10 +996,10 @@ export default class MapView extends Vue {
         if (this.isMapHasLayer) {
           const extent = dragBox.getGeometry().getExtent();
           //All layers (tile/vector)
-          var layers= this.map.$map.getLayers();
+          var layers = this.map.$map.getLayers();
           //Recover vector and visible layers
-          layers.forEach((layer)=>{
-            if(layer.getVisible() && layer.type==='VECTOR'){
+          layers.forEach((layer) => {
+            if (layer.getVisible() && layer.type === 'VECTOR') {
               const source = layer.getSource();
               source.forEachFeatureIntersectingExtent(
                   extent,
@@ -984,7 +1029,7 @@ export default class MapView extends Vue {
     });
   }
 
-  mapCreated(map){
+  mapCreated(map) {
     this.multiSelect(map);
   }
 
@@ -1085,15 +1130,23 @@ export default class MapView extends Vue {
 
   //Show areas and devices only under zoom 9 and get the current map expansion
   private zoomRestriction() {
-    if (this.mapView.$view.getZoom() < 9) {
+    if (this.mapView.$view.getZoom() < 5) {
       this.featuresArea = [];
       this.featuresDevice = [];
       this.devices = this.initDevices();
       this.areas = this.initAreas();
       this.isDisabled = true;
+      this.checkZoom = true;
+      this.opacityOS = 0;
     } else {
+        if(this.mapView.$view.getZoom() < 15){
+            this.checkZoom = true;
+            this.opacityOS = 0;
+        } else {
+            this.checkZoom = false;
+            this.opacityOS = 1;
+        }
       this.isDisabled = false;
-
       let coordinateExtent = this.getCoordinateExtent();
 
       this.calcOverlayCoordinate(coordinateExtent);
@@ -1149,10 +1202,98 @@ export default class MapView extends Vue {
         if (maxDate != undefined) {
           maxDateString = maxDate.toISOString();
         }
-        this.areasRecovery(geometry, minDateString,maxDateString);
+        this.areasRecovery(geometry, minDateString, maxDateString);
         this.devicesRecovery(geometry);
       }
     }
+  }
+
+    //get visible OS features
+  getFeatures(){
+    let clusterSource = this.clusterSource;
+    clusterSource.$source.clear();
+
+    this.$opensilex.showLoader();
+
+    let features =[];
+
+    this.vectorSource.forEach((vector) => {
+        const isVectorSourceMounted = (vector) =>
+            vector &&
+            vector.getFeatures() &&
+            vector.getFeatures() &&
+            vector.getFeatures().length > 0;
+
+        this.waitFor((_)=>
+            this.vectorSource.length === this.featuresOS.length &&
+            this.vectorSource.every(isVectorSourceMounted)
+        ).then(() => {
+            if(vector.$parent.$layer.getVisible()){
+                features.push(vector.getFeatures());
+            }
+            this.$opensilex.hideLoader();
+            clusterSource.$source.addFeatures(features.flat());
+        })
+    })
+  }
+
+  // manage behavior on click on cluster point -> zoom in
+  manageCluster(e){
+      this.map.forEachFeatureAtPixel(
+          e.pixel,
+          (feature) => {
+              //transform all geometries into points and build the new extent
+              if(feature.get('features')) {
+                  let points: any[] = [];
+                  let features = feature.get('features');
+
+                  features.forEach((feat) => {
+                      let geom = feat.getGeometry();
+                      if (geom.getType() == 'Point') {
+                          points.push(geom.getCoordinates());
+                      } else if (geom.getType() == 'Polygon') {
+                          points.push(geom.getInteriorPoint().getCoordinates());
+                      } else if (geom.getType() == 'LineString') {
+                          let point = new Point(geom.getCoordinateAt(0.5), undefined);
+                          points.push(point.getCoordinates());
+                      }
+                })
+
+              this.mapView.$view.fit(olExtent.boundingExtent(points),{ maxZoom: 17});
+              }
+          }
+      )
+  }
+
+  // cluster points style
+  makeClusterStyleFunc(){
+      const styleCache = {};
+
+      return function __clusterStyleFunc (feature) {
+              const size = feature.get('features').length;
+              let style = styleCache[size];
+              if (!style) {
+                  style = new Style({
+                      image: new CircleStyle({
+                          radius: 10,
+                          stroke: new Stroke({
+                              color: '#fff',
+                          }),
+                          fill: new Fill({
+                              color: '#00a38d',
+                          }),
+                      }),
+                      text: new Text({
+                          text: size.toString(),
+                          fill: new Fill({
+                              color: '#fff',
+                          }),
+                      }),
+                  });
+                  styleCache[size] = style;
+              }
+              return style;
+          }
   }
 
   ///////////// FILTERS METHODS ////////////
@@ -1193,9 +1334,11 @@ export default class MapView extends Vue {
     return result;
   }
 
-  set filters(value) {}
+  set filters(value) {
+  }
 
   showFiltersDetails(filterResult: any) {
+    this.$opensilex.showLoader();
     if (filterResult.ref) {
       this.tabLayer.forEach((element, index) => {
         if (element.ref === filterResult.ref) {
@@ -1204,6 +1347,7 @@ export default class MapView extends Vue {
       });
       this.tabLayer.push(filterResult);
     }
+    this.$opensilex.hideLoader();
   }
 
   colorFeature(color) {
@@ -1219,6 +1363,7 @@ export default class MapView extends Vue {
   }
 
   ///////////// SO METHODS ////////////
+
   //update SO
   callScientificObjectUpdate() {
     if (this.callSO) {
@@ -1227,34 +1372,34 @@ export default class MapView extends Vue {
       this.scientificObjectsService
           .getScientificObjectDetail(this.scientificObjectURI, this.experiment)
           .then((http: HttpResponse<OpenSilexResponse<ScientificObjectDetailDTO>>) => {
-              const result = http.response.result as any;
+            const result = http.response.result as any;
 
-              if (result.geometry !== null) {
-                result.geometry.properties = {
-                  uri: result.uri,
-                  name: result.name,
-                  type: result.rdf_type,
-                  nature: "ScientificObjects",
-                };
-                let flatFeatures = this.featuresOS.flat();
-                //Replace the updated feature
-                flatFeatures.splice(flatFeatures.findIndex(feature => feature.properties.uri === result.geometry.properties.uri),1,result.geometry);
-                //Feature formatting for efficient display of vectors
-                this.featuresOS = [];
-                flatFeatures.forEach((element) => {
-                  let inserted = false;
-                  this.featuresOS.forEach((item) => {
-                    if (item[0].properties.type === element.properties.type) {
-                      item.push(element);
-                      inserted = true;
-                    }
-                  });
-                  if (!inserted) {
-                    this.featuresOS.push([element]);
+            if (result.geometry !== null) {
+              result.geometry.properties = {
+                uri: result.uri,
+                name: result.name,
+                type: result.rdf_type,
+                nature: "ScientificObjects",
+              };
+              let flatFeatures = this.featuresOS.flat();
+              //Replace the updated feature
+              flatFeatures.splice(flatFeatures.findIndex(feature => feature.properties.uri === result.geometry.properties.uri), 1, result.geometry);
+              //Feature formatting for efficient display of vectors
+              this.featuresOS = [];
+              flatFeatures.forEach((element) => {
+                let inserted = false;
+                this.featuresOS.forEach((item) => {
+                  if (item[0].properties.type === element.properties.type) {
+                    item.push(element);
+                    inserted = true;
                   }
-                })
-                this.selectedFeatures.push(result.geometry);
-              }
+                });
+                if (!inserted) {
+                  this.featuresOS.push([element]);
+                }
+              })
+              this.selectedFeatures.push(result.geometry);
+            }
           })
           .catch(this.$opensilex.errorHandler)
     }
@@ -1431,7 +1576,7 @@ export default class MapView extends Vue {
           const res = http.response.result as any;
           res.forEach((element) => {
             if (element.geometry != null) {
-              if(element.rdf_type === this.temporalAreaType){
+              if (element.rdf_type === this.temporalAreaType) {
                 element.geometry.properties = {
                   uri: element.uri,
                   name: element.name,
@@ -1441,8 +1586,7 @@ export default class MapView extends Vue {
                   description: element.description,
                   nature: "Area",
                 }
-              }
-              else {
+              } else {
                 element.geometry.properties = {
                   uri: element.uri,
                   name: element.name,
@@ -1474,39 +1618,38 @@ export default class MapView extends Vue {
         .finally(() => {
           if (this.featuresArea.length === 0) {
             this.areas = this.initAreas();
-          }
-          else {
+          } else {
             this.areas = [{
-                title: "Areas",
-                isLeaf: false,
-                children: [
-                  {
-                    title: "StructuralArea",
-                    isLeaf: true,
-                    isSelectable: false,
-                    isDraggable: false,
-                    isCheckable: true,
-                    isExpanded: false,
-                    isSelected: null,
-                    children: [],
-                  },
-                  {
-                    title: "TemporalArea",
-                    isLeaf: true,
-                    isSelectable: false,
-                    isDraggable: false,
-                    isCheckable: true,
-                    isExpanded: false,
-                    isSelected: null,
-                    children: [],
-                  },
-                ],
-                isExpanded: true,
-                isSelected: null,
-                isDraggable: false,
-                isSelectable: false,
-                isCheckable: true,
-              }]
+              title: "Areas",
+              isLeaf: false,
+              children: [
+                {
+                  title: "StructuralArea",
+                  isLeaf: true,
+                  isSelectable: false,
+                  isDraggable: false,
+                  isCheckable: true,
+                  isExpanded: false,
+                  isSelected: null,
+                  children: [],
+                },
+                {
+                  title: "TemporalArea",
+                  isLeaf: true,
+                  isSelectable: false,
+                  isDraggable: false,
+                  isCheckable: true,
+                  isExpanded: false,
+                  isSelected: null,
+                  children: [],
+                },
+              ],
+              isExpanded: true,
+              isSelected: null,
+              isDraggable: false,
+              isSelectable: false,
+              isCheckable: true,
+            }]
           }
           this.endReceipt = true;
           this.$opensilex.hideLoader();
@@ -1514,7 +1657,7 @@ export default class MapView extends Vue {
   }
 
   ///////////// DEVICES METHODS ////////////
-  getDeviceDetails(listURI, listDevicePositions){
+  getDeviceDetails(listURI, listDevicePositions) {
 
     let devices = {
       title: "Devices",
@@ -1530,7 +1673,7 @@ export default class MapView extends Vue {
     //get details of each device loaded
     this.devicesService
         .getDeviceByUris(listURI)
-        .then((http : HttpResponse<OpenSilexResponse<Array<DeviceGetDTO>>>) => {
+        .then((http: HttpResponse<OpenSilexResponse<Array<DeviceGetDTO>>>) => {
           let res = http.response.result;
           listDevicePositions.forEach((devicePosition) => {
             let element = res.find(el => el.uri === devicePosition.properties.uri);
@@ -1548,7 +1691,8 @@ export default class MapView extends Vue {
             }
             if (bool) {
               //formatting devices for the panel map
-              let children = { title : element.rdf_type,
+              let children = {
+                title: element.rdf_type,
                 children: [],
                 isLeaf: true,
                 isSelectable: false,
@@ -1673,49 +1817,158 @@ export default class MapView extends Vue {
       pdf.save(titleFile + ".pdf");
       this.$bvModal.hide("modal-save-map");
       map.setSize(size);
-      map.getView().fit(extent, { size: size });
+      map.getView().fit(extent, {size: size});
     });
     let printSize = [width, height];
     map.setSize(printSize);
   }
   //save and export the map in shape format
-  saveShapefile(titleFile: String) {
-    let vectorSource = new Vector();
-    let geometry = null;
-    let feature = null;
-    for (let layer of this.featuresOS) {
-      for (let obj of layer) {
-        geometry = null;
-        if (obj.geometry.type === "Point") {
-          geometry = new Point(obj.geometry.coordinates);
-        } else {
-          geometry = new Polygon(obj.geometry.coordinates);
-        }
-        feature = new Feature({
-          geometry,
-          name: obj.properties.name,
-        });
-        vectorSource.addFeature(feature);
+  saveShapefile() {
+
+      // 1 - Defines features to export
+      this.exportedFeatures = [];
+
+      //if there is a selection, save it
+      if (this.selectedFeatures.length > 0) {
+        this.exportedFeatures = this.selectedFeatures;
       }
-    }
-    for (let layer of this.featuresArea) {
-      geometry = null;
-      if (layer.geometry.type === "Point") {
-        geometry = new Point(layer.geometry.coordinates);
-      } else {
-        geometry = new Polygon(layer.geometry.coordinates);
+      //without selection, save all visible objects
+      else {
+          this.map.$map.getLayers().forEach((layer) => {
+              if (layer.getVisible() && layer.type === 'VECTOR') {
+                  const source = layer.getSource();
+                  source.forEachFeature(
+                      (feature: any) => {
+                        feature = olExt.writeGeoJsonFeature(feature);
+                        this.exportedFeatures.push(feature);
+                      }
+                  )
+              }
+          });
       }
-      feature = new Feature({
-        geometry,
-        name: layer.properties.name,
-      });
-      vectorSource.addFeature(feature);
-    }
-    let writer = new GeoJSON();
-    let geojsonStr = writer.writeFeatures(vectorSource.getFeatures());
-    let geoJson = JSON.parse(geojsonStr);
-    shpwrite.download(geoJson);
-    this.$bvModal.hide("modal-save-map");
+      // 2 - For exported OS, selected properties to export
+      // TODO:  adding selected variable data - standby
+
+      let featuresFiltered = this.exportedFeatures.filter(feature => feature.properties.nature === 'ScientificObjects');
+
+      if(featuresFiltered.length >10000){
+          this.$opensilex.showErrorToast(this.$i18n.t("MapView.export-error").toString());
+      }
+      //if features contains OS --> open modal
+      else{
+          if(featuresFiltered.length > 0 ){
+              this.exportedOS = featuresFiltered.map(feat => feat = {
+                  name : feat.properties.name,
+                  uri : feat.properties.uri,
+                  rdf_type: feat.properties.type,
+                  geometry: feat.geometry
+              });
+              this.exportShapeModalList.show();
+          }
+          // 3 - For each item type (Device/Area) -> create a separate vector and download it
+          this.downloadFeatures();
+      }
+  }
+
+  downloadOSFeatures(values){
+      this.$opensilex.showInfoToast(this.$i18n.t("MapView.export-info").toString());
+      //Get service OS export shape
+      let path = "/core/scientific_objects/export_shp";
+      let today = new Date();
+      let filename =
+          "export_scientific_objects_" +
+          today.getFullYear() + ""
+          + (today.getMonth()) + ""
+          + today.getDate() + "_"
+          +  today.getHours() + ""
+          + today.getMinutes()
+          + "" + today.getSeconds();
+
+      //let props = values.props;
+      let queryParams = {
+          selected_props : values.props,
+          experiment : this.experiment
+      }
+
+      let body = this.exportedOS
+
+      setTimeout(()=> {
+          this.$opensilex.downloadFilefromPostOrGetService(
+              path,
+              filename,
+              "zip",
+              "POST",
+              queryParams,
+              body
+          );
+      }, 1000)
+
+  }
+
+  downloadFeatures() {
+      let vectorDevice = new Vector();
+      let vectorArea = new Vector();
+      let featureDevice: Feature;
+      let featureArea: Feature;
+      let geometry: Geometry;
+      let writer = new GeoJSON();
+      let options = {folder: "", types: ""};
+
+      this.$opensilex.showLoader();
+
+      for (let obj of this.exportedFeatures) {
+          geometry = null;
+
+          switch (obj.geometry.type) {
+              case 'Polygon':
+                  geometry = new Polygon(obj.geometry.coordinates);
+                  break;
+              case 'LineString':
+                  geometry = new LineString(obj.geometry.coordinates);
+                  break;
+              default:
+                  geometry = new Point(obj.geometry.coordinates);
+          }
+
+          switch (obj.properties.nature) {
+              case 'Device':
+                  featureDevice = new Feature({
+                      geometry,
+                      name: obj.properties.name,
+                      URI: obj.properties.uri,
+                      type_name: this.nameType(obj.properties.type),
+                      type_URI: obj.properties.type,
+                  });
+                  vectorDevice.addFeature(featureDevice);
+                  break;
+              case 'Area':
+                  featureArea = new Feature({
+                      geometry,
+                      name: obj.properties.name,
+                      URI: obj.properties.uri,
+                      type_name: this.nameType(obj.properties.type),
+                      type_URI: obj.properties.type,
+                  });
+                  vectorArea.addFeature(featureArea);
+                  break;
+          }
+      }
+
+      if (!vectorDevice.isEmpty()) {
+          let geojsonStr = writer.writeFeatures(vectorDevice.getFeatures());
+          let geoJson = JSON.parse(geojsonStr);
+          options.folder = "Devices";
+          shpwrite.download(geoJson, options);
+      }
+      if (!vectorArea.isEmpty()) {
+          let geojsonStr = writer.writeFeatures(vectorArea.getFeatures());
+          let geoJson = JSON.parse(geojsonStr);
+          options.folder = "Areas";
+          shpwrite.download(geoJson, options);
+      }
+
+      this.$opensilex.hideLoader();
+      this.$bvModal.hide("modal-save-map");
   }
 
   ///////////// TABLE METHODS ////////////
@@ -1910,7 +2163,7 @@ export default class MapView extends Vue {
    }
   //get all vectors
   const layers = this.map.$map.getLayers();
-  let vectors = layers.array_.filter(el => { return el.type.includes("VECTOR")})
+  let vectors = layers.array_.filter(el => { return el.type.includes("VECTOR")});
   vectors.forEach((element) => {
       // Iterate all layers of the map (OpenLayers API) to find the ones that are linked to elements
       const source = element.getSource();
@@ -1927,7 +2180,7 @@ export default class MapView extends Vue {
                 option.isAll = node.title == "Areas";// is the 'Areas' node clicked ?
                 option.condition =  array[0].values_.nature == "Area" &&
                     (node.title == "Areas" || // If 'Areas' node is clicked
-                    (node.title == "StructuralAera" &&
+                    (node.title == "StructuralArea" &&
                     this.getType(array[0].values_.type) !== "TemporalArea") || // If 'StructuralArea' node is clicked and element is not temporal area type
                     (node.title == "TemporalArea" &&
                     this.getType(array[0].values_.type) === "TemporalArea"));
@@ -1967,6 +2220,10 @@ export default class MapView extends Vue {
         }
       }
     })
+    //update the OS cluster visibility
+    if(this.checkZoom){
+        this.getFeatures();
+    }
   }
 
   initDevices(){
@@ -2206,7 +2463,7 @@ export default class MapView extends Vue {
   ///////////// EVENT PANEL METHODS ////////////
   //select Features from timeline??
   selectFeaturesFromTimeline(uri) {
-    for (let area of this.featuresArea) {
+    for (let area of this.featuresArea.flat()) {
       if (area.properties.uri === uri) {
         for (let i = 0; i < this.selectedFeatures.length; i++) {
           if (this.selectedFeatures[i].properties.uri === uri) {
@@ -2385,11 +2642,37 @@ p {
     transform: translateY(0);
   }
 }
+
 .disabled{
   color:grey ;
   background-color: lightgrey;
   pointer-events: none;
 }
+
+.helpButton:hover {
+  background-color: #00A28C;
+  color: #f1f1f1;
+}
+
+.helpButton {
+  margin-left: -5px;
+  color: #00A28C;
+  font-size: 1.2em;
+  border: none;
+}
+
+
+.helpButton:hover {
+  background-color: #00A28C;
+  color: #f1f1f1;
+}
+.helpButton {
+  margin-left: -5px;
+  color: #00A28C;
+  font-size: 1.2em;
+  border: none;
+}
+
 </style>
 
 <i18n>
@@ -2409,7 +2692,6 @@ en:
     LegendSO: Scientific Object
     LegendStructuralArea: Structural Area
     LegendTemporalArea: Temporal Area
-    help: Instructions
     Instruction: Press Shift to <b>select item by item</b> on the map.<br> Press and hold Shift + Alt + Click and move the mouse <b>to rotate</b> the map.<br> Press Ctrl + Click while dragging to <b>select multiple scientific objects</b>.<br>Press Shift + Click while dragging to define a <b>zoom-in area</b>.
     WarningInstruction: Currently, the selection tool does not follow the rotation.
     details: Show or hide element details
@@ -2419,6 +2701,7 @@ en:
     displayFilter: Filters ({count})
     mapPanel: Manage map panel
     mapPanelTitle: Map Panel
+    mapPanelNotVisible : not visible
     eventPanelTitle: Events Panel
     eventPanel-help: The event panel displays all the events linked to the temporal areas. They are ordered from most recent to oldest.
     mapPanelScientificObjects: Scientific Objects
@@ -2432,11 +2715,13 @@ en:
     save: Save the map
     time: See temporal(s) area(s)
     noFilter: No filter applied. To add one, use the form below the map
-    save-confirmation: Do you want to export the map as PNG image or PDF ?
+    save-confirmation: Do you want to export the map as PNG image, PDF or shapefile ?
     noTemporalAreas: No temporal areas are displayed on the map.
     marketFrom: From
     marketTo: To
     dateRange: Handle scientific objects with date range
+    export-error: The number of exported objects exceeds the limit of 10,000 objects.
+    export-info: The export can take some time (about 1min for 7000 objects).
   Area:
     title: Area
     add: Description of the area
@@ -2453,6 +2738,9 @@ en:
   Device:
     title: Device
     update: Update device
+    en:
+  help: Instructions
+  instruction: The button "Shapefile" exports the selected items. Without selection, visible items in the "Map Panel" are exported. The export is limited to 10000 objects.
 
 fr:
   MapView:
@@ -2470,7 +2758,6 @@ fr:
     LegendSO: Objet scientifique
     LegendStructuralArea: Zone structurelle
     LegendTemporalArea: Zone temporaire
-    help: Instructions
     Instruction: Appuyez sur Maj pour <b>sélectionner élément par élément</b> sur la carte.<br> Appuyez et maintenez Maj +Alt + Clic puis déplacer la souris pour faire <b>pivoter</b> la carte.<br> Appuyez sur Ctrl + Clic tout en faisant glisser pour <b>sélectionner plusieurs objets scientifiques</b>.<br> Appuyez sur Maj + Clic tout en faisant glisser pour définir une <b>zone de zoom avant</b>.
     WarningInstruction: Actuellement, l'outil de sélection ne suit pas la rotation.
     details: Afficher ou masquer les détails de l'élément
@@ -2480,6 +2767,7 @@ fr:
     displayFilter: Filtres ({count})
     mapPanel: Gérer la carte
     mapPanelTitle: Données
+    mapPanelNotVisible : non visible
     eventPanelTitle: Évènements
     eventPanel-help: Le panneau des événements affiche tous les événements liés aux zones temporaires. Ils sont affichés des plus récents aux plus anciens.
     mapPanelScientificObjects: Objets Scientifiques
@@ -2487,17 +2775,19 @@ fr:
     mapPanelAreasStructuralArea: Zone structurelle
     mapPanelAreasTemporalArea: Zone temporaire
     mapPanelFilters: Filtres
-    mapPanelDevices : Dispositifs
+    mapPanelDevices : Appareils
     create-filter: Créer un filtre
     center: Recentrer la carte
     save: Enregistrer la carte
     time: Visualiser les zones temporaires
     noFilter: Aucun filtre appliqué. Pour en ajouter, utiliser le formulaire situé sous la carte
-    save-confirmation: Voulez-vous exporter la carte au format PNG ou PDF ?
+    save-confirmation: Voulez-vous exporter la carte au format PNG, PDF ou shapefile ?
     noTemporalAreas: Aucune zone temporaire n'est affichée sur la carte.
     marketFrom: Du
     marketTo: Jusqu'au
     dateRange: Manipuler des objets scientifiques avec une plage de dates
+    export-error: Le nombre d'objets exportés est supérieur à la limite de 10 000 objets.
+    export-info: L'export peut prendre un certain temps (environ 1min pour 7000 objets).
   Area:
     title: Zone
     add: Description de la zone
@@ -2514,4 +2804,6 @@ fr:
   Device:
     title: Dispositif
     update: Mise à jour du dispositif
+  help: Instructions
+  instruction: Le bouton "Shapefile" exporte les éléments sélectionnés. Sans sélection, les éléments visibles dans le menu "Données" sont exportés. L'export est limité à 10000 objets.
 </i18n>

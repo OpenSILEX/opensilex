@@ -32,12 +32,14 @@ import org.opensilex.core.variable.api.unit.UnitDetailsDTO;
 import org.opensilex.core.variable.dal.*;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.account.dal.AccountDAO;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.server.rest.validation.ValidURI;
@@ -121,7 +123,7 @@ public class VariableAPI {
             credentialLabelKey = CREDENTIAL_VARIABLE_MODIFICATION_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "A variable is created", response = ObjectUriResponse.class),
+            @ApiResponse(code = 201, message = "A variable is created", response = URI.class),
             @ApiResponse(code = 409, message = "A Variable with the same URI already exists", response = ErrorResponse.class)
     })
     @Consumes(MediaType.APPLICATION_JSON)
@@ -134,6 +136,7 @@ public class VariableAPI {
             VariableDAO dao = getDao();
             VariableModel model = dto.newModel();
             model.setCreator(currentUser.getUri());
+            model.setPublisher(currentUser.getUri());
 
             model = dao.create(model);
             URI shortUri = new URI(SPARQLDeserializers.getShortURI(model.getUri().toString()));
@@ -164,10 +167,28 @@ public class VariableAPI {
             if (variable == null) {
                 throw new NotFoundURIException(uri);
             }
-            SharedResourceInstanceDTO sharedResourceInstanceDTO = variable.getFromSharedResourceInstance() != null
-                    ? coreModule.getSharedResourceInstanceDTO(variable.getFromSharedResourceInstance(), currentUser.getLanguage())
-                    : null;
-            return new SingleObjectResponse<>(new VariableDetailsDTO(variable, sharedResourceInstanceDTO)).getResponse();
+
+            // This code might be reused later if the SRI mechanic is extended to resources other than variables
+            // In that case, the logic can be moved into the response object to avoid code duplication
+            SharedResourceInstanceDTO sharedResourceInstanceDTO = coreModule.tryGetSharedResourceInstanceDTO(
+                    variable.getFromSharedResourceInstance(), currentUser.getLanguage());
+            if (variable.getFromSharedResourceInstance() != null && sharedResourceInstanceDTO == null) {
+                VariableDetailsDTO dto = new VariableDetailsDTO(variable);
+                if (Objects.nonNull(variable.getPublisher())) {
+                    dto.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(variable.getPublisher())));
+                }
+                return new SingleObjectResponse<>(dto).addMetadataStatus(new StatusDTO(
+                        "Missing SRI from configuration : " + variable.getFromSharedResourceInstance(),
+                        StatusLevel.WARNING,
+                        "server.warnings.shared-resource-instance-unknown",
+                        Collections.singletonMap("uri", variable.getFromSharedResourceInstance().toString()))).getResponse();
+            } else {
+                VariableDetailsDTO dto = new VariableDetailsDTO(variable, sharedResourceInstanceDTO);
+                if (Objects.nonNull(variable.getPublisher())) {
+                    dto.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(variable.getPublisher())));
+                }
+                return new SingleObjectResponse<>(dto).getResponse();
+            }
         }
 
         SharedResourceInstanceService service = new SharedResourceInstanceService(
@@ -185,7 +206,7 @@ public class VariableAPI {
             credentialLabelKey = CREDENTIAL_VARIABLE_MODIFICATION_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Variable updated", response = ObjectUriResponse.class),
+            @ApiResponse(code = 200, message = "Variable updated", response = URI.class),
             @ApiResponse(code = 404, message = "Unknown variable URI", response = ErrorResponse.class)
     })
     @Consumes(MediaType.APPLICATION_JSON)
@@ -210,7 +231,7 @@ public class VariableAPI {
             credentialLabelKey = CREDENTIAL_VARIABLE_DELETE_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Variable deleted", response = ObjectUriResponse.class),
+            @ApiResponse(code = 200, message = "Variable deleted", response = URI.class),
             @ApiResponse(code = 404, message = "Unknown variable URI", response = ErrorResponse.class)
     })
     @Consumes(MediaType.APPLICATION_JSON)
@@ -245,7 +266,8 @@ public class VariableAPI {
             @ApiParam(value = "Characteristic filter") @QueryParam("characteristic") @ValidURI URI characteristic,
             @ApiParam(value = "Method filter") @QueryParam("method") @ValidURI URI method,
             @ApiParam(value = "Unit filter") @QueryParam("unit") @ValidURI URI unit,
-            @ApiParam(value = "Group filter") @QueryParam("group_of_variables") @ValidURI URI group,
+            @ApiParam(value = "Included in group filter") @QueryParam("group_of_variables") @ValidURI URI includedIngroup,
+            @ApiParam(value = "Not included in group filter") @QueryParam("not_included_in_group_of_variables") @ValidURI URI notIncluedInGroup,
             @ApiParam(value = "Data type filter") @QueryParam("data_type") @ValidURI URI dataType,
             @ApiParam(value = "Time interval filter") @QueryParam("time_interval") String timeInterval,
             @ApiParam(value = "Species filter") @QueryParam("species") List<URI> species,
@@ -266,7 +288,8 @@ public class VariableAPI {
                     .setCharacteristic(characteristic)
                     .setMethod(method)
                     .setUnit(unit)
-                    .setGroup(group)
+                    .setIncludedInGroup(includedIngroup)
+                    .setNotIncludedInGroup(notIncluedInGroup)
                     .setDataType(dataType)
                     .setTimeInterval(timeInterval)
                     .setSpecies(species)
@@ -526,7 +549,7 @@ public class VariableAPI {
             @ApiParam(value = "List of variable URI", example = "http://opensilex.dev/set/variables/Plant_Height") URIsListPostDTO dto
     ) throws Exception {
         VariableDAO dao = getDao();
-        List<VariableModel> variableList = dao.getList(dto.getUris());
+        List<VariableModel> variableList = dao.getListForExport(dto.getUris(), currentUser.getLanguage());
 
         return buildCSVForDetailsExport(variableList);
 
@@ -625,7 +648,6 @@ public class VariableAPI {
             T model = detailsDto.toModel();
             model.setCreator(currentUser.getUri());
             model.setFromSharedResourceInstance(service.getSharedResourceInstanceURI());
-            model.setLastUpdateTime(OffsetDateTime.now());
             return model;
         }).collect(Collectors.toList());
 

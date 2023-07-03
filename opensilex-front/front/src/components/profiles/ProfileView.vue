@@ -14,6 +14,7 @@
         <opensilex-ProfileList
           ref="profileList"
           v-bind:credentialsGroups="credentialsGroups"
+          :isClickable="false"
           @onEdit="showEditForm($event)"
         ></opensilex-ProfileList>
       </template>

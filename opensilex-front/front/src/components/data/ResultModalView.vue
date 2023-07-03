@@ -26,6 +26,14 @@
             : $t("ResultModalView.datum-imported")
         }}
       </p>
+      <p v-if="nbAnnotationsImported != null && nbAnnotationsImported > 0" class="validation-confirm-container">
+          {{ nbAnnotationsImported }}
+          {{
+          nbAnnotationsImported > 1
+              ? $t("ResultModalView.annotations-imported")
+              : $t("ResultModalView.annotation-imported")
+          }}
+      </p>
       <opensilex-ProvenanceDetails
         label="ResultModalView.provenanceLabel"
         v-if="provenance"
@@ -45,11 +53,16 @@ export default class ResultModalView extends Vue {
   modalShow: boolean = false;
 
   nbLinesImported: number = null;
+  nbAnnotationsImported: number = null;
 
   provenance: any = null;
 
   setNbLinesImported(value: number) {
     this.nbLinesImported = value;
+  }
+
+  setNbAnnotationsImported(value: number) {
+      this.nbAnnotationsImported = value;
   }
 
   setProvenance(value) {
@@ -66,6 +79,7 @@ export default class ResultModalView extends Vue {
 
   clearModal() {
     this.nbLinesImported = null;
+    this.nbAnnotationsImported = null;
     this.provenance = null;
     this.$emit("onHide");
   }
@@ -85,6 +99,8 @@ export default class ResultModalView extends Vue {
       datum-imported: L'observation a été importée avec succès
       title : Rapport de l'insertion des données 
       provenanceLabel : Provenance
+      annotations-imported: annotations ont été importées avec succès
+      annotation-imported: L'annotation a été importée avec succès
 
   en: 
     ResultModalView:
@@ -92,4 +108,6 @@ export default class ResultModalView extends Vue {
       datum-imported: Observation has been imported successfully
       title : Data insertion report
       provenanceLabel : Provenance
+      annotations-imported: annotations have been imported successfully
+      annotation-imported: annotation has been imported successfully
 </i18n>

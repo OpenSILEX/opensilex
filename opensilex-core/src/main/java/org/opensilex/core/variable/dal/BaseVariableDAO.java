@@ -139,7 +139,8 @@ public class BaseVariableDAO<T extends SPARQLNamedResourceModel<T>> {
                 objectClass,
                 uris,
                 lang,
-                result -> fetcher.getInstance(result,lang)
+                result -> fetcher.getInstance(result,lang),
+                null
         );
     }
 
@@ -148,5 +149,33 @@ public class BaseVariableDAO<T extends SPARQLNamedResourceModel<T>> {
      */
     public List<T> getList(List<URI> uris) throws Exception {
         return getList(uris,null);
+    }
+
+    /**
+     * The function retrieves a list of objects for export by querying a SPARQL endpoint with specified
+     * URIs and language, and fetching specific fields for each object.
+     * 
+     * @param uris A list of URIs that represent the resources to be fetched from the SPARQL endpoint.
+     * @param lang The language parameter specifies the language in which the data should be returned.
+     * It is used to retrieve the data in a specific language if it is available.
+     * @return A List of objects of type T.
+     */
+    public List<T> getListForExport(List<URI> uris, String lang) throws Exception {
+        Map<String,Boolean> fieldsToFetch = new HashMap<>();
+        fieldsToFetch.put(VariableModel.SPECIES_FIELD_NAME, true);
+        fieldsToFetch.put(BaseVariableModel.EXACT_MATCH_FIELD, true);
+        fieldsToFetch.put(BaseVariableModel.NARROW_MATCH_FIELD, true);
+        fieldsToFetch.put(BaseVariableModel.BROAD_MATCH_FIELD, true);
+        fieldsToFetch.put(BaseVariableModel.CLOSE_MATCH_FIELD, true);
+
+
+        return sparql.getListByURIs(
+                defaultGraph,
+                objectClass,
+                uris,
+                lang,
+                result -> fetcher.getInstance(result, lang),
+                fieldsToFetch
+        );
     }
 }

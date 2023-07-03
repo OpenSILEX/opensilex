@@ -74,3 +74,15 @@ phisws:
 system:
     ignoredModules:
         org.opensilex.opensilex-mobile.MobileModule: opensilex-mobile.jar
+
+# dataverse:
+#     externalAPIKey: "****-****-****-****-****"
+#     rechercheDataGouvBasePath: "https://data-preproduction.inrae.fr"
+#     dataverseAlias: "opensilex-tests"
+#     dataverseLanguages:
+#         - en
+#         - fr
+#     datasetMetadataLanguages:
+#         - en
+#         - fr
+

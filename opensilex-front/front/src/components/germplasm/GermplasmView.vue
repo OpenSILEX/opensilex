@@ -123,20 +123,19 @@ export default class GermplasmView extends Vue {
 </script>
 
 <style scoped lang="scss">
-
-.createButton, .helpButton{
+.createButton, .helpButton {
   margin-bottom: 10px;
-  margin-top: -15px;
-  margin-left: 0;
   margin-right: 5px;
+  margin-top: 5px;
 }
+
 .helpButton {
   margin-left: -5px;
   color: #00A28C;
   font-size: 1.2em;
   border: none
 }
-  
+
 .helpButton:hover {
   background-color: #00A28C;
   color: #f1f1f1
@@ -152,6 +151,7 @@ en:
     add: Add germplasm
     update: Update Germplasm
     delete: Delete Germplasm
+    groupGermplasm: Germplasm Group
 fr:
   GermplasmView:
     title: Ressources Génétiques 
@@ -159,5 +159,6 @@ fr:
     add: Ajouter des ressources génétiques
     update: éditer germplasm
     delete: supprimer germplasm
+    groupGermplasm: Groupe de Ressources Génétiques
 </i18n>
 

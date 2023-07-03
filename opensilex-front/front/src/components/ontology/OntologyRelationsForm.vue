@@ -72,7 +72,9 @@ export default class OntologyRelationsForm extends Vue {
      *
      * @description You can pass a short or full URI for properties, this has no effect since this component take care of this.
      */
-    @Prop()
+    @Prop({
+      default: () => new Set<string>()
+    })
     excludedProperties: Set<string>;
 
     /**

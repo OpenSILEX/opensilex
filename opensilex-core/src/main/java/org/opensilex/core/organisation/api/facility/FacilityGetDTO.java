@@ -9,12 +9,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.annotations.ApiModel;
-import org.geojson.GeoJsonObject;
 import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.site.SiteModel;
+import org.opensilex.core.variablesGroup.dal.VariablesGroupModel;
 import org.opensilex.sparql.response.NamedResourceDTO;
 
 import javax.validation.constraints.NotNull;
@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
  * @author vince
  */
 @ApiModel
-@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "organizations", "sites", "address", "geometry"})
+@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "organizations", "sites", "address", "variableGroups"})
 public class FacilityGetDTO extends FacilityDTO {
 
     @JsonProperty("organizations")
@@ -37,8 +37,8 @@ public class FacilityGetDTO extends FacilityDTO {
     @JsonProperty("sites")
     protected List<NamedResourceDTO<SiteModel>> sites;
 
-    @JsonProperty("geometry")
-    protected GeoJsonObject geometry;
+    @JsonProperty("variableGroups")
+    protected List<NamedResourceDTO<VariablesGroupModel>> variablesGroups;
 
     @NotNull
     public List<NamedResourceDTO<OrganizationModel>> getInfrastructures() {
@@ -57,12 +57,12 @@ public class FacilityGetDTO extends FacilityDTO {
         this.sites = sites;
     }
 
-    public GeoJsonObject getGeometry() {
-        return geometry;
+    public List<NamedResourceDTO<VariablesGroupModel>> getVariablesGroups() {
+        return variablesGroups;
     }
 
-    public void setGeometry(GeoJsonObject geometry) {
-        this.geometry = geometry;
+    public void setVariablesGroups(List<NamedResourceDTO<VariablesGroupModel>> variablesGroups) {
+        this.variablesGroups = variablesGroups;
     }
 
     @Override
@@ -76,7 +76,7 @@ public class FacilityGetDTO extends FacilityDTO {
                 organizationModel.setUri(infrastructure.getUri());
                 organizationModels.add(organizationModel);
             });
-            model.setInfrastructures(organizationModels);
+            model.setOrganizations(organizationModels);
         }
 
         if (getSites() != null) {
@@ -88,13 +88,23 @@ public class FacilityGetDTO extends FacilityDTO {
             });
             model.setSites(siteModels);
         }
+
+        if (getVariablesGroups() != null) {
+            List<VariablesGroupModel> variablesGroupModels = new ArrayList<>();
+            getVariablesGroups().forEach(group -> {
+                VariablesGroupModel groupModel = new VariablesGroupModel();
+                groupModel.setUri(group.getUri());
+                variablesGroupModels.add(groupModel);
+            });
+            model.setVariableGroups(variablesGroupModels);
+        }
     }
 
     public void fromModel(FacilityModel model) {
         super.fromModel(model);
 
-        if (model.getInfrastructures() != null) {
-            setInfrastructures(model.getInfrastructures()
+        if (model.getOrganizations() != null) {
+            setInfrastructures(model.getOrganizations()
                     .stream()
                     .map(infrastructureModel ->
                             (NamedResourceDTO<OrganizationModel>)NamedResourceDTO.getDTOFromModel(infrastructureModel))
@@ -103,7 +113,15 @@ public class FacilityGetDTO extends FacilityDTO {
 
         if (model.getSites() != null) {
             setSites(model.getSites().stream()
-                    .map(siteModel -> (NamedResourceDTO<SiteModel>)NamedResourceDTO.getDTOFromModel(siteModel))
+                    .map(siteModel ->
+                            (NamedResourceDTO<SiteModel>)NamedResourceDTO.getDTOFromModel(siteModel))
+                    .collect(Collectors.toList()));
+        }
+
+        if (model.getVariableGroups() != null) {
+            setVariablesGroups(model.getVariableGroups().stream()
+                    .map(groupModel ->
+                            (NamedResourceDTO<VariablesGroupModel>)NamedResourceDTO.getDTOFromModel(groupModel))
                     .collect(Collectors.toList()));
         }
     }

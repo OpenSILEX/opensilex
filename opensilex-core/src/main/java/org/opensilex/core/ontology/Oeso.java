@@ -73,7 +73,10 @@ public class Oeso {
 
     // ---- VARIABLES GROUP ----
     public static final Resource VariablesGroup = Ontology.resource(NS, "VariablesGroup");
-    
+
+    // ---- Germplasm GROUP ----
+    public static final Resource GermplasmGroup = Ontology.resource(NS, "GermplasmGroup");
+
     // ----- USERS ------
     public static final Resource ScientificSupervisor = Ontology.resource(NS, "ScientificSupervisor");
     public static final Resource TechnicalSupervisor = Ontology.resource(NS, "TechnicalSupervisor");
@@ -111,6 +114,7 @@ public class Oeso {
     public static final Property containsFacility = Ontology.property(NS, "containsFacility");
     public static final Property withinSite = Ontology.property(NS, "withinSite");
     public static final Property hasGeometry = Ontology.property(NS, "hasGeometry");
+    public static final Property hasVariablesGroup = Ontology.property(NS, "hasVariablesGroup");
 
 
     // ---- SPECIES ----

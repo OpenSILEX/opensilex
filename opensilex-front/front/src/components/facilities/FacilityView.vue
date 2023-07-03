@@ -10,15 +10,20 @@
         <opensilex-PageActions :tabs="true" :returnButton="true">
             <template v-slot>
                 <b-nav-item
-                        :active="isDetailsTab()"
-                        :to="{ path: '/facility/details/' + encodeURIComponent(uri) }"
-                >{{ $t("FacilityView.details") }}
+                    :active="isOverviewTab()"
+                    :to="{ path: '/facility/overview/' + encodeURIComponent(uri) }"
+                > {{ $t("FacilityView.overview") }}
+                  <img
+                       v-bind:src="$opensilex.getResourceURI('images/construction.png')"
+                       class="wip-icon"
+                       alt="work in progress"
+                  >
                 </b-nav-item>
 
                 <b-nav-item
-                    :active="isDeviceTab()"
-                    :to="{ path: '/facility/devices/' + encodeURIComponent(uri) }"
-                >{{ $t("FacilityView.devices") }}
+                        :active="isDetailsTab()"
+                        :to="{ path: '/facility/details/' + encodeURIComponent(uri) }"
+                >{{ $t("FacilityView.details") }}
                 </b-nav-item>
 
                 <b-nav-item
@@ -37,15 +42,15 @@
 
         <opensilex-PageContent>
             <template v-slot>
-                <opensilex-FacilityDetails
-                        v-if="isDetailsTab()"
-                        :uri="uri"
-                ></opensilex-FacilityDetails>
-
-                <opensilex-FacilityAssociatedDevices
-                    v-if="isDeviceTab()"
+                <opensilex-FacilityMonitoringView
+                    v-if="isOverviewTab()"
                     :uri="uri"
-                ></opensilex-FacilityAssociatedDevices>
+                ></opensilex-FacilityMonitoringView>
+
+                <opensilex-FacilityDetails
+                    v-if="isDetailsTab()"
+                    :uri="uri"
+                ></opensilex-FacilityDetails>
 
                 <opensilex-DocumentTabList
                         v-else-if="isDocumentTab()"
@@ -117,8 +122,8 @@
             return this.$route.path.startsWith("/facility/details/");
         }
 
-        isDeviceTab() {
-          return this.$route.path.startsWith("/facility/devices/");
+        isOverviewTab() {
+          return this.$route.path.startsWith("/facility/overview/");
         }
 
         isDocumentTab() {
@@ -133,17 +138,24 @@
 </script>
 
 <style scoped lang="scss">
+
+.wip-icon {
+  float: right;
+  padding-left: 5px;
+  width: 28px;
+}
+
 </style>
 
 <i18n>
 en:
     FacilityView:
         details: Details
-        devices: Associated devices
+        overview: Monitoring
         document: Documents
 fr:
     FacilityView:
         details: Détail
-        devices: Dispositifs associés
+        overview: Supervision
         document: Documents
 </i18n>

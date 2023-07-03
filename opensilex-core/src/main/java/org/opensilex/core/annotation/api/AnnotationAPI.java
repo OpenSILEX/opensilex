@@ -11,13 +11,16 @@ import io.swagger.annotations.*;
 import org.opensilex.core.annotation.dal.AnnotationDAO;
 import org.opensilex.core.annotation.dal.AnnotationModel;
 import org.opensilex.core.annotation.dal.MotivationModel;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.server.response.*;
+import org.opensilex.server.response.ErrorResponse;
+import org.opensilex.server.response.ObjectUriResponse;
+import org.opensilex.server.response.PaginatedListResponse;
+import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.response.CreatedUriResponse;
 import org.opensilex.sparql.service.SPARQLService;
@@ -68,7 +71,7 @@ public class AnnotationAPI {
             credentialLabelKey = CREDENTIAL_ANNOTATION_MODIFICATION_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "An annotation is created", response = ObjectUriResponse.class),
+            @ApiResponse(code = 201, message = "An annotation is created", response = URI.class),
             @ApiResponse(code = 409, message = "An annotation with the same URI already exists", response = ErrorResponse.class)
     })
     @Consumes(MediaType.APPLICATION_JSON)
@@ -96,7 +99,7 @@ public class AnnotationAPI {
             credentialLabelKey = CREDENTIAL_ANNOTATION_MODIFICATION_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Annotation created", response = ObjectUriResponse.class),
+            @ApiResponse(code = 200, message = "Annotation created", response = URI.class),
             @ApiResponse(code = 404, message = "Unknown annotation URI", response = ErrorResponse.class)
     })
     @Consumes(MediaType.APPLICATION_JSON)
@@ -117,7 +120,7 @@ public class AnnotationAPI {
             credentialLabelKey = CREDENTIAL_ANNOTATION_DELETE_LABEL_KEY
     )
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Annotation deleted", response = ObjectUriResponse.class),
+            @ApiResponse(code = 200, message = "Annotation deleted", response = URI.class),
             @ApiResponse(code = 404, message = "Annotation URI not found", response = ErrorResponse.class)
     })
     @Consumes(MediaType.APPLICATION_JSON)

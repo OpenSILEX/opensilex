@@ -75,15 +75,15 @@
           <template v-slot:advancedSearch>
             <!-- Germplasm -->
             <div>
-            <opensilex-FilterField>
-              <opensilex-GermplasmSelector
-                :multiple="false"
-                :germplasm.sync="filter.germplasm"
-                :experiment="filter.experiment"
-                class="searchFilter"
-                @handlingEnterKey="refresh()"
-              ></opensilex-GermplasmSelector>
-            </opensilex-FilterField>
+              <opensilex-FilterField>
+                <opensilex-GermplasmSelector
+                    :multiple="false"
+                    :germplasm.sync="filter.germplasm"
+                    :experiment="filter.experiment"
+                    class="searchFilter"
+                    @handlingEnterKey="refresh()"
+                ></opensilex-GermplasmSelector>
+              </opensilex-FilterField>
             </div>
             <!-- Factors levels -->
             <div>

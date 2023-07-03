@@ -12,7 +12,7 @@ import java.util.List;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 
 /**
- * @see Brapi documentation V1.3 https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3
+ * @see <a href="https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3">BrAPI documentation</a>
  * @author Alice Boizet
  */
 public class StudyDetailsDTO extends StudyDTO {

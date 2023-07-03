@@ -36,7 +36,7 @@ import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 
 /**
- * @see BrAPI documentation V1.3 https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3
+ * @see <a href="https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3">BrAPI documentation</a>
  * The BrAPI germplasm corresponds to an accession in OpenSILEX
  * @author Alice BOIZET
  */
@@ -46,7 +46,8 @@ public class GermplasmAPI implements BrapiCall {
     
     @Override
     public ArrayList<Call> callInfo() {
-        ArrayList<Call> calls = new ArrayList();
+        // TODO : strange.. Why list with a single element?
+        ArrayList<Call> calls = new ArrayList<>();
         ArrayList<String> calldatatypes = new ArrayList<>();
         calldatatypes.add("json");
         ArrayList<String> call1Methods = new ArrayList<>();

@@ -373,50 +373,54 @@ export default class GenerateDataTemplateFrom extends Vue {
         line3.push( this.getDataTypeLabel("xsd:date") +
           "\n" + this.$t("DataHelp.required"));
 
-        this.service.getVariablesByURIs(this.variables).then((http) => {
-          for (let element of http.response.result) {
+        this.service.getVariablesByURIs(this.variables)
+          .then((http) => {
+            for (let element of http.response.result) {
 
-            //column variable
-            line1.push(element.uri);
-            line2.push(element.name);
-            if (element.datatype === undefined || element.datatype === null) {
-              element.datatype = Xsd.STRING;
+              //column variable
+              line1.push(element.uri);
+              line2.push(element.name);
+              if (element.datatype === undefined || element.datatype === null) {
+                element.datatype = Xsd.STRING;
+              }
+              let variableHelp = this.$t("DataHelp.column-type-help").toString() +
+                  this.$opensilex.getVariableDatatypeLabel(element.datatype);
+              if (this.$opensilex.checkURIs(element.datatype, Xsd.DATE)) {
+                variableHelp += " " + this.$t("DataTemplateForm.format-help.date");
+              } else if (this.$opensilex.checkURIs(element.datatype, Xsd.DATETIME)) {
+                variableHelp += " " + this.$t("DataTemplateForm.format-help.datetime");
+              } else if (this.$opensilex.checkURIs(element.datatype, Xsd.BOOLEAN)) {
+                variableHelp += " " + this.$t("DataTemplateForm.format-help.boolean");
+              }
+              line3.push(variableHelp);
+
+              //column raw_data
+              if (this.withRawData) {
+                line1.push("raw_data");
+                line2.push(this.$t("DataTemplateForm.raw-data"));
+                line3.push(
+                  this.$t("DataHelp.column-type-help").toString() +
+                  this.$t("DataTemplateForm.type-list") +
+                  this.$opensilex.getVariableDatatypeLabel(element.datatype));
+              }
             }
-            let variableHelp = this.$t("DataHelp.column-type-help").toString() +
-                this.$opensilex.getVariableDatatypeLabel(element.datatype);
-            if (this.$opensilex.checkURIs(element.datatype, Xsd.DATE)) {
-              variableHelp += " " + this.$t("DataTemplateForm.format-help.date");
-            } else if (this.$opensilex.checkURIs(element.datatype, Xsd.DATETIME)) {
-              variableHelp += " " + this.$t("DataTemplateForm.format-help.datetime");
-            } else if (this.$opensilex.checkURIs(element.datatype, Xsd.BOOLEAN)) {
-              variableHelp += " " + this.$t("DataTemplateForm.format-help.boolean");
+
+            //column annotation on object
+            if (this.selectedColumns.includes(this.annotationColumn)) {
+                line1.push(this.annotationColumn);
+                line2.push(this.$t("DataTemplate.annotationHelp"));
+                line3.push(this.$t("DataHelp.column-type-help")+"String");
             }
-            line3.push(variableHelp);
 
-            //column raw_data
-            if (this.withRawData) {
-              line1.push("raw_data");
-              line2.push(this.$t("DataTemplateForm.raw-data"));
-              line3.push(
-                this.$t("DataHelp.column-type-help").toString() +
-                this.$t("DataTemplateForm.type-list") +
-                this.$opensilex.getVariableDatatypeLabel(element.datatype));
-            }
-          }
-
-          //column annotation on object
-          if (this.selectedColumns.includes(this.annotationColumn)) {
-              line1.push(this.annotationColumn);
-              line2.push(this.$t("DataTemplate.annotationHelp"));
-              line3.push(this.$t("DataHelp.column-type-help")+"String");
-          }
-
-          arrData = [line1, line2, line3];
-          this.$papa.download(
-            this.$papa.unparse(arrData, { delimiter: this.separator }),
-            "datasetTemplate"
-          );
-        });
+            arrData = [line1, line2, line3];
+            this.$papa.download(
+              this.$papa.unparse(arrData, { delimiter: this.separator }),
+              "datasetTemplate"
+            );
+          }).catch((error) => {
+            this.$opensilex.showErrorToast(this.$i18n.t("DataTemplateForm.variable-not-found-error"));
+            throw error;
+          });
       }
     });
   }
@@ -462,6 +466,7 @@ en :
       datetime: "(format: YYYY-MM-DDThh:mm:ssZ)"
       date: "(format: YYYY-MM-DD)"
       boolean: "(format: true/false)"
+    variable-not-found-error: Variable not found. Please make sure you have imported it.
   DataTemplate:
     annotationHelp: "Annotation (On the target object)"
 fr :
@@ -480,6 +485,7 @@ fr :
       datetime: "(format: AAAA-MM-JJThh:mm:ssZ)"
       date: "(format: AAAA-MM-JJ)"
       boolean: "(format: true/false)"
+    variable-not-found-error: Variable non trouvée. Veuillez verifier que la variable est bien importée.
   DataTemplate:
     annotationHelp: "Annotation (Sur l'object cible)"
  </i18n>

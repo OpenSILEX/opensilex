@@ -227,24 +227,22 @@ public class ScientificObjectAPI {
         List<ScientificObjectNodeDTO> dtoMapGeo = new ArrayList<>();
         int lengthMapGeo = 0;
 
-        //1- Get SO with geometry for the experiment (MongoDB - collection geospatial)
+        // Get SO with geometry for the experiment
         validateContextAccess(contextURI);
 
         Instant test_start = Instant.now();
         FindIterable<GeospatialModel> mapGeo = geoDAO.getGeometryByGraphList(contextURI);
         Instant test_end = Instant.now();
 
-        //2- Filter OS with date and get OS detail ( uri, name, rdfType, rdfTypeLabel, destruction date, creation date) ( RDF4J) - SONodeDTO
-        //for each SO,get the uri
+        // Filter OS by date and get OS details ( uri, name, rdfType, rdfTypeLabel, destruction date, creation date)
         for (GeospatialModel geospatialModel : mapGeo) {
             dtoMapGeo.add(ScientificObjectNodeDTO.getDTOFromModel(geospatialModel));
             lengthMapGeo++;
         }
 
-        //get SO uris between 2 dates for an experiment
         List<ScientificObjectNodeDTO> dtoList = soDAO.getScientificObjectsByDate(contextURI, startDate, endDate, currentUser.getLanguage(), dtoMapGeo.stream().map(ScientificObjectNodeDTO::getUri).collect(Collectors.toList()));
 
-        //3- set the geometry from MongoDB in SO from RDF4J
+        // Set the geometry coming from MongoDB in the corresponding SO of RDF4J
         for(ScientificObjectNodeDTO dto : dtoList){
             dto.setGeometry(dtoMapGeo.stream().filter(o -> dto.getUri().toString().equals(o.getUri().toString())).findAny().orElse(null).getGeometry());
         }

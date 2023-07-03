@@ -340,8 +340,6 @@ export default class SelectForm extends Vue {
           resolve(this.currentValue);
         } else {
           //Set table async view's checked items
-          //TODO: vérif casse pas pour autre items (ex: group de germplasm)
-          //let jsonSelectedItems = this._convertSelectedToJson();
           this.$nextTick(()=> {
             if(this.searchModal.setInitiallySelectedItems){
               this.searchModal.setInitiallySelectedItems(this.selectedInJsonFormat);
@@ -495,19 +493,6 @@ export default class SelectForm extends Vue {
     }
 
     return "";
-  }
-
-  /**
-   * Converts selected prop to a new list of jsons, each json has 1 field : long uri
-   * Used to set TableAsyncView's initially selected items
-   * @private
-   */
-  private _convertSelectedToJson(){
-    let result = [];
-    for(const uri of this.selection){
-      result.push({uri:this.$opensilex.getLongUri(uri)});
-    }
-    return result;
   }
 
  select(value) {

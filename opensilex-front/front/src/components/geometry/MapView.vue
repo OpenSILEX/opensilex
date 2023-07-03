@@ -73,7 +73,6 @@
         @onValidate="downloadOSFeatures"
     ></opensilex-ExportShapeModalList>
     <!-- chart modal -->
-    <!-- TODO : créer un nouveau composant? -->
     <b-modal id="modal-chart" size="xl" hide-footer>
       <template #modal-title>
         <i class="ik ik-search mr-1"></i>
@@ -469,7 +468,7 @@
             </template>
           </opensilex-TreeView>
           <!-- AREAS -->
-          <opensilex-TreeView :nodes.sync="areas" :class="isDisabled ? 'disabled' : ''">
+          <opensilex-TreeView :nodes.sync="areas" :class="isDisabled ? 'disabledMenu' : ''">
             <template v-slot:node="{ node }" >
               <span class="item-icon"> </span>
               <!-- flat() method creates a new array with all sub-array elements concatenated into it recursively up to the specified depth -->
@@ -504,7 +503,7 @@
             </template>
           </opensilex-TreeView>
           <!-- DEVICES -->
-          <opensilex-TreeView :nodes.sync="devices" :class="isDisabled ? 'disabled' : ''">
+          <opensilex-TreeView :nodes.sync="devices" :class="isDisabled ? 'disabledMenu' : ''">
             <template v-slot:node="{ node }">
               <span class="item-icon"> </span>&nbsp;
               <span v-if="node.title === 'Devices'">{{ $t("MapView.mapPanelDevices") }} ({{ isDisabled ? $t("MapView.mapPanelNotVisible") : featuresDevice.flat().length }})</span>
@@ -2717,7 +2716,7 @@ p {
   }
 }
 
-.disabled{
+.disabledMenu{
   color:grey ;
   background-color: lightgrey;
   pointer-events: none;
@@ -2787,7 +2786,7 @@ en:
     create-filter: Create filter
     center: Refocus the map
     save: Save the map
-    chart: Display graphic - limited to 15 scientific objects
+    chart: Display graphic - from 1 to 15 scientific objects
     time: See temporal(s) area(s)
     noFilter: No filter applied. To add one, use the form below the map
     save-confirmation: Do you want to export the map as PNG image, PDF or shapefile ?
@@ -2854,7 +2853,7 @@ fr:
     create-filter: Créer un filtre
     center: Recentrer la carte
     save: Enregistrer la carte
-    chart: Afficher le graphique - limiter à 15 objets scientifiques
+    chart: Afficher le graphique - de 1 à 15 objets scientifiques
     time: Visualiser les zones temporaires
     noFilter: Aucun filtre appliqué. Pour en ajouter, utiliser le formulaire situé sous la carte
     save-confirmation: Voulez-vous exporter la carte au format PNG, PDF ou shapefile ?

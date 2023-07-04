@@ -91,6 +91,8 @@ export default class GroupVariablesForm extends Vue {
   }
 
   create(form: VariablesGroupCreationDTO){
+    this.$opensilex.enableLoader();
+    this.$opensilex.showLoader();
     return this.$opensilex
       .getService<VariablesService>("opensilex.VariablesService")
       .createVariablesGroup(form)
@@ -98,6 +100,8 @@ export default class GroupVariablesForm extends Vue {
         let message = this.$i18n.t(this.form.name) + this.$i18n.t("component.common.success.creation-success-message");
         this.$opensilex.showSuccessToast(message);
         let uri = http.response.result;
+        this.$opensilex.hideLoader();
+        this.$opensilex.disableLoader();
         this.$emit("onCreate", uri);
         this.$router.push({path: "/variables?elementType=VariableGroup&selected=" + encodeURIComponent(uri)});
       })
@@ -112,6 +116,8 @@ export default class GroupVariablesForm extends Vue {
   }
 
   update(form: VariablesGroupUpdateDTO){
+    this.$opensilex.enableLoader();
+    this.$opensilex.showLoader();
     return this.$opensilex
       .getService<VariablesService>("opensilex.VariablesService")
       .updateVariablesGroup(form)
@@ -119,6 +125,8 @@ export default class GroupVariablesForm extends Vue {
         let message = this.$i18n.t(this.form.name) + this.$i18n.t("component.common.success.update-success-message");
         this.$opensilex.showSuccessToast(message);
         let uri = http.response.result;
+        this.$opensilex.hideLoader();
+        this.$opensilex.disableLoader();
         this.$emit("onUpdate", uri);
       })
       .catch(this.$opensilex.errorHandler);

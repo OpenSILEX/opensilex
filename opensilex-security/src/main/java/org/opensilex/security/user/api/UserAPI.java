@@ -124,7 +124,9 @@ public class UserAPI {
         sparql.startTransaction();
         try {
             PersonDAO personDAO = new PersonDAO(sparql);
-            PersonModel person = personDAO.create(userDTO.createCorrespondingPersonDTO());
+            PersonDTO personDTO = userDTO.createCorrespondingPersonDTO();
+            personDTO.setUri(null);
+            PersonModel person = personDAO.create(personDTO );
 
             AccountModel user = accountDAO.create(
                     userDTO.getUri(),
@@ -322,8 +324,14 @@ public class UserAPI {
 
                 if (Objects.isNull(newHolderOfTheAccount) && Objects.nonNull(holderOfTheAccount) ) {
                     PersonDTO holderToUpdate = userDTO.createCorrespondingPersonDTO();
+
+                    holderToUpdate.setUri(holderOfTheAccount.getUri());
                     String email = Objects.nonNull(holderOfTheAccount.getEmail()) ? holderOfTheAccount.getEmail().toString() : null;
                     holderToUpdate.setEmail(email);
+                    String phone = Objects.nonNull(holderOfTheAccount.getPhoneNumber()) ? holderOfTheAccount.getPhoneNumber().getSchemeSpecificPart() : null;
+                    holderToUpdate.setPhoneNumber(phone);
+                    holderToUpdate.setOrcid(holderOfTheAccount.getOrcid());
+                    holderToUpdate.setAffiliation(holderOfTheAccount.getAffiliation());
 
                     personDAO.update(holderToUpdate);
                 }

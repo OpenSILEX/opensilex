@@ -74,8 +74,6 @@ phisws:
 system:
     ignoredModules:
         org.opensilex.opensilex-mobile.MobileModule: opensilex-mobile.jar
-        org.opensilex.opensilex-dataverse.DataverseModule: opensilex-dataverse.jar
-
 
 # dataverse:
 #     externalAPIKey: "****-****-****-****-****"

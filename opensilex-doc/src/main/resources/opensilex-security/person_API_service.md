@@ -17,7 +17,7 @@ example of use-cases :
 ### model of a person
 ![data model of a person](img/person_data_model.png)
 #### specification of the model :
-* ORCID is stored as a URI
+* ORCID is stored as a URI and should be unique (see [orcid website](https://orcid.org/) for more information)
 * PhoneNumber is stored as a URI with the tel:scheme ex: tel:+33-1-42-75-90-00
 
 ### specifications of the service

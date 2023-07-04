@@ -423,15 +423,7 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
                 CSVCell cell = new CSVCell(rowIndex,colIndex.get()-2, start,"start");
                 validation.addMissingRequiredValue(cell);
             } 
-        }
-
-        int resultOfDatesComparison = start.compareTo(end);
-
-        if (resultOfDatesComparison > 0) {
-            CSVCell cell = new CSVCell(rowIndex,colIndex.get(), start,EventModel.START_FIELD);
-            cell.setMessage("EventCsvForm.invalidDate");
-            validation.addInvalidDateErrors(cell);
-        } else { 
+        } else {
             InstantModel endModel = new InstantModel();
             try {
                 endModel.setDateTimeStamp(OffsetDateTime.parse(end));
@@ -440,7 +432,15 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
                 CSVCell cell = new CSVCell(rowIndex,colIndex.get()-1, end,"end");
                 validation.addInvalidValueError(cell);
             }
+        }
 
+        // End & start comparison
+        if (model.getStart() != null && model.getEnd() != null) {
+            if (model.getStart().getDateTimeStamp().isAfter(model.getEnd().getDateTimeStamp())) {
+                CSVCell cell = new CSVCell(rowIndex,colIndex.get(), start, EventModel.START_FIELD);
+                cell.setMessage("EventCsvForm.invalidDate");
+                validation.addInvalidDateErrors(cell);
+            }
         }
 
         String target = row[colIndex.getAndIncrement()];

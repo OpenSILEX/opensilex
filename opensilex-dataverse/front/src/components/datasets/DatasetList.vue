@@ -82,14 +82,14 @@
                             </div>
 
                             <!-- authors -->
-                            <div> <!-- TODO : Should use a PersonSelector instead but issue with the get documents service -->
+                            <div>
                                 <label>{{ $t('DatasetList.filter.author') }}</label>
-                                <opensilex-InputForm
-                                    :value.sync="filters.authors"
+                                <opensilex-PersonSelector
+                                    :persons.sync="filters.authors"
                                     class="searchFilter"
                                     placeholder="DatasetList.filter.author-placeholder"
                                     @handlingEnterKey="refresh()"
-                                ></opensilex-InputForm>
+                                ></opensilex-PersonSelector>
                             </div>
 
                             <!-- deprecated -->
@@ -335,14 +335,14 @@ export default class DatasetList extends Vue {
             let promises = [];
 
             experimentSet.forEach(experiment => {
-                if (!this.experimentMap.has(experiment)){
+                if (!this.experimentMap.has(experiment) && experiment !== undefined){
                     promises.push(this.experimentsService.getExperiment(experiment).then(response => {
                         this.experimentMap.set(experiment, response.response.result.name)
                     }));
                 }
             })
             authorSet.forEach(author => {
-                if (!this.authorMap.has(author)){
+                if (!this.authorMap.has(author) && author !== undefined){
                     promises.push(this.securityService.getPerson(author).then(response => {
                         this.authorMap.set(author, response.response.result)
                     }));
@@ -366,7 +366,7 @@ export default class DatasetList extends Vue {
                         identifier: document.identifier,
                         rdf_type: document.rdf_type,
                         title: document.title,
-                        productionDate: document.date,
+                        date: document.date,
                         description: document.description,
                         targets: document.targets,
                         authors: document.authors,

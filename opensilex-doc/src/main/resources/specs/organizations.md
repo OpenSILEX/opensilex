@@ -6,11 +6,11 @@
 
 # Specifications : organizations
 
-This document describes briefly the functional and technical specifications of the organizations in OpenSILEX.
+This document briefly describes the functional and technical specifications of the organizations in OpenSILEX.
 
 ## Needs
 
-Organizations represents the institutions responsible for the experiments and facilities. They include for example
+Organizations represent the institutions responsible for the experiments and facilities. They include for example
 national infrastructures, installations or experimental units. Organizations are hierarchically structured : an org
 can be part of zero, one or more "parents", and can have multiple "children".
 
@@ -39,14 +39,14 @@ A user has access to an organization if and only if at least one of these condit
 
 ### Detailed explanations
 
-The logic for checking the organization access rights is performed by a SPARQL query. The class `OrganizationSPARQLHelper`
-regroups some methods to construct this query, mainly `addOrganizationAccessClause` (see the Javadoc for more details
+The logic for checking the organization access rights is performed by a SPARQL queries. The class `OrganizationSPARQLHelper`
+regroups some methods to build this query, mainly `addOrganizationAccessClause` (see its Javadoc for more details
 on how the query works).
 
 To increase the performance, the search results are cached in `OrganizationDAO`. The first time a user tries to search
 organizations, a first query is performed to retrieve all organizations the user has access to. The filter is then
-applied on the cached values. The next time this user performs a search, the results are directly taken from the cache
-and no SPARQL query is performed, allowing for a much shorter response time.
+applied on the cached values. The next time this user performs a search, the results will directly be taken from the cache
+and no SPARQL query will be performed, allowing for a much shorter response time.
 
 The organization search uses the `SPARQLListFetcher` class to retrieve all children organizations in a single query,
 delegating the hierarchy reconstruction to the caller.

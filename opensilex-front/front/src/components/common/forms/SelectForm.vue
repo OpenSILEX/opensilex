@@ -698,13 +698,11 @@ export default class SelectForm extends Vue {
   updateModal() {
     // unselect temporary items that are not in confirmed selection
     //This line creates a new array containing elements from selectedTmp that aren't in selectedCopie
-      let difference = this.selectedTmp.filter(x => !this.selectedCopie.some(el => el.uri === x.uri));
     let difference = this.selectedTmp.filter(x => !this.selectedCopie.some(el => el.uri === x.uri));
     difference.forEach((item) => {
       this.searchModal.unSelect(item);
     });
     // reselect previously confirmed items that are not in temporary selection
-      difference = this.selectedCopie.filter(x => !this.selectedTmp.some(el => el.uri === x.uri));
     difference = this.selectedCopie.filter(x => !this.selectedTmp.some(el => el.uri === x.uri));
     difference.forEach((item) => {
       this.searchModal.selectItem(item);

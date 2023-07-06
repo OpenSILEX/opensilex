@@ -189,7 +189,7 @@
     color: inherit;
 }
 
-.personOrcid a {
+.personOrcid a, .dataDetailLinks a {
     color: #007bff;
 }
 
@@ -537,6 +537,12 @@
     border-color: #00A38D;
     background-color: #00A38D;
 }
+
+.modal-header .close:hover {
+    color: red;
+    transition: 0.5s
+}
+
 /********************************
 * 
 ********************************/

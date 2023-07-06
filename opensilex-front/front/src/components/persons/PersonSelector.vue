@@ -5,6 +5,7 @@
     :selected.sync="personsURI"
     :multiple="multiple"
     :itemLoadingMethod="loadPersons"
+    :required="required"
     :searchMethod="searchPersons"
     :conversionMethod="personToSelectNode"
     placeholder="component.person.filter-placeholder"
@@ -33,6 +34,9 @@ export default class PersonSelector extends Vue {
   label;
 
   @Prop()
+  required;
+
+  @Prop()
   multiple;
 
   @Prop()
@@ -54,10 +58,10 @@ export default class PersonSelector extends Vue {
       );
   }
 
-  searchPersons(searchQuery, page, pageSize) {
+  searchPersons(searchQuery, page) {
     return this.$opensilex
       .getService<SecurityService>("opensilex.SecurityService")
-      .searchPersons(searchQuery, this.getOnlyPersonsWithoutAccount, undefined, page, pageSize)
+      .searchPersons(searchQuery, this.getOnlyPersonsWithoutAccount, undefined, page, 0)
       .then( (http: HttpResponse<OpenSilexResponse<Array<PersonDTO>>>) =>{
       if (this.personPropertyExistsCondition){
           let tmp = http.response.result.map(value => {

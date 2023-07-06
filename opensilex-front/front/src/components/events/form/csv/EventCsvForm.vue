@@ -6,6 +6,7 @@
                 :validateCSV="validateCSV"
                 :uploadCSV="uploadCSV"
                 @csvImported="onCsvImported"
+                successImportMsg="Event.multiple-insert"
                 :title="isMove ? 'EventHelpTableView.move-csv-import-title' : 'EventHelpTableView.csv-import-title'"
         >
             <template v-slot:icon>
@@ -94,8 +95,6 @@
 
         onCsvImported(response){
             this.nbLinesImported = response.result.nb_lines_imported;
-            let msgKey = this.isMove ? "Event.move-multiple-insert" : "Event.multiple-insert";
-            this.$opensilex.showSuccessToast(this.nbLinesImported+ " "+this.$i18n.t(msgKey));
             this.$emit("csvImported", response);
         }
 

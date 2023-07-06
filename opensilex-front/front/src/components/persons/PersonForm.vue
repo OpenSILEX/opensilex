@@ -54,7 +54,7 @@
 
     <!-- First name -->
     <opensilex-InputForm
-        :value.sync="form.organization"
+        :value.sync="form.affiliation"
         label="component.person.affiliation"
         placeholder="component.person.form-affiliation-placeholder"
         type="text"
@@ -94,7 +94,7 @@ export default class PersonForm extends Vue {
         email: null,
         first_name: null,
         last_name: null,
-        organization: null,
+        affiliation: null,
         phone_number: null
       };
     }
@@ -116,7 +116,7 @@ export default class PersonForm extends Vue {
       email: null,
       first_name: null,
       last_name: null,
-      organization: null,
+      affiliation: null,
       phone_number: null
     };
   }

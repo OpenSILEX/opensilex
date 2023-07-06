@@ -398,7 +398,7 @@ export default class ExperimentDetail extends Vue {
           for (let i = 0; i < http.response.result.length; i++) {
             if (
               this.experiment.species.find(
-                (species) => species == http.response.result[i].uri
+                (species) => this.$opensilex.checkURIs(species, http.response.result[i].uri)
               )
             ) {
               this.speciesList.push(http.response.result[i]);

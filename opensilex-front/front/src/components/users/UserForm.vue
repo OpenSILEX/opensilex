@@ -48,51 +48,50 @@
     ></opensilex-CheckboxForm>
 
     <!-- choices about holder of the account -->
-      <b-form-group :label="$t('component.account.linked-person')" v-slot="{ ariaDescribedby }">
+    <b-form-group :label="$t('component.account.linked-person')" v-slot="{ ariaDescribedby }">
 
-        <div id="choixPerson">
+      <div id="choixPerson">
 
-          <div v-if="hasHolder" class="boutonChoix" :title="$t('component.account.choices.create-person')">
-            <b-form-radio
-                button
-                button-variant="outline-info"
-                v-model="selected"
-                value="addPerson">
-              <slot name="icon">
-                <opensilex-Icon icon='fa#user-plus' />
-              </slot>
-            </b-form-radio>
-          </div>
-
-          <div class="boutonChoix" :title="$t('component.account.choices.select-person')">
-            <b-form-radio
-                class="boutonChoix"
-                button
-                button-variant="outline-info"
-                v-model="selected"
-                value="selectPerson">
-              <slot name="icon">
-                <opensilex-Icon icon='fa#link' />
-              </slot>
-            </b-form-radio>
-          </div>
-
-          <div class="boutonChoix" :title="$t('component.account.choices.account-only')">
-            <b-form-radio
-                class="boutonChoix"
-                button
-                button-variant="outline-info"
-                v-model="selected"
-                value="noOne">
-              <slot name="icon">
-                <opensilex-Icon icon='fa#window-close' />
-              </slot>
-            </b-form-radio>
-          </div>
+        <div v-if="hasHolder" class="boutonChoix" :title="$t('component.account.choices.create-person')">
+          <b-form-radio
+              button
+              button-variant="outline-info"
+              v-model="selected"
+              value="addPerson">
+            <slot name="icon">
+              <opensilex-Icon icon='fa#user-plus'/>
+            </slot>
+          </b-form-radio>
         </div>
 
-      </b-form-group>
+        <div class="boutonChoix" :title="$t('component.account.choices.select-person')">
+          <b-form-radio
+              class="boutonChoix"
+              button
+              button-variant="outline-info"
+              v-model="selected"
+              value="selectPerson">
+            <slot name="icon">
+              <opensilex-Icon icon='fa#link'/>
+            </slot>
+          </b-form-radio>
+        </div>
 
+        <div class="boutonChoix" :title="$t('component.account.choices.account-only')">
+          <b-form-radio
+              class="boutonChoix"
+              button
+              button-variant="outline-info"
+              v-model="selected"
+              value="noOne">
+            <slot name="icon">
+              <opensilex-Icon icon='fa#window-close'/>
+            </slot>
+          </b-form-radio>
+        </div>
+      </div>
+
+    </b-form-group>
 
 
     <!-- persons -->
@@ -137,9 +136,9 @@ import {OpenSilexStore} from "../../models/Store";
 
 @Component
 export default class UserForm extends Vue {
-$opensilex: OpenSilexVuePlugin
-$securityService : SecurityService
-$store: OpenSilexStore
+  $opensilex: OpenSilexVuePlugin
+  $securityService: SecurityService
+  $store: OpenSilexStore
 
   get user() {
     return this.$store.state.user;
@@ -181,7 +180,10 @@ $store: OpenSilexStore
 
   hasHolder = false
 
-  created(){
+  originalFirstName: string
+  originalLastName: string
+
+  created() {
     this.$securityService = this.$opensilex.getService("opensilex.SecurityService")
   }
 
@@ -190,6 +192,8 @@ $store: OpenSilexStore
     this.$nextTick(() => {
       this.hasHolder = !this.editMode || (this.editMode && this.form.first_name != null)
       this.selected = this.hasHolder ? 'addPerson' : 'noOne'
+      this.originalFirstName = this.form.first_name
+      this.originalLastName = this.form.last_name
     });
   }
 
@@ -207,6 +211,7 @@ $store: OpenSilexStore
   }
 
   create(form) {
+    this.showLoader()
     if (this.selected === 'addPerson') {
       return this.createWithNewPerson(form)
     } else {
@@ -214,25 +219,39 @@ $store: OpenSilexStore
     }
   }
 
-  createWithNewPerson(form) {
-    return this.$securityService
-        .createUser(form)
-        .catch(error => {
-          this.$opensilex.errorHandler(error);
-        });
+  async createWithNewPerson(form) {
+    try {
+      let response = await this.$securityService.createUser(form)
+      return response
+    } catch (error) {
+      this.$opensilex.errorHandler(error);
+    } finally {
+      this.hideLoader()
+    }
   }
 
-  createWithExistentPersonOrAccountOnly(form) {
-    return this.$securityService
-        .createAccount(form)
-        .catch(error => {
-          this.$opensilex.errorHandler(error);
-        });
+  async createWithExistentPersonOrAccountOnly(form) {
+    try {
+      let response = await this.$securityService.createAccount(form)
+      return response
+    } catch (error) {
+      this.$opensilex.errorHandler(error);
+    } finally {
+      this.hideLoader()
+    }
   }
 
   update(form) {
+    this.showLoader()
+
     if (form.password === "") {
       form.password = null;
+    }
+    if (form.first_name === "" || form.first_name === null) {
+      form.first_name = this.originalFirstName
+    }
+    if (form.last_name === "" || form.last_name === null) {
+      form.last_name = this.originalLastName
     }
     return this.$securityService
         .updateUser(form)
@@ -240,7 +259,20 @@ $store: OpenSilexStore
           let uri = http.response.result;
           console.debug("User updated", uri);
         })
-        .catch(this.$opensilex.errorHandler);
+        .catch(error => {
+          this.$opensilex.errorHandler(error);
+        })
+        .finally( () => { this.hideLoader()} )
+  }
+
+  showLoader() {
+    this.$opensilex.enableLoader();
+    this.$opensilex.showLoader();
+  }
+
+  hideLoader() {
+    this.$opensilex.hideLoader();
+    this.$opensilex.disableLoader();
   }
 
 }

@@ -90,6 +90,6 @@ public class DataverseClientTest {
         assertEquals("Facade description must be the same", facade.getDescriptions().get(0).getDescription(), experimentModel.getDescription());
         assertEquals("Facade subject must be the same", facade.getSubject(), "Agricultural Sciences");
         assertEquals("Facade languages must be the same", facade.getLanguages().get(0), "English");
-        assertEquals("Facade depositor must be the same", facade.getDepositor(), datasetDTO.getCurrentAccount().getFirstName() + " " + datasetDTO.getCurrentAccount().getLastName().toUpperCase());
+        assertEquals("Facade depositor must be the same", facade.getDepositor(), datasetDTO.getCurrentAccount().getHolderOfTheAccount().getFirstName() + " " + datasetDTO.getCurrentAccount().getHolderOfTheAccount().getLastName().toUpperCase());
     }
 }

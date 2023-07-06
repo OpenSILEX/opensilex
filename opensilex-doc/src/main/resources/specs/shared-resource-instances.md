@@ -36,7 +36,7 @@ and re-use of resources rather than systematic declarations of said resources.
 
 ## Solution
 
-An OpenSILEX instance can be configured to have associated shared resource instances.
+An OpenSILEX instance can be configured to have associated shared resource instances (SRIs).
 
 The search service of the variable API can be used to browse variables, entities, etc. from an SRI defined in the
 instance configuration rather than the local instance. This is also true for the `getByUri` and `getListByUris`
@@ -47,9 +47,9 @@ In the web application, the top field of the variable list page allows to change
 default, the user will see the variables that are present on the local instance. They can choose to browse variables 
 from any SRI defined in the instance configuration.
 
-The local variables in the list have an icon indicating whether they come from a shared resource instance. On hovering
+The local variables in the list have an icon indicating whether they come from a shared resource instance or not. On hovering
 the icon, the name of the instance is displayed. Similarly, when browsing variables from an SRI, an icon will show
-whether the variable has already been copied to the local instance.
+whether the variable has already been copied to the local instance or not.
 
 The detail page of a local variable also displays the origin SRI, as well as the last time the variable was updated
 from the SRI.
@@ -61,11 +61,11 @@ components of the variables such as the entity, etc. are also copied on the loca
 
 ### Definitions
 
-- **Shared Resource Instance (SRI)** : An OpenSILEX instance used to store resources that are meant to be re-use by 
+- **Shared Resource Instance (SRI)** : An OpenSILEX instance used to store resources that are meant to be re-used by 
   other instances. For example, they can be common variables for a specific domain. In the context of any OpenSILEX
   instance, the Shared Resource Instances are the instances defined under the `core.sharedResourceInstances` section
   of the configuration file. (See the [configuration documentation](../installation/configuration/shared-resource-instances.md)).
-- **Copy** : Create a new resource on an instance from an origin resource in an SRI. The new resource will have the same
+- **Copy** : Create a new resource on an instance from an origin resource on an SRI. The new resource will have the same
   fields and URI as the origin, and an additional field referring to the source SRI
   (`vocabulary:fromSharedResourceInstance`).
 
@@ -75,7 +75,7 @@ components of the variables such as the entity, etc. are also copied on the loca
 
 The SRI configurations are defined in the `CoreConfig` and `SharedResourceInstanceItem` interfaces. Methods for
 accessing these configurations are defined in the injectable `CoreModule` class. They can be accessed either as
-`SharedResourceInstanceItem` for `SharedResourceInstanceDTO`, the difference being that the DTO only has one label,
+`SharedResourceInstanceItem` or `SharedResourceInstanceDTO`, the difference being that the DTO only has one label,
 chosen according to the user language, whereas the item has a map of all labels depending on the language.
 
 #### API
@@ -154,9 +154,9 @@ The following bullet points are notes from a meeting concerning the limitations 
     - Major changes : update of the entity, etc.
     - Example of a complex case : a variable can be split in two more specific variables
 - Allow for resource moderation on the SRI.
-  - Non-administrator user should be able to submit variables to add to an SRI. These variables could be submitted to
+  - Non-administrator users should be able to submit variables to add to an SRI. These variables could be submitted for
     moderation before being accepted.
   - The moderator can make suggestions before accepting the variable (using annotations)
 - When declaring a variable on the local instance, automatically search the SRI for similar variables. Show the user
-  suggested variables from the URI to encourage re-use rather than re-declaration.
+  suggested variables from the SRI to encourage re-use rather than re-declaration.
 - Keep the "source" filter visible even if the filter window is closed on the variable list

@@ -266,7 +266,7 @@ public class VariableAPI {
             @ApiParam(value = "Characteristic filter") @QueryParam("characteristic") @ValidURI URI characteristic,
             @ApiParam(value = "Method filter") @QueryParam("method") @ValidURI URI method,
             @ApiParam(value = "Unit filter") @QueryParam("unit") @ValidURI URI unit,
-            @ApiParam(value = "Included in group filter") @QueryParam("included_in_group_of_variables") @ValidURI URI includedIngroup,
+            @ApiParam(value = "Included in group filter") @QueryParam("group_of_variables") @ValidURI URI includedIngroup,
             @ApiParam(value = "Not included in group filter") @QueryParam("not_included_in_group_of_variables") @ValidURI URI notIncluedInGroup,
             @ApiParam(value = "Data type filter") @QueryParam("data_type") @ValidURI URI dataType,
             @ApiParam(value = "Time interval filter") @QueryParam("time_interval") String timeInterval,

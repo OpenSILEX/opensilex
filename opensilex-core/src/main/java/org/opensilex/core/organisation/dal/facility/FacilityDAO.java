@@ -232,7 +232,9 @@ public class FacilityDAO {
         if (Objects.nonNull(existingModel.getAddress()) || Objects.nonNull(geometry)) {
             deleteFacilityGeospatialModel(instance.getUri());
 
-            sparql.delete(FacilityAddressModel.class, existingModel.getAddress().getUri());
+            if (Objects.nonNull(existingModel.getAddress())) {
+                sparql.delete(FacilityAddressModel.class, existingModel.getAddress().getUri());
+            }
         }
 
         createFacilityGeospatialModel(instance, geometry);

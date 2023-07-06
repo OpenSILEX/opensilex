@@ -170,7 +170,11 @@ public class DataverseAPI {
         docModel.setType(datasetRDFType);
         docModel.setDeprecated(Boolean.toString(datasetDeprecated));
         docModel.setDate(productionDate);
-        docModel.setDescription(datasetDTO.getDescription());
+        if(!datasetDTO.getDescription().isEmpty()){
+            docModel.setDescription(datasetDTO.getDescription());
+        } else {
+            docModel.setDescription(datasetDTO.getTopic());
+        }
         docModel.setLanguage(datasetLanguage.getDisplayLanguage(currentAccount.getLocale()));
         docModel.setAuthors(datasetAuthors.stream().map(URI::toString).collect(Collectors.toList()));
 

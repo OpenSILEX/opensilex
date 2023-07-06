@@ -1934,7 +1934,9 @@ public class DataAPI {
             }else{
                 if(validRow){
                     annotationFromAnnotationColumn.setTargets(Collections.singletonList( target==null ? object.getUri() : target.getUri()));
-                    annotationFromAnnotationColumn.setCreated(parsedDateTimeMongo.getInstant().atOffset(ZoneOffset.ofTotalSeconds(0)));
+                    String onlyDateString = parsedDateTimeMongo.getInstant().toString().substring(0, 11);
+                    String setToMidday = onlyDateString + "12:00:00Z";
+                    annotationFromAnnotationColumn.setCreated(Instant.parse( setToMidday ).atOffset(ZoneOffset.ofTotalSeconds(0)));
                     csvValidation.addToAnnotationsOnObjects(annotationFromAnnotationColumn);
                 }
             }

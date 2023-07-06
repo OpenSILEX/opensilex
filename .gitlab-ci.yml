@@ -290,7 +290,7 @@ test:opensilex-develop:deploy:
     CONFIGS_FILES_DIR_PATH: "$DEV_TOOLS_REPO_CONF_FILES_PATH/mistea/develop"
     INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
     OPENSILEX_JAR_ADMIN_PORT: 4081
-    OPENSILEX_JAR_PORT: 28081
+    OPENSILEX_JAR_PORT: 8081
     REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
     REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
     REMOTE_SERVER_RSYNC_DIR: "mistea/develop"
@@ -309,7 +309,7 @@ test:opensilex-release:deploy:
     CONFIGS_FILES_DIR_PATH: "$DEV_TOOLS_REPO_CONF_FILES_PATH/mistea/release"
     INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
     OPENSILEX_JAR_ADMIN_PORT: 4081
-    OPENSILEX_JAR_PORT: 28081
+    OPENSILEX_JAR_PORT: 8081
     REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
     REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
     REMOTE_SERVER_RSYNC_DIR: "mistea/release"
@@ -530,7 +530,7 @@ pages:
     - cd $CI_PROJECT_DIR/opensilex-swagger-codegen-maven-plugin
     - mvn install $MAVEN_OPTS_SCHUEDULES 1> $CI_PROJECT_DIR/logs/mvn-install-swagger.log
     - cd $CI_PROJECT_DIR
-    - mvn install site $MAVEN_OPTS_SCHUEDULES -Pwith-test-report -Pwith-security-check -DskipFrontBuild 1> $CI_PROJECT_DIR/logs/mvn-install-site.log
+    - mvn install site $MAVEN_OPTS_SCHUEDULES -Pwith-test-report -Pwith-security-check -DskipFrontBuild -pl '!opensilex-dev-tools' > $CI_PROJECT_DIR/logs/mvn-install-site.log
     - mkdir public
     - mv $CI_PROJECT_DIR/opensilex-doc/src/main/resources/generated/* public
   artifacts:

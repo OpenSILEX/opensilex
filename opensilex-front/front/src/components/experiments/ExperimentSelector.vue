@@ -1,5 +1,6 @@
 <template>
   <opensilex-SelectForm
+    :required="required"
     :label="label"
     :selected.sync="experimentsURI"
     :multiple="multiple"
@@ -39,6 +40,9 @@ export default class ExperimentSelector extends Vue {
 
   @Prop()
   clearable;
+
+  @Prop()
+  required;
 
   get placeholder() {
     return this.multiple

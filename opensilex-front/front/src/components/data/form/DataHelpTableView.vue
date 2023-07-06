@@ -318,7 +318,7 @@ fr :
             <br /> \n
             <strong>Les valeurs vides seront ignorées.<br>\n
             Valeurs spéciales autorisées : NA, null et NaN pour les décimaux</strong> <br /> \n
-            La colonne <strong>Annotation</strong> va créer une annotation qui sera liée avec la cible de cette ligne."
+            La colonne <strong>Annotation</strong> va créer une annotation qui sera liée avec la target de cette ligne."
     text-help-global:  "Vous pouvez insérer les données à partir de cette ligne. <br /> \n
             Les trois premières lignes de contenu CSV seront ignorées. <br /> \n
             <strong>Les colonnes \"experiment\", \"target\" et \"device\" sont optionnelles. Vous pouvez les enlever. Dans ces 3 colonnes, vous pouvez mettre des URIs ou des noms. </strong> <br /> \n

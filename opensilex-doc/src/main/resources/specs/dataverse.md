@@ -6,13 +6,14 @@
 
 # Specifications : dataverse
 
-This document describes briefly the functional and technical specifications of the dataverses in OpenSILEX.
+This document briefly describes the functional and technical specifications of `dataverses` in OpenSILEX.
 
 ## Needs
 
-Dataverse is an often used system to store data long-term and share it. The users would like a way to lower the 
+Dataverse is a system often used to store data long-term and share it. The users would like a way to lower the 
 redundancy created by using both OpenSILEX and a Dataverse.
-A more specific case for INRAE is the use of Recherche Data Gouv as it is recommended for all public research.
+
+A more specific case for INRAE is the use of "Recherche Data Gouv" as it is recommended for all public research in France.
 
 ## Solution
 
@@ -20,7 +21,7 @@ A more specific case for INRAE is the use of Recherche Data Gouv as it is recomm
 
 An OpenSILEX user that has a Recherche Data Gouv account can create a Dataset draft from the metadata on OpenSILEX.
 
-For now this is a proof of concept/minimum viable product and limited to Recherche Data Gouv instead of  integrating 
+For now this is a proof of concept/minimum viable product and limited to Recherche Data Gouv instead of integrating 
 with generic Dataverses.
 
 ## Technical specifications
@@ -28,8 +29,10 @@ with generic Dataverses.
 ### Definitions
 
 [Dataverse project](https://dataverse.org/)
+
 __Dataset__: A dataset is a file containing data and its associated metadata.
-__Dataset draft__: A dataset that isn't published yet.
+
+__Dataset draft__: A dataset that isn't published yet. It has a reserved DOI but isn't public yet.
 
 [Recherche Data Gouv](https://entrepot.recherche.data.gouv.fr/)
 
@@ -40,25 +43,24 @@ The `DataverseAPI` class contains 3 webservices:
 * `availableDatasetMetadataLanguages()` returns the available dataset metadata languages from the opensilex config
 * `createDataset()` creates a Dataset draft on a Dataverse from metadata extracted from an experiment and links it with an 
 OpenSILEX Document. To do so it passes the information through a `DataverseAPIPostDatsetDTO` to a `DataverseClient` 
-which calls the Dataverse's API. A new document is created using a `DocumentModel` and the identifier returned by the 
+which calls the Dataverse API. A new document is created using a `DocumentModel` and the identifier returned by the 
 Dataverse API is used to link this document and the Dataset draft.
+
 __Note__: This draft doesn't contain a file. Only some metadata is present and the rest of the process will have 
 to happen on the respective Dataverse.
 
 For now these are the only functionalities so datasets can't be updated, deleted or synchronised on both sides.
 
-The frontend rights are in the config file ("credentials.yml) but should eventually be moved to the opensilex-dataverse 
-module but that would necessitate to adapt the ExtraCredentialService.
+The frontend rights are in the config file ("credentials.yml") but should eventually be moved to the opensilex-dataverse 
+module but that would necessitate to adapt the `ExtraCredentialService`.
 
 No generic frontend is available, only a specific one for Recherche Data Gouv.
 The Recherche Data Gouv Base Path setup for the instance can be retrieved using the corresponding webservice.
-Another limitation is that there is no loading symbol during the form's validation for the frontend.
-This may be a problem for slower connections or if the Recherche Data Gouv service is unavailable.
 
 ### Tests
 
 The tests are very limited due to our architecture.
-For now the only test is DataverseClientTest.testCreateAFacade() which tests the construction of the Dataset facade.
+For now the only test is `DataverseClientTest.testCreateAFacade()` which tests the construction of the Dataset facade.
 
 ### Aditional informations
 

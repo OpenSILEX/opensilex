@@ -360,44 +360,47 @@ public class UserAPI {
      * @param accountURI : URI of the account to delete
      * @throws Exception if update fail
      */
-    @DELETE
-    @Path("{uri}")
-    @ApiOperation("Delete a user")
-    @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_USER_DELETE_ID,
-            credentialLabelKey = CREDENTIAL_USER_DELETE_LABEL_KEY
-    )
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "User deleted"),
-            @ApiResponse(code = 404, message = "URI not found")
-    })
-    public Response deleteUser(
-            @ApiParam(value = "User URI", example = "http://opensilex.dev/users#jean.michel.inrae", required = true) @PathParam("uri") @NotNull @ValidURI URI accountURI
-    ) throws Exception {
-        AccountDAO accountDAO = new AccountDAO(sparql);
-        PersonDAO personDAO = new PersonDAO(sparql);
 
-        AccountModel accountModel = accountDAO.get(accountURI);
+    /** Temporarly commented to avoid mistakes until there is no protections on deletion */
 
-        sparql.startTransaction();
-        try {
-            if (accountModel.getHolderOfTheAccount() != null){
-                personDAO.delete(accountModel.getHolderOfTheAccount().getUri());
-            }
-
-            accountDAO.delete(accountURI);
-
-            sparql.commitTransaction();
-        } catch (Exception e){
-            sparql.rollbackTransaction();
-            throw e;
-        }
-
-        return new ObjectUriResponse(Response.Status.OK, accountURI).getResponse();
-    }
+//    @DELETE
+//    @Path("{uri}")
+//    @ApiOperation("Delete a user")
+//    @ApiProtected
+//    @ApiCredential(
+//            credentialId = CREDENTIAL_USER_DELETE_ID,
+//            credentialLabelKey = CREDENTIAL_USER_DELETE_LABEL_KEY
+//    )
+//    @Consumes(MediaType.APPLICATION_JSON)
+//    @Produces(MediaType.APPLICATION_JSON)
+//    @ApiResponses(value = {
+//            @ApiResponse(code = 200, message = "User deleted"),
+//            @ApiResponse(code = 404, message = "URI not found")
+//    })
+//    public Response deleteUser(
+//            @ApiParam(value = "User URI", example = "http://opensilex.dev/users#jean.michel.inrae", required = true) @PathParam("uri") @NotNull @ValidURI URI accountURI
+//    ) throws Exception {
+//        AccountDAO accountDAO = new AccountDAO(sparql);
+//        PersonDAO personDAO = new PersonDAO(sparql);
+//
+//        AccountModel accountModel = accountDAO.get(accountURI);
+//
+//        sparql.startTransaction();
+//        try {
+//            if (accountModel.getHolderOfTheAccount() != null){
+//                personDAO.delete(accountModel.getHolderOfTheAccount().getUri());
+//            }
+//
+//            accountDAO.delete(accountURI);
+//
+//            sparql.commitTransaction();
+//        } catch (Exception e){
+//            sparql.rollbackTransaction();
+//            throw e;
+//        }
+//
+//        return new ObjectUriResponse(Response.Status.OK, accountURI).getResponse();
+//    }
 
     @GET
     @Path("{uri}/groups")

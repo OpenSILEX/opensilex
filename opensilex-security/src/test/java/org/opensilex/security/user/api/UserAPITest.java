@@ -157,20 +157,20 @@ public class UserAPITest extends AbstractSecurityIntegrationTest {
         assertEquals(URIDeserializer.formatURI(newHolderURI), URIDeserializer.formatURI( updatedAccount.getHolderOfTheAccount().getUri() ));
     }
 
-    @Test
-    public void testDelete() throws Exception {
-        // create object and check if URI exists
-        Response postResponse = getJsonPostResponseAsAdmin(target(createPath), getUser1CreationDTO());
-        assertEquals(Response.Status.CREATED.getStatusCode(), postResponse.getStatus());
-        String uri = extractUriFromResponse(postResponse).toString();
-
-        // delete object and if URI no longer exists
-        Response delResult = getDeleteByUriResponse(target(deletePath), uri);
-        assertEquals(Response.Status.OK.getStatusCode(), delResult.getStatus());
-
-        Response getResult = getJsonGetByUriResponseAsAdmin(target(getPath), uri);
-        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
-    }
+//    @Test
+//    public void testDelete() throws Exception {
+//        // create object and check if URI exists
+//        Response postResponse = getJsonPostResponseAsAdmin(target(createPath), getUser1CreationDTO());
+//        assertEquals(Response.Status.CREATED.getStatusCode(), postResponse.getStatus());
+//        String uri = extractUriFromResponse(postResponse).toString();
+//
+//        // delete object and if URI no longer exists
+//        Response delResult = getDeleteByUriResponse(target(deletePath), uri);
+//        assertEquals(Response.Status.OK.getStatusCode(), delResult.getStatus());
+//
+//        Response getResult = getJsonGetByUriResponseAsAdmin(target(getPath), uri);
+//        assertEquals(Response.Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
+//    }
 
     @Test
     public void testGetByUriFail() throws Exception {

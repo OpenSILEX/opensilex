@@ -144,16 +144,16 @@ export default class UserForm extends Vue {
     return this.$store.state.user;
   }
 
-  get languages() {
-    let langs = [];
-    Object.keys(this.$i18n.messages).forEach(key => {
-      langs.push({
-        id: key,
-        label: this.$t("component.header.language." + key)
-      });
-    });
-    return langs;
-  }
+    get languages() {
+        let langs = [];
+        Object.keys(this.$i18n.messages).forEach(key => {
+            langs.push({
+                id: key,
+                label: this.$t("component.header.language." + key)
+            });
+        });
+        return langs;
+    }
 
   uriGenerated = true;
 

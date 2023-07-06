@@ -75,12 +75,12 @@
               label="component.account.update"
               :small="true"
           ></opensilex-EditButton>
-          <opensilex-DeleteButton
-              v-if="user.hasCredential(credentials.CREDENTIAL_USER_DELETE_ID) && user.email !== data.item.email"
-              @click="deleteUser(data.item.uri)"
-              label="component.account.delete"
-              :small="true"
-          ></opensilex-DeleteButton>
+<!--          <opensilex-DeleteButton-->
+<!--              v-if="user.hasCredential(credentials.CREDENTIAL_USER_DELETE_ID) && user.email !== data.item.email"-->
+<!--              @click="deleteUser(data.item.uri)"-->
+<!--              label="component.account.delete"-->
+<!--              :small="true"-->
+<!--          ></opensilex-DeleteButton>-->
         </b-button-group>
       </template>
     </opensilex-TableAsyncView>
@@ -202,15 +202,15 @@ export default class UserList extends Vue {
     }
   }
 
-  deleteUser(uri: string) {
-    this.service
-        .deleteUser(uri)
-        .then(() => {
-          this.refresh();
-          this.$opensilex.showSuccessToast(this.$t('component.account.successDelete'))
-        })
-        .catch(this.$opensilex.errorHandler);
-  }
+  // deleteUser(uri: string) {
+  //   this.service
+  //       .deleteUser(uri)
+  //       .then(() => {
+  //         this.refresh();
+  //         this.$opensilex.showSuccessToast(this.$t('component.account.successDelete'))
+  //       })
+  //       .catch(this.$opensilex.errorHandler);
+  // }
 
   changeEnable(dto: UserUpdateDTO) {
     dto.enable = !dto.enable;

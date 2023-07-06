@@ -28,6 +28,7 @@ import org.opensilex.core.organisation.api.site.SiteGetListDTO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.site.SiteModel;
+import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.group.api.GroupAPITest;
 import org.opensilex.security.group.api.GroupCreationDTO;
 import org.opensilex.security.group.api.GroupUserProfileDTO;
@@ -128,6 +129,8 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
 
     private final Set<URI> availableFacilitiesForExperimentWithOrgCreatedByUserURISet = new HashSet<>();
     private final Set<URI> availableFacilitiesForExperimentWithoutOrgURISet = new HashSet<>();
+
+    private final AccountDAO accountDAO = new AccountDAO(getSparqlService());
 
     @Before
     public void beforeTest() throws Exception {
@@ -619,7 +622,7 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
 
     @After
     public void afterTests() throws Exception {
-        getDeleteByUriResponse(target(userAPITest.deletePath), user.toString());
+        accountDAO.delete(user);
     }
 
     @Override

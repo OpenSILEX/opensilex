@@ -55,7 +55,7 @@
 
         <!-- Dataverse module -->
         <module>opensilex-dataverse</module>
-            
+
         <!-- Development module -->
         <module>opensilex-dev-tools</module>
         

@@ -530,7 +530,7 @@ pages:
     - cd $CI_PROJECT_DIR/opensilex-swagger-codegen-maven-plugin
     - mvn install $MAVEN_OPTS_SCHUEDULES 1> $CI_PROJECT_DIR/logs/mvn-install-swagger.log
     - cd $CI_PROJECT_DIR
-    - mvn install site $MAVEN_OPTS_SCHUEDULES -Pwith-test-report -Pwith-security-check -DskipFrontBuild 1> $CI_PROJECT_DIR/logs/mvn-install-site.log
+    - mvn install site $MAVEN_OPTS_SCHUEDULES -Pwith-test-report -Pwith-security-check -DskipFrontBuild -pl '!opensilex-dev-tools' > $CI_PROJECT_DIR/logs/mvn-install-site.log
     - mkdir public
     - mv $CI_PROJECT_DIR/opensilex-doc/src/main/resources/generated/* public
   artifacts:
@@ -948,31 +948,31 @@ test:brice:deploy:
     - brice:build
 
 ###################################
-##  GUILHEM-TEST-SNAPSHOT-DEPLOYMENT
+##  MARIEM-TEST-SNAPSHOT-DEPLOYMENT
 ###################################
 
-guilhem:build:
+mariem:build:
   <<: *build_template_with_opensilex
   rules:
-    - if: $CI_COMMIT_BRANCH == "guilhem"
+    - if: $CI_COMMIT_BRANCH == "mariem"
 
-test:guilhem:deploy:
+test:mariem:deploy:
   <<: *deploy_opensilex_before_script
   <<: *deploy_opensilex_template
   variables:
-    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/guilhem"
+    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/mariem"
     INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
     OPENSILEX_JAR_ADMIN_PORT: 4098
     OPENSILEX_JAR_PORT: 8098
     REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
     REMOTE_SERVER_IP: $REMOTE_TEST_SERVER_IP
-    REMOTE_SERVER_RSYNC_DIR: "mistea/guilhem"
+    REMOTE_SERVER_RSYNC_DIR: "mistea/mariem"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   rules:
-    - if: $CI_COMMIT_BRANCH == "guilhem"
+    - if: $CI_COMMIT_BRANCH == "mariem"
       when: on_success
   needs:
-    - guilhem:build
+    - mariem:build
 
 ######################################
 ##  PHENO3C-PROD-BUILD-DEPLOYMENT

@@ -20,10 +20,10 @@
 
 ## Needs
 
-Facilities represent the different installations that can be used for the experiments. That includes for example
+Facilities represent the different installations that can be used for experiments. That includes for example
 fields, greenhouses or growth chambers.
 
-A facility can be characterised by a geometry. For example, a field has bounds defined by coordinates.
+A facility can be characterised by its geometry. For example, a field has bounds defined by coordinates.
 
 A facility can have an address.
 
@@ -53,7 +53,7 @@ For convenience, the facility form will try to autocomplete the address field us
 
 #### API
 
-The facility API expects the following types at the creation or update of a facility :
+The facility API expects the following types on creation or update of a facility :
 
 - For the address, a `FacilityAddressDTO`
 - For the geometry, a `GeoJsonObject`
@@ -65,11 +65,11 @@ geocoding service is the [Nominatim API](https://nominatim.openstreetmap.org).
 #### Front-end
 
 The facility form uses the `AddressForm` component to allow the user to specify the address of the facility. This
-component can use an external service to autocomplete the user input. This service responsible for this is
+component can use an external service to autocomplete the user input. The service responsible for this is
 `IGeocodingService`. For the moment, two services are available :
 
 - **Photon**, based on OpenStreetMap data : https://photon.komoot.io
-- **Adresse**, the french official geocoding API. Only works on french addresses : https://adresse.data.gouv.fr/api-doc/adresse
+- **Adresse**, the French official geocoding API. Only works on French addresses : https://adresse.data.gouv.fr/api-doc/adresse
 
 The service that will be used depends on the configuration. See the
 [configuration documentation](../installation/configuration/geocoding.md) for more information on this topic.

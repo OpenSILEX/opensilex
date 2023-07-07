@@ -1,6 +1,10 @@
 <!-- TOC -->
 * [Changelog](#changelog)
-  * [[1.0.0]](#100)
+  * [[1.0.1]](#101---ambitious-amber)
+    * [Fixed or optimized](#fixed-or-optimized)
+      * [API](#api)
+      * [Web client](#web-client)
+  * [[1.0.0]](#100---ambitious-amber)
     * [New features](#new-features)
     * [Fixed or optimized](#fixed-or-optimized)
       * [API](#api)
@@ -61,7 +65,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.0]
+## [1.0.1] - Ambitious Amber
+
+### Fixed or optimized
+
+#### API
+
+- [Person/User] Removed User and Person delete web services
+
+#### Web client
+
+- [Person/Account] Removed Account and Person delete buttons
+- [Profiles] Added translation for Dataverse credentials menu
+
+## [1.0.0] - Ambitious Amber
 
 > WARNING : upgrading to this new version require manual operations. Please
 > see the [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.0.0.md).

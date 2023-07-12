@@ -16,6 +16,7 @@ import org.opensilex.core.external.opensilex.SharedResourceInstanceService;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.variable.api.VariableAPI;
 import org.opensilex.core.variable.dal.BaseVariableDAO;
+import org.opensilex.core.variable.dal.EntityAgroportalModel;
 import org.opensilex.core.variable.dal.EntityModel;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
@@ -42,12 +43,13 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -278,7 +280,7 @@ public class EntityAPI {
     @ApiOperation("Search through agroportal")
     @ApiProtected
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return entities", response = EntityGetDTO.class, responseContainer = "List"),
+            @ApiResponse(code = 200, message = "Return entities", response = EntityAgroportalDTO.class, responseContainer = "List"),
             @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)
     })
     @Consumes(MediaType.APPLICATION_JSON)
@@ -290,13 +292,13 @@ public class EntityAPI {
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @Min(0) int pageSize
     ) throws Exception {
 
-        JsonNode searchResult = jsonToNode(get(REST_URL + "/search?q=" + namePattern)).get("collection");
+        String url = REST_URL + "/search?q=" + URLEncoder.encode(namePattern, StandardCharsets.UTF_8.toString());
 
-        List<EntityAgroportalModel> entities = mapper.readValue(searchResult.traverse(), new TypeReference<List<EntityAgroportalModel>>(){});
+        JsonNode searchResults = jsonToNode(get(url)).get("collection");
 
-        System.out.println(writer.writeValueAsString(searchResult));
+        List<EntityAgroportalModel> entities = mapper.readValue(searchResults.traverse(), new TypeReference<List<EntityAgroportalModel>>(){});
 
-        return new SingleObjectResponse<>(entities)
+        return new SingleObjectResponse<>(entities.stream().map(EntityAgroportalDTO::fromModel).collect(Collectors.toList()))
                 .getResponse();
     }
 

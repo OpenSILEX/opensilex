@@ -590,6 +590,14 @@ components["opensilex-VariableStructureDetails"] = VariableStructureDetails;
 import EntitySelector from './variables/form/EntitySelector.vue';
 components["opensilex-EntitySelector"] = EntitySelector;
 
+import AgroportalSearch from './variables/AgroportalSearch.vue';
+components["opensilex-AgroportalSearch"] = AgroportalSearch;
+import AgroportalResults from './variables/AgroportalResults.vue';
+components["opensilex-AgroportalResults"] = AgroportalResults;
+import TestPage from './TestPage.vue';
+components["opensilex-TestPage"] = TestPage;
+
+
 // Entity of interest
 import InterestEntityForm from './variables/form/InterestEntityForm.vue';
 components["opensilex-InterestEntityForm"] = InterestEntityForm;

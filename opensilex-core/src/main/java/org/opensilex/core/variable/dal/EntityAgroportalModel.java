@@ -1,24 +1,25 @@
-package org.opensilex.core.variable.api.entity;
+package org.opensilex.core.variable.dal;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class EntityAgroportalModel {
 
     @JsonProperty("prefLabel")
     private String prefLabel;
-
+    @JsonProperty("synonym")
+    private String[] synonym;
     @JsonProperty("definition")
     private String[] definitions;
-    @JsonProperty("ontologyType")
-    private String ontologyType;
+    @JsonProperty("obsolete")
+    private boolean obsolete;
     @JsonProperty("@id")
     private String id;
     @JsonProperty("@type")
     private String type;
+    @JsonProperty("links")
+    private LinksAgroportalModel links;
 
     public String getPrefLabel() {
         return prefLabel;
@@ -28,20 +29,28 @@ public class EntityAgroportalModel {
         this.prefLabel = prefLabel;
     }
 
-    public String[] getDefinition() {
+    public String[] getSynonym() {
+        return synonym;
+    }
+
+    public void setSynonym(String[] synonym) {
+        this.synonym = synonym;
+    }
+
+    public String[] getDefinitions() {
         return definitions;
     }
 
-    public void setDefinition(String[] definition) {
-        this.definitions = definition;
+    public void setDefinitions(String[] definitions) {
+        this.definitions = definitions;
     }
 
-    public String getOntologyType() {
-        return ontologyType;
+    public boolean isObsolete() {
+        return obsolete;
     }
 
-    public void setOntologyType(String ontologyType) {
-        this.ontologyType = ontologyType;
+    public void setObsolete(boolean obsolete) {
+        this.obsolete = obsolete;
     }
 
     public String getId() {
@@ -58,5 +67,13 @@ public class EntityAgroportalModel {
 
     public void setType(String type) {
         this.type = type;
+    }
+
+    public LinksAgroportalModel getLinks() {
+        return links;
+    }
+
+    public void setLinks(LinksAgroportalModel links) {
+        this.links = links;
     }
 }

@@ -22,7 +22,6 @@ public class Trait {
         String entity;
         String mainAbbreviation;
         String name;
-        OntologyReference ontologyReference;
         String status;
         List<String> synonyms;
         String traitDbId;
@@ -83,14 +82,6 @@ public class Trait {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public OntologyReference getOntologyReference() {
-        return ontologyReference;
-    }
-
-    public void setOntologyReference(OntologyReference ontologyReference) {
-        this.ontologyReference = ontologyReference;
     }
 
     public String getStatus() {

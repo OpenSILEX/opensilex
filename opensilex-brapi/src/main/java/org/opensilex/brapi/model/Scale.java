@@ -14,7 +14,6 @@ public class Scale {
     private String dataType; // - Code - Duration - Nominal - Numerical - Ordinal - Text - Date
     private String decimalPlaces;
     private String name;
-    private OntologyReference ontologyReference;
     private String scaleDbId;
     private String scaleName;
     private String validValues;
@@ -42,14 +41,6 @@ public class Scale {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public OntologyReference getOntologyReference() {
-        return ontologyReference;
-    }
-
-    public void setOntologyReference(OntologyReference ontologyReference) {
-        this.ontologyReference = ontologyReference;
     }
 
     public String getScaleDbId() {

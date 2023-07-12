@@ -19,6 +19,7 @@ public class Method {
     private String formula;
     private String methodDbId;
     private String methodName;
+    private OntologyReference ontologyReference;    
     private String reference;
 
     public String getBrapiClass() {
@@ -59,6 +60,14 @@ public class Method {
 
     public void setMethodName(String methodName) {
         this.methodName = methodName;
+    }
+
+    public OntologyReference getOntologyReference() {
+        return ontologyReference;
+    }
+
+    public void setOntologyReference(OntologyReference ontologyReference) {
+        this.ontologyReference = ontologyReference;
     }
 
     public String getReference() {

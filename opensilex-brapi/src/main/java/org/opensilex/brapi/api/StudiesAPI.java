@@ -53,8 +53,8 @@ import java.util.stream.Collectors;
  * @author Alice Boizet
  */
 @Api("BRAPI")
-@Path("/brapi/v1")
-public class StudiesAPI implements BrapiCall {
+@Path("/brapi/")
+public class StudiesAPI extends BrapiCall {
 
     @Inject
     private SPARQLService sparql;
@@ -69,40 +69,9 @@ public class StudiesAPI implements BrapiCall {
     AccountModel currentUser;
 
     /**
-     * Overriding BrapiCall method
-     *
-     * @return Calls call information
-     * @date 27 Aug 2018
-     */
-    @Override
-    public ArrayList<Call> callInfo() {
-        ArrayList<Call> calls = new ArrayList();
-        ArrayList<String> calldatatypes = new ArrayList<>();
-        calldatatypes.add("json");
-        ArrayList<String> callMethods = new ArrayList<>();
-        callMethods.add("GET");
-        ArrayList<String> callVersions = new ArrayList<>();
-        callVersions.add("1.3");
-        Call call1 = new Call("studies/{studyDbId}", calldatatypes, callMethods, callVersions);
-        Call call2 = new Call("studies/{studyDbId}/observations", calldatatypes, callMethods, callVersions);
-        Call call3 = new Call("studies/{studyDbId}/observationvariables", calldatatypes, callMethods, callVersions);
-        Call call4 = new Call("studies/{studyDbId}/observationunits", calldatatypes, callMethods, callVersions);
-        Call call5 = new Call("studies", calldatatypes, callMethods, callVersions);
-
-        calls.add(call1);
-        calls.add(call2);
-        calls.add(call3);
-        calls.add(call4);
-        calls.add(call5);
-
-        return calls;
-    }
-
-    /**
      * Retrieve studies information
      *
      * @param studyDbId
-     * @param seasonDbId
      * @param active
      * @param sortBy
      * @param sortOrder
@@ -112,7 +81,8 @@ public class StudiesAPI implements BrapiCall {
      * @throws java.sql.SQLException
      */
     @GET
-    @Path("studies")
+    @Path("v1/studies")
+    @BrapiVersion("1.3")
     @ApiOperation(value = "Retrieve studies information", notes = "Retrieve studies information")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Retrieve studies information", response = StudyDTO.class, responseContainer = "List")})
@@ -182,7 +152,8 @@ public class StudiesAPI implements BrapiCall {
     }
 
     @GET
-    @Path("studies/{studyDbId}")
+    @Path("v1/studies/{studyDbId}")
+    @BrapiVersion("1.3")
     @ApiOperation(value = "Retrieve study details", notes = "Retrieve study details")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Retrieve study details", response = StudyDetailsDTO.class, responseContainer = "List")})
@@ -205,7 +176,8 @@ public class StudiesAPI implements BrapiCall {
     }
 
     @GET
-    @Path("studies/{studyDbId}/observations")
+    @Path("v1/studies/{studyDbId}/observations")
+    @BrapiVersion("1.3")
     @ApiOperation(value = "Get the observations associated to a specific study", notes = "Get the observations associated to a specific study")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "OK", response = ObservationDTO.class, responseContainer = "List")})
@@ -231,7 +203,8 @@ public class StudiesAPI implements BrapiCall {
     }
 
     @GET
-    @Path("studies/{studyDbId}/observationvariables")
+    @Path("v1/studies/{studyDbId}/observationvariables")
+    @BrapiVersion("1.3")
     @ApiOperation(value = "List all the observation variables measured in the study.", notes = "List all the observation variables measured in the study.")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "OK", response = ObservationVariableDTO.class, responseContainer = "List")})
@@ -251,7 +224,8 @@ public class StudiesAPI implements BrapiCall {
     }
 
     @GET
-    @Path("studies/{studyDbId}/observationunits")
+    @Path("v1/studies/{studyDbId}/observationunits")
+    @BrapiVersion("1.3")
     @ApiOperation(value = "List all the observation units measured in the study.", notes = "List all the observation units measured in the study.")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "OK", response = ObservationUnitDTO.class, responseContainer = "List")})

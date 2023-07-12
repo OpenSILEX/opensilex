@@ -6,34 +6,25 @@
 //******************************************************************************
 package org.opensilex.brapi.api;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-import java.net.URI;
-import java.util.ArrayList;
-import javax.inject.Inject;
-import javax.validation.constraints.Min;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import org.opensilex.brapi.model.Call;
+import io.swagger.annotations.*;
 import org.opensilex.brapi.model.GermplasmDTO;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
+
+import javax.inject.Inject;
+import javax.validation.constraints.Min;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.net.URI;
 
 /**
  * @see <a href="https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3">BrAPI documentation</a>
@@ -41,25 +32,8 @@ import org.opensilex.utils.ListWithPagination;
  * @author Alice BOIZET
  */
 @Api("BRAPI")
-@Path("/brapi/v1/")
-public class GermplasmAPI implements BrapiCall {
-    
-    @Override
-    public ArrayList<Call> callInfo() {
-        // TODO : strange.. Why list with a single element?
-        ArrayList<Call> calls = new ArrayList<>();
-        ArrayList<String> calldatatypes = new ArrayList<>();
-        calldatatypes.add("json");
-        ArrayList<String> call1Methods = new ArrayList<>();
-        call1Methods.add("GET");
-        ArrayList<String> call1Versions = new ArrayList<>();
-        call1Versions.add("1.3");
-        Call call1 = new Call("germplasm", calldatatypes, call1Methods, call1Versions);
-       
-        calls.add(call1);
-        
-        return calls;
-    }    
+@Path("/brapi/")
+public class GermplasmAPI extends BrapiCall {
     
     @Inject
     private SPARQLService sparql;
@@ -71,7 +45,8 @@ public class GermplasmAPI implements BrapiCall {
     AccountModel currentUser;
     
     @GET
-    @Path("germplasm")
+    @Path("v1/germplasm")
+    @BrapiVersion("1.3")
     @ApiOperation("Submit a search request for germplasm")
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)

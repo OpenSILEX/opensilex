@@ -6,25 +6,9 @@
 //******************************************************************************
 package org.opensilex.brapi.api;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
-import java.net.URI;
-import java.util.ArrayList;
-import javax.inject.Inject;
-import javax.validation.constraints.Min;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import io.swagger.annotations.*;
 import org.apache.commons.lang3.StringUtils;
 import org.opensilex.brapi.BrapiPaginatedListResponse;
-import org.opensilex.brapi.model.Call;
 import org.opensilex.brapi.model.StudyDTO;
 import org.opensilex.brapi.model.StudyDetailsDTO;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
@@ -32,22 +16,30 @@ import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.dal.ExperimentSearchFilter;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
 
+import javax.inject.Inject;
+import javax.validation.constraints.Min;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.net.URI;
+import java.util.ArrayList;
+
 /**
- * @see Brapi documentation V1.2 https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.2
+ * @see <a href="https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.2">BrAPI documentation</a>
  * @author Alice Boizet
  */
 @Api("BRAPI")
-@Path("/brapi/v1")
-public class StudiesSearchAPI implements BrapiCall {
+@Path("/brapi/")
+public class StudiesSearchAPI extends BrapiCall {
     
     @Inject
     private SPARQLService sparql;    
@@ -60,23 +52,10 @@ public class StudiesSearchAPI implements BrapiCall {
     
     @CurrentUser
     AccountModel currentUser;
-
-    @Override
-    public ArrayList<Call> callInfo() {
-        ArrayList<Call> calls = new ArrayList();
-        ArrayList<String> calldatatypes = new ArrayList<>();
-        calldatatypes.add("json");
-        ArrayList<String> callMethods = new ArrayList<>();
-        callMethods.add("GET");
-        ArrayList<String> callVersions = new ArrayList<>();
-        callVersions.add("1.2");
-        Call call1 = new Call("studies-search", calldatatypes, callMethods, callVersions);
-        calls.add(call1);
-        return calls;
-    }
     
     @GET
-    @Path("studies-search")
+    @Path("v1/studies-search")
+    @BrapiVersion("1.2")
     @ApiOperation(value = "Retrieve studies information", notes = "Retrieve studies information")
     @ApiResponses(value = {
         @ApiResponse(code = 200, message = "Retrieve studies information", response = StudyDTO.class, responseContainer = "List")})
@@ -95,9 +74,7 @@ public class StudiesSearchAPI implements BrapiCall {
         ArrayList<OrderBy> orderByList = new ArrayList();
         
         if (!StringUtils.isEmpty(sortBy)) {
-            if (null == sortBy) {
-                sortBy = "";
-            } else switch (sortBy) {
+            switch (sortBy) {
                 case "studyDbId":
                     sortBy = "uri";
                     break;

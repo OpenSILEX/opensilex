@@ -10,8 +10,12 @@ if (process.env.NODE_ENV !== 'production') {
 
 module.exports = {
     publicPath: publicPath,
-    devServer: {
-        progress: false
+    devServer: { 
+        client: {
+            logging: 'error',
+            progress: false,
+        },
+        compress: true,
     },
     configureWebpack: {
         externals: {

@@ -74,6 +74,34 @@
             </plugin>
 
             <!-- Front Node & Yarn management -->
+            <!-- <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <version>${frontend.maven-antrun-plugin}</version>
+            <executions>
+              <execution>
+                <id>download-yarn</id>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <phase>initialize</phase>
+                <configuration>
+                  <target>
+                    <property name="yarn.dest" value="${project.basedir}/../.node/node/yarn.js" />
+                    <dirname file="${yarn.dest}" property="yarn.dest.dir" />
+                    <mkdir dir="${yarn.dest.dir}" />
+                    <get dest="${yarn.dest}" src="https://repo.yarnpkg.com/${yarn-berry.version}/packages/yarnpkg-cli/bin/yarn.js" usetimestamp="true" />
+                    <checksum algorithm="SHA-256" file="${yarn.dest}" property="${yarn-berry.sha256sum}" verifyProperty="yarn.checksum.matches" />
+                    <condition property="yarn.checksum.matches.fail">
+                      <equals arg1="${yarn.checksum.matches}" arg2="false" />
+                    </condition>
+                    <fail if="yarn.checksum.matches.fail">Checksum error</fail>
+                    <echo message="${yarn.dest.dir} directory"/>
+                  </target>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin> -->
             <plugin>
                 <groupId>com.github.eirslett</groupId>
                 <artifactId>frontend-maven-plugin</artifactId>
@@ -85,7 +113,7 @@
                         <goals>
                             <goal>install-node-and-yarn</goal>
                         </goals>
-                        <phase>initialize</phase>
+                        <phase>initialize</phase> 
                     </execution>
 
                     <!-- install typescript and dts-generator types definition generator globally -->

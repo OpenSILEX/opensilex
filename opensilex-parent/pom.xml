@@ -44,10 +44,12 @@
         <ignoreMavenPluginVersion>false</ignoreMavenPluginVersion>
 
         <!-- Front-end Node & Yarn version -->
-        <node.version>v14.19.0</node.version>
-        <yarn.version>v1.22.10</yarn.version>
-        <npm.version>v8.5.2</npm.version>
-
+        <node.version>v16.9.1</node.version>
+        <yarn.version>v1.22.19</yarn.version>
+        <npm.version>v9.8.0</npm.version>
+        <!-- maven-antrun-plugin will download this Yarn version. -->
+        <yarn-berry.version>3.2.0</yarn-berry.version>
+        <yarn-berry.sha256sum>99a7f42f678b8ccd9c8e97a9e65fe7a5043033dd0e074e6d1f13fbe2d5ff2734</yarn-berry.sha256sum>
         <!-- Java supported version -->
         <java.compiler.version>1.8</java.compiler.version>
 
@@ -93,7 +95,7 @@
         <!-- test only dependencies version -->
         <junit.version>4.13.2</junit.version>
         <mockito.version>4.3.1</mockito.version>
-        <embed.mongo.version>3.4.2</embed.mongo.version>
+        <embed.mongo.version>3.4.5</embed.mongo.version>
         <awaitability.version>4.1.1</awaitability.version>
 
         <!-- maven plugins versions -->
@@ -118,7 +120,9 @@
         <serviceloader.maven.plugin.version>1.1.0</serviceloader.maven.plugin.version>
         <jacoco.maven.plugin.version>0.8.5</jacoco.maven.plugin.version>
         <owasp.dependency.check.maven.plugin.version>5.3.2</owasp.dependency.check.maven.plugin.version>
-        <frontend.maven.plugin.version>1.12.1</frontend.maven.plugin.version>
+        <frontend.maven.plugin.version>1.13.4</frontend.maven.plugin.version>
+        <frontend.maven-antrun-plugin>3.1.0</frontend.maven-antrun-plugin>
+ 
         <maven.project.info.reports.plugin.version>3.0.0</maven.project.info.reports.plugin.version>
         <maven.javadoc.plugin.version>3.1.1</maven.javadoc.plugin.version>
         <maven.exec.plugin.version>3.0.0</maven.exec.plugin.version>
@@ -135,7 +139,7 @@
         <s3.version>2.17.290</s3.version>
         <s3.transfer-manager.version>2.17.290-PREVIEW</s3.transfer-manager.version>
         <caffeine.version>3.1.1</caffeine.version>
-        <geotools.version>29-RC1</geotools.version>
+        <geotools.version>29.0</geotools.version>
     </properties>
 
     <dependencyManagement>
@@ -811,7 +815,7 @@
                         </execution>
                     </executions>
                 </plugin>
-                <!-- Front Node & Yarn management -->
+                <!-- Front Node & Yarn management --> 
                 <plugin>
                     <groupId>com.github.eirslett</groupId>
                     <artifactId>frontend-maven-plugin</artifactId>

@@ -7,7 +7,7 @@
 package org.opensilex.brapi.api;
 
 
-import org.opensilex.brapi.model.Call;
+import org.opensilex.brapi.model.BrAPIv1CallDTO;
 import org.reflections.Reflections;
 
 import javax.ws.rs.*;
@@ -23,9 +23,9 @@ abstract class BrapiCall {
 
     public static final Reflections REFLECTIONS = new Reflections("org.opensilex.brapi");
 
-    public static List<Call> brapiCallsInfo = new ArrayList<>();
+    public static List<BrAPIv1CallDTO> brapiCallsInfo = new ArrayList<>();
 
-    public static List<Call> getBrapiCallsInfo(){
+    public static List<BrAPIv1CallDTO> getBrapiCallsInfo(){
         if(brapiCallsInfo.isEmpty()) {
             Set<Class<? extends BrapiCall>> brapiClasses = REFLECTIONS.getSubTypesOf(BrapiCall.class);
 
@@ -75,7 +75,7 @@ abstract class BrapiCall {
                 }
 
                 for (String name : results.keySet()) {
-                    brapiCallsInfo.add(new Call(
+                    brapiCallsInfo.add(new BrAPIv1CallDTO(
                             name,
                             new ArrayList<>(results.get(name).get("callDatatypes")),
                             new ArrayList<>(results.get(name).get("callMethods")),

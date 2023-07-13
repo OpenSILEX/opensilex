@@ -1,8 +1,8 @@
 //******************************************************************************
-//                          ObservationTreatment.java
+//                          BrAPIv1ObservationTreatmentDTO.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
-// Contact: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// BrAPIv1ContactDTO: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package org.opensilex.brapi.model;
 
@@ -10,7 +10,7 @@ package org.opensilex.brapi.model;
  * @see <a href="https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3">BrAPI documentation</a>
  * @author Alice Boizet
  */
-class ObservationTreatment {
+class BrAPIv1ObservationTreatmentDTO {
     private String factor;
     private String modality;
 

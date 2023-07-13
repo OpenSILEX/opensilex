@@ -1,8 +1,8 @@
 //******************************************************************************
-//                          Method.java
+//                          BrAPIv1MethodDTO.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
-// Contact: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// BrAPIv1ContactDTO: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package org.opensilex.brapi.model;
 
@@ -12,14 +12,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @see <a href="https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3">BrAPI documentation</a>
  * @author Alice Boizet
  */
-public class Method {
+public class BrAPIv1MethodDTO {
     @JsonProperty("class")
     private String brapiClass;
     private String description;
     private String formula;
     private String methodDbId;
     private String methodName;
-    private OntologyReference ontologyReference;    
+    private BrAPIv1OntologyReferenceDTO ontologyReference;
     private String reference;
 
     public String getBrapiClass() {
@@ -62,11 +62,11 @@ public class Method {
         this.methodName = methodName;
     }
 
-    public OntologyReference getOntologyReference() {
+    public BrAPIv1OntologyReferenceDTO getOntologyReference() {
         return ontologyReference;
     }
 
-    public void setOntologyReference(OntologyReference ontologyReference) {
+    public void setOntologyReference(BrAPIv1OntologyReferenceDTO ontologyReference) {
         this.ontologyReference = ontologyReference;
     }
 

@@ -1,8 +1,8 @@
 //******************************************************************************
-//                          Location.java
+//                          BrAPIv1LocationDTO.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
-// Contact: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// BrAPIv1ContactDTO: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package org.opensilex.brapi.model;
 
@@ -12,7 +12,7 @@ import java.util.Map;
  * @see <a href="https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3">BrAPI documentation</a>
  * @author Alice Boizet
  */
-class Location {
+class BrAPIv1LocationDTO {
     private String abbreviation;
     private String abreviation;
     private Map additionalInfo;

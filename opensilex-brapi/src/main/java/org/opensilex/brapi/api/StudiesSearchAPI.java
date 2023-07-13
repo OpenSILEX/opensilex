@@ -9,8 +9,8 @@ package org.opensilex.brapi.api;
 import io.swagger.annotations.*;
 import org.apache.commons.lang3.StringUtils;
 import org.opensilex.brapi.BrapiPaginatedListResponse;
-import org.opensilex.brapi.model.StudyDTO;
-import org.opensilex.brapi.model.StudyDetailsDTO;
+import org.opensilex.brapi.model.BrAPIv1StudyDTO;
+import org.opensilex.brapi.model.BrAPIv1StudyDetailsDTO;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.dal.ExperimentSearchFilter;
@@ -58,7 +58,7 @@ public class StudiesSearchAPI extends BrapiCall {
     @BrapiVersion("1.2")
     @ApiOperation(value = "Retrieve studies information", notes = "Retrieve studies information")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve studies information", response = StudyDTO.class, responseContainer = "List")})
+        @ApiResponse(code = 200, message = "Retrieve studies information", response = BrAPIv1StudyDTO.class, responseContainer = "List")})
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
 
@@ -101,7 +101,7 @@ public class StudiesSearchAPI extends BrapiCall {
         if (studyDbId != null) {
             ExperimentModel model = xpDao.get(studyDbId, currentUser);  
             if (model != null) {
-                return new SingleObjectResponse<>(StudyDetailsDTO.fromModel(model)).getResponse();
+                return new SingleObjectResponse<>(BrAPIv1StudyDetailsDTO.fromModel(model)).getResponse();
             } else {
                 throw new NotFoundURIException(studyDbId);
             }
@@ -115,7 +115,7 @@ public class StudiesSearchAPI extends BrapiCall {
 
             ListWithPagination<ExperimentModel> resultList = xpDao.search(filter);
 
-            ListWithPagination<StudyDTO> resultDTOList = resultList.convert(StudyDTO.class, StudyDTO::fromModel);
+            ListWithPagination<BrAPIv1StudyDTO> resultDTOList = resultList.convert(BrAPIv1StudyDTO.class, BrAPIv1StudyDTO::fromModel);
             return new BrapiPaginatedListResponse<>(resultDTOList).getResponse();
         }
     }

@@ -1,8 +1,8 @@
 //******************************************************************************
-//                          ObservationVariableDTO.java
+//                          BrAPIv1ObservationVariableDTO.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
-// Contact: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// BrAPIv1ContactDTO: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package org.opensilex.brapi.model;
 
@@ -13,7 +13,7 @@ import org.opensilex.core.variable.dal.VariableModel;
  * @see <a href="https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3">BrAPI documentation</a>
  * @author Alice Boizet
  */
-public class ObservationVariableDTO {
+public class BrAPIv1ObservationVariableDTO {
     private String observationVariableDbId;
     private String observationVariableName;
     private String ontologyReference;
@@ -27,9 +27,9 @@ public class ObservationVariableDTO {
     private String submissionTimesTamp;
     private String language;
     private String crop;
-    private Trait trait;
-    private Method method;
-    private Scale scale;
+    private BrAPIv1TraitDTO trait;
+    private BrAPIv1MethodDTO method;
+    private BrAPIv1ScaleDTO scale;
     private String defaultValue;    
     private String documentationURL;
 
@@ -137,27 +137,27 @@ public class ObservationVariableDTO {
         this.crop = crop;
     }
 
-    public Trait getTrait() {
+    public BrAPIv1TraitDTO getTrait() {
         return trait;
     }
 
-    public void setTrait(Trait trait) {
+    public void setTrait(BrAPIv1TraitDTO trait) {
         this.trait = trait;
     }
 
-    public Method getMethod() {
+    public BrAPIv1MethodDTO getMethod() {
         return method;
     }
 
-    public void setMethod(Method method) {
+    public void setMethod(BrAPIv1MethodDTO method) {
         this.method = method;
     }
 
-    public Scale getScale() {
+    public BrAPIv1ScaleDTO getScale() {
         return scale;
     }
 
-    public void setScale(Scale scale) {
+    public void setScale(BrAPIv1ScaleDTO scale) {
         this.scale = scale;
     }
 
@@ -177,14 +177,14 @@ public class ObservationVariableDTO {
         this.documentationURL = documentationURL;
     }
     
-    public static ObservationVariableDTO fromModel(VariableModel model) {
-        ObservationVariableDTO variable = new ObservationVariableDTO();
+    public static BrAPIv1ObservationVariableDTO fromModel(VariableModel model) {
+        BrAPIv1ObservationVariableDTO variable = new BrAPIv1ObservationVariableDTO();
         if (model.getUri() != null) {
             variable.setObservationVariableDbId(model.getUri().toString());
         }
         variable.setObservationVariableName(model.getName());
         
-        Trait trait = new Trait();
+        BrAPIv1TraitDTO trait = new BrAPIv1TraitDTO();
         if (model.getTraitName() != null) {
             trait.setName(model.getTraitName());
         } else {
@@ -203,7 +203,7 @@ public class ObservationVariableDTO {
         }        
         variable.setTrait(trait);
         
-        Method method = new Method();
+        BrAPIv1MethodDTO method = new BrAPIv1MethodDTO();
         if (model.getMethod() != null) {
             method.setMethodName(model.getMethod().getName());
             if (model.getMethod().getUri() != null) {
@@ -212,7 +212,7 @@ public class ObservationVariableDTO {
         }
         variable.setMethod(method);
         
-        Scale scale = new Scale();
+        BrAPIv1ScaleDTO scale = new BrAPIv1ScaleDTO();
         if (model.getUnit() != null) {
             scale.setScaleName(model.getUnit().getName());
             if (model.getUnit().getUri() != null) {

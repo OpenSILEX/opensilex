@@ -1,8 +1,8 @@
 //******************************************************************************
-//                          StudyDTO.java
+//                          BrAPIv1StudyDTO.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
-// Contact: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// BrAPIv1ContactDTO: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package org.opensilex.brapi.model;
 
@@ -16,7 +16,7 @@ import org.opensilex.core.experiment.dal.ExperimentModel;
  * @see <a href="https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3">BrAPI documentation</a>
  * @author Alice Boizet
  */
-public class StudyDTO {
+public class BrAPIv1StudyDTO {
     private String active;
     private Map additionalInfo;
     private String commonCropName;
@@ -27,7 +27,7 @@ public class StudyDTO {
     private String name;
     private String programDbId;
     private String programName;
-    private List<Season> seasons;
+    private List<BrAPIv1SeasonDTO> seasons;
     private String startDate;
     private String studyDbId;
     private String studyName;
@@ -117,11 +117,11 @@ public class StudyDTO {
         this.programName = programName;
     }
 
-    public List<Season> getSeasons() {
+    public List<BrAPIv1SeasonDTO> getSeasons() {
         return seasons;
     }
 
-    public void setSeasons(List<Season> seasons) {
+    public void setSeasons(List<BrAPIv1SeasonDTO> seasons) {
         this.seasons = seasons;
     }
 
@@ -189,8 +189,8 @@ public class StudyDTO {
         this.trialName = trialName;
     }
     
-    public static StudyDTO fromModel(ExperimentModel model) {
-        StudyDTO study = new StudyDTO();
+    public static BrAPIv1StudyDTO fromModel(ExperimentModel model) {
+        BrAPIv1StudyDTO study = new BrAPIv1StudyDTO();
         
         if (model.getUri() != null) {
             study.setStudyDbId(model.getUri().toString());
@@ -212,8 +212,8 @@ public class StudyDTO {
         } else {
             study.setActive("true");
         }
-        List<Season> seasons = new ArrayList<>();
-        Season season = new Season();
+        List<BrAPIv1SeasonDTO> seasons = new ArrayList<>();
+        BrAPIv1SeasonDTO season = new BrAPIv1SeasonDTO();
         //season.setYear(model.getCampaign());
         seasons.add(season);
         study.setSeasons(seasons);

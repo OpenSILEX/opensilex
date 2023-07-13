@@ -1,8 +1,8 @@
 //******************************************************************************
-//                          ObservationDTO.java
+//                          BrAPIv1ObservationDTO.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
-// Contact: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// BrAPIv1ContactDTO: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package org.opensilex.brapi.model;
 
@@ -12,18 +12,18 @@ import java.util.ArrayList;
  * @see <a href="https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3">BrAPI documentation</a>
  * @author Alice Boizet
  */
-public class Call {
+public class BrAPIv1CallDTO {
     private String call;
     private ArrayList<String> dataTypes = new ArrayList<>();
     private ArrayList<String> methods = new ArrayList<>();
     private ArrayList<String> versions = new ArrayList<>();
 
     //Default constructor
-    public Call() {
+    public BrAPIv1CallDTO() {
     }    
 
     //Constructor with parameters
-    public Call(String call, ArrayList<String> dataTypes, ArrayList<String> methods, ArrayList<String> versions) {
+    public BrAPIv1CallDTO(String call, ArrayList<String> dataTypes, ArrayList<String> methods, ArrayList<String> versions) {
         this.call = call;
         this.dataTypes = dataTypes;
         this.methods = methods;

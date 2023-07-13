@@ -1,8 +1,8 @@
 //******************************************************************************
-//                          GermplasmDTO.java
+//                          BrAPIv1GermplasmDTO.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
-// Contact: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// BrAPIv1ContactDTO: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package org.opensilex.brapi.model;
 
@@ -13,7 +13,7 @@ import org.opensilex.core.germplasm.dal.GermplasmModel;
  * @see <a href="https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3">BrAPI documentation</a>
  * @author Alice BOIZET
  */
-public class GermplasmDTO {
+public class BrAPIv1GermplasmDTO {
 
     protected String accessionNumber;
     protected String acquisitionDate;
@@ -292,8 +292,8 @@ public class GermplasmDTO {
      * @param model Germplasm Model to convert
      * @return Corresponding user DTO
      */
-    public static GermplasmDTO fromModel(GermplasmModel model) {
-        GermplasmDTO dto = new GermplasmDTO();
+    public static BrAPIv1GermplasmDTO fromModel(GermplasmModel model) {
+        BrAPIv1GermplasmDTO dto = new BrAPIv1GermplasmDTO();
         dto.setGermplasmDbId(model.getUri().toString());
 
         if (model.getLabel() != null) {

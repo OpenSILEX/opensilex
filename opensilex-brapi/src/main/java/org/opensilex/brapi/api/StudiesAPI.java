@@ -85,7 +85,7 @@ public class StudiesAPI extends BrapiCall {
     @BrapiVersion("1.3")
     @ApiOperation(value = "Retrieve studies information", notes = "Retrieve studies information")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve studies information", response = StudyDTO.class, responseContainer = "List")})
+        @ApiResponse(code = 200, message = "Retrieve studies information", response = BrAPIv1StudyDTO.class, responseContainer = "List")})
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
 
@@ -132,7 +132,7 @@ public class StudiesAPI extends BrapiCall {
         if (studyDbId != null) {
             ExperimentModel model = xpDao.get(studyDbId, currentUser);
             if (model != null) {
-                return new SingleObjectResponse<>(StudyDetailsDTO.fromModel(model)).getResponse();
+                return new SingleObjectResponse<>(BrAPIv1StudyDetailsDTO.fromModel(model)).getResponse();
             } else {
                 throw new NotFoundURIException(studyDbId);
             }
@@ -145,7 +145,7 @@ public class StudiesAPI extends BrapiCall {
                     .setPageSize(pageSize);
 
             ListWithPagination<ExperimentModel> resultList = xpDao.search(filter);
-            ListWithPagination<StudyDTO> resultDTOList = resultList.convert(StudyDTO.class, StudyDTO::fromModel);
+            ListWithPagination<BrAPIv1StudyDTO> resultDTOList = resultList.convert(BrAPIv1StudyDTO.class, BrAPIv1StudyDTO::fromModel);
             return new BrapiPaginatedListResponse(resultDTOList).getResponse();
         }
 
@@ -156,7 +156,7 @@ public class StudiesAPI extends BrapiCall {
     @BrapiVersion("1.3")
     @ApiOperation(value = "Retrieve study details", notes = "Retrieve study details")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve study details", response = StudyDetailsDTO.class, responseContainer = "List")})
+        @ApiResponse(code = 200, message = "Retrieve study details", response = BrAPIv1StudyDetailsDTO.class, responseContainer = "List")})
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
 
@@ -168,7 +168,7 @@ public class StudiesAPI extends BrapiCall {
         ExperimentModel model = dao.get(studyDbId, currentUser);
 
         if (model != null) {
-            return new SingleObjectResponse<>(StudyDetailsDTO.fromModel(model)).getResponse();
+            return new SingleObjectResponse<>(BrAPIv1StudyDetailsDTO.fromModel(model)).getResponse();
         } else {
             throw new NotFoundURIException(studyDbId);
         }
@@ -176,11 +176,11 @@ public class StudiesAPI extends BrapiCall {
     }
 
     @GET
-    @Path("v1/studies/{studyDbId}/observations")
+    @Path("v1/studies/{studyDbId}/observations") //TODO : test this to see if return structure includes unused attributes of class
     @BrapiVersion("1.3")
     @ApiOperation(value = "Get the observations associated to a specific study", notes = "Get the observations associated to a specific study")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "OK", response = ObservationDTO.class, responseContainer = "List")})
+        @ApiResponse(code = 200, message = "OK", response = BrAPIv1ObservationDTO.class, responseContainer = "List")})
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getObservations(
@@ -197,7 +197,7 @@ public class StudiesAPI extends BrapiCall {
 
         DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
         ListWithPagination<DataModel> datas = dataDAO.search(currentUser, experiments, null, observationVariableDbIds, null, null, null, null, null, null, null, null, null, page, pageSize);
-        ListWithPagination<ObservationDTO> observations = datas.convert(ObservationDTO.class, ObservationDTO::fromModel);
+        ListWithPagination<BrAPIv1ObservationDTO> observations = datas.convert(BrAPIv1ObservationDTO.class, BrAPIv1ObservationDTO::fromModel);
         return new BrapiPaginatedListResponse<>(observations).getResponse();
 
     }
@@ -207,7 +207,7 @@ public class StudiesAPI extends BrapiCall {
     @BrapiVersion("1.3")
     @ApiOperation(value = "List all the observation variables measured in the study.", notes = "List all the observation variables measured in the study.")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "OK", response = ObservationVariableDTO.class, responseContainer = "List")})
+        @ApiResponse(code = 200, message = "OK", response = BrAPIv1ObservationVariableDTO.class, responseContainer = "List")})
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getObservationVariables(
@@ -219,7 +219,7 @@ public class StudiesAPI extends BrapiCall {
         DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
         ListWithPagination<VariableModel> variables = dataDAO.getVariablesByExperiment(currentUser, studyDbId, page, pageSize);
 
-        ListWithPagination<ObservationVariableDTO> resultDTOList = variables.convert(ObservationVariableDTO.class, ObservationVariableDTO::fromModel);
+        ListWithPagination<BrAPIv1ObservationVariableDTO> resultDTOList = variables.convert(BrAPIv1ObservationVariableDTO.class, BrAPIv1ObservationVariableDTO::fromModel);
         return new BrapiPaginatedListResponse<>(resultDTOList).getResponse();
     }
 
@@ -228,7 +228,7 @@ public class StudiesAPI extends BrapiCall {
     @BrapiVersion("1.3")
     @ApiOperation(value = "List all the observation units measured in the study.", notes = "List all the observation units measured in the study.")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "OK", response = ObservationUnitDTO.class, responseContainer = "List")})
+        @ApiResponse(code = 200, message = "OK", response = BrAPIv1ObservationUnitDTO.class, responseContainer = "List")})
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getObservationUnits(
@@ -259,10 +259,10 @@ public class StudiesAPI extends BrapiCall {
         Collection<URI> nodeUris = scientificObjects.getList().stream().map(ScientificObjectNodeDTO::getUri).collect(Collectors.toList());
         Map<String, List<FactorLevelModel>> soUriFactorLevelMap = soDAO.getScientificObjectsFactors(studyDbId, nodeUris, currentUser.getLanguage());
         
-        ListWithPagination<ObservationUnitDTO> observations = scientificObjects.convert(ObservationUnitDTO.class, (item) -> {
+        ListWithPagination<BrAPIv1ObservationUnitDTO> observations = scientificObjects.convert(BrAPIv1ObservationUnitDTO.class, (item) -> {
             String expandedUri = SPARQLDeserializers.getExpandedURI(item.getUri());
             List<FactorLevelModel> factors = soUriFactorLevelMap.get(expandedUri);
-            return ObservationUnitDTO.fromModel(item, factors);
+            return BrAPIv1ObservationUnitDTO.fromModel(item, factors);
         });
         return new BrapiPaginatedListResponse<>(observations).getResponse();
     }

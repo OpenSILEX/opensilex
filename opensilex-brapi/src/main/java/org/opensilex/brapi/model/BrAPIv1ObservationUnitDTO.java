@@ -1,8 +1,8 @@
 //******************************************************************************
-//                          ObservationUnitDTO.java
+//                          BrAPIv1ObservationUnitDTO.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRA 2019
-// Contact: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
+// BrAPIv1ContactDTO: alice.boizet@inra.fr, anne.tireau@inra.fr, pascal.neveu@inra.fr
 //******************************************************************************
 package org.opensilex.brapi.model;
 
@@ -15,7 +15,7 @@ import org.opensilex.core.scientificObject.api.ScientificObjectNodeDTO;
  * @see <a href="https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3">BrAPI documentation</a>
  * @author Alice Boizet
  */
-public class ObservationUnitDTO {
+public class BrAPIv1ObservationUnitDTO {
     private String blockNumber;         
     private String entryNumber;
     private String entryType;
@@ -24,8 +24,8 @@ public class ObservationUnitDTO {
     private String observationLevel;
     private String observationLevels;
     private String observationUnitDbId;
-    private List<ObservationUnitXref> observationUnitXref;
-    private List<ObservationSummary> observations;
+    private List<BrAPIv1ObservationUnitXrefDTO> observationUnitXref;
+    private List<BrAPIv1ObservationSummaryDTO> observations;
     private String plantNumber;
     private String plotNumber;
     private String positionCoordinateX;
@@ -38,7 +38,7 @@ public class ObservationUnitDTO {
     private String studyLocation;
     private String studyLocationDbId;
     private String studyName;
-    private List<ObservationTreatment> treatments;
+    private List<BrAPIv1ObservationTreatmentDTO> treatments;
 
     public String getBlockNumber() {
         return blockNumber;
@@ -104,19 +104,19 @@ public class ObservationUnitDTO {
         this.observationUnitDbId = observationUnitDbId;
     }
 
-    public List<ObservationUnitXref> getObservationUnitXref() {
+    public List<BrAPIv1ObservationUnitXrefDTO> getObservationUnitXref() {
         return observationUnitXref;
     }
 
-    public void setObservationUnitXref(List<ObservationUnitXref> observationUnitXref) {
+    public void setObservationUnitXref(List<BrAPIv1ObservationUnitXrefDTO> observationUnitXref) {
         this.observationUnitXref = observationUnitXref;
     }
 
-    public List<ObservationSummary> getObservations() {
+    public List<BrAPIv1ObservationSummaryDTO> getObservations() {
         return observations;
     }
 
-    public void setObservations(List<ObservationSummary> observations) {
+    public void setObservations(List<BrAPIv1ObservationSummaryDTO> observations) {
         this.observations = observations;
     }
 
@@ -216,25 +216,25 @@ public class ObservationUnitDTO {
         this.studyName = studyName;
     }
 
-    public List<ObservationTreatment> getTreatments() {
+    public List<BrAPIv1ObservationTreatmentDTO> getTreatments() {
         return treatments;
     }
 
-    public void setTreatments(List<ObservationTreatment> treatments) {
+    public void setTreatments(List<BrAPIv1ObservationTreatmentDTO> treatments) {
         this.treatments = treatments;
     }
     
-    public static ObservationUnitDTO fromModel(ScientificObjectNodeDTO model, List<FactorLevelModel> factorLevels) {
-        ObservationUnitDTO observationUnit = new ObservationUnitDTO();
+    public static BrAPIv1ObservationUnitDTO fromModel(ScientificObjectNodeDTO model, List<FactorLevelModel> factorLevels) {
+        BrAPIv1ObservationUnitDTO observationUnit = new BrAPIv1ObservationUnitDTO();
         if (model.getUri() != null) {
             observationUnit.setObservationUnitDbId(model.getUri().toString());
         }
         if(factorLevels == null){
             return observationUnit;
         }
-        List<ObservationTreatment> treatments = new ArrayList();
+        List<BrAPIv1ObservationTreatmentDTO> treatments = new ArrayList();
         for (FactorLevelModel level:factorLevels) {
-            ObservationTreatment treatment = new ObservationTreatment();
+            BrAPIv1ObservationTreatmentDTO treatment = new BrAPIv1ObservationTreatmentDTO();
             treatment.setFactor(level.getFactor().getName());
             treatment.setModality(level.getName());
             treatments.add(treatment);

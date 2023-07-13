@@ -8,7 +8,7 @@ package org.opensilex.brapi.api;
 
 import io.swagger.annotations.*;
 import org.opensilex.brapi.BrapiPaginatedListResponse;
-import org.opensilex.brapi.model.Call;
+import org.opensilex.brapi.model.BrAPIv1CallDTO;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.utils.ListWithPagination;
 
@@ -60,7 +60,7 @@ public class CallsAPI extends BrapiCall {
         @ApiResponse(
                 code = 200,
                 message = "Retrieve BrAPI calls",
-                response = Call.class,
+                response = BrAPIv1CallDTO.class,
                 responseContainer = "List"
         )
     })
@@ -69,8 +69,8 @@ public class CallsAPI extends BrapiCall {
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("pageSize") @DefaultValue("20") @Min(0) int pageSize,
             @ApiParam(value = "datatype", example = "json") @QueryParam("dataType") String dataType) {
-        List<Call> brapiCallsInfo = BrapiCall.getBrapiCallsInfo();
-        ListWithPagination<Call> callsList = new ListWithPagination<>(brapiCallsInfo, page, pageSize, brapiCallsInfo.size());
+        List<BrAPIv1CallDTO> brapiCallsInfo = BrapiCall.getBrapiCallsInfo();
+        ListWithPagination<BrAPIv1CallDTO> callsList = new ListWithPagination<>(brapiCallsInfo, page, pageSize, brapiCallsInfo.size());
         return new BrapiPaginatedListResponse<>(callsList).getResponse();
     }
 }

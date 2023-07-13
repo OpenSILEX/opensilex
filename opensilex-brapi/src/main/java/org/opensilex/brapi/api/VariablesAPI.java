@@ -8,7 +8,7 @@ package org.opensilex.brapi.api;
 
 import io.swagger.annotations.*;
 import org.opensilex.brapi.BrapiPaginatedListResponse;
-import org.opensilex.brapi.model.ObservationVariableDTO;
+import org.opensilex.brapi.model.BrAPIv1ObservationVariableDTO;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
@@ -52,10 +52,10 @@ public class VariablesAPI extends BrapiCall {
     @GET
     @Path("v1/variables")
     @BrapiVersion("1.3")
-    @ApiOperation(value = "Call to retrieve a list of observationVariables available in the system",
+    @ApiOperation(value = "BrAPIv1CallDTO to retrieve a list of observationVariables available in the system",
             notes = "retrieve variables information")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "retrieve variables information", response = ObservationVariableDTO.class, responseContainer = "List")})
+        @ApiResponse(code = 200, message = "retrieve variables information", response = BrAPIv1ObservationVariableDTO.class, responseContainer = "List")})
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getVariablesList(
@@ -77,7 +77,7 @@ public class VariablesAPI extends BrapiCall {
             variables = varDAO.search(null, null, page, pageSize,currentUser.getLanguage());
         }
 
-        ListWithPagination<ObservationVariableDTO> resultDTOList = variables.convert(ObservationVariableDTO.class, ObservationVariableDTO::fromModel);
+        ListWithPagination<BrAPIv1ObservationVariableDTO> resultDTOList = variables.convert(BrAPIv1ObservationVariableDTO.class, BrAPIv1ObservationVariableDTO::fromModel);
         return new BrapiPaginatedListResponse<>(resultDTOList).getResponse();
     }
     
@@ -87,7 +87,7 @@ public class VariablesAPI extends BrapiCall {
     @ApiOperation(value = "Retrieve variable details by id",
             notes = "Retrieve variable details by id")
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Retrieve variable details by id", response = ObservationVariableDTO.class, responseContainer = "List")})
+        @ApiResponse(code = 200, message = "Retrieve variable details by id", response = BrAPIv1ObservationVariableDTO.class, responseContainer = "List")})
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     public Response getVariableDetails(
@@ -98,7 +98,7 @@ public class VariablesAPI extends BrapiCall {
 
         VariableModel variable = variableDAO.get(observationVariableDbId);
         if (variable != null) {
-            return new SingleObjectResponse<>(ObservationVariableDTO.fromModel(variable)).getResponse();
+            return new SingleObjectResponse<>(BrAPIv1ObservationVariableDTO.fromModel(variable)).getResponse();
         } else {
             throw new NotFoundURIException(observationVariableDbId);
         }        

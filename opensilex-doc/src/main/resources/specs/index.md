@@ -11,6 +11,10 @@ Specifications of the opensilex-dataverse module.
 
 Includes how to activate said module and configure it.
 
+## [Experiments](./experiments.md) __[INCOMPLETE]__
+
+Specifications of the "Experiment" concept.
+
 ## [Facilities](./facilities.md) __[INCOMPLETE]__
 
 Specifications of the "Facility" concept.

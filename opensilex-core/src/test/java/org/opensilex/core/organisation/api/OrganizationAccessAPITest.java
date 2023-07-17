@@ -128,7 +128,6 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
     private final Set<URI> forbiddenSiteURISet = new HashSet<>();
 
     private final Set<URI> availableFacilitiesForExperimentWithOrgCreatedByUserURISet = new HashSet<>();
-    private final Set<URI> availableFacilitiesForExperimentWithoutOrgURISet = new HashSet<>();
 
     private final AccountDAO accountDAO = new AccountDAO(getSparqlService());
 
@@ -366,7 +365,6 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
         forbiddenSiteURISet.add(siteOfOrgPrivateWithWrongGroup);
 
         availableFacilitiesForExperimentWithOrgCreatedByUserURISet.add(facOfOrgCreatedByUser);
-        availableFacilitiesForExperimentWithoutOrgURISet.addAll(accessibleFacilityURISet);
     }
 
     @Test
@@ -590,8 +588,6 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
 
     @Test
     public void testGetAvailableFacilitiesForExperimentWithoutOrg() throws Exception {
-        assert !availableFacilitiesForExperimentWithoutOrgURISet.isEmpty();
-
         Response getResponse = getJsonGetResponse(target(ExperimentAPITest.getAvailableFacilitiesPath).resolveTemplate("uri", experimentWithoutOrg), USER_MAIL);
         assertEquals(Response.Status.OK.getStatusCode(), getResponse.getStatus());
 
@@ -600,11 +596,7 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
                 .stream().map(RDFObjectDTO::getUri)
                 .collect(Collectors.toList());
 
-        assertEquals(availableFacilitiesForExperimentWithoutOrgURISet.size(), availableFacilityURIList.size());
-
-        for (URI availableFacilityURI : availableFacilitiesForExperimentWithoutOrgURISet) {
-            assertTrue(availableFacilityURI + " should be available", availableFacilityURIList.stream().anyMatch(uri -> SPARQLDeserializers.compareURIs(uri, availableFacilityURI)));
-        }
+        assertEquals(0, availableFacilityURIList.size());
     }
 
     @Test

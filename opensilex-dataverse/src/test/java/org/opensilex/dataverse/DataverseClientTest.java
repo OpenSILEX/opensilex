@@ -38,7 +38,7 @@ public class DataverseClientTest {
         currentPerson.setFirstName("Tests_first_name");
         currentPerson.setLastName("Tests_last_name");
         AccountModel currentAccount = new AccountModel();
-        currentAccount.setHolderOfTheAccount(currentPerson);
+        currentAccount.setLinkedPerson(currentPerson);
         List<PersonModel> datasetAuthors = Arrays.asList(
                 new PersonModel(),
                 new PersonModel()
@@ -90,6 +90,6 @@ public class DataverseClientTest {
         assertEquals("Facade description must be the same", facade.getDescriptions().get(0).getDescription(), experimentModel.getDescription());
         assertEquals("Facade subject must be the same", facade.getSubject(), "Agricultural Sciences");
         assertEquals("Facade languages must be the same", facade.getLanguages().get(0), "English");
-        assertEquals("Facade depositor must be the same", facade.getDepositor(), datasetDTO.getCurrentAccount().getHolderOfTheAccount().getFirstName() + " " + datasetDTO.getCurrentAccount().getHolderOfTheAccount().getLastName().toUpperCase());
+        assertEquals("Facade depositor must be the same", facade.getDepositor(), datasetDTO.getCurrentAccount().getLinkedPerson().getFirstName() + " " + datasetDTO.getCurrentAccount().getLinkedPerson().getLastName().toUpperCase());
     }
 }

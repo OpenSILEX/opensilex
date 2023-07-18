@@ -205,7 +205,7 @@
             },
             "security": {
                 "label": "Security",
-                "users": "Accounts",
+                "accounts": "Accounts",
                 "persons": "Persons",
                 "groups": "Groups",
                 "profiles": "Profiles"
@@ -296,7 +296,7 @@
                 "select-person": "create an account and link it to the selected person"
             },
             "person-selector": {
-                "help-message": "Select the person to link with"
+                "help-message": "Select the person to link with or leave empty to create an account without a person"
             },
             "errors": {
                 "user-already-exists": "Account already exists with this URI or email address."

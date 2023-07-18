@@ -59,6 +59,7 @@ import static org.apache.jena.vocabulary.RDF.uri;
  *
  * @author Vincent Migot
  */
+@Deprecated
 @Api(SecurityModule.REST_SECURITY_API_ID)
 @Path("/security/users")
 @ApiCredentialGroup(
@@ -95,9 +96,10 @@ public class UserAPI {
      * @see AccountDAO
      * @see PersonDAO
      * @param userDTO user model to create
-     * @return User URI or null if creation of account or person failed
+     * @return User URI
      * @throws Exception If creation failed
      */
+    @Deprecated
     @POST
     @ApiOperation("Add a user")
     @ApiProtected
@@ -154,6 +156,7 @@ public class UserAPI {
      * @return Corresponding user
      * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
      */
+    @Deprecated
     @GET
     @Path("{uri}")
     @ApiOperation("Get a user")
@@ -193,6 +196,7 @@ public class UserAPI {
      * @return Corresponding list of users
      * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
      */
+    @Deprecated
     @GET
     @Path("by_uris")
     @ApiOperation("Get users by their URIs")
@@ -236,6 +240,7 @@ public class UserAPI {
      * @return filtered, ordered and paginated list
      * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
      */
+    @Deprecated
     @GET
     @ApiOperation("Search users")
     @ApiProtected
@@ -275,6 +280,7 @@ public class UserAPI {
      * @param userDTO : information to update user
      * @throws Exception if update fail
      */
+    @Deprecated
     @PUT
     @ApiOperation("Update a user")
     @ApiProtected
@@ -299,12 +305,12 @@ public class UserAPI {
         if (model != null) {
 
             PersonModel newHolderOfTheAccount = null;
-            boolean addHolderOfTheAccount = Objects.nonNull( userDTO.getHolderOfTheAccountURI() ) && Objects.isNull(model.getHolderOfTheAccount());
-            boolean changeHolderOfTheAccount = Objects.nonNull( userDTO.getHolderOfTheAccountURI() ) && Objects.nonNull(model.getHolderOfTheAccount())
-                    && ! SPARQLDeserializers.compareURIs(userDTO.getHolderOfTheAccountURI(), model.getHolderOfTheAccount().getUri());
+            boolean addHolderOfTheAccount = Objects.nonNull( userDTO.getLinkedPerson() ) && Objects.isNull(model.getLinkedPerson());
+            boolean changeHolderOfTheAccount = Objects.nonNull( userDTO.getLinkedPerson() ) && Objects.nonNull(model.getLinkedPerson())
+                    && ! SPARQLDeserializers.compareURIs(userDTO.getLinkedPerson(), model.getLinkedPerson().getUri());
                 if (addHolderOfTheAccount || changeHolderOfTheAccount){
-                newHolderOfTheAccount = personDAO.get(userDTO.getHolderOfTheAccountURI());
-                AccountAPI.checkHolderExistAndHasNoAccountYet(personDAO, userDTO.getHolderOfTheAccountURI());
+                newHolderOfTheAccount = personDAO.get(userDTO.getLinkedPerson());
+                AccountAPI.checkHolderExistAndHasNoAccountYet(personDAO, userDTO.getLinkedPerson());
             }
 
             sparql.startTransaction();
@@ -316,11 +322,11 @@ public class UserAPI {
                         authentication.getPasswordHash(userDTO.getPassword()),
                         userDTO.getLanguage(),
                         userDTO.isEnable(),
-                        newHolderOfTheAccount,
+                        Objects.nonNull(newHolderOfTheAccount) ? newHolderOfTheAccount : model.getLinkedPerson(),
                         userDTO.getFavorites()
                 );
 
-                PersonModel holderOfTheAccount = account.getHolderOfTheAccount();
+                PersonModel holderOfTheAccount = account.getLinkedPerson();
 
                 if (Objects.isNull(newHolderOfTheAccount) && Objects.nonNull(holderOfTheAccount) ) {
                     PersonDTO holderToUpdate = userDTO.createCorrespondingPersonDTO();

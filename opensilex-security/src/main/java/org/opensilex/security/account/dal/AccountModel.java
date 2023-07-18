@@ -68,7 +68,8 @@ public class AccountModel extends SPARQLResourceModel implements Principal, Clas
     @SPARQLProperty(
             ontology = FOAF.class,
             property = "accountName",
-            required = true
+            required = true,
+            ignoreUpdateIfNull = true
     )
     private InternetAddress email;
     public static final String EMAIL_FIELD = "email";
@@ -82,13 +83,15 @@ public class AccountModel extends SPARQLResourceModel implements Principal, Clas
 
     @SPARQLProperty(
             ontology = SecurityOntology.class,
-            property = "isAdmin"
+            property = "isAdmin",
+            ignoreUpdateIfNull = true
     )
     private Boolean admin = Boolean.FALSE;
 
     @SPARQLProperty(
             ontology = SecurityOntology.class,
-            property = "hasLanguage"
+            property = "hasLanguage",
+            ignoreUpdateIfNull = true
     )
     private String language;
 
@@ -103,23 +106,23 @@ public class AccountModel extends SPARQLResourceModel implements Principal, Clas
 
     @SPARQLProperty(
             ontology = FOAF.class,
-            property = "topic_interest"
+            property = "topic_interest",
+            ignoreUpdateIfNull = true
     )
     private List<URI> favorites;
 
     @SPARQLProperty(
             ontology = FOAF.class,
             property = "account",
-            inverse = true,
-            ignoreUpdateIfNull = true
-            //make easier the update of accounts, but harder the deletion of the link between an account and a person
+            inverse = true
     )
-    private PersonModel holderOfTheAccount = null;
-    public static final String HOLDER_OF_THE_ACCOUNT_FIELD = "holderOfTheAccount";
+    private PersonModel linkedPerson = null;
+    public static final String LINKED_PERSON_FIELD = "linkedPerson";
 
     @SPARQLProperty(
             ontology = SecurityOntology.class,
-            property = "isEnabled"
+            property = "isEnabled",
+            ignoreUpdateIfNull = true
     )
     private Boolean isEnabled = Boolean.TRUE;
 
@@ -195,12 +198,12 @@ public class AccountModel extends SPARQLResourceModel implements Principal, Clas
         this.anonymous = anonymous;
     }
 
-    public PersonModel getHolderOfTheAccount() {
-        return holderOfTheAccount;
+    public PersonModel getLinkedPerson() {
+        return linkedPerson;
     }
 
-    public void setHolderOfTheAccount(PersonModel holderOfTheAccount) {
-        this.holderOfTheAccount = holderOfTheAccount;
+    public void setLinkedPerson(PersonModel linkedPerson) {
+        this.linkedPerson = linkedPerson;
     }
 
     public Boolean getIsEnabled() {

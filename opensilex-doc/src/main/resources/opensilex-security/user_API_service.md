@@ -8,6 +8,8 @@
 
 Manipulate [account](./account_API_service.md) and [person](./person_API_service.md) simultaneously for a better comprehension of users.
 
+> Warning : the user API services is deprecated and will be deleted in a future release
+> 
 > Warning : the user concept is a representative concept only, there is no user objects in database or classes.
 >
 > A while ago, we were using user object for authentication, credentials and contact information.
@@ -31,8 +33,4 @@ Several integrations tests in `UserAPITest.java` to ensure both success and erro
 
 ## futurs perspectives
 
-### model evolution
-Actually we can create an account and connect it, or not, to a person. But account can be created for persons or for more global Agents.
-For exemple, we can create an account with special credentials for the authentication of a device or a script.
-
-Warning, in the ontology, a foaf:person is a foaf:Agent
+removal of users API services

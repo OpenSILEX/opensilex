@@ -107,7 +107,7 @@ public class PersonDAO {
         if (accountModel == null) {
             return null;
         }
-        return accountModel.getHolderOfTheAccount();
+        return accountModel.getLinkedPerson();
     }
 
     /**

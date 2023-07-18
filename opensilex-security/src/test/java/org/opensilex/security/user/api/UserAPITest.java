@@ -92,14 +92,16 @@ public class UserAPITest extends AbstractSecurityIntegrationTest {
         UserGetDTO createdUser = getUser1CreationDTO();
         // create the user
         Response postResult = getJsonPostResponseAsAdmin(target(createPath), createdUser);
+        URI userURI = extractUriFromResponse(postResult);
+        URI holderOfTheAccountUri = new AccountDAO(getSparqlService()).get(userURI).getLinkedPerson().getUri();
 
         // update the xp
-        URI uri = extractUriFromResponse(postResult);
         UserUpdateDTO dto = new UserUpdateDTO();
-        dto.setUri(uri);
+        dto.setUri(userURI);
         dto.setEmail("a@b.com");
         dto.setFirstName("a");
         dto.setLastName("b");
+        dto.setLinkedPerson(holderOfTheAccountUri);
         dto.setAdmin(false);
         dto.setLanguage("fr");
 
@@ -124,7 +126,7 @@ public class UserAPITest extends AbstractSecurityIntegrationTest {
         compareUsersDTO(dto, dtoFromDatabase);
 
         //check that email of the person is not updated nor deleted by the User Update
-        PersonModel personModel = accountModel.getHolderOfTheAccount();
+        PersonModel personModel = accountModel.getLinkedPerson();
         assertEquals(createdUser.getEmail(), personModel.getEmail().toString());
     }
 
@@ -145,7 +147,7 @@ public class UserAPITest extends AbstractSecurityIntegrationTest {
 
         UserUpdateDTO updateDTO = new UserUpdateDTO();
         updateDTO.setUri(userURI);
-        updateDTO.setHolderOfTheAccountURI(newHolderURI);
+        updateDTO.setLinkedPerson(newHolderURI);
         updateDTO.setEmail(createdUser.getEmail());
         updateDTO.setAdmin(createdUser.isAdmin());
         updateDTO.setLanguage(createdUser.getLanguage());
@@ -154,7 +156,7 @@ public class UserAPITest extends AbstractSecurityIntegrationTest {
         assertEquals(Response.Status.OK.getStatusCode(), putResult.getStatus());
 
         AccountModel updatedAccount = new AccountDAO(getSparqlService()).get(userURI);
-        assertEquals(URIDeserializer.formatURI(newHolderURI), URIDeserializer.formatURI( updatedAccount.getHolderOfTheAccount().getUri() ));
+        assertEquals(URIDeserializer.formatURI(newHolderURI), URIDeserializer.formatURI( updatedAccount.getLinkedPerson().getUri() ));
     }
 
 //    @Test

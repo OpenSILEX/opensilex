@@ -90,10 +90,10 @@ public class UserGetDTO extends UserDTO {
         dto.setEmail(model.getEmail().toString());
         dto.setLanguage(model.getLanguage());
         dto.setEnable(model.getIsEnabled());
-        if (Objects.nonNull(model.getHolderOfTheAccount()) ){
-            dto.setFirstName(model.getHolderOfTheAccount().getFirstName());
-            dto.setLastName(model.getHolderOfTheAccount().getLastName());
-            dto.setHolderOfTheAccountURI(model.getHolderOfTheAccount().getUri());
+        if (Objects.nonNull(model.getLinkedPerson()) ){
+            dto.setFirstName(model.getLinkedPerson().getFirstName());
+            dto.setLastName(model.getLinkedPerson().getLastName());
+            dto.setLinkedPerson(model.getLinkedPerson().getUri());
         }
 
         return dto;
@@ -101,7 +101,7 @@ public class UserGetDTO extends UserDTO {
 
     public PersonDTO createCorrespondingPersonDTO() {
         PersonDTO personDTO = new PersonDTO();
-        personDTO.setUri(holderOfTheAccountURI);
+        personDTO.setUri(linkedPerson);
         personDTO.setFirstName(firstName);
         personDTO.setLastName(lastName);
         personDTO.setEmail(email);

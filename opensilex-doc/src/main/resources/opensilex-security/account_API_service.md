@@ -25,9 +25,10 @@ Account are used to manage personal credentials and store login and password for
 - Accounts that are admins has automatically unrestricted credentials.
 - An account is not necessarily linked to a Person.
 - An account can be linked to a person only if the person does not already have an account.
+- the person linked to an account can't be changed nor removed
 
 ### tests
-Several integrations tests are located in `AccountAPITest.java` to ensure both success and error POST scenarios
+Several integrations tests are located in `AccountAPITest.java` to ensure both success and error POST, PUT and GET scenarios
 
 
 ## futurs perspectives

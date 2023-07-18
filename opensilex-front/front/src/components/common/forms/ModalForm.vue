@@ -8,7 +8,7 @@
     @shown="disableValidation=false"
     @hidden="disableValidation=true"
     :size="modalSize"
-    :static="true"
+    :static="static"
     no-close-on-backdrop
     no-close-on-esc
     @keydown.native.enter="validate"
@@ -98,6 +98,9 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
   editMode = false;
 
   form: CreationDTOType | UpdateDTOType | {} = {};
+
+  @Prop({default: true})
+  static: boolean
 
   @Prop({ default: false })
   tutorial :boolean;
@@ -237,13 +240,14 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
 
     this.editMode = false;
 
+    this.modalRef.show();
+
     this.$nextTick(() => {
       this.form = this.getFormRef().getEmptyForm();
       let form = this.initForm(this.form as CreationDTOType);
       if (form) {
         this.form = form;
       }
-      this.modalRef.show();
 
       this.validatorRef.reset();
       if (this.getFormRef().reset) {

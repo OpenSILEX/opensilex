@@ -58,8 +58,8 @@ public class UserCommandsTest {
         user = accountDAO.getByEmail(email);
         Assert.assertNotNull(user);
         Assert.assertEquals(email,user.getEmail());
-        Assert.assertEquals("firstName",user.getHolderOfTheAccount().getFirstName());
-        Assert.assertEquals("lastName",user.getHolderOfTheAccount().getLastName());
+        Assert.assertEquals("firstName",user.getLinkedPerson().getFirstName());
+        Assert.assertEquals("lastName",user.getLinkedPerson().getLastName());
         Assert.assertEquals(true,user.isAdmin());
         Assert.assertEquals("en",user.getLanguage());
 

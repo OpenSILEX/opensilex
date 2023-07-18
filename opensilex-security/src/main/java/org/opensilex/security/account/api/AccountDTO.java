@@ -1,14 +1,16 @@
 
 package org.opensilex.security.account.api;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.OpenSilex;
 import org.opensilex.server.rest.validation.ValidURI;
 
 import javax.validation.constraints.Email;
 import java.net.URI;
+import java.util.List;
 
-public class AccountDTO {
+public abstract class AccountDTO {
 
     protected URI uri;
 
@@ -21,7 +23,10 @@ public class AccountDTO {
 
     protected Boolean enable;
 
-    protected URI holderOfTheAccountURI;
+    @JsonProperty("linked_person")
+    protected URI linkedPerson;
+
+    protected List<URI> favorites;
 
     @ValidURI
     @ApiModelProperty(value = "Account URI", example = "http://opensilex.dev/users#jean.michel.inrae")
@@ -71,11 +76,17 @@ public class AccountDTO {
 
     @ValidURI
     @ApiModelProperty(value = "URI of the Person linked to this account", example = "http://opensilex.dev/person#Jean.Michel.mistea")
-    public URI getHolderOfTheAccountURI() {
-        return holderOfTheAccountURI;
+    public URI getLinkedPerson() {
+        return linkedPerson;
     }
 
-    public void setHolderOfTheAccountURI(URI uri) {
-        this.holderOfTheAccountURI = uri;
+    public void setLinkedPerson(URI uri) {
+        this.linkedPerson = uri;
     }
+
+    @ApiModelProperty(value = "Favorites URI")
+    public List<URI> getFavorites() { return favorites; }
+
+    public void setFavorites(List<URI> favorites) { this.favorites = favorites; }
+
 }

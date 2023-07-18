@@ -10,7 +10,7 @@
 
     <opensilex-TableAsyncView
         ref="tableRef"
-        :searchMethod="searchUsers"
+        :searchMethod="searchAccounts"
         :fields="fields"
         defaultSortBy="email"
     >
@@ -75,12 +75,6 @@
               label="component.account.update"
               :small="true"
           ></opensilex-EditButton>
-<!--          <opensilex-DeleteButton-->
-<!--              v-if="user.hasCredential(credentials.CREDENTIAL_USER_DELETE_ID) && user.email !== data.item.email"-->
-<!--              @click="deleteUser(data.item.uri)"-->
-<!--              label="component.account.delete"-->
-<!--              :small="true"-->
-<!--          ></opensilex-DeleteButton>-->
         </b-button-group>
       </template>
     </opensilex-TableAsyncView>
@@ -90,17 +84,16 @@
 <script lang="ts">
 import {Component, Ref} from "vue-property-decorator";
 import Vue from "vue";
-// @ts-ignore
 import {SecurityService} from "opensilex-security/index";
-import {UserUpdateDTO} from "opensilex-security/model/userUpdateDTO";
 import {PersonDTO} from "opensilex-security/model/personDTO";
-import {UserGetDTO} from "opensilex-security/model/userGetDTO";
 import HttpResponse, {OpenSilexResponse} from "../../lib/HttpResponse";
 import {SlotDetails} from "../common/views/TableAsyncView.vue";
 import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
+import {AccountUpdateDTO} from "opensilex-security/model/accountUpdateDTO";
+import {AccountGetDTO} from "opensilex-security/model/accountGetDTO";
 
 @Component
-export default class UserList extends Vue {
+export default class AccountList extends Vue {
   $opensilex: any;
   service: SecurityService;
   $store: any;
@@ -170,9 +163,8 @@ export default class UserList extends Vue {
     this.tableRef.refresh();
   }
 
-  async searchUsers(options) {
-    let usersResponse : HttpResponse<OpenSilexResponse<UserGetDTO[]>> = await this.service
-        .searchUsers(
+  async searchAccounts(options) {
+    let accountsResponse = await this.service.searchAccounts(
             this.filter,
             options.orderBy,
             options.currentPage,
@@ -181,15 +173,16 @@ export default class UserList extends Vue {
 
     let key_personUri_value_accountUri : {[id: string]: string} = {}
 
-     usersResponse.response.result.forEach( account => {
-      if (account.holderOfTheAccountURI) {
-        key_personUri_value_accountUri[account.holderOfTheAccountURI] = account.uri
+     accountsResponse.response.result.forEach( account => {
+       this.personByAccountUri[account.uri] = null
+      if (account.linked_person) {
+        key_personUri_value_accountUri[account.linked_person] = account.uri
       }
     });
 
     await this.mapPersonsWithAccount(key_personUri_value_accountUri)
 
-    return usersResponse
+    return accountsResponse
   }
 
   async mapPersonsWithAccount(key_personUri_value_accountUri : {[id: string]: string}){
@@ -202,31 +195,21 @@ export default class UserList extends Vue {
     }
   }
 
-  // deleteUser(uri: string) {
-  //   this.service
-  //       .deleteUser(uri)
-  //       .then(() => {
-  //         this.refresh();
-  //         this.$opensilex.showSuccessToast(this.$t('component.account.successDelete'))
-  //       })
-  //       .catch(this.$opensilex.errorHandler);
-  // }
-
-  changeEnable(dto: UserUpdateDTO) {
+  changeEnable(dto: AccountUpdateDTO) {
     dto.enable = !dto.enable;
     this.service
-        .updateUser(dto)
+        .updateAccount(dto)
         .catch(this.$opensilex.errorHandler);
   }
 
-  displayEnableButton(userRow) {
-    let isUserConnected = userRow.email === this.user.email
+  displayEnableButton(accountRow) {
+    let isUserConnected = accountRow.email === this.user.email
     return this.user.hasCredential(this.credentials.CREDENTIAL_USER_MODIFICATION_ID)
-        && !userRow.admin
+        && !accountRow.admin
         && !isUserConnected
   }
 
-  async showUsersGroups(data: SlotDetails<UserGetDTO>) {
+  async showUsersGroups(data: SlotDetails<AccountGetDTO>) {
 
     let accountUri :string = data.item.uri
 

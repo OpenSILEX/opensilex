@@ -31,16 +31,14 @@ components["opensilex-ForgotPassword"] = ForgotPassword;
 
 
 // Users
-import UserForm from './users/UserForm.vue';
-components["opensilex-UserForm"] = UserForm;
-import UserList from './users/UserList.vue';
-components["opensilex-UserList"] = UserList;
-import UserView from './users/UserView.vue';
-components["opensilex-UserView"] = UserView;
-import UserSelector from './users/UserSelector.vue';
-components["opensilex-UserSelector"] = UserSelector;
-import UserNameView from './users/UserNameView.vue';
-components["opensilex-UserNameView"] = UserNameView;
+import AccountForm from './account/AccountForm.vue';
+components["opensilex-AccountForm"] = AccountForm;
+import AccountList from './account/AccountList.vue';
+components["opensilex-AccountList"] = AccountList;
+import AccountView from './account/AccountView.vue';
+components["opensilex-AccountView"] = AccountView;
+import AccountSelector from './account/AccountSelector.vue';
+components["opensilex-AccountSelector"] = AccountSelector;
 
 //Persons
 import PersonView from "./persons/PersonView.vue";

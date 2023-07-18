@@ -358,9 +358,9 @@ Options are represented by node, see [vue-treeselect documentation](https://vue-
 
 This component supports different options loading mechanisms :
 
-- options: Directly define fixed array of options (see UserForm language selection for an example)
+- options: Directly define fixed array of options (see AccountForm language selection for an example)
 - optionsLoadingMethod: Asyncronously load options from a webservice when component is loaded (see ExperimentForm1 species selection for an example)
-- searchMethod: Asyncronously load options corresponding to user search (see UserSelector for an example)
+- searchMethod: Asyncronously load options corresponding to user search (see AccountSelector for an example)
 
 If result of async calls are not returning vue-treeselect nodes, you must define "conversionMethod" property to transform results into the correct format.
 
@@ -597,6 +597,8 @@ Form component can also implement the following methods:
 If these methods are not defined "createAction" and/or "updateAction" properties must be defined.
 
 To interact with ModalForm component, use "showCreateForm()" and "showEditForm(form)" methods.
+
+To put a ModalForm A into a ModalForm B, you should put the "static" prop of B to false 
 
 #### Properties
 

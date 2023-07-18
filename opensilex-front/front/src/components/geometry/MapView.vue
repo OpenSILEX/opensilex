@@ -2765,7 +2765,7 @@ en:
     LegendSO: Scientific Object
     LegendStructuralArea: Structural Area
     LegendTemporalArea: Temporal Area
-    Instruction: Press Shift to <b>select item by item</b> on the map.<br> Press and hold Shift + Alt + Click and move the mouse <b>to rotate</b> the map.<br> Press Ctrl + Click while dragging to <b>select multiple scientific objects</b>.<br>Press Shift + Click while dragging to define a <b>zoom-in area</b>.
+    Instruction: Press Shift to <b>select item by item</b> on the map.<br> Press and hold Shift + Alt + Click and move the mouse <b>to rotate</b> the map.<br> Press Ctrl + Click while dragging to <b>select multiple scientific objects</b>.<br>Press Shift + Click while dragging to define a <b>zoom-in area</b>.<br> To display a graph, select one to 15 scientific objects on the map and click on the "Display graphic" button.
     WarningInstruction: Currently, the selection tool does not follow the rotation.
     details: Show or hide element details
     author: Author
@@ -2786,7 +2786,7 @@ en:
     create-filter: Create filter
     center: Refocus the map
     save: Save the map
-    chart: Display graphic - from 1 to 15 scientific objects
+    chart: Display graph - from 1 to 15 scientific objects
     time: See temporal(s) area(s)
     noFilter: No filter applied. To add one, use the form below the map
     save-confirmation: Do you want to export the map as PNG image, PDF or shapefile ?
@@ -2832,7 +2832,7 @@ fr:
     LegendSO: Objet scientifique
     LegendStructuralArea: Zone structurelle
     LegendTemporalArea: Zone temporaire
-    Instruction: Appuyez sur Maj pour <b>sélectionner élément par élément</b> sur la carte.<br> Appuyez et maintenez Maj +Alt + Clic puis déplacer la souris pour faire <b>pivoter</b> la carte.<br> Appuyez sur Ctrl + Clic tout en faisant glisser pour <b>sélectionner plusieurs objets scientifiques</b>.<br> Appuyez sur Maj + Clic tout en faisant glisser pour définir une <b>zone de zoom avant</b>.
+    Instruction: Appuyez sur Maj pour <b>sélectionner élément par élément</b> sur la carte.<br> Appuyez et maintenez Maj +Alt + Clic puis déplacer la souris pour faire <b>pivoter</b> la carte.<br> Appuyez sur Ctrl + Clic tout en faisant glisser pour <b>sélectionner plusieurs objets scientifiques</b>.<br> Appuyez sur Maj + Clic tout en faisant glisser pour définir une <b>zone de zoom avant</b>.<br> Pour afficher un graphique, sélectionner un à 15 objets scientifiques sur la carte et cliquer sur le bouton "Afficher le graphique".
     WarningInstruction: Actuellement, l'outil de sélection ne suit pas la rotation.
     details: Afficher ou masquer les détails de l'élément
     author: Auteur

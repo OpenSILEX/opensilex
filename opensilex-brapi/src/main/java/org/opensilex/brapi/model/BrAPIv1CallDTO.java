@@ -14,13 +14,9 @@ import java.util.ArrayList;
  */
 public class BrAPIv1CallDTO {
     private String call;
-    private ArrayList<String> dataTypes = new ArrayList<>();
-    private ArrayList<String> methods = new ArrayList<>();
-    private ArrayList<String> versions = new ArrayList<>();
-
-    //Default constructor
-    public BrAPIv1CallDTO() {
-    }    
+    private ArrayList<String> dataTypes;
+    private ArrayList<String> methods;
+    private ArrayList<String> versions;
 
     //Constructor with parameters
     public BrAPIv1CallDTO(String call, ArrayList<String> dataTypes, ArrayList<String> methods, ArrayList<String> versions) {

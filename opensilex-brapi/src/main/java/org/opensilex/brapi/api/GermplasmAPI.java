@@ -7,6 +7,7 @@
 package org.opensilex.brapi.api;
 
 import io.swagger.annotations.*;
+import org.opensilex.brapi.brapiresponses.BrAPIv1GermplasmListResponse;
 import org.opensilex.brapi.model.BrAPIv1GermplasmDTO;
 import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
@@ -15,7 +16,6 @@ import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.server.response.ErrorResponse;
-import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 
@@ -51,7 +51,7 @@ public class GermplasmAPI extends BrapiCall {
     @ApiProtected
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "OK", response = BrAPIv1GermplasmDTO.class),
+        @ApiResponse(code = 200, message = "OK", response = BrAPIv1GermplasmListResponse.class),
         @ApiResponse(code = 400, message = "Bad user request", response = ErrorResponse.class),
         @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)})
 
@@ -68,7 +68,7 @@ public class GermplasmAPI extends BrapiCall {
         if (germplasmPUI != null && uri == null) {
             uri = germplasmPUI;
         }
-        
+
         ListWithPagination<GermplasmModel> resultList = germplasmDAO.brapiSearch(
                 currentUser,
                 uri,
@@ -83,7 +83,7 @@ public class GermplasmAPI extends BrapiCall {
                 BrAPIv1GermplasmDTO.class,
                 BrAPIv1GermplasmDTO::fromModel
         );
-        return new PaginatedListResponse<>(resultDTOList).getResponse();
+        return new BrAPIv1GermplasmListResponse(resultDTOList).getResponse();
     }
     
 }

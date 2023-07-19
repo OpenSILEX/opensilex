@@ -193,12 +193,16 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
         }
         submitResult
           .then(result => {
-            if (result !== false && result !== undefined) {
+            if (result !== false && result !== undefined) {            
               this.creationOrUpdateMessage();
             }
             this.$nextTick(() => {
               if (result !== false) {
-                this.$emit(successEvent, result);
+                if(this.component === "opensilex-OntologyClassForm") {
+                  this.$emit(successEvent, this.form);
+                } else {
+                  this.$emit(successEvent, result);
+                }
               }
               if (result !== false || !this.doNotHideOnError) {
                 this.hide();

@@ -29,7 +29,7 @@
                         createTitle="OntologyClassView.add"
                         editTitle="OntologyClassView.update"
                         :initForm="initForm"
-                        @onCreate="refresh()"
+                        @onCreate="checkVocabularyThenRefresh"
                         @onUpdate="refresh()"
                         modalSize="lg"
                         successMessage="OntologyClassView.the-type"
@@ -159,6 +159,35 @@ export default class OntologyClassView extends Vue {
 
     beforeDestroy() {
         this.langUnwatcher();
+    }
+
+    recursiveVocabularyCheck(children: Array<any>, values): boolean {      
+        for(let child of children) {
+            if(child.data.name === values.nameFr || child.data.name === values.nameEn) {              
+                return false;
+            }
+            if(child.children.length > 0) {
+                this.recursiveVocabularyCheck(child.children, values);
+            }
+        }
+        return true;
+    }
+
+    checkVocabularyThenRefresh(data) {
+        let children = this.classesTree.nodes[0].children;
+        let valueToCheck = {
+            uri: data.uri,
+            nameEn: data.name_translations.en,
+            nameFr: data.name_translations.fr
+        };
+        let checker: boolean = this.recursiveVocabularyCheck(children, valueToCheck);
+
+        if(!checker) {
+            let message = this.$i18n.t("component.common.type-warning-same-name").toString();
+            this.$opensilex.showWarningToast(message);
+        }
+
+        this.refresh();
     }
 
     refresh() {

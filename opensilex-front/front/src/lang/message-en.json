@@ -50,6 +50,7 @@
             "logout": "Logout",
             "parent": "parent",
             "type": "Type",
+            "type-warning-same-name": "A type with the same name already exist",
             "select-lang": "Choose a language",
             "select-date": "Choose a date",
             "next": "Next",

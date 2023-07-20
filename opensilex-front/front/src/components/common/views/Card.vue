@@ -1,8 +1,9 @@
 <template>
-  <div class="card">
+  <div class="card"
+    @click="$emit('click')">
     <div v-if="!noHeader" class="card-header">
       <h3 class="capitalize-first-letter">
-        <opensilex-Icon :icon="icon" class="icon-title" />&nbsp;
+        <opensilex-Icon v-if="icon" :icon="icon" class="icon-title" />
         {{ $t(label) }}
       </h3>
       <slot name="header"></slot>
@@ -43,4 +44,9 @@ export default class DescriptionCard extends Vue {
 </script>
 
 <style scoped lang="scss">
+
+.capitalize-first-letter {
+  width: 100%;
+}
+
 </style>

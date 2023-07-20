@@ -61,7 +61,7 @@ Add a 'Monitoring' tab in the facility view (open by default) which can display 
 
 Environmental data are grouped by variables. Each variable are display as a tile within a grid,
 showing the variable's name and the last calculated data from past week (median of medians) (see [General_functioning](#general)).
-If there is no data found for this period, display the last stored data in the system (in red).
+If there is no data found for this period, display the date of the last stored data in the system (in red).
 
 On click on a tile, display the graphic representation of all data series.
 By default, only calculated data series are accessible (median of medians, daily mean).
@@ -138,7 +138,7 @@ The last data recorded in the system is also stored, used if there is no data fo
 
 The provenance model contained in a data item can contain variable information.
 The list of agents (sensors/operators) in the *provWasAssociatedWith* field can be empty or contain
-an indefinite number of elements (cf. [code below](#codeprov).
+an indefinite number of elements (cf. [code below](#codeprov)).
 
 To simplify and standardise the information returned by the service, a *DataSimpleProvenanceGetDTO* 
 is generated for each provenance from the *DataProvenanceModel* according to these rules:
@@ -223,11 +223,6 @@ Following tests check if the calculations results are correct:
 - `testComputeMedianPerHour`
 - `testComputeAveragePerDay`
 
-### Environment changes
-
-**Vue-grid-layout (v2.4.0)**: Add a grid layout system for VueJS.
-https://jbaysolutions.github.io/vue-grid-layout/
-
 ## Limitations and Improvements
 
 ### Limitations
@@ -238,8 +233,6 @@ Also, the service assumes the `date` is a datetime with no verifications.
 
 The data values must be numbers, but there is no verifications.
 The service's behaviour with other types is unknown.
-
-The package 'vue-grid-layout' is not supported by Vue3.
 
 ### Possible improvements
 

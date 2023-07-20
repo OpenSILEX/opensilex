@@ -558,7 +558,8 @@ en:
         add-method: Add method
         unit: "Unit/Scale"
         add-unit: Add unit
-        groupVariable: "Group of variables"
+        groupVariable: Group of variables
+        groupVariableAssociated: Group of associated variables
         add-groupVariable: Add a group of variables
         no-var-provided: No variable provided
         associated-data-error: Data are associated with this variable
@@ -580,7 +581,8 @@ fr:
         add-method: Ajouter une méthode
         unit: "Unité/Echelle"
         add-unit: Ajouter une unité
-        groupVariable: "Groupe de variables"
+        groupVariable: Groupe de variables
+        groupVariableAssociated: Groupe de variables associées
         add-groupVariable: Ajouter un groupe de variables
         no-var-provided: Aucune variable associée
         associated-data-error: Données sont associées à cette variable

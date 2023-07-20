@@ -46,37 +46,21 @@
 
     <!-- Grid layout for tiles -->
 
-    <GridLayout v-if="isItemsLoaded"
-                class="grid-layout"
-        :layout.sync="layout"
-        :col-num="NB_COL"
-        :is-draggable="true"
-        :is-resizable="false"
-        :is-mirrored="false"
-        :vertical-compact="true"
-        :is-bounded="true"
-        :autoSize="false"
-        :margin="[10, 10]"
-        :use-css-transforms="true">
+    <div v-if="isItemsLoaded"
+         class="row">
+      <div v-for="item in layout"
+           class="item col"
+           :key="item.i">
+        <opensilex-VariableVisualizationTile
+            class="tile-content"
+            v-bind="item.content"
+            :defaultStartDate="startDate"
+            :defaultEndDate="endDate"
+        >
+        </opensilex-VariableVisualizationTile>
+      </div>
+    </div>
 
-        <GridItem class="tile"
-                  v-for="item in layout"
-                    :x="item.x"
-                    :y="item.y"
-                    :w="item.w"
-                    :h="item.h"
-                    :i="item.i"
-                    :key="item.i"
-                    :dragIgnoreFrom="'#data-infos, #devices-list, #graphic, #btn-show'">
-          <opensilex-VariableVisualizationTile
-              class="tile-content"
-              v-bind="item.content"
-              :defaultStartDate="startDate"
-              :defaultEndDate="endDate"
-          >
-          </opensilex-VariableVisualizationTile>
-        </GridItem>
-    </GridLayout>
   </div>
 </template>
 
@@ -92,7 +76,6 @@ import {DataService} from "opensilex-core/api/data.service";
 import {NamedResourceDTOVariableModel} from "opensilex-core/model/namedResourceDTOVariableModel";
 import {VariableGetDTO} from "opensilex-core/model/variableGetDTO";
 import {VariablesGroupGetDTO} from "opensilex-core/model/variablesGroupGetDTO";
-import {GridItemData} from "vue-grid-layout";
 
 
 @Component
@@ -100,8 +83,7 @@ export default class FacilityMonitoringView extends Vue {
   $opensilex: OpenSilexVuePlugin;
 
   /// GridLayout system
-  NB_COL = 4;
-  layout: Array<GridItemData> = [];
+  layout: Array<any> = [];
 
   uri: string = null;
   selected: FacilityGetDTO = null;
@@ -268,11 +250,8 @@ export default class FacilityMonitoringView extends Vue {
     this.layout = [];
     let i = 0;
     for (let v of this.usedVariables) {
-      let x = i % this.NB_COL;
-      let y = Math.floor(i / this.NB_COL);
-
       this.layout.push({
-        "x":x, "y":y, "w":1, "h":2, "i":''+i,
+        "i":''+i,
         "content": { target: this.uri, variableUri: v }
       });
       ++i;
@@ -310,6 +289,11 @@ export default class FacilityMonitoringView extends Vue {
   background-color: #00A38D;
   border-color:#00A38D;
   color: #fff;
+}
+
+.item {
+  min-width: 400px;
+  max-width: 400px;
 }
 
 </style>

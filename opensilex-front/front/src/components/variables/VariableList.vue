@@ -93,7 +93,7 @@
                                 class="searchFilter"
                                 @handlingEnterKey="refresh()"
                             ></opensilex-GroupVariablesSelector>
-                            
+
                             <opensilex-CheckboxForm
                                 title="VariableList.withoutGroup"
                                 helpMessage="VariableList.withoutGroup-info"
@@ -847,7 +847,7 @@ en:
         selected-all: All variables
         display: Display
         withoutGroup: Not in group
-        withoutGroup-info: Select the checkbox to filter the variables that are not included in the selected group 
+        withoutGroup-info: Select the checkbox to filter the variables that are not included in the selected group
 fr:
     VariableList:
         name-placeholder: Entrer un nom de variable
@@ -865,6 +865,6 @@ fr:
         selected-all: Toutes les variables
         display: Affichage
         withoutGroup: Pas dans ce groupe
-        withoutGroup-info: Cocher la case pour filtrer les variables qui n'appartiennent pas au groupe sélectionné 
+        withoutGroup-info: Cocher la case pour filtrer les variables qui n'appartiennent pas au groupe sélectionné
 
 </i18n>

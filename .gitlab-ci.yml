@@ -290,7 +290,7 @@ test:opensilex-develop:deploy:
     CONFIGS_FILES_DIR_PATH: "$DEV_TOOLS_REPO_CONF_FILES_PATH/mistea/develop"
     INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
     OPENSILEX_JAR_ADMIN_PORT: 4081
-    OPENSILEX_JAR_PORT: 28081
+    OPENSILEX_JAR_PORT: 8081
     REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
     REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
     REMOTE_SERVER_RSYNC_DIR: "mistea/develop"
@@ -309,7 +309,7 @@ test:opensilex-release:deploy:
     CONFIGS_FILES_DIR_PATH: "$DEV_TOOLS_REPO_CONF_FILES_PATH/mistea/release"
     INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
     OPENSILEX_JAR_ADMIN_PORT: 4081
-    OPENSILEX_JAR_PORT: 28081
+    OPENSILEX_JAR_PORT: 8081
     REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
     REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
     REMOTE_SERVER_RSYNC_DIR: "mistea/release"
@@ -497,17 +497,26 @@ update:nightly:builds:branch:
   variables:
     JAVA_VERSION: 11
 
-.with_java17: &java17
+.with_java14: &java14
   variables:
-    JAVA_VERSION: 17
+    JAVA_VERSION: 14
+
+#.with_java17: &java17
+#  variables:
+#    JAVA_VERSION: 17
+
 
 test:build:java11:
   <<: *java11
   <<: *test_build_on_schedules
 
-test:build:java17:
-  <<: *java17
+test:build:java14:
+  <<: *java14
   <<: *test_build_on_schedules
+
+#test:build:java17:
+#  <<: *java17
+#  <<: *test_build_on_schedules
 
 ########################
 ##  BUILD - GITLAB PAGES DOCS
@@ -521,15 +530,17 @@ pages:
     - cd $CI_PROJECT_DIR/opensilex-swagger-codegen-maven-plugin
     - mvn install $MAVEN_OPTS_SCHUEDULES 1> $CI_PROJECT_DIR/logs/mvn-install-swagger.log
     - cd $CI_PROJECT_DIR
-    - mvn install site $MAVEN_OPTS_SCHUEDULES -Pwith-test-report -Pwith-security-check -DskipFrontBuild 1> $CI_PROJECT_DIR/logs/mvn-install-site.log
+    - mvn install site $MAVEN_OPTS_SCHUEDULES -Pwith-test-report -Pwith-security-check -DskipFrontBuild -pl '!opensilex-dev-tools' > $CI_PROJECT_DIR/logs/mvn-install-site.log
     - mkdir public
     - mv $CI_PROJECT_DIR/opensilex-doc/src/main/resources/generated/* public
   artifacts:
     paths:
       - public
       - logs
+    when: always
   rules:
     - if: $NIGHTLY_BUILD == "true"
+  allow_failure: true
 
 # ##########################################
 # ##  BUILD & DEPLOY FOR MISTEA TEAM
@@ -682,6 +693,35 @@ test:bernhard:deploy:
       when: on_success
   needs:
     - bernhard:build
+
+###################################
+##  GABRIEL-TEST-BUILD-DEPLOYMENT
+###################################
+
+gabriel:build:
+  <<: *build_template_with_opensilex
+  rules:
+    - if: $CI_COMMIT_BRANCH == "gabriel"
+
+test:gabriel:deploy:
+  <<: *deploy_opensilex_before_script
+  <<: *deploy_opensilex_template
+  variables:
+    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/gabriel"
+    INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
+    OPENSILEX_JAR_ADMIN_PORT: 4091
+    OPENSILEX_JAR_PORT: 8091
+    REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
+    REMOTE_SERVER_IP: "$REMOTE_TEST_SERVER_IP"
+    REMOTE_SERVER_RSYNC_DIR: "mistea/gabriel"
+    REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "gabriel"
+      when: on_success
+  needs:
+    - gabriel:build
+
+
 
 ######################################
 ##  OPTIMIZATION-TEST-BUILD-DEPLOYMENT
@@ -908,31 +948,31 @@ test:brice:deploy:
     - brice:build
 
 ###################################
-##  GUILHEM-TEST-SNAPSHOT-DEPLOYMENT
+##  MARIEM-TEST-SNAPSHOT-DEPLOYMENT
 ###################################
 
-guilhem:build:
+mariem:build:
   <<: *build_template_with_opensilex
   rules:
-    - if: $CI_COMMIT_BRANCH == "guilhem"
+    - if: $CI_COMMIT_BRANCH == "mariem"
 
-test:guilhem:deploy:
+test:mariem:deploy:
   <<: *deploy_opensilex_before_script
   <<: *deploy_opensilex_template
   variables:
-    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/guilhem"
+    CONFIGS_FILES_DIR_PATH: "${DEV_TOOLS_REPO_CONF_FILES_PATH}/mistea/mariem"
     INSTANCE_CONFIGURATION_FILE_NAME: "phis.test.yml"
     OPENSILEX_JAR_ADMIN_PORT: 4098
     OPENSILEX_JAR_PORT: 8098
     REMOTE_SERVER_RSYNC_ACCOUNT: "$REMOTE_PHIS_RSYNC_ACCOUNT"
     REMOTE_SERVER_IP: $REMOTE_TEST_SERVER_IP
-    REMOTE_SERVER_RSYNC_DIR: "mistea/guilhem"
+    REMOTE_SERVER_RSYNC_DIR: "mistea/mariem"
     REMOTE_SERVER_SSH_KEY: "$TEST_SSH_PRIVATE_KEY"
   rules:
-    - if: $CI_COMMIT_BRANCH == "guilhem"
+    - if: $CI_COMMIT_BRANCH == "mariem"
       when: on_success
   needs:
-    - guilhem:build
+    - mariem:build
 
 ######################################
 ##  PHENO3C-PROD-BUILD-DEPLOYMENT

@@ -232,10 +232,11 @@ export default class AreaDetails extends Vue {
 
   loadAuthor(uriAuthor) {
     this.securityService
-        .getUser(uriAuthor)
-        .then((http: HttpResponse<OpenSilexResponse<UserGetDTO>>) => {
-          const {last_name, first_name} = http.response.result;
-          this.authorName = first_name + " " + last_name;
+        .getAccount(uriAuthor)
+        .then((accountResponse) => {
+          let account = accountResponse.response.result;
+          const {person_last_name, person_first_name, email, linked_person} = account;
+          this.authorName = linked_person ? person_first_name + " " + person_last_name : email;
         })
         .catch(this.$opensilex.errorHandler);
   }

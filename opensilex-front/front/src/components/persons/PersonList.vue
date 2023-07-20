@@ -39,12 +39,6 @@
               label="component.person.update"
               :small="true"
           ></opensilex-EditButton>
-          <opensilex-DeleteButton
-              v-if="person.hasCredential(credentials.CREDENTIAL_PERSON_DELETE_ID)"
-              @click="deletePerson(data.item.uri)"
-              label="component.person.delete"
-              :small="true"
-          ></opensilex-DeleteButton>
         </b-button-group>
       </template>
     </opensilex-TableAsyncView>
@@ -88,8 +82,8 @@ export default class PersonList extends Vue {
       label: "component.person.orcid"
     },
     {
-      key: "organization",
-      label: "component.person.organization"
+      key: "affiliation",
+      label: "component.person.affiliation"
     },
     {
       key: "phone_number",
@@ -138,15 +132,6 @@ export default class PersonList extends Vue {
     this.refresh();
   }
 
-  deletePerson(uri: string) {
-    this.service
-        .deletePerson(uri)
-        .then(() => {
-          this.refresh();
-          this.$opensilex.showSuccessToast(this.$t('component.person.successDelete'))
-        })
-        .catch(this.$opensilex.errorHandler);
-  }
 }
 </script>
 

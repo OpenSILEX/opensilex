@@ -31,16 +31,14 @@ components["opensilex-ForgotPassword"] = ForgotPassword;
 
 
 // Users
-import UserForm from './users/UserForm.vue';
-components["opensilex-UserForm"] = UserForm;
-import UserList from './users/UserList.vue';
-components["opensilex-UserList"] = UserList;
-import UserView from './users/UserView.vue';
-components["opensilex-UserView"] = UserView;
-import UserSelector from './users/UserSelector.vue';
-components["opensilex-UserSelector"] = UserSelector;
-import UserNameView from './users/UserNameView.vue';
-components["opensilex-UserNameView"] = UserNameView;
+import AccountForm from './account/AccountForm.vue';
+components["opensilex-AccountForm"] = AccountForm;
+import AccountList from './account/AccountList.vue';
+components["opensilex-AccountList"] = AccountList;
+import AccountView from './account/AccountView.vue';
+components["opensilex-AccountView"] = AccountView;
+import AccountSelector from './account/AccountSelector.vue';
+components["opensilex-AccountSelector"] = AccountSelector;
 
 //Persons
 import PersonView from "./persons/PersonView.vue";
@@ -119,10 +117,15 @@ import FacilityDetails from "./facilities/views/FacilityDetails.vue";
 components["opensilex-FacilityDetails"] = FacilityDetails;
 import FacilityDescription from "./facilities/views/FacilityDescription.vue";
 components["opensilex-FacilityDescription"] = FacilityDescription;
-import FacilityAssociatedDevices from "./facilities/views/FacilityAssociatedDevices.vue";
-components["opensilex-FacilityAssociatedDevices"] = FacilityAssociatedDevices;
+import FacilityMonitoringView from "./facilities/views/FacilityMonitoringView.vue";
+components["opensilex-FacilityMonitoringView"] = FacilityMonitoringView;
 import FacilityListView from "./facilities/FacilityListView.vue";
 components["opensilex-FacilityListView"] = FacilityListView;
+
+import DatePeriodPicker from "./facilities/DatePeriodPicker.vue";
+components["opensilex-DatePeriodPicker"] = DatePeriodPicker;
+import FacilityHistogramSettings from "./facilities/FacilityHistogramSettings.vue";
+components["opensilex-FacilityHistogramSettings"] = FacilityHistogramSettings;
 
 
 // Factors
@@ -529,6 +532,8 @@ import VariableView from './variables/views/VariableView.vue';
 components["opensilex-VariableView"] = VariableView;
 import VariableVisualizationTab from './variables/views/VariableVisualizationTab.vue';
 components["opensilex-VariableVisualizationTab"] = VariableVisualizationTab;
+import VariableVisualizationTile from './variables/views/VariableVisualizationTile.vue';
+components["opensilex-VariableVisualizationTile"] = VariableVisualizationTile;
 import VariableVisualizationForm from './variables/form/VariableVisualizationForm.vue';
 components["opensilex-VariableVisualizationForm"] = VariableVisualizationForm;
 import VariableDevicesSelector from './variables/form/VariableDevicesSelector.vue';
@@ -708,7 +713,7 @@ components["opensilex-DisplayInformationAboutItem"] = DisplayInformationAboutIte
 import ExportShapeModalList from "./geometry/ExportShapeModalList.vue";
 components["opensilex-ExportShapeModalList"] = ExportShapeModalList;
 
-//VISUALIZATION
+// VISUALIZATION
 
 import ImageGrid from './visualization/ImageGrid.vue';
 components["opensilex-ImageGrid"] = ImageGrid;

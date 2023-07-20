@@ -354,6 +354,8 @@ export default class ProjectList extends Vue {
       .then(() => {
         this.refresh();
         this.$emit("onDelete", uri);
+        let message = this.$i18n.t("ProjectList.name") + " " + uri + " " + this.$i18n.t("component.common.success.delete-success-message");
+        this.$opensilex.showSuccessToast(message);
       })
       .catch(this.$opensilex.errorHandler);
   }
@@ -403,10 +405,12 @@ export default class ProjectList extends Vue {
 <i18n>
 en:
   ProjectList:
+    name: The project
     selected-all: All projects
 
 fr:
   ProjectList:
+    name: Le projet
     selected-all: Tout les projets
 
 </i18n>

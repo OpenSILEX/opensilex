@@ -203,36 +203,39 @@ public class PersonAPI {
      * @throws Exception if delete fail
      * @see PersonDAO
      */
-    @DELETE
-    @Path("{uri}")
-    @ApiOperation("Delete a person")
-    @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_PERSON_DELETE_ID,
-            credentialLabelKey = CREDENTIAL_PERSON_DELETE_LABEL_KEY
-    )
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "User deleted"),
-            @ApiResponse(code = 404, message = "URI not found")
-    })
-    public Response deletePerson(
-            @ApiParam(value = "Person URI", example = "http://opensilex.dev/person#harold.haddock.mistea", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
-    ) throws Exception {
 
-        if (!sparql.uriExists(PersonModel.class, uri)) {
-            return new ErrorResponse(
-                    Response.Status.NOT_FOUND,
-                    "Person doesn't exists",
-                    "URI: " + uri + " doesn't exist"
-            ).getResponse();
-        }
+    /** Temporarly commented to avoid mistakes until there is no protections on deletion */
 
-        PersonDAO personDAO = new PersonDAO(sparql);
-        personDAO.delete(uri);
-        return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
-    }
+//    @DELETE
+//    @Path("{uri}")
+//    @ApiOperation("Delete a person")
+//    @ApiProtected
+//    @ApiCredential(
+//            credentialId = CREDENTIAL_PERSON_DELETE_ID,
+//            credentialLabelKey = CREDENTIAL_PERSON_DELETE_LABEL_KEY
+//    )
+//    @Consumes(MediaType.APPLICATION_JSON)
+//    @Produces(MediaType.APPLICATION_JSON)
+//    @ApiResponses(value = {
+//            @ApiResponse(code = 200, message = "User deleted"),
+//            @ApiResponse(code = 404, message = "URI not found")
+//    })
+//    public Response deletePerson(
+//            @ApiParam(value = "Person URI", example = "http://opensilex.dev/person#harold.haddock.mistea", required = true) @PathParam("uri") @NotNull @ValidURI URI uri
+//    ) throws Exception {
+//
+//        if (!sparql.uriExists(PersonModel.class, uri)) {
+//            return new ErrorResponse(
+//                    Response.Status.NOT_FOUND,
+//                    "Person doesn't exists",
+//                    "URI: " + uri + " doesn't exist"
+//            ).getResponse();
+//        }
+//
+//        PersonDAO personDAO = new PersonDAO(sparql);
+//        personDAO.delete(uri);
+//        return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
+//    }
 
     /**
      * Return a person by URI

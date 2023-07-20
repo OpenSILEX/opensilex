@@ -75,6 +75,8 @@ export default class ExperimentForm extends Vue {
         form.uri = uri;
         console.debug("experiment created", uri);
         this.$emit("onCreate", form);
+        let message = this.$i18n.t("ExperimentList.name") + " " + form.name + " " + this.$i18n.t("component.common.success.creation-success-message");
+        this.$opensilex.showSuccessToast(message);
       })
       .catch((error) => {
         if (error.status == 409) {
@@ -97,6 +99,8 @@ export default class ExperimentForm extends Vue {
         let uri = http.response.result;
         console.debug("experiment updated", uri);
         this.$emit("onUpdate", form);
+        let message = this.$i18n.t("ExperimentList.name") + " " + form.name + " " + this.$i18n.t("component.common.success.update-success-message");
+        this.$opensilex.showSuccessToast(message);
       })
       .catch(this.$opensilex.errorHandler);
   }

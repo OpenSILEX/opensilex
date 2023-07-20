@@ -8,7 +8,7 @@
     @shown="disableValidation=false"
     @hidden="disableValidation=true"
     :size="modalSize"
-    :static="true"
+    :static="static"
     no-close-on-backdrop
     no-close-on-esc
     @keydown.native.enter="validate"
@@ -99,6 +99,9 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
 
   form: CreationDTOType | UpdateDTOType | {} = {};
 
+  @Prop({default: true})
+  static: boolean
+
   @Prop({ default: false })
   tutorial :boolean;
 
@@ -155,6 +158,11 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
   })
   successMessage: string | Function;
 
+  @Prop({
+      default: false
+  })
+  overrideSuccessMessage: boolean;
+
   disableValidation: boolean = true;
 
   get display(): boolean {
@@ -209,14 +217,17 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
     } else {
       successMessage = this.$i18n.t(this.successMessage);
     }
-    if (this.editMode) {
-      successMessage =
-        successMessage +
-        this.$i18n.t("component.common.success.update-success-message");
-    } else {
-      successMessage =
-        successMessage +
-        this.$i18n.t("component.common.success.creation-success-message");
+
+    if (!this.overrideSuccessMessage){
+        if (this.editMode) {
+            successMessage =
+                successMessage +
+                this.$i18n.t("component.common.success.update-success-message");
+        } else {
+            successMessage =
+                successMessage +
+                this.$i18n.t("component.common.success.creation-success-message");
+        }
     }
     this.$opensilex.showSuccessToast(successMessage);
   }
@@ -229,13 +240,14 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
 
     this.editMode = false;
 
+    this.modalRef.show();
+
     this.$nextTick(() => {
       this.form = this.getFormRef().getEmptyForm();
       let form = this.initForm(this.form as CreationDTOType);
       if (form) {
         this.form = form;
       }
-      this.modalRef.show();
 
       this.validatorRef.reset();
       if (this.getFormRef().reset) {

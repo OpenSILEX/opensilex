@@ -115,21 +115,7 @@ export default class FacilityDetails extends Vue {
 
   loadDevices() {
     this.devices = [];
-    this.deviceService.searchDevices(
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        this.uri,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        0,
-        0)
+    this.deviceService.getDevicesByFacility(this.uri)
         .then(
             (
                 http: HttpResponse<OpenSilexResponse<Array<DeviceGetDTO>>>

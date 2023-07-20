@@ -183,8 +183,6 @@ public class GermplasmDAO {
             }
         }
 
-        // Filter by experiment if it has any species. Otherwise, don't apply any filter on experiments (because it
-        // doesn't make sens).
         final URI finalExperiment;
         if (searchFilter.getExperiment() != null) {
             finalExperiment = searchFilter.getExperiment();

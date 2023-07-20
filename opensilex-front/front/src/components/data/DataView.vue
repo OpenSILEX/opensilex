@@ -140,13 +140,13 @@
                 <!-- Operator -->
                 <div>
                   <opensilex-FilterField>
-                    <opensilex-UserSelector
+                    <opensilex-AccountSelector
                       :users.sync="filter.operators"
                       label="DataView.filter.operator"
                       class="searchFilter"
                       @handlingEnterKey="refresh()"
                       :multiple="true"
-                    ></opensilex-UserSelector>
+                    ></opensilex-AccountSelector>
                   </opensilex-FilterField>
                 </div>
 

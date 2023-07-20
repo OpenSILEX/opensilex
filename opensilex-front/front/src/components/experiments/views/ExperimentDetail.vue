@@ -152,7 +152,7 @@
             <opensilex-UriView
               title="component.experiment.record_author"
               :uri="recordAuthor.uri"
-              :value="recordAuthor.first_name + ' ' + recordAuthor.last_name"
+              :value="recordAuthor.linked_person ? recordAuthor.person_first_name + ' ' + recordAuthor.person_last_name : recordAuthor.email"
           >
           </opensilex-UriView>
           </template>
@@ -180,6 +180,7 @@ import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import DTOConverter from "../../../models/DTOConverter";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import {PersonDTO} from "opensilex-security/index";
+import {AccountGetDTO} from "opensilex-security/model/accountGetDTO";
 
 @Component
 export default class ExperimentDetail extends Vue {
@@ -203,7 +204,7 @@ export default class ExperimentDetail extends Vue {
   technicalSupervisorsList = [];
   installationsList = [];
   infrastructuresList = [];
-  recordAuthor :UserGetDTO = null;
+  recordAuthor :AccountGetDTO = null;
 
   created() {
     this.service = this.$opensilex.getService("opensilex.ExperimentsService");
@@ -264,6 +265,8 @@ export default class ExperimentDetail extends Vue {
     this.service
       .deleteExperiment(uri)
       .then(() => {
+        let message = this.$i18n.t("ExperimentList.name") + " " + uri + " " + this.$i18n.t("component.common.success.delete-success-message");
+        this.$opensilex.showSuccessToast(message);
         this.$router.push({
           path: "/experiments",
         });
@@ -376,9 +379,9 @@ export default class ExperimentDetail extends Vue {
     if (this.experiment.record_author &&
       this.experiment.record_author.length > 0){
         service
-        .getUser(this.experiment.record_author)
-        .then((http: HttpResponse<OpenSilexResponse<UserGetDTO>>) => {
-          this.recordAuthor = http.response.result;
+        .getAccount(this.experiment.record_author)
+        .then( accountResponse => {
+          this.recordAuthor = accountResponse.response.result;
         })
         .catch(this.$opensilex.errorHandler);
       }
@@ -396,7 +399,7 @@ export default class ExperimentDetail extends Vue {
           for (let i = 0; i < http.response.result.length; i++) {
             if (
               this.experiment.species.find(
-                (species) => species == http.response.result[i].uri
+                (species) => this.$opensilex.checkURIs(species, http.response.result[i].uri)
               )
             ) {
               this.speciesList.push(http.response.result[i]);

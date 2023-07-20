@@ -28,6 +28,7 @@ import org.opensilex.core.organisation.api.site.SiteGetListDTO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.site.SiteModel;
+import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.group.api.GroupAPITest;
 import org.opensilex.security.group.api.GroupCreationDTO;
 import org.opensilex.security.group.api.GroupUserProfileDTO;
@@ -127,7 +128,8 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
     private final Set<URI> forbiddenSiteURISet = new HashSet<>();
 
     private final Set<URI> availableFacilitiesForExperimentWithOrgCreatedByUserURISet = new HashSet<>();
-    private final Set<URI> availableFacilitiesForExperimentWithoutOrgURISet = new HashSet<>();
+
+    private final AccountDAO accountDAO = new AccountDAO(getSparqlService());
 
     @Before
     public void beforeTest() throws Exception {
@@ -363,7 +365,6 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
         forbiddenSiteURISet.add(siteOfOrgPrivateWithWrongGroup);
 
         availableFacilitiesForExperimentWithOrgCreatedByUserURISet.add(facOfOrgCreatedByUser);
-        availableFacilitiesForExperimentWithoutOrgURISet.addAll(accessibleFacilityURISet);
     }
 
     @Test
@@ -587,8 +588,6 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
 
     @Test
     public void testGetAvailableFacilitiesForExperimentWithoutOrg() throws Exception {
-        assert !availableFacilitiesForExperimentWithoutOrgURISet.isEmpty();
-
         Response getResponse = getJsonGetResponse(target(ExperimentAPITest.getAvailableFacilitiesPath).resolveTemplate("uri", experimentWithoutOrg), USER_MAIL);
         assertEquals(Response.Status.OK.getStatusCode(), getResponse.getStatus());
 
@@ -597,11 +596,7 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
                 .stream().map(RDFObjectDTO::getUri)
                 .collect(Collectors.toList());
 
-        assertEquals(availableFacilitiesForExperimentWithoutOrgURISet.size(), availableFacilityURIList.size());
-
-        for (URI availableFacilityURI : availableFacilitiesForExperimentWithoutOrgURISet) {
-            assertTrue(availableFacilityURI + " should be available", availableFacilityURIList.stream().anyMatch(uri -> SPARQLDeserializers.compareURIs(uri, availableFacilityURI)));
-        }
+        assertEquals(0, availableFacilityURIList.size());
     }
 
     @Test
@@ -619,7 +614,7 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
 
     @After
     public void afterTests() throws Exception {
-        getDeleteByUriResponse(target(userAPITest.deletePath), user.toString());
+        accountDAO.delete(user);
     }
 
     @Override

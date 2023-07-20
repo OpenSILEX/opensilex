@@ -3,7 +3,7 @@ menu:
   #   label: component.menu.dashboard
   #   route:
   #     path: /users
-  #     component: opensilex-UserView
+  #     component: opensilex-AccountView
   - id: scientific-organisation
     label: component.menu.scientific-organisation
     children:
@@ -57,6 +57,16 @@ menu:
           icon: ik#ik-thermometer
           title: Device.title
           description: Device.description
+      - id: persons
+        label: component.menu.security.persons
+        route:
+          path: /persons
+          component: opensilex-PersonView
+          credentials:
+            - person-access
+          icon: ik#ik-user
+          title: PersonView.title
+          description: PersonView.description
   - id: experimentalDesign
     label: component.menu.experimentalDesign.label
     children:
@@ -151,28 +161,28 @@ menu:
       #   label: component.menu.equipments.label
       #   route:
       #     path: /users
-      #     component: opensilex-UserView
+      #     component: opensilex-AccountView
       #   children:
       #     - id: sensors
       #       label: component.menu.equipments.sensors
       #       route:
       #         path: /users
-      #         component: opensilex-UserView
+      #         component: opensilex-AccountView
       #     - id: actuators
       #       label: component.menu.equipments.actuators
       #       route:
       #         path: /users
-      #         component: opensilex-UserView
+      #         component: opensilex-AccountView
       #     - id: vectors
       #       label: component.menu.equipments.vectors
       #       route:
       #         path: /users
-      #         component: opensilex-UserView
+      #         component: opensilex-AccountView
       #     - id: radiometricTargets
       #       label: component.menu.equipments.radiometricTargets
       #       route:
       #         path: /users
-      #         component: opensilex-UserView
+      #         component: opensilex-AccountView
 
   - id: vocabulary
     label: component.menu.vocabulary
@@ -241,25 +251,15 @@ menu:
     label: component.menu.configuration
     children:
       - id: users
-        label: component.menu.security.users
+        label: component.menu.security.accounts
         route:
-          path: /users
-          component: opensilex-UserView
+          path: /accounts
+          component: opensilex-AccountView
           credentials:
             - user-access
           icon: ik#ik-user
-          title: UserView.title
-          description: UserView.description
-      - id: persons
-        label: component.menu.security.persons
-        route:
-          path: /persons
-          component: opensilex-PersonView
-          credentials:
-            - person-access
-          icon: ik#ik-user
-          title: PersonView.title
-          description: PersonView.description
+          title: AccountView.title
+          description: AccountView.description
       - id: groups
         label: component.menu.security.groups
         route:
@@ -331,7 +331,7 @@ routes:
   - path: /facility/details/:uri
     component: opensilex-FacilityView
     rdfType: vocabulary:Facility
-  - path: /facility/devices/:uri
+  - path: /facility/overview/:uri
     component: opensilex-FacilityView
   - path: /facility/annotations/:uri
     component: opensilex-FacilityView

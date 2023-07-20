@@ -13,7 +13,6 @@ import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.server.rest.validation.Required;
-import org.opensilex.server.rest.validation.ValidURI;
 
 import javax.mail.internet.InternetAddress;
 import java.net.URI;
@@ -36,7 +35,7 @@ import java.util.Objects;
  * @author Yvan Roux
  */
 @ApiModel
-@JsonPropertyOrder({"uri", "first_name", "last_name", "email", "organization", "phone_number", "orcid", "account"})
+@JsonPropertyOrder({"uri", "first_name", "last_name", "email", "affiliation", "phone_number", "orcid", "account"})
 public class PersonDTO {
 
     @JsonProperty("uri")
@@ -53,14 +52,13 @@ public class PersonDTO {
     @JsonProperty("email")
     protected String email;
 
-    @JsonProperty("organization")
-    protected String organization;
+    @JsonProperty("affiliation")
+    protected String affiliation;
 
     @JsonProperty("phone_number")
     protected String phoneNumber;
 
     @JsonProperty("orcid")
-    @ValidURI
     protected URI orcid;
 
 
@@ -103,13 +101,13 @@ public class PersonDTO {
         this.email = email;
     }
 
-    @ApiModelProperty(value = "organization", example = "MISTEA")
-    public String getOrganization() {
-        return organization;
+    @ApiModelProperty(value = "affiliation", example = "MISTEA")
+    public String getAffiliation() {
+        return affiliation;
     }
 
-    public void setOrganization(String organization) {
-        this.organization = organization;
+    public void setAffiliation(String affiliation) {
+        this.affiliation = affiliation;
     }
 
     @ApiModelProperty(value = "phone number", example = "+33-1-42-75-90-00")
@@ -147,7 +145,7 @@ public class PersonDTO {
         personDTO.setUri(personModel.getUri());
         personDTO.setFirstName(personModel.getFirstName());
         personDTO.setLastName(personModel.getLastName());
-        personDTO.setOrganization(personModel.getOrganization());
+        personDTO.setAffiliation(personModel.getAffiliation());
         personDTO.setOrcid(personModel.getOrcid());
         InternetAddress email = personModel.getEmail();
         if ( Objects.nonNull(personModel.getPhoneNumber())){

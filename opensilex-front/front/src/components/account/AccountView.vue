@@ -1,29 +1,30 @@
 <template>
   <div class="container-fluid">
     <opensilex-CreateButton
-      @click="userForm.showCreateForm()"
-      label="UserView.create"
+      @click="AccountForm.showCreateForm()"
+      label="AccountView.create"
       class="createButton">
     </opensilex-CreateButton>
 
     <opensilex-PageContent>
       <template v-slot>
-        <opensilex-UserList
-          ref="userList"
+        <opensilex-AccountList
+          ref="AccountList"
           @onEdit="showEditForm($event)"
-        ></opensilex-UserList>
+        ></opensilex-AccountList>
       </template>
     </opensilex-PageContent>
 
     <opensilex-ModalForm
       v-if="user.hasCredential(credentials.CREDENTIAL_USER_MODIFICATION_ID)"
-      ref="userForm"
-      component="opensilex-UserForm"
-      createTitle="UserView.create"
-      editTitle="UserView.update"
+      ref="AccountForm"
+      component="opensilex-AccountForm"
+      createTitle="AccountView.create"
+      editTitle="AccountView.update"
       icon="ik#ik-user"
-      @onCreate="userList.refresh()"
-      @onUpdate="userList.refresh()"
+      :lazy="true"
+      @onCreate="AccountList.refresh()"
+      @onUpdate="AccountList.refresh()"
     ></opensilex-ModalForm>
   </div>
 </template>
@@ -33,12 +34,12 @@ import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 
 @Component
-export default class UserView extends Vue {
+export default class AccountView extends Vue {
   $opensilex: any;
   $store: any;
 
-  @Ref("userForm") readonly userForm!: any;
-  @Ref("userList") readonly userList!: any;
+  @Ref("AccountForm") readonly AccountForm!: any;
+  @Ref("AccountList") readonly AccountList!: any;
 
   get user() {
     return this.$store.state.user;
@@ -49,7 +50,7 @@ export default class UserView extends Vue {
   }
   showEditForm(dto){
     let copydto = JSON.parse(JSON.stringify(dto));
-    this.userForm.showEditForm(copydto);
+    this.AccountForm.showEditForm(copydto);
   }
 }
 </script>
@@ -64,16 +65,16 @@ export default class UserView extends Vue {
 
 <i18n>
 en:
-  UserView:
-    title: Users
-    description: Manage and configure users
-    create: Add user
-    update: Update user
+  AccountView:
+    title: Accounts
+    description: Manage and configure accounts
+    create: Add account
+    update: Update account
 
 fr:
-  UserView:
-    title: Utilisateurs
-    description: Gérer et configurer les utilisateurs
-    create: Ajouter un utilisateur
-    update: Modifier l'utilisateur
+  AccountView:
+    title: Comptes
+    description: Gérer et configurer les comptes
+    create: Ajouter un compte
+    update: Modifier le compte
 </i18n>

@@ -70,12 +70,12 @@
 
         <div>
           <opensilex-FilterField v-if="filter.agent_type === 'vocabulary:Operator'">
-            <opensilex-UserSelector
+            <opensilex-AccountSelector
               :users.sync="filter.agent"
               label="ProvenanceForm.agent"
               class="searchFilter"
               @handlingEnterKey="refresh()"
-            ></opensilex-UserSelector>
+            ></opensilex-AccountSelector>
           </opensilex-FilterField>
 
           <opensilex-FilterField v-else-if="filter.agent_type">

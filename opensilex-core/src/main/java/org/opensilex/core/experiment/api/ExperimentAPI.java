@@ -341,9 +341,7 @@ public class ExperimentAPI {
         ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql);
         List<FacilityModel> facilities = xpDao.getAvailableFacilities(xpUri, currentUser);
 
-        List<FacilityGetDTO> dtoList = facilities.stream().map((item) -> {
-            return FacilityGetDTO.getDTOFromModel(item, false);
-        }).collect(Collectors.toList());
+        List<FacilityGetDTO> dtoList = facilities.stream().map((item) -> FacilityGetDTO.getDTOFromModel(item, false)).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();
     }
 

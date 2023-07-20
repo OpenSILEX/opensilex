@@ -54,9 +54,9 @@
 
     <!-- First name -->
     <opensilex-InputForm
-        :value.sync="form.organization"
-        label="component.person.organization"
-        placeholder="component.person.form-organization-placeholder"
+        :value.sync="form.affiliation"
+        label="component.person.affiliation"
+        placeholder="component.person.form-affiliation-placeholder"
         type="text"
     ></opensilex-InputForm>
 
@@ -81,6 +81,7 @@ import {SecurityService} from "opensilex-security/api/security.service";
 @Component
 export default class PersonForm extends Vue {
   $opensilex: OpenSilexVuePlugin;
+  $securityService: SecurityService;
 
   uriGenerated = true;
 
@@ -91,17 +92,21 @@ export default class PersonForm extends Vue {
     default: () => {
       return {
         uri: null,
-        email: "",
-        first_name: "",
-        last_name: "",
-        organization: "",
-        phone_number: ""
+        email: null,
+        first_name: null,
+        last_name: null,
+        affiliation: null,
+        phone_number: null
       };
     }
   })
   form;
 
   disable_orcid_field : boolean = false
+
+  created(){
+    this.$securityService = this.$opensilex.getService<SecurityService>("opensilex.SecurityService")
+  }
 
   reset() {
     this.uriGenerated = true;
@@ -114,32 +119,23 @@ export default class PersonForm extends Vue {
     return {
       uri: null,
       email: null,
-      first_name: "",
-      last_name: "",
-      organization: "",
-      phone_number: ""
+      first_name: null,
+      last_name: null,
+      affiliation: null,
+      phone_number: null
     };
   }
 
-  create(form) {
-    if (form.email === ""){
-      form.email = null;
-    }
+  async create(form) {
+    this.replaceEmptyStringByNull(form)
+    form.orcid = this.getCompleteUrlOrcid(form.orcid)
 
-    if (form.orcid === ""){
-      form.orcid = null;
-    }
-
-    return this.$opensilex
-      .getService<SecurityService>("opensilex.SecurityService")
-      .createPerson(form)
-      .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-        let uri = http.response.result;
-        console.debug("Person created", uri);
-      })
-      .catch(error => {
+    try {
+      let response = this.$securityService.createPerson(form)
+      this.$emit("onCreate", form)
+      return response
+    } catch(error) {
         if (error.status == 409) {
-          console.error("Person already exists", error);
           this.$opensilex.errorHandler(
             error,
             this.$t("component.person.errors.person-already-exists")
@@ -147,10 +143,13 @@ export default class PersonForm extends Vue {
         } else {
           this.$opensilex.errorHandler(error);
         }
-      });
+      }
   }
 
   update(form) {
+    this.replaceEmptyStringByNull(form)
+    form.orcid = this.getCompleteUrlOrcid(form.orcid)
+
     return this.$opensilex
       .getService<SecurityService>("opensilex.SecurityService")
       .updatePerson(form)
@@ -160,6 +159,31 @@ export default class PersonForm extends Vue {
       })
       .catch(this.$opensilex.errorHandler);
   }
+
+  private getCompleteUrlOrcid(orcid) {
+    if (orcid === ""){
+      return  null;
+    }
+    //regex : 3 séquences de 4 chiffres séparées par un tiret puis une séquence de 4 chiffres ou 3 chiffres et un X
+    //exemples validés : 0009-0006-6636-4714 ou 0009-0006-6636-471X
+    let regexOrcidWithoutCompleteUrl = /^([0-9]{4}-){3}[0-9]{3}[0-9X]$/
+    if (regexOrcidWithoutCompleteUrl.test(orcid)){
+      return  "https://orcid.org/"+orcid
+    }
+
+    return orcid
+  }
+
+  private replaceEmptyStringByNull(form){
+    if (form.email === ""){
+      form.email = null;
+    }
+
+    if (form.phone_number === ""){
+      form.phone_number = null;
+    }
+  }
+
 }
 </script>
 

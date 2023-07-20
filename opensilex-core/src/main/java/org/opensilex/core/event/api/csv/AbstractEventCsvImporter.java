@@ -444,7 +444,15 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
                 CSVCell cell = new CSVCell(rowIndex,colIndex.get()-1, end,"end");
                 validation.addInvalidValueError(cell);
             }
+        }
 
+        // End & start comparison
+        if (model.getStart() != null && model.getEnd() != null) {
+            if (model.getStart().getDateTimeStamp().isAfter(model.getEnd().getDateTimeStamp())) {
+                CSVCell cell = new CSVCell(rowIndex,colIndex.get(), start, EventModel.START_FIELD);
+                cell.setMessage("EventCsvForm.invalidDate");
+                validation.addInvalidDateErrors(cell);
+            }
         }
 
         String target = row[colIndex.getAndIncrement()];

@@ -23,7 +23,7 @@ import org.opensilex.security.person.dal.PersonDAO;
 import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.ValidURI;
-import org.opensilex.sparql.response.CreatedUriResponse;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.response.NamedResourcePaginatedListResponse;
 import org.opensilex.sparql.service.SPARQLService;
@@ -59,6 +59,7 @@ import static org.apache.jena.vocabulary.RDF.uri;
  *
  * @author Vincent Migot
  */
+@Deprecated
 @Api(SecurityModule.REST_SECURITY_API_ID)
 @Path("/security/users")
 @ApiCredentialGroup(
@@ -95,9 +96,10 @@ public class UserAPI {
      * @see AccountDAO
      * @see PersonDAO
      * @param userDTO user model to create
-     * @return User URI or null if creation of account or person failed
+     * @return User URI
      * @throws Exception If creation failed
      */
+    @Deprecated
     @POST
     @ApiOperation("Add a user")
     @ApiProtected
@@ -124,7 +126,9 @@ public class UserAPI {
         sparql.startTransaction();
         try {
             PersonDAO personDAO = new PersonDAO(sparql);
-            PersonModel person = personDAO.create(userDTO.toPersonDTO());
+            PersonDTO personDTO = userDTO.createCorrespondingPersonDTO();
+            personDTO.setUri(null);
+            PersonModel person = personDAO.create(personDTO );
 
             AccountModel user = accountDAO.create(
                     userDTO.getUri(),
@@ -152,6 +156,7 @@ public class UserAPI {
      * @return Corresponding user
      * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
      */
+    @Deprecated
     @GET
     @Path("{uri}")
     @ApiOperation("Get a user")
@@ -191,6 +196,7 @@ public class UserAPI {
      * @return Corresponding list of users
      * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
      */
+    @Deprecated
     @GET
     @Path("by_uris")
     @ApiOperation("Get users by their URIs")
@@ -234,6 +240,7 @@ public class UserAPI {
      * @return filtered, ordered and paginated list
      * @throws Exception Return a 500 - INTERNAL_SERVER_ERROR error response
      */
+    @Deprecated
     @GET
     @ApiOperation("Search users")
     @ApiProtected
@@ -273,6 +280,7 @@ public class UserAPI {
      * @param userDTO : information to update user
      * @throws Exception if update fail
      */
+    @Deprecated
     @PUT
     @ApiOperation("Update a user")
     @ApiProtected
@@ -297,9 +305,12 @@ public class UserAPI {
         if (model != null) {
 
             PersonModel newHolderOfTheAccount = null;
-            if (Objects.nonNull( userDTO.getHolderOfTheAccountURI() )){
-                newHolderOfTheAccount = personDAO.get(userDTO.getHolderOfTheAccountURI());
-                AccountAPI.checkHolderExistAndHasNoAccountYet(personDAO, userDTO.getHolderOfTheAccountURI());
+            boolean addHolderOfTheAccount = Objects.nonNull( userDTO.getLinkedPerson() ) && Objects.isNull(model.getLinkedPerson());
+            boolean changeHolderOfTheAccount = Objects.nonNull( userDTO.getLinkedPerson() ) && Objects.nonNull(model.getLinkedPerson())
+                    && ! SPARQLDeserializers.compareURIs(userDTO.getLinkedPerson(), model.getLinkedPerson().getUri());
+                if (addHolderOfTheAccount || changeHolderOfTheAccount){
+                newHolderOfTheAccount = personDAO.get(userDTO.getLinkedPerson());
+                AccountAPI.checkHolderExistAndHasNoAccountYet(personDAO, userDTO.getLinkedPerson());
             }
 
             sparql.startTransaction();
@@ -311,16 +322,22 @@ public class UserAPI {
                         authentication.getPasswordHash(userDTO.getPassword()),
                         userDTO.getLanguage(),
                         userDTO.isEnable(),
-                        newHolderOfTheAccount,
+                        Objects.nonNull(newHolderOfTheAccount) ? newHolderOfTheAccount : model.getLinkedPerson(),
                         userDTO.getFavorites()
                 );
 
-                PersonModel holderOfTheAccount = account.getHolderOfTheAccount();
+                PersonModel holderOfTheAccount = account.getLinkedPerson();
 
                 if (Objects.isNull(newHolderOfTheAccount) && Objects.nonNull(holderOfTheAccount) ) {
-                    PersonDTO holderToUpdate = userDTO.toPersonDTO();
+                    PersonDTO holderToUpdate = userDTO.createCorrespondingPersonDTO();
+
+                    holderToUpdate.setUri(holderOfTheAccount.getUri());
                     String email = Objects.nonNull(holderOfTheAccount.getEmail()) ? holderOfTheAccount.getEmail().toString() : null;
                     holderToUpdate.setEmail(email);
+                    String phone = Objects.nonNull(holderOfTheAccount.getPhoneNumber()) ? holderOfTheAccount.getPhoneNumber().getSchemeSpecificPart() : null;
+                    holderToUpdate.setPhoneNumber(phone);
+                    holderToUpdate.setOrcid(holderOfTheAccount.getOrcid());
+                    holderToUpdate.setAffiliation(holderOfTheAccount.getAffiliation());
 
                     personDAO.update(holderToUpdate);
                 }
@@ -349,44 +366,47 @@ public class UserAPI {
      * @param accountURI : URI of the account to delete
      * @throws Exception if update fail
      */
-    @DELETE
-    @Path("{uri}")
-    @ApiOperation("Delete a user")
-    @ApiProtected
-    @ApiCredential(
-            credentialId = CREDENTIAL_USER_DELETE_ID,
-            credentialLabelKey = CREDENTIAL_USER_DELETE_LABEL_KEY
-    )
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "User deleted"),
-            @ApiResponse(code = 404, message = "URI not found")
-    })
-    public Response deleteUser(
-            @ApiParam(value = "User URI", example = "http://opensilex.dev/users#jean.michel.inrae", required = true) @PathParam("uri") @NotNull @ValidURI URI accountURI
-    ) throws Exception {
-        AccountDAO accountDAO = new AccountDAO(sparql);
-        PersonDAO personDAO = new PersonDAO(sparql);
 
-        AccountModel accountModel = accountDAO.get(accountURI);
+    /** Temporarly commented to avoid mistakes until there is no protections on deletion */
 
-        sparql.startTransaction();
-        try {
-            if (accountModel.getHolderOfTheAccount() != null){
-                personDAO.delete(accountModel.getHolderOfTheAccount().getUri());
-            }
-
-            accountDAO.delete(accountURI);
-
-            sparql.commitTransaction();
-        } catch (Exception e){
-            sparql.rollbackTransaction();
-            throw e;
-        }
-
-        return new ObjectUriResponse(Response.Status.OK, accountURI).getResponse();
-    }
+//    @DELETE
+//    @Path("{uri}")
+//    @ApiOperation("Delete a user")
+//    @ApiProtected
+//    @ApiCredential(
+//            credentialId = CREDENTIAL_USER_DELETE_ID,
+//            credentialLabelKey = CREDENTIAL_USER_DELETE_LABEL_KEY
+//    )
+//    @Consumes(MediaType.APPLICATION_JSON)
+//    @Produces(MediaType.APPLICATION_JSON)
+//    @ApiResponses(value = {
+//            @ApiResponse(code = 200, message = "User deleted"),
+//            @ApiResponse(code = 404, message = "URI not found")
+//    })
+//    public Response deleteUser(
+//            @ApiParam(value = "User URI", example = "http://opensilex.dev/users#jean.michel.inrae", required = true) @PathParam("uri") @NotNull @ValidURI URI accountURI
+//    ) throws Exception {
+//        AccountDAO accountDAO = new AccountDAO(sparql);
+//        PersonDAO personDAO = new PersonDAO(sparql);
+//
+//        AccountModel accountModel = accountDAO.get(accountURI);
+//
+//        sparql.startTransaction();
+//        try {
+//            if (accountModel.getHolderOfTheAccount() != null){
+//                personDAO.delete(accountModel.getHolderOfTheAccount().getUri());
+//            }
+//
+//            accountDAO.delete(accountURI);
+//
+//            sparql.commitTransaction();
+//        } catch (Exception e){
+//            sparql.rollbackTransaction();
+//            throw e;
+//        }
+//
+//        return new ObjectUriResponse(Response.Status.OK, accountURI).getResponse();
+//    }
 
     @GET
     @Path("{uri}/groups")

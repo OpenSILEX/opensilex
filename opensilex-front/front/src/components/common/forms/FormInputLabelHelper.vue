@@ -7,7 +7,7 @@
         v-if="helpMessage"
         tabindex="0"
         icon="question-circle"
-        v-b-tooltip.hover.top="$t(helpMessage)"
+        v-b-tooltip.hover.top.html="$t(helpMessage)"
       />
     </label>
   </span>

@@ -63,3 +63,22 @@ front:
 
 Example, if the selected variable URI is : `dev:/id/variable/air_temperature_thermometer_degreecelsius`, the graphic will display the data of all devices measuring this variable.
 It is then possible with the interface to filter the devices displayed and the periods chosen.
+
+# Choice of the image to display if the data visualization is not configured
+
+The instance logo or any other image can replace the data visualization component if no variable is defined for it.
+You must add the image file in the images folder of your theme. (path by default : `front/theme/opensilex/images`).
+The file must be called `dashboardLogo`. Accepted extensions are `.jpg`, `.png`, and `.svg`.
+
+
+Definition of the chosen logo in `Dashboard.vue` component:
+
+```Dashboard.vue
+# ------------------------------------------------------------------------------
+  <img
+    v-bind:src="$opensilex.getResourceURI('images/dashboardLogo', ['png', 'svg', 'jpg'])"
+    class="dashboardCentralLogo"
+    alt
+  />
+```
+

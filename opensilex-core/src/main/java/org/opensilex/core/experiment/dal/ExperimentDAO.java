@@ -46,9 +46,8 @@ import org.slf4j.LoggerFactory;
 
 import java.net.URI;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -542,6 +541,9 @@ public class ExperimentDAO {
 
         ExperimentModel xp = sparql.getByURI(ExperimentModel.class, xpUri, user.getLanguage());
 
+        Map<URI, FacilityModel> availableFacilities = xp.getFacilities()
+                .stream().collect(Collectors.toMap(FacilityModel::getUri, Function.identity()));
+
         List<URI> organizationUriFilter = xp.getInfrastructures()
                 .stream().map(SPARQLResourceModel::getUri)
                 .collect(Collectors.toList());
@@ -549,16 +551,14 @@ public class ExperimentDAO {
         OrganizationDAO organizationDAO = new OrganizationDAO(sparql, nosql);
         FacilityDAO facilityDAO = new FacilityDAO(sparql, nosql, organizationDAO);
 
-        if (CollectionUtils.isEmpty(organizationUriFilter)) {
-            return facilityDAO.search(new FacilitySearchFilter()
-                            .setUser(user))
-                    .getList();
-        } else {
-            return facilityDAO.search(new FacilitySearchFilter()
-                            .setUser(user)
-                            .setOrganizations(organizationUriFilter))
-                    .getList();
+        if (!organizationUriFilter.isEmpty()) {
+            facilityDAO.search(new FacilitySearchFilter()
+                    .setUser(user)
+                    .setOrganizations(organizationUriFilter)
+            ).getList().forEach(facility -> availableFacilities.put(facility.getUri(), facility));
         }
+
+        return new ArrayList<>(availableFacilities.values());
     }
 
     public List<ExperimentModel> getByURIs(List<URI> uris, AccountModel currentUser) throws Exception {

@@ -43,7 +43,11 @@
 
         <!-- Twitter -->
         <div class="twitter">
-          <opensilex-Twitter></opensilex-Twitter>
+          <!-- <opensilex-Twitter></opensilex-Twitter> -->
+          <!-- <div class='sk-ww-linkedin-page-post' data-embed-id='168449'></div> -->
+          <!-- <script src='https://widgets.sociablekit.com/linkedin-page-posts/widget.js' async defer></script> -->
+
+          <iframe src='https://widgets.sociablekit.com/linkedin-page-posts/iframe/168449' frameborder='0' width='100%' height='740'></iframe>
         </div>
     </div>
   </div>
@@ -63,6 +67,11 @@ export default class Dashboard extends Vue {
   $opensilex: OpenSilexVuePlugin;
 
   created() {
+    let linkedinFeed = document.createElement("script");
+    linkedinFeed.setAttribute("src", "https://widgets.sociablekit.com/linkedin-page-posts/widget.js");
+    // linkedinFeed.setAttribute("charset", "utf-8");
+    document.head.appendChild(linkedinFeed);
+
     // close global menu on medium / low size
     this.$nextTick(() => {
       if (matchMedia('(max-width: 1625px)').matches) {

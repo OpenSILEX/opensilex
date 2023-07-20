@@ -6,64 +6,37 @@
 //******************************************************************************
 package org.opensilex.brapi.model;
 
-import java.util.ArrayList;
 import org.opensilex.core.variable.dal.VariableModel;
+
+import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * @see <a href="https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3">BrAPI documentation</a>
  * @author Alice Boizet
  */
 public class BrAPIv1ObservationVariableDTO {
+
+    private ArrayList<String> contextOfUse;
+    private String crop;
+    private String defaultValue;
+    private String documentationURL;
+    private String growthStage;
+    private String institution;
+    private String language; // This will change once the multilabel development is done
+    private BrAPIv1MethodDTO method;
     private String observationVariableDbId;
     private String observationVariableName;
-    private String ontologyReference;
-    private ArrayList<String> synonyms;
-    private ArrayList<String> contextOfUse;
-    private String growthStage;
-    private String status;
-    private String xref;
-    private String institution;
-    private String scientist;
-    private String submissionTimesTamp;
-    private String language;
-    private String crop;
-    private BrAPIv1TraitDTO trait;
-    private BrAPIv1MethodDTO method;
+    private String ontologyDbId;
+    private String ontologyName;
+    private BrAPIv1OntologyReferenceDTO ontologyReference;
     private BrAPIv1ScaleDTO scale;
-    private String defaultValue;    
-    private String documentationURL;
-
-    public String getObservationVariableDbId() {
-        return observationVariableDbId;
-    }
-
-    public void setObservationVariableDbId(String observationVariableDbId) {
-        this.observationVariableDbId = observationVariableDbId;
-    }
-
-    public String getObservationVariableName() {
-        return observationVariableName;
-    }
-
-    public void setObservationVariableName(String observationVariableName) {
-        this.observationVariableName = observationVariableName;
-    }
-
-    public String getOntologyReference() {
-        return ontologyReference;
-    }
-
-    public void setOntologyReference(String ontologyReference) {
-        this.ontologyReference = ontologyReference;
-    }
-
-    public ArrayList<String> getSynonyms() {
-        return synonyms;
-    }
-
-    public void setSynonyms(ArrayList<String> synonyms) {
-        this.synonyms = synonyms;
-    }
+    private String scientist;
+    private String status;
+    private String submissionTimestamp;
+    private ArrayList<String> synonyms;
+    private BrAPIv1TraitDTO trait;
+    private String xref;
 
     public ArrayList<String> getContextOfUse() {
         return contextOfUse;
@@ -73,92 +46,12 @@ public class BrAPIv1ObservationVariableDTO {
         this.contextOfUse = contextOfUse;
     }
 
-    public String getGrowthStage() {
-        return growthStage;
-    }
-
-    public void setGrowthStage(String growthStage) {
-        this.growthStage = growthStage;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public String getXref() {
-        return xref;
-    }
-
-    public void setXref(String xref) {
-        this.xref = xref;
-    }
-
-    public String getInstitution() {
-        return institution;
-    }
-
-    public void setInstitution(String institution) {
-        this.institution = institution;
-    }
-
-    public String getScientist() {
-        return scientist;
-    }
-
-    public void setScientist(String scientist) {
-        this.scientist = scientist;
-    }
-
-    public String getSubmissionTimesTamp() {
-        return submissionTimesTamp;
-    }
-
-    public void setSubmissionTimesTamp(String submissionTimesTamp) {
-        this.submissionTimesTamp = submissionTimesTamp;
-    }
-
-    public String getLanguage() {
-        return language;
-    }
-
-    public void setLanguage(String language) {
-        this.language = language;
-    }
-
     public String getCrop() {
         return crop;
     }
 
     public void setCrop(String crop) {
         this.crop = crop;
-    }
-
-    public BrAPIv1TraitDTO getTrait() {
-        return trait;
-    }
-
-    public void setTrait(BrAPIv1TraitDTO trait) {
-        this.trait = trait;
-    }
-
-    public BrAPIv1MethodDTO getMethod() {
-        return method;
-    }
-
-    public void setMethod(BrAPIv1MethodDTO method) {
-        this.method = method;
-    }
-
-    public BrAPIv1ScaleDTO getScale() {
-        return scale;
-    }
-
-    public void setScale(BrAPIv1ScaleDTO scale) {
-        this.scale = scale;
     }
 
     public String getDefaultValue() {
@@ -176,7 +69,135 @@ public class BrAPIv1ObservationVariableDTO {
     public void setDocumentationURL(String documentationURL) {
         this.documentationURL = documentationURL;
     }
-    
+
+    public String getGrowthStage() {
+        return growthStage;
+    }
+
+    public void setGrowthStage(String growthStage) {
+        this.growthStage = growthStage;
+    }
+
+    public String getInstitution() {
+        return institution;
+    }
+
+    public void setInstitution(String institution) {
+        this.institution = institution;
+    }
+
+    public String getLanguage() {
+        return language;
+    }
+
+    public void setLanguage(String language) {
+        this.language = language;
+    }
+
+    public BrAPIv1MethodDTO getMethod() {
+        return method;
+    }
+
+    public void setMethod(BrAPIv1MethodDTO method) {
+        this.method = method;
+    }
+
+    public String getObservationVariableDbId() {
+        return observationVariableDbId;
+    }
+
+    public void setObservationVariableDbId(String observationVariableDbId) {
+        this.observationVariableDbId = observationVariableDbId;
+    }
+
+    public String getObservationVariableName() {
+        return observationVariableName;
+    }
+
+    public void setObservationVariableName(String observationVariableName) {
+        this.observationVariableName = observationVariableName;
+    }
+
+    public String getOntologyDbId() {
+        return ontologyDbId;
+    }
+
+    public void setOntologyDbId(String ontologyDbId) {
+        this.ontologyDbId = ontologyDbId;
+    }
+
+    public String getOntologyName() {
+        return ontologyName;
+    }
+
+    public void setOntologyName(String ontologyName) {
+        this.ontologyName = ontologyName;
+    }
+
+    public BrAPIv1OntologyReferenceDTO getOntologyReference() {
+        return ontologyReference;
+    }
+
+    public void setOntologyReference(BrAPIv1OntologyReferenceDTO ontologyReference) {
+        this.ontologyReference = ontologyReference;
+    }
+
+    public BrAPIv1ScaleDTO getScale() {
+        return scale;
+    }
+
+    public void setScale(BrAPIv1ScaleDTO scale) {
+        this.scale = scale;
+    }
+
+    public String getScientist() {
+        return scientist;
+    }
+
+    public void setScientist(String scientist) {
+        this.scientist = scientist;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getSubmissionTimestamp() {
+        return submissionTimestamp;
+    }
+
+    public void setSubmissionTimestamp(String submissionTimestamp) {
+        this.submissionTimestamp = submissionTimestamp;
+    }
+
+    public ArrayList<String> getSynonyms() {
+        return synonyms;
+    }
+
+    public void setSynonyms(ArrayList<String> synonyms) {
+        this.synonyms = synonyms;
+    }
+
+    public BrAPIv1TraitDTO getTrait() {
+        return trait;
+    }
+
+    public void setTrait(BrAPIv1TraitDTO trait) {
+        this.trait = trait;
+    }
+
+    public String getXref() {
+        return xref;
+    }
+
+    public void setXref(String xref) {
+        this.xref = xref;
+    }
+
     public static BrAPIv1ObservationVariableDTO fromModel(VariableModel model) {
         BrAPIv1ObservationVariableDTO variable = new BrAPIv1ObservationVariableDTO();
         if (model.getUri() != null) {
@@ -220,6 +241,18 @@ public class BrAPIv1ObservationVariableDTO {
             }
         }        
         variable.setScale(scale);
+
+        if (model.getSpecies() != null && model.getSpecies().size() == 1) {
+            variable.setCrop(model.getSpecies().get(0).toString());
+        }
+
+        if (model.getAlternativeName() != null) {
+            variable.setSynonyms(new ArrayList<>(Collections.singletonList(model.getAlternativeName())));
+        }
+
+        if (model.getExactMatch() != null) {
+            variable.setXref(model.getExactMatch().get(0).toString());
+        }
 
         return variable;
     }

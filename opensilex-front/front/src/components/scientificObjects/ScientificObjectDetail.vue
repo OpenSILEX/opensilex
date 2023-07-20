@@ -112,6 +112,7 @@
         <opensilex-ScientificObjectVisualizationTab
             v-if="isVisualizationTab"
             :scientificObject="selected"
+            :elementName="selected.name"   
         ></opensilex-ScientificObjectVisualizationTab>
 
         <opensilex-DocumentTabList

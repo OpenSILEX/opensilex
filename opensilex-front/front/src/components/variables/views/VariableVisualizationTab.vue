@@ -35,6 +35,8 @@
           :deviceType="false"
           :lType="true"
           :lWidth="true"
+          :graphicTitle="variable"
+          :elementName="elementName"   
           @addEventIsClicked="showEventForm"
           @dataAnnotationIsClicked="showAnnotationForm"
           v-bind:class ="{
@@ -87,6 +89,8 @@ export default class VariableVisualizationTab extends Vue {
   @Prop()
   variable;
 
+  @Prop()
+  elementName;
 
   isGraphicLoaded: boolean = true;
   target = [];

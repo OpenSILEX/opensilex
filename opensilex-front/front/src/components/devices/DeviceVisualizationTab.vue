@@ -31,6 +31,8 @@
         v-if="isGraphicLoaded"
         ref="visuGraphic"
         :deviceType="false"
+        :elementName="elementName"
+        :graphicTitle="device"
         @addEventIsClicked="showAddEventComponent"
         @dataAnnotationIsClicked="showAnnotationForm"
         class="DeviceVisualisationGraphic"
@@ -90,6 +92,9 @@ export default class DeviceVisualizationTab extends Vue {
   @Ref("annotationModalForm") readonly annotationModalForm!: any;
   @Ref("eventsModalForm") readonly eventsModalForm!: any;
   @Ref("deviceVisualizationForm") readonly deviceVisualizationForm!: any;
+
+  @Prop()
+  elementName;
 
   created() {
     if (this.device == null) {

@@ -130,6 +130,7 @@
             "search": {
                 "search-button": "Rechercher",
                 "visualize-button": "Visualiser",
+                "badgeHelpMessage": "Ce badge représente le nombre d'éléments sélectionnés sur le maximum permis.",
                 "clear-button": "Réinitialiser",
                 "noDataFound": "Pas de données trouvées"
             },

@@ -160,8 +160,6 @@ export default class DeviceVisualizationForm extends Vue {
     this.eventsCountValue = eventsCount;
   }
 
-
-
   created() {
     this.getEvents();
   }

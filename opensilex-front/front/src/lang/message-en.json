@@ -131,6 +131,7 @@
             "search": {
                 "search-button": "Search",
                 "visualize-button": "Visualize",
+                "badgeHelpMessage": "This badge represents the number of items selected out of the maximum that is allowed.",
                 "clear-button": "Reset",
                 "noDataFound": "No data found"
             },

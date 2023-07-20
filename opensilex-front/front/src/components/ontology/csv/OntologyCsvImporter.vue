@@ -4,7 +4,7 @@
         size="xl"
         :static="true"
     >
-        <template class="mt-1" v-slot:modal-header>
+        <template v-slot:modal-header>
             <b-row class="mt-1" style="width: 100%">
                 <b-col cols="11">
                     <i>
@@ -21,7 +21,7 @@
                     <button
                         type="button"
                         class="close"
-                        @click="this.hide()"
+                        @click="hide"
                         data-dismiss="modal"
                         aria-label="Close"
                     >

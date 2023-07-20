@@ -329,7 +329,7 @@ a.external-url-link:hover {
 * MAIN NAVIGATION MENU
 *************************************/
 .app-sidebar {
-    margin-top: 60px;
+    margin-top: 65px;
 }
 
 .hidden-menu #menu-container {
@@ -541,6 +541,11 @@ a.external-url-link:hover {
     color: #fff;
     border-color: #00A38D;
     background-color: #00A38D;
+}
+
+.modal-header .close:hover {
+    color: red;
+    transition: 0.5s
 }
 /********************************
 * 

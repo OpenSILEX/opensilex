@@ -59,6 +59,8 @@
           @dataAnnotationIsClicked="showAnnotationForm"
           :startDate="experimentDataVisualisationForm.startDate"
           :endDate="experimentDataVisualisationForm.endDate"
+          :graphicTitle="selectedExperiment"
+          :elementName="elementName"
       ></opensilex-DataVisuGraphic>
 
 
@@ -162,6 +164,12 @@ export default class ExperimentDataVisualisationView extends Vue {
 
   @Prop()
   soFilter;
+
+  @Prop()
+  graphicTitle;
+
+  @Prop()
+  elementName;
 
   private langUnwatcher;
 
@@ -445,6 +453,9 @@ export default class ExperimentDataVisualisationView extends Vue {
           visible: true,
           color: this.eventTypesColorArray[concernedItem.id],
           legendColor: this.eventTypesColorArray[concernedItem.id],
+          custom: {
+            variable: selectedVariable.uri
+          }
         }
         dataAndImage.push(dataSerie)
 

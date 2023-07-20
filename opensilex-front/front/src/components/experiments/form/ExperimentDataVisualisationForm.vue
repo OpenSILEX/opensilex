@@ -140,7 +140,6 @@ import { EventGetDTO, ProvenanceGetDTO } from "opensilex-core/index";
 // @ts-ignore
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 import { ScientificObjectsService } from "opensilex-core/index";
-import ScientificObjectList from "../../scientificObjects/ScientificObjectList.vue";
 
 let lastWeekDate = new Date(new Date((new Date).setDate(new Date().getDate() - 7)).setHours(0,0,0,0))
 

@@ -46,6 +46,8 @@
           v-if="isGraphicLoaded"
           ref="visuGraphic"
           :selectedScientificObjects="scientificObject.uri"
+          :graphicTitle="scientificObject.uri"
+          :elementName="elementName"   
           @addEventIsClicked="showAddEventComponent"
           @dataAnnotationIsClicked="showAnnotationForm"
           v-bind:class="{
@@ -104,6 +106,9 @@ export default class ScientificObjectVisualizationTab extends Vue {
 
   @Prop()
   scientificObject;
+
+  @Prop()
+  elementName;
 
   isGraphicLoaded = true;
   target = [];

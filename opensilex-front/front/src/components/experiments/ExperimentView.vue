@@ -105,6 +105,7 @@
                 <opensilex-ExperimentDataVisualisation
                         v-else-if="isDataVisualisation()"
                         :uri="uri"
+                        :elementName="name"
                 ></opensilex-ExperimentDataVisualisation>
 
                 <opensilex-MapView

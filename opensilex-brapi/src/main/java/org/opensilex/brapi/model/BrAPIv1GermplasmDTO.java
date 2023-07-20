@@ -283,7 +283,7 @@ public class BrAPIv1GermplasmDTO {
 
         if (model.getVariety() != null) {
             try {
-                dto.setSubtaxa("var. " + model.getVariety().getLabel().getDefaultValue());
+                dto.setSubtaxa("var. " + model.getVariety().getLabel().getDefaultValue()); //TODO : change this to latin label when Multilabels done because the name isn't necessarily in latin
             } catch (Exception e) {
                 dto.setSubtaxa(model.getVariety().getUri().toString());
             }

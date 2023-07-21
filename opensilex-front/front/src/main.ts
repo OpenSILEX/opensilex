@@ -486,7 +486,8 @@ function loadTheme(vueJsService: VueJsService, config: FrontConfigDTO) {
 
 $opensilex.loadModules([
   "opensilex-security",
-  "opensilex-core"
+  "opensilex-core",
+    "opensilex-dataverse"
 ]).then(() => {
   $opensilex.initAsyncComponents(components).then(() => {
     console.debug("Default components loaded !");

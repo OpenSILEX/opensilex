@@ -42,6 +42,7 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -166,7 +167,12 @@ public class DataverseAPI {
         docModel.setTargets(Collections.singletonList(experimentUri));
         docModel.setTitle(datasetTitle);
         docModel.setIdentifier(datasetId.getPersistentId());
-        docModel.setSource(new URI("https://data-preproduction.inrae.fr/dataset.xhtml?persistentId=" + datasetId.getPersistentId()));
+        docModel.setSource(
+                UriBuilder.fromUri(dataverseBasePath.toURI())
+                        .path("dataset.xhtml")
+                        .queryParam("persistentId", datasetId.getPersistentId())
+                        .build()
+        );
         docModel.setType(datasetRDFType);
         docModel.setDeprecated(Boolean.toString(datasetDeprecated));
         docModel.setDate(productionDate);

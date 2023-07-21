@@ -27,40 +27,7 @@
         <relativePath>../opensilex-module/pom.xml</relativePath>
     </parent>
 
-    <repositories>
-        <repository>
-            <id>jitpack.io</id>
-            <name>Jitpack Repository</name>
-            <url>https://jitpack.io</url>
-        </repository>
-    </repositories>
-
     <dependencies>
-        <dependency>
-            <!--TODO : fork it on the opensilex team -->
-            <groupId>com.github.Gabriel-Besombes</groupId>
-            <artifactId>dataverse-client-java</artifactId>
-            <version>15e3e170862dfa4b66cf587947db0626825b274a</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>javax.servlet</groupId>
-                    <artifactId>servlet-api</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.springframework</groupId>
-                    <artifactId>spring-web</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.springframework</groupId>
-                    <artifactId>spring-core</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.springframework</groupId>
-                    <artifactId>spring-context</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
         <dependency>
             <groupId>commons-lang</groupId>
             <artifactId>commons-lang</artifactId>
@@ -76,6 +43,12 @@
             <artifactId>spring-web</artifactId>
             <version>5.2.20.RELEASE</version>
         </dependency>
+        <dependency>
+            <groupId>org.swordapp</groupId>
+            <artifactId>sword2-client</artifactId>
+            <version>0.9.3</version>
+        </dependency>
+
 
     </dependencies>
 

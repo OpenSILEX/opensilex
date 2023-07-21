@@ -102,7 +102,7 @@ import static org.opensilex.core.data.api.DataAPI.*;
  * @author Julien BONNEFONT
  */
 @Api(ExperimentAPI.CREDENTIAL_EXPERIMENT_GROUP_ID)
-@Path("/core/experiments")
+@Path(ExperimentAPI.PATH)
 @ApiCredentialGroup(
         groupId = ExperimentAPI.CREDENTIAL_EXPERIMENT_GROUP_ID,
         groupLabelKey = ExperimentAPI.CREDENTIAL_EXPERIMENT_GROUP_LABEL_KEY
@@ -111,6 +111,7 @@ public class ExperimentAPI {
 
     Logger LOGGER = LoggerFactory.getLogger(ExperimentAPI.class);
 
+    public static final String PATH = "/core/experiments";
     public static final String CREDENTIAL_EXPERIMENT_GROUP_ID = "Experiments";
     public static final String CREDENTIAL_EXPERIMENT_GROUP_LABEL_KEY = "credential-groups.experiments";
 

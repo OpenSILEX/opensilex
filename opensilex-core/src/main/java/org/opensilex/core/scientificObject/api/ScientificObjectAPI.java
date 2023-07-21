@@ -84,13 +84,14 @@ import java.util.stream.Collectors;
  * @author Julien BONNEFONT
  */
 @Api(ScientificObjectAPI.CREDENTIAL_SCIENTIFIC_OBJECT_GROUP_ID)
-@Path("/core/scientific_objects")
+@Path(ScientificObjectAPI.PATH)
 @ApiCredentialGroup(
         groupId = ScientificObjectAPI.CREDENTIAL_SCIENTIFIC_OBJECT_GROUP_ID,
         groupLabelKey = ScientificObjectAPI.CREDENTIAL_SCIENTIFIC_OBJECT_GROUP_LABEL_KEY
 )
 public class ScientificObjectAPI {
 
+    public static final String PATH = "/core/scientific_objects";
     public static final String CREDENTIAL_SCIENTIFIC_OBJECT_GROUP_ID = "Scientific Objects";
     public static final String CREDENTIAL_SCIENTIFIC_OBJECT_GROUP_LABEL_KEY = "credential-groups.scientific-objects";
 

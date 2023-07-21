@@ -142,3 +142,36 @@ restriction with a min cardinality defined but no max cardinality defined.
 - This service return properties which are linked to the class through OWL restriction. So if some property has `type` as domain,
 but is not related to the class through restriction, then the property will not be included in service results.
 - Instead, you must use the `getProperties(domain,namePattern,includeSubClasses)` service if you want to retrieve all properties with `type` as domain.
+
+# Other
+
+This section regroup other services present in the Ontology API.
+
+## Services
+
+### `GET /ontology/uri_label/`
+
+**Description** : Returns the label associated with the given URI, or a NOT FOUND response if the URI does not exist
+or has no label.
+
+**Path** : `OntologyAPI.getURILabel`
+
+**Parameters** :
+- **uri** : URI of the resource (_required_)
+
+### `GET /ontology/uris_labels/`
+
+**Description** : Returns labels associated with the given URIs
+
+**Path** : `OntologyAPI.getURILabelsList`
+
+**Parameters** :
+- **uri** : URIs of resources to get labels from (_required_)
+- **context** : URI of a specific context to look for labels. Used to retrieve labels of scientific objects in an
+  experiment for example.
+- **searchDefault** : If **context** is specified, look first in the given context and then in the whole graph. Allows
+  to find labels specific to a context and labels of global resources in one request.
+
+**Notes** :
+- For each given URI that is non-existant, or for which no label were found, a warning will be sent in the response
+  metadata.

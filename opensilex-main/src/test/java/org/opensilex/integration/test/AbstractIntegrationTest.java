@@ -10,10 +10,32 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.glassfish.jersey.client.ClientConfig;
+import org.glassfish.jersey.internal.inject.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.test.DeploymentContext;
+import org.glassfish.jersey.test.JerseyTest;
+import org.glassfish.jersey.test.TestProperties;
+import org.glassfish.jersey.test.grizzly.GrizzlyTestContainerFactory;
+import org.glassfish.jersey.test.spi.TestContainer;
+import org.glassfish.jersey.test.spi.TestContainerException;
+import org.glassfish.jersey.test.spi.TestContainerFactory;
+import org.junit.*;
+import org.junit.rules.TestRule;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
+import org.mockito.Mockito;
+import org.opensilex.OpenSilex;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
+import org.opensilex.server.rest.RestApplication;
+import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
+import org.opensilex.utils.OrderBy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
@@ -24,33 +46,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.client.Client;
-import org.glassfish.jersey.client.ClientConfig;
-import org.glassfish.jersey.internal.inject.AbstractBinder;
-import org.glassfish.jersey.test.DeploymentContext;
-import org.glassfish.jersey.test.JerseyTest;
-import org.glassfish.jersey.test.TestProperties;
-import org.glassfish.jersey.test.grizzly.GrizzlyTestContainerFactory;
-import org.glassfish.jersey.test.spi.TestContainer;
-import org.glassfish.jersey.test.spi.TestContainerException;
-import org.glassfish.jersey.test.spi.TestContainerFactory;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.BeforeClass;
-
-import org.junit.Rule;
-import org.junit.rules.TestRule;
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
-import org.mockito.Mockito;
-import org.opensilex.OpenSilex;
-import org.opensilex.server.rest.RestApplication;
-import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
-import org.opensilex.utils.OrderBy;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author Renaud COLIN
@@ -333,6 +328,11 @@ public abstract class AbstractIntegrationTest extends JerseyTest {
         PaginatedListResponse<URI> listResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<URI>>() {
         });
         return listResponse.getResult();
+    }
+
+    protected <T> T readResponse(Response response, TypeReference<T> type) {
+        JsonNode node = response.readEntity(JsonNode.class);
+        return mapper.convertValue(node, type);
     }
 
     protected boolean compareMaps(Map<String, String> first, Map<String, String> second) {

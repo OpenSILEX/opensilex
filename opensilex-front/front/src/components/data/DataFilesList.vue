@@ -215,7 +215,7 @@ export default class DataFilesList extends Vue {
         .then((httpObj) => {
           for (let j in httpObj.response.result) {
             let obj = httpObj.response.result[j];
-            this.objectsPath[obj.uri] = this.$opensilex.getPathFromUriTypes(obj.rdfTypes);
+            this.objectsPath[obj.uri] = this.$opensilex.getPathFromUriTypes(obj.rdf_types);
           }
         }
       );

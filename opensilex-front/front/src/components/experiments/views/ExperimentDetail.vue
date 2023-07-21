@@ -151,6 +151,7 @@
             ></opensilex-ContactsList>
             <opensilex-UriView
               title="component.experiment.record_author"
+              v-if="recordAuthor"
               :uri="recordAuthor.uri"
               :value="recordAuthor.linked_person ? recordAuthor.person_first_name + ' ' + recordAuthor.person_last_name : recordAuthor.email"
           >

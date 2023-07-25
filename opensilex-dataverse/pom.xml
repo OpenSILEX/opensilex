@@ -47,12 +47,6 @@
             <artifactId>spring-web</artifactId>
             <version>5.2.20.RELEASE</version>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.projectlombok</groupId>-->
-<!--            <artifactId>lombok</artifactId>-->
-<!--            <version>${lombokVersion}</version>-->
-<!--            <scope>provided</scope>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>org.swordapp</groupId>
             <artifactId>sword2-client</artifactId>
@@ -64,45 +58,6 @@
 
     <build>
         <plugins>
-<!--            <plugin>-->
-<!--                <groupId>org.apache.maven.plugins</groupId>-->
-<!--                <artifactId>maven-compiler-plugin</artifactId>-->
-<!--                <configuration>-->
-<!--                    <source>${java.compiler.version}</source>-->
-<!--                    <target>${java.compiler.version}</target>-->
-<!--                    <compilerArgument>-proc:none</compilerArgument>-->
-<!--                    &lt;!&ndash;                    <compilerArgs>-->
-<!--                        <arg>-Xlint:all</arg>-->
-<!--                    </compilerArgs>&ndash;&gt;-->
-<!--                    &lt;!&ndash; Add hibernate validation &ndash;&gt;-->
-<!--                    <annotationProcessorPaths>-->
-<!--                        <path>-->
-<!--                            <groupId>org.hibernate.validator</groupId>-->
-<!--                            <artifactId>hibernate-validator-annotation-processor</artifactId>-->
-<!--                            <version>${hibernate.validator.version}</version>-->
-<!--                        </path>-->
-<!--                        <path>-->
-<!--                            <groupId>org.projectlombok</groupId>-->
-<!--                            <artifactId>lombok</artifactId>-->
-<!--                            <version>${lombokVersion}</version>-->
-<!--                        </path>-->
-<!--                    </annotationProcessorPaths>-->
-<!--                </configuration>-->
-<!--            </plugin>-->
-
-<!--            <plugin>-->
-<!--                <groupId>org.projectlombok</groupId>-->
-<!--                <artifactId>lombok-maven-plugin</artifactId>-->
-<!--                <version>1.18.20.0</version>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <phase>generate-sources</phase>-->
-<!--                        <goals>-->
-<!--                            <goal>delombok</goal>-->
-<!--                        </goals>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--            </plugin>-->
             <!-- Generate swagger.json file -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>

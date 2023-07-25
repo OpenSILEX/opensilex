@@ -27,8 +27,29 @@ public class DatasetBuilderOpensilex extends DatasetBuilder {
 
     @Override
     protected List<CitationField> createFields(DatasetFacade facade, Citation citation) {
-        List<CitationField> fields = super.createFields(facade, citation);
+        List<CitationField> fields = new ArrayList<>();
+        //mandatory fields
+        this.addTitle(facade, fields);
+        this.addAuthors(facade, fields);
+        this.addDescription(facade, fields);
+        this.addKeywords(facade, fields);
+        this.addTopicClassifications(facade, fields);
+        this.addPublications(facade, fields);
+        this.addLanguages(facade, fields);
+        this.addNotes(facade, fields);
+        this.addProducers(facade, fields);
+        this.addProductionDate(facade, fields);
+        this.addProductionPlace(facade, fields);
+        this.addContributor(facade, fields);
+        this.addSubject(facade, fields);
+        this.addContacts(facade, fields);
         this.addKindOfData(facade, fields);
+
+        //optional fields
+        this.addDepositor(facade, fields);
+        this.addSubTitle(facade, fields);
+        this.addAlternativeTitle(facade, fields);
+        this.addAlternativeURL(facade, fields);
         return fields;
     }
 

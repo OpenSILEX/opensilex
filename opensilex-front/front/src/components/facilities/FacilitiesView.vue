@@ -16,7 +16,7 @@
       <h3>
         {{ $t("FacilitiesView.facilities") }}
 
-        <!--CreateButton position on card for InfrastructureView-->
+        <!--CreateButton position on card for OrganizationView-->
         <span v-if="!withActions">
         <opensilex-CreateButton
           v-if="user.hasCredential(credentials.CREDENTIAL_FACILITY_MODIFICATION_ID)"
@@ -29,7 +29,7 @@
         <font-awesome-icon
           icon="question-circle"
           class="facilitiesHelp"
-          v-b-tooltip.hover.top="$t('FacilitiesView.infrastructure-facility-help')"
+          v-b-tooltip.hover.top="$t('FacilitiesView.facility-help')"
         />
       </h3>
     </template>
@@ -219,7 +219,7 @@ export default class FacilitiesView extends Vue {
       .getService<OrganizationsService>("opensilex.OrganizationsService")
       .deleteFacility(uri)
       .then(() => {
-        let message = this.$i18n.t("InfrastructureFacilityForm.name") + " " + uri + " " + this.$i18n.t("component.common.success.delete-success-message");
+        let message = this.$i18n.t("organizationFacilityForm.name") + " " + uri + " " + this.$i18n.t("component.common.success.delete-success-message");
         this.$opensilex.showSuccessToast(message);
         this.$emit("onDelete", uri);
       });
@@ -309,7 +309,7 @@ en:
     delete: Delete facility
     add: Add facility
     facilities: Facilities
-    infrastructure-facility-help: "Factilities correspond to the various fixed installations of an organization.
+    facility-help: "Factilities correspond to the various fixed installations of an organization.
                                   These can be greenhouses, fields, culture chambers, growth chambers ..."
 fr:
   FacilitiesView:
@@ -317,6 +317,6 @@ fr:
     delete: Supprimer l'installation environnementale
     add: Ajouter une installation environnementale
     facilities: Installations environnementales
-    infrastructure-facility-help: "Les installations environnementales correspondent aux différentes installations fixes d'une organisation.
+    facility-help: "Les installations environnementales correspondent aux différentes installations fixes d'une organisation.
                                   Il peut s'agir de serres, champs, chambres de culture, chambres de croissance ..."
 </i18n>

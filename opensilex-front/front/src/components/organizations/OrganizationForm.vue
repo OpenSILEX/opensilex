@@ -3,7 +3,7 @@
     <!-- URI -->
     <opensilex-UriForm
       :uri.sync="form.uri"
-      label="InfrastructureForm.infrastructure-uri"
+      label="OrganizationForm.organization-uri"
       helpMessage="component.common.uri-help-message"
       :editMode="editMode"
       :generated.sync="uriGenerated"
@@ -15,7 +15,7 @@
       label="component.common.name"
       type="text"
       :required="true"
-      placeholder="InfrastructureForm.form-name-placeholder"
+      placeholder="OrganizationForm.form-name-placeholder"
     ></opensilex-InputForm>
 
     <!-- Type -->
@@ -24,7 +24,7 @@
       :baseType="$opensilex.Foaf.ORGANIZATION_TYPE_URI"
       :ignoreRoot="false"
       :required="true"
-      placeholder="InfrastructureForm.form-type-placeholder"
+      placeholder="OrganizationForm.form-type-placeholder"
     ></opensilex-TypeForm>
 
     <!-- Parents -->
@@ -33,19 +33,19 @@
       :options="parentOptions"
       :multiple="true"
       label="component.common.parent"
-      placeholder="InfrastructureForm.form-parent-placeholder"
+      placeholder="OrganizationForm.form-parent-placeholder"
     ></opensilex-SelectForm>
 
     <!-- Groupes -->
     <opensilex-GroupSelector
-        label="InfrastructureForm.form-group-label"
+        label="OrganizationForm.form-group-label"
         :groups.sync="form.groups"
         :multiple="true"
     ></opensilex-GroupSelector>
 
     <!-- Facilities -->
     <opensilex-FacilitySelector
-        label="InfrastructureForm.form-facilities-label"
+        label="OrganizationForm.form-facilities-label"
         :facilities.sync="form.facilities"
         :multiple="true"
     >
@@ -88,13 +88,13 @@ export default class OrganizationForm extends Vue {
 
   reset() {
     this.uriGenerated = true;
-    if (this.parentInfrastructures == null) {
+    if (this.parentOrganizations == null) {
       this.$opensilex
         .getService<OrganizationsService>("opensilex-core.OrganizationsService")
-        .searchInfrastructures()
+        .searchOrganizations()
         .then(
           (http: HttpResponse<OpenSilexResponse<Array<ResourceDagDTO>>>) => {
-            this.setParentInfrastructures(http.response.result);
+            this.setParentOrganizations(http.response.result);
           }
         )
         .catch(this.$opensilex.errorHandler);
@@ -112,19 +112,19 @@ export default class OrganizationForm extends Vue {
     };
   }
 
-  parentInfrastructures = null;
-  setParentInfrastructures(infrastructures) {
-    this.parentInfrastructures = infrastructures;
+  parentOrganizations = null;
+  setParentOrganizations(organizations) {
+    this.parentOrganizations = organizations;
   }
 
   init() {
-    if (this.parentInfrastructures == null) {
+    if (this.parentOrganizations == null) {
       this.$opensilex
         .getService<OrganizationsService>("opensilex-core.OrganizationsService")
-        .searchInfrastructures()
+        .searchOrganizations()
         .then(
           (http: HttpResponse<OpenSilexResponse<Array<ResourceDagDTO>>>) => {
-            this.setParentInfrastructures(http.response.result);
+            this.setParentOrganizations(http.response.result);
           }
         )
         .catch(this.$opensilex.errorHandler);
@@ -133,11 +133,11 @@ export default class OrganizationForm extends Vue {
 
   get parentOptions() {
     if (this.editMode) {
-      return this.$opensilex.buildTreeFromDag(this.parentInfrastructures, {
+      return this.$opensilex.buildTreeFromDag(this.parentOrganizations, {
         disableSubTree: this.form.uri
       });
     } else {
-      return this.$opensilex.buildTreeFromDag(this.parentInfrastructures);
+      return this.$opensilex.buildTreeFromDag(this.parentOrganizations);
     }
   }
 
@@ -150,19 +150,19 @@ export default class OrganizationForm extends Vue {
     this.cleanFormBeforeSend(form);
     return this.$opensilex
       .getService<OrganizationsService>("opensilex.OrganizationsService")
-      .createInfrastructure(form)
+      .createOrganization(form)
       .then((http: HttpResponse<OpenSilexResponse<string>>) => {
         let uri = http.response.result;
-        console.debug("Infrastructure facility created", uri);
+        console.debug("Organization facility created", uri);
         form.uri = uri;
         return form;
       })
       .catch((error) => {
         if (error.status == 409) {
-          console.error("Infrastructure already exists", error);
+          console.error("Organization already exists", error);
           this.$opensilex.errorHandler(
             error,
-            this.$t("InfrastructureForm.infrastructure-already-exists")
+            this.$t("OrganizationForm.organization-already-exists")
           );
         } else {
           this.$opensilex.errorHandler(error);
@@ -175,11 +175,11 @@ export default class OrganizationForm extends Vue {
     delete form.rdf_type_name;
     return this.$opensilex
       .getService<OrganizationsService>("opensilex.OrganizationsService")
-      .updateInfrastructure(form)
+      .updateOrganization(form)
       .then((http: HttpResponse<OpenSilexResponse<any>>) => {
         let uri = http.response.result;
-        console.debug("Infrastructure updated", uri);
-        let message = this.$i18n.t("InfrastructureForm.name") + " " + form.name + " " + this.$i18n.t("component.common.success.update-success-message");
+        console.debug("Organization updated", uri);
+        let message = this.$i18n.t("OrganizationForm.name") + " " + form.name + " " + this.$i18n.t("component.common.success.update-success-message");
         this.$opensilex.showSuccessToast(message);
       })
       .catch(this.$opensilex.errorHandler);
@@ -192,23 +192,23 @@ export default class OrganizationForm extends Vue {
 
 <i18n>
 en:
-  InfrastructureForm:
+  OrganizationForm:
     name: The organization
-    infrastructure-uri: Organization URI
+    organization-uri: Organization URI
     form-name-placeholder: Enter organization name
     form-type-placeholder: Select organization type
     form-parent-placeholder: Select parent organization
-    infrastructure-already-exists: Organization already exists with this URI
+    organization-already-exists: Organization already exists with this URI
     form-group-label: Groups
     form-facilities-label: Facilities
 fr:
-  InfrastructureForm:
+  OrganizationForm:
     name: L'organisation
-    infrastructure-uri: URI de l'organisation
+    organization-uri: URI de l'organisation
     form-name-placeholder: Saisir le nom de l'organisation
     form-type-placeholder: Sélectionner le type d'organisation
     form-parent-placeholder: Sélectionner l'organisation parente
-    infrastructure-already-exists: Une organisation existe déjà avec cette URI
+    organization-already-exists: Une organisation existe déjà avec cette URI
     form-group-label: Groupes
     form-facilities-label: Installations environnementales
 </i18n>

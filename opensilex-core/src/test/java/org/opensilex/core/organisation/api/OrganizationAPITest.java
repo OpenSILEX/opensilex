@@ -1,5 +1,5 @@
 //******************************************************************************
-//                          InfrastructureAPITest.java
+//                          OrganizationAPITest.java
 // OpenSILEX - Licence AGPL V3.0 - https://www.gnu.org/licenses/agpl-3.0.en.html
 // Copyright © INRAE 2020
 // Contact: renaud.colin@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
@@ -39,12 +39,12 @@ public class OrganizationAPITest extends AbstractMongoIntegrationTest {
     protected String updatePath = path;
     protected String deletePath = path + "/{uri}";
 
-    private static int infraCount = 0;
+    private static int orgaCount = 0;
 
     protected OrganizationCreationDTO getCreationDTO(URI parent) {
-        infraCount++;
+        orgaCount++;
         OrganizationCreationDTO dto = new OrganizationCreationDTO();
-        dto.setName("Infra " + infraCount);
+        dto.setName("Orga " + orgaCount);
         if (parent != null) {
             List<URI> parents = new ArrayList<>();
             parents.add(parent);

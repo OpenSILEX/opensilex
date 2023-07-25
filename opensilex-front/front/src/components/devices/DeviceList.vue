@@ -712,7 +712,7 @@ fr:
             start_up: Date d'obtention
             start_up-placeholder: Entrer une année
             facility: Installation environnementale
-            facility-placeholder: Sélectionner une infrastructure
+            facility-placeholder: Sélectionner une installation
             brand: Marque
             brand-placeholder: Entrer une marque
             model: Modèle constructeur

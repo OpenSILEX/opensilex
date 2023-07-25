@@ -9,13 +9,13 @@ package org.opensilex.core.experiment.api;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.server.rest.validation.Required;
 
+import javax.validation.constraints.NotNull;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import javax.validation.constraints.NotNull;
-import org.opensilex.server.rest.validation.Required;
 
 /**
  * @author Renaud COLIN A basic DTO class about an {@link ExperimentModel}
@@ -41,7 +41,7 @@ public abstract class ExperimentDTO {
     protected String objective;
 
     @JsonProperty("organisations") 
-    protected List<URI> infrastructures = new ArrayList<>();
+    protected List<URI> organizations = new ArrayList<>();
 
     @JsonProperty("facilities")
     protected List<URI> facilities = new ArrayList<>();
@@ -172,12 +172,12 @@ public abstract class ExperimentDTO {
         return this;
     }
 
-    public List<URI> getInfrastructures() {
-        return infrastructures;
+    public List<URI> getOrganizations() {
+        return organizations;
     }
 
-    public ExperimentDTO setInfrastructures(List<URI> infrastructures) {
-        this.infrastructures = infrastructures;
+    public ExperimentDTO setOrganizations(List<URI> organizations) {
+        this.organizations = organizations;
         return this;
     }
 

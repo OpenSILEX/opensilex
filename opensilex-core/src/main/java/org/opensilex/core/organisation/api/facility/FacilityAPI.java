@@ -45,13 +45,13 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static org.opensilex.core.organisation.api.OrganizationAPI.CREDENTIAL_GROUP_INFRASTRUCTURE_ID;
+import static org.opensilex.core.organisation.api.OrganizationAPI.CREDENTIAL_GROUP_ORGANIZATION_ID;
 
 /**
  *
  * @author vidalmor
  */
-@Api(CREDENTIAL_GROUP_INFRASTRUCTURE_ID)
+@Api(CREDENTIAL_GROUP_ORGANIZATION_ID)
 @Path(FacilityAPI.PATH)
 @ApiCredentialGroup(
         groupId = FacilityAPI.CREDENTIAL_GROUP_FACILITY_ID,

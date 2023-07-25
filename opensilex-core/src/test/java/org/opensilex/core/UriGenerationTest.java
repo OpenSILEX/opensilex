@@ -167,7 +167,7 @@ public class UriGenerationTest extends AbstractMongoIntegrationTest {
     }
 
     @Test
-    public void testInfra() throws Exception {
+    public void testOrga() throws Exception {
 
         OrganizationModel model = new OrganizationModel();
         model.setName("name");

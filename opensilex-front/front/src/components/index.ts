@@ -74,7 +74,7 @@ components["opensilex-GroupList"] = GroupList;
 import GroupSelector from './groups/GroupSelector.vue';
 components["opensilex-GroupSelector"] = GroupSelector;
 
-// Infrastructures
+// Organizations
 import OrganizationView from './organizations/OrganizationView.vue';
 components["opensilex-OrganizationView"] = OrganizationView;
 import OrganizationDetailView from './organizations/OrganizationDetailView.vue';

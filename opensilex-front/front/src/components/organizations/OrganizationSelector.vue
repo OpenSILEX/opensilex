@@ -2,10 +2,10 @@
   <opensilex-SelectForm
     :label="label"
     :required="required"
-    :selected.sync="infrastructuresURI"
+    :selected.sync="organizationsURI"
     :multiple="multiple"
-    :options="infrastructuresOptions"
-    placeholder="InfrastructureTree.filter-placeholder"
+    :options="organizationsOptions"
+    placeholder="OrganizationTree.filter-placeholder"
     @select="select"
     @deselect="deselect"
   ></opensilex-SelectForm>
@@ -21,8 +21,8 @@ import { ResourceDagDTO } from 'opensilex-core/index';
 export default class OrganizationSelector extends Vue {
   $opensilex: any;
 
-  @PropSync("infrastructures")
-  infrastructuresURI;
+  @PropSync("organizations")
+  organizationsURI;
 
   @Prop()
   label;
@@ -31,14 +31,14 @@ export default class OrganizationSelector extends Vue {
   multiple;
 
   @Prop()
-  excludeInfrastructureURI: string;
+  excludeOrganizationURI: string;
 
   @Prop({
     default: false
   })
   required: boolean;
 
-  infrastructuresOptions = [];
+  organizationsOptions = [];
   mounted() {
     this.init();
   }
@@ -46,9 +46,9 @@ export default class OrganizationSelector extends Vue {
   init() {
     this.$opensilex
       .getService("opensilex-core.OrganizationsService")
-      .searchInfrastructures()
+      .searchOrganizations()
       .then((http: HttpResponse<OpenSilexResponse<Array<ResourceDagDTO>>>) => {
-        this.infrastructuresOptions = this.$opensilex.buildTreeFromDag(
+        this.organizationsOptions = this.$opensilex.buildTreeFromDag(
           http.response.result
         );
       })

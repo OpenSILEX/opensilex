@@ -225,7 +225,7 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
         experimentCreationDTO.setEndDate(startDate.plusDays(3));
 
         if (Objects.nonNull(orgURI)) {
-            experimentCreationDTO.setInfrastructures(Collections.singletonList(orgURI));
+            experimentCreationDTO.setOrganizations(Collections.singletonList(orgURI));
         }
 
         if (Objects.nonNull(groupURI)) {
@@ -257,7 +257,7 @@ public class OrganizationAccessAPITest extends AbstractMongoIntegrationTest {
         ProfileCreationDTO profileCreationDTO = new ProfileCreationDTO();
         profileCreationDTO.setName("Access test profile");
         profileCreationDTO.setCredentials(new ArrayList<String>() {{
-            add(OrganizationAPI.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID);
+            add(OrganizationAPI.CREDENTIAL_ORGANIZATION_MODIFICATION_ID);
             add(FacilityAPI.CREDENTIAL_FACILITY_MODIFICATION_ID);
         }});
         Response postProfileResponse = getJsonPostResponseAsAdmin(target(profileAPITest.createPath), profileCreationDTO);

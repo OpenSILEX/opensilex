@@ -4,21 +4,21 @@
           <opensilex-CreateButton
             v-if="
               user.hasCredential(
-                credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
+                credentials.CREDENTIAL_ORGANIZATION_MODIFICATION_ID
               )
             "
             @click="createOrganization()"
-            label="InfrastructureTree.add"
+            label="OrganizationTree.add"
             class="createButton firstButton"
           ></opensilex-CreateButton>
           <opensilex-CreateButton
             v-if="
               user.hasCredential(
-                credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
+                credentials.CREDENTIAL_ORGANIZATION_MODIFICATION_ID
               )
             "
             @click="createSite()"
-            label="InfrastructureTree.addSite"
+            label="OrganizationTree.addSite"
             class="createButton"
           ></opensilex-CreateButton>
         </div>
@@ -26,25 +26,25 @@
     <!-- Card header -->
     <template v-slot:header>
       <h3>
-        {{ $t("InfrastructureTree.infrastructure-component") }}
+        {{ $t("OrganizationTree.organization-component") }}
         &nbsp;
         <font-awesome-icon
           icon="question-circle"
-          class="infrastructureHelp"
-          v-b-tooltip.hover.top="$t('InfrastructureTree.infrastructure-help')"
+          class="organizationHelp"
+          v-b-tooltip.hover.top="$t('OrganizationTree.organization-help')"
         />
       </h3>
 
     </template>
 
     <!-- Card body -->
-    <!-- Infrastructure filter -->
+    <!-- Organization filter -->
     <opensilex-StringFilter
       :filter.sync="filter"
       :debounce="300"
       :lazy="false"
       @update="updateFilter()"
-      placeholder="InfrastructureTree.filter-placeholder"
+      placeholder="OrganizationTree.filter-placeholder"
     ></opensilex-StringFilter>
 
     <opensilex-TreeView
@@ -71,23 +71,23 @@
       <template v-slot:buttons="{ node }">
         <opensilex-DetailButton
           @click="showOrganizationOrSiteDetail(node.data)"
-          :label="node.data.isOrganization ? $t('InfrastructureTree.showDetail') : $t('InfrastructureTree.showDetailSite')"
+          :label="node.data.isOrganization ? $t('OrganizationTree.showDetail') : $t('OrganizationTree.showDetailSite')"
           :small="true"
         ></opensilex-DetailButton>
         <opensilex-EditButton
           v-if="
             user.hasCredential(
-              credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
+              credentials.CREDENTIAL_ORGANIZATION_MODIFICATION_ID
             )
           "
           @click="editOrganizationOrSite(node.data)"
-          :label="node.data.isOrganization ? $t('InfrastructureTree.edit') : $t('InfrastructureTree.editSite')"
+          :label="node.data.isOrganization ? $t('OrganizationTree.edit') : $t('OrganizationTree.editSite')"
           :small="true"
         ></opensilex-EditButton>
         <opensilex-Dropdown
             v-if="
               user.hasCredential(
-                credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
+                credentials.CREDENTIAL_ORGANIZATION_MODIFICATION_ID
               ) && node.data.isOrganization
             "
             @click="(option) => createOrganizationOrSite(option, node.data.uri)"
@@ -100,10 +100,10 @@
         </opensilex-Dropdown>
         <opensilex-DeleteButton
           v-if="
-            user.hasCredential(credentials.CREDENTIAL_INFRASTRUCTURE_DELETE_ID)
+            user.hasCredential(credentials.CREDENTIAL_ORGANIZATION_DELETE_ID)
           "
           @click="deleteOrganizationOrSite(node.data)"
-          :label="node.data.isOrganization ? $t('InfrastructureTree.delete') : $t('InfrastructureTree.deleteSite')"
+          :label="node.data.isOrganization ? $t('OrganizationTree.delete') : $t('OrganizationTree.deleteSite')"
           :small="true"
         ></opensilex-DeleteButton>
       </template>
@@ -112,13 +112,13 @@
     <opensilex-ModalForm
       v-if="
         user.hasCredential(
-          credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
+          credentials.CREDENTIAL_ORGANIZATION_MODIFICATION_ID
         )
       "
-      ref="infrastructureForm"
+      ref="organizationForm"
       component="opensilex-OrganizationForm"
-      createTitle="InfrastructureTree.add"
-      editTitle="InfrastructureTree.update"
+      createTitle="OrganizationTree.add"
+      editTitle="OrganizationTree.update"
       icon="ik#ik-globe"
       @onCreate="onCreate"
       @onUpdate="onUpdate"
@@ -128,13 +128,13 @@
     <opensilex-ModalForm
         v-if="
           user.hasCredential(
-            credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
+            credentials.CREDENTIAL_ORGANIZATION_MODIFICATION_ID
           )
         "
         ref="siteForm"
         component="opensilex-SiteForm"
-        createTitle="InfrastructureTree.addSite"
-        editTitle="InfrastructureTree.editSite"
+        createTitle="OrganizationTree.addSite"
+        editTitle="OrganizationTree.editSite"
         icon="ik#ik-globe"
         @onCreate="onCreate"
         @onUpdate="onUpdate"
@@ -201,18 +201,18 @@ export default class OrganizationTree extends Vue {
   private selectedOrganization: OrganizationGetDTO;
   private selectedSite: SiteGetDTO;
 
-  @Ref("infrastructureForm") readonly infrastructureForm!: ModalForm<OrganizationForm, OrganizationCreationDTO, OrganizationUpdateDTO>;
+  @Ref("organizationForm") readonly organizationForm!: ModalForm<OrganizationForm, OrganizationCreationDTO, OrganizationUpdateDTO>;
   @Ref("siteForm") readonly siteForm!: ModalForm<SiteForm, SiteCreationDTO, SiteUpdateDTO>;
   @Ref("treeView") readonly treeView: TreeView<OrganizationOrSiteData>;
 
   private createOptions: Array<DropdownButtonOption> = [
     {
-      label: this.$t("InfrastructureTree.add-child").toString(),
+      label: this.$t("OrganizationTree.add-child").toString(),
       id: AddOption.ADD_ORGANIZATION,
       data: AddOption.ADD_ORGANIZATION
     },
     {
-      label: this.$t("InfrastructureTree.addSite").toString(),
+      label: this.$t("OrganizationTree.addSite").toString(),
       id: AddOption.ADD_SITE,
       data: AddOption.ADD_SITE
     }
@@ -232,9 +232,9 @@ export default class OrganizationTree extends Vue {
 
   private getMultipleParentsTooltip(node: OrganizationOrSiteTreeNode) {
     if (node.data.isOrganization) {
-      return this.$t("InfrastructureTree.organization-multiple-tooltip");
+      return this.$t("OrganizationTree.organization-multiple-tooltip");
     }
-    return this.$t("InfrastructureTree.site-multiple-tooltip");
+    return this.$t("OrganizationTree.site-multiple-tooltip");
   }
 
   private filter: any = "";
@@ -334,15 +334,15 @@ export default class OrganizationTree extends Vue {
 
   private async fetchOrganizationsAsTree(): Promise<Array<GenericTreeOption>> {
     try {
-      let orgHttp: HttpResponse<OpenSilexResponse<Array<ResourceDagDTO>>> = await this.service.searchInfrastructures(this.filter);
+      let orgHttp: HttpResponse<OpenSilexResponse<Array<ResourceDagDTO>>> = await this.service.searchOrganizations(this.filter);
 
-      if (this.infrastructureForm && this.infrastructureForm.getFormRef()) {
+      if (this.organizationForm && this.organizationForm.getFormRef()) {
         if (this.filter == "") {
-          this.infrastructureForm
+          this.organizationForm
               .getFormRef()
-              .setParentInfrastructures(orgHttp.response.result);
+              .setParentOrganizations(orgHttp.response.result);
         } else {
-          this.infrastructureForm.getFormRef().init();
+          this.organizationForm.getFormRef().init();
         }
       }
 
@@ -419,7 +419,7 @@ export default class OrganizationTree extends Vue {
   public displayOrganizationDetail(uri: string, forceRefresh?: boolean) {
     if (forceRefresh || this.selectedOrganization == null || this.selectedOrganization.uri != uri) {
       return this.service
-        .getInfrastructure(uri)
+        .getOrganization(uri)
         .then((http: HttpResponse<OpenSilexResponse<OrganizationGetDTO>>) => {
           let detailDTO: OrganizationGetDTO = http.response.result;
           this.selectedOrganization = detailDTO;
@@ -468,7 +468,7 @@ export default class OrganizationTree extends Vue {
 
   showOrganizationDetail(uri) {
     this.$router.push({
-      path: "/infrastructure/details/" + encodeURIComponent(uri),
+      path: "/organization/details/" + encodeURIComponent(uri),
     });
   }
 
@@ -482,12 +482,12 @@ export default class OrganizationTree extends Vue {
 
   createOrganization(parentURI?) {
     this.parentURI = parentURI;
-    this.infrastructureForm.showCreateForm();
+    this.organizationForm.showCreateForm();
   }
 
   editOrganization(uri) {
     this.service
-      .getInfrastructure(uri)
+      .getOrganization(uri)
       .then((http: HttpResponse<OpenSilexResponse<OrganizationGetDTO>>) => {
         let detailDTO: OrganizationGetDTO = http.response.result;
         this.parentURI = Array.isArray(detailDTO.parents) && detailDTO.parents.length > 0
@@ -495,16 +495,16 @@ export default class OrganizationTree extends Vue {
           : undefined;
 
         let editDTO: OrganizationUpdateDTO = DTOConverter.extractURIFromResourceProperties(detailDTO);
-        this.infrastructureForm.showEditForm(editDTO);
+        this.organizationForm.showEditForm(editDTO);
       });
   }
 
   deleteOrganization(uri: string) {
     this.service
-      .deleteInfrastructure(uri)
+      .deleteOrganization(uri)
       .then(() => {
         this.$emit("onDelete");
-        let message = this.$i18n.t("InfrastructureForm.name") + " " + uri + " " + this.$i18n.t("component.common.success.delete-success-message");
+        let message = this.$i18n.t("OrganizationForm.name") + " " + uri + " " + this.$i18n.t("component.common.success.delete-success-message");
         this.$opensilex.showSuccessToast(message);
         this.refresh();
       })
@@ -513,7 +513,7 @@ export default class OrganizationTree extends Vue {
 
   showSiteDetail(uri) {
     this.$router.push({
-      path: "/infrastructure/site/details/" + encodeURIComponent(uri),
+      path: "/organization/site/details/" + encodeURIComponent(uri),
     });
   }
 
@@ -580,7 +580,7 @@ export default class OrganizationTree extends Vue {
   display: inline-block;
   width: 23px;
 }
-.infrastructureHelp{
+.organizationHelp{
   font-size: 1.3em;
   background: #f1f1f1;
   color: #00A38D;
@@ -612,7 +612,7 @@ export default class OrganizationTree extends Vue {
 
 <i18n>
 en:
-  InfrastructureTree:
+  OrganizationTree:
     filter-placeholder: Search organizations...
     add: Add organization
     update: Update organization
@@ -622,14 +622,14 @@ en:
     editSite: Edit site
     delete: Delete organization
     deleteSite: Delete site
-    infrastructure-component: Organizations and sites
-    infrastructure-help: "The organizations represent the hierarchy between the different sites, units, ... with a specific address and / or with dedicated teams."
+    organization-component: Organizations and sites
+    organization-help: "The organizations represent the hierarchy between the different sites, units, ... with a specific address and / or with dedicated teams."
     showDetail: Organization details
     showDetailSite: Site details
     organization-multiple-tooltip: "This organization has several parent organizations"
     site-multiple-tooltip: "This site hosts several organizations"
 fr:
-  InfrastructureTree:
+  OrganizationTree:
     filter-placeholder: Rechercher des organisations...
     add: Ajouter une organisation
     update: Modifier l'organisation
@@ -639,8 +639,8 @@ fr:
     editSite: Editer le site
     delete: Supprimer l'organisation
     deleteSite: Supprimer le site
-    infrastructure-component: Organisations et sites
-    infrastructure-help: "Les organisations représentent la hiérarchie entre les différents sites, unités, ... disposant d'une adresse particulière et/ou avec des équipes dédiées."
+    organization-component: Organisations et sites
+    organization-help: "Les organisations représentent la hiérarchie entre les différents sites, unités, ... disposant d'une adresse particulière et/ou avec des équipes dédiées."
     showDetail: Détail de l'organisation
     showDetailSite: Détail du site
     organization-multiple-tooltip: "Cette organisation a plusieurs organisations parentes"

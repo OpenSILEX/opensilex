@@ -113,8 +113,8 @@
               :list="projectsList"
             ></opensilex-UriListView>
             <opensilex-UriListView
-              label="component.experiment.infrastructures"
-              :list="infrastructuresListURIs"
+              label="component.experiment.organizations"
+              :list="organizationsListURIs"
             ></opensilex-UriListView>
             <opensilex-UriListView
               label="component.experiment.facilities"
@@ -204,7 +204,7 @@ export default class ExperimentDetail extends Vue {
   scientificSupervisorsList = [];
   technicalSupervisorsList = [];
   installationsList = [];
-  infrastructuresList = [];
+  organizationsList = [];
   recordAuthor :AccountGetDTO = null;
 
   created() {
@@ -239,15 +239,15 @@ export default class ExperimentDetail extends Vue {
         return this.$opensilex.getConfig().menuExclusions.includes("germplasm");
   }
 
-  get infrastructuresListURIs() {
-    let infraUris = [];
-    for (let infra of this.infrastructuresList) {
-      infra.to = {
-        path: "/infrastructure/details/" + encodeURIComponent(infra.uri),
+  get organizationsListURIs() {
+    let orgaUris = [];
+    for (let orga of this.organizationsList) {
+      orga.to = {
+        path: "/organization/details/" + encodeURIComponent(orga.uri),
       };
-      infraUris.push(infra);
+      orgaUris.push(orga);
     }
-    return infraUris;
+    return orgaUris;
   }
 
   get facilityListUris() {
@@ -299,7 +299,7 @@ export default class ExperimentDetail extends Vue {
 
   loadExperimentDetails() {
     this.loadProjects();
-    this.loadInfrastructures();
+    this.loadOrganizations();
     this.loadPersons();
     this.loadGroups();
     this.loadFactors();
@@ -310,18 +310,18 @@ export default class ExperimentDetail extends Vue {
     );
   }
 
-  loadInfrastructures() {
+  loadOrganizations() {
     let service: OrganizationsService = this.$opensilex.getService(
       "opensilex.OrganizationsService"
     );
-    this.infrastructuresList = [];
+    this.organizationsList = [];
 
     if (
       this.experiment.organisations &&
       this.experiment.organisations.length > 0
     ) {
       this.experiment.organisations.forEach((organisation) => {
-        this.infrastructuresList.push({
+        this.organizationsList.push({
           uri: organisation.uri,
           value: organisation.name,
         });

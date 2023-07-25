@@ -41,11 +41,11 @@ import static org.opensilex.core.organisation.api.OrganizationAPI.*;
 /**
  * @author Valentin RIGOLLE
  */
-@Api(CREDENTIAL_GROUP_INFRASTRUCTURE_ID)
+@Api(CREDENTIAL_GROUP_ORGANIZATION_ID)
 @Path("core/sites")
 @ApiCredentialGroup(
-        groupId = OrganizationAPI.CREDENTIAL_GROUP_INFRASTRUCTURE_ID,
-        groupLabelKey = OrganizationAPI.CREDENTIAL_GROUP_INFRASTRUCTURE_LABEL_KEY
+        groupId = OrganizationAPI.CREDENTIAL_GROUP_ORGANIZATION_ID,
+        groupLabelKey = OrganizationAPI.CREDENTIAL_GROUP_ORGANIZATION_LABEL_KEY
 )
 public class SiteAPI {
 
@@ -149,8 +149,8 @@ public class SiteAPI {
     @ApiOperation("Create a site")
     @ApiProtected
     @ApiCredential(
-            credentialId = CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID,
-            credentialLabelKey = CREDENTIAL_INFRASTRUCTURE_MODIFICATION_LABEL_KEY
+            credentialId = CREDENTIAL_ORGANIZATION_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_ORGANIZATION_MODIFICATION_LABEL_KEY
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -182,8 +182,8 @@ public class SiteAPI {
     @ApiOperation("Update a site")
     @ApiProtected
     @ApiCredential(
-            credentialId = CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID,
-            credentialLabelKey = CREDENTIAL_INFRASTRUCTURE_MODIFICATION_LABEL_KEY
+            credentialId = CREDENTIAL_ORGANIZATION_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_ORGANIZATION_MODIFICATION_LABEL_KEY
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -212,8 +212,8 @@ public class SiteAPI {
     @ApiOperation("Delete a site")
     @ApiProtected
     @ApiCredential(
-            credentialId = CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID,
-            credentialLabelKey = CREDENTIAL_INFRASTRUCTURE_MODIFICATION_LABEL_KEY
+            credentialId = CREDENTIAL_ORGANIZATION_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_ORGANIZATION_MODIFICATION_LABEL_KEY
     )
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)

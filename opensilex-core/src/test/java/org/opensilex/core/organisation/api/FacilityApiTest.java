@@ -40,19 +40,19 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
     protected final static String UPDATE_PATH = PATH;
     protected final static String DELETE_PATH = PATH + "/{uri}";
 
-    protected OrganizationModel infra;
+    protected OrganizationModel orga;
 
     // TypeReference used to parse Response into a List of FacilityGetDTO
     protected static final TypeReference<PaginatedListResponse<FacilityGetDTO>> listTypeReference = new TypeReference<PaginatedListResponse<FacilityGetDTO>>() {};
     protected static final TypeReference<SingleObjectResponse<FacilityGetDTO>> singleObjectResponseTypeReference = new TypeReference<SingleObjectResponse<FacilityGetDTO>>() {};
 
     @Before
-    public void createInfrastructure() throws Exception {
-        infra = new OrganizationModel();
-        infra.setUri(new URI("test:infra"));
-        infra.setName("infra");
+    public void createOrganization() throws Exception {
+        orga = new OrganizationModel();
+        orga.setUri(new URI("test:orga"));
+        orga.setName("orga");
 
-        getSparqlService().create(infra);
+        getSparqlService().create(orga);
     }
 
     public FacilityUpdateDTO getCreationDTO(int count) throws URISyntaxException {
@@ -60,9 +60,9 @@ public class FacilityApiTest extends AbstractMongoIntegrationTest {
         FacilityUpdateDTO facility = new FacilityUpdateDTO();
         facility.setName("facility"+count);
         facility.setUri(new URI("test:facility"+count));
-        List<URI> infraUris = new ArrayList<>();
-        infraUris.add(infra.getUri());
-        facility.setOrganizations(infraUris);
+        List<URI> orgaUris = new ArrayList<>();
+        orgaUris.add(orga.getUri());
+        facility.setOrganizations(orgaUris);
         return facility;
     }
 

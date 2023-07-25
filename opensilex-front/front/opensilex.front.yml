@@ -7,16 +7,16 @@ menu:
   - id: scientific-organisation
     label: component.menu.scientific-organisation
     children:
-      - id: infrastructures
-        label: component.menu.infrastructure
+      - id: organizations
+        label: component.menu.organization
         route:
-          path: /infrastructures
+          path: /organizations
           component: opensilex-OrganizationView
           credentials:
             - organization-access
           icon: fa#fa-sitemap
-          title: component.menu.infrastructures
-          description: InfrastructureView.description
+          title: component.menu.organizations
+          description: OrganizationView.description
       - id: projects
         label: component.menu.projects
         route:
@@ -217,7 +217,7 @@ menu:
           icon: ik#ik-settings
           title: DeviceTypes.typeTitle
           description: DeviceTypes.typeDescription
-      - id: infrastructureVocabulary
+      - id: organizationVocabulary
         label: component.menu.facilitiesTypes
         route:
           path: /facilities-types
@@ -306,10 +306,10 @@ menu:
           description: PackagesView.description
 
 routes:
-  - path: /infrastructure/details/:uri
+  - path: /organization/details/:uri
     component: opensilex-OrganizationDetailView
     icon: ik#ik-globe
-  - path: /infrastructure/site/details/:uri
+  - path: /organization/site/details/:uri
     component: opensilex-SiteView
   - path: /experiment/details/:uri
     component: opensilex-ExperimentView
@@ -453,7 +453,7 @@ routes:
   - path: /scientific-objects/documents/:uri
     component: opensilex-ScientificObjectDetailView
 
-  - path: /infrastructures/details/:uri
+  - path: /organizations/details/:uri
     component: opensilex-OrganizationDetailView
     credentials: []
   - path: /provenances/details/:uri

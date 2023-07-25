@@ -155,7 +155,7 @@
                   <opensilex-FilterField quarterWidth="true">
                     <opensilex-FacilitySelector
                       ref="facilitySelector"
-                      label="InfrastructureForm.form-facilities-label"
+                      label="OrganizationForm.form-facilities-label"
                       :facilities.sync="filter.facilities"
                       :multiple="true"
                       class="searchFilter"

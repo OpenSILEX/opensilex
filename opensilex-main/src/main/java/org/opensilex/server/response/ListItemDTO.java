@@ -17,6 +17,8 @@ public class ListItemDTO {
     
     private String name;
 
+    private String graph;
+
     public URI getUri() {
         return uri;
     }
@@ -31,5 +33,13 @@ public class ListItemDTO {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getGraph() {
+        return graph;
+    }
+
+    public void setGraph(String graph) {
+        this.graph = graph;
     }
 }

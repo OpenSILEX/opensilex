@@ -195,10 +195,11 @@ public class ScientificObjectAPI {
             select.addFilter(SPARQLQueryHelper.inURIFilter("?g", graphFilterURIs));
         }
 
-        select.addVar("?type ?label");
+        select.addVar("?type ?label ?graph");
         select.setDistinct(true);
         select.addWhere("?type", Ontology.subClassStrict, Oeso.ScientificObject);
         select.addWhere("?type", RDFS.label, "?label");
+        select.addGraph("?graph", "?type", RDFS.label, "?label");
         select.addFilter(SPARQLQueryHelper.langFilterWithDefault("label", currentUser.getLanguage()));
 
         List<ListItemDTO> types = new ArrayList<>();
@@ -207,9 +208,11 @@ public class ScientificObjectAPI {
             try {
                 URI uri = new URI(row.getStringValue("type"));
                 String label = row.getStringValue("label");
+                String graph = row.getStringValue("graph");
                 ListItemDTO listItem = new ListItemDTO();
                 listItem.setUri(uri);
                 listItem.setName(label);
+                listItem.setGraph(graph);
                 types.add(listItem);
             } catch (URISyntaxException ex) {
                 throw new RuntimeException(ex);

@@ -66,6 +66,9 @@ client into OpenSILEX under the `com.researchspace` package.
 As the dataverse client was originally designed with Lombok, we had to "delombok" it in order not to add another dependency
 to OpenSILEX. See the [relevant documentation](https://projectlombok.org/features/delombok).
 
+> WARNING : The original work is licensed under the Apache 2.0 License. That means that any change to the original 
+source files must be marked in some way, for example by adding a comment on top of the file.
+
 ### Tests
 
 The tests are very limited due to our architecture.

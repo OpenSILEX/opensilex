@@ -176,11 +176,11 @@ export default class VariableVisualizationTab extends Vue {
     } else {
       this.isGraphicLoaded = false;
       this.$opensilex.showInfoToast(
-          this.$i18n.t("ExperimentDataVisuView.datatypeMessageA") +
+          this.$i18n.t("DeviceDataTab.datatypeMessageA") +
           " " +
           datatype +
           " " +
-          this.$i18n.t("ExperimentDataVisuView.datatypeMessageB")
+          this.$i18n.t("DeviceDataTab.datatypeMessageB")
       );
     }
   }
@@ -451,13 +451,13 @@ export default class VariableVisualizationTab extends Vue {
             const cleanData = HighchartsDataTransformer.transformDataForHighcharts(data, {deviceUri: concernedItem.uri});
             if (dataLength > 50000) {
               this.$opensilex.showInfoToast(
-                  this.$i18n.t("ExperimentDataVisuView.limitSizeMessageA") +
+                  this.$i18n.t("DeviceDataTab.limitSizeMessageA") +
                   " " +
                   dataLength +
                   " " +
-                  this.$i18n.t("ExperimentDataVisuView.limitSizeMessageB") +
+                  this.$i18n.t("DeviceDataTab.limitSizeMessageB") +
                   concernedItem.name +
-                  this.$i18n.t("ExperimentDataVisuView.limitSizeMessageC")
+                  this.$i18n.t("DeviceDataTab.limitSizeMessageC")
               );
             }
 

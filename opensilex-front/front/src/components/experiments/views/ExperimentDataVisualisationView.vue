@@ -306,11 +306,11 @@ export default class ExperimentDataVisualisationView extends Vue {
                   this.showGraphicComponent = true;
                   this.showImages = false;
                   this.$opensilex.showInfoToast(
-                      this.$i18n.t("ExperimentDataVisuView.datatypeMessageA") +
+                      this.$i18n.t("ExperimentDataVisualisationView.datatypeMessageA") +
                       " " +
                       datatype +
                       " " +
-                      this.$i18n.t("ExperimentDataVisuView.datatypeMessageB")
+                      this.$i18n.t("ExperimentDataVisualisationView.datatypeMessageB")
                   );
                 }
               }

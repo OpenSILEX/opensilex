@@ -390,8 +390,6 @@ import ExperimentScientificObjects from './experiments/views/ExperimentScientifi
 components["opensilex-ExperimentScientificObjects"] = ExperimentScientificObjects;
 import ExperimentData from './experiments/views/ExperimentData.vue';
 components["opensilex-ExperimentData"] = ExperimentData;
-import ExperimentDataVisuView from './experiments/views/ExperimentDataVisuView.vue';
-components["opensilex-ExperimentDataVisuView"] = ExperimentDataVisuView;
 import ExperimentDataVisualisationView from './experiments/views/ExperimentDataVisualisationView.vue';
 components["opensilex-ExperimentDataVisualisationView"] = ExperimentDataVisualisationView;
 import ExperimentModalList from './experiments/ExperimentModalList.vue';

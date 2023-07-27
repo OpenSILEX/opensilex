@@ -5,7 +5,6 @@
  */
 package org.opensilex.core.scientificObject.dal;
 
-import com.github.jsonldjava.utils.Obj;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.trie.PatriciaTrie;
 import org.apache.commons.lang3.StringUtils;
@@ -20,7 +19,10 @@ import org.apache.jena.sparql.path.*;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.OpenSilex;
-import org.opensilex.core.event.dal.move.*;
+import org.opensilex.core.event.dal.move.MoveEventDAO;
+import org.opensilex.core.event.dal.move.MoveEventNoSqlModel;
+import org.opensilex.core.event.dal.move.MoveModel;
+import org.opensilex.core.event.dal.move.TargetPositionModel;
 import org.opensilex.core.exception.DuplicateNameException;
 import org.opensilex.core.exception.DuplicateNameListException;
 import org.opensilex.core.experiment.dal.ExperimentModel;
@@ -36,7 +38,10 @@ import org.opensilex.core.scientificObject.api.ScientificObjectNodeWithChildrenD
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.exceptions.InvalidValueException;
-import org.opensilex.sparql.deserializer.*;
+import org.opensilex.sparql.deserializer.DateDeserializer;
+import org.opensilex.sparql.deserializer.SPARQLDeserializer;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapperIndex;
@@ -224,7 +229,7 @@ public class ScientificObjectDAO {
     }
 
 
-    private int getCount(ScientificObjectSearchFilter searchFilter) throws Exception {
+    public int getCount(ScientificObjectSearchFilter searchFilter) throws Exception {
 
         SelectBuilder count = new SelectBuilder();
         addSearchfilter(count, true, searchFilter);

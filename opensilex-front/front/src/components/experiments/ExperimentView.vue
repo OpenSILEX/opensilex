@@ -29,6 +29,12 @@
                         :active="isScientificObjectsTab()"
                         :to="{path: '/experiment/scientific-objects/' + encodeURIComponent(uri),}"
                 >{{ $t("ExperimentView.scientific-objects") }}
+                    <span
+                        v-if="!scientificObjectsCountIsLoading && scientificObjects > 0"
+                        class="tabWithElements"
+                    >
+                        {{$opensilex.$numberFormatter.formateResponse(scientificObjects)}}
+                    </span>
                 </b-nav-item
                 >
                 <b-nav-item
@@ -148,6 +154,7 @@
     import {DocumentsService} from "opensilex-core/api/documents.service";
     import {FactorsService} from "opensilex-core/api/factors.service";
     import {DataService} from "opensilex-core/api/data.service";
+    import {ScientificObjectsService} from "opensilex-core/index";
 
     @Component
     export default class ExperimentView extends Vue {
@@ -162,16 +169,19 @@
         $DocumentsService: DocumentsService
         $FactorsService: FactorsService
         $DataService: DataService
+        $ScientificObjectsService: ScientificObjectsService
 
         annotations: number;
         documents: number;
         factors: number;
         data: number;
+        scientificObjects: number;
 
         annotationsCountIsLoading: boolean = true;
         documentsCountIsLoading: boolean = true;
         factorsCountIsLoading: boolean = true;
         dataCountIsLoading: boolean = true;
+        scientificObjectsCountIsLoading: boolean = true;
 
         @Ref("annotationList") readonly annotationList!: AnnotationList;
 
@@ -193,10 +203,12 @@
             this.$DocumentsService = this.$opensilex.getService<DocumentsService>("opensilex.DocumentsService");
             this.$DataService = this.$opensilex.getService<DataService>("opensilex.DataService");
             this.$FactorsService = this.$opensilex.getService<FactorsService>("opensilex.FactorsService");
+            this.$ScientificObjectsService = this.$opensilex.getService<ScientificObjectsService>("opensilex.ScientificObjectsService");
             this.searchAnnotations();
             this.searchDocuments();
             this.searchData();
             this.searchFactors();
+            this.searchScientificObjects();
         }
 
         get user() {
@@ -303,6 +315,19 @@
                     this.factors = http.response.result as number;
                     this.factorsCountIsLoading = false;
                     return this.factors
+                }
+            }).catch(this.$opensilex.errorHandler);
+        }
+
+        searchScientificObjects(){
+            return this.$ScientificObjectsService
+            .countScientificObjects(
+                this.uri
+            ).then((http: HttpResponse<OpenSilexResponse<number>>) => {
+                if (http && http.response) {
+                    this.scientificObjects = http.response.result as number;
+                    this.scientificObjectsCountIsLoading = false;
+                    return this.scientificObjects
                 }
             }).catch(this.$opensilex.errorHandler);
         }

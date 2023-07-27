@@ -1012,4 +1012,26 @@ public class ScientificObjectAPI {
         List<ProvenanceGetDTO> dtoList = provenances.stream().map(ProvenanceGetDTO::fromModel).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();
     }
+
+    @GET
+    @Path("count")
+    @ApiOperation("Count scientific objects")
+    @ApiProtected
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return the number of scientific objects associated to a given experiment", response = Integer.class)
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response countScientificObjects(
+            @ApiParam(value = "Experiment URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("experiment") URI experiment) throws Exception {
+
+        ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
+
+               ScientificObjectSearchFilter searchFilter = new ScientificObjectSearchFilter()
+                .setExperiment(experiment);
+
+        int scientificObjectsCount = dao.getCount(searchFilter);
+
+        return new SingleObjectResponse<>(scientificObjectsCount).getResponse();
+    }
 }

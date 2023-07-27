@@ -60,6 +60,7 @@ class OntologyStoreLoader {
     private final SelectBuilder ALL_CLASSES_QUERY;
     private final SelectBuilder ALL_PROPERTIES_QUERY;
 
+    protected static final Var GRAPH_VAR = makeVar("graph");
     protected static final Var URI_VAR = makeVar(SPARQLResourceModel.URI_FIELD);
     protected static final Var PARENT_VAR = makeVar(SPARQLTreeModel.PARENT_FIELD);
     protected static final Var DOMAIN_VAR = makeVar(AbstractPropertyModel.DOMAIN_FIELD);
@@ -332,6 +333,7 @@ class OntologyStoreLoader {
 
         SelectBuilder select = new SelectBuilder()
                 .setDistinct(true)
+                //.addVar(GRAPH_VAR)
                 .addVar(URI_VAR)
                 .addVar(PARENT_VAR)
                 .addWhere(URI_VAR, RDF.type, owlClassNode)
@@ -341,6 +343,7 @@ class OntologyStoreLoader {
                         .addWhere(PARENT_VAR, RDF.type, owlClassNode)
                         .addFilter(exprFactory.isIRI(PARENT_VAR))
                 ).addOrderBy(URI_VAR);
+                //.addGraph(GRAPH_VAR, URI_VAR, RDF.type, owlClassNode);
 
         appendNamesAndComments(select);
 

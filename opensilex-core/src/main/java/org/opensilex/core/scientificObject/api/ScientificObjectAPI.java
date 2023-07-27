@@ -195,7 +195,7 @@ public class ScientificObjectAPI {
             select.addFilter(SPARQLQueryHelper.inURIFilter("?g", graphFilterURIs));
         }
 
-        select.addVar("?type ?label ?graph");
+        select.addVar("?graph ?type ?label");
         select.setDistinct(true);
         select.addWhere("?type", Ontology.subClassStrict, Oeso.ScientificObject);
         select.addWhere("?type", RDFS.label, "?label");

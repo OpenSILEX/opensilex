@@ -71,7 +71,8 @@ export default class ScientificObjectTypeSelector extends Vue {
       return {
         id: data.uri,
         label: data.name + " (" + data.color + ")",
-        isDisabled: data.isDisabled ?? false
+        isDisabled: data.isDisabled ?? false,
+        color: data.color
       };
     } else {
       return data;

@@ -75,7 +75,7 @@
 
         >
           <template v-slot:option-label="{ node }">
-            <slot name="option-label" v-bind:node="node"> <div :style="convertTypeColor(node.raw.color)" class="label" :title="node.label">{{ node.label }}</div></slot>
+            <slot name="option-label" v-bind:node="node"> <div class="label" :title="node.label">{{ node.label }}&nbsp;<span :class="convertTypeColor(node.raw.color)">{{ node.raw.color }}</span></div></slot>
           </template>
 
           <template v-slot:value-label="{ node }">
@@ -730,22 +730,10 @@ export default class SelectForm extends Vue {
 
   convertTypeColor(color) {
     switch (color) {
-      case "sixtine": return {
-        'background-color': '#007bff',
-        'color': 'white'
-      };
-      case "phis": return {
-        'background-color': '#28a745',
-        'color': 'white'
-      };
-      case "error": return {
-        'background-color': '#dc3545',
-        'color': 'white'
-      };
-      case "global": return {
-        'background-color': '#343a40',
-        'color': 'white'
-      };
+      case "sixtine": return 'badge rounded-pill bg-primary text-white';
+      case "phis": return 'badge rounded-pill bg-success text-white';
+      case "error": return 'badge rounded-pill bg-danger text-white';
+      case "global": return 'badge rounded-pill bg-dark text-white';
     }
   }
 }

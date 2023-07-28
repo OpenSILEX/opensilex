@@ -20,10 +20,6 @@
     <url>https://www.opensilex.org/</url>
     <version>${revision}</version>
 
-    <properties>
-        <lombokVersion>1.18.24</lombokVersion>
-    </properties>
-
     <parent>
         <groupId>org.opensilex</groupId>
         <artifactId>opensilex-module</artifactId>

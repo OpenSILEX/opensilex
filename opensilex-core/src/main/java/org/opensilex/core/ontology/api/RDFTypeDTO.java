@@ -22,6 +22,8 @@ public class RDFTypeDTO {
 
     protected URI parent;
 
+    protected String graph;
+
     public URI getUri() {
         return uri;
     }
@@ -54,6 +56,14 @@ public class RDFTypeDTO {
         this.parent = parent;
     }
 
+    public String getGraph() {
+        return graph;
+    }
+
+    public void setGraph(String graph) {
+        this.graph = graph;
+    }
+
     public RDFTypeDTO() {
 
     }
@@ -71,6 +81,8 @@ public class RDFTypeDTO {
         if (model.getParent() != null) {
             setParent(model.getParent().getUri());
         }
+
+        setGraph(model.getGraph());
     }
 
 }

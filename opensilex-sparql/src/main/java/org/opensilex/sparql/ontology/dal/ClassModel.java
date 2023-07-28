@@ -66,6 +66,7 @@ public class ClassModel extends VocabularyModel<ClassModel> {
         label = other.getLabel();
         comment = other.getComment();
         rdfTypeName = other.getTypeLabel();
+        graph = other.getGraph();
 
         children = other.getChildren();
         setChildren(children);

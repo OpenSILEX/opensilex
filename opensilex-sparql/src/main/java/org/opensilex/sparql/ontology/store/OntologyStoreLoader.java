@@ -31,6 +31,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -188,24 +189,28 @@ class OntologyStoreLoader {
 
         List<T> models = new ArrayList<>();
         AtomicReference<String> lastURI = new AtomicReference<>();
+        AtomicReference<String> lastGRAPH = new AtomicReference<>();
 
         sparql.executeSelectQueryAsStream(select).forEach(result -> {
 
             T model;
             String uri = URIDeserializer.getShortURI(result.getStringValue(SPARQLResourceModel.URI_FIELD));
-
+            String graph = Objects.nonNull(result.getStringValue("graph")) ? result.getStringValue("graph") : "";
             // first row with this URI, create object
-            if (!uri.equals(lastURI.get())) {
+            if (!uri.equals(lastURI.get()) || !graph.equals(lastGRAPH.get())) {
 
                 // create model, set properties and register it
                 model = modelConstructor.apply(result);
                 model.setUri(URI.create(uri));
+                model.setGraph(graph);
+
                 fromResult(result, model);
                 models.add(model);
 
                 lastURI.set(uri);
+                lastGRAPH.set(graph);
             } else {
-                // two or more row per URI, just reuse the first and unique object created with this uri
+                // two or more row per URI and GRAPH, just reuse the first and unique object created with this uri and graph
                 model = models.get(models.size() - 1);
             }
 
@@ -326,28 +331,34 @@ class OntologyStoreLoader {
         return label;
     }
 
-
     private SelectBuilder buildGetAllClassesQuery() {
 
         final Node owlClassNode = NodeFactory.createURI(OWL2.Class.getURI());
 
-        SelectBuilder select = new SelectBuilder()
+        SelectBuilder selectWithoutGraph = new SelectBuilder()
                 .setDistinct(true)
-                //.addVar(GRAPH_VAR)
+                .addVar(GRAPH_VAR)
                 .addVar(URI_VAR)
                 .addVar(PARENT_VAR)
                 .addWhere(URI_VAR, RDF.type, owlClassNode)
+                .addMinus(new WhereBuilder().addGraph(GRAPH_VAR, URI_VAR, RDF.type, owlClassNode));
+
+        SelectBuilder selectWithGraph = new SelectBuilder()
+                .setDistinct(true)
+                .addVar(GRAPH_VAR)
+                .addVar(URI_VAR)
+                .addGraph(GRAPH_VAR, URI_VAR, RDF.type, owlClassNode);
+
+        SelectBuilder selectAll = selectWithoutGraph
+                .addUnion(selectWithGraph)
                 .addFilter(exprFactory.isIRI(URI_VAR))
                 .addOptional(new WhereBuilder()
                         .addWhere(URI_VAR, RDFS.subClassOf, PARENT_VAR)
                         .addWhere(PARENT_VAR, RDF.type, owlClassNode)
-                        .addFilter(exprFactory.isIRI(PARENT_VAR))
-                ).addOrderBy(URI_VAR);
-                //.addGraph(GRAPH_VAR, URI_VAR, RDF.type, owlClassNode);
-
-        appendNamesAndComments(select);
-
-        return select;
+                        .addFilter(exprFactory.isIRI(PARENT_VAR)))
+                .addOrderBy(URI_VAR);
+        appendNamesAndComments(selectAll);
+        return selectAll;
     }
 
     private SelectBuilder buildGetAllPropertiesQuery() {

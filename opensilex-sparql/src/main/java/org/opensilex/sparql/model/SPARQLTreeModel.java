@@ -21,6 +21,8 @@ public abstract class SPARQLTreeModel<T extends SPARQLTreeModel<T>> extends SPAR
     protected List<T> children = new ArrayList<>();
     public static final String CHILDREN_FIELD = "children";
 
+    protected String graph;
+
     public T getParent() {
         return parent;
     }
@@ -35,6 +37,14 @@ public abstract class SPARQLTreeModel<T extends SPARQLTreeModel<T>> extends SPAR
 
     public void setChildren(List<T> children) {
         this.children = children;
+    }
+
+    public String getGraph() {
+        return graph;
+    }
+
+    public void setGraph(String graph) {
+        this.graph = graph;
     }
 
     public List<T> getNodes(boolean includeThis) {

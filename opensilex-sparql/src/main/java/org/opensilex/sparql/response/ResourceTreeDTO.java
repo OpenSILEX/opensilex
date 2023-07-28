@@ -23,6 +23,8 @@ public class ResourceTreeDTO extends NamedResourceDTO<SPARQLTreeModel<?>> {
 
     private boolean disabled;
 
+    private String graph;
+
     private List<ResourceTreeDTO> children = new LinkedList<>();
 
 
@@ -56,6 +58,14 @@ public class ResourceTreeDTO extends NamedResourceDTO<SPARQLTreeModel<?>> {
 
     public void setDisabled(boolean disabled) {
         this.disabled = disabled;
+    }
+
+    public String getGraph() {
+        return graph;
+    }
+
+    public void setGraph(String graph) {
+        this.graph = graph;
     }
 
     public static <T extends SPARQLTreeModel<T>> List<ResourceTreeDTO> fromResourceTree(List<SPARQLTreeListModel<?>>trees) {
@@ -96,7 +106,7 @@ public class ResourceTreeDTO extends NamedResourceDTO<SPARQLTreeModel<?>> {
     private static <T extends SPARQLTreeModel<T>> ResourceTreeDTO fromResourceTreeRecursive(T model, SPARQLTreeListModel<T> tree, boolean enableSelection, BiConsumer<T, ResourceTreeDTO> handler) {
         ResourceTreeDTO dto = new ResourceTreeDTO();
         dto.fromModel(model);
-
+        dto.setGraph(model.getGraph());
         dto.setSelected(enableSelection && tree.isSelected(model));
 
         List<ResourceTreeDTO> childrenDTOs = new ArrayList<>(tree.getChildCount(model));

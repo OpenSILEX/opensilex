@@ -30,6 +30,8 @@ public abstract class VocabularyModel<T extends VocabularyModel<T>> extends SPAR
     )
     protected SPARQLLabel comment;
 
+    protected String graph;
+
     @Override
     public SPARQLLabel getLabel() {
         return label;
@@ -62,5 +64,13 @@ public abstract class VocabularyModel<T extends VocabularyModel<T>> extends SPAR
         } else {
             return getUri().toString();
         }
+    }
+
+    public String getGraph() {
+        return graph;
+    }
+
+    public void setGraph(String graph) {
+        this.graph = graph;
     }
 }

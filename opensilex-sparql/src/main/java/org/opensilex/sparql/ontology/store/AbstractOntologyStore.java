@@ -180,18 +180,11 @@ public abstract class AbstractOntologyStore implements OntologyStore {
         Map<String, T> localModelsByUri = new HashMap<>();
         for (T model : models) {
             String uri = formatURI(model.getUri());
-            if (localModelsByUri.containsKey(uri)) {
-                throw new IllegalArgumentException("Duplicate URI " + uri);
-            }
             localModelsByUri.put(uri, model);
         }
 
         for (T model : models) {
             String uri = formatURI(model.getUri());
-            if (modelsByUris.containsKey(uri)) {
-                throw new IllegalArgumentException("URI already exist : " + uri);
-            }
-
             linkWithParent(localModelsByUri, model, uri);
             modelsByUris.put(uri, model);
         }

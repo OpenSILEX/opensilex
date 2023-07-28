@@ -57,6 +57,18 @@ module but that would necessitate to adapt the `ExtraCredentialService`.
 No generic frontend is available, only a specific one for Recherche Data Gouv.
 The Recherche Data Gouv Base Path setup for the instance can be retrieved using the corresponding webservice.
 
+#### Dataverse client
+
+In order to query the dataverse API, we originally used the Java dataverse client provided by IQSS (https://github.com/IQSS/dataverse-client-java).
+However, using it as a dependency triggered a deployment error on some servers. So, fully integrated the code of the
+client into OpenSILEX under the `com.researchspace` package.
+
+As the dataverse client was originally designed with Lombok, we had to "delombok" it in order not to add another dependency
+to OpenSILEX. See the [relevant documentation](https://projectlombok.org/features/delombok).
+
+> WARNING : The original work is licensed under the Apache 2.0 License. That means that any change to the original 
+source files must be marked in some way, for example by adding a comment on top of the file.
+
 ### Tests
 
 The tests are very limited due to our architecture.

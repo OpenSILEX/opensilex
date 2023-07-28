@@ -613,7 +613,7 @@
 <!--------------------- TABLE ----------------------------->
     <div
       id="selectedTable"
-      v-if="selectedFeatures.length !== 0  && !checkZoom"
+      v-if="selectedFeatures.length !== 0"
       class="selected-features"
     >
       <opensilex-TableView
@@ -1210,14 +1210,17 @@ export default class MapView extends Vue {
 
     //get visible OS features
   getFeatures(){
-    let clusterSource = this.clusterSource;
-    clusterSource.$source.clear();
+    if(this.vectorSource === undefined){
+      return ;
+    } else {
+      let clusterSource = this.clusterSource;
+      clusterSource.$source.clear();
 
-    this.$opensilex.showLoader();
+      this.$opensilex.showLoader();
 
-    let features =[];
+      let features =[];
 
-    this.vectorSource.forEach((vector) => {
+      this.vectorSource.forEach((vector) => {
         const isVectorSourceMounted = (vector) =>
             vector &&
             vector.getFeatures() &&
@@ -1228,13 +1231,14 @@ export default class MapView extends Vue {
             this.vectorSource.length === this.featuresOS.length &&
             this.vectorSource.every(isVectorSourceMounted)
         ).then(() => {
-            if(vector.$parent.$layer.getVisible()){
-                features.push(vector.getFeatures());
-            }
-            this.$opensilex.hideLoader();
-            clusterSource.$source.addFeatures(features.flat());
+          if(vector.$parent.$layer.getVisible()){
+            features.push(vector.getFeatures());
+          }
+          this.$opensilex.hideLoader();
+          clusterSource.$source.addFeatures(features.flat());
         })
-    })
+      })
+    }
   }
 
   // manage behavior on click on cluster point -> zoom in

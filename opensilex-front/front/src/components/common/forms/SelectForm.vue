@@ -731,19 +731,19 @@ export default class SelectForm extends Vue {
   convertTypeColor(color) {
     switch (color) {
       case "sixtine": return {
-        'background-color': 'blue',
+        'background-color': '#007bff',
         'color': 'white'
       };
       case "phis": return {
-        'background-color': 'green',
+        'background-color': '#28a745',
         'color': 'white'
       };
       case "error": return {
-        'background-color': 'red',
+        'background-color': '#dc3545',
         'color': 'white'
       };
       case "global": return {
-        'background-color': 'black',
+        'background-color': '#343a40',
         'color': 'white'
       };
     }

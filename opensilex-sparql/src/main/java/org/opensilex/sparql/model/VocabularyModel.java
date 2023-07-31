@@ -11,6 +11,7 @@ package org.opensilex.sparql.model;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 
+import java.util.Objects;
 import java.util.Set;
 
 public abstract class VocabularyModel<T extends VocabularyModel<T>> extends SPARQLTreeModel<T>
@@ -72,5 +73,19 @@ public abstract class VocabularyModel<T extends VocabularyModel<T>> extends SPAR
 
     public void setGraph(String graph) {
         this.graph = graph;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        VocabularyModel<?> that = (VocabularyModel<?>) o;
+        return Objects.equals(graph, that.graph);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), graph);
     }
 }

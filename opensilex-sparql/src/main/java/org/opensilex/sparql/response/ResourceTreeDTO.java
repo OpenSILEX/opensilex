@@ -136,7 +136,7 @@ public class ResourceTreeDTO extends NamedResourceDTO<SPARQLTreeModel<?>> {
             return false;
         }
         final ResourceTreeDTO other = (ResourceTreeDTO) obj;
-        return Objects.equals(this.uri, other.uri);
+        return Objects.equals(this.uri, other.uri) && Objects.equals(this.graph, other.graph);
     }
 
 }

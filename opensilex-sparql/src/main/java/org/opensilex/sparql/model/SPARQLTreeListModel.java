@@ -5,6 +5,8 @@
  */
 package org.opensilex.sparql.model;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
 import java.net.URI;
@@ -19,8 +21,9 @@ public class SPARQLTreeListModel<T extends SPARQLTreeModel<T>> {
 
     private final HashMap<URI, Set<T>> modelsByParent = new HashMap<>();
     private final HashMap<URI, T> parentByModel = new HashMap<>();
-
+    private final Map<Pair<URI, String>, T> debugModel = new HashMap<>();
     private final List<URI> selectionList;
+    private final List<Pair<URI, String>> debugSelection;
     private final URI root;
     private final boolean excludeRoot;
 
@@ -30,10 +33,13 @@ public class SPARQLTreeListModel<T extends SPARQLTreeModel<T>> {
 
     public SPARQLTreeListModel(Collection<T> selectionList, URI root, boolean excludeRoot, boolean addSelectionToTree) {
         this.selectionList = new ArrayList<>(selectionList.size());
+        this.debugSelection = new ArrayList<>(selectionList.size());
         for (T instance : selectionList) {
             URI formattedUri = SPARQLDeserializers.formatURI(instance.getUri());
             this.selectionList.add(formattedUri);
+            this.debugSelection.add(Pair.of(formattedUri, instance.getGraph()));
             this.parentByModel.put(formattedUri, instance.getParent());
+            this.debugModel.put(Pair.of(formattedUri, instance.getGraph()), instance.getParent());
         }
         this.root = root != null ? SPARQLDeserializers.formatURI(root) : null;
         this.excludeRoot = excludeRoot;
@@ -132,6 +138,7 @@ public class SPARQLTreeListModel<T extends SPARQLTreeModel<T>> {
         if (!exists) {
             modelsByParent.get(parentURI).add(instance);
             parentByModel.put(SPARQLDeserializers.formatURI(instance.getUri()), instance.getParent());
+            debugModel.put(Pair.of(SPARQLDeserializers.formatURI(instance.getUri()), instance.getGraph()), instance.getParent());
         }
     }
 

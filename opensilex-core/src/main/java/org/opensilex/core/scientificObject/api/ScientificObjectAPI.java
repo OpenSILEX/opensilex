@@ -13,6 +13,7 @@ import com.mongodb.client.model.geojson.Geometry;
 import io.swagger.annotations.*;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
@@ -197,9 +198,24 @@ public class ScientificObjectAPI {
 
         select.addVar("?graph ?type ?label");
         select.setDistinct(true);
-        select.addWhere("?type", Ontology.subClassStrict, Oeso.ScientificObject);
-        select.addWhere("?type", RDFS.label, "?label");
-        select.addGraph("?graph", "?type", RDFS.label, "?label");
+
+        select.addGraph("?graph", new WhereBuilder()
+            .addWhere("?type", Ontology.subClassStrict, Oeso.ScientificObject)
+            .addWhere("?type", RDFS.label, "?label")
+        );
+
+        // The UNION is to get the triplet without graph with a MINUS in the query
+        select.addUnion(new SelectBuilder()
+                .addVar("?graph ?type ?label")
+                .setDistinct(true)
+                .addWhere("?type", Ontology.subClassStrict, Oeso.ScientificObject)
+                .addWhere("?type", RDFS.label, "?label")
+                .addMinus(new WhereBuilder().addGraph("?graph", new WhereBuilder()
+                        .addWhere("?type", Ontology.subClassStrict, Oeso.ScientificObject)
+                        .addWhere("?type", RDFS.label, "?label")
+                ))
+        );
+
         select.addFilter(SPARQLQueryHelper.langFilterWithDefault("label", currentUser.getLanguage()));
 
         List<ListItemDTO> types = new ArrayList<>();

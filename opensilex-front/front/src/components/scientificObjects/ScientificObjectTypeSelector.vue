@@ -115,21 +115,26 @@ export default class ScientificObjectTypeSelector extends Vue {
     let phis = [];
     let global = [];
 
+    let erreurFinal = new Set();
     for (let dto of data) {
-      if(dto.graph.startsWith("http://phenome.inrae.fr/openstack-test/")) {
-        phis.push(dto.uri);
-      }
+      if(!dto.graph) {
+        erreurFinal.add(dto.uri);
+      } else {
+        
+        if(dto.graph.startsWith("http://phenome.inrae.fr/openstack-test/")) {
+          phis.push(dto.uri);
+        }
 
-      if(dto.graph.startsWith("http://vegetalunit.inrae.fr/openstack-test/") || dto.graph.endsWith("oeso-sixtine")) {
-        sixtine.push(dto.uri);
-      }
+        if(dto.graph.startsWith("http://vegetalunit.inrae.fr/openstack-test/") || dto.graph.endsWith("oeso-sixtine")) {
+          sixtine.push(dto.uri);
+        }
 
-      if(dto.graph === "http://www.opensilex.org/set/properties" || dto.graph.endsWith("oeso-ext")) {
-        global.push(dto.uri);
+        if(dto.graph === "http://www.opensilex.org/set/properties" || dto.graph.endsWith("oeso-ext")) {
+          global.push(dto.uri);
+        }
       }
     }
 
-    let erreurFinal = new Set();
     let sixtineFinal = new Set();
     let phisFinal = new Set();
     let globalFinal = new Set();

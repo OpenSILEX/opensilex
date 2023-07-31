@@ -651,6 +651,7 @@ export default class OpenSilexVuePlugin {
         let option = {
             id: resourceTree.uri,
             label: resourceTree.name,
+            graph: resourceTree.graph,
             isDefaultExpanded: buildOptions.expanded,
             isDisabled: false,
             children: []

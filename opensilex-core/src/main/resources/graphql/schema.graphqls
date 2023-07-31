@@ -1,0 +1,21 @@
+schema {
+    query: Query
+}
+
+type Query {
+    hello: String
+    experiments: [Experiment]
+}
+
+type Experiment {
+    uri: String!
+    name: String!
+    scientificSupervisors: [Person]
+    technicalSupervisors: [Person]
+}
+
+type Person {
+    uri: String!
+    firstName: String!
+    lastName: String!
+}

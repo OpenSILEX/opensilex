@@ -18,7 +18,14 @@ import graphql.schema.idl.SchemaGenerator;
 import graphql.schema.idl.SchemaParser;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import io.swagger.annotations.Api;
+import org.bson.Document;
+import org.opensilex.core.device.dal.DeviceAttributeModel;
+import org.opensilex.core.device.dal.DeviceDAO;
+import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.provenance.dal.ProvenanceDAO;
+import org.opensilex.core.provenance.dal.ProvenanceModel;
+import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.sparql.service.SPARQLService;
 
@@ -40,8 +47,12 @@ public class GraphQLAPI {
     @Inject
     SPARQLService sparql;
 
-    //@todo brancher à une ressource RDF
-    //@todo brancher à une ressource mongo
+    @Inject
+    MongoDBService mongo;
+
+    //@todo brancher à une ressource RDF -> OK. Test requête custom ? (ex. OS dans XP)
+    //@todo brancher à une ressource mongo -> OK (ex. provenance)
+    //@todo faire la liaison mongo <-> RDF -> OK (ex. deviceAttribute - device)
     //@todo injection de dépendance dans les fetchers ?
     @GET
     @ApiProtected
@@ -94,6 +105,11 @@ public class GraphQLAPI {
                 .type("Query", typeWiring -> typeWiring
                         .dataFetcher("hello", new StaticDataFetcher("world"))
                         .dataFetcher("experiments", environment -> sparql.search(ExperimentModel.class, "en"))
+                        .dataFetcher("provenances", environment -> mongo.search(ProvenanceModel.class, ProvenanceDAO.PROVENANCE_COLLECTION_NAME, new Document(), null))
+                        .dataFetcher("deviceAttributes", environment -> mongo.search(DeviceAttributeModel.class, DeviceDAO.ATTRIBUTES_COLLECTION_NAME, new Document(), null))
+                )
+                .type("DeviceAttribute", typeWiring -> typeWiring
+                        .dataFetcher("device", environment -> sparql.getByURI(DeviceModel.class, environment.<DeviceAttributeModel>getSource().getUri(), "en"))
                 )
                 .build();
 

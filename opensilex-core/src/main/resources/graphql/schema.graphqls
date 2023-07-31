@@ -5,6 +5,8 @@ schema {
 type Query {
     hello: String
     experiments: [Experiment]
+    provenances: [Provenance]
+    deviceAttributes: [DeviceAttribute]
 }
 
 type Experiment {
@@ -14,8 +16,30 @@ type Experiment {
     technicalSupervisors: [Person]
 }
 
+type Account {
+    uri: String!
+    name: String!
+    linkedPerson: Person
+}
+
 type Person {
     uri: String!
     firstName: String!
     lastName: String!
+}
+
+type Provenance {
+    uri: String!
+    name: String!
+    description: String
+}
+
+type Device {
+    uri: String!
+    name: String!
+}
+
+type DeviceAttribute {
+    uri: String!
+    device: Device
 }

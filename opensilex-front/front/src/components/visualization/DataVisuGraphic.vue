@@ -461,10 +461,10 @@ export default class DataVisuGraphic extends Vue {
               if (point.y) {
                 return (
                     "" +
-                    this.point.series.name +
+                    point.series.name +
                     " :" +
                     '<span style=" color:' +
-                    this.point.color +
+                    point.color +
                     '" ><b> ' +
                     point.data.value +
                     "</b></span>" +
@@ -483,11 +483,14 @@ export default class DataVisuGraphic extends Vue {
                     '<span style=" color:' +
                     point.color +
                     '" ><b>' +
-                    point.text +
+                    point.data.value +
                     "</b></span>" +
                     "<br/>Time:<b> " +
                     that.$opensilex.$dateTimeFormatter.formatLocaleDateTime(this.x) +
-                    "</b> "
+                    "</b> " +
+                    "<br/> Target: <b>" +
+                    point.data.target +
+                    "</b>"
                 );
               }
             },
@@ -509,7 +512,7 @@ export default class DataVisuGraphic extends Vue {
               turboThreshold: 100000,
               cursor: "pointer",
               dataGrouping: {
-                enabled: true
+                enabled: false,
               },
               lineWidth: this.lineWidth ? 2 : 0, //scatter plot
               stickyTracking: false, //tooltip only on hover

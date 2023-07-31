@@ -2,7 +2,7 @@
   <opensilex-Overlay :show="!isDataLoaded && !isNoDataFound">
     <opensilex-Card
         ref="tilePanel"
-        class="item"
+        class="item variableTile"
         :label="variableUri.name"
         @click="showGraphic"
     >

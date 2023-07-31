@@ -734,6 +734,14 @@ a.external-url-link:hover {
 }
 
 /********************************
+* FACILITIES
+********************************/
+
+.variableTile .capitalize-first-letter {
+    width: 100%;
+}
+
+/********************************
 * MEDIA QUERIES
 ********************************/
 

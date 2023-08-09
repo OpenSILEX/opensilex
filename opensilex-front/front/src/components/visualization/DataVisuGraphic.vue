@@ -363,7 +363,7 @@ export default class DataVisuGraphic extends Vue {
       return [
         {
           chart: {
-            zoomType: "x", 
+            zoomType: "x",
             marginLeft: 80,
             marginRight: 80,
             height: that.series.length > 8 ? 800 : 700,
@@ -432,7 +432,7 @@ export default class DataVisuGraphic extends Vue {
             verticalAlign: "bottom",
             align: "center",
             layout: "horizontal"
-        
+
           },
           xAxis: {
             type: "datetime",
@@ -591,7 +591,7 @@ export default class DataVisuGraphic extends Vue {
       }
     }
     this.yAxis[0].labels.x = 25; // space between scale numbers and graphic
-    this.yAxis[0].title.x = 25; // space between scale numbers and Yaxis title 
+    this.yAxis[0].title.x = 25; // space between scale numbers and Yaxis title
     this.yAxis[1].opposite = false;
     this.yAxis[1].labels.x = -10;
     this.yAxis[1].title.x = -10;
@@ -753,7 +753,7 @@ export default class DataVisuGraphic extends Vue {
   }
 
   exportPNG() {
-    if (this.selectedPointsCount < 1500) { 
+    if (this.selectedPointsCount < 1500) {
       this.highchartsRef[0].chart.exportChart({
         type: "image/png",
         filename: this.exportDateFormated + "_graphic_opensilex"
@@ -887,7 +887,7 @@ export default class DataVisuGraphic extends Vue {
 <style scoped lang="scss">
 
 .graphContainer {
-  height: 600px;
+  height: auto;
   min-height:600px;
 }
 

@@ -166,8 +166,7 @@ export default class SelectForm extends Vue {
    * selection but as a list of jsons, containing at least name and uri of each selected item. Required to show labels of pre-existing elements
    */
   @Prop({default: null})
-  selectedInJsonFormat
-
+  selectedInJsonFormat;
 
   @Prop()
   multiple;
@@ -341,28 +340,32 @@ export default class SelectForm extends Vue {
           resolve(this.currentValue);
         } else {
           //Set table async view's checked items
-          let jsonSelectedItems = this._convertSelectedToJson();
-          if(this.searchModal.setInitiallySelectedItems){
-            this.searchModal.setInitiallySelectedItems(jsonSelectedItems);
-          }
-          //Set selectedTmp and selectedCopie
-            if( this.firstTimeOpening ){
-                this.firstTimeOpening = false;
-                if( this.selectedInJsonFormat ){
-                    this.selectedTmp = this.selectedInJsonFormat.map(e => this.conversionMethod(e));
-                    this.selectedCopie = this.selectedInJsonFormat.map(e => this.conversionMethod(e));
-                }
+          this.$nextTick(()=> {
+            if(this.searchModal.setInitiallySelectedItems){
+              this.searchModal.setInitiallySelectedItems(this.selectedInJsonFormat);
             }
-          let nodeList = [];
-          this.selectedTmp.forEach((item) => {
-            nodeList.push(this.conversionMethod(item));
+            //Set selectedTmp and selectedCopie
+            if( this.firstTimeOpening ){
+              this.firstTimeOpening = false;
+              if( this.selectedInJsonFormat ){
+                this.selectedTmp = this.selectedInJsonFormat.map(e => this.conversionMethod(e));
+                this.selectedCopie = this.selectedInJsonFormat.map(e => this.conversionMethod(e));
+              }
+            }
+            let nodeList = [];
+            this.selectedTmp.forEach((item) => {
+              nodeList.push(this.conversionMethod(item));
+            });
+            this.currentValue = nodeList;
+            if (this.loading) {
+              this.loading = false;
+            }
+            //if there are items initially selected, send the event "onValidate", without the need to open and validate in the modal, to send data to the form
+            if(this.selectedInJsonFormat && this.currentValue !== []){
+              this.$emit('onValidate', this.selectedCopie);
+            }
+            resolve(this.currentValue);
           });
-          this.currentValue = nodeList;
-          if (this.loading) {
-            this.loading = false;
-          }
-          resolve(this.currentValue);
-
         }
       } else {
         if (this.itemLoadingMethod) {
@@ -490,19 +493,6 @@ export default class SelectForm extends Vue {
     }
 
     return "";
-  }
-
-  /**
-   * Converts selected prop to a new list of jsons, each json has 1 field : long uri
-   * Used to set TableAsyncView's initially selected items
-   * @private
-   */
-  private _convertSelectedToJson(){
-    let result = [];
-    for(const uri of this.selection){
-      result.push({uri:this.$opensilex.getLongUri(uri)});
-    }
-    return result;
   }
 
  select(value) {
@@ -708,12 +698,12 @@ export default class SelectForm extends Vue {
   updateModal() {
     // unselect temporary items that are not in confirmed selection
     //This line creates a new array containing elements from selectedTmp that aren't in selectedCopie
-      let difference = this.selectedTmp.filter(x => !this.selectedCopie.some(el => el.uri === x.uri));
+    let difference = this.selectedTmp.filter(x => !this.selectedCopie.some(el => el.uri === x.uri));
     difference.forEach((item) => {
       this.searchModal.unSelect(item);
     });
     // reselect previously confirmed items that are not in temporary selection
-      difference = this.selectedCopie.filter(x => !this.selectedTmp.some(el => el.uri === x.uri));
+    difference = this.selectedCopie.filter(x => !this.selectedTmp.some(el => el.uri === x.uri));
     difference.forEach((item) => {
       this.searchModal.selectItem(item);
     });

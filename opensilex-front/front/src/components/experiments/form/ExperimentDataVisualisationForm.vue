@@ -17,9 +17,12 @@
             <div>
               <opensilex-FilterField>
                 <opensilex-UsedScientificObjectSelector
+                  ref="soSelector"
                   label="DataView.filter.scientificObjects"
                   placeholder="DataView.filter.scientificObjects-placeholder"
                   :scientificObjects.sync="scientificObjectsURI"
+                  :scObjects="soWithLabels"
+                  :mapMode="mapMode"
                   :soFilter="soFilter"
                   :experiment="selectedExperiment"
                   :required="true"
@@ -140,6 +143,8 @@ import { EventGetDTO, ProvenanceGetDTO } from "opensilex-core/index";
 // @ts-ignore
 import HttpResponse, { OpenSilexResponse } from "opensilex-core/HttpResponse";
 import { ScientificObjectsService } from "opensilex-core/index";
+import {ScientificObjectDetailDTO} from "opensilex-core/model/scientificObjectDetailDTO";
+import UsedScientificObjectSelector from 'src/components/scientificObjects/views/UsedScientificObjectSelector.vue';
 
 let lastWeekDate = new Date(new Date((new Date).setDate(new Date().getDate() - 7)).setHours(0,0,0,0))
 
@@ -152,10 +157,15 @@ export default class ExperimentDataVisualisationForm extends Vue {
   selectedProvenance: any = null;
   visibleDetails: boolean = false;
   countIsLoading : boolean = false;
+  @Prop()
+  mapMode;
+  @Prop()
+  soWithLabels :Array<ScientificObjectDetailDTO>;
 
   @Ref("searchField") readonly searchField!: any;
   @Ref("provSelector") readonly provSelector!: any;
   @Ref("variableRef") readonly variableRef!: any;
+  @Ref("soSelector") readonly soSelector!: UsedScientificObjectSelector;
 
   filter = {
     scientificObject: [],
@@ -324,6 +334,10 @@ export default class ExperimentDataVisualisationForm extends Vue {
   onValidateScientificObjects(selection) {
     this.variableRef.refreshVariableSelector();
     this.$emit("onValidateScientificObjects", selection);
+  }
+  setSelectorsToFirstTimeOpenAndSetLabels(soWithLabels ){
+    this.soSelector.setSoSelectorToFirstTimeOpen();
+    this.soWithLabels = soWithLabels ;
   }
 }
 </script>

@@ -37,6 +37,8 @@
               :refreshSoSelector="refreshSoSelector"
               :refreshProvComponent="refreshProvComponent"
               :soFilter="soFilter"
+              :mapMode="mapMode"
+              :soWithLabels="soWithLabels"
               @search="onSearch"
               @onValidateScientificObjects="onValidateScientificObjects"
           ></opensilex-ExperimentDataVisualisationForm>
@@ -96,7 +98,7 @@ import {
   VariablesService
 } from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
-import {Component, Prop, Ref, Watch} from "vue-property-decorator";
+import {Component, Prop, PropSync, Ref, Watch} from "vue-property-decorator";
 import OpenSilexVuePlugin from '../../../models/OpenSilexVuePlugin'
 import Vue from "vue";
 import HighchartsDataTransformer, {
@@ -155,6 +157,14 @@ export default class ExperimentDataVisualisationView extends Vue {
   searchFiltersToggle: boolean = true;
   showImages = true;
 
+  @Prop()
+  selected;
+
+  @Prop({default : false})
+  mapMode;
+
+  @Prop()
+  soWithLabels;
 
   @Prop()
   refreshSoSelector;
@@ -179,6 +189,12 @@ export default class ExperimentDataVisualisationView extends Vue {
         lang => {
         }
     );
+
+    if(this.mapMode){
+      this.selectedScientificObjects = this.selected;
+    }
+
+    this.experimentDataVisualisationForm.setSelectorsToFirstTimeOpenAndSetLabels(this.soWithLabels);
   }
 
   beforeDestroy() {
@@ -735,7 +751,7 @@ export default class ExperimentDataVisualisationView extends Vue {
 }
 
 .experimentDataVisualisationGraphicWithoutForm {
-  min-width: 100%;
+  min-width: 98%;
   max-width: 100vw;
 }
 </style>

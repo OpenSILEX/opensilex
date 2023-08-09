@@ -1184,33 +1184,67 @@ public class ScientificObjectDAO {
     }
 
      
-    public Collection<String> getScientificObjectsByDate(URI contextURI, String startDate, String endDate, Collection<URI> uris) throws Exception {
-        Var uriVar = makeVar("uri");
-        Var typeVar = makeVar("type");
-        Var creationDateVar = makeVar("creationDate");
-        Var destructionDateVar = makeVar("destructionDate");
-        SelectBuilder select = new SelectBuilder();
+    public List<ScientificObjectNodeDTO> getScientificObjectsByDate(URI contextURI, String startDate, String endDate,String lang, Collection<URI> uris) throws Exception {
 
         Node context = SPARQLDeserializers.nodeURI(contextURI);
-        select.addGraph(context, uriVar, RDF.type, typeVar);
-        select.addOptional(uriVar, Oeso.hasCreationDate, creationDateVar);
-        select.addOptional(uriVar, Oeso.hasDestructionDate, destructionDateVar);
-        LocalDate start = startDate == null ? null : LocalDate.parse(startDate);
-        LocalDate end = endDate == null ? null : LocalDate.parse(endDate);
-        Expr expr = dateRange("creationDate", start, "destructionDate", end);
-        select.addFilter(SPARQLQueryHelper.inURIFilter(uriVar, uris));
-        select.addFilter(expr);
 
-        Collection<String> types = new HashSet<>();
-        sparql.executeSelectQuery(select, (row) -> {
-            try {
-                URI uri = new URI(row.getStringValue("uri"));
-                types.add(SPARQLDeserializers.getShortURI(uri));
-            } catch (URISyntaxException ex) {
-                throw new RuntimeException(ex);
-            }
-        });
-        return types;
+        Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
+        Var nameVar = makeVar(SPARQLNamedResourceModel.NAME_FIELD);
+        Var typeVar = makeVar(SPARQLResourceModel.TYPE_FIELD);
+        Var typeNameVar = makeVar(SPARQLResourceModel.TYPE_NAME_FIELD);
+        Var creationDateVar = makeVar(ScientificObjectModel.CREATION_DATE_FIELD);
+        Var destructionDateVar = makeVar(ScientificObjectModel.DESTRUCTION_DATE_FIELD);
+
+        SelectBuilder select = new SelectBuilder();
+
+        // Define request var
+        select.addVar(uriVar);
+        select.addVar(nameVar);
+        select.addVar(typeVar);
+        select.addVar(typeNameVar);
+        select.addVar(creationDateVar);
+        select.addVar(destructionDateVar);
+
+        // Add label and type in where clause
+        WhereBuilder graphHandler = new WhereBuilder();
+        select.addWhere(typeVar, Ontology.subClassAny, Oeso.ScientificObject);
+        graphHandler.addWhere(uriVar, RDFS.label, nameVar);
+        graphHandler.addWhere(uriVar, RDF.type, typeVar);
+
+        // Add creation and destruction date as optional fields
+        graphHandler.addOptional(uriVar, Oeso.hasCreationDate, creationDateVar);
+        graphHandler.addOptional(uriVar, Oeso.hasDestructionDate, destructionDateVar);
+
+        // Add rdf type label in where clause
+        WhereHandler optionalTypeLabelHandler = new WhereHandler();
+        optionalTypeLabelHandler.addWhere(select.makeTriplePath(typeVar, RDFS.label, typeNameVar));
+        // Add rdf type label lang filter
+        Locale locale = Locale.forLanguageTag(lang);
+        optionalTypeLabelHandler.addFilter(SPARQLQueryHelper.langFilterWithDefault(SPARQLResourceModel.TYPE_NAME_FIELD, locale.getLanguage()));
+        select.getWhereHandler().addOptional(optionalTypeLabelHandler);
+
+        //Add uris filter
+        graphHandler.addFilter(SPARQLQueryHelper.inURIFilter(uriVar, uris));
+
+        //Add date filter
+        if( startDate != null || endDate != null ){
+            LocalDate start = startDate == null ? null : LocalDate.parse(startDate);
+            LocalDate end = endDate == null ? null : LocalDate.parse(endDate);
+            Expr expr = dateRange(ScientificObjectModel.CREATION_DATE_FIELD, start, ScientificObjectModel.DESTRUCTION_DATE_FIELD, end);
+            graphHandler.addFilter(expr);
+        }
+
+        select.addGraph(context, graphHandler);
+
+        Stream<SPARQLResult> resultStream = sparql.executeSelectQueryAsStream(select);
+
+        if(resultStream == null){
+            return new ArrayList<>(Collections.emptyList());
+        }
+        else{
+            List<ScientificObjectNodeDTO> results = streamToList(resultStream,dtoFromResult());
+            return results;
+        }
     }
     
     public static Expr dateRange(String startDateVarName, Object startDate, String endDateVarName, Object endDate) throws Exception {

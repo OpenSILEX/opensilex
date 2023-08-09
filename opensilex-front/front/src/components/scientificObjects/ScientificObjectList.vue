@@ -445,6 +445,9 @@ export default class ScientificObjectList extends Vue {
   onItemSelected(row) {
     this.tableRef.onItemSelected(row);
   }
+  setInitiallySelectedItems(initiallySelectedItems:any){
+    this.tableRef.setInitiallySelectedItems(initiallySelectedItems);
+  }
 }
 </script>
 

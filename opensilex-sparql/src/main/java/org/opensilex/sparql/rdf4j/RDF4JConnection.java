@@ -217,6 +217,11 @@ public class RDF4JConnection extends BaseService implements SPARQLConnection {
     }
 
     @Override
+    public boolean hasActiveTransaction() {
+        return rdf4JConnection.isActive();
+    }
+
+    @Override
     public void startTransaction() throws SPARQLException {
         try {
             rdf4JConnection.begin();
@@ -245,12 +250,9 @@ public class RDF4JConnection extends BaseService implements SPARQLConnection {
     }
 
     @Override
-    public void rollbackTransaction(Exception ex) throws Exception {
+    public void rollbackTransaction() throws SPARQLException {
         try {
             rdf4JConnection.rollback();
-            if(ex != null){
-                throw ex;
-            }
         } catch (RepositoryException e) {
             Throwable cause = e.getCause();
             if (cause instanceof ShaclSailValidationException) {

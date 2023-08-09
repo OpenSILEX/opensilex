@@ -133,4 +133,6 @@ public class AreaCreationDTO {
     public void setEvent(EventCreationDTO event) {
         this.event = event;
     }
+
+
 }

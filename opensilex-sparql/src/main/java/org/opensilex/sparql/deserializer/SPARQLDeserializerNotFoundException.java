@@ -5,13 +5,15 @@
 //******************************************************************************
 package org.opensilex.sparql.deserializer;
 
+import org.opensilex.sparql.exceptions.SPARQLException;
+
 import java.net.URI;
 
 /**
  *
  * @author vincent
  */
-public class SPARQLDeserializerNotFoundException extends Exception {
+public class SPARQLDeserializerNotFoundException extends SPARQLException {
 
     /**
      *

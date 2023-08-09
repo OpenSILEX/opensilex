@@ -7,6 +7,7 @@ package org.opensilex.sparql.deserializer;
 
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Node;
+import org.opensilex.sparql.exceptions.SPARQLException;
 
 /**
  *
@@ -14,11 +15,11 @@ import org.apache.jena.graph.Node;
  */
 public interface SPARQLDeserializer<T> {
 
-    public T fromString(String value) throws Exception;
+    T fromString(String value) throws SPARQLException;
 
-    public Node getNode(Object value) throws Exception;
+    Node getNode(Object value) throws SPARQLException;
 
-    public default boolean validate(String value) {
+    default boolean validate(String value) {
         try {
             return this.getDataType().isValid(value);
         } catch (Exception ex) {
@@ -26,17 +27,17 @@ public interface SPARQLDeserializer<T> {
         }
     }
 
-    public XSDDatatype getDataType();
+    XSDDatatype getDataType();
 
-    public default String getNodeString(Object value) throws Exception {
+    default String getNodeString(Object value) throws SPARQLException {
         return getNode(value).toString();
     }
 
-    public default Node getNodeFromString(String value) throws Exception {
+    default Node getNodeFromString(String value) throws SPARQLException {
         return getNode(fromString(value));
     }
 
-    public default Class<T> getClassType() {
+    default Class<T> getClassType() {
         return (Class<T>) SPARQLDeserializers.getDeserializerClass(this);
     }
 

@@ -245,6 +245,10 @@ public class MongoDBService extends BaseService {
         return createAll(instances,collection,session,null,false,false);
     }
 
+    public <T> T findByURI(MongoCollection<T> collection, URI uri) throws NoSQLInvalidURIException {
+        return this.findByURI(collection, uri, MongoModel.URI_FIELD);
+    }
+
     /**
      * @param collection the collection on which find an instance with the given uri
      * @param uri        URI of the instance to find

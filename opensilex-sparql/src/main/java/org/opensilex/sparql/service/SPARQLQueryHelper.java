@@ -36,6 +36,7 @@ import java.util.stream.Stream;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Property;
 
+import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.utils.OrderBy;
 
 import javax.ws.rs.core.Response;
@@ -292,7 +293,7 @@ public class SPARQLQueryHelper {
      * @see SelectBuilder#addWhereValueVar(Object, Object...)
      * @see SPARQLDeserializers#getForClass(Class)
      */
-    public static void addWhereValues(WhereClause<?> where, String varName, Collection<?> values) throws Exception {
+    public static void addWhereValues(WhereClause<?> where, String varName, Collection<?> values) throws SPARQLException {
 
         if (values.isEmpty()) {
             return;

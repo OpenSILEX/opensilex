@@ -20,7 +20,9 @@ import org.apache.jena.sparql.syntax.ElementNamedGraph;
 import org.apache.jena.sparql.syntax.ElementOptional;
 import org.apache.jena.vocabulary.*;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidClassDefinitionException;
+import org.opensilex.sparql.exceptions.SPARQLInvalidModelException;
 import org.opensilex.sparql.exceptions.SPARQLMapperNotFoundException;
 import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
@@ -340,7 +342,7 @@ class SPARQLClassQueryBuilder {
         return create;
     }
 
-    public <T extends SPARQLResourceModel> Node addCreateBuilder(Node graph, T instance, UpdateBuilder create, boolean blankNode, BiConsumer<UpdateBuilder, Node> createExtension) throws Exception {
+    public <T extends SPARQLResourceModel> Node addCreateBuilder(Node graph, T instance, UpdateBuilder create, boolean blankNode, BiConsumer<UpdateBuilder, Node> createExtension) throws SPARQLException {
         Node uriNode = executeOnInstanceTriples(graph, instance, (Quad quad, Field field) -> {
 
             if (graph == null) {
@@ -657,7 +659,7 @@ class SPARQLClassQueryBuilder {
         addOptionalLangClause(where, fieldVar, property, fieldNameVar, "");
     }
 
-    private <T extends SPARQLResourceModel> Node executeOnInstanceTriples(Node graph, T instance, BiConsumer<Quad, Field> tripleHandler, boolean blankNode) throws Exception {
+    private <T extends SPARQLResourceModel> Node executeOnInstanceTriples(Node graph, T instance, BiConsumer<Quad, Field> tripleHandler, boolean blankNode) throws SPARQLException {
         Quad quad;
         Triple triple;
 
@@ -670,7 +672,7 @@ class SPARQLClassQueryBuilder {
         }
 
         if (instance.getType() == null) {
-            instance.setType(new URI(analyzer.getRDFType().getURI()));
+            instance.setType(URI.create(analyzer.getRDFType().getURI()));
         }
 
         triple = new Triple(uriNode, RDF.type.asNode(), SPARQLDeserializers.nodeURI(instance.getType()));
@@ -682,8 +684,7 @@ class SPARQLClassQueryBuilder {
 
             if (fieldValue == null) {
                 if (!analyzer.isOptional(field)) {
-                    // TODO change exception type
-                    throw new Exception("Field value can't be null: " + field.getName());
+                    throw new SPARQLInvalidModelException("Field value can't be null: " + field.getName());
                 }
             } else {
                 Property property = analyzer.getDataPropertyByField(field);
@@ -703,15 +704,13 @@ class SPARQLClassQueryBuilder {
 
             if (fieldValue == null) {
                 if (!analyzer.isOptional(field)) {
-                    // TODO change exception type
-                    throw new Exception("Field value can't be null: " + field.getName());
+                    throw new SPARQLInvalidModelException("Field value can't be null: " + field.getName());
                 }
             } else {
                 SPARQLClassObjectMapper<SPARQLResourceModel> fieldMapper = mapperIndex.getForClass(fieldValue.getClass());
                 URI propertyFieldURI = fieldMapper.getURI(fieldValue);
                 if (propertyFieldURI == null) {
-                    // TODO change exception type
-                    throw new Exception("Object URI value can't be null: " + field.getName());
+                    throw new SPARQLInvalidModelException("Object URI value can't be null: " + field.getName());
                 } else {
                     Property property = analyzer.getObjectPropertyByField(field);
                     if (analyzer.isReverseRelation(field)) {
@@ -731,8 +730,7 @@ class SPARQLClassQueryBuilder {
             Object fieldValue = analyzer.getFieldValue(field, instance);
             if (fieldValue == null) {
                 if (!analyzer.isOptional(field)) {
-                    // TODO change exception type
-                    throw new Exception("Field value can't be null: " + field.getName());
+                    throw new SPARQLInvalidModelException("Field value can't be null: " + field.getName());
                 }
             } else {
                 SPARQLLabel label = (SPARQLLabel) fieldValue;
@@ -776,15 +774,13 @@ class SPARQLClassQueryBuilder {
                 for (Object listValue : fieldValues) {
                     if (listValue == null) {
                         if (!analyzer.isOptional(field)) {
-                            // TODO change exception type
-                            throw new Exception("Field value can't be null");
+                            throw new SPARQLInvalidModelException("Field value can't be null");
                         }
                     } else {
                         SPARQLClassObjectMapper<SPARQLResourceModel> fieldMapper = mapperIndex.getForClass(listValue.getClass());
                         URI propertyFieldURI = fieldMapper.getURI(listValue);
                         if (propertyFieldURI == null) {
-                            // TODO change exception type
-                            throw new Exception("Object URI value can't be null");
+                            throw new SPARQLInvalidModelException("Object URI value can't be null");
                         } else {
                             Property property = analyzer.getObjectListPropertyByField(field);
                             Node propertyFieldNode = SPARQLDeserializers.nodeURI(propertyFieldURI);
@@ -810,7 +806,7 @@ class SPARQLClassQueryBuilder {
         return uriNode;
     }
 
-    private <T extends SPARQLResourceModel> void addRelationsQuads(Node graph, Node uriNode, T instance, UpdateBuilder builder) throws Exception {
+    private <T extends SPARQLResourceModel> void addRelationsQuads(Node graph, Node uriNode, T instance, UpdateBuilder builder) throws SPARQLException {
 
         if(instance.getRelations() == null){
             return;

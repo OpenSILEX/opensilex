@@ -31,6 +31,7 @@ import java.util.stream.Stream;
 
 import com.mongodb.client.result.InsertManyResult;
 import com.mongodb.client.result.InsertOneResult;
+import com.mongodb.client.result.UpdateResult;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.jena.arq.querybuilder.Order;
 import org.bson.BsonDocument;
@@ -63,7 +64,6 @@ public class MongoDBService extends BaseService {
     public static final String DEFAULT_SERVICE = "mongodb";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MongoDBService.class);
-    private static final String URI_FIELD = "uri";
 
     private final String dbName;
     private MongoClient mongoClient;
@@ -518,14 +518,18 @@ public class MongoDBService extends BaseService {
         T instance = findByURI(collection, uri, uriField);
         if (instance == null) {
             throw new NoSQLInvalidURIException(uri);
+        }
+        return deleteIfExists(collection, session, eq(uriField, uri));
+    }
+
+    public <T extends MongoModel> DeleteResult deleteIfExists(MongoCollection<T> collection, ClientSession session, Bson filter) {
+        if (session != null) {
+            return collection.deleteOne(session, filter);
         } else {
-            if (session != null) {
-                return collection.deleteOne(session, eq(URI_FIELD, uri));
-            } else {
-                return collection.deleteOne(eq(URI_FIELD, uri));
-            }
+            return collection.deleteOne(filter);
         }
     }
+
 
     public <T extends MongoModel> DeleteResult delete(MongoCollection<T> collection, ClientSession session, List<URI> uris) throws Exception {
         LOGGER.debug("MONGO DELETE - Collection : {}, {} uris to delete", collection.getNamespace().getCollectionName(), uris.size());
@@ -553,6 +557,13 @@ public class MongoDBService extends BaseService {
     public <T extends MongoModel> void update(T newInstance, MongoCollection<T> collection) throws NoSQLInvalidURIException {
         LOGGER.debug("MONGO UPDATE - Collection : {}", collection.getNamespace().getCollectionName());
         update(newInstance, collection, MongoModel.URI_FIELD);
+    }
+
+    /**
+     * @see <a href="https://www.mongodb.com/docs/drivers/java/sync/current/fundamentals/crud/write-operations/upsert/">Insert or Update in a Single Operation</a>
+     */
+    public <T extends MongoModel> UpdateResult updateOrCreate(MongoCollection<T> collection, ClientSession session, T newInstance, Bson idFilter) {
+        return collection.replaceOne(session, idFilter, newInstance, new ReplaceOptions().upsert(true));
     }
 
     public <T extends MongoModel> void updateOrDelete(String idField, URI uri, T instance, MongoCollection<T> collection, ClientSession session) {

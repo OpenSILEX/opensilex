@@ -135,13 +135,13 @@ public class EventDAO<T extends EventModel> {
         return model;
     }
 
-    public List<T> create(List<T> models) throws Exception {
+    public Collection<T> create(Collection<T> models) throws Exception {
         check(models, true);
         sparql.create(eventGraph, models, SPARQLService.DEFAULT_MAX_INSTANCE_PER_QUERY, false);
         return models;
     }
 
-    protected void check(List<T> models, boolean checkNewModel) throws Exception {
+    protected void check(Collection<T> models, boolean checkNewModel) throws Exception {
 
         final int batchSize = 256;
         int i = 0;

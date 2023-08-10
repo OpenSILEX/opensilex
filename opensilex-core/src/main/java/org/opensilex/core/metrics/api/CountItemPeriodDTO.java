@@ -6,13 +6,13 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @JsonPropertyOrder({"difference_count"})
 public class CountItemPeriodDTO extends CountItemDTO {
     @JsonProperty("difference_count")
-    private Integer diffCount;
+    private Integer differenceCount;
 
     public Integer getDifferenceCount() {
-        return diffCount;
+        return differenceCount;
     }
 
-    public void setDifferenceCount(Integer diffCount) {
-        this.diffCount = diffCount;
+    public void setDifferenceCount(Integer differenceCount) {
+        this.differenceCount = differenceCount;
     }
 }

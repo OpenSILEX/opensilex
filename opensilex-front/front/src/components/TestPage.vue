@@ -19,7 +19,18 @@
           -->
 
       <div class="row">
+        <opensilex-CreateButton
+          label="Create"
+          @click="showEntityCreateForm"
+        >
+        </opensilex-CreateButton>
+        <opensilex-AgroportalEntityCreate
+            ref="entityForm"
+            @onCreate="setLoadedEntity"
+        >
+        </opensilex-AgroportalEntityCreate>
 
+        <!--
         <div class="col-sm-4">
           <opensilex-AgroportalSearch
             @change="onSearchTextChange"
@@ -31,10 +42,7 @@
               @selected="selectResult">
           </opensilex-AgroportalResults>
         </div>
-
-        <div class="col">
-
-        </div>
+        -->
 
       </div>
     </opensilex-PageContent>
@@ -50,6 +58,8 @@ import {Ref} from "vue-property-decorator";
 import AgroportalResults from "./variables/AgroportalResults.vue";
 import OpenSilexVuePlugin from "../models/OpenSilexVuePlugin";
 import {EntityAgroportalDTO} from "opensilex-core/model/entityAgroportalDTO";
+import {EntityCreationDTO} from "opensilex-core/model/entityCreationDTO";
+import AgroportalEntityCreate from "./variables/agroportal/AgroportalEntityCreate.vue";
 
 @Component
 export default class TestPage extends Vue {
@@ -59,6 +69,7 @@ export default class TestPage extends Vue {
   text = "";
 
   @Ref("searchResults") readonly searchResults!: AgroportalResults;
+  @Ref("entityForm") readonly entityForm!: AgroportalEntityCreate;
 
   onSearchTextChange(searchedText: string) {
     this.text = searchedText;
@@ -66,6 +77,14 @@ export default class TestPage extends Vue {
 
   selectResult(result: EntityAgroportalDTO) {
     console.debug(result);
+  }
+
+  showEntityCreateForm() {
+    this.entityForm.showCreateForm();
+  }
+
+  setLoadedEntity(created: EntityCreationDTO) {
+    console.log(created);
   }
 
 }

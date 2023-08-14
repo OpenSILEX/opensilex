@@ -3,13 +3,13 @@
       type="text"
       v-model="searchBar"
       placeholder="search"
-      v-on:change="foo"/>
+      v-on:change="$emit('change', searchBar)"/>
 </template>
 
 
 <script lang="ts">
 
-import {Component, Prop, Ref} from "vue-property-decorator";
+import {Component} from "vue-property-decorator";
 import Vue from 'vue';
 
 @Component
@@ -21,10 +21,6 @@ export default class AgroportalSearch extends Vue {
     this.searchBar = "";
   }
 
-  foo() {
-    console.log(this.searchBar);
-    this.$emit('change', this.searchBar);
-  }
 }
 </script>
 

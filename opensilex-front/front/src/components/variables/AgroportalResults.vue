@@ -1,27 +1,21 @@
 <template>
-  <div class="container-fluid scrollable">
-    <div class="wrapper">
-      <div v-for="(entity, index) in entities" v-bind:key="entity.id">
-        <div class="row result"
-          v-on:click="selectResult(entity)"
-          :class="(selected == entity) ? 'selectedResult' : ''">
-          <div id="result-header" class="row mx-0 jqx-max-size">
-            <div class="col-lg-12">
-              <div id="result-name">
-                {{entity.name}} -
-                <a id="result-link" v-bind:href="entity.id" target="_blank">{{getOntologyAcronym(entity.links.ontology)}}</a>
-              </div>
-            </div>
-          </div>
-          <div id="result-body" class="row jqx-max-size">
-            <div id="result-definition" class="col-lg-12">
-              {{entity.definitions[0]}}
-            </div>
-          </div>
+  <opensilex-Overlay :show="isDataLoading">
+    <div id="agroportal-results" class="container-fluid scrollable">
+      <div class="wrapper">
+        <div v-if="isNothingFound && !isDataLoading">
+          Nothing found for '{{ this.text }}'
+        </div>
+        <div v-for="(entity, index) in entities" v-bind:key="entity.id">
+          <opensilex-AgroportalResultItem
+            v-on:click="selectResult(entity)"
+            :entity="entity"
+            @import="$emit('import', entity)"
+          >
+          </opensilex-AgroportalResultItem>
         </div>
       </div>
     </div>
-  </div>
+  </opensilex-Overlay>
 </template>
 
 
@@ -47,8 +41,10 @@ export default class AgroportalResults extends Vue {
   entities: Array<EntityAgroportalDTO> = [];
   selected: EntityAgroportalDTO = null;
 
-  getOntologyAcronym(url: string) {
-    return url.split('/').pop();
+  isDataLoading: boolean = false;
+
+  get isNothingFound() : boolean {
+    return this.entities.length === 0 && !(this.text.trim().length === 0);
   }
 
   @Watch("text")
@@ -58,6 +54,8 @@ export default class AgroportalResults extends Vue {
       this.clear();
       return;
     }
+
+    this.isDataLoading = true;
 
     this.$opensilex.disableLoader();
     this.entityService.searchThroughAgroportal(
@@ -71,6 +69,7 @@ export default class AgroportalResults extends Vue {
         console.debug(results);
         this.entities = [...new Map(results.map(item =>
             [item.id, item])).values()];
+        this.isDataLoading = false;
       }
     });
   }
@@ -94,33 +93,14 @@ export default class AgroportalResults extends Vue {
 
 <style scoped>
 
-#result-name {
-  font-weight: bold;
-  font-size: large;
-  margin-bottom: 5px;
-}
-
-#result-link {
-  font-weight: normal;
-  font-size: medium;
-}
-
-.result {
-  font-size: medium;
-  margin-bottom: 10px;
-  padding: 5px;
-  margin-right: 1px;
+#agroportal-results {
+  min-height: 50px;
 }
 
 .scrollable {
   max-height: 500px;
   overflow-y: scroll;
   overflow-x: clip;
-}
-
-.selectedResult {
-  border: solid 2px #00a38d;
-  border-radius: 3px;
 }
 
 </style>

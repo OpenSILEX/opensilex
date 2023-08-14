@@ -1,0 +1,33 @@
+<template>
+    <ValidationObserver ref="entityValidatorRef">
+        <opensilex-ExternalReferencesForm
+                :references.sync="form"
+                :displayInsertButton="false"
+                :ontologiesToSelect="selectedOntologies"
+        ></opensilex-ExternalReferencesForm>
+    </ValidationObserver>
+</template>
+
+<script lang="ts">
+
+    import {Component, PropSync, Ref} from "vue-property-decorator";
+    import Vue from "vue";
+    // @ts-ignore
+    import {EntityCreationDTO} from "opensilex-core/index";
+    import EntityCreate from "./AgroportalEntityCreate.vue";
+    import AgroportalEntityCreate from "./AgroportalEntityCreate.vue";
+
+    @Component
+    export default class AgroportalEntityExternalReferencesForm extends Vue {
+
+        selectedOntologies: string[] = EntityCreate.selectedOntologies;
+
+        @PropSync("form")
+        entityDto: EntityCreationDTO;
+
+    }
+</script>
+
+<style scoped>
+
+</style>

@@ -48,7 +48,7 @@ public interface FrontConfig {
 
     @ConfigDescription(
             value = "Front footer component definition",
-            defaultString = "opensilex-DefaultFooterComponent"
+            defaultString = "opensilex-SearchFooterComponent"
     )
     String footerComponent();
 

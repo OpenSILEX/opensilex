@@ -44,9 +44,9 @@
               <router-view :key="$route.fullPath" />
             </main>
 
-        <!--    <footer v-if="!embed">
+            <footer v-if="!embed">
               <component v-bind:is="footerComponent"></component>
-            </footer> -->
+            </footer>
           </div>
         </section>
         </div>

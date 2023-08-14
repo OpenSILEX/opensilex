@@ -56,6 +56,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
+import static org.opensilex.sparql.service.SPARQLQueryHelper.regexFilter;
 
 /**
  * @author vince
@@ -1000,6 +1001,30 @@ public final class OntologyDAO {
         Var uriVar = makeVar(uriField);
         select.addVar(uriVar);
         select.addWhere(uriVar, RDFS.label, targetNameOrUri);
+
+        List<SPARQLResult> results = sparql.executeSelectQuery(select);
+        SPARQLDeserializer<URI> uriDeserializer = SPARQLDeserializers.getForClass(URI.class);
+        List<SPARQLNamedResourceModel> resultList = new ArrayList<>();
+        for (SPARQLResult result : results) {
+            SPARQLNamedResourceModel model = new SPARQLNamedResourceModel();
+            model.setName(targetNameOrUri);
+            model.setUri(uriDeserializer.fromString(result.getStringValue(uriField)));
+            resultList.add(model);
+        }
+
+        return resultList;
+    }
+
+    public List<SPARQLNamedResourceModel> searchByName(String targetNameOrUri) throws Exception {
+        SelectBuilder select = new SelectBuilder();
+        select.setDistinct(true);
+        String uriField = "uri";
+        String nameField = "name";
+        Var uriVar = makeVar(uriField);
+        Var nameVar = makeVar(nameField);
+        select.addVar(uriVar);
+        select.addWhere(uriVar, RDFS.label, nameVar);
+        select.addFilter(regexFilter(nameField, targetNameOrUri));
 
         List<SPARQLResult> results = sparql.executeSelectQuery(select);
         SPARQLDeserializer<URI> uriDeserializer = SPARQLDeserializers.getForClass(URI.class);

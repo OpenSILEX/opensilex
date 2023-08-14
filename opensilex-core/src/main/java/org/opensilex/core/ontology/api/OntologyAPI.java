@@ -598,13 +598,34 @@ public class OntologyAPI {
     }
 
     @GET
-    @Path("/uri_types")
+    @Path("/search_uri")
     @ApiOperation("Return all rdf types of an uri")
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return URI rdf types", response = URITypesDTO.class, responseContainer = "List")
+            @ApiResponse(code = 200, message = "Return URI rdf types", response = URI.class, responseContainer = "List")
+    })
+    public Response searchURIs(
+            @ApiParam(value = "URI search pattern", required = true) @QueryParam("search_text") @NotNull @NotEmpty String searchText
+    ) throws Exception {
+        OntologyDAO dao = new OntologyDAO(sparql);
+
+        List<URI> uris = dao.searchByName(searchText)
+                .stream().map(result -> (result.getUri()))
+                .collect(Collectors.toList());
+
+        return new SingleObjectResponse<>(uris).getResponse();
+    }
+
+    @GET
+    @Path("/uri_types")
+    @ApiOperation("Return all URIs matching the pattern")
+    @ApiProtected
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return List of URIs", response = URITypesDTO.class, responseContainer = "List")
     })
     public Response getURITypes(
             @ApiParam(value = "URIs to get types from", required = true) @QueryParam("uri") @NotNull @ValidURI @NotEmpty List<URI> uris

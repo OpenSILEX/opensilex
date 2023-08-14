@@ -4,6 +4,8 @@ let components = {};
 // Layout
 import DefaultFooterComponent from './layout/DefaultFooterComponent.vue';
 components["opensilex-DefaultFooterComponent"] = DefaultFooterComponent;
+import SearchFooterComponent from './layout/SearchFooterComponent.vue';
+components["opensilex-SearchFooterComponent"] = SearchFooterComponent;
 import DefaultHeaderComponent from './layout/DefaultHeaderComponent.vue';
 components["opensilex-DefaultHeaderComponent"] = DefaultHeaderComponent;
 import DefaultLoginComponent from './layout/DefaultLoginComponent.vue';

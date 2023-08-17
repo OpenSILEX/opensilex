@@ -30,7 +30,7 @@
 
                 <!-- Comment -->
                 <opensilex-TextAreaForm
-                        :value.sync="form.definitions[0]"
+                        :value.sync="form.description"
                         label="component.common.description">
                 </opensilex-TextAreaForm>
             </div>
@@ -97,7 +97,7 @@ export default class AgroportalEntityEnrichForm extends Vue {
     errorMsg: String = "";
 
     @PropSync("form")
-    entityDto: EntityAgroportalDTO;
+    entityDto: EntityCreationDTO;
 
     externalOntologiesRefs: any[] = ExternalOntologies.getExternalOntologiesReferences(EntityCreate.selectedOntologies);
 

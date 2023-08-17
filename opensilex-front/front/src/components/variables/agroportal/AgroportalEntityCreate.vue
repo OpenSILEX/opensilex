@@ -73,15 +73,15 @@ import {EntityDetailsDTO} from "opensilex-core/model/entityDetailsDTO";
         @Ref("modalRef") readonly modalRef!: any;
         @Ref("validatorRef") readonly validatorRef!: any;
 
-        getEmptyForm(): EntityAgroportalDTO {
+        getEmptyForm(): EntityCreationDTO {
             return {
-                id: null,
+                uri: null,
                 name: null,
-                synonym: null,
-                definitions: [],
-                obsolete: null,
-                type: null,
-                links: null,
+                description: null,
+                exact_match: [],
+                close_match: [],
+                broad_match: [],
+                narrow_match: []
             };
         }
 
@@ -115,18 +115,6 @@ import {EntityDetailsDTO} from "opensilex-core/model/entityDetailsDTO";
                 .catch(error => {
                     this.$opensilex.errorHandler(error);
                 });
-        }
-
-        private convertToEntityDTO(entity: EntityAgroportalDTO) : EntityDetailsDTO {
-          let dto: EntityDetailsDTO = {};
-
-          dto.uri = entity.id;
-          dto.name = entity.name;
-          if (entity.definitions.length > 0) {
-            dto.description = entity.definitions[0];
-          }
-
-          return dto;
         }
 
         loadingWizard: boolean = false;

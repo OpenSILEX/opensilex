@@ -6,10 +6,16 @@
 //******************************************************************************
 package org.opensilex.brapi.model;
 
+import org.apache.jena.datatypes.xsd.XSDDatatype;
+import org.apache.jena.vocabulary.XSD;
+import org.opensilex.core.variable.dal.MethodModel;
+import org.opensilex.core.variable.dal.UnitModel;
 import org.opensilex.core.variable.dal.VariableModel;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Objects;
 
 /**
  * @see <a href="https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3">BrAPI documentation</a>
@@ -198,60 +204,95 @@ public class BrAPIv1ObservationVariableDTO {
         this.xref = xref;
     }
 
-    public static BrAPIv1ObservationVariableDTO fromModel(VariableModel model) {
+    public static BrAPIv1ObservationVariableDTO fromModel(
+            VariableModel variableModel
+    ) {
         BrAPIv1ObservationVariableDTO variable = new BrAPIv1ObservationVariableDTO();
-        if (model.getUri() != null) {
-            variable.setObservationVariableDbId(model.getUri().toString());
+        if (variableModel.getUri() != null) {
+            variable.setObservationVariableDbId(variableModel.getUri().toString());
         }
-        variable.setObservationVariableName(model.getName());
+        variable.setObservationVariableName(variableModel.getName());
         
         BrAPIv1TraitDTO trait = new BrAPIv1TraitDTO();
-        if (model.getTraitName() != null) {
-            trait.setName(model.getTraitName());
+        if (variableModel.getTraitName() != null) {
+            trait.setName(variableModel.getTraitName());
         } else {
             String traitName = "";
-            if (model.getEntity() != null) {
-                traitName = traitName + model.getEntity().getName() + "_";
+            if (variableModel.getEntity() != null) {
+                traitName = traitName + variableModel.getEntity().getName() + "_";
             }
-            if (model.getCharacteristic() != null) {
-                traitName = traitName + model.getCharacteristic().getName();
+            if (variableModel.getCharacteristic() != null) {
+                traitName = traitName + variableModel.getCharacteristic().getName();
             }
             trait.setName(traitName);
         }
         
-        if (model.getTraitUri() != null) {
-          trait.setTraitDbId(model.getTraitUri().toString());  
+        if (variableModel.getTraitUri() != null) {
+          trait.setTraitDbId(variableModel.getTraitUri().toString());
         }        
         variable.setTrait(trait);
         
         BrAPIv1MethodDTO method = new BrAPIv1MethodDTO();
-        if (model.getMethod() != null) {
-            method.setMethodName(model.getMethod().getName());
-            if (model.getMethod().getUri() != null) {
-                method.setMethodDbId(model.getMethod().getUri().toString());
+        if (variableModel.getMethod() != null) {
+            method.setMethodName(variableModel.getMethod().getName());
+            if (variableModel.getMethod().getUri() != null) {
+                method.setMethodDbId(variableModel.getMethod().getUri().toString());
             }   
         }
         variable.setMethod(method);
         
         BrAPIv1ScaleDTO scale = new BrAPIv1ScaleDTO();
-        if (model.getUnit() != null) {
-            scale.setScaleName(model.getUnit().getName());
-            if (model.getUnit().getUri() != null) {
-                scale.setScaleDbId(model.getUnit().getUri().toString());
+        if (variableModel.getUnit() != null) {
+            scale.setScaleName(variableModel.getUnit().getName());
+            if (variableModel.getUnit().getUri() != null) {
+                scale.setScaleDbId(variableModel.getUnit().getUri().toString());
             }
         }        
         variable.setScale(scale);
 
-        if (model.getSpecies() != null && model.getSpecies().size() == 1) {
-            variable.setCrop(model.getSpecies().get(0).toString());
+        if (variableModel.getSpecies() != null && variableModel.getSpecies().size() == 1) {
+            variable.setCrop(variableModel.getSpecies().get(0).toString());
         }
 
-        if (model.getAlternativeName() != null) {
-            variable.setSynonyms(new ArrayList<>(Collections.singletonList(model.getAlternativeName())));
+        if (variableModel.getAlternativeName() != null) {
+            variable.setSynonyms(new ArrayList<>(Collections.singletonList(variableModel.getAlternativeName())));
         }
 
-        if (model.getExactMatch() != null) {
-            variable.setXref(model.getExactMatch().get(0).toString());
+        if (variableModel.getExactMatch() != null) {
+            variable.setXref(variableModel.getExactMatch().get(0).toString());
+        }
+
+        if (variableModel.getMethod() != null){
+            variable.setMethod(BrAPIv1MethodDTO.fromModel(variableModel.getMethod()));
+        }
+
+        if (variableModel.getTraitUri() != null){
+            BrAPIv1TraitDTO variableTrait = new BrAPIv1TraitDTO();
+            variableTrait.setTraitDbId(variableModel.getTraitUri().toString());
+            if (variableModel.getTraitName() != null) {
+                variableTrait.setTraitName(variableModel.getTraitName());
+            }
+            variable.setTrait(variableTrait);
+        }
+
+        if (variableModel.getUnit() != null){
+            BrAPIv1ScaleDTO variableScale = BrAPIv1ScaleDTO.fromModel(variableModel.getUnit());
+            // TODO how to do this better? at least switch
+            String dataTypeUri = variableModel.getDataType().toString();
+            if (Objects.equals(dataTypeUri, "xsd:decimal") | Objects.equals(dataTypeUri, "xsd:integer")){
+                variableScale.setDataType("Numerical");
+            }
+            if (Objects.equals(dataTypeUri, "xsd:date") | Objects.equals(dataTypeUri, "xsd:dateTime")){
+                variableScale.setDataType("Date");
+            }
+            if (Objects.equals(dataTypeUri, "xsd:string")){
+                variableScale.setDataType("Text");
+            }
+            if (Objects.equals(dataTypeUri, "xsd:boolean")){
+                variableScale.setDataType("Nominal");
+            }
+
+            variable.setScale(variableScale);
         }
 
         return variable;

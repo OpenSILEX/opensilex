@@ -6,6 +6,9 @@
 //******************************************************************************
 package org.opensilex.brapi.model;
 
+import org.opensilex.core.variable.dal.MethodModel;
+import org.opensilex.core.variable.dal.UnitModel;
+
 /**
  * @see <a href="https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3">BrAPI documentation</a>
  * @author Alice Boizet
@@ -13,7 +16,6 @@ package org.opensilex.brapi.model;
 public class BrAPIv1ScaleDTO {
     private String dataType; // - Code - Duration - Nominal - Numerical - Ordinal - Text - Date
     private String decimalPlaces;
-    private String name;
     private BrAPIv1OntologyReferenceDTO ontologyReference;
     private String scaleDbId;
     private String scaleName;
@@ -34,14 +36,6 @@ public class BrAPIv1ScaleDTO {
 
     public void setDecimalPlaces(String decimalPlaces) {
         this.decimalPlaces = decimalPlaces;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public BrAPIv1OntologyReferenceDTO getOntologyReference() {
@@ -83,5 +77,22 @@ public class BrAPIv1ScaleDTO {
     public void setXref(String xref) {
         this.xref = xref;
     }
-    
+
+    public BrAPIv1ScaleDTO extractFromModel(UnitModel unitModel){
+
+        if (unitModel.getUri() != null){
+            this.setScaleDbId(unitModel.getUri().toString());
+        }
+
+        if (unitModel.getName() != null){
+            this.setScaleName(unitModel.getName());
+        }
+
+        return this;
+    }
+
+    public static BrAPIv1ScaleDTO fromModel(UnitModel unitModel){
+        BrAPIv1ScaleDTO scale = new BrAPIv1ScaleDTO();
+        return scale.extractFromModel(unitModel);
+    }
 }

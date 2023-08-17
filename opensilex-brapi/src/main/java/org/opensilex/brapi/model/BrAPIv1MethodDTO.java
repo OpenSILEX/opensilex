@@ -7,6 +7,7 @@
 package org.opensilex.brapi.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.opensilex.core.variable.dal.MethodModel;
 
 /**
  * @see <a href="https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3">BrAPI documentation</a>
@@ -77,5 +78,26 @@ public class BrAPIv1MethodDTO {
     public void setReference(String reference) {
         this.reference = reference;
     }    
-    
+
+    public BrAPIv1MethodDTO extractFromModel(MethodModel methodModel){
+
+        if (methodModel.getUri() != null){
+            this.setMethodDbId(methodModel.getUri().toString());
+        }
+
+        if (methodModel.getName() != null){
+            this.setMethodName(methodModel.getName());
+        }
+
+        if (methodModel.getDescription() != null){
+            this.setDescription(methodModel.getDescription());
+        }
+
+        return this;
+    }
+
+    public static BrAPIv1MethodDTO fromModel(MethodModel methodModel){
+        BrAPIv1MethodDTO method = new BrAPIv1MethodDTO();
+        return method.extractFromModel(methodModel);
+    }
 }

@@ -24,6 +24,7 @@ import {EntityCreationDTO, EntityGetDTO, VariablesService} from "opensilex-core/
 import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
 import {EntityUpdateDTO} from "opensilex-core/model/entityUpdateDTO";
 import {EntityAgroportalDTO} from "opensilex-core/model/entityAgroportalDTO";
+import {EntityDetailsDTO} from "opensilex-core/model/entityDetailsDTO";
 
 @Component
     export default class AgroportalEntityCreate extends Vue {
@@ -114,6 +115,18 @@ import {EntityAgroportalDTO} from "opensilex-core/model/entityAgroportalDTO";
                 .catch(error => {
                     this.$opensilex.errorHandler(error);
                 });
+        }
+
+        private convertToEntityDTO(entity: EntityAgroportalDTO) : EntityDetailsDTO {
+          let dto: EntityDetailsDTO = {};
+
+          dto.uri = entity.id;
+          dto.name = entity.name;
+          if (entity.definitions.length > 0) {
+            dto.description = entity.definitions[0];
+          }
+
+          return dto;
         }
 
         loadingWizard: boolean = false;

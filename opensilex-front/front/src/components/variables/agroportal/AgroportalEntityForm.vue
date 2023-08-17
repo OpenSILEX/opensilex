@@ -16,10 +16,10 @@
 
               <!-- Name -->
               <opensilex-AgroportalSearch
-                      label="component.common.name"
-                      type="text"
-                      placeholder="search"
-                      @change="onSearchTextChange"
+                  label="component.common.name"
+                  type="text"
+                  placeholder="search"
+                  @change="onSearchTextChange"
               ></opensilex-AgroportalSearch>
 
               <div class="row">

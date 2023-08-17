@@ -75,13 +75,14 @@
 </template>
 
 <script lang="ts">
-    import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
+import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import {ExternalOntologies} from "../../../models/ExternalOntologies";
 import EntityCreate from "./AgroportalEntityCreate.vue";
 // @ts-ignore
 import { EntityCreationDTO } from "opensilex-core/index";
 import AgroportalEntityCreate from "./AgroportalEntityCreate.vue";
+    import {EntityAgroportalDTO} from "opensilex-core/model/entityAgroportalDTO";
 
 @Component
 export default class AgroportalEntityEnrichForm extends Vue {
@@ -96,7 +97,7 @@ export default class AgroportalEntityEnrichForm extends Vue {
     errorMsg: String = "";
 
     @PropSync("form")
-    entityDto: EntityCreationDTO;
+    entityDto: EntityAgroportalDTO;
 
     externalOntologiesRefs: any[] = ExternalOntologies.getExternalOntologiesReferences(EntityCreate.selectedOntologies);
 

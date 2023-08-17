@@ -6,11 +6,12 @@
 //******************************************************************************
 package org.opensilex.brapi.model;
 
+import org.opensilex.core.experiment.dal.ExperimentModel;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.opensilex.core.experiment.dal.ExperimentModel;
 
 /**
  * @see <a href="https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3">BrAPI documentation</a>
@@ -18,20 +19,18 @@ import org.opensilex.core.experiment.dal.ExperimentModel;
  */
 public class BrAPIv1StudyDTO {
     private String active;
-    private Map additionalInfo;
+    private Map<String, String> additionalInfo;
     private String commonCropName;
     private String documentationURL;
     private String endDate;
     private String locationDbId;
     private String locationName;
-    private String name;
     private String programDbId;
     private String programName;
     private List<BrAPIv1SeasonDTO> seasons;
     private String startDate;
     private String studyDbId;
     private String studyName;
-    private String studyType;
     private String studyTypeDbId;
     private String studyTypeName;
     private String trialDbId;
@@ -93,14 +92,6 @@ public class BrAPIv1StudyDTO {
         this.locationName = locationName;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public String getProgramDbId() {
         return programDbId;
     }
@@ -149,14 +140,6 @@ public class BrAPIv1StudyDTO {
         this.studyName = studyName;
     }
 
-    public String getStudyType() {
-        return studyType;
-    }
-
-    public void setStudyType(String studyType) {
-        this.studyType = studyType;
-    }
-
     public String getStudyTypeDbId() {
         return studyTypeDbId;
     }
@@ -188,36 +171,51 @@ public class BrAPIv1StudyDTO {
     public void setTrialName(String trialName) {
         this.trialName = trialName;
     }
-    
-    public static BrAPIv1StudyDTO fromModel(ExperimentModel model) {
-        BrAPIv1StudyDTO study = new BrAPIv1StudyDTO();
-        
+
+    public BrAPIv1StudyDTO extractFromModel(ExperimentModel model) {
+
         if (model.getUri() != null) {
-            study.setStudyDbId(model.getUri().toString());
-        }        
-        study.setName(model.getName());
-        study.setStudyName(model.getName());
-        
-        if (model.getStartDate() != null) {
-            study.setStartDate(model.getStartDate().toString());
+            this.setStudyDbId(model.getUri().toString());
         }
-        
+        this.setStudyName(model.getName());
+
+        if (model.getStartDate() != null) {
+            this.setStartDate(model.getStartDate().toString());
+        }
+
         if (model.getEndDate() != null) {
-            study.setEndDate(model.getEndDate().toString());
-        }        
-        
+            this.setEndDate(model.getEndDate().toString());
+        }
+
+        // TODO : Active state could be an attribute of the class? Here it is done in the DTO but it is also done in the frontend
         LocalDate date = LocalDate.now();
         if ((model.getStartDate() != null && model.getStartDate().isAfter(date)) || (model.getEndDate() != null && model.getEndDate().isBefore(date)))  {
-            study.setActive("false");
+            this.setActive("false");
         } else {
-            study.setActive("true");
+            this.setActive("true");
         }
-        List<BrAPIv1SeasonDTO> seasons = new ArrayList<>();
-        BrAPIv1SeasonDTO season = new BrAPIv1SeasonDTO();
-        //season.setYear(model.getCampaign());
-        seasons.add(season);
-        study.setSeasons(seasons);
-        
-        return study;
+
+        if (model.getEndDate() != null){
+            List<BrAPIv1SeasonDTO> seasons = new ArrayList<>();
+            for (int studyYear = model.getStartDate().getYear(); studyYear <= model.getEndDate().getYear(); studyYear++){
+                BrAPIv1SeasonDTO season = new BrAPIv1SeasonDTO();
+                season.setYear(String.valueOf(studyYear));
+                seasons.add(season);
+            }
+            this.setSeasons(seasons);
+        }
+
+        if (!model.getProjects().isEmpty()){
+            // ProgramName not a list so only the first one is kept
+            this.setProgramName(model.getProjects().get(0).getName());
+        }
+
+        return this;
+    }
+
+    public static BrAPIv1StudyDTO fromModel(ExperimentModel model) {
+        BrAPIv1StudyDTO study = new BrAPIv1StudyDTO();
+        return study.extractFromModel(model);
+
     }
 }

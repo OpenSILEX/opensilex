@@ -20,6 +20,8 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.scientificObject.api.ScientificObjectNodeDTO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectSearchFilter;
+import org.opensilex.core.variable.dal.MethodModel;
+import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -28,6 +30,7 @@ import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
 import org.opensilex.utils.OrderBy;
@@ -172,7 +175,7 @@ public class StudiesAPI extends BrapiCall {
     }
 
     @GET
-    @Path("v1/studies/{studyDbId}/observations") //TODO : test this to see if return structure includes unused attributes of class
+    @Path("v1/studies/{studyDbId}/observations")
     @BrapiVersion("1.3")
     @ApiOperation(value = "Get the observations associated to a specific study", notes = "Get the observations associated to a specific study")
     @ApiResponses(value = {
@@ -187,13 +190,21 @@ public class StudiesAPI extends BrapiCall {
     ) throws Exception {
 
         ExperimentDAO xpDAO = new ExperimentDAO(sparql, nosql);
+        ExperimentModel experimentModel = xpDAO.get(studyDbId, currentUser);
         xpDAO.validateExperimentAccess(studyDbId, currentUser);
         List<URI> experiments = new ArrayList<>();
         experiments.add(studyDbId);
 
         DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
+        OntologyDAO ontologyDAO = new OntologyDAO(sparql);
         ListWithPagination<DataModel> datas = dataDAO.search(currentUser, experiments, null, observationVariableDbIds, null, null, null, null, null, null, null, null, null, page, pageSize);
-        ListWithPagination<BrAPIv1ObservationDTO> observations = datas.convert(BrAPIv1ObservationDTO.class, BrAPIv1ObservationDTO::fromModel);
+        ListWithPagination<BrAPIv1ObservationDTO> observations = datas.convert(BrAPIv1ObservationDTO.class, data -> {
+            try {
+                return BrAPIv1ObservationDTO.fromModel(data, experimentModel, ontologyDAO, sparql, currentUser);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
         return new BrAPIv1ObservationListResponse(observations).getResponse();
 
     }

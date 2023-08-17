@@ -13,7 +13,7 @@ package org.opensilex.brapi.model;
 public class BrAPIv1SeasonDTO {
     private String season;
     private String seasonDbId;
-    private Integer year;    
+    private String year;
 
     public String getSeason() {
         return season;
@@ -31,11 +31,11 @@ public class BrAPIv1SeasonDTO {
         this.seasonDbId = seasonDbId;
     }
 
-    public Integer getYear() {
+    public String getYear() {
         return year;
     }
 
-    public void setYear(Integer year) {
+    public void setYear(String year) {
         this.year = year;
     }
     

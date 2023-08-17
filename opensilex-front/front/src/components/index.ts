@@ -447,6 +447,8 @@ import GermplasmGroupSelector from './germplasmGroup/GermplasmGroupSelector.vue'
 components["opensilex-GermplasmGroupSelector"] = GermplasmGroupSelector;
 import AssociatedGermplasmGroupsList from './germplasmGroup/AssociatedGermplasmGroupsList.vue';
 components["opensilex-AssociatedGermplasmGroupsList"] = AssociatedGermplasmGroupsList;
+import GermplasmGroupHelp from './germplasmGroup/GermplasmGroupHelp.vue';
+components["opensilex-GermplasmGroupHelp"] = GermplasmGroupHelp;
 
 import GermplasmAttributesValueSelector from './germplasm/GermplasmAttributesValueSelector.vue';
 components["opensilex-GermplasmAttributesValueSelector"] = GermplasmAttributesValueSelector;

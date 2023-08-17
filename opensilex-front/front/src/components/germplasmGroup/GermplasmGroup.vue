@@ -5,14 +5,22 @@
         <opensilex-HelpButton
             label="component.common.help-button"
             class="helpButton"
+            @click="helpModal.show()"
         ></opensilex-HelpButton>
+
+        <b-modal ref="helpModal" size="xl" hide-header hide-footer>
+          <opensilex-GermplasmGroupHelp @hideButtonIsClicked="hideHelpModal()"></opensilex-GermplasmGroupHelp>
+        </b-modal>
+
         <opensilex-CreateButton
             label="GermplasmGroupView.add"
             class="createButton"
             v-show="user.hasCredential(credentials.CREDENTIAL_GERMPLASM_MODIFICATION_ID)"
             @click="showCreateForm"
         ></opensilex-CreateButton>
+
       </opensilex-PageActions>
+
       <opensilex-ModalForm
           v-if="user.hasCredential(credentials.CREDENTIAL_GERMPLASM_MODIFICATION_ID)"
           ref="groupGermplasmForm"
@@ -118,6 +126,8 @@ export default class GermplasmGroup extends Vue {
   @Ref("germplasmGroupList") readonly germplasmGroupList!: GermplasmGroupList;
 
   @Ref("germplasmGroupContentList") readonly germplasmGroupContentList!: GermplasmGroupContentList;
+
+  @Ref("helpModal") readonly helpModal!: any;
 
   searchFiltersToggle: boolean = true;
 
@@ -234,6 +244,10 @@ export default class GermplasmGroup extends Vue {
     this.selected = data;
     this.$opensilex.updateURLParameter("selected", this.selected.uri);
     this.germplasmGroupContentList.refresh();
+  }
+
+  hideHelpModal() {
+    this.helpModal.hide();
   }
 
 }

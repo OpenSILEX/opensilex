@@ -64,7 +64,7 @@ export default class AgroportalEntityForm extends Vue {
     errorMsg: String = "";
 
     @PropSync("form")
-    entityDto: EntityAgroportalDTO;
+    entityDto: EntityCreationDTO;
 
     externalOntologiesRefs: any[] = ExternalOntologies.getExternalOntologiesReferences(EntityCreate.selectedOntologies);
 
@@ -79,8 +79,9 @@ export default class AgroportalEntityForm extends Vue {
     }
 
     importResult(entity: EntityAgroportalDTO) {
+      this.entityDto.uri = entity.id;
       this.entityDto.name = entity.name;
-      this.entityDto.definitions = entity.definitions;
+      this.entityDto.description = entity.definitions[0];
     }
 
     reset() {

@@ -15,6 +15,14 @@
             @importMapping="onImportMapping">
         </opensilex-AgroportalResults>
       </div>
+
+      <div class="row">
+        <opensilex-ExternalReferencesForm
+          :references.sync="form"
+          :displayInsertButton="false"
+          :ontologiesToSelect="selectedOntologies">
+        </opensilex-ExternalReferencesForm>
+      </div>
     </ValidationObserver>
 </template>
 
@@ -24,17 +32,17 @@ import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
 import Vue from "vue";
 // @ts-ignore
 import {EntityCreationDTO} from "opensilex-core/index";
-import EntityCreate from "./AgroportalEntityCreate.vue";
-import AgroportalEntityCreate from "./AgroportalEntityCreate.vue";
 import {EntityAgroportalDTO} from "opensilex-core/model/entityAgroportalDTO";
+import AgroportalEntityCreate from "./AgroportalEntityCreate.vue";
+
 
 @Component
 export default class AgroportalEntityExternalReferencesForm extends Vue {
 
-    selectedOntologies: string[] = EntityCreate.selectedOntologies;
+    selectedOntologies: string[] = AgroportalEntityCreate.selectedOntologies;
 
     @PropSync("form")
-    entityDto: EntityAgroportalDTO;
+    entityDto: EntityCreationDTO;
 
     text = "";
 
@@ -44,7 +52,9 @@ export default class AgroportalEntityExternalReferencesForm extends Vue {
     }
 
     onImportMapping(entity: EntityAgroportalDTO, relation) {
-
+      if(relation == "exact-match") {
+        this.entityDto.exact_match.push(entity.id);
+      }
     }
 
 }

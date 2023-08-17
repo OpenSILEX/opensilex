@@ -19,12 +19,7 @@
         </div>
       </div>
       <div v-if="isSelected">
-        <opensilex-CreateButton
-            label="Import"
-            title="Import"
-            @click="$emit('import', entity)"
-        >
-        </opensilex-CreateButton>
+        <slot name="btnValidate"></slot>
       </div>
     </div>
 </template>

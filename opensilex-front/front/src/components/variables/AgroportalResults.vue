@@ -2,16 +2,47 @@
   <opensilex-Overlay :show="isDataLoading">
     <div id="agroportal-results" class="container-fluid scrollable">
       <div class="wrapper">
+
         <div v-if="isNothingFound && !isDataLoading">
           Nothing found for '{{ this.text }}'
         </div>
+
         <div v-for="(entity, index) in entities" v-bind:key="entity.id">
+
           <opensilex-AgroportalResultItem
             v-on:click="selectResult(entity)"
             :entity="entity"
             @import="$emit('import', entity)"
           >
+
+
+            <template v-if="isMappingMode" v-slot:btnValidate>
+              <b-dropdown
+                  dropright
+                  class="mb-2 mr-2"
+                  :small="true"
+                  text="Map term as">
+
+                <b-dropdown-item v-for="(relation, index) in skosReferences" v-bind:key="relation"
+                   class="btn-dropdown"
+                   @click="$emit('importMapping', entity, relation)"
+                >
+                  {{relation}}
+                </b-dropdown-item>
+              </b-dropdown>
+            </template>
+
+            <template v-else v-slot:btnValidate>
+              <opensilex-CreateButton
+                  label="Import"
+                  title="Import"
+                  @click="$emit('import', entity)"
+              >
+              </opensilex-CreateButton>
+            </template>
+
           </opensilex-AgroportalResultItem>
+
         </div>
       </div>
     </div>
@@ -38,10 +69,22 @@ export default class AgroportalResults extends Vue {
   })
   text;
 
+  @Prop({
+    default: false
+  })
+  isMappingMode: boolean;
+
   entities: Array<EntityAgroportalDTO> = [];
   selected: EntityAgroportalDTO = null;
 
   isDataLoading: boolean = false;
+
+  skosReferences = {
+    EXACT_MATCH_JSON_PROPERTY: "exact-match",
+    CLOSE_MATCH_JSON_PROPERTY: "close-match",
+    BROAD_MATCH_JSON_PROPERTY: "broad-match",
+    NARROW_MATCH_JSON_PROPERTY: "narrow-match"
+  }
 
   get isNothingFound() : boolean {
     return this.entities.length === 0 && !(this.text.trim().length === 0);
@@ -103,9 +146,27 @@ export default class AgroportalResults extends Vue {
   overflow-x: clip;
 }
 
+.btn-dropdown {
+  z-index: 10;
+}
+
 </style>
 
 
 <i18n>
+
+en:
+  AgroportalResults:
+    exact-match: exact match
+    close-match: close match
+    broad-match: broad match
+    narrow-match: narrow match
+
+fr:
+  AgroportalResults:
+    exact-match: exact match
+    close-match: close match
+    broad-match: broad match
+    narrow-match: narrow match
 
 </i18n>

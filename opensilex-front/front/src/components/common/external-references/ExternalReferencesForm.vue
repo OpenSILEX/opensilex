@@ -8,6 +8,22 @@
                         <strong class="text-primary">{{this.skosReferences.uri}}</strong>
                     </em>
                 </p>
+                <div class="row">
+                  <opensilex-AgroportalSearch
+                      label="component.common.name"
+                      type="text"
+                      placeholder="search"
+                      @change="onSearchTextChange"
+                  ></opensilex-AgroportalSearch>
+
+                  <opensilex-AgroportalResults
+                      ref="searchResults"
+                      :text.sync="text"
+                      :isMappingMode="true"
+                      :mappingOptions="options"
+                      @importMapping="onImportMapping">
+                  </opensilex-AgroportalResults>
+                </div>
                 <b-card bg-variant="light">
                     <div class="row">
                         <div class="col">
@@ -144,6 +160,7 @@
     import Vue from "vue";
     import {Skos} from "../../../models/Skos";
     import {ExternalOntologies} from "../../../models/ExternalOntologies";
+    import {EntityAgroportalDTO} from "opensilex-core/model/entityAgroportalDTO";
 
     @Component
     export default class ExternalReferencesForm extends Vue {
@@ -154,6 +171,7 @@
 
         currentRelation: string = "";
         currentExternalUri: string = "";
+        text: string = "";
 
         @PropSync("references")
         skosReferences: any;
@@ -162,6 +180,9 @@
 
         @Prop({default: true})
         displayInsertButton: boolean;
+
+        @Prop({default: false})
+        includeAgroportalSearch: boolean;
 
         @Prop({default: (() => [])})
         ontologiesToSelect: string[];
@@ -338,6 +359,15 @@
                     }
                 });
             });
+        }
+
+        onSearchTextChange(searchedText: string) {
+          this.text = searchedText;
+        }
+
+        onImportMapping(entity: EntityAgroportalDTO, relation) {
+          this.currentExternalUri = entity.id;
+          this.currentRelation = relation.id;
         }
     }
 </script>

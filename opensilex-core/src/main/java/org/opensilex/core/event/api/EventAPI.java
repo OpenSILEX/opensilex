@@ -222,6 +222,7 @@ public class EventAPI {
         if (!validation.hasErrors()) {
             String token = TokenGenerator.getValidationToken(5, ChronoUnit.MINUTES, Collections.emptyMap());
             validationDTO.setValidationToken(token);
+            validationDTO.setNbLinesImported(validation.getNbObjectImported());
         }
 
         return new SingleObjectResponse<>(validationDTO).getResponse();

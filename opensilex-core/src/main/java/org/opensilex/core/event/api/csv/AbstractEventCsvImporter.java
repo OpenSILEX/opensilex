@@ -70,6 +70,8 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
 
     private final AccountModel user;
 
+    private boolean currentRowIsValid;
+
     protected AbstractEventCsvImporter(SPARQLService sparql, OntologyDAO ontologyDAO, InputStream file, AccountModel user) throws SPARQLInvalidClassDefinitionException, SPARQLMapperNotFoundException {
         this.ontologyDAO = ontologyDAO;
         this.file = file;
@@ -263,6 +265,7 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
             }catch (NotFoundURIException e){
                 CSVCell csvCell = new CSVCell(rowIndex, colIndex.get(), type.toString(), SPARQLResourceModel.TYPE_FIELD);
                 validation.addInvalidURIError(csvCell);
+                currentRowIsValid = false;
                 return;
             }
 
@@ -297,6 +300,7 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
                 if (!nullOrEmpty) {
                     CSVCell csvCell = new CSVCell(rowIndex, colIndex.get(), propValue, "unknown property " + property.toString() + " for type " + model.getType());
                     validation.addInvalidValueError(csvCell);
+                    currentRowIsValid = false;
                 }
 
             } else {
@@ -305,12 +309,14 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
                     if(propertyRestriction.isRequired()){
                         CSVCell csvCell = new CSVCell(rowIndex, colIndex.get(), propValue, property.toString());
                         validation.addMissingRequiredValue(csvCell);
+                        currentRowIsValid = false;
                     }
                 }else {
                     // invalid value -> error
                     if(! ontologyDAO.validateObjectValue(null, classModel, property, propValue, model)){
                         CSVCell csvCell = new CSVCell(rowIndex, colIndex.get(), propValue, property.toString());
                         validation.addInvalidValueError(csvCell);
+                        currentRowIsValid = false;
                     }
                 }
             }
@@ -347,6 +353,7 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
             missedRequiredProperties.forEach(property -> {
                 CSVCell csvCell = new CSVCell(rowIndex, colIndex.get(), null, property.toString());
                 validation.addMissingRequiredValue(csvCell);
+                currentRowIsValid = false;
             });
         }
 
@@ -357,9 +364,12 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
                                       Map<URI,ClassModel> classesByTypeIndex,
                                       Map<URI,List<URI>> missedPropertiesByType
     ) throws Exception {
-
+        currentRowIsValid = true;
         readCommonsProps(model,row,rowIndex,colIndex);
         readCustomProps(model,row,rowIndex,colIndex,customProperties,classesByTypeIndex,missedPropertiesByType);
+        if(currentRowIsValid){
+            validation.setNbObjectImported(validation.getNbObjectImported() + 1);
+        }
     }
 
     /**
@@ -378,7 +388,7 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
                 CSVCell cell = new CSVCell(rowIndex,colIndex.get(), "No value for column",header);
                 validation.addInvalidValueError(cell);
             });
-
+            currentRowIsValid = false;
             return;
         }
 
@@ -396,6 +406,7 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
         if (StringUtils.isEmpty(isInstant)) {
             CSVCell cell = new CSVCell(rowIndex,colIndex.get()-1, isInstant,"isInstant");
             validation.addMissingRequiredValue(cell);
+            currentRowIsValid = false;
         }else{
             model.setIsInstant(Boolean.parseBoolean(isInstant));
         }
@@ -409,6 +420,7 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
             }catch (DateTimeParseException e){
                 CSVCell cell = new CSVCell(rowIndex,colIndex.get()-1, start,"start");
                 validation.addInvalidValueError(cell);
+                currentRowIsValid = false;
             }
         }
 
@@ -418,10 +430,12 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
             if(model.getIsInstant() == null || model.getIsInstant()){
                 CSVCell cell = new CSVCell(rowIndex,colIndex.get()-1, end,"end");
                 validation.addMissingRequiredValue(cell);
+                currentRowIsValid = false;
             }
             else if (StringUtils.isEmpty(start)) {
                 CSVCell cell = new CSVCell(rowIndex,colIndex.get()-2, start,"start");
                 validation.addMissingRequiredValue(cell);
+                currentRowIsValid = false;
             } 
         } else {
             InstantModel endModel = new InstantModel();
@@ -431,6 +445,7 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
             }catch (DateTimeParseException e){
                 CSVCell cell = new CSVCell(rowIndex,colIndex.get()-1, end,"end");
                 validation.addInvalidValueError(cell);
+                currentRowIsValid = false;
             }
         }
 
@@ -440,6 +455,7 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
                 CSVCell cell = new CSVCell(rowIndex,colIndex.get(), start, EventModel.START_FIELD);
                 cell.setMessage("EventCsvForm.invalidDate");
                 validation.addInvalidDateErrors(cell);
+                currentRowIsValid = false;
             }
         }
 
@@ -447,6 +463,7 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
         if(StringUtils.isEmpty(target)){
             CSVCell cell = new CSVCell(rowIndex,colIndex.get()-1, target,"Target");
             validation.addMissingRequiredValue(cell);
+            currentRowIsValid = false;
         }else{
             URI targetUri = new URI(target);
             model.setTargets(Collections.singletonList(targetUri));

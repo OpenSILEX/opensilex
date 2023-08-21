@@ -23,11 +23,11 @@
                   :small="true"
                   text="Map term as">
 
-                <b-dropdown-item v-for="(relation, index) in skosReferences" v-bind:key="relation"
+                <b-dropdown-item v-for="(relation, index) in mappingOptions" v-bind:key="relation.id"
                    class="btn-dropdown"
                    @click="$emit('importMapping', entity, relation)"
                 >
-                  {{relation}}
+                  {{relation.label}}
                 </b-dropdown-item>
               </b-dropdown>
             </template>
@@ -67,7 +67,10 @@ export default class AgroportalResults extends Vue {
   @Prop({
     default: ""
   })
-  text;
+  text: string;
+
+  @Prop()
+  mappingOptions;
 
   @Prop({
     default: false

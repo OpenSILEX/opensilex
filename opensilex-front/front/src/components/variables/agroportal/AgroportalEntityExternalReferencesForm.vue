@@ -1,25 +1,10 @@
 <template>
     <ValidationObserver ref="entityValidatorRef">
       <div class="row">
-        <opensilex-AgroportalSearch
-            label="component.common.name"
-            type="text"
-            placeholder="search"
-            @change="onSearchTextChange"
-        ></opensilex-AgroportalSearch>
-
-        <opensilex-AgroportalResults
-            ref="searchResults"
-            :text.sync="text"
-            :isMappingMode="true"
-            @importMapping="onImportMapping">
-        </opensilex-AgroportalResults>
-      </div>
-
-      <div class="row">
         <opensilex-ExternalReferencesForm
           :references.sync="form"
           :displayInsertButton="false"
+          :includeAgroportalSearch="true"
           :ontologiesToSelect="selectedOntologies">
         </opensilex-ExternalReferencesForm>
       </div>

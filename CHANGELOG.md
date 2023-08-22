@@ -65,6 +65,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - BB
+
+### New features
+
+- [Map] You can now visualize data in a chart by selecting an object in the map view
+
+### Fixed or optimized
+
+- [Front] Minor visual fixes
+- [Experiment] Associated facilities are now part of the available facilities for scientific objects of the experiments
+- [Experiment] On the "Data" page of an experiment, targets are now always correctly displayed
+- [Experiment] The "Visualization" tab of a scientific object in an experiment has been removed
+- [Experiment] Scientific object count is now displayed on the scientific objects tab
+- [Map] Fixed some issues with the zoom
+- [Account] The form for creating accounts has been simplified
+- [Person] You can now search persons by their ORCID
+- [User] The User API is now deprecated
+- [Organization] Fixed an issue where you had to click twice on "create organization" or "create site" to perform the action
+- [Facility] Tweaked the "Monitoring" page of a facility for better ergonomy
+- [Germplasm group] Added documentation that you can read by hovering the question mark
+- [Charts] Tweaked the display of graphs with multi-scale axis for better ergonomy
+- [Charts] Fixed a bug where data with the value 0 where sometimes displayed as undefined
+- [Charts] Charts no longer aggregate data points
+- [PHIS] PHIS logo is now displayed if the dashboard chart is not configured
+
 ## [1.0.1] - Ambitious Amber
 
 ### Fixed or optimized

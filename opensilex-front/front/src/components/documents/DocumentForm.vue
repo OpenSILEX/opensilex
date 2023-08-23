@@ -225,28 +225,23 @@ export default class DocumentForm extends Vue {
     }
     return this.$opensilex
      .uploadFileToService("/core/documents", this.form, null, false)
-     .then((http: OpenSilexResponse<any>) => {
+     .then((http: any) => {
+        if (http.result.message) {
+          if (http.metadata.status === 409) {
+            return this.$opensilex.showErrorToast(this.$i18n.t("DocumentForm.error.document-already-exists").toString() +" - "+ http.result.message);
+          } else if (http.metadata.status === 400) {
+            return this.$opensilex.showErrorToast(this.$i18n.t("DocumentForm.error.file-name-too-long").toString() +" - "+ http.result.message);
+          } else
+            return this.$opensilex.showErrorToast(http.result.message);
+         }
+
         let uri = http.result;
         console.debug("document created", uri);
         form.uri = uri;
         return form;
       })
       .catch(error => {
-        if (error.status == 409) {
-          console.error("Document already exists", error);
-          this.$opensilex.errorHandler(
-            error,
-            this.$i18n.t("DocumentForm.error.document-already-exists")
-          );
-        } else if (error.status == 500) {
-          console.error("File name is too long", error);
-          this.$opensilex.errorHandler(
-            error,
-            this.$i18n.t("DocumentForm.error.file-name-too-long")
-          );
-        } else {
-          this.$opensilex.errorHandler(error);
-        }
+          this.$opensilex.errorHandler(error)
       });
   }
 

@@ -937,10 +937,9 @@ export default class OpenSilexVuePlugin {
         this.showLoader();
         return new Promise((resolve, reject) => {
             let promise = fetch(url, options)
-                .then(response => response.json())
-                .then((http) => {
-                    return http;
-                });
+                .then((response) => {
+                    return response.json().then(data => ({metadata: { status : response.status}, result: data.result}))
+                })
 
             promise
                 .then((result) => {

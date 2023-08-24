@@ -703,6 +703,25 @@ gabriel:build:
   rules:
     - if: $CI_COMMIT_BRANCH == "gabriel"
 
+# See : https://playwright.dev/docs/ci#gitlab-ci
+# TODO : make it into a template
+test:gabriel:front-test:
+  image: mcr.microsoft.com/playwright:v1.37.0-jammy
+#  parallel: 7    for parallelization
+  before_script:
+    - apt-get update --allow-insecure-repositories && apt-get install -y git
+    - apt-get install openjdk-11-jre-headless # Check if headless is ok
+    - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@forgemia.inra.fr/OpenSILEX/opensilex-front-tests.git --branch master $CI_PROJECT_DIR/opensilex-front-tests
+  script:
+    - cd artifacts/$OPENSILEX_APP_REVISION
+    - echo "${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar ${OPENSILEX_CONFIG_SERVER_OPTS} ${OPENSILEX_RESET_ONTOLOGIES_OPTS} -d"
+    - ${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar ${OPENSILEX_CONFIG_SERVER_OPTS} ${OPENSILEX_RESET_ONTOLOGIES_OPTS} -d
+    - cd $CI_PROJECT_DIR/opensilex-front-tests
+    - npm ci
+    - npx playwright test #  --shard=$CI_NODE_INDEX/$CI_NODE_TOTAL    for sharding
+  rules:
+    - if: '$FRONT_TESTS == "true"'
+
 test:gabriel:deploy:
   <<: *deploy_opensilex_before_script
   <<: *deploy_opensilex_template

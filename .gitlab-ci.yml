@@ -720,7 +720,11 @@ test:gabriel:front-test:
     - npm ci
     - npx playwright test #  --shard=$CI_NODE_INDEX/$CI_NODE_TOTAL    for sharding
   rules:
+    - if: $CI_COMMIT_BRANCH == "gabriel"
+      when: on_success
     - if: '$FRONT_TESTS == "true"'
+  needs:
+    - gabriel:build
 
 test:gabriel:deploy:
   <<: *deploy_opensilex_before_script

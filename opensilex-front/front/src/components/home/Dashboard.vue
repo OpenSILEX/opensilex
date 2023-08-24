@@ -2,6 +2,7 @@
   <div>
     <!--Header -->
     <opensilex-PageHeader
+      data-testid="dashboard-page-header"
       icon="fa#tachometer-alt"
       title="DashboardUser.title"
       class= "detail-element-header"

@@ -7,6 +7,7 @@
   >
     <!-- helpMessage="component.common.type.help-message" -->
     <template v-slot:field="field">
+      <div data-testid="typeSelector">
       <treeselect
         :id="field.id"
         :options="typesOptions"
@@ -24,6 +25,7 @@
         @open="$emit('open', $event)"
         @keyup.enter.native="onEnter"
       />
+      </div>
     </template>
   </opensilex-FormField>
 </template>

@@ -83,7 +83,7 @@
             <slot :name="getCellTemplateName(field.key)" v-bind:data="data">{{data.item[field.key]}}</slot>
           </span>
 
-          <span v-else :key="index" class="checkbox"></span>
+          <span v-else :key="index" class="checkbox" :id="'checkboxTestID' + data.index"></span>
         </template>
 
         <template v-slot:row-details="data">

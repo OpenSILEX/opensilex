@@ -16,6 +16,7 @@
             type="text"
             :required="true"
             placeholder="OntologyObjectForm.form-name-placeholder"
+            data-testid="OntologyObjectForm-nameSelector"
         ></opensilex-InputForm>
 
         <!-- Type -->

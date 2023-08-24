@@ -115,6 +115,7 @@
                     v-slot="{ errors }"
                   >
                     <b-form-input
+                      data-testid="default-login-component-email-input"
                       id="email"
                       v-model="form.email"
                       required
@@ -135,6 +136,7 @@
                     v-slot="{ errors }"
                   >
                     <b-form-input
+                      data-testid="default-login-component-password-input"
                       id="password"
                       type="password"
                       v-model="form.password"
@@ -156,6 +158,7 @@
                 </a>
                 <div class="sign-btn text-center">
                   <b-button
+                    data-testid="default-login-component-connection-button"
                     type="submit"
                     class="greenThemeColor"
                     v-text="$t('component.login.button.login')"

@@ -12,4 +12,7 @@ opensilex-doc/src/main/resources/generated/
 **/opensilex-data-analysis
 **/inrae-bigdatagrapes
 **/*.iml
+
+/opensilex-front-tests/e2e/test-results/
+/opensilex-front-tests/e2e/playwright-report/
 opensilex-front/front/src/opensilex.dev.ts

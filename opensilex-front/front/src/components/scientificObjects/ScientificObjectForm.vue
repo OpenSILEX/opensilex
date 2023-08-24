@@ -10,6 +10,7 @@
         :updateAction="callScientificObjectUpdate"
         @onCreate="$emit('onCreate', $event)"
         @onUpdate="$emit('onUpdate', $event)"
+        data-testid="scientificObjectModalForm"
     >
         <template v-slot:customFields="{ form }">
             <opensilex-GeometryForm

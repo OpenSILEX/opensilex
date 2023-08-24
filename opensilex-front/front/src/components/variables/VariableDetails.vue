@@ -3,7 +3,11 @@
   <div class="page">
     <b-row>
       <b-col>
-        <opensilex-Card label="component.common.informations" icon="ik#ik-clipboard">
+        <opensilex-Card 
+          label="component.common.informations"
+          icon="ik#ik-clipboard"
+          data-testid="variableDescriptionCard"
+        >
 
           <template v-slot:rightHeader>
 

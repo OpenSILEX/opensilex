@@ -12,6 +12,7 @@
         :updateAction="update"
         :successMessage="successMessage"
         :key="key"
+        data-testid="variableCreateModalForm"
     ></opensilex-ModalForm>
 
 </template>

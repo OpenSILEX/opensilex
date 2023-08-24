@@ -1,0 +1,14 @@
+{
+  "name": "opensilex-front-tests",
+  "version": "1.0.0",
+  "description": "This repo contains tools for automated testing of the frontend of OpenSILEX.",
+  "main": "index.js",
+  "scripts": {},
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.38.1",
+    "@types/node": "^20.8.2"
+  }
+}

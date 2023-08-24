@@ -711,7 +711,7 @@ test:gabriel:front-test:
   before_script:
     - apt-get update --allow-insecure-repositories && apt-get install -y git
     - apt-get -y install openjdk-11-jre-headless # Check if headless is ok
-    - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@forgemia.inra.fr/OpenSILEX/opensilex-front-tests --branch main $CI_PROJECT_DIR/opensilex-front-tests
+    - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@forgemia.inra.fr/OpenSILEX/opensilex-front-tests.git --branch main $CI_PROJECT_DIR/opensilex-front-tests
   script:
     - cd artifacts/$OPENSILEX_APP_REVISION
     - echo "${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar ${OPENSILEX_CONFIG_SERVER_OPTS} ${OPENSILEX_RESET_ONTOLOGIES_OPTS} -d"

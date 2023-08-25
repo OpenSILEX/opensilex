@@ -698,14 +698,14 @@ test:bernhard:deploy:
 ##  GABRIEL-TEST-BUILD-DEPLOYMENT
 ###################################
 
-gabriel:build:
-  <<: *build_template_with_opensilex
-  rules:
-    - if: $CI_COMMIT_BRANCH == "gabriel"
+#gabriel:build:
+#  <<: *build_template_with_opensilex
+#  rules:
+#    - if: $CI_COMMIT_BRANCH == "gabriel"
 
 # See : https://playwright.dev/docs/ci#gitlab-ci
 # TODO : make it into a template
-gabriel:build:front-test:
+test:gabriel:front-test:
   image: mcr.microsoft.com/playwright:v1.37.0-jammy
 #  parallel: 7    for parallelization
   before_script:

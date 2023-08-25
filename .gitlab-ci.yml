@@ -716,8 +716,8 @@ test:gabriel:front-test:
     - wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq && chmod +x /usr/bin/yq
   script:
     - echo "SETTING UP CONFIG"
-    - echo "curl -X GET 'PRIVATE-TOKEN:$JOB_API_TOKEN' 'https://forgemia.inra.fr/OpenSILEX/opensilex-dev/-%2Fblob%2Fdevelop%2Fopensilex-dev-tools%2Fsrc%2Fmain%2Fresources%2Fconfig%2Fopensilex%2Eyml/raw?ref=gabriel' >> opensilex.yml"
-    - curl -X GET "PRIVATE-TOKEN:$JOB_API_TOKEN" "https://forgemia.inra.fr/OpenSILEX/opensilex-dev/-%2Fblob%2Fdevelop%2Fopensilex-dev-tools%2Fsrc%2Fmain%2Fresources%2Fconfig%2Fopensilex%2Eyml/raw?ref=gabriel" >> opensilex.yml
+    - echo "curl -X GET 'PRIVATE-TOKEN:$JOB_API_TOKEN' 'https://forgemia.inra.fr/OpenSILEX/projects/opensilex-dev/repository/files/opensilex-dev-tools%2Fsrc%2Fmain%2Fresources%2Fconfig%2Fopensilex%2Eyml/raw?ref=gabriel' >> opensilex.yml"
+    - curl -X GET "PRIVATE-TOKEN:$JOB_API_TOKEN" "https://forgemia.inra.fr/OpenSILEX/projects/opensilex-dev/repository/files/opensilex-dev-tools%2Fsrc%2Fmain%2Fresources%2Fconfig%2Fopensilex%2Eyml/raw?ref=gabriel" >> opensilex.yml
     - yq -i '.ontologies.sparql.config.serverURI = ${REMOTE_TEST_SERVER_IP}:8080/rdf4j-server/' opensilex.yml
     - yq -i '.ontologies.sparql.config.repository = FRONT-TEST-JOB-${CI_JOB_ID}' opensilex.yml
     - yq -i '.file-system.fs.config.defaultFS.connections.gridfs.config.host = ${REMOTE_TEST_SERVER_IP}' opensilex.yml

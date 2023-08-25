@@ -736,10 +736,10 @@ test:gabriel:front-test:
     - npx playwright test #  --shard=$CI_NODE_INDEX/$CI_NODE_TOTAL    for sharding
   rules:
     - if: $CI_COMMIT_BRANCH == "gabriel"
-      when: on_success
+      #when: on_success
     - if: '$FRONT_TESTS == "true"'
-  needs:
-    - gabriel:build
+#  needs:
+#    - gabriel:build
 
 
 test:gabriel:deploy:

@@ -705,7 +705,7 @@ gabriel:build:
 
 # See : https://playwright.dev/docs/ci#gitlab-ci
 # TODO : make it into a template
-build:gabriel:front-test:
+gabriel:build:front-test:
   image: mcr.microsoft.com/playwright:v1.37.0-jammy
 #  parallel: 7    for parallelization
   before_script:

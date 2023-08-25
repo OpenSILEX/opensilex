@@ -713,10 +713,21 @@ test:gabriel:front-test:
     - apt-get -y install openjdk-11-jre-headless # Check if headless is ok
     - echo "git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@forgemia.inra.fr/OpenSILEX/opensilex-front-tests.git --branch main $CI_PROJECT_DIR/opensilex-front-tests"
     - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@forgemia.inra.fr/OpenSILEX/opensilex-front-tests.git --branch main $CI_PROJECT_DIR/opensilex-front-tests
+    - snap install yq
   script:
+    - yq -i '.ontologies.sparql.config.serverURI = ${REMOTE_TEST_SERVER_IP}:8080/rdf4j-server/' /opensilex-dev-tools/src/main/resources/config/opensilex.yml
+    - yq -i '.ontologies.sparql.config.repository = FRONT-TEST-JOB-${CI_JOB_ID}' /opensilex-dev-tools/src/main/resources/config/opensilex.yml
+    - yq -i '.file-system.fs.config.defaultFS.connections.gridfs.config.host = ${REMOTE_TEST_SERVER_IP}' /opensilex-dev-tools/src/main/resources/config/opensilex.yml
+    - yq -i '.big-data.mongodb.config.host = ${REMOTE_TEST_SERVER_IP}' /opensilex-dev-tools/src/main/resources/config/opensilex.yml
+    - yq -i '.file-system.fs.config.defaultFS.connections.gridfs.config.port = 27017' /opensilex-dev-tools/src/main/resources/config/opensilex.yml
+    - yq -i '.big-data.mongodb.config.port = 27017' /opensilex-dev-tools/src/main/resources/config/opensilex.yml
+    - yq -i '.file-system.fs.config.defaultFS.connections.gridfs.config.database = FRONT-TEST-JOB-${CI_JOB_ID}' /opensilex-dev-tools/src/main/resources/config/opensilex.yml
+    - yq -i '.big-data.mongodb.config.database = FRONT-TEST-JOB-${CI_JOB_ID}' /opensilex-dev-tools/src/main/resources/config/opensilex.yml
     - cd artifacts/$OPENSILEX_APP_REVISION
-    - echo "${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar ${OPENSILEX_START_SERVER_OPTS}"
-    - ${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar ${OPENSILEX_START_SERVER_OPTS}
+    - echo "${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar install --CONFIG_FILE=/opensilex-dev-tools/src/main/resources/config/opensilex.yml -d"
+    - ${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar install --CONFIG_FILE=/opensilex-dev-tools/src/main/resources/config/opensilex.yml -d
+    - echo "${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar start server --DEBUG --CONFIG_FILE=/opensilex-dev-tools/src/main/resources/config/opensilex.yml -d"
+    - ${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar start server --DEBUG --CONFIG_FILE=/opensilex-dev-tools/src/main/resources/config/opensilex.yml -d
     - cd $CI_PROJECT_DIR/opensilex-front-tests
     - npm ci
     - npx playwright test #  --shard=$CI_NODE_INDEX/$CI_NODE_TOTAL    for sharding
@@ -726,6 +737,35 @@ test:gabriel:front-test:
     - if: '$FRONT_TESTS == "true"'
   needs:
     - gabriel:build
+
+file-system:
+  fs:
+    config:
+      defaultFS: local
+      connections:
+        local:
+          implementation: org.opensilex.fs.local.LocalFileSystemConnection
+          config:
+            basePath: ../../opensilex-data
+        #     irods:
+        #         implementation: org.opensilex.fs.irods.IrodsFileSystemConnection
+        #         config:
+        #             basePath: /FranceGrillesZone/home/fg-phenome/PHIS
+        gridfs:
+          implementation: org.opensilex.fs.gridfs.GridFSConnection
+          config:
+            host: localhost
+            port: 8668
+            database: opensilex
+      # customPath:
+      #     datafile/: irods
+
+big-data:
+  mongodb:
+    config:
+      host: localhost
+      port: 8668
+      database: opensilex
 
 test:gabriel:deploy:
   <<: *deploy_opensilex_before_script

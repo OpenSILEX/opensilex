@@ -725,7 +725,7 @@ test:gabriel:front-test:
     - yq -i '.big-data.mongodb.config.port = "27017"' opensilex.yml
     - yq -i '.file-system.fs.config.defaultFS.connections.gridfs.config.database = "FRONT-TEST-JOB-${CI_JOB_ID}"' opensilex.yml
     - yq -i '.big-data.mongodb.config.database = "FRONT-TEST-JOB-${CI_JOB_ID}"' opensilex.yml
-    - curl -X GET -H "PRIVATE-TOKEN:$JOB_API_TOKEN" "https://forgemia.inra.fr/api/v4/projects/1675/repository/files/opensilex-release%2Ftarget%2Fopensilex%2Fopensilex%2Ejar/raw?ref=gabriel" >> opensilex.jar
+    - curl -X GET -H "PRIVATE-TOKEN:$JOB_API_TOKEN" "https://forgemia.inra.fr/api/v4/projects/1675/repository/files/opensilex-release%2Ftarget%2Fopensilex-release-BUILD-SNAPSHOT%2Fopensilex%2Ejar/raw?ref=gabriel" >> opensilex.jar  # opensilex-release%2Ftarget%2Fopensilex%2F
     - echo "${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar install --CONFIG_FILE=/opensilex.yml -d"
     - ${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar install --CONFIG_FILE=/opensilex.yml -d
     - echo "${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar start server --DEBUG --CONFIG_FILE=/opensilex.yml -d"

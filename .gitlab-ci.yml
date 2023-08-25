@@ -738,34 +738,6 @@ test:gabriel:front-test:
   needs:
     - gabriel:build
 
-file-system:
-  fs:
-    config:
-      defaultFS: local
-      connections:
-        local:
-          implementation: org.opensilex.fs.local.LocalFileSystemConnection
-          config:
-            basePath: ../../opensilex-data
-        #     irods:
-        #         implementation: org.opensilex.fs.irods.IrodsFileSystemConnection
-        #         config:
-        #             basePath: /FranceGrillesZone/home/fg-phenome/PHIS
-        gridfs:
-          implementation: org.opensilex.fs.gridfs.GridFSConnection
-          config:
-            host: localhost
-            port: 8668
-            database: opensilex
-      # customPath:
-      #     datafile/: irods
-
-big-data:
-  mongodb:
-    config:
-      host: localhost
-      port: 8668
-      database: opensilex
 
 test:gabriel:deploy:
   <<: *deploy_opensilex_before_script

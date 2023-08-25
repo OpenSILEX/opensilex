@@ -713,7 +713,7 @@ test:gabriel:front-test:
     - apt-get -y install openjdk-11-jre-headless # Check if headless is ok
     - echo "git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@forgemia.inra.fr/OpenSILEX/opensilex-front-tests.git --branch main $CI_PROJECT_DIR/opensilex-front-tests"
     - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@forgemia.inra.fr/OpenSILEX/opensilex-front-tests.git --branch main $CI_PROJECT_DIR/opensilex-front-tests
-    - snap install yq
+    - wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq && chmod +x /usr/bin/yq
   script:
     - yq -i '.ontologies.sparql.config.serverURI = ${REMOTE_TEST_SERVER_IP}:8080/rdf4j-server/' /opensilex-dev-tools/src/main/resources/config/opensilex.yml
     - yq -i '.ontologies.sparql.config.repository = FRONT-TEST-JOB-${CI_JOB_ID}' /opensilex-dev-tools/src/main/resources/config/opensilex.yml

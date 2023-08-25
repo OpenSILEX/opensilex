@@ -698,10 +698,10 @@ test:bernhard:deploy:
 ##  GABRIEL-TEST-BUILD-DEPLOYMENT
 ###################################
 
-#gabriel:build:
-#  <<: *build_template_with_opensilex
-#  rules:
-#    - if: $CI_COMMIT_BRANCH == "gabriel"
+gabriel:build:
+  <<: *build_template_with_opensilex
+  rules:
+    - if: $CI_COMMIT_BRANCH == "gabriel"
 
 # See : https://playwright.dev/docs/ci#gitlab-ci
 # TODO : make it into a template
@@ -725,7 +725,7 @@ test:gabriel:front-test:
     - yq -i '.big-data.mongodb.config.port = "27017"' opensilex.yml
     - yq -i '.file-system.fs.config.defaultFS.connections.gridfs.config.database = "FRONT-TEST-JOB-${CI_JOB_ID}"' opensilex.yml
     - yq -i '.big-data.mongodb.config.database = "FRONT-TEST-JOB-${CI_JOB_ID}"' opensilex.yml
-    - curl -X GET -H "PRIVATE-TOKEN:$JOB_API_TOKEN" "https://forgemia.inra.fr/api/v4/projects/1675/repository/files/opensilex-release%2Ftarget%2Fopensilex-release-BUILD-SNAPSHOT%2Fopensilex%2Ejar/raw?ref=gabriel" >> opensilex.jar  # opensilex-release%2Ftarget%2Fopensilex%2F
+    - cd artifacts/$OPENSILEX_APP_REVISION
     - echo "${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar install --CONFIG_FILE=/opensilex.yml -d"
     - ${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar install --CONFIG_FILE=/opensilex.yml -d
     - echo "${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar start server --DEBUG --CONFIG_FILE=/opensilex.yml -d"
@@ -735,10 +735,10 @@ test:gabriel:front-test:
     - npx playwright test #  --shard=$CI_NODE_INDEX/$CI_NODE_TOTAL    for sharding
   rules:
     - if: $CI_COMMIT_BRANCH == "gabriel"
-      #when: on_success
+      when: on_success
     - if: '$FRONT_TESTS == "true"'
-#  needs:
-#    - gabriel:build
+  needs:
+    - gabriel:build
 
 
 #test:gabriel:deploy:

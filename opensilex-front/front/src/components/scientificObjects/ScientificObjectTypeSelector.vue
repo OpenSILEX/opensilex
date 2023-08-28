@@ -129,7 +129,7 @@ export default class ScientificObjectTypeSelector extends Vue {
           sixtine.push(dto.uri);
         }
 
-        if(dto.graph === "http://www.opensilex.org/set/properties" || dto.graph.endsWith("oeso-ext")) {
+        if(dto.graph === "http://www.opensilex.org/set/properties" || dto.graph.endsWith("oeso-ext") || dto.graph.endsWith("oeso")) {
           global.push(dto.uri);
         }
       }

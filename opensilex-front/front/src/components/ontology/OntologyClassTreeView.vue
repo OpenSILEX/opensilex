@@ -1,12 +1,15 @@
 <template>
     <opensilex-TreeView :nodes.sync="nodes" @select="displayClassDetail($event.data.uri)">
         <template v-slot:node="{ node }">
-      <span class="item-icon">
-        <opensilex-Icon v-if="classesParametersByURI[node.data.uri] && classesParametersByURI[node.data.uri].icon"
-                        :icon="classesParametersByURI[node.data.uri].icon"/>
-      </span>&nbsp;
+            <span class="item-icon">
+                <opensilex-Icon v-if="classesParametersByURI[node.data.uri] && classesParametersByURI[node.data.uri].icon"
+                            :icon="classesParametersByURI[node.data.uri].icon"/>
+            </span>
+            &nbsp;
             <strong v-if="node.data.selected">{{ node.title }}</strong>
             <span v-if="!node.data.selected">{{ node.title }}</span>
+            &nbsp;
+            <span :class="convertTypeColor(node.data.color)">{{ node.data.color }}</span>
         </template>
 
         <template v-slot:buttons="{ node }">
@@ -116,16 +119,17 @@ export default class OntologyClassTreeView extends Vue {
 
             if (results[0].response.result.length > 0) {
                 this.resourceTree = results[0].response.result;
+                this.initGraphArrays(this.resourceTree[0]);
 
                 // push the root class on the first tree level, and recursively build nodes for descendant
-                this.nodes = [this.dtoToNode(this.resourceTree[0], selection)];
+                this.nodes = [this.dtoToNode(this.setUpFinalDto(this.resourceTree[0]), selection)];
 
             } else {
                 this.nodes = [];
             }
 
             if (selection) {
-                this.displayClassDetail(selection.uri);
+                this.displayClassDetail(selection.uri);               
             }
         }).catch(this.$opensilex.errorHandler);
     }
@@ -145,7 +149,7 @@ export default class OntologyClassTreeView extends Vue {
         let childrenDTOs = [];
         if (!isLeaf) {
             for (let i in dto.children) {
-                childrenDTOs.push(this.dtoToNode(dto.children[i], selection));
+                childrenDTOs.push(this.dtoToNode(this.setUpFinalDto(dto.children[i]), selection));
             }
         }
 
@@ -169,6 +173,108 @@ export default class OntologyClassTreeView extends Vue {
 
     isManagedClass(rdfClassURI) {
         return !!this.classesParametersByURI[rdfClassURI];
+    }
+
+    
+
+    sixtine = [];
+    phis = [];
+    global = [];
+
+    erreurFinal = new Set();
+
+    initGraphArrays(dto) {
+        if(!dto.graph) {
+            this.erreurFinal.add(dto.uri);
+        } else {
+            
+            if(dto.graph.startsWith("http://phenome.inrae.fr/openstack-test/")) {
+                this.phis.push(dto.uri);
+            }
+
+            if(dto.graph.startsWith("http://vegetalunit.inrae.fr/openstack-test/") || dto.graph.endsWith("oeso-sixtine")) {
+                this.sixtine.push(dto.uri);
+            }
+
+            if(dto.graph === "http://www.opensilex.org/set/properties" || dto.graph.endsWith("oeso-ext") || dto.graph.endsWith("oeso")) {
+                this.global.push(dto.uri);
+            }
+        }
+        if(dto.children && dto.children.length > 0) {
+            dto.children.forEach(child => this.initGraphArrays(child));
+        }
+    }
+
+    sortGraph() {
+        let sixtineFinal = new Set();
+        let phisFinal = new Set();
+        let globalFinal = new Set();
+
+        for (let uriSixtine of this.sixtine) {
+            if(this.global.includes(uriSixtine)) {
+                this.erreurFinal.add(uriSixtine);
+            } else {
+                sixtineFinal.add(uriSixtine);
+            }
+        }
+
+        for (let uriPhis of this.phis) {
+            if(this.global.includes(uriPhis)) {
+                this.erreurFinal.add(uriPhis);
+            } else {
+                phisFinal.add(uriPhis);
+            }
+        }
+
+        for (let uriGlobal of this.global) {
+            if(!sixtineFinal.has(uriGlobal) && !phisFinal.has(uriGlobal) && !this.erreurFinal.has(uriGlobal)) {
+                globalFinal.add(uriGlobal);
+            }
+        }
+
+        return {
+            erreur: this.erreurFinal,
+            sixtine: sixtineFinal,
+            phis: phisFinal,
+            global: globalFinal
+        }
+    }
+
+    setUpFinalDto(dto) {
+        let graphs = this.sortGraph();
+        
+        let newDto = dto;
+        if(graphs.phis.has(newDto.uri)) {
+            newDto["color"] = "phis"
+            return newDto;
+        }
+        
+        if(graphs.sixtine.has(newDto.uri)) {
+            newDto["color"] = "sixtine"
+            return newDto;
+        }
+
+        if(graphs.erreur.has(newDto.uri)) {
+            newDto["color"] = "error"
+            return newDto;
+        }
+        
+        if(graphs.global.has(newDto.uri)) {
+            newDto["color"] = "global"
+            return newDto;
+        }
+
+        
+        return newDto;
+    }
+
+    convertTypeColor(color) {
+        switch (color) {
+            case "sixtine": return 'badge rounded-pill bg-primary text-white';
+            case "phis": return 'badge rounded-pill bg-success text-white';
+            case "error": return 'badge rounded-pill bg-danger text-white';
+            case "global": return 'badge rounded-pill bg-dark text-white';
+        }
     }
 }
 </script>

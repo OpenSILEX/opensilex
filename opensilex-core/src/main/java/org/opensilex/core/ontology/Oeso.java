@@ -178,4 +178,11 @@ public class Oeso {
     public static final Property personInCharge = Ontology.property(NS,"personInCharge");
     public static final Property startUp = Ontology.property(NS,"startUp");
     public static final Property removal = Ontology.property(NS,"removal");
+
+    // ---- Criteria search logic
+    public static final Resource lessThan = Ontology.resource(NS, "LessThan");
+    public static final Resource lessOrEqualThan = Ontology.resource(NS, "LessOrEqualThan");
+    public static final Resource moreThan = Ontology.resource(NS, "MoreThan");
+    public static final Resource moreOrEqualThan = Ontology.resource(NS, "MoreOrEqualThan");
+    public static final Resource equalToo = Ontology.resource(NS, "EqualToo");
 }

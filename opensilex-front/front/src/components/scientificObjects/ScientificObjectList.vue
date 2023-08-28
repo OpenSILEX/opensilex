@@ -188,6 +188,7 @@ export default class ScientificObjectList extends Vue {
         types: [],
         existenceDate: undefined,
         creationDate: undefined,
+        criteriaDto: {}
       };
     },
   })
@@ -280,6 +281,7 @@ export default class ScientificObjectList extends Vue {
       types: [],
       existenceDate: undefined,
       creationDate: undefined,
+      criteriaDto: {}
     };
     this.refresh();
   }
@@ -319,7 +321,7 @@ export default class ScientificObjectList extends Vue {
 
   refreshWithKeepingSelection() {
     if (!this.noUpdateURL) {
-        this.$opensilex.updateURLParameters(this.filter);
+      this.$opensilex.updateURLParameters(this.filter);
     }
     this.tableRef.refresh();
   }
@@ -339,6 +341,7 @@ export default class ScientificObjectList extends Vue {
       undefined,
       this.filter.existenceDate,
       this.filter.creationDate,
+      JSON.stringify(this.filter.criteriaDto),
       options.orderBy,
       options.currentPage,
       options.pageSize

@@ -123,6 +123,18 @@
               ></opensilex-DateForm>
             </opensilex-FilterField>
             </div>
+            <!-- Criteria search -->
+            <div>
+              <opensilex-FilterField quarterWidth="false">
+                <opensilex-CriteriaSearchModalCreator
+                    class="searchFilter"
+                    ref="criteriaSearchCreateModal"
+                    :criteria_dto.sync="filter.criteriaDto"
+                    :required="false"
+                    :requiredBlue="false"
+                ></opensilex-CriteriaSearchModalCreator>
+              </opensilex-FilterField>
+            </div>
           </template>
         </opensilex-SearchFilterField>
       </div>
@@ -160,6 +172,7 @@
 <script lang="ts">
 import Vue from "vue";
 import { Component, Ref, PropSync } from "vue-property-decorator";
+import CriteriaSearchModalCreator from "@/components/scientificObjects/CriteriaSearchModalCreator.vue";
 
 @Component
 export default class ScientificObjectModalList extends Vue {
@@ -174,6 +187,7 @@ export default class ScientificObjectModalList extends Vue {
         types: [],
         existenceDate: undefined,
         creationDate: undefined,
+        criteriaDto: undefined
       };
     },
   })
@@ -187,6 +201,7 @@ export default class ScientificObjectModalList extends Vue {
 
   @Ref("soList") readonly soList!: any;
   @Ref("modalRef") readonly modalRef!: any;
+  @Ref("criteriaSearchCreateModal") readonly criteriaSearchCreateModal!: CriteriaSearchModalCreator;
 
   selectItem(row) {
     this.soList.onItemSelected(row);
@@ -221,6 +236,7 @@ export default class ScientificObjectModalList extends Vue {
       types: [],
       existenceDate: undefined,
       creationDate: undefined,
+      criteriaDto: undefined
     };
     this.refresh();
   }

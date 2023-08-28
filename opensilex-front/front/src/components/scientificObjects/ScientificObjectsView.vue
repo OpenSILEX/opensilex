@@ -155,6 +155,19 @@
                 ></opensilex-DateForm>
               </opensilex-FilterField>
               </div>
+
+              <!-- Criteria search -->
+              <div>
+                <opensilex-FilterField quarterWidth="false">
+                  <opensilex-CriteriaSearchModalCreator
+                      class="searchFilter"
+                      ref="criteriaSearchCreateModal"
+                      :criteria_dto.sync="filter.criteriaDto"
+                      :required="false"
+                      :requiredBlue="false"
+                  ></opensilex-CriteriaSearchModalCreator>
+                </opensilex-FilterField>
+              </div>
             </template>
           </opensilex-SearchFilterField>
         </div>
@@ -203,6 +216,7 @@
 import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import EventCsvForm from "../events/form/csv/EventCsvForm.vue";
+import CriteriaSearchModalCreator from "./CriteriaSearchModalCreator.vue";
 
 @Component
 export default class ScientificObjectsView extends Vue {
@@ -215,6 +229,7 @@ export default class ScientificObjectsView extends Vue {
   @Ref("eventCsvForm") readonly eventCsvForm!: EventCsvForm;
   @Ref("moveCsvForm") readonly moveCsvForm!: EventCsvForm;
   @Ref("soList") readonly soList!: any;
+  @Ref("criteriaSearchCreateModal") readonly criteriaSearchCreateModal!: CriteriaSearchModalCreator;
 
   selectedUris: Array<string> = [];
 
@@ -233,6 +248,7 @@ export default class ScientificObjectsView extends Vue {
     types: [],
     existenceDate: undefined,
     creationDate: undefined,
+    criteriaDto: undefined
   };
 
   data(){
@@ -309,7 +325,9 @@ export default class ScientificObjectsView extends Vue {
       types: [],
       existenceDate: undefined,
       creationDate: undefined,
+      criteriaDto: undefined
     };
+    this.criteriaSearchCreateModal.resetCriteriaListAndSave();
     this.soList.refresh();
   }
 }

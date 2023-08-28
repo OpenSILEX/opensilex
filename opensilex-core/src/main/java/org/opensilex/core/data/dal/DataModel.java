@@ -20,6 +20,8 @@ import java.util.UUID;
  */
 public class DataModel extends MongoModel {
 
+    public static final String TARGET_FIELD = "target";
+
     private URI target;
     
     private URI variable;
@@ -42,8 +44,7 @@ public class DataModel extends MongoModel {
     
     private Float confidence = null;
 
-    private Document metadata;  
-
+    private Document metadata;
 
     public URI getTarget() {
         return target;

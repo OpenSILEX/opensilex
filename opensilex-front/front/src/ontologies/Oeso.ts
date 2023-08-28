@@ -55,6 +55,7 @@ let ontologies = {
     PERSON_IN_CHARGE: OESO_URI+"#personInCharge",
     START_UP: OESO_URI+"#startUp",
     REMOVAL: OESO_URI+"#removal",
+    MATHMATICAL_OPERATORS_URI: OESO_URI+"#MathmaticalOperator",
 
     getShortURI: getShortURI,
     checkURIs: checkURIs

@@ -32,7 +32,6 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.apache.jena.arq.querybuilder.Order;
-import org.bson.BsonBoolean;
 import org.bson.BsonDocument;
 import org.bson.BsonInt32;
 import org.bson.Document;
@@ -45,8 +44,7 @@ import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidUriListException;
 import org.opensilex.nosql.mongodb.auth.MongoAuthenticationService;
-import org.opensilex.nosql.mongodb.codec.ObjectCodec;
-import org.opensilex.nosql.mongodb.codec.URICodec;
+import org.opensilex.nosql.mongodb.codec.*;
 import org.opensilex.service.BaseService;
 import org.opensilex.service.ServiceDefaultDefinition;
 import org.opensilex.sparql.SPARQLModule;
@@ -69,7 +67,6 @@ public class MongoDBService extends BaseService {
     private MongoClient mongoClient;
     private ClientSession session = null;
     private MongoDatabase db;
-    public final static int SIZE_MAX = 10000;
     private URI generationPrefixURI;
     private static String defaultTimezone;
 
@@ -140,7 +137,11 @@ public class MongoDBService extends BaseService {
         // Define custom codec registry for URI, Object and GeoJson
         CodecRegistry codecRegistry = CodecRegistries.fromRegistries(
                 MongoClientSettings.getDefaultCodecRegistry(),
-                CodecRegistries.fromCodecs(new URICodec(), new ObjectCodec()),
+                CodecRegistries.fromCodecs(
+                        new URICodec(),
+                        new ObjectCodec(),
+                        new ZonedDateTimeCodec()
+                ),
                 CodecRegistries.fromProviders(
                         new GeoJsonCodecProvider(),
                         PojoCodecProvider.builder().register(URI.class).automatic(true).build()
@@ -527,7 +528,7 @@ public class MongoDBService extends BaseService {
             String collectionName,
             List<Bson> aggregationArgs,
             Class<T> instanceClass) {
-        LOGGER.debug("MONGO SEARCH - Collection : " + collectionName + " - Aggregation pipeline : " + aggregationArgs.toString());
+        LOGGER.debug("MONGO AGGREGATE - Collection : " + collectionName + " - Aggregation pipeline : " + aggregationArgs.toString());
         Set<T> results = new HashSet<>();
         MongoCollection<T> collection = db.getCollection(collectionName, instanceClass);
 
@@ -536,10 +537,8 @@ public class MongoDBService extends BaseService {
         for (T res : aggregate) {
             results.add(res);
         }
-
         return results;
     }
-
 
     public <T extends MongoModel> void delete(Class<T> instanceClass, String collectionName, URI uri) throws NoSQLInvalidURIException {
         LOGGER.debug("MONGO DELETE - Collection : " + collectionName + " - uri : " + uri);

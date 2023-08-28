@@ -8,6 +8,7 @@ package org.opensilex.core.scientificObject.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.client.model.geojson.Geometry;
 import com.mongodb.client.model.geojson.Point;
 import com.mongodb.client.model.geojson.Polygon;
@@ -15,6 +16,7 @@ import com.mongodb.client.model.geojson.Position;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.riot.Lang;
+import org.apache.jena.vocabulary.XSD;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
 import org.junit.*;
@@ -23,8 +25,7 @@ import org.opensilex.OpenSilex;
 import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.core.data.DataAPITest;
 import org.opensilex.core.data.DataFileAPITest;
-import org.opensilex.core.data.api.DataCreationDTO;
-import org.opensilex.core.data.api.DataFileCreationDTO;
+import org.opensilex.core.data.api.*;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataProvenanceModel;
 import org.opensilex.core.experiment.api.ExperimentAPITest;
@@ -56,6 +57,8 @@ import javax.ws.rs.core.Response.Status;
 import java.io.File;
 import java.io.OutputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -63,7 +66,7 @@ import java.time.LocalDate;
 import java.util.*;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM_TYPE;
-import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.*;
 import static org.junit.Assert.assertNotNull;
 import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
 
@@ -79,6 +82,7 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
     public static final String createPath = path + "/";
     public static final String updatePath = path + "/";
     public static final String deletePath = path + "/{uri}";
+    public static final String searchPath = path + "/";
     public static final String searchGeomPath = path + "/geometry";
 
     public static final String GERMPLASM_RESTRICTION_ONTOLOGY_GRAPH = "http://www.opensilex.org/vocabulary/test-germplasm-restriction#";
@@ -87,6 +91,10 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
     private int soCount = 1;
     private URI experiment;
     private URI speciesUri;
+
+    private final DataAPITest dataApi = new DataAPITest();
+    private final VariableApiTest variableApi = new VariableApiTest();
+
 
     private final static String EXPERIMENT_QUERY_PARAM = "experiment";
 
@@ -694,6 +702,164 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
     public void testOsDeleteFailWhenDataFilesAssociatedWithinExperiment() throws Exception {
         testOsDeleteFailWhenAssociatedDataFile(false);
     }
+
+    //Criteria search tests :
+
+    /**
+     * Objects, Variables and data used for criteria search tests :
+     */
+    private URI createVariableOfDatatype(URI datatype) throws Exception {
+        VariableCreationDTO variableCreationDTO = variableApi.getCreationDto();
+        variableCreationDTO.setDataType(datatype);
+        Response postResultVar = getJsonPostResponseAsAdmin(target(variableApi.createPath), variableCreationDTO);
+        return extractUriFromResponse(postResultVar);
+    }
+
+    /**
+     * Test to check criteria searches on int types, a decimal types and datetime types.
+     * Also verifies that excluded objects from result are correct
+     */
+    @Test
+    public void testCriteriaSearch() throws Exception {
+        //Create objects, for each ensure that the result is a well-formed URI, else throw exception
+        //Separate objects for int tests and 2 other objects for other tests to make sure correct objects get excluded
+        Response postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(false, true, false));
+        assertEquals(Status.CREATED.getStatusCode(), postResult.getStatus());
+        URI osWithCorrectIntData = extractUriFromResponse(postResult);
+        postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(false, true, false));
+        assertEquals(Status.CREATED.getStatusCode(), postResult.getStatus());
+        URI osWithWrongIntData = extractUriFromResponse(postResult);
+        postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(false, true, false));
+        assertEquals(Status.CREATED.getStatusCode(), postResult.getStatus());
+        URI osWithCorrectDatas = extractUriFromResponse(postResult);
+        postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(false, true, false));
+        assertEquals(Status.CREATED.getStatusCode(), postResult.getStatus());
+        URI osWithWrongDatas = extractUriFromResponse(postResult);
+
+        //create variables
+        URI integerVariable = createVariableOfDatatype(new URI(XSD.integer.getURI()));
+        URI decimalVariable = createVariableOfDatatype(new URI(XSD.decimal.getURI()));
+        URI datetimeVariable = createVariableOfDatatype(new URI(XSD.dateTime.getURI()));
+
+        //Create data
+        //Provenance for data :
+        ProvenanceCreationDTO provenance = new ProvenanceCreationDTO();
+        provenance.setName("criteriaSearchTestProv");
+        Response postProvenanceResponse = getJsonPostResponseAsAdmin(target(new ProvenanceAPITest().createPath), provenance);
+        provenance.setUri(extractUriFromResponse(postProvenanceResponse));
+
+        // create data provenance
+        DataProvenanceModel dataProvenance = new DataProvenanceModel();
+        dataProvenance.setUri(provenance.getUri());
+        dataProvenance.setExperiments(Collections.emptyList());
+        ArrayList<DataCreationDTO> dtoList = new ArrayList<>();
+        DataCreationDTO falseIntData = dataApi.getCreationDataDTO("2020-10-11T10:29:06.402+0200", integerVariable, osWithWrongIntData, 20, dataProvenance);
+        DataCreationDTO correctIntData = dataApi.getCreationDataDTO("2020-10-12T10:29:06.402+0200", integerVariable, osWithCorrectIntData, 5, dataProvenance);
+        DataCreationDTO correctDecimalData = dataApi.getCreationDataDTO("2020-10-13T10:29:06.402+0200", decimalVariable, osWithCorrectDatas, 20.5, dataProvenance);
+        DataCreationDTO falseDecimalData= dataApi.getCreationDataDTO("2020-10-14T10:29:06.402+0200", decimalVariable, osWithWrongDatas, 5.5, dataProvenance);
+        DataCreationDTO correctDatetimeData = dataApi.getCreationDataDTO("2020-10-11T10:29:06.402+0200", datetimeVariable, osWithCorrectDatas, "2020-10-11T10:29:06.402+0200", dataProvenance);
+        DataCreationDTO falseDatetimeData = dataApi.getCreationDataDTO("2020-10-12T10:29:06.402+0200", datetimeVariable, osWithWrongDatas, "2050-03-01T00:01:00Z", dataProvenance);
+        dtoList.add(correctIntData);
+        dtoList.add(falseIntData);
+        dtoList.add(correctDecimalData);
+        dtoList.add(falseDecimalData);
+        dtoList.add(correctDatetimeData);
+        dtoList.add(falseDatetimeData);
+        final Response postResultData = getJsonPostResponseAsAdmin(target(DataAPITest.createListPath), dtoList);
+        LOGGER.info(postResultData.toString());
+        assertEquals(Response.Status.CREATED.getStatusCode(), postResultData.getStatus());
+
+        //Search tests :
+
+        SingleCriteriaDTO lessThan10SingleCriteria = new SingleCriteriaDTO();
+        lessThan10SingleCriteria.setVariableUri(integerVariable);
+        lessThan10SingleCriteria.setCriteria(new URI(Oeso.lessThan.getURI()));
+        lessThan10SingleCriteria.setValue("10");
+
+        SingleCriteriaDTO wrongDatatypeForIntCriteria = new SingleCriteriaDTO();
+        wrongDatatypeForIntCriteria.setVariableUri(integerVariable);
+        wrongDatatypeForIntCriteria.setCriteria(new URI(Oeso.lessThan.getURI()));
+        wrongDatatypeForIntCriteria.setValue("this is not an int idiot");
+
+        SingleCriteriaDTO inexistingVariableCriteria = new SingleCriteriaDTO();
+        inexistingVariableCriteria.setVariableUri(new URI("some_random_fake_uri"));
+        inexistingVariableCriteria.setCriteria(new URI(Oeso.lessThan.getURI()));
+        inexistingVariableCriteria.setValue("this value shouldn't matter");
+
+        SingleCriteriaDTO moreThan10Dot5SingleCriteria = new SingleCriteriaDTO();
+        moreThan10Dot5SingleCriteria.setVariableUri(decimalVariable);
+        moreThan10Dot5SingleCriteria.setCriteria(new URI(Oeso.moreThan.getURI()));
+        moreThan10Dot5SingleCriteria.setValue("10.5");
+
+        SingleCriteriaDTO equalToo20201011SingleCriteria = new SingleCriteriaDTO();
+        equalToo20201011SingleCriteria.setVariableUri(datetimeVariable);
+        equalToo20201011SingleCriteria.setCriteria(new URI(Oeso.equalToo.getURI()));
+        equalToo20201011SingleCriteria.setValue("2020-10-11T10:29:06.402+0200");
+
+        //Test a single criteria on int type
+        CriteriaDTO criteriaForCurrentTest = new CriteriaDTO();
+        criteriaForCurrentTest.setCriteriaList(Collections.singletonList(lessThan10SingleCriteria));
+
+        Map<String, Object> currentScientificObjectSearchParams = new HashMap<String, Object>() {
+            {
+                put("criteria_dto", URLEncoder.encode(new ObjectMapper().writeValueAsString(criteriaForCurrentTest), "UTF-8"));
+            }
+        };
+        WebTarget searchTarget = appendSearchParams(target(searchPath), 0, 20, currentScientificObjectSearchParams);
+        Response getResult = appendAdminToken(searchTarget).get();
+        assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
+
+        List<ScientificObjectNodeDTO> searchResult = getSearchResultsAsAdmin(
+                searchPath,
+                currentScientificObjectSearchParams,
+                new TypeReference<PaginatedListResponse<ScientificObjectNodeDTO>>() {});
+
+        assertEquals(1, searchResult.size());
+        assertTrue(SPARQLDeserializers.compareURIs(osWithCorrectIntData, searchResult.get(0).getUri()));
+
+
+        //Test that we get only osWithCorrectDatas using two criteria
+        criteriaForCurrentTest.setCriteriaList(new ArrayList<>(Arrays.asList(moreThan10Dot5SingleCriteria, equalToo20201011SingleCriteria)));
+        currentScientificObjectSearchParams = new HashMap<String, Object>() {
+            {
+                put("criteria_dto", URLEncoder.encode(new ObjectMapper().writeValueAsString(criteriaForCurrentTest), "UTF-8"));
+            }
+        };
+        searchTarget = appendSearchParams(target(searchPath), 0, 20, currentScientificObjectSearchParams);
+        getResult = appendAdminToken(searchTarget).get();
+        assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
+
+        searchResult = getSearchResultsAsAdmin(
+                searchPath,
+                currentScientificObjectSearchParams,
+                new TypeReference<PaginatedListResponse<ScientificObjectNodeDTO>>() {});
+
+        assertEquals(1, searchResult.size());
+        assertTrue(SPARQLDeserializers.compareURIs(osWithCorrectDatas, searchResult.get(0).getUri()));
+
+        //test error responses bad data type, invalid variable
+        criteriaForCurrentTest.setCriteriaList(new ArrayList<>(Collections.singletonList(wrongDatatypeForIntCriteria)));
+        currentScientificObjectSearchParams = new HashMap<String, Object>() {
+            {
+                put("criteria_dto", URLEncoder.encode(new ObjectMapper().writeValueAsString(criteriaForCurrentTest), "UTF-8"));
+            }
+        };
+        searchTarget = appendSearchParams(target(searchPath), 0, 20, currentScientificObjectSearchParams);
+        getResult = appendAdminToken(searchTarget).get();
+        assertEquals(Status.BAD_REQUEST.getStatusCode(), getResult.getStatus());
+        criteriaForCurrentTest.setCriteriaList(new ArrayList<>(Collections.singletonList(inexistingVariableCriteria)));
+        currentScientificObjectSearchParams = new HashMap<String, Object>() {
+            {
+                put("criteria_dto", URLEncoder.encode(new ObjectMapper().writeValueAsString(criteriaForCurrentTest), "UTF-8"));
+            }
+        };
+        searchTarget = appendSearchParams(target(searchPath), 0, 20, currentScientificObjectSearchParams);
+        getResult = appendAdminToken(searchTarget).get();
+        assertEquals(Status.BAD_REQUEST.getStatusCode(), getResult.getStatus());
+
+
+    }
+
 
     private ScientificObjectCreationDTO getCreationDTO(URI experiment, String name, URI uri) throws Exception {
         ScientificObjectCreationDTO dto = new ScientificObjectCreationDTO();

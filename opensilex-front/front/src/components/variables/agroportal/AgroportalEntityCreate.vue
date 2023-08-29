@@ -10,8 +10,10 @@
             :createAction="create"
             :updateAction="update"
             :static="false"
+            :nextStepAction="nextStep"
     >
-        <template v-slot:icon></template>
+      <template v-slot:icon></template>
+
     </opensilex-WizardForm>
 </template>
 
@@ -117,6 +119,17 @@ import {EntityDetailsDTO} from "opensilex-core/model/entityDetailsDTO";
                 });
         }
 
+        nextStep(stepIndex, form, nextStepComponent, currentStepComponent) {
+          console.log(form);
+          if(stepIndex == 0 && form.uri != "") {
+            //this.wizardRef.hide();
+            form.exact_match.push(form.uri);
+            form.uri = "";
+            return true;
+          }
+
+        }
+
         loadingWizard: boolean = false;
 
         setLoading(value: boolean) {
@@ -140,6 +153,7 @@ en:
         edit: Edit entity
         name-placeholder: Plant
         search-for-ontology-term: Search for ontology term
+        selected-term: Selected term
 fr:
     AgroportalEntityForm:
         uri-help: "Décocher si vous souhaitez ajouter une entité à partir d'une ontologie existante ou si vous souhaitez spécifier une URI particulière. Laisser coché si vous souhaitez ajouter une entité avec une URI auto-générée"
@@ -149,4 +163,5 @@ fr:
         edit: Éditer une entité
         name-placeholder: Plante
         search-for-ontology-term: Rechercher un terme
+        selected-term: Terme sélectionné
 </i18n>

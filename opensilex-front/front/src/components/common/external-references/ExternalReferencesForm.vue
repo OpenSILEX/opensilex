@@ -8,7 +8,7 @@
                         <strong class="text-primary">{{this.skosReferences.uri}}</strong>
                     </em>
                 </p>
-                <div class="row">
+                <div class="row" v-if="includeAgroportalSearch">
                   <opensilex-AgroportalSearch
                       label="component.common.name"
                       type="text"

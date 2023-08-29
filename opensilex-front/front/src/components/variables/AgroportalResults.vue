@@ -7,6 +7,10 @@
           Nothing found for '{{ this.text }}'
         </div>
 
+        <div v-if="isAgroportalDown && !isDataLoading">
+          Nothing found for '{{ this.text }}'
+        </div>
+
         <div v-for="(entity, index) in entities" v-bind:key="entity.id">
 
           <opensilex-AgroportalResultItem
@@ -77,9 +81,10 @@ export default class AgroportalResults extends Vue {
   })
   isMappingMode: boolean;
 
-  entities: Array<EntityAgroportalDTO> = [];
-  selected: EntityAgroportalDTO = null;
+  entities: Array<any> = [];
+  selected: any = null;
 
+  isAgroportalDown: boolean = false;
   isDataLoading: boolean = false;
 
   skosReferences = {
@@ -117,6 +122,9 @@ export default class AgroportalResults extends Vue {
             [item.id, item])).values()];
         this.isDataLoading = false;
       }
+    })
+    .catch((error) => {
+      this.isAgroportalDown = true;
     });
   }
 

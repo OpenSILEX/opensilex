@@ -2,9 +2,9 @@
     <ValidationObserver ref="validatorRef">
 
         <div class="row">
-
             <div class="col-lg-12">
 
+              <!-- Title -->
               <b-form-group
                   label="component.skos.ontologies-references-label"
                   label-size="lg"
@@ -14,7 +14,7 @@
                 <template v-slot:label>{{ $t('AgroportalEntityForm.search-for-ontology-term') }}</template>
               </b-form-group>
 
-              <!-- Name -->
+              <!-- Search bar -->
               <opensilex-AgroportalSearch
                   label="component.common.name"
                   type="text"
@@ -22,6 +22,7 @@
                   @change="onSearchTextChange"
               ></opensilex-AgroportalSearch>
 
+              <!-- Search results -->
               <div class="row">
                 <opensilex-AgroportalResults
                     ref="searchResults"
@@ -29,12 +30,20 @@
                     @import="importResult">
                 </opensilex-AgroportalResults>
               </div>
-            </div>
-
-            <div class="col">
 
             </div>
+        </div>
 
+        <div class="row">
+          <div class="col-lg-12">
+
+            <opensilex-AgroportalResultItem
+                v-if="entity != null"
+                :entity="entity"
+            >
+            </opensilex-AgroportalResultItem>
+
+          </div>
         </div>
     </ValidationObserver>
 </template>
@@ -65,6 +74,7 @@ export default class AgroportalEntityForm extends Vue {
 
     @PropSync("form")
     entityDto: EntityCreationDTO;
+    entity: EntityAgroportalDTO = null;
 
     externalOntologiesRefs: any[] = ExternalOntologies.getExternalOntologiesReferences(EntityCreate.selectedOntologies);
 
@@ -79,9 +89,14 @@ export default class AgroportalEntityForm extends Vue {
     }
 
     importResult(entity: EntityAgroportalDTO) {
+      this.entity = entity;
       this.entityDto.uri = entity.id;
       this.entityDto.name = entity.name;
       this.entityDto.description = entity.definitions[0];
+      this.entityDto.exact_match = [];
+      this.entityDto.narrow_match = [];
+      this.entityDto.broad_match = [];
+      this.entityDto.close_match = [];
     }
 
     reset() {

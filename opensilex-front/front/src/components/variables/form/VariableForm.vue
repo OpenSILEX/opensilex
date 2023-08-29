@@ -336,7 +336,7 @@ export default class VariableForm extends Vue {
         this.service = this.$opensilex.getService("opensilex.VariablesService");
         this.dataService = this.$opensilex.getService("opensilex-core.DataService");
 
-        for(let period of ["millisecond","second","minute","hour","day","week","month","unique"]){
+        for(let period of ["millisecond","second","minute","hour","day","week","month","year","unique"]){
             this.periodList.push({
                 id: this.$i18n.t("VariableForm.dimension-values." +period),
                 label: this.$i18n.t("VariableForm.dimension-values." + period)
@@ -907,6 +907,7 @@ en:
             day: Day
             week: Week
             month: Month
+            year: Year
             mm: Millimeter
             cm: Centimeter
             m: Meter
@@ -997,6 +998,7 @@ fr:
             day: Jour
             week: Semaine
             month: Mois
+            year: Année
             mm: Millimètre
             cm: Centimètre
             m: Mètre

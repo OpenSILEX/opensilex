@@ -371,6 +371,7 @@ export default class DeviceList extends Vue {
             .deleteDevice(uri)
             .then(() => {
                 this.refresh();
+                this.tableRef.removeSelected(uri);
                 this.$emit("onDelete", uri);
                 let message = this.$i18n.t("DeviceForm.name") + " " + uri + " " + this.$i18n.t("component.common.success.delete-success-message");
                 this.$opensilex.showSuccessToast(message);

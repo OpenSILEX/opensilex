@@ -546,6 +546,7 @@ export default class ExperimentList extends Vue {
       .deleteExperiment(uri)
       .then(() => {
         this.refresh();
+        this.tableRef.removeSelected(uri);
         let message = this.$i18n.t("ExperimentList.name") + " " + uri + " " + this.$i18n.t("component.common.success.delete-success-message");
         this.$opensilex.showSuccessToast(message);
       })

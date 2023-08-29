@@ -438,7 +438,7 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
     return this.totalRow;
   }
 
-  //Update selected item counter in case that selected item is deleted
+  //Update selected item counter in case that selected item is deleted.
   removeSelected(uri: string) {
     this.selectedItems.splice(this.selectedItems.findIndex(object => object.uri === uri), 1);
     this.numberOfSelectedRows=this.selectedItems.length;

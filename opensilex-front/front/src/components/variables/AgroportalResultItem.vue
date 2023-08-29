@@ -1,6 +1,6 @@
 <template>
     <div class="row result"
-         v-on:click="selectItem(!isSelected)"
+         v-on:click="$emit('item-clicked', index)"
       :class="(isSelected) ? 'selectedResult' : ''">
       <div id="result-header" class="row mx-0 jqx-max-size">
         <div class="col-lg-12">
@@ -40,14 +40,13 @@ export default class AgroportalResultItem extends Vue {
   @Prop()
   entity: EntityAgroportalDTO;
 
+  @Prop()
+  index;
+
   isSelected: boolean = false;
 
   getOntologyAcronym(url: string) {
     return url.split('/').pop();
-  }
-
-  selectItem(isSelected: boolean) {
-    this.isSelected = isSelected;
   }
 
 }

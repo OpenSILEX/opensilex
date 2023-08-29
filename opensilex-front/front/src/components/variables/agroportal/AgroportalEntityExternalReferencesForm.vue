@@ -1,13 +1,19 @@
 <template>
     <ValidationObserver ref="entityValidatorRef">
+
       <div class="row">
-        <opensilex-ExternalReferencesForm
-          :references.sync="form"
-          :displayInsertButton="false"
-          :includeAgroportalSearch="true"
-          :ontologiesToSelect="selectedOntologies">
-        </opensilex-ExternalReferencesForm>
+        <div class="col-lg-12">
+
+          <opensilex-ExternalReferencesForm
+            :references.sync="form"
+            :displayInsertButton="false"
+            :includeAgroportalSearch="true"
+            :ontologiesToSelect="selectedOntologies">
+          </opensilex-ExternalReferencesForm>
+
+        </div>
       </div>
+
     </ValidationObserver>
 </template>
 

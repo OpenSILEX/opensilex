@@ -121,8 +121,7 @@ import {EntityDetailsDTO} from "opensilex-core/model/entityDetailsDTO";
 
         nextStep(stepIndex, form, nextStepComponent, currentStepComponent) {
           console.log(form);
-          if(stepIndex == 0 && form.uri != "") {
-            //this.wizardRef.hide();
+          if(stepIndex == 0 && form.uri != null) {
             form.exact_match.push(form.uri);
             form.uri = "";
             return true;

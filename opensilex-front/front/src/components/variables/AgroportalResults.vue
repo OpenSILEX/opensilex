@@ -11,43 +11,41 @@
           Nothing found for '{{ this.text }}'
         </div>
 
-        <div v-for="(entity, index) in entities" v-bind:key="entity.id">
+        <opensilex-AgroportalResultItem v-for="(entity, index) in entities" v-bind:key="entity.id"
+          ref="AgroportalResultItem"
+          :entity="entity"
+          :index="index"
+          @import="$emit('import', entity)"
+          @item-clicked="selectItem"
+        >
 
-          <opensilex-AgroportalResultItem
-            v-on:click="selectResult(entity)"
-            :entity="entity"
-            @import="$emit('import', entity)"
-          >
+          <template v-if="isMappingMode" v-slot:btnValidate>
+            <b-dropdown
+                dropright
+                class="mb-2 mr-2"
+                :small="true"
+                text="Map term as">
 
-
-            <template v-if="isMappingMode" v-slot:btnValidate>
-              <b-dropdown
-                  dropright
-                  class="mb-2 mr-2"
-                  :small="true"
-                  text="Map term as">
-
-                <b-dropdown-item v-for="(relation, index) in mappingOptions" v-bind:key="relation.id"
-                   class="btn-dropdown"
-                   @click="$emit('importMapping', entity, relation)"
-                >
-                  {{relation.label}}
-                </b-dropdown-item>
-              </b-dropdown>
-            </template>
-
-            <template v-else v-slot:btnValidate>
-              <opensilex-CreateButton
-                  label="Import"
-                  title="Import"
-                  @click="$emit('import', entity)"
+              <b-dropdown-item v-for="(relation, index) in mappingOptions" v-bind:key="relation.id"
+                 class="btn-dropdown"
+                 @click="$emit('importMapping', entity, relation)"
               >
-              </opensilex-CreateButton>
-            </template>
+                {{relation.label}}
+              </b-dropdown-item>
+            </b-dropdown>
+          </template>
 
-          </opensilex-AgroportalResultItem>
+          <template v-else v-slot:btnValidate>
+            <opensilex-CreateButton
+                label="Import"
+                title="Import"
+                @click="$emit('import', entity)"
+            >
+            </opensilex-CreateButton>
+          </template>
 
-        </div>
+        </opensilex-AgroportalResultItem>
+
       </div>
     </div>
   </opensilex-Overlay>
@@ -56,11 +54,12 @@
 
 <script lang="ts">
 
-import {Component, Prop, Watch} from "vue-property-decorator";
+import {Component, Prop, Ref, Watch} from "vue-property-decorator";
 import Vue from 'vue';
 import {VariablesService} from "opensilex-core/api/variables.service";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {EntityAgroportalDTO} from "opensilex-core/model/entityAgroportalDTO";
+import AgroportalResultItem from "./AgroportalResultItem.vue";
 
 @Component
 export default class AgroportalResults extends Vue {
@@ -82,7 +81,7 @@ export default class AgroportalResults extends Vue {
   isMappingMode: boolean;
 
   entities: Array<any> = [];
-  selected: any = null;
+  selectedIndex: number = null;
 
   isAgroportalDown: boolean = false;
   isDataLoading: boolean = false;
@@ -93,6 +92,8 @@ export default class AgroportalResults extends Vue {
     BROAD_MATCH_JSON_PROPERTY: "broad-match",
     NARROW_MATCH_JSON_PROPERTY: "narrow-match"
   }
+
+  @Ref("AgroportalResultItem") readonly resultItems!: any;
 
   get isNothingFound() : boolean {
     return this.entities.length === 0 && !(this.text.trim().length === 0);
@@ -128,13 +129,17 @@ export default class AgroportalResults extends Vue {
     });
   }
 
-  selectResult(result: EntityAgroportalDTO) {
-    this.selected = result;
+  selectItem(index) {
+    if(this.selectedIndex != null) {
+      this.resultItems[this.selectedIndex].isSelected = false;
+    }
+    this.resultItems[index].isSelected = true;
+    this.selectedIndex = index;
   }
 
   clear() {
     this.entities = [];
-    this.selected = null;
+    this.selectedIndex = null;
   }
 
   created() {

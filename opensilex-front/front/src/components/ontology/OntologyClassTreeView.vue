@@ -1,5 +1,5 @@
 <template>
-    <opensilex-TreeView :nodes.sync="nodes" @select="displayClassDetail($event.data.uri)">
+    <opensilex-TreeView :nodes.sync="nodes" @select="displayClassDetail($event.data.uri, $event.data.graph)">
         <template v-slot:node="{ node }">
             <span class="item-icon">
                 <opensilex-Icon v-if="classesParametersByURI[node.data.uri] && classesParametersByURI[node.data.uri].icon"
@@ -80,7 +80,7 @@ export default class OntologyClassTreeView extends Vue {
             () => this.$store.getters.language,
             lang => {
                 if (this.selected) {
-                    this.displayClassDetail(this.selected.uri);
+                    this.displayClassDetail(this.selected.uri, this.selected.graph);
                 }
             }
         );
@@ -129,16 +129,17 @@ export default class OntologyClassTreeView extends Vue {
             }
 
             if (selection) {
-                this.displayClassDetail(selection.uri);               
+                this.displayClassDetail(selection.uri, selection.graph);               
             }
         }).catch(this.$opensilex.errorHandler);
     }
 
-    displayClassDetail(uri) {
+    displayClassDetail(uri, graph) {
         this.vueJsOntologyService
             .getRDFTypeProperties(uri, this.rdfType)
             .then(http => {
                 this.selected = http.response.result;
+                this.selected.graph = graph;
                 this.$emit("selectionChange", this.selected);
             }).catch(this.$opensilex.errorHandler);
     }
@@ -179,7 +180,7 @@ export default class OntologyClassTreeView extends Vue {
 
     sixtine = [];
     phis = [];
-    global = [];
+    oeso = [];
 
     erreurFinal = new Set();
 
@@ -188,7 +189,7 @@ export default class OntologyClassTreeView extends Vue {
             this.erreurFinal.add(dto.uri);
         } else {
             
-            if(dto.graph.startsWith("http://phenome.inrae.fr/openstack-test/")) {
+            if(dto.graph.startsWith("http://phenome.inrae.fr/openstack-test/") || dto.graph.endsWith("oeso-ext")) {
                 this.phis.push(dto.uri);
             }
 
@@ -196,8 +197,8 @@ export default class OntologyClassTreeView extends Vue {
                 this.sixtine.push(dto.uri);
             }
 
-            if(dto.graph === "http://www.opensilex.org/set/properties" || dto.graph.endsWith("oeso-ext") || dto.graph.endsWith("oeso")) {
-                this.global.push(dto.uri);
+            if(dto.graph === "http://www.opensilex.org/set/properties" || dto.graph.endsWith("oeso")) {
+                this.oeso.push(dto.uri);
             }
         }
         if(dto.children && dto.children.length > 0) {
@@ -211,7 +212,7 @@ export default class OntologyClassTreeView extends Vue {
         let globalFinal = new Set();
 
         for (let uriSixtine of this.sixtine) {
-            if(this.global.includes(uriSixtine)) {
+            if(this.oeso.includes(uriSixtine) || this.phis.includes(uriSixtine)) {
                 this.erreurFinal.add(uriSixtine);
             } else {
                 sixtineFinal.add(uriSixtine);
@@ -219,14 +220,14 @@ export default class OntologyClassTreeView extends Vue {
         }
 
         for (let uriPhis of this.phis) {
-            if(this.global.includes(uriPhis)) {
+            if(this.oeso.includes(uriPhis) || this.sixtine.includes(uriPhis)) {
                 this.erreurFinal.add(uriPhis);
             } else {
                 phisFinal.add(uriPhis);
             }
         }
 
-        for (let uriGlobal of this.global) {
+        for (let uriGlobal of this.oeso) {
             if(!sixtineFinal.has(uriGlobal) && !phisFinal.has(uriGlobal) && !this.erreurFinal.has(uriGlobal)) {
                 globalFinal.add(uriGlobal);
             }
@@ -236,7 +237,7 @@ export default class OntologyClassTreeView extends Vue {
             erreur: this.erreurFinal,
             sixtine: sixtineFinal,
             phis: phisFinal,
-            global: globalFinal
+            oeso: globalFinal
         }
     }
 
@@ -259,8 +260,8 @@ export default class OntologyClassTreeView extends Vue {
             return newDto;
         }
         
-        if(graphs.global.has(newDto.uri)) {
-            newDto["color"] = "global"
+        if(graphs.oeso.has(newDto.uri)) {
+            newDto["color"] = "oeso"
             return newDto;
         }
 
@@ -273,7 +274,7 @@ export default class OntologyClassTreeView extends Vue {
             case "sixtine": return 'badge rounded-pill bg-primary text-white';
             case "phis": return 'badge rounded-pill bg-success text-white';
             case "error": return 'badge rounded-pill bg-danger text-white';
-            case "global": return 'badge rounded-pill bg-dark text-white';
+            case "oeso": return 'badge rounded-pill bg-dark text-white';
         }
     }
 }

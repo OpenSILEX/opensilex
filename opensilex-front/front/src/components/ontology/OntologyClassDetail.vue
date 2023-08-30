@@ -23,6 +23,11 @@
                 label="OntologyClassForm.icon"
                 :value="selected.icon"
             ></opensilex-IconView>
+            <!-- Graph -->
+            <opensilex-StringView
+                label="component.common.name"
+                :value="selected.graph"
+            ></opensilex-StringView>
         </div>
         <hr>
         <div>

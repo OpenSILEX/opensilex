@@ -733,7 +733,7 @@ export default class SelectForm extends Vue {
       case "sixtine": return 'badge rounded-pill bg-primary text-white';
       case "phis": return 'badge rounded-pill bg-success text-white';
       case "error": return 'badge rounded-pill bg-danger text-white';
-      case "global": return 'badge rounded-pill bg-dark text-white';
+      case "oeso": return 'badge rounded-pill bg-dark text-white';
     }
   }
 }

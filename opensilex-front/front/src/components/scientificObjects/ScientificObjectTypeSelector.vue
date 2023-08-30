@@ -100,8 +100,8 @@ export default class ScientificObjectTypeSelector extends Vue {
         result.push(newDto);
       }
 
-      if(graphs.global.has(dto.uri)) {
-        newDto["color"] = "global"
+      if(graphs.oeso.has(dto.uri)) {
+        newDto["color"] = "oeso"
         result.push(newDto);
       }
     }
@@ -113,7 +113,7 @@ export default class ScientificObjectTypeSelector extends Vue {
 
     let sixtine = [];
     let phis = [];
-    let global = [];
+    let oeso = [];
 
     let erreurFinal = new Set();
     for (let dto of data) {
@@ -121,7 +121,7 @@ export default class ScientificObjectTypeSelector extends Vue {
         erreurFinal.add(dto.uri);
       } else {
         
-        if(dto.graph.startsWith("http://phenome.inrae.fr/openstack-test/")) {
+        if(dto.graph.startsWith("http://phenome.inrae.fr/openstack-test/") || dto.graph.endsWith("oeso-ext")) {
           phis.push(dto.uri);
         }
 
@@ -129,8 +129,8 @@ export default class ScientificObjectTypeSelector extends Vue {
           sixtine.push(dto.uri);
         }
 
-        if(dto.graph === "http://www.opensilex.org/set/properties" || dto.graph.endsWith("oeso-ext") || dto.graph.endsWith("oeso")) {
-          global.push(dto.uri);
+        if(dto.graph === "http://www.opensilex.org/set/properties" || dto.graph.endsWith("oeso")) {
+          oeso.push(dto.uri);
         }
       }
     }
@@ -140,7 +140,7 @@ export default class ScientificObjectTypeSelector extends Vue {
     let globalFinal = new Set();
 
     for (let uriSixtine of sixtine) {
-      if(global.includes(uriSixtine)) {
+      if(oeso.includes(uriSixtine) || phis.includes(uriSixtine)) {
         erreurFinal.add(uriSixtine);
       } else {
         sixtineFinal.add(uriSixtine);
@@ -148,14 +148,14 @@ export default class ScientificObjectTypeSelector extends Vue {
     }
 
     for (let uriPhis of phis) {
-      if(global.includes(uriPhis)) {
+      if(oeso.includes(uriPhis) || sixtine.includes(uriPhis)) {
         erreurFinal.add(uriPhis);
       } else {
         phisFinal.add(uriPhis);
       }
     }
     
-    for (let uriGlobal of global) {
+    for (let uriGlobal of oeso) {
       if(!sixtineFinal.has(uriGlobal) && !phisFinal.has(uriGlobal) && !erreurFinal.has(uriGlobal)) {
         globalFinal.add(uriGlobal);
       }
@@ -165,7 +165,7 @@ export default class ScientificObjectTypeSelector extends Vue {
       erreur: erreurFinal,
       sixtine: sixtineFinal,
       phis: phisFinal,
-      global: globalFinal
+      oeso: globalFinal
     }
   }
 

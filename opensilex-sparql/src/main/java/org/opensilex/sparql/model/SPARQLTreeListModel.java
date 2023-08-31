@@ -18,9 +18,9 @@ import java.util.function.Consumer;
  */
 public class SPARQLTreeListModel<T extends SPARQLTreeModel<T>> {
 
-    private final HashMap<Pair<URI, String>, List<T>> modelsByParentDebug = new HashMap<>();
-    private final Map<Pair<URI, String>, T> parentByModelDebug = new HashMap<>();
-    private final List<Pair<URI, String>> selectionListDebug;
+    private final Map<Pair<URI, String>, List<T>> modelsByParent = new HashMap<>();
+    private final Map<Pair<URI, String>, T> parentByModel = new HashMap<>();
+    private final List<Pair<URI, String>> selectionList;
     private final URI root;
     private final boolean excludeRoot;
 
@@ -29,11 +29,11 @@ public class SPARQLTreeListModel<T extends SPARQLTreeModel<T>> {
     }
 
     public SPARQLTreeListModel(Collection<T> selectionList, URI root, boolean excludeRoot, boolean addSelectionToTree) {
-        this.selectionListDebug = new ArrayList<>(selectionList.size());
+        this.selectionList = new ArrayList<>(selectionList.size());
         for (T instance : selectionList) {
             URI formattedUri = SPARQLDeserializers.formatURI(instance.getUri());
-            this.selectionListDebug.add(Pair.of(formattedUri, instance.getGraph()));
-            this.parentByModelDebug.put(Pair.of(formattedUri, instance.getGraph()), instance.getParent());
+            this.selectionList.add(Pair.of(formattedUri, instance.getGraph()));
+            this.parentByModel.put(Pair.of(formattedUri, instance.getGraph()), instance.getParent());
         }
         this.root = root != null ? SPARQLDeserializers.formatURI(root) : null;
         this.excludeRoot = excludeRoot;
@@ -70,7 +70,7 @@ public class SPARQLTreeListModel<T extends SPARQLTreeModel<T>> {
             parentURI = SPARQLDeserializers.formatURI(parent.getUri());
             parentGRAPH = parent.getGraph();
         }
-        return this.modelsByParentDebug.get(Pair.of(parentURI, parentGRAPH));
+        return this.modelsByParent.get(Pair.of(parentURI, parentGRAPH));
     }
 
     public int getChildCount(T parent) {
@@ -86,7 +86,7 @@ public class SPARQLTreeListModel<T extends SPARQLTreeModel<T>> {
     }
 
     public T getParent(T instance) {
-        return parentByModelDebug.get(Pair.of(SPARQLDeserializers.formatURI(instance.getUri()), instance.getGraph()));
+        return parentByModel.get(Pair.of(SPARQLDeserializers.formatURI(instance.getUri()), instance.getGraph()));
     }
 
     public void addTree(T instance) {
@@ -100,7 +100,7 @@ public class SPARQLTreeListModel<T extends SPARQLTreeModel<T>> {
         if (parent == null || formattedUri.equals(root)) {
             if (parent == null || !excludeRoot) {
                 //modelsByParent.computeIfAbsent(null, key -> new HashSet<>());
-                modelsByParentDebug.computeIfAbsent(Pair.of(null, null), key -> new ArrayList<>());
+                modelsByParent.computeIfAbsent(Pair.of(null, null), key -> new ArrayList<>());
                 addInMapIfExists(Pair.of(null, null), instance);
             }
         } else {
@@ -108,11 +108,11 @@ public class SPARQLTreeListModel<T extends SPARQLTreeModel<T>> {
             if (parentURI.equals(root) && excludeRoot) {
                 parentURI = null;
             }
-            if (!modelsByParentDebug.containsKey(Pair.of(parentURI, parent.getGraph()))) {
+            if (!modelsByParent.containsKey(Pair.of(parentURI, parent.getGraph()))) {
                 if (parentURI != null && parent.getGraph() != null) {
                     addTree(parent);
                 }
-                modelsByParentDebug.put(Pair.of(parentURI, parent.getGraph()), new ArrayList<>());
+                modelsByParent.put(Pair.of(parentURI, parent.getGraph()), new ArrayList<>());
             }
             addInMapIfExists(Pair.of(parentURI, parent.getGraph()), instance);
         }
@@ -121,20 +121,20 @@ public class SPARQLTreeListModel<T extends SPARQLTreeModel<T>> {
 
     private void addInMapIfExists(Pair<URI, String> parent, T instance) {
         boolean exists = false;
-        for (T item : modelsByParentDebug.get(parent)) {
+        for (T item : modelsByParent.get(parent)) {
             if (SPARQLDeserializers.compareURIs(instance.getUri(), item.getUri()) && instance.getGraph().equals(item.getGraph())) {
                 exists = true;
                 break;
             }
         }
         if (!exists) {
-            modelsByParentDebug.get(parent).add(instance);
-            parentByModelDebug.put(Pair.of(SPARQLDeserializers.formatURI(instance.getUri()), instance.getGraph()), instance.getParent());
+            modelsByParent.get(parent).add(instance);
+            parentByModel.put(Pair.of(SPARQLDeserializers.formatURI(instance.getUri()), instance.getGraph()), instance.getParent());
         }
     }
 
     public boolean isSelected(T instance) {
-        return this.selectionListDebug.contains(Pair.of(instance.getUri(), instance.getGraph()));
+        return this.selectionList.contains(Pair.of(instance.getUri(), instance.getGraph()));
     }
 
     public void traverse(Consumer<T> handler) {

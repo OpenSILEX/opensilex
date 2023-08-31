@@ -135,8 +135,6 @@ export default class OntologyClassTreeView extends Vue {
     }
 
     displayClassDetail(node) {
-        console.log(node);
-        
         this.vueJsOntologyService
             .getRDFTypeProperties(node.uri, this.rdfType)
             .then(http => {

@@ -716,18 +716,18 @@ test:gabriel:front-test:
     - wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq && chmod +x /usr/bin/yq
   script:
     - echo "SETTING UP CONFIG"
-    - curl -X GET -H "PRIVATE-TOKEN:$JOB_API_TOKEN" "https://forgemia.inra.fr/api/v4/projects/1675/repository/files/opensilex-dev-tools%2Fsrc%2Fmain%2Fresources%2Fconfig%2Fopensilex%2Eyml/raw?ref=gabriel" >> opensilex.yml
-    - yq -i '.ontologies.sparql.config.serverURI = "$REMOTE_TEST_SERVER_IP:8080/rdf4j-server/"' opensilex.yml
-    - yq -i '.ontologies.sparql.config.repository = "FRONT-TEST-JOB-$CI_JOB_ID"' opensilex.yml
-    - yq -i '.file-system.fs.config.connections.gridfs.config.host = "$REMOTE_TEST_SERVER_IP"' opensilex.yml
-    - yq -i '.big-data.mongodb.config.host = "$REMOTE_TEST_SERVER_IP"' opensilex.yml
-    - yq -i '.file-system.fs.config.connections.gridfs.config.port = 27017' opensilex.yml
-    - yq -i '.big-data.mongodb.config.port = 27017' opensilex.yml
-    - yq -i '.file-system.fs.config.connections.gridfs.config.database = "FRONT-TEST-JOB-$CI_JOB_ID"' opensilex.yml
-    - yq -i '.big-data.mongodb.config.database = "FRONT-TEST-JOB-$CI_JOB_ID"' opensilex.yml
+    - curl -X GET -H "PRIVATE-TOKEN:$JOB_API_TOKEN" "https://forgemia.inra.fr/api/v4/projects/1675/repository/files/opensilex-dev-tools%2Fsrc%2Fmain%2Fresources%2Fconfig%2Fopensilex%2Eyml/raw?ref=gabriel" >> /opensilex.yml
+    - yq -i '.ontologies.sparql.config.serverURI = "$REMOTE_TEST_SERVER_IP:8080/rdf4j-server/"' /opensilex.yml
+    - yq -i '.ontologies.sparql.config.repository = "FRONT-TEST-JOB-$CI_JOB_ID"' /opensilex.yml
+    - yq -i '.file-system.fs.config.connections.gridfs.config.host = "$REMOTE_TEST_SERVER_IP"' /opensilex.yml
+    - yq -i '.big-data.mongodb.config.host = "$REMOTE_TEST_SERVER_IP"' /opensilex.yml
+    - yq -i '.file-system.fs.config.connections.gridfs.config.port = 27017' /opensilex.yml
+    - yq -i '.big-data.mongodb.config.port = 27017' /opensilex.yml
+    - yq -i '.file-system.fs.config.connections.gridfs.config.database = "FRONT-TEST-JOB-$CI_JOB_ID"' /opensilex.yml
+    - yq -i '.big-data.mongodb.config.database = "FRONT-TEST-JOB-$CI_JOB_ID"' /opensilex.yml
     - envsubst < /opensilex.yml > /opensilex.yml
-    - echo "opensilex.yml config file content :"
-    - cat opensilex.yml
+    - echo "/opensilex.yml config file content :"
+    - cat /opensilex.yml
     - cd artifacts/$OPENSILEX_APP_REVISION
     - echo "${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar install --CONFIG_FILE=/opensilex.yml -d"
     - ${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar install --CONFIG_FILE=/opensilex.yml -d

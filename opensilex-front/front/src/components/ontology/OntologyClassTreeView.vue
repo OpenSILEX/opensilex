@@ -1,5 +1,5 @@
 <template>
-    <opensilex-TreeView :nodes.sync="nodes" @select="displayClassDetail($event.data.uri, $event.data.graph)">
+    <opensilex-TreeView :nodes.sync="nodes" @select="displayClassDetail($event.data)">
         <template v-slot:node="{ node }">
             <span class="item-icon">
                 <opensilex-Icon v-if="classesParametersByURI[node.data.uri] && classesParametersByURI[node.data.uri].icon"
@@ -80,7 +80,7 @@ export default class OntologyClassTreeView extends Vue {
             () => this.$store.getters.language,
             lang => {
                 if (this.selected) {
-                    this.displayClassDetail(this.selected.uri, this.selected.graph);
+                    this.displayClassDetail(this.selected);
                 }
             }
         );
@@ -129,17 +129,19 @@ export default class OntologyClassTreeView extends Vue {
             }
 
             if (selection) {
-                this.displayClassDetail(selection.uri, selection.graph);               
+                this.displayClassDetail(selection);               
             }
         }).catch(this.$opensilex.errorHandler);
     }
 
-    displayClassDetail(uri, graph) {
+    displayClassDetail(node) {
+        console.log(node);
+        
         this.vueJsOntologyService
-            .getRDFTypeProperties(uri, this.rdfType)
+            .getRDFTypeProperties(node.uri, this.rdfType)
             .then(http => {
                 this.selected = http.response.result;
-                this.selected.graph = graph;
+                this.selected.graph = node.graph;
                 this.$emit("selectionChange", this.selected);
             }).catch(this.$opensilex.errorHandler);
     }

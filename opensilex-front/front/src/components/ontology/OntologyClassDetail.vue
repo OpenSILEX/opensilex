@@ -25,7 +25,7 @@
             ></opensilex-IconView>
             <!-- Graph -->
             <opensilex-StringView
-                label="component.common.name"
+                label="component.common.graph"
                 :value="selected.graph"
             ></opensilex-StringView>
         </div>

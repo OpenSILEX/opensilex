@@ -27,6 +27,7 @@
             "creator": "Créateur",
             "delete": "supprimer",
             "name": "Nom",
+            "graph": "Graph",
             "term":"Terme",
             "comment": "Description",
             "details-label": "Description",

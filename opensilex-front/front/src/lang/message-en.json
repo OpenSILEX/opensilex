@@ -28,6 +28,7 @@
             "creator": "Creator",
             "edit": "edit",
             "name": "Name",
+            "graph": "Graph",
             "term":"Term",
             "comment": "Comment",
             "details-label": "Description",

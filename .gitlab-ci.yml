@@ -728,7 +728,7 @@ test:gabriel:front-test:
     - yq -i '.big-data.mongodb.config.database = "FRONT-TEST-JOB-$CI_JOB_ID"' /opensilex.yml
     - envsubst < /opensilex.yml > /opensilex.yml
     - echo "/opensilex.yml config file content :"
-    - cat /opensilex.yml
+    - cat /opensilex.yml | echo
     - cd artifacts/$OPENSILEX_APP_REVISION
     - echo "${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar install --CONFIG_FILE=/opensilex.yml -d"
     - ${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar install --CONFIG_FILE=/opensilex.yml -d

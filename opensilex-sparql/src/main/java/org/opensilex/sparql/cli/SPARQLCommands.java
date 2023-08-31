@@ -6,8 +6,7 @@
 package org.opensilex.sparql.cli;
 
 import java.net.URI;
-import java.util.List;
-import java.util.Map;
+
 import org.opensilex.cli.OpenSilexCommand;
 import org.opensilex.cli.HelpOption;
 import org.opensilex.cli.AbstractOpenSilexCommand;
@@ -39,7 +38,7 @@ public class SPARQLCommands extends AbstractOpenSilexCommand implements OpenSile
         SPARQLServiceFactory factory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
         SPARQLService sparql = factory.provide();
         try {
-            getOpenSilex().getModuleByClass(SPARQLModule.class).installOntologies(sparql, true);
+            getOpenSilex().getModuleByClass(SPARQLModule.class).installAllOntologies(sparql, true);
         } finally {
             factory.dispose(sparql);
         }

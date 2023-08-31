@@ -54,8 +54,8 @@ public class VariablesGroupApiTest extends AbstractSecurityIntegrationTest {
         SPARQLService service = getSparqlService();
 
         EntityModel entity = new EntityModel();
-        entity.setName("Artemisia absinthium");
-        entity.setDescription("A plant which was used in the past for building methanol");
+//        entity.setName("Artemisia absinthium");
+//        entity.setDescription("A plant which was used in the past for building methanol");
 
         service.create(entity);
 
@@ -77,9 +77,9 @@ public class VariablesGroupApiTest extends AbstractSecurityIntegrationTest {
         service.create(unit);
 
         VariableCreationDTO variableDto = new VariableCreationDTO();
-        variableDto.setName(entity.getName() + characteristic.getName());
-        variableDto.setAlternativeName(variableDto.getName() + method.getName() + unit.getName());
-        variableDto.setDescription("A comment about a variable");
+//        variableDto.setName(entity.getName() + characteristic.getName());
+//        variableDto.setAlternativeName(variableDto.getName() + method.getName() + unit.getName());
+//        variableDto.setDescription("A comment about a variable");
 
         variableDto.setEntity(entity.getUri());
         variableDto.setCharacteristic(characteristic.getUri());

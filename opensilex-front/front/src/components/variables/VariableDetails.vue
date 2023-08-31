@@ -40,81 +40,109 @@
 
           </template>
 
-                    <template v-slot:body>
-                        <opensilex-UriView v-if="variable && variable.uri" :uri="variable.uri"
-                        ></opensilex-UriView>
-                        <opensilex-StringView label="component.common.name"
-                                              :value="variable.name"></opensilex-StringView>
-                        <opensilex-StringView label="VariableForm.altName"
-                                              :value="variable.alternative_name"></opensilex-StringView>
-                        <opensilex-TextView label="component.common.description"
-                                            :value="variable.description"></opensilex-TextView>
-                        <div
-                            v-if="variable.from_shared_resource_instance"
-                        >
-                          <opensilex-UriView
-                              title="component.sharedResourceInstances.label"
-                              :uri="variable.from_shared_resource_instance.uri"
-                              :value="variable.from_shared_resource_instance.label"
-                          ></opensilex-UriView>
-                          <opensilex-DateView
-                              label="component.sharedResourceInstances.import_date.label"
-                              :value="variable.last_update_date"
-                              :isDatetime="true"
-                              :useLocaleFormat="true"
-                          ></opensilex-DateView>
-                        </div>
-                    </template>
-                </opensilex-Card>
-            </b-col>
-            <b-col>
-                <opensilex-Card label="VariableDetails.structure" icon="ik#ik-clipboard">
-                    <template v-slot:body>
-                        <opensilex-UriView title="VariableView.entity" v-if="variable.entity"
-                                           :value="variable.entity.name" :uri="variable.entity.uri"
-                                           :to="getEntityPath()">
-                        </opensilex-UriView>
+          <template v-slot:body>
+            <opensilex-UriView v-if="variable && variable.uri" :uri="variable.uri"
+            ></opensilex-UriView>
+            <opensilex-TableView
+                ref="tableRef"
+                :fields="fields"
+                :items="labelDTOList"
+                defaultSortBy="prefLabel"
+                iconNumberOfSelectedRow="fa#vials"
+                class="modalLabelsList"
+            >
+              <template v-slot:cell(prefLabel)="item">
+                {{ item.data.value }}
+              </template>
 
-                        <opensilex-UriView title="VariableForm.interestEntity-label"
-                                           :value="variable.entity_of_interest ? variable.entity_of_interest.name: undefined"
-                                           :uri="variable.entity_of_interest ? variable.entity_of_interest.uri: undefined"
-                                           :to="variable.entity_of_interest ? getInterestEntityPath(): undefined">
-                        </opensilex-UriView>
+              <template v-slot:cell(shortLabel)="item">
+                {{ item.data.value }}
+              </template>
 
-                        <opensilex-UriView title="VariableView.characteristic" v-if="variable.characteristic"
-                                           :value="variable.characteristic.name" :uri="variable.characteristic.uri"
-                                           :to="getCharacteristicPath()">
-                        </opensilex-UriView>
-                        <opensilex-UriView title="VariableView.method" v-if="variable.method"
-                                           :value="variable.method.name" :uri="variable.method.uri"
-                                           :to="getMethodPath()">
-                        </opensilex-UriView>
-                        <opensilex-UriView title="VariableView.unit" v-if="variable.unit"
-                                           :value="variable.unit.name" :uri="variable.unit.uri"
-                                           :to="getUnitPath()">
-                        </opensilex-UriView>
-                    </template>
-                </opensilex-Card>
-            </b-col>
-        </b-row>
-        <b-row>
-            <b-col>
-                <opensilex-Card label="component.skos.ontologies-references-label" icon="fa#globe-americas">
-                    <template v-slot:body>
-                        <opensilex-ExternalReferencesDetails
-                            :skosReferences="variable">
-                        </opensilex-ExternalReferencesDetails>
-                    </template>
-                </opensilex-Card>
-            </b-col>
-            <b-col>
-                <opensilex-Card label="VariableDetails.advanced" icon="ik#ik-clipboard">
-                    <template v-slot:body>
-                      <opensilex-UriListView
-                          v-if="!isGermplasmMenuExcluded"
-                          label="GermplasmList.speciesLabel"
-                          :list="speciesList"
-                      ></opensilex-UriListView>
+              <template v-slot:cell(altLabels)="item">
+            <span v-for="(altLabel, index) in item.data.value" :key="index">
+              {{ altLabel }}
+              <br>
+            </span>
+              </template>
+
+              <template v-slot:cell(definition)="item">
+                {{ item.data.value }}
+              </template>
+
+            </opensilex-TableView>
+            <!--            <opensilex-StringView label="component.common.name"-->
+            <!--                               :value="variable.name"></opensilex-StringView>-->
+            <!--            <opensilex-StringView label="VariableForm.altName"-->
+            <!--                                  :value="variable.alternative_name"></opensilex-StringView>-->
+            <!--            <opensilex-TextView label="component.common.description"-->
+            <!--                                :value="variable.description"></opensilex-TextView>-->
+            <div
+                v-if="variable.from_shared_resource_instance"
+            >
+              <opensilex-UriView
+                  title="component.sharedResourceInstances.label"
+                  :uri="variable.from_shared_resource_instance.uri"
+                  :value="variable.from_shared_resource_instance.label"
+              ></opensilex-UriView>
+              <opensilex-DateView
+                  label="component.sharedResourceInstances.import_date.label"
+                  :value="variable.last_update_date"
+                  :isDatetime="true"
+                  :useLocaleFormat="true"
+              ></opensilex-DateView>
+            </div>
+          </template>
+        </opensilex-Card>
+      </b-col>
+      <b-col>
+        <opensilex-Card label="VariableDetails.structure" icon="ik#ik-clipboard">
+          <template v-slot:body>
+            <opensilex-UriView title="VariableView.entity" v-if="variable.entity"
+                               :value="variable.entity.prefLabels[lang]" :uri="variable.entity.uri"
+                               :to="getEntityPath()">
+            </opensilex-UriView>
+
+            <opensilex-UriView title="VariableForm.interestEntity-label"
+                               :value="variable.entity_of_interest ? variable.entity_of_interest.name: undefined"
+                               :uri="variable.entity_of_interest ? variable.entity_of_interest.uri: undefined"
+                               :to="variable.entity_of_interest ? getInterestEntityPath(): undefined">
+            </opensilex-UriView>
+
+            <opensilex-UriView title="VariableView.characteristic" v-if="variable.characteristic"
+                               :value="variable.characteristic.name" :uri="variable.characteristic.uri"
+                               :to="getCharacteristicPath()">
+            </opensilex-UriView>
+            <opensilex-UriView title="VariableView.method" v-if="variable.method"
+                               :value="variable.method.name" :uri="variable.method.uri"
+                               :to="getMethodPath()">
+            </opensilex-UriView>
+            <opensilex-UriView title="VariableView.unit" v-if="variable.unit"
+                               :value="variable.unit.name" :uri="variable.unit.uri"
+                               :to="getUnitPath()">
+            </opensilex-UriView>
+          </template>
+        </opensilex-Card>
+      </b-col>
+    </b-row>
+    <b-row>
+      <b-col>
+        <opensilex-Card label="component.skos.ontologies-references-label" icon="fa#globe-americas">
+          <template v-slot:body>
+            <opensilex-ExternalReferencesDetails
+                :skosReferences="variable">
+            </opensilex-ExternalReferencesDetails>
+          </template>
+        </opensilex-Card>
+      </b-col>
+      <b-col>
+        <opensilex-Card label="VariableDetails.advanced" icon="ik#ik-clipboard">
+          <template v-slot:body>
+            <opensilex-UriListView
+                v-if="!isGermplasmMenuExcluded"
+                label="GermplasmList.speciesLabel"
+                :list="speciesList"
+            ></opensilex-UriListView>
 
             <opensilex-StringView label="OntologyPropertyForm.data-type"
                                   :value="$opensilex.getVariableDatatypeLabel(variable.datatype)"></opensilex-StringView>
@@ -149,6 +177,7 @@ import {DataService} from "opensilex-core/api/data.service";
 import DTOConverter from "../../models/DTOConverter";
 import {VariableUpdateDTO} from "opensilex-core/index";
 import VueRouter from "vue-router";
+import {LabelDTO} from "opensilex-core/model/labelDTO";
 
 @Component
 export default class VariableDetails extends Vue {
@@ -160,6 +189,8 @@ export default class VariableDetails extends Vue {
   $i18n: any;
   service: VariablesService;
   dataService: DataService;
+
+  labelDTOList: Array<LabelDTO>;
 
   get user() {
     return this.$store.state.user;
@@ -196,12 +227,34 @@ export default class VariableDetails extends Vue {
   }
 
   get isGermplasmMenuExcluded() {
-        return this.$opensilex.getConfig().menuExclusions.includes("germplasm");
+    return this.$opensilex.getConfig().menuExclusions.includes("germplasm");
   }
 
   created() {
     this.service = this.$opensilex.getService("opensilex.VariablesService");
     this.dataService = this.$opensilex.getService("opensilex-core.DataService");
+    this.initLabelDTOList();
+
+  }
+
+  initLabelDTOList() {
+    this.labelDTOList = []
+
+    const keys = Object.keys(this.variable.multiLabelsDTO.prefLabels);
+
+    keys.forEach((key) => {
+      const labelDTO: LabelDTO = {
+        prefLabel: this.variable.multiLabelsDTO.prefLabels[key],
+        shortLabel: this.variable.multiLabelsDTO.shortLabels[key],
+        altLabels: this.variable.multiLabelsDTO.altLabels[key],
+        definition: this.variable.multiLabelsDTO.definitions[key],
+        lang: key,
+      };
+
+      this.labelDTOList.push(labelDTO);
+
+    });
+
   }
 
 
@@ -221,10 +274,11 @@ export default class VariableDetails extends Vue {
   }
 
   update(variable) {
-    let formattedVariable:VariableUpdateDTO =  DTOConverter.extractURIFromResourceProperties(variable);
+    let formattedVariable: VariableUpdateDTO = DTOConverter.extractURIFromResourceProperties(variable);
 
     this.service.updateVariable(formattedVariable).then(() => {
-      let message = this.$i18n.t("VariableView.name") + " " + formattedVariable.name + " " + this.$i18n.t("component.common.success.update-success-message");
+      let message = this.$i18n.t("VariableView.name") + " " + formattedVariable.multiLabelsDTO.prefLabels[this.$i18n.locale]
+          + " " + this.$i18n.t("component.common.success.update-success-message");
       this.$opensilex.showSuccessToast(message);
       this.$emit("onUpdate", variable);
     }).catch(this.$opensilex.errorHandler);
@@ -239,7 +293,8 @@ export default class VariableDetails extends Vue {
             this.$opensilex.showErrorToast(count + " " + this.$i18n.t("VariableView.associated-data-error"));
           } else {
             this.service.deleteVariable(this.variable.uri).then(() => {
-              let message = this.$i18n.t("VariableView.name") + " " + this.variable.name + " " + this.$i18n.t("component.common.success.delete-success-message");
+              let message = this.$i18n.t("VariableView.name") + " " + this.variable.multiLabelsDTO.prefLabels[this.$i18n.locale]
+                  + " " + this.$i18n.t("component.common.success.delete-success-message");
               this.$opensilex.showSuccessToast(message);
               this.$router.push({path: "/variables"});
             }).catch(this.$opensilex.errorHandler);
@@ -290,13 +345,48 @@ export default class VariableDetails extends Vue {
     return this.getPath(VariablesView.UNIT_TYPE, this.variable.unit.uri);
   }
 
+  get lang() {
+    return this.$store.state.lang;
+  }
+
+  get fields() {
+
+    return [
+      {
+        key: "prefLabel",
+        label: this.$t("component.common.prefLabel"),
+        sortable: true,
+      },
+      {
+        key: "shortLabel",
+        label: this.$t("component.common.shortLabel"),
+        sortable: true,
+      },
+      {
+        key: "altLabels",
+        label: this.$t("component.common.altLabels"),
+        sortable: false,
+      },
+      {
+        key: "definition",
+        label: this.$t("component.common.definition"),
+        sortable: false,
+      },
+      {
+        key: "lang",
+        label: this.$t("component.common.lang"),
+        sortable: true,
+      },
+    ];
+  }
+
 }
 </script>
 
 <style scoped lang="scss">
 
 .page {
-  margin-top : 20px;
+  margin-top: 20px;
 }
 </style>
 

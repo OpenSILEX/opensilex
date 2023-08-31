@@ -6,16 +6,17 @@
 package org.opensilex.core.variable.dal;
 
 import org.apache.jena.arq.querybuilder.SelectBuilder;
+import org.apache.jena.arq.querybuilder.handlers.WhereHandler;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.sparql.expr.Expr;
+
 import org.opensilex.server.exceptions.displayable.DisplayableBadRequestException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLInvalidUriListException;
 import org.opensilex.sparql.mapping.SparqlNoProxyFetcher;
 import org.opensilex.sparql.model.SPARQLMultiNamedResourceModel;
-import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
@@ -25,11 +26,8 @@ import org.opensilex.utils.OrderBy;
 import java.net.URI;
 import java.util.*;
 
-/**
- *
- * @author vidalmor
- */
-public class BaseMultiLabeledIdentifierDAO<T extends SPARQLMultiNamedResourceModel<T>> {
+
+public class BaseMultiLabelsResourceDAO<T extends SPARQLMultiNamedResourceModel<T>> {
 
     protected final SPARQLService sparql;
     protected final Class<T> objectClass;
@@ -41,7 +39,7 @@ public class BaseMultiLabeledIdentifierDAO<T extends SPARQLMultiNamedResourceMod
      */
     protected final SparqlNoProxyFetcher<T> fetcher;
 
-    public BaseMultiLabeledIdentifierDAO(Class<T> objectClass, SPARQLService sparql) {
+    public BaseMultiLabelsResourceDAO(Class<T> objectClass, SPARQLService sparql) {
         this.sparql = sparql;
         this.objectClass = objectClass;
         try{
@@ -68,18 +66,7 @@ public class BaseMultiLabeledIdentifierDAO<T extends SPARQLMultiNamedResourceMod
         return instance;
     }
 
-    /**
-     * Delete a resource associated to a variable
-     * @param uri URI of the resource to delete (required)
-     * @param property The property which link the given uri to a {@link VariableModel} (required)
-     * @throws DisplayableBadRequestException if the resource is linked to an existing variable
-     * @throws Exception if some errors occurs during deletion operation
-     *
-     * @apiNote
-     * Example : <br>
-     * {@code delete(:entity_uri,Oeso.hasEntity)} will delete the given entity by checking
-     * if some variable is linked to the entity, before deleting it
-     */
+
     public void delete(URI uri, Property property) throws DisplayableBadRequestException, Exception {
 
         Objects.requireNonNull(uri);
@@ -115,25 +102,63 @@ public class BaseMultiLabeledIdentifierDAO<T extends SPARQLMultiNamedResourceMod
         return sparql.getByURI(objectClass, instanceURI, null);
     }
 
-    public ListWithPagination<T> search(String labelPattern, List<OrderBy> orderByList, Integer page, Integer pageSize, String lang) throws Exception {
-        Expr labelFilter = SPARQLQueryHelper.regexFilter(SPARQLNamedResourceModel.NAME_FIELD, labelPattern);
 
-        return sparql.searchWithPagination(
+    public ListWithPagination<T> search(String labelPattern,
+                                        List<OrderBy> orderByList, Integer page, Integer pageSize, String lang) throws Exception {
+
+        Expr prefLabelFilter = SPARQLQueryHelper.regexFilter(SPARQLMultiNamedResourceModel.PREF_LABELS_FIELD,
+                labelPattern);
+        Expr altLabelFilter = SPARQLQueryHelper.regexFilter(SPARQLMultiNamedResourceModel.ALT_LABELS_FIELD,
+                labelPattern);
+        Expr shortLabelFilter = SPARQLQueryHelper.regexFilter(SPARQLMultiNamedResourceModel.SHORT_LABEL_FIELD,
+                labelPattern);
+
+        Expr  label;
+        if (prefLabelFilter != null && altLabelFilter != null && shortLabelFilter != null) {
+            label = SPARQLQueryHelper.getExprFactory().or(prefLabelFilter, altLabelFilter);
+        } else if (prefLabelFilter != null && altLabelFilter != null) {
+            label = prefLabelFilter;
+        } else {
+            label = null;
+        }
+
+        Map<String, WhereHandler> customQueryHandler = new HashMap<>();
+        customQueryHandler.put(SPARQLMultiNamedResourceModel.PREF_LABELS_FIELD,new WhereHandler());
+        customQueryHandler.put(SPARQLMultiNamedResourceModel.ALT_LABELS_FIELD,new WhereHandler());
+        customQueryHandler.put(SPARQLMultiNamedResourceModel.SHORT_LABEL_FIELD,new WhereHandler());
+
+        ListWithPagination<T> listWithPagination = sparql.searchWithPagination(
                 defaultGraph,
                 objectClass,
                 lang,
                 (SelectBuilder select) -> {
-                    if (labelFilter != null) {
-                        select.addFilter(labelFilter);
+                    if (label != null) {
+                        select.addFilter(label);
                     }
                 },
-                Collections.emptyMap(),
-                result -> fetcher.getInstance(result,lang),
+                customQueryHandler,
+                null,
                 orderByList,
                 page,
                 pageSize
         );
+
+        List<T> models = listWithPagination.getList();
+        List<T> uniqueModels = new ArrayList<>();
+        Set<URI> uniqueUris = new HashSet<>();
+
+        for (T model : models) {
+            if (uniqueUris.add(model.getUri())) {
+                uniqueModels.add(model);
+            }
+        }
+
+        listWithPagination.setList(uniqueModels);
+
+
+        return listWithPagination;
     }
+
 
     public List<T> getList(List<URI> uris, String lang) throws Exception {
         return sparql.getListByURIs(

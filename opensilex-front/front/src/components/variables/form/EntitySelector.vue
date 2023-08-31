@@ -66,9 +66,9 @@ export default class EntitySelector extends Vue {
       .catch(this.$opensilex.errorHandler); 
   }
 
-  searchEntities(name): Promise<HttpResponse<OpenSilexResponse<Array<EntityGetDTO>>>> {
+  searchEntities(label): Promise<HttpResponse<OpenSilexResponse<Array<EntityGetDTO>>>> {
     return this.$opensilex.getService<VariablesService>("opensilex.VariablesService")
-    .searchEntities(name, ["name=asc"], 0, 10, this.sharedResourceInstance)
+    .searchEntities(label, ["label=asc"], 0, 10, this.sharedResourceInstance)
     .then((http: HttpResponse<OpenSilexResponse<Array<EntityGetDTO>>>) => {
         return http;
     });

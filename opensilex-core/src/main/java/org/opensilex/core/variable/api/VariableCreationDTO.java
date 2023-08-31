@@ -25,25 +25,11 @@ import java.util.List;
  * @author vidalmor
  */
 @JsonPropertyOrder({
-    "uri", "name", "alternative_name", "description",
     "entity", "entity_of_interest","characteristic", "trait", "trait_name", "method", "unit",
     "species","datatype","time_interval", "sampling_interval",
     "exact_match","close_match","broader","narrower"
 })
-public class VariableCreationDTO extends SKOSReferencesDTO {
-
-    @JsonProperty("uri")
-    protected URI uri;
-
-    @NotNull
-    @JsonProperty("name")
-    private String name;
-
-    @JsonProperty("alternative_name")
-    private String alternativeName;
-
-    @JsonProperty("description")
-    private String description;
+public class VariableCreationDTO extends BaseMultiLabelResourceCreationDTO<VariableModel> {
 
     @JsonProperty("entity")
     private URI entity;
@@ -86,35 +72,6 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
 
     public void setUri(URI uri) {
         this.uri = uri;
-    }
-
-
-    @ApiModelProperty(example = "Plant_Height", required = true)
-    @NotNull
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    @ApiModelProperty(example = "Plant_Height_Estimation_Cm")
-    public String getAlternativeName() {
-        return alternativeName;
-    }
-
-    public void setAlternativeName(String alternativeName) {
-        this.alternativeName = alternativeName;
-    }
-
-    @ApiModelProperty(example = "Describe the height of a plant.")
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     @ValidURI
@@ -220,14 +177,13 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
     public VariableModel newModel() {
         VariableModel model = new VariableModel();
         model.setUri(uri);
-        model.setName(name);
 
-        if(!StringUtils.isEmpty(alternativeName)){
-            model.setAlternativeName(alternativeName);
-        }
-        if(!StringUtils.isEmpty(description)){
-            model.setDescription(description);
-        }
+        model.getPrefLabels().addAllTranslations(this.multiLabelsDTO.getPrefLabels());
+        model.getShortLabels().addAllTranslations(this.multiLabelsDTO.getShortLabels());
+
+        model.getAltsLabels().addAllTranslations(this.multiLabelsDTO.getAltLabels());
+        model.getDefinitions().addAllTranslations(this.multiLabelsDTO.getDefinitions());
+
         model.setDataType(dataType);
 
         model.setEntity(new EntityModel(entity));
@@ -265,6 +221,11 @@ public class VariableCreationDTO extends SKOSReferencesDTO {
         }
         setSkosReferencesToModel(model);
         return model;
+    }
+
+    @Override
+    protected VariableModel newModelInstance() {
+        return null;
     }
 
 }

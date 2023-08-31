@@ -1,26 +1,37 @@
 <template>
   <opensilex-FormField
-    :rules="rules"
-    :required="isRequired"
-    :label="label"
-    :helpMessage="helpMessage"
-    :vid="vid"
+      :rules="rules"
+      :required="isRequired"
+      :label="label"
+      :helpMessage="helpMessage"
+      :vid="vid"
   >
     <template v-slot:field="field">
-      <b-form-input
-        :id="field.id"
-        :value="stringValue"
-        @update="updateValue($event)"
-        @change="change"
-        @input="input"
-        @blur="blur"
-        @keyup.enter.native="onEnter"
-        :disabled="disabled"
-        :type="type"
-        :required="isRequired"
-        :placeholder="$t(placeholder)"
-        :autocomplete="autocomplete"
-      ></b-form-input>
+      <b-input-group>
+        <b-form-input
+            :id="field.id"
+            :value="stringValue"
+            @update="updateValue($event)"
+            @change="change"
+            @input="input"
+            @blur="blur"
+            @keyup.enter.native="onEnter"
+            :disabled="disabled"
+            :type="type"
+            :required="isRequired"
+            :placeholder="$t(placeholder)"
+            :autocomplete="autocomplete"
+        ></b-form-input>
+
+        <opensilex-Button
+          v-if="actionHandler"
+          ref="entityForm"
+          @click="actionHandler"
+          class="greenThemeColor"
+          icon="ik#ik-plus"
+      ></opensilex-Button>
+
+      </b-input-group>
     </template>
   </opensilex-FormField>
 </template>
@@ -50,8 +61,8 @@ export default class InputForm extends Vue {
     }
   }
 
-  change(value){
-    this.$emit("change",value);
+  change(value) {
+    this.$emit("change", value);
   }
 
   input(value) {
@@ -94,6 +105,9 @@ export default class InputForm extends Vue {
 
   @Prop()
   vid;
+
+  @Prop()
+  actionHandler: Function
 }
 </script>
 

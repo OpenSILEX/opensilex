@@ -323,7 +323,7 @@ public class MetricDAO {
         HashMap<URI, String> variables = new HashMap<>();
 
         for (VariableModel usedVariable : usedVariables) {
-            variables.put(usedVariable.getUri(), usedVariable.getName());
+//            variables.put(usedVariable.getUri(), usedVariable.getName());
         }
 
         return variables;

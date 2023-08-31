@@ -24,9 +24,8 @@ import {EntityCreationDTO, EntityGetDTO, VariablesService} from "opensilex-core/
 import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
 import {EntityUpdateDTO} from "opensilex-core/model/entityUpdateDTO";
 import {LabelDTO} from 'opensilex-core/model/labelDTO';
-import {MultiLabelDTO} from 'opensilex-core/model/multiLabelDTO';
-import LabelCreationSubForm from './LabelCreationSubForm.vue';
-
+import {MultiLabelsDTO} from 'opensilex-core/model/multiLabelsDTO';
+import LabelsCreationSubForm from './LabelsCreationSubForm.vue';
 
 @Component
 export default class EntityCreate extends Vue {
@@ -56,9 +55,9 @@ export default class EntityCreate extends Vue {
   errorMsg: String = "";
   service: VariablesService;
 
-  @Ref("labelCreationSubForm") readonly labelCreationSubForm!: LabelCreationSubForm;
+  @Ref("labelCreationSubForm") readonly labelCreationSubForm!: LabelsCreationSubForm;
 
-  multiLabelDTO: MultiLabelDTO;
+  multiLabelDTO: MultiLabelsDTO;
 
   @Ref("wizardRef") readonly wizardRef!: any;
 
@@ -83,7 +82,7 @@ export default class EntityCreate extends Vue {
   getEmptyForm(): EntityCreationDTO {
     return {
       uri: null,
-      multiLabelDTO: this.getEmptyMultiLabelDTO(),
+      multiLabelsDTO: this.getEmptyMultiLabelsDTO(),
       exact_match: [],
       close_match: [],
       broad_match: [],
@@ -96,9 +95,10 @@ export default class EntityCreate extends Vue {
   }
 
 
-  getEmptyMultiLabelDTO(): MultiLabelDTO {
+  getEmptyMultiLabelsDTO(): MultiLabelsDTO {
     return {
       prefLabels: {},
+      shortLabels: {},
       altLabels: {},
       definitions: {}
     };
@@ -107,10 +107,17 @@ export default class EntityCreate extends Vue {
 
   create(form: EntityCreationDTO) {
 
+    console.log("form",JSON.stringify(form.multiLabelsDTO));
     return this.service
         .createEntity(form)
         .then((http: HttpResponse<OpenSilexResponse<string>>) => {
-          let message = this.$i18n.t("EntityForm.uri") + " " + form.uri + " " + this.$i18n.t("component.common.success.creation-success-message");
+          console.log("form",JSON.stringify(form))
+          let message = "";
+          if (form.uri) {
+            message = "The entity " + form.uri + " " + this.$i18n.t("component.common.success.creation-success-message");
+          } else {
+            message = "The entity " + form.multiLabelsDTO.prefLabels[this.$i18n.locale] + " " + this.$i18n.t("component.common.success.creation-success-message").toString();
+          }
           this.$opensilex.showSuccessToast(message);
           this.$emit("onCreate", form);
         })
@@ -121,10 +128,9 @@ export default class EntityCreate extends Vue {
             this.$opensilex.errorHandler(error);
           }
         });
-
   }
 
-  update(form: EntityUpdateDTO) {
+  // update(form: EntityUpdateDTO) {
     //   return this.service
     //       .updateEntity(form)
     //       .then((http: HttpResponse<OpenSilexResponse<string>>) => {
@@ -136,7 +142,7 @@ export default class EntityCreate extends Vue {
     //       .catch(error => {
     //         this.$opensilex.errorHandler(error);
     //       });
-  }
+  // }
 
   loadingWizard: boolean = false;
 

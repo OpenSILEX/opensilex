@@ -24,24 +24,18 @@
             :per-pag="pageSize"
             defaultSortBy="prefLabel"
             iconNumberOfSelectedRow="fa#vials"
-            class="modalLabelsList"
-        >
+            class="modalLabelsList">
           <template v-slot:cell(prefLabel)="item">
-            {{ item.data.value }}
-          </template>
-
+            {{ item.data.value }}</template>
+          <template v-slot:cell(shortLabel)="item">
+            {{ item.data.value }}</template>
           <template v-slot:cell(altLabels)="item">
             <span v-for="(altLabel, index) in item.data.value" :key="index">
-              {{ altLabel }}
-              <br>
-            </span>
+              {{ altLabel }}<br></span>
           </template>
-
           <template v-slot:cell(definition)="item">
             {{ item.data.value }}
           </template>
-
-
         </opensilex-TableView>
       </template>
     </div>
@@ -97,14 +91,14 @@ import EntityCreate from "./EntityCreate.vue";
 import {VueConstructor} from 'vue';
 
 // @ts-ignore
-import {EntityCreationDTO, LabelDTO, MultiLabelDTO} from "opensilex-core/index";
+import {EntityCreationDTO, LabelDTO, MultiLabelsDTO} from "opensilex-core/index";
 
 import DefaultHeaderComponent from "../../layout/DefaultHeaderComponent.vue";
 
 import VueI18n from "vue-i18n";
 import en from '../../../lang/message-en.json';
 import fr from '../../../lang/message-fr.json';
-import LabelCreationSubForm from "./LabelCreationSubForm.vue";
+import LabelsCreationSubForm from "./LabelsCreationSubForm.vue";
 
 @Component({
   computed: {
@@ -129,7 +123,7 @@ export default class EntityForm extends Vue {
   isValidSubForm: boolean = false;
 
   @Ref("labelCreationSubForm")
-  labelCreationSubForm: LabelCreationSubForm;
+  labelCreationSubForm: LabelsCreationSubForm;
 
   key = 0;
 
@@ -163,28 +157,32 @@ export default class EntityForm extends Vue {
   beforeNext() {
 
     console.log("this.labelCreationSubForm.getLabelDTO()", JSON.stringify(this.labelCreationSubForm.getLabelDTO()));
-    this.addLabelsToMultiLabelDTO(this.labelCreationSubForm.getLabelDTO());
+    this.addLabelsToMultiLabelsDTO(this.labelCreationSubForm.getLabelDTO());
 
   }
 
-  addLabelsToMultiLabelDTO(labelDTO) {
-    if (!this.entityDto.multiLabelDTO.altLabels) {
-      this.entityDto.multiLabelDTO.altLabels = {};
+  addLabelsToMultiLabelsDTO(labelDTO) {
+    console.log("this.entityDto.multiLabelsDTO", JSON.stringify(this.entityDto.multiLabelsDTO));
+
+    if (!this.entityDto.multiLabelsDTO.altLabels) {
+      this.entityDto.multiLabelsDTO.altLabels = {};
     }
 
-    this.entityDto.multiLabelDTO.prefLabels[labelDTO.lang] = labelDTO.prefLabel;
+    this.entityDto.multiLabelsDTO.prefLabels[labelDTO.lang] = labelDTO.prefLabel;
 
-    if (!this.entityDto.multiLabelDTO.altLabels[labelDTO.lang]) {
-      this.entityDto.multiLabelDTO.altLabels[labelDTO.lang] = [];
+    this.entityDto.multiLabelsDTO.shortLabels[labelDTO.lang] = labelDTO.shortLabel;
+
+    if (!this.entityDto.multiLabelsDTO.altLabels[labelDTO.lang]) {
+      this.entityDto.multiLabelsDTO.altLabels[labelDTO.lang] = [];
     }
 
     for (let i = 0; i < labelDTO.altLabels.length; i++) {
-      this.entityDto.multiLabelDTO.altLabels[labelDTO.lang].push(labelDTO.altLabels[i]);
+      this.entityDto.multiLabelsDTO.altLabels[labelDTO.lang].push(labelDTO.altLabels[i]);
     }
 
-    this.entityDto.multiLabelDTO.definitions[labelDTO.lang] = labelDTO.definition;
+    this.entityDto.multiLabelsDTO.definitions[labelDTO.lang] = labelDTO.definition;
 
-    console.log("this.entityDto.multiLabelDTO", JSON.stringify(this.entityDto.multiLabelDTO));
+    console.log("this.entityDto.multiLabelDTO", JSON.stringify(this.entityDto.multiLabelsDTO));
   }
 
 
@@ -192,7 +190,7 @@ export default class EntityForm extends Vue {
 
     this.labelDTOList.push(labelDTO);
 
-    this.addLabelsToMultiLabelDTO(labelDTO);
+    this.addLabelsToMultiLabelsDTO(labelDTO);
 
     this.dataLoaded = true;
 
@@ -206,6 +204,11 @@ export default class EntityForm extends Vue {
       {
         key: "prefLabel",
         label: this.$t("component.common.prefLabel"),
+        sortable: true,
+      },
+      {
+        key: "shortLabel",
+        label: this.$t("component.common.shortLabel"),
         sortable: true,
       },
       {
@@ -225,7 +228,6 @@ export default class EntityForm extends Vue {
       },
     ];
   }
-
 
   externalOntologiesRefs: any[] = ExternalOntologies.getExternalOntologiesReferences(EntityCreate.selectedOntologies);
 

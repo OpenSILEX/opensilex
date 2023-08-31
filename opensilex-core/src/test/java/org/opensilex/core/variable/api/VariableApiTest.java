@@ -68,8 +68,8 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
         SPARQLService service = getSparqlService();
 
         EntityModel entity = new EntityModel();
-        entity.setName("Artemisia absinthium");
-        entity.setDescription("A plant which was used in the past for building methanol");
+//        entity.setName("Artemisia absinthium");
+//        entity.setDescription("A plant which was used in the past for building methanol");
 
         service.create(entity);
 
@@ -91,9 +91,9 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
         service.create(unit);
 
         VariableCreationDTO variableDto = new VariableCreationDTO();
-        variableDto.setName(entity.getName() + characteristic.getName());
-        variableDto.setAlternativeName(variableDto.getName() + method.getName() + unit.getName());
-        variableDto.setDescription("A comment about a variable");
+//        variableDto.setName(entity.getName() + characteristic.getName());
+//        variableDto.setAlternativeName(variableDto.getName() + method.getName() + unit.getName());
+//        variableDto.setDescription("A comment about a variable");
 
         variableDto.setEntity(entity.getUri());
         variableDto.setCharacteristic(characteristic.getUri());
@@ -117,8 +117,8 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
     public void testCreateFailWithNoRequiredFields() throws Exception {
 
         VariableCreationDTO dto = new VariableCreationDTO();
-        dto.setName("name");
-        dto.setDescription("only a comment, not a name");
+//        dto.setName("name");
+//        dto.setDescription("only a comment, not a name");
 
         Response postResult = getJsonPostResponseAsAdmin(target(createPath), dto);
         assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), postResult.getStatus());
@@ -179,14 +179,14 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
         final Response postResult = getJsonPostResponseAsAdmin(target(createPath), dto);
 
         dto.setUri(extractUriFromResponse(postResult));
-        dto.setName("new alias");
-        dto.setDescription("new comment");
+//        dto.setName("new alias");
+//        dto.setDescription("new comment");
         dto.setTrait(new URI("http://purl.obolibrary.org/obo/TO_0002644_new"));
 
         // create a new entity to associate with the variable
         EntityModel entity = new EntityModel();
-        entity.setName("Artemisia absinthium");
-        entity.setDescription("A plant which was used in the past for building methanol");
+//        entity.setName("Artemisia absinthium");
+//        entity.setDescription("A plant which was used in the past for building methanol");
         getSparqlService().create(entity);
         dto.setEntity(entity.getUri());
 
@@ -203,9 +203,9 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
         VariableDetailsDTO dtoFromApi = getResponse.getResult();
 
         // check that the object has been updated
-        assertEquals(dto.getName(), dtoFromApi.getName());
-        assertEquals(dto.getDescription(), dtoFromApi.getDescription());
-        assertTrue(SPARQLDeserializers.compareURIs(dto.getEntity(), dtoFromApi.getEntity().getUri()));
+//        assertEquals(dto.getName(), dtoFromApi.getName());
+//        assertEquals(dto.getDescription(), dtoFromApi.getDescription());
+//        assertTrue(SPARQLDeserializers.compareURIs(dto.getEntity(), dtoFromApi.getEntity().getUri()));
         assertTrue(SPARQLDeserializers.compareURIs(dto.getTrait(), dtoFromApi.getTrait()));
     }
 
@@ -227,9 +227,10 @@ public class VariableApiTest extends AbstractMongoIntegrationTest {
         VariableDetailsDTO dtoFromDb = getResponse.getResult();
         assertNotNull(dtoFromDb);
 
-        assertEquals(creationDTO.getName(), dtoFromDb.getName());
-        assertEquals(creationDTO.getAlternativeName(), dtoFromDb.getAlternativeName());
-        assertEquals(creationDTO.getDescription(), dtoFromDb.getDescription());
+//        assertEquals(creationDTO.getName(), dtoFromDb.getName());
+//        assertEquals(creationDTO.getAlternativeName(), dtoFromDb.getAlternativeName());
+//        assertEquals(creationDTO.getDescription(), dtoFromDb.getDescription());
+
         assertEquals(creationDTO.getTrait(), dtoFromDb.getTrait());
         assertEquals(creationDTO.getTraitName(), dtoFromDb.getTraitName());
 

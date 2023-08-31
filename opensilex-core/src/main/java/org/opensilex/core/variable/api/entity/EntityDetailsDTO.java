@@ -7,24 +7,21 @@
 package org.opensilex.core.variable.api.entity;
 
 import java.net.URI;
-import java.util.List;
 
 import io.swagger.annotations.ApiModelProperty;
-import org.opensilex.core.variable.api.BaseMultiLabeledIdentifierDetailsDTO;
-import org.opensilex.core.variable.api.BaseVariableDetailsDTO;
-import org.opensilex.core.variable.api.MultiLabelDTO;
+import org.opensilex.core.variable.api.BaseMultiLabelResourceDetailsDTO;
+import org.opensilex.core.variable.api.MultiLabelsDTO;
 import org.opensilex.core.variable.dal.EntityModel;
-import org.opensilex.core.variable.dal.EntityMultiLabelModel;
 
 
-/**
+/**wsq<
  *
  * @author vidalmor
  */
 
-public class EntityDetailsDTO extends BaseMultiLabeledIdentifierDetailsDTO<EntityMultiLabelModel> {
+public class EntityDetailsDTO extends BaseMultiLabelResourceDetailsDTO<EntityModel> {
 
-    public EntityDetailsDTO(EntityMultiLabelModel model) {
+    public EntityDetailsDTO(EntityModel model) {
         super(model);
     }
 
@@ -37,19 +34,18 @@ public class EntityDetailsDTO extends BaseMultiLabeledIdentifierDetailsDTO<Entit
         return uri;
     }
     @Override
-    public MultiLabelDTO getMultiLabelDTO() {
-        return multiLabelDTO;
+    public MultiLabelsDTO getMultiLabelsDTO() {
+        return multiLabelsDTO;
     }
     @Override
-    public void setMultiLabelDTO(MultiLabelDTO multiLabelDTO) {
-        this.multiLabelDTO = multiLabelDTO;
+    public void setMultiLabelsDTO(MultiLabelsDTO multiLabelsDTO) {
+
+        this.multiLabelsDTO = multiLabelsDTO;
     }
 
-
-
     @Override
-    public EntityMultiLabelModel toModel() {
-        EntityMultiLabelModel model = new EntityMultiLabelModel();
+    public EntityModel toModel() {
+        EntityModel model = new EntityModel();
         setBasePropertiesToModel(model);
         return model;
     }

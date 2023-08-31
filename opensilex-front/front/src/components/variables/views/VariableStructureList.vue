@@ -18,7 +18,6 @@
                 <!-- <span v-if="!node.data.selected">{{ node.title }}</span> -->
                 <span v-if="!node.data.selected">{{ node.data.variables ? node.title + ' ' + $tc('VariableStructureList.variable', node.data.variables.length, { count: node.data.variables.length }) : node.title }}</span>
             </template>
-
             <template v-slot:buttons="{ node }">
                 <opensilex-EditButton
                     v-if="user.hasCredential(credentials.CREDENTIAL_VARIABLE_MODIFICATION_ID)"
@@ -34,7 +33,6 @@
                 ></opensilex-DeleteButton>
             </template>
         </opensilex-TreeView>
-
     </b-card>
 </template>
 
@@ -54,7 +52,7 @@ export default class VariableStructureList extends Vue {
     $route: any;
     service: VariablesService;
     $i18n: any;
-    
+
     @PropSync("_type")
     type: string;
 
@@ -72,11 +70,12 @@ export default class VariableStructureList extends Vue {
         this.$opensilex.updateURLParameter("name", this.nameFilter, "");
         this.refresh(false);
     }
-    
+
     created() {
         this.service = this.$opensilex.getService("opensilex-core.VariablesService");
 
         let query: any = this.$route.query;
+        console.log("this.selected",this.selected);
         if (query && query.selected) {
             this.refresh(false,decodeURIComponent(query.selected));
         } else {
@@ -98,11 +97,12 @@ export default class VariableStructureList extends Vue {
     searchElements(nameFilter : string): Promise<HttpResponse<OpenSilexResponse<Array<NamedResourceDTO>>>> {
 
         let orderBy = ["name=asc"];
+        let orderByEntity = ["name=asc"];
 
         switch (this.type) {
 
             case VariablesView.ENTITY_TYPE: {
-                return this.service.searchEntities(nameFilter,orderBy);
+                return this.service.searchEntities(nameFilter,orderByEntity);
             }
             case VariablesView.INTEREST_ENTITY_TYPE: {
                 return this.service.searchInterestEntity(nameFilter,orderBy);
@@ -119,7 +119,7 @@ export default class VariableStructureList extends Vue {
             case VariablesView.GROUP_VARIABLE_TYPE: {
                 return this.service.searchVariablesGroups(nameFilter, undefined, orderBy);
             }
-            default: { 
+            default: {
                 return this.service.searchEntities(this.nameFilter,orderBy);
             }
         }
@@ -200,7 +200,8 @@ export default class VariableStructureList extends Vue {
 
     private selected: any;
 
-    public displayNodesDetail(node: any) {
+
+  public displayNodesDetail(node: any) {
         this.displayNodeDetail(node.data.uri);
     }
 
@@ -208,11 +209,12 @@ export default class VariableStructureList extends Vue {
 
         switch (this.type) {
             case VariablesView.ENTITY_TYPE : {
-                return this.service.getEntity(uri);
+
+              return this.service.getEntity(uri);
             }
             case VariablesView.INTEREST_ENTITY_TYPE : {
                 return this.service.getInterestEntity(uri);
-            }            
+            }
             case VariablesView.CHARACTERISTIC_TYPE : {
                 return this.service.getCharacteristic(uri);
             }
@@ -224,7 +226,7 @@ export default class VariableStructureList extends Vue {
             }
             case VariablesView.GROUP_VARIABLE_TYPE: {
                 return this.service.getVariablesGroup(uri);
-            }   
+            }
             default : {
                 return this.service.getEntity(uri);
             }

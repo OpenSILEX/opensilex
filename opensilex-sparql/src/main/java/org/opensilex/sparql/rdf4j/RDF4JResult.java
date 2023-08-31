@@ -24,6 +24,10 @@ public class RDF4JResult implements SPARQLResult {
         this.bindingSet = bindingSet;
     }
 
+    public BindingSet getBindingSet() {
+        return bindingSet;
+    }
+
     @Override
     public String getStringValue(String key) {
         Value binding = bindingSet.getValue(key);

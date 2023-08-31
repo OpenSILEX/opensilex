@@ -67,6 +67,7 @@ import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
+import org.opensilex.sparql.response.MultiNamedResourceDTO;
 import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.response.ResourceTreeDTO;
 import org.opensilex.sparql.service.SPARQLService;
@@ -1147,7 +1148,7 @@ public class DataAPI {
         
         DataDAO dataDAO = new DataDAO(nosql, sparql, null);
         List<VariableModel> variables = dataDAO.getUsedVariables(user, experiments, objects, provenances, devices);
-        List<NamedResourceDTO> dtoList = variables.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
+        List<MultiNamedResourceDTO> dtoList = variables.stream().map(MultiNamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();
     }
 

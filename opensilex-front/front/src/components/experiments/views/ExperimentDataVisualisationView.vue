@@ -437,7 +437,7 @@ export default class ExperimentDataVisualisationView extends Vue {
         }
         const dataAndImage = [];
 
-        let name = this.multipleVariables ? concernedItem.label + " / " + selectedVariable.name : concernedItem.label
+        let name = this.multipleVariables ? concernedItem.label + " / " + selectedVariable.multiLabelsDTO.prefLabels[this.$i18n.locale] : concernedItem.label
 
         const dataSerie = {
           name: name,

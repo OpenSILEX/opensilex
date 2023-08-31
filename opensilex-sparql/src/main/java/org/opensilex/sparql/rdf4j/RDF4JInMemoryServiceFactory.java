@@ -5,7 +5,6 @@
  */
 package org.opensilex.sparql.rdf4j;
 
-import java.net.URISyntaxException;
 import org.eclipse.rdf4j.repository.Repository;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.eclipse.rdf4j.sail.memory.MemoryStore;
@@ -36,7 +35,7 @@ public class RDF4JInMemoryServiceFactory extends RDF4JServiceFactory {
     public void startup() throws Exception {
         super.startup();
         SPARQLService sparql = this.provide();
-        getOpenSilex().getModuleByClass(SPARQLModule.class).installOntologies(sparql, false);
+        getOpenSilex().getModuleByClass(SPARQLModule.class).installAllOntologies(sparql, false);
         this.dispose(sparql);
     }
 

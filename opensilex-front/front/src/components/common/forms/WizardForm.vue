@@ -163,7 +163,6 @@ export default class WizardForm extends Vue {
         let currentStepComponent: any = this.$refs[
         "step" + props.activeTabIndex
             ][0];
-        console.log("from nextStepHandler ");
         if (currentStepComponent.beforeNext) {
           currentStepComponent.beforeNext();
         }

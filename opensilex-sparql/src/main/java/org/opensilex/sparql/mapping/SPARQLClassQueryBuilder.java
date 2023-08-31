@@ -330,6 +330,12 @@ class SPARQLClassQueryBuilder {
             }
         });
 
+        analyzer.forEachMultiLabelProperty((Field field, Property property) -> {
+            if (dataPropertyHandler != null) {
+                labelPropertyHandler.accept(field, property);
+            }
+        });
+
     }
 
     public <T extends SPARQLResourceModel> UpdateBuilder getCreateBuilder(Node graph, T instance, boolean blankNode, BiConsumer<UpdateBuilder, Node> createExtension) throws Exception {
@@ -620,7 +626,9 @@ class SPARQLClassQueryBuilder {
     private void addOptionalLangClause(WhereHandler where, Var fieldVar, Node property, Var fieldNameVar, String lang) {
         WhereBuilder optionalLang = new WhereBuilder();
         optionalLang.addWhere(fieldVar, property, fieldNameVar);
-        optionalLang.addFilter(SPARQLQueryHelper.langFilter(fieldNameVar, lang));
+        if(lang != null){
+            optionalLang.addFilter(SPARQLQueryHelper.langFilter(fieldNameVar, lang));
+        }
         where.addOptional(optionalLang.getWhereHandler());
     }
 
@@ -651,8 +659,12 @@ class SPARQLClassQueryBuilder {
      * @param lang
      */
     private void addOptionalLangClauseOrDefault(WhereHandler where, Var fieldVar, Node property, Var fieldNameVar, String lang) {
-        addOptionalLangClause(where, fieldVar, property, fieldNameVar, lang);
-        addOptionalLangClause(where, fieldVar, property, fieldNameVar, "");
+        if(! StringUtils.isEmpty(lang)){
+            addOptionalLangClause(where, fieldVar, property, fieldNameVar, lang);
+            addOptionalLangClause(where, fieldVar, property, fieldNameVar, "");
+        }else{
+            addOptionalLangClause(where, fieldVar, property, fieldNameVar, lang);
+        }
     }
 
     private <T extends SPARQLResourceModel> Node executeOnInstanceTriples(Node graph, T instance, BiConsumer<Quad, Field> tripleHandler, boolean blankNode) throws Exception {
@@ -745,9 +757,22 @@ class SPARQLClassQueryBuilder {
                     quad = new Quad(graph, triple);
                     tripleHandler.accept(quad, field);
                 }
+
+            }
+        }
+
+        for (Field field : analyzer.getMultiLabelPropertyFields()) {
+            Object fieldValue = analyzer.getFieldValue(field, instance);
+            if (fieldValue == null) {
+                if (!analyzer.isOptional(field)) {
+                    // TODO change exception type
+                    throw new Exception("Field value can't be null: " + field.getName());
+                }
+            } else {
+
                 SPARQLMultiLabels multiLabels = (SPARQLMultiLabels) fieldValue;
                 Property propertyMultiLabels = analyzer.getMultiLabelPropertyByField(field);
-                for (Map.Entry<String, List<String>> translation : multiLabels.getTranslationsOfAltLabels().entrySet()) {
+                for (Map.Entry<String, List<String>> translation : multiLabels.getTranslations().entrySet()) {
                     String language = translation.getKey();
                     List<String> translationValues = translation.getValue();
 

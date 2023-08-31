@@ -19,10 +19,10 @@
             :to="{ path: getPath('annotations') }"
         >{{ $t("Annotation.list-title") }}
           <span
-            v-if="!annotationsCountIsLoading && annotations > 0"
-            class="tabWithElements"
+              v-if="!annotationsCountIsLoading && annotations > 0"
+              class="tabWithElements"
           >
-            {{$opensilex.$numberFormatter.formateResponse(annotations)}}
+            {{ $opensilex.$numberFormatter.formateResponse(annotations) }}
           </span>
         </b-nav-item>
         <b-nav-item
@@ -36,10 +36,10 @@
             :to="{ path: getPath('documents') }"
         >{{ $t('component.project.documents') }}
           <span
-            v-if="!documentsCountIsLoading && documents > 0"
-            class="tabWithElements"
+              v-if="!documentsCountIsLoading && documents > 0"
+              class="tabWithElements"
           >
-            {{$opensilex.$numberFormatter.formateResponse(documents)}}
+            {{ $opensilex.$numberFormatter.formateResponse(documents) }}
           </span>
         </b-nav-item>
 
@@ -48,33 +48,33 @@
     <opensilex-PageContent>
       <template v-slot>
         <opensilex-VariableDetails
-            v-if="isDetailsTab()"
+            v-if="isDetailsTab() && variable.entity"
             :variable="variable"
             :displayLocalActions="onLocalInstance"
             @onUpdate="updateVariable($event)"
         ></opensilex-VariableDetails>
 
         <opensilex-AnnotationList
-        class="projectAnnotations"
-          v-else-if="isAnnotationTab()"
-          ref="annotationList"
-          :target="uri"
-          :displayTargetColumn="false"
-          :enableActions="true"
-          :modificationCredentialId="credentials.CREDENTIAL_ANNOTATION_MODIFICATION_ID"
-          :deleteCredentialId="credentials.CREDENTIAL_ANNOTATION_DELETE_ID"
+            class="projectAnnotations"
+            v-else-if="isAnnotationTab()"
+            ref="annotationList"
+            :target="uri"
+            :displayTargetColumn="false"
+            :enableActions="true"
+            :modificationCredentialId="credentials.CREDENTIAL_ANNOTATION_MODIFICATION_ID"
+            :deleteCredentialId="credentials.CREDENTIAL_ANNOTATION_DELETE_ID"
         ></opensilex-AnnotationList>
 
         <opensilex-VariableVisualizationTab
-          v-else-if="isVisualizationTab()"
-          :variable="uri"
-          :modificationCredentialId="credentials.CREDENTIAL_DEVICE_MODIFICATION_ID"
+            v-else-if="isVisualizationTab()"
+            :variable="uri"
+            :modificationCredentialId="credentials.CREDENTIAL_DEVICE_MODIFICATION_ID"
         ></opensilex-VariableVisualizationTab>
 
         <opensilex-DocumentTabList
-          v-else-if="isDocumentTab()"
-          :uri="uri"
-          :modificationCredentialId="credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID"
+            v-else-if="isDocumentTab()"
+            :uri="uri"
+            :modificationCredentialId="credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID"
         ></opensilex-DocumentTabList>
       </template>
 
@@ -90,9 +90,10 @@ import {VariablesService} from "opensilex-core/api/variables.service";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import AnnotationList from "../../annotations/list/AnnotationList.vue";
 
-import { VariableDetailsDTO } from 'opensilex-core/index';
+import {VariableDetailsDTO} from 'opensilex-core/index';
 import {AnnotationsService} from "opensilex-core/api/annotations.service";
 import {DocumentsService} from "opensilex-core/api/documents.service";
+import {MultiLabelsDTO} from "opensilex-core/model/multiLabelsDTO";
 
 @Component
 export default class VariableView extends Vue {
@@ -115,29 +116,39 @@ export default class VariableView extends Vue {
   annotationsCountIsLoading: boolean = true;
   documentsCountIsLoading: boolean = true;
 
-  static getEmptyDetailsDTO() : VariableDetailsDTO{
+  getEmptyMultiLabelsDTO(): MultiLabelsDTO {
     return {
-        uri: undefined,
-        alternative_name: undefined,
-        name: undefined,
-        entity: undefined,
-        entity_of_interest: undefined,
-        characteristic: undefined,
-        description: undefined,
-        time_interval: undefined,
-        sampling_interval: undefined,
-        datatype: undefined,
-        trait: undefined,
-        trait_name: undefined,
-        method: undefined,
-        unit: undefined,
-        exact_match: [],
-        close_match: [],
-        broad_match: [],
-        narrow_match: [],
-        species: undefined
+      prefLabels: {},
+      shortLabels: {},
+      altLabels: {},
+      definitions: {}
     };
   }
+
+
+  static getEmptyDetailsDTO(): VariableDetailsDTO {
+    return {
+      uri: undefined,
+      multiLabelsDTO :undefined,
+      entity: undefined,
+      entity_of_interest: undefined,
+      characteristic: undefined,
+      time_interval: undefined,
+      sampling_interval: undefined,
+      datatype: undefined,
+      trait: undefined,
+      trait_name: undefined,
+      method: undefined,
+      unit: undefined,
+      exact_match: [],
+      close_match: [],
+      broad_match: [],
+      narrow_match: [],
+      species: undefined
+    };
+  }
+
+
 
 
   variable: VariableDetailsDTO = VariableView.getEmptyDetailsDTO();
@@ -172,13 +183,18 @@ export default class VariableView extends Vue {
     let path = "/variable/" + tab + "/" + encodeURIComponent(this.uri);
     const sri = this.$route.query.sharedResourceInstance;
     if (sri) {
+      console.log("path + \"?sharedResourceInstance=\" + sri", path + "?sharedResourceInstance=" + sri);
+
       return path + "?sharedResourceInstance=" + sri;
     } else {
+      console.log("path ", path);
+
       return path;
     }
   }
 
   isDetailsTab() {
+    console.log("this.$route.path", this.$route.path);
     return this.$route.path.startsWith("/variable/details/");
   }
 
@@ -209,40 +225,40 @@ export default class VariableView extends Vue {
 
   searchAnnotations() {
     return this.$AnnotationsService
-    .countAnnotations(
-      this.uri,
-      undefined,
-      undefined
-    ).then((http: HttpResponse<OpenSilexResponse<number>>) => {
-      if(http && http.response){
-        this.annotations = http.response.result as number;
-        this.annotationsCountIsLoading = false;
-        return this.annotations
-      }
-      }
-    ).catch(this.$opensilex.errorHandler);
+        .countAnnotations(
+            this.uri,
+            undefined,
+            undefined
+        ).then((http: HttpResponse<OpenSilexResponse<number>>) => {
+              if (http && http.response) {
+                this.annotations = http.response.result as number;
+                this.annotationsCountIsLoading = false;
+                return this.annotations
+              }
+            }
+        ).catch(this.$opensilex.errorHandler);
   }
 
-  searchDocuments(){
+  searchDocuments() {
     return this.$DocumentsService
-      .countDocuments(
-        this.uri,
-        undefined,
-        undefined
-      ).then((http: HttpResponse<OpenSilexResponse<number>>) => {
-        if(http && http.response){
-          this.documents = http.response.result as number;
-          this.documentsCountIsLoading = false;
-          return this.documents
-        }
-      }
-    ).catch(this.$opensilex.errorHandler);
+        .countDocuments(
+            this.uri,
+            undefined,
+            undefined
+        ).then((http: HttpResponse<OpenSilexResponse<number>>) => {
+              if (http && http.response) {
+                this.documents = http.response.result as number;
+                this.documentsCountIsLoading = false;
+                return this.documents
+              }
+            }
+        ).catch(this.$opensilex.errorHandler);
   }
 }
 </script>
 
 <style scoped lang="scss">
-.projectAnnotations{
+.projectAnnotations {
   margin-top: 18px;
 }
 

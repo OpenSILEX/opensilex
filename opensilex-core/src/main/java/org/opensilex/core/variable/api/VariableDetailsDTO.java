@@ -40,19 +40,11 @@ import org.opensilex.sparql.response.NamedResourceDTO;
  */
 
 @JsonPropertyOrder({
-        "uri", "name", "alternative_name", "description",
         "entity", "entity_of_interest","characteristic", "trait", "trait_name", "method", "unit",
         "species","time_interval", "sampling_interval", "datatype",
-        SKOSReferencesDTO.EXACT_MATCH_JSON_PROPERTY,
-        SKOSReferencesDTO.CLOSE_MATCH_JSON_PROPERTY,
-        SKOSReferencesDTO.BROAD_MATCH_JSON_PROPERTY,
-        SKOSReferencesDTO.NARROW_MATCH_JSON_PROPERTY
 })
 
-public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
-
-    @JsonProperty("alternative_name")
-    private String alternativeName;
+public class VariableDetailsDTO extends BaseMultiLabelResourceDetailsDTO<VariableModel> {
 
     @JsonProperty("entity")
     private EntityGetDTO entity;
@@ -95,7 +87,7 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
         super(model, sharedResourceInstance);
 
         EntityModel entity = model.getEntity();
-//        this.entity = new EntityGetDTO(entity);
+        this.entity = new EntityGetDTO(entity);
         
         InterestEntityModel entityOfInterest = model.getEntityOfInterest();
         if(entityOfInterest != null){
@@ -110,8 +102,6 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
 
         UnitModel unit = model.getUnit();
         this.unit = new UnitGetDTO(unit);
-
-        this.alternativeName = model.getAlternativeName();
 
         if(model.getSpecies() != null){
             List<SpeciesDTO> dtos = new ArrayList<>();
@@ -142,27 +132,6 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
     @ApiModelProperty(example = "http://opensilex.dev/set/variables/Plant_Height")
     public URI getUri() {
         return uri;
-    }
-
-    @Override
-    @ApiModelProperty(example = "Plant_Height")
-    public String getName() {
-        return name;
-    }
-
-    @ApiModelProperty(example = "Plant_Height_Estimation_Cm")
-    public String getAlternativeName() {
-        return alternativeName;
-    }
-
-    public void setAlternativeName(String alternativeName) {
-        this.alternativeName = alternativeName;
-    }
-
-    @Override
-    @ApiModelProperty(example = "Describe the height of a plant.")
-    public String getDescription() {
-        return description;
     }
 
     public EntityGetDTO getEntity() { return entity; }
@@ -277,7 +246,6 @@ public class VariableDetailsDTO extends BaseVariableDetailsDTO<VariableModel> {
                     .collect(Collectors.toList()));
         }
 
-        model.setAlternativeName(this.getAlternativeName());
         model.setDataType(this.getDataType());
         model.setSamplingInterval(this.getSamplingInterval());
         model.setTimeInterval(this.getTimeInterval());

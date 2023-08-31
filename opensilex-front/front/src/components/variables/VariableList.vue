@@ -2,6 +2,7 @@
     <div>
         <opensilex-PageContent
         class="pagecontent">
+          <div></div>
             <template>
             <!-- Toggle Sidebar-->
                 <div class="searchMenuContainer"
@@ -226,7 +227,7 @@
                         <span class="lowSize" v-bind:class="{ variablesCheckboxMarginHighSize: toggleSearchFilters }">
                              <opensilex-UriLink
                                  :uri="data.item.uri"
-                                 :value="data.item.name"
+                                 :value="data.item.prefLabels[lang]"
                                  :to="{path: getDetailsPageUrl(data.item)}"
                              ></opensilex-UriLink>
                         </span >
@@ -260,8 +261,10 @@
                           />
                       </div>
                     </template>
-                    <template v-slot:cell(_entity_name)="{data}">{{ data.item.entity.name }}</template>
-                    <template v-slot:cell(_interest_entity_name)="{data}">
+<!--                  <template v-slot:cell(_entity_name)="{data}">{{ data.item.entity.prefLabels[this.$i18n.locale] }}</template>-->
+                  <template v-slot:cell(_entity_name)="{data}">{{ data.item.entity.prefLabels[lang] }}</template>
+
+                  <template v-slot:cell(_interest_entity_name)="{data}">
                         {{ data.item.entity_of_interest ? data.item.entity_of_interest.name : "" }}
                     </template>
                     <template v-slot:cell(_characteristic_name)="{data}">{{ data.item.characteristic.name }}</template>
@@ -529,7 +532,9 @@ export default class VariableList extends Vue {
     }
 
     searchVariablesWithAttribute(options) {
-        return this.$service.searchVariables(
+
+
+      return this.$service.searchVariables(
             this.filter.name,
             this.filter.entity,
             this.filter.entityOfInterest,
@@ -550,7 +555,9 @@ export default class VariableList extends Vue {
             this.filter.sharedResourceInstance
         ).then(response => {
           this.displayActions = this.filter.sharedResourceInstance === undefined;
-          return response;
+          // console.log("response",JSON.stringify(response))
+
+        return response;
         });
     }
 

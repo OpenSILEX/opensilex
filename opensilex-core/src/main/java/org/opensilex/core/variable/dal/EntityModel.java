@@ -6,7 +6,6 @@
 package org.opensilex.core.variable.dal;
 
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.annotations.SPARQLResource;
 
 import java.net.URI;
@@ -19,11 +18,10 @@ import java.net.URI;
         resource = "Entity",
         graph = VariableModel.GRAPH
 )
-public class EntityModel extends BaseVariableModel<EntityModel> {
+public class EntityModel extends BaseMultiLabelsResourceModel<EntityModel> {
 
     public EntityModel() {
     }
-
 
     public EntityModel(URI uri) {
         setUri(uri);
@@ -33,7 +31,7 @@ public class EntityModel extends BaseVariableModel<EntityModel> {
     public String[] getInstancePathSegments(EntityModel instance) {
         return new String[]{
                 "entity",
-                instance.getName()
+                instance.getPrefLabels().getTranslations().values().stream().findAny().get()
         };
     }
 }

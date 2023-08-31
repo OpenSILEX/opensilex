@@ -32,7 +32,7 @@ import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.model.SPARQLLabel;
-import org.opensilex.sparql.model.SPARQLNamedResourceModel;
+import org.opensilex.sparql.model.SPARQLMultiNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
@@ -52,7 +52,7 @@ import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
  * @author vidalmor
  * @author rcolin
  */
-public class VariableDAO extends BaseVariableDAO<VariableModel> {
+public class VariableDAO extends BaseMultiLabelsResourceDAO<VariableModel> {
 
     static Var entityLabelVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getObjectNameVarName(VariableModel.ENTITY_FIELD_NAME));
     static Var entityOfInterestLabelVar = SPARQLQueryHelper.makeVar(SPARQLClassObjectMapper.getObjectNameVarName(VariableModel.ENTITY_OF_INTEREST_FIELD_NAME));
@@ -181,9 +181,10 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
         * You can use them into the orderByList
         *
         * @return the list of {@link VariableModel} founds
-        * @see VariableModel#getName()
-        * @see VariableModel#getAlternativeName()
-        * @see EntityModel#getName()
+        * @see VariableModel#getPrefLabels()
+        * @see VariableModel#getAltsLabels()
+        * @see EntityModel#getPrefLabels()
+        * @see EntityModel#getAltsLabels()
         * @see InterestEntityModel#getName()
         * @see CharacteristicModel#getName()
         * @see MethodModel#getName()
@@ -205,10 +206,9 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
                 defaultGraph,
                 VariableModel.class,
                 filter.getLang(),
-
                 (SelectBuilder select) -> addFilter(select,filter,orderByExprMap),
                 Collections.emptyMap(),
-                result -> fetcher.getInstance(result, filter.getUserModel().getLanguage()),
+                null,
                 filter.getOrderByList(),
                 filter.getPage(),
                 filter.getPageSize()
@@ -337,20 +337,22 @@ public class VariableDAO extends BaseVariableDAO<VariableModel> {
         ExprFactory exprFactory = select.getExprFactory();
         Expr uriStrRegex = exprFactory.str(exprFactory.asVar(SPARQLResourceModel.URI_FIELD));
 
-        if (!StringUtils.isEmpty(filter.getNamePattern())) {
+        if (!StringUtils.isEmpty(filter.getLabelPattern())) {
 
             // append string regex matching on entity, entity of interest, characteristic, method and unit name
             Expr[] regexExprArray = varsByVarName.values().stream()
-                    .map(nameVariable -> SPARQLQueryHelper.regexFilter(nameVariable.getVarName(), filter.getNamePattern()))
+                    .map(nameVariable -> SPARQLQueryHelper.regexFilter(nameVariable.getVarName(), filter.getLabelPattern()))
                     .toArray(Expr[]::new);
 
             // set the string regex filter on entity, entity of interest, characteristic, method, unit  name,long name and URI
             select.addFilter(
                     SPARQLQueryHelper.or(
                             regexExprArray,
-                            SPARQLQueryHelper.regexFilter(SPARQLNamedResourceModel.NAME_FIELD, filter.getNamePattern()),
-                            SPARQLQueryHelper.regexFilter(VariableModel.ALTERNATIVE_NAME_FIELD_NAME, filter.getNamePattern()),
-                            SPARQLQueryHelper.regexFilter(uriStrRegex, filter.getNamePattern(), null)
+                            SPARQLQueryHelper.regexFilter(SPARQLMultiNamedResourceModel.PREF_LABELS_FIELD, filter.getLabelPattern()),
+                            SPARQLQueryHelper.regexFilter(SPARQLMultiNamedResourceModel.ALT_LABELS_FIELD, filter.getLabelPattern()),
+                            SPARQLQueryHelper.regexFilter(SPARQLMultiNamedResourceModel.SHORT_LABEL_FIELD, filter.getLabelPattern()),
+
+                            SPARQLQueryHelper.regexFilter(uriStrRegex, filter.getLabelPattern(), null)
                     ));
 
         }

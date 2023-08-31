@@ -7,43 +7,37 @@
 package org.opensilex.core.variable.api.entity;
 
 import io.swagger.annotations.ApiModelProperty;
-import org.opensilex.core.variable.api.BaseMultiLabeledIdentifierCreationDTO;
-import org.opensilex.core.variable.dal.EntityMultiLabelModel;
+import org.opensilex.core.variable.api.BaseMultiLabelResourceCreationDTO;
+import org.opensilex.core.variable.dal.EntityModel;
 
 import java.net.URI;
 
-public class EntityCreationDTO extends BaseMultiLabeledIdentifierCreationDTO<EntityMultiLabelModel> {
+public class EntityCreationDTO extends BaseMultiLabelResourceCreationDTO<EntityModel> {
 
     @ApiModelProperty(example = "http://opensilex.dev/set/variables/entity/Plant")
     public URI getUri() {
         return uri;
     }
-
-
     public void setUri(URI uri) {
         this.uri = uri;
     }
-
-
-    public EntityCreationDTO() {
-
-    }
-
+    public EntityCreationDTO() {}
     @Override
-    public EntityMultiLabelModel newModel() {
+    public EntityModel newModel() {
 
-        EntityMultiLabelModel model = super.newModel();
+        EntityModel model = super.newModel();
 
-        model.getPrefLabels().addAllTranslations(this.multiLabelDTO.getPrefLabels());
-        model.getAltsLabels().addAllTranslations(this.multiLabelDTO.getAltLabels());
-        model.getDefinitions().addAllTranslations(this.multiLabelDTO.getDefinitions());
+        model.getPrefLabels().addAllTranslations(this.multiLabelsDTO.getPrefLabels());
+        model.getShortLabels().addAllTranslations(this.multiLabelsDTO.getShortLabels());
+        model.getAltsLabels().addAllTranslations(this.multiLabelsDTO.getAltLabels());
+        model.getDefinitions().addAllTranslations(this.multiLabelsDTO.getDefinitions());
 
         return model;
     }
 
     @Override
-    protected EntityMultiLabelModel newModelInstance() {
-        return new EntityMultiLabelModel();
+    protected EntityModel newModelInstance() {
+        return new EntityModel();
     }
 
 }

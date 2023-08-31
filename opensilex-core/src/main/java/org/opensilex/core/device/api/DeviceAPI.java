@@ -49,6 +49,7 @@ import org.opensilex.sparql.csv.DefaultCsvImporter;
 import org.opensilex.sparql.csv.validation.CachedCsvImporter;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
+import org.opensilex.sparql.response.MultiNamedResourceDTO;
 import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
@@ -899,7 +900,7 @@ public class DeviceAPI {
     ) throws Exception {
         DeviceDAO dao = new DeviceDAO(sparql, nosql, fs);
         List<VariableModel> variables = dao.getDeviceVariables(uri, currentUser.getLanguage());
-        List<NamedResourceDTO> dtoList = variables.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
+        List<MultiNamedResourceDTO> dtoList = variables.stream().map(MultiNamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();
     }
 

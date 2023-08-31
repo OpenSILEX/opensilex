@@ -6,12 +6,13 @@ package org.opensilex.sparql.response;
         import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 
         import java.net.URI;
+        import java.util.HashMap;
         import java.util.List;
         import java.util.Map;
 
 
 @JsonPropertyOrder({
-        "uri", "prefLabels", "altLabels", "definitions"
+        "uri", "prefLabels", "shortLabels","altLabels", "definitions"
 })
 public class ObjectMultiNamedResourceDTO {
 
@@ -19,21 +20,26 @@ public class ObjectMultiNamedResourceDTO {
     protected URI uri;
 
     @JsonProperty("prefLabels")
-    protected Map<String,String> prefLabels;
+    protected Map<String,String> prefLabels  = new HashMap<>();
+
+    @JsonProperty("shortLabels")
+    protected Map<String,String> shortLabels = new HashMap<>();
 
     @JsonProperty("altLabels")
-    protected Map<String,List<String>> altLabels;
+    protected Map<String,List<String>> altLabels = new HashMap<>();
 
     @JsonProperty("definitions")
-    protected Map<String,String> definitions;
+    protected Map<String,String> definitions = new HashMap<>();
 
     public ObjectMultiNamedResourceDTO() {
+
     }
 
     public ObjectMultiNamedResourceDTO(SPARQLMultiNamedResourceModel<?> model) {
         this.uri = model.getUri();
         this.prefLabels = model.getPrefLabels().getAllTranslations();
-        this.altLabels = model.getAltsLabels().getTranslationsOfAltLabels();
+        this.shortLabels = model.getShortLabels().getAllTranslations();
+        this.altLabels = model.getAltsLabels().getTranslations();
         this.definitions = model.getDefinitions().getAllTranslations();
     }
 
@@ -69,6 +75,11 @@ public class ObjectMultiNamedResourceDTO {
         this.definitions = definitions;
     }
 
+    public Map<String, String> getShortLabels() {
+        return shortLabels;
+    }
 
-
+    public void setShortLabels(Map<String, String> shortLabels) {
+        this.shortLabels = shortLabels;
+    }
 }

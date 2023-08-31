@@ -5,22 +5,22 @@ import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLMultiLabels;
 import org.opensilex.sparql.model.SPARQLMultiNamedResourceModel;
-import org.opensilex.sparql.model.SPARQLNamedResourceModel;
+import org.opensilex.sparql.ontology.OesoSparql;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-public class MultiLabelModel<T extends SPARQLMultiNamedResourceModel<T>> extends SPARQLMultiNamedResourceModel<T> {
-
-
+public class MultiLabelsModel<T extends SPARQLMultiNamedResourceModel<T>> extends SPARQLMultiNamedResourceModel<T> {
 
     @SPARQLProperty(
             ontology = SKOS.class,
             property = "prefLabel"
     )
     protected SPARQLLabel prefLabels;
+
+    @SPARQLProperty(
+            ontology = OesoSparql.class,
+            property = "shortLabel"
+    )
+    protected SPARQLLabel shortLabels;
+
 
     @SPARQLProperty(
             ontology = SKOS.class,
@@ -59,10 +59,24 @@ public class MultiLabelModel<T extends SPARQLMultiNamedResourceModel<T>> extends
         this.definitions = definitions;
     }
 
-    public MultiLabelModel(){
+    @Override
+    public SPARQLLabel getShortLabels() {
+        return shortLabels;
+    }
+
+    @Override
+    public void setShortLabels(SPARQLLabel shortLabel) {
+        this.shortLabels = shortLabel;
+    }
+
+    public MultiLabelsModel(){
         this.prefLabels = new SPARQLLabel();
+        this.shortLabels = new SPARQLLabel();
         this.altsLabels = new SPARQLMultiLabels();
         this.definitions = new SPARQLLabel();
 
     }
+
+
+
 }

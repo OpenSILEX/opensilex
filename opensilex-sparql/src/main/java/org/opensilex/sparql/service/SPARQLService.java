@@ -869,11 +869,11 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                                                                     Collection<OrderBy> orderByList, Integer offset, Integer limit) throws Exception {
         SPARQLClassObjectMapperIndex mapperIndex = getMapperIndex();
         String language;
-        if (lang == null) {
-            language = getDefaultLang();
-        } else {
+//        if (lang == null) {
+//            language = getDefaultLang();
+//        } else {
             language = lang;
-        }
+//        }
 
         SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(objectClass);
         SelectBuilder select = getSelectBuilder(mapper, graph, language, filterHandler, customHandlerByFields, orderByList, offset, limit);
@@ -907,9 +907,9 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
     public <T extends SPARQLResourceModel> int count(Node graph, Class<T> objectClass, String lang, ThrowingConsumer<SelectBuilder, Exception> filterHandler, Map<String, WhereHandler> customHandlerByFields) throws Exception {
         SPARQLClassObjectMapperIndex mapperIndex = getMapperIndex();
-        if (lang == null) {
-            lang = getDefaultLang();
-        }
+//        if (lang == null) {
+//            lang = getDefaultLang();
+//        }
         SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(objectClass);
         SelectBuilder selectCount = mapper.getCountBuilder(graph, "count", lang, filterHandler, customHandlerByFields);
 
@@ -952,9 +952,9 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                                                                                       Map<String, WhereHandler> customHandlerByFields,
                                                                                       ThrowingFunction<SPARQLResult, T, Exception> resultHandler,
                                                                                       Collection<OrderBy> orderByList, Integer page, Integer pageSize) throws Exception {
-        if (lang == null) {
-            lang = getDefaultLang();
-        }
+//        if (lang == null) {
+//            lang = getDefaultLang();
+//        }
         int total = count(graph, objectClass, lang, filterHandler, customHandlerByFields);
 
         List<T> list;
@@ -2017,6 +2017,39 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
 
         return translations;
     }
+    public Map<String, List<String>> getAltLabelsTranslations(Node graph, URI resourceURI, Property labelProperty, boolean reverseRelation) throws Exception {
+        Map<String, List<String>> translations = new HashMap<>();
+
+        SelectBuilder select = new SelectBuilder();
+
+        Var valueVar = makeVar("value");
+        Var langVar = makeVar("lang");
+
+        select.addVar(valueVar);
+        select.addVar(SPARQLQueryHelper.getExprFactory().lang(valueVar), langVar);
+
+        if (reverseRelation) {
+            select.addWhere(valueVar, labelProperty, SPARQLDeserializers.nodeURI(resourceURI));
+        } else {
+            select.addWhere(SPARQLDeserializers.nodeURI(resourceURI), labelProperty, valueVar);
+        }
+
+        executeSelectQuery(select, (SPARQLResult result) -> {
+            String value = result.getStringValue("value");
+            String resultLang = result.getStringValue("lang");
+
+            if (translations.containsKey(resultLang)) {
+                translations.get(resultLang).add(value);
+            } else {
+                List<String> values = new ArrayList<>();
+                values.add(value);
+                translations.put(resultLang, values);
+            }
+        });
+
+        return translations;
+    }
+
 
     @Override
     public void disableSHACL() throws SPARQLException {

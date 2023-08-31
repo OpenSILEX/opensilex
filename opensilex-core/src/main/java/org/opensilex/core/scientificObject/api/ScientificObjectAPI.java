@@ -49,6 +49,7 @@ import org.opensilex.sparql.csv.CsvImporter;
 import org.opensilex.sparql.csv.export.CsvExporter;
 import org.opensilex.sparql.csv.validation.CachedCsvImporter;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
+import org.opensilex.sparql.response.MultiNamedResourceDTO;
 import org.opensilex.sparql.response.NamedResourceDTO;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
@@ -903,7 +904,7 @@ public class ScientificObjectAPI {
 
         DataDAO dao = new DataDAO(nosql, sparql, null);
         List<VariableModel> variables = dao.getUsedVariables(currentUser, null, Arrays.asList(uri), null, null);
-        List<NamedResourceDTO> dtoList = variables.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
+        List<MultiNamedResourceDTO> dtoList = variables.stream().map(MultiNamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();
 
 }

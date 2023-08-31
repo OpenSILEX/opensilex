@@ -12,7 +12,7 @@ import java.util.List;
  */
 public class VariableSearchFilter extends SparqlSearchFilter {
 
-    private String namePattern;
+    private String labelPattern;
     private URI entity;
     private URI interestEntity;
     private URI characteristic;
@@ -36,12 +36,12 @@ public class VariableSearchFilter extends SparqlSearchFilter {
         this.fetchSpecies = false;
     }
 
-    public String getNamePattern() {
-        return namePattern;
+    public String getLabelPattern() {
+        return labelPattern;
     }
 
-    public VariableSearchFilter setNamePattern(String namePattern) {
-        this.namePattern = namePattern;
+    public VariableSearchFilter setLabelPattern(String labelPattern) {
+        this.labelPattern = labelPattern;
         return this;
     }
 

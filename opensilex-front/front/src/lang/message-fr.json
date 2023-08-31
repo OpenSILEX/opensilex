@@ -28,6 +28,7 @@
             "delete": "supprimer",
             "name": "Nom",
             "prefLabel": "Label préféré",
+            "shortLabel": "Label court",
             "altLabel": "Label alternatif",
             "altLabels": "Les labels alternatives",
             "definition": "définition",

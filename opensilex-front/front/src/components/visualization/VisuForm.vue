@@ -175,7 +175,7 @@ export default class VisuForm extends Vue {
     if (dto) {
       return {
         id: dto.uri,
-        label: dto.name
+        label: dto.prefLabels[this.$i18n.locale]
       };
     }
     return null;

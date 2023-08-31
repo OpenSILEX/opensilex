@@ -33,6 +33,7 @@ public class SPARQLLabel {
 
     public SPARQLLabel(String value, String lang) {
         this();
+        this.translations = new HashMap<>();
         setDefaultValue(value);
         setDefaultLang(lang);
     }
@@ -40,6 +41,7 @@ public class SPARQLLabel {
     public SPARQLLabel(SPARQLLabel label) {
         this.defaultValue = label.getDefaultValue();
         this.defaultLang = label.getDefaultLang();
+        this.translations = new HashMap<>();
 
         if(!MapUtils.isEmpty(label.getAllTranslations())){
             this.translations = new HashMap<>(label.getAllTranslations());

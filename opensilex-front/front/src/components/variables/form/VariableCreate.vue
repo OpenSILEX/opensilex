@@ -81,9 +81,12 @@ import VariableForm from "./VariableForm.vue";
             this.key++;
         }
 
+
+
         create(variable: VariableCreationDTO) {
+          console.log("variable",JSON.stringify(variable));
             this.service.createVariable(variable).then((http: HttpResponse<OpenSilexResponse<string>>) => {
-                let message = this.$i18n.t("VariableForm.variable") + " " + variable.name + " " + this.$i18n.t("component.common.success.creation-success-message");
+                let message = this.$i18n.t("VariableForm.variable") + " " + variable.multiLabelsDTO.prefLabels[this.$i18n.locale] + " " + this.$i18n.t("component.common.success.creation-success-message");
                 this.$opensilex.showSuccessToast(message);
                 variable.uri =  http.response.result.toString();
                 this.$emit("onCreate",variable);
@@ -101,13 +104,15 @@ import VariableForm from "./VariableForm.vue";
         }
 
         successMessage(variable : VariableCreationDTO){
-            return this.$i18n.t("VariableView.name") + " " + variable.name;
+            return this.$i18n.t("VariableView.name") + " " + variable.multiLabelsDTO.prefLabels[this.$i18n.locale]
+                ;
         }
 
         update(variable: VariableUpdateDTO) {
 
             this.service.updateVariable(variable).then(() => {
-                let message = this.$i18n.t("VariableForm.variable") + " " + variable.name + " " + this.$i18n.t("component.common.success.update-success-message");
+                let message = this.$i18n.t("VariableForm.variable") + " " + variable.multiLabelsDTO.prefLabels[this.$i18n.locale]
+                    + " " + this.$i18n.t("component.common.success.update-success-message");
                 this.$opensilex.showSuccessToast(message);
 
                 this.$emit("onUpdate", variable);

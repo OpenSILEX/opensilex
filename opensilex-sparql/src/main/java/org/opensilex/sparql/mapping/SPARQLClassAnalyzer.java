@@ -612,6 +612,11 @@ public final class SPARQLClassAnalyzer {
         return objectPropertiesLists.containsKey(f.getName());
     }
 
+    public boolean isMultiLabelsProperties(Field f) {
+        return multiLabelProperties.containsKey(f.getName());
+    }
+
+
     public boolean isLabelField(Field f) {
         return labelProperties.containsKey(f.getName());
     }

@@ -207,7 +207,7 @@ public class VariablesGroupDAO {
 
             VariableModel nestedModel = new VariableModel();
             nestedModel.setUri(URIDeserializer.formatURI(result.getStringValue(variable.getVarName())));
-            nestedModel.setName(result.getStringValue(variableName.getVarName()));
+//            nestedModel.setName(result.getStringValue(variableName.getVarName()));
             nestedModel.setType(URIDeserializer.formatURI(result.getStringValue(variableType.getVarName())));
             nestedModel.setTypeLabel(variableClass.getLabel());
 

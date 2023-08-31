@@ -192,7 +192,7 @@ public class UriGenerationTest extends AbstractMongoIntegrationTest {
 
     private VariableModel getVariable(String name) throws Exception {
         EntityModel entity = new EntityModel();
-        entity.setName("entity");
+//        entity.setName("entity");
 
         CharacteristicModel characteristic = new CharacteristicModel();
         characteristic.setName("characteristic");
@@ -215,7 +215,7 @@ public class UriGenerationTest extends AbstractMongoIntegrationTest {
         model.setMethod(method);
         model.setUnit(unit);
         model.setDataType(new URI(XSD.xint.getURI()));
-        model.setName(name);
+//        model.setName(name);
         return model;
     }
 
@@ -233,7 +233,7 @@ public class UriGenerationTest extends AbstractMongoIntegrationTest {
     public void testEntity() throws Exception {
 
         EntityModel model = new EntityModel();
-        model.setName("name");
+//        model.setName("name");
 
         getSparqlService().create(model);
         String expectedUri = getOpensilexBaseURI()+"id/variable/entity.name";

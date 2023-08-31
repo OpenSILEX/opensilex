@@ -1,17 +1,17 @@
 package org.opensilex.core.variable.api.entity;
 
 import io.swagger.annotations.ApiModelProperty;
-import org.opensilex.core.variable.api.BaseMultiLabeledIdentifierGetDTO;
-import org.opensilex.core.variable.dal.EntityMultiLabelModel;
+import org.opensilex.core.variable.api.BaseMultiLabelResourceGetDTO;
+import org.opensilex.core.variable.dal.EntityModel;
 
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
 
-public class EntityGetDTO extends BaseMultiLabeledIdentifierGetDTO<EntityMultiLabelModel> {
+public class EntityGetDTO extends BaseMultiLabelResourceGetDTO<EntityModel> {
 
-    public EntityGetDTO(EntityMultiLabelModel model) {
+    public EntityGetDTO(EntityModel model) {
         super(model);
     }
 
@@ -27,6 +27,11 @@ public class EntityGetDTO extends BaseMultiLabeledIdentifierGetDTO<EntityMultiLa
     @Override
     public Map<String,String> getPrefLabels() {
         return prefLabels;
+    }
+
+    @Override
+    public Map<String, String> getShortLabels() {
+        return shortLabels;
     }
 
     @Override

@@ -20,7 +20,7 @@ public class ListWithPagination<T> {
     /**
      * List content for current page.
      */
-    private final List<T> list;
+    private List<T> list;
 
     /**
      * Total number of elements.
@@ -78,6 +78,10 @@ public class ListWithPagination<T> {
      */
     public List<T> getList() {
         return list;
+    }
+
+    public void setList(List<T> list) {
+        this.list = list;
     }
 
     /**

@@ -6,15 +6,18 @@
 package org.opensilex.core.variable.api;
 
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.opensilex.core.germplasm.api.GermplasmAPI;
 import org.opensilex.core.species.dal.SpeciesModel;
+import org.opensilex.core.variable.dal.MultiLabelsModel;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -25,19 +28,24 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
  */
 
 @JsonPropertyOrder({
-        "uri", "name", "alternativeName", "description", "dataType", "species", "timeInterval", "samplingInterval",
-        "entityURI", "entityName", "entityOfInterestURI", "entityOfInterestName",
+        "uri","prefLabels", "shortLabels", "altLabels", "definitions", "dataType", "species", "timeInterval", "samplingInterval",
+        "entityURI", "entity_prefLabels", "entity_shortLabel", "entity_altLabels", "entity_definitions","entityOfInterestURI", "entityOfInterestName",
         "characteristicURI", "characteristicName", "methodURI", "methodName", "unitURI", "unitName"
 })
 
-public class VariableExportDTOClassic extends BaseVariableExportDTO<VariableModel>{
-    
-    private String alternativeName;
+public class VariableExportDTOClassic extends MultiLabelsDTO {
 
+    private URI uri;
     private URI entity_uri;
-    
-    private String entity_label;
-    
+
+    private Map<String,String> entity_prefLabels;
+
+    private Map<String,String> entity_shortLabel;
+
+    private Map<String,List<String>> entity_altLabels;
+
+    private Map<String,String> entity_definitions;
+
     private URI entity_of_interest_uri;
     
     private String entity_of_interest_label;
@@ -64,11 +72,16 @@ public class VariableExportDTOClassic extends BaseVariableExportDTO<VariableMode
     
     public VariableExportDTOClassic(VariableModel model) {
         super(model);
-        
-        this.alternativeName = model.getAlternativeName();
-        
+
         this.entity_uri = model.getEntity().getUri();
-        this.entity_label = model.getEntity().getName();
+
+        this.entity_prefLabels = model.getEntity().getPrefLabels().getAllTranslations();
+
+        this.entity_shortLabel = model.getEntity().getShortLabels().getAllTranslations();
+
+        this.entity_altLabels = model.getEntity().getAltsLabels().getTranslations();
+
+        this.entity_definitions = model.getEntity().getDefinitions().getAllTranslations();
 
         if(model.getEntityOfInterest() != null){
             this.entity_of_interest_uri = model.getEntityOfInterest().getUri();
@@ -107,31 +120,9 @@ public class VariableExportDTOClassic extends BaseVariableExportDTO<VariableMode
     public VariableExportDTOClassic() {
     }
     
-    @Override
     @ApiModelProperty(example = "http://opensilex.dev/set/variables/Plant_Height")
     public URI getUri() {
         return this.uri;
-    }
-
-    @Override
-    @ApiModelProperty(example = "Plant_Height")
-    public String getName() {
-        return this.name;
-    }
-
-    @ApiModelProperty(example = "Plant_Height_Estimation_Cm")
-    public String getAlternativeName() {
-        return this.alternativeName;
-    }
-
-    public void setAlternativeName(String alternativeName) {
-        this.alternativeName = alternativeName;
-    }
-
-    @Override
-    @ApiModelProperty(example = "Describe the height of a plant.")
-    public String getDescription() {
-        return this.description;
     }
     
     public URI getEntityURI(){
@@ -141,15 +132,8 @@ public class VariableExportDTOClassic extends BaseVariableExportDTO<VariableMode
     public void setEntityURI(URI entityURI){
         this.entity_uri = entityURI;
     }
-    
-    public String getEntityName(){
-        return this.entity_label;
-    }
-    
-    public void setEntityName(String entityLabel){
-        this.entity_label = entityLabel;
-    }
-    
+
+
     public URI getEntityOfInterestURI(){
         return this.entity_of_interest_uri;
     }

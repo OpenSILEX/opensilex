@@ -135,4 +135,6 @@
         <rdfs:label xml:lang="fr">Profil utilisateur</rdfs:label>
         <rdfs:label xml:lang="en">User profile</rdfs:label>
     </owl:Class>
+
+
 </rdf:RDF>

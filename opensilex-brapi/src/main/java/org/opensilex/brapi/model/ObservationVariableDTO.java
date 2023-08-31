@@ -7,6 +7,9 @@
 package org.opensilex.brapi.model;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import org.opensilex.core.variable.dal.VariableModel;
 
 /**
@@ -15,7 +18,13 @@ import org.opensilex.core.variable.dal.VariableModel;
  */
 public class ObservationVariableDTO {
     private String observationVariableDbId;
-    private String observationVariableName;
+    private Map<String,String> observationVariablePrefLabels;
+
+    private Map<String,String> observationVariableShortLabel;
+
+    private Map<String, List<String>> observationVariablAltLabels;
+
+
     private String ontologyReference;
     private ArrayList<String> synonyms;
     private ArrayList<String> contextOfUse;
@@ -41,13 +50,30 @@ public class ObservationVariableDTO {
         this.observationVariableDbId = observationVariableDbId;
     }
 
-    public String getObservationVariableName() {
-        return observationVariableName;
+    public Map<String, String> getObservationVariablePrefLabels() {
+        return observationVariablePrefLabels;
     }
 
-    public void setObservationVariableName(String observationVariableName) {
-        this.observationVariableName = observationVariableName;
+    public void setObservationVariablePrefLabels(Map<String, String> observationVariablePrefLabels) {
+        this.observationVariablePrefLabels = observationVariablePrefLabels;
     }
+
+    public Map<String, String> getObservationVariableShortLabel() {
+        return observationVariableShortLabel;
+    }
+
+    public void setObservationVariableShortLabel(Map<String, String> observationVariableShortLabel) {
+        this.observationVariableShortLabel = observationVariableShortLabel;
+    }
+
+    public Map<String, List<String>> getObservationVariablAltLabels() {
+        return observationVariablAltLabels;
+    }
+
+    public void setObservationVariablAltLabels(Map<String, List<String>> observationVariablAltLabels) {
+        this.observationVariablAltLabels = observationVariablAltLabels;
+    }
+
 
     public String getOntologyReference() {
         return ontologyReference;
@@ -182,15 +208,18 @@ public class ObservationVariableDTO {
         if (model.getUri() != null) {
             variable.setObservationVariableDbId(model.getUri().toString());
         }
-        variable.setObservationVariableName(model.getName());
-        
+        variable.setObservationVariablePrefLabels(model.getPrefLabels().getAllTranslations());
+        variable.setObservationVariableShortLabel(model.getShortLabels().getAllTranslations());
+        variable.setObservationVariablAltLabels(model.getAltsLabels().getTranslations());
+
+
         Trait trait = new Trait();
         if (model.getTraitName() != null) {
             trait.setName(model.getTraitName());
         } else {
             String traitName = "";
             if (model.getEntity() != null) {
-                traitName = traitName + model.getEntity().getName() + "_";
+//                traitName = traitName + model.getEntity().getName() + "_";
             }
             if (model.getCharacteristic() != null) {
                 traitName = traitName + model.getCharacteristic().getName();

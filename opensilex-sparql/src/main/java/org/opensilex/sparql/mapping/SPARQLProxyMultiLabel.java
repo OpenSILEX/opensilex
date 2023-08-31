@@ -27,7 +27,7 @@ public class SPARQLProxyMultiLabel extends SPARQLProxy<SPARQLMultiLabels> {
         Map<String, List<String>> altLabelstranslations = service.getAltLabelsTranslations(graph, resourceURI, labelProperty, reverseRelation);
 
         SPARQLMultiLabels multiLabels = new SPARQLMultiLabels();
-        multiLabels.setTranslationsOfAltLabels(altLabelstranslations);
+        multiLabels.setTranslations(altLabelstranslations);
         return multiLabels;
     }
 }

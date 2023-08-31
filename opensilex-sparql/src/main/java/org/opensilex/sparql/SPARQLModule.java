@@ -5,9 +5,12 @@
  */
 package org.opensilex.sparql;
 
+import org.apache.jena.riot.Lang;
 import org.opensilex.OpenSilex;
 import org.opensilex.OpenSilexModuleNotFoundException;
 import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.extensions.OntologyFileDefinition;
+import org.opensilex.sparql.ontology.OesoSparql;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.ontology.store.DefaultOntologyStore;
 import org.opensilex.sparql.ontology.store.NoOntologyStore;
@@ -18,6 +21,7 @@ import java.net.URISyntaxException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.StringUtils;
 import org.opensilex.OpenSilexModule;
@@ -35,7 +39,7 @@ import javax.ws.rs.core.UriBuilder;
  *
  * @author vince
  */
-public class SPARQLModule extends OpenSilexModule {
+public class SPARQLModule extends OpenSilexModule implements SPARQLExtension {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SPARQLModule.class);
 
@@ -123,7 +127,7 @@ public class SPARQLModule extends OpenSilexModule {
         return customPrefixes;
     }
 
-    public void installOntologies(SPARQLService sparql, boolean reset) throws Exception {
+    public void installAllOntologies(SPARQLService sparql, boolean reset) throws Exception {
         // #TODO clean cache
         sparql.disableSHACL();
         // Allow any module implementing SPARQLExtension to add custom ontologies
@@ -145,7 +149,7 @@ public class SPARQLModule extends OpenSilexModule {
         SPARQLService sparqlService = sparqlFactory.provide();
 
         try {
-            installOntologies(sparqlService, reset);
+            installAllOntologies(sparqlService, reset);
 
             if (sparqlConfig.enableSHACL()) {
                 sparqlService.enableSHACL();
@@ -219,4 +223,16 @@ public class SPARQLModule extends OpenSilexModule {
         SPARQLModule.initOntologyStore(getOpenSilex(),sparql);
     }
 
+    @Override
+    public List<OntologyFileDefinition> getOntologiesFiles() throws Exception {
+        List<OntologyFileDefinition> list = SPARQLExtension.super.getOntologiesFiles();
+
+        list.add(new OntologyFileDefinition(
+                OesoSparql.NS,
+                "ontology/oeso-sparql.owl",
+                Lang.RDFXML,
+                OesoSparql.PREFIX
+        ));
+        return list;
+    }
 }

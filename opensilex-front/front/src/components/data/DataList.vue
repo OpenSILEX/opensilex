@@ -154,7 +154,7 @@ export default class DataList extends Vue {
     }
 
     getVariableName(variableUri: string): string {
-        return this.variableNames[this.$opensilex.getLongUri(variableUri)];
+        return this.variablePrefLabels[this.$opensilex.getLongUri(variableUri)];
     }
 
     refresh() {
@@ -230,7 +230,7 @@ export default class DataList extends Vue {
 
     objects = {};
     objectsPath = {};
-    variableNames = {};
+    variablePrefLabels = {};
     provenances = {};
     devices = {};
     facilities = {};
@@ -323,7 +323,7 @@ export default class DataList extends Vue {
                                 .then((httpObj) => {
                                     for (let j in httpObj.response.result) {
                                         let variable = httpObj.response.result[j];
-                                        this.variableNames[this.$opensilex.getLongUri(variable.uri)] = variable.name;
+                                        this.variablePrefLabels[this.$opensilex.getLongUri(variable.uri)] = variable.multiLabelsDTO.prefLabels;
                                     }
                                 })
                                 .catch(reject);

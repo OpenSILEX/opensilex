@@ -588,7 +588,7 @@ export default class DataVisuGraphic extends Vue {
           },
           title: {
             text: variable
-                ? variable.name + " (" + variable.unit.name + ")"
+                ? variable.prefLabels[this.$i18n.locale] + " (" + variable.unit.name + ")"
                 : "",
             style: {
               color: Highcharts.getOptions().colors[1],

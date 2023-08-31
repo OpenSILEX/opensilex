@@ -18,7 +18,7 @@ import org.opensilex.core.variable.dal.VariableModel;
  */
 
 @JsonPropertyOrder({
-        "uri", "name", "alternativeName", "description", "dataType", "species", "timeInterval", "samplingInterval",
+        "uri","prefLabels", "shortLabels", "altLabels", "definitions", "dataType", "species", "timeInterval", "samplingInterval",
         "entityURI", "entityName", "entityNarrowMatch", "entityBroadMatch", "entityCloseMatch", "entityExactMatch",
         "entityOfInterestURI", "entityOfInterestName", "entityOfInterestNarrowMatch", "entityOfInterestBroadMatch",
         "entityOfInterestCloseMatch", "entityOfInterestExactMatch",

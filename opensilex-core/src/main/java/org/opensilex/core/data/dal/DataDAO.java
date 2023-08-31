@@ -738,8 +738,8 @@ public class DataDAO {
 
             String unitID = unit.getName() + " (" + unit.getUri().toString() + ")";
             units.add(unitID);
-            variablesList.add(variableModel.getName() + " (" + variableModel.getUri() + ")");
-            defaultColumns.add(variableModel.getName());
+//            variablesList.add(variableModel.getName() + " (" + variableModel.getUri() + ")");
+//            defaultColumns.add(variableModel.getName());
             if (withRawData) {
                 defaultColumns.add("Raw data");
                 methods.add("");
@@ -1064,7 +1064,7 @@ public class DataDAO {
                         // date
                         csvRow.add(dataGetDTO.getDate());
                         // variable
-                        csvRow.add(variables.get(dataGetDTO.getVariable()).getName());
+//                        csvRow.add(variables.get(dataGetDTO.getVariable()).getName());
                         // method
                         if (variables.get(dataGetDTO.getVariable()).getMethod() != null) {
                             csvRow.add(variables.get(dataGetDTO.getVariable()).getMethod().getName());

@@ -8,7 +8,6 @@ package org.opensilex.sparql.model;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.sparql.annotations.SPARQLProperty;
 import org.opensilex.uri.generation.ClassURIGenerator;
-
 /**
  *
  * @author vidalmor
@@ -34,8 +33,8 @@ public class SPARQLNamedResourceModel<T extends SPARQLNamedResourceModel> extend
     @Override
     public String[] getInstancePathSegments(T instance) {
         return new String[]{
-            instance.getName()
+                instance.getName()
         };
     }
-    
+
 }

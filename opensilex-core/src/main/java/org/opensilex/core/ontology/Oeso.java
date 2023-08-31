@@ -174,4 +174,5 @@ public class Oeso {
     public static final Property personInCharge = Ontology.property(NS,"personInCharge");
     public static final Property startUp = Ontology.property(NS,"startUp");
     public static final Property removal = Ontology.property(NS,"removal");
+
 }

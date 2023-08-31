@@ -29,6 +29,7 @@
             "edit": "edit",
             "name": "Name",
             "prefLabel": "Preferred label",
+            "shortLabel": "short label",
             "altLabel": "Alternative label",
             "altLabels": "Alternative labels",
             "definition": "Definition",

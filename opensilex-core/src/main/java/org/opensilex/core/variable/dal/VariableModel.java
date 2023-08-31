@@ -22,16 +22,10 @@ import java.util.List;
         graph = VariableModel.GRAPH,
         ignoreValidation = true
 )
-public class VariableModel extends BaseVariableModel<VariableModel> implements ClassURIGenerator<VariableModel> {
+public class VariableModel extends BaseMultiLabelsResourceModel<VariableModel> implements ClassURIGenerator<VariableModel> {
 
     public static final String GRAPH = "variable";
 
-    @SPARQLProperty(
-            ontology = SKOS.class,
-            property = "altLabel"
-    )
-    private String alternativeName;
-    public static final String ALTERNATIVE_NAME_FIELD_NAME = "alternativeName";
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -111,10 +105,6 @@ public class VariableModel extends BaseVariableModel<VariableModel> implements C
     )
     private List<SpeciesModel> species;
     public static final String SPECIES_FIELD_NAME = "species";
-
-    public String getAlternativeName() { return alternativeName; }
-
-    public void setAlternativeName(String alternativeName) { this.alternativeName = alternativeName; }
 
     public EntityModel getEntity() {
         return entity;

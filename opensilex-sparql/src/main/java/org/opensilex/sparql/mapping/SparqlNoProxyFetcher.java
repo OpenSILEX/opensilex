@@ -2,6 +2,8 @@ package org.opensilex.sparql.mapping;
 
 import org.apache.commons.collections4.trie.PatriciaTrie;
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.rdf4j.model.Literal;
+import org.eclipse.rdf4j.model.Value;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
@@ -9,6 +11,7 @@ import org.opensilex.sparql.model.SPARQLLabel;
 import org.opensilex.sparql.model.SPARQLNamedResourceModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
+import org.opensilex.sparql.rdf4j.RDF4JResult;
 import org.opensilex.sparql.service.SPARQLResult;
 import org.opensilex.sparql.service.SPARQLService;
 
@@ -16,6 +19,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URI;
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -74,10 +78,13 @@ public class SparqlNoProxyFetcher<T extends SPARQLResourceModel> implements Spar
 
         for (Field field : classAnalyzer.getLabelPropertyFields()) {
 
-            String value = result.getStringValue(field.getName());
+            Literal value = (Literal) (((RDF4JResult) result).getBindingSet().getValue(field.getName()));
 
-            if (!StringUtils.isEmpty(value)) {
-                SPARQLLabel label = new SPARQLLabel(value,lang);
+            if (!StringUtils.isEmpty(value.stringValue())) {
+                SPARQLLabel label = new SPARQLLabel(value.stringValue(), lang);
+                if (value.getLanguage().isPresent()) {
+                    label.setTranslations(Collections.singletonMap(value.getLanguage().get(), value.getLabel()));
+                }
                 Method setter = classAnalyzer.getSetterFromField(field);
                 setter.invoke(instance, label);
             }

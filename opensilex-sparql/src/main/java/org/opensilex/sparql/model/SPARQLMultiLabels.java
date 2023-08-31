@@ -2,38 +2,38 @@ package org.opensilex.sparql.model;
 
 import org.apache.commons.collections4.MapUtils;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class SPARQLMultiLabels {
-    private Map<String, List<String>> translationsOfAltLabels;
+    private Map<String, List<String>> translations;
 
     public SPARQLMultiLabels() {
+
+        this.translations  = new HashMap<String, List<String>>();
     }
 
     public SPARQLMultiLabels(Map<String, List<String>> translationsOfAltLabels) {
-        this.translationsOfAltLabels = translationsOfAltLabels;
+        this.translations = translationsOfAltLabels;
     }
 
-    public Map<String, List<String>> getTranslationsOfAltLabels() {
-        return translationsOfAltLabels;
+    public Map<String, List<String>> getTranslations() {
+        return translations;
     }
 
-    public void setTranslationsOfAltLabels(Map<String, List<String>> translationsOfAltLabels) {
-        this.translationsOfAltLabels = translationsOfAltLabels;
+    public void setTranslations(Map<String, List<String>> translationsOfAltLabels) {
+        this.translations = translationsOfAltLabels;
     }
 
-    public Map<String, List<String>> getAllAltLabelsTranslations() {
-        Map<String, List<String>> allTranslations = new HashMap<>();
-        allTranslations.putAll(translationsOfAltLabels);
-
-        return allTranslations;
-    }
 
     public void addAllTranslations(Map<String, List<String>> labelTranslations) {
 
-        translationsOfAltLabels.putAll(labelTranslations);
+
+
+        translations.putAll(labelTranslations);
+
     }
 
 

@@ -2441,7 +2441,12 @@ Used in OpenSILEX for group things</rdfs:comment>
     <owl:NamedIndividual rdf:about="http://xmlns.com/foaf/0.1/Organization"/>
 
 
+    <!-- http://www.opensilex.org/vocabulary/oeso#shortLabel -->
 
+    <owl:DatatypeProperty rdf:ID="shortLabel">
+      <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2004/02/skos/core#altLabel"/>
+        <rdfs:range rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+    </owl:ObjectProperty>
     <!--
     ///////////////////////////////////////////////////////////////////////////////////////
     //

@@ -4,48 +4,48 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import org.opensilex.core.ontology.SKOSReferencesDTO;
 import org.opensilex.core.sharedResource.SharedResourceInstanceDTO;
-import org.opensilex.core.variable.dal.BaseMultiLabeledIdentifierModel;
-import org.opensilex.core.variable.dal.BaseVariableModel;
+import org.opensilex.core.variable.dal.BaseMultiLabelsResourceModel;
 
 import java.net.URI;
 import java.time.OffsetDateTime;
 
 @JsonPropertyOrder({
-        "uri", "multiLabelDTO",
+        "uri", "multiLabelsDTO",
         SKOSReferencesDTO.EXACT_MATCH_JSON_PROPERTY,
         SKOSReferencesDTO.CLOSE_MATCH_JSON_PROPERTY,
         SKOSReferencesDTO.BROAD_MATCH_JSON_PROPERTY,
         SKOSReferencesDTO.NARROW_MATCH_JSON_PROPERTY
 })
-public abstract class BaseMultiLabeledIdentifierDetailsDTO<T extends BaseMultiLabeledIdentifierModel<T>> extends SKOSReferencesDTO {
+public abstract class BaseMultiLabelResourceDetailsDTO<T extends BaseMultiLabelsResourceModel<T>> extends SKOSReferencesDTO {
 
-    protected BaseMultiLabeledIdentifierDetailsDTO(T model, SharedResourceInstanceDTO sharedResourceInstance) {
+    protected BaseMultiLabelResourceDetailsDTO(T model, SharedResourceInstanceDTO sharedResourceInstance) {
         this(model);
         setFromSharedResourceInstance(sharedResourceInstance);
     }
 
-    protected BaseMultiLabeledIdentifierDetailsDTO(T model){
+    protected BaseMultiLabelResourceDetailsDTO(T model){
 
         uri = model.getUri();
-        this.multiLabelDTO = new MultiLabelDTO();
-        System.out.println(this.multiLabelDTO);
-        multiLabelDTO.setPrefLabels(model.getPrefLabels().getAllTranslations());
-        multiLabelDTO.setAltLabels(model.getAltsLabels().getAllAltLabelsTranslations());
-        multiLabelDTO.setDefinitions(model.getDefinitions().getAllTranslations());
+        this.multiLabelsDTO = new MultiLabelsDTO();
+
+        multiLabelsDTO.setPrefLabels(model.getPrefLabels().getAllTranslations());
+        multiLabelsDTO.setShortLabels(model.getShortLabels().getAllTranslations());
+        multiLabelsDTO.setAltLabels(model.getAltsLabels().getTranslations());
+        multiLabelsDTO.setDefinitions(model.getDefinitions().getAllTranslations());
         setLastUpdateTime(model.getLastUpdateTime());
 
         setSkosReferencesFromModel(model);
     }
 
-    protected BaseMultiLabeledIdentifierDetailsDTO(){
+    protected BaseMultiLabelResourceDetailsDTO(){
 
     }
 
     @JsonProperty("uri")
     protected URI uri;
 
-    @JsonProperty("MultiLabelDTO")
-    protected MultiLabelDTO multiLabelDTO;
+    @JsonProperty("multiLabelsDTO")
+    protected MultiLabelsDTO multiLabelsDTO;
 
     @JsonProperty("from_shared_resource_instance")
     protected SharedResourceInstanceDTO fromSharedResourceInstance;
@@ -61,12 +61,12 @@ public abstract class BaseMultiLabeledIdentifierDetailsDTO<T extends BaseMultiLa
         this.uri = uri;
     }
 
-    public MultiLabelDTO getMultiLabelDTO() {
-        return multiLabelDTO;
+    public MultiLabelsDTO getMultiLabelsDTO() {
+        return multiLabelsDTO;
     }
 
-    public void setMultiLabelDTO(MultiLabelDTO multiLabelDTO) {
-        this.multiLabelDTO = multiLabelDTO;
+    public void setMultiLabelsDTO(MultiLabelsDTO multiLabelsDTO) {
+        this.multiLabelsDTO = multiLabelsDTO;
     }
 
     public SharedResourceInstanceDTO getFromSharedResourceInstance() {
@@ -89,9 +89,9 @@ public abstract class BaseMultiLabeledIdentifierDetailsDTO<T extends BaseMultiLa
 
         setSkosReferencesToModel(model);
         model.setUri(this.getUri());
-        model.getPrefLabels().addAllTranslations(this.multiLabelDTO.getPrefLabels());
-        model.getAltsLabels().addAllTranslations(this.multiLabelDTO.getAltLabels());
-        model.getDefinitions().addAllTranslations(this.multiLabelDTO.getDefinitions());
+        model.getPrefLabels().addAllTranslations(this.multiLabelsDTO.getPrefLabels());
+        model.getAltsLabels().addAllTranslations(this.multiLabelsDTO.getAltLabels());
+        model.getDefinitions().addAllTranslations(this.multiLabelsDTO.getDefinitions());
 
     }
 

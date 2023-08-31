@@ -3,6 +3,7 @@ package org.opensilex.sparql.model;
 import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.SKOS;
 import org.opensilex.sparql.annotations.SPARQLProperty;
+import org.opensilex.sparql.ontology.OesoSparql;
 import org.opensilex.uri.generation.ClassURIGenerator;
 
 import java.util.List;
@@ -15,11 +16,22 @@ public class SPARQLMultiNamedResourceModel <T extends SPARQLMultiNamedResourceMo
             property = "prefLabel"
     )
     protected SPARQLLabel prefLabels;
+    public static final String PREF_LABELS_FIELD = "prefLabels";
+
+    @SPARQLProperty(
+            ontology = OesoSparql.class,
+            property = "shortLabel"
+    )
+    protected SPARQLLabel shortLabels;
+
+    public static final String SHORT_LABEL_FIELD = "shortLabels";
+
     @SPARQLProperty(
             ontology = SKOS.class,
             property = "altLabel"
     )
     private SPARQLMultiLabels altsLabels;
+    public static final String ALT_LABELS_FIELD = "altsLabels";
 
 
     @SPARQLProperty(
@@ -27,7 +39,6 @@ public class SPARQLMultiNamedResourceModel <T extends SPARQLMultiNamedResourceMo
             property = "definition"
     )
     private SPARQLLabel definitions;
-    public static final String NAME_FIELD = "name";
 
 
     public SPARQLLabel getPrefLabels() {
@@ -52,6 +63,14 @@ public class SPARQLMultiNamedResourceModel <T extends SPARQLMultiNamedResourceMo
 
     public void setDefinitions(SPARQLLabel definitions) {
         this.definitions = definitions;
+    }
+
+    public SPARQLLabel getShortLabels() {
+        return shortLabels;
+    }
+
+    public void setShortLabels(SPARQLLabel shortLabels) {
+        this.shortLabels = shortLabels;
     }
 
     @Override

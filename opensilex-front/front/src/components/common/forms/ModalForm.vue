@@ -1,46 +1,46 @@
 <template>
   <b-modal
-    ref="modalRef"
-    :class="(modalSize === 'full' ? 'full-screen-modal-form' : '')"
-    @ok.prevent="validate"
-    @hide="$emit('hide')"
-    @shown="disableValidation=false"
-    @hidden="disableValidation=true"
-    :size="modalSize"
-    :static="true"
-    no-close-on-backdrop
-    no-close-on-esc
-    @keydown.native.enter="validate"
+      ref="modalRef"
+      :class="(modalSize === 'full' ? 'full-screen-modal-form' : '')"
+      @ok.prevent="validate"
+      @hide="$emit('hide')"
+      @shown="disableValidation=false"
+      @hidden="disableValidation=true"
+      :size="modalSize"
+      :static="true"
+      no-close-on-backdrop
+      no-close-on-esc
+      @keydown.native.enter="validate"
   >
-    <template v-slot:modal-ok>{{$t('component.common.ok')}}</template>
-    <template v-slot:modal-cancel>{{$t('component.common.cancel')}}</template>
+    <template v-slot:modal-ok>{{ $t('component.common.ok') }}</template>
+    <template v-slot:modal-cancel>{{ $t('component.common.cancel') }}</template>
 
     <template class="mt-1" v-slot:modal-header>
       <b-row class="mt-1" style="width:100%">
-        <b-col cols="10" >
+        <b-col cols="10">
           <i>
-            <h4> 
+            <h4>
               <slot name="icon">
-                <opensilex-Icon :icon="icon" class="icon-title" />
+                <opensilex-Icon :icon="icon" class="icon-title"/>
               </slot>
               <span v-if="editMode">{{ $t(editTitle) }}</span>
-              <span v-else>{{ $t(createTitle) }}</span>         
+              <span v-else>{{ $t(createTitle) }}</span>
             </h4>
           </i>
         </b-col>
 
-          <opensilex-HelpButton
-              v-if="tutorial && !editMode"
-              label="component.tutorial.name"  
-              @click="getFormRef().tutorial()"
-              class="helpButton"
-          ></opensilex-HelpButton> 
+        <opensilex-HelpButton
+            v-if="tutorial && !editMode"
+            label="component.tutorial.name"
+            @click="getFormRef().tutorial()"
+            class="helpButton"
+        ></opensilex-HelpButton>
 
         <!-- Emulate built in modal header close button action -->
         <button type="button" class="close col-1" @click="modalRef.hide()" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
-      </b-row> 
+      </b-row>
     </template>
 
     <template v-slot:modal-footer="footer">
@@ -48,20 +48,21 @@
           variant="secondary"
           @click="footer.cancel()"
       >
-        {{$t('component.common.cancel')}}
+        {{ $t('component.common.cancel') }}
       </b-button>
       <b-button
           class="greenThemeColor"
           @click="footer.ok()"
       >
-        {{$t('component.common.ok')}}
+        {{ $t('component.common.ok') }}
       </b-button>
     </template>
 
     <ValidationObserver ref="validatorRef">
-        <component ref="componentRef" v-bind:is="component" :editMode="editMode" :form.sync="form" :disableValidation="disableValidation">
-            <slot name="customFields" v-bind:form="form" v-bind:editMode="editMode"></slot>
-        </component>
+      <component ref="componentRef" v-bind:is="component" :editMode="editMode" :form.sync="form"
+                 :disableValidation="disableValidation">
+        <slot name="customFields" v-bind:form="form" v-bind:editMode="editMode"></slot>
+      </component>
     </ValidationObserver>
   </b-modal>
 </template>
@@ -77,6 +78,7 @@ export type ModalInnerForm<CreationDTOType, UpdateDTOType> = Vue & {
   update?: (dto: UpdateDTOType) => any;
   reset?: () => void;
   tutorial?: () => void;
+  beforeValidate?: () => void;
 }
 
 /**
@@ -97,8 +99,8 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
 
   form: CreationDTOType | UpdateDTOType | {} = {};
 
-  @Prop({ default: false })
-  tutorial :boolean;
+  @Prop({default: false})
+  tutorial: boolean;
 
   @Prop()
   component: string;
@@ -112,7 +114,7 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
   @Prop()
   icon;
 
-  @Prop({ default: "md" })
+  @Prop({default: "md"})
   modalSize;
 
   @Prop({default: false})
@@ -120,7 +122,8 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
 
   @Prop({
     type: Function,
-    default: () => {}
+    default: () => {
+    }
   })
   initForm: (form: CreationDTOType) => CreationDTOType;
 
@@ -139,6 +142,16 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
   disableValidation: boolean = true;
 
   validate() {
+
+    if (this.getFormRef().beforeValidate) {
+      this.getFormRef().beforeValidate()
+    }
+
+    console.log("classique validate function")
+    if ("multiLabelsDTO" in this.form) {
+      const variableFormComponent = this.getFormRef(); // Get the reference to VariableForm
+
+    }
     this.validatorRef.validate().then(isValid => {
       if (isValid) {
         let submitMethod: any = this.getFormRef().create;
@@ -161,22 +174,23 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
           submitResult = Promise.resolve(submitResult);
         }
         submitResult
-          .then(result => {
-            if (result !== false && result !== undefined) {
-              this.creationOrUpdateMessage();
-            }
-            this.$nextTick(() => {
-              if (result !== false) {
-                this.$emit(successEvent, result);
+            .then(result => {
+              if (result !== false && result !== undefined) {
+                this.creationOrUpdateMessage();
               }
-              if (result !== false || !this.doNotHideOnError) {
-                this.hide();
-              }
-            });
-          })
-          .catch(console.error);
+              this.$nextTick(() => {
+                if (result !== false) {
+                  this.$emit(successEvent, result);
+                }
+                if (result !== false || !this.doNotHideOnError) {
+                  this.hide();
+                }
+              });
+            })
+            .catch(console.error);
       }
     });
+
   }
 
   creationOrUpdateMessage() {
@@ -188,15 +202,16 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
     }
     if (this.editMode) {
       successMessage =
-        successMessage +
-        this.$i18n.t("component.common.success.update-success-message");
+          successMessage +
+          this.$i18n.t("component.common.success.update-success-message");
     } else {
       successMessage =
-        successMessage +
-        this.$i18n.t("component.common.success.creation-success-message");
+          successMessage +
+          this.$i18n.t("component.common.success.creation-success-message");
     }
     this.$opensilex.showSuccessToast(successMessage);
   }
+
   getFormRef(): InnerFormType {
     return this.$refs.componentRef as InnerFormType;
   }
@@ -248,6 +263,7 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
   transition: 0.5s;
   right: 5px;
 }
+
 .close:hover {
   color: red;
   transition: 0.5s
@@ -259,7 +275,7 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
   font-size: 1.2em;
   border: none
 }
-  
+
 .helpButton:hover {
   background-color: #00A28C;
   color: #f1f1f1
@@ -269,7 +285,7 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
   .helpButton {
     margin-left: 0px;
     margin-right: 15px;
-    }
+  }
 }
 
 </style>;

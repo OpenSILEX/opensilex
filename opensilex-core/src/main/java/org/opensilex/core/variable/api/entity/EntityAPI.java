@@ -6,14 +6,12 @@
 package org.opensilex.core.variable.api.entity;
 
 import io.swagger.annotations.*;
+import org.eclipse.rdf4j.model.Model;
 import org.opensilex.core.CoreModule;
 import org.opensilex.core.external.opensilex.SharedResourceInstanceService;
-import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.variable.api.VariableAPI;
-import org.opensilex.core.variable.dal.BaseMultiLabeledIdentifierDAO;
-import org.opensilex.core.variable.dal.BaseVariableDAO;
+import org.opensilex.core.variable.dal.BaseMultiLabelsResourceDAO;
 import org.opensilex.core.variable.dal.EntityModel;
-import org.opensilex.core.variable.dal.EntityMultiLabelModel;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
@@ -45,6 +43,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static org.opensilex.core.variable.api.VariableAPI.*;
+
+//import org.opensilex.lucene.data.RDF4JGraphDataRetriever;
+//import org.opensilex.lucene.indexation.LuceneIndexer;
+//import org.opensilex.lucene.research.LuceneSearcher;
 
 @Api(CREDENTIAL_VARIABLE_GROUP_ID)
 @Path(EntityAPI.PATH)
@@ -89,13 +91,13 @@ public class EntityAPI {
             @ApiParam("Entity description") @Valid EntityCreationDTO dto
     ) throws Exception {
         try {
-            BaseMultiLabeledIdentifierDAO<EntityMultiLabelModel> dao = new BaseMultiLabeledIdentifierDAO<>(EntityMultiLabelModel.class, sparql);
-            EntityMultiLabelModel model = dto.newModel();
+            BaseMultiLabelsResourceDAO<EntityModel> dao = new BaseMultiLabelsResourceDAO<>(EntityModel.class, sparql);
+            EntityModel model = dto.newModel();
             model.setCreator(currentUser.getUri());
 
             dao.create(model);
             URI shortUri = new URI(SPARQLDeserializers.getShortURI(model.getUri().toString()));
-            return new ObjectUriResponse(Response.Status.CREATED,shortUri).getResponse();
+            return new ObjectUriResponse(Response.Status.CREATED, shortUri).getResponse();
 
         } catch (SPARQLAlreadyExistingUriException duplicateUriException) {
             return new ErrorResponse(Response.Status.CONFLICT, "Entity already exists", duplicateUriException.getMessage()).getResponse();
@@ -105,9 +107,6 @@ public class EntityAPI {
     @GET
     @Path("{uri}")
     @ApiOperation("Get an entity")
-
-
-
     @ApiProtected
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -119,8 +118,8 @@ public class EntityAPI {
             @ApiParam(value = "Entity URI", example = "http://opensilex.dev/set/variables/entity/Plant", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
 
-        BaseMultiLabeledIdentifierDAO<EntityMultiLabelModel> dao = new BaseMultiLabeledIdentifierDAO<>(EntityMultiLabelModel.class, sparql);
-        EntityMultiLabelModel model = dao.get(uri);
+        BaseMultiLabelsResourceDAO<EntityModel> dao = new BaseMultiLabelsResourceDAO<>(EntityModel.class, sparql);
+        EntityModel model = dao.get(uri);
         if (model != null) {
             return new SingleObjectResponse<>(new EntityDetailsDTO(model)).getResponse();
         } else {
@@ -135,16 +134,16 @@ public class EntityAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Return entities", response = EntityDetailsDTO.class, responseContainer = "List"),
-        @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
-        @ApiResponse(code = 404, message = "Entity not found (if any provided URIs is not found", response = ErrorDTO.class)
+            @ApiResponse(code = 200, message = "Return entities", response = EntityDetailsDTO.class, responseContainer = "List"),
+            @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
+            @ApiResponse(code = 404, message = "Entity not found (if any provided URIs is not found", response = ErrorDTO.class)
     })
     public Response getEntitiesByURIs(
             @ApiParam(value = "Entities URIs", required = true) @QueryParam(EntityAPI.GET_BY_URIS_URI_PARAM) @NotNull List<URI> uris,
             @ApiParam(value = "Shared resource instance") @QueryParam(EntityAPI.SHARED_RESOURCE_INSTANCE_PARAM) URI sharedResourceInstance
     ) throws Exception {
         if (sharedResourceInstance == null) {
-            BaseMultiLabeledIdentifierDAO<EntityMultiLabelModel> dao = new BaseMultiLabeledIdentifierDAO<>(EntityMultiLabelModel.class, sparql);
+            BaseMultiLabelsResourceDAO<EntityModel> dao = new BaseMultiLabelsResourceDAO<>(EntityModel.class, sparql);
 
             try {
                 List<EntityDetailsDTO> resultDTOList = dao.getList(uris)
@@ -168,56 +167,58 @@ public class EntityAPI {
                 uris, EntityDetailsDTO.class);
         return new PaginatedListResponse<>(detailsList).getResponse();
     }
-    
-    
-//    @PUT
-//    @ApiOperation("Update an entity")
-//    @ApiProtected
-//    @ApiCredential(
-//            credentialId = CREDENTIAL_VARIABLE_MODIFICATION_ID,
-//            credentialLabelKey = CREDENTIAL_VARIABLE_MODIFICATION_LABEL_KEY
-//    )
-//    @Consumes(MediaType.APPLICATION_JSON)
-//    @Produces(MediaType.APPLICATION_JSON)
-//    @ApiResponses(value = {
-//            @ApiResponse(code = 200, message = "Entity updated", response = URI.class),
-//            @ApiResponse(code = 404, message = "Unknown entity URI", response = ErrorResponse.class)
-//    })
-//    public Response updateEntity(
-//            @ApiParam("Entity description") @Valid EntityUpdateDTO dto
-//    ) throws Exception {
-//        BaseVariableDAO<EntityModel> dao = new BaseVariableDAO<>(EntityModel.class, sparql);
-//
-//        EntityModel model = dto.newModel();
-//        dao.update(model);
-//        URI shortUri = new URI(SPARQLDeserializers.getShortURI(model.getUri().toString()));
-//        return new ObjectUriResponse(Response.Status.OK,shortUri).getResponse();
-//    }
 
-    @DELETE
-    @Path("{uri}")
-    @ApiOperation("Delete an entity")
+
+    @PUT
+    @ApiOperation("Update an entity")
     @ApiProtected
     @ApiCredential(
-            credentialId = CREDENTIAL_VARIABLE_DELETE_ID,
-            credentialLabelKey = CREDENTIAL_VARIABLE_DELETE_LABEL_KEY
+            credentialId = CREDENTIAL_VARIABLE_MODIFICATION_ID,
+            credentialLabelKey = CREDENTIAL_VARIABLE_MODIFICATION_LABEL_KEY
     )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Entity deleted", response = URI.class),
-            @ApiResponse(code = 404, message = "Unknown entity URI", response = ErrorResponse.class)
-    })
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response deleteEntity(
-            @ApiParam(value = "Entity URI", example = "http://opensilex.dev/set/variables/entity/Plant", required = true) @PathParam("uri") @NotNull URI uri
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Entity updated", response = URI.class),
+            @ApiResponse(code = 404, message = "Unknown entity URI", response = ErrorResponse.class)
+    })
+    public Response updateEntity(
+            @ApiParam("Entity description") @Valid EntityUpdateDTO dto
     ) throws Exception {
-        BaseVariableDAO<EntityModel> dao = new BaseVariableDAO<>(EntityModel.class, sparql);
-        dao.delete(uri, Oeso.hasEntity);
-        return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
+
+        BaseMultiLabelsResourceDAO<EntityModel> dao = new BaseMultiLabelsResourceDAO<>(EntityModel.class, sparql);
+
+        EntityModel model = dto.newModel();
+        dao.update(model);
+
+        URI shortUri = new URI(SPARQLDeserializers.getShortURI(model.getUri().toString()));
+        return new ObjectUriResponse(Response.Status.OK, shortUri).getResponse();
     }
 
+//    @DELETE
+//    @Path("{uri}")
+//    @ApiOperation("Delete an entity")
+//    @ApiProtected
+//    @ApiCredential(
+//            credentialId = CREDENTIAL_VARIABLE_DELETE_ID,
+//            credentialLabelKey = CREDENTIAL_VARIABLE_DELETE_LABEL_KEY
+//    )
+//    @ApiResponses(value = {
+//            @ApiResponse(code = 200, message = "Entity deleted", response = URI.class),
+//            @ApiResponse(code = 404, message = "Unknown entity URI", response = ErrorResponse.class)
+//    })
+//    @Consumes(MediaType.APPLICATION_JSON)
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public Response deleteEntity(
+//            @ApiParam(value = "Entity URI", example = "http://opensilex.dev/set/variables/entity/Plant", required = true) @PathParam("uri") @NotNull URI uri
+//    ) throws Exception {
+//        BaseVariableDAO<EntityModel> dao = new BaseVariableDAO<>(EntityModel.class, sparql);
+//        dao.delete(uri, Oeso.hasEntity);
+//        return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
+//    }
+
     @GET
-    @ApiOperation("Search entities by name")
+    @ApiOperation("Search entities by label")
     @ApiProtected
     @ApiResponses(value = {
             @ApiResponse(code = 200, message = "Return entities", response = EntityGetDTO.class, responseContainer = "List"),
@@ -226,25 +227,26 @@ public class EntityAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchEntities(
-            @ApiParam(value = "Name (regex)", example = "plant") @QueryParam("name") String namePattern ,
-            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @ApiParam(value = "label (regex)", example = "plant") @QueryParam("label") String labelPattern,
+            @ApiParam(value = "List of fields to sort as an array of label=asc|desc", example = "uri=asc") @DefaultValue("label=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @Min(0) int pageSize,
             @ApiParam(value = "Shared resource instance") @QueryParam(EntityAPI.SHARED_RESOURCE_INSTANCE_PARAM) URI sharedResourceInstance
-            ) throws Exception {
+    ) throws Exception {
+
         if (sharedResourceInstance == null) {
-            BaseVariableDAO<EntityModel> dao = new BaseVariableDAO<>(EntityModel.class, sparql);
+            BaseMultiLabelsResourceDAO<EntityModel> dao = new BaseMultiLabelsResourceDAO<>(EntityModel.class, sparql);
             ListWithPagination<EntityModel> resultList = dao.search(
-                    namePattern,
+                    labelPattern,
                     orderByList,
                     page,
-                    pageSize,
-                    currentUser.getLanguage()
+                    20,
+                    null
             );
 
-            ListWithPagination<OldEntityGetDTO> resultDTOList = resultList.convert(
-                    OldEntityGetDTO.class,
-                    OldEntityGetDTO::new
+            ListWithPagination<EntityGetDTO> resultDTOList = resultList.convert(
+                    EntityGetDTO.class,
+                    EntityGetDTO::new
             );
             return new PaginatedListResponse<>(resultDTOList).getResponse();
         }
@@ -254,8 +256,12 @@ public class EntityAPI {
         );
 
         Map<String, String[]> searchParams = new HashMap<>(httpRequest.getParameterMap());
+
         searchParams.remove(EntityAPI.SHARED_RESOURCE_INSTANCE_PARAM);
+
         return new PaginatedListResponse<>(service.search(EntityAPI.PATH, searchParams, EntityGetDTO.class))
                 .getResponse();
     }
+
+
 }

@@ -206,7 +206,7 @@ export default class SelectForm extends Vue {
             id: e.uri,
             label: e.name
           };
-      } else {
+       } else {
         return e;
       }
     }
@@ -618,7 +618,7 @@ export default class SelectForm extends Vue {
           
           let nodeList = [];
           list.forEach((item) => {
-            nodeList.push(self.conversionMethod(item));
+            nodeList.push(this.conversionMethod(item));
           });
           callback(null, nodeList);
           self.$opensilex.enableLoader();
@@ -682,6 +682,10 @@ export default class SelectForm extends Vue {
     if (this.searchModal) {
       this.searchModal.refresh();
     }
+  }
+
+  get lang() {
+    return this.$store.state.lang;
   }
 
 }

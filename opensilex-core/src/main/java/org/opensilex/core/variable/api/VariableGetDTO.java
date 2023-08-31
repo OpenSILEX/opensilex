@@ -18,24 +18,19 @@ import org.opensilex.sparql.response.NamedResourceDTO;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
  * @author vidalmor
  */
 @JsonPropertyOrder({
-        "uri", "name", "entity", "entity_of_interest", "characteristic", "method", "unit", "onLocal", "sharedResourceInstance"
+        "uri", "entity", "entity_of_interest", "characteristic", "method", "unit", "onLocal", "sharedResourceInstance"
 })
-public class VariableGetDTO {
+public class VariableGetDTO extends BaseMultiLabelResourceGetDTO {
 
     @JsonProperty("uri")
     private URI uri;
-
-    @JsonProperty("name")
-    private String name;
-
-    @JsonProperty("alternative_name")
-    private String alternativeName;
 
     @JsonProperty("entity")
     private EntityGetDTO entity;
@@ -65,23 +60,6 @@ public class VariableGetDTO {
 
     public void setUri(URI uri) {
         this.uri = uri;
-    }
-
-    @ApiModelProperty(example = "Plant_Height")
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getAlternativeName() {
-        return alternativeName;
-    }
-
-    public void setAlternativeName(String alternativeName) {
-        this.alternativeName = alternativeName;
     }
 
     public EntityGetDTO getEntity() { return entity; }
@@ -145,11 +123,16 @@ public class VariableGetDTO {
 
         VariableGetDTO dto = new VariableGetDTO();
         dto.setUri(model.getUri());
-        dto.setName(model.getName());
-        dto.setAlternativeName(model.getAlternativeName());
+        dto.setPrefLabels(model.getPrefLabels().getAllTranslations());
+        dto.setAltLabels(model.getAltsLabels().getTranslations());
+        dto.setShortLabels(model.getShortLabels().getAllTranslations());
+        dto.setDefinitions(model.getDefinitions().getAllTranslations());
+
+//        dto.setName(model.getName());
+//        dto.setAlternativeName(model.getAlternativeName());
 
         EntityModel entity = model.getEntity();
-//        dto.setEntity(new EntityGetDTO(entity));
+        dto.setEntity(new EntityGetDTO(entity));
 
         InterestEntityModel entityOfInterest = model.getEntityOfInterest();
         if(entityOfInterest != null){
@@ -177,5 +160,25 @@ public class VariableGetDTO {
             }
         }
         return dto;
+    }
+
+    @Override
+    public Map<String, String> getPrefLabels() {
+        return this.prefLabels;
+    }
+
+    @Override
+    public Map<String, String> getShortLabels() {
+        return null;
+    }
+
+    @Override
+    public Map<String, List<String>> getAltLabels() {
+        return this.altLabels;
+    }
+
+    @Override
+    public Map<String, String> getDefinitions() {
+        return this.definitions;
     }
 }

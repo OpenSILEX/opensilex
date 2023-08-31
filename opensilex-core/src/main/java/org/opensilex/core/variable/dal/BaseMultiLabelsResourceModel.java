@@ -16,8 +16,7 @@ import java.net.URI;
 import java.time.OffsetDateTime;
 import java.util.List;
 
-//public abstract class BaseMultiLabelIdentifierModel<T extends BaseMultiLabelIdentifierModel> extends LabelModel implements SKOSReferences {
-public abstract class BaseMultiLabeledIdentifierModel<T extends SPARQLMultiNamedResourceModel<T>> extends MultiLabelModel<T> implements SKOSReferences {
+public abstract class BaseMultiLabelsResourceModel<T extends SPARQLMultiNamedResourceModel<T>> extends MultiLabelsModel<T> implements SKOSReferences {
 
     @SPARQLProperty(
             ontology = SKOS.class,
@@ -111,4 +110,6 @@ public abstract class BaseMultiLabeledIdentifierModel<T extends SPARQLMultiNamed
         this.lastUpdateTime = lastUpdateTime;
     }
 
+    public BaseMultiLabelsResourceModel() {
+    }
 }

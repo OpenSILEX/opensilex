@@ -366,7 +366,7 @@ export default class GenerateDataTemplateFrom extends Vue {
 
             //column variable
             line1.push(element.uri);
-            line2.push(element.name);
+            line2.push(element.multiLabelsDTO.prefLabels[this.$i18n.locale]);
             if (element.datatype === undefined || element.datatype === null) {
               element.datatype = Xsd.STRING;
             }

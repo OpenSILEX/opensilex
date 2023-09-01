@@ -1,6 +1,6 @@
 <template>
   <opensilex-Overlay :show="isDataLoading">
-    <div id="agroportal-results" class="container-fluid scrollable">
+    <div id="agroportal-results" class="container-fluid scrollable" v-if="!isTextEmpty">
       <div class="wrapper">
 
         <div v-if="isNothingFound && !isDataLoading">
@@ -37,8 +37,8 @@
 
           <template v-else v-slot:btnValidate>
             <opensilex-CreateButton
-                label="Import"
-                title="Import"
+                label="Use"
+                title="Use"
                 @click="$emit('import', entity)"
             >
             </opensilex-CreateButton>
@@ -96,7 +96,11 @@ export default class AgroportalResults extends Vue {
   @Ref("AgroportalResultItem") readonly resultItems!: any;
 
   get isNothingFound() : boolean {
-    return this.entities.length === 0 && !(this.text.trim().length === 0);
+    return (this.entities.length === 0) && !(this.text.trim().length === 0);
+  }
+
+  get isTextEmpty() : boolean {
+    return (this.text.trim().length === 0);
   }
 
   @Watch("text")
@@ -154,12 +158,12 @@ export default class AgroportalResults extends Vue {
 
 #agroportal-results {
   min-height: 50px;
+  background: rgba(0, 0, 0, .05);
 }
 
 .scrollable {
   max-height: 500px;
   overflow-y: scroll;
-  overflow-x: clip;
 }
 
 .btn-dropdown {

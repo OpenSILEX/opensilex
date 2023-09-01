@@ -1,9 +1,10 @@
 <template>
-    <div class="row result"
+    <b-container class="result"
          v-on:click="$emit('item-clicked', index)"
       :class="(isSelected) ? 'selectedResult' : ''">
-      <div id="result-header" class="row mx-0 jqx-max-size">
-        <div class="col-lg-12">
+
+      <b-row id="result-header" class="mx-0 jqx-max-size">
+        <b-col col lg="12">
           <div id="result-name">
             {{entity.name}} -
             <span id="result-ontology">{{getOntologyAcronym(entity.links.ontology)}}</span>
@@ -11,17 +12,22 @@
           <div id="result-link">
             <a v-bind:href="entity.id" target="_blank">{{entity.id}}</a>
           </div>
-        </div>
-      </div>
-      <div id="result-body" class="row jqx-max-size">
-        <div id="result-definition" class="col-lg-12">
+        </b-col>
+      </b-row>
+
+      <b-row id="result-body" class="jqx-max-size">
+        <b-col col lg="12" id="result-definition">
           {{entity.definitions[0]}}
-        </div>
-      </div>
-      <div v-if="isSelected">
-        <slot name="btnValidate"></slot>
-      </div>
-    </div>
+        </b-col>
+      </b-row>
+
+      <b-row v-if="isSelected" align-h="end">
+        <b-col cols="auto">
+          <slot name="btnValidate"></slot>
+        </b-col>
+      </b-row>
+
+    </b-container>
 </template>
 
 

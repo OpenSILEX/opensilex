@@ -5,7 +5,7 @@
             createTitle="EntityForm.add"
             editTitle="EntityForm.edit"
             icon="fa#vials"
-            modalSize="lg"
+            modalSize="xl"
             :initForm="getEmptyForm"
             :createAction="create"
             :updateAction="update"
@@ -140,6 +140,7 @@ import {EntityDetailsDTO} from "opensilex-core/model/entityDetailsDTO";
 </script>
 
 <style scoped lang="scss">
+
 </style>
 
 <i18n>

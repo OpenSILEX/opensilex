@@ -2,7 +2,7 @@
     <ValidationObserver ref="validatorRef">
 
         <div class="row">
-            <div class="col-lg-12">
+            <div class="col-lg-8">
 
               <!-- Title -->
               <b-form-group
@@ -24,18 +24,27 @@
 
               <!-- Search results -->
               <div class="row">
-                <opensilex-AgroportalResults
-                    ref="searchResults"
-                    :text.sync="text"
-                    @import="importResult">
-                </opensilex-AgroportalResults>
+                <div class="col-lg-12">
+                  <opensilex-AgroportalResults
+                      ref="searchResults"
+                      :text.sync="text"
+                      @import="importResult">
+                  </opensilex-AgroportalResults>
+                </div>
               </div>
 
             </div>
-        </div>
 
-        <div class="row">
-          <div class="col-lg-12">
+          <div class="col-lg-4">
+
+            <b-form-group
+                label="component.skos.ontologies-references-label"
+                label-size="lg"
+                label-class="font-weight-bold pt-0"
+                class="mb-0"
+            >
+              <template v-slot:label>Selected entity</template>
+            </b-form-group>
 
             <opensilex-AgroportalResultItem
                 v-if="entity != null"
@@ -44,6 +53,10 @@
             </opensilex-AgroportalResultItem>
 
           </div>
+        </div>
+
+        <div class="row">
+
         </div>
     </ValidationObserver>
 </template>

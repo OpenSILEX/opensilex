@@ -706,10 +706,10 @@ test:bernhard:deploy:
 # See : https://playwright.dev/docs/ci#gitlab-ci
 # TODO : make it into a template
 test:gabriel:front-test:
-  image: docker:latest
+  image: mcr.microsoft.com/playwright:v1.37.0-jammy
 #  parallel: 7    for parallelization
   before_script:
-    - apt-get update --allow-insecure-repositories && apt-get install -y git
+    - apt-get update --allow-insecure-repositories && apt-get install -y git && apt install -y --no-install-recommends docker.io
     - apt-get -y install openjdk-11-jre-headless # Check if headless is ok
     - apt-get -y install gettext-base
     - echo "git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@forgemia.inra.fr/OpenSILEX/opensilex-front-tests.git --branch main $CI_PROJECT_DIR/opensilex-front-tests"
@@ -733,7 +733,7 @@ test:gabriel:front-test:
     - echo "/opensilex_mod.yml config file content :"
     - echo "$(</opensilex_mod.yml)"
     - echo "START DOCKERS :"
-    - cd $CI_PROJECT_DIR/opensilex-front-tests
+    - curl -X GET -H "PRIVATE-TOKEN:$JOB_API_TOKEN" "https://forgemia.inra.fr/api/v4/projects/1675/repository/files/opensilex-dev-tools%2Fsrc%2Fmain%2Fresources%2Fdocker%2Fdocker-compose%2Eyml/raw?ref=gabriel" >> /docker-compose.yml
     - docker compose up
     - cd artifacts/$OPENSILEX_APP_REVISION
     - echo "${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar install --CONFIG_FILE=/opensilex_mod.yml -d"

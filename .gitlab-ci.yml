@@ -720,7 +720,7 @@ test:gabriel:front-test:
     - chmod a+r /etc/apt/keyrings/docker.gpg
     - echo "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
     - apt-get update
-    - apt-get install -y --no-install-recommends docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin docker.io
+    - apt-get install -y --no-install-recommends docker.io docker-compose-plugin
   script:
     - echo "SETTING UP CONFIG"
     - curl -X GET -H "PRIVATE-TOKEN:$JOB_API_TOKEN" "https://forgemia.inra.fr/api/v4/projects/1675/repository/files/opensilex-dev-tools%2Fsrc%2Fmain%2Fresources%2Fconfig%2Fopensilex%2Eyml/raw?ref=gabriel" >> /opensilex.yml

@@ -740,7 +740,7 @@ test:gabriel:front-test:
     - echo "$(</opensilex_mod.yml)"
     - echo "START DOCKERS :"
     - curl -X GET -H "PRIVATE-TOKEN:$JOB_API_TOKEN" "https://forgemia.inra.fr/api/v4/projects/1675/repository/files/opensilex-dev-tools%2Fsrc%2Fmain%2Fresources%2Fdocker%2Fdocker-compose%2Eyml/raw?ref=gabriel" >> /docker-compose.yml
-    - dockerd
+    - (dockerd &)
     - docker compose -p test up
     - cd artifacts/$OPENSILEX_APP_REVISION
     - echo "${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar install --CONFIG_FILE=/opensilex_mod.yml -d"

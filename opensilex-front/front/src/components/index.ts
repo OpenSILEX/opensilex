@@ -520,6 +520,10 @@ import UsedScientificObjectSelector from './scientificObjects/views/UsedScientif
 components["opensilex-UsedScientificObjectSelector"] = UsedScientificObjectSelector;
 import ScientificObjectPropertiesSelector from './scientificObjects/ScientificObjectPropertiesSelector.vue';
 components["opensilex-ScientificObjectPropertiesSelector"] = ScientificObjectPropertiesSelector;
+import CriteriaSearchModalCreator from './scientificObjects/CriteriaSearchModalCreator.vue';
+components["opensilex-CriteriaSearchModalCreator"] = CriteriaSearchModalCreator;
+import CriteriaOperatorSelector from './scientificObjects/CriteriaOperatorSelector.vue';
+components["opensilex-CriteriaOperatorSelector"] = CriteriaOperatorSelector;
 
 // Variables
 import VariableList from './variables/VariableList.vue';

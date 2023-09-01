@@ -33,7 +33,7 @@ variables:
   MAVEN_OPTS_SCHUEDULES: "-Dhttps.protocols=TLSv1.2 -Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=ERROR -Dorg.slf4j.simpleLogger.defaultLogLevel=error -Dorg.slf4j.simpleLogger.showDateTime=true -Djava.awt.headless=true"
   MAVEN_SKIP_TESTS: "false"
   # DEFAULT SERVER MAVEN VERSION
-  MVN_VERSION: 3.6.3
+  MVN_VERSION: 3.8.6
   # DEFAULT SERVER JAVA VERSION
   JAVA_VERSION: 11
   ## DEPLOY CONFIGS ##
@@ -561,6 +561,8 @@ demo:build:
 
 maximilian:build:
   <<: *build_template_with_opensilex
+  variables:
+    MAVEN_SKIP_TESTS: "true"
   rules:
     - if: $CI_COMMIT_BRANCH == "maximilian2"
 
@@ -588,6 +590,8 @@ test:maximilian:deploy:
 
 arnaud:build:
   <<: *build_template_with_opensilex
+  variables:
+    MAVEN_SKIP_TESTS: "true"
   rules:
     - if: $CI_COMMIT_BRANCH == "arnaud"
 
@@ -615,6 +619,8 @@ test:arnaud:deploy:
 
 yvan:build:
   <<: *build_template_with_opensilex
+  variables:
+    MAVEN_SKIP_TESTS: "true"
   rules:
     - if: $CI_COMMIT_BRANCH == "yvan"
   tags:
@@ -646,6 +652,8 @@ test:yvan:deploy:
 
 valentin:build:
   <<: *build_template_with_opensilex
+  variables:
+    MAVEN_SKIP_TESTS: "true"
   rules:
     - if: $CI_COMMIT_BRANCH == "test/valentin"
 
@@ -673,6 +681,8 @@ test:valentin:deploy:
 
 bernhard:build:
   <<: *build_template_with_opensilex
+  variables:
+    MAVEN_SKIP_TESTS: "true"
   rules:
     - if: $CI_COMMIT_BRANCH == "bernhard"
 
@@ -700,6 +710,8 @@ test:bernhard:deploy:
 
 gabriel:build:
   <<: *build_template_with_opensilex
+  variables:
+    MAVEN_SKIP_TESTS: "true"
   rules:
     - if: $CI_COMMIT_BRANCH == "gabriel"
 
@@ -729,6 +741,8 @@ test:gabriel:deploy:
 
 optimization:build:
   <<: *build_template_with_opensilex
+  variables:
+    MAVEN_SKIP_TESTS: "true"
   rules:
     - if: $CI_COMMIT_BRANCH == "optimization"
 
@@ -756,6 +770,8 @@ test:optimization:deploy:
 
 sebastien:build:
   <<: *build_template_with_opensilex
+  variables:
+    MAVEN_SKIP_TESTS: "true"
   rules:
     - if: $CI_COMMIT_BRANCH == "sebastien"
 
@@ -783,6 +799,8 @@ test:sebastien:deploy:
 
 bendy:build:
   <<: *build_template_with_opensilex
+  variables:
+    MAVEN_SKIP_TESTS: "true"
   rules:
     - if: $CI_COMMIT_BRANCH == "bendy"
 
@@ -810,6 +828,8 @@ test:bendy:deploy:
 
 alexiaChiavarino:build:
   <<: *build_template_with_opensilex
+  variables:
+    MAVEN_SKIP_TESTS: "true"
   rules:
     - if: $CI_COMMIT_BRANCH == "alexiaChiavarino"
   tags:
@@ -841,6 +861,8 @@ test:alexiaChiavarino:deploy:
 
 renaud:build:
   <<: *build_template_with_opensilex
+  variables:
+    MAVEN_SKIP_TESTS: "true"
   rules:
     - if: $CI_COMMIT_BRANCH == "renaud"
 
@@ -868,6 +890,8 @@ test:renaud:deploy:
 
 temporary1:build:
   <<: *build_template_with_opensilex
+  variables:
+    MAVEN_SKIP_TESTS: "true"
   rules:
     - if: $CI_COMMIT_BRANCH == "temporary1"
 
@@ -895,6 +919,8 @@ test:temporary1:deploy:
 
 emilie:build:
   <<: *build_template_with_opensilex
+  variables:
+    MAVEN_SKIP_TESTS: "true"
   rules:
     - if: $CI_COMMIT_BRANCH == "emilie"
 
@@ -926,6 +952,8 @@ test:emilie:deploy:
 
 brice:build:
   <<: *build_template_with_opensilex
+  variables:
+    MAVEN_SKIP_TESTS: "true"
   rules:
     - if: $CI_COMMIT_BRANCH == "brice"
 
@@ -953,6 +981,8 @@ test:brice:deploy:
 
 mariem:build:
   <<: *build_template_with_opensilex
+  variables:
+    MAVEN_SKIP_TESTS: "true"
   rules:
     - if: $CI_COMMIT_BRANCH == "mariem"
 

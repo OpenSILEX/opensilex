@@ -228,7 +228,7 @@ export default class DocumentList extends Vue {
   }
 
   refreshOrRedirectAfterCreation(document) {
-    if (this.redirectAfterCreation) {
+    if (document !== undefined && this.redirectAfterCreation) {
       this.$router.push({
         path: '/document/details/' + encodeURIComponent(document.uri)
       })

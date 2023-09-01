@@ -698,10 +698,10 @@ test:bernhard:deploy:
 ##  GABRIEL-TEST-BUILD-DEPLOYMENT
 ###################################
 
-gabriel:build:
-  <<: *build_template_with_opensilex
-  rules:
-    - if: $CI_COMMIT_BRANCH == "gabriel"
+#gabriel:build:
+#  <<: *build_template_with_opensilex
+#  rules:
+#    - if: $CI_COMMIT_BRANCH == "gabriel"
 
 # See : https://playwright.dev/docs/ci#gitlab-ci
 # TODO : make it into a template
@@ -746,10 +746,10 @@ test:gabriel:front-test:
     # Penser à exit 0 ou 1 en fonction des résultats de tests + sauvegarder les traces en
   rules:
     - if: $CI_COMMIT_BRANCH == "gabriel"
-      when: on_success
+#      when: on_success
     - if: '$FRONT_TESTS == "true"'
-  needs:
-    - gabriel:build
+#  needs:
+ #   - gabriel:build
 
 
 #test:gabriel:deploy:

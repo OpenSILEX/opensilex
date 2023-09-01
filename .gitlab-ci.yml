@@ -733,10 +733,10 @@ test:gabriel:front-test:
     - echo "/opensilex_mod.yml config file content :"
     - echo "$(</opensilex_mod.yml)"
     - cd artifacts/$OPENSILEX_APP_REVISION
-    - echo "${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar install --CONFIG_FILE=/opensilex.yml -d"
-    - ${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar install --CONFIG_FILE=/opensilex.yml -d
-    - echo "${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar start server --DEBUG --CONFIG_FILE=/opensilex.yml -d"
-    - ${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar start server --DEBUG --CONFIG_FILE=/opensilex.yml -d
+    - echo "${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar install --CONFIG_FILE=/opensilex_mod.yml -d"
+    - ${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar install --CONFIG_FILE=/opensilex_mod.yml -d
+    - echo "${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar start server --DEBUG --CONFIG_FILE=/opensilex_mod.yml -d"
+    - ${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar start server --DEBUG --CONFIG_FILE=/opensilex_mod.yml -d
     - cd $CI_PROJECT_DIR/opensilex-front-tests
     - npm ci
     - npx playwright test #  --shard=$CI_NODE_INDEX/$CI_NODE_TOTAL    for sharding

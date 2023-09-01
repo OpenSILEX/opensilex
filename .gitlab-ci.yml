@@ -728,9 +728,10 @@ test:gabriel:front-test:
     - yq -i '.file-system.fs.config.connections.gridfs.config.database = "FRONT-TEST-JOB-$CI_JOB_ID"' /opensilex.yml
     - yq -i '.big-data.mongodb.config.database = "FRONT-TEST-JOB-$CI_JOB_ID"' /opensilex.yml
     - echo "$(</opensilex.yml)"
-    - envsubst < /opensilex.yml > /opensilex.yml
-    - echo "/opensilex.yml config file content :"
-    - echo "$(</opensilex.yml)"
+    - printenv
+    - envsubst < /opensilex.yml > /opensilex_mod.yml
+    - echo "/opensilex_mod.yml config file content :"
+    - echo "$(</opensilex_mod.yml)"
     - cd artifacts/$OPENSILEX_APP_REVISION
     - echo "${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar install --CONFIG_FILE=/opensilex.yml -d"
     - ${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar install --CONFIG_FILE=/opensilex.yml -d

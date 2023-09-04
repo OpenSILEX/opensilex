@@ -712,6 +712,7 @@ test:gabriel:front-test:
     - apt-get update --allow-insecure-repositories && apt-get install -y git
     - apt-get -y install openjdk-11-jre-headless # Check if headless is ok
     - apt-get -y install gettext-base
+    - mount -t tmpfs cgroup_root /sys/fs/cgroup
     - echo "git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@forgemia.inra.fr/OpenSILEX/opensilex-front-tests.git --branch main $CI_PROJECT_DIR/opensilex-front-tests"
     - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@forgemia.inra.fr/OpenSILEX/opensilex-front-tests.git --branch main $CI_PROJECT_DIR/opensilex-front-tests
     - wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq && chmod +x /usr/bin/yq
@@ -739,7 +740,6 @@ test:gabriel:front-test:
     - echo "/opensilex_mod.yml config file content :"
     - echo "$(</opensilex_mod.yml)"
     - echo "START DOCKERS :"
-    - mount -t tmpfs cgroup_root /sys/fs/cgroup
     - cd opensilex-dev-tools/src/main/resources/docker
     - dockerd &
     - docker compose -p test up

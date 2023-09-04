@@ -744,7 +744,7 @@ test:gabriel:front-test:
     - echo "START DOCKERS :"
     - cd opensilex-dev-tools/src/main/resources/docker
     - dockerd &
-    - docker compose -p test up
+    - docker compose -p test up &
     - cd artifacts/$OPENSILEX_APP_REVISION
     - echo "${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar install --CONFIG_FILE=/opensilex_mod.yml -d"
     - ${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar install --CONFIG_FILE=/opensilex_mod.yml -d

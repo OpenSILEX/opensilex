@@ -739,6 +739,7 @@ test:gabriel:front-test:
     - echo "/opensilex_mod.yml config file content :"
     - echo "$(</opensilex_mod.yml)"
     - echo "START DOCKERS :"
+    - mount -t tmpfs cgroup_root /sys/fs/cgroup
     - cd opensilex-dev-tools/src/main/resources/docker
     - dockerd &
     - docker compose -p test up

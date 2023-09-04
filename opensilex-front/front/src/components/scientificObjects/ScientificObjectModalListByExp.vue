@@ -146,12 +146,13 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop } from "vue-property-decorator";
+import { Component, Prop, Ref } from "vue-property-decorator";
+import ScientificObjectList from './ScientificObjectList.vue';
 import ScientificObjectModalList from "./ScientificObjectModalList.vue";
 
 @Component
 export default class ScientificObjectModalListByExp extends ScientificObjectModalList {
-
+  @Ref("soList") readonly soList!: ScientificObjectList;
 
   @Prop()
   maximumSelectedRows: number;
@@ -163,6 +164,16 @@ export default class ScientificObjectModalListByExp extends ScientificObjectModa
   }
   searchFiltersPannel() {
     return  this.$t("searchfilter.label")
+  }
+
+  selectItem(row) {
+    this.soList.onItemSelected(row);
+  }
+  unSelect(row) {
+    this.soList.onItemUnselected(row);
+  }
+  setInitiallySelectedItems(initiallySelectedItems:Array<any>){
+    this.soList.setInitiallySelectedItems(initiallySelectedItems);
   }
 }
 </script>

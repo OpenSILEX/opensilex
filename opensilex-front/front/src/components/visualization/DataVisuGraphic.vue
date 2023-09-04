@@ -1,5 +1,5 @@
 <template>
-  <div style="min-height:300px;">
+  <div class="graphContainer">
     <b-list-group
         v-show="contextMenuShow"
         ref="contextMenu"
@@ -226,6 +226,15 @@ export default class DataVisuGraphic extends Vue {
   })
   lWidth;
 
+  @Prop()
+  graphicTitle;
+
+  @Prop()
+  elementName;
+
+  exportDateFormated;
+
+
   data: any = null;
   provenance: any = null;
   annotations = [];
@@ -260,6 +269,13 @@ export default class DataVisuGraphic extends Vue {
 
     let lang = this.$store.getters.language;
     this.langOptionChanges(lang);
+
+    let todayDate = new Date();
+    let days = todayDate.getDate().toString().padStart(2, '0');
+    let months = (todayDate.getMonth() + 1).toString().padStart(2, '0'); // (this method start at month "0")
+    let years = todayDate.getFullYear();
+    let formatedDate = years + "-" + months + "-" + days;
+    this.exportDateFormated = formatedDate;
   }
 
   beforeDestroy() {
@@ -348,12 +364,15 @@ export default class DataVisuGraphic extends Vue {
         {
           chart: {
             zoomType: "x",
-            marginBottom: this.resizeLegendMargin(),
             marginLeft: 80,
-            height: that.series.length > 8 ? 650 : 500, //ok until 20 or 30 series depends on the name (uri) lenght....
+            marginRight: 80,
+            height: that.series.length > 8 ? 800 : 700,
             type: that.lineType ? "line" : "scatter",
             events: {
-              click: function(e) {
+              load: function() {
+                that.addLegendHeight(this);
+              },
+              click: () => {
                 let chart = that.highchartsRef[0].chart;
                 chart.tooltip.hide(0);
               },
@@ -371,9 +390,6 @@ export default class DataVisuGraphic extends Vue {
               }
             }
           },
-          title: {
-            text: ""
-          },
           subtitle: {
             text: ""
           },
@@ -385,9 +401,18 @@ export default class DataVisuGraphic extends Vue {
             }
           },
           exporting: {
-            sourceWidth: 800,
-            sourceHeight: 500,
-            scale: 2
+            sourceWidth: 1600,
+            sourceHeight: 800,
+            scale: 2,
+            chartOptions: {
+              title: {
+                text: this.$i18n.t("DataVisuGraphic.name") + " : " + this.elementName + "<br/>" + " URI : " + this.graphicTitle,
+              },
+              legend: {
+                itemWidth: 600,
+                itemDistance: 110
+              }
+            }
           },
           scrollbar: {
             enabled: false
@@ -403,9 +428,11 @@ export default class DataVisuGraphic extends Vue {
           },
           legend: {
             enabled: true,
-            floating: true,
+            floating: false,
             verticalAlign: "bottom",
-            align: "center"
+            align: "center",
+            layout: "horizontal"
+
           },
           xAxis: {
             type: "datetime",
@@ -434,10 +461,10 @@ export default class DataVisuGraphic extends Vue {
               if (point.y) {
                 return (
                     "" +
-                    this.point.series.name +
+                    point.series.name +
                     " :" +
                     '<span style=" color:' +
-                    this.point.color +
+                    point.color +
                     '" ><b> ' +
                     point.data.value +
                     "</b></span>" +
@@ -456,11 +483,14 @@ export default class DataVisuGraphic extends Vue {
                     '<span style=" color:' +
                     point.color +
                     '" ><b>' +
-                    point.text +
+                    point.data.value +
                     "</b></span>" +
                     "<br/>Time:<b> " +
                     that.$opensilex.$dateTimeFormatter.formatLocaleDateTime(this.x) +
-                    "</b> "
+                    "</b> " +
+                    "<br/> Target: <b>" +
+                    point.data.target +
+                    "</b>"
                 );
               }
             },
@@ -482,7 +512,7 @@ export default class DataVisuGraphic extends Vue {
               turboThreshold: 100000,
               cursor: "pointer",
               dataGrouping: {
-                enabled: true
+                enabled: false,
               },
               lineWidth: this.lineWidth ? 2 : 0, //scatter plot
               stickyTracking: false, //tooltip only on hover
@@ -551,6 +581,22 @@ export default class DataVisuGraphic extends Vue {
     this.lineWidth = !this.lineWidth;
   }
 
+  linkToCorrectAxis(){
+    for (let serie of this.series){
+      if (serie.custom?.variable  === this.variables[0].uri) {
+        serie.yAxis = 0;
+      }
+      if (serie.custom?.variable  === this.variables[1].uri) {
+        serie.yAxis = 1;
+      }
+    }
+    this.yAxis[0].labels.x = 25; // space between scale numbers and graphic
+    this.yAxis[0].title.x = 25; // space between scale numbers and Yaxis title
+    this.yAxis[1].opposite = false;
+    this.yAxis[1].labels.x = -10;
+    this.yAxis[1].title.x = -10;
+  }
+
 
   closeContextMenu() {
     this.contextMenuShow = false;
@@ -580,6 +626,7 @@ export default class DataVisuGraphic extends Vue {
       this.yAxis = this.buildYAxis(this.showEvents);
     }
     this.series = series;
+    this.linkToCorrectAxis();
   }
 
   buildYAxis(showEvents): Array<Highcharts.YAxisOptions> {
@@ -587,12 +634,12 @@ export default class DataVisuGraphic extends Vue {
         return {
           labels: {
             align: "right",
-            x: -3
           },
           title: {
             text: variable
                 ? variable.name + " (" + variable.unit.name + ")"
                 : "",
+              x: 20,
             style: {
               color: Highcharts.getOptions().colors[1],
               fontWeight: 'bold',
@@ -602,19 +649,13 @@ export default class DataVisuGraphic extends Vue {
         };
       });
 
-    // Special rules for 2 axis
-    if (yAxis.length === 2) {
-      yAxis[0].opposite = true;
-      yAxis[1].opposite = false;
-      yAxis[1].linkedTo = 0;
-    }
 
     if (showEvents) {
       // Resize the var axis
-      for (let options of yAxis) {
-        options.height = "80%";
-        options.lineWidth = 2;
-        options.resize = {
+      for (let axis of yAxis) {
+        axis.lineWidth = 2;
+        axis.height = "80%"
+        axis.resize = {
           enabled: true
         }
       }
@@ -713,7 +754,10 @@ export default class DataVisuGraphic extends Vue {
 
   exportPNG() {
     if (this.selectedPointsCount < 1500) {
-      this.highchartsRef[0].chart.exportChart({ type: "image/jpg" });
+      this.highchartsRef[0].chart.exportChart({
+        type: "image/png",
+        filename: this.exportDateFormated + "_graphic_opensilex"
+      });
     } else {
       this.$opensilex.showInfoToast(
           "Too much points : " +
@@ -830,122 +874,23 @@ export default class DataVisuGraphic extends Vue {
     chart.tooltip.hide();
   }
 
-  // resize space between graphic and legends
-  resizeLegendMargin (){
-    //  2 elements
-    if (this.series.length <= 2) {
-      return 100
-    }
-    //   3 to 4
-    else if (this.series.length > 2 && this.series.length <= 4) {
-      if (window.innerWidth <= 1200){
-        //small
-        return 120
-      }
-      else {
-        //large
-        return 100
-      }
-    }
-    //  5 to 8
-    else if (this.series.length > 4 && this.series.length <= 8) {
-      if (window.innerWidth <= 1030){
-        //mobile
-        return 210
-      }
-      else if (window.innerWidth >1030 && window.innerWidth <= 1285){
-        //small
-        return 160
-      }
-      else if (window.innerWidth <= 1700 && window.innerWidth > 1285) {
-        //medium
-        return 140
-      }
-      else {
-        //large
-        return 110
-      }
-    }
-    //  9 to 12
-    else if (this.series.length > 8 && this.series.length <= 12) {
-      if (window.innerWidth <= 1030){
-        //mobile
-        return 240
-      }
-      else if (window.innerWidth >1030 && window.innerWidth <= 1285){
-        //small
-        return 190
-      }
-      else if (window.innerWidth <= 1700 && window.innerWidth > 1285) {
-        //medium
-        return 160
-      }
-      else {
-        //large
-        return 130
-      }
-    }
-    // 13 to 16
-    else if (this.series.length > 12 && this.series.length <= 16) {
-      if (window.innerWidth <= 1015){
-        //small
-        return 300
-      }
-      else if (window.innerWidth <= 1450 && window.innerWidth > 1015) {
-        //medium
-        return 220
-      }
-      else {
-        //large
-        return 150
-      }
-    }
-    //  17 to 20
-    else if (this.series.length > 16 && this.series.length <= 20) {
-      if (window.innerWidth <= 1015){
-        //small
-        return 300
-      }
-      else if (window.innerWidth <= 1450 && window.innerWidth > 1015) {
-        //medium
-        return 220
-      }
-      else {
-        //large
-        return 170
-      }
-    }
-    //  21 to 24
-    else if (this.series.length > 20 && this.series.length <= 24) {
-      if (window.innerWidth <= 1015){
-        //small
-        return 300
-      }
-      else if (window.innerWidth <= 1450 && window.innerWidth > 1015) {
-        //medium
-        return 240
-      }
-      else {
-        //large
-        return 190
-      }
-    }
-    // more than 25
-    else {
-      if (window.innerWidth <= 1450) {
-        //small
-        return 300
-      }
-      else {
-        //large
-        return 210
-      }
+  addLegendHeight(highcharts){
+    let legendSpace = highcharts.legend.addLegendHeight - highcharts.legend.padding;
+
+    if (legendSpace){
+      highcharts.setSize(null, highcharts.chartHeight + legendSpace, false);
     }
   }
 }
 </script>
 
 <style scoped lang="scss">
+
+.graphContainer {
+  height: auto;
+  min-height:600px;
+}
+
 .card-header {
   height: 60px;
 }
@@ -992,6 +937,7 @@ fr:
     fullscreen : Plein ecran
     download : Télecharger l'image
     rightClick : click droit sur un point pour ajouter un evénement ou une annotation
+    name: Nom
 
 en:
   DataVisuGraphic:
@@ -1004,4 +950,5 @@ en:
     fullscreen : Fullscreen
     download : Download image
     rightClick : right click on a point to add event or annotation
+    name: Name
 </i18n>

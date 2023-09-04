@@ -70,7 +70,7 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.*;
+import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
@@ -84,13 +84,14 @@ import java.util.stream.Collectors;
  * @author Julien BONNEFONT
  */
 @Api(ScientificObjectAPI.CREDENTIAL_SCIENTIFIC_OBJECT_GROUP_ID)
-@Path("/core/scientific_objects")
+@Path(ScientificObjectAPI.PATH)
 @ApiCredentialGroup(
         groupId = ScientificObjectAPI.CREDENTIAL_SCIENTIFIC_OBJECT_GROUP_ID,
         groupLabelKey = ScientificObjectAPI.CREDENTIAL_SCIENTIFIC_OBJECT_GROUP_LABEL_KEY
 )
 public class ScientificObjectAPI {
 
+    public static final String PATH = "/core/scientific_objects";
     public static final String CREDENTIAL_SCIENTIFIC_OBJECT_GROUP_ID = "Scientific Objects";
     public static final String CREDENTIAL_SCIENTIFIC_OBJECT_GROUP_LABEL_KEY = "credential-groups.scientific-objects";
 
@@ -222,48 +223,33 @@ public class ScientificObjectAPI {
             @ApiParam(value = "Search by maximal date", example = "2020-08-22") @QueryParam("end_date") @Date(DateFormat.YMD) String endDate
     ) throws Exception {
 
-        validateContextAccess(contextURI);
-
         GeospatialDAO geoDAO = new GeospatialDAO(nosql);
+        ScientificObjectDAO soDAO = new ScientificObjectDAO(sparql, nosql);
+        List<ScientificObjectNodeDTO> dtoMapGeo = new ArrayList<>();
+        int lengthMapGeo = 0;
+
+        // Get SO with geometry for the experiment
+        validateContextAccess(contextURI);
 
         Instant test_start = Instant.now();
         FindIterable<GeospatialModel> mapGeo = geoDAO.getGeometryByGraphList(contextURI);
         Instant test_end = Instant.now();
-        
-        Collection<String> filteredUris = new HashSet<>(); 
 
-        // Date
-        if (startDate != null || endDate != null) {
-            ScientificObjectDAO soDAO = new ScientificObjectDAO(sparql, nosql);
-            Collection<URI> uris = new HashSet<>();
-            
-            for (GeospatialModel geospatialModel : mapGeo) {
-                ScientificObjectNodeDTO dtoFromModel = ScientificObjectNodeDTO.getDTOFromModel(geospatialModel);
-                URI uri = dtoFromModel.getUri();
-                uris.add(uri);
-            }
-            filteredUris = soDAO.getScientificObjectsByDate(contextURI, startDate, endDate, uris);
+        // Filter OS by date and get OS details ( uri, name, rdfType, rdfTypeLabel, destruction date, creation date)
+        for (GeospatialModel geospatialModel : mapGeo) {
+            dtoMapGeo.add(ScientificObjectNodeDTO.getDTOFromModel(geospatialModel));
+            lengthMapGeo++;
         }
 
-        List<ScientificObjectNodeDTO> dtoList = new ArrayList<>();
-        int lengthMapGeo = 0;
+        List<ScientificObjectNodeDTO> dtoList = soDAO.getScientificObjectsByDate(contextURI, startDate, endDate, currentUser.getLanguage(), dtoMapGeo.stream().map(ScientificObjectNodeDTO::getUri).collect(Collectors.toList()));
 
-        for (GeospatialModel geospatialModel : mapGeo) {
-            if (startDate != null || endDate != null) {
-                String uri = geospatialModel.getUri().toString();
-                if (filteredUris.contains(uri) == true) {
-                    ScientificObjectNodeDTO dtoFromModel = ScientificObjectNodeDTO.getDTOFromModel(geospatialModel);
-                    dtoList.add(dtoFromModel);
-                    lengthMapGeo++;
-                }
-            } else {
-                ScientificObjectNodeDTO dtoFromModel = ScientificObjectNodeDTO.getDTOFromModel(geospatialModel);
-                dtoList.add(dtoFromModel);
-                lengthMapGeo++;
-            }
+        // Set the geometry coming from MongoDB in the corresponding SO of RDF4J
+        for(ScientificObjectNodeDTO dto : dtoList){
+            dto.setGeometry(dtoMapGeo.stream().filter(o -> dto.getUri().toString().equals(o.getUri().toString())).findAny().orElseThrow(NullPointerException::new).getGeometry());
         }
 
         LOGGER.debug(lengthMapGeo + " space entities recovered " + Duration.between(test_start, test_end).toMillis() + " milliseconds elapsed");
+
         return new PaginatedListResponse<>(dtoList).getResponse();
     }
 
@@ -1010,5 +996,27 @@ public class ScientificObjectAPI {
         List<ProvenanceModel> provenances = dataDAO.getProvenancesByScientificObject(currentUser, uri, DataDAO.FILE_COLLECTION_NAME);
         List<ProvenanceGetDTO> dtoList = provenances.stream().map(ProvenanceGetDTO::fromModel).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();
+    }
+
+    @GET
+    @Path("count")
+    @ApiOperation("Count scientific objects")
+    @ApiProtected
+    @ApiResponses(value = {
+        @ApiResponse(code = 200, message = "Return the number of scientific objects associated to a given experiment", response = Integer.class)
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response countScientificObjects(
+            @ApiParam(value = "Experiment URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("experiment") URI experiment) throws Exception {
+
+        ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
+
+               ScientificObjectSearchFilter searchFilter = new ScientificObjectSearchFilter()
+                .setExperiment(experiment);
+
+        int scientificObjectsCount = dao.getCount(searchFilter);
+
+        return new SingleObjectResponse<>(scientificObjectsCount).getResponse();
     }
 }

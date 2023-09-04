@@ -6,6 +6,9 @@
 //******************************************************************************
 package org.opensilex.server.response;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Collections;
 import java.util.Map;
 
@@ -37,8 +40,6 @@ public class StatusDTO {
      */
     private final Map<String, String> translationValues;
 
-
-
     /**
      * Status message type ERROR|WARN|INFO|DEBUG.
      */
@@ -52,7 +53,14 @@ public class StatusDTO {
         this(message, level, translationKey, Collections.emptyMap());
     }
 
-    public StatusDTO(String message, StatusLevel level, String translationKey, Map<String, String> translationValues) {
+    // Jackson annotations for deserialization (only used in API tests to check response statuses)
+    @JsonCreator
+    public StatusDTO(
+            @JsonProperty("message") String message,
+            @JsonProperty("level") StatusLevel level,
+            @JsonProperty("translationKey") String translationKey,
+            @JsonProperty("translationValues") Map<String, String> translationValues
+    ) {
         this.message = message;
         this.level = level;
         this.translationKey = translationKey;

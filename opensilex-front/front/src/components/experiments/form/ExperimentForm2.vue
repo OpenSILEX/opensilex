@@ -21,8 +21,8 @@
     ></opensilex-ProjectSelector>
 
     <opensilex-OrganizationSelector
-      label="component.experiment.infrastructures"
-      :infrastructures.sync="experiment.organisations"
+      label="component.experiment.organizations"
+      :organizations.sync="experiment.organisations"
       :multiple="true"
     ></opensilex-OrganizationSelector>
 

@@ -8,7 +8,7 @@
               {{$t(labelNumberOfSelectedRow)}}
             </h3>
             <span v-if="!maximumSelectedRows && selectMode!=='single'" class="badge badge-pill greenThemeColor">{{numberOfSelectedRows}}</span>
-            <span v-else-if="selectMode!=='single'" class="badge badge-pill badge-warning">{{numberOfSelectedRows}}/{{maximumSelectedRows}}</span>
+            <span v-else-if="selectMode!=='single'" class="badge badge-pill greenThemeColor" v-b-tooltip.hover.top="$t(badgeHelpMessage)">{{numberOfSelectedRows}}/{{maximumSelectedRows}}</span>
             <slot name="selectableTableButtons" v-bind:numberOfSelectedRows="numberOfSelectedRows"></slot>
         </div>
       </div>
@@ -165,6 +165,9 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
 
   @Prop()
   maximumSelectedRows; // if you need a limit of selected items
+
+
+  badgeHelpMessage : string = "component.common.search.badgeHelpMessage";
 
   selectedItems: Array<T> = [];
   selectedItem;

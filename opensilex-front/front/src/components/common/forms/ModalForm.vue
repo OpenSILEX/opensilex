@@ -8,7 +8,7 @@
     @shown="disableValidation=false"
     @hidden="disableValidation=true"
     :size="modalSize"
-    :static="true"
+    :static="static"
     no-close-on-backdrop
     no-close-on-esc
     @keydown.native.enter="validate"
@@ -60,7 +60,16 @@
     </template>
 
     <ValidationObserver ref="validatorRef">
-        <component ref="componentRef" v-bind:is="component" :editMode="editMode" :form.sync="form" :data="data" :disableValidation="disableValidation">
+        <component
+            ref="componentRef"
+            v-bind:is="component"
+            :editMode="editMode"
+            :form.sync="form"
+            :data="data"
+            :disableValidation="disableValidation"
+            @shownSelector="disableValidation=true"
+            @hideSelector="disableValidation=false"
+        >
             <slot name="customFields" v-bind:form="form" v-bind:editMode="editMode"></slot>
         </component>
     </ValidationObserver>
@@ -98,6 +107,9 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
   editMode = false;
 
   form: CreationDTOType | UpdateDTOType | {} = {};
+
+  @Prop({default: true})
+  static: boolean
 
   @Prop({ default: false })
   tutorial :boolean;
@@ -167,44 +179,46 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
   }
 
   validate() {
-    this.validatorRef.validate().then(isValid => {
-      if (isValid) {
-        let submitMethod: any = this.getFormRef().create;
-        if (this.createAction) {
-          submitMethod = this.createAction;
-        }
-        let successEvent = "onCreate";
-        if (this.editMode) {
-          if (this.updateAction) {
-            submitMethod = this.updateAction;
-          } else {
-            submitMethod = this.getFormRef().update;
+    if(!this.disableValidation){
+      this.validatorRef.validate().then(isValid => {
+        if (isValid) {
+          let submitMethod: any = this.getFormRef().create;
+          if (this.createAction) {
+            submitMethod = this.createAction;
+          }
+          let successEvent = "onCreate";
+          if (this.editMode) {
+            if (this.updateAction) {
+              submitMethod = this.updateAction;
+            } else {
+              submitMethod = this.getFormRef().update;
+            }
+
+            successEvent = "onUpdate";
           }
 
-          successEvent = "onUpdate";
+          let submitResult: any = submitMethod(this.form);
+          if (!(submitResult instanceof Promise)) {
+            submitResult = Promise.resolve(submitResult);
+          }
+          submitResult
+              .then(result => {
+                if (result !== false && result !== undefined) {
+                  this.creationOrUpdateMessage();
+                }
+                this.$nextTick(() => {
+                  if (result !== false) {
+                    this.$emit(successEvent, result);
+                  }
+                  if (result !== false || !this.doNotHideOnError) {
+                    this.hide();
+                  }
+                });
+              })
+              .catch(console.error);
         }
-
-        let submitResult: any = submitMethod(this.form);
-        if (!(submitResult instanceof Promise)) {
-          submitResult = Promise.resolve(submitResult);
-        }
-        submitResult
-          .then(result => {
-            if (result !== false && result !== undefined) {
-              this.creationOrUpdateMessage();
-            }
-            this.$nextTick(() => {
-              if (result !== false) {
-                this.$emit(successEvent, result);
-              }
-              if (result !== false || !this.doNotHideOnError) {
-                this.hide();
-              }
-            });
-          })
-          .catch(console.error);
-      }
-    });
+      });
+    }
   }
 
   creationOrUpdateMessage() {
@@ -234,9 +248,11 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
 
   showCreateForm() {
     this.opened = true;
-
+    
+    if(!this.static) {
+      this.modalRef.show();
+    } 
     this.editMode = false;
-
     this.$nextTick(() => {
       this.form = this.getFormRef().getEmptyForm();
       let form = this.initForm(this.form as CreationDTOType);
@@ -244,7 +260,6 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
         this.form = form;
       }
       this.modalRef.show();
-
       this.validatorRef.reset();
       if (this.getFormRef().reset) {
         this.getFormRef().reset();

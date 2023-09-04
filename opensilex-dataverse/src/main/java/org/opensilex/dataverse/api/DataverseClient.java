@@ -93,8 +93,8 @@ public class DataverseClient {
                 .subject("Agricultural Sciences")
                 .languages(Collections.singletonList(datasetDTO.getDatasetLanguage().getDisplayLanguage(Locale.ENGLISH)));
 
-        if(datasetDTO.getCurrentAccount().getHolderOfTheAccount() != null){
-            facadeBuilder.depositor(datasetDTO.getCurrentAccount().getHolderOfTheAccount().getFirstName() + " " + datasetDTO.getCurrentAccount().getHolderOfTheAccount().getLastName().toUpperCase());
+        if(datasetDTO.getCurrentAccount().getLinkedPerson() != null){
+            facadeBuilder.depositor(datasetDTO.getCurrentAccount().getLinkedPerson().getFirstName() + " " + datasetDTO.getCurrentAccount().getLinkedPerson().getLastName().toUpperCase());
         }else {
             facadeBuilder.depositor(datasetDTO.getCurrentAccount().getEmail().toString());
         }

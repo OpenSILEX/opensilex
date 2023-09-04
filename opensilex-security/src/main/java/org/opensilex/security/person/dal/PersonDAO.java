@@ -107,7 +107,7 @@ public class PersonDAO {
         if (accountModel == null) {
             return null;
         }
-        return accountModel.getHolderOfTheAccount();
+        return accountModel.getLinkedPerson();
     }
 
     /**
@@ -155,7 +155,8 @@ public class PersonDAO {
         Expr stringFilter = SPARQLQueryHelper.or(
                 SPARQLQueryHelper.regexFilter(PersonModel.FIRST_NAME_FIELD, stringPattern),
                 SPARQLQueryHelper.regexFilter(PersonModel.LAST_NAME_FIELD, stringPattern),
-                SPARQLQueryHelper.regexFilter(PersonModel.EMAIL_FIELD, stringPattern)
+                SPARQLQueryHelper.regexFilter(PersonModel.EMAIL_FIELD, stringPattern),
+                SPARQLQueryHelper.regexStrFilter(PersonModel.ORCID_FIELD, stringPattern)
         );
 
         return sparql.searchWithPagination(

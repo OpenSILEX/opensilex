@@ -62,7 +62,7 @@ public class RouteDTO {
         this.path = path;
     }
 
-    @ApiModelProperty(value = "Route component", example = "opensilex.UserList")
+    @ApiModelProperty(value = "Route component", example = "opensilex.AccountList")
     public String getComponent() {
         return component;
     }

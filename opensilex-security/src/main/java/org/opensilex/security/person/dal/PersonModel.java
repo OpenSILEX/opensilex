@@ -76,6 +76,7 @@ public class PersonModel extends SPARQLResourceModel implements ClassURIGenerato
             ignoreUpdateIfNull = true
     )
     private URI orcid;
+    public static final String ORCID_FIELD = "orcid";
 
     @SPARQLProperty(
             ontology = FOAF.class,

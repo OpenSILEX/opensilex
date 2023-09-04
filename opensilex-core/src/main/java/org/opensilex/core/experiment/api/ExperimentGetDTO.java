@@ -8,21 +8,21 @@ package org.opensilex.core.experiment.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
+import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.organisation.dal.OrganizationModel;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
+import org.opensilex.core.project.dal.ProjectModel;
+import org.opensilex.server.rest.validation.Required;
+import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.response.NamedResourceDTO;
+
+import javax.validation.constraints.NotNull;
 import java.net.URI;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-import javax.validation.constraints.NotNull;
-
-import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.core.organisation.dal.facility.FacilityModel;
-import org.opensilex.core.organisation.dal.OrganizationModel;
-import org.opensilex.core.project.dal.ProjectModel;
-import org.opensilex.server.rest.validation.Required;
-import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.sparql.response.NamedResourceDTO;
 
 /**
  *
@@ -62,7 +62,7 @@ public class ExperimentGetDTO {
     protected List<URI> factors = new ArrayList<>();
     
     @JsonProperty("organisations") 
-    protected List<NamedResourceDTO<OrganizationModel>> infrastructures = new ArrayList<>();
+    protected List<NamedResourceDTO<OrganizationModel>> organizations = new ArrayList<>();
 
     @JsonProperty("facilities")
     protected List<NamedResourceDTO<FacilityModel>> facilities = new ArrayList<>();
@@ -186,12 +186,12 @@ public class ExperimentGetDTO {
         this.isPublic = isPublic;
     }
 
-    public List<NamedResourceDTO<OrganizationModel>> getInfrastructures() {
-        return infrastructures;
+    public List<NamedResourceDTO<OrganizationModel>> getOrganizations() {
+        return organizations;
     }
 
-    public void setInfrastructures(List<NamedResourceDTO<OrganizationModel>> infrastructures) {
-        this.infrastructures = infrastructures;
+    public void setOrganizations(List<NamedResourceDTO<OrganizationModel>> organizations) {
+        this.organizations = organizations;
     }
 
     public List<NamedResourceDTO<FacilityModel>> getFacilities() {
@@ -259,12 +259,12 @@ public class ExperimentGetDTO {
         dto.setFactors(getUriList(model.getFactors()));
         dto.setCreator(model.getCreator());
 
-        List<NamedResourceDTO<OrganizationModel>> infrastructuresDTO = new ArrayList<>();
-        model.getInfrastructures().forEach((infra) -> {
-            NamedResourceDTO<OrganizationModel> infraDTO = NamedResourceDTO.getDTOFromModel(infra);
-            infrastructuresDTO.add(infraDTO);
+        List<NamedResourceDTO<OrganizationModel>> organizationsDTO = new ArrayList<>();
+        model.getOrganizations().forEach((orga) -> {
+            NamedResourceDTO<OrganizationModel> orgaDTO = NamedResourceDTO.getDTOFromModel(orga);
+            organizationsDTO.add(orgaDTO);
         });
-        dto.setInfrastructures(infrastructuresDTO);
+        dto.setOrganizations(organizationsDTO);
         
         List<NamedResourceDTO<ProjectModel>> projectsDTO = new ArrayList<>();
         model.getProjects().forEach((project) -> {

@@ -29,7 +29,7 @@
 
               <template v-slot:cell(author)="{data}">
                 <opensilex-TextView v-if="data.item.author"
-                                    :value="getUserNames(data.item.author)">
+                                    :value="getAccountNames(data.item.author)">
                 </opensilex-TextView>
               </template>
 
@@ -96,6 +96,7 @@ import AnnotationModalForm from "../form/AnnotationModalForm.vue";
 import {SecurityService} from "opensilex-security/api/security.service";
 import {UserGetDTO} from 'opensilex-security/index';
 import {AnnotationGetDTO} from 'opensilex-core/index';
+import {AccountGetDTO} from "opensilex-security/model/accountGetDTO";
 
 @Component
 export default class AnnotationList extends Vue {
@@ -127,7 +128,7 @@ export default class AnnotationList extends Vue {
   @Prop({default: AnnotationList.getDefaultColumns})
   columnsToDisplay: Set<string>;
 
-  usersByUri: Map<string, UserGetDTO>;
+  accountsByUri: Map<string, AccountGetDTO>;
   renderComponent = true;
 
   @Ref("tableRef") readonly tableRef!: any;
@@ -222,27 +223,29 @@ export default class AnnotationList extends Vue {
 
   buildUsersIndexPromise(annotations: Array<AnnotationGetDTO>, reject): Promise<void | HttpResponse<OpenSilexResponse<Array<UserGetDTO>>>> {
 
-    this.usersByUri = new Map();
+    this.accountsByUri = new Map();
 
     let uniqueUsers = new Set<string>();
     annotations.forEach(annotation => {
       uniqueUsers.add(annotation.author);
     });
 
-    return this.$securityService.getUsersByURI(Array.from(uniqueUsers)).then(http => {
-      http.response.result.forEach(userDto => {
-        this.usersByUri.set(userDto.uri, {first_name: userDto.first_name, last_name: userDto.last_name});
+    return this.$securityService.getAccountsByURI(Array.from(uniqueUsers)).then(http => {
+      http.response.result.forEach(accountDTO => {
+        this.accountsByUri.set(accountDTO.uri, accountDTO);
       })
     }).catch(reject);
   }
 
-  getUserNames(userUri: string): string {
-
-    if (!userUri) {
+  getAccountNames(accounturi: string): string {
+    if (!accounturi) {
       return undefined;
     }
-    let userDto = this.usersByUri.get(userUri);
-    return userDto ? userDto.first_name + " " + userDto.last_name : undefined;
+    let accountDTO = this.accountsByUri.get(accounturi);
+    if (accountDTO){
+      return accountDTO.linked_person ? accountDTO.person_first_name + " " + accountDTO.person_last_name : accountDTO.email
+    }
+    return undefined;
   }
 
   static newFilter() {

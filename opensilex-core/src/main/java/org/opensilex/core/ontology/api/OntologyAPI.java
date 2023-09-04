@@ -6,6 +6,7 @@
 package org.opensilex.core.ontology.api;
 
 import io.swagger.annotations.*;
+import org.apache.commons.lang3.BooleanUtils;
 import org.opensilex.core.CoreModule;
 import org.opensilex.core.URIsListPostDTO;
 import org.opensilex.core.sharedResource.SharedResourceInstanceDTO;
@@ -17,6 +18,7 @@ import org.opensilex.server.exceptions.NotFoundException;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.SPARQLModule;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.exceptions.SPARQLInvalidURIException;
@@ -536,23 +538,44 @@ public class OntologyAPI {
     })
     public Response getURILabelsList(
             @ApiParam(value = "URIs to get label from", required = true) @QueryParam("uri") @NotNull @ValidURI @NotEmpty List<URI> uris,
-            @ApiParam(value = "Context URI") @QueryParam("context") @ValidURI URI context
+            @ApiParam(value = "Context URI") @QueryParam("context") @ValidURI URI context,
+            @ApiParam(value = "Look for all contexts if not present in specified context") @QueryParam("searchDefault") Boolean searchDefault
     ) throws Exception {
         OntologyDAO dao = new OntologyDAO(sparql);
 
         List<SPARQLNamedResourceModel> results = dao.getURILabels(uris, currentUser.getLanguage(), context);
         List<NamedResourceDTO> dtoList = results.stream().map(NamedResourceDTO::getDTOFromModel).collect(Collectors.toList());
 
+        Set<URI> foundUriSet = dtoList.stream()
+                .map(NamedResourceDTO::getUri)
+                .map(SPARQLDeserializers::formatURI)
+                .collect(Collectors.toSet());
+        Set<URI> missingUriSet = new HashSet<>(uris).stream()
+                .map(SPARQLDeserializers::formatURI)
+                .filter(uri -> !foundUriSet.contains(uri))
+                .collect(Collectors.toSet());
+
+        if (context != null && BooleanUtils.isTrue(searchDefault) && !missingUriSet.isEmpty()) {
+            dao.getURILabels(missingUriSet, currentUser.getLanguage(), null).stream()
+                    .map(NamedResourceDTO::getDTOFromModel)
+                    .forEach(dtoList::add);
+            Set<URI> newFoundUriSet = dtoList.stream()
+                    .map(NamedResourceDTO::getUri)
+                    .map(SPARQLDeserializers::formatURI)
+                    .collect(Collectors.toSet());
+            missingUriSet = new HashSet<>(uris).stream()
+                    .map(SPARQLDeserializers::formatURI)
+                    .filter(uri -> !newFoundUriSet.contains(uri))
+                    .collect(Collectors.toSet());
+        }
+
         SingleObjectResponse<List<NamedResourceDTO>> response = new SingleObjectResponse<>(dtoList);
 
-        Set<URI> foundUriSet = dtoList.stream().map(NamedResourceDTO::getUri).collect(Collectors.toSet());
-        for (URI uri : uris) {
-            if (!foundUriSet.contains(uri)) {
-                response.addMetadataStatus(new StatusDTO(
-                        String.format(OntologyDAO.NO_LABEL_FOR_URI_MESSAGE, uri),
-                        StatusLevel.WARNING
-                ));
-            }
+        for (URI uri : missingUriSet) {
+            response.addMetadataStatus(new StatusDTO(
+                    String.format(OntologyDAO.NO_LABEL_FOR_URI_MESSAGE, uri),
+                    StatusLevel.WARNING
+            ));
         }
 
         return response.getResponse();
@@ -581,14 +604,16 @@ public class OntologyAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return URI rdf types", response = URITypesDTO.class)
+            @ApiResponse(code = 200, message = "Return URI rdf types", response = URITypesDTO.class, responseContainer = "List")
     })
     public Response getURITypes(
             @ApiParam(value = "URIs to get types from", required = true) @QueryParam("uri") @NotNull @ValidURI @NotEmpty List<URI> uris
     ) throws Exception {
         OntologyDAO dao = new OntologyDAO(sparql);
 
-        List<URITypesModel> types = dao.getSuperClassesByURI(uris);
+        List<URITypesDTO> types = dao.getSuperClassesByURI(uris)
+                .stream().map(URITypesDTO::fromModel)
+                .collect(Collectors.toList());
 
         return new SingleObjectResponse<>(types).getResponse();
     }

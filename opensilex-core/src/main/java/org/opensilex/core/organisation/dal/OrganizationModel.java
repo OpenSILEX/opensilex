@@ -27,7 +27,7 @@ import org.opensilex.sparql.model.SPARQLDagModel;
         ontology = FOAF.class,
         resource = "Organization",
         graph = OrganizationModel.GRAPH,
-        prefix = "infra"
+        prefix = "orga"
 )
 public class OrganizationModel extends SPARQLDagModel<OrganizationModel> {
 

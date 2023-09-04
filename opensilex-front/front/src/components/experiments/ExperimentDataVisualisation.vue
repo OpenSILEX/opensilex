@@ -5,6 +5,7 @@
         :soFilter="soFilter" 
         @graphicCreated="onGraphicCreated"
         :selectedScientificObjects="selectedScientificObjects"
+        :elementName="elementName"
       ></opensilex-ExperimentDataVisualisationView> 
     </div>     
   </div>
@@ -38,6 +39,8 @@ export default class ExperimentDataVisualisation extends Vue {
   numberOfSelectedRows = 0;
   refreshKey = 0;
 
+  @Prop()
+  elementName;
 
   refreshTypeSelectorComponent(){
     this.refreshKey += 1

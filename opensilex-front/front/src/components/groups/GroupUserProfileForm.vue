@@ -1,11 +1,11 @@
 <template>
   <div>
-    <opensilex-UserSelector
+    <opensilex-AccountSelector
       label="component.group.user-profiles"
       :users.sync="searchedUser"
       :multiple="false"
       @select="selectUser"
-    ></opensilex-UserSelector>
+    ></opensilex-AccountSelector>
     <b-table
       id="user-selection-table"
       striped

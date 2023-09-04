@@ -102,7 +102,7 @@ import static org.opensilex.core.data.api.DataAPI.*;
  * @author Julien BONNEFONT
  */
 @Api(ExperimentAPI.CREDENTIAL_EXPERIMENT_GROUP_ID)
-@Path("/core/experiments")
+@Path(ExperimentAPI.PATH)
 @ApiCredentialGroup(
         groupId = ExperimentAPI.CREDENTIAL_EXPERIMENT_GROUP_ID,
         groupLabelKey = ExperimentAPI.CREDENTIAL_EXPERIMENT_GROUP_LABEL_KEY
@@ -111,6 +111,7 @@ public class ExperimentAPI {
 
     Logger LOGGER = LoggerFactory.getLogger(ExperimentAPI.class);
 
+    public static final String PATH = "/core/experiments";
     public static final String CREDENTIAL_EXPERIMENT_GROUP_ID = "Experiments";
     public static final String CREDENTIAL_EXPERIMENT_GROUP_LABEL_KEY = "credential-groups.experiments";
 
@@ -341,9 +342,7 @@ public class ExperimentAPI {
         ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql);
         List<FacilityModel> facilities = xpDao.getAvailableFacilities(xpUri, currentUser);
 
-        List<FacilityGetDTO> dtoList = facilities.stream().map((item) -> {
-            return FacilityGetDTO.getDTOFromModel(item, false);
-        }).collect(Collectors.toList());
+        List<FacilityGetDTO> dtoList = facilities.stream().map((item) -> FacilityGetDTO.getDTOFromModel(item, false)).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();
     }
 

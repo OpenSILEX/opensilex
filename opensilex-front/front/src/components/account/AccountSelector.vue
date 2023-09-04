@@ -4,8 +4,8 @@
     :helpMessage="helpMessage"
     :selected.sync="usersURI"
     :multiple="multiple"
-    :itemLoadingMethod="loadUsers"
-    :searchMethod="searchUsers"
+    :itemLoadingMethod="loadAccounts"
+    :searchMethod="searchAccounts"
     :conversionMethod="userToSelectNode"
     placeholder="component.account.filter-placeholder"
     noResultsText="component.account.filter-search-no-result"
@@ -18,13 +18,11 @@
 <script lang="ts">
 import { Component, Prop, PropSync } from "vue-property-decorator";
 import Vue, { PropOptions } from "vue";
-// @ts-ignore
-import { SecurityService, UserGetDTO } from "opensilex-security/index";
-// @ts-ignore
-import HttpResponse, { OpenSilexResponse } from "opensilex-security/HttpResponse";
+import { SecurityService } from "opensilex-security/index";
+import {AccountGetDTO} from "opensilex-security/model/accountGetDTO";
 
 @Component
-export default class UserSelector extends Vue {
+export default class AccountSelector extends Vue {
   $opensilex: any;
   service: SecurityService;
 
@@ -40,26 +38,27 @@ export default class UserSelector extends Vue {
   @Prop()
   helpMessage: string;
 
-  loadUsers(usersURI) {
+  loadAccounts(accountsURIs) {
     return this.$opensilex
       .getService("opensilex.SecurityService")
-      .getUsersByURI(usersURI)
+      .getAccountsByURI(accountsURIs)
       .then(
-        (http: HttpResponse<OpenSilexResponse<Array<UserGetDTO>>>) =>
+        (http) =>
           http.response.result
       );
   }
 
-  searchUsers(searchQuery, page, pageSize) {
+  searchAccounts(searchQuery, page, pageSize) {
     return this.$opensilex
       .getService("opensilex.SecurityService")
-      .searchUsers(searchQuery, undefined, page, pageSize);
+      .searchAccounts(searchQuery, undefined, page, pageSize);
   }
 
-  userToSelectNode(dto: UserGetDTO) {
-    let userLabel = dto.first_name + " " + dto.last_name + " <" + dto.email + ">";
+  userToSelectNode(dto: AccountGetDTO) {
+    let personName = dto.linked_person ? dto.person_first_name + " " + dto.person_last_name : ""
+    let accountLabel = personName + " <" + dto.email + ">";
     return {
-      label: userLabel,
+      label: accountLabel,
       id: dto.uri
     };
   }

@@ -32,6 +32,8 @@
         :germplasmsUris.sync="form.germplasm_list"
         :germplasms="germplasmsWithLabels"
         :editMode="this.editMode"
+        @hideSelector='$emit("hideSelector")'
+        @shownSelector='$emit("shownSelector")'
     ></opensilex-GermplasmSelectorWithFilter>
 
 

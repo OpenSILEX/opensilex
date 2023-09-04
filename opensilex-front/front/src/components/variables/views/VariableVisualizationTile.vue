@@ -2,8 +2,9 @@
   <opensilex-Overlay :show="!isDataLoaded && !isNoDataFound">
     <opensilex-Card
         ref="tilePanel"
+        class="item variableTile"
         :label="variableUri.name"
-        icon=""
+        @click="showGraphic"
     >
       <template v-slot:body>
 
@@ -19,12 +20,10 @@
             <div class="col" v-if="isDataOutOfReach">
               <opensilex-TextView
                   style="margin-bottom: 0;"
-                  v-on:click.native="showGraphic"
                   :value="$t('VariableVisualizationTile.lastDataStored')">
               </opensilex-TextView>
               <opensilex-DateView
                   style="font-size: x-large; margin-bottom: 0; color: #e53935;"
-                  v-on:click.native="showGraphic"
                   :value.sync="lastData.date"
                   :isDateTime="true"
                   :useLocaleFormat="true"
@@ -34,18 +33,15 @@
             <div class="col" v-else>
               <opensilex-TextView
                   style="margin-bottom: 0;"
-                  v-on:click.native="showGraphic"
                   :value="$t('VariableVisualizationTile.lastMedianData')">
               </opensilex-TextView>
               <opensilex-TextView
-                  style="font-size: xx-large; margin-bottom: 0;"
-                  v-on:click.native="showGraphic"
+                  style="font-size: x-large; margin-bottom: 0;"
                   :value.sync="lastData.value"
               >
               </opensilex-TextView>
               <opensilex-DateView
                   style="font-size: x-large; margin-bottom: 0;"
-                  v-on:click.native="showGraphic"
                 :value.sync="lastData.date"
                 :isDateTime="true"
                 :useLocaleFormat="true"
@@ -68,6 +64,28 @@
             <b-badge v-if="period" pill class="greenThemeColor">
               <opensilex-Icon icon="fa#hourglass-half"/> {{ $t("Histogram.period." + period) }}
             </b-badge>
+
+            <!-- Graphic Options menu dropdown-->
+            <b-dropdown right size="lg" variant="link" toggle-class="text-decoration-none" no-caret>
+              <template #button-content>
+                <opensilex-Icon icon="fa#bars" size="lg" class="dashboardGraphicMenu" />
+              </template>
+
+              <b-dropdown-item @click="scatter">
+                <opensilex-Icon icon="fa#braille" />
+                {{ $t("Histogram.dataStyle") }}
+              </b-dropdown-item>
+
+              <b-dropdown-item @click="fullscreen">
+                <opensilex-Icon icon="fa#expand" />
+                {{ $t("VisualisationGraphic.fullscreen") }}
+              </b-dropdown-item>
+
+              <b-dropdown-item @click="exportPNG">
+                <opensilex-Icon icon="fa#download" />
+                {{ $t("VisualisationGraphic.download") }}
+              </b-dropdown-item>
+            </b-dropdown>
 
             <!-- Settings button -->
             <opensilex-Button
@@ -116,7 +134,7 @@
 <script lang="ts">
 import {Component, Prop, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
-import {DataGetDTO, DevicesService, NamedResourceDTOVariableModel} from "opensilex-core/index";
+import {DevicesService, NamedResourceDTOVariableModel} from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import HighchartsDataTransformer from "../../../models/HighchartsDataTransformer";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
@@ -409,6 +427,18 @@ export default class VariableVisualizationTile extends Vue {
     }
   }
 
+  scatter() {
+    this.visuGraphic.scatter();
+  }
+
+  fullscreen() {
+    this.visuGraphic.fullscreen();
+  }
+
+  exportPNG() {
+    this.visuGraphic.exportPNG();
+  }
+
 }
 </script>
 
@@ -424,6 +454,7 @@ export default class VariableVisualizationTile extends Vue {
   background-color: #00A28C;
   color: #f1f1f1
 }
+
 </style>
 
 <i18n>

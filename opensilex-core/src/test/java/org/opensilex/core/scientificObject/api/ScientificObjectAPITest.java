@@ -43,6 +43,7 @@ import org.opensilex.core.variable.api.VariableCreationDTO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
+import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -78,6 +79,7 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
     public static final String createPath = path + "/";
     public static final String updatePath = path + "/";
     public static final String deletePath = path + "/{uri}";
+    public static final String searchGeomPath = path + "/geometry";
 
     public static final String GERMPLASM_RESTRICTION_ONTOLOGY_GRAPH = "http://www.opensilex.org/vocabulary/test-germplasm-restriction#";
     public static final Path GERMPLASM_RESTRICTION_ONTOLOGY_PATH = Paths.get("ontologies", "germplasmRestriction.owl");
@@ -85,6 +87,8 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
     private int soCount = 1;
     private URI experiment;
     private URI speciesUri;
+
+    private final static String EXPERIMENT_QUERY_PARAM = "experiment";
 
     @Rule
     public TemporaryFolder tmpFolder = new TemporaryFolder();
@@ -472,29 +476,46 @@ public class ScientificObjectAPITest extends AbstractMongoIntegrationTest {
         testGetScientificObjectsListByUris(false);
     }
 
-    public void testSearchScientificObjectsWithGeometryListByUris(boolean withGeometry) throws Exception {
-        final Response postResult = getJsonPostResponseAsAdmin(target(createPath), getCreationDTO(withGeometry));
-        URI uri = extractUriFromResponse(postResult);
-
-        final Response getResult = getResponse(uri);
-        assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
-
-        // try to deserialize object
-        JsonNode node = getResult.readEntity(JsonNode.class);
-        SingleObjectResponse<ScientificObjectNodeDTO> getResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<ScientificObjectNodeDTO>>() {
-        });
-        ScientificObjectNodeDTO soGetDetailDTO = getResponse.getResult();
-        assertNotNull(soGetDetailDTO);
-    }
-
     @Test
     public void testSearchScientificObjectsWithGeometryListByUris() throws Exception {
-        testSearchScientificObjectsWithGeometryListByUris(true);
+
+        ScientificObjectCreationDTO dtoWithGeom = getCreationDTO(true);
+        Response postResult = getJsonPostResponseAsAdmin(target(createPath), dtoWithGeom);
+        dtoWithGeom.setUri(extractUriFromResponse(postResult));
+
+        ScientificObjectCreationDTO dtoWithoutGeom = getCreationDTO(false);
+        postResult = getJsonPostResponseAsAdmin(target(createPath), dtoWithoutGeom);
+        dtoWithoutGeom.setUri(extractUriFromResponse(postResult));
+
+        // create new experimentation
+        final Response postResultXP = getJsonPostResponseAsAdmin(target(ExperimentAPITest.createPath), ExperimentAPITest.getCreationDTO());
+        assertEquals(Status.CREATED.getStatusCode(), postResultXP.getStatus());
+
+        ScientificObjectCreationDTO dtoOtherXP = getCreationDTO(true);
+        dtoOtherXP.setExperiment(extractUriFromResponse(postResultXP));
+        postResult = getJsonPostResponseAsAdmin(target(createPath), dtoOtherXP);
+        dtoOtherXP.setUri(extractUriFromResponse(postResult));
+
+        //search by context URI
+        Map<String, Object> params = new HashMap<String, Object>() {{
+            put(EXPERIMENT_QUERY_PARAM, experiment);
+        }};
+
+        List<ScientificObjectNodeDTO> results = getSearchResultsAsAdmin(searchGeomPath, params, new TypeReference<PaginatedListResponse<ScientificObjectNodeDTO>>() {
+        });
+        assertEquals(1,results.size());
+        assertEquals(dtoWithGeom.getUri(),new URI(SPARQLDeserializers.getExpandedURI(results.get(0).getUri())));
     }
 
     @Test
-    public void testSearchScientificObjectsWithGeometryListByUrisWithoutGeometry() throws Exception {
-        testSearchScientificObjectsWithGeometryListByUris(false);
+    public void testSearchScientificObjectsWithGeometryListByUrisWithoutExperimentFail() throws Exception {
+        ScientificObjectCreationDTO dtoWithGeom = getCreationDTO(true);
+        Response postResult = getJsonPostResponseAsAdmin(target(createPath), dtoWithGeom);
+        dtoWithGeom.setUri(extractUriFromResponse(postResult));
+
+        final Response result = getJsonGetResponseAsAdmin(target(searchGeomPath));
+
+        assertEquals(Status.BAD_REQUEST.getStatusCode(), result.getStatus());
     }
 
     @Test

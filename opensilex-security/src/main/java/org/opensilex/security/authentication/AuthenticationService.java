@@ -264,9 +264,9 @@ public class AuthenticationService extends BaseService implements Service {
 
         String firstName = null;
         String lastName = null;
-        if (Objects.nonNull(user.getHolderOfTheAccount())){
-            firstName = user.getHolderOfTheAccount().getFirstName();
-            lastName = user.getHolderOfTheAccount().getLastName();
+        if (Objects.nonNull(user.getLinkedPerson())){
+            firstName = user.getLinkedPerson().getFirstName();
+            lastName = user.getLinkedPerson().getLastName();
         }
 
         // Create token

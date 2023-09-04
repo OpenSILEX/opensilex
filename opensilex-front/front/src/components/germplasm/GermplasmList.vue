@@ -8,7 +8,7 @@
                  v-on:click="SearchFiltersToggle = !SearchFiltersToggle"
                  :title="searchFiltersPannel()">
                 <div class="searchMenuIcon">
-                    <i class="icon ik ik-search"></i>
+                    <i class="ik ik-search"></i>
                 </div>
             </div>
             <Transition>
@@ -349,7 +349,6 @@ export default class GermplasmList extends Vue {
     }
 
     onItemSelected(row) {
-        console.debug("GermplasmList selecting item, heres the row : ", row);
       this.tableRef.onItemSelected(row);
     }
 
@@ -499,7 +498,6 @@ export default class GermplasmList extends Vue {
                 (
                     http: HttpResponse<OpenSilexResponse<Array<ExperimentGetListDTO>>>
                 ) => {
-                    //console.log(http.response.result)
                     for (let i = 0; i < http.response.result.length; i++) {
                         let expDTO = http.response.result[i];
                         this.experimentsList.push({

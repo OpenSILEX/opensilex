@@ -5,8 +5,8 @@
     createTitle="FacilitiesView.add"
     editTitle="FacilitiesView.update"
     icon="ik#ik-map"
-    :createAction="callInfrastructureFacilityCreation"
-    :updateAction="callInfrastructureFacilityUpdate"
+    :createAction="callOrganizationFacilityCreation"
+    :updateAction="callOrganizationFacilityUpdate"
     @onCreate="$emit('onCreate', $event)"
     @onUpdate="$emit('onUpdate', $event)"
     :initForm="initForm"
@@ -65,7 +65,7 @@ export default class FacilityModalForm extends Vue {
     });
   }
 
-  callInfrastructureFacilityCreation(form: FacilityCreationDTO) {
+  callOrganizationFacilityCreation(form: FacilityCreationDTO) {
     let definedRelations = [];
     for (let i in form.relations) {
       let relation = form.relations[i];
@@ -89,16 +89,16 @@ export default class FacilityModalForm extends Vue {
       .getService<OrganizationsService>("opensilex.OrganizationsService")
       .createFacility(form)
       .then((http: HttpResponse<OpenSilexResponse<string>>) => {
-        let message = this.$i18n.t("FacilityModalForm.name") + " " + form.name + " " + this.$i18n.t("component.common.success.creation-success-message");
+        let message = this.$i18n.t("OrganizationFacilityForm:.name") + " " + form.name + " " + this.$i18n.t("component.common.success.creation-success-message");
         this.$opensilex.showSuccessToast(message);
       })
       .catch((error) => {
         if (error.status === 409) {
-          console.error("Facility already exists", error);
+          console.error("Organization facility already exists", error);
           this.$opensilex.errorHandler(
             error,
             this.$t(
-              "FacilityModalForm.facility-already-exists"
+              "OrganizationFacilityForm.organization-facility-already-exists"
             )
           );
         } else {
@@ -107,7 +107,7 @@ export default class FacilityModalForm extends Vue {
       });
   }
 
-  callInfrastructureFacilityUpdate(form: FacilityUpdateDTO) {
+  callOrganizationFacilityUpdate(form: FacilityUpdateDTO) {
     let definedRelations = [];
     for (let i in form.relations) {
       let relation = form.relations[i];
@@ -130,7 +130,7 @@ export default class FacilityModalForm extends Vue {
       .getService<OrganizationsService>("opensilex.OrganizationsService")
       .updateFacility(form)
       .then((http: HttpResponse<OpenSilexResponse<string>>) => {
-        let message = this.$i18n.t("FacilityModalForm.name") + " " + form.name + " " + this.$i18n.t("component.common.success.update-success-message");
+        let message = this.$i18n.t("OrganizationFacilityForm:.name") + " " + form.name + " " + this.$i18n.t("component.common.success.update-success-message");
         this.$opensilex.showSuccessToast(message);
       })
       .catch(this.$opensilex.errorHandler);
@@ -143,17 +143,17 @@ export default class FacilityModalForm extends Vue {
 
 <i18n>
 en:
-  FacilityModalForm:
+  OrganizationFacilityForm:
     name: The facility
-    facility-uri: Infrastructure facility URI
-    form-name-placeholder: Enter infrastructure facility name
-    form-type-placeholder: Select infrastructure facility type
-    facility-already-exists: Infrastructure facility already exists with this URI
+    facility-uri: Organization facility URI
+    form-name-placeholder: Enter organization facility name
+    form-type-placeholder: Select organization facility type
+    organization-facility-already-exists: Organization facility already exists with this URI
 fr:
-  FacilityModalForm:
+  OrganizationFacilityForm:
     name: L'installation environnementale
     facility-uri: URI de l'installation environnementale
     form-name-placeholder: Saisir le nom de l'installation environnementale
     form-type-placeholder: Sélectionner le type de l'installation environnementale
-    facility-already-exists: Une installation environnementale existe déjà avec cette URI
+    organization-facility-already-exists: Une installation environnementale existe déjà avec cette URI
 </i18n>

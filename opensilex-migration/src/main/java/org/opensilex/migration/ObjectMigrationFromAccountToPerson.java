@@ -180,7 +180,7 @@ public class ObjectMigrationFromAccountToPerson implements OpenSilexModuleUpdate
 
             AccountModel operatorAccount = accounts.get(operator.getUri());
             if (Objects.nonNull(operatorAccount)) {
-                PersonModel holderOfTheOperatorAccount = operatorAccount.getHolderOfTheAccount();
+                PersonModel holderOfTheOperatorAccount = operatorAccount.getLinkedPerson();
                 if (Objects.nonNull(holderOfTheOperatorAccount)) {
                     operator.setUri(holderOfTheOperatorAccount.getUri());
                     provenanceDAO.update(provenance);

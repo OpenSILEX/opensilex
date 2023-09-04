@@ -81,6 +81,7 @@ import {SecurityService} from "opensilex-security/api/security.service";
 @Component
 export default class PersonForm extends Vue {
   $opensilex: OpenSilexVuePlugin;
+  $securityService: SecurityService;
 
   uriGenerated = true;
 
@@ -103,6 +104,10 @@ export default class PersonForm extends Vue {
 
   disable_orcid_field : boolean = false
 
+  created(){
+    this.$securityService = this.$opensilex.getService<SecurityService>("opensilex.SecurityService")
+  }
+
   reset() {
     this.uriGenerated = true;
     this.$nextTick( () => {
@@ -121,20 +126,16 @@ export default class PersonForm extends Vue {
     };
   }
 
-  create(form) {
+  async create(form) {
     this.replaceEmptyStringByNull(form)
     form.orcid = this.getCompleteUrlOrcid(form.orcid)
 
-    return this.$opensilex
-      .getService<SecurityService>("opensilex.SecurityService")
-      .createPerson(form)
-      .then((http: HttpResponse<OpenSilexResponse<any>>) => {
-        let uri = http.response.result;
-        console.debug("Person created", uri);
-      })
-      .catch(error => {
+    try {
+      let response = this.$securityService.createPerson(form)
+      this.$emit("onCreate", form)
+      return response
+    } catch(error) {
         if (error.status == 409) {
-          console.error("Person already exists", error);
           this.$opensilex.errorHandler(
             error,
             this.$t("component.person.errors.person-already-exists")
@@ -142,7 +143,7 @@ export default class PersonForm extends Vue {
         } else {
           this.$opensilex.errorHandler(error);
         }
-      });
+      }
   }
 
   update(form) {

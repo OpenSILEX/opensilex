@@ -37,6 +37,8 @@
               :refreshSoSelector="refreshSoSelector"
               :refreshProvComponent="refreshProvComponent"
               :soFilter="soFilter"
+              :mapMode="mapMode"
+              :soWithLabels="soWithLabels"
               @search="onSearch"
               @onValidateScientificObjects="onValidateScientificObjects"
           ></opensilex-ExperimentDataVisualisationForm>
@@ -59,6 +61,8 @@
           @dataAnnotationIsClicked="showAnnotationForm"
           :startDate="experimentDataVisualisationForm.startDate"
           :endDate="experimentDataVisualisationForm.endDate"
+          :graphicTitle="selectedExperiment"
+          :elementName="elementName"
       ></opensilex-DataVisuGraphic>
 
 
@@ -94,7 +98,7 @@ import {
   VariablesService
 } from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
-import {Component, Prop, Ref, Watch} from "vue-property-decorator";
+import {Component, Prop, PropSync, Ref, Watch} from "vue-property-decorator";
 import OpenSilexVuePlugin from '../../../models/OpenSilexVuePlugin'
 import Vue from "vue";
 import HighchartsDataTransformer, {
@@ -153,6 +157,14 @@ export default class ExperimentDataVisualisationView extends Vue {
   searchFiltersToggle: boolean = true;
   showImages = true;
 
+  @Prop()
+  selected;
+
+  @Prop({default : false})
+  mapMode;
+
+  @Prop()
+  soWithLabels;
 
   @Prop()
   refreshSoSelector;
@@ -163,6 +175,12 @@ export default class ExperimentDataVisualisationView extends Vue {
   @Prop()
   soFilter;
 
+  @Prop()
+  graphicTitle;
+
+  @Prop()
+  elementName;
+
   private langUnwatcher;
 
   mounted() {
@@ -171,6 +189,12 @@ export default class ExperimentDataVisualisationView extends Vue {
         lang => {
         }
     );
+
+    if(this.mapMode){
+      this.selectedScientificObjects = this.selected;
+    }
+
+    this.experimentDataVisualisationForm.setSelectorsToFirstTimeOpenAndSetLabels(this.soWithLabels);
   }
 
   beforeDestroy() {
@@ -298,11 +322,11 @@ export default class ExperimentDataVisualisationView extends Vue {
                   this.showGraphicComponent = true;
                   this.showImages = false;
                   this.$opensilex.showInfoToast(
-                      this.$i18n.t("ExperimentDataVisuView.datatypeMessageA") +
+                      this.$i18n.t("ExperimentDataVisualisationView.datatypeMessageA") +
                       " " +
                       datatype +
                       " " +
-                      this.$i18n.t("ExperimentDataVisuView.datatypeMessageB")
+                      this.$i18n.t("ExperimentDataVisualisationView.datatypeMessageB")
                   );
                 }
               }
@@ -445,6 +469,9 @@ export default class ExperimentDataVisualisationView extends Vue {
           visible: true,
           color: this.eventTypesColorArray[concernedItem.id],
           legendColor: this.eventTypesColorArray[concernedItem.id],
+          custom: {
+            variable: selectedVariable.uri
+          }
         }
         dataAndImage.push(dataSerie)
 
@@ -724,7 +751,7 @@ export default class ExperimentDataVisualisationView extends Vue {
 }
 
 .experimentDataVisualisationGraphicWithoutForm {
-  min-width: 100%;
+  min-width: 98%;
   max-width: 100vw;
 }
 </style>

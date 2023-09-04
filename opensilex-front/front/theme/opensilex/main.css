@@ -337,7 +337,7 @@ a.external-url-link:hover {
 * MAIN NAVIGATION MENU
 *************************************/
 .app-sidebar {
-    margin-top: 60px;
+    margin-top: 65px;
 }
 
 .hidden-menu #menu-container {
@@ -549,6 +549,11 @@ a.external-url-link:hover {
     border-color: #00A38D;
     background-color: #00A38D;
 }
+
+.modal-header .close:hover {
+    color: red;
+    transition: 0.5s
+}
 /********************************
 * 
 ********************************/
@@ -726,6 +731,14 @@ a.external-url-link:hover {
 
 .b-tooltip .tooltip-inner a:hover {
     text-decoration: underline ;
+}
+
+/********************************
+* FACILITIES
+********************************/
+
+.variableTile .capitalize-first-letter {
+    width: 100%;
 }
 
 /********************************

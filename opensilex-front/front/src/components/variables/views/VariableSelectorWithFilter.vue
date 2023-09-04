@@ -18,6 +18,8 @@
     @select="select"
     @deselect="deselect"
     @onValidate="onValidate"
+    @hide='$emit("hideSelector")'
+    @shown='$emit("shownSelector")'
   ></opensilex-SelectForm>
 </template>
 

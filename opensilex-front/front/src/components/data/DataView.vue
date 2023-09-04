@@ -140,13 +140,13 @@
                 <!-- Operator -->
                 <div>
                   <opensilex-FilterField>
-                    <opensilex-UserSelector
+                    <opensilex-AccountSelector
                       :users.sync="filter.operators"
                       label="DataView.filter.operator"
                       class="searchFilter"
                       @handlingEnterKey="refresh()"
                       :multiple="true"
-                    ></opensilex-UserSelector>
+                    ></opensilex-AccountSelector>
                   </opensilex-FilterField>
                 </div>
 
@@ -155,7 +155,7 @@
                   <opensilex-FilterField quarterWidth="true">
                     <opensilex-FacilitySelector
                       ref="facilitySelector"
-                      label="InfrastructureForm.form-facilities-label"
+                      label="OrganizationForm.form-facilities-label"
                       :facilities.sync="filter.facilities"
                       :multiple="true"
                       class="searchFilter"

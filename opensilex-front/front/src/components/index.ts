@@ -31,16 +31,14 @@ components["opensilex-ForgotPassword"] = ForgotPassword;
 
 
 // Users
-import UserForm from './users/UserForm.vue';
-components["opensilex-UserForm"] = UserForm;
-import UserList from './users/UserList.vue';
-components["opensilex-UserList"] = UserList;
-import UserView from './users/UserView.vue';
-components["opensilex-UserView"] = UserView;
-import UserSelector from './users/UserSelector.vue';
-components["opensilex-UserSelector"] = UserSelector;
-import UserNameView from './users/UserNameView.vue';
-components["opensilex-UserNameView"] = UserNameView;
+import AccountForm from './account/AccountForm.vue';
+components["opensilex-AccountForm"] = AccountForm;
+import AccountList from './account/AccountList.vue';
+components["opensilex-AccountList"] = AccountList;
+import AccountView from './account/AccountView.vue';
+components["opensilex-AccountView"] = AccountView;
+import AccountSelector from './account/AccountSelector.vue';
+components["opensilex-AccountSelector"] = AccountSelector;
 
 //Persons
 import PersonView from "./persons/PersonView.vue";
@@ -76,7 +74,7 @@ components["opensilex-GroupList"] = GroupList;
 import GroupSelector from './groups/GroupSelector.vue';
 components["opensilex-GroupSelector"] = GroupSelector;
 
-// Infrastructures
+// Organizations
 import OrganizationView from './organizations/OrganizationView.vue';
 components["opensilex-OrganizationView"] = OrganizationView;
 import OrganizationDetailView from './organizations/OrganizationDetailView.vue';
@@ -392,8 +390,6 @@ import ExperimentScientificObjects from './experiments/views/ExperimentScientifi
 components["opensilex-ExperimentScientificObjects"] = ExperimentScientificObjects;
 import ExperimentData from './experiments/views/ExperimentData.vue';
 components["opensilex-ExperimentData"] = ExperimentData;
-import ExperimentDataVisuView from './experiments/views/ExperimentDataVisuView.vue';
-components["opensilex-ExperimentDataVisuView"] = ExperimentDataVisuView;
 import ExperimentDataVisualisationView from './experiments/views/ExperimentDataVisualisationView.vue';
 components["opensilex-ExperimentDataVisualisationView"] = ExperimentDataVisualisationView;
 import ExperimentModalList from './experiments/ExperimentModalList.vue';
@@ -451,6 +447,8 @@ import GermplasmGroupSelector from './germplasmGroup/GermplasmGroupSelector.vue'
 components["opensilex-GermplasmGroupSelector"] = GermplasmGroupSelector;
 import AssociatedGermplasmGroupsList from './germplasmGroup/AssociatedGermplasmGroupsList.vue';
 components["opensilex-AssociatedGermplasmGroupsList"] = AssociatedGermplasmGroupsList;
+import GermplasmGroupHelp from './germplasmGroup/GermplasmGroupHelp.vue';
+components["opensilex-GermplasmGroupHelp"] = GermplasmGroupHelp;
 
 import GermplasmAttributesValueSelector from './germplasm/GermplasmAttributesValueSelector.vue';
 components["opensilex-GermplasmAttributesValueSelector"] = GermplasmAttributesValueSelector;

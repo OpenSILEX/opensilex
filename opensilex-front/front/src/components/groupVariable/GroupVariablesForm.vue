@@ -41,6 +41,8 @@
       v-else
       placeholder="VariableSelectorWithFilter.placeholder-multiple"
       :variables.sync="form.variables"
+      @hideSelector='$emit("hideSelector")'
+      @shownSelector='$emit("shownSelector")'
     ></opensilex-VariableSelectorWithFilter>
 
   </ValidationObserver>

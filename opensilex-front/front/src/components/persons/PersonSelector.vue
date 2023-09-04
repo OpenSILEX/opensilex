@@ -1,30 +1,50 @@
 <template>
-  <opensilex-SelectForm
-    :label="label"
-    :helpMessage="helpMessage"
-    :selected.sync="personsURI"
-    :multiple="multiple"
-    :itemLoadingMethod="loadPersons"
-    :required="required"
-    :searchMethod="searchPersons"
-    :conversionMethod="personToSelectNode"
-    placeholder="component.person.filter-placeholder"
-    noResultsText="component.person.filter-search-no-result"
-    @select="select"
-    @deselect="deselect"
-  ></opensilex-SelectForm>
+  <div>
+    <opensilex-SelectForm
+        ref="selectForm"
+        :label="label"
+        :helpMessage="helpMessage"
+        :selected.sync="personsURI"
+        :multiple="multiple"
+        :itemLoadingMethod="loadPersons"
+        :required="required"
+        :searchMethod="searchPersons"
+        :conversionMethod="personToSelectNode"
+        placeholder="component.person.filter-placeholder"
+        noResultsText="component.person.filter-search-no-result"
+        :actionHandler="allowAddPerson ? showCreateForm : null"
+        @select="select"
+        @deselect="deselect"
+    ></opensilex-SelectForm>
+    <opensilex-ModalForm
+        v-if="user.hasCredential(credentials.CREDENTIAL_PERSON_MODIFICATION_ID)"
+        :static="false"
+        ref="PersonForm"
+        component="opensilex-PersonForm"
+        createTitle="PersonView.create"
+        editTitle="PersonView.update"
+        icon="ik#ik-user"
+        @onCreate="setCreatedPerson"
+    ></opensilex-ModalForm>
+  </div>
 </template>
 
 <script lang="ts">
-import {Component, Prop, PropSync} from "vue-property-decorator";
+import {Component, Prop, PropSync, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import {SecurityService, PersonDTO} from "opensilex-security/index";
 import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+import SelectForm from "../common/forms/SelectForm.vue";
+import {OpenSilexStore} from "../../models/Store";
+import ModalForm from "../common/forms/ModalForm.vue";
+import PersonForm from "./PersonForm.vue";
 
 @Component
 export default class PersonSelector extends Vue {
   $opensilex: OpenSilexVuePlugin;
+  $store: OpenSilexStore;
+
   service: SecurityService;
 
   @PropSync("persons")
@@ -46,63 +66,68 @@ export default class PersonSelector extends Vue {
   getOnlyPersonsWithoutAccount: boolean;
 
   @Prop()
-  personPropertyExistsCondition : string;
+  personPropertyExistsCondition: string;
+
+  @Prop()
+
+  @Prop({default: false})
+  allowAddPerson: boolean;
+
+  @Ref("selectForm") selectForm!: SelectForm;
+  @Ref("PersonForm") readonly personForm!: ModalForm<PersonForm, PersonDTO, PersonDTO>;
+
+  get user() {
+    return this.$store.state.user;
+  }
+
+  get credentials() {
+    return this.$store.state.credentials;
+  }
+
+  created() {
+    this.service = this.$opensilex.getService<SecurityService>("opensilex.SecurityService")
+  }
 
   loadPersons(personsURI) {
-    return this.$opensilex
-      .getService<SecurityService>("opensilex.SecurityService")
-      .getPersonsByURI(personsURI)
-      .then(
-        (http: HttpResponse<OpenSilexResponse<Array<PersonDTO>>>) =>
-          http.response.result
-      );
+    return this.service
+        .getPersonsByURI(personsURI)
+        .then(
+            (http: HttpResponse<OpenSilexResponse<Array<PersonDTO>>>) =>
+                http.response.result
+        );
   }
 
-  searchPersons(searchQuery, page) {
-    return this.$opensilex
-      .getService<SecurityService>("opensilex.SecurityService")
-      .searchPersons(searchQuery, this.getOnlyPersonsWithoutAccount, undefined, page, 0)
-      .then( (http: HttpResponse<OpenSilexResponse<Array<PersonDTO>>>) =>{
-      if (this.personPropertyExistsCondition){
-          let tmp = http.response.result.map(value => {
-              if (!value[this.personPropertyExistsCondition]){
-                  return {
-                      email : value.email,
-                      uri : value.uri,
-                      account : value.account,
-                      first_name : value.first_name,
-                      last_name : value.last_name,
-                      isDisabled : true
-                  }
-              } else {
-                  return {
-                      email : value.email,
-                      uri : value.uri,
-                      account : value.account,
-                      first_name : value.first_name,
-                      last_name : value.last_name,
-                      isDisabled : false
-                  }
-              }
-          })
-          http.response.result = tmp
-          return http;
-      } else {
-          return http
-      }
-      });
+  async searchPersons(searchQuery, page) {
+    let searchResponse = await this.service
+        .searchPersons(searchQuery, this.getOnlyPersonsWithoutAccount, undefined, page, 0)
+
+    return searchResponse
   }
 
-  personToSelectNode(dto) {
+  personToSelectNode(dto: PersonDTO) {
     let personLabel = dto.first_name + " " + dto.last_name;
-    if ( dto.email !== null ){
+    if (dto.email !== null) {
       personLabel += " <" + dto.email + ">";
+    }
+    let disabled: boolean = false;
+    if (this.personPropertyExistsCondition && !dto[this.personPropertyExistsCondition]) {
+      disabled = true
     }
     return {
       label: personLabel,
       id: dto.uri,
-      isDisabled: dto.isDisabled
+      isDisabled: disabled
     };
+  }
+
+  async setCreatedPerson(createdPersonUri: HttpResponse<OpenSilexResponse<string>>) {
+    let createdPerson = ( await this.service.getPerson(createdPersonUri.response.result) ).response.result
+    this.selectForm.select(this.personToSelectNode(createdPerson));
+    this.$emit("onCreate")
+  }
+
+  showCreateForm(){
+    this.personForm.showCreateForm()
   }
 
   select(value) {

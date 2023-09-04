@@ -113,8 +113,8 @@
               :list="projectsList"
             ></opensilex-UriListView>
             <opensilex-UriListView
-              label="component.experiment.infrastructures"
-              :list="infrastructuresListURIs"
+              label="component.experiment.organizations"
+              :list="organizationsListURIs"
             ></opensilex-UriListView>
             <opensilex-UriListView
               label="component.experiment.facilities"
@@ -151,8 +151,9 @@
             ></opensilex-ContactsList>
             <opensilex-UriView
               title="component.experiment.record_author"
+              v-if="recordAuthor"
               :uri="recordAuthor.uri"
-              :value="recordAuthor.first_name + ' ' + recordAuthor.last_name"
+              :value="recordAuthor.linked_person ? recordAuthor.person_first_name + ' ' + recordAuthor.person_last_name : recordAuthor.email"
           >
           </opensilex-UriView>
           </template>
@@ -180,6 +181,7 @@ import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import DTOConverter from "../../../models/DTOConverter";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import {PersonDTO} from "opensilex-security/index";
+import {AccountGetDTO} from "opensilex-security/model/accountGetDTO";
 
 @Component
 export default class ExperimentDetail extends Vue {
@@ -202,8 +204,8 @@ export default class ExperimentDetail extends Vue {
   scientificSupervisorsList = [];
   technicalSupervisorsList = [];
   installationsList = [];
-  infrastructuresList = [];
-  recordAuthor :UserGetDTO = null;
+  organizationsList = [];
+  recordAuthor :AccountGetDTO = null;
 
   created() {
     this.service = this.$opensilex.getService("opensilex.ExperimentsService");
@@ -237,15 +239,15 @@ export default class ExperimentDetail extends Vue {
         return this.$opensilex.getConfig().menuExclusions.includes("germplasm");
   }
 
-  get infrastructuresListURIs() {
-    let infraUris = [];
-    for (let infra of this.infrastructuresList) {
-      infra.to = {
-        path: "/infrastructure/details/" + encodeURIComponent(infra.uri),
+  get organizationsListURIs() {
+    let orgaUris = [];
+    for (let orga of this.organizationsList) {
+      orga.to = {
+        path: "/organization/details/" + encodeURIComponent(orga.uri),
       };
-      infraUris.push(infra);
+      orgaUris.push(orga);
     }
-    return infraUris;
+    return orgaUris;
   }
 
   get facilityListUris() {
@@ -297,7 +299,7 @@ export default class ExperimentDetail extends Vue {
 
   loadExperimentDetails() {
     this.loadProjects();
-    this.loadInfrastructures();
+    this.loadOrganizations();
     this.loadPersons();
     this.loadGroups();
     this.loadFactors();
@@ -308,18 +310,18 @@ export default class ExperimentDetail extends Vue {
     );
   }
 
-  loadInfrastructures() {
+  loadOrganizations() {
     let service: OrganizationsService = this.$opensilex.getService(
       "opensilex.OrganizationsService"
     );
-    this.infrastructuresList = [];
+    this.organizationsList = [];
 
     if (
       this.experiment.organisations &&
       this.experiment.organisations.length > 0
     ) {
       this.experiment.organisations.forEach((organisation) => {
-        this.infrastructuresList.push({
+        this.organizationsList.push({
           uri: organisation.uri,
           value: organisation.name,
         });
@@ -378,9 +380,9 @@ export default class ExperimentDetail extends Vue {
     if (this.experiment.record_author &&
       this.experiment.record_author.length > 0){
         service
-        .getUser(this.experiment.record_author)
-        .then((http: HttpResponse<OpenSilexResponse<UserGetDTO>>) => {
-          this.recordAuthor = http.response.result;
+        .getAccount(this.experiment.record_author)
+        .then( accountResponse => {
+          this.recordAuthor = accountResponse.response.result;
         })
         .catch(this.$opensilex.errorHandler);
       }

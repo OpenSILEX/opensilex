@@ -637,8 +637,8 @@ fr:
     filter-year-placeholder: Saisir une année
     filter-species: Espèces
     filter-species-placeholder: Sélectionner une ou plusieurs espèces
-    filter-facilities: Infrastructures environnementales
-    filter-facilities-placeholder: Sélectionner une ou plusieurs infrastructure
+    filter-facilities: Installations environnementales
+    filter-facilities-placeholder: Sélectionner une ou plusieurs installations
     filter-project: Projet
     filter-project-placeholder: Sélectionner un projet
     filter-state: Etat

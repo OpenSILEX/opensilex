@@ -42,9 +42,9 @@
         </div>
 
         <!-- Twitter -->
-        <div class="twitter">
+        <!-- <div class="twitter">
           <opensilex-Twitter></opensilex-Twitter>
-        </div>
+        </div> -->
     </div>
   </div>
 
@@ -105,8 +105,8 @@ export default class Dashboard extends Vue {
   grid-auto-flow: column dense;
   justify-items: stretch;
   grid-template-areas: 
-    "favorites graph1 graph1 twitter"
-    "favorites graph1 graph1 twitter";
+    "favorites graph1 graph1 graph1"
+    "favorites graph1 graph1 graph1";
   width: 100%;
 }
 

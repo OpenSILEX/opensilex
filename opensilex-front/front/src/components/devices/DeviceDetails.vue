@@ -92,6 +92,7 @@
          <opensilex-DeviceVisualizationTab
           v-else-if="isVisualizationTab()"
           :device="uri"
+          :elementName="device.name"
           ></opensilex-DeviceVisualizationTab>
 
          <opensilex-DeviceDataFiles

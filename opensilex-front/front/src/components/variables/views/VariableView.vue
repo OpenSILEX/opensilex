@@ -68,6 +68,7 @@
         <opensilex-VariableVisualizationTab
           v-else-if="isVisualizationTab()"
           :variable="uri"
+          :elementName="variable.name"
           :modificationCredentialId="credentials.CREDENTIAL_DEVICE_MODIFICATION_ID"
         ></opensilex-VariableVisualizationTab>
 

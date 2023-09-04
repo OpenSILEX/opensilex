@@ -11,21 +11,21 @@
             <opensilex-EditButton
               v-if="
                 user.hasCredential(
-                  credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
+                  credentials.CREDENTIAL_ORGANIZATION_MODIFICATION_ID
                 )
               "
-              @click="editInfrastructure()"
-              label="InfrastructureTree.edit"
+              @click="editOrganization()"
+              label="OrganizationTree.edit"
               :small="true"
             ></opensilex-EditButton>
             <opensilex-DeleteButton
               v-if="
                 user.hasCredential(
-                  credentials.CREDENTIAL_INFRASTRUCTURE_DELETE_ID
+                  credentials.CREDENTIAL_ORGANIZATION_DELETE_ID
                 )
               "
-              @click="deleteInfrastructure()"
-              label="InfrastructureTree.delete"
+              @click="deleteOrganization()"
+              label="OrganizationTree.delete"
               :small="true"
             ></opensilex-DeleteButton>
           </b-button-group>
@@ -36,6 +36,9 @@
         <opensilex-UriView
           :uri="selected.uri"
           :value="selected.uri"
+          :to="{
+            path: '/organization/details/' + encodeURIComponent(selected.uri),
+          }"
         ></opensilex-UriView>
         <!-- Name -->
         <opensilex-StringView
@@ -52,14 +55,14 @@
         <opensilex-UriListView
           v-if="hasParents"
           :list="parentUriList"
-          label="InfrastructureDetail.parentOrganizations"
+          label="OrganizationDetail.parentOrganizations"
           :inline="false"
         >
         </opensilex-UriListView>
 
         <!-- Groups -->
         <opensilex-UriListView
-            label="InfrastructureDetail.groups.label"
+            label="OrganizationDetail.groups.label"
             :list="groupUriList"
             :inline="false"
             v-if="hasGroups"
@@ -68,7 +71,7 @@
 
         <!-- Sites -->
         <opensilex-UriListView
-            label="InfrastructureDetail.sites.label"
+            label="OrganizationDetail.sites.label"
             :list="siteUriList"
             :inline="false"
             v-if="hasSites"
@@ -77,7 +80,7 @@
 
         <!-- Expe -->
         <opensilex-UriListView
-            label="InfrastructureDetail.experiments.label"
+            label="OrganizationDetail.experiments.label"
             :list="experimentUriList"
             :inline="false"
             v-if="hasExperiments"
@@ -86,10 +89,10 @@
       </div>
     </b-card>
     <opensilex-ModalForm
-        ref="infrastructureForm"
+        ref="organizationForm"
         component="opensilex-OrganizationForm"
-        createTitle="InfrastructureTree.add"
-        editTitle="InfrastructureTree.update"
+        createTitle="OrganizationTree.add"
+        editTitle="OrganizationTree.update"
         icon="ik#ik-globe"
         @onCreate="$emit('onCreate', $event)"
         @onUpdate="$emit('onUpdate', $event)"
@@ -120,7 +123,7 @@ export default class OrganizationDetail extends Vue {
   })
   withActions;
 
-  @Ref("infrastructureForm") readonly infrastructureForm!: any;
+  @Ref("organizationForm") readonly organizationForm!: any;
 
   created() {
     this.organizationService = this.$opensilex.getService("opensilex-core.OrganizationsService");
@@ -168,7 +171,7 @@ export default class OrganizationDetail extends Vue {
         uri: parent.uri,
         value: parent.name,
         to: {
-          path: "/infrastructure/details/" + encodeURIComponent(parent.uri),
+          path: "/organization/details/" + encodeURIComponent(parent.uri),
         },
       }
     });
@@ -180,7 +183,7 @@ export default class OrganizationDetail extends Vue {
         uri: site.uri,
         value: site.name,
         to: {
-          path: "/infrastructure/site/details/" + encodeURIComponent(site.uri)
+          path: "/organization/site/details/" + encodeURIComponent(site.uri)
         }
       };
     });
@@ -198,17 +201,17 @@ export default class OrganizationDetail extends Vue {
     });
   }
 
-  editInfrastructure() {
+  editOrganization() {
     this.organizationService
-      .getInfrastructure(this.selected.uri)
+      .getOrganization(this.selected.uri)
       .then((http: HttpResponse<OpenSilexResponse<OrganizationGetDTO>>) => {
         let editDto = DTOConverter.extractURIFromResourceProperties(http.response.result);
-        this.infrastructureForm.showEditForm(editDto);
+        this.organizationForm.showEditForm(editDto);
       })
       .catch(this.$opensilex.errorHandler);
   }
 
-  deleteInfrastructure() {
+  deleteOrganization() {
     this.$emit("onDelete");
   }
 
@@ -216,7 +219,7 @@ export default class OrganizationDetail extends Vue {
     form.parents = this.selected.parents;
   }
 
-  setInfrastructure(form) {
+  setOrganization(form) {
     form.groups = this.selected.groups.map((group) => group.uri);
   }
 }
@@ -228,7 +231,7 @@ export default class OrganizationDetail extends Vue {
 
 <i18n>
 en:
-  InfrastructureDetail:
+  OrganizationDetail:
     parentOrganizations: Parent organizations
     groups:
       label: "Groups"
@@ -239,7 +242,7 @@ en:
     experiments:
       label: "Experiments"
 fr:
-  InfrastructureDetail:
+  OrganizationDetail:
     parentOrganizations: Organisations parentes
     groups:
       label: "Groupes"

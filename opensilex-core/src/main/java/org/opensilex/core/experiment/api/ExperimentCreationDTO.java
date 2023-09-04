@@ -38,13 +38,13 @@ public class ExperimentCreationDTO extends ExperimentDTO {
         // No species at experiment creation
         model.setSpecies(null);
         
-        List<OrganizationModel> infrastructuresList = new ArrayList<>(infrastructures.size());
-        infrastructures.forEach((URI u) -> {
-            OrganizationModel infrastructure = new OrganizationModel();
-            infrastructure.setUri(u);
-            infrastructuresList.add(infrastructure);
+        List<OrganizationModel> organizationsList = new ArrayList<>(organizations.size());
+        organizations.forEach((URI u) -> {
+            OrganizationModel organization = new OrganizationModel();
+            organization.setUri(u);
+            organizationsList.add(organization);
         });
-        model.setInfrastructures(infrastructuresList);
+        model.setOrganizations(organizationsList);
 
         List<FacilityModel> facilityList = new ArrayList<>(facilities.size());
         facilities.forEach( facilityUri -> {

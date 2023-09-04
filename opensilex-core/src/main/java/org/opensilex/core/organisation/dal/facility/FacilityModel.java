@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
         ontology = Oeso.class,
         resource = "Facility",
         graph = OrganizationModel.GRAPH,
-        prefix = "infra",
+        prefix = "orga",
         handleCustomProperties = true
 )
 public class FacilityModel extends SPARQLTreeModel<FacilityModel> {
@@ -51,7 +51,7 @@ public class FacilityModel extends SPARQLTreeModel<FacilityModel> {
             inverse = true
     )
     private List<OrganizationModel> organizations;
-    public static final String ORGANIZATIONS_FIElD = "organizations";
+    public static final String ORGANIZATION_FIELD = "organizations";
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -85,7 +85,7 @@ public class FacilityModel extends SPARQLTreeModel<FacilityModel> {
         this.organizations = organizations;
     }
 
-    public List<URI> getOrganizationUriList() {
+    public List<URI> getOrganizationUris() {
         if (this.organizations == null) {
             return new ArrayList<>();
         }

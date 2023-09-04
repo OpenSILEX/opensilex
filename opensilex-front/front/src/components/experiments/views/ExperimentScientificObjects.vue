@@ -180,12 +180,6 @@
                   {{$t('Move.add')}}
                 </b-dropdown-item-button>
 
-                <b-dropdown-divider
-                ></b-dropdown-divider>
-                <b-dropdown-item-button 
-                  @click="visualize"
-                >{{$t('ExperimentScientificObjects.visualize')}}
-                </b-dropdown-item-button>
             </b-dropdown>
             <opensilex-CreateButton
                 class="mb-2 mr-2"
@@ -295,12 +289,6 @@
     </div>
     </opensilex-PageContent>
 
-    <opensilex-ExperimentDataVisuView
-      v-if="showDataVisuView"
-      :selectedScientificObjects="selectedNamedObjects"
-      @graphicCreated="onGraphicCreated"
-    ></opensilex-ExperimentDataVisuView>
-
     <opensilex-ModalForm
       v-if="user.hasCredential(credentials.CREDENTIAL_DOCUMENT_MODIFICATION_ID)"
       ref="documentForm"
@@ -329,7 +317,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Ref } from "vue-property-decorator";
+import { Component, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import { ScientificObjectsService } from "opensilex-core/index";
 import ScientificObjectDetail from "../../scientificObjects/ScientificObjectDetail.vue";
@@ -346,7 +334,6 @@ export default class ExperimentScientificObjects extends Vue {
   $t: any;
   soService: ScientificObjectsService;
   uri: string;
-  showDataVisuView = false;
   numberOfSelectedRows = 0;
   SearchFiltersToggle : boolean = false;
 
@@ -423,47 +410,6 @@ export default class ExperimentScientificObjects extends Vue {
     this.refresh();
   }
 
-  visualize() {
-    this.selectAllLimit = 10;
-    if(this.selectedObjects.length > this.selectAllLimit) {
-      alert(this.$t('ExperimentScientificObjects.alertSelectAllLimitSize') + this.selectAllLimit);
-      this.selectAll=false;
-    } 
-    else {
-    this.SearchFiltersToggle = false;
-    //build selectedNamedObject
-      this.selectedNamedObjects = [];
-      this.selectedObjects.forEach(value => {
-        this.selectedNamedObjects.push({
-          uri: value,
-          name: this.namedObjectsArray[value]
-        });
-      });
-      this.showDataVisuView = true;
-      let that =this
-      this.$nextTick(() =>
-        setTimeout(function() {
-          that.page.scrollIntoView({
-            behavior: "smooth",
-            block: "end",
-            inline: "nearest"
-          });
-        }, 100)
-      );
-    }
-  }
-
-  onGraphicCreated() {
-    let that = this;
-    setTimeout(function() {
-      that.page.scrollIntoView({
-        behavior: "smooth",
-        block: "end",
-        inline: "nearest"
-      });
-    }, 500);
-  }
-
   private langUnwatcher;
   mounted() {
     this.langUnwatcher = this.$store.watch(
@@ -489,7 +435,6 @@ export default class ExperimentScientificObjects extends Vue {
   unselectRefresh() {
     this.selected = null;
     this.selectedObjects = []; // fix bug filtre/selection
-    this.showDataVisuView = false; 
     this.refresh();
   }
 
@@ -604,7 +549,6 @@ export default class ExperimentScientificObjects extends Vue {
   }
 
   public displayScientificObjectDetailsIfNew(nodeUri: any) {
-    this.showDataVisuView = false;
     if (!this.selected || this.selected.uri != nodeUri) {
       this.displayScientificObjectDetails(nodeUri);
     }
@@ -710,8 +654,6 @@ export default class ExperimentScientificObjects extends Vue {
   selectAllLimit = 10000;
   
   onSelectAll(){
-
-    this.showDataVisuView = false;
     if (this.selectAll) {
       this.selectedObjects = [];
 
@@ -739,34 +681,12 @@ export default class ExperimentScientificObjects extends Vue {
               let soDTO = http.response.result[i];
               this.selectedObjects.push(soDTO.uri);
             }  
-
-              //Select all parents
-              // this.searchMethod(this.nodes, 0, this.selectAllLimit)
-              // .then((http) => {
-              // for (let i in http.response.result) {
-              //   let soDTO = http.response.result[i];
-
-              //   let soNode = {
-              //       title: soDTO.name,
-              //       data: soDTO,
-              //       isDraggable: false,
-              //       isExpanded: true,
-              //       isSelected: true,
-              //       isSelectable: true,
-              //       isVisible: true
-              //     };
-              //     this.selectedObjects.push(soNode.data.uri);
-
-              //     let children = this.loadAllChildren(soNode);
-              //     console.log(children);
-              // }  
               this.numberOfSelectedRows = this.selectedObjects.length;
               return this.selectedObjects;
             }
         })
       }
     else {
-      this.showDataVisuView = false; 
       this.selectedObjects = [];
       this.numberOfSelectedRows = this.selectedObjects.length;
     }
@@ -845,7 +765,6 @@ en:
     geometry-comment: Geospatial coordinates
     objectType: Object type
     name-placeholder: Enter a name
-    visualize: Visualize
     alertSelectAllLimitSize: The selection has too many lines for this feature, refine your search, maximum= 
 
 fr:
@@ -863,6 +782,5 @@ fr:
     geometry-comment: Coordonnées géospatialisées
     objectType: Type d'objet
     name-placeholder: Saisir un nom
-    visualize: Visualiser
     alertSelectAllLimitSize: La selection comporte trop de lignes pour cette fonctionnalité, affinez votre recherche, maximum= 
 </i18n>

@@ -77,7 +77,7 @@ system:
 
 # dataverse:
 #     externalAPIKey: "****-****-****-****-****"
-#     rechercheDataGouvBasePath: "https://data-preproduction.inrae.fr"
+#     rechercheDataGouvBasePath: https://demo.recherche.data.gouv.fr/"
 #     dataverseAlias: "opensilex-tests"
 #     dataverseLanguages:
 #         - en

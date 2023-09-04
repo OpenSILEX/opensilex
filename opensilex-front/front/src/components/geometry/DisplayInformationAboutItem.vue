@@ -3,6 +3,7 @@
     <div v-if="item.properties.nature === 'Area'">
       <opensilex-AreaDetails
           :showName="showName"
+          :experiment="experiment"
           :uri="item.properties.uri"
           :withBasicProperties="false"
       />
@@ -13,7 +14,7 @@
           :showName="showName"
       />
     </div>
-    <div v-if="(item.properties.nature === 'ScientificObjects') & detailsSO">
+    <div v-if="(item.properties.nature === 'ScientificObjects') && detailsSO">
       <template v-if="withBasicProperties">
         <opensilex-ScientificObjectDetailMap
             v-if="item.properties.OS"

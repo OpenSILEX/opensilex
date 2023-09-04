@@ -66,7 +66,6 @@ import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -107,11 +106,11 @@ public class ScientificObjectDAO {
 
     public List<ScientificObjectModel> searchByURIs(URI contextURI, List<URI> objectsURI, AccountModel currentUser, boolean loadChildren) throws Exception {
 
-        Map<String,Boolean> fieldsToFetch = new HashMap<>();
-        fieldsToFetch.put(ScientificObjectModel.FACTOR_LEVEL_FIELD,true);
+        Set<String> fieldsToFetch = new HashSet<>();
+        fieldsToFetch.add(ScientificObjectModel.FACTOR_LEVEL_FIELD);
 
         if(loadChildren){
-            fieldsToFetch.put(SPARQLTreeModel.CHILDREN_FIELD,true);
+            fieldsToFetch.add(SPARQLTreeModel.CHILDREN_FIELD);
         }
 
         return sparql.loadListByURIs(
@@ -307,15 +306,12 @@ public class ScientificObjectDAO {
 
         if(! CollectionUtils.isEmpty(fieldsToFetch)){
 
-            Map<String,Boolean> fieldToFetchMap = fieldsToFetch.stream().collect(Collectors.toMap(Function.identity(),uri -> true));
-
             // if object children must be retrieved later, then don't use listFetcher since it doesn't handle children properties (eg : name)
             SPARQLListFetcher<ScientificObjectModel> listFetcher = new SPARQLListFetcher<>(
                     sparql,
                     ScientificObjectModel.class,
                     SPARQLDeserializers.nodeURI(searchFilter.getExperiment()),
-                    fieldToFetchMap,
-                    select,
+                    fieldsToFetch,
                     results
             );
             listFetcher.updateModels();

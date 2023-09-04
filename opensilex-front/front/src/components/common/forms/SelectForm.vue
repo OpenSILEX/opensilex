@@ -132,6 +132,7 @@
         @select="select(conversionMethod($event))"
         @unselect="deselect(conversionMethod($event))"
         @selectall="selectAll"
+        @hide='$emit("hide")'
         class="isModalSearchComponent"
       ></component>
 

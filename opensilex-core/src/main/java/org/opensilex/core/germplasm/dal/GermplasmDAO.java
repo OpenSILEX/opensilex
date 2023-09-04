@@ -224,17 +224,11 @@ public class GermplasmDAO {
         );
 
         // manually fetch synonyms with ListFetcher in optimized way
-
-        Map<String, Boolean> fieldsToFetch = new HashMap<>();
-        // The triple <?uri skos:altLabel ?synonym> is present into initial select if and only if a filter on name occurred
-        fieldsToFetch.put(GermplasmModel.SYNONYM_VAR, StringUtils.isEmpty(searchFilter.getName()));
-
         SPARQLListFetcher<GermplasmModel> listFetcher = new SPARQLListFetcher<>(
                 sparql,
                 GermplasmModel.class,
                 sparql.getDefaultGraph(GermplasmModel.class),
-                fieldsToFetch,
-                initialSelect.get(),
+                Collections.singleton(GermplasmModel.SYNONYM_VAR),
                 models.getList()
         );
         listFetcher.updateModels();

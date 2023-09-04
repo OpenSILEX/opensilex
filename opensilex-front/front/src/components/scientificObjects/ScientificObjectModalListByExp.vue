@@ -167,7 +167,6 @@ export default class ScientificObjectModalListByExp extends ScientificObjectModa
   }
 
   selectItem(row) {
-    console.debug("ScientificObjectModalListByExp selecting item, heres the row : ", row);
     this.soList.onItemSelected(row);
   }
   unSelect(row) {

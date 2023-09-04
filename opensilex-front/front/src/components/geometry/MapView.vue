@@ -733,9 +733,6 @@ import VueI18n from "vue-i18n";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {stringify} from "wkt";
 import ExperimentDataVisualisation from "../experiments/ExperimentDataVisualisation.vue";
-import {NamedResourceDTOOrganizationModel} from "opensilex-core/model/namedResourceDTOOrganizationModel";
-import {NamedResourceDTOFacilityModel} from "opensilex-core/model/namedResourceDTOFacilityModel";
-import {NamedResourceDTOProjectModel} from "opensilex-core/model/namedResourceDTOProjectModel";
 
 @Component({
   components: {ExperimentDataVisualisation}
@@ -764,7 +761,7 @@ export default class MapView extends Vue {
     start_date: null,
     end_date: null,
   };
-  private experiment: string;
+  private experiment: string = "";
   private experimentService: ExperimentsService;
   private ontologyService: OntologyService;
   private scientificObjectsService: ScientificObjectsService ;
@@ -904,8 +901,8 @@ export default class MapView extends Vue {
   created() {
     this.$opensilex.showLoader();
 
-    this.temporalAreaType = this.$opensilex.getShortUri(Oeso.TEMPORAL_AREA_TYPE_URI);
-    this.structuralAreaType = this.$opensilex.getShortUri(Oeso.AREA_TYPE_URI);
+    this.temporalAreaType = Oeso.getShortURI(Oeso.TEMPORAL_AREA_TYPE_URI);
+    this.structuralAreaType = Oeso.getShortURI(Oeso.AREA_TYPE_URI);
 
     this.scientificObjectsService = this.$opensilex.getService("opensilex.ScientificObjectsService");
     this.areaService = this.$opensilex.getService("opensilex.AreaService");
@@ -2061,7 +2058,7 @@ export default class MapView extends Vue {
     let uri = data.item.properties.uri;
     switch (data.item.properties.nature) {
       default: return { path : '/scientific-objects/details/' + encodeURIComponent(uri)};
-      case 'Area': return { path : '/area/details/' + encodeURIComponent(uri)};
+      case 'Area': return { path : '/area/details/' + encodeURIComponent(uri), query: { experiment: encodeURIComponent(this.experiment)}};
       case 'Device': return { path :'/device/details/' + encodeURIComponent(uri)};
     }
   }

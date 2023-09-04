@@ -35,6 +35,8 @@ public class B extends SPARQLResourceModel {
     )
     private Integer integer;
 
+
+
     @SPARQLProperty(
             ontology = TEST_ONTOLOGY.class,
             property = "hasLong"
@@ -53,6 +55,7 @@ public class B extends SPARQLResourceModel {
             required = true
     )
     private Float floatVar;
+    public static final String FLOAT_FIELD = "floatVar";
 
     @SPARQLProperty(
             ontology = TEST_ONTOLOGY.class,
@@ -60,6 +63,7 @@ public class B extends SPARQLResourceModel {
             required = true
     )
     private Double doubleVar;
+    public static final String DOUBLE_FIELD = "doubleVar";
 
     @SPARQLProperty(
             ontology = TEST_ONTOLOGY.class,
@@ -80,6 +84,15 @@ public class B extends SPARQLResourceModel {
             property = "hasByte"
     )
     private Byte byteVar;
+
+    @SPARQLProperty(
+            ontology = TEST_ONTOLOGY.class,
+            property = "hasString"
+    )
+    private String stringVar;
+
+    public static final String STRING_FIELD = "stringVar";
+
 
     @SPARQLProperty(
             ontology = TEST_ONTOLOGY.class,
@@ -159,14 +172,6 @@ public class B extends SPARQLResourceModel {
         this.shortVar = shortVar;
     }
 
-    public Byte getByteVar() {
-        return byteVar;
-    }
-
-    public void setByteVar(Byte byteVar) {
-        this.byteVar = byteVar;
-    }
-
     public List<String> getStringList() {
         return stringList;
     }
@@ -181,5 +186,21 @@ public class B extends SPARQLResourceModel {
 
     public void setaList(List<A> aList) {
         this.aList = aList;
+    }
+
+    public Byte getByteVar() {
+        return byteVar;
+    }
+
+    public void setByteVar(Byte byteVar) {
+        this.byteVar = byteVar;
+    }
+
+    public String getStringVar() {
+        return stringVar;
+    }
+
+    public void setStringVar(String stringVar) {
+        this.stringVar = stringVar;
     }
 }

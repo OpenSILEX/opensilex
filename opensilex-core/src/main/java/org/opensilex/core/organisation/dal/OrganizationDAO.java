@@ -182,8 +182,7 @@ public class OrganizationDAO {
                 sparql,
                 OrganizationModel.class,
                 sparql.getDefaultGraph(OrganizationModel.class),
-                Collections.singletonMap(OrganizationModel.CHILDREN_FIELD, true),
-                initialSelect.get(),
+                Collections.singleton(OrganizationModel.CHILDREN_FIELD),
                 models
         );
         listFetcher.updateModels();

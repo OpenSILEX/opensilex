@@ -11,6 +11,8 @@
       :selectedInJsonFormat="this.editMode ? germplasm : null"
       @clear="refreshGermplasmSelector"
       :limit="4"
+      @hide='$emit("hideSelector")'
+      @shown='$emit("shownSelector")'
       class="searchFilter"
   ></opensilex-SelectForm>
 </template>
@@ -50,6 +52,7 @@ export default class GermplasmSelectorWithFilter extends Vue {
   refreshGermplasmSelector() {
     this.germplasmSelector.refreshModalSearch();
   }
+
 }
 </script>
 

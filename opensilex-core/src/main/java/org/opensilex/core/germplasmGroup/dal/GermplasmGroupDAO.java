@@ -7,6 +7,7 @@ package org.opensilex.core.germplasmGroup.dal;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.trie.PatriciaTrie;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.arq.querybuilder.WhereBuilder;
 import org.apache.jena.graph.Node;
@@ -157,6 +158,13 @@ public class GermplasmGroupDAO {
                 .addGroupBy(germplasm)
                 .addGroupBy(germplasmType)
                 .addGroupBy(germplasmName);
+
+
+        //Only get labels of correct language
+        if (!StringUtils.isEmpty(lang)) {
+            Expr langFilter = SPARQLQueryHelper.langFilterWithDefault("germplasm_name", Locale.forLanguageTag(lang).getLanguage());
+            query.addFilter(langFilter);
+        }
 
         // aggregate groups with variables
         SPARQLQueryHelper.appendGroupConcatAggregator(query, germplasmGroup, true);

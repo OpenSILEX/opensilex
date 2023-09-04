@@ -712,6 +712,7 @@ test:gabriel:front-test:
     - apt-get update --allow-insecure-repositories && apt-get install -y git
     - apt-get -y install openjdk-11-jre-headless # Check if headless is ok
     - apt-get -y install gettext-base
+    - apt-get -y install cgroupfs-mount
     #- mount -t tmpfs cgroup_root /sys/fs/cgroup
     - cgroupfs-mount
     - echo "git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@forgemia.inra.fr/OpenSILEX/opensilex-front-tests.git --branch main $CI_PROJECT_DIR/opensilex-front-tests"

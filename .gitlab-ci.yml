@@ -747,8 +747,8 @@ test:gabriel:front-test:
     - dockerd &
     - docker compose -p test up &
     - cd $CI_PROJECT_DIR/artifacts/$OPENSILEX_APP_REVISION
-    - echo "${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar install --CONFIG_FILE=/opensilex_mod.yml -d"
-    - ${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar install --CONFIG_FILE=/opensilex_mod.yml -d
+    - echo "${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar system install --CONFIG_FILE=/opensilex_mod.yml"
+    - ${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar system install --CONFIG_FILE=/opensilex_mod.yml
     - echo "${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar start server --DEBUG --CONFIG_FILE=/opensilex_mod.yml -d"
     - ${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar start server --DEBUG --CONFIG_FILE=/opensilex_mod.yml -d
     - cd $CI_PROJECT_DIR/opensilex-front-tests

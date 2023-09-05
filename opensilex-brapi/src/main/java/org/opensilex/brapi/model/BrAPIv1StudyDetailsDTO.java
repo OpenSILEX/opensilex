@@ -6,6 +6,7 @@
 //******************************************************************************
 package org.opensilex.brapi.model;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 
@@ -13,7 +14,7 @@ import org.opensilex.core.experiment.dal.ExperimentModel;
  * @see <a href="https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3">BrAPI documentation</a>
  * @author Alice Boizet
  */
-public class BrAPIv1StudyDetailsDTO extends BrAPIv1StudyDTO {
+public class BrAPIv1StudyDetailsDTO extends BrAPIv1SuperStudyDTO {
     private List<BrAPIv1ContactDTO> contacts;
     private List<BrAPIv1DataLinkDTO> dataLinks;
     private String license;
@@ -26,6 +27,7 @@ public class BrAPIv1StudyDetailsDTO extends BrAPIv1StudyDTO {
     private Float latitude;
     private Float longitude;
     private String studyDescription;
+    private List<String> seasons;
 
     public List<BrAPIv1ContactDTO> getContacts() {
         return contacts;
@@ -123,9 +125,26 @@ public class BrAPIv1StudyDetailsDTO extends BrAPIv1StudyDTO {
         this.studyDescription = studyDescription;
     }
 
+    public List<String> getSeasons() {
+        return seasons;
+    }
+
+    public void setSeasons(List<String> seasons) {
+        this.seasons = seasons;
+    }
+
     public BrAPIv1StudyDetailsDTO extractFromModel(ExperimentModel model) {
         super.extractFromModel(model);
         this.setStudyDescription(model.getDescription());
+
+        if (model.getEndDate() != null){
+            List<String> seasons = new ArrayList<>();
+            for (int studyYear = model.getStartDate().getYear(); studyYear <= model.getEndDate().getYear(); studyYear++){
+                seasons.add(String.valueOf(studyYear));
+            }
+            this.setSeasons(seasons);
+        }
+
         return this;
     }
 

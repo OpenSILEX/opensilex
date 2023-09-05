@@ -6,6 +6,7 @@
 //******************************************************************************
 package org.opensilex.brapi.model;
 
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.vocabulary.XSD;
 import org.opensilex.core.variable.dal.MethodModel;
@@ -258,7 +259,7 @@ public class BrAPIv1ObservationVariableDTO {
             variable.setSynonyms(new ArrayList<>(Collections.singletonList(variableModel.getAlternativeName())));
         }
 
-        if (variableModel.getExactMatch() != null) {
+        if (!CollectionUtils.isEmpty(variableModel.getExactMatch())) {
             variable.setXref(variableModel.getExactMatch().get(0).toString());
         }
 

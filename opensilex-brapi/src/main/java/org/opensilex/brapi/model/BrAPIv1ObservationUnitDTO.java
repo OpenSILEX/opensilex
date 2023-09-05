@@ -8,6 +8,8 @@ package org.opensilex.brapi.model;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.scientificObject.api.ScientificObjectNodeDTO;
 
@@ -16,6 +18,27 @@ import org.opensilex.core.scientificObject.api.ScientificObjectNodeDTO;
  * @author Alice Boizet
  */
 public class BrAPIv1ObservationUnitDTO {
+
+    private enum PositionType {
+        LONGITUDE("LONGITUDE"),
+        LATITUDE("LATITUDE"),
+        PLANTED_ROW("PLANTED_ROW"),
+        PLANTED_INDIVIDUAl("PLANTED_INDIVIDUAl"),
+        GRID_ROW("GRID_ROW"),
+        GRID_COL("GRID_COL"),
+        MEASURED_ROW("MEASURED_ROW"),
+        MEASURED_COL("MEASURED_COL");
+
+        public final String label;
+
+        PositionType(String label){
+            this.label = label;
+        }
+        @Override
+        public String toString() {
+            return this.label;
+        }
+    }
     private String blockNumber;         
     private String entryNumber;
     private String entryType;
@@ -29,9 +52,9 @@ public class BrAPIv1ObservationUnitDTO {
     private String plantNumber;
     private String plotNumber;
     private String positionCoordinateX;
-    private String positionCoordinateXType; //LONGITUDE, LATITUDE, PLANTED_ROW, PLANTED_INDIVIDUAl, GRID_ROW, GRID_COL, MEASURED_ROW, MEASURED_COL          
+    private String positionCoordinateXType; // Use PositionType
     private String positionCoordinateY;
-    private String positionCoordinateYType;          
+    private String positionCoordinateYType; // Use PositionType
     private String programName;
     private String replicate;
     private String studyDbId;
@@ -144,12 +167,13 @@ public class BrAPIv1ObservationUnitDTO {
         this.positionCoordinateX = positionCoordinateX;
     }
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public String getPositionCoordinateXType() {
         return positionCoordinateXType;
     }
 
-    public void setPositionCoordinateXType(String positionCoordinateXType) {
-        this.positionCoordinateXType = positionCoordinateXType;
+    public void setPositionCoordinateXType(PositionType positionCoordinateXType) {
+        this.positionCoordinateXType = positionCoordinateXType.toString();
     }
 
     public String getPositionCoordinateY() {
@@ -160,12 +184,13 @@ public class BrAPIv1ObservationUnitDTO {
         this.positionCoordinateY = positionCoordinateY;
     }
 
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public String getPositionCoordinateYType() {
         return positionCoordinateYType;
     }
 
-    public void setPositionCoordinateYType(String positionCoordinateYType) {
-        this.positionCoordinateYType = positionCoordinateYType;
+    public void setPositionCoordinateYType(PositionType positionCoordinateYType) {
+        this.positionCoordinateYType = positionCoordinateYType.toString();
     }
 
     public String getProgramName() {
@@ -232,7 +257,7 @@ public class BrAPIv1ObservationUnitDTO {
         if(factorLevels == null){
             return observationUnit;
         }
-        List<BrAPIv1ObservationTreatmentDTO> treatments = new ArrayList();
+        List<BrAPIv1ObservationTreatmentDTO> treatments = new ArrayList<>();
         for (FactorLevelModel level:factorLevels) {
             BrAPIv1ObservationTreatmentDTO treatment = new BrAPIv1ObservationTreatmentDTO();
             treatment.setFactor(level.getFactor().getName());
@@ -240,7 +265,11 @@ public class BrAPIv1ObservationUnitDTO {
             treatments.add(treatment);
         }
         observationUnit.setTreatments(treatments);
-        observationUnit.setObservationLevel(model.getTypeLabel().toString());
+        observationUnit.setObservationLevel(model.getTypeLabel());
+
+        // null isn't allowed for these so by default it is set to long/lat
+        /*observationUnit.setPositionCoordinateXType(PositionType.LONGITUDE);
+        observationUnit.setPositionCoordinateXType(PositionType.LATITUDE);*/
         
         return observationUnit;
     }

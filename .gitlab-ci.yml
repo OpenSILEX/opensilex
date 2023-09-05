@@ -749,8 +749,8 @@ test:gabriel:front-test:
     - cd $CI_PROJECT_DIR/artifacts/$OPENSILEX_APP_REVISION
     - echo "${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar system install --CONFIG_FILE=/opensilex_mod.yml"
     - ${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar system install --CONFIG_FILE=/opensilex_mod.yml
-    - echo "${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar start server -d -p 8080 --DEBUG --CONFIG_FILE=/opensilex_mod.yml"
-    - ${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar start server -d -p 8080 --DEBUG --CONFIG_FILE=/opensilex_mod.yml
+    - echo "${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar start server --daemon=true --port=8080 --DEBUG --CONFIG_FILE=/opensilex_mod.yml"
+    - ${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar start server --daemon=true --port=8080 --DEBUG --CONFIG_FILE=/opensilex_mod.yml
     - cd $CI_PROJECT_DIR/opensilex-front-tests
     - npm ci
     - npx playwright test #  --shard=$CI_NODE_INDEX/$CI_NODE_TOTAL    for sharding

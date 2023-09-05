@@ -728,12 +728,12 @@ test:gabriel:front-test:
     - echo "SETTING UP CONFIG"
     - curl -X GET -H "PRIVATE-TOKEN:$JOB_API_TOKEN" "https://forgemia.inra.fr/api/v4/projects/1675/repository/files/opensilex-dev-tools%2Fsrc%2Fmain%2Fresources%2Fconfig%2Fopensilex%2Eyml/raw?ref=gabriel" >> /opensilex.yml
     - echo "$(</opensilex.yml)"
-    - yq -i '.ontologies.sparql.config.serverURI = "http://$REMOTE_TEST_SERVER_IP:8080/rdf4j-server/"' /opensilex.yml
+    - yq -i '.ontologies.sparql.config.serverURI = "http://localhost:8667/rdf4j-server/"' /opensilex.yml
     - yq -i '.ontologies.sparql.config.repository = "FRONT-TEST-JOB-$CI_JOB_ID"' /opensilex.yml
     - yq -i '.file-system.fs.config.connections.gridfs.config.host = "localhost"' /opensilex.yml
     - yq -i '.big-data.mongodb.config.host = "localhost"' /opensilex.yml
-    - yq -i '.file-system.fs.config.connections.gridfs.config.port = 27017' /opensilex.yml
-    - yq -i '.big-data.mongodb.config.port = 27017' /opensilex.yml
+    - yq -i '.file-system.fs.config.connections.gridfs.config.port = 8668' /opensilex.yml
+    - yq -i '.big-data.mongodb.config.port = 8668' /opensilex.yml
     - yq -i '.file-system.fs.config.connections.gridfs.config.database = "FRONT-TEST-JOB-$CI_JOB_ID"' /opensilex.yml
     - yq -i '.big-data.mongodb.config.database = "FRONT-TEST-JOB-$CI_JOB_ID"' /opensilex.yml
     - echo "$(</opensilex.yml)"

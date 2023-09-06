@@ -3,21 +3,17 @@
 
         <div class="row">
 
-            <div class="col">
+            <div class="col-lg-6">
+
+                <!-- URI -->
                 <opensilex-UriForm
-                        :uri.sync="form.uri"
-                        label="component.common.uri"
-                        :generated.sync="uriGenerated"
-                        :required="true"
-                        helpMessage="EntityForm.uri-help"
-                        :editMode="editMode"
+                    :uri.sync="form.uri"
+                    label="component.common.uri"
+                    :generated.sync="uriGenerated"
+                    :required="true"
+                    helpMessage="EntityForm.uri-help"
+                    :editMode="editMode"
                 ></opensilex-UriForm>
-            </div>
-        </div>
-
-        <div class="row">
-
-            <div class="col-lg-5">
 
                 <!-- Name -->
                 <opensilex-InputForm
@@ -36,36 +32,10 @@
             </div>
 
             <div class="col">
-                <b-form-group
-                        label="component.skos.ontologies-references-label"
-                        label-size="lg"
-                        label-class="font-weight-bold pt-0"
-                        class="mb-0"
-                >
-                    <template v-slot:label>{{ $t('component.skos.ontologies-references-label') }}</template>
-                </b-form-group>
 
                 <div class="row">
                     <div class="col">
-                        <b-card-text>
-                            <ul>
-                                <li
-                                        v-for="externalOntologyRef in externalOntologiesRefs"
-                                        :key="externalOntologyRef.name"
-                                >
-                                    <a
-                                            target="_blank"
-                                            v-bind:title="externalOntologyRef.name"
-                                            v-bind:href="externalOntologyRef.link"
-                                            v-b-tooltip.v-info.hover.left="externalOntologyRef.description"
-                                    >{{ externalOntologyRef.name }}</a>
-                                </li>
-                            </ul>
-                        </b-card-text>
-                    </div>
-
-                    <div class="col-lg-7">
-                        <p> {{$t("EntityForm.ontologies-help")}}</p>
+                        TODO : add labels
                     </div>
                 </div>
             </div>

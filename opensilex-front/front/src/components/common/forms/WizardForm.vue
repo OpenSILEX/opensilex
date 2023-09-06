@@ -41,7 +41,7 @@
                 <b-button
                     variant="success"
                     v-if="!blockingStep && !props.isLastStep"
-                    @click="validateEarly(props)"
+                    @click="validate(props)"
                 >{{getStepBtnTitle(props)}}</b-button>
                 <b-button
                   variant="success"
@@ -219,6 +219,13 @@ export default class WizardForm extends Vue {
   validate(props) {
     this.validateStep(props).then(isValid => {
       if (isValid) {
+
+        if (this.customValidation) {
+          if (!this.customValidation(this.form)) {
+            return false;
+          }
+        }
+
         let submitMethod: any = null;
         if (this.createAction) {
           submitMethod = this.createAction;
@@ -254,12 +261,8 @@ export default class WizardForm extends Vue {
     });
   }
 
-  validateEarly(props) {
-    if (this.customValidation) {
-      if (this.customValidation(this.form)) {
-        this.validate(props);
-      }
-    }
+  skipStep() {
+    this.wizardRef.nextTab();
   }
 }
 </script>
@@ -292,6 +295,11 @@ export default class WizardForm extends Vue {
 
 ::v-deep .vue-form-wizard {
   padding-bottom: 50px;
+}
+
+.wizard-tab-container {
+  padding-top: 20px;
+  padding-bottom: 20px;
 }
 
 .icon-title {

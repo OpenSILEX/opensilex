@@ -11,7 +11,7 @@
             :updateAction="update"
             :static="false"
             :nextStepAction="nextStep"
-            :customValidation="validate"
+            :customValidation="validateCustom"
             :blockingStep="false"
     >
       <template v-slot:icon></template>
@@ -64,6 +64,17 @@ import {EntityDetailsDTO} from "opensilex-core/model/entityDetailsDTO";
 
         @Ref("wizardRef") readonly wizardRef!: any;
 
+        checkAgroportalReachable() {
+          return this.service.pingAgroportal(1000).then((http) => {
+            if (http && http.response) {
+              let isReachable = http.response.result;
+              if (!isReachable) {
+                this.wizardRef.skipStep();
+              }
+            }
+          });
+        }
+
         created(){
             this.service = this.$opensilex.getService("opensilex.VariablesService");
         }
@@ -73,6 +84,7 @@ import {EntityDetailsDTO} from "opensilex-core/model/entityDetailsDTO";
         }
 
         showCreateForm() {
+            this.checkAgroportalReachable();
             this.wizardRef.showCreateForm();
         }
 
@@ -129,8 +141,13 @@ import {EntityDetailsDTO} from "opensilex-core/model/entityDetailsDTO";
                 });
         }
 
-        validate(form: EntityCreationDTO) {
-            if (form.uri != null && form.name != null) {
+        validate() {
+          return true;
+        }
+
+        validateCustom(form: EntityCreationDTO) {
+          console.debug(form);
+            if (form.name != null) {
               return true;
             }
             return false;

@@ -2,27 +2,29 @@
     <div>
         <ValidationObserver ref="validatorRef">
             <b-form>
-                <p>
+                <p v-if="skosReferences.uri">
                     {{$t('component.skos.addTo')}}  
                     <em>
                         <strong class="text-primary">{{this.skosReferences.uri}}</strong>
                     </em>
                 </p>
                 <div class="row" v-if="includeAgroportalSearch && isAgroportalReachable">
-                  <opensilex-AgroportalSearch
-                      label="component.common.name"
-                      type="text"
-                      placeholder="search"
-                      @change="onSearchTextChange"
-                  ></opensilex-AgroportalSearch>
+                  <div class="col">
+                    <opensilex-AgroportalSearch
+                        label="component.common.name"
+                        type="text"
+                        placeholder="search"
+                        @change="onSearchTextChange"
+                    ></opensilex-AgroportalSearch>
 
-                  <opensilex-AgroportalResults
-                      ref="searchResults"
-                      :text.sync="text"
-                      :isMappingMode="true"
-                      :mappingOptions="options"
-                      @importMapping="onImportMapping">
-                  </opensilex-AgroportalResults>
+                    <opensilex-AgroportalResults
+                        ref="searchResults"
+                        :text.sync="text"
+                        :isMappingMode="true"
+                        :mappingOptions="options"
+                        @importMapping="onImportMapping">
+                    </opensilex-AgroportalResults>
+                  </div>
                 </div>
                 <b-card bg-variant="light">
                     <div class="row">
@@ -201,15 +203,13 @@
 
         isAgroportalReachable: boolean = false;
 
-        checkAgroportalReachable(): boolean {
-          let isReachable: boolean = false;
+        checkAgroportalReachable() {
           this.variablesService.pingAgroportal(1000).then((http) => {
             if (http && http.response) {
-              isReachable = http.response.result;
-              console.debug(isReachable);
+              let isReachable = http.response.result;
+              this.isAgroportalReachable = isReachable;
             }
           });
-          return isReachable;
         }
 
         relationsInternal: any[] = [];
@@ -229,12 +229,13 @@
         }
 
         beforeMount() {
-          this.isAgroportalReachable = this.checkAgroportalReachable();
+
         }
 
         created() {
            this.setOptions();
            this.variablesService = this.$opensilex.getService<VariablesService>("opensilex.VariablesService");
+           this.checkAgroportalReachable();
         }
 
         private langUnwatcher;

@@ -755,6 +755,8 @@ test:gabriel:front-test:
     - npm ci
     - PLAYWRIGHT_HTML_REPORT=$CI_PROJECT_DIR/artifacts/front-tests/playwright-report npx playwright test --output $CI_PROJECT_DIR/artifacts/front-tests/test-results  #  --shard=$CI_NODE_INDEX/$CI_NODE_TOTAL    for sharding
     # Penser à exit 0 ou 1 en fonction des résultats de tests + sauvegarder les traces en
+
+  after_script:
     - echo "https://opensilex.pages.mia.inra.fr/-/opensilex-dev/-/jobs/$CI_JOB_ID/artifacts/artifacts/front-tests/playwright-report/index.html"
   rules:
     - if: $CI_COMMIT_BRANCH == "gabriel"

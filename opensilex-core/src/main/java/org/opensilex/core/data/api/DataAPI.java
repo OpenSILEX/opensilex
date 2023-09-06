@@ -1558,7 +1558,6 @@ public class DataAPI {
 
         ParsedDateTimeMongo parsedDateTimeMongo = null;
         
-        List<ProvEntityModel> agents = new ArrayList<>();
         List<URI> experiments = new ArrayList<>();
         SPARQLNamedResourceModel target = null;
         
@@ -1858,8 +1857,7 @@ public class DataAPI {
                                     URI rootType = rootDeviceTypes.get(deviceFromDeviceColumn.getType());
                                     agent.setType(rootType);
                                     agent.setUri(deviceFromDeviceColumn.getUri());
-                                    agents.add(agent);
-                                    provenanceModel.setProvWasAssociatedWith(agents);
+                                    provenanceModel.setProvWasAssociatedWith(Collections.singletonList(agent));
 
                                 } else if (sensingDeviceFoundFromProvenance) {
 
@@ -1871,8 +1869,7 @@ public class DataAPI {
                                     URI rootType = rootDeviceTypes.get(checkedDevice.getType());
                                     agent.setType(rootType);
                                     agent.setUri(checkedDevice.getUri());
-                                    agents.add(agent);
-                                    provenanceModel.setProvWasAssociatedWith(agents);
+                                    provenanceModel.setProvWasAssociatedWith(Collections.singletonList(agent));
 
                                 }
 
@@ -1934,9 +1931,13 @@ public class DataAPI {
             }else{
                 if(validRow){
                     annotationFromAnnotationColumn.setTargets(Collections.singletonList( target==null ? object.getUri() : target.getUri()));
-                    String onlyDateString = parsedDateTimeMongo.getInstant().toString().substring(0, 11);
-                    String setToMidday = onlyDateString + "12:00:00Z";
-                    annotationFromAnnotationColumn.setCreated(Instant.parse( setToMidday ).atOffset(ZoneOffset.ofTotalSeconds(0)));
+                    Instant usedInstant = parsedDateTimeMongo.getInstant();
+                    if(!parsedDateTimeMongo.getIsDateTime()){
+                        String onlyDateString = parsedDateTimeMongo.getInstant().toString().substring(0, 11);
+                        String setToMidday = onlyDateString + "12:00:00Z";
+                        usedInstant = Instant.parse( setToMidday );
+                    }
+                    annotationFromAnnotationColumn.setCreated(usedInstant.atOffset(ZoneOffset.ofTotalSeconds(0)));
                     csvValidation.addToAnnotationsOnObjects(annotationFromAnnotationColumn);
                 }
             }

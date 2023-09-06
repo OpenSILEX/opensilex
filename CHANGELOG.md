@@ -1,27 +1,30 @@
 <!-- TOC -->
 * [Changelog](#changelog)
-  * [[1.0.1]](#101---ambitious-amber)
-    * [Fixed or optimized](#fixed-or-optimized)
-      * [API](#api)
-      * [Web client](#web-client)
-  * [[1.0.0]](#100---ambitious-amber)
+  * [[1.1.0] - BB](#110---bb)
     * [New features](#new-features)
     * [Fixed or optimized](#fixed-or-optimized)
+  * [[1.0.1] - Ambitious Amber](#101---ambitious-amber)
+    * [Fixed or optimized](#fixed-or-optimized-1)
       * [API](#api)
       * [Web client](#web-client)
-  * [[1.0.0-rc+7]](#100-rc7)
+  * [[1.0.0] - Ambitious Amber](#100---ambitious-amber)
     * [New features](#new-features-1)
-    * [Fixed or optimized](#fixed-or-optimized-1)
-  * [[1.0.0-rc+6]](#100-rc6)
     * [Fixed or optimized](#fixed-or-optimized-2)
+      * [API](#api-1)
+      * [Web client](#web-client-1)
+  * [[1.0.0-rc+7]](#100-rc7)
+    * [New features](#new-features-2)
+    * [Fixed or optimized](#fixed-or-optimized-3)
+  * [[1.0.0-rc+6]](#100-rc6)
+    * [Fixed or optimized](#fixed-or-optimized-4)
     * [Added or changed](#added-or-changed)
   * [[1.0.0-rc+5.2]](#100-rc52)
-    * [Fixed or optimized](#fixed-or-optimized-3)
+    * [Fixed or optimized](#fixed-or-optimized-5)
   * [[1.0.0-rc+5.1]](#100-rc51)
-    * [Fixed or optimized](#fixed-or-optimized-4)
+    * [Fixed or optimized](#fixed-or-optimized-6)
   * [[1.0.0-rc+5]](#100-rc5)
     * [Added or changed](#added-or-changed-1)
-    * [Fixed or optimized](#fixed-or-optimized-5)
+    * [Fixed or optimized](#fixed-or-optimized-7)
   * [[1.0.0-rc+4.1] - 2022-07-13](#100-rc41---2022-07-13)
     * [Fixed](#fixed)
   * [[1.0.0-rc+4] - 2022-06-13](#100-rc4---2022-06-13)
@@ -37,10 +40,10 @@
     * [Some Known Issues](#some-known-issues)
   * [[1.0.0-rc+1] - 2021-11-02](#100-rc1---2021-11-02)
     * [Added](#added-1)
-    * [Fixed or optimized](#fixed-or-optimized-6)
+    * [Fixed or optimized](#fixed-or-optimized-8)
   * [[1.0.0-rc] - 2021-10-08](#100-rc---2021-10-08)
     * [Added](#added-2)
-    * [Fixed or optimized](#fixed-or-optimized-7)
+    * [Fixed or optimized](#fixed-or-optimized-9)
     * [Changed](#changed)
     * [Major bugs identified](#major-bugs-identified)
   * [[1.0.0-beta+2.1] - 2021-07-27](#100-beta21---2021-07-27)
@@ -64,6 +67,37 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.1.0] - Blazing Basalt
+
+> WARNING : upgrading to this new version require manual operations. Please
+> see the [versioning notes](https://github.com/OpenSILEX/opensilex/blob/master/opensilex-doc/src/main/resources/release/1.1.0.md).
+> Also available [here](opensilex-doc%2Fsrc%2Fmain%2Fresources%2Frelease%2F1.1.0.md)
+
+### Changes and new features
+
+- [Map] You can now visualize data in a chart by selecting an object in the map view
+- [Person] You can now search persons by their ORCID
+- [User] The User API is now deprecated
+- [Account] The form for creating accounts has been simplified
+- [Experiment] Associated facilities are now part of the available facilities for scientific objects of the experiments
+- [Experiment] The "Visualization" tab of a scientific object in an experiment has been removed
+- [Experiment] Scientific object count is now displayed on the scientific objects tab
+- [Germplasm group] Added documentation that you can read by hovering the question mark
+
+### Fixed or optimized
+
+- [Front] Minor visual fixes
+- [Experiment] On the "Data" page of an experiment, targets are now always correctly displayed
+- [Data] Importing multiple variables in one CSV no longer duplicates devices in provenance
+- [Data] Adding annotation during data import now uses the correct date and time
+- [Map] Fixed some issues with the zoom
+- [Organization] Fixed an issue where you had to click twice on "create organization" or "create site" to perform the action
+- [Facility] Tweaked the "Monitoring" page of a facility for better ergonomy
+- [Charts] Tweaked the display of graphs with multi-scale axis for better ergonomy
+- [Charts] Fixed a bug where data with the value 0 where sometimes displayed as undefined
+- [Charts] Charts no longer aggregate data points
+- [PHIS] PHIS logo is now displayed if the dashboard chart is not configured
 
 ## [1.0.1] - Ambitious Amber
 

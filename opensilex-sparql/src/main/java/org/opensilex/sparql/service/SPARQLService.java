@@ -389,7 +389,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      */
     public <T extends SPARQLResourceModel> List<T> getListByURIs(Node graph, Class<T> objectClass, Collection<URI> uris, String lang,
                                                                  ThrowingFunction<SPARQLResult, T, Exception> resultHandler,
-                                                                 Map<String, Boolean> listFieldsToFetch
+                                                                 Set<String> listFieldsToFetch
     ) throws Exception {
         if (CollectionUtils.isEmpty(uris)) {
             return Collections.emptyList();
@@ -413,7 +413,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                 uris,
                 lang,
                 resultHandler,
-                listFieldsToFetch == null ? Collections.emptyMap() : listFieldsToFetch
+                listFieldsToFetch == null ? Collections.emptyList() : listFieldsToFetch
         );
     }
 
@@ -471,7 +471,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                                                                   Collection<URI> uris,
                                                                   String lang,
                                                                   ThrowingFunction<SPARQLResult, T, Exception> resultHandler,
-                                                                  Map<String, Boolean> listFieldsToFetch) throws Exception {
+                                                                  Collection<String> listFieldsToFetch) throws Exception {
 
         if (CollectionUtils.isEmpty(uris)) {
             return Collections.emptyList();
@@ -487,11 +487,6 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         select.addValueVar(mapper.getURIFieldExprVar(), uriNodes);
 
         // set default ORDER BY ?uri. Needed if we use multi-valued properties fetching
-        if(! MapUtils.isEmpty(listFieldsToFetch)){
-            OrderBy uriDescOrder = SPARQLClassObjectMapper.DEFAULT_ORDER_BY;
-            select.addOrderBy(SPARQLQueryHelper.getExprFactory().asVar(uriDescOrder.getFieldName()), uriDescOrder.getOrder());
-        }
-
         List<T> results = executeSelectQueryAsStream(select).map(
                 result -> {
                     try {
@@ -521,13 +516,12 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             throw new SPARQLInvalidUriListException("[" + objectClass.getSimpleName() + "] URIs not found: ", unknownUris);
         }
 
-        if(! MapUtils.isEmpty(listFieldsToFetch)){
+        if(! CollectionUtils.isEmpty(listFieldsToFetch)){
             SPARQLListFetcher<T> listFetcher = new SPARQLListFetcher<>(
                     this,
                     objectClass,
                     graph,
                     listFieldsToFetch,
-                    select,
                     results
             );
             listFetcher.updateModels();

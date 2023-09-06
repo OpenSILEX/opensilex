@@ -1,5 +1,5 @@
 <template>
-  <b-modal ref="modalRef" size="xl" :static="true">
+  <b-modal ref="modalRef" size="xl" :static="true" @hide='$emit("hide")'>
     <template v-slot:modal-title>
       <i class="ik ik-search mr-1"></i>
       {{ $t('GermplasmList.selectLabel') }}
@@ -54,6 +54,7 @@ export default class GermplasmModalList extends GermplasmList {
 
   show() {
     let modalRef: any = this.$refs.modalRef;
+    this.$emit("shown");
     modalRef.show();
   }
 

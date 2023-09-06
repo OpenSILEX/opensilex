@@ -39,6 +39,11 @@
             <div class="wizard-footer-right">
               <b-button-group>
                 <b-button
+                    variant="success"
+                    v-if="!blockingStep && !props.isLastStep"
+                    @click="validateEarly(props)"
+                >{{getStepBtnTitle(props)}}</b-button>
+                <b-button
                   variant="success"
                   v-if="props.activeTabIndex > 0"
                   @click="props.prevTab()"
@@ -80,6 +85,9 @@ export default class WizardForm extends Vue {
   @Prop({ default: true })
   static;
 
+  @Prop({ default: true })
+  blockingStep;
+
   @Prop()
   steps;
 
@@ -106,6 +114,13 @@ export default class WizardForm extends Vue {
 
   @Prop()
   nextStepAction: Function;
+
+  @Prop()
+  customValidation: Function;
+
+  getStepBtnTitle(props) {
+    return this.$t(this.steps[props.activeTabIndex].finish);
+  }
 
   showCreateForm() {
     this.form = this.initForm();
@@ -237,6 +252,14 @@ export default class WizardForm extends Vue {
           .catch(console.error);
       }
     });
+  }
+
+  validateEarly(props) {
+    if (this.customValidation) {
+      if (this.customValidation(this.form)) {
+        this.validate(props);
+      }
+    }
   }
 }
 </script>

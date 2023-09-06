@@ -88,7 +88,6 @@ import AgroportalEntityCreate from "./AgroportalEntityCreate.vue";
 export default class AgroportalEntityEnrichForm extends Vue {
     $opensilex: any;
 
-    title = "";
     uriGenerated = true;
 
     @Prop()

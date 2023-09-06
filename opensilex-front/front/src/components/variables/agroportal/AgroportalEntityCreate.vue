@@ -11,6 +11,8 @@
             :updateAction="update"
             :static="false"
             :nextStepAction="nextStep"
+            :customValidation="validate"
+            :blockingStep="false"
     >
       <template v-slot:icon></template>
 
@@ -32,9 +34,17 @@ import {EntityDetailsDTO} from "opensilex-core/model/entityDetailsDTO";
     export default class AgroportalEntityCreate extends Vue {
 
         steps = [
-            {component: "opensilex-AgroportalEntityForm"}
-            ,{component : "opensilex-AgroportalEntityEnrichForm"}
-            ,{component : "opensilex-AgroportalEntityExternalReferencesForm"}
+            {component: "opensilex-AgroportalEntityForm",
+              title: "AgroportalEntityForm.step1-title",
+              finish: "AgroportalEntityForm.import-and-save"
+            }
+            ,{component : "opensilex-AgroportalEntityEnrichForm",
+              title: "AgroportalEntityForm.step2-title",
+              finish: "AgroportalEntityForm.save"
+            }
+            ,{component : "opensilex-AgroportalEntityExternalReferencesForm",
+              title: "AgroportalEntityForm.step3-title"
+            }
         ];
 
         static selectedOntologies: string[] = [
@@ -105,7 +115,7 @@ import {EntityDetailsDTO} from "opensilex-core/model/entityDetailsDTO";
                 });
         }
 
-        update(form: EntityUpdateDTO){
+        update(form: EntityUpdateDTO) {
             return this.service
                 .updateEntity(form)
                 .then((http: HttpResponse<OpenSilexResponse<string>>) => {
@@ -119,6 +129,13 @@ import {EntityDetailsDTO} from "opensilex-core/model/entityDetailsDTO";
                 });
         }
 
+        validate(form: EntityCreationDTO) {
+            if (form.uri != null && form.name != null) {
+              return true;
+            }
+            return false;
+        }
+
         nextStep(stepIndex, form, nextStepComponent, currentStepComponent) {
           console.log(form);
           if(stepIndex == 0 && form.uri != null) {
@@ -126,7 +143,6 @@ import {EntityDetailsDTO} from "opensilex-core/model/entityDetailsDTO";
             form.uri = "";
             return true;
           }
-
         }
 
         loadingWizard: boolean = false;
@@ -154,6 +170,11 @@ en:
         name-placeholder: Plant
         search-for-ontology-term: Search for ontology term
         selected-term: Selected term
+        step1-title: Search
+        step2-title: Enrich
+        step3-title: Mapping
+        import-and-save: Import & Save
+        save: Save
 fr:
     AgroportalEntityForm:
         uri-help: "Décocher si vous souhaitez ajouter une entité à partir d'une ontologie existante ou si vous souhaitez spécifier une URI particulière. Laisser coché si vous souhaitez ajouter une entité avec une URI auto-générée"
@@ -164,4 +185,9 @@ fr:
         name-placeholder: Plante
         search-for-ontology-term: Rechercher un terme
         selected-term: Terme sélectionné
+        step1-title: Chercher
+        step2-title: Enrichir
+        step3-title: Mapper
+        import-and-save: Importer & Enregistrer
+        save: Enregistrer
 </i18n>

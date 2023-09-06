@@ -30,23 +30,10 @@ import AgroportalEntityCreate from "./AgroportalEntityCreate.vue";
 @Component
 export default class AgroportalEntityExternalReferencesForm extends Vue {
 
-    selectedOntologies: string[] = AgroportalEntityCreate.selectedOntologies;
+  selectedOntologies: string[] = AgroportalEntityCreate.selectedOntologies;
 
-    @PropSync("form")
-    entityDto: EntityCreationDTO;
-
-    text = "";
-
-
-    onSearchTextChange(searchedText: string) {
-      this.text = searchedText;
-    }
-
-    onImportMapping(entity: EntityAgroportalDTO, relation) {
-      if(relation == "exact-match") {
-        this.entityDto.exact_match.push(entity.id);
-      }
-    }
+  @PropSync("form")
+  entityDto: EntityCreationDTO;
 
 }
 </script>

@@ -75,9 +75,7 @@ import AgroportalEntityCreate from "./AgroportalEntityCreate.vue";
 export default class AgroportalEntityForm extends Vue {
     $opensilex: any;
 
-    title = "";
     uriGenerated = true;
-
     text = "";
 
     @Prop()

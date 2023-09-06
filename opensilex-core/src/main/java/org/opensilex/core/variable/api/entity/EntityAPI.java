@@ -45,10 +45,7 @@ import javax.ws.rs.core.Response;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URI;
-import java.net.URL;
-import java.net.URLEncoder;
+import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.*;
@@ -271,9 +268,48 @@ public class EntityAPI {
      */
 
     static final String REST_URL = "https://data.agroportal.lirmm.fr";
+    static final String SERVER_URL = "https://agroportal.lirmm.fr";
     static final String API_KEY = "bcfa713e-007c-418b-b7b3-57ce40fd7721";
     static final ObjectMapper mapper = new ObjectMapper();
     static final ObjectWriter writer = mapper.writerWithDefaultPrettyPrinter();
+
+    @GET
+    @Path("/ping_agroportal")
+    @ApiOperation("Ping agroportal")
+    @ApiProtected
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Agroportal status", response = Boolean.class),
+            @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response pingAgroportal(
+            @ApiParam(value = "Timeout", example = "1000") @QueryParam("timeout") Integer timeout
+    ) throws Exception {
+
+        boolean isReachable = getStatus(SERVER_URL, timeout);
+        return new SingleObjectResponse<>(isReachable).getResponse();
+    }
+
+    private static boolean getStatus(String url, int timeout) throws IOException {
+
+        boolean result = false;
+        try {
+            URL urlObj = new URL(url);
+            HttpURLConnection con = (HttpURLConnection) urlObj.openConnection();
+            con.setRequestMethod("GET");
+            con.setConnectTimeout(timeout);
+            con.connect();
+
+            int code = con.getResponseCode();
+            if (code == 200) {
+                result = true;
+            }
+        } catch (Exception e) {
+            result = false;
+        }
+        return result;
+    }
 
     @GET
     @Path("/search_agroportal")

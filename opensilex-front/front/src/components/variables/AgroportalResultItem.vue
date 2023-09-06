@@ -10,7 +10,7 @@
             <span id="result-ontology">{{getOntologyAcronym(entity.links.ontology)}}</span>
           </div>
           <div id="result-link">
-            <a v-bind:href="entity.id" target="_blank">{{entity.id}}</a>
+            <a v-bind:href="entity.id" target="_blank" rel="noopener noreferrer">{{entity.id}}</a>
           </div>
         </b-col>
       </b-row>

@@ -8,7 +8,7 @@
                         <strong class="text-primary">{{this.skosReferences.uri}}</strong>
                     </em>
                 </p>
-                <div class="row" v-if="includeAgroportalSearch">
+                <div class="row" v-if="includeAgroportalSearch && isAgroportalReachable">
                   <opensilex-AgroportalSearch
                       label="component.common.name"
                       type="text"
@@ -161,13 +161,17 @@
     import {Skos} from "../../../models/Skos";
     import {ExternalOntologies} from "../../../models/ExternalOntologies";
     import {EntityAgroportalDTO} from "opensilex-core/model/entityAgroportalDTO";
+    import {VariablesService} from "opensilex-core/api/variables.service";
+    import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 
     @Component
     export default class ExternalReferencesForm extends Vue {
-        $opensilex: any;
+        $opensilex: OpenSilexVuePlugin;
         $store: any;
         $t: any;
         $i18n: any;
+
+        variablesService: VariablesService;
 
         currentRelation: string = "";
         currentExternalUri: string = "";
@@ -195,6 +199,19 @@
             }
         }
 
+        isAgroportalReachable: boolean = false;
+
+        checkAgroportalReachable(): boolean {
+          let isReachable: boolean = false;
+          this.variablesService.pingAgroportal(1000).then((http) => {
+            if (http && http.response) {
+              isReachable = http.response.result;
+              console.debug(isReachable);
+            }
+          });
+          return isReachable;
+        }
+
         relationsInternal: any[] = [];
 
         skosRelationsMap: Map<string, string> = Skos.getSkosRelationsMap();
@@ -211,8 +228,13 @@
             }
         }
 
+        beforeMount() {
+          this.isAgroportalReachable = this.checkAgroportalReachable();
+        }
+
         created() {
            this.setOptions();
+           this.variablesService = this.$opensilex.getService<VariablesService>("opensilex.VariablesService");
         }
 
         private langUnwatcher;

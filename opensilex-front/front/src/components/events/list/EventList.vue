@@ -381,8 +381,8 @@ export default class EventList extends Vue {
     }
 
     refresh() {
-        this.tableRef.refresh();
         this.$opensilex.updateURLParameters(this.filter);
+        this.tableRef.changeCurrentPage(1);
     }
 
     displayAfterCreation(event) {

@@ -313,13 +313,15 @@ export default class ProjectList extends Vue {
   refresh() {
     if(this.tableRef.onlySelected) {
       this.tableRef.onlySelected = false;
-      this.tableRef.refresh();
+      this.tableRef.changeCurrentPage(1);
     } else {
-      this.tableRef.refresh();
+      this.tableRef.changeCurrentPage(1);
     }
-    if (!this.noUpdateURL) {
-      this.$opensilex.updateURLParameters(this.filter);
-    }
+    this.$nextTick(() => {
+      if (!this.noUpdateURL) {
+        this.$opensilex.updateURLParameters(this.filter);
+      }
+    });
   }
 
   loadData(options) {

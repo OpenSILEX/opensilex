@@ -298,9 +298,9 @@ export default class ScientificObjectList extends Vue {
   refresh() {
     if(this.tableRef.onlySelected) {
       this.tableRef.onlySelected = false;
-      this.tableRef.refresh();
+      this.tableRef.changeCurrentPage(1);
     } else {
-      this.tableRef.refresh();
+      this.tableRef.changeCurrentPage(1);
     }
     this.$nextTick(() => {
       if (!this.noUpdateURL) {

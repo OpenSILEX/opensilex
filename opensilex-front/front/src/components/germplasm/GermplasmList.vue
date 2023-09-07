@@ -423,9 +423,9 @@ export default class GermplasmList extends Vue {
 
         if (this.tableRef.onlySelected) {
             this.tableRef.onlySelected = false;
-            this.tableRef.refresh();
+            this.tableRef.changeCurrentPage(1);
         } else {
-            this.tableRef.refresh();
+            this.tableRef.changeCurrentPage(1);
         }
     }
 

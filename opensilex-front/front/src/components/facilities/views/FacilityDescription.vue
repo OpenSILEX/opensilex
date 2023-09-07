@@ -313,6 +313,7 @@ en:
     devices: Devices
     site: "Site"
     address: "Address"
+
 fr:
   FacilityDescription:
     organizations: Organisations

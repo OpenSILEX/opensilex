@@ -44,12 +44,14 @@ import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.exceptions.displayable.DisplayableBadRequestException;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.Date;
@@ -418,7 +420,11 @@ public class ScientificObjectAPI {
             throw new NotFoundURIException("Scientific object uri not found:", objectURI);
         }
 
-        return new SingleObjectResponse<>(ScientificObjectDetailDTO.getDTOFromModel(model, geometryByURI, lastMove)).getResponse();
+        ScientificObjectDetailDTO dto = ScientificObjectDetailDTO.getDTOFromModel(model, geometryByURI, lastMove);
+        if (Objects.nonNull(model.getPublisher())) {
+            dto.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(model.getPublisher())));
+        }
+        return new SingleObjectResponse<>(dto).getResponse();
     }
 
     @GET
@@ -462,6 +468,9 @@ public class ScientificObjectAPI {
             GeospatialModel geometryByURI = geoDAO.getGeometryByURI(objectURI, contextURI);
             if (model != null) {
                 ScientificObjectDetailByExperimentsDTO dto = ScientificObjectDetailByExperimentsDTO.getDTOFromModel(model, experiment, geometryByURI, lastMove);
+                if (Objects.nonNull(model.getPublisher())){
+                    dto.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(model.getPublisher())));
+                }
                 dtoList.add(dto);
             }
         }
@@ -597,7 +606,7 @@ public class ScientificObjectAPI {
         sparql.startTransaction();
         try {
 
-            URI soURI = dao.update(contextURI, soType, descriptionDto.getUri(), descriptionDto.getName(), descriptionDto.getRelations(), currentUser);
+            URI soURI = dao.update(contextURI, soType, descriptionDto.getUri(), descriptionDto.getName(), descriptionDto.getRelations(), descriptionDto.getPublisher(), descriptionDto.getPublicationDate(), currentUser);
 
             if (hasExperiment) {
                 experimentDAO.updateExperimentSpeciesFromScientificObjects(contextURI);

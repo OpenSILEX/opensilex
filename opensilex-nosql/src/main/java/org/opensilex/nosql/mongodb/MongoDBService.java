@@ -227,7 +227,7 @@ public class MongoDBService extends BaseService {
             generateUniqueUriIfNullOrValidateCurrent(instance, true, uriGenerationPrefix, collectionName);
         }
 
-        if (instance.getPublicationDate() == null) {
+        if (Objects.isNull(instance.getPublicationDate())) {
             instance.setPublicationDate(Instant.now());
         }
 
@@ -250,7 +250,7 @@ public class MongoDBService extends BaseService {
                 generateUniqueUriIfNullOrValidateCurrent(instance, checkUriExist, prefix, collectionName);
             }
 
-            if (instance.getPublicationDate() == null) {
+            if (Objects.isNull(instance.getPublicationDate())) {
                 instance.setPublicationDate(Instant.now());
             }
         }
@@ -610,7 +610,7 @@ public class MongoDBService extends BaseService {
             throw new NoSQLInvalidURIException(newInstance.getUri());
         }
 
-        if (newInstance.getPublicationDate() == null) {
+        if (Objects.isNull(newInstance.getPublicationDate())) {
             newInstance.setPublicationDate(instance.getPublicationDate());
         }
 

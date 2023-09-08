@@ -12,12 +12,14 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.variable.api.VariableAPI;
 import org.opensilex.core.variable.dal.BaseVariableDAO;
 import org.opensilex.core.variable.dal.CharacteristicModel;
+import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.response.*;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
@@ -41,6 +43,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static org.opensilex.core.variable.api.VariableAPI.*;
@@ -89,7 +92,7 @@ public class CharacteristicAPI {
         try {
             BaseVariableDAO<CharacteristicModel> dao = new BaseVariableDAO<>(CharacteristicModel.class, sparql);
             CharacteristicModel model = dto.newModel();
-            model.setCreator(currentUser.getUri());
+            model.setPublisher(currentUser.getUri());
 
             dao.create(model);
             URI shortUri = new URI(SPARQLDeserializers.getShortURI(model.getUri().toString()));
@@ -117,7 +120,11 @@ public class CharacteristicAPI {
         CharacteristicModel model = dao.get(uri);
 
         if (model != null) {
-            return new SingleObjectResponse<>(new CharacteristicDetailsDTO(model)).getResponse();
+            CharacteristicDetailsDTO dto = new CharacteristicDetailsDTO(model);
+            if (Objects.nonNull(model.getPublisher())) {
+                dto.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(model.getPublisher())));
+            }
+            return new SingleObjectResponse<>(dto).getResponse();
         } else {
             throw new NotFoundURIException(uri);
         }

@@ -92,7 +92,6 @@ public class AnnotationCreationDTO {
 
         model.setUri(uri);
         model.setDescription(description);
-        model.setCreated(OffsetDateTime.now());
         model.setTargets(targets);
 
         MotivationModel motivationModel = new MotivationModel();

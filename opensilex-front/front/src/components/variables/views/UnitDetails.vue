@@ -17,7 +17,13 @@
             <opensilex-TextView label="UnitForm.symbol" :value="selected.symbol"></opensilex-TextView>
             <!-- alternative symbol -->
             <opensilex-TextView label="UnitForm.alternative-symbol" :value="selected.alternative_symbol"></opensilex-TextView>
-
+            <!-- Metadata -->
+            <opensilex-MetadataView
+                v-if="selected.publisher && selected.publisher.uri"
+                :publisher="selected.publisher"
+                :publicationDate="selected.publication_date"
+                :lastUpdatedDate="selected.last_updated_date" 
+            ></opensilex-MetadataView>
         </div>
     </b-card>
 </template>

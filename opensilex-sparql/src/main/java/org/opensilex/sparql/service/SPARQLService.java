@@ -1026,7 +1026,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                                                           boolean blankNode,
                                                           BiConsumer<UpdateBuilder, Node> createExtension) throws Exception {
 
-        if (instance.getPublicationDate() == null && setPublicationDate) {
+        if (Objects.isNull(instance.getPublicationDate()) && setPublicationDate) {
             instance.setPublicationDate(OffsetDateTime.now());
         }
 
@@ -1084,7 +1084,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             Node subGraphNode = subGraph != null ? SPARQLDeserializers.nodeURI(subGraph) : null;
 
             for (SPARQLResourceModel subInstance :  entry.getValue()) {
-                create(subGraphNode, subInstance, instance, subInstanceUpdateBuilder, checkUriExist, false, blankNode, null);
+                create(subGraphNode, subInstance, instance, subInstanceUpdateBuilder, checkUriExist, true, blankNode, null);
             }
         }
     }
@@ -1102,7 +1102,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     public <T extends SPARQLResourceModel> void create(Node graph, Collection<T> instances) throws Exception {
-        create(graph, instances, null, true);
+        create(graph, instances, null, true, true);
     }
 
     public static final int DEFAULT_MAX_INSTANCE_PER_QUERY = 1000;
@@ -1114,7 +1114,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      * @param checkUriExist       indicate if the service must check if instances already exist
      * @param <T>                 the SPARQLResourceModel type
      */
-    public <T extends SPARQLResourceModel> void create(Node graph, Collection<T> instances, Integer maxInstancePerQuery, boolean checkUriExist) throws Exception {
+    public <T extends SPARQLResourceModel> void create(Node graph, Collection<T> instances, Integer maxInstancePerQuery, boolean checkUriExist, boolean setPublicationDate) throws Exception {
 
         boolean reuseSameQuery = maxInstancePerQuery != null;
 
@@ -1139,6 +1139,10 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                 startTransaction();
 
                 for (T instance : instances) {
+                    if (Objects.isNull(instance.getPublicationDate()) && setPublicationDate) {
+                        instance.setPublicationDate(OffsetDateTime.now());
+                    }
+
                     SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(instance.getClass());
                     prepareInstanceCreation(graph, instance, null, mapper, subInstanceUpdateBuilder, checkUriExist, false);
                     mapper.addCreateBuilder(graph, instance, updateBuilder, false, null);

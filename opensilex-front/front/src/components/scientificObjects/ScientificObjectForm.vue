@@ -34,6 +34,7 @@ import {ScientificObjectDetailDTO} from "opensilex-core/model/scientificObjectDe
 import {ScientificObjectCreationDTO} from "opensilex-core/model/scientificObjectCreationDTO";
 import {ScientificObjectUpdateDTO} from "opensilex-core/model/scientificObjectUpdateDTO";
 import DTOConverter from "../../models/DTOConverter";
+import { UserGetDTO } from "../../../../../opensilex-security/front/src/lib";
 
 @Component
 export default class ScientificObjectForm extends Vue {
@@ -117,7 +118,10 @@ export default class ScientificObjectForm extends Vue {
 
                 this.initOntologyObjectForm(form, os.rdf_type);
                 this.excludeCurrentURIFromParentSelector(objectURI, form);
+                let publisher: UserGetDTO = os.publisher; 
                 const editDto = DTOConverter.extractURIFromResourceProperties<ScientificObjectDetailDTO, ScientificObjectUpdateDTO>(os);
+                editDto.publisher = publisher;
+                
                 this.modalForm.showEditForm(editDto);
             });
     }
@@ -186,8 +190,10 @@ export default class ScientificObjectForm extends Vue {
                 name: form.name,
                 rdf_type: form.rdf_type,
                 geometry: form.geometry,
+                publisher: form.publisher,
+                publication_date: form.publication_date,
                 experiment: this.getExperimentURI(),
-                relations: definedRelations,
+                relations: definedRelations
             })
             .catch((error) => {
                 this.$opensilex.errorHandler(error, error.response.result.message);

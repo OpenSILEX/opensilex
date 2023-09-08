@@ -88,7 +88,6 @@ public class GermplasmGroupApi {
         try {
             GermplasmGroupDAO dao = new GermplasmGroupDAO(sparql);
             GermplasmGroupModel model = dto.newModel();
-            model.setCreator(currentUser.getUri());
             model.setPublisher(currentUser.getUri());
 
             model = dao.create(model);

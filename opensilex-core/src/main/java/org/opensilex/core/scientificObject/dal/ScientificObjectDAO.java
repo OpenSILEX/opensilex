@@ -16,6 +16,7 @@ import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.path.*;
+import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.OpenSilex;
@@ -37,6 +38,7 @@ import org.opensilex.core.scientificObject.api.ScientificObjectNodeDTO;
 import org.opensilex.core.scientificObject.api.ScientificObjectNodeWithChildrenDTO;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.sparql.deserializer.DateDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
@@ -791,7 +793,7 @@ public class ScientificObjectDAO {
         boolean useDefaultGraph = SPARQLDeserializers.compareURIs(defaultGraphNode.getURI(),contextURI);
         Node graphNode = useDefaultGraph ? defaultGraphNode : SPARQLDeserializers.nodeURI(contextURI);
 
-        sparql.create(graphNode,models,SPARQLService.DEFAULT_MAX_INSTANCE_PER_QUERY,false);
+        sparql.create(graphNode,models,SPARQLService.DEFAULT_MAX_INSTANCE_PER_QUERY,false, true);
     }
 
     /**
@@ -814,7 +816,7 @@ public class ScientificObjectDAO {
 
         ScientificObjectModel object = initObject(contextURI, experiment, soType, name, relations, currentUser);
         object.setUri(objectURI);
-
+        object.setPublisher(currentUser.getUri());
         try {
             sparql.startTransaction();
             nosql.startTransaction();
@@ -855,8 +857,6 @@ public class ScientificObjectDAO {
         List<URI> targets = new ArrayList<>();
         targets.add(object.getUri());
         facilityMoveEvent.setTargets(targets);
-
-        facilityMoveEvent.setCreator(object.getCreator());
 
         facilityMoveEvent.setIsInstant(true);
 
@@ -901,13 +901,19 @@ public class ScientificObjectDAO {
      * @return the URI of the created object
      * @throws DuplicateNameException if some object with the same name exist into the given graph
      */
-    public URI update(URI contextURI, URI soType, URI objectURI, String name, List<RDFObjectRelationDTO> relations, AccountModel currentUser) throws Exception, DuplicateNameException {
+    public URI update(URI contextURI, URI soType, URI objectURI, String name, List<RDFObjectRelationDTO> relations, UserGetDTO publisher, OffsetDateTime publicationDate, AccountModel currentUser) throws Exception, DuplicateNameException {
 
         checkUniqueNameByGraph(contextURI,name,objectURI,false);
 
         SPARQLResourceModel object = initObject(contextURI, null, soType, name, relations, currentUser);
         object.setUri(objectURI);
-
+        if (Objects.nonNull(publisher) && Objects.nonNull(publisher.getUri())) {
+            object.setPublisher(publisher.getUri());
+        }
+        if (Objects.nonNull(publicationDate)) {
+            object.setPublicationDate(publicationDate);
+        }
+        object.setLastUpdateDate(OffsetDateTime.now());
         Node graphNode = SPARQLDeserializers.nodeURI(contextURI);
 
         List<URI> childrenURIs = sparql.searchURIs(
@@ -1299,6 +1305,16 @@ public class ScientificObjectDAO {
                 // write type and name triple
                 update.addInsert(defaultGraphNode, uriNode, RDF.type, SPARQLDeserializers.nodeURI(object.getType()))
                       .addInsert(defaultGraphNode, uriNode, RDFS.label, stringDeserializer.getNode(object.getName()));
+
+                if (Objects.nonNull(object.getPublisher())) {
+                    update.addInsert(defaultGraphNode, uriNode, DCTerms.publisher, stringDeserializer.getNode(object.getPublisher()));
+                }
+                if (Objects.nonNull(object.getPublicationDate())) {
+                    update.addInsert(defaultGraphNode, uriNode, DCTerms.issued, stringDeserializer.getNode(object.getPublicationDate()));
+                }
+                if (Objects.nonNull(object.getLastUpdateDate())) {
+                    update.addInsert(defaultGraphNode, uriNode, DCTerms.modified, stringDeserializer.getNode(object.getLastUpdateDate()));
+                }
             }
 
             sparql.executeUpdateQuery(update);

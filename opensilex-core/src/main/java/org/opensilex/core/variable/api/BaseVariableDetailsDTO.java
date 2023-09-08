@@ -5,12 +5,14 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import org.opensilex.core.ontology.SKOSReferencesDTO;
 import org.opensilex.core.sharedResource.SharedResourceInstanceDTO;
 import org.opensilex.core.variable.dal.BaseVariableModel;
+import org.opensilex.security.user.api.UserGetDTO;
 
 import java.net.URI;
 import java.time.OffsetDateTime;
+import java.util.Objects;
 
 @JsonPropertyOrder({
-        "uri", "name", "description",
+        "uri", "name", "description", "publisher", "publication_date", "last_updated_date",
         SKOSReferencesDTO.EXACT_MATCH_JSON_PROPERTY,
         SKOSReferencesDTO.CLOSE_MATCH_JSON_PROPERTY,
         SKOSReferencesDTO.BROAD_MATCH_JSON_PROPERTY,
@@ -27,7 +29,10 @@ public abstract class BaseVariableDetailsDTO<T extends BaseVariableModel<T>> ext
         uri = model.getUri();
         name = model.getName();
         description = model.getDescription();
-
+        publicationDate = model.getPublicationDate();
+        if (Objects.nonNull(model.getLastUpdateDate())) {
+            lastUpdatedDate = model.getLastUpdateDate();
+        }
         setSkosReferencesFromModel(model);
     }
 
@@ -43,6 +48,15 @@ public abstract class BaseVariableDetailsDTO<T extends BaseVariableModel<T>> ext
 
     @JsonProperty("description")
     protected String description;
+
+    @JsonProperty("publisher")
+    protected UserGetDTO publisher;
+
+    @JsonProperty("publication_date")
+    protected OffsetDateTime publicationDate;
+
+    @JsonProperty("last_updated_date")
+    protected OffsetDateTime lastUpdatedDate;
 
     @JsonProperty("from_shared_resource_instance")
     protected SharedResourceInstanceDTO fromSharedResourceInstance;
@@ -77,6 +91,30 @@ public abstract class BaseVariableDetailsDTO<T extends BaseVariableModel<T>> ext
 
     public void setFromSharedResourceInstance(SharedResourceInstanceDTO fromSharedResourceInstance) {
         this.fromSharedResourceInstance = fromSharedResourceInstance;
+    }
+
+    public UserGetDTO getPublisher() {
+        return publisher;
+    }
+
+    public void setPublisher(UserGetDTO publisher) {
+        this.publisher = publisher;
+    }
+
+    public OffsetDateTime getPublicationDate() {
+        return publicationDate;
+    }
+
+    public void setPublicationDate(OffsetDateTime publicationDate) {
+        this.publicationDate = publicationDate;
+    }
+
+    public OffsetDateTime getLastUpdatedDate() {
+        return lastUpdatedDate;
+    }
+
+    public void setLastUpdatedDate(OffsetDateTime lastUpdatedDate) {
+        this.lastUpdatedDate = lastUpdatedDate;
     }
 
     protected void setBasePropertiesToModel(T model) {

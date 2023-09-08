@@ -18,10 +18,13 @@ import org.opensilex.core.area.dal.AreaModel;
 import org.opensilex.core.event.api.EventGetDTO;
 import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
+import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.OffsetDateTime;
+import java.util.Objects;
 
 import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
 
@@ -30,7 +33,7 @@ import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
  *
  * @author Jean Philippe VERT
  */
-@JsonPropertyOrder({"uri", "rdf_type", "is_structural_area","name", "description", "author", "geometry","event"})
+@JsonPropertyOrder({"uri", "rdf_type", "is_structural_area","name", "description", "publisher", "geometry", "event", "publication_date", "last_updated_date"})
 public class AreaGetDTO {
     /**
      * Area URI
@@ -64,14 +67,20 @@ public class AreaGetDTO {
     protected String description;
 
     /**
-     * author
+     * publisher
      */
-    protected URI author;
+    protected UserGetDTO publisher;
 
     /**
      * event of the Area
      */
     protected EventGetDTO event;
+
+    @JsonProperty("publication_date")
+    protected OffsetDateTime publicationDate;
+
+    @JsonProperty("last_updated_date")
+    protected OffsetDateTime lastUpdatedDate;
 
     /**
      * Convert Area Model into Area DTO
@@ -122,11 +131,17 @@ public class AreaGetDTO {
         dto.setUri(model.getUri());
         dto.setName(model.getName());
         dto.setRdfType(model.getType());
-        dto.setAuthor(model.getCreator());
 
         if (model.getDescription() != null) {
             dto.setDescription(model.getDescription());
         }
+        if (Objects.nonNull(model.getPublicationDate())) {
+            dto.setPublicationDate(model.getPublicationDate());
+        }
+        if (Objects.nonNull(model.getLastUpdateDate())) {
+            dto.setLastUpdatedDate(model.getLastUpdateDate());
+        }
+
         return dto;
     }
 
@@ -199,12 +214,12 @@ public class AreaGetDTO {
         this.description = description;
     }
 
-    public URI getAuthor() {
-        return author;
+    public UserGetDTO getPublisher() {
+        return publisher;
     }
 
-    public void setAuthor(URI author) {
-        this.author = author;
+    public void setPublisher(UserGetDTO publisher) {
+        this.publisher = publisher;
     }
 
     public EventGetDTO getEvent() {
@@ -213,5 +228,21 @@ public class AreaGetDTO {
 
     public void setEvent(EventGetDTO event) {
         this.event = event;
+    }
+
+    public OffsetDateTime getPublicationDate() {
+        return publicationDate;
+    }
+
+    public void setPublicationDate(OffsetDateTime publicationDate) {
+        this.publicationDate = publicationDate;
+    }
+
+    public OffsetDateTime getLastUpdatedDate() {
+        return lastUpdatedDate;
+    }
+
+    public void setLastUpdatedDate(OffsetDateTime lastUpdatedDate) {
+        this.lastUpdatedDate = lastUpdatedDate;
     }
 }

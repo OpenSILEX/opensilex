@@ -8,6 +8,9 @@
 
 package org.opensilex.sparql.model;
 
+import java.net.URI;
+import java.time.OffsetDateTime;
+
 public interface TranslatedModel {
 
     SPARQLLabel getLabel();
@@ -23,4 +26,16 @@ public interface TranslatedModel {
     String getName();
 
     void setName(String name);
+
+    URI getPublisher();
+
+    void setPublisher(URI publisher);
+
+    OffsetDateTime getPublicationDate();
+
+    void setPublicationDate(OffsetDateTime publicationDate);
+
+    OffsetDateTime getLastUpdateDate();
+
+    void setLastUpdateDate(OffsetDateTime lastUpdateDate);
 }

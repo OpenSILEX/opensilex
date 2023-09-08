@@ -86,6 +86,14 @@
             noGeometryLabel="SiteDetail.noGeometryWarning"
         >
         </opensilex-AddressView>
+
+        <!-- Metadata -->
+        <opensilex-MetadataView
+          v-if="selected.publisher && selected.publisher.uri"
+          :publisher="selected.publisher"
+          :publicationDate="selected.publication_date"
+          :lastUpdatedDate="selected.last_updated_date" 
+        ></opensilex-MetadataView>
       </div>
     </b-card>
     <opensilex-ModalForm

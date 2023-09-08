@@ -8,7 +8,10 @@ package org.opensilex.core.germplasm.api;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.net.URI;
+import java.time.OffsetDateTime;
+
 import org.opensilex.core.germplasm.dal.GermplasmModel;
+import org.opensilex.security.user.api.UserGetDTO;
 
 /**
  *
@@ -21,6 +24,15 @@ public class GermplasmGetAllDTO {
      * Germplasm URI
      */
     protected URI uri;
+
+    @JsonProperty("publisher")
+    protected UserGetDTO publisher;
+
+    @JsonProperty("publication_date")
+    protected OffsetDateTime publicationDate;
+
+    @JsonProperty("last_updated_date")
+    protected OffsetDateTime lastUpdatedDate;
 
     /**
      * Germplasm Type : Species, Variety, Accession or subclass of PlantMaterialLot
@@ -96,6 +108,30 @@ public class GermplasmGetAllDTO {
 
     public void setSpeciesName(String speciesName) {
         this.speciesName = speciesName;
+    }
+
+    public UserGetDTO getPublisher() {
+        return publisher;
+    }
+
+    public void setPublisher(UserGetDTO publisher) {
+        this.publisher = publisher;
+    }
+
+    public OffsetDateTime getPublicationDate() {
+        return publicationDate;
+    }
+
+    public void setPublicationDate(OffsetDateTime publicationDate) {
+        this.publicationDate = publicationDate;
+    }
+
+    public OffsetDateTime getLastUpdatedDate() {
+        return lastUpdatedDate;
+    }
+
+    public void setLastUpdatedDate(OffsetDateTime lastUpdatedDate) {
+        this.lastUpdatedDate = lastUpdatedDate;
     }
 
     /**

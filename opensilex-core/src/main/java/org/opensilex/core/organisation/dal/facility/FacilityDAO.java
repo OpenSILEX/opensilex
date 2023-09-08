@@ -289,7 +289,7 @@ public class FacilityDAO {
      *     <li>The user is admin</li>
      *     <li>The user has access to an organization hosted by the facility</li>
      *     <li>The user has access to a site containing the facility</li>
-     *     <li>The user is the creator of the facility</li>
+     *     <li>The user is the publisher of the facility</li>
      * </ul>
      *
      * @param facilityURI The facility URI to check

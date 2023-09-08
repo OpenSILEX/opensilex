@@ -113,7 +113,7 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
         // insert sparql and noSql model streams
         try {
             sparql.startTransaction();
-            sparql.create(eventGraph, models, SPARQLService.DEFAULT_MAX_INSTANCE_PER_QUERY, false);
+            sparql.create(eventGraph, models, SPARQLService.DEFAULT_MAX_INSTANCE_PER_QUERY, false, true);
 
             if (!noSqlModels.isEmpty()) {
                 mongodb.startTransaction();

@@ -65,6 +65,37 @@ public class AccountModel extends SPARQLResourceModel implements Principal, Clas
         return system;
     }
 
+    /**
+     * convenient method used to get an AccountModel from non-complete information
+     * @return the AccountModel instanced with given information
+     */
+    public static AccountModel buildAccountModel(URI uri,
+                                                 InternetAddress email,
+                                                 boolean admin,
+                                                 String passwordHash,
+                                                 String lang,
+                                                 Boolean enable,
+                                                 PersonModel holderOfTheAccount,
+                                                 List<URI> favorites) {
+
+        AccountModel accountModel = new AccountModel();
+        accountModel.setUri(uri);
+        accountModel.setEmail(email);
+        accountModel.setAdmin(admin);
+        accountModel.setLocale(new Locale(lang));
+        accountModel.setLinkedPerson(holderOfTheAccount);
+        accountModel.setFavorites(favorites);
+        accountModel.setIsEnabled(enable);
+        if (passwordHash != null) {
+            accountModel.setPasswordHash(passwordHash);
+        }
+        if (enable != null) {
+            accountModel.setIsEnabled(enable);
+        }
+
+        return accountModel;
+    }
+
     @SPARQLProperty(
             ontology = FOAF.class,
             property = "accountName",

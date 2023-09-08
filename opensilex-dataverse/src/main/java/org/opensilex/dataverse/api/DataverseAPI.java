@@ -164,6 +164,7 @@ public class DataverseAPI {
 
         DocumentModel docModel = new DocumentModel();
         docModel.setUri(datasetUri);
+        docModel.setPublisher(currentAccount.getUri());
         docModel.setTargets(Collections.singletonList(experimentUri));
         docModel.setTitle(datasetTitle);
         docModel.setIdentifier(datasetId.getPersistentId());

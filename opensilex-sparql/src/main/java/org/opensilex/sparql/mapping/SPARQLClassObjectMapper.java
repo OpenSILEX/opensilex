@@ -743,15 +743,11 @@ public class SPARQLClassObjectMapper<T extends SPARQLResourceModel> {
             newInstance.setPublisher(oldInstance.getPublisher());
         }
 
-        if (newInstance.getPublicationDate() == null) {
+        if (Objects.isNull(newInstance.getPublicationDate())) {
             newInstance.setPublicationDate(oldInstance.getPublicationDate());
         }
 
         newInstance.setLastUpdateDate(OffsetDateTime.now());
-
-        if (oldInstance.getCreator() != null && newInstance.getCreator() == null) {
-            newInstance.setCreator(oldInstance.getCreator());
-        }
 
         for (Field field : classAnalizer.getDataPropertyFields()) {
             Object oldFieldValue = classAnalizer.getFieldValue(field, oldInstance);

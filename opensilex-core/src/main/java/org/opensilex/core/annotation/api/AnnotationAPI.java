@@ -81,7 +81,7 @@ public class AnnotationAPI {
         try {
             AnnotationDAO dao = new AnnotationDAO(sparql);
             AnnotationModel model = dto.newModel();
-            model.setCreator(currentUser.getUri());
+            model.setPublisher(currentUser.getUri());
 
             model = dao.create(model);
             return new CreatedUriResponse(model.getUri()).getResponse();
@@ -201,7 +201,7 @@ public class AnnotationAPI {
             @ApiParam(value = "Description (regex)", example = "The pest attack") @QueryParam("description") String descriptionPattern,
             @ApiParam(value = "Target URI", example = "http://www.opensilex.org/demo/2018/o18000076") @QueryParam("target") URI target,
             @ApiParam(value = "Motivation URI", example = "http://www.w3.org/ns/oa#describing") @QueryParam("motivation") URI motivation,
-            @ApiParam(value = "Author URI", example = "http://opensilex.dev/users#Admin.OpenSilex") @QueryParam("author") URI creator,
+            @ApiParam(value = "Author URI", example = "http://opensilex.dev/users#Admin.OpenSilex") @QueryParam("author") URI publisher,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "author=asc") @DefaultValue("created=desc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
@@ -213,7 +213,7 @@ public class AnnotationAPI {
                 descriptionPattern,
                 target,
                 motivation,
-                creator,
+                publisher,
                 currentUser.getLanguage(),
                 orderByList,
                 page,

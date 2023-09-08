@@ -8,9 +8,11 @@ package org.opensilex.security.profile.api;
 
 import io.swagger.annotations.*;
 import org.opensilex.security.SecurityModule;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
+import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.profile.dal.ProfileDAO;
 import org.opensilex.security.profile.dal.ProfileModel;
 import org.opensilex.server.response.*;
@@ -66,6 +68,9 @@ public class ProfileAPI {
     @Inject
     private SPARQLService sparql;
 
+    @CurrentUser
+    AccountModel currentUser;
+
     @POST
     @ApiOperation("Add a profile")
     @ApiResponses({
@@ -110,7 +115,8 @@ public class ProfileAPI {
         ProfileModel profile = profileDAO.create(
                 profileDTO.getUri(),
                 profileDTO.getName(),
-                profileDTO.getCredentials()
+                profileDTO.getCredentials(),
+                currentUser.getUri()
         );
         // return user URI
         return new CreatedUriResponse(profile.getUri()).getResponse();

@@ -112,6 +112,14 @@
         :relations="selected.relations"
       >
       </opensilex-OntologyObjectProperties>
+
+      <!-- Metadata -->
+      <opensilex-MetadataView
+        v-if="selected.publisher && selected.publisher.uri"
+        :publisher="selected.publisher"
+        :publicationDate="selected.publication_date"
+        :lastUpdatedDate="selected.last_updated_date" 
+      ></opensilex-MetadataView>
     </template>
   </opensilex-Card>
 </template>
@@ -125,7 +133,6 @@ import { FacilityGetDTO } from 'opensilex-core/index';
 import {ExperimentGetListDTO} from "opensilex-core/model/experimentGetListDTO";
 import {DeviceGetDTO} from "opensilex-core/model/deviceGetDTO";
 import {OrganizationsService} from "opensilex-core/api/organizations.service";
-import {VueJsOntologyExtensionService} from "../../../lib";
 import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 
 @Component

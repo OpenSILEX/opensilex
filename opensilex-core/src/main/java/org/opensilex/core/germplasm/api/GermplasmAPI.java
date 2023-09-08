@@ -26,12 +26,14 @@ import org.opensilex.core.germplasm.dal.GermplasmDAO;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.server.rest.validation.ValidURI;
@@ -151,6 +153,7 @@ public class GermplasmAPI {
                 germplasmDTO = completeDTO(germplasmDTO);
                 // create new germplasm
                 GermplasmModel model = germplasmDTO.newModel();
+                model.setPublisher(currentUser.getUri());
                 GermplasmModel germplasm = germplasmDAO.create(model);
                 return new CreatedUriResponse(germplasm.getUri()).getResponse();
             } catch (Exception e) {
@@ -189,9 +192,11 @@ public class GermplasmAPI {
         // Check if germplasm is found
         if (model != null) {
             // Return GermplasmGetDTO
-            return new SingleObjectResponse<>(
-                    GermplasmGetSingleDTO.fromModel(model)
-            ).getResponse();
+            GermplasmGetSingleDTO dto = GermplasmGetSingleDTO.fromModel(model);
+            if (Objects.nonNull(model.getPublisher())) {
+                dto.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(model.getPublisher())));
+            }
+            return new SingleObjectResponse<>(dto).getResponse();
         } else {
             throw new NotFoundURIException("Germplasm URI not found : ", uri);
         }

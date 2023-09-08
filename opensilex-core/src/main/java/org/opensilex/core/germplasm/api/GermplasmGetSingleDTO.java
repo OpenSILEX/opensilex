@@ -8,6 +8,8 @@ package org.opensilex.core.germplasm.api;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.Map;
+import java.util.Objects;
+
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 
 /**
@@ -15,7 +17,7 @@ import org.opensilex.core.germplasm.dal.GermplasmModel;
  *
  * @author Alice Boizet
  */
-@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "synonyms", "code", 
+@JsonPropertyOrder({"uri", "publisher", "publication_date", "last_updated_date", "rdf_type", "rdf_type_name", "name", "synonyms", "code",
     "production_year", "description", "species", "species_name","variety", 
     "variety_name", "accession", "accession_name", "institute", "website", "metadata"})
 public class GermplasmGetSingleDTO extends GermplasmGetExportDTO {
@@ -46,6 +48,12 @@ public class GermplasmGetSingleDTO extends GermplasmGetExportDTO {
         dto.setRdfType(model.getType());
         dto.setRdfTypeName(model.getTypeLabel().getDefaultValue());
         dto.setName(model.getName());
+        if (Objects.nonNull(model.getPublicationDate())) {
+            dto.setPublicationDate(model.getPublicationDate());
+        }
+        if (Objects.nonNull(model.getLastUpdateDate())) {
+            dto.setLastUpdatedDate(model.getLastUpdateDate());
+        }
 
         if (model.getSpecies() != null) {
             dto.setSpecies(model.getSpecies().getUri());

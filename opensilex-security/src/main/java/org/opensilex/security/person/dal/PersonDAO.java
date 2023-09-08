@@ -47,8 +47,7 @@ public class PersonDAO {
      *
      * @return the personModel of the created Person.
      */
-    public PersonModel create(PersonDTO personDTO) throws Exception {
-        PersonModel person = PersonModel.fromDTO(personDTO, sparql);
+    public PersonModel create(PersonModel person) throws Exception {
 
         if (orcidIsNonNullAndWellFormed(person.getOrcid())) {
             requireOrcidIsUnique(person.getOrcid());

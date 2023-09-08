@@ -26,12 +26,14 @@ import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
@@ -122,6 +124,7 @@ public class EventAPI {
             URI eventGraph = dao.getGraph();
 
             List<EventModel> models = getEventModels(dtoList, eventGraph);
+            models.forEach(eventModel -> eventModel.setPublisher(currentUser.getUri()));
             dao.create(models);
 
             List<URI> createdUris = models.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList());
@@ -189,7 +192,6 @@ public class EventAPI {
 
         for(EventCreationDTO dto : eventDtos){
             EventModel model = dto.toModel();
-            model.setCreator(currentUser.getUri());
 
             if (!CollectionUtils.isEmpty(dto.getRelations())) {
                 URI type = dto.getType();
@@ -252,7 +254,6 @@ public class EventAPI {
 
         EventDAO<EventModel> dao = new EventDAO<>(sparql, nosql);
         EventModel model = dto.toModel();
-        model.setCreator(currentUser.getUri());
 
         OntologyDAO ontologyDAO = new OntologyDAO(sparql);
         ClassModel eventClassModel = null;
@@ -337,6 +338,9 @@ public class EventAPI {
 
         EventDetailsDTO dto = new EventDetailsDTO();
         dto.fromModel(model);
+        if (Objects.nonNull(model.getPublisher())){
+            dto.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(model.getPublisher())));
+        }
         return new SingleObjectResponse<>(dto).getResponse();
     }
 
@@ -409,6 +413,7 @@ public class EventAPI {
             MoveEventDAO dao = new MoveEventDAO(sparql, nosql);
 
             List<MoveModel> models = (List<MoveModel>)(List<?>) getEventModels(dtoList, dao.getGraph());
+            models.forEach(moveModel -> moveModel.setPublisher(currentUser.getUri()));
             dao.create(models);
 
             List<URI> createdUris = models.stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList());;
@@ -448,6 +453,7 @@ public class EventAPI {
                 if(forValidation){
                     dao.check(models, true);
                 }else{
+                    models.forEach(model -> model.setPublisher(currentUser.getUri()));
                     dao.create(models);
                 }
                 // update validation when some URIs are already existing or unknown
@@ -540,7 +546,6 @@ public class EventAPI {
 
         MoveEventDAO dao = new MoveEventDAO(sparql, nosql);
         MoveModel model = dto.toModel();
-        model.setCreator(currentUser.getUri());
 
         ClassModel eventClassModel = null;
 
@@ -575,6 +580,9 @@ public class EventAPI {
         }
 
         MoveDetailsDTO dto = new MoveDetailsDTO(model);
+        if (Objects.nonNull(model.getPublisher())){
+            dto.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(model.getPublisher())));
+        }
         return new SingleObjectResponse<>(dto).getResponse();
     }
 

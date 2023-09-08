@@ -86,10 +86,11 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
                 sparql,
                 ScientificObjectModel.class,
                 experiment == null ? sparql.getDefaultGraphURI(ScientificObjectModel.class) : experiment,
-                ScientificObjectModel::new
+                ScientificObjectModel::new,
+                user.getUri()
         );
-        Objects.requireNonNull(mongoDB);
         Objects.requireNonNull(user);
+        Objects.requireNonNull(mongoDB);
 
         this.experiment = experiment;
         experimentDAO = new ExperimentDAO(sparql, mongoDB);
@@ -322,7 +323,13 @@ public class ScientificObjectCsvImporter extends AbstractCsvImporter<ScientificO
 
     @Override
     public void create(CSVValidationModel validation, List<ScientificObjectModel> models) throws Exception {
-
+        if (Objects.nonNull(this.publisher)) {
+            for (ScientificObjectModel model : models) {
+                if (Objects.isNull(model.getPublisher())) {
+                    model.setPublisher(this.publisher);
+                }
+            }
+        }
         scientificObjectDAO.create(models, graph);
 
         // associated moves creation

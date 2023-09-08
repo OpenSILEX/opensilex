@@ -397,16 +397,16 @@ public class ExperimentDAO {
         select.addOptional(new Triple(uriVar, Oeso.isPublic.asNode(), isPublicVar));
         Expr isPublic = SPARQLQueryHelper.eq(isPublicVar, Boolean.TRUE);
 
-        Var creatorVar = makeVar(ExperimentModel.CREATOR_FIELD);
-        select.addOptional(new Triple(uriVar, DCTerms.creator.asNode(), creatorVar));
-        Expr isCreator = SPARQLQueryHelper.eq(creatorVar, userNodeURI);
+        Var publisherVar = makeVar(ExperimentModel.PUBLISHER_FIELD);
+        select.addOptional(new Triple(uriVar, DCTerms.publisher.asNode(), publisherVar));
+        Expr isPublisher = SPARQLQueryHelper.eq(publisherVar, userNodeURI);
 
         select.addFilter(SPARQLQueryHelper.or(
                 inGroup,
                 hasScientificSupervisor,
                 hasTechnicalSupervisor,
                 isPublic,
-                isCreator
+                isPublisher
         ));
     }
 
@@ -436,9 +436,9 @@ public class ExperimentDAO {
         ask.getWhereHandler().getClause().addElement(new ElementOptional(optionals));
         Expr inGroup = SPARQLQueryHelper.eq(userVar, userNodeURI);
 
-        Var creatorVar = makeVar(ExperimentModel.CREATOR_FIELD);
-        ask.addOptional(new Triple(uriVar, DCTerms.creator.asNode(), creatorVar));
-        Expr isCreator = SPARQLQueryHelper.eq(creatorVar, userNodeURI);
+        Var publisherVar = makeVar(ExperimentModel.PUBLISHER_FIELD);
+        ask.addOptional(new Triple(uriVar, DCTerms.publisher.asNode(), publisherVar));
+        Expr isPublisher = SPARQLQueryHelper.eq(publisherVar, userNodeURI);
 
         Var scientificSupervisorVar = makeVar(ExperimentModel.SCIENTIFIC_SUPERVISOR_FIELD);
         ask.addOptional(new Triple(uriVar, Oeso.hasScientificSupervisor.asNode(), scientificSupervisorVar));
@@ -454,7 +454,7 @@ public class ExperimentDAO {
 
         ask.addFilter(
                 SPARQLQueryHelper.or(
-                        isCreator,
+                        isPublisher,
                         inGroup,
                         hasScientificSupervisor,
                         hasTechnicalSupervisor,

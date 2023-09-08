@@ -33,11 +33,13 @@ import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.*;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.person.dal.PersonDAO;
 import org.opensilex.security.person.dal.PersonModel;
+import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 import org.opensilex.server.rest.validation.ValidURI;
@@ -150,6 +152,7 @@ public class DeviceAPI {
                 deviceDTO.toModel(devModel);
                 deviceDAO.initDevice(devModel, deviceDTO.getRelations(), currentUser);
                 devModel.setPersonInCharge(personInCharge);
+                devModel.setPublisher(currentUser.getUri());
                 URI uri = deviceDAO.create(devModel, currentUser);
                 return new CreatedUriResponse(uri).getResponse();
             } catch (SPARQLAlreadyExistingUriException ex) {
@@ -260,7 +263,11 @@ public class DeviceAPI {
             DeviceModel model = dao.getDeviceByURI(uri, currentUser);
 
             if (model != null) {
-                return new SingleObjectResponse<>(DeviceGetDetailsDTO.getDTOFromModel(model)).getResponse();
+                DeviceGetDetailsDTO dto = DeviceGetDetailsDTO.getDTOFromModel(model);
+                if (Objects.nonNull(model.getPublisher())) {
+                    dto.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(model.getPublisher())));
+                }
+                return new SingleObjectResponse<>(dto).getResponse();
             } else {
                 throw new NotFoundURIException(uri);
             }
@@ -387,7 +394,7 @@ public class DeviceAPI {
     ) throws Exception {
 
         CsvImporter<DeviceModel> csvImporter = new CachedCsvImporter<>(
-                new DefaultCsvImporter<>(sparql, DeviceModel.class, DeviceModel::new),
+                new DefaultCsvImporter<>(sparql, DeviceModel.class, DeviceModel::new, currentUser.getUri()),
                 importDTO.getValidationToken()
         );
 
@@ -415,7 +422,7 @@ public class DeviceAPI {
     ) throws Exception {
 
         CsvImporter<DeviceModel> csvImporter = new CachedCsvImporter<>(
-                new DefaultCsvImporter<>(sparql, DeviceModel.class, DeviceModel::new),
+                new DefaultCsvImporter<>(sparql, DeviceModel.class, DeviceModel::new, currentUser.getUri()),
                 importDTO.getValidationToken()
         );
 

@@ -120,6 +120,12 @@
                 :uri="germplasm.accession"
                 :to="{path: '/germplasm/details/'+ encodeURIComponent(germplasm.accession)}"
               ></opensilex-LabelUriView>
+              <opensilex-MetadataView
+              v-if="germplasm.publisher && germplasm.publisher.uri"
+                :publisher="germplasm.publisher"
+                :publicationDate="germplasm.publication_date"
+                :lastUpdatedDate="germplasm.last_updated_date" 
+              ></opensilex-MetadataView>
             </template>
           </opensilex-Card>
           <opensilex-Card label="GermplasmDetails.additionalInfo" icon="ik#ik-clipboard" v-if="addInfo.length != 0">

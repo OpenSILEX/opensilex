@@ -169,6 +169,14 @@ public class SPARQLDeserializers {
         return parameterizedClass(object.getClass(), target, paramIndex);
     }
 
+    public static Node nodeOffsetDateTime(OffsetDateTime date){
+        try {
+            return SPARQLDeserializers.getForClass(OffsetDateTime.class).getNodeFromString(date.toString());
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
     public static Node nodeURI(URI uri) {
         try {
             return SPARQLDeserializers.getForClass(URI.class).getNodeFromString(uri.toString());

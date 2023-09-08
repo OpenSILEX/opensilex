@@ -96,6 +96,13 @@
                 :uri="provenance.prov_activity[0].uri"
               ></opensilex-UriView>
 
+              <opensilex-MetadataView
+                v-if="provenance.publisher && provenance.publisher.uri"
+                :publisher="provenance.publisher"
+                :publicationDate="provenance.issued"
+                :lastUpdatedDate="provenance.modified" 
+              ></opensilex-MetadataView>
+
             </template>
           </opensilex-Card>
         </b-col>
@@ -317,7 +324,10 @@ export default class ProvenanceDetailsPage extends Vue {
       activity_start_date: null,
       activity_end_date: null,
       activity_uri: null,
-      agents: []
+      agents: [],
+      publisher: this.provenance.publisher,
+      publication_date: this.provenance.issued,
+      last_updated_date: this.provenance.modified
     }
 
     if (this.provenance.prov_activity != null && this.provenance.prov_activity.length>0) {

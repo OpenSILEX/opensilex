@@ -40,6 +40,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -128,17 +129,23 @@ public class UserAPI {
             PersonDAO personDAO = new PersonDAO(sparql);
             PersonDTO personDTO = userDTO.createCorrespondingPersonDTO();
             personDTO.setUri(null);
-            PersonModel person = personDAO.create(personDTO );
+            PersonModel person = PersonModel.fromDTO(personDTO, sparql);
+            person.setPublisher(currentUser.getUri());
+            personDAO.create(person);
 
-            AccountModel user = accountDAO.create(
+            AccountModel user = AccountModel.buildAccountModel(
                     userDTO.getUri(),
                     new InternetAddress(userDTO.getEmail()),
                     userDTO.isAdmin(),
                     authentication.getPasswordHash(userDTO.getPassword()),
                     userDTO.getLanguage(),
                     userDTO.isEnable(),
-                    person
+                    person,
+                    Collections.emptyList()
             );
+            user.setPublisher(currentUser.getUri());
+            accountDAO.create(user);
+
             sparql.commitTransaction();
 
             return new ObjectUriResponse(Response.Status.CREATED, user.getUri()).getResponse();

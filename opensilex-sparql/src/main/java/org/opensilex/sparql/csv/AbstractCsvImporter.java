@@ -58,6 +58,8 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
     // Add one LINE since users expect that the first effective row is the third line
     public static final int CSV_HEADER_HUMAN_READABLE_ROW_OFFSET = CSV_ROW_BEGIN_INDEX+1;
 
+    protected URI publisher;
+
     protected final SPARQLService sparql;
     protected final OntologyStore ontologyStore;
 
@@ -102,12 +104,13 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
      * @param graph object graph
      * @param objectConstructor way to define new model which are instance of the given {@code objectClass}
      */
-    protected AbstractCsvImporter(SPARQLService sparql, Class<T> objectClass, URI graph, Supplier<T> objectConstructor) throws SPARQLException {
+    protected AbstractCsvImporter(SPARQLService sparql, Class<T> objectClass, URI graph, Supplier<T> objectConstructor, URI publisher) throws SPARQLException {
 
         Objects.requireNonNull(sparql);
         Objects.requireNonNull(objectClass);
         Objects.requireNonNull(graph);
         Objects.requireNonNull(objectConstructor);
+        Objects.requireNonNull(publisher);
 
         SPARQLConfig sparqlConfig;
         try{
@@ -133,6 +136,7 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
         this.generationPrefix = sparql.getDefaultGenerationURI(objectClass).toString();
         this.objectConstructor = objectConstructor;
         this.ontologyStore = SPARQLModule.getOntologyStoreInstance();
+        this.publisher = publisher;
 
         try {
             this.rootClassURI = URIDeserializer.formatURI(sparql.getRDFTypeURI(objectClass));
@@ -683,7 +687,14 @@ public abstract class AbstractCsvImporter<T extends SPARQLResourceModel & ClassU
     @Override
     public void create(CSVValidationModel validation, List<T> models) throws Exception {
         if (!validation.hasErrors()) {
-            sparql.create(NodeFactory.createURI(graph.toString()), models, models.size(), false);
+            if (Objects.nonNull(this.publisher)) {
+                for (T model : models) {
+                    if (Objects.isNull(model.getPublisher())) {
+                        model.setPublisher(this.publisher);
+                    }
+                }
+            }
+            sparql.create(NodeFactory.createURI(graph.toString()), models, models.size(), false, true);
         }
     }
 }

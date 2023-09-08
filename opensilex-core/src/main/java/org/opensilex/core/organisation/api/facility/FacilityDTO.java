@@ -16,6 +16,7 @@ import org.opensilex.sparql.model.SPARQLModelRelation;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * DTO representing JSON for getting facility
@@ -80,6 +81,12 @@ public class FacilityDTO extends RDFObjectDTO {
         setType(model.getType());
         setTypeLabel(model.getTypeLabel().getDefaultValue());
         setName(model.getName());
+        if (Objects.nonNull(model.getPublicationDate())) {
+            setPublicationDate(model.getPublicationDate());
+        }
+        if (Objects.nonNull(model.getLastUpdateDate())) {
+            setLastUpdatedDate(model.getLastUpdateDate());
+        }
         if (model.getAddress() != null) {
             FacilityAddressDTO address = new FacilityAddressDTO();
             address.fromModel(model.getAddress());

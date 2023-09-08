@@ -21,9 +21,9 @@
                 :isSelectable="isSelectable"
             >
 
-              <template v-slot:cell(created)="{data}">
+              <template v-slot:cell(published)="{data}">
                 <opensilex-TextView
-                    :value="new Date(data.item.created).toLocaleString()">
+                    :value="new Date(data.item.published).toLocaleString()">
                 </opensilex-TextView>
               </template>
 
@@ -136,7 +136,7 @@ export default class AnnotationList extends Vue {
 
 
   static getDefaultColumns() {
-    return new Set(["created", "description", "author", "motivation", "uri"]);
+    return new Set(["published", "description", "publisher", "motivation", "uri"]);
   }
 
   get user() {
@@ -200,7 +200,7 @@ export default class AnnotationList extends Vue {
           this.filter.bodyValue,
           this.target,
           this.filter.motivation,
-          this.filter.author,
+          this.filter.publisher,
           options.orderBy,
           options.currentPage,
           options.pageSize
@@ -227,7 +227,7 @@ export default class AnnotationList extends Vue {
 
     let uniqueUsers = new Set<string>();
     annotations.forEach(annotation => {
-      uniqueUsers.add(annotation.author);
+      uniqueUsers.add(annotation.publisher);
     });
 
     return this.$securityService.getAccountsByURI(Array.from(uniqueUsers)).then(http => {
@@ -252,8 +252,8 @@ export default class AnnotationList extends Vue {
     return {
       bodyValue: undefined,
       motivation: undefined,
-      created: undefined,
-      author: undefined
+      published: undefined,
+      publisher: undefined
     };
   }
 
@@ -266,11 +266,11 @@ export default class AnnotationList extends Vue {
 
     let tableFields = [];
 
-    if (this.columnsToDisplay.has("created")) {
-      tableFields.push({key: "created", label: "Annotation.created", sortable: true});
+    if (this.columnsToDisplay.has("published")) {
+      tableFields.push({key: "published", label: "Annotation.published", sortable: true});
     }
-    if (this.columnsToDisplay.has("author")) {
-      tableFields.push({key: "author", label: "Annotation.author", sortable: false});
+    if (this.columnsToDisplay.has("publisher")) {
+      tableFields.push({key: "publisher", label: "Annotation.publisher", sortable: false});
     }
     if (this.columnsToDisplay.has("description")) {
       tableFields.push({key: "description", label: "Annotation.description", sortable: true});
@@ -329,8 +329,8 @@ en:
     motivation-placeholder: Select a motivation
     motivation-help: Intent or motivation for the creation of the Annotation.
     description: Description
-    author: Author
-    created: Created
+    publisher: Publisher
+    published: Published
     target: Target
     list-title: Annotations
     already-exist: the annotation already exist
@@ -345,8 +345,8 @@ fr:
     motivation-placeholder: Sélectionnez une motivation
     motivation-help: "Intention ou motivation guidant la création de l'annotation"
     description: Description
-    created: Créée le
-    author: Auteur
+    published: Publié le
+    publisher: Publieur
     target: Cible
     list-title: Annotations
     already-exist: l'annotation existe déjà

@@ -224,8 +224,11 @@ export default class ProvenanceForm extends Vue {
       name: null,
       description: null,
       prov_activity: [],
-      prov_agent: []
-  }
+      prov_agent: [],
+      publisher: form.publisher,
+      publication_date: form.publication_date,
+      last_updated_date: form.last_updated_date
+    }
     provenance.uri = form.uri;
     provenance.name = form.name;
     provenance.description = form.description;

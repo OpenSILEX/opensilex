@@ -9,11 +9,13 @@ import io.swagger.annotations.*;
 import org.opensilex.core.experiment.api.ExperimentGetDTO;
 import org.opensilex.core.project.dal.ProjectDAO;
 import org.opensilex.core.project.dal.ProjectModel;
+import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.response.*;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
 import org.opensilex.sparql.response.CreatedUriResponse;
@@ -31,6 +33,7 @@ import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author Julien BONNEFONT
@@ -88,7 +91,7 @@ public class ProjectAPI {
         try {
             ProjectDAO dao = new ProjectDAO(sparql);
             ProjectModel model = dto.newModel();
-            model.setCreator(currentUser.getUri());
+            model.setPublisher(currentUser.getUri());
 
             model = dao.create(model);
             return new CreatedUriResponse(model.getUri()).getResponse();
@@ -149,7 +152,11 @@ public class ProjectAPI {
     ) throws Exception {
         ProjectDAO dao = new ProjectDAO(sparql);
         ProjectModel model = dao.get(uri, currentUser);
-        return new SingleObjectResponse<>(ProjectGetDetailDTO.fromModel(model)).getResponse();
+        ProjectGetDetailDTO dto = ProjectGetDetailDTO.fromModel(model);
+        if (Objects.nonNull(model.getPublisher())){
+            dto.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(model.getPublisher())));
+        }
+        return new SingleObjectResponse<>(dto).getResponse();
     }
 
     /**

@@ -22,7 +22,7 @@ import static org.opensilex.core.geospatial.dal.GeospatialDAO.geometryToGeoJson;
  *
  * @author vmigot
  */
-@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "parent", "parent_name", "experiment", "experiment_name", "factor_level", "relations", "geometry"})
+@JsonPropertyOrder({"uri", "publisher", "publication_date", "last_updated_date", "rdf_type", "rdf_type_name", "name", "parent", "parent_name", "experiment", "experiment_name", "factor_level", "relations", "geometry"})
 public class ScientificObjectDetailByExperimentsDTO extends ScientificObjectDetailDTO {
 
     @ApiModelProperty(value = "Scientific object experiment URI")

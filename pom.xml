@@ -50,7 +50,7 @@
         <!-- BRAPI module-->
         <module>opensilex-brapi</module>
 
-        <!-- INSECTs module-->
+        <!-- INSECT module-->
         <module>opensilex-insect</module>
 
 

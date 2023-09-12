@@ -49,7 +49,11 @@
 
         <!-- BRAPI module-->
         <module>opensilex-brapi</module>
-        
+
+        <!-- INSECT module-->
+        <module>opensilex-insect</module>
+
+
         <!-- Extension modules -->
         <!--<module>inrae-sixtine</module>-->
 

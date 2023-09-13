@@ -18,6 +18,7 @@ import org.apache.jena.riot.Lang;
 
 import org.opensilex.OpenSilex;
 import org.opensilex.insect.ontology.OesoInsect;
+import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.rdf4j.RDF4JConfig;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.OpenSilexModuleNotFoundException;
@@ -37,21 +38,27 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Phis opensilex module implementation
+ * Insect opensilex module implementation
  */
-public class PhisWsModule extends OpenSilexModule implements APIExtension, SPARQLExtension {
+public class InsectModule extends OpenSilexModule implements APIExtension, SPARQLExtension {
     
-    private final static Logger LOGGER = LoggerFactory.getLogger(PhisWsModule.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger(InsectModule.class);
+
+    @Override
+    public void setup() {
+        SPARQLService.addPrefix(OesoInsect.PREFIX, OesoInsect.NS);
+        URIDeserializer.setPrefixes(SPARQLService.getPrefixMapping(), true);
+    }
 
     @Override
     public List<OntologyFileDefinition> getOntologiesFiles() throws Exception {
         SPARQLConfig sparqlConfig = getOpenSilex().getModuleConfig(SPARQLModule.class, SPARQLConfig.class);
         List<OntologyFileDefinition> list = SPARQLExtension.super.getOntologiesFiles();
         list.add(new OntologyFileDefinition(
-                OesoExt.NS,
-                "ontologies/oeso-ext.owl",
+                OesoInsect.NS,
+                "ontologies/oeso-insect.owl",
                 Lang.RDFXML,
-                OesoExt.PREFIX
+                OesoInsect.PREFIX
         ));
         return list;
     }

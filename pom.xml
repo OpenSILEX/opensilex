@@ -132,13 +132,20 @@
             <version>${revision}</version>
         </dependency>
 
-        <!-- BRAPI dependency --> 
+        <!-- BRAPI dependency -->
         <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex-brapi</artifactId>
             <version>${revision}</version>
         </dependency>
-        
+
+        <!-- Insect dependency -->
+        <dependency>
+            <groupId>org.opensilex</groupId>
+            <artifactId>opensilex-insect</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
         <dependency>
             <groupId>org.opensilex</groupId>
             <artifactId>opensilex-migration</artifactId>

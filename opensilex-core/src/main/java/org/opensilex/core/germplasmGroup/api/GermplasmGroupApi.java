@@ -62,6 +62,8 @@ import static org.opensilex.core.germplasmGroup.api.GermplasmGroupApi.PATH;
 public class GermplasmGroupApi {
     public static final String PATH = "/core/germplasm_group";
 
+    public static final String GROUP_EXAMPLE_URI = "opensilex-sandbox:id/germplasmGroup/test";
+
     @CurrentUser
     AccountModel currentUser;
 

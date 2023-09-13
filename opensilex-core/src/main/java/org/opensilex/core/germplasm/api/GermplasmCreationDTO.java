@@ -14,7 +14,10 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javax.validation.constraints.NotNull;
+
+import org.apache.commons.collections4.CollectionUtils;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.nosql.mongodb.metadata.MetaDataModel;
 import org.opensilex.server.rest.validation.ValidURI;
@@ -26,7 +29,7 @@ import org.opensilex.sparql.model.SPARQLLabel;
  */
 @ApiModel
 @JsonPropertyOrder({"uri", "rdf_type", "name", "synonyms", "code", "production_year",
-    "description", "species", "variety", "accession", "institute", "website", "metadata"})
+    "description", "species", "variety", "accession", "institute", "website","parent_germplasms", "parent_a_germplasms", "parent_b_germplasms", "metadata"})
 public class GermplasmCreationDTO {
     
     /**
@@ -83,7 +86,28 @@ public class GermplasmCreationDTO {
      */
     @ApiModelProperty(value = "institute", example = "INRA")
     protected String institute;
-        
+
+    /**
+     * parent varieties, male, female, A or B we don't care here
+     */
+    @ApiModelProperty(value = "parent germplasm uris", example = "http://opensilex.dev/opensilex/id/variety#B73")
+    @JsonProperty("parent_germplasms")
+    protected List<URI> parentGermplasms;
+
+    /**
+     * parent varieties, male, female, A or B we don't care here
+     */
+    @ApiModelProperty(value = "parent A germplasm uris", example = "http://opensilex.dev/opensilex/id/variety#B73")
+    @JsonProperty("parent_a_germplasms")
+    protected List<URI> parentAGermplasms;
+
+    /**
+     * parent varieties, male, female, A or B we don't care here
+     */
+    @ApiModelProperty(value = "parent B germplasm uris", example = "http://opensilex.dev/opensilex/id/variety#B73")
+    @JsonProperty("parent_b_germplasms")
+    protected List<URI> parentBGermplasms;
+
     /**
      * productionYear
      */
@@ -211,6 +235,30 @@ public class GermplasmCreationDTO {
     public void setWebsite(URI website) {
         this.website = website;
     }
+
+    public List<URI> getParentGermplasms() {
+        return parentGermplasms;
+    }
+
+    public void setParentGermplasms(List<URI> parentGermplasms) {
+        this.parentGermplasms = parentGermplasms;
+    }
+
+    public List<URI> getParentAGermplasms() {
+        return parentAGermplasms;
+    }
+
+    public void setParentAGermplasms(List<URI> parentAGermplasms) {
+        this.parentAGermplasms = parentAGermplasms;
+    }
+
+    public List<URI> getParentBGermplasms() {
+        return parentBGermplasms;
+    }
+
+    public void setParentBGermplasms(List<URI> parentBGermplasms) {
+        this.parentBGermplasms = parentBGermplasms;
+    }
     
     public GermplasmModel newModel() {
         GermplasmModel model = new GermplasmModel();
@@ -269,6 +317,18 @@ public class GermplasmCreationDTO {
         if (code != null) {
             model.setCode(code);
         }
+
+        if(!CollectionUtils.isEmpty(parentGermplasms)){
+            model.setParentGermplasms(createGermplasmListFromUriList(parentGermplasms));
+        }
+
+        if(!CollectionUtils.isEmpty(parentAGermplasms)){
+            model.setParentAGermplasms(createGermplasmListFromUriList(parentAGermplasms));
+        }
+
+        if(!CollectionUtils.isEmpty(parentBGermplasms)){
+            model.setParentBGermplasms(createGermplasmListFromUriList(parentBGermplasms));
+        }
         
         if (website != null) {
             model.setWebsite(website);                    
@@ -277,4 +337,11 @@ public class GermplasmCreationDTO {
         return model;
     }   
 
+    private List<GermplasmModel> createGermplasmListFromUriList(List<URI> uris){
+        return uris.stream().map(uri -> {
+            GermplasmModel nextGerm = new GermplasmModel();
+            nextGerm.setUri(uri);
+            return nextGerm;
+        }).collect(Collectors.toList());
+    }
 }

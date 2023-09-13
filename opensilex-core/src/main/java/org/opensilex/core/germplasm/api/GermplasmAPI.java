@@ -85,8 +85,8 @@ public class GermplasmAPI {
     public static final String GERMPLASM_EXAMPLE_URI = "http://opensilex/set/experiments/ZA17";
     public static final String GERMPLASM_EXAMPLE_TYPE = "http://www.opensilex.org/vocabulary/oeso#Variety";
     public static final String GERMPLASM_EXAMPLE_SPECIES = "http://www.phenome-fppn.fr/id/species/zeamays";
-    protected static final String GERMPLASM_EXAMPLE_VARIETY = "";
-    protected static final String GERMPLASM_EXAMPLE_ACCESSION = "";
+    protected static final String GERMPLASM_EXAMPLE_VARIETY = "http://opensilex.test/id/germplasm/variety.huachano";
+    protected static final String GERMPLASM_EXAMPLE_ACCESSION = "http://opensilex.test/id/germplasm/accession.v_a_x_v_b";
     protected static final String GERMPLASM_EXAMPLE_INSTITUTE = "INRA";
     protected static final String GERMPLASM_EXAMPLE_PRODUCTION_YEAR = "2020";
     protected static final String GERMPLASM_EXAMPLE_METADATA = "{ \"water_stress\" : \"resistant\",\n" +
@@ -142,7 +142,7 @@ public class GermplasmAPI {
 
         GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
 
-        ErrorResponse error = check(germplasmDTO, germplasmDAO, false);
+        ErrorResponse error = check(germplasmDTO, false);
         if (error != null) {
             return error.getResponse();
         }
@@ -373,6 +373,9 @@ public class GermplasmAPI {
             @ApiParam(value = "Group filter") @QueryParam("group_of_germplasm") @ValidURI URI group,
             @ApiParam(value = "Search by institute", example = GERMPLASM_EXAMPLE_INSTITUTE) @QueryParam("institute") String institute,
             @ApiParam(value = "Search by experiment") @QueryParam("experiment") URI experiment,
+            @ApiParam(value = "Search by parent varieties A or B") @QueryParam("parent_germplasms") List<URI> parentGermplasms,
+            @ApiParam(value = "Search by parent varieties A") @QueryParam("parent_germplasms_a") List<URI> parentGermplasmsA,
+            @ApiParam(value = "Search by parent varieties B") @QueryParam("parent_germplasms_b") List<URI> parentGermplasmsB,
             @ApiParam(value = "Search by metadata", example = GERMPLASM_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("label=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
@@ -390,7 +393,10 @@ public class GermplasmAPI {
                  .setProductionYear(productionYear)
                  .setExperiment(experiment)
                  .setMetadata(metadata)
-                 .setGroup(group);
+                 .setGroup(group)
+                 .setParentGermplasms(parentGermplasms)
+                 .setParentAGermplasms(parentGermplasmsA)
+                 .setParentBGermplasms(parentGermplasmsB);
 
          searchFilter.setOrderByList(orderByList)
                  .setPage(page)
@@ -525,7 +531,7 @@ public class GermplasmAPI {
     ) throws Exception {
         try {
             GermplasmDAO germplasmDAO = new GermplasmDAO(sparql, nosql);
-            ErrorResponse error = check(germplasmDTO, germplasmDAO, true);
+            ErrorResponse error = check(germplasmDTO, true);
             if (error != null) {
                 return error.getResponse();
             }
@@ -576,7 +582,7 @@ public class GermplasmAPI {
 
     }
 
-    private ErrorResponse check(GermplasmCreationDTO germplasmDTO, GermplasmDAO germplasmDAO, boolean update) throws Exception {
+    private ErrorResponse check(GermplasmCreationDTO germplasmDTO, boolean update) throws Exception {
 
         if (!update) {
             // check if germplasm URI already exists
@@ -731,6 +737,9 @@ public class GermplasmAPI {
         return null;
     }
 
+    /**
+     * Sets a species if a variety was given. Sets species and variety if an accession was given.
+     */
     private <T extends GermplasmCreationDTO> T completeDTO(T germplasmDTO) throws Exception {
         if (germplasmDTO.getSpecies() == null && germplasmDTO.getVariety() != null) {
             GermplasmModel variety = cacheGermplasm.get(new KeyGermplasm(germplasmDTO.getVariety()), this::getGermplasm);

@@ -3,6 +3,7 @@ package org.opensilex.core.germplasm.api;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.core.experiment.api.ExperimentAPI;
+import org.opensilex.core.germplasmGroup.api.GermplasmGroupApi;
 import org.opensilex.core.variable.dal.VariableSearchFilter;
 import org.opensilex.sparql.service.SparqlSearchFilter;
 
@@ -37,6 +38,12 @@ public class GermplasmSearchFilter extends SparqlSearchFilter {
     private List<URI> uris;
 
     private URI group;
+
+    private List<URI> parentGermplasms;
+
+    private List<URI> parentAGermplasms;
+
+    private List<URI> parentBGermplasms;
 
     @ApiModelProperty(value = "Regex pattern for filtering list by uri", example = GermplasmAPI.GERMPLASM_EXAMPLE_URI)
     public String getUri() {
@@ -158,6 +165,7 @@ public class GermplasmSearchFilter extends SparqlSearchFilter {
         return this;
     }
 
+    @ApiModelProperty(value = "Search by germplasm group", example = GermplasmGroupApi.GROUP_EXAMPLE_URI)
     public URI getGroup() {
         return group;
     }
@@ -167,5 +175,31 @@ public class GermplasmSearchFilter extends SparqlSearchFilter {
         return this;
     }
 
+    public List<URI> getParentGermplasms() {
+        return parentGermplasms;
+    }
+
+    public GermplasmSearchFilter setParentGermplasms(List<URI> parentGermplasms) {
+        this.parentGermplasms = parentGermplasms;
+        return this;
+    }
+
+    public List<URI> getParentAGermplasms() {
+        return parentAGermplasms;
+    }
+
+    public GermplasmSearchFilter setParentAGermplasms(List<URI> parentAGermplasms) {
+        this.parentAGermplasms = parentAGermplasms;
+        return this;
+    }
+
+    public List<URI> getParentBGermplasms() {
+        return parentBGermplasms;
+    }
+
+    public GermplasmSearchFilter setParentBGermplasms(List<URI> parentBGermplasms) {
+        this.parentBGermplasms = parentBGermplasms;
+        return this;
+    }
 
 }

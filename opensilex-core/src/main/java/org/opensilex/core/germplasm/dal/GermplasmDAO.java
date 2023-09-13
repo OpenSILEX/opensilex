@@ -211,7 +211,9 @@ public class GermplasmDAO {
                     appendProductionYearFilter(select, searchFilter.getProductionYear());
                     appendURIsFilter(select, filteredUris);
                     appendGroupFilter(select, searchFilter.getGroup());
-
+                    appendParentFilter(select, searchFilter.getParentGermplasms());
+                    appendParentAFilter(select, searchFilter.getParentAGermplasms());
+                    appendParentBFilter(select, searchFilter.getParentBGermplasms());
                     appendExperimentFilter(select, finalExperiment);
 
                     initialSelect.set(select);
@@ -271,6 +273,32 @@ public class GermplasmDAO {
     private void appendGroupFilter(SelectBuilder select, URI group){
         if (group != null) {
             select.addWhere(SPARQLDeserializers.nodeURI(group), RDFS.member, makeVar(SPARQLResourceModel.URI_FIELD));
+        }
+    }
+
+    private void appendParentFilter(SelectBuilder select, List<URI> parentUris){
+        if (!CollectionUtils.isEmpty(parentUris)) {
+            Var predicateVar = makeVar("hasParent");
+            select.addWhere(makeVar(GermplasmModel.URI_FIELD), predicateVar, makeVar(GermplasmModel.PARENT_VAR));
+            select.addUnion(new WhereBuilder()
+                    .addWhere(predicateVar, RDFS.subPropertyOf, Oeso.hasParentGermplasm)
+                    .addWhere(predicateVar, RDF.type, Oeso.hasParentGermplasm)
+            );
+            select.addFilter(SPARQLQueryHelper.inURIFilter(GermplasmModel.PARENT_VAR, parentUris));
+        }
+    }
+
+    private void appendParentAFilter(SelectBuilder select, List<URI> parentAUris){
+        if (!CollectionUtils.isEmpty(parentAUris)) {
+            select.addWhere(makeVar(GermplasmModel.URI_FIELD), Oeso.hasParentGermplasmA, makeVar(GermplasmModel.PARENT_A_VAR));
+            select.addFilter(SPARQLQueryHelper.inURIFilter(GermplasmModel.PARENT_A_VAR, parentAUris));
+        }
+    }
+
+    private void appendParentBFilter(SelectBuilder select, List<URI> parentBUris){
+        if (!CollectionUtils.isEmpty(parentBUris)) {
+            select.addWhere(makeVar(GermplasmModel.URI_FIELD), Oeso.hasParentGermplasmB, makeVar(GermplasmModel.PARENT_B_VAR));
+            select.addFilter(SPARQLQueryHelper.inURIFilter(GermplasmModel.PARENT_B_VAR, parentBUris));
         }
     }
 

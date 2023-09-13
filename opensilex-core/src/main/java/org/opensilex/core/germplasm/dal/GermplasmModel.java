@@ -110,6 +110,28 @@ public class GermplasmModel extends SPARQLNamedResourceModel<GermplasmModel> imp
     )
     List<String> synonyms;
     public static final String SYNONYM_VAR = "synonyms";
+
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "hasParentGermplasm"
+    )
+    protected List<GermplasmModel> parentGermplasms;
+
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "hasParentGermplasmA"
+    )
+    protected List<GermplasmModel> parentAGermplasms;
+
+    @SPARQLProperty(
+            ontology = Oeso.class,
+            property = "hasParentGermplasmB"
+    )
+    protected List<GermplasmModel> parentBGermplasms;
+
+    public static final String PARENT_VAR = "parentGermplasm";
+    public static final String PARENT_A_VAR = "parentAGermplasm";
+    public static final String PARENT_B_VAR = "parentBGermplasm";
     
     @SPARQLProperty(
             ontology = FOAF.class,
@@ -214,6 +236,30 @@ public class GermplasmModel extends SPARQLNamedResourceModel<GermplasmModel> imp
 
     public void setWebsite(URI website) {
         this.website = website;
+    }
+
+    public List<GermplasmModel> getParentGermplasms() {
+        return parentGermplasms;
+    }
+
+    public void setParentGermplasms(List<GermplasmModel> parentGermplasms) {
+        this.parentGermplasms = parentGermplasms;
+    }
+
+    public List<GermplasmModel> getParentAGermplasms() {
+        return parentAGermplasms;
+    }
+
+    public void setParentAGermplasms(List<GermplasmModel> parentAGermplasms) {
+        this.parentAGermplasms = parentAGermplasms;
+    }
+
+    public List<GermplasmModel> getParentBGermplasms() {
+        return parentBGermplasms;
+    }
+
+    public void setParentBGermplasms(List<GermplasmModel> parentBGermplasms) {
+        this.parentBGermplasms = parentBGermplasms;
     }
     
     @Override

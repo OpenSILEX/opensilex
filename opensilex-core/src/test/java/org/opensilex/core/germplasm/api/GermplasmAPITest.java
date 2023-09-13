@@ -15,6 +15,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -70,6 +72,146 @@ public class GermplasmAPITest extends AbstractMongoIntegrationTest {
         final Response getResultSpecies = getJsonGetByUriResponseAsAdmin(target(uriPath), createdSpeciesUri.toString());
         assertEquals(Response.Status.OK.getStatusCode(), getResultSpecies.getStatus());
         
+    }
+
+    /**
+     * Tests creation, updating and recuperation of germplasms with parents.
+     */
+    @Test
+    public void testParentStuff() throws Exception {
+
+        //Create some parents
+        GermplasmCreationDTO someParentADTO = new GermplasmCreationDTO();
+        someParentADTO.setName("jack");
+        someParentADTO.setRdfType(new URI(Oeso.Species.toString()));
+        final Response postResultParentA = getJsonPostResponseAsAdmin(target(createPath), someParentADTO);
+        assertEquals(Response.Status.CREATED.getStatusCode(), postResultParentA.getStatus());
+        URI someParentAURI = extractUriFromResponse(postResultParentA);
+
+        GermplasmCreationDTO someSecondParentADTO = new GermplasmCreationDTO();
+        someSecondParentADTO.setName("bla");
+        someSecondParentADTO.setRdfType(new URI(Oeso.Species.toString()));
+        final Response postResultSecondParentA = getJsonPostResponseAsAdmin(target(createPath), someSecondParentADTO);
+        assertEquals(Response.Status.CREATED.getStatusCode(), postResultSecondParentA.getStatus());
+        URI someSecondParentAURI = extractUriFromResponse(postResultSecondParentA);
+
+        GermplasmCreationDTO someParentBDTO = new GermplasmCreationDTO();
+        someParentBDTO.setName("john");
+        someParentBDTO.setRdfType(new URI(Oeso.Species.toString()));
+        final Response postResultParentB = getJsonPostResponseAsAdmin(target(createPath), someParentBDTO);
+        assertEquals(Response.Status.CREATED.getStatusCode(), postResultParentB.getStatus());
+        URI someParentBURI = extractUriFromResponse(postResultParentB);
+
+        //create some children, they have the same B parent, different A parents. One seperate child that has a parent that isnt of type A or B
+        GermplasmCreationDTO someAccessionChildDTO = new GermplasmCreationDTO();
+        someAccessionChildDTO.setName("john junior");
+        someAccessionChildDTO.setRdfType(new URI(Oeso.Species.toString()));
+        someAccessionChildDTO.setParentAGermplasms(Stream.of(someParentAURI, someSecondParentAURI).collect(Collectors.toList()));
+        someAccessionChildDTO.setParentBGermplasms(Collections.singletonList(someParentBURI));
+        final Response postResultAccessionChild = getJsonPostResponseAsAdmin(target(createPath), someAccessionChildDTO);
+        assertEquals(Response.Status.CREATED.getStatusCode(), postResultAccessionChild.getStatus());
+        URI someAccessionChildURI = extractUriFromResponse(postResultAccessionChild);
+
+        GermplasmCreationDTO someVarietyChildDTO = new GermplasmCreationDTO();
+        someVarietyChildDTO.setName("bla junior");
+        someVarietyChildDTO.setRdfType(new URI(Oeso.Species.toString()));
+        someVarietyChildDTO.setParentAGermplasms(Collections.singletonList(someAccessionChildURI));
+        someVarietyChildDTO.setParentBGermplasms(Collections.singletonList(someParentBURI));
+        final Response postResultVarietyChild = getJsonPostResponseAsAdmin(target(createPath), someVarietyChildDTO);
+        assertEquals(Response.Status.CREATED.getStatusCode(), postResultVarietyChild.getStatus());
+        URI uriNotUsedInAParentTillNow = extractUriFromResponse(postResultVarietyChild);
+
+        GermplasmCreationDTO someChildWithNoParentTypeDTO = new GermplasmCreationDTO();
+        someChildWithNoParentTypeDTO.setName("indiana jones");
+        someChildWithNoParentTypeDTO.setRdfType(new URI(Oeso.Species.toString()));
+        someChildWithNoParentTypeDTO.setParentGermplasms(Collections.singletonList(uriNotUsedInAParentTillNow));
+        final Response postResultChildNoParentType = getJsonPostResponseAsAdmin(target(createPath), someChildWithNoParentTypeDTO);
+        assertEquals(Response.Status.CREATED.getStatusCode(), postResultChildNoParentType.getStatus());
+        URI childWithNoParentTypeUri = extractUriFromResponse(postResultChildNoParentType);
+
+        //Test search by parentA
+        Map<String, Object> params = new HashMap<String, Object>() {
+            {
+                put("parent_germplasms_a", Collections.singletonList(someParentAURI));
+            }
+        };
+        WebTarget searchTarget = appendSearchParams(target(searchPath), 0, 20, params);
+        Response getResult = appendAdminToken(searchTarget).get();
+        assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
+        JsonNode node = getResult.readEntity(JsonNode.class);
+        ObjectMapper mapper = ObjectMapperContextResolver.getObjectMapper();
+        PaginatedListResponse<GermplasmGetAllDTO> germplasmListResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<GermplasmGetAllDTO>>() {
+        });
+        List<GermplasmGetAllDTO> germplasmList = germplasmListResponse.getResult();
+        assertEquals(germplasmList.size(), 1);
+        assertEquals(germplasmList.get(0).uri, someAccessionChildURI);
+
+        //Test search by parent B
+        params = new HashMap<String, Object>() {
+            {
+                put("parent_germplasms_b", Collections.singletonList(someParentBURI));
+            }
+        };
+        searchTarget = appendSearchParams(target(searchPath), 0, 20, params);
+        getResult = appendAdminToken(searchTarget).get();
+        assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
+        node = getResult.readEntity(JsonNode.class);
+        germplasmListResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<GermplasmGetAllDTO>>() {
+        });
+        germplasmList = germplasmListResponse.getResult();
+        assertEquals(germplasmList.size(), 2);
+
+        //Test search parent with a parentA property
+        params = new HashMap<String, Object>() {
+            {
+                put("parent_germplasms", Collections.singletonList(someParentAURI));
+            }
+        };
+        searchTarget = appendSearchParams(target(searchPath), 0, 20, params);
+        getResult = appendAdminToken(searchTarget).get();
+        assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
+        node = getResult.readEntity(JsonNode.class);
+        germplasmListResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<GermplasmGetAllDTO>>() {
+        });
+        germplasmList = germplasmListResponse.getResult();
+        assertEquals(germplasmList.size(), 1);
+        assertEquals(germplasmList.get(0).uri, someAccessionChildURI);
+
+        //Test search by parent when the child's parent was defined with no type (not a or b)
+        params = new HashMap<String, Object>() {
+            {
+                put("parent_germplasms", Collections.singletonList(uriNotUsedInAParentTillNow));
+            }
+        };
+        searchTarget = appendSearchParams(target(searchPath), 0, 20, params);
+        getResult = appendAdminToken(searchTarget).get();
+        assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
+        node = getResult.readEntity(JsonNode.class);
+        germplasmListResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<GermplasmGetAllDTO>>() {
+        });
+        germplasmList = germplasmListResponse.getResult();
+        assertEquals(germplasmList.size(), 1);
+        assertEquals(germplasmList.get(0).uri, childWithNoParentTypeUri);
+
+        //Test update by setting a parentB to a parentA value and making sure this is the only returned element on a parentB search
+        someAccessionChildDTO.setParentBGermplasms(Collections.singletonList(someParentAURI));
+        someAccessionChildDTO.setUri(someAccessionChildURI);
+        final Response updateResponse = getJsonPutResponse(target(updatePath), someAccessionChildDTO);
+        assertEquals(Status.OK.getStatusCode(), updateResponse.getStatus());
+        params = new HashMap<String, Object>() {
+            {
+                put("parent_germplasms_b", Collections.singletonList(someParentAURI));
+            }
+        };
+        searchTarget = appendSearchParams(target(searchPath), 0, 20, params);
+        getResult = appendAdminToken(searchTarget).get();
+        assertEquals(Status.OK.getStatusCode(), getResult.getStatus());
+        node = getResult.readEntity(JsonNode.class);
+        germplasmListResponse = mapper.convertValue(node, new TypeReference<PaginatedListResponse<GermplasmGetAllDTO>>() {
+        });
+        germplasmList = germplasmListResponse.getResult();
+        assertEquals(germplasmList.size(), 1);
+        assertEquals(germplasmList.get(0).uri, someAccessionChildURI);
     }
 
     @Test

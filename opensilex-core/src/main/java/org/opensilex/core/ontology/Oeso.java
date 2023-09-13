@@ -185,4 +185,7 @@ public class Oeso {
     public static final Resource moreThan = Ontology.resource(NS, "MoreThan");
     public static final Resource moreOrEqualThan = Ontology.resource(NS, "MoreOrEqualThan");
     public static final Resource equalToo = Ontology.resource(NS, "EqualToo");
+    public static final Resource hasParentGermplasm = Ontology.property(NS, "hasParentGermplasm");
+    public static final Resource hasParentGermplasmA = Ontology.property(NS, "hasParentGermplasmA");
+    public static final Resource hasParentGermplasmB = Ontology.property(NS, "hasParentGermplasmB");
 }

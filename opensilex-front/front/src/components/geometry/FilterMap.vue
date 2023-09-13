@@ -53,17 +53,22 @@ import {Component, Prop} from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {FactorDetailsGetDTO, GermplasmGetSingleDTO, ScientificObjectNodeDTO} from "opensilex-core/index";
+import {ScientificObjectsService} from "opensilex-core/api/scientificObjects.service";
 
 @Component
 export default class FilterMap extends Vue {
   featureOS: any[];
 
+  scientificObjectsService:ScientificObjectsService;
+
   experiment: string;
 
   @Prop()
   editMode;
+
   @Prop()
   title: string;
+
   @Prop({
     default: () => {
       return {
@@ -123,6 +128,7 @@ export default class FilterMap extends Vue {
     this.$opensilex.showLoader();
 
     this.experiment = decodeURIComponent(this.$route.params.uri);
+    this.scientificObjectsService=this.$opensilex.getService("opensilex.ScientificObjectsService")
     this.recoveryScientificObjects();
   }
 
@@ -138,9 +144,8 @@ export default class FilterMap extends Vue {
       for (const feature of this.featureOS) {
         pageSize += feature.length;
       }
-  
-      this.$opensilex
-          .getService("opensilex.ScientificObjectsService")
+
+      this.scientificObjectsService
           .searchScientificObjects(
               this.experiment, // experiment uri?: string,
               [], // rdfTypes?: Array<string>,
@@ -149,6 +154,7 @@ export default class FilterMap extends Vue {
               germplasm || undefined,
               factorLevels, // factorLevels?: Array<string>,
               undefined, // facility?: string,
+              undefined,
               undefined,
               undefined,
               [],

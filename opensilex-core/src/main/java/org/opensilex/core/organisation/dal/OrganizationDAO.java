@@ -286,4 +286,20 @@ public class OrganizationDAO {
 
         return instance;
     }
+
+    public Set<OrganizationModel> getOrganizationsByFacilityURI(URI facilityURI, AccountModel user) throws Exception {
+        return searchWithoutFilters(user).stream().filter(
+                orga -> orga.getFacilities().stream().anyMatch(
+                        facilityModel -> SPARQLDeserializers.compareURIs(facilityURI,facilityModel.getUri())
+                )
+        ).collect(Collectors.toSet());
+    }
+
+    public Set<OrganizationModel> getDirectParentOrganizations(URI organizationURI, AccountModel user) throws Exception {
+        return searchWithoutFilters(user).stream().filter(
+                orga -> orga.getParents().stream().anyMatch(
+                        parentOrga -> SPARQLDeserializers.compareURIs(organizationURI,parentOrga.getUri())
+                )
+        ).collect(Collectors.toSet());
+    }
 }

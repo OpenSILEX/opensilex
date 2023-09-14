@@ -7,6 +7,29 @@ ontologies:
             serverURI: http://localhost:8667/rdf4j-server/
             repository: insect_behaveOpt
 
+file-system:
+    fs:
+        config:
+            defaultFS: local
+            connections:
+                local:
+                    implementation: org.opensilex.fs.local.LocalFileSystemConnection
+                    config:
+                        basePath: ../../opensilex-data
+                #     irods:
+                #         implementation: org.opensilex.fs.irods.IrodsFileSystemConnection
+                #         config:
+                #             basePath: /FranceGrillesZone/home/fg-phenome/PHIS
+                gridfs:
+                    implementation: org.opensilex.fs.gridfs.GridFSConnection
+                    config:
+                        host: localhost
+                        port: 8668
+                        database: opensilex
+            # customPath:
+            #     datafile/: irods
+
+
 big-data:
     mongodb:
         config:
@@ -37,7 +60,7 @@ core:
             # Default metrics units : DAYS, HOURS, MINUTES, SECONDS are authorized (String)
             metricsTimeUnit: MINUTES
 
-front:
-    dashboard:
-        graph1:
-            variable: http://opensilex.test/id/variable/air_temperature_datalogging_degreecelsius
+#front:
+    #dashboard:
+        #graph1:
+            #variable: http://opensilex.test/id/variable/air_temperature_datalogging_degreecelsius

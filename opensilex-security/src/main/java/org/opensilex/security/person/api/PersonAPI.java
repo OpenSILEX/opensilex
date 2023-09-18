@@ -8,9 +8,11 @@ package org.opensilex.security.person.api;
 import io.swagger.annotations.*;
 import org.opensilex.security.SecurityModule;
 import org.opensilex.security.account.dal.AccountDAO;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
+import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.person.dal.PersonDAO;
 import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.server.response.*;
@@ -59,6 +61,9 @@ public class PersonAPI {
     @Inject
     private SPARQLService sparql;
 
+    @CurrentUser
+    AccountModel currentUser;
+
     /**
      * Create a person and return its URI
      *
@@ -84,8 +89,9 @@ public class PersonAPI {
             @ApiParam("Person description") @Valid PersonDTO personDTO
     ) throws Exception {
         PersonDAO personDAO = new PersonDAO(sparql);
-
-        PersonModel person = personDAO.create(personDTO);
+        PersonModel person = PersonModel.fromDTO(personDTO, sparql);
+        person.setPublisher(currentUser.getUri());
+        personDAO.create(person);
 
         return new CreatedUriResponse(person.getUri()).getResponse();
     }

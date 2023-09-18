@@ -52,6 +52,12 @@
               label="component.factor.description"
               :value="factor.description"
             ></opensilex-StringView>
+            <opensilex-MetadataView
+              v-if="factor.publisher && factor.publisher.uri"
+              :publisher="factor.publisher"
+              :publicationDate="factor.publication_date"
+              :lastUpdatedDate="factor.last_updated_date" 
+            ></opensilex-MetadataView>
           </template>
         </opensilex-Card>
 

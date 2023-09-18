@@ -69,7 +69,7 @@ public class OrganizationDAO {
      *     <li>The user is admin</li>
      *     <li>The user is a member of a group associated with the organization</li>
      *     <li>The user is a member of a group associated with a parent organization</li>
-     *     <li>The user is the creator of the organization</li>
+     *     <li>The user is the publisher of the organization</li>
      * </ul>
      *
      * @param organizationURI The organization URI to check

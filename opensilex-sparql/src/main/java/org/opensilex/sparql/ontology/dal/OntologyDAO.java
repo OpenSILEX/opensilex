@@ -27,10 +27,7 @@ import org.apache.jena.sparql.core.TriplePath;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.aggregate.Aggregator;
 import org.apache.jena.sparql.expr.aggregate.AggregatorFactory;
-import org.apache.jena.vocabulary.OWL;
-import org.apache.jena.vocabulary.OWL2;
-import org.apache.jena.vocabulary.RDF;
-import org.apache.jena.vocabulary.RDFS;
+import org.apache.jena.vocabulary.*;
 import org.opensilex.server.exceptions.NotFoundException;
 import org.opensilex.server.exceptions.displayable.DisplayableBadRequestException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
@@ -50,6 +47,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -215,7 +213,7 @@ public final class OntologyDAO {
      * }
      * </pre>
      */
-    private UpdateBuilder getDeleteRestrictionUpdate(URI classURI, URI propertyURI) throws IllegalArgumentException{
+    private UpdateBuilder getDeleteRestrictionUpdate(URI classURI, URI propertyURI) {
 
         if(classURI == null && propertyURI == null){
             throw new IllegalArgumentException("classURI and propertyURI are both null");
@@ -242,6 +240,14 @@ public final class OntologyDAO {
                         .addWhere(restriction, OWL.onProperty, restrictedProperty)
                         .addWhere(restriction, RDF.type, OWL2.Restriction)
                         .addWhere(restriction, restrictionProperty, restrictionValue));
+    }
+
+    private UpdateBuilder getLastUpdatedDateRestrictionUpdate(URI classURI) {
+        Var objectVar = makeVar("?o");
+        Node nodeURI = SPARQLDeserializers.nodeURI(classURI);
+        return new UpdateBuilder().addDelete(customGraph, nodeURI, DCTerms.modified, objectVar)
+                .addWhere(new WhereBuilder().addGraph(customGraph, nodeURI, DCTerms.modified, objectVar))
+                .addInsert(customGraph, nodeURI, DCTerms.modified, SPARQLDeserializers.nodeOffsetDateTime(OffsetDateTime.now()));
     }
 
     public ClassModel getClassModel(URI rdfClass, URI parentClass, String lang) throws SPARQLException {
@@ -744,6 +750,9 @@ public final class OntologyDAO {
             sparql.create(customGraph, restriction, false, false, true, (create, node) -> {
                 create.addInsert(customGraph, SPARQLDeserializers.nodeURI(classURI), RDFS.subClassOf, node);
             });
+
+            UpdateBuilder modified = getLastUpdatedDateRestrictionUpdate(classURI);
+            sparql.executeUpdateQuery(modified);
             return true;
         } else {
             return false;
@@ -774,7 +783,10 @@ public final class OntologyDAO {
         } else if (results.size() > 1) {
             throw new NotFoundException("Multiple class property restrictions found (should never happened) for : " + classURI.toString() + " - " + propertyURI.toString());
         } else {
+            UpdateBuilder modified = getLastUpdatedDateRestrictionUpdate(classURI);
             UpdateBuilder delete = getDeleteRestrictionUpdate(classURI, propertyURI);
+
+            sparql.executeUpdateQuery(modified);
             sparql.executeDeleteQuery(delete);
         }
     }

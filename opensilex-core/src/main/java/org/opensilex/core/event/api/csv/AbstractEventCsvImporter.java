@@ -450,7 +450,6 @@ public abstract class AbstractEventCsvImporter<T extends EventModel> {
 
         String description = row[colIndex.getAndIncrement()];
         model.setDescription(description);
-        model.setCreator(user.getUri());
 
     }
 }

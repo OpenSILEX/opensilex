@@ -35,7 +35,9 @@ import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
@@ -1404,9 +1406,18 @@ public class DataDAO {
      */
     public ListWithPagination<DataGetDTO> modelListToDTO(ListWithPagination<DataModel> modelList) throws Exception {
         Set<URI> dateVariables = getAllDateVariables();
-        List<DataGetDTO> dtoList = modelList.getList().stream()
-                .map(dataModel -> DataGetDTO.getDtoFromModel(dataModel, dateVariables))
-                .collect(Collectors.toList());
+        List<DataGetDTO> dtoList = new ArrayList<>();
+        modelList.getList().forEach(dataModel -> {
+            DataGetDTO dto = DataGetDTO.getDtoFromModel(dataModel, dateVariables);
+            if (Objects.nonNull(dataModel.getPublisher())) {
+                try {
+                    dto.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(dataModel.getPublisher())));
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            dtoList.add(dto);
+        });
         return new ListWithPagination<>(dtoList, modelList.getPage(), modelList.getPageSize(), modelList.getTotal());
     }
 

@@ -25,7 +25,6 @@ import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
-import org.opensilex.core.organisation.api.facility.FacilityGetDTO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.provenance.api.ProvenanceAPI;
 import org.opensilex.core.provenance.api.ProvenanceCreationDTO;
@@ -35,8 +34,8 @@ import org.opensilex.core.variable.api.VariableApiTest;
 import org.opensilex.core.variable.api.VariableCreationDTO;
 import org.opensilex.core.variable.dal.*;
 import org.opensilex.security.account.dal.AccountDAO;
-import org.opensilex.security.person.api.PersonDTO;
 import org.opensilex.security.person.dal.PersonDAO;
+import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
@@ -107,11 +106,11 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
     public void create_with_personInCharge() throws Exception {
         PersonDAO personDAO = new PersonDAO(getSparqlService());
 
-        PersonDTO personDTO = new PersonDTO();
-        personDTO.setFirstName("test");
-        personDTO.setLastName("test");
-        personDTO.setEmail("test@test.test");
-        URI personURI = personDAO.create(personDTO).getUri();
+        PersonModel personModel = new PersonModel();
+        personModel.setFirstName("test");
+        personModel.setLastName("test");
+        personModel.setEmail(new InternetAddress("test@test.test"));
+        URI personURI = personDAO.create(personModel).getUri();
 
         DeviceCreationDTO deviceDTO = getCreationDto();
         deviceDTO.setPersonInChargeURI(personURI);

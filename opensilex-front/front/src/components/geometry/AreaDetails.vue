@@ -60,10 +60,6 @@
                     label="component.area.details.name"
                 ></opensilex-StringView>
                 <opensilex-StringView
-                    :value="authorName"
-                    label="component.area.details.author"
-                ></opensilex-StringView>
-                <opensilex-StringView
                     :value="nameType()"
                     label="component.area.details.rdfType"
                 ></opensilex-StringView>
@@ -75,6 +71,12 @@
                 <opensilex-GeometryCopy
                     :value="area.geometry"
                 ></opensilex-GeometryCopy>
+                <opensilex-MetadataView
+                  v-if="area.publisher && area.publisher.uri"
+                  :publisher="area.publisher"
+                  :publicationDate="area.publication_date"
+                  :lastUpdatedDate="area.last_updated_date"
+              ></opensilex-MetadataView>
               </template>
             </opensilex-Card>
           </b-col>
@@ -128,7 +130,7 @@
     </template>
     <opensilex-StringView
         :value="authorName"
-        label="component.area.details.author"
+        label="component.area.details.publisher"
     ></opensilex-StringView>
     <div v-if="isViewAllInformation || !showName ">
       <opensilex-StringView
@@ -192,7 +194,7 @@ export default class AreaDetails extends Vue {
   area: AreaGetDTO = {
     uri: null,
     name: null,
-    author: null,
+    publisher: null,
     rdf_type: null,
     description: null,
     geometry: null,
@@ -232,20 +234,16 @@ export default class AreaDetails extends Vue {
             this.area.rdf_type = this.area.event.rdf_type;
           }
           this.rdf_type = this.area.rdf_type;
-          this.loadAuthor(this.area.author);
+          this.loadAuthor(this.area.publisher);
         })
         .catch(this.$opensilex.errorHandler);
   }
 
-  loadAuthor(uriAuthor) {
-    this.securityService
-        .getAccount(uriAuthor)
-        .then((accountResponse) => {
-          let account = accountResponse.response.result;
-          const {person_last_name, person_first_name, email, linked_person} = account;
-          this.authorName = linked_person ? person_first_name + " " + person_last_name : email;
-        })
-        .catch(this.$opensilex.errorHandler);
+  loadAuthor(publisher: UserGetDTO) {
+    if(publisher) {
+      this.authorName = publisher.first_name && publisher.last_name ?
+      publisher.first_name + " " + publisher.last_name : publisher.uri;
+    }
   }
 
   nameType() {
@@ -325,7 +323,6 @@ export default class AreaDetails extends Vue {
               " " +
               this.$i18n.t("component.common.success.delete-success-message");
           this.$opensilex.showSuccessToast(message);
-
           this.$router.push({ path: "/experiment/map/" + this.$route.query.experiment });
         })
         .catch(this.$opensilex.errorHandler);
@@ -344,10 +341,6 @@ export default class AreaDetails extends Vue {
   display: block;
 }
 
-::v-deep a {
-  color: #007bff;
-}
-
 #show {
   color: #007bff;
   cursor: pointer;
@@ -362,7 +355,7 @@ en:
       details:
         uri: URI
         name: Name
-        author: Author
+        publisher: Publisher
         rdfType: Type
         description: Description
         geometry: Geometry
@@ -374,7 +367,7 @@ fr:
       details:
         uri: URI
         name: Nom
-        author: Auteur
+        publisher: Publieur
         rdfType: Type
         description: Description
         geometry: Géométrie

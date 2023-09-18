@@ -94,6 +94,12 @@
                   :url="document.source"
                   :value="document.source"
               ></opensilex-UriView>
+              <opensilex-MetadataView
+                v-if="document.publisher && document.publisher.uri"
+                :publisher="document.publisher"
+                :publicationDate="document.publication_date"
+                :lastUpdatedDate="document.last_updated_date" 
+              ></opensilex-MetadataView>
             </template>
           </opensilex-Card>
       </b-col>

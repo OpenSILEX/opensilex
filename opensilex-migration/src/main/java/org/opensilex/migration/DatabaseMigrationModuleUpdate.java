@@ -12,6 +12,8 @@ import org.opensilex.utils.AnsiUtils;
 import org.opensilex.update.AbstractOpenSilexModuleUpdate;
 import org.opensilex.update.OpensilexModuleUpdateException;
 
+import java.net.URISyntaxException;
+
 /**
  * An abstract implementation of Module update which handle Sparql/MongoDB operation by handling :
  * <ul>
@@ -52,7 +54,7 @@ public abstract class DatabaseMigrationModuleUpdate extends AbstractOpenSilexMod
         return false;
     }
 
-    protected void sparqlOperation(SPARQLService sparql, SPARQLConfig sparqlConfig) throws SPARQLException {
+    protected void sparqlOperation(SPARQLService sparql, SPARQLConfig sparqlConfig) throws Exception {
 
     }
 

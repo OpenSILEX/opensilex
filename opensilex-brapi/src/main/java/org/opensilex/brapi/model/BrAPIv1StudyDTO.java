@@ -7,11 +7,10 @@
 package org.opensilex.brapi.model;
 
 import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @see <a href="https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3">BrAPI documentation</a>
@@ -40,6 +39,13 @@ public class BrAPIv1StudyDTO extends BrAPIv1SuperStudyDTO{
                 seasons.add(season);
             }
             this.setSeasons(seasons);
+        }
+
+        List<FacilityModel> facilitiesList = model.getFacilities();
+        if (facilitiesList.size() == 1){
+            FacilityModel facility = facilitiesList.get(0);
+            this.setLocationDbId(facility.getUri().toString());
+            this.setLocationName(facility.getName());
         }
 
         return this;

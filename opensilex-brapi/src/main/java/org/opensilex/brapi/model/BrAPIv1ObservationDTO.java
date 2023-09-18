@@ -8,25 +8,16 @@ package org.opensilex.brapi.model;
 
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
-import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
-import org.opensilex.OpenSilex;
 import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.experiment.dal.ExperimentModel;
-import org.opensilex.core.ontology.Oeso;
-import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.service.SPARQLService;
 
-import javax.inject.Inject;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -180,19 +171,13 @@ public class BrAPIv1ObservationDTO {
             List<String> targetNameInExperiment = sparql.searchPrimitives(experimentGraph, targetURI, RDFS.label, String.class);
             if (targetNameInExperiment.isEmpty()) {
                 this.setObservationUnitName(ontologyDAO.getURILabel(targetURI, currentUser.getLanguage()));
-            } else {
+            } else if (targetNameInExperiment.size() == 1){
                 // For now a target has one and only one label in a context (here experiment)
                 this.setObservationUnitName(targetNameInExperiment.get(0));
             }
 
             List<URI> targetTypes = sparql.getRdfTypes(targetURI,null);
             this.setObservationLevel(ontologyDAO.getURILabel(targetTypes.get(0), currentUser.getLanguage()));
-
-            List<URI> germplasmURIs = sparql.searchPrimitives(experimentGraph, targetURI, Oeso.hasGermplasm, URI.class);
-            if (!germplasmURIs.isEmpty()){
-                // This is imperfect as there can be multiple germplasm but in most cases there is only one
-                this.setGermplasmDbId(germplasmURIs.get(0).toString());
-            }
         }
 
         if (dataModel.getVariable() != null) {

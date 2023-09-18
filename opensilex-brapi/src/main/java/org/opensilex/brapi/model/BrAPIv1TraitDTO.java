@@ -14,20 +14,20 @@ import java.util.List;
  * @author Alice Boizet
  */
 public class BrAPIv1TraitDTO {
-        List<String> alternativeAbbreviations;
-        String attribute;
-        @JsonProperty("class")
-        String brapiClass;
-        String description;
-        String entity;
-        String mainAbbreviation;
-        String name;
-        BrAPIv1OntologyReferenceDTO ontologyReference;
-        String status;
-        List<String> synonyms;
-        String traitDbId;
-        String traitName;
-        String xref;
+    private List<String> alternativeAbbreviations;
+    private String attribute;
+    @JsonProperty("class")
+    private String brapiClass;
+    private String description;
+    private String entity;
+    private String mainAbbreviation;
+    private String name;
+    private BrAPIv1OntologyReferenceDTO ontologyReference;
+    private String status;
+    private List<String> synonyms;
+    private String traitDbId;
+    private String traitName;
+    private String xref;
 
     public List<String> getAlternativeAbbreviations() {
         return alternativeAbbreviations;

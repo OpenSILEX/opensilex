@@ -6,12 +6,35 @@
 //******************************************************************************
 package org.opensilex.brapi.model;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonInclude;
+import org.geotools.geojson.geom.GeometryJSON;
+import org.locationtech.jts.geom.Point;
+import org.opensilex.core.data.dal.DataDAO;
+import org.opensilex.core.data.dal.DataModel;
+import org.opensilex.core.event.dal.move.MoveEventDAO;
+import org.opensilex.core.event.dal.move.MoveModel;
+import org.opensilex.core.event.dal.move.PositionModel;
+import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
-import org.opensilex.core.scientificObject.api.ScientificObjectNodeDTO;
+import org.opensilex.core.experiment.factor.dal.FactorModel;
+import org.opensilex.core.geospatial.dal.GeospatialDAO;
+import org.opensilex.core.geospatial.dal.GeospatialModel;
+import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.organisation.dal.facility.FacilityDAO;
+import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
+import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.sparql.model.SPARQLModelRelation;
+import org.opensilex.sparql.model.SPARQLResourceModel;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
+import org.opensilex.sparql.service.SPARQLService;
+import org.opensilex.utils.ListWithPagination;
+
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @see <a href="https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3">BrAPI documentation</a>
@@ -44,24 +67,27 @@ public class BrAPIv1ObservationUnitDTO {
     private String entryType;
     private String germplasmDbId;
     private String germplasmName;
+    private String locationDbId;
+    private String locationName;
     private String observationLevel;
-    private String observationLevels;
     private String observationUnitDbId;
     private List<BrAPIv1ObservationUnitXrefDTO> observationUnitXref;
     private List<BrAPIv1ObservationSummaryDTO> observations;
+    private String pedigree;
     private String plantNumber;
     private String plotNumber;
     private String positionCoordinateX;
     private String positionCoordinateXType; // Use PositionType
     private String positionCoordinateY;
     private String positionCoordinateYType; // Use PositionType
+    private String programDbId;
     private String programName;
     private String replicate;
     private String studyDbId;
-    private String studyLocation;
-    private String studyLocationDbId;
     private String studyName;
-    private List<BrAPIv1ObservationTreatmentDTO> treatments;
+    private List<BrAPIv1ObservationUnitTreatmentDTO> treatments;
+    private String trialDbId;
+    private String trialName;
 
     public String getBlockNumber() {
         return blockNumber;
@@ -109,14 +135,6 @@ public class BrAPIv1ObservationUnitDTO {
 
     public void setObservationLevel(String observationLevel) {
         this.observationLevel = observationLevel;
-    }
-
-    public String getObservationLevels() {
-        return observationLevels;
-    }
-
-    public void setObservationLevels(String observationLevels) {
-        this.observationLevels = observationLevels;
     }
 
     public String getObservationUnitDbId() {
@@ -217,22 +235,6 @@ public class BrAPIv1ObservationUnitDTO {
         this.studyDbId = studyDbId;
     }
 
-    public String getStudyLocation() {
-        return studyLocation;
-    }
-
-    public void setStudyLocation(String studyLocation) {
-        this.studyLocation = studyLocation;
-    }
-
-    public String getStudyLocationDbId() {
-        return studyLocationDbId;
-    }
-
-    public void setStudyLocationDbId(String studyLocationDbId) {
-        this.studyLocationDbId = studyLocationDbId;
-    }
-
     public String getStudyName() {
         return studyName;
     }
@@ -241,35 +243,190 @@ public class BrAPIv1ObservationUnitDTO {
         this.studyName = studyName;
     }
 
-    public List<BrAPIv1ObservationTreatmentDTO> getTreatments() {
+    public List<BrAPIv1ObservationUnitTreatmentDTO> getTreatments() {
         return treatments;
     }
 
-    public void setTreatments(List<BrAPIv1ObservationTreatmentDTO> treatments) {
+    public void setTreatments(List<BrAPIv1ObservationUnitTreatmentDTO> treatments) {
         this.treatments = treatments;
     }
-    
-    public static BrAPIv1ObservationUnitDTO fromModel(ScientificObjectNodeDTO model, List<FactorLevelModel> factorLevels) {
+
+    public String getLocationDbId() {
+        return locationDbId;
+    }
+
+    public void setLocationDbId(String locationDbId) {
+        this.locationDbId = locationDbId;
+    }
+
+    public String getLocationName() {
+        return locationName;
+    }
+
+    public void setLocationName(String locationName) {
+        this.locationName = locationName;
+    }
+
+    public String getPedigree() {
+        return pedigree;
+    }
+
+    public void setPedigree(String pedigree) {
+        this.pedigree = pedigree;
+    }
+
+    public void setPositionCoordinateXType(String positionCoordinateXType) {
+        this.positionCoordinateXType = positionCoordinateXType;
+    }
+
+    public void setPositionCoordinateYType(String positionCoordinateYType) {
+        this.positionCoordinateYType = positionCoordinateYType;
+    }
+
+    public String getProgramDbId() {
+        return programDbId;
+    }
+
+    public void setProgramDbId(String programDbId) {
+        this.programDbId = programDbId;
+    }
+
+    public String getTrialDbId() {
+        return trialDbId;
+    }
+
+    public void setTrialDbId(String trialDbId) {
+        this.trialDbId = trialDbId;
+    }
+
+    public String getTrialName() {
+        return trialName;
+    }
+
+    public void setTrialName(String trialName) {
+        this.trialName = trialName;
+    }
+
+    public static BrAPIv1ObservationUnitDTO fromModel(
+            ScientificObjectModel model, 
+            FacilityDAO facilityDAO, 
+            AccountModel currentUser, 
+            DataDAO dataDAO, 
+            ExperimentModel experimentModel, 
+            OntologyDAO ontologyDAO, 
+            SPARQLService sparql,
+            MoveEventDAO moveEventDAO,
+            GeospatialDAO geospatialDAO
+    ) throws Exception {
         BrAPIv1ObservationUnitDTO observationUnit = new BrAPIv1ObservationUnitDTO();
+
         if (model.getUri() != null) {
             observationUnit.setObservationUnitDbId(model.getUri().toString());
         }
-        if(factorLevels == null){
-            return observationUnit;
+
+        if (!model.getTypeLabel().toString().isEmpty()){
+            observationUnit.setObservationLevel(model.getTypeLabel().toString());
         }
-        List<BrAPIv1ObservationTreatmentDTO> treatments = new ArrayList<>();
-        for (FactorLevelModel level:factorLevels) {
-            BrAPIv1ObservationTreatmentDTO treatment = new BrAPIv1ObservationTreatmentDTO();
-            treatment.setFactor(level.getFactor().getName());
-            treatment.setModality(level.getName());
-            treatments.add(treatment);
+
+        Set<SPARQLModelRelation> hosts = model.getRelations(Oeso.isHosted).collect(Collectors.toSet());
+        if (hosts.size() == 1){
+            observationUnit.setLocationDbId(hosts.toString());
+            observationUnit.setLocationName(facilityDAO.get(URI.create(hosts.toString()), currentUser).getName());
         }
-        observationUnit.setTreatments(treatments);
-        observationUnit.setObservationLevel(model.getTypeLabel());
+
+        Set<SPARQLModelRelation> germplasms = model.getRelations(Oeso.hasGermplasm).collect(Collectors.toSet());
+        if (germplasms.size() == 1){
+            observationUnit.setGermplasmDbId(germplasms.toString());
+            observationUnit.setGermplasmName(facilityDAO.get(URI.create(germplasms.toString()), currentUser).getName());
+        }
+
+        // TODO : add data to observations
+        ListWithPagination<DataModel> objectData = dataDAO.search(
+                currentUser,
+                Collections.singletonList(experimentModel.getUri()),
+                Collections.singletonList(model.getUri()),
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                0,
+                0
+        );
+
+        if (!objectData.getList().isEmpty()){
+            List<BrAPIv1ObservationSummaryDTO> observations = new ArrayList<>();
+            for (DataModel data : objectData.getList()) {
+                observations.add(BrAPIv1ObservationSummaryDTO.fromModel(data, experimentModel, ontologyDAO, sparql, currentUser));
+            }
+            observationUnit.setObservations(observations);
+        }
+
 
         // null isn't allowed for these so by default it is set to long/lat
-        /*observationUnit.setPositionCoordinateXType(PositionType.LONGITUDE);
-        observationUnit.setPositionCoordinateXType(PositionType.LATITUDE);*/
+        observationUnit.setPositionCoordinateXType(PositionType.LONGITUDE);
+        observationUnit.setPositionCoordinateYType(PositionType.LATITUDE);
+
+        GeospatialModel objectGeometryModel = geospatialDAO.getGeometryByURI(model.getUri(), experimentModel.getUri());
+        if (!objectGeometryModel.getGeometry().toString().isEmpty()) {
+            org.locationtech.jts.geom.Geometry objectJtsGeometry = new GeometryJSON().read(objectGeometryModel.getGeometry().toJson());
+
+            if (!objectJtsGeometry.isEmpty()){
+
+                Point centroid = objectJtsGeometry.getCentroid();
+                observationUnit.setPositionCoordinateX(Double.toString(centroid.getX()));
+                observationUnit.setPositionCoordinateY(Double.toString(centroid.getY()));
+            }
+        } else if (moveEventDAO.countMoves(model.getUri()) == 1){
+            MoveModel moveModel = moveEventDAO.getLastMoveEvent(model.getUri());
+            PositionModel movePosition = moveEventDAO.getPosition(model.getUri(), moveModel.getUri());
+            
+            if (!movePosition.getCoordinates().toString().isEmpty()){
+                org.locationtech.jts.geom.Geometry moveJtsGeometry = new GeometryJSON().read(movePosition.getCoordinates().toJson());
+
+                if (!moveJtsGeometry.isEmpty()){
+
+                    Point centroid = moveJtsGeometry.getCentroid();
+                    observationUnit.setPositionCoordinateX(Double.toString(centroid.getX()));
+                    observationUnit.setPositionCoordinateY(Double.toString(centroid.getY()));
+                }
+            } else if (!movePosition.getX().isEmpty() | movePosition.getY().isEmpty()) {
+                if (!movePosition.getX().isEmpty()) {
+                    observationUnit.setPositionCoordinateX(movePosition.getX());
+                }
+                if (!movePosition.getY().isEmpty()) {
+                    observationUnit.setPositionCoordinateY(movePosition.getY());
+                }
+                observationUnit.setPositionCoordinateXType(PositionType.GRID_ROW);
+                observationUnit.setPositionCoordinateYType(PositionType.GRID_COL);
+            }
+        }
+
+        observationUnit.setStudyName(experimentModel.getName());
+        observationUnit.setStudyDbId(experimentModel.getUri().toString());
+
+        if (model.getFactorLevels().size()>0){
+            List<BrAPIv1ObservationUnitTreatmentDTO> unitTreatments = new ArrayList<>();
+            List<FactorModel> experimentFactors = experimentModel.getFactors();
+            List<URI> objectFactorLevels = model.getFactorLevels().stream().map(SPARQLResourceModel::getUri).collect(Collectors.toList());
+            for (FactorModel factorModel : experimentFactors) {
+                for (FactorLevelModel factorLevelModel : factorModel.getFactorLevels()) {
+                    if (objectFactorLevels.contains(factorLevelModel.getUri())){
+                        BrAPIv1ObservationUnitTreatmentDTO unitTreatment = new BrAPIv1ObservationUnitTreatmentDTO();
+                        unitTreatment.setFactor(factorModel.getName());
+                        unitTreatment.setModality(factorLevelModel.getName());
+                        unitTreatments.add(unitTreatment);
+                    }
+                }
+            }
+
+            observationUnit.setTreatments(unitTreatments);
+        }
         
         return observationUnit;
     }

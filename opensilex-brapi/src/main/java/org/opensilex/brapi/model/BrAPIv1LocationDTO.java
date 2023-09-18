@@ -6,7 +6,18 @@
 //******************************************************************************
 package org.opensilex.brapi.model;
 
-import java.util.Map;
+
+import com.mongodb.client.model.geojson.Geometry;
+import org.geotools.geojson.geom.GeometryJSON;
+import org.locationtech.jts.geom.Point;
+import org.opensilex.core.organisation.dal.OrganizationDAO;
+import org.opensilex.core.organisation.dal.OrganizationModel;
+import org.opensilex.core.organisation.dal.facility.FacilityDAO;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
+import org.opensilex.security.account.dal.AccountModel;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @see <a href="https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3">BrAPI documentation</a>
@@ -14,20 +25,181 @@ import java.util.Map;
  */
 class BrAPIv1LocationDTO {
     private String abbreviation;
-    private String abreviation;
-    private Map additionalInfo;
+    private Map<String, String> additionalInfo;
     private Double altitude;
     private String countryCode;
     private String countryName;
     private String documentationURL;
     private String instituteAddress;
-    private String instituteAdress;
     private String instituteName;
     private Double latitude;
     private String locationDbId;
     private String locationName;
     private String locationType;
     private Double longitude;
-    private String name;
 
+    public String getAbbreviation() {
+        return abbreviation;
+    }
+
+    public void setAbbreviation(String abbreviation) {
+        this.abbreviation = abbreviation;
+    }
+
+    public Map<String, String> getAdditionalInfo() {
+        return additionalInfo;
+    }
+
+    public void setAdditionalInfo(Map<String, String> additionalInfo) {
+        this.additionalInfo = additionalInfo;
+    }
+
+    public Double getAltitude() {
+        return altitude;
+    }
+
+    public void setAltitude(Double altitude) {
+        this.altitude = altitude;
+    }
+
+    public String getCountryCode() {
+        return countryCode;
+    }
+
+    public void setCountryCode(String countryCode) {
+        this.countryCode = countryCode;
+    }
+
+    public String getCountryName() {
+        return countryName;
+    }
+
+    public void setCountryName(String countryName) {
+        this.countryName = countryName;
+    }
+
+    public String getDocumentationURL() {
+        return documentationURL;
+    }
+
+    public void setDocumentationURL(String documentationURL) {
+        this.documentationURL = documentationURL;
+    }
+
+    public String getInstituteAddress() {
+        return instituteAddress;
+    }
+
+    public void setInstituteAddress(String instituteAddress) {
+        this.instituteAddress = instituteAddress;
+    }
+
+    public String getInstituteName() {
+        return instituteName;
+    }
+
+    public void setInstituteName(String instituteName) {
+        this.instituteName = instituteName;
+    }
+
+    public Double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(Double latitude) {
+        this.latitude = latitude;
+    }
+
+    public String getLocationDbId() {
+        return locationDbId;
+    }
+
+    public void setLocationDbId(String locationDbId) {
+        this.locationDbId = locationDbId;
+    }
+
+    public String getLocationName() {
+        return locationName;
+    }
+
+    public void setLocationName(String locationName) {
+        this.locationName = locationName;
+    }
+
+    public String getLocationType() {
+        return locationType;
+    }
+
+    public void setLocationType(String locationType) {
+        this.locationType = locationType;
+    }
+
+    public Double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(Double longitude) {
+        this.longitude = longitude;
+    }
+
+    public BrAPIv1LocationDTO extractFromModel(FacilityModel model, FacilityDAO facilityDAO, OrganizationDAO organizationDAO, AccountModel currentAccount) throws Exception {
+        this.setLocationDbId(model.getUri().toString());
+
+        this.setLocationName(model.getName());
+        this.setLocationType(model.getType().toString());
+
+        if (facilityDAO.getFacilityGeospatialModel(model.getUri()) != null){
+            Geometry facilityGeometry = facilityDAO.getFacilityGeospatialModel(model.getUri()).getGeometry();
+
+            org.locationtech.jts.geom.Geometry facilityJtsGeometry = new GeometryJSON().read(facilityGeometry.toJson());
+
+            if (!facilityJtsGeometry.isEmpty()){
+
+                Point centroid = facilityJtsGeometry.getCentroid();
+                this.setLongitude(centroid.getX());
+                this.setLatitude(centroid.getY());
+            }
+        }
+
+        Set<OrganizationModel> hostedOrganizations = organizationDAO.getOrganizationsByFacilityURI(model.getUri(), currentAccount);
+        if (!hostedOrganizations.isEmpty()) {
+            Set<OrganizationModel> directParentOrganizations = organizationDAO.getDirectParentOrganizations(model.getUri(), currentAccount);
+            while (!directParentOrganizations.isEmpty()){
+                List<OrganizationModel> parentsWithOneAddress = directParentOrganizations.stream().map(parentOrg -> {
+                    OrganizationModel parentModel;
+                    try {
+                        parentModel = organizationDAO.get(parentOrg.getUri(), currentAccount);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                    if (parentModel.getSites().size() == 1) {
+                        return parentModel;
+                    } else {
+                        return null;
+                    }
+                }).collect(Collectors.toList());
+                if (parentsWithOneAddress.size()==1) {
+                    OrganizationModel institute = organizationDAO.get(parentsWithOneAddress.get(0).getUri(), currentAccount);
+                    this.setInstituteAddress(institute.getSites().get(0).getAddress().toString());
+                    this.setInstituteName(institute.getName());
+                    directParentOrganizations.remove(parentsWithOneAddress.get(0));
+                } else if (parentsWithOneAddress.size()>1) {
+                    Set<OrganizationModel> newParents = new HashSet<>();
+                    for (OrganizationModel childOrga : directParentOrganizations) {
+                        newParents.addAll(organizationDAO.getDirectParentOrganizations(childOrga.getUri(), currentAccount));
+                    }
+                    directParentOrganizations = newParents;
+                } else {
+                    directParentOrganizations = Collections.emptySet();
+                }
+            }
+        }
+
+        return this;
+    }
+
+    public static BrAPIv1LocationDTO fromModel(FacilityModel model, FacilityDAO facilityDAO, OrganizationDAO organizationDAO, AccountModel currentAccount) throws Exception {
+        BrAPIv1LocationDTO location = new BrAPIv1LocationDTO();
+        return location.extractFromModel(model, facilityDAO, organizationDAO, currentAccount);
+    }
 }

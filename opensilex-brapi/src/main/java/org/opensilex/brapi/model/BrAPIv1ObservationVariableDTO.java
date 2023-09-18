@@ -7,13 +7,8 @@
 package org.opensilex.brapi.model;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.jena.datatypes.xsd.XSDDatatype;
-import org.apache.jena.vocabulary.XSD;
-import org.opensilex.core.variable.dal.MethodModel;
-import org.opensilex.core.variable.dal.UnitModel;
 import org.opensilex.core.variable.dal.VariableModel;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Objects;
@@ -32,10 +27,6 @@ public class BrAPIv1ObservationVariableDTO {
     private String institution;
     private String language; // This will change once the multilabel development is done
     private BrAPIv1MethodDTO method;
-    private String observationVariableDbId;
-    private String observationVariableName;
-    private String ontologyDbId;
-    private String ontologyName;
     private BrAPIv1OntologyReferenceDTO ontologyReference;
     private BrAPIv1ScaleDTO scale;
     private String scientist;
@@ -44,6 +35,10 @@ public class BrAPIv1ObservationVariableDTO {
     private ArrayList<String> synonyms;
     private BrAPIv1TraitDTO trait;
     private String xref;
+    private String observationVariableDbId;
+    private String observationVariableName;
+    private String studyDbId;
+    private String trialName;
 
     public ArrayList<String> getContextOfUse() {
         return contextOfUse;
@@ -125,22 +120,6 @@ public class BrAPIv1ObservationVariableDTO {
         this.observationVariableName = observationVariableName;
     }
 
-    public String getOntologyDbId() {
-        return ontologyDbId;
-    }
-
-    public void setOntologyDbId(String ontologyDbId) {
-        this.ontologyDbId = ontologyDbId;
-    }
-
-    public String getOntologyName() {
-        return ontologyName;
-    }
-
-    public void setOntologyName(String ontologyName) {
-        this.ontologyName = ontologyName;
-    }
-
     public BrAPIv1OntologyReferenceDTO getOntologyReference() {
         return ontologyReference;
     }
@@ -205,9 +184,24 @@ public class BrAPIv1ObservationVariableDTO {
         this.xref = xref;
     }
 
-    public static BrAPIv1ObservationVariableDTO fromModel(
-            VariableModel variableModel
-    ) {
+    public String getStudyDbId() {
+        return studyDbId;
+    }
+
+    public void setStudyDbId(String studyDbId) {
+        this.studyDbId = studyDbId;
+    }
+
+    public String getTrialName() {
+        return trialName;
+    }
+
+    public void setTrialName(String trialName) {
+        this.trialName = trialName;
+    }
+
+    public static BrAPIv1ObservationVariableDTO fromModel(VariableModel variableModel) {
+
         BrAPIv1ObservationVariableDTO variable = new BrAPIv1ObservationVariableDTO();
         if (variableModel.getUri() != null) {
             variable.setObservationVariableDbId(variableModel.getUri().toString());
@@ -278,7 +272,7 @@ public class BrAPIv1ObservationVariableDTO {
 
         if (variableModel.getUnit() != null){
             BrAPIv1ScaleDTO variableScale = BrAPIv1ScaleDTO.fromModel(variableModel.getUnit());
-            // TODO how to do this better? at least switch
+
             String dataTypeUri = variableModel.getDataType().toString();
             if (Objects.equals(dataTypeUri, "xsd:decimal") | Objects.equals(dataTypeUri, "xsd:integer")){
                 variableScale.setDataType("Numerical");

@@ -6,6 +6,15 @@
 //******************************************************************************
 package org.opensilex.brapi.model;
 
+import org.opensilex.core.data.dal.DataModel;
+import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
+import org.opensilex.sparql.service.SPARQLService;
+
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+
 /**
  * @see <a href="https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3">BrAPI documentation</a>
  * @author Alice Boizet
@@ -17,6 +26,7 @@ class BrAPIv1ObservationSummaryDTO {
     private String observationVariableDbId;
     private String observationVariableName;
     private BrAPIv1SeasonDTO season;
+    private String value;
 
     public String getCollector() {
         return collector;
@@ -65,5 +75,45 @@ class BrAPIv1ObservationSummaryDTO {
     public void setSeason(BrAPIv1SeasonDTO season) {
         this.season = season;
     }
-    
+
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
+
+    public BrAPIv1ObservationSummaryDTO extractFromModel(DataModel dataModel, ExperimentModel expeModel, OntologyDAO ontologyDAO, SPARQLService sparql, AccountModel currentUser) throws Exception {
+
+        if (dataModel.getUri() != null) {
+            this.setObservationDbId(dataModel.getUri().toString());
+        }
+
+        if (dataModel.getDate() != null) {
+            this.setObservationTimeStamp(dataModel.getDate().toString());
+        }
+
+        if (dataModel.getVariable() != null) {
+            this.setObservationVariableDbId(dataModel.getVariable().toString());
+            this.setObservationVariableName(ontologyDAO.getURILabel(dataModel.getVariable(), currentUser.getLanguage()));
+        }
+
+        if (dataModel.getDate() != null){
+            BrAPIv1SeasonDTO season = new BrAPIv1SeasonDTO();
+            season.setYear(String.valueOf(LocalDateTime.from(dataModel.getDate().atZone(ZoneId.systemDefault())).getYear()));
+            this.setSeason(season);
+        }
+
+        if (dataModel.getValue() != null) {
+            this.setValue(dataModel.getValue().toString());
+        }
+
+        return this;
+    }
+
+    public static BrAPIv1ObservationSummaryDTO fromModel(DataModel dataModel, ExperimentModel expeModel, OntologyDAO ontologyDAO, SPARQLService sparql, AccountModel currentUser) throws Exception {
+        BrAPIv1ObservationSummaryDTO observation = new BrAPIv1ObservationSummaryDTO();
+        return observation.extractFromModel(dataModel, expeModel, ontologyDAO, sparql, currentUser);
+    }
 }

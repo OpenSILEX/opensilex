@@ -6,9 +6,14 @@
 //******************************************************************************
 package org.opensilex.brapi.model;
 
+import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.organisation.dal.OrganizationDAO;
+import org.opensilex.core.organisation.dal.facility.FacilityDAO;
+import org.opensilex.core.organisation.dal.facility.FacilityModel;
+import org.opensilex.security.account.dal.AccountModel;
+
 import java.util.ArrayList;
 import java.util.List;
-import org.opensilex.core.experiment.dal.ExperimentModel;
 
 /**
  * @see <a href="https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3">BrAPI documentation</a>
@@ -19,13 +24,13 @@ public class BrAPIv1StudyDetailsDTO extends BrAPIv1SuperStudyDTO {
     private List<BrAPIv1DataLinkDTO> dataLinks;
     private String license;
     private BrAPIv1LocationDTO location;
-    private Float altitude;
+    private Double altitude;
     private String countryCode;
     private String countryName;
     private String instituteAddress;
     private String instituteName;
-    private Float latitude;
-    private Float longitude;
+    private Double latitude;
+    private Double longitude;
     private String studyDescription;
     private List<String> seasons;
 
@@ -61,11 +66,11 @@ public class BrAPIv1StudyDetailsDTO extends BrAPIv1SuperStudyDTO {
         this.license = license;
     }
 
-    public Float getAltitude() {
+    public Double getAltitude() {
         return altitude;
     }
 
-    public void setAltitude(Float altitude) {
+    public void setAltitude(Double altitude) {
         this.altitude = altitude;
     }
 
@@ -101,19 +106,19 @@ public class BrAPIv1StudyDetailsDTO extends BrAPIv1SuperStudyDTO {
         this.instituteName = instituteName;
     }
 
-    public Float getLatitude() {
+    public Double getLatitude() {
         return latitude;
     }
 
-    public void setLatitude(Float latitude) {
+    public void setLatitude(Double latitude) {
         this.latitude = latitude;
     }
 
-    public Float getLongitude() {
+    public Double getLongitude() {
         return longitude;
     }
 
-    public void setLongitude(Float longitude) {
+    public void setLongitude(Double longitude) {
         this.longitude = longitude;
     }
 
@@ -133,7 +138,7 @@ public class BrAPIv1StudyDetailsDTO extends BrAPIv1SuperStudyDTO {
         this.seasons = seasons;
     }
 
-    public BrAPIv1StudyDetailsDTO extractFromModel(ExperimentModel model) {
+    public BrAPIv1StudyDetailsDTO extractFromModel(ExperimentModel model, FacilityDAO facilityDAO, OrganizationDAO organizationDAO, AccountModel currentAccount) throws Exception {
         super.extractFromModel(model);
         this.setStudyDescription(model.getDescription());
 
@@ -145,11 +150,20 @@ public class BrAPIv1StudyDetailsDTO extends BrAPIv1SuperStudyDTO {
             this.setSeasons(seasons);
         }
 
+        List<FacilityModel> facilitiesList = model.getFacilities();
+        if (facilitiesList.size() == 1){
+            FacilityModel facility = facilitiesList.get(0);
+            BrAPIv1LocationDTO locationDTO = BrAPIv1LocationDTO.fromModel(facility, facilityDAO, organizationDAO, currentAccount);
+            this.setLocation(locationDTO);
+            this.setLatitude(locationDTO.getLatitude());
+            this.setLongitude(locationDTO.getLongitude());
+        }
+
         return this;
     }
 
-    public static BrAPIv1StudyDetailsDTO fromModel(ExperimentModel model) {
+    public static BrAPIv1StudyDetailsDTO fromModel(ExperimentModel model, FacilityDAO facilityDAO, OrganizationDAO organizationDAO, AccountModel currentAccount) throws Exception {
         BrAPIv1StudyDetailsDTO study = new BrAPIv1StudyDetailsDTO();
-        return study.extractFromModel(model);
+        return study.extractFromModel(model, facilityDAO, organizationDAO, currentAccount);
     }
 }

@@ -13,7 +13,7 @@ package org.opensilex.brapi.model;
 class BrAPIv1ContactDTO {
     private String contactDbId;
     private String email;
-    private String institutionName;
+    private String instituteName;
     private String name;
     private String orcid;
     private String type;
@@ -34,12 +34,12 @@ class BrAPIv1ContactDTO {
         this.email = email;
     }
 
-    public String getInstitutionName() {
-        return institutionName;
+    public String getInstituteName() {
+        return instituteName;
     }
 
-    public void setInstitutionName(String institutionName) {
-        this.institutionName = institutionName;
+    public void setInstituteName(String instituteName) {
+        this.instituteName = instituteName;
     }
 
     public String getName() {

@@ -16,6 +16,33 @@ import java.util.List;
  */
 public class BrAPIv1GermplasmDTO {
 
+    protected String accessionNumber;
+    protected String acquisitionDate;
+    protected Integer biologicalStatusOfAccessionCode;
+    protected String breedingMethodDbId;
+    protected String commonCropName;
+    protected String countryOfOriginCode;
+    protected String defaultDisplayName;
+    protected String documentationURL;
+    protected List<Object> donors; // type Donor has no equivalent in OpenSILEX
+    protected String germplasmDbId;
+    protected String germplasmGenus;
+    protected String germplasmName;
+    protected String germplasmPUI;
+
+    protected String germplasmSpecies;
+    protected String instituteCode;
+    protected String instituteName;
+    protected String pedigree;
+    protected String seedSource;
+    protected String speciesAuthority;
+    protected String subtaxa;
+    protected String subtaxaAuthority;
+    protected List<String> synonyms;
+    protected List<Object> taxonIds; // type TaxonId has no equivalent in OpenSILEX
+    protected String sourceName;
+    protected String taxonId;
+    protected List<String> typeOfGermplasmStorageCode;
     public String getAccessionNumber() {
         return accessionNumber;
     }
@@ -224,34 +251,6 @@ public class BrAPIv1GermplasmDTO {
         this.typeOfGermplasmStorageCode = typeOfGermplasmStorageCode;
     }
 
-    protected String accessionNumber;
-    protected String acquisitionDate;
-    protected Integer biologicalStatusOfAccessionCode;
-    protected String breedingMethodDbId;
-    protected String commonCropName;
-    protected String countryOfOriginCode;
-    protected String defaultDisplayName;
-    protected String documentationURL;
-    protected List<Object> donors; // type Donor has no equivalent in OpenSILEX
-    protected String germplasmDbId;
-    protected String germplasmGenus;
-    protected String germplasmName;
-    protected String germplasmPUI;
-
-    protected String germplasmSpecies;
-    protected String instituteCode;
-    protected String instituteName;
-    protected String pedigree;
-    protected String seedSource;
-    protected String speciesAuthority;
-    protected String subtaxa;
-    protected String subtaxaAuthority;
-    protected List<String> synonyms;
-    protected List<Object> taxonIds; // type TaxonId has no equivalent in OpenSILEX
-    protected String sourceName;
-    protected String taxonId;
-    protected List<String> typeOfGermplasmStorageCode;
-
     /**
      * Convert Germplasm Model into Germplasm DTO
      *
@@ -283,7 +282,7 @@ public class BrAPIv1GermplasmDTO {
 
         if (model.getVariety() != null) {
             try {
-                dto.setSubtaxa("var. " + model.getVariety().getLabel().getDefaultValue()); //TODO : change this to latin label when Multilabels done because the name isn't necessarily in latin
+                dto.setSubtaxa("var. " + model.getVariety().getLabel().getDefaultValue()); //TODO : change this to latin label when Multilabels are added because the name isn't necessarily in latin
             } catch (Exception e) {
                 dto.setSubtaxa(model.getVariety().getUri().toString());
             }

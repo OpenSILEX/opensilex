@@ -49,7 +49,7 @@ export default class FacilityDetails extends Vue {
   experimentService: ExperimentsService;
   deviceService: DevicesService;
 
-  @Ref("infrastructureFacilityForm") readonly infrastructureFacilityForm!: any;
+  @Ref("organizationFacilityForm") readonly organizationFacilityForm!: any;
   @Ref("experimentsView")
   experimentsView: AssociatedExperimentsList;
 

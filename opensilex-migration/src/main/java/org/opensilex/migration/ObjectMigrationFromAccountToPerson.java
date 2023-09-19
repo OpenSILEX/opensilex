@@ -164,6 +164,10 @@ public class ObjectMigrationFromAccountToPerson implements OpenSilexModuleUpdate
 
     private void migrateProvenanceOperators(ProvenanceModel provenance, Map<URI, AccountModel> accounts, String operatorPredicateURI, ProvenanceDAO provenanceDAO) throws NoSQLInvalidURIException {
         Collection<AgentModel> operators = new ArrayList<>();
+        if ( Objects.isNull(provenance.getAgents()) ) {
+            return;
+        }
+
         provenance.getAgents().forEach( agentModel -> {
             String agentType = URIDeserializer.getExpandedURI(agentModel.getRdfType());
             if (agentType.equals(operatorPredicateURI)){

@@ -162,7 +162,7 @@
                             icon="ik#ik-link"
                             label="DatasetList.browseSource"
                             variant="outline-info"
-                            @click="window.open(data.item.source)"
+                            @click="openLink(data.item.source)"
                         ></opensilex-Button>
                     </b-button-group>
                 </template>
@@ -394,6 +394,10 @@ export default class DatasetList extends Vue {
 
     successMessage(form) {
         return this.$t("DatasetList.success-message", {datasetDraftURI: form.uri});
+    }
+
+    openLink(link: string) {
+      window.open(link);
     }
 }
 </script>

@@ -191,7 +191,7 @@
             "homepage": "Accueil",
             "experiments": "Expérimentations",
             "facilities": "Installations (environnement)",
-            "infrastructure": "Organisations",
+            "organization": "Organisations",
             "installations": "Installations",
             "projects": "Projets",
             "variables": "Variables",
@@ -217,7 +217,7 @@
                 "germplasm": "Ressources Génétiques"
             },
             "groupVariables": "Groupe de variables",
-            "infrastructures": "Organisations",
+            "organizations": "Organisations",
             "configuration": "Administration",
             "scientificObjectTypes": "Objets scientifiques",
             "facilitiesTypes": "Installations (environnement)",
@@ -460,7 +460,7 @@
             "technicalSupervisors": "Responsables techniques",
             "scientificSupervisors": "Responsables scientifiques",
             "record_author": "Saisie par",
-            "infrastructures": "Organisations",
+            "organizations": "Organisations",
             "facilities": "Installations techniques",
             "contacts": "Contacts",
             "add": "Ajouter une expérimentation",
@@ -532,7 +532,7 @@
             "form-wizard": {
                 "label": "Assistant de création d'expérimentation",
                 "general-informations": "Informations générales",
-                "infra-groups-projects": "Organisations, groupes et projets",
+                "orga-groups-projects": "Organisations, groupes et projets",
                 "scientific-technical-users": "Utilisateurs",
                 "variables-sensors-factors": "Variables, facteurs et capteurs"
             }
@@ -711,7 +711,7 @@
         "persons": "Persons",
         "variables": "Variables",
         "factors": "Facteurs",
-        "infrastructures": "Organisations",
+        "organizations": "Organisations",
         "germplasm": "Germplasm",
         "area": "Zone",
         "scientific-objects": "Objets scientifiques",
@@ -736,7 +736,7 @@
             "modification": "Ajout / Modification des expérimentations",
             "delete": "Suppression des expérimentations"
         },
-        "infrastructure": {
+        "organization": {
             "modification": "Ajout / Modification des Organisations",
             "delete": "Suppression des Organisations"
         },

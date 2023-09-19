@@ -11,7 +11,7 @@ This document briefly describes the functional and technical specifications of t
 ## Needs
 
 Organizations represent the institutions responsible for the experiments and facilities. They include for example
-national infrastructures, installations or experimental units. Organizations are hierarchically structured : an org
+national organizations, installations or experimental units. Organizations are hierarchically structured : an org
 can be part of zero, one or more "parents", and can have multiple "children".
 
 Organizations regroup users with different roles, and different permissions.

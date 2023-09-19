@@ -193,7 +193,7 @@
             "experiments": "Experiments",
             "facilities": "Facilities",
             "variables": "Variables",
-            "infrastructure": "Organizations",
+            "organization": "Organizations",
             "installations": "Installations",
             "projects": "Projects",
             "scientificObjects": "Scientific Objects",
@@ -217,7 +217,7 @@
                 "germplasm": "Germplasm"
             },
             "groupVariables": "Variables Groups",
-            "infrastructures": "Organizations",
+            "organizations": "Organizations",
             "configuration": "Administration",
             "scientificObjectTypes": "Scientific object types",
             "facilitiesTypes": "Facilities types",
@@ -463,8 +463,7 @@
             "technicalSupervisors": "Technical supervisors",
             "scientificSupervisors": "Scientific supervisors",
             "record_author": "Declared by",
-            "infrastructures": "Organizations",
-            "infrastructures-help": "The list of experiment organizations",
+            "organizations": "Organizations",
             "facilities": "Facilities",
             "contacts": "Contacts",
             "period": "Periode",
@@ -553,7 +552,7 @@
             "form-wizard": {
                 "label": "Experiment creation wizard",
                 "general-informations": "General informations",
-                "infra-groups-projects": "Organizations, groups and projects",
+                "orga-groups-projects": "Organizations, groups and projects",
                 "scientific-technical-users": "Scientific and technical users",
                 "variables-sensors-factors": "Variables, factors and sensors"
             }
@@ -659,7 +658,7 @@
         "persons": "Persons",
         "variables": "Variables",
         "factors": "Factors",
-        "infrastructures": "Organizations",
+        "organizations": "Organizations",
         "germplasm": "Germplasm",
         "area": "Area",
         "scientific-objects": "Scientific objects",
@@ -684,7 +683,7 @@
             "modification": "Add / update experiments",
             "delete": "Delete experiments"
         },
-        "infrastructure": {
+        "organization": {
             "modification": "Add / update Organizations",
             "delete": "Delete Organizations"
         },
@@ -776,7 +775,6 @@
                 "experiments": "ik-layers",
                 "image": "ik-bar-chart-line",
                 "installations": "ik-globe",
-                "infrastructure": "ik-globe",
                 "projects": "ik-folder",
                 "security": {
                     "label": "ik-lock",

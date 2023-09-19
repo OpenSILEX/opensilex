@@ -110,8 +110,8 @@ public class ExperimentModel extends SPARQLNamedResourceModel<ExperimentModel> i
             ontology = Oeso.class,
             property = "usesOrganization"
     )
-    List<OrganizationModel> infrastructures;
-    public static final String INFRASTRUCTURE_FIELD = "infrastructure";
+    List<OrganizationModel> organizations;
+    public static final String ORGANIZATION_FIELD = "organization";
 
     @SPARQLProperty(
             ontology = Oeso.class,
@@ -216,12 +216,12 @@ public class ExperimentModel extends SPARQLNamedResourceModel<ExperimentModel> i
         this.species = species;
     }
 
-    public List<OrganizationModel> getInfrastructures() {
-        return infrastructures;
+    public List<OrganizationModel> getOrganizations() {
+        return organizations;
     }
 
-    public void setInfrastructures(List<OrganizationModel> infrastructures) {
-        this.infrastructures = infrastructures;
+    public void setOrganizations(List<OrganizationModel> organizations) {
+        this.organizations = organizations;
     }
 
     public List<FacilityModel> getFacilities() {

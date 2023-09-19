@@ -646,13 +646,13 @@
     </owl:Class>
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#EuropeanInfrastructure -->
+    <!-- http://www.opensilex.org/vocabulary/oeso#EuropeanOrganization -->
 
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#EuropeanInfrastructure">
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#EuropeanOrganization">
         <rdfs:subClassOf rdf:resource="http://xmlns.com/foaf/0.1/Organization"/>
-        <rdfs:comment xml:lang="en">The ESFRI listed project EMPHASIS aims at a synergistic development and long-term operation of plant phenotyping infrastructure in Europe (https://emphasis.plant-phenotyping.eu/) by developing tools and methods for multi-scale phenotyping, allowing one to analyze genotype performance and trait diversity in current and future European environmental conditions.</rdfs:comment>
-        <rdfs:label xml:lang="en">european infrastructure</rdfs:label>
-        <rdfs:label xml:lang="fr">infrastructure européenne</rdfs:label>
+        <rdfs:comment xml:lang="en">The ESFRI listed project EMPHASIS aims at a synergistic development and long-term operation of plant phenotyping organization in Europe (https://emphasis.plant-phenotyping.eu/) by developing tools and methods for multi-scale phenotyping, allowing one to analyze genotype performance and trait diversity in current and future European environmental conditions.</rdfs:comment>
+        <rdfs:label xml:lang="en">european organization</rdfs:label>
+        <rdfs:label xml:lang="fr">organisation européenne</rdfs:label>
     </owl:Class>
 
     <!-- http://www.opensilex.org/vocabulary/oeso#Fan -->
@@ -890,13 +890,13 @@
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#LocalInfrastructure -->
+    <!-- http://www.opensilex.org/vocabulary/oeso#LocalOrganization -->
 
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#LocalInfrastructure">
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#LocalOrganization">
         <rdfs:subClassOf rdf:resource="http://xmlns.com/foaf/0.1/Organization"/>
-        <rdfs:comment xml:lang="en">A LOCAL INFRASTRUCTURE is a group of installations located in one site depending on one institution (or more), which share governance committees, a common (or at least highly interoperable) information system, common principles for cost calculation and pricing and a common tool for user access.</rdfs:comment>
-        <rdfs:label xml:lang="fr">infrastructure locale</rdfs:label>
-        <rdfs:label xml:lang="en">local infrastructure</rdfs:label>
+        <rdfs:comment xml:lang="en">A LOCAL ORGANIZATION is a group of installations located in one site depending on one institution (or more), which share governance committees, a common (or at least highly interoperable) information system, common principles for cost calculation and pricing and a common tool for user access.</rdfs:comment>
+        <rdfs:label xml:lang="fr">organisation locale</rdfs:label>
+        <rdfs:label xml:lang="en">local organization</rdfs:label>
     </owl:Class>
     
 
@@ -951,13 +951,13 @@
     
 
 
-    <!-- http://www.opensilex.org/vocabulary/oeso#NationalInfrastructure -->
+    <!-- http://www.opensilex.org/vocabulary/oeso#NationalOrganization -->
 
-    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#NationalInfrastructure">
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#NationalOrganization">
         <rdfs:subClassOf rdf:resource="http://xmlns.com/foaf/0.1/Organization"/>
-        <rdfs:comment xml:lang="en">A NATIONAL INFRASTRUCTURE is an organized group of local infrastructures with governance recognised by national authorities (e.g. respective ministry or national structures).</rdfs:comment>
-        <rdfs:label xml:lang="fr">infrastructure nationale</rdfs:label>
-        <rdfs:label xml:lang="en">national infrastructure</rdfs:label>
+        <rdfs:comment xml:lang="en">A NATIONAL ORGANIZATION is an organized group of local organizations with governance recognised by national authorities (e.g. respective ministry or national structures).</rdfs:comment>
+        <rdfs:label xml:lang="fr">organisation nationale</rdfs:label>
+        <rdfs:label xml:lang="en">national organization</rdfs:label>
     </owl:Class>
     
 

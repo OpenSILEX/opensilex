@@ -35,7 +35,7 @@ export default class FacilityPropertyView extends Vue {
   target: string;
 
   label = "";
-  infrastructure = null;
+  organization = null;
   to = null;
 
   mounted() {
@@ -50,8 +50,8 @@ export default class FacilityPropertyView extends Vue {
         .getService<OrganizationsService>("opensilex.OrganizationsService")
         .getFacility(this.value)
         .then((http) => {
-          this.infrastructure = http.response.result;
-          this.label = this.infrastructure.name;
+          this.organization = http.response.result;
+          this.label = this.organization.name;
         })
         .catch(() => {
           this.label = this.value;

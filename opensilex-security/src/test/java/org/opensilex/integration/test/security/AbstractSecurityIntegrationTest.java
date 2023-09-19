@@ -8,24 +8,9 @@ package org.opensilex.integration.test.security;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
-
-import java.net.URI;
-import java.util.ArrayList;
-
+import org.glassfish.jersey.media.multipart.MultiPart;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.junit.After;
-import org.junit.Assert;
-import org.opensilex.server.response.PaginatedListResponse;
-import org.opensilex.server.response.SingleObjectResponse;
-
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.Invocation;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.junit.BeforeClass;
 import org.opensilex.integration.test.AbstractIntegrationTest;
 import org.opensilex.security.SecurityModule;
@@ -33,6 +18,8 @@ import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.AuthenticationService;
 import org.opensilex.security.authentication.api.AuthenticationDTO;
 import org.opensilex.security.authentication.api.TokenGetDTO;
+import org.opensilex.server.response.PaginatedListResponse;
+import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.sparql.model.SPARQLResourceModel;
 import org.opensilex.sparql.response.ResourceTreeDTO;
 import org.opensilex.sparql.response.ResourceTreeResponse;
@@ -41,8 +28,16 @@ import org.opensilex.sparql.service.SPARQLServiceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.glassfish.jersey.media.multipart.MultiPart;
-import org.glassfish.jersey.media.multipart.MultiPartFeature;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.Invocation;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static junit.framework.TestCase.assertEquals;
 
@@ -440,12 +435,7 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
         final Response getResult = appendToken(searchTarget, userMail).get();
         assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
 
-        JsonNode node = getResult.readEntity(JsonNode.class);
-        Assert.assertNull(node.get("resultWithPagination"));
-        Assert.assertNotNull(node.get("result"));
-
-        PaginatedListResponse<T> responseList = mapper.convertValue(node, typeReference);
-        return responseList.getResult();
+        return readResponse(getResult, typeReference).getResult();
     }
 
     protected <T> List<T> getSearchResultsAsAdmin(String searchPath, Map<String, Object> searchCriteria, TypeReference<PaginatedListResponse<T>> typeReference) throws Exception {
@@ -464,9 +454,6 @@ public abstract class AbstractSecurityIntegrationTest extends AbstractIntegratio
         final Response getResult = appendAdminToken(searchTarget).get();
         assertEquals(Response.Status.OK.getStatusCode(), getResult.getStatus());
 
-        JsonNode node = getResult.readEntity(JsonNode.class);
-        return mapper.convertValue(node, new TypeReference<ResourceTreeResponse>() {
-        }).getResult();
+        return readResponse(getResult, new TypeReference<ResourceTreeResponse>() {}).getResult();
     }
-
 }

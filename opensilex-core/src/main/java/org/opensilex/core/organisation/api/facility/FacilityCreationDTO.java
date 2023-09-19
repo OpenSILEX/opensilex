@@ -93,6 +93,6 @@ class FacilityCreationDTO extends FacilityDTO {
     public void fromModel(FacilityModel model) {
         super.fromModel(model);
 
-        setOrganizations(model.getOrganizationUriList());
+        setOrganizations(model.getOrganizationUris());
     }
 }

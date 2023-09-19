@@ -51,10 +51,10 @@ export default class FacilityPropertySelector extends Vue {
           }
           return facilityNodes;
         });
-    } else if (this.context && this.context.infrastructureURI) {
+    } else if (this.context && this.context.organizationURI) {
       return this.$opensilex
         .getService("opensilex.OrganizationsService")
-        .getInfrastructure(this.context.infrastructureURI)
+        .getOrganization(this.context.organizationURI)
         .then(http => {
           let facilityNodes = [];
           for (let facility of http.response.result.facilities) {

@@ -237,18 +237,18 @@ export default class ModalForm<InnerFormType extends ModalInnerForm<CreationDTOT
 
   showCreateForm() {
     this.opened = true;
-
+    
+    if(!this.static) {
+      this.modalRef.show();
+    } 
     this.editMode = false;
-
-    this.modalRef.show();
-
     this.$nextTick(() => {
       this.form = this.getFormRef().getEmptyForm();
       let form = this.initForm(this.form as CreationDTOType);
       if (form) {
         this.form = form;
       }
-
+      this.modalRef.show();
       this.validatorRef.reset();
       if (this.getFormRef().reset) {
         this.getFormRef().reset();

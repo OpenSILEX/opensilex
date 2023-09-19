@@ -13,7 +13,7 @@
                     credentials.CREDENTIAL_FACILITY_MODIFICATION_ID
                   )
                 "
-            @click="editInfrastructureFacility()"
+            @click="editOrganizationFacility()"
             label="FacilitiesView.update"
             :small="true"
         ></opensilex-EditButton>
@@ -23,7 +23,7 @@
                     credentials.CREDENTIAL_FACILITY_DELETE_ID
                   )
                 "
-            @click="deleteInfrastructureFacility()"
+            @click="deleteOrganizationFacility()"
             label="FacilitiesView.delete"
             :small="true"
         ></opensilex-DeleteButton>
@@ -34,7 +34,7 @@
               credentials.CREDENTIAL_FACILITY_MODIFICATION_ID
             )
           "
-          ref="infrastructureFacilityForm"
+          ref="organizationFacilityForm"
           @onUpdate="refresh"
       ></opensilex-FacilityModalForm>
     </template>
@@ -148,7 +148,7 @@ export default class FacilityDescription extends Vue {
   valueByProperties: any = {};
   classModel: any = {};
 
-  @Ref("infrastructureFacilityForm") readonly infrastructureFacilityForm!: any;
+  @Ref("organizationFacilityForm") readonly organizationFacilityForm!: any;
 
   created() {
 
@@ -196,7 +196,7 @@ export default class FacilityDescription extends Vue {
         uri: org.uri,
         value: org.name,
         to: {
-          path: "/infrastructure/details/" + encodeURIComponent(org.uri),
+          path: "/organization/details/" + encodeURIComponent(org.uri),
         },
       };
     });
@@ -243,23 +243,23 @@ export default class FacilityDescription extends Vue {
         uri: site.uri,
         value: site.name,
         to: {
-          path: "/infrastructure/site/details/" + encodeURIComponent(site.uri),
+          path: "/organization/site/details/" + encodeURIComponent(site.uri),
         },
       };
     });
   }
 
-  editInfrastructureFacility() {
-    this.infrastructureFacilityForm.showEditForm(DTOConverter.extractURIFromResourceProperties(this.selected));
+  editOrganizationFacility() {
+    this.organizationFacilityForm.showEditForm(DTOConverter.extractURIFromResourceProperties(this.selected));
   }
 
-  deleteInfrastructureFacility() {
+  deleteOrganizationFacility() {
     this.$opensilex
         .getService<OrganizationsService>("opensilex.OrganizationsService")
         .deleteFacility(this.selected.uri)
         .then(() => {
           this.$router.push({
-            path: "/infrastructures",
+            path: "/organizations",
           });
         })
         .catch(this.$opensilex.errorHandler);

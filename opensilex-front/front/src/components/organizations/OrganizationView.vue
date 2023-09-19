@@ -2,18 +2,18 @@
   <div class="container-fluid">
     <div class="row">
       <div class="col-md-6">
-        <!-- Infrastructure tree -->
+        <!-- Organization tree -->
         <opensilex-OrganizationTree
-          ref="infrastructureTree"
+          ref="organizationTree"
           @onSelect="onSelectedOrganizationOrSite"
         ></opensilex-OrganizationTree>
       </div>
       <div class="col-md-6">
-        <!-- Infrastructure detail -->
+        <!-- Organization detail -->
         <opensilex-OrganizationDetail
           :selected="selectedOrganization"
           @onUpdate="refreshTree"
-          class="infrastructureDetailComponent"
+          class="organizationDetailComponent"
         ></opensilex-OrganizationDetail>
         <!-- Site detail -->
         <opensilex-SiteDetail
@@ -52,7 +52,7 @@ export default class OrganizationView extends Vue {
   $route: any;
   service: OrganizationsService;
 
-  @Ref("infrastructureTree") readonly infrastructureTree!: OrganizationTree;
+  @Ref("organizationTree") readonly organizationTree!: OrganizationTree;
   @Ref("organizationFacilitiesView") readonly organizationFacilitiesView!: any;
   @Ref("facilitiesView") readonly facilitiesView!: any;
 
@@ -119,7 +119,7 @@ export default class OrganizationView extends Vue {
       uri = this.selectedSite.uri;
     }
 
-    this.infrastructureTree.refresh(uri);
+    this.organizationTree.refresh(uri);
   }
 }
 </script>
@@ -127,7 +127,7 @@ export default class OrganizationView extends Vue {
 
 <style scoped lang="scss">
 @media only screen and (min-width: 768px) {
-  .infrastructureDetailComponent {
+  .organizationDetailComponent {
     margin-top: 30px;
   }
 }
@@ -135,12 +135,12 @@ export default class OrganizationView extends Vue {
 
 <i18n>
 en:
-  InfrastructureView:
+  OrganizationView:
     description: Manage and configure organizations
     organizations: Organizations and sites
     facilities: Facilities
 fr:
-  InfrastructureView:
+  OrganizationView:
     description: Gérer et configurer les organisations
     organizations: Organisations et sites
     facilities: Installations techniques

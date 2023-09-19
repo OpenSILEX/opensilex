@@ -35,26 +35,26 @@ public class SiteAPITest extends AbstractMongoIntegrationTest {
 
     private final static String URIS_PARAM_NAME = "uris";
 
-    protected OrganizationModel infra;
+    protected OrganizationModel orga;
 
     protected static final TypeReference<PaginatedListResponse<SiteGetListDTO>> listTypeReference = new TypeReference<PaginatedListResponse<SiteGetListDTO>>() {};
 
     @Before
-    public void createInfrastructure() throws Exception {
-        infra = new OrganizationModel();
-        infra.setUri(new URI("test:infra"));
-        infra.setName("infra");
+    public void createOrganization() throws Exception {
+        orga = new OrganizationModel();
+        orga.setUri(new URI("test:orga"));
+        orga.setName("orga");
 
-        getSparqlService().create(infra);
+        getSparqlService().create(orga);
     }
 
     public SiteUpdateDTO getCreationDTO(int count) throws URISyntaxException {
         SiteUpdateDTO site = new SiteUpdateDTO();
         site.setName("site"+count);
         site.setUri(new URI("test:site"+count));
-        List<URI> infraUris = new ArrayList<>();
-        infraUris.add(infra.getUri());
-        site.setOrganizations(infraUris);
+        List<URI> orgaUris = new ArrayList<>();
+        orgaUris.add(orga.getUri());
+        site.setOrganizations(orgaUris);
         return site;
     }
 

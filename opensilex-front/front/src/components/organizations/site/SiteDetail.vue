@@ -11,21 +11,21 @@
             <opensilex-EditButton
                 v-if="
                 user.hasCredential(
-                  credentials.CREDENTIAL_INFRASTRUCTURE_MODIFICATION_ID
+                  credentials.CREDENTIAL_ORGANIZATION_MODIFICATION_ID
                 )
               "
                 @click="editSite()"
-                label="InfrastructureTree.edit"
+                label="OrganizationTree.edit"
                 :small="true"
             ></opensilex-EditButton>
             <opensilex-DeleteButton
                 v-if="
                 user.hasCredential(
-                  credentials.CREDENTIAL_INFRASTRUCTURE_DELETE_ID
+                  credentials.CREDENTIAL_ORGANIZATION_DELETE_ID
                 )
               "
                 @click="deleteSite()"
-                label="InfrastructureTree.delete"
+                label="OrganizationTree.delete"
                 :small="true"
             ></opensilex-DeleteButton>
           </b-button-group>
@@ -37,7 +37,7 @@
             :uri="selected.uri"
             :value="selected.uri"
             :to="{
-            path: '/infrastructure/site/details/' + encodeURIComponent(selected.uri),
+            path: '/organization/site/details/' + encodeURIComponent(selected.uri),
           }"
         ></opensilex-UriView>
         <!-- Name -->
@@ -91,8 +91,8 @@
     <opensilex-ModalForm
         ref="siteForm"
         component="opensilex-SiteForm"
-        createTitle="InfrastructureTree.addSite"
-        editTitle="InfrastructureTree.editSite"
+        createTitle="OrganizationTree.addSite"
+        editTitle="OrganizationTree.editSite"
         icon="ik#ik-globe"
         @onCreate="$emit('onCreate', $event)"
         @onUpdate="$emit('onUpdate', $event)"

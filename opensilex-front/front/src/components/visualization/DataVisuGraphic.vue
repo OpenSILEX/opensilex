@@ -363,7 +363,7 @@ export default class DataVisuGraphic extends Vue {
       return [
         {
           chart: {
-            zoomType: "x", 
+            zoomType: "x",
             marginLeft: 80,
             marginRight: 80,
             height: that.series.length > 8 ? 800 : 700,
@@ -432,7 +432,7 @@ export default class DataVisuGraphic extends Vue {
             verticalAlign: "bottom",
             align: "center",
             layout: "horizontal"
-        
+
           },
           xAxis: {
             type: "datetime",
@@ -461,10 +461,10 @@ export default class DataVisuGraphic extends Vue {
               if (point.y) {
                 return (
                     "" +
-                    this.point.series.name +
+                    point.series.name +
                     " :" +
                     '<span style=" color:' +
-                    this.point.color +
+                    point.color +
                     '" ><b> ' +
                     point.data.value +
                     "</b></span>" +
@@ -483,11 +483,14 @@ export default class DataVisuGraphic extends Vue {
                     '<span style=" color:' +
                     point.color +
                     '" ><b>' +
-                    point.text +
+                    point.data.value +
                     "</b></span>" +
                     "<br/>Time:<b> " +
                     that.$opensilex.$dateTimeFormatter.formatLocaleDateTime(this.x) +
-                    "</b> "
+                    "</b> " +
+                    "<br/> Target: <b>" +
+                    point.data.target +
+                    "</b>"
                 );
               }
             },
@@ -509,7 +512,7 @@ export default class DataVisuGraphic extends Vue {
               turboThreshold: 100000,
               cursor: "pointer",
               dataGrouping: {
-                enabled: true
+                enabled: false,
               },
               lineWidth: this.lineWidth ? 2 : 0, //scatter plot
               stickyTracking: false, //tooltip only on hover
@@ -588,7 +591,7 @@ export default class DataVisuGraphic extends Vue {
       }
     }
     this.yAxis[0].labels.x = 25; // space between scale numbers and graphic
-    this.yAxis[0].title.x = 25; // space between scale numbers and Yaxis title 
+    this.yAxis[0].title.x = 25; // space between scale numbers and Yaxis title
     this.yAxis[1].opposite = false;
     this.yAxis[1].labels.x = -10;
     this.yAxis[1].title.x = -10;
@@ -750,7 +753,7 @@ export default class DataVisuGraphic extends Vue {
   }
 
   exportPNG() {
-    if (this.selectedPointsCount < 1500) { 
+    if (this.selectedPointsCount < 1500) {
       this.highchartsRef[0].chart.exportChart({
         type: "image/png",
         filename: this.exportDateFormated + "_graphic_opensilex"
@@ -884,7 +887,7 @@ export default class DataVisuGraphic extends Vue {
 <style scoped lang="scss">
 
 .graphContainer {
-  height: 600px;
+  height: auto;
   min-height:600px;
 }
 

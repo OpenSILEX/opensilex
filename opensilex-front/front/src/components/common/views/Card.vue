@@ -44,9 +44,4 @@ export default class DescriptionCard extends Vue {
 </script>
 
 <style scoped lang="scss">
-
-.capitalize-first-letter {
-  width: 100%;
-}
-
 </style>

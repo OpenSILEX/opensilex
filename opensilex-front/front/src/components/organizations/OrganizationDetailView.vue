@@ -10,16 +10,16 @@
     </opensilex-PageActions>
     <div class="row">
       <div class="col-md-6">
-        <!-- Infrastructure detail -->
+        <!-- Organization detail -->
         <opensilex-OrganizationDetail
           :selected="selected"
           :withActions="true"
-          @onDelete="deleteInfrastructure"
+          @onDelete="deleteOrganization"
           @onUpdate="refresh"
         ></opensilex-OrganizationDetail>
       </div>
       <div class="col-md-6">
-        <!-- Infrastructure facilities -->
+        <!-- Organization facilities -->
         <opensilex-FacilitiesView
           :facilities="selected.facilities"
           :organization="selected"
@@ -60,19 +60,19 @@ export default class OrganizationDetailView extends Vue {
 
   refresh() {
     this.service
-      .getInfrastructure(this.uri)
+      .getOrganization(this.uri)
       .then((http: HttpResponse<OpenSilexResponse<OrganizationGetDTO>>) => {
         let detailDTO: OrganizationGetDTO = http.response.result;
         this.selected = detailDTO;
       });
   }
 
-  deleteInfrastructure() {
+  deleteOrganization() {
     this.service
-      .deleteInfrastructure(this.uri)
+      .deleteOrganization(this.uri)
       .then(() => {
         this.$router.push({
-          path: "/infrastructures",
+          path: "/organizations",
         });
       })
       .catch(this.$opensilex.errorHandler);

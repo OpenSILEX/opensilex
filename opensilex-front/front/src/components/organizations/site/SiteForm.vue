@@ -22,7 +22,7 @@
     <opensilex-OrganizationSelector
         ref="organizationSelector"
         label="SiteForm.organizations"
-        :infrastructures.sync="form.organizations"
+        :organizations.sync="form.organizations"
         :multiple="true"
         :required="true"
     ></opensilex-OrganizationSelector>

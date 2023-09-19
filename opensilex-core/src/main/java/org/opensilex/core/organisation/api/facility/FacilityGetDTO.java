@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
 public class FacilityGetDTO extends FacilityDTO {
 
     @JsonProperty("organizations")
-    protected List<NamedResourceDTO<OrganizationModel>> infrastructures;
+    protected List<NamedResourceDTO<OrganizationModel>> organizations;
 
     @JsonProperty("sites")
     protected List<NamedResourceDTO<SiteModel>> sites;
@@ -41,12 +41,12 @@ public class FacilityGetDTO extends FacilityDTO {
     protected List<NamedResourceDTO<VariablesGroupModel>> variablesGroups;
 
     @NotNull
-    public List<NamedResourceDTO<OrganizationModel>> getInfrastructures() {
-        return infrastructures;
+    public List<NamedResourceDTO<OrganizationModel>> getOrganizations() {
+        return organizations;
     }
 
-    public void setInfrastructures(List<NamedResourceDTO<OrganizationModel>> infrastructures) {
-        this.infrastructures = infrastructures;
+    public void setOrganizations(List<NamedResourceDTO<OrganizationModel>> organizations) {
+        this.organizations = organizations;
     }
 
     public List<NamedResourceDTO<SiteModel>> getSites() {
@@ -68,16 +68,6 @@ public class FacilityGetDTO extends FacilityDTO {
     @Override
     public void toModel(FacilityModel model) {
         super.toModel(model);
-
-        if (getInfrastructures() != null) {
-            List<OrganizationModel> organizationModels = new ArrayList<>();
-            getInfrastructures().forEach(infrastructure -> {
-                OrganizationModel organizationModel = new OrganizationModel();
-                organizationModel.setUri(infrastructure.getUri());
-                organizationModels.add(organizationModel);
-            });
-            model.setOrganizations(organizationModels);
-        }
 
         if (getSites() != null) {
             List<SiteModel> siteModels = new ArrayList<>();
@@ -104,10 +94,10 @@ public class FacilityGetDTO extends FacilityDTO {
         super.fromModel(model);
 
         if (model.getOrganizations() != null) {
-            setInfrastructures(model.getOrganizations()
+            setOrganizations(model.getOrganizations()
                     .stream()
-                    .map(infrastructureModel ->
-                            (NamedResourceDTO<OrganizationModel>)NamedResourceDTO.getDTOFromModel(infrastructureModel))
+                    .map(organizationModel ->
+                            (NamedResourceDTO<OrganizationModel>)NamedResourceDTO.getDTOFromModel(organizationModel))
                     .collect(Collectors.toList()));
         }
 

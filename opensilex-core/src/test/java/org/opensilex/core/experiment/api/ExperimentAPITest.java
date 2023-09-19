@@ -85,7 +85,7 @@ public class ExperimentAPITest extends AbstractMongoIntegrationTest {
         experimentModel.setObjective("Objective : " + experimentModel);
 
         if (organization != null) {
-            experimentModel.setInfrastructures(Collections.singletonList(organization));
+            experimentModel.setOrganizations(Collections.singletonList(organization));
         }
 
         if (facilities.length > 0) {
@@ -107,7 +107,7 @@ public class ExperimentAPITest extends AbstractMongoIntegrationTest {
         xpDto.setEndDate(currentDate.plusDays(3));
         xpDto.setObjective("Objective");
 
-        xpDto.setInfrastructures(new ArrayList<URI>() {{
+        xpDto.setOrganizations(new ArrayList<URI>() {{
             add(organizationURI);
         }});
 

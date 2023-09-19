@@ -93,7 +93,7 @@ public class FacilityDAO {
         if (user != null) {
             lang = user.getLanguage();
         }
-        List<OrganizationModel> organizationModels = sparql.getListByURIs(OrganizationModel.class, instance.getOrganizationUriList(), lang);
+        List<OrganizationModel> organizationModels = sparql.getListByURIs(OrganizationModel.class, instance.getOrganizationUris(), lang);
         instance.setOrganizations(organizationModels);
         sparql.create(instance);
 
@@ -172,8 +172,8 @@ public class FacilityDAO {
 
                     // Organization filter
                     if (CollectionUtils.isNotEmpty(filter.getOrganizations())) {
-                        select.addWhere(makeVar(FacilityModel.ORGANIZATIONS_FIElD), Oeso.isHosted, uriVar);
-                        select.addFilter(SPARQLQueryHelper.inURIFilter(makeVar(FacilityModel.ORGANIZATIONS_FIElD), filter.getOrganizations()));
+                        select.addWhere(makeVar(FacilityModel.ORGANIZATION_FIELD), Oeso.isHosted, uriVar);
+                        select.addFilter(SPARQLQueryHelper.inURIFilter(makeVar(FacilityModel.ORGANIZATION_FIELD), filter.getOrganizations()));
                     }
 
                     if (!StringUtils.isEmpty(filter.getPattern())) {
@@ -224,8 +224,10 @@ public class FacilityDAO {
         validateFacilityAccess(instance.getUri(), user);
         validateFacilityAddress(instance, user);
 
-        List<OrganizationModel> organizationModels = sparql.getListByURIs(OrganizationModel.class, instance.getOrganizationUriList(), user.getLanguage());
+        List<OrganizationModel> organizationModels = sparql.getListByURIs(OrganizationModel.class, instance.getOrganizationUris(), user.getLanguage());
         instance.setOrganizations(organizationModels);
+
+        URI graphUri = sparql.getDefaultGraphURI(OrganizationModel.class);
 
         FacilityModel existingModel = sparql.getByURI(FacilityModel.class, instance.getUri(), user.getLanguage());
 

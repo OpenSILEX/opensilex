@@ -288,7 +288,7 @@ export default class DataList extends Vue {
 
                         if (objectsToLoad.length > 0) {
                             let promiseObject = this.ontologyService
-                                .getURILabelsList(objectsToLoad, this.contextUri)
+                                .getURILabelsList(objectsToLoad, this.contextUri, true)
                                 .then((httpObj) => {
                                     for (let j in httpObj.response.result) {
                                         let obj = httpObj.response.result[j];
@@ -375,7 +375,7 @@ export default class DataList extends Vue {
                 for (let j in httpObj.response.result) {
                     let obj = httpObj.response.result[j];
                     this.objectsPath[obj.uri] =
-                        this.$opensilex.getPathFromUriTypes(obj.rdfTypes);
+                        this.$opensilex.getPathFromUriTypes(obj.rdf_types);
                 }
             });
     }

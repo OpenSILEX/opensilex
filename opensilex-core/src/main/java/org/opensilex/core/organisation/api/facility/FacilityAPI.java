@@ -45,20 +45,21 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static org.opensilex.core.organisation.api.OrganizationAPI.CREDENTIAL_GROUP_INFRASTRUCTURE_ID;
+import static org.opensilex.core.organisation.api.OrganizationAPI.CREDENTIAL_GROUP_ORGANIZATION_ID;
 
 /**
  *
  * @author vidalmor
  */
-@Api(CREDENTIAL_GROUP_INFRASTRUCTURE_ID)
-@Path("core/facilities")
+@Api(CREDENTIAL_GROUP_ORGANIZATION_ID)
+@Path(FacilityAPI.PATH)
 @ApiCredentialGroup(
         groupId = FacilityAPI.CREDENTIAL_GROUP_FACILITY_ID,
         groupLabelKey = FacilityAPI.CREDENTIAL_GROUP_FACILITY_LABEL_KEY
 )
 public class FacilityAPI {
 
+    public static final String PATH = "/core/facilities";
     public static final String CREDENTIAL_GROUP_FACILITY_ID = "Facilities";
     public static final String CREDENTIAL_GROUP_FACILITY_LABEL_KEY = "credential-groups.facilities";
 

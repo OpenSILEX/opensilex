@@ -32,8 +32,8 @@
 
     <!-- Organizations -->
     <opensilex-OrganizationSelector
-        label="component.experiment.infrastructures"
-        :infrastructures.sync="form.organizations"
+        label="component.experiment.organizations"
+        :organizations.sync="form.organizations"
         :multiple="true"
     ></opensilex-OrganizationSelector>
 

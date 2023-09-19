@@ -9,8 +9,6 @@ package org.opensilex.brapi.model;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -43,11 +41,11 @@ public class BrAPIv1SuperStudyDTO {
         this.active = active;
     }
 
-    public Map getAdditionalInfo() {
+    public Map<String, String> getAdditionalInfo() {
         return additionalInfo;
     }
 
-    public void setAdditionalInfo(Map additionalInfo) {
+    public void setAdditionalInfo(Map<String, String> additionalInfo) {
         this.additionalInfo = additionalInfo;
     }
 
@@ -178,7 +176,6 @@ public class BrAPIv1SuperStudyDTO {
             this.setEndDate(model.getEndDate().toString());
         }
 
-        // TODO : Active state could be an attribute of the class? Here it is done in the DTO but it is also done in the frontend
         LocalDate date = LocalDate.now();
         if ((model.getStartDate() != null && model.getStartDate().isAfter(date)) || (model.getEndDate() != null && model.getEndDate().isBefore(date)))  {
             this.setActive("false");
@@ -189,6 +186,7 @@ public class BrAPIv1SuperStudyDTO {
         if (!model.getProjects().isEmpty()){
             // ProgramName not a list so only the first one is kept
             this.setProgramName(model.getProjects().get(0).getName());
+            this.setProgramDbId(model.getProjects().get(0).getUri().toString());
         }
 
         return this;

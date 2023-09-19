@@ -42,7 +42,7 @@ public class BrAPIv1StudyDTO extends BrAPIv1SuperStudyDTO{
         }
 
         List<FacilityModel> facilitiesList = model.getFacilities();
-        if (facilitiesList.size() == 1){
+        if (facilitiesList.size() >= 1){
             FacilityModel facility = facilitiesList.get(0);
             this.setLocationDbId(facility.getUri().toString());
             this.setLocationName(facility.getName());

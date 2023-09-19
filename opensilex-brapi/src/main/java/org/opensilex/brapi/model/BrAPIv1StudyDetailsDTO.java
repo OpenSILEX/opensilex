@@ -151,7 +151,7 @@ public class BrAPIv1StudyDetailsDTO extends BrAPIv1SuperStudyDTO {
         }
 
         List<FacilityModel> facilitiesList = model.getFacilities();
-        if (facilitiesList.size() == 1){
+        if (facilitiesList.size() >= 1){
             FacilityModel facility = facilitiesList.get(0);
             BrAPIv1LocationDTO locationDTO = BrAPIv1LocationDTO.fromModel(facility, facilityDAO, organizationDAO, currentAccount);
             this.setLocation(locationDTO);

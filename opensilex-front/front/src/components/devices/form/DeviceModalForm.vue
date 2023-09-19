@@ -24,6 +24,7 @@ import DeviceForm from "./DeviceForm.vue";
 import {DevicesService} from "opensilex-core/api/devices.service";
 import {DeviceCreationDTO, DeviceGetDetailsDTO} from 'opensilex-core/index';
 import DTOConverter from "../../../models/DTOConverter";
+import { UserGetDTO } from "../../../../../../opensilex-security/front/src/lib";
 
 @Component
 export default class DeviceModalForm extends Vue {
@@ -59,7 +60,7 @@ export default class DeviceModalForm extends Vue {
         this.service.getDevice(uri)
             .then((http: HttpResponse<OpenSilexResponse<DeviceGetDetailsDTO>>) => {
                 let device = http.response.result;
-
+                let publisher: UserGetDTO = device.publisher;               
                 // render form and pass device to form
                 this.renderModalForm = true;
                 this.$nextTick(() => {
@@ -67,6 +68,7 @@ export default class DeviceModalForm extends Vue {
                     form.readAttributes(device.metadata)
                     form.typeSwitch(device.rdf_type, true);
                     const editDto = DTOConverter.extractURIFromResourceProperties<DeviceGetDetailsDTO, DeviceCreationDTO>(device);
+                    editDto.publisher = publisher;
                     this.modalForm.showEditForm(editDto);
                 });
             }).catch(this.$opensilex.errorHandler);

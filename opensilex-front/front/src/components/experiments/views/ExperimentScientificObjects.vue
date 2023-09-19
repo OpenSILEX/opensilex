@@ -128,6 +128,18 @@
                 </b-form-group>
               </opensilex-FilterField>
             </div>
+            <!-- Criteria search -->
+            <div>
+              <opensilex-FilterField quarterWidth="false">
+                <opensilex-CriteriaSearchModalCreator
+                    class="searchFilter"
+                    ref="criteriaSearchCreateModal"
+                    :criteria_dto.sync="filters.criteriaDto"
+                    :required="false"
+                    :requiredBlue="false"
+                ></opensilex-CriteriaSearchModalCreator>
+              </opensilex-FilterField>
+            </div>
           </template>
         </opensilex-SearchFilterField>
         </div>
@@ -389,7 +401,8 @@ export default class ExperimentScientificObjects extends Vue {
     types: [],
     parent: undefined,
     germplasm: undefined,
-    factorLevels: []
+    factorLevels: [],
+    criteriaDto: undefined
   };
 
   public selected = null;
@@ -448,7 +461,9 @@ export default class ExperimentScientificObjects extends Vue {
       types: [],
       parent: undefined,
       germplasm: undefined,
-      factorLevels: []
+      factorLevels: [],
+      criteriaDto: undefined
+
     };
     // Only if search and reset button are use in list
   }
@@ -489,7 +504,7 @@ export default class ExperimentScientificObjects extends Vue {
   searchMethod(nodeURI, page, pageSize) {
 
     let orderBy = ["name=asc"];
-    if(this.filters.parent || this.filters.types.length !== 0 || this.filters.factorLevels.length !== 0 || this.filters.name.length !== 0 || this.filters.germplasm) {
+    if(this.filters.parent || this.filters.types.length !== 0 || this.filters.factorLevels.length !== 0 || this.filters.name.length !== 0 || this.filters.germplasm || this.filters.criteriaDto) {
        return this.soService.searchScientificObjects(
         this.uri, // experiment uri?: string,
         this.filters.types, 
@@ -500,6 +515,7 @@ export default class ExperimentScientificObjects extends Vue {
         undefined, // facility?: string,
         undefined,
         undefined,
+         JSON.stringify(this.filters.criteriaDto),
         orderBy,
         page,
         pageSize );
@@ -531,7 +547,8 @@ export default class ExperimentScientificObjects extends Vue {
         undefined, // facility?: string,
         undefined,
         undefined,
-        [], // orderBy?: ,
+          undefined,
+          [],// orderBy?: ,
         page, // page?: number,
         pageSize // pageSize?: number
       )
@@ -666,8 +683,9 @@ export default class ExperimentScientificObjects extends Vue {
         this.filters.factorLevels,
         undefined, 
         undefined, 
-        undefined, 
-        [], 
+        undefined,
+          JSON.stringify(this.filters.criteriaDto),
+          undefined,
         0,
         this.selectAllLimit)
       .then((http) => {

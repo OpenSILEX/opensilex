@@ -18,6 +18,13 @@
       <opensilex-StringView label="component.common.name" :value="dto.name"></opensilex-StringView>
       <!-- Comment -->
       <opensilex-StringView label="component.common.comment" :value="dto.comment"></opensilex-StringView>
+      <!-- Metadata -->
+      <opensilex-MetadataView
+        v-if="dto.publisher && dto.publisher.uri"
+        :publisher="dto.publisher"
+        :publicationDate="dto.publication_date"
+        :lastUpdatedDate="dto.last_updated_date" 
+      ></opensilex-MetadataView>
     </div>
   </b-card>
 </template>

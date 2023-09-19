@@ -9,24 +9,25 @@
       ></opensilex-PageHeader>
 
       <opensilex-PageActions :returnButton="true" :tabs="true">
-        <b-nav-item
-            :active="isDetailsTab()"
-            :to="{ path: '/area/details/' + encodeURIComponent(uri) }"
-        >{{ $t("component.common.details-label") }}
-        </b-nav-item>
+        <template v-slot>
+          <b-nav-item
+              :active="isDetailsTab()"
+              :to="{ path: '/area/details/' + encodeURIComponent($route.params.uri) }"
+          >{{ $t("component.common.details-label") }}
+          </b-nav-item>
 
-  <!--      <b-nav-item
-            :active="isDocumentTab()"
-            :to="{ path: '/area/documents/' + encodeURIComponent(uri) }"
-        >{{ $t("component.project.documents") }}
-        </b-nav-item>
+          <b-nav-item
+              :active="isDocumentTab()"
+              :to="{ path: '/area/documents/' + encodeURIComponent($route.params.uri) }"
+          >{{ $t("component.project.documents") }}
+          </b-nav-item>
 
-        <b-nav-item
-            :active="isAnnotationTab()"
-            :to="{ path: '/area/annotations/' + encodeURIComponent(uri) }"
-        >{{ $t("Annotation.list-title") }}
-        </b-nav-item>
-  -->
+          <b-nav-item
+              :active="isAnnotationTab()"
+              :to="{ path: '/area/annotations/' + encodeURIComponent($route.params.uri) }"
+          >{{ $t("Annotation.list-title") }}
+          </b-nav-item>
+        </template>
       </opensilex-PageActions>
 
       <opensilex-PageContent>
@@ -39,13 +40,13 @@
                       v-if="user.hasCredential(credentials.CREDENTIAL_AREA_MODIFICATION_ID)"
                       :small="true"
                       label="Area.update"
-                      @click="editArea()"
+                      @click="editArea(decodeURIComponent($route.params.uri))"
                   ></opensilex-EditButton>
 
                   <opensilex-DeleteButton
                       v-if="user.hasCredential(credentials.CREDENTIAL_AREA_DELETE_ID)"
-                      label="component.area.delete"
-                      @click="deleteArea()"
+                      label="Area.delete"
+                      @click="deleteArea(decodeURIComponent($route.params.uri))"
                   ></opensilex-DeleteButton>
                 </div>
               </template>
@@ -59,10 +60,6 @@
                     label="component.area.details.name"
                 ></opensilex-StringView>
                 <opensilex-StringView
-                    :value="authorName"
-                    label="component.area.details.author"
-                ></opensilex-StringView>
-                <opensilex-StringView
                     :value="nameType()"
                     label="component.area.details.rdfType"
                 ></opensilex-StringView>
@@ -74,6 +71,12 @@
                 <opensilex-GeometryCopy
                     :value="area.geometry"
                 ></opensilex-GeometryCopy>
+                <opensilex-MetadataView
+                  v-if="area.publisher && area.publisher.uri"
+                  :publisher="area.publisher"
+                  :publicationDate="area.publication_date"
+                  :lastUpdatedDate="area.last_updated_date"
+              ></opensilex-MetadataView>
               </template>
             </opensilex-Card>
           </b-col>
@@ -83,7 +86,7 @@
             v-else-if="isDocumentTab()"
             ref="documentList"
             :modificationCredentialId="credentials.CREDENTIAL_AREA_MODIFICATION_ID"
-            :uri="uri"
+            :uri="area.uri"
         ></opensilex-DocumentTabList>
 
         <opensilex-AnnotationList
@@ -93,7 +96,7 @@
             :displayTargetColumn="false"
             :enableActions="true"
             :modificationCredentialId="credentials.CREDENTIAL_AREA_MODIFICATION_ID"
-            :target="uri"
+            :target="area.uri"
         ></opensilex-AnnotationList>
       </opensilex-PageContent>
 
@@ -106,7 +109,7 @@
           editTitle="component.area.update"
           icon="fa#sun"
           modalSize="lg"
-          @onUpdate="loadArea"
+          @onUpdate="loadArea(decodeURIComponent($route.params.uri))"
       ></opensilex-ModalForm>
     </div>
   </div>
@@ -118,7 +121,8 @@
           label="component.common.name"
       ></opensilex-StringView>
       <opensilex-UriLink
-          :to="{ path: '/area/details/' + encodeURIComponent(area.uri) }"
+          class="personOrcid"
+          :to="{ path: '/area/details/' + encodeURIComponent(area.uri), query: { experiment: encodeURIComponent(experiment)} }"
           :uri="area.uri"
           :value="area.name + ' (' + nameType().bold() + ')'"
           target="_blank"
@@ -126,7 +130,7 @@
     </template>
     <opensilex-StringView
         :value="authorName"
-        label="component.area.details.author"
+        label="component.area.details.publisher"
     ></opensilex-StringView>
     <div v-if="isViewAllInformation || !showName ">
       <opensilex-StringView
@@ -158,6 +162,7 @@ import {AreaService} from "opensilex-core/api/area.service";
 import {SecurityService} from "opensilex-security/api/security.service";
 import {OntologyService} from "opensilex-core/api/ontology.service";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
+import Oeso from "../../ontologies/Oeso";
 
 @Component
 export default class AreaDetails extends Vue {
@@ -165,6 +170,7 @@ export default class AreaDetails extends Vue {
   $store: any;
   $t: any;
   $i18n: any;
+  $route: any;
   areaService: AreaService;
   securityService: SecurityService;
   ontologyService: OntologyService;
@@ -178,6 +184,9 @@ export default class AreaDetails extends Vue {
   uri;
 
   @Prop()
+  experiment;
+
+  @Prop()
   showName;
 
   @Ref("areaForm") readonly areaForm!: any;
@@ -185,7 +194,7 @@ export default class AreaDetails extends Vue {
   area: AreaGetDTO = {
     uri: null,
     name: null,
-    author: null,
+    publisher: null,
     rdf_type: null,
     description: null,
     geometry: null,
@@ -225,20 +234,16 @@ export default class AreaDetails extends Vue {
             this.area.rdf_type = this.area.event.rdf_type;
           }
           this.rdf_type = this.area.rdf_type;
-          this.loadAuthor(this.area.author);
+          this.loadAuthor(this.area.publisher);
         })
         .catch(this.$opensilex.errorHandler);
   }
 
-  loadAuthor(uriAuthor) {
-    this.securityService
-        .getAccount(uriAuthor)
-        .then((accountResponse) => {
-          let account = accountResponse.response.result;
-          const {person_last_name, person_first_name, email, linked_person} = account;
-          this.authorName = linked_person ? person_first_name + " " + person_last_name : email;
-        })
-        .catch(this.$opensilex.errorHandler);
+  loadAuthor(publisher: UserGetDTO) {
+    if(publisher) {
+      this.authorName = publisher.first_name && publisher.last_name ?
+      publisher.first_name + " " + publisher.last_name : publisher.uri;
+    }
   }
 
   nameType() {
@@ -285,19 +290,31 @@ export default class AreaDetails extends Vue {
     }
   }
 
-  private editArea() {
+  editArea(uri) {
     this.areaService
-        .getByURI(this.uri)
+        .getByURI(uri)
         .then((http: HttpResponse<OpenSilexResponse<AreaGetDTO>>) => {
           let form: any = http.response.result;
+
+          if(form.rdf_type === Oeso.getShortURI(Oeso.TEMPORAL_AREA_TYPE_URI)){
+            form.is_structural_area = false;
+            form.rdf_type = this.$opensilex.getShortUri(form.event.rdf_type);
+            form.start = form.event.start;
+            form.end = form.event.end;
+            form.is_instant = form.event.is_instant;
+            form.event=null;
+          }
+          else {
+            form.is_structural_area = true;
+          }
           this.areaForm.showEditForm(form);
         })
         .catch(this.$opensilex.errorHandler);
   }
 
-  private deleteArea() {
+  deleteArea(uri) {
     this.areaService
-        .deleteArea(this.uri)
+        .deleteArea(uri)
         .then((http: HttpResponse<OpenSilexResponse<string>>) => {
           let message =
               this.$i18n.t("component.area.title") +
@@ -306,6 +323,7 @@ export default class AreaDetails extends Vue {
               " " +
               this.$i18n.t("component.common.success.delete-success-message");
           this.$opensilex.showSuccessToast(message);
+          this.$router.push({ path: "/experiment/map/" + this.$route.query.experiment });
         })
         .catch(this.$opensilex.errorHandler);
   }
@@ -323,10 +341,6 @@ export default class AreaDetails extends Vue {
   display: block;
 }
 
-::v-deep a {
-  color: #007bff;
-}
-
 #show {
   color: #007bff;
   cursor: pointer;
@@ -341,7 +355,7 @@ en:
       details:
         uri: URI
         name: Name
-        author: Author
+        publisher: Publisher
         rdfType: Type
         description: Description
         geometry: Geometry
@@ -353,7 +367,7 @@ fr:
       details:
         uri: URI
         name: Nom
-        author: Auteur
+        publisher: Publieur
         rdfType: Type
         description: Description
         geometry: Géométrie

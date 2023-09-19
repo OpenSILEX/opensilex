@@ -7,6 +7,9 @@ package org.opensilex.sparql.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.net.URI;
+import java.time.OffsetDateTime;
+import java.util.Objects;
+
 import org.opensilex.sparql.model.SPARQLResourceModel;
 
 /**
@@ -22,6 +25,12 @@ public abstract class ResourceDTO<T extends SPARQLResourceModel> {
 
     @JsonProperty("rdf_type_name")
     protected String typeLabel;
+
+    @JsonProperty("publication_date")
+    private OffsetDateTime publicationDate;
+
+    @JsonProperty("last_updated_date")
+    private OffsetDateTime lastUpdatedDate;
 
     public URI getUri() {
         return uri;
@@ -47,6 +56,22 @@ public abstract class ResourceDTO<T extends SPARQLResourceModel> {
         this.typeLabel = typeLabel;
     }
 
+    public OffsetDateTime getPublicationDate() {
+        return publicationDate;
+    }
+
+    public void setPublicationDate(OffsetDateTime publicationDate) {
+        this.publicationDate = publicationDate;
+    }
+
+    public OffsetDateTime getLastUpdatedDate() {
+        return lastUpdatedDate;
+    }
+
+    public void setLastUpdatedDate(OffsetDateTime lastUpdatedDate) {
+        this.lastUpdatedDate = lastUpdatedDate;
+    }
+
     public abstract T newModelInstance();
 
     public T newModel() {
@@ -59,6 +84,12 @@ public abstract class ResourceDTO<T extends SPARQLResourceModel> {
         setUri(model.getUri());
         setType(model.getType());
         setTypeLabel(model.getTypeLabel().getDefaultValue());
+        if (Objects.nonNull(model.getPublicationDate())) {
+            setPublicationDate(model.getPublicationDate());
+        }
+        if (Objects.nonNull(model.getLastUpdateDate())) {
+            setLastUpdatedDate(model.getLastUpdateDate());
+        }
     }
 
     public void toModel(T model) {

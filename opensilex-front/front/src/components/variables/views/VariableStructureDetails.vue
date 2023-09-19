@@ -13,6 +13,13 @@
             <opensilex-TextView label="component.common.name" :value="selected.name"></opensilex-TextView>
             <!-- Description -->
             <opensilex-TextView :value="selected.description" label="component.common.description"></opensilex-TextView>
+            <!-- Metadata -->
+            <opensilex-MetadataView
+                v-if="selected.publisher && selected.publisher.uri"
+                :publisher="selected.publisher"
+                :publicationDate="selected.publication_date"
+                :lastUpdatedDate="selected.last_updated_date" 
+            ></opensilex-MetadataView>
         </div>
     </b-card>
 </template>

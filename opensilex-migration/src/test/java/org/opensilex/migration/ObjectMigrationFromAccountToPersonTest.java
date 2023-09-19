@@ -20,7 +20,6 @@ import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.security.person.api.PersonDTO;
 import org.opensilex.security.person.dal.PersonDAO;
 import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -69,11 +68,11 @@ public class ObjectMigrationFromAccountToPersonTest extends AbstractMongoIntegra
     }
 
     private static PersonModel createPerson(AccountModel account) throws Exception {
-        PersonDTO personDTO = new PersonDTO();
-        personDTO.setFirstName("user" + userCount + " first name");
-        personDTO.setLastName("user" + userCount + " last name");
-        personDTO.setAccount(account.getUri());
-        return personDAO.create(personDTO);
+        PersonModel personModel = new PersonModel();
+        personModel.setFirstName("user" + userCount + " first name");
+        personModel.setLastName("user" + userCount + " last name");
+        personModel.setAccount(account);
+        return personDAO.create(personModel);
     }
 
     private static ProjectModel getProjectModel(){

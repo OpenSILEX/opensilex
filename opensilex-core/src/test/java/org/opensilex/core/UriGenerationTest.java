@@ -449,7 +449,7 @@ public class UriGenerationTest extends AbstractMongoIntegrationTest {
 
         AnnotationModel model = new AnnotationModel();
         model.setTargets(Collections.singletonList(target.getUri()));
-        model.setCreated(OffsetDateTime.now());
+        model.setPublicationDate(OffsetDateTime.now());
         model.setMotivation(new MotivationModel());
         model.getMotivation().setUri(new URI(OA.describing.getURI()));
         model.setDescription("description");

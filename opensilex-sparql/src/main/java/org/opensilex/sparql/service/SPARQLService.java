@@ -389,7 +389,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      */
     public <T extends SPARQLResourceModel> List<T> getListByURIs(Node graph, Class<T> objectClass, Collection<URI> uris, String lang,
                                                                  ThrowingFunction<SPARQLResult, T, Exception> resultHandler,
-                                                                 Map<String, Boolean> listFieldsToFetch
+                                                                 Set<String> listFieldsToFetch
     ) throws Exception {
         if (CollectionUtils.isEmpty(uris)) {
             return Collections.emptyList();
@@ -413,7 +413,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                 uris,
                 lang,
                 resultHandler,
-                listFieldsToFetch == null ? Collections.emptyMap() : listFieldsToFetch
+                listFieldsToFetch == null ? Collections.emptyList() : listFieldsToFetch
         );
     }
 
@@ -471,7 +471,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                                                                   Collection<URI> uris,
                                                                   String lang,
                                                                   ThrowingFunction<SPARQLResult, T, Exception> resultHandler,
-                                                                  Map<String, Boolean> listFieldsToFetch) throws Exception {
+                                                                  Collection<String> listFieldsToFetch) throws Exception {
 
         if (CollectionUtils.isEmpty(uris)) {
             return Collections.emptyList();
@@ -487,11 +487,6 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
         select.addValueVar(mapper.getURIFieldExprVar(), uriNodes);
 
         // set default ORDER BY ?uri. Needed if we use multi-valued properties fetching
-        if(! MapUtils.isEmpty(listFieldsToFetch)){
-            OrderBy uriDescOrder = SPARQLClassObjectMapper.DEFAULT_ORDER_BY;
-            select.addOrderBy(SPARQLQueryHelper.getExprFactory().asVar(uriDescOrder.getFieldName()), uriDescOrder.getOrder());
-        }
-
         List<T> results = executeSelectQueryAsStream(select).map(
                 result -> {
                     try {
@@ -521,13 +516,12 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             throw new SPARQLInvalidUriListException("[" + objectClass.getSimpleName() + "] URIs not found: ", unknownUris);
         }
 
-        if(! MapUtils.isEmpty(listFieldsToFetch)){
+        if(! CollectionUtils.isEmpty(listFieldsToFetch)){
             SPARQLListFetcher<T> listFetcher = new SPARQLListFetcher<>(
                     this,
                     objectClass,
                     graph,
                     listFieldsToFetch,
-                    select,
                     results
             );
             listFetcher.updateModels();
@@ -1032,7 +1026,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                                                           boolean blankNode,
                                                           BiConsumer<UpdateBuilder, Node> createExtension) throws Exception {
 
-        if (instance.getPublicationDate() == null && setPublicationDate) {
+        if (Objects.isNull(instance.getPublicationDate()) && setPublicationDate) {
             instance.setPublicationDate(OffsetDateTime.now());
         }
 
@@ -1090,7 +1084,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
             Node subGraphNode = subGraph != null ? SPARQLDeserializers.nodeURI(subGraph) : null;
 
             for (SPARQLResourceModel subInstance :  entry.getValue()) {
-                create(subGraphNode, subInstance, instance, subInstanceUpdateBuilder, checkUriExist, false, blankNode, null);
+                create(subGraphNode, subInstance, instance, subInstanceUpdateBuilder, checkUriExist, true, blankNode, null);
             }
         }
     }
@@ -1108,7 +1102,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
     }
 
     public <T extends SPARQLResourceModel> void create(Node graph, Collection<T> instances) throws Exception {
-        create(graph, instances, null, true);
+        create(graph, instances, null, true, true);
     }
 
     public static final int DEFAULT_MAX_INSTANCE_PER_QUERY = 1000;
@@ -1120,7 +1114,7 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
      * @param checkUriExist       indicate if the service must check if instances already exist
      * @param <T>                 the SPARQLResourceModel type
      */
-    public <T extends SPARQLResourceModel> void create(Node graph, Collection<T> instances, Integer maxInstancePerQuery, boolean checkUriExist) throws Exception {
+    public <T extends SPARQLResourceModel> void create(Node graph, Collection<T> instances, Integer maxInstancePerQuery, boolean checkUriExist, boolean setPublicationDate) throws Exception {
 
         boolean reuseSameQuery = maxInstancePerQuery != null;
 
@@ -1145,6 +1139,10 @@ public class SPARQLService extends BaseService implements SPARQLConnection, Serv
                 startTransaction();
 
                 for (T instance : instances) {
+                    if (Objects.isNull(instance.getPublicationDate()) && setPublicationDate) {
+                        instance.setPublicationDate(OffsetDateTime.now());
+                    }
+
                     SPARQLClassObjectMapper<T> mapper = mapperIndex.getForClass(instance.getClass());
                     prepareInstanceCreation(graph, instance, null, mapper, subInstanceUpdateBuilder, checkUriExist, false);
                     mapper.addCreateBuilder(graph, instance, updateBuilder, false, null);

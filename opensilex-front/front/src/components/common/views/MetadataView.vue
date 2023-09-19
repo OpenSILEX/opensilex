@@ -1,10 +1,16 @@
 <template>
     <div id="metadata">
-      <span v-if="lastUpdatedDate">
-        {{ completeMetadata }}
+      <span v-if="!publicationDate && !lastUpdatedDate">
+        {{ onlyPublisher }}
+      </span>
+      <span v-else-if="publicationDate && !lastUpdatedDate">
+        {{ withoutUpdate}}
+      </span>
+      <span v-else-if="!publicationDate && lastUpdatedDate">
+        {{ withoutPublication}}
       </span>
       <span v-else>
-        {{ withoutUpdate}}
+        {{ completeMetadata}}
       </span>
     </div>
 </template>
@@ -37,13 +43,25 @@ export default class MetadataView extends Vue {
     });
   }
 
+  get withoutPublication() {
+    return this.$t("MetadataView.without-publication-with-update-sentence", {
+      publisher: this.publisher.first_name && this.publisher.last_name ? this.publisher.first_name + " " + this.publisher.last_name : this.publisher.uri,
+      lastUpdateDate: this.$opensilex.$dateTimeFormatter.formatLocaleDate(this.lastUpdatedDate, {timeStyle: 'medium'})
+    });
+  }
+  
   get withoutUpdate() {
-    return this.$t("MetadataView.without-update-sentence", {
+    return this.$t("MetadataView.without-update-with-publication-sentence", {
       datePublication: this.$opensilex.$dateTimeFormatter.formatLocaleDate(this.publicationDate, {timeStyle: 'medium'}),
       publisher: this.publisher.first_name && this.publisher.last_name ? this.publisher.first_name + " " + this.publisher.last_name : this.publisher.uri
     });
   }
 
+  get onlyPublisher() {
+    return this.$t("MetadataView.only-publisher-sentence", {
+      publisher: this.publisher.first_name && this.publisher.last_name ? this.publisher.first_name + " " + this.publisher.last_name : this.publisher.uri
+    });
+  }
 }
 </script>
 
@@ -60,9 +78,13 @@ export default class MetadataView extends Vue {
   en:
     MetadataView:
       complete-sentence: "Published on {datePublication} by {publisher}, updated on {lastUpdateDate}"
-      without-update-sentence: "Published on {datePublication} by {publisher}."
+      without-publication-with-update-sentence: "Published by {publisher}, updated on {lastUpdateDate}"
+      without-update-with-publication-sentence: "Published on {datePublication} by {publisher}"
+      only-publisher-sentence: "Published by {publisher}"
   fr:
     MetadataView:
       complete-sentence: "Publié le {datePublication} par {publisher}, modifié le {lastUpdateDate}"
-      without-update-sentence: "Publié le {datePublication} par {publisher}."
+      without-publication-with-update-sentence: "Publié par {publisher}, modifié le {lastUpdateDate}"
+      without-update-with-publication-sentence: "Publié le {datePublication} par {publisher}"
+      only-publisher-sentence: "Publié par {publisher}"
 </i18n>

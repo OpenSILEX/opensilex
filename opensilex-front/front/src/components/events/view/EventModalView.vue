@@ -20,7 +20,15 @@
             <opensilex-StringView label="Event.end" v-if="event.end" :value="new Date(event.end).toLocaleString()">
             </opensilex-StringView>
 
-            <opensilex-StringView label="Event.creator" :value="event.author">
+            <opensilex-StringView 
+                label="Event.publisher" 
+                :value="displayPublisher(event.publisher)">
+            </opensilex-StringView>
+
+            <opensilex-StringView label="Event.datePublication" :value="event.publication_date">
+            </opensilex-StringView>
+
+            <opensilex-StringView label="Event.lastUpdateDate" :value="event.last_updated_date">
             </opensilex-StringView>
 
           <opensilex-StringView class="overflow-auto" style="height: 100px" label="Event.targets" :uri="event.targets">
@@ -77,6 +85,7 @@
     import {VueJsOntologyExtensionService, VueRDFTypeDTO} from "../../../lib";
     import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
     import { EventDetailsDTO } from 'opensilex-core/index';
+    import { UserGetDTO } from "../../../../../../opensilex-security/front/src/lib";
 
     @Component
     export default class EventModalView extends Vue {
@@ -113,7 +122,7 @@
                 end: undefined,
                 targets: [],
                 description: undefined,
-                author: undefined,
+                publisher: undefined,
                 is_instant: true
             };
         }
@@ -180,6 +189,14 @@
 
         hasRelations(event): boolean {
             return event && event.relations && event.relations.length > 0;
+        }
+
+        displayPublisher(publisher: UserGetDTO) {
+            if(!publisher || !publisher.uri) {
+                return undefined;
+            } else {
+                return publisher.first_name && publisher.last_name ? publisher.first_name + ' ' + publisher.last_name : publisher.uri
+            }
         }
     }
 

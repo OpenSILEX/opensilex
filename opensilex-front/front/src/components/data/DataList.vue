@@ -157,12 +157,10 @@ export default class DataList extends Vue {
         return this.variableNames[this.$opensilex.getLongUri(variableUri)];
     }
 
-    refresh() {
-        this.tableRef.refresh();
-        this.$nextTick(() => {
-            this.$opensilex.updateURLParameters(this.filter);
-        });
-    }
+  refresh() {
+    this.$opensilex.updateURLParameters(this.filter);
+    this.tableRef.changeCurrentPage(1);
+  }
 
     created() {
         this.dataService = this.$opensilex.getService("opensilex.DataService");

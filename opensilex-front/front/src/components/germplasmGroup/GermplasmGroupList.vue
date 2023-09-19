@@ -29,6 +29,7 @@
                       :filter.sync="filter.name"
                       placeholder="GermplasmGroupList.filter.label-placeholder"
                       class="searchFilter"
+                      @handlingEnterKey="refresh()"
                   ></opensilex-StringFilter>
                 </opensilex-FilterField> <br>
               </div>

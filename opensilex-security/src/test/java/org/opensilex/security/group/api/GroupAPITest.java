@@ -52,8 +52,8 @@ public class GroupAPITest extends AbstractSecurityIntegrationTest {
         accountDao.create(new URI(USER2_URI), new InternetAddress("user2@opensilex.org"), false, authentication.getPasswordHash("azerty"), OpenSilex.DEFAULT_LANGUAGE, null, null);
 
         ProfileDAO profileDao = new ProfileDAO(sparql);
-        profileDao.create(new URI(PROFILE1_URI), "profile1", new ArrayList<>());
-        profileDao.create(new URI(PROFILE2_URI), "profile2", new ArrayList<>());
+        profileDao.create(new URI(PROFILE1_URI), "profile1", new ArrayList<>(), new URI(USER1_URI));
+        profileDao.create(new URI(PROFILE2_URI), "profile2", new ArrayList<>(), new URI(USER2_URI));
     }
 
     protected GroupCreationDTO getGroupCreationDTO() throws URISyntaxException {

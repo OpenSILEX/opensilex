@@ -32,13 +32,6 @@ public class AnnotationModel extends SPARQLResourceModel implements ClassURIGene
     public static final String GRAPH = "annotation";
 
     @SPARQLProperty(
-            ontology = DCTerms.class,
-            property = "created",
-            required = true
-    )
-    private OffsetDateTime created;
-
-    @SPARQLProperty(
             ontology = OA.class,
             property = "bodyValue",
             required = true
@@ -62,14 +55,6 @@ public class AnnotationModel extends SPARQLResourceModel implements ClassURIGene
     )
     private List<URI> targets;
     public static final String TARGET_FIELD = "targets";
-
-    public OffsetDateTime getCreated() {
-        return created;
-    }
-
-    public void setCreated(OffsetDateTime created) {
-        this.created = created;
-    }
 
     public String getDescription() {
         return description;

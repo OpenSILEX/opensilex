@@ -18,6 +18,7 @@ import org.opensilex.security.authentication.AuthenticationService;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.group.dal.GroupDAO;
 import org.opensilex.security.group.dal.GroupModel;
+import org.opensilex.security.person.api.ORCIDClient;
 import org.opensilex.security.person.api.PersonDTO;
 import org.opensilex.security.person.dal.PersonDAO;
 import org.opensilex.security.person.dal.PersonModel;
@@ -131,7 +132,7 @@ public class UserAPI {
             personDTO.setUri(null);
             PersonModel person = PersonModel.fromDTO(personDTO, sparql);
             person.setPublisher(currentUser.getUri());
-            personDAO.create(person);
+            personDAO.create(person, new ORCIDClient());
 
             AccountModel user = AccountModel.buildAccountModel(
                     userDTO.getUri(),
@@ -346,7 +347,7 @@ public class UserAPI {
                     holderToUpdate.setOrcid(holderOfTheAccount.getOrcid());
                     holderToUpdate.setAffiliation(holderOfTheAccount.getAffiliation());
 
-                    personDAO.update(holderToUpdate);
+                    personDAO.update(holderToUpdate, new ORCIDClient());
                 }
 
                 sparql.commitTransaction();

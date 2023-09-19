@@ -34,6 +34,7 @@ import org.opensilex.core.variable.api.VariableApiTest;
 import org.opensilex.core.variable.api.VariableCreationDTO;
 import org.opensilex.core.variable.dal.*;
 import org.opensilex.security.account.dal.AccountDAO;
+import org.opensilex.security.person.api.ORCIDClient;
 import org.opensilex.security.person.dal.PersonDAO;
 import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.server.response.ErrorResponse;
@@ -110,7 +111,7 @@ public class DeviceAPITest extends AbstractMongoIntegrationTest {
         personModel.setFirstName("test");
         personModel.setLastName("test");
         personModel.setEmail(new InternetAddress("test@test.test"));
-        URI personURI = personDAO.create(personModel).getUri();
+        URI personURI = personDAO.create(personModel, new ORCIDClient()).getUri();
 
         DeviceCreationDTO deviceDTO = getCreationDto();
         deviceDTO.setPersonInChargeURI(personURI);

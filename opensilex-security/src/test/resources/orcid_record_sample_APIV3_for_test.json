@@ -1,0 +1,312 @@
+{
+  "orcid-identifier": {
+    "uri": "https://orcid.org/0009-0006-6636-4714",
+    "path": "0009-0006-6636-4714",
+    "host": "orcid.org"
+  },
+  "preferences": {
+    "locale": "en"
+  },
+  "history": {
+    "creation-method": "DIRECT",
+    "completion-date": null,
+    "submission-date": {
+      "value": 1686234962265
+    },
+    "last-modified-date": {
+      "value": 1691066412236
+    },
+    "claimed": true,
+    "source": null,
+    "deactivation-date": null,
+    "verified-email": true,
+    "verified-primary-email": true
+  },
+  "person": {
+    "last-modified-date": {
+      "value": 1690808261470
+    },
+    "name": {
+      "created-date": {
+        "value": 1686234962574
+      },
+      "last-modified-date": {
+        "value": 1690812615197
+      },
+      "given-names": {
+        "value": "Jean Claude"
+      },
+      "family-name": {
+        "value": "Ven Damme"
+      },
+      "credit-name": null,
+      "source": null,
+      "visibility": "public",
+      "path": "0009-0006-6636-4714"
+    },
+    "other-names": {
+      "last-modified-date": null,
+      "other-name": [],
+      "path": "/0009-0006-6636-4714/other-names"
+    },
+    "biography": {
+      "created-date": {
+        "value": 1690808203616
+      },
+      "last-modified-date": {
+        "value": 1690808203616
+      },
+      "content": "cette biographie commence dans les méandre de votre mémoire... car ceci est VOTRE histoire (ﾉ>ω<)ﾉ :｡･:*:･ﾟ’☆━━━★",
+      "visibility": "public",
+      "path": "/0009-0006-6636-4714/biography"
+    },
+    "researcher-urls": {
+      "last-modified-date": null,
+      "researcher-url": [],
+      "path": "/0009-0006-6636-4714/researcher-urls"
+    },
+    "emails": {
+      "last-modified-date": {
+        "value": 1690808261470
+      },
+      "email": [
+        {
+          "created-date": {
+            "value": 1686234962570
+          },
+          "last-modified-date": {
+            "value": 1690808261470
+          },
+          "source": {
+            "source-orcid": {
+              "uri": "https://orcid.org/0009-0006-6636-4714",
+              "path": "0009-0006-6636-4714",
+              "host": "orcid.org"
+            },
+            "source-client-id": null,
+            "source-name": {
+              "value": "Jean Claude"
+            },
+            "assertion-origin-orcid": null,
+            "assertion-origin-client-id": null,
+            "assertion-origin-name": null
+          },
+          "email": "jcvd@jcvd.be",
+          "path": null,
+          "visibility": "public",
+          "verified": true,
+          "primary": true,
+          "put-code": null
+        }
+      ],
+      "path": "/0009-0006-6636-4714/email"
+    },
+    "addresses": {
+      "last-modified-date": null,
+      "address": [],
+      "path": "/0009-0006-6636-4714/address"
+    },
+    "keywords": {
+      "last-modified-date": null,
+      "keyword": [],
+      "path": "/0009-0006-6636-4714/keywords"
+    },
+    "external-identifiers": {
+      "last-modified-date": null,
+      "external-identifier": [],
+      "path": "/0009-0006-6636-4714/external-identifiers"
+    },
+    "path": "/0009-0006-6636-4714/person"
+  },
+  "activities-summary": {
+    "last-modified-date": {
+      "value": 1690814004795
+    },
+    "distinctions": {
+      "last-modified-date": null,
+      "affiliation-group": [],
+      "path": "/0009-0006-6636-4714/distinctions"
+    },
+    "educations": {
+      "last-modified-date": null,
+      "affiliation-group": [],
+      "path": "/0009-0006-6636-4714/educations"
+    },
+    "employments": {
+      "last-modified-date": {
+        "value": 1690814004795
+      },
+      "affiliation-group": [
+        {
+          "last-modified-date": {
+            "value": 1690808600359
+          },
+          "external-ids": {
+            "external-id": []
+          },
+          "summaries": [
+            {
+              "employment-summary": {
+                "created-date": {
+                  "value": 1690808600359
+                },
+                "last-modified-date": {
+                  "value": 1690808600359
+                },
+                "source": {
+                  "source-orcid": {
+                    "uri": "https://orcid.org/0009-0006-6636-4714",
+                    "path": "0009-0006-6636-4714",
+                    "host": "orcid.org"
+                  },
+                  "source-client-id": null,
+                  "source-name": {
+                    "value": "Jean Claude Ven Damme"
+                  },
+                  "assertion-origin-orcid": null,
+                  "assertion-origin-client-id": null,
+                  "assertion-origin-name": null
+                },
+                "put-code": 20906627,
+                "department-name": null,
+                "role-title": null,
+                "start-date": null,
+                "end-date": null,
+                "organization": {
+                  "name": "Belgywood cinemas",
+                  "address": {
+                    "city": "Montpellier",
+                    "region": "Occitanie",
+                    "country": "FR"
+                  },
+                  "disambiguated-organization": null
+                },
+                "url": null,
+                "external-ids": null,
+                "display-index": "1",
+                "visibility": "public",
+                "path": "/0009-0006-6636-4714/employment/20906627"
+              }
+            }
+          ]
+        },
+        {
+          "last-modified-date": {
+            "value": 1690814004795
+          },
+          "external-ids": {
+            "external-id": []
+          },
+          "summaries": [
+            {
+              "employment-summary": {
+                "created-date": {
+                  "value": 1690814004795
+                },
+                "last-modified-date": {
+                  "value": 1690814004795
+                },
+                "source": {
+                  "source-orcid": {
+                    "uri": "https://orcid.org/0009-0006-6636-4714",
+                    "path": "0009-0006-6636-4714",
+                    "host": "orcid.org"
+                  },
+                  "source-client-id": null,
+                  "source-name": {
+                    "value": "Jean Claude Ven Damme"
+                  },
+                  "assertion-origin-orcid": null,
+                  "assertion-origin-client-id": null,
+                  "assertion-origin-name": null
+                },
+                "put-code": 20907528,
+                "department-name": "art martial",
+                "role-title": "responsable de coup de savates",
+                "start-date": {
+                  "year": {
+                    "value": "2020"
+                  },
+                  "month": {
+                    "value": "09"
+                  },
+                  "day": {
+                    "value": "01"
+                  }
+                },
+                "end-date": {
+                  "year": {
+                    "value": "2021"
+                  },
+                  "month": {
+                    "value": "09"
+                  },
+                  "day": {
+                    "value": "01"
+                  }
+                },
+                "organization": {
+                  "name": "Le DOJOnclaude Ven Damme",
+                  "address": {
+                    "city": "Montpellier",
+                    "region": "Occitanie",
+                    "country": "FR"
+                  },
+                  "disambiguated-organization": null
+                },
+                "url": null,
+                "external-ids": null,
+                "display-index": "1",
+                "visibility": "public",
+                "path": "/0009-0006-6636-4714/employment/20907528"
+              }
+            }
+          ]
+        }
+      ],
+      "path": "/0009-0006-6636-4714/employments"
+    },
+    "fundings": {
+      "last-modified-date": null,
+      "group": [],
+      "path": "/0009-0006-6636-4714/fundings"
+    },
+    "invited-positions": {
+      "last-modified-date": null,
+      "affiliation-group": [],
+      "path": "/0009-0006-6636-4714/invited-positions"
+    },
+    "memberships": {
+      "last-modified-date": null,
+      "affiliation-group": [],
+      "path": "/0009-0006-6636-4714/memberships"
+    },
+    "peer-reviews": {
+      "last-modified-date": null,
+      "group": [],
+      "path": "/0009-0006-6636-4714/peer-reviews"
+    },
+    "qualifications": {
+      "last-modified-date": null,
+      "affiliation-group": [],
+      "path": "/0009-0006-6636-4714/qualifications"
+    },
+    "research-resources": {
+      "last-modified-date": null,
+      "group": [],
+      "path": "/0009-0006-6636-4714/research-resources"
+    },
+    "services": {
+      "last-modified-date": null,
+      "affiliation-group": [],
+      "path": "/0009-0006-6636-4714/services"
+    },
+    "works": {
+      "last-modified-date": null,
+      "group": [],
+      "path": "/0009-0006-6636-4714/works"
+    },
+    "path": "/0009-0006-6636-4714/activities"
+  },
+  "path": "/0009-0006-6636-4714"
+}

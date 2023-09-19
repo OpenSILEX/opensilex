@@ -330,6 +330,16 @@
             "successDelete" : "Person removed",
             "errors": {
                 "person-already-exists": "Person already exists with this URI."
+            },
+            "load-orcid-infos" : "load infos",
+            "orcid-suggestion": {
+                "title": "choose infos to pick-up",
+                "selector-help-message": "choose an option or leave empty",
+                "checkbox-help-message": "check the box to validate the proposition",
+                "last-name-pickup": "pick-up last name",
+                "first-name-pickup": "pick-up first name",
+                "last-name-placeholder": "no name found in your ORCID data",
+                "first-name-placeholder": "no first name found in your ORCID data"
             }
         },
         "variable" : {

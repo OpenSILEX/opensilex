@@ -330,6 +330,16 @@
             "successDelete" : "Personne supprimée",
             "errors": {
                 "person-already-exists": "Une personne existe déjà avec cette URI."
+            },
+            "load-orcid-infos" : "charger",
+            "orcid-suggestion": {
+                "title": "valider les informations à garder",
+                "selector-help-message": "choisissez une option ou laissez vide",
+                "checkbox-help-message": "cocher la case pour pour valider la proposition",
+                "last-name-pickup": "garder le nom",
+                "first-name-pickup": "garder le prénom",
+                "last-name-placeholder": "aucun nom trouvé dans vos données ORCID",
+                "first-name-placeholder": "aucun prénom trouvé dans vos données ORCID"
             }
         },
         "variable" : {

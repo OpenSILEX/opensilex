@@ -6,7 +6,6 @@
     :multiple="multiple"
     :searchMethod="searchVariablesGroups"
     :itemLoadingMethod="loadVariablesGroups"
-    :convertionMethod="vgToSelectNode"
     :clearable="clearable"
     :placeholder="placeholder"
     noResultsText="component.groupVariable.form.selector.filter-search-no-result"
@@ -25,7 +24,7 @@ import {VariablesGroupGetDTO} from "opensilex-core/index";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {VariablesService} from "opensilex-core/api/variables.service";
 import SelectForm from "../common/forms/SelectForm.vue";
-import {NamedResourceDTOVariablesGroupModel} from "opensilex-core/model/namedResourceDTOVariablesGroupModel";
+
 
 @Component
 export default class GroupVariablesSelector extends Vue {
@@ -76,17 +75,6 @@ export default class GroupVariablesSelector extends Vue {
     });
   }
 
-  vgToSelectNode(vgDto: NamedResourceDTOVariablesGroupModel) {
-    if (!vgDto) {
-      return undefined;
-    }
-
-    return {
-      label: vgDto.name,
-      id: this.$opensilex.getShortUri(vgDto.uri)
-    };
-  }
-
   select(value) {
     this.$emit("select", value);
   }
@@ -113,7 +101,6 @@ en:
             placeholder : Select one group of variables
             placeholder-multiple : Select one or more groups of variables
             filter-search-no-result : No groups of variables found
-    
             
 fr:
   component: 

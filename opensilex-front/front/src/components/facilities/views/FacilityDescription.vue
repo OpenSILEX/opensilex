@@ -325,6 +325,7 @@ fr:
   FacilityDescription:
     organizations: Organisations
     expsInProgress: Experiences en cours
+    variable-groups: Groupes de variables
     devices: Appareils
     site: "Site"
     address: "Adresse"

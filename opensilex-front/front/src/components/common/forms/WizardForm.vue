@@ -42,22 +42,22 @@
                     variant="success"
                     v-if="!blockingStep && !props.isLastStep"
                     @click="validate(props)"
-                >{{getStepBtnTitle(props)}}</b-button>
+                >{{getStepBtnFinishTitle(props)}}</b-button>
                 <b-button
                   variant="success"
                   v-if="props.activeTabIndex > 0"
                   @click="props.prevTab()"
-                >{{$t('component.common.form-wizard.previous')}}</b-button>
+                >{{getStepBtnPreviousTitle(props)}}</b-button>
                 <b-button
                   v-if="!props.isLastStep"
                   class="greenThemeColor"
                   @click="nextStepHandler(props)"
-                >{{$t('component.common.form-wizard.next')}}</b-button>
+                >{{getStepBtnNextTitle(props)}}</b-button>
                 <b-button
                   v-if="props.isLastStep"
                   @click="validate(props)"
                   class="greenThemeColor"
-                >{{$t('component.common.form-wizard.done')}}</b-button>
+                >{{getStepBtnDoneTitle(props)}}</b-button>
               </b-button-group>
             </div>
           </footer>
@@ -118,8 +118,28 @@ export default class WizardForm extends Vue {
   @Prop()
   customValidation: Function;
 
-  getStepBtnTitle(props) {
-    return this.$t(this.steps[props.activeTabIndex].finish);
+  getStepBtnFinishTitle(props) {
+    return (this.steps[props.activeTabIndex].finish)
+        ? this.$t(this.steps[props.activeTabIndex].finish)
+        : this.$t('component.common.form-wizard.finish');
+  }
+
+  getStepBtnPreviousTitle(props) {
+    return (this.steps[props.activeTabIndex].previous)
+        ? this.$t(this.steps[props.activeTabIndex].previous)
+        : this.$t('component.common.form-wizard.previous');
+  }
+
+  getStepBtnNextTitle(props) {
+    return (this.steps[props.activeTabIndex].next)
+        ? this.$t(this.steps[props.activeTabIndex].next)
+        : this.$t('component.common.form-wizard.next');
+  }
+
+  getStepBtnDoneTitle(props) {
+    return (this.steps[props.activeTabIndex].done)
+        ? this.$t(this.steps[props.activeTabIndex].done)
+        : this.$t('component.common.form-wizard.done');
   }
 
   showCreateForm() {

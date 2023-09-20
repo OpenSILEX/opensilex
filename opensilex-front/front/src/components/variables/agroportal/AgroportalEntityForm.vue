@@ -68,8 +68,7 @@ import {ExternalOntologies} from "../../../models/ExternalOntologies";
 import EntityCreate from "./AgroportalEntityCreate.vue";
 // @ts-ignore
 import { EntityCreationDTO } from "opensilex-core/index";
-import AgroportalEntityCreate from "./AgroportalEntityCreate.vue";
-    import {EntityAgroportalDTO} from "opensilex-core/model/entityAgroportalDTO";
+import {EntityAgroportalDTO} from "opensilex-core/model/entityAgroportalDTO";
 
 @Component
 export default class AgroportalEntityForm extends Vue {

@@ -36,7 +36,8 @@ import {EntityDetailsDTO} from "opensilex-core/model/entityDetailsDTO";
         steps = [
             {component: "opensilex-AgroportalEntityForm",
               title: "AgroportalEntityForm.step1-title",
-              finish: "AgroportalEntityForm.import-and-save"
+              finish: "AgroportalEntityForm.import-and-save",
+              next: "AgroportalEntityForm.enrich"
             }
             ,{component : "opensilex-AgroportalEntityEnrichForm",
               title: "AgroportalEntityForm.step2-title",
@@ -192,6 +193,8 @@ en:
         step3-title: Mapping
         import-and-save: Import & Save
         save: Save
+        enrich: Enrich
+        skip: Skip
 fr:
     AgroportalEntityForm:
         uri-help: "Décocher si vous souhaitez ajouter une entité à partir d'une ontologie existante ou si vous souhaitez spécifier une URI particulière. Laisser coché si vous souhaitez ajouter une entité avec une URI auto-générée"
@@ -207,4 +210,6 @@ fr:
         step3-title: Mapper
         import-and-save: Importer & Enregistrer
         save: Enregistrer
+        enrich: Enrichir
+        skip: Passer
 </i18n>

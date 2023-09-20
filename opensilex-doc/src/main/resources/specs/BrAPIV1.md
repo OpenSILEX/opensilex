@@ -70,6 +70,8 @@ __Scales__
 
 ## Germplasm
 
+__Note : only accessions are considered germplasms__
+
 | BrAPIv1GermplasmDTO             | OpenSILEX GermplasmModel | Notes              |
 |---------------------------------|--------------------------|--------------------|
 | accessionNumber                 | accessionNumber          |                    |

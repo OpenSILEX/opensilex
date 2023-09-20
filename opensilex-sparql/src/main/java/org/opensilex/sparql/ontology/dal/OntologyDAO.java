@@ -34,7 +34,8 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
-import org.opensilex.sparql.exceptions.*;
+import org.opensilex.sparql.exceptions.SPARQLException;
+import org.opensilex.sparql.exceptions.SPARQLInvalidUriListException;
 import org.opensilex.sparql.mapping.SPARQLClassObjectMapper;
 import org.opensilex.sparql.model.*;
 import org.opensilex.sparql.response.ResourceTreeDTO;
@@ -51,7 +52,6 @@ import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
@@ -1027,4 +1027,10 @@ public final class OntologyDAO {
     }
 
 
+    public Boolean isSubclassOf(URI rdfTypeURI, URI superClassRdfTypeURI) throws SPARQLException {
+        SelectBuilder select = new SelectBuilder();
+        select.addWhere(rdfTypeURI, RDFS.subClassOf, superClassRdfTypeURI);
+        List<SPARQLResult> results = sparql.executeSelectQuery(select);
+        return results.size() != 0;
+    }
 }

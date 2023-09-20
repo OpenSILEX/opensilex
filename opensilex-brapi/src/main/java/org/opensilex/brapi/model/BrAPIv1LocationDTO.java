@@ -14,6 +14,7 @@ import org.opensilex.core.organisation.dal.OrganizationDAO;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.facility.FacilityDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
+import org.opensilex.core.organisation.dal.site.SiteAddressModel;
 import org.opensilex.security.account.dal.AccountModel;
 
 import java.util.*;
@@ -180,8 +181,12 @@ class BrAPIv1LocationDTO {
                 }).collect(Collectors.toList());
                 if (parentsWithOneAddress.size()==1) {
                     OrganizationModel institute = organizationDAO.get(parentsWithOneAddress.get(0).getUri(), currentAccount);
-                    this.setInstituteAddress(institute.getSites().get(0).getAddress().toString());
+                    SiteAddressModel parentAddress = institute.getSites().get(0).getAddress();
+                    this.setInstituteAddress(parentAddress.toString());
                     this.setInstituteName(institute.getName());
+                    String countryName = parentAddress.getCountryName();
+                    this.setCountryName(countryName);
+                    this.setCountryCode(new Locale(countryName).getISO3Country());
                     directParentOrganizations.remove(parentsWithOneAddress.get(0));
                 } else if (parentsWithOneAddress.size()>1) {
                     Set<OrganizationModel> newParents = new HashSet<>();
@@ -193,6 +198,12 @@ class BrAPIv1LocationDTO {
                     directParentOrganizations = Collections.emptySet();
                 }
             }
+        }
+
+        if (!model.getAddress().toString().isEmpty()){
+            String countryName = model.getAddress().getCountryName();
+            this.setCountryName(countryName);
+            this.setCountryCode(new Locale(countryName).getISO3Country());
         }
 
         return this;

@@ -11,9 +11,11 @@ import org.opensilex.core.organisation.dal.OrganizationDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.security.person.dal.PersonModel;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @see <a href="https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3">BrAPI documentation</a>
@@ -158,6 +160,17 @@ public class BrAPIv1StudyDetailsDTO extends BrAPIv1SuperStudyDTO {
             this.setLatitude(locationDTO.getLatitude());
             this.setLongitude(locationDTO.getLongitude());
         }
+
+        List<BrAPIv1ContactDTO> studyContacts = new ArrayList<>();
+        List<PersonModel> experimentScientificSupervisors = model.getScientificSupervisors();
+        if (!experimentScientificSupervisors.isEmpty()) {
+            studyContacts.addAll(experimentScientificSupervisors.stream().map(personModel -> BrAPIv1ContactDTO.fromModel(personModel, "ScientificSupervisor")).collect(Collectors.toList()));
+        }
+        List<PersonModel> experimentTechnicalSupervisors = model.getTechnicalSupervisors();
+        if (!experimentTechnicalSupervisors.isEmpty()) {
+            studyContacts.addAll(experimentTechnicalSupervisors.stream().map(personModel -> BrAPIv1ContactDTO.fromModel(personModel, "TechnicalSupervisor")).collect(Collectors.toList()));
+        }
+        this.setContacts(studyContacts);
 
         return this;
     }

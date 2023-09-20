@@ -11,7 +11,13 @@ import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.experiment.dal.ExperimentModel;
+import org.opensilex.core.germplasm.dal.GermplasmDAO;
+import org.opensilex.core.germplasm.dal.GermplasmModel;
+import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
+import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.service.SPARQLService;
 
@@ -19,6 +25,7 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @see <a href="https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3">BrAPI documentation</a>
@@ -153,7 +160,7 @@ public class BrAPIv1ObservationDTO {
         this.value = value;
     }
 
-    public BrAPIv1ObservationDTO extractFromModel(DataModel dataModel, ExperimentModel expeModel, OntologyDAO ontologyDAO, SPARQLService sparql, AccountModel currentUser) throws Exception {
+    public BrAPIv1ObservationDTO extractFromModel(DataModel dataModel, ExperimentModel expeModel, OntologyDAO ontologyDAO, SPARQLService sparql, AccountModel currentUser, ScientificObjectDAO scientificObjectDAO, GermplasmDAO germplasmDAO) throws Exception {
 
         Node experimentGraph = NodeFactory.createURI(expeModel.getUri().toString());
 
@@ -199,11 +206,21 @@ public class BrAPIv1ObservationDTO {
             this.setValue(dataModel.getValue().toString());
         }
 
+        if (ontologyDAO.isSubclassOf(dataModel.getTarget(), new URI(Oeso.ScientificObject.getURI()))){
+            ScientificObjectModel objectModel = scientificObjectDAO.getObjectByURI(dataModel.getTarget(), expeModel.getUri(), currentUser.getLanguage());
+            List<SPARQLModelRelation> germplasms = objectModel.getRelations(Oeso.hasGermplasm).distinct().collect(Collectors.toList());
+            if (germplasms.size() >= 1){
+                GermplasmModel germplasmModel = germplasmDAO.get(new URI(germplasms.get(0).getValue()), currentUser);
+                this.setGermplasmDbId(germplasmModel.getUri().toString());
+                this.setGermplasmName(germplasmModel.getName());
+            }
+        }
+
         return this;
     }
 
-    public static BrAPIv1ObservationDTO fromModel(DataModel dataModel, ExperimentModel expeModel, OntologyDAO ontologyDAO, SPARQLService sparql, AccountModel currentUser) throws Exception {
+    public static BrAPIv1ObservationDTO fromModel(DataModel dataModel, ExperimentModel expeModel, OntologyDAO ontologyDAO, SPARQLService sparql, AccountModel currentUser, ScientificObjectDAO scientificObjectDAO, GermplasmDAO germplasmDAO) throws Exception {
         BrAPIv1ObservationDTO observation = new BrAPIv1ObservationDTO();
-        return observation.extractFromModel(dataModel, expeModel, ontologyDAO, sparql, currentUser);
+        return observation.extractFromModel(dataModel, expeModel, ontologyDAO, sparql, currentUser, scientificObjectDAO, germplasmDAO);
     }
 }

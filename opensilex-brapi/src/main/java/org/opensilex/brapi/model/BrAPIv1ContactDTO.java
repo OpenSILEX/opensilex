@@ -6,6 +6,8 @@
 //******************************************************************************
 package org.opensilex.brapi.model;
 
+import org.opensilex.security.person.dal.PersonModel;
+
 /**
  * @see <a href="https://app.swaggerhub.com/apis/PlantBreedingAPI/BrAPI/1.3">BrAPI documentation</a>
  * @author Alice Boizet
@@ -65,6 +67,19 @@ class BrAPIv1ContactDTO {
     public void setType(String type) {
         this.type = type;
     }
-    
-    
+
+    public BrAPIv1ContactDTO extractFromModel(PersonModel model, String role) {
+        this.setEmail(model.getEmail().toString());
+        this.setContactDbId(model.getUri().toString());
+        this.setName(model.getLastName().toUpperCase() + model.getFirstName().substring(0,1).toUpperCase() + model.getFirstName().substring(1));
+        this.setOrcid(model.getOrcid().toString());
+        this.setType(role);
+
+        return this;
+    }
+
+    public static BrAPIv1ContactDTO fromModel(PersonModel model, String role) {
+        BrAPIv1ContactDTO contact = new BrAPIv1ContactDTO();
+        return contact.extractFromModel(model, role);
+    }
 }

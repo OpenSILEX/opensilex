@@ -150,6 +150,13 @@ public class Oeso {
     public static final Property hasReplication = Ontology.property(NS, "hasReplication");
     public static final Property hasId = Ontology.property(NS, "hasId");
 
+    public static final String PARENTA_PROPERTY_NAME = "hasParentGermplasmA";
+    public static final String PARENTB_PROPERTY_NAME = "hasParentGermplasmB";
+    public static final String PARENT_PROPERTY_NAME = "hasParentGermplasm";
+    public static final Property hasParentGermplasm = Ontology.property(NS, PARENT_PROPERTY_NAME);
+    public static final Property hasParentGermplasmA = Ontology.property(NS, PARENTA_PROPERTY_NAME);
+    public static final Property hasParentGermplasmB = Ontology.property(NS, PARENTB_PROPERTY_NAME);
+
     // ---- SCIENTIFIC OBJECTS ----
     public static final Resource ScientificObject = Ontology.resource(NS, "ScientificObject");
     public static final Property isPartOf = Ontology.property(NS, "isPartOf");
@@ -185,7 +192,5 @@ public class Oeso {
     public static final Resource moreThan = Ontology.resource(NS, "MoreThan");
     public static final Resource moreOrEqualThan = Ontology.resource(NS, "MoreOrEqualThan");
     public static final Resource equalToo = Ontology.resource(NS, "EqualToo");
-    public static final Resource hasParentGermplasm = Ontology.property(NS, "hasParentGermplasm");
-    public static final Resource hasParentGermplasmA = Ontology.property(NS, "hasParentGermplasmA");
-    public static final Resource hasParentGermplasmB = Ontology.property(NS, "hasParentGermplasmB");
+
 }

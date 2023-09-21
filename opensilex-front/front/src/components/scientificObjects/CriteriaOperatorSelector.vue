@@ -9,8 +9,6 @@
       :conversionMethod="operatorToSelectNode"
       :clearable="false"
       placeholder="OperatorSelector.placeholder"
-      :required="required"
-      :defaultSelectedValue="defaultSelectedValue"
       @clear="$emit('clear')"
       @select="select"
       @deselect="deselect"
@@ -23,8 +21,7 @@ import Component from 'vue-class-component';
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
-import {VariableDetailsDTO} from "opensilex-core/model/variableDetailsDTO";
-import {Prop, PropSync } from 'vue-property-decorator';
+import {PropSync } from 'vue-property-decorator';
 import {OntologyService} from "opensilex-core/api/ontology.service";
 import Oeso from "../../ontologies/Oeso";
 import {RDFTypeDTO} from "opensilex-core/model/rDFTypeDTO";
@@ -37,12 +34,6 @@ export default class CriteriaOperatorSelector extends Vue {
 
   @PropSync("operator")
   operatorURI: string;
-
-  @Prop()
-  defaultSelectedValue;
-
-  @Prop({default: false})
-  required;
 
   created() {
     this.service = this.$opensilex.getService("opensilex.OntologyService");

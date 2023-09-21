@@ -19,6 +19,7 @@ import javax.validation.constraints.NotNull;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
+import org.opensilex.core.ontology.Oeso;
 import org.opensilex.nosql.mongodb.metadata.MetaDataModel;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.model.SPARQLLabel;
@@ -90,22 +91,25 @@ public class GermplasmCreationDTO {
     /**
      * parent varieties, male, female, A or B we don't care here
      */
-    @ApiModelProperty(value = "parent germplasm uris", example = "http://opensilex.dev/opensilex/id/variety#B73")
-    @JsonProperty("parent_germplasms")
+    @ApiModelProperty(value = "parent germplasm uris", example = "[http://opensilex.dev/opensilex/id/variety#B73, http://opensilex.dev/opensilex/id/variety#A73]")
+    @JsonProperty(Oeso.PARENT_PROPERTY_NAME)
     protected List<URI> parentGermplasms;
 
-    /**
-     * parent varieties, male, female, A or B we don't care here
-     */
-    @ApiModelProperty(value = "parent A germplasm uris", example = "http://opensilex.dev/opensilex/id/variety#B73")
-    @JsonProperty("parent_a_germplasms")
-    protected List<URI> parentAGermplasms;
 
     /**
      * parent varieties, male, female, A or B we don't care here
      */
-    @ApiModelProperty(value = "parent B germplasm uris", example = "http://opensilex.dev/opensilex/id/variety#B73")
-    @JsonProperty("parent_b_germplasms")
+    @ApiModelProperty(value = "parent A germplasm uris", example = "[http://opensilex.dev/opensilex/id/variety#B73, http://opensilex.dev/opensilex/id/variety#A73]")
+    @JsonProperty(Oeso.PARENTA_PROPERTY_NAME)
+    protected List<URI> parentAGermplasms;
+
+
+
+    /**
+     * parent varieties, male, female, A or B we don't care here
+     */
+    @ApiModelProperty(value = "parent B germplasm uris", example = "[http://opensilex.dev/opensilex/id/variety#B73, http://opensilex.dev/opensilex/id/variety#A73]")
+    @JsonProperty(Oeso.PARENTB_PROPERTY_NAME)
     protected List<URI> parentBGermplasms;
 
     /**

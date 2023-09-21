@@ -56,6 +56,7 @@ let ontologies = {
     START_UP: OESO_URI+"#startUp",
     REMOVAL: OESO_URI+"#removal",
     MATHMATICAL_OPERATORS_URI: OESO_URI+"#MathmaticalOperator",
+    HAS_PARENT_GERMPLASM: OESO_URI+"#hasParentGermplasm",
 
     getShortURI: getShortURI,
     checkURIs: checkURIs

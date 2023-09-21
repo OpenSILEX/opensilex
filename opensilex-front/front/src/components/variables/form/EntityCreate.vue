@@ -23,7 +23,6 @@ import {ExternalOntologies} from "../../../models/ExternalOntologies";
 import {EntityCreationDTO, EntityGetDTO, VariablesService} from "opensilex-core/index";
 import HttpResponse, {OpenSilexResponse} from "../../../lib/HttpResponse";
 import {EntityUpdateDTO} from "opensilex-core/model/entityUpdateDTO";
-import {LabelDTO} from 'opensilex-core/model/labelDTO';
 import {MultiLabelsDTO} from 'opensilex-core/model/multiLabelsDTO';
 import LabelsCreationSubForm from './LabelsCreationSubForm.vue';
 
@@ -90,7 +89,7 @@ export default class EntityCreate extends Vue {
     };
   }
 
-  getLabelDTO(): LabelDTO {
+  getLabelDTO() {
     return this.labelCreationSubForm.labelDTO;
   }
 

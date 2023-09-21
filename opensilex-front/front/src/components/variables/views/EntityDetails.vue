@@ -42,7 +42,6 @@
 <script lang="ts">
 import {Component, Prop, Ref, Watch} from "vue-property-decorator";
 import Vue from "vue";
-import { LabelDTO } from 'opensilex-core/model/labelDTO';
 import {EntityDetailsDTO} from "opensilex-core/model/entityDetailsDTO";
 import {EntityGetDTO} from "opensilex-core/model/entityGetDTO";
 
@@ -54,7 +53,7 @@ export default class EntityDetails extends Vue {
   @Prop()
   selected ;
 
-  labelDTOList: Array<LabelDTO>;
+  labelDTOList: Array<any>;
 
   created() {
 
@@ -73,7 +72,7 @@ export default class EntityDetails extends Vue {
     const keys = Object.keys(this.selected.multiLabelsDTO.prefLabels);
 
     keys.forEach((key) => {
-      const labelDTO: LabelDTO = {
+      const labelDTO = {
         prefLabel: this.selected.multiLabelsDTO.prefLabels[key],
         shortLabel: this.selected.multiLabelsDTO.shortLabels[key],
         altLabels: this.selected.multiLabelsDTO.altLabels[key],

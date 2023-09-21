@@ -292,8 +292,6 @@ import {
   VariablesService
 } from "opensilex-core/index";
 
-import {LabelDTO} from "opensilex-core/model/labelDTO";
-
 import HttpResponse, {OpenSilexResponse} from "opensilex-core/HttpResponse";
 import {DataService} from "opensilex-core/api/data.service";
 import SelectForm from "../../common/forms/SelectForm.vue";
@@ -344,7 +342,7 @@ export default class VariableForm extends Vue {
   @Ref("labelCreationSubForm")
   labelCreationSubForm: LabelsCreationSubForm;
 
-  labelDTOList: Array<LabelDTO> = [];
+  labelDTOList: Array<any> = [];
   dataLoaded: boolean = false;
 
   pageSize: number;
@@ -813,7 +811,7 @@ export default class VariableForm extends Vue {
     console.log("this.entityDto.multiLabelDTO", JSON.stringify(this.form.multiLabelsDTO));
   }
 
-  getConfimedLabelsDTOFromSubForm(labelDTO: LabelDTO) {
+  getConfimedLabelsDTOFromSubForm(labelDTO) {
 
     this.labelDTOList.push(labelDTO);
 

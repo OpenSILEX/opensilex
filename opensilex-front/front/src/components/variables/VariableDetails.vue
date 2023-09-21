@@ -177,7 +177,6 @@ import {DataService} from "opensilex-core/api/data.service";
 import DTOConverter from "../../models/DTOConverter";
 import {VariableUpdateDTO} from "opensilex-core/index";
 import VueRouter from "vue-router";
-import {LabelDTO} from "opensilex-core/model/labelDTO";
 
 @Component
 export default class VariableDetails extends Vue {
@@ -190,7 +189,7 @@ export default class VariableDetails extends Vue {
   service: VariablesService;
   dataService: DataService;
 
-  labelDTOList: Array<LabelDTO>;
+  labelDTOList: Array<any>;
 
   get user() {
     return this.$store.state.user;
@@ -243,7 +242,7 @@ export default class VariableDetails extends Vue {
     const keys = Object.keys(this.variable.multiLabelsDTO.prefLabels);
 
     keys.forEach((key) => {
-      const labelDTO: LabelDTO = {
+      const labelDTO = {
         prefLabel: this.variable.multiLabelsDTO.prefLabels[key],
         shortLabel: this.variable.multiLabelsDTO.shortLabels[key],
         altLabels: this.variable.multiLabelsDTO.altLabels[key],

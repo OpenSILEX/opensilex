@@ -75,7 +75,7 @@ import {VueJsOntologyExtensionService, VueRDFTypeDTO, VueRDFTypePropertyDTO} fro
 import {RDFObjectRelationDTO} from "opensilex-core/model/rDFObjectRelationDTO";
 import Component from "vue-class-component";
 import {Prop, Watch} from "vue-property-decorator";
-import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
+//import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
 
 export interface PropertyDetail {
     detail: VueRDFTypePropertyDTO,
@@ -101,7 +101,7 @@ export default class OntologyObjectProperties extends Vue {
     @Prop({
         required: true
     })
-    selected: NamedResourceDTO;
+    selected;//: NamedResourceDTO;
 
     /**
      * The supertype of the object (e.g. "vocabulary:ScientificObject")

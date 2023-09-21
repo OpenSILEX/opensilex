@@ -40,14 +40,14 @@ import {Component, Prop, Ref} from "vue-property-decorator";
 import Vue from "vue";
 import {VueJsOntologyExtensionService} from "../../lib";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
-import {ScientificObjectDetailDTO} from "opensilex-core/model/scientificObjectDetailDTO";
+//import {ScientificObjectDetailDTO} from "opensilex-core/model/scientificObjectDetailDTO";
 
 @Component
 export default class ScientificObjectDetailMap extends Vue {
   $opensilex: OpenSilexVuePlugin;
   vueService: VueJsOntologyExtensionService;
   @Prop()
-  selected: ScientificObjectDetailDTO;
+  selected;//: ScientificObjectDetailDTO;
   isViewAllInformation: boolean = false;
 
   @Prop({

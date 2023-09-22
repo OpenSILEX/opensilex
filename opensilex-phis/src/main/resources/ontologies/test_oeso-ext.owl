@@ -1,0 +1,157 @@
+<?xml version="1.0"?>
+<rdf:RDF
+    xmlns="http://www.opensilex.org/vocabulary/oeso-ext#"
+         xml:base="http://www.opensilex.org/vocabulary/oeso-ext"
+     xmlns:dc="http://purl.org/dc/elements/1.1/"
+     xmlns:owl="http://www.w3.org/2002/07/owl#"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:xml="http://www.w3.org/XML/1998/namespace"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:oeso="http://www.opensilex.org/vocabulary/oeso#"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     xmlns:time="http://www.w3.org/2006/time#">
+    <owl:Ontology rdf:about="http://www.opensilex.org/vocabulary/oeso-ext">
+        <dc:creator>Anne Tireau, Llorenç Cabrera-Bosquet, Pascal Neveu (INRA Montpellier)</dc:creator>
+        <rdfs:comment>INRA MISTEA
+            Copyright © - INRA - 2014 - 2021
+            Oeso extention ontology for PHIS is licensed by CC 4.0 (http://creativecommons.org/licenses/by-sa/4.0/legalcode)</rdfs:comment>
+        <rdfs:label xml:lang="en">OpenSILEX - Phenome</rdfs:label>
+        <owl:versionInfo>Version 3.3 (2021-10-22) created by INRA</owl:versionInfo>
+    </owl:Ontology>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Annotation properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+    
+
+
+    <!-- http://purl.org/dc/elements/1.1/creator -->
+
+    <owl:AnnotationProperty rdf:about="http://purl.org/dc/elements/1.1/creator"/>
+    
+
+
+    <!-- http://purl.org/dc/elements/1.1/source -->
+
+    <owl:AnnotationProperty rdf:about="http://purl.org/dc/elements/1.1/source"/>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Object Properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+   
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#hasGermplasm -->
+
+    <owl:ObjectProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#hasGermplasm">
+        <rdfs:subPropertyOf rdf:resource="http://www.w3.org/2002/07/owl#topObjectProperty"/>
+    </owl:ObjectProperty>
+    
+
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Data properties
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#status -->
+
+    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#status">
+        <rdfs:label xml:lang="en">status</rdfs:label>
+        <rdfs:label xml:lang="fr">status</rdfs:label>
+    </owl:DatatypeProperty>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#waveband -->
+
+    <owl:DatatypeProperty rdf:about="http://www.opensilex.org/vocabulary/oeso#waveband"/>
+    
+
+    <!-- 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //
+    // Classes
+    //
+    ///////////////////////////////////////////////////////////////////////////////////////
+     -->
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#Accession -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Accession">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
+        <rdfs:label xml:lang="en">Accession</rdfs:label>
+        <rdfs:label xml:lang="fr">Accession</rdfs:label>
+    </owl:Class>
+
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#Germplasm -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#GrowthChamber -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#GrowthChamber">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#Facility"/>
+        <rdfs:label xml:lang="fr">chambre de culture</rdfs:label>
+        <rdfs:label xml:lang="en">growth chamber</rdfs:label>
+    </owl:Class>
+    
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#Plant -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#Plant">
+        <rdfs:subClassOf rdf:resource="http://www.opensilex.org/vocabulary/oeso#ScientificObject"/>
+        <dc:source>skos:closeMatch http://www.ontobee.org/ontology/rdf/PO?iri=http://purl.obolibrary.org/obo/PO_0000003</dc:source>
+        <rdfs:comment xml:lang="en">the continuous organism originating from a single seed, callus, rhizome or any other propagation mean</rdfs:comment>
+        <rdfs:label xml:lang="en">plant</rdfs:label>
+        <rdfs:label xml:lang="fr">plante</rdfs:label>
+    </owl:Class>
+    
+
+
+
+    <!-- http://www.opensilex.org/vocabulary/oeso#ScientificObject -->
+
+    <owl:Class rdf:about="http://www.opensilex.org/vocabulary/oeso#ScientificObject">
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasGermplasm"/>
+                <owl:onClass rdf:resource="http://www.opensilex.org/vocabulary/oeso#Germplasm"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+        <rdfs:subClassOf>
+            <owl:Restriction>
+                <owl:onProperty rdf:resource="http://www.opensilex.org/vocabulary/oeso#hasReplication"/>
+                <owl:maxQualifiedCardinality rdf:datatype="http://www.w3.org/2001/XMLSchema#nonNegativeInteger">1</owl:maxQualifiedCardinality>
+                <owl:onDataRange rdf:resource="http://www.w3.org/2001/XMLSchema#string"/>
+            </owl:Restriction>
+        </rdfs:subClassOf>
+    </owl:Class>
+    
+</rdf:RDF>
+
+
+
+

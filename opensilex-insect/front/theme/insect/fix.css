@@ -1,0 +1,241 @@
+/**
+ * Fix for bootstrap theme
+ */
+
+ .wrapper .page-wrap .main-content .page-header .page-header-title i {
+     margin-right: 0;
+ }
+
+.wrapper .header-top {
+    padding: 10px 0;
+}
+
+.customized .header-top .top-menu .dropdown .dropdown-toggle {
+    height: 40px;
+    line-height: 15px;
+}
+
+::placeholder {
+    color: #879099;
+}
+
+.btn {
+    font-weight: normal;
+}
+
+.table tbody td { 
+    vertical-align: top;
+}
+
+#main-menu-navigation.nav {
+    display: block;
+}
+
+.wrapper .page-wrap .main-content {
+    width: 100%;
+}
+
+.wrapper .page-wrap .app-sidebar .sidebar-content .nav-container .navigation-main .nav-item:not(.open) .submenu-content {
+    display: block;
+    height: 0;
+    overflow: hidden;
+}
+
+.customized #main-menu-navigation .nav-item.has-sub .submenu-content.open {
+    height: auto;
+}
+
+.btn-link {
+    color: #212121;
+}
+
+.btn-link:hover {
+    text-decoration: none;
+}
+
+.table-responsive a:visited,
+.table-responsive a {
+    color: #007bff;
+}
+.custom-control-label {
+    cursor: pointer;
+}
+
+.table-responsive a:visited.btn-outline-danger,
+.table-responsive a.btn-outline-danger {
+    color: #dc3545;
+}
+
+.table.b-table > thead > tr > th {
+    vertical-align: middle;
+}
+
+/**
+ * Fix for multiselect module
+ */
+
+.multiselect__select {
+    height: 30px;
+}
+
+.multiselect__tags {
+    font-size: 13px;
+    min-height: 35px;
+    padding: 5px 40px 0 8px;
+}
+
+.multiselect__placeholder {
+    margin-bottom: 0;
+}
+
+.multiselect__tag {
+    background: #00A38D;
+    margin-bottom: 0;
+}
+
+.multiselect__tags input {
+    color: #eaeaea;
+    padding-top: 2px;
+}
+
+.multiselect__option--highlight {
+    background: #00A38D;
+}
+
+.multiselect, .multiselect__input, .multiselect__single {
+    font-size: 13px;
+}
+
+.multiselect__tag-icon:after {
+    color: #ffffff;
+}
+
+.multiselect__tags input {
+    color: #212529;
+}
+
+.multiselect__tags input::placeholder {
+    color: #adadad;
+}
+
+.card-body.advancedSearch {
+    display: none;
+}
+
+.card-body.advancedSearch.open {
+    display: flex;
+}
+
+.properties-configuration .dropdown-menu {
+    width: auto;
+}
+
+.properties-configuration .btn.dropdown-toggle {
+    height: 30px;
+    padding: 0px;
+}
+
+.properties-configuration .dropdown-header {
+    font-weight: bold;
+    padding: 10px;
+}
+
+.properties-configuration p.b-dropdown-text {
+    font-size: 12px;
+    padding: 0 10px;
+}
+
+.properties-configuration p.b-dropdown-text .custom-control-label:after,
+.properties-configuration p.b-dropdown-text .custom-control-label:before {
+    top: 0;
+}
+
+.properties-configuration .properties-dropdown-footer {
+    padding-top: 10px;
+    padding-bottom: 10px;
+    text-align: right;
+}
+
+.properties-configuration .properties-dropdown-footer p.b-dropdown-text {
+    font-size: 13px;
+}
+
+.properties-configuration .properties-dropdown-footer .btn-success {
+    margin-left: 3px;
+}
+
+.card-footer.text-right .btn-primary {
+    margin-left: 3px;
+}
+
+.card-footer.text-right .btn .ik:before {
+    display: inline-block;
+}
+
+/**
+ * Fix for date picker
+ */
+table.asd__month-table td {
+   padding: 0;
+}
+
+.table-striped .asd__month-table tbody tr:nth-of-type(odd) {
+    background-color: #fff;
+}
+
+.asd__keyboard-shortcuts-trigger {
+    display: none;
+}
+
+.asd__day {
+    line-height: normal;
+}
+
+.container-experiment .badge {
+    font-weight: normal;
+}
+
+.keyword {
+    margin-right: 2px;
+}
+
+.modal-xxl {
+    max-width: 95%;
+}
+
+.table td, .table th,
+.table thead td, .table thead th,
+.table tbody td, .table tbody th,
+.table-sm td, .table-sm th {
+    border-bottom: 1px solid #dee2e6;
+    padding: .75em;
+}
+
+.table th,
+.table thead th,
+.table-sm th {
+    border-top: 1px solid #dee2e6;
+}
+
+.hide {
+    display: none;
+}
+
+.modal-title {
+    display: inherit;
+}
+
+table.b-table-selectable thead tr th:first-child {
+    width: 45px;
+}
+
+
+@media (min-width: 200px) and (max-width: 1150px) {
+    .customized .header-top .top-menu .dropdown .dropdown-toggle {
+        height: 25px;
+        width: 25px;
+        font-size: 80%;
+        line-height: 5px;
+        padding: 5px;
+    }
+  }

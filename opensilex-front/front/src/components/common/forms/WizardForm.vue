@@ -39,7 +39,7 @@
             <div class="wizard-footer-right">
               <b-button-group>
                 <b-button
-                    variant="success"
+                    variant="warning"
                     v-if="!blockingStep && !props.isLastStep"
                     @click="validate(props)"
                 >{{getStepBtnFinishTitle(props)}}</b-button>

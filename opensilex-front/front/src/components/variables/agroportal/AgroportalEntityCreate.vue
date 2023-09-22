@@ -195,6 +195,7 @@ en:
         save: Save
         enrich: Enrich
         skip: Skip
+        no-selected-item: No selected term
 fr:
     AgroportalEntityForm:
         uri-help: "Décocher si vous souhaitez ajouter une entité à partir d'une ontologie existante ou si vous souhaitez spécifier une URI particulière. Laisser coché si vous souhaitez ajouter une entité avec une URI auto-générée"
@@ -212,4 +213,5 @@ fr:
         save: Enregistrer
         enrich: Enrichir
         skip: Passer
+        no-selected-item: Aucun terme sélectionné
 </i18n>

@@ -15,7 +15,7 @@
         </b-col>
       </b-row>
 
-      <b-row id="result-body" class="jqx-max-size">
+      <b-row id="result-body" class="mx-0 jqx-max-size">
         <b-col col lg="12" id="result-definition">
           {{entity.definitions[0]}}
         </b-col>
@@ -75,7 +75,7 @@ export default class AgroportalResultItem extends Vue {
 .result {
   font-size: medium;
   margin-bottom: 10px;
-  padding: 5px;
+  padding: 10px;
   margin-right: 1px;
 }
 

@@ -37,10 +37,10 @@
                         :actionHandler="editMode ? undefined : showEntityCreateForm"
                         :disabled="false"
                     ></opensilex-SelectForm>
-                    <opensilex-EntityCreate
+                    <opensilex-AgroportalEntityCreate
                         ref="entityForm"
                         @onCreate="setLoadedEntity">
-                    </opensilex-EntityCreate>
+                    </opensilex-AgroportalEntityCreate>
                 </div>
 
                 <!-- Entity of interest -->

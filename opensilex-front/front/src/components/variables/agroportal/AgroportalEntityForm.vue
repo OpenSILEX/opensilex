@@ -28,7 +28,7 @@
                   <opensilex-AgroportalResults
                       ref="searchResults"
                       :text.sync="text"
-                      @import="importResult">
+                      @import="selectItem">
                   </opensilex-AgroportalResults>
                 </div>
               </div>
@@ -43,14 +43,33 @@
                 label-class="font-weight-bold pt-0"
                 class="mb-0"
             >
-              <template v-slot:label>Selected entity</template>
+              <template v-slot:label>
+                <b-row>
+                  <b-col>
+                    Selected entity
+                  </b-col>
+                  <b-col v-if="!!entity">
+                    <opensilex-Button
+                        @click="removeSelected"
+                        variant="outline-danger"
+                        :small="true"
+                        icon="fa#trash-alt"
+                    >
+                    </opensilex-Button>
+                  </b-col>
+                </b-row>
+              </template>
+
             </b-form-group>
 
             <opensilex-AgroportalResultItem
-                v-if="entity != null"
+                v-if="!!entity"
                 :entity="entity"
             >
             </opensilex-AgroportalResultItem>
+            <div v-else>
+              {{ $t('AgroportalEntityForm.no-selected-item') }}
+            </div>
 
           </div>
         </div>
@@ -99,7 +118,7 @@ export default class AgroportalEntityForm extends Vue {
     }
 
     importResult(entity: EntityAgroportalDTO) {
-      this.entity = entity;
+      if (!entity) return;
       this.entityDto.uri = entity.id;
       this.entityDto.name = entity.name;
       this.entityDto.description = entity.definitions[0];
@@ -109,12 +128,31 @@ export default class AgroportalEntityForm extends Vue {
       this.entityDto.close_match = [];
     }
 
+    removeSelected() {
+      this.entity = null;
+      this.clear();
+    }
+
+    selectItem(entity: EntityAgroportalDTO) {
+      this.entity = entity;
+      this.importResult(this.entity);
+    }
+
     reset() {
         this.uriGenerated = true;
         return this.validatorRef.reset();
     }
 
+    clear() {
+      this.entityDto.name = "";
+      for(var member in this.entityDto) {
+        this.entityDto[member] = null;
+      }
+      console.debug(this.entityDto);
+    }
+
     validate() {
+        this.importResult(this.entity);
         return this.validatorRef.validate();
     }
 }

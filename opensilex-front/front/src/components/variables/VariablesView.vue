@@ -58,9 +58,9 @@
             ></opensilex-VariableCreate>
 
             <!-- Create form -->
-            <opensilex-EntityCreate
+            <opensilex-AgroportalEntityCreate
                 ref="entityForm" @onCreate="refresh($event.uri)" @onUpdate="refresh($event.uri)"
-            ></opensilex-EntityCreate>
+            ></opensilex-AgroportalEntityCreate>
 
             <opensilex-InterestEntityCreate
                 ref="interestEntityForm" @onCreate="refresh($event.uri)" @onUpdate="refresh($event.uri)"

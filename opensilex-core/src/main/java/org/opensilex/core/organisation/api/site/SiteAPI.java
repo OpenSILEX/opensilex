@@ -7,13 +7,11 @@ import org.opensilex.core.organisation.dal.site.SiteDAO;
 import org.opensilex.core.organisation.dal.site.SiteModel;
 import org.opensilex.core.organisation.dal.site.SiteSearchFilter;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.exceptions.displayable.DisplayableBadRequestException;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
@@ -36,7 +34,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static org.opensilex.core.organisation.api.OrganizationAPI.*;
@@ -115,12 +112,11 @@ public class SiteAPI {
             @ApiParam(value = "Site URI") @PathParam("uri") @NotNull URI siteUri
     ) throws Exception {
         SiteDAO siteDAO = new SiteDAO(sparql, nosql);
-        SiteModel model = siteDAO.get(siteUri, currentUser);
+
         SiteGetDTO siteDto = new SiteGetDTO();
-        siteDto.fromModelWithGeospatialInfo(model, siteDAO.getSiteGeospatialModel(siteUri));
-        if (Objects.nonNull(model.getPublisher())){
-            siteDto.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(model.getPublisher())));
-        }
+        siteDto.fromModelWithGeospatialInfo(
+                siteDAO.get(siteUri, currentUser),
+                siteDAO.getSiteGeospatialModel(siteUri));
 
         return new SingleObjectResponse<>(siteDto).getResponse();
 
@@ -172,9 +168,7 @@ public class SiteAPI {
         try {
             SiteDAO siteDAO = new SiteDAO(sparql, nosql);
 
-            SiteModel created = siteCreationDto.newModel();
-            created.setPublisher(currentUser.getUri());
-            created = siteDAO.create(created, currentUser);
+            SiteModel created = siteDAO.create(siteCreationDto.newModel(), currentUser);
 
             return new CreatedUriResponse(created.getUri()).getResponse();
 

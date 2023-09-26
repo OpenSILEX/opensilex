@@ -14,13 +14,11 @@ import org.opensilex.core.organisation.dal.facility.FacilityDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.organisation.dal.facility.FacilitySearchFilter;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.ValidURI;
@@ -100,7 +98,7 @@ public class FacilityAPI {
             OrganizationDAO organizationDAO = new OrganizationDAO(sparql, nosql);
             FacilityDAO facilityDAO = new FacilityDAO(sparql, nosql, organizationDAO);
             FacilityModel facility = dto.newModel();
-            facility.setPublisher(currentUser.getUri());
+            facility.setCreator(currentUser.getUri());
 
             if (dto.getRelations() != null) {
                 OntologyDAO ontoDAO = new OntologyDAO(sparql);
@@ -166,14 +164,11 @@ public class FacilityAPI {
     ) throws Exception {
         OrganizationDAO organizationDAO = new OrganizationDAO(sparql, nosql);
         FacilityDAO facilityDAO = new FacilityDAO(sparql, nosql, organizationDAO);
-        FacilityModel model = facilityDAO.get(uri, currentUser);
+
         FacilityGetDTO facilityGetDTO = FacilityGetDTO.getDTOFromModel(
-                model,
+                facilityDAO.get(uri, currentUser),
                 true
         );
-        if (Objects.nonNull(model.getPublisher())){
-            facilityGetDTO.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(model.getPublisher())));
-        }
         facilityGetDTO.fromGeospatialModel(facilityDAO.getFacilityGeospatialModel(uri));
         return new SingleObjectResponse<>(facilityGetDTO).getResponse();
     }

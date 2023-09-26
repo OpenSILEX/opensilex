@@ -147,10 +147,6 @@ public class DataValidateUtils {
         }
         return booleanValue;
     }
-
-    public static Object convertData(URI dataType, String value) {
-        return getDataTypeConverter(dataType).apply(value);
-    }
     
     public static ParsedDateTimeMongo setDataDateInfo(String date, String timezone) throws TimezoneAmbiguityException, TimezoneException {
         ParsedDateTimeMongo parsedDateTimeMongo = null;        

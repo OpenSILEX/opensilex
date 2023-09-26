@@ -113,10 +113,10 @@ public class AnnotationDAO {
         }
     }
 
-    private void appendPublisherFilter(ElementGroup annotationGraphGroupElem, URI publisher) throws Exception {
+    private void appendCreatorFilter(ElementGroup annotationGraphGroupElem, URI creator) throws Exception {
 
-        if (publisher != null) {
-            Expr targetEqFilter = SPARQLQueryHelper.eq(AnnotationModel.PUBLISHER_FIELD, publisher);
+        if (creator != null) {
+            Expr targetEqFilter = SPARQLQueryHelper.eq(AnnotationModel.CREATOR_FIELD, creator);
             annotationGraphGroupElem.addElementFilter(new ElementFilter(targetEqFilter));
         }
 
@@ -125,7 +125,7 @@ public class AnnotationDAO {
     public ListWithPagination<AnnotationModel> search(String bodyValuePattern,
                                                       URI target,
                                                       URI motivation,
-                                                      URI publisher,
+                                                      URI creator,
                                                       String lang,
                                                       List<OrderBy> orderByList,
                                                       Integer page,
@@ -162,7 +162,7 @@ public class AnnotationDAO {
                     appendTargetFilter(annotationGraphGroupElem, target);
                     appendBodyValueFilter(annotationGraphGroupElem, bodyValuePattern);
                     appendMotivationFilter(annotationGraphGroupElem, motivation);
-                    appendPublisherFilter(annotationGraphGroupElem, publisher);
+                    appendCreatorFilter(annotationGraphGroupElem, creator);
 
                     // add specific ORDER BY directly to the select builder
                     specificOrderMap.forEach(selectBuilder::addOrderBy);

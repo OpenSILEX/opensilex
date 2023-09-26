@@ -15,7 +15,6 @@ import org.opensilex.core.annotation.dal.AnnotationModel;
 import org.opensilex.core.annotation.dal.MotivationModel;
 
 import java.net.URI;
-import java.time.OffsetDateTime;
 import java.util.List;
 
 /**
@@ -23,7 +22,7 @@ import java.util.List;
  */
 @ApiModel
 @JsonPropertyOrder({
-        "uri", "description", "targets", "motivation", "published", "publisher",
+        "uri", "description", "targets", "motivation", "created", "author",
 })
 public class AnnotationGetDTO {
 
@@ -39,11 +38,12 @@ public class AnnotationGetDTO {
     @JsonProperty("motivation")
     protected MotivationGetDTO motivation;
 
-    @JsonProperty("published")
-    protected OffsetDateTime published;
 
-    @JsonProperty("publisher")
-    protected URI publisher;
+    @JsonProperty("created")
+    protected String created;
+
+    @JsonProperty("author")
+    protected URI author;
 
     public AnnotationGetDTO() {
     }
@@ -53,8 +53,8 @@ public class AnnotationGetDTO {
 
         description = model.getDescription();
         targets = model.getTargets();
-        published = model.getPublicationDate();
-        publisher = model.getPublisher();
+        created = model.getCreated().toString();
+        author = model.getCreator();
 
         MotivationModel motivationModel = model.getMotivation();
         motivation = new MotivationGetDTO(motivationModel);
@@ -86,14 +86,24 @@ public class AnnotationGetDTO {
         this.targets = targets;
     }
 
-    @ApiModelProperty(value = "Annotation publisher URI" ,example = "http://opensilex.dev/users#Admin.OpenSilex")
-    public URI getPublisher() {
-        return publisher;
+    @ApiModelProperty(value = "Creation date" ,example = "2019-09-08T12:00:00+01:00")
+    public String getCreated() {
+        return created;
     }
 
-    public void setPublisher(URI publisher) {
-        this.publisher = publisher;
+    public void setCreated(String created) {
+        this.created = created;
     }
+
+    @ApiModelProperty(value = "Annotation author URI" ,example = "http://opensilex.dev/users#Admin.OpenSilex")
+    public URI getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(URI author) {
+        this.author = author;
+    }
+
 
     public MotivationGetDTO getMotivation() {
         return motivation;

@@ -135,6 +135,7 @@ public class VariableAPI {
         try {
             VariableDAO dao = getDao();
             VariableModel model = dto.newModel();
+            model.setCreator(currentUser.getUri());
             model.setPublisher(currentUser.getUri());
 
             model = dao.create(model);
@@ -645,7 +646,7 @@ public class VariableAPI {
 
         List<T> modelList = detailsCollection.stream().map(detailsDto -> {
             T model = detailsDto.toModel();
-            model.setPublisher(currentUser.getUri());
+            model.setCreator(currentUser.getUri());
             model.setFromSharedResourceInstance(service.getSharedResourceInstanceURI());
             return model;
         }).collect(Collectors.toList());

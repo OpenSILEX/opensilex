@@ -11,7 +11,6 @@ import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.core.organisation.dal.site.SiteAddressModel;
 import org.opensilex.core.organisation.dal.site.SiteModel;
 import org.opensilex.security.group.dal.GroupModel;
-import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.sparql.response.NamedResourceDTO;
 
 import java.util.List;
@@ -22,8 +21,7 @@ import java.util.stream.Collectors;
  *
  * @author Valentin RIGOLLE
  */
-@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "publisher", "publication_date", "last_updated_date",
-        "name", "address", "organizations", "facilities", "groups", "geometry"})
+@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "address", "organizations", "facilities", "groups", "geometry"})
 public class SiteGetDTO extends SiteDTO {
     protected SiteAddressDTO address;
 
@@ -35,9 +33,6 @@ public class SiteGetDTO extends SiteDTO {
 
     @JsonProperty("geometry")
     protected GeoJsonObject geometry;
-
-    @JsonProperty("publisher")
-    protected UserGetDTO publisher;
 
     public SiteAddressDTO getAddress() {
         return address;
@@ -77,14 +72,6 @@ public class SiteGetDTO extends SiteDTO {
 
     public void setGeometry(GeoJsonObject geometry) {
         this.geometry = geometry;
-    }
-
-    public UserGetDTO getPublisher() {
-        return publisher;
-    }
-
-    public void setPublisher(UserGetDTO publisher) {
-        this.publisher = publisher;
     }
 
     @Override

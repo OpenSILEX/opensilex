@@ -338,6 +338,7 @@ public class EventApiTest extends AbstractSecurityIntegrationTest {
         assertEquals(creationDTO.getDescription(), dtoFromDb.getDescription());
         assertEquals(creationDTO.getStart(), dtoFromDb.getStart());
         assertEquals(creationDTO.getIsInstant(), dtoFromDb.getIsInstant());
+        assertFalse(StringUtils.isEmpty(dtoFromDb.getCreator().toString()));
 
         Collections.sort(creationDTO.getTargets());
         Collections.sort(dtoFromDb.getTargets());

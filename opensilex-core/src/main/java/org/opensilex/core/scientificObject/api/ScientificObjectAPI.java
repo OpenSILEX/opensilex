@@ -5,8 +5,6 @@
 //******************************************************************************
 package org.opensilex.core.scientificObject.api;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoWriteException;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.model.geojson.Geometry;
@@ -16,16 +14,12 @@ import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
-import org.bson.Document;
 import org.bson.codecs.configuration.CodecConfigurationException;
 import org.geojson.GeoJsonObject;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.opensilex.core.csv.api.CSVValidationDTO;
-import org.opensilex.core.data.api.CriteriaDTO;
-import org.opensilex.core.data.api.SingleCriteriaDTO;
 import org.opensilex.core.data.dal.DataDAO;
-import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.exception.DuplicateNameException;
@@ -40,18 +34,14 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.core.scientificObject.dal.*;
-import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
-import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.exceptions.displayable.DisplayableBadRequestException;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.Date;
@@ -80,7 +70,7 @@ import javax.validation.constraints.NotNull;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.File;
+import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
@@ -128,9 +118,6 @@ public class ScientificObjectAPI {
 
     @Inject
     private MongoDBService nosql;
-
-    @Inject
-    private FileStorageService fs;
 
     @POST
     @Path("by_uris")
@@ -236,33 +223,48 @@ public class ScientificObjectAPI {
             @ApiParam(value = "Search by maximal date", example = "2020-08-22") @QueryParam("end_date") @Date(DateFormat.YMD) String endDate
     ) throws Exception {
 
-        GeospatialDAO geoDAO = new GeospatialDAO(nosql);
-        ScientificObjectDAO soDAO = new ScientificObjectDAO(sparql, nosql);
-        List<ScientificObjectNodeDTO> dtoMapGeo = new ArrayList<>();
-        int lengthMapGeo = 0;
-
-        // Get SO with geometry for the experiment
         validateContextAccess(contextURI);
+
+        GeospatialDAO geoDAO = new GeospatialDAO(nosql);
 
         Instant test_start = Instant.now();
         FindIterable<GeospatialModel> mapGeo = geoDAO.getGeometryByGraphList(contextURI);
         Instant test_end = Instant.now();
+        
+        Collection<String> filteredUris = new HashSet<>(); 
 
-        // Filter OS by date and get OS details ( uri, name, rdfType, rdfTypeLabel, destruction date, creation date)
-        for (GeospatialModel geospatialModel : mapGeo) {
-            dtoMapGeo.add(ScientificObjectNodeDTO.getDTOFromModel(geospatialModel));
-            lengthMapGeo++;
+        // Date
+        if (startDate != null || endDate != null) {
+            ScientificObjectDAO soDAO = new ScientificObjectDAO(sparql, nosql);
+            Collection<URI> uris = new HashSet<>();
+            
+            for (GeospatialModel geospatialModel : mapGeo) {
+                ScientificObjectNodeDTO dtoFromModel = ScientificObjectNodeDTO.getDTOFromModel(geospatialModel);
+                URI uri = dtoFromModel.getUri();
+                uris.add(uri);
+            }
+            filteredUris = soDAO.getScientificObjectsByDate(contextURI, startDate, endDate, uris);
         }
 
-        List<ScientificObjectNodeDTO> dtoList = soDAO.getScientificObjectsByDate(contextURI, startDate, endDate, currentUser.getLanguage(), dtoMapGeo.stream().map(ScientificObjectNodeDTO::getUri).collect(Collectors.toList()));
+        List<ScientificObjectNodeDTO> dtoList = new ArrayList<>();
+        int lengthMapGeo = 0;
 
-        // Set the geometry coming from MongoDB in the corresponding SO of RDF4J
-        for(ScientificObjectNodeDTO dto : dtoList){
-            dto.setGeometry(dtoMapGeo.stream().filter(o -> dto.getUri().toString().equals(o.getUri().toString())).findAny().orElseThrow(NullPointerException::new).getGeometry());
+        for (GeospatialModel geospatialModel : mapGeo) {
+            if (startDate != null || endDate != null) {
+                String uri = geospatialModel.getUri().toString();
+                if (filteredUris.contains(uri) == true) {
+                    ScientificObjectNodeDTO dtoFromModel = ScientificObjectNodeDTO.getDTOFromModel(geospatialModel);
+                    dtoList.add(dtoFromModel);
+                    lengthMapGeo++;
+                }
+            } else {
+                ScientificObjectNodeDTO dtoFromModel = ScientificObjectNodeDTO.getDTOFromModel(geospatialModel);
+                dtoList.add(dtoFromModel);
+                lengthMapGeo++;
+            }
         }
 
         LOGGER.debug(lengthMapGeo + " space entities recovered " + Duration.between(test_start, test_end).toMillis() + " milliseconds elapsed");
-
         return new PaginatedListResponse<>(dtoList).getResponse();
     }
 
@@ -330,7 +332,6 @@ public class ScientificObjectAPI {
             @ApiParam(value = "Facility", example = "diaphen:serre-2") @QueryParam("facility") @ValidURI URI facility,
             @ApiParam(value = "Date to filter object existence") @QueryParam("existence_date") LocalDate existenceDate,
             @ApiParam(value = "Date to filter object creation") @QueryParam("creation_date") LocalDate creationDate,
-            @ApiParam(value = "A CriteriaDTO to be applied to data, retain objects that are targets in returned data") @QueryParam("criteria_dto") @Valid CriteriaDTO criteriaDTO,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
@@ -345,45 +346,25 @@ public class ScientificObjectAPI {
             }
         }
 
-        ScientificObjectSearchFilter searchFilter = new ScientificObjectSearchFilter();
+        ScientificObjectSearchFilter searchFilter = new ScientificObjectSearchFilter()
+                .setExperiment(contextURI)
+                .setPattern(pattern)
+                .setRdfTypes(rdfTypes)
+                .setParentURI(parentURI)
+                .setGermplasm((germplasm!=null ? Collections.singletonList(germplasm) : null))
+                .setFactorLevels(factorLevels)
+                .setFacility(facility)
+                .setExistenceDate(existenceDate)
+                .setCreationDate(creationDate);
 
-        //Get all object uris that has at least one data validating each all the criteria
-        //This is a boolean to not bother applying other filters if criteria search returned 0 results
-        boolean applyNonCriteriaFilters = true;
-        if(criteriaDTO!=null && !CollectionUtils.isEmpty(criteriaDTO.getCriteriaList())){
-            DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
-            VariableDAO variableDAO = new VariableDAO(sparql, nosql, fs);
-            List<URI> criteriaFilteredObjects = dataDAO.getScientificObjectsThatMatchDataCriteria(criteriaDTO, contextURI, currentUser, variableDAO);
-            if(criteriaFilteredObjects != null){
-                searchFilter.setUris(criteriaFilteredObjects);
-                applyNonCriteriaFilters = !criteriaFilteredObjects.isEmpty();
-            }
-        }
+        searchFilter.setPage(page)
+                .setPageSize(pageSize)
+                .setOrderByList(orderByList)
+                .setLang(currentUser.getLanguage());
 
-        if(!applyNonCriteriaFilters){
-            ListWithPagination<ScientificObjectNodeDTO> emptyResult = new ListWithPagination<>(Collections.emptyList(), page, pageSize, 0);
-            return new PaginatedListResponse<>(emptyResult).getResponse();
-        }else{
-            searchFilter
-                    .setExperiment(contextURI)
-                    .setPattern(pattern)
-                    .setRdfTypes(rdfTypes)
-                    .setParentURI(parentURI)
-                    .setGermplasm((germplasm!=null ? Collections.singletonList(germplasm) : null))
-                    .setFactorLevels(factorLevels)
-                    .setFacility(facility)
-                    .setExistenceDate(existenceDate)
-                    .setCreationDate(creationDate);
-
-            searchFilter.setPage(page)
-                    .setPageSize(pageSize)
-                    .setOrderByList(orderByList)
-                    .setLang(currentUser.getLanguage());
-
-            ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
-            ListWithPagination<ScientificObjectNodeDTO> dtoList = dao.searchAsDto(searchFilter);
-            return new PaginatedListResponse<>(dtoList).getResponse();
-        }
+        ScientificObjectDAO dao = new ScientificObjectDAO(sparql, nosql);
+        ListWithPagination<ScientificObjectNodeDTO> dtoList = dao.searchAsDto(searchFilter);
+        return new PaginatedListResponse<>(dtoList).getResponse();
     }
 
     @GET
@@ -420,11 +401,7 @@ public class ScientificObjectAPI {
             throw new NotFoundURIException("Scientific object uri not found:", objectURI);
         }
 
-        ScientificObjectDetailDTO dto = ScientificObjectDetailDTO.getDTOFromModel(model, geometryByURI, lastMove);
-        if (Objects.nonNull(model.getPublisher())) {
-            dto.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(model.getPublisher())));
-        }
-        return new SingleObjectResponse<>(dto).getResponse();
+        return new SingleObjectResponse<>(ScientificObjectDetailDTO.getDTOFromModel(model, geometryByURI, lastMove)).getResponse();
     }
 
     @GET
@@ -468,9 +445,6 @@ public class ScientificObjectAPI {
             GeospatialModel geometryByURI = geoDAO.getGeometryByURI(objectURI, contextURI);
             if (model != null) {
                 ScientificObjectDetailByExperimentsDTO dto = ScientificObjectDetailByExperimentsDTO.getDTOFromModel(model, experiment, geometryByURI, lastMove);
-                if (Objects.nonNull(model.getPublisher())){
-                    dto.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(model.getPublisher())));
-                }
                 dtoList.add(dto);
             }
         }
@@ -606,7 +580,7 @@ public class ScientificObjectAPI {
         sparql.startTransaction();
         try {
 
-            URI soURI = dao.update(contextURI, soType, descriptionDto.getUri(), descriptionDto.getName(), descriptionDto.getRelations(), descriptionDto.getPublisher(), descriptionDto.getPublicationDate(), currentUser);
+            URI soURI = dao.update(contextURI, soType, descriptionDto.getUri(), descriptionDto.getName(), descriptionDto.getRelations(), currentUser);
 
             if (hasExperiment) {
                 experimentDAO.updateExperimentSpeciesFromScientificObjects(contextURI);
@@ -1037,60 +1011,6 @@ public class ScientificObjectAPI {
         List<ProvenanceModel> provenances = dataDAO.getProvenancesByScientificObject(currentUser, uri, DataDAO.FILE_COLLECTION_NAME);
         List<ProvenanceGetDTO> dtoList = provenances.stream().map(ProvenanceGetDTO::fromModel).collect(Collectors.toList());
         return new PaginatedListResponse<>(dtoList).getResponse();
-    }
-
-    /**
-     * Contains one main map providing an identifier to each criteria triplet that is invalid.
-     * And 3 other maps to identify what type of error each invalid triplet has.
-     * The 3 add error functions will automatically create the identifier if the triplet didn't already have an error.
-     * (Variable uri not found, Criteria uri not found or Invalid datatype for the given variable.
-     */
-    public static class GetScientificObjectsByDataCriteriaRequestErrors{
-        private final Map<Integer, URI> invalidVariables;
-        private final Map<Integer, URI> invalidCriteriaOperators;
-        private final Map<Integer, String> invalidValueDatatypes;
-        private final Map<SingleCriteriaDTO, Integer> invalidCriterias;
-        int currentIdentifier;
-        public GetScientificObjectsByDataCriteriaRequestErrors(){
-            this.invalidVariables = new HashMap<>();
-            this.invalidCriteriaOperators = new HashMap<>();
-            this.invalidValueDatatypes = new HashMap<>();
-            this.invalidCriterias = new HashMap<>();
-            this.currentIdentifier = 0;
-        }
-        public boolean hasErrors(){
-            return !invalidCriterias.isEmpty();
-        }
-        public void addInvalidVariable(SingleCriteriaDTO invalidCriteria, URI invalidVariable){
-            Integer id = invalidCriterias.computeIfAbsent(invalidCriteria, (criteria) -> {this.currentIdentifier ++; return this.currentIdentifier;});
-            this.invalidVariables.put(id, invalidVariable);
-        }
-        public void addInvalidCriteriaOperator(SingleCriteriaDTO invalidCriteria, URI invalidCriteriaOperator){
-            Integer id = invalidCriterias.computeIfAbsent(invalidCriteria, (criteria) -> {this.currentIdentifier ++; return this.currentIdentifier;});
-            this.invalidCriteriaOperators.put(id, invalidCriteriaOperator);
-        }
-        public void addInvalidValueDatatypeError(SingleCriteriaDTO invalidCriteria, String invalidValue){
-            Integer id = invalidCriterias.computeIfAbsent(invalidCriteria, (criteria) -> {this.currentIdentifier ++; return this.currentIdentifier;});
-            this.invalidValueDatatypes.put(id, invalidValue);
-        }
-        public String generateErrorMessage(){
-            StringBuilder result = new StringBuilder("Errors were found in the following criteria : \n");
-            ObjectMapper objectMapper = new ObjectMapper();
-            for (SingleCriteriaDTO singleCriteriaDTO : invalidCriterias.keySet()) {
-                try {
-                    result.append(objectMapper.writeValueAsString(singleCriteriaDTO));
-                } catch (JsonProcessingException e) {
-                    result.append("{singleCriteriaDTO json serialization failed}");
-                }
-                Integer id = invalidCriterias.get(singleCriteriaDTO);
-                result.append((invalidVariables.get(id) == null ? "" : "variable uri not found, "));
-                result.append((invalidCriteriaOperators.get(id) == null ? "" : "criteria operator not found, "));
-                result.append((invalidValueDatatypes.get(id) == null ? "" : "value does not match required data-type of variable. "));
-                result.append("\n");
-            }
-            return result.toString();
-
-        }
     }
 
     @GET

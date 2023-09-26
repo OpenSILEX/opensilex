@@ -14,7 +14,6 @@ import org.opensilex.sparql.response.NamedResourceDTO;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -40,11 +39,12 @@ public class GermplasmGroupGetDTO extends GermplasmGroupDTO {
         dto.setUri(model.getUri());
         dto.setName(model.getName());
         dto.setDescription(model.getDescription());
-        if (Objects.nonNull(model.getPublicationDate())) {
+
+        if (model.getPublicationDate() != null) {
             dto.setPublicationDate(model.getPublicationDate());
         }
 
-        if (Objects.nonNull(model.getLastUpdateDate())) {
+        if (model.getLastUpdateDate() != null) {
             dto.setLastUpdatedDate(model.getLastUpdateDate());
         }
 

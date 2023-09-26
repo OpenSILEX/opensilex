@@ -73,24 +73,24 @@ public class OrganizationSPARQLHelper {
     }
 
     /**
-     * Creates a clause associating the organization with its publisher.
+     * Creates a clause associating the organization with its creator.
      *
      * <pre>
      *     <code>
      *         {
-     *             ?orgURIVar dc:publisher ?publisherUriVar
+     *             ?orgURIVar dc:creator ?creatorUriVar
      *         }
      *     </code>
      * </pre>
      *
      * @param orgURIVar A var or an URI representing the organization.
-     * @param publisherUriVar A var or an URI representing the publisher.
+     * @param creatorUriVar A var or an URI representing the creator.
      * @return
      */
-    private WhereBuilder buildOrganizationPublisherClause(Var orgURIVar, Object publisherUriVar) {
+    private WhereBuilder buildOrganizationCreatorClause(Var orgURIVar, Object creatorUriVar) {
         WhereBuilder where = new WhereBuilder();
 
-        where.addWhere(orgURIVar, DCTerms.publisher, publisherUriVar);
+        where.addWhere(orgURIVar, DCTerms.creator, creatorUriVar);
 
         return where;
     }
@@ -205,15 +205,15 @@ public class OrganizationSPARQLHelper {
                 SPARQLQueryHelper.bound(userURIVar),
                 SPARQLQueryHelper.eq(userURIVar, SPARQLDeserializers.nodeURI(userURI)));
 
-        // Retrieve the publisher of the organizations
-        Var publisherVar = makeVar(ExperimentModel.PUBLISHER_FIELD);
-        organizationAccessWhere.addOptional(buildOrganizationPublisherClause(orgURIVar, publisherVar));
-        Expr isPublisher = SPARQLQueryHelper.and(
-                SPARQLQueryHelper.bound(publisherVar),
-                SPARQLQueryHelper.eq(publisherVar, userURI));
+        // Retrieve the creator of the organizations
+        Var creatorVar = makeVar(ExperimentModel.CREATOR_FIELD);
+        organizationAccessWhere.addOptional(buildOrganizationCreatorClause(orgURIVar, creatorVar));
+        Expr isCreator = SPARQLQueryHelper.and(
+                SPARQLQueryHelper.bound(creatorVar),
+                SPARQLQueryHelper.eq(creatorVar, userURI));
 
         // The filter represents the OR condition
-        organizationAccessWhere.addFilter(SPARQLQueryHelper.or(isInGroup, isPublisher));
+        organizationAccessWhere.addFilter(SPARQLQueryHelper.or(isInGroup, isCreator));
 
         // Here we create the nested select clause
         SelectBuilder noGroupSelect = buildNoGroupOrganizationSelect(orgURIVar);
@@ -272,7 +272,7 @@ public class OrganizationSPARQLHelper {
      * <ul>
      *     <li>The facility hosts an organization the user has access to</li>
      *     <li>The facility is located within a site the user has access to</li>
-     *     <li>The user is the publisher of the facility</li>
+     *     <li>The user is the creator of the facility</li>
      * </ul>
      *
      * Please note that you will need to fetch the organizations and sites the user has access to first. The recommended
@@ -287,7 +287,7 @@ public class OrganizationSPARQLHelper {
     public void addFacilityAccessClause(WhereClause<?> where, Var facilityURIVar, Collection<URI> userOrganizations, Collection<URI> userSites, URI userURI) throws Exception {
         Var organizationVar = makeVar("_organization");
         Var siteVar = makeVar("_site");
-        Var publisherVar = makeVar("_publisher");
+        Var creatorVar = makeVar("_creator");
         Node userURINode = SPARQLDeserializers.nodeURI(userURI);
 
         WhereBuilder facilityOrganization = new WhereBuilder();
@@ -296,19 +296,19 @@ public class OrganizationSPARQLHelper {
         WhereBuilder facilitySite = new WhereBuilder();
         facilitySite.addWhere(facilityURIVar, Oeso.withinSite, siteVar);
 
-        WhereBuilder facilityPublisher= new WhereBuilder();
-        facilityPublisher.addWhere(facilityURIVar, DCTerms.publisher, publisherVar);
+        WhereBuilder facilityCreator = new WhereBuilder();
+        facilityCreator.addWhere(facilityURIVar, DCTerms.creator, creatorVar);
 
         WhereBuilder unionWhere = new WhereBuilder();
         unionWhere.addOptional(facilityOrganization);
         unionWhere.addOptional(facilitySite);
-        unionWhere.addOptional(facilityPublisher);
+        unionWhere.addOptional(facilityCreator);
 
         where.addWhere(unionWhere);
         where.addFilter(SPARQLQueryHelper.or(
                 SPARQLQueryHelper.inURIFilter(organizationVar, userOrganizations),
                 SPARQLQueryHelper.inURIFilter(siteVar, userSites),
-                SPARQLQueryHelper.eq(publisherVar, userURINode)
+                SPARQLQueryHelper.eq(creatorVar, userURINode)
         ));
     }
 }

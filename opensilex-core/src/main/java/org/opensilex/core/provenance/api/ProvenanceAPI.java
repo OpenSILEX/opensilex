@@ -18,7 +18,6 @@ import org.opensilex.core.provenance.dal.ProvenanceModel;
 import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
@@ -26,7 +25,6 @@ import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.person.dal.PersonModel;
-import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.exceptions.displayable.DisplayableBadRequestException;
 import org.opensilex.server.response.*;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -118,7 +116,6 @@ public class ProvenanceAPI {
         try {
             ProvenanceDAO provDAO = new ProvenanceDAO(nosql, sparql);
             ProvenanceModel model = provDTO.newModel();
-            model.setPublisher(currentUser.getUri());
             ProvenanceModel provenance = provDAO.create(model);
 
             return new CreatedUriResponse(provenance.getUri()).getResponse();
@@ -151,11 +148,7 @@ public class ProvenanceAPI {
         ProvenanceDAO dao = new ProvenanceDAO(nosql, sparql);
         try {
             ProvenanceModel provenance = dao.get(uri);
-            ProvenanceGetDTO dto = ProvenanceGetDTO.fromModel(provenance);
-            if (Objects.nonNull(provenance.getPublisher())) {
-                dto.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(provenance.getPublisher())));
-            }
-            return new SingleObjectResponse<>(dto).getResponse();
+            return new SingleObjectResponse<>(ProvenanceGetDTO.fromModel(provenance)).getResponse();
         } catch (NoSQLInvalidURIException e) {
             throw new NotFoundURIException("Invalid or unknown provenance URI ", uri);
         }

@@ -9,7 +9,6 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import org.opensilex.core.project.dal.ProjectModel;
 import org.opensilex.sparql.model.SPARQLResourceModel;
@@ -46,12 +45,6 @@ public class ProjectGetDTO extends ProjectDTO {
                 .setObjective(model.getObjective())
                 .setHomePage(model.getHomePage());
 
-        if (Objects.nonNull(model.getPublicationDate())) {
-            dto.setPublicationDate(model.getPublicationDate());
-        }
-        if (Objects.nonNull(model.getLastUpdateDate())) {
-            dto.setLastUpdatedDate(model.getLastUpdateDate());
-        }
         if (model.getEndDate() != null) {
             dto.setEndDate(model.getEndDate());
         }

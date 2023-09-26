@@ -11,7 +11,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModelProperty;
 import org.opensilex.core.event.dal.EventModel;
-import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.rest.validation.Required;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.server.rest.validation.date.ValidOffsetDateTime;
@@ -20,13 +19,12 @@ import org.opensilex.sparql.response.ResourceDTO;
 import javax.validation.constraints.NotEmpty;
 import java.net.URI;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * @author Renaud COLIN
  */
 @JsonPropertyOrder({
-    "uri", "publisher", "rdf_type", "rdf_type_name", "start", "end", "is_instant", "description", "targets"
+    "uri", "rdf_type", "rdf_type_name", "start", "end", "is_instant","description","targets","author"
 })
 public class EventGetDTO extends ResourceDTO<EventModel> {
 
@@ -42,8 +40,8 @@ public class EventGetDTO extends ResourceDTO<EventModel> {
     @JsonProperty("description")
     protected String description;
 
-    @JsonProperty("publisher")
-    protected UserGetDTO publisher;
+    @JsonProperty("author")
+    protected URI creator;
 
     @JsonProperty("is_instant")
     protected boolean isInstant;
@@ -110,13 +108,15 @@ public class EventGetDTO extends ResourceDTO<EventModel> {
         this.description = description;
     }
 
-    public UserGetDTO getPublisher() {
-        return publisher;
+    @ApiModelProperty(value = "Event creator URI" ,example = "http://opensilex.dev/users#Admin.OpenSilex")
+    public URI getCreator() {
+        return creator;
     }
 
-    public void setPublisher(UserGetDTO publisher) {
-        this.publisher = publisher;
+    public void setCreator(URI creator) {
+        this.creator = creator;
     }
+
 
     @ApiModelProperty(value = "Indicate if the event is instant" ,example = "false")
     public Boolean getIsInstant() {
@@ -146,13 +146,8 @@ public class EventGetDTO extends ResourceDTO<EventModel> {
 
         description = model.getDescription();
         targets = model.getTargets();
+        creator = model.getCreator();
         isInstant = model.getIsInstant();
-        if (Objects.nonNull(model.getPublicationDate())) {
-            setPublicationDate(model.getPublicationDate());
-        }
-        if (Objects.nonNull(model.getLastUpdateDate())) {
-            setLastUpdatedDate(model.getLastUpdateDate());
-        }
     }
 
     public static EventGetDTO getDTOFromModel(EventModel model) {

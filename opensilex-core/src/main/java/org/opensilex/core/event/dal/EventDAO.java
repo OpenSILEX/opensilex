@@ -131,17 +131,17 @@ public class EventDAO<T extends EventModel> {
     }
 
     public T create(T model) throws Exception {
-        sparql.create(eventGraph, model, false, true);
+        sparql.create(eventGraph, model, false, false);
         return model;
     }
 
-    public List<T> create(List<T> models) throws Exception {
+    public Collection<T> create(Collection<T> models) throws Exception {
         check(models, true);
-        sparql.create(eventGraph, models, SPARQLService.DEFAULT_MAX_INSTANCE_PER_QUERY, false, true);
+        sparql.create(eventGraph, models, SPARQLService.DEFAULT_MAX_INSTANCE_PER_QUERY, false);
         return models;
     }
 
-    public void check(List<T> models, boolean checkNewModel) throws Exception {
+    protected void check(Collection<T> models, boolean checkNewModel) throws Exception {
 
         final int batchSize = 256;
         int i = 0;
@@ -168,6 +168,7 @@ public class EventDAO<T extends EventModel> {
                 }
 
                 if (urisBuffer.size() >= batchSize || i == models.size() - 1) {
+
                     Set<URI> alreadyExistingUris = sparql.getExistingUris(null, urisBuffer, true);
                     if (!alreadyExistingUris.isEmpty()) {
                         throw new SPARQLAlreadyExistingUriListException("[" + EventModel.class.getSimpleName() + "] already existing URIs : ", alreadyExistingUris, EventModel.URI_FIELD);
@@ -180,13 +181,9 @@ public class EventDAO<T extends EventModel> {
             // check if target already exist
             targetsBuffer.addAll(model.getTargets());
             if (targetsBuffer.size() >= batchSize || i == models.size() - 1) {
-                Set<URI> unknownTargets = new HashSet<>();
-                try{
-                    unknownTargets = sparql.getExistingUris(null, targetsBuffer, false);
-                    if (!unknownTargets.isEmpty()) {
-                        throw new Exception();
-                    }
-                }catch (Exception e){
+
+                Set<URI> unknownTargets = sparql.getExistingUris(null, targetsBuffer, false);
+                if (!unknownTargets.isEmpty()) {
                     throw new SPARQLInvalidUriListException("[" + EventModel.class.getSimpleName() + "] Unknown targets : ", unknownTargets, EventModel.TARGETS_FIELD);
                 }
                 targetsBuffer.clear();
@@ -445,12 +442,18 @@ public class EventDAO<T extends EventModel> {
                 searchFilter.getPageSize()
         );
 
+        Map<String, Boolean> fieldsToFetch = new HashMap<>();
+
+        // Append he <?uri,oeev:concerns,?target> triple only if not already into select.
+        fieldsToFetch.put(EventModel.TARGETS_FIELD, !targetTripleAdded.get());
+
         // manually fetch targets
         SPARQLListFetcher<EventModel> listFetcher = new SPARQLListFetcher<>(
                 sparql,
                 EventModel.class,
                 eventGraph,
-                Collections.singleton(EventModel.TARGETS_FIELD),
+                fieldsToFetch,
+                initialSelect.get(),
                 results.getList()
         );
         listFetcher.updateModels();

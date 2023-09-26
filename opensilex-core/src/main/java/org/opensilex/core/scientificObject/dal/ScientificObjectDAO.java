@@ -16,7 +16,6 @@ import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.path.*;
-import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.opensilex.OpenSilex;
@@ -38,7 +37,6 @@ import org.opensilex.core.scientificObject.api.ScientificObjectNodeDTO;
 import org.opensilex.core.scientificObject.api.ScientificObjectNodeWithChildrenDTO;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.sparql.deserializer.DateDeserializer;
 import org.opensilex.sparql.deserializer.SPARQLDeserializer;
@@ -68,6 +66,7 @@ import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -108,11 +107,11 @@ public class ScientificObjectDAO {
 
     public List<ScientificObjectModel> searchByURIs(URI contextURI, List<URI> objectsURI, AccountModel currentUser, boolean loadChildren) throws Exception {
 
-        Set<String> fieldsToFetch = new HashSet<>();
-        fieldsToFetch.add(ScientificObjectModel.FACTOR_LEVEL_FIELD);
+        Map<String,Boolean> fieldsToFetch = new HashMap<>();
+        fieldsToFetch.put(ScientificObjectModel.FACTOR_LEVEL_FIELD,true);
 
         if(loadChildren){
-            fieldsToFetch.add(SPARQLTreeModel.CHILDREN_FIELD);
+            fieldsToFetch.put(SPARQLTreeModel.CHILDREN_FIELD,true);
         }
 
         return sparql.loadListByURIs(
@@ -308,12 +307,15 @@ public class ScientificObjectDAO {
 
         if(! CollectionUtils.isEmpty(fieldsToFetch)){
 
+            Map<String,Boolean> fieldToFetchMap = fieldsToFetch.stream().collect(Collectors.toMap(Function.identity(),uri -> true));
+
             // if object children must be retrieved later, then don't use listFetcher since it doesn't handle children properties (eg : name)
             SPARQLListFetcher<ScientificObjectModel> listFetcher = new SPARQLListFetcher<>(
                     sparql,
                     ScientificObjectModel.class,
                     SPARQLDeserializers.nodeURI(searchFilter.getExperiment()),
-                    fieldsToFetch,
+                    fieldToFetchMap,
+                    select,
                     results
             );
             listFetcher.updateModels();
@@ -793,7 +795,7 @@ public class ScientificObjectDAO {
         boolean useDefaultGraph = SPARQLDeserializers.compareURIs(defaultGraphNode.getURI(),contextURI);
         Node graphNode = useDefaultGraph ? defaultGraphNode : SPARQLDeserializers.nodeURI(contextURI);
 
-        sparql.create(graphNode,models,SPARQLService.DEFAULT_MAX_INSTANCE_PER_QUERY,false, true);
+        sparql.create(graphNode,models,SPARQLService.DEFAULT_MAX_INSTANCE_PER_QUERY,false);
     }
 
     /**
@@ -816,7 +818,7 @@ public class ScientificObjectDAO {
 
         ScientificObjectModel object = initObject(contextURI, experiment, soType, name, relations, currentUser);
         object.setUri(objectURI);
-        object.setPublisher(currentUser.getUri());
+
         try {
             sparql.startTransaction();
             nosql.startTransaction();
@@ -857,6 +859,8 @@ public class ScientificObjectDAO {
         List<URI> targets = new ArrayList<>();
         targets.add(object.getUri());
         facilityMoveEvent.setTargets(targets);
+
+        facilityMoveEvent.setCreator(object.getCreator());
 
         facilityMoveEvent.setIsInstant(true);
 
@@ -901,19 +905,13 @@ public class ScientificObjectDAO {
      * @return the URI of the created object
      * @throws DuplicateNameException if some object with the same name exist into the given graph
      */
-    public URI update(URI contextURI, URI soType, URI objectURI, String name, List<RDFObjectRelationDTO> relations, UserGetDTO publisher, OffsetDateTime publicationDate, AccountModel currentUser) throws Exception, DuplicateNameException {
+    public URI update(URI contextURI, URI soType, URI objectURI, String name, List<RDFObjectRelationDTO> relations, AccountModel currentUser) throws Exception, DuplicateNameException {
 
         checkUniqueNameByGraph(contextURI,name,objectURI,false);
 
         SPARQLResourceModel object = initObject(contextURI, null, soType, name, relations, currentUser);
         object.setUri(objectURI);
-        if (Objects.nonNull(publisher) && Objects.nonNull(publisher.getUri())) {
-            object.setPublisher(publisher.getUri());
-        }
-        if (Objects.nonNull(publicationDate)) {
-            object.setPublicationDate(publicationDate);
-        }
-        object.setLastUpdateDate(OffsetDateTime.now());
+
         Node graphNode = SPARQLDeserializers.nodeURI(contextURI);
 
         List<URI> childrenURIs = sparql.searchURIs(
@@ -1186,67 +1184,33 @@ public class ScientificObjectDAO {
     }
 
      
-    public List<ScientificObjectNodeDTO> getScientificObjectsByDate(URI contextURI, String startDate, String endDate,String lang, Collection<URI> uris) throws Exception {
-
-        Node context = SPARQLDeserializers.nodeURI(contextURI);
-
-        Var uriVar = makeVar(SPARQLResourceModel.URI_FIELD);
-        Var nameVar = makeVar(SPARQLNamedResourceModel.NAME_FIELD);
-        Var typeVar = makeVar(SPARQLResourceModel.TYPE_FIELD);
-        Var typeNameVar = makeVar(SPARQLResourceModel.TYPE_NAME_FIELD);
-        Var creationDateVar = makeVar(ScientificObjectModel.CREATION_DATE_FIELD);
-        Var destructionDateVar = makeVar(ScientificObjectModel.DESTRUCTION_DATE_FIELD);
-
+    public Collection<String> getScientificObjectsByDate(URI contextURI, String startDate, String endDate, Collection<URI> uris) throws Exception {
+        Var uriVar = makeVar("uri");
+        Var typeVar = makeVar("type");
+        Var creationDateVar = makeVar("creationDate");
+        Var destructionDateVar = makeVar("destructionDate");
         SelectBuilder select = new SelectBuilder();
 
-        // Define request var
-        select.addVar(uriVar);
-        select.addVar(nameVar);
-        select.addVar(typeVar);
-        select.addVar(typeNameVar);
-        select.addVar(creationDateVar);
-        select.addVar(destructionDateVar);
+        Node context = SPARQLDeserializers.nodeURI(contextURI);
+        select.addGraph(context, uriVar, RDF.type, typeVar);
+        select.addOptional(uriVar, Oeso.hasCreationDate, creationDateVar);
+        select.addOptional(uriVar, Oeso.hasDestructionDate, destructionDateVar);
+        LocalDate start = startDate == null ? null : LocalDate.parse(startDate);
+        LocalDate end = endDate == null ? null : LocalDate.parse(endDate);
+        Expr expr = dateRange("creationDate", start, "destructionDate", end);
+        select.addFilter(SPARQLQueryHelper.inURIFilter(uriVar, uris));
+        select.addFilter(expr);
 
-        // Add label and type in where clause
-        WhereBuilder graphHandler = new WhereBuilder();
-        select.addWhere(typeVar, Ontology.subClassAny, Oeso.ScientificObject);
-        graphHandler.addWhere(uriVar, RDFS.label, nameVar);
-        graphHandler.addWhere(uriVar, RDF.type, typeVar);
-
-        // Add creation and destruction date as optional fields
-        graphHandler.addOptional(uriVar, Oeso.hasCreationDate, creationDateVar);
-        graphHandler.addOptional(uriVar, Oeso.hasDestructionDate, destructionDateVar);
-
-        // Add rdf type label in where clause
-        WhereHandler optionalTypeLabelHandler = new WhereHandler();
-        optionalTypeLabelHandler.addWhere(select.makeTriplePath(typeVar, RDFS.label, typeNameVar));
-        // Add rdf type label lang filter
-        Locale locale = Locale.forLanguageTag(lang);
-        optionalTypeLabelHandler.addFilter(SPARQLQueryHelper.langFilterWithDefault(SPARQLResourceModel.TYPE_NAME_FIELD, locale.getLanguage()));
-        select.getWhereHandler().addOptional(optionalTypeLabelHandler);
-
-        //Add uris filter
-        graphHandler.addFilter(SPARQLQueryHelper.inURIFilter(uriVar, uris));
-
-        //Add date filter
-        if( startDate != null || endDate != null ){
-            LocalDate start = startDate == null ? null : LocalDate.parse(startDate);
-            LocalDate end = endDate == null ? null : LocalDate.parse(endDate);
-            Expr expr = dateRange(ScientificObjectModel.CREATION_DATE_FIELD, start, ScientificObjectModel.DESTRUCTION_DATE_FIELD, end);
-            graphHandler.addFilter(expr);
-        }
-
-        select.addGraph(context, graphHandler);
-
-        Stream<SPARQLResult> resultStream = sparql.executeSelectQueryAsStream(select);
-
-        if(resultStream == null){
-            return new ArrayList<>(Collections.emptyList());
-        }
-        else{
-            List<ScientificObjectNodeDTO> results = streamToList(resultStream,dtoFromResult());
-            return results;
-        }
+        Collection<String> types = new HashSet<>();
+        sparql.executeSelectQuery(select, (row) -> {
+            try {
+                URI uri = new URI(row.getStringValue("uri"));
+                types.add(SPARQLDeserializers.getShortURI(uri));
+            } catch (URISyntaxException ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+        return types;
     }
     
     public static Expr dateRange(String startDateVarName, Object startDate, String endDateVarName, Object endDate) throws Exception {
@@ -1305,16 +1269,6 @@ public class ScientificObjectDAO {
                 // write type and name triple
                 update.addInsert(defaultGraphNode, uriNode, RDF.type, SPARQLDeserializers.nodeURI(object.getType()))
                       .addInsert(defaultGraphNode, uriNode, RDFS.label, stringDeserializer.getNode(object.getName()));
-
-                if (Objects.nonNull(object.getPublisher())) {
-                    update.addInsert(defaultGraphNode, uriNode, DCTerms.publisher, stringDeserializer.getNode(object.getPublisher()));
-                }
-                if (Objects.nonNull(object.getPublicationDate())) {
-                    update.addInsert(defaultGraphNode, uriNode, DCTerms.issued, stringDeserializer.getNode(object.getPublicationDate()));
-                }
-                if (Objects.nonNull(object.getLastUpdateDate())) {
-                    update.addInsert(defaultGraphNode, uriNode, DCTerms.modified, stringDeserializer.getNode(object.getLastUpdateDate()));
-                }
             }
 
             sparql.executeUpdateQuery(update);

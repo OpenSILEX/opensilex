@@ -9,13 +9,11 @@ import io.swagger.annotations.*;
 import org.opensilex.core.organisation.dal.OrganizationDAO;
 import org.opensilex.core.organisation.dal.OrganizationModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.server.response.PaginatedListResponse;
@@ -35,7 +33,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.util.List;
-import java.util.Objects;
 
 /**
  *
@@ -87,7 +84,7 @@ public class OrganizationAPI {
         try {
             OrganizationDAO dao = new OrganizationDAO(sparql, nosql);
             OrganizationModel model = dto.newModel();
-            model.setPublisher(currentUser.getUri());
+            model.setCreator(currentUser.getUri());
 
             model = dao.create(model);
             return new CreatedUriResponse(model.getUri()).getResponse();
@@ -113,11 +110,7 @@ public class OrganizationAPI {
     ) throws Exception {
         OrganizationDAO dao = new OrganizationDAO(sparql, nosql);
         OrganizationModel model = dao.get(uri, currentUser);
-        OrganizationGetDTO dto = OrganizationGetDTO.getDTOFromModel(model);
-        if (Objects.nonNull(model.getPublisher())){
-            dto.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(model.getPublisher())));
-        }
-        return new SingleObjectResponse<>(dto).getResponse();
+        return new SingleObjectResponse<>(OrganizationGetDTO.getDTOFromModel(model)).getResponse();
     }
 
     @DELETE

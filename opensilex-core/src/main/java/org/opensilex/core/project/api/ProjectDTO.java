@@ -9,12 +9,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
 import java.time.LocalDate;
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import javax.validation.constraints.NotNull;
 import org.opensilex.core.project.dal.ProjectModel;
-import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.rest.validation.Required;
 
 /**
@@ -24,15 +22,6 @@ public abstract class ProjectDTO {
     
     @JsonProperty("uri")
     protected URI uri;
-
-    @JsonProperty("publisher")
-    protected UserGetDTO publisher;
-
-    @JsonProperty("publication_date")
-    protected OffsetDateTime publicationDate;
-
-    @JsonProperty("last_updated_date")
-    protected OffsetDateTime lastUpdatedDate;
 
     @JsonProperty("name")
     protected String name;
@@ -81,30 +70,6 @@ public abstract class ProjectDTO {
     public ProjectDTO setUri(URI uri) {
         this.uri = uri;
         return this;
-    }
-
-    public UserGetDTO getPublisher() {
-        return publisher;
-    }
-
-    public void setPublisher(UserGetDTO publisher) {
-        this.publisher = publisher;
-    }
-
-    public OffsetDateTime getPublicationDate() {
-        return publicationDate;
-    }
-
-    public void setPublicationDate(OffsetDateTime publicationDate) {
-        this.publicationDate = publicationDate;
-    }
-
-    public OffsetDateTime getLastUpdatedDate() {
-        return lastUpdatedDate;
-    }
-
-    public void setLastUpdatedDate(OffsetDateTime lastUpdatedDate) {
-        this.lastUpdatedDate = lastUpdatedDate;
     }
 
     @Required

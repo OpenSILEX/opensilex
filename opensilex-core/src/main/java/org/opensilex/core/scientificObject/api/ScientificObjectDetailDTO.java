@@ -14,7 +14,6 @@ import org.opensilex.core.experiment.factor.dal.FactorLevelModel;
 import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.ontology.api.RDFObjectRelationDTO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
-import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.response.NamedResourceDTO;
 
@@ -33,14 +32,11 @@ import org.opensilex.sparql.deserializer.SPARQLDeserializers;
  *
  * @author vmigot
  */
-@JsonPropertyOrder({"uri", "publisher", "publication_date", "last_updated_date", "rdf_type", "rdf_type_name", "name", "parent", "parent_name", "factor_level", "relations", "geometry"})
+@JsonPropertyOrder({"uri", "rdf_type", "rdf_type_name", "name", "parent", "parent_name", "factor_level", "relations", "geometry"})
 public class ScientificObjectDetailDTO extends NamedResourceDTO<ScientificObjectModel> {
 
     @ApiModelProperty(value = "Scientific object parent URI")
     protected URI parent;
-
-    @JsonProperty("publisher")
-    protected UserGetDTO publisher;
 
     @JsonProperty("parent_name")
     @ApiModelProperty(value = "Scientific object parent name")
@@ -61,14 +57,6 @@ public class ScientificObjectDetailDTO extends NamedResourceDTO<ScientificObject
     protected List<RDFObjectRelationDTO> relations;
 
     protected GeoJsonObject geometry;
-
-    public UserGetDTO getPublisher() {
-        return publisher;
-    }
-
-    public void setPublisher(UserGetDTO publisher) {
-        this.publisher = publisher;
-    }
 
     public URI getParent() {
         return parent;

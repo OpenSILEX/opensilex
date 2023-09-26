@@ -124,7 +124,8 @@ public class SiteDAO {
                 sparql,
                 SiteModel.class,
                 sparql.getDefaultGraph(SiteModel.class),
-                Collections.singleton(SiteModel.ORGANIZATION_FIELD),
+                Collections.singletonMap(SiteModel.ORGANIZATION_FIELD, true),
+                initialSelect.get(),
                 models.getList()
         );
         listFetcher.updateModels();

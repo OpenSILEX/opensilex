@@ -14,13 +14,11 @@ import org.opensilex.core.document.dal.DocumentDAO;
 import org.opensilex.core.document.dal.DocumentModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
-import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.exceptions.NotFoundException;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.ObjectUriResponse;
@@ -43,7 +41,6 @@ import javax.ws.rs.core.Response;
 import java.io.File;
 import java.net.URI;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * @author Fernandez Emilie
@@ -142,7 +139,7 @@ public class DocumentAPI {
                             "wrong rdfType: " + docDto.getType().toString()
                     ).getResponse();
                 }
-                documentModel.setPublisher(currentUser.getUri());
+
                 documentDAO.create(documentModel, file);
                 return new CreatedUriResponse(documentModel.getUri()).getResponse();
 
@@ -176,11 +173,7 @@ public class DocumentAPI {
         DocumentModel documentModel = documentDAO.getMetadata(uri, currentUser);
 
         if (documentModel != null) {
-            DocumentGetDTO dto = DocumentGetDTO.fromModel(documentModel);
-            if (Objects.nonNull(documentModel.getPublisher())) {
-                dto.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(documentModel.getPublisher())));
-            }
-            return new SingleObjectResponse<>(dto).getResponse();
+            return new SingleObjectResponse<>(DocumentGetDTO.fromModel(documentModel)).getResponse();
         } else {
             return new ErrorResponse(
                     Response.Status.NOT_FOUND,

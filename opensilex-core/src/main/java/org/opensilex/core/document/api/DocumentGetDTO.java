@@ -8,8 +8,6 @@ package org.opensilex.core.document.api;
 
 import org.opensilex.core.document.dal.DocumentModel;
 
-import java.util.Objects;
-
 /**
  *
  * A basic GetDTO which extends the {@link DocumentDTO} and which add the conversion from an {@link DocumentModel} to a {@link DocumentGetDTO}
@@ -35,14 +33,6 @@ public class DocumentGetDTO extends DocumentDTO {
                 .setSubject(model.getSubject())
                 .setDeprecated(Boolean.parseBoolean(model.getDeprecated()))
                 .setSource(model.getSource());
-
-        if (Objects.nonNull(model.getPublicationDate())) {
-            dto.setPublicationDate(model.getPublicationDate());
-        }
-
-        if (Objects.nonNull(model.getLastUpdateDate())) {
-            dto.setLastUpdatedDate(model.getLastUpdateDate());
-        }
 
         return dto;
     }

@@ -121,9 +121,7 @@ public class MetricDAO {
 
                 //variables
                 for (CountItemModel item : metric.getDataByVariables().getItems()) {
-                    URI itemUri = new URI(SPARQLDeserializers.getExpandedURI(item.getUri()));
-                    String itemName = variables.get(itemUri);
-                    item.setName(itemName);
+                    item.setName(variables.get(item.getUri()));//TODO replace URI by name
                 }
                 
             }
@@ -193,9 +191,7 @@ public class MetricDAO {
 
                 //variables
                 for (CountItemModel item : summary.getDataByVariables().getItems()) {
-                    URI itemUri = new URI(SPARQLDeserializers.getExpandedURI(item.getUri()));
-                    String itemName = variables.get(itemUri);
-                    item.setName(itemName);
+                    item.setName(variables.get(item.getUri()));//TODO replace URI by name
                 }
             }
             catch (Exception e) {
@@ -311,9 +307,7 @@ public class MetricDAO {
 
                 //variables
                 for (CountItemModel item : summary.getDataByVariables().getItems()) {
-                    URI itemUri = new URI(SPARQLDeserializers.getExpandedURI(item.getUri()));
-                    String itemName = variables.get(itemUri);
-                    item.setName(itemName);
+                    item.setName(variables.get(item.getUri()));//TODO replace URI by name
                 }
             } catch (Exception e) {
                 throw new RuntimeException(e);

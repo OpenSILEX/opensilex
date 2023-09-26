@@ -25,11 +25,13 @@ import org.opensilex.core.geospatial.dal.GeospatialModel;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.response.*;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.server.rest.validation.date.ValidOffsetDateTime;
@@ -48,6 +50,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import static org.opensilex.core.geospatial.dal.GeospatialDAO.geoJsonToGeometry;
 
@@ -135,7 +138,9 @@ public class AreaAPI {
                 else{
                     //Create an event with the rdfType from event
                     areaDTO.event.setTargets(Arrays.asList(areaURI));
-                    eventDAO.create(areaDTO.event.toModel());
+                    EventModel eventModel = areaDTO.event.toModel();
+                    eventModel.setPublisher(currentUser.getUri());
+                    eventDAO.create(eventModel);
                 }
             }
             else{
@@ -207,9 +212,20 @@ public class AreaAPI {
             switch (eventList.getList().size()) {
                 case 1:
                     EventModel eventByURI = eventDAO.get(eventList.getList().get(0).getUri(), currentUser);
-                    return new SingleObjectResponse<>(AreaGetDTO.fromModel(model, geometryByURI, eventByURI)).getResponse();
+                    AreaGetDTO dto = AreaGetDTO.fromModel(model, geometryByURI, eventByURI);
+                    if (Objects.nonNull(model.getPublisher())) {
+                        dto.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(model.getPublisher())));
+                    }
+                    if (Objects.nonNull(eventByURI.getPublisher())) {
+                        dto.getEvent().setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(eventByURI.getPublisher())));
+                    }
+                    return new SingleObjectResponse<>(dto).getResponse();
                 case 0:
-                    return new SingleObjectResponse<>(AreaGetDTO.fromModel(model, geometryByURI)).getResponse();
+                    dto = AreaGetDTO.fromModel(model, geometryByURI);
+                    if (Objects.nonNull(model.getPublisher())) {
+                        dto.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(model.getPublisher())));
+                    }
+                    return new SingleObjectResponse<>(dto).getResponse();
                 default:
                     return new ErrorResponse(
                             Response.Status.UNAUTHORIZED,

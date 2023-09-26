@@ -11,12 +11,14 @@ import org.opensilex.core.external.opensilex.SharedResourceInstanceService;
 import org.opensilex.core.variable.api.VariableAPI;
 import org.opensilex.core.variablesGroup.dal.VariablesGroupDAO;
 import org.opensilex.core.variablesGroup.dal.VariablesGroupModel;
+import org.opensilex.security.account.dal.AccountDAO;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.response.*;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.exceptions.SPARQLAlreadyExistingUriException;
@@ -36,10 +38,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
 /**
  * @author Hamza IKIOU
  */
@@ -86,7 +86,7 @@ public class VariablesGroupAPI {
         try {
             VariablesGroupDAO dao = new VariablesGroupDAO(sparql);
             VariablesGroupModel model = dto.newModel();
-            model.setCreator(currentUser.getUri());
+            model.setPublisher(currentUser.getUri());
 
             model = dao.create(model);
             URI shortUri = new URI(SPARQLDeserializers.getShortURI(model.getUri().toString()));
@@ -157,7 +157,11 @@ public class VariablesGroupAPI {
         if (model == null) {
             throw new NotFoundURIException(uri);
         }
-        return new SingleObjectResponse<>(VariablesGroupGetDTO.fromModel(model)).getResponse();
+        VariablesGroupGetDTO dto = VariablesGroupGetDTO.fromModel(model);
+        if (Objects.nonNull(model.getPublisher())) {
+            dto.setPublisher(UserGetDTO.fromModel(new AccountDAO(sparql).get(model.getPublisher())));
+        }
+        return new SingleObjectResponse<>(dto).getResponse();
     }
 
     @GET

@@ -5,9 +5,12 @@
  */
 package org.opensilex.core.ontology.api;
 
+import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.sparql.ontology.dal.ClassModel;
 
 import java.net.URI;
+import java.time.OffsetDateTime;
+import java.util.Objects;
 
 /**
  * @author vmigot
@@ -21,6 +24,12 @@ public class RDFTypeDTO {
     protected String comment;
 
     protected URI parent;
+
+    protected UserGetDTO publisher;
+
+    protected OffsetDateTime publicationDate;
+
+    protected OffsetDateTime lastUpdatedDate;
 
     public URI getUri() {
         return uri;
@@ -54,6 +63,30 @@ public class RDFTypeDTO {
         this.parent = parent;
     }
 
+    public UserGetDTO getPublisher() {
+        return publisher;
+    }
+
+    public void setPublisher(UserGetDTO publisher) {
+        this.publisher = publisher;
+    }
+
+    public OffsetDateTime getPublicationDate() {
+        return publicationDate;
+    }
+
+    public void setPublicationDate(OffsetDateTime publicationDate) {
+        this.publicationDate = publicationDate;
+    }
+
+    public OffsetDateTime getLastUpdatedDate() {
+        return lastUpdatedDate;
+    }
+
+    public void setLastUpdatedDate(OffsetDateTime lastUpdatedDate) {
+        this.lastUpdatedDate = lastUpdatedDate;
+    }
+
     public RDFTypeDTO() {
 
     }
@@ -70,6 +103,13 @@ public class RDFTypeDTO {
 
         if (model.getParent() != null) {
             setParent(model.getParent().getUri());
+        }
+
+        if (Objects.nonNull(model.getPublicationDate())) {
+            setPublicationDate(model.getPublicationDate());
+        }
+        if (Objects.nonNull(model.getLastUpdateDate())) {
+            setLastUpdatedDate(model.getLastUpdateDate());
         }
     }
 

@@ -55,6 +55,9 @@ import PersonContact from "./persons/PersonContact.vue";
 components["opensilex-PersonContact"] = PersonContact;
 import ContactsList from "./persons/ContactsList.vue";
 components["opensilex-ContactsList"] = ContactsList;
+import OrcidSuggestionModal from "./persons/OrcidSuggestionModal.vue";
+components["opensilex-OrcidSuggestionModal"] = OrcidSuggestionModal;
+
 
 // Profiles
 import ProfileForm from './profiles/ProfileForm.vue';
@@ -449,6 +452,8 @@ import GermplasmGroupSelector from './germplasmGroup/GermplasmGroupSelector.vue'
 components["opensilex-GermplasmGroupSelector"] = GermplasmGroupSelector;
 import AssociatedGermplasmGroupsList from './germplasmGroup/AssociatedGermplasmGroupsList.vue';
 components["opensilex-AssociatedGermplasmGroupsList"] = AssociatedGermplasmGroupsList;
+import GermplasmGroupHelp from './germplasmGroup/GermplasmGroupHelp.vue';
+components["opensilex-GermplasmGroupHelp"] = GermplasmGroupHelp;
 
 import GermplasmAttributesValueSelector from './germplasm/GermplasmAttributesValueSelector.vue';
 components["opensilex-GermplasmAttributesValueSelector"] = GermplasmAttributesValueSelector;
@@ -520,6 +525,10 @@ import UsedScientificObjectSelector from './scientificObjects/views/UsedScientif
 components["opensilex-UsedScientificObjectSelector"] = UsedScientificObjectSelector;
 import ScientificObjectPropertiesSelector from './scientificObjects/ScientificObjectPropertiesSelector.vue';
 components["opensilex-ScientificObjectPropertiesSelector"] = ScientificObjectPropertiesSelector;
+import CriteriaSearchModalCreator from './scientificObjects/CriteriaSearchModalCreator.vue';
+components["opensilex-CriteriaSearchModalCreator"] = CriteriaSearchModalCreator;
+import CriteriaOperatorSelector from './scientificObjects/CriteriaOperatorSelector.vue';
+components["opensilex-CriteriaOperatorSelector"] = CriteriaOperatorSelector;
 
 // Variables
 import VariableList from './variables/VariableList.vue';

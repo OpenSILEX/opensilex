@@ -1,14 +1,12 @@
 package org.opensilex.sparql.mapping;
 
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.collections4.trie.PatriciaTrie;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.ExprFactory;
 import org.apache.jena.arq.querybuilder.SelectBuilder;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
-import org.apache.jena.query.Query;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.aggregate.AggGroupConcatDistinct;
@@ -34,7 +32,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
@@ -46,7 +43,7 @@ import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
  * Instead of passing URI returned to the initial query, this class reuse the initial query body.
  * This allow to don't re-send these URI to the multi-valued query, and so to limit the number of I/O with the triplestore.
  * This also make the query size not dependent of the result number and ensure that query will be
- * parsable and sendable to the triplestore
+ * parsable and can be send to the triplestore
  *
  *
  * Notes : this approach is optimized in most of the case, since I/O between OpenSILEX
@@ -68,20 +65,8 @@ public class SPARQLListFetcher<T extends SPARQLResourceModel> {
     private final Node graph;
 
     /**
-     * Indicate for each multi-valued properties to fetch, if a triple must be added into WHERE.
-     * If the corresponding field is already into the initial query WHERE (ex : if some filter has been done on ths field),
-     * then it's not needed to re-put the triple into the new query, else the triple must be added
-     */
-    private final Map<String, Boolean> fieldsToFetch;
-
-    /**
-     * Initial query, needed in order to re-build a query by re-using WHERE, FILTER and ORDER BY
-     */
-    private final SelectBuilder initialSelect;
-
-    /**
      * The list of initial results. This class will update each item from results, by
-     * setting all multi-valued properties from fieldsToFetch
+     * setting all multivalued properties from the input fieldToFetch Set
      */
     private final List<T> results;
 
@@ -118,22 +103,17 @@ public class SPARQLListFetcher<T extends SPARQLResourceModel> {
      * @param sparql         {@link SPARQLService} used to run additional SPARQL query
      * @param objectClass    the SPARQL model class
      * @param graph          graph
-     * @param fieldsToFetch  The multi-valued fields to fetch
+     * @param fieldsToFetch  The multivalued fields to fetch. Note if redundant element are present in the collection, then the element is only added one inside the generated SPARQL query
      *                       <pre>
-     *                                                  For each field, indicate if the <b> ?uri,:multi_valued_property,?value> </b> triple must be added or not to the query.
-     *                                             </pre>
-     * @param initialSelect  the initial builder
-     * @param initialResults the List of {@link SPARQLResourceModel}, each item from list will be updated by adding values for multi-valued properties
-     * @throws IllegalArgumentException if the {@link Query} build by the initialSelect has no ORDER BY clause. It's needed to ensure matching
-     *                                  between initialResults and multi-valued properties values fetched by this class.
-     * @see Query#getOrderBy()
+     *                                                                                              For each field, indicate if the <b> ?uri,:multi_valued_property,?value> </b> triple must be added or not to the query.
+     *                                                                                         </pre>
+     * @param initialResults the List of {@link SPARQLResourceModel}, each item from list will be updated by adding values for multivalued properties
      * @see SelectBuilder#build()
      */
     public SPARQLListFetcher(SPARQLService sparql,
                              Class<T> objectClass,
                              Node graph,
-                             Map<String, Boolean> fieldsToFetch,
-                             SelectBuilder initialSelect,
+                             Collection<String> fieldsToFetch,
                              List<T> initialResults
     ) throws SPARQLDeserializerNotFoundException, SPARQLInvalidClassDefinitionException, SPARQLMapperNotFoundException {
 
@@ -141,23 +121,18 @@ public class SPARQLListFetcher<T extends SPARQLResourceModel> {
         this.mapper = sparql.getMapperIndex().getForClass(objectClass);
         this.graph = graph;
 
-
-        this.initialSelect = initialSelect;
-
         Objects.requireNonNull(initialResults);
-        if(initialResults.size() >= MAX_RESULTS_SIZE){
-            throw new IllegalArgumentException("initialResults.size() : " + initialResults.size() + " >= to limit : " +MAX_RESULTS_SIZE);
+        if (initialResults.size() >= MAX_RESULTS_SIZE) {
+            throw new IllegalArgumentException("initialResults.size() : " + initialResults.size() + " >= to limit : " + MAX_RESULTS_SIZE);
         }
         this.results = initialResults;
 
-        if (MapUtils.isEmpty(fieldsToFetch)) {
+        if (CollectionUtils.isEmpty(fieldsToFetch)) {
             throw new IllegalArgumentException("Null or empty fieldsToFetch");
         }
-        this.fieldsToFetch = fieldsToFetch;
-
         concatVarNameByFields = new LinkedHashMap<>();
 
-        for (String fieldName : fieldsToFetch.keySet()) {
+        for (String fieldName : fieldsToFetch) {
             Field field = mapper.classAnalizer.getFieldFromName(fieldName);
             if (field == null) {
                 throw new IllegalArgumentException("Unknown custom field " + fieldName + " from SPARQL model : " + mapper.getObjectClass().getName());
@@ -196,13 +171,13 @@ public class SPARQLListFetcher<T extends SPARQLResourceModel> {
     /**
      * Update {@link #results} by setting all multi-valued properties
      *
-     * @throws SPARQLException if some error is encountered during SPARQL query evaluation
+     * @throws SPARQLException          if some error is encountered during SPARQL query evaluation
      * @throws IllegalArgumentException if {@link SPARQLListFetcher#results} contains two models with the same URI.
-     * This exception if throw because the two SPARQL query used to match list attributes must work on the same unique results
+     *                                  This exception if throw because the two SPARQL query used to match list attributes must work on the same unique results
      */
     public void updateModels() throws SPARQLException {
 
-        if(CollectionUtils.isEmpty(results)){
+        if (CollectionUtils.isEmpty(results)) {
             return;
         }
 
@@ -210,11 +185,12 @@ public class SPARQLListFetcher<T extends SPARQLResourceModel> {
         SelectBuilder selectWithMultivalued = getSelect();
 
         // compute index between models and models URIs in order to associate in O(n) time complexity, the n results from selectWithMultivalued
-        Map<String,T> modelsByUris = new PatriciaTrie<>();
-        int i=0;
-        for(T model : results){
+        // We need to maintain index since, there
+        Map<String, T> modelsByUris = new PatriciaTrie<>();
+        int i = 0;
+        for (T model : results) {
             String modelURI = URIDeserializer.formatURIAsStr(model.getUri().toString());
-            if(modelsByUris.containsKey(modelURI)){
+            if (modelsByUris.containsKey(modelURI)) {
                 throw new IllegalArgumentException(String.format("Multiple results with the same URI (%s) at index %d", modelURI, i));
             }
             modelsByUris.put(modelURI, model);
@@ -238,8 +214,8 @@ public class SPARQLListFetcher<T extends SPARQLResourceModel> {
     }
 
     /**
-     * @return a new SelectBuilder based on the initialSelect. This new SELECT include multi-valued fields to fetch.
-     * @apiNote Example: considering the following initialSelect :
+     * @return a new SelectBuilder which include multivalued fields to fetch.
+     * @apiNote Example: considering the following initial query:
      *
      * <pre>
      * {@code
@@ -279,35 +255,11 @@ public class SPARQLListFetcher<T extends SPARQLResourceModel> {
      *
      * SELECT DISTINCT ?uri (GROUP_CONCAT(DISTINCT ?targets ; separator=',') AS ?targets__opensilex__concat)
      * WHERE{
-     *   SELECT DISTINCT ?uri ?targets WHERE {
-     *    ?rdfType (rdfs:subClassOf)* oeev:Event
-     *     OPTIONAL
-     *       { ?rdfType  rdfs:label  ?rdfTypeName
-     *         FILTER ( langMatches(lang(?rdfTypeName), "en") || langMatches(lang(?rdfTypeName), "") )
-     *       }
-     *     ?rdfType (rdfs:subClassOf)* oeev:Move
-     *     GRAPH <http://www.opensilex.org/set/event>{
-     *     ?uri  a               ?rdfType ;
-     *           oeev:isInstant  ?isInstant
-     *         OPTIONAL
-     *           { ?uri  dc:creator  ?creator}
-     *         OPTIONAL
-     *           { ?uri  rdfs:comment  ?description}
-     *         OPTIONAL
-     *           { ?uri    time:hasBeginning     ?start .
-     *             ?start  time:inXSDDateTimeStamp  ?_start__timestamp}
-     *         OPTIONAL
-     *           { ?uri  time:hasEnd           ?end .
-     *             ?end  time:inXSDDateTimeStamp  ?_end__timestamp
-     *           }
-     *           ?uri  oeev:concerns  ?targets
-     *       }
-     *     FILTER ( ! isBlank(?uri) )
-     *   }
-     *   ORDER BY DESC(?_end__timestamp)
-     *   LIMIT 1000
-     *   }
-     *   GROUP BY ?uri
+     *    ?uri  oeev:concerns  ?targets
+     * }
+     * VALUES ?uri ( :event_1 :event_2)
+     * LIMIT 1000
+     * GROUP BY ?uri
      *
      * }</pre>
      */
@@ -321,17 +273,12 @@ public class SPARQLListFetcher<T extends SPARQLResourceModel> {
                 .setDistinct(true)
                 .addGroupBy(uriVar);   // append the GROUP BY in order to support the GROUP_CONCAT aggregator
 
-        SelectBuilder innerSelect = initialSelect.clone();
-        innerSelect.setDistinct(true);
-        innerSelect.getVars().clear();
-        innerSelect.addVar(uriVar);
-
         ExprFactory exprFactory = SPARQLQueryHelper.getExprFactory();
-        ElementGroup innerGraphElemGroup;
+        ElementGroup graphElemGroup;
         if (graph != null) {
-            innerGraphElemGroup = SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(innerSelect.getWhereHandler().getClause(), graph);
+            graphElemGroup = SPARQLQueryHelper.getSelectOrCreateGraphElementGroup(multivaluedSelect.getWhereHandler().getClause(), graph);
         } else {
-            innerGraphElemGroup = innerSelect.getWhereHandler().getClause();
+            graphElemGroup = multivaluedSelect.getWhereHandler().getClause();
         }
 
         // append var and BGP for each multivalued field
@@ -350,38 +297,31 @@ public class SPARQLListFetcher<T extends SPARQLResourceModel> {
                 Var fieldConcatVar = makeVar(concatVarNameByFields.get(field));
                 multivaluedSelect.addVar(groupConcat.toString(), fieldConcatVar);
 
-                // append ?field into inner select
-                innerSelect.addVar(fieldVar);
-
             } catch (ParseException e) {
                 throw new IllegalArgumentException(e);
             }
 
-            boolean appendTriple = fieldsToFetch.get(field.getName());
-            if (appendTriple) {
-                // add the BGP (?uri <field_to_fetch_property> ?field_to_fetch)
-                // or the reversed relation if needed
-                Triple triple = mapper.classAnalizer.isReverseRelation(field)
+            // add the BGP (?uri <field_to_fetch_property> ?field_to_fetch)
+            Triple triple = mapper.classAnalizer.isReverseRelation(field)
                     ? new Triple(fieldVar, property.asNode(), uriVar)
                     : new Triple(uriVar, property.asNode(), fieldVar);
 
-                if (mapper.classAnalizer.isOptional(field)) {
-                    ElementTriplesBlock elementTriple = new ElementTriplesBlock();
-                    elementTriple.addTriple(triple);
-                    innerGraphElemGroup.addElement(new ElementOptional(elementTriple));
-                } else {
-                    innerGraphElemGroup.addTriplePattern(triple);
-                }
+            if (mapper.classAnalizer.isOptional(field)) {
+                ElementTriplesBlock elementTriple = new ElementTriplesBlock();
+                elementTriple.addTriple(triple);
+                graphElemGroup.addElement(new ElementOptional(elementTriple));
+            } else {
+                graphElemGroup.addTriplePattern(triple);
             }
         });
 
-        // add original query as sub query
-        multivaluedSelect.addSubQuery(innerSelect);
-
-        // copy VALUES clause because if VALUES are inserted with SelectBuilder.addValueVar(var,values), then addSubQuery() don't copy VALUES from SelectBuilder.getWhereHandler().getValuesMap()
-        // addSubQuery() copy VALUES if they are inserted with SelectBuilder.addWhereValueVar(var,values), in this case VALUES are copied from SelectBuilder.getValuesHandler()
-        multivaluedSelect.getValuesHandler().addAll(innerSelect.getValuesHandler());
-
+        SPARQLQueryHelper.addWhereUriStringValues(
+                multivaluedSelect,
+                SPARQLResourceModel.URI_FIELD,
+                results.stream().map(model -> model.getUri().toString()),
+                true,
+                results.size()
+        );
         return multivaluedSelect;
     }
 
@@ -400,7 +340,7 @@ public class SPARQLListFetcher<T extends SPARQLResourceModel> {
                 // a singleton array containing an empty string, instead of an empty array, that's why this case
                 // is handled separately)
                 listPropertyValues = Collections.emptyList();
-            } else  {
+            } else {
                 String[] stringValues = parsedValue.split(GROUP_CONCAT_SEPARATOR);
                 SPARQLClassObjectMapper<?> objectMapper = objectMappersByConcatVarName.get(concatFieldName);
 

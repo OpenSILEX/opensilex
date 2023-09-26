@@ -59,6 +59,7 @@ import org.opensilex.utils.ListWithPagination;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -429,6 +430,7 @@ public class DeviceDAO {
         createIndexes();
         DeviceAttributeModel storedAttributes = getStoredAttributes(instance.getUri());
         Node graph = sparql.getDefaultGraph(DeviceModel.class);
+        instance.setLastUpdateDate(OffsetDateTime.now());
         if ((instance.getAttributes() == null || instance.getAttributes().isEmpty()) && storedAttributes == null) {
             sparql.deleteByURI(graph, instance.getUri());
             sparql.create(instance);

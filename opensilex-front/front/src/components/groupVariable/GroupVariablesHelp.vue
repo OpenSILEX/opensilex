@@ -23,20 +23,20 @@
     import Vue from "vue";
     import GroupVariablesHelpFR from "./doc/GroupVariablesHelpFR.md";
     import GroupVariablesHelpEN from "./doc/GroupVariablesHelpEN.md";
+    import OpenSilexVuePlugin from 'src/models/OpenSilexVuePlugin';
 
     Vue.component("GroupVariablesHelpEN", GroupVariablesHelpEN);
     Vue.component("GroupVariablesHelpFR", GroupVariablesHelpFR);
 
     @Component
     export default class GroupVariablesHelp extends Vue {
-        $opensilex: any;
+        $opensilex: OpenSilexVuePlugin;
         $store: any;
         $t: any;
         $i18n: any;
         $router: any;
 
         get lang() {
-            console.debug("Active language : " + this.$store.getters.language);
             return this.$store.getters.language;
         }
 

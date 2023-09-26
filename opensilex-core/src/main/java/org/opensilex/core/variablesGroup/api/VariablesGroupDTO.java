@@ -10,7 +10,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.net.URI;
+import java.time.OffsetDateTime;
 
+import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.rest.validation.Required;
 
 /**
@@ -20,6 +22,15 @@ public abstract class VariablesGroupDTO {
     
     @JsonProperty("uri")
     protected URI uri;
+
+    @JsonProperty("publisher")
+    protected UserGetDTO publisher;
+
+    @JsonProperty("publication_date")
+    protected OffsetDateTime publicationDate;
+
+    @JsonProperty("last_updated_date")
+    protected OffsetDateTime lastUpdatedDate;
 
     @JsonProperty("name")
     protected String name;
@@ -46,7 +57,31 @@ public abstract class VariablesGroupDTO {
     public void setName(String name) {
         this.name = name;
     }
-    
+
+    public UserGetDTO getPublisher() {
+        return publisher;
+    }
+
+    public void setPublisher(UserGetDTO publisher) {
+        this.publisher = publisher;
+    }
+
+    public OffsetDateTime getPublicationDate() {
+        return publicationDate;
+    }
+
+    public void setPublicationDate(OffsetDateTime publicationDate) {
+        this.publicationDate = publicationDate;
+    }
+
+    public OffsetDateTime getLastUpdatedDate() {
+        return lastUpdatedDate;
+    }
+
+    public void setLastUpdatedDate(OffsetDateTime lastUpdatedDate) {
+        this.lastUpdatedDate = lastUpdatedDate;
+    }
+
     @ApiModelProperty(example = "Group where we can find all plant related variables")
     public String getDescription() {
         return description;

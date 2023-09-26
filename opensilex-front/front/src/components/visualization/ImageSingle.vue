@@ -12,6 +12,8 @@
         <b-card-text><span class="imageAttribut">Type:</span> {{ type }}</b-card-text>
         <b-card-text><span class="imageAttribut">{{ $t("ImageSingle.target") }}</span> : {{ image.target }}</b-card-text>
         <b-card-text><span class="imageAttribut"> {{ $t("ImageSingle.filename") }}</span> : {{ image.filename }}</b-card-text>
+        <b-card-text><span class="imageAttribut"> {{ $t("ImageSingle.publisher") }}</span> : {{ publisher }}</b-card-text>
+        <b-card-text><span class="imageAttribut"> {{ $t("ImageSingle.datePublication") }}</span> : {{ datePublication }}</b-card-text>
 
         <b-card-text v-if="image.metadata">{{ $t("component.common.metadata") }}: {{ image.metadata }}</b-card-text>
         <div class="d-flex justify-content-between">
@@ -79,6 +81,8 @@ export default class ImageSingle extends Vue {
   imgs = [];
   date;
   type;
+  publisher;
+  datePublication;
 
   src: string = "";
 
@@ -92,6 +96,12 @@ export default class ImageSingle extends Vue {
     this.src = this.image.url;
     this.date = this.$opensilex.$dateTimeFormatter.formatISODateTime(this.image.date);
     this.type = this.image.rdf_type.split(":")[1];
+    if(!this.image.publisher || !this.image.publisher.uri) {
+      this.publisher = undefined;
+    } else {
+      this.publisher = this.image.publisher.first_name && this.image.publisher.last_name ? this.image.publisher.first_name + " " + this.image.publisher.last_name : this.image.publisher.uri;
+    }
+    this.datePublication = this.$opensilex.$dateTimeFormatter.formatISODateTime(this.image.issued);
   }
 
   showImage() {
@@ -170,6 +180,8 @@ img:hover {
       setting: 'Settings'
       annotate: Annotate
       provenance: Provenance
+      publisher: Publisher
+      datePublication: Publication date
 
   fr:
     ImageSingle:
@@ -180,5 +192,7 @@ img:hover {
       setting: 'Paramètres'
       annotate: Annoter
       provenance: Provenance
+      publisher: Publieur
+      datePublication: Date de publication
 </i18n>
 

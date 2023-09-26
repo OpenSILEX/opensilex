@@ -27,6 +27,7 @@ import {FacilityGetDTO} from "opensilex-core/model/facilityGetDTO";
 import ModalForm from "../common/forms/ModalForm.vue";
 import FacilityForm from "./FacilityForm.vue";
 import {FacilityUpdateDTO} from "opensilex-core/model/facilityUpdateDTO";
+import { UserGetDTO } from "../../../../../opensilex-security/front/src/lib";
 
 @Component
 export default class FacilityModalForm extends Vue {
@@ -48,10 +49,12 @@ export default class FacilityModalForm extends Vue {
       .getFacility(form.uri)
       .then((http) => {
         let dto: FacilityGetDTO = http.response.result;
+        let publisher: UserGetDTO = dto.publisher;
         this.facilityForm
           .getFormRef()
           .typeSwitch(dto.rdf_type, true);
         let editDto = DTOConverter.extractURIFromResourceProperties<FacilityGetDTO, FacilityUpdateDTO>(dto);
+        editDto.publisher = publisher;       
         this.facilityForm.showEditForm(editDto);
       }).catch(this.$opensilex.errorHandler);
   }

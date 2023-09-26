@@ -8,9 +8,11 @@ package org.opensilex.security.group.api;
 
 import io.swagger.annotations.*;
 import org.opensilex.security.SecurityModule;
+import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredential;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
+import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.group.dal.GroupDAO;
 import org.opensilex.security.group.dal.GroupModel;
 import org.opensilex.server.response.*;
@@ -54,6 +56,9 @@ public class GroupAPI {
 
     @Inject
     private SPARQLService sparql;
+
+    @CurrentUser
+    AccountModel currentUser;
 
     /**
      * Create a group and return it's URI
@@ -101,7 +106,9 @@ public class GroupAPI {
         }
 
         // create new group
-        GroupModel group = dao.create(dto.newModel());
+        GroupModel group = dto.newModel();
+        group.setPublisher(currentUser.getUri());
+        dao.create(group);
 
         // return group URI
         return new CreatedUriResponse(group.getUri()).getResponse();

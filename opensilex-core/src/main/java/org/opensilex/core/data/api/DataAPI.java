@@ -186,6 +186,7 @@ public class DataAPI {
 
             for (DataCreationDTO dto : dtoList) {
                 DataModel model = dto.newModel();
+                model.setPublisher(user.getUri());
                 dataList.add(model);
             }
             
@@ -1243,6 +1244,7 @@ public class DataAPI {
                 //Transactions so that we don't create any Data or Annotations if either fail
                 nosql.startTransaction();
                 sparql.startTransaction();
+                data.forEach(dataModel -> dataModel.setPublisher(user.getUri()));
                 dao.createAll(data);
                 
                 if(!validation.getVariablesToDevices().isEmpty()){
@@ -1557,8 +1559,7 @@ public class DataAPI {
         boolean validRow = true;
 
         ParsedDateTimeMongo parsedDateTimeMongo = null;
-        
-        List<ProvEntityModel> agents = new ArrayList<>();
+
         List<URI> experiments = new ArrayList<>();
         SPARQLNamedResourceModel target = null;
         
@@ -1756,7 +1757,7 @@ public class DataAPI {
                 if(!StringUtils.isEmpty(annotation)){
                     annotationFromAnnotationColumn = new AnnotationModel();
                     annotationFromAnnotationColumn.setDescription(annotation.trim());
-                    annotationFromAnnotationColumn.setCreator(user.getUri());
+                    annotationFromAnnotationColumn.setPublisher(user.getUri());
                     MotivationModel motivationModel = new MotivationModel();
                     motivationModel.setUri(URI.create(OA.commenting.getURI()));
                     annotationFromAnnotationColumn.setMotivation(motivationModel);
@@ -1858,8 +1859,7 @@ public class DataAPI {
                                     URI rootType = rootDeviceTypes.get(deviceFromDeviceColumn.getType());
                                     agent.setType(rootType);
                                     agent.setUri(deviceFromDeviceColumn.getUri());
-                                    agents.add(agent);
-                                    provenanceModel.setProvWasAssociatedWith(agents);
+                                    provenanceModel.setProvWasAssociatedWith(Collections.singletonList(agent));
 
                                 } else if (sensingDeviceFoundFromProvenance) {
 
@@ -1871,8 +1871,7 @@ public class DataAPI {
                                     URI rootType = rootDeviceTypes.get(checkedDevice.getType());
                                     agent.setType(rootType);
                                     agent.setUri(checkedDevice.getUri());
-                                    agents.add(agent);
-                                    provenanceModel.setProvWasAssociatedWith(agents);
+                                    provenanceModel.setProvWasAssociatedWith(Collections.singletonList(agent));
 
                                 }
 
@@ -1934,9 +1933,6 @@ public class DataAPI {
             }else{
                 if(validRow){
                     annotationFromAnnotationColumn.setTargets(Collections.singletonList( target==null ? object.getUri() : target.getUri()));
-                    String onlyDateString = parsedDateTimeMongo.getInstant().toString().substring(0, 11);
-                    String setToMidday = onlyDateString + "12:00:00Z";
-                    annotationFromAnnotationColumn.setCreated(Instant.parse( setToMidday ).atOffset(ZoneOffset.ofTotalSeconds(0)));
                     csvValidation.addToAnnotationsOnObjects(annotationFromAnnotationColumn);
                 }
             }

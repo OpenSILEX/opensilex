@@ -188,6 +188,7 @@ export default class ScientificObjectList extends Vue {
         types: [],
         existenceDate: undefined,
         creationDate: undefined,
+        criteriaDto: {}
       };
     },
   })
@@ -280,6 +281,7 @@ export default class ScientificObjectList extends Vue {
       types: [],
       existenceDate: undefined,
       creationDate: undefined,
+      criteriaDto: {}
     };
     this.refresh();
   }
@@ -296,9 +298,9 @@ export default class ScientificObjectList extends Vue {
   refresh() {
     if(this.tableRef.onlySelected) {
       this.tableRef.onlySelected = false;
-      this.tableRef.refresh();
+      this.tableRef.changeCurrentPage(1);
     } else {
-      this.tableRef.refresh();
+      this.tableRef.changeCurrentPage(1);
     }
     this.$nextTick(() => {
       if (!this.noUpdateURL) {
@@ -319,7 +321,7 @@ export default class ScientificObjectList extends Vue {
 
   refreshWithKeepingSelection() {
     if (!this.noUpdateURL) {
-        this.$opensilex.updateURLParameters(this.filter);
+      this.$opensilex.updateURLParameters(this.filter);
     }
     this.tableRef.refresh();
   }
@@ -339,6 +341,7 @@ export default class ScientificObjectList extends Vue {
       undefined,
       this.filter.existenceDate,
       this.filter.creationDate,
+      JSON.stringify(this.filter.criteriaDto),
       options.orderBy,
       options.currentPage,
       options.pageSize

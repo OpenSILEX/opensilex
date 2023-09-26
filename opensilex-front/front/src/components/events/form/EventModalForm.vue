@@ -108,7 +108,9 @@
                     let form: EventForm = this.modalForm.getFormRef();
                     form.typeSwitch(dto.rdf_type,true);
                     form.setContext(this.context);
+                    let publisher = dto.publisher;
                     const editDto = DTOConverter.extractURIFromResourceProperties<EventDetailsDTO, EventUpdateDTO>(dto);
+                    editDto.publisher = publisher;
                     this.modalForm.showEditForm(editDto);
                 })
             });
@@ -307,6 +309,9 @@
             is-instant-example: "true or false"
             event: Event
             creator: Creator
+            publisher: Publisher
+            datePublication: Issued
+            lastUpdateDate: Modified
             specific-properties: Specific properties
             multiple-insert: event(s) registered.
             move-multiple-insert: move(s) registered.
@@ -337,6 +342,9 @@
             is-instant-example: true or false
             event: Évenement
             creator: Créateur
+            publisher: Publieur
+            datePublication: Publié
+            lastUpdateDate: Modifié
             specific-properties: Propriétés spécifiques
             multiple-insert: événement(s) enregistré(s)
             move-multiple-insert: déplacement(s) enregistré(s)

@@ -81,10 +81,12 @@
         </template>
       </b-table>
       <b-pagination
+        v-if="totalRow>0" 
         v-model="currentPage"
         :total-rows="totalRow"
         :per-page="pageSize"
-        @change="pagination"
+        :page="currentPage"
+        @change="pageChange"
       ></b-pagination>
     </div>
   </opensilex-Overlay>
@@ -95,6 +97,8 @@ import { Component, Prop, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import HttpResponse, { OpenSilexResponse } from "../../../lib/HttpResponse";
 import {OrderBy} from "opensilex-core/index";
+import { Watch } from "vue-property-decorator";
+import OpenSilexVuePlugin from "../../../models/OpenSilexVuePlugin";
 import {NamedResourceDTO} from "opensilex-core/model/namedResourceDTO";
 import {BTable} from "bootstrap-vue";
 
@@ -105,7 +109,7 @@ export interface SlotDetails<T extends NamedResourceDTO> {
 
 @Component
 export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
-  $opensilex: any;
+  $opensilex: OpenSilexVuePlugin;
   $route: any;
   $store: any;
   $i18n: any;
@@ -172,7 +176,26 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
   selectedItems: Array<T> = [];
   selectedItem;
 
+  @Watch("currentPage")
+  definePath(){
+    if (this.routeArr[1] === localStorage.getItem("startPath") || localStorage.getItem("startPath") === this.routeArr[1] + "s") {
+      // if the section parameter in the url is the same as the one stored,
+      // we get the number of the last page visited and update the url with
+      // expect a number when we get "page" but localStorage get and set strings
+      this.currentPage = parseInt(localStorage.getItem("page"), 10);
+      this.$opensilex.updateURLParameter("page", this.currentPage, "");
+    } else {
+      // otherwise we store the new section parameter and display the first page
+      localStorage.setItem("startPath", this.routeArr[1]);
+      localStorage.setItem("page", "1");
+      this.currentPage = 1;
+      this.tableRef.refresh()
+    }
+  }
+
   currentPage: number = 1;
+  currentStartPath: string = "";
+  routeArr : string = this.$route.path.split('/');
   pageSize: number;
   totalRow = 0;
   sortBy;
@@ -187,6 +210,8 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
   selectAllLimit; 
 
   created() {
+     this.currentPage = parseInt(localStorage.getItem("page"), 10);
+     this.currentStartPath = localStorage.getItem("startPath");
 
     if (this.isSelectable && this.selectMode!="single") {
       this.fields.unshift({
@@ -215,6 +240,13 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
         this.sortDesc = this.defaultSortDesc;
       }
     }
+    this.definePath()                             
+  } 
+
+  pageChange(newPage) {
+    localStorage.setItem("page", newPage);
+    this.currentPage = newPage;
+    this.tableRef.refresh();
   }
 
   get isGlobalLoaderVisible() {
@@ -284,6 +316,13 @@ export default class TableAsyncView<T extends NamedResourceDTO> extends Vue {
   pagination() {
     this.tableRef.refresh();
   }
+
+  changeCurrentPage(page: any) {
+    this.currentPage = page;
+    localStorage.setItem("page", page);
+    this.refresh()
+  }
+
 
    refresh() {
       this.currentPage = 1;

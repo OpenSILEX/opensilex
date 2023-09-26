@@ -1,6 +1,5 @@
 package org.opensilex.core.event.dal.move;
 
-import com.mongodb.client.ClientSession;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
@@ -23,11 +22,13 @@ import org.apache.jena.sparql.syntax.ElementGroup;
 import org.apache.jena.vocabulary.RDF;
 import org.bson.conversions.Bson;
 import org.opensilex.core.event.dal.EventDAO;
+import org.opensilex.core.geospatial.dal.GeospatialDAO;
 import org.opensilex.core.ontology.Oeev;
 import org.opensilex.core.ontology.Time;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.sparql.deserializer.SPARQLDeserializerNotFoundException;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.deserializer.URIDeserializer;
 import org.opensilex.sparql.exceptions.SPARQLException;
@@ -65,19 +66,83 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
 
     private final MongoCollection<MoveEventNoSqlModel> moveEventCollection;
 
-    protected static final Logger LOGGER = LoggerFactory.getLogger(MoveEventDAO.class);
+    protected final static Logger LOGGER = LoggerFactory.getLogger(GeospatialDAO.class);
 
-    public MoveEventDAO(SPARQLService sparql, MongoDBService mongodb) throws SPARQLException {
+    public MoveEventDAO(SPARQLService sparql, MongoDBService mongodb) throws SPARQLException, SPARQLDeserializerNotFoundException {
         super(sparql, mongodb);
         this.moveEventCollection = mongodb.getDatabase().getCollection(MOVE_COLLECTION_NAME, MoveEventNoSqlModel.class);
     }
 
-    public List<MoveModel> create(List<MoveModel> models, ClientSession mongoSession) throws Exception {
+    public final MongoCollection<MoveEventNoSqlModel> getMoveEventCollection() {
+        return moveEventCollection;
+    }
+
+    @Override
+    public MoveModel create(MoveModel model) throws Exception {
+
+        try {
+            check(Collections.singletonList(model), true);
+
+            sparql.startTransaction();
+            sparql.create(eventGraph, model, false);
+
+            // insert move event in mongodb
+            MoveEventNoSqlModel noSqlModel = model.getNoSqlModel();
+            if (noSqlModel != null) {
+
+                String shortEventUri = URIDeserializer.getShortURI(model.getUri().toString());
+                noSqlModel.setUri(new URI(shortEventUri));
+
+                mongodb.startTransaction();
+                moveEventCollection.insertOne(noSqlModel);
+                mongodb.commitTransaction();
+            }
+
+            sparql.commitTransaction();
+            return model;
+
+        } catch (Exception e) {
+            sparql.rollbackTransaction(e);
+            mongodb.rollbackTransaction();
+            throw e;
+        }
+    }
+
+    protected void create(Collection<MoveModel> models, List<MoveEventNoSqlModel> noSqlModels) throws Exception {
+
+        // insert sparql and noSql model streams
+        try {
+            sparql.startTransaction();
+            sparql.create(eventGraph, models, SPARQLService.DEFAULT_MAX_INSTANCE_PER_QUERY, false, true);
+
+            if (!noSqlModels.isEmpty()) {
+                mongodb.startTransaction();
+                moveEventCollection.insertMany(noSqlModels);
+                mongodb.commitTransaction();
+            }
+            sparql.commitTransaction();
+
+        } catch (Exception e) {
+            sparql.rollbackTransaction(e);
+            mongodb.rollbackTransaction();
+            throw e;
+        }
+    }
+
+
+    /**
+     * @param models
+     * @return
+     * @throws Exception
+     */
+    @Override
+    public List<MoveModel> create(List<MoveModel> models) throws Exception {
+
+        List<MoveEventNoSqlModel> noSqlModels = new ArrayList<>();
 
         check(models, true);
 
         // build streams of sparql and no models from main model stream
-        List<MoveEventNoSqlModel> noSqlModels = new ArrayList<>();
         for (MoveModel model : models) {
 
             URI uri = model.getUri();
@@ -96,12 +161,7 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
 
         }
 
-        sparql.create(eventGraph, models, SPARQLService.DEFAULT_MAX_INSTANCE_PER_QUERY, false);
-
-        if (!noSqlModels.isEmpty()) {
-            mongodb.createAll(noSqlModels, moveEventCollection, mongoSession);
-        }
-
+        create(models, noSqlModels);
         return models;
     }
 
@@ -238,26 +298,73 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
         }
     }
 
-    public void update(MoveModel model, ClientSession mongoSession) throws Exception {
+    @Override
+    public MoveModel update(MoveModel model) throws Exception {
 
         check(Collections.singletonList(model), false);
-        sparql.update(model);
 
-        MoveEventNoSqlModel noSqlModel = model.getNoSqlModel();
-        Bson idFilter = eq(MoveEventNoSqlModel.ID_FIELD, model.getUri());
+        try {
+            sparql.startTransaction();
+            sparql.update(model);
 
-        // the new move event has no data model in mongodb, so we need to delete the old if exists
-        if (noSqlModel == null) {
-            mongodb.deleteIfExists(moveEventCollection, mongoSession, idFilter);
-        } else {
-            noSqlModel.setUri(model.getUri());
-            mongodb.updateOrCreate(moveEventCollection, mongoSession, noSqlModel, idFilter);
+            MoveEventNoSqlModel noSqlModel = model.getNoSqlModel();
+            Bson idFilter = eq(MoveEventNoSqlModel.ID_FIELD, model.getUri());
+            boolean moveExistInMongo = moveEventCollection.find(idFilter).first() != null;
+
+            // the new move event has no data model in mongodb, so we need to delete the old if exists
+            if (noSqlModel == null) {
+                if (moveExistInMongo) {
+                    mongodb.startTransaction();
+                    moveEventCollection.deleteOne(idFilter);
+                    mongodb.commitTransaction();
+                }
+            } else {
+                noSqlModel.setUri(model.getUri());
+
+                // insert or update the mongodb data model
+                mongodb.startTransaction();
+                if (moveExistInMongo) {
+                    moveEventCollection.findOneAndReplace(idFilter, noSqlModel);
+                } else {
+                    moveEventCollection.insertOne(noSqlModel);
+                }
+                mongodb.commitTransaction();
+            }
+
+            sparql.commitTransaction();
+        } catch (Exception e) {
+            sparql.rollbackTransaction();
+            mongodb.rollbackTransaction();
+            throw e;
         }
+        return model;
     }
 
-    public void delete(URI uri, ClientSession mongoSession) throws Exception {
-        sparql.delete(MoveModel.class, uri);
-        mongodb.deleteIfExists(moveEventCollection, mongoSession, eq(MoveEventNoSqlModel.ID_FIELD, uri));
+    @Override
+    public void delete(URI uri) throws Exception {
+
+        try {
+            sparql.startTransaction();
+            sparql.delete(MoveModel.class, uri);
+
+            // first check if the model exist
+            boolean moveExistInMongo = mongodb.uriExists(moveEventCollection, uri, MoveEventNoSqlModel.ID_FIELD);
+
+            // start the transaction for deleting, only if the model exist
+            if (moveExistInMongo) {
+                mongodb.startTransaction();
+                moveEventCollection.deleteOne(eq(MoveEventNoSqlModel.ID_FIELD, uri));
+                mongodb.commitTransaction();
+            }
+
+            sparql.commitTransaction();
+
+        } catch (Exception e) {
+            sparql.rollbackTransaction();
+            mongodb.rollbackTransaction();
+            throw e;
+        }
+
     }
 
     /**
@@ -319,7 +426,7 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
                     .limit(pageSize)
                     .projection(concernedItemPositionProjection)//  don't fetch concernedItem and position of other item
                     .forEach(moveNoSqlModel -> {
-                        if (!moveNoSqlModel.getTargetPositions().isEmpty()) {
+                        if (moveNoSqlModel.getTargetPositions().size() > 0) {
                             positionsByUri.put(moveNoSqlModel.getUri(), moveNoSqlModel.getTargetPositions().get(0).getPosition());
                         } else {
                             positionsByUri.remove(moveNoSqlModel.getUri());
@@ -329,7 +436,9 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
         }
 
         LinkedHashMap<MoveModel, PositionModel> results = new LinkedHashMap<>();
-        positionsByUri.forEach((uri, position) -> results.put(moveByURI.get(uri), position));
+        positionsByUri.forEach((uri, position) -> {
+            results.put(moveByURI.get(uri), position);
+        });
         return results;
     }
 
@@ -452,7 +561,7 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
                 )
                 .first();
 
-        if (moveNoSqlModel == null || moveNoSqlModel.getTargetPositions().isEmpty()) {
+        if (moveNoSqlModel == null || moveNoSqlModel.getTargetPositions().size() == 0) {
             return null;
         }
 

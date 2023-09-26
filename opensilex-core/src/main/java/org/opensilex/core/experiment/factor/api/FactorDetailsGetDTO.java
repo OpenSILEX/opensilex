@@ -13,19 +13,24 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
+
 import static org.opensilex.core.experiment.api.ExperimentAPI.EXPERIMENT_EXAMPLE_URI;
 import org.opensilex.core.experiment.factor.dal.FactorModel;
 import org.opensilex.core.ontology.SKOSReferencesDTO;
+import org.opensilex.security.user.api.UserGetDTO;
 
 /**
  *
  * @author Arnaud Charleroy
  */
 @JsonPropertyOrder({
-        "uri", "name", "category", "description", "levels",
+        "uri", "publisher", "publication_date", "last_updated_date",
+        "name", "category", "description", "levels",
         SKOSReferencesDTO.EXACT_MATCH_JSON_PROPERTY,
         SKOSReferencesDTO.CLOSE_MATCH_JSON_PROPERTY,
         SKOSReferencesDTO.BROAD_MATCH_JSON_PROPERTY,
@@ -35,7 +40,16 @@ public class FactorDetailsGetDTO extends SKOSReferencesDTO {
 
     @ApiModelProperty(example = "http://opensilex.dev/set/factors#irrigation")
     private URI uri;
-    
+
+    @JsonProperty("publisher")
+    private UserGetDTO publisher;
+
+    @JsonProperty("publication_date")
+    private OffsetDateTime publicationDate;
+
+    @JsonProperty("last_updated_date")
+    private OffsetDateTime lastUpdatedDate;
+
     @ApiModelProperty(example = "Irrigation")
     private String name;
     
@@ -58,6 +72,30 @@ public class FactorDetailsGetDTO extends SKOSReferencesDTO {
 
     public void setUri(URI uri) {
         this.uri = uri;
+    }
+
+    public UserGetDTO getPublisher() {
+        return publisher;
+    }
+
+    public void setPublisher(UserGetDTO publisher) {
+        this.publisher = publisher;
+    }
+
+    public OffsetDateTime getPublicationDate() {
+        return publicationDate;
+    }
+
+    public void setPublicationDate(OffsetDateTime publicationDate) {
+        this.publicationDate = publicationDate;
+    }
+
+    public OffsetDateTime getLastUpdatedDate() {
+        return lastUpdatedDate;
+    }
+
+    public void setLastUpdatedDate(OffsetDateTime lastUpdatedDate) {
+        this.lastUpdatedDate = lastUpdatedDate;
     }
 
     public String getName() {
@@ -106,6 +144,12 @@ public class FactorDetailsGetDTO extends SKOSReferencesDTO {
         FactorDetailsGetDTO dto = new FactorDetailsGetDTO();
         dto.setUri(model.getUri());
         dto.setName(model.getName());
+        if (Objects.nonNull(model.getPublicationDate())) {
+            dto.setPublicationDate(model.getPublicationDate());
+        }
+        if (Objects.nonNull(model.getLastUpdateDate())) {
+            dto.setLastUpdatedDate(model.getLastUpdateDate());
+        }
         if(model.getCategory() != null){
             dto.setCategory(model.getCategory());
         }

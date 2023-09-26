@@ -29,12 +29,12 @@ public class AreaDAO {
         this.sparql = sparql;
     }
 
+    public URI create(URI uri, String name, URI rdfType, String description, URI user) throws Exception {
+        AreaModel area = new AreaModel(uri, name, rdfType, description, user);
 
+        sparql.create(area);
 
-    public AreaModel create(URI uri, String name, URI rdfType, String description, URI user) throws Exception {
-        AreaModel model = new AreaModel(uri, name, rdfType, description, user);
-        sparql.create(model);
-        return model;
+        return area.getUri();
     }
 
     public AreaModel getByURI(URI instanceURI) throws Exception {

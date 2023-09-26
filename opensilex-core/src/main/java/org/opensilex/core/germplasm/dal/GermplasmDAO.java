@@ -24,10 +24,10 @@ import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.SKOS;
 import org.bson.Document;
+import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.germplasm.api.GermplasmSearchFilter;
 import org.opensilex.core.ontology.Oeso;
-import org.opensilex.nosql.distributed.SparqlMongoTransaction;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.metadata.MetaDataDao;
 import org.opensilex.nosql.mongodb.metadata.MetaDataModel;
@@ -88,46 +88,55 @@ public class GermplasmDAO {
         MetaDataModel storedAttributes = getStoredAttributes(model.getUri());
         MetaDataModel attributeModel = model.getMetadata();
 
-        if ((MapUtils.isEmpty(attributeModel.getAttributes()) && storedAttributes == null)) {
-            sparql.delete(GermplasmModel.class,model.getUri());
-            sparql.create(model);
-            return model;
-        }
-
-        return new SparqlMongoTransaction(sparql,nosql).execute((sparqlSession, mongoSession) -> {
-            sparqlSession.delete(GermplasmModel.class,model.getUri());
-            sparqlSession.create(model);
-
-            if (!MapUtils.isEmpty(attributeModel.getAttributes())) {
-                if (storedAttributes != null) {
-                    getAttributesCollection().findOneAndReplace(mongoSession, eq(MongoModel.URI_FIELD, attributeModel.getUri()), attributeModel);
+        if (((attributeModel == null || MapUtils.isEmpty(attributeModel.getAttributes())) && storedAttributes == null)) {
+            sparql.update(model);
+        } else {
+            nosql.startTransaction();
+            sparql.startTransaction();
+            sparql.update(model);
+            try {
+                if (attributeModel != null && !MapUtils.isEmpty(attributeModel.getAttributes())) {
+                    attributeModel.setUri(model.getUri());
+                    if (storedAttributes != null) {
+                        nosql.update(attributeModel, MetaDataModel.class, ATTRIBUTES_COLLECTION_NAME);
+                    } else {
+                        nosql.create(attributeModel, MetaDataModel.class, ATTRIBUTES_COLLECTION_NAME, null);
+                    }
                 } else {
-                    getAttributesCollection().insertOne(mongoSession, attributeModel);
+                    // delete old attributes
+                    attributeCollection.findOneAndDelete(nosql.getSession(), eq(MongoModel.URI_FIELD, model.getUri()));
                 }
-            } else {
-                getAttributesCollection().findOneAndDelete(mongoSession, eq(MongoModel.URI_FIELD, model.getUri()));
+                nosql.commitTransaction();
+                sparql.commitTransaction();
+            } catch (Exception ex) {
+                nosql.rollbackTransaction();
+                sparql.rollbackTransaction(ex);
             }
 
-            return model;
-        });
+        }
+        return model;
 
     }
 
     public GermplasmModel create(GermplasmModel model) throws Exception {
-
-        MetaDataModel metaDataModel = model.getMetadata();
-
-        if (MapUtils.isEmpty(metaDataModel.getAttributes())) {
-            sparql.create(model, true);
-            return model;
+        if (model.getMetadata() != null) {
+            nosql.startTransaction();
+            sparql.startTransaction();
+            try {
+                sparql.create(model);
+                model.getMetadata().setUri(model.getUri());
+                nosql.create(model.getMetadata(), MetaDataModel.class, ATTRIBUTES_COLLECTION_NAME, null);
+                nosql.commitTransaction();
+                sparql.commitTransaction();
+            } catch (Exception ex) {
+                nosql.rollbackTransaction();
+                sparql.rollbackTransaction(ex);
+            }
+        } else {
+            sparql.create(model);
         }
 
-        return new SparqlMongoTransaction(sparql,nosql).execute((sparqlSession, mongoSession) -> {
-            sparqlSession.create(model);
-            model.getMetadata().setUri(model.getUri());
-            getAttributesCollection().insertOne(mongoSession,metaDataModel);
-            return model;
-        });
+        return model;
 
     }
 
@@ -215,17 +224,11 @@ public class GermplasmDAO {
         );
 
         // manually fetch synonyms with ListFetcher in optimized way
-
-        Map<String, Boolean> fieldsToFetch = new HashMap<>();
-        // The triple <?uri skos:altLabel ?synonym> is present into initial select if and only if a filter on name occurred
-        fieldsToFetch.put(GermplasmModel.SYNONYM_VAR, StringUtils.isEmpty(searchFilter.getName()));
-
         SPARQLListFetcher<GermplasmModel> listFetcher = new SPARQLListFetcher<>(
                 sparql,
                 GermplasmModel.class,
                 sparql.getDefaultGraph(GermplasmModel.class),
-                fieldsToFetch,
-                initialSelect.get(),
+                Collections.singleton(GermplasmModel.SYNONYM_VAR),
                 models.getList()
         );
         listFetcher.updateModels();
@@ -343,12 +346,23 @@ public class GermplasmDAO {
     }
 
     public void delete(URI uri) throws Exception {
-
-        new SparqlMongoTransaction(sparql, nosql).execute((sparqlSession, mongoSession) -> {
-            sparqlSession.delete(GermplasmModel.class, uri);
-            getAttributesCollection().findOneAndDelete(mongoSession, eq(MongoModel.URI_FIELD, uri));
-            return uri;
-        });
+        MetaDataModel attributes = getStoredAttributes(uri);
+        if (attributes != null) {
+            nosql.startTransaction();
+            sparql.startTransaction();
+            try {
+                sparql.delete(GermplasmModel.class, uri);
+                MongoCollection<MetaDataModel> collection = getAttributesCollection();
+                collection.findOneAndDelete(nosql.getSession(), eq("uri", uri));
+                nosql.commitTransaction();
+                sparql.commitTransaction();
+            } catch (Exception ex) {
+                nosql.rollbackTransaction();
+                sparql.rollbackTransaction(ex);
+            }
+        } else {
+            sparql.delete(GermplasmModel.class, uri);
+        }
     }
 
     public boolean isLinkedToSth(GermplasmModel germplasm) throws SPARQLException {
@@ -435,11 +449,12 @@ public class GermplasmDAO {
     }
 
     private MetaDataModel getStoredAttributes(URI uri) {
+        MetaDataModel storedAttributes = null;
         try {
-            return nosql.findByURI(getAttributesCollection(),uri);
+            storedAttributes = nosql.findByURI(MetaDataModel.class, ATTRIBUTES_COLLECTION_NAME, uri);
         } catch (NoSQLInvalidURIException e) {
-            return null;
         }
+        return storedAttributes;
     }
     private void appendURIsFilter(SelectBuilder select, Set<URI> uris) {
         if (uris != null && !uris.isEmpty()) {

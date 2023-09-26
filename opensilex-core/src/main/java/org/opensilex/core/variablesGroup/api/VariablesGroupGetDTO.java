@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.core.variablesGroup.dal.VariablesGroupModel;
@@ -37,7 +38,12 @@ public class VariablesGroupGetDTO extends VariablesGroupDTO {
         dto.setUri(model.getUri());
         dto.setName(model.getName());
         dto.setDescription(model.getDescription());
-
+        if (Objects.nonNull(model.getPublicationDate())) {
+            dto.setPublicationDate(model.getPublicationDate());
+        }
+        if (Objects.nonNull(model.getLastUpdateDate())) {
+            dto.setLastUpdatedDate(model.getLastUpdateDate());
+        }
         List<NamedResourceDTO<VariableModel>> variableList = new ArrayList<>(model.getVariablesList().size());
 
         for (VariableModel variableModel : model.getVariablesList()) {

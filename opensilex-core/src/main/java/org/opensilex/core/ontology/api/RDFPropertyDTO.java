@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.annotations.ApiModelProperty;
 import org.apache.jena.vocabulary.OWL2;
+import org.opensilex.security.user.api.UserGetDTO;
 import org.opensilex.server.rest.validation.Required;
 import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -17,8 +18,10 @@ import org.opensilex.sparql.ontology.dal.*;
 
 import javax.validation.constraints.NotNull;
 import java.net.URI;
+import java.time.OffsetDateTime;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author vmigot
@@ -76,6 +79,15 @@ public class RDFPropertyDTO {
             example = "http://opensilex.org/parent_custom_object_property"
     )
     protected URI parent;
+
+    @JsonProperty("publisher")
+    protected UserGetDTO publisher;
+
+    @JsonProperty("publication_date")
+    protected OffsetDateTime publicationDate;
+
+    @JsonProperty("last_updated_date")
+    protected OffsetDateTime lastUpdatedDate;
 
     @ValidURI
     @NotNull
@@ -144,6 +156,30 @@ public class RDFPropertyDTO {
         return RDFPropertyDTO.isDataProperty(getType());
     }
 
+    public UserGetDTO getPublisher() {
+        return publisher;
+    }
+
+    public void setPublisher(UserGetDTO publisher) {
+        this.publisher = publisher;
+    }
+
+    public OffsetDateTime getPublicationDate() {
+        return publicationDate;
+    }
+
+    public void setPublicationDate(OffsetDateTime publicationDate) {
+        this.publicationDate = publicationDate;
+    }
+
+    public OffsetDateTime getLastUpdatedDate() {
+        return lastUpdatedDate;
+    }
+
+    public void setLastUpdatedDate(OffsetDateTime lastUpdatedDate) {
+        this.lastUpdatedDate = lastUpdatedDate;
+    }
+
     public RDFPropertyDTO() {
 
     }
@@ -152,6 +188,14 @@ public class RDFPropertyDTO {
 
         setUri(model.getUri());
         setType(model.getType());
+
+        if (Objects.nonNull(model.getPublicationDate())) {
+            setPublicationDate(model.getPublicationDate());
+        }
+
+        if (Objects.nonNull(model.getLastUpdateDate())) {
+            setLastUpdatedDate(model.getLastUpdateDate());
+        }
 
         if (model.getParent() != null) {
             setParent(model.getParent().getUri());

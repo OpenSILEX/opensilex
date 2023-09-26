@@ -35,12 +35,13 @@ import org.opensilex.core.position.api.PositionGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
-import org.opensilex.nosql.distributed.SparqlMongoTransaction;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ForbiddenURIAccessException;
+import org.opensilex.security.person.dal.PersonDAO;
+import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.server.exceptions.InvalidValueException;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.DateDeserializer;
@@ -58,6 +59,7 @@ import org.opensilex.utils.ListWithPagination;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -104,13 +106,13 @@ public class DeviceDAO {
     }
 
     private DeviceAttributeModel getStoredAttributes(URI uri) {
-
+        DeviceAttributeModel storedAttributes = null;
         try {
-            return nosql.findByURI(getAttributesCollection(),uri);
+            storedAttributes = nosql.findByURI(DeviceAttributeModel.class, ATTRIBUTES_COLLECTION_NAME, uri);
         } catch (NoSQLInvalidURIException e) {
             // no attribute found, just continue since it's optional
-            return null;
         }
+        return storedAttributes;
 
     }
 
@@ -121,32 +123,41 @@ public class DeviceDAO {
         attributeCollection.createIndex(Indexes.ascending(MongoModel.URI_FIELD), unicityOptions);
     }
     
-    public URI create(DeviceModel model, AccountModel currentUser) throws Exception {
+    public URI create(DeviceModel devModel, AccountModel currentUser) throws Exception {
 
 
         ClassModel classModel = SPARQLModule.getOntologyStoreInstance().getClassModel(
-                model.getType(),
+                devModel.getType(),
                 new URI(Oeso.Device.getURI()),
                 currentUser.getLanguage()
         );
-        model.setTypeLabel(classModel.getLabel());
+        devModel.setTypeLabel(classModel.getLabel());
 
-        if (MapUtils.isEmpty(model.getAttributes())) {
-            sparql.create(model, true);
-            return model.getUri();
+        if (!MapUtils.isEmpty(devModel.getAttributes())) {
+
+            MongoCollection<DeviceAttributeModel> collection = getAttributesCollection();
+            collection.createIndex(Indexes.ascending(MongoModel.URI_FIELD), new IndexOptions().unique(true));
+            sparql.startTransaction();
+            nosql.startTransaction();
+            try {
+                sparql.create(devModel);
+
+                DeviceAttributeModel attributeModel = new DeviceAttributeModel();
+                attributeModel.setUri(devModel.getUri());
+                attributeModel.setAttribute(devModel.getAttributes());
+                collection.insertOne(nosql.getSession(), attributeModel);
+
+                nosql.commitTransaction();
+                sparql.commitTransaction();
+            } catch (Exception ex) {
+                nosql.rollbackTransaction();
+                sparql.rollbackTransaction(ex);
+            }
+        } else {
+            sparql.create(devModel, true);
         }
 
-        return new SparqlMongoTransaction(sparql,nosql).execute((sparqlSession, mongoSession) -> {
-            sparqlSession.create(model);
-
-            DeviceAttributeModel attributeModel = new DeviceAttributeModel();
-            attributeModel.setUri(model.getUri());
-            attributeModel.setAttribute(model.getAttributes());
-
-            getAttributesCollection().insertOne(mongoSession,attributeModel);
-            return model.getUri();
-        });
-
+        return devModel.getUri();
     }
 
     public ListWithPagination<DeviceModel> search(DeviceSearchFilter filter) throws Exception {
@@ -415,36 +426,43 @@ public class DeviceDAO {
        return device;
     }
 
-    public DeviceModel update(DeviceModel model, AccountModel user) throws Exception {
-        DeviceAttributeModel storedAttributes = getStoredAttributes(model.getUri());
+    public DeviceModel update(DeviceModel instance, AccountModel user) throws Exception {
+        createIndexes();
+        DeviceAttributeModel storedAttributes = getStoredAttributes(instance.getUri());
         Node graph = sparql.getDefaultGraph(DeviceModel.class);
+        instance.setLastUpdateDate(OffsetDateTime.now());
+        if ((instance.getAttributes() == null || instance.getAttributes().isEmpty()) && storedAttributes == null) {
+            sparql.deleteByURI(graph, instance.getUri());
+            sparql.create(instance);
+        } else {
+            nosql.startTransaction();
+            sparql.startTransaction();
+            sparql.deleteByURI(graph, instance.getUri());
+            sparql.create(instance);
+            MongoCollection<DeviceAttributeModel> collection = getAttributesCollection();
 
-        if ((MapUtils.isEmpty(model.getAttributes()) && storedAttributes == null)) {
-            sparql.deleteByURI(graph, model.getUri());
-            sparql.create(model);
-            return model;
-        }
-
-        return new SparqlMongoTransaction(sparql,nosql).execute((sparqlSession, mongoSession) -> {
-            sparql.deleteByURI(graph, model.getUri());
-            sparql.create(model);
-
-            if (!MapUtils.isEmpty(model.getAttributes())) {
-                DeviceAttributeModel attributeModel = new DeviceAttributeModel();
-                attributeModel.setUri(attributeModel.getUri());
-                attributeModel.setAttribute(model.getAttributes());
-                if (storedAttributes != null) {
-                    getAttributesCollection().findOneAndReplace(mongoSession, eq(MongoModel.URI_FIELD, attributeModel.getUri()), attributeModel);
+            try {
+                if (instance.getAttributes() != null && !instance.getAttributes().isEmpty()) {
+                    DeviceAttributeModel model = new DeviceAttributeModel();
+                    model.setUri(instance.getUri());
+                    model.setAttribute(instance.getAttributes());
+                    if (storedAttributes != null) {
+                        collection.findOneAndReplace(nosql.getSession(), eq(MongoModel.URI_FIELD, instance.getUri()), model);
+                    } else {
+                        collection.insertOne(nosql.getSession(), model);
+                    }
                 } else {
-                    getAttributesCollection().insertOne(mongoSession, attributeModel);
+                    collection.findOneAndDelete(nosql.getSession(), eq(MongoModel.URI_FIELD, instance.getUri()));
                 }
-            } else {
-                getAttributesCollection().findOneAndDelete(mongoSession, eq(MongoModel.URI_FIELD, model.getUri()));
+                nosql.commitTransaction();
+                sparql.commitTransaction();
+            } catch (Exception ex) {
+                nosql.rollbackTransaction();
+                sparql.rollbackTransaction(ex);
             }
 
-            return model;
-        });
-
+        }
+        return instance;
     }
 
     public DeviceModel getDeviceByURI(URI deviceURI, AccountModel currentUser) throws Exception {
@@ -507,7 +525,7 @@ public class DeviceDAO {
 
     /**
      *
-     * @param uri uri of device
+     * @param deviceURI uri of device
      * @param currentUser current user
      * @throws ForbiddenURIAccessException if the device is linked to some existing data, datafile or provenance.
      * @throws Exception if some error is encountered during delete
@@ -516,33 +534,41 @@ public class DeviceDAO {
      * @see org.opensilex.core.data.dal.DataModel
      * @see org.opensilex.core.data.dal.DataFileModel
      */
-    public void delete(URI uri, AccountModel currentUser) throws Exception {
+    public void delete(URI deviceURI, AccountModel currentUser) throws Exception {
         
         // test if device in provenances
         ProvenanceDAO provenanceDAO = new ProvenanceDAO(nosql, sparql);
-        int provCount = provenanceDAO.count(null, null, null, null, null, null, uri);
+        int provCount = provenanceDAO.count(null, null, null, null, null, null, deviceURI);
         if(provCount > 0) {
-            throw new ForbiddenURIAccessException(uri, provCount+" provenance(s)");
+            throw new ForbiddenURIAccessException(deviceURI, provCount+" provenance(s)");
         }
         
         DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
-        int dataCount = dataDAO.count(currentUser, null, null, null, null, Collections.singletonList(uri),null, null, null, null, null, null);
+        int dataCount = dataDAO.count(currentUser, null, null, null, null, Collections.singletonList(deviceURI),null, null, null, null, null, null);
         if(dataCount > 0){
-            throw new ForbiddenURIAccessException(uri, dataCount+" data");
+            throw new ForbiddenURIAccessException(deviceURI, dataCount+" data");
         }  
         
-        int dataFileCount = dataDAO.countFiles(currentUser, null, null, null, null, Collections.singletonList(uri),null, null, null, null);
+        int dataFileCount = dataDAO.countFiles(currentUser, null, null, null, null, Collections.singletonList(deviceURI),null, null, null, null);
         if(dataFileCount > 0) {
-            throw new ForbiddenURIAccessException(uri, dataFileCount + " datafile(s)");
+            throw new ForbiddenURIAccessException(deviceURI, dataFileCount + " datafile(s)");
         }
+        
+        nosql.startTransaction();
+        sparql.startTransaction();
 
-        new SparqlMongoTransaction(sparql, nosql).execute((sparqlSession, mongoSession) -> {
-            deleteVariableLinks(uri);
-            sparqlSession.delete(DeviceModel.class, uri);
-            getAttributesCollection().findOneAndDelete(mongoSession, eq(MongoModel.URI_FIELD, uri));
-            return uri;
-        });
+        deleteVariableLinks(deviceURI);
+        sparql.delete(DeviceModel.class, deviceURI);
+        MongoCollection<DeviceAttributeModel> collection = getAttributesCollection();
 
+        try {
+            collection.findOneAndDelete(nosql.getSession(), eq(MongoModel.URI_FIELD, deviceURI));
+            nosql.commitTransaction();
+            sparql.commitTransaction();
+        } catch (Exception ex) {
+            nosql.rollbackTransaction();
+            sparql.rollbackTransaction(ex);
+        }
     }
 
     private void deleteVariableLinks(URI deviceUri) throws Exception {

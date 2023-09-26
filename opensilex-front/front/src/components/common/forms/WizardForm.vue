@@ -37,12 +37,15 @@
             </div>
 
             <div class="wizard-footer-right">
+              <b-button
+                  id="btn-finish"
+                  class="greenThemeColor"
+                  variant="warning"
+                  v-if="!blockingStep && !props.isLastStep"
+                  @click="validate(props)"
+              >{{getStepBtnFinishTitle(props)}}</b-button>
+
               <b-button-group>
-                <b-button
-                    variant="warning"
-                    v-if="!blockingStep && !props.isLastStep"
-                    @click="validate(props)"
-                >{{getStepBtnFinishTitle(props)}}</b-button>
                 <b-button
                   variant="success"
                   v-if="props.activeTabIndex > 0"
@@ -324,6 +327,10 @@ export default class WizardForm extends Vue {
 
 .icon-title {
   margin-right: 5px;
+}
+
+#btn-finish {
+  margin-right: 10px;
 }
 
 ::v-deep .single-wizard .wizard-progress-with-circle,

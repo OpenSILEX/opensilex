@@ -155,9 +155,9 @@ import {EntityDetailsDTO} from "opensilex-core/model/entityDetailsDTO";
         }
 
         nextStep(stepIndex, form, nextStepComponent, currentStepComponent) {
-          console.log(form);
+          console.debug(form);
           if(stepIndex == 0 && form.uri != null) {
-            form.exact_match.push(form.uri);
+            form.close_match.push(form.uri);
             form.uri = "";
             return true;
           }

@@ -95,8 +95,8 @@ import Vue from "vue";
 import HttpResponse, {OpenSilexResponse} from "opensilex-security/HttpResponse";
 import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {SecurityService} from "opensilex-security/api/security.service";
-import {PersonDTO} from "opensilex-security/model/personDTO";
 import OrcidSuggestionModal from "./OrcidSuggestionModal.vue";
+//import {PersonDTO} from "opensilex-security/model/personDTO";
 
 @Component
 export default class PersonForm extends Vue {
@@ -123,7 +123,7 @@ export default class PersonForm extends Vue {
       };
     }
   })
-  form: PersonDTO;
+  form: any;//PersonDTO;
 
   disable_orcid_field: boolean = false
 
@@ -150,7 +150,7 @@ export default class PersonForm extends Vue {
     };
   }
 
-  async create(form: PersonDTO) {
+  async create(form){//: PersonDTO) {
     this.replaceEmptyStringByNull(form)
     form.orcid = this.getCompleteUrlOrcid(form.orcid)
 
@@ -163,7 +163,7 @@ export default class PersonForm extends Vue {
     }
   }
 
-  update(form: PersonDTO) {
+  update(form){//: PersonDTO) {
     this.replaceEmptyStringByNull(form)
     form.orcid = this.getCompleteUrlOrcid(form.orcid)
 
@@ -201,7 +201,7 @@ export default class PersonForm extends Vue {
     }
   }
 
-  fillFormWithNoNull(person: PersonDTO) {
+  fillFormWithNoNull(person){//: PersonDTO) {
     for (const [key, value] of Object.entries(person)) {
       if (value) {
         this.form[key] = value

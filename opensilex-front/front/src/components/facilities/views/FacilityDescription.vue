@@ -84,6 +84,15 @@
       >
       </opensilex-UriListView>
 
+      <!-- VariableGroups -->
+      <opensilex-UriListView
+          v-if="hasVariableGroups"
+          label="FacilityDescription.variable-groups"
+          :list="variableGroupUriList"
+          :inline="true"
+      >
+      </opensilex-UriListView>
+
       <!-- Devices -->
       <opensilex-UriListView
           v-if="hasDevices"
@@ -185,6 +194,10 @@ export default class FacilityDescription extends Vue {
     return !!this.experiments && this.experiments.length > 0;
   }
 
+  get hasVariableGroups() {
+    return !!this.selected && this.selected.variableGroups.length > 0;
+  }
+
   get hasDevices() {
     return !!this.devices && this.devices.length > 0;
   }
@@ -256,6 +269,21 @@ export default class FacilityDescription extends Vue {
     });
   }
 
+  get variableGroupUriList() {
+    if (!this.selected) {
+      return [];
+    }
+    return this.selected.variableGroups.map(varGroup => {
+      return {
+        uri: varGroup.uri,
+        value: varGroup.name,
+        to: {
+          path: "/variables?elementType=VariableGroup&selected=" + encodeURIComponent(varGroup.uri),
+        },
+      };
+    });
+  }
+
   editOrganizationFacility() {
     this.organizationFacilityForm.showEditForm(DTOConverter.extractURIFromResourceProperties(this.selected));
   }
@@ -288,13 +316,16 @@ en:
   FacilityDescription:
     organizations: Organizations
     expsInProgress: Experiments in progress
+    variable-groups: Groups of variables
     devices: Devices
     site: "Site"
     address: "Address"
+
 fr:
   FacilityDescription:
     organizations: Organisations
     expsInProgress: Experiences en cours
+    variable-groups: Groupes de variables
     devices: Appareils
     site: "Site"
     address: "Adresse"

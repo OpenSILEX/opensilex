@@ -7,12 +7,15 @@ package org.opensilex.core.variablesGroup.api;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.core.variablesGroup.dal.VariablesGroupModel;
+import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.response.NamedResourceDTO;
 
 /**
@@ -35,7 +38,11 @@ public class VariablesGroupGetDTO extends VariablesGroupDTO {
 
         VariablesGroupGetDTO dto = new VariablesGroupGetDTO();
 
-        dto.setUri(model.getUri());
+        try {
+            dto.setUri(new URI(SPARQLDeserializers.getShortURI(model.getUri())));
+        } catch (URISyntaxException e) {
+            dto.setUri(model.getUri());
+        }
         dto.setName(model.getName());
         dto.setDescription(model.getDescription());
         if (Objects.nonNull(model.getPublicationDate())) {

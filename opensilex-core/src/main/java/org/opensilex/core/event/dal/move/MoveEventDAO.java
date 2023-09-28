@@ -248,16 +248,16 @@ public class MoveEventDAO extends EventDAO<MoveModel> {
 
         // the new move event has no data model in mongodb, so we need to delete the old if exists
         if (noSqlModel == null) {
-            mongodb.deleteIfExists(moveEventCollection, mongoSession, idFilter);
+            mongodb.delete(moveEventCollection, mongoSession, idFilter);
         } else {
             noSqlModel.setUri(model.getUri());
-            mongodb.updateOrCreate(moveEventCollection, mongoSession, noSqlModel, idFilter);
+            mongodb.upsert(moveEventCollection, mongoSession, noSqlModel, idFilter);
         }
     }
 
     public void delete(URI uri, ClientSession mongoSession) throws Exception {
         sparql.delete(MoveModel.class, uri);
-        mongodb.deleteIfExists(moveEventCollection, mongoSession, eq(MoveEventNoSqlModel.ID_FIELD, uri));
+        mongodb.delete(moveEventCollection, mongoSession, eq(MoveEventNoSqlModel.ID_FIELD, uri));
     }
 
     /**

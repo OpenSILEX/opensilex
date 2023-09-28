@@ -40,6 +40,7 @@ import org.opensilex.core.provenance.api.ProvenanceAPI;
 import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
+import org.opensilex.core.provenance.dal.ProvenanceSearchFilter;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.core.species.api.SpeciesDTO;
@@ -633,7 +634,7 @@ public class ExperimentAPI {
         // test prov
         List<URI> provenancesArrayList = new ArrayList<>();
 
-        ProvenanceDAO provDAO = new ProvenanceDAO(nosql, sparql);
+        ProvenanceDAO provDAO = new ProvenanceDAO(nosql);
         if (provenanceUri != null) {
             try {
                 provDAO.get(provenanceUri);
@@ -712,7 +713,7 @@ public class ExperimentAPI {
         // test prov
         ProvenanceModel provenanceModel = null;
 
-        ProvenanceDAO provDAO = new ProvenanceDAO(nosql, sparql);
+        ProvenanceDAO provDAO = new ProvenanceDAO(nosql);
         try {
             provenanceModel = provDAO.get(provenance);
         } catch (NoSQLInvalidURIException e) {
@@ -793,7 +794,7 @@ public class ExperimentAPI {
         // test prov
         ProvenanceModel provenanceModel = null;
 
-        ProvenanceDAO provDAO = new ProvenanceDAO(nosql, sparql);
+        ProvenanceDAO provDAO = new ProvenanceDAO(nosql);
         try {
             provenanceModel = provDAO.get(provenance);
         } catch (NoSQLInvalidURIException e) {
@@ -1073,20 +1074,28 @@ public class ExperimentAPI {
 
         DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
         Set<URI> provenancesURIs = dataDAO.getProvenancesByExperiment(currentUser, xpUri);
-
-        ListWithPagination<ProvenanceGetDTO> provenances = new ListWithPagination(new ArrayList<ProvenanceGetDTO>());
-        if (!provenancesURIs.isEmpty()) {
-            ProvenanceDAO dao = new ProvenanceDAO(nosql, sparql);
-            ListWithPagination<ProvenanceModel> resultList = dao.search(provenancesURIs, name, description, activityType, activityUri, agentType, agentURI, orderByList, page, pageSize);
-
-            provenances = resultList.convert(
-                    ProvenanceGetDTO.class,
-                    ProvenanceGetDTO::fromModel
-            );
-
+        if(provenancesURIs.isEmpty()){
+            return new PaginatedListResponse<>(Collections.emptyList()).getResponse();
         }
 
-        return new PaginatedListResponse<>(provenances).getResponse();
+        ProvenanceSearchFilter filter = new ProvenanceSearchFilter()
+                .setName(name)
+                .setDescription(description)
+                .setActivityType(activityType)
+                .setActivityUri(activityUri)
+                .setAgentType(agentType)
+                .setAgents(agentURI);
+        filter.setOrderByList(orderByList)
+                .setPage(page)
+                .setPageSize(pageSize);
+
+        ProvenanceDAO dao = new ProvenanceDAO(nosql);
+        ListWithPagination<ProvenanceGetDTO> dtoList = dao.search(filter).convert(
+                ProvenanceGetDTO.class,
+                ProvenanceGetDTO::fromModel
+        );
+
+        return new PaginatedListResponse<>(dtoList).getResponse();
     }
     
     @GET

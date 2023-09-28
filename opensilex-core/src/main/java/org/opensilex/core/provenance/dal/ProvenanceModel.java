@@ -17,7 +17,13 @@ import org.opensilex.nosql.mongodb.MongoModel;
 public class ProvenanceModel extends MongoModel {
   
     String name;
+
+    public static final String NAME_FIELD = "name";
+
     String description;
+
+    public static final String DESCRIPTION_FIELD = "description";
+
 
     List<ActivityModel> activity;
 

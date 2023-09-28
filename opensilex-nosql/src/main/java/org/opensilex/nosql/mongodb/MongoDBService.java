@@ -16,14 +16,13 @@ import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 
-import com.mongodb.client.model.Aggregates;
-import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.ReplaceOptions;
+import com.mongodb.client.model.*;
 import com.mongodb.client.model.geojson.codecs.GeoJsonCodecProvider;
 import com.mongodb.client.result.DeleteResult;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -140,28 +139,17 @@ public class MongoDBService extends BaseService {
         return session;
     }
 
-    public <R> R operationInTransaction(ThrowingFunction<ClientSession, R, Exception> preCommitOperation
-    ) throws Exception {
+    public <R> R operationInTransaction(ThrowingFunction<ClientSession, R, MongoException> preCommitOperation
+    ) throws MongoException {
         return operationInTransaction(mongoClient.startSession(), preCommitOperation, null, null);
     }
 
-    public <R> R operationInTransaction(ClientSession session, ThrowingFunction<ClientSession, R, Exception> preCommitOperation
-    ) throws Exception {
-        return operationInTransaction(session, preCommitOperation, null, null);
-    }
-
-    public <R> R operationInTransaction(ThrowingFunction<ClientSession, R, Exception> preCommitOperation,
-                                        Runnable rollbackOperation
-    ) throws Exception {
-        return operationInTransaction(mongoClient.startSession(), preCommitOperation, null, rollbackOperation);
-    }
-
-    public <R> R operationInTransaction(ClientSession session,
-                                        ThrowingFunction<ClientSession,R, Exception> preCommitOperation,
+    private  <R> R operationInTransaction(ClientSession session,
+                                        ThrowingFunction<ClientSession,R, MongoException> preCommitOperation,
                                         Runnable commitOperation,
                                         Runnable rollbackOperation
 
-    ) throws Exception {
+    ) throws MongoException {
 
         Objects.requireNonNull(preCommitOperation);
         Objects.requireNonNull(session);
@@ -204,7 +192,7 @@ public class MongoDBService extends BaseService {
         return this.db;
     }
 
-    public <T extends MongoModel> InsertOneResult create(T instance, MongoCollection<T> collection, String uriGenerationPrefix, ClientSession session) throws Exception {
+    public <T extends MongoModel> InsertOneResult create(T instance, MongoCollection<T> collection, String uriGenerationPrefix, ClientSession session) throws URISyntaxException {
         LOGGER.debug("MONGO CREATE - Collection : {}", collection);
         if (instance.getUri() == null) {
             generateUniqueUriIfNullOrValidateCurrent(instance, true, uriGenerationPrefix, collection);
@@ -219,7 +207,7 @@ public class MongoDBService extends BaseService {
         }
     }
 
-    public <T extends MongoModel> InsertManyResult createAll(List<T> instances, MongoCollection<T> collection, ClientSession session, String prefix, boolean checkUris, boolean checkUriExist) throws Exception {
+    public <T extends MongoModel> InsertManyResult createAll(List<T> instances, MongoCollection<T> collection, ClientSession session, String prefix, boolean checkUris, boolean checkUriExist) throws MongoException, URISyntaxException {
         LOGGER.debug("[MONGO_CREATE] : { collection: {}}", collection.getNamespace().getCollectionName());
 
         if(checkUris){
@@ -241,12 +229,12 @@ public class MongoDBService extends BaseService {
         );
     }
 
-    public <T extends MongoModel> InsertManyResult createAll(List<T> instances, MongoCollection<T> collection, ClientSession session) throws Exception {
+    public <T extends MongoModel> InsertManyResult createAll(List<T> instances, MongoCollection<T> collection, ClientSession session) throws MongoException, URISyntaxException {
         return createAll(instances,collection,session,null,false,false);
     }
 
     public <T> T findByURI(MongoCollection<T> collection, URI uri) throws NoSQLInvalidURIException {
-        return this.findByURI(collection, uri, MongoModel.URI_FIELD);
+        return findByURI(collection, uri, MongoModel.URI_FIELD);
     }
 
     /**
@@ -258,12 +246,19 @@ public class MongoDBService extends BaseService {
      * @throws NoSQLInvalidURIException if no instance is found
      */
     public <T> T findByURI(MongoCollection<T> collection, URI uri, String uriField) throws NoSQLInvalidURIException {
-        T instance = collection.find(eq(uriField, uri)).first();
+        return findByURI(null,collection,uri,uriField);
+    }
+
+    public <T> T findByURI(ClientSession session, MongoCollection<T> collection, URI uri, String uriField) throws NoSQLInvalidURIException {
+
+        T instance = session == null ?
+                collection.find(eq(uriField, uri)).first() :
+                collection.find(session, eq(uriField, uri)).first();
+
         if (instance == null) {
             throw new NoSQLInvalidURIException(uri);
-        } else {
-            return instance;
         }
+        return instance;
     }
 
     public <T extends MongoModel> List<T> findByURIs(MongoCollection<T> collection, Collection<URI> uris) {
@@ -294,10 +289,10 @@ public class MongoDBService extends BaseService {
      * @param <T>        the instance class
      * @return if an instance with the given uri exists
      */
-    public <T> boolean uriExists(MongoCollection<T> collection, URI uri) {
+    public <T> boolean uriExists(ClientSession session, MongoCollection<T> collection, URI uri) {
         LOGGER.debug("[MONGO_URI_EXISTS] : { collection: {}, uri: {}}", collection.getNamespace().getCollectionName(),uri);
         try {
-            findByURI(collection, uri, MongoModel.URI_FIELD);
+            findByURI(session, collection, uri, MongoModel.URI_FIELD);
             return true;
         } catch (NoSQLInvalidURIException ex) {
             return false;
@@ -335,11 +330,12 @@ public class MongoDBService extends BaseService {
     }
 
     public  <T extends MongoModel> Map.Entry<FindIterable<T>,Long> findWithPagination(MongoCollection<T> collection,
-                                                                                      Document filter,
+                                                                                      Bson filter,
                                                                                       Bson projection,
                                                                                       List<OrderBy> orderByList,
                                                                                       int page,
-                                                                                      int pageSize) {
+                                                                                      int pageSize,
+                                                                                      ClientSession session) {
 
         long resultsNumber = collection.countDocuments(filter);
 
@@ -351,10 +347,11 @@ public class MongoDBService extends BaseService {
         if (resultsNumber == 0) {
             return null;
         }
+        FindIterable<T> queryResult = session == null ?
+                collection.find(filter) :
+                collection.find(session,filter);
 
-        FindIterable<T> queryResult = collection
-                .find(filter)
-                .sort(buildSort(orderByList))
+        queryResult.sort(buildSort(orderByList))
                 .skip(page * pageSize)
                 .limit(pageSize)
                 .projection(projection);
@@ -364,13 +361,14 @@ public class MongoDBService extends BaseService {
 
     public <T extends MongoModel> ListWithPagination<T> searchWithPagination(
             MongoCollection<T> collection,
-            Document filter,
+            Bson filter,
             Bson projection,
             List<OrderBy> orderByList,
             int page,
-            int pageSize) {
+            int pageSize,
+            ClientSession session) {
 
-        Map.Entry<FindIterable<T>,Long> resultAndCount = findWithPagination(collection,filter,projection,orderByList,page,pageSize);
+        Map.Entry<FindIterable<T>, Long> resultAndCount = findWithPagination(collection, filter, projection, orderByList, page, pageSize, session);
         if(resultAndCount == null){
             return new ListWithPagination<>(Collections.emptyList());
         }
@@ -382,13 +380,17 @@ public class MongoDBService extends BaseService {
         return new ListWithPagination<>(results, page, pageSize, resultAndCount.getValue().intValue());
     }
 
-    public <T> long count(
+    public <T> long count(ClientSession session,
             MongoCollection<T> collection,
-            Document filter) {
+            Bson filter) {
 
         LOGGER.debug("[MONGO_COUNT] : { collection: {},filter: {}}", collection.getNamespace().getCollectionName(), filter);
-        return collection.countDocuments(filter);
+        return session == null ?
+                collection.countDocuments(filter) :
+                collection.countDocuments(session,filter);
     }
+
+
 
     public <T> List<T> search(
             MongoCollection<T> collection,
@@ -519,15 +521,14 @@ public class MongoDBService extends BaseService {
         if (instance == null) {
             throw new NoSQLInvalidURIException(uri);
         }
-        return deleteIfExists(collection, session, eq(uriField, uri));
+        return delete(collection, session, eq(uriField, uri));
     }
 
-    public <T extends MongoModel> DeleteResult deleteIfExists(MongoCollection<T> collection, ClientSession session, Bson filter) {
+    public <T extends MongoModel> DeleteResult delete(MongoCollection<T> collection, ClientSession session, Bson filter) {
         if (session != null) {
             return collection.deleteOne(session, filter);
-        } else {
-            return collection.deleteOne(filter);
         }
+        return collection.deleteOne(filter);
     }
 
 
@@ -538,32 +539,48 @@ public class MongoDBService extends BaseService {
 
 
     /**
-     * Update the given instance
-     *
-     * @param collection  the collection on which the new instance is located
-     * @param newInstance the instance to update
-     * @param uriField    the name of the uri field
-     * @param <T>         the instance class
-     * @throws NoSQLInvalidURIException if no instance is found
+     * @param uriField the name of the ID/URI field of the model
+     * @see #update(MongoModel, MongoCollection, Bson, ClientSession)
      */
-    public <T extends MongoModel> void update(T newInstance, MongoCollection<T> collection, String uriField) throws NoSQLInvalidURIException {
-        T instance = findByURI(collection, newInstance.getUri(), uriField);
+    public <T extends MongoModel> void update(T newModel, MongoCollection<T> collection, String uriField, ClientSession session) throws NoSQLInvalidURIException {
+        T instance = findByURI(collection, newModel.getUri(), uriField);
         if (instance == null) {
-            throw new NoSQLInvalidURIException(newInstance.getUri());
+            throw new NoSQLInvalidURIException(newModel.getUri());
         }
-        collection.findOneAndReplace(eq(uriField, newInstance.getUri()), newInstance);
+        update(newModel, collection, Filters.eq(uriField, newModel.getUri()), session);
     }
 
-    public <T extends MongoModel> void update(T newInstance, MongoCollection<T> collection) throws NoSQLInvalidURIException {
+    /**
+     * Update the new model in the given collection according a filter
+     * @param newModel new model to write in database
+     * @param collection collection of the current model in database
+     * @param filter additional BSON filter
+     * @param session current session
+     * @throws NoSQLInvalidURIException if no previous corresponding model was found in the collection
+     */
+    public <T extends MongoModel> void update(T newModel, MongoCollection<T> collection, Bson filter, ClientSession session) throws NoSQLInvalidURIException {
         LOGGER.debug("MONGO UPDATE - Collection : {}", collection.getNamespace().getCollectionName());
-        update(newInstance, collection, MongoModel.URI_FIELD);
+
+        FindOneAndReplaceOptions options =  new FindOneAndReplaceOptions().projection( // don't fetch the full old document
+                Projections.include(MongoModel.URI_FIELD) // only retrieve id
+        );
+        T updatedModel = session == null ?
+                collection.findOneAndReplace(filter, newModel, options) :
+                collection.findOneAndReplace(session, filter, newModel, options);
+
+        if (updatedModel == null) {
+            throw new NoSQLInvalidURIException(newModel.getUri());
+        }
     }
 
     /**
      * @see <a href="https://www.mongodb.com/docs/drivers/java/sync/current/fundamentals/crud/write-operations/upsert/">Insert or Update in a Single Operation</a>
      */
-    public <T extends MongoModel> UpdateResult updateOrCreate(MongoCollection<T> collection, ClientSession session, T newInstance, Bson idFilter) {
-        return collection.replaceOne(session, idFilter, newInstance, new ReplaceOptions().upsert(true));
+    public <T extends MongoModel> UpdateResult upsert(MongoCollection<T> collection, ClientSession session, T newInstance, Bson idFilter) {
+        return session == null ?
+                collection.replaceOne(idFilter, newInstance, new ReplaceOptions().upsert(true)) :
+                collection.replaceOne(session, idFilter, newInstance, new ReplaceOptions().upsert(true));
+
     }
 
     public <T extends MongoModel> void updateOrDelete(String idField, URI uri, T instance, MongoCollection<T> collection, ClientSession session) {
@@ -632,7 +649,7 @@ public class MongoDBService extends BaseService {
      * @param collection
      * @throws Exception
      */
-    public <T extends MongoModel> void generateUniqueUriIfNullOrValidateCurrent(T instance, boolean checkUriExist, String instanceClassPrefix, MongoCollection<T> collection) throws Exception {
+    public <T extends MongoModel> void generateUniqueUriIfNullOrValidateCurrent(T instance, boolean checkUriExist, String instanceClassPrefix, MongoCollection<T> collection) throws NoSQLAlreadyExistingUriException, URISyntaxException {
         URI uri = instance.getUri();
 
         if (uri == null) {
@@ -650,7 +667,7 @@ public class MongoDBService extends BaseService {
         }
     }
 
-    public <T extends MongoModel> DeleteResult deleteOnCriteria(MongoCollection<T> collection, ClientSession session, Bson filter) throws Exception {
+    public <T extends MongoModel> DeleteResult deleteOnCriteria(MongoCollection<T> collection, ClientSession session, Bson filter) throws MongoException {
 
         if(session != null){
             return collection.deleteMany(filter);

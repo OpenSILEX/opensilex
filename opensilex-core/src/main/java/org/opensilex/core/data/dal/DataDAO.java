@@ -23,6 +23,7 @@ import org.opensilex.core.experiment.utils.ExportDataIndex;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
+import org.opensilex.core.provenance.dal.ProvenanceSearchFilter;
 import org.opensilex.core.variable.dal.MethodModel;
 import org.opensilex.core.variable.dal.UnitModel;
 import org.opensilex.core.variable.dal.VariableDAO;
@@ -307,7 +308,8 @@ public class DataDAO {
         //Get all data that have :
         //    provenance.provUsed.uri IN devices or operators URIs
         // OR ( provenance.uri IN devices/operators Provenances list && provenance.provUsed.uri isEmpty or not exists)
-        ProvenanceDAO provDAO = new ProvenanceDAO(nosql, sparql);
+        ProvenanceDAO provDAO = new ProvenanceDAO(nosql);
+        provDAO.search(new ProvenanceSearchFilter().setAgents())
         Set<URI> agentProvenances = provDAO.getProvenancesURIsByAgents(agents);
 
         Document directProvFilter = new Document("provenance.provWasAssociatedWith.uri", new Document("$in", agents));
@@ -315,7 +317,7 @@ public class DataDAO {
         Document globalProvUsed = new Document("provenance.uri", new Document("$in", agentProvenances));
         globalProvUsed.put("$or", Arrays.asList(
                 new Document("provenance.provWasAssociatedWith", new Document("$exists", false)),
-                new Document("provenance.provWasAssociatedWith", new ArrayList())
+                new Document("provenance.provWasAssociatedWith", new ArrayList<>())
             )
         );
 

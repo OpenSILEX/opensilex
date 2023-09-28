@@ -32,7 +32,7 @@ public abstract class SearchFilter {
     protected SearchFilter() {
         this.lang = OpenSilex.DEFAULT_LANGUAGE;
         this.page = 0;
-        this.pageSize = 20;
+        this.pageSize = 0;
         this.orderByList = Collections.emptyList();
         this.includedUris = Collections.emptyList();
     }

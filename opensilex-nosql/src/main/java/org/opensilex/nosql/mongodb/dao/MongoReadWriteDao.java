@@ -1,15 +1,13 @@
 package org.opensilex.nosql.mongodb.dao;
 
+import com.mongodb.MongoException;
 import com.mongodb.client.ClientSession;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.FindOneAndReplaceOptions;
-import com.mongodb.client.model.Projections;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.InsertManyResult;
 import com.mongodb.client.result.InsertOneResult;
-import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -17,26 +15,26 @@ import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.utils.ListWithPagination;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.*;
 import java.util.function.Function;
 
-public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter> implements MongoWriteDao<T,F>, MongoReadDao<T,F> {
+public abstract class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter> implements MongoWriteDao<T, F>, MongoReadDao<T, F> {
 
     protected final MongoDBService mongodb;
     protected final MongoCollection<T> collection;
     protected final String createPrefix;
 
-    public MongoReadWriteDao(MongoDBService mongodb, Class<T> modelClass, String collectionName, String createPrefix) {
+    protected MongoReadWriteDao(MongoDBService mongodb, Class<T> modelClass, String collectionName, String createPrefix) {
         Objects.requireNonNull(mongodb);
         this.mongodb = mongodb;
-        this.collection = mongodb.getDatabase().getCollection(collectionName,modelClass);
+        this.collection = mongodb.getDatabase().getCollection(collectionName, modelClass);
         this.createPrefix = createPrefix;
     }
 
-    protected void createIndexes(){
+    protected void createIndexes() {
         // no index by default
     }
-
 
     @Override
     public T get(URI uri) throws NoSQLInvalidURIException {
@@ -44,155 +42,162 @@ public class MongoReadWriteDao<T extends MongoModel, F extends MongoSearchFilter
     }
 
     @Override
-    public T get(F filter) throws Exception {
-        return collection.find(filterToDocument(filter)).first();
+    public T get(ClientSession session, URI uri) throws NoSQLInvalidURIException {
+        return mongodb.findByURI(session, collection, uri, MongoModel.URI_FIELD);
     }
 
     @Override
-    public InsertOneResult create(T instance) throws Exception {
-        return create(instance,null);
+    public boolean exists(URI uri) throws MongoException{
+        return exists(null, uri);
     }
 
     @Override
-    public InsertOneResult create(T instance, ClientSession session) throws Exception {
+    public boolean exists(ClientSession session, URI uri) throws MongoException {
+        return mongodb.uriExists(session, collection, uri);
+    }
+
+    @Override
+    public InsertOneResult create(T instance, ClientSession session) throws MongoException, URISyntaxException {
         return mongodb.create(instance, collection, createPrefix, session);
     }
 
     @Override
-    public InsertManyResult create(List<T> instances) throws Exception {
-        return create(instances,null);
+    public InsertManyResult create(List<T> instances) throws MongoException, URISyntaxException {
+        return create(instances, null);
     }
 
     @Override
-    public InsertManyResult create(List<T> instances, ClientSession session) throws Exception {
+    public InsertManyResult create(List<T> instances, ClientSession session) throws MongoException, URISyntaxException {
         return mongodb.createAll(instances, collection, session, createPrefix, true, true);
     }
 
-    public Bson getUpdateFilter(T instance) throws Exception {
+    public Bson getUpdateFilter(T instance) {
         // by default the filter for update is the id filter with the instance uri
-        return getIdFilter(instance.getUri());
+        return getIdFilter(instance);
     }
 
     @Override
-    public void update(T instance, ClientSession session) throws Exception {
-
-        // if document exist, replace it and return the old document
-        // else return null
-        T created = collection.findOneAndReplace(
-                session,
-                getUpdateFilter(instance),
-                instance,
-                new FindOneAndReplaceOptions().projection( // don't fetch the full old document
-                        Projections.include(idField()) // only retrieve id
-                )
-        );
-        if (created == null) {
-            throw new NoSQLInvalidURIException(instance.getUri());
-        }
+    public void update(T instance, ClientSession session) throws MongoException, NoSQLInvalidURIException {
+        mongodb.update(instance, collection, getUpdateFilter(instance), session);
     }
 
     @Override
-    public DeleteResult delete(URI uri, ClientSession session) throws Exception {
-        return mongodb.delete(collection, session, uri, idField());
+    public DeleteResult delete(URI uri, ClientSession session) throws MongoException {
+        return mongodb.delete(collection, session, getIdFilter(uri));
     }
 
     @Override
-    public DeleteResult delete(List<URI> uris, ClientSession session) throws Exception {
+    public DeleteResult delete(List<URI> uris, ClientSession session) throws MongoException {
         return mongodb.deleteOnCriteria(collection, session, Filters.in(idField(), uris));
     }
 
-    public Document deleteFilterToDocument(F deleteFilter) throws Exception {
-        Document filter = filterToDocument(deleteFilter);
-        if(filter.size() == 0){
-            throw new IllegalArgumentException("["+collection.getNamespace().getCollectionName()+"] Empty delete filter : provide at least a filter");
+    public Bson deleteFilterToDocument(F deleteFilter) throws MongoException {
+        Bson filter = filterToBson(deleteFilter);
+        if (filter == null) {
+            throw new IllegalArgumentException("[" + collection.getNamespace().getCollectionName() + "] Empty delete filter : provide at least a filter");
         }
         return filter;
     }
 
     @Override
-    public DeleteResult delete(F deleteFilter, ClientSession session) throws Exception {
-       return mongodb.deleteOnCriteria(collection, session, deleteFilterToDocument(deleteFilter));
+    public DeleteResult delete(F deleteFilter, ClientSession session) throws MongoException {
+        return mongodb.deleteOnCriteria(collection, session, deleteFilterToDocument(deleteFilter));
     }
 
     @Override
-    public long count(F filter) throws Exception {
-        return mongodb.count(collection, filterToDocument(filter));
+    public long count(F filter) throws MongoException {
+        return count(null, filter);
     }
 
     @Override
-    public ListWithPagination<T> search(F searchFilter) throws Exception {
-       return search(searchFilter,null);
+    public long count(ClientSession session, F filter) throws MongoException {
+        return mongodb.count(session, collection, filterToBson(filter));
+    }
+
+    public ListWithPagination<T> search(F filter) throws MongoException {
+        return search(null, filter, null);
     }
 
     @Override
-    public ListWithPagination<T> search(F filter, Bson projection) throws Exception {
+    public ListWithPagination<T> search(ClientSession session, F filter, Bson projection) throws MongoException {
         return mongodb.searchWithPagination(
                 collection,
-                filterToDocument(filter),
-                null,
+                filterToBson(filter),
+                projection,
                 filter.getOrderByList(),
                 filter.getPage(),
-                filter.getPageSize()
+                filter.getPageSize(),
+                session
         );
     }
 
     @Override
-    public <T_CONVERTED> ListWithPagination<T_CONVERTED> search(F filter, Bson projection, Function<T, T_CONVERTED> convertFunction) throws Exception {
+    public <T_CONVERTED> ListWithPagination<T_CONVERTED> search(ClientSession session, F filter, Bson projection, Function<T, T_CONVERTED> convertFunction) throws MongoException {
 
         Objects.requireNonNull(convertFunction);
 
-        Map.Entry<FindIterable<T>,Long> resultAndCount = mongodb.findWithPagination(
+        Map.Entry<FindIterable<T>, Long> resultAndCount = mongodb.findWithPagination(
                 collection,
-                filterToDocument(filter),
+                filterToBson(filter),
                 null,
                 filter.getOrderByList(),
                 filter.getPage(),
-                filter.getPageSize()
+                filter.getPageSize(),
+                session
         );
 
-        if(resultAndCount != null){
-
+        if (resultAndCount != null) {
             int resultCount = resultAndCount.getValue().intValue();
 
             // iterate over MongoDB result and convert result on the fly before collect them inside a List
             List<T_CONVERTED> convertedResults = new ArrayList<>(resultCount);
             resultAndCount.getKey().forEach(mongoResult ->
-                    convertedResults.add(convertFunction.apply(mongoResult)
+                convertedResults.add(convertFunction.apply(mongoResult)
             ));
-            return new ListWithPagination<>(convertedResults,filter.getPage(), filter.getPageSize(), resultCount);
+
+            return new ListWithPagination<>(convertedResults, filter.getPage(), filter.getPageSize(), resultCount);
         }
         return new ListWithPagination<>(Collections.emptyList());
-
-
     }
 
-    protected Bson getIdFilter(URI id){
+    public <T_CONVERTED> ListWithPagination<T_CONVERTED> search(F filter, Function<T, T_CONVERTED> convertFunction) throws MongoException {
+        return search(null, filter, null, convertFunction);
+    }
+
+    protected Bson getIdFilter(URI id) {
         return Filters.eq(idField(), id);
     }
 
-    public List<Bson> getBsonFilters(F searchFilter) throws Exception{
+    protected Bson getIdFilter(T model) {
+        return Filters.eq(idField(), model.getUri());
+    }
+
+
+    public List<Bson> getBsonFilters(F searchFilter) {
         List<Bson> filters = new ArrayList<>();
-        if(searchFilter.getUri() != null){
+        if (searchFilter.getUri() != null) {
             filters.add(getIdFilter(searchFilter.getUri()));
         }
         return filters;
     }
 
-    public Document filterToDocument(F searchFilter) throws Exception {
+    protected Bson filterToBson(F searchFilter) {
 
         Objects.requireNonNull(searchFilter);
-
-        Document document = new Document();
-
         List<Bson> bsonFilters = getBsonFilters(searchFilter);
 
-        // append each filter with a logical AND or logical OR
-        if(searchFilter.isLogicalAnd()){
-            document.putAll(Filters.and(bsonFilters).toBsonDocument());
-        }else{
-            document.putAll(Filters.or(bsonFilters).toBsonDocument());
+        if(bsonFilters.isEmpty()){
+            return null;
+        }else if(bsonFilters.size() == 1){
+            return bsonFilters.get(0);
         }
 
-        return document;
+        // append each filter with a logical AND or logical OR
+        if (searchFilter.isLogicalAnd()) {
+            return Filters.and(bsonFilters);
+        } else {
+            return Filters.or(bsonFilters);
+        }
+
     }
 }

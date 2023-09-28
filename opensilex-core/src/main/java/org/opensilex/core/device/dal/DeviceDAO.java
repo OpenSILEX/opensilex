@@ -33,6 +33,7 @@ import org.opensilex.core.organisation.dal.facility.FacilityDAO;
 import org.opensilex.core.organisation.dal.facility.FacilityModel;
 import org.opensilex.core.position.api.PositionGetDTO;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
+import org.opensilex.core.provenance.dal.ProvenanceSearchFilter;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.distributed.SparqlMongoTransaction;
@@ -65,7 +66,6 @@ import static com.mongodb.client.model.Filters.eq;
 import static org.opensilex.sparql.service.SPARQLQueryHelper.makeVar;
 
 /**
- *
  * @author sammy
  */
 public class DeviceDAO {
@@ -106,7 +106,7 @@ public class DeviceDAO {
     private DeviceAttributeModel getStoredAttributes(URI uri) {
 
         try {
-            return nosql.findByURI(getAttributesCollection(),uri);
+            return nosql.findByURI(getAttributesCollection(), uri);
         } catch (NoSQLInvalidURIException e) {
             // no attribute found, just continue since it's optional
             return null;
@@ -120,7 +120,7 @@ public class DeviceDAO {
         MongoCollection<DeviceModel> attributeCollection = nosql.getDatabase().getCollection(ATTRIBUTES_COLLECTION_NAME, DeviceModel.class);
         attributeCollection.createIndex(Indexes.ascending(MongoModel.URI_FIELD), unicityOptions);
     }
-    
+
     public URI create(DeviceModel model, AccountModel currentUser) throws Exception {
 
 
@@ -136,14 +136,14 @@ public class DeviceDAO {
             return model.getUri();
         }
 
-        return new SparqlMongoTransaction(sparql,nosql).execute((sparqlSession, mongoSession) -> {
+        return new SparqlMongoTransaction(sparql, nosql).execute((sparqlSession, mongoSession) -> {
             sparqlSession.create(model);
 
             DeviceAttributeModel attributeModel = new DeviceAttributeModel();
             attributeModel.setUri(model.getUri());
             attributeModel.setAttribute(model.getAttributes());
 
-            getAttributesCollection().insertOne(mongoSession,attributeModel);
+            getAttributesCollection().insertOne(mongoSession, attributeModel);
             return model.getUri();
         });
 
@@ -194,7 +194,7 @@ public class DeviceDAO {
                     sparql.getDefaultGraph(DeviceModel.class),
                     DeviceModel.class,
                     currentUser.getLanguage(),
-                    (SelectBuilder select) -> {                        
+                    (SelectBuilder select) -> {
                         if (namePattern != null && !namePattern.trim().isEmpty()) {
                             select.addFilter(SPARQLQueryHelper.regexFilter(DeviceModel.NAME_FIELD, namePattern));
                         }
@@ -215,8 +215,8 @@ public class DeviceDAO {
                         }
                         String graph = sparql.getDefaultGraph(DeviceModel.class).getURI();
                         Node uriVar = NodeFactory.createVariable(DeviceModel.URI_FIELD);
-                        if(variable != null) {
-                            SPARQLQueryHelper.appendRelationFilter(select,graph, uriVar, Oeso.measures, variable);
+                        if (variable != null) {
+                            SPARQLQueryHelper.appendRelationFilter(select, graph, uriVar, Oeso.measures, variable);
                         }
 
                         DateDeserializer dateDeserializer = new DateDeserializer();
@@ -346,11 +346,11 @@ public class DeviceDAO {
                             select.addFilter(SPARQLQueryHelper.inURIFilter(DeviceModel.URI_FIELD, filteredUris));
                         }
                     },
-                customHandlerByFields,
-                null,
-                null,
-                0,
-                0
+                    customHandlerByFields,
+                    null,
+                    null,
+                    0,
+                    0
             );
         }
 
@@ -368,7 +368,7 @@ public class DeviceDAO {
         Expr dateRangeExpr = SPARQLQueryHelper.dateRange(DeviceModel.STARTUP_FIELD, Date, null, null);
         select.addFilter(dateRangeExpr);
     }
-    
+
     private void appendTypeFilter(Map<String, WhereHandler> customHandlerByFields, URI type) throws Exception {
         if (type != null) {
             WhereHandler handler = new WhereHandler();
@@ -376,18 +376,18 @@ public class DeviceDAO {
             customHandlerByFields.put(DeviceModel.TYPE_FIELD, handler);
         }
     }
-    
+
     /**
      * Linked variables to a device by the 'oeso:measures' relation
-     * @param device device
-     * @param variables variables to associate
-     * @throws Exception if some error is encountered 
      *
-     * **/
+     * @param device    device
+     * @param variables variables to associate
+     * @throws Exception if some error is encountered
+     **/
     public DeviceModel associateVariablesToDevice(DeviceModel device, List<URI> variables, AccountModel user) throws Exception {
-        
+
         List<SPARQLModelRelation> relations = device.getRelations();
-        
+
         // Fix cause the addRelationQuads in SPARQLClassQueryBuilder need a not null relation type  
         // Works only if all relations are measure relations .. 
         List<SPARQLModelRelation> newRelations = new ArrayList<>();
@@ -395,13 +395,13 @@ public class DeviceDAO {
             SPARQLModelRelation rel = new SPARQLModelRelation();
             rel.setProperty(relation.getProperty());
             rel.setValue(relation.getValue());
-            if(relation.getType() == null) {
+            if (relation.getType() == null) {
                 rel.setType(URI.class);
             }
             newRelations.add(rel);
         }
         // Fix
-       
+
         for (URI variable : variables) {
             SPARQLModelRelation relation = new SPARQLModelRelation();
             relation.setProperty(Oeso.measures);
@@ -409,10 +409,10 @@ public class DeviceDAO {
             relation.setType(URI.class);
             newRelations.add(relation);
         }
-       device.setRelations(newRelations);
-       
-       device = update(device, user);
-       return device;
+        device.setRelations(newRelations);
+
+        device = update(device, user);
+        return device;
     }
 
     public DeviceModel update(DeviceModel model, AccountModel user) throws Exception {
@@ -425,7 +425,7 @@ public class DeviceDAO {
             return model;
         }
 
-        return new SparqlMongoTransaction(sparql,nosql).execute((sparqlSession, mongoSession) -> {
+        return new SparqlMongoTransaction(sparql, nosql).execute((sparqlSession, mongoSession) -> {
             sparql.deleteByURI(graph, model.getUri());
             sparql.create(model);
 
@@ -490,8 +490,8 @@ public class DeviceDAO {
         select.setDistinct(true);
 
         select.addWhere(subject, Oeev.to, SPARQLDeserializers.nodeURI(facilityUri))
-            .addWhere(subject, Ontology.typeSubClassAny, Oeev.Move)
-            .addWhere(subject, Oeev.concerns, target);
+                .addWhere(subject, Ontology.typeSubClassAny, Oeev.Move)
+                .addWhere(subject, Oeev.concerns, target);
 
         List<SPARQLResult> list = sparql.executeSelectQuery(select);
 
@@ -506,33 +506,31 @@ public class DeviceDAO {
     }
 
     /**
-     *
-     * @param uri uri of device
+     * @param uri         uri of device
      * @param currentUser current user
      * @throws ForbiddenURIAccessException if the device is linked to some existing data, datafile or provenance.
-     * @throws Exception if some error is encountered during delete
-     *
+     * @throws Exception                   if some error is encountered during delete
      * @see org.opensilex.core.provenance.dal.ProvenanceModel
      * @see org.opensilex.core.data.dal.DataModel
      * @see org.opensilex.core.data.dal.DataFileModel
      */
     public void delete(URI uri, AccountModel currentUser) throws Exception {
-        
+
         // test if device in provenances
-        ProvenanceDAO provenanceDAO = new ProvenanceDAO(nosql, sparql);
-        int provCount = provenanceDAO.count(null, null, null, null, null, null, uri);
-        if(provCount > 0) {
-            throw new ForbiddenURIAccessException(uri, provCount+" provenance(s)");
+        ProvenanceDAO provenanceDAO = new ProvenanceDAO(nosql);
+        long provCount = provenanceDAO.count(new ProvenanceSearchFilter().setAgents(uri));
+        if (provCount > 0) {
+            throw new ForbiddenURIAccessException(uri, provCount + " provenance(s)");
         }
-        
+
         DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
-        int dataCount = dataDAO.count(currentUser, null, null, null, null, Collections.singletonList(uri),null, null, null, null, null, null);
-        if(dataCount > 0){
-            throw new ForbiddenURIAccessException(uri, dataCount+" data");
-        }  
-        
-        int dataFileCount = dataDAO.countFiles(currentUser, null, null, null, null, Collections.singletonList(uri),null, null, null, null);
-        if(dataFileCount > 0) {
+        int dataCount = dataDAO.count(currentUser, null, null, null, null, Collections.singletonList(uri), null, null, null, null, null, null);
+        if (dataCount > 0) {
+            throw new ForbiddenURIAccessException(uri, dataCount + " data");
+        }
+
+        int dataFileCount = dataDAO.countFiles(currentUser, null, null, null, null, Collections.singletonList(uri), null, null, null, null);
+        if (dataFileCount > 0) {
             throw new ForbiddenURIAccessException(uri, dataFileCount + " datafile(s)");
         }
 
@@ -569,20 +567,20 @@ public class DeviceDAO {
     public DeviceModel getByName(String name) throws Exception {
         //pageSize=2 in order to detect duplicated names
         ListWithPagination<DeviceModel> results = sparql.searchWithPagination(
-            DeviceModel.class,
-            null,
-            (SelectBuilder select) -> {
-                select.addFilter(SPARQLQueryHelper.eq(DeviceModel.NAME_FIELD, name));
-            },
-            null,
-            0,
-            2
+                DeviceModel.class,
+                null,
+                (SelectBuilder select) -> {
+                    select.addFilter(SPARQLQueryHelper.eq(DeviceModel.NAME_FIELD, name));
+                },
+                null,
+                0,
+                2
         );
-        
+
         if (results.getList().isEmpty()) {
             return null;
         }
-        
+
         if (results.getList().size() > 1) {
             throw new DuplicateNameException(name);
         }

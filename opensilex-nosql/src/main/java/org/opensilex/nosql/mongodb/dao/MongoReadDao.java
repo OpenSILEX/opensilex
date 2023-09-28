@@ -1,5 +1,7 @@
 package org.opensilex.nosql.mongodb.dao;
 
+import com.mongodb.MongoException;
+import com.mongodb.client.ClientSession;
 import org.bson.conversions.Bson;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoModel;
@@ -17,13 +19,21 @@ public interface MongoReadDao<T extends MongoModel, F extends MongoSearchFilter>
 
     T get(URI uri) throws NoSQLInvalidURIException;
 
-    T get(F filter) throws Exception;
+    T get(ClientSession session, URI uri) throws NoSQLInvalidURIException;
 
-    long count(F filter) throws Exception;
+    boolean exists(URI uri) throws MongoException;
 
-    ListWithPagination<T> search(F filter) throws Exception;
+    boolean exists(ClientSession session, URI uri) throws MongoException;
 
-    ListWithPagination<T> search(F filter, Bson projection) throws Exception;
+    long count(F filter) throws MongoException;
 
-    <T_CONVERTED> ListWithPagination<T_CONVERTED> search(F filter, Bson projection, Function<T,T_CONVERTED> convertFunction) throws Exception;
+    long count(ClientSession session, F filter) throws MongoException;
+
+    ListWithPagination<T> search(F filter) throws MongoException;
+
+    ListWithPagination<T> search(ClientSession session, F filter, Bson projection) throws MongoException;
+
+    <T_CONVERTED> ListWithPagination<T_CONVERTED> search(F filter, Function<T,T_CONVERTED> convertFunction) throws MongoException;
+
+    <T_CONVERTED> ListWithPagination<T_CONVERTED> search(ClientSession session, F filter, Bson projection, Function<T,T_CONVERTED> convertFunction) throws MongoException;
 }

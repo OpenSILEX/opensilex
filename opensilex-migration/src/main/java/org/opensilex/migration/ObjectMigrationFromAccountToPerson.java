@@ -183,7 +183,7 @@ public class ObjectMigrationFromAccountToPerson implements OpenSilexModuleUpdate
                 PersonModel holderOfTheOperatorAccount = operatorAccount.getLinkedPerson();
                 if (Objects.nonNull(holderOfTheOperatorAccount)) {
                     operator.setUri(holderOfTheOperatorAccount.getUri());
-                    provenanceDAO.update(provenance);
+                    provenanceDAO.update(provenance,null);
                 } else {
                     logger.error("le compte " + operatorAccount.getUri() + " n'as pas de personne associée, migration impossible");
                 }

@@ -15,6 +15,7 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.provenance.dal.AgentModel;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
+import org.opensilex.core.provenance.dal.ProvenanceSearchFilter;
 import org.opensilex.nosql.exceptions.NoSQLAlreadyExistingUriException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -114,11 +115,10 @@ public class ProvenanceAPI {
         }
 
         try {
-            ProvenanceDAO provDAO = new ProvenanceDAO(nosql, sparql);
+            ProvenanceDAO provDAO = new ProvenanceDAO(nosql);
             ProvenanceModel model = provDTO.newModel();
-            ProvenanceModel provenance = provDAO.create(model);
-
-            return new CreatedUriResponse(provenance.getUri()).getResponse();
+            provDAO.create(model);
+            return new CreatedUriResponse(model.getUri()).getResponse();
             
         } catch (NoSQLAlreadyExistingUriException exception) {            
              // Return error response 409 - CONFLICT if experiment URI already exists
@@ -145,7 +145,7 @@ public class ProvenanceAPI {
             @ApiParam(value = "Provenance URI", required = true) @PathParam("uri") @NotNull URI uri
     ) throws Exception {
 
-        ProvenanceDAO dao = new ProvenanceDAO(nosql, sparql);
+        ProvenanceDAO dao = new ProvenanceDAO(nosql);
         try {
             ProvenanceModel provenance = dao.get(uri);
             return new SingleObjectResponse<>(ProvenanceGetDTO.fromModel(provenance)).getResponse();
@@ -175,15 +175,24 @@ public class ProvenanceAPI {
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @DefaultValue("20") @Min(0) int pageSize
     ) throws Exception {
 
-        ProvenanceDAO dao = new ProvenanceDAO(nosql, sparql);
-        ListWithPagination<ProvenanceModel> resultList = dao.search(null, name, description, activityType, activityUri, agentType, agentURI, orderByList, page, pageSize);
+        ProvenanceSearchFilter filter = new ProvenanceSearchFilter()
+                .setName(name)
+                .setDescription(description)
+                .setActivityType(activityType)
+                .setActivityUri(activityUri)
+                .setAgentType(agentType)
+                .setAgents(Collections.singletonList(agentURI));
+        filter.setOrderByList(orderByList)
+                .setPage(page)
+                .setPageSize(pageSize);
 
-        // Convert paginated list to DTO
-        ListWithPagination<ProvenanceGetDTO> provenances = resultList.convert(
+        ProvenanceDAO dao = new ProvenanceDAO(nosql);
+        ListWithPagination<ProvenanceGetDTO> dtoList = dao.search(filter).convert(
                 ProvenanceGetDTO.class,
                 ProvenanceGetDTO::fromModel
         );
-        return new PaginatedListResponse<>(provenances).getResponse();
+
+        return new PaginatedListResponse<>(dtoList).getResponse();
     }
 
     @DELETE
@@ -201,7 +210,7 @@ public class ProvenanceAPI {
     })
     public Response deleteProvenance(
             @ApiParam(value = "Provenance URI", example = PROVENANCE_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri) throws Exception {
-        ProvenanceDAO dao = new ProvenanceDAO(nosql, sparql);
+        ProvenanceDAO dao = new ProvenanceDAO(nosql);
 
         //check if the provenance can be deleted (not linked to data)
         List<URI> provenances = new ArrayList<>();
@@ -284,9 +293,9 @@ public class ProvenanceAPI {
                checkAgents(dto.getAgents());
             }
 
-            ProvenanceDAO dao = new ProvenanceDAO(nosql, sparql);
+            ProvenanceDAO dao = new ProvenanceDAO(nosql);
             ProvenanceModel newProvenance = dto.newModel();
-            newProvenance = dao.update(newProvenance);
+            dao.update(newProvenance);
             return new ObjectUriResponse(Response.Status.OK, newProvenance.getUri()).getResponse();
         } catch (NoSQLInvalidURIException e) {
             throw new NotFoundURIException("Invalid or unknown provenance URI ", dto.getUri());
@@ -307,20 +316,20 @@ public class ProvenanceAPI {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Return provenancess list", response = ProvenanceGetDTO.class, responseContainer = "List"),
+            @ApiResponse(code = 200, message = "Return provenances list", response = ProvenanceGetDTO.class, responseContainer = "List"),
             @ApiResponse(code = 400, message = "Invalid parameters", response = ErrorDTO.class),
             @ApiResponse(code = 404, message = "Provenance not found (if any provided URIs is not found", response = ErrorDTO.class)
     })
     public Response getProvenancesByURIs(
             @ApiParam(value = "Provenances URIs", required = true) @QueryParam("uris") @NotNull List<URI> uris
     ) throws Exception {
-        ProvenanceDAO dao = new ProvenanceDAO(nosql, sparql);
-        List<ProvenanceModel> models = dao.getListByURIs(uris);
+        ProvenanceDAO dao = new ProvenanceDAO(nosql);
+        ListWithPagination<ProvenanceGetDTO> dtoList = dao.search(
+                new ProvenanceSearchFilter().setUris(uris),
+                ProvenanceGetDTO::fromModel
+        );
 
-        List<ProvenanceGetDTO> resultDTOList = new ArrayList<>(models.size());
-        models.forEach(result -> resultDTOList.add(ProvenanceGetDTO.fromModel(result)));
-
-        return new PaginatedListResponse<>(resultDTOList).getResponse();
+        return new PaginatedListResponse<>(dtoList).getResponse();
     }
 
     private ErrorResponse checkActivityTypes(List<ActivityCreationDTO> activities) throws Exception {

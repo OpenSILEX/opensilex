@@ -5,13 +5,15 @@
  */
 package org.opensilex.nosql.exceptions;
 
+import com.mongodb.MongoException;
+
 import java.net.URI;
 
 /**
  *
  * @author sammy
  */
-public class NoSQLAlreadyExistingUriException extends Exception {
+public class NoSQLAlreadyExistingUriException extends MongoException {
 
     private final URI uri;
 

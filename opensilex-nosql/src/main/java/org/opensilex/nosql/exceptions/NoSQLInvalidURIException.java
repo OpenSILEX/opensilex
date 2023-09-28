@@ -5,13 +5,15 @@
  */
 package org.opensilex.nosql.exceptions;
 
+import com.mongodb.MongoException;
+
 import java.net.URI;
 
 /**
  *
  * @author sammy
  */
-public class NoSQLInvalidURIException extends Exception{
+public class NoSQLInvalidURIException extends MongoException {
     private final URI uri;
 
     public NoSQLInvalidURIException(URI uri) {

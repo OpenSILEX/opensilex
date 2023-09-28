@@ -12,7 +12,7 @@
             :static="false"
             :nextStepAction="nextStep"
             :customValidation="validateCustom"
-            :blockingStep="false"
+            :isBlockingStep="false"
     >
       <template v-slot:icon></template>
 

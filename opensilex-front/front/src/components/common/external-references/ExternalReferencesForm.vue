@@ -228,10 +228,6 @@
             }
         }
 
-        beforeMount() {
-
-        }
-
         created() {
            this.setOptions();
            this.variablesService = this.$opensilex.getService<VariablesService>("opensilex.VariablesService");

@@ -41,7 +41,7 @@
                   id="btn-finish"
                   class="greenThemeColor"
                   variant="warning"
-                  v-if="!blockingStep && !props.isLastStep"
+                  v-if="!isBlockingStep && !props.isLastStep"
                   @click="validate(props)"
               >{{getStepBtnFinishTitle(props)}}</b-button>
 
@@ -89,7 +89,7 @@ export default class WizardForm extends Vue {
   static;
 
   @Prop({ default: true })
-  blockingStep;
+  isBlockingStep;
 
   @Prop()
   steps;

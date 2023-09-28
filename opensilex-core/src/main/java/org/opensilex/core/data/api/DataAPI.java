@@ -14,6 +14,7 @@ import com.mongodb.client.result.DeleteResult;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 import io.swagger.annotations.*;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.apache.jena.graph.Node;
@@ -43,6 +44,7 @@ import org.opensilex.core.provenance.api.ProvenanceGetDTO;
 import org.opensilex.core.provenance.dal.AgentModel;
 import org.opensilex.core.provenance.dal.ProvenanceDAO;
 import org.opensilex.core.provenance.dal.ProvenanceModel;
+import org.opensilex.core.provenance.dal.ProvenanceSearchFilter;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.core.variable.api.VariableDetailsDTO;
@@ -887,10 +889,10 @@ public class DataAPI {
             }
 
             //check provenance uri and variables device association
-            ProvenanceDAO provDAO = new ProvenanceDAO(nosql, sparql);
+            ProvenanceDAO provDAO = new ProvenanceDAO(nosql);
             if (!provenanceURIs.contains(data.getProvenance().getUri())) {
                 provenanceURIs.add(data.getProvenance().getUri());
-                if (!provDAO.provenanceExists(data.getProvenance().getUri())) {  
+                if (!provDAO.exists(data.getProvenance().getUri())) {
                     notFoundedProvenanceURIs.add(data.getProvenance().getUri());
                 } 
             }
@@ -1158,14 +1160,18 @@ public class DataAPI {
         DataDAO dataDAO = new DataDAO(nosql, sparql, null);
         Set<URI> provenanceURIs = dataDAO.getDataProvenances(user, experiments, targets, variables, devices);
 
-        ProvenanceDAO provenanceDAO = new ProvenanceDAO(nosql, sparql);
-        List<ProvenanceModel> resultList = provenanceDAO.getListByURIs(new ArrayList<>(provenanceURIs));
-        List<ProvenanceGetDTO> resultDTOList = new ArrayList<>();
+        if(CollectionUtils.isEmpty(provenanceURIs)){
+            return new PaginatedListResponse<>(Collections.emptyList()).getResponse();
+        }
 
-        resultList.forEach(result -> {
-            resultDTOList.add(ProvenanceGetDTO.fromModel(result));
-        });
-        return new PaginatedListResponse<>(resultDTOList).getResponse();
+        ProvenanceDAO provenanceDAO = new ProvenanceDAO(nosql);
+
+        List<ProvenanceGetDTO> resultDtoList = provenanceDAO.search(
+                new ProvenanceSearchFilter().setUris(provenanceURIs),
+                ProvenanceGetDTO::fromModel
+        ).getList();
+
+        return new PaginatedListResponse<>(resultDtoList).getResponse();
     }
     
     @GET
@@ -1214,7 +1220,7 @@ public class DataAPI {
 
         // test prov
         ProvenanceModel provenanceModel = null;
-        ProvenanceDAO provDAO = new ProvenanceDAO(nosql, sparql); 
+        ProvenanceDAO provDAO = new ProvenanceDAO(nosql);
         try {
             provenanceModel = provDAO.get(provenance);
         } catch (NoSQLInvalidURIException e) {
@@ -1318,7 +1324,7 @@ public class DataAPI {
         // test prov
         ProvenanceModel provenanceModel = null;
 
-        ProvenanceDAO provDAO = new ProvenanceDAO(nosql, sparql);
+        ProvenanceDAO provDAO = new ProvenanceDAO(nosql);
         try {
             provenanceModel = provDAO.get(provenance);
         } catch (NoSQLInvalidURIException e) {
@@ -2097,7 +2103,7 @@ public class DataAPI {
             dto.setName(ontologyDao.getURILabel(uri, user.getLanguage()));
         }
         else {
-            ProvenanceDAO provenanceDao = new ProvenanceDAO(nosql, sparql);
+            ProvenanceDAO provenanceDao = new ProvenanceDAO(nosql);
             ProvenanceModel provModel = provenanceDao.get(dataProvModel.getUri());
             dto.setUri(provModel.getUri());
             dto.setName(provModel.getName());

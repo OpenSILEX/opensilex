@@ -311,7 +311,6 @@
             "orcid-placeholder": "https://orcid.org/0000-0003-4189-7793",
             "form-email-placeholder": "Saisir l'adresse email",
             "form-affiliation-placeholder" : "Saisir un organisme d'affiliation",
-            "form-phone-placeholder" : "Saisir un numéro de téléphone (+33-6-58-44-...)",
             "filter-search-no-result": "Désolé, aucune personne ne correspond à votre recherche.",
             "filter-placeholder": "Rechercher des personnes...",
             "orcid-help-message": "Si rempli, l'ORCID sera utilisé comme uri lors de la création. Champ non modifiable",

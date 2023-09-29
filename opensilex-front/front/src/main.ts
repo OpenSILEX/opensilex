@@ -192,6 +192,11 @@ import VueEasyLightbox from "vue-easy-lightbox";
 // Method 1. via Vue.use
 Vue.use(VueEasyLightbox)
 
+//component used for the personForm : 09-21-2023
+import VueTelInput from 'vue-tel-input'
+import 'vue-tel-input/dist/vue-tel-input.css'
+Vue.use(VueTelInput)
+
 // Initialize i18n
 import VueI18n from 'vue-i18n'
 import en from './lang/message-en.json';
@@ -335,6 +340,13 @@ extend("wkt", {
   validate: (value) => {
     return parse(value) != null;
   }
+});
+
+// created on 09-26-2023 for the vue-tel-input component in the personForm.
+// used to create a dynamic way to invalidate a field (by passing the falsy rule depending on a prop value)
+extend('falsy', {
+    validate: value => { return false; },
+    message: 'incorrect value'
 });
 
 

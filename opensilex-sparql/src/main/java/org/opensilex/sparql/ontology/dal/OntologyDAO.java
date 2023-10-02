@@ -1026,11 +1026,4 @@ public final class OntologyDAO {
         return resultList;
     }
 
-
-    public Boolean isSubclassOf(URI rdfTypeURI, URI superClassRdfTypeURI) throws SPARQLException {
-        SelectBuilder select = new SelectBuilder();
-        select.addWhere(rdfTypeURI, RDFS.subClassOf, superClassRdfTypeURI);
-        List<SPARQLResult> results = sparql.executeSelectQuery(select);
-        return results.size() != 0;
-    }
 }

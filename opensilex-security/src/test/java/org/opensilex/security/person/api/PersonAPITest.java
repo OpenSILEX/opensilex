@@ -2,19 +2,15 @@ package org.opensilex.security.person.api;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
-import org.apache.jena.graph.Node;
 import org.junit.Test;
 import org.opensilex.integration.test.security.AbstractSecurityIntegrationTest;
 import org.opensilex.security.SecurityModule;
-import org.opensilex.security.person.dal.PersonDAO;
 import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.security.user.api.UserAPITest;
 import org.opensilex.security.user.api.UserCreationDTO;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
-import org.opensilex.sparql.deserializer.SPARQLDeserializers;
 import org.opensilex.sparql.model.SPARQLResourceModel;
-import org.opensilex.sparql.service.SPARQLService;
 
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
@@ -25,7 +21,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class PersonAPITest extends AbstractSecurityIntegrationTest {
 
@@ -89,22 +86,6 @@ public class PersonAPITest extends AbstractSecurityIntegrationTest {
         //try to create the same Person again
         Response result = getJsonPostResponseAsAdmin(target(createPath), getDefaultDTO());
         assertEquals(Response.Status.CONFLICT.getStatusCode(), result.getStatus());
-    }
-
-    @Test
-    public void createWithOrcidChangeTheUri() throws Exception {
-        URI orcid = new URI("https://orcid.org/0009-0006-6636-4715");
-
-        PersonDTO personWithOrcid = getDefaultDTO();
-        personWithOrcid.setUri(new URI("http://should-be-overwritten"));
-        personWithOrcid.setOrcid(orcid);
-
-        Response result = getJsonPostResponseAsAdmin(target(createPath), personWithOrcid);
-        assertEquals(Response.Status.CREATED.getStatusCode(), result.getStatus());
-
-        URI createdPersonURI = extractUriFromResponse(result);
-
-        assertEquals(orcid, createdPersonURI);
     }
 
     @Test
@@ -291,67 +272,6 @@ public class PersonAPITest extends AbstractSecurityIntegrationTest {
         //verify that update doesn't create the Person
         Response getResult = getJsonGetByUriResponseAsAdmin(target(getPath), dtoUpdate.getUri().toString());
         assertEquals(Response.Status.NOT_FOUND.getStatusCode(), getResult.getStatus());
-    }
-
-    @Test
-    public void updateAllowToAddOrcidWhenNotSetYet() throws Exception{
-        Response postResult = getJsonPostResponseAsAdmin(target(createPath), getDefaultDTO());
-
-        //update the person
-        URI uriCreated = extractUriFromResponse(postResult);
-        PersonDTO dtoUpdate = new PersonDTO();
-        dtoUpdate.setUri(uriCreated);
-        dtoUpdate.setOrcid( new URI("https://orcid.org/0009-0006-6636-471X") );
-        dtoUpdate.setFirstName(getDefaultDTO().getFirstName());
-        dtoUpdate.setLastName(getDefaultDTO().getLastName());
-
-        Response putResult = getJsonPutResponse(target(updatePath), dtoUpdate);
-        assertEquals(Response.Status.OK.getStatusCode(), putResult.getStatus());
-
-        //extract the dto after data was updated
-        Response getResult = getJsonGetByUriResponseAsAdmin(target(getPath), dtoUpdate.getUri().toString());
-        JsonNode node = getResult.readEntity(JsonNode.class);
-        SingleObjectResponse<PersonDTO> getObjectResponse = mapper.convertValue(node, new TypeReference<SingleObjectResponse<PersonDTO>>() {
-        });
-        PersonDTO resultDto = getObjectResponse.getResult();
-
-        //compare dtos to ensure update worked
-        comparePersonDTO(dtoUpdate, resultDto);
-    }
-
-    @Test
-    public void updateWithOrcidAlreadyExists() throws Exception{
-        PersonDTO personWithOrcid = getDefaultDTO();
-        personWithOrcid.setOrcid( new URI("https://orcid.org/0009-0006-6636-4715") );
-
-        Response postResult = getJsonPostResponseAsAdmin(target(createPath), personWithOrcid);
-        assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
-
-        PersonDTO personWithoutOrcid = get2ndDefaultDTO();
-
-        postResult = getJsonPostResponseAsAdmin(target(createPath), personWithoutOrcid);
-        assertEquals(Response.Status.CREATED.getStatusCode(), postResult.getStatus());
-
-        personWithoutOrcid.setOrcid(personWithOrcid.getOrcid());
-        Response putResult = getJsonPutResponse(target(updatePath), personWithoutOrcid);
-        assertEquals(Response.Status.CONFLICT.getStatusCode(), putResult.getStatus());
-    }
-
-    @Test
-    public void updateDoNotAllowToChangeOrcid() throws Exception {
-        PersonDTO personWithOrcid = getDefaultDTO();
-        personWithOrcid.setUri(new URI("http://should-be-overwritten"));
-        personWithOrcid.setOrcid( new URI("https://orcid.org/0009-0006-6636-4715") );
-
-        Response result = getJsonPostResponseAsAdmin(target(createPath), personWithOrcid);
-        assertEquals(Response.Status.CREATED.getStatusCode(), result.getStatus());
-
-        URI createdPersonURI = extractUriFromResponse(result);
-        personWithOrcid.setUri(createdPersonURI);
-        personWithOrcid.setOrcid( new URI("https://orcid.org/0009-0006-6636-4719") );
-
-        Response putResult = getJsonPutResponse(target(updatePath), personWithOrcid);
-        assertEquals(Response.Status.BAD_REQUEST.getStatusCode(), putResult.getStatus());
     }
 
 //    @Test

@@ -23,7 +23,7 @@
 import { Component, Prop, PropSync, Ref } from "vue-property-decorator";
 import Vue from "vue";
 import {ScientificObjectsService} from "opensilex-core/index";
-import SelectForm, { SelectableItem } from 'src/components/common/forms/SelectForm.vue';
+import SelectForm, { SelectableItem } from "../../common/forms/SelectForm.vue";
 
 /**
 * Selector of Scientific Objects present in an experiment.

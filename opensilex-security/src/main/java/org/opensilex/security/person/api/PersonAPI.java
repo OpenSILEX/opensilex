@@ -16,7 +16,6 @@ import org.opensilex.security.authentication.injection.CurrentUser;
 import org.opensilex.security.person.dal.PersonDAO;
 import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.server.response.*;
-import org.opensilex.server.rest.validation.ValidURI;
 import org.opensilex.sparql.response.CreatedUriResponse;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
@@ -91,7 +90,7 @@ public class PersonAPI {
         PersonDAO personDAO = new PersonDAO(sparql);
         PersonModel person = PersonModel.fromDTO(personDTO, sparql);
         person.setPublisher(currentUser.getUri());
-        personDAO.create(person);
+        personDAO.create(person, new ORCIDClient());
 
         return new CreatedUriResponse(person.getUri()).getResponse();
     }
@@ -190,7 +189,7 @@ public class PersonAPI {
                 ).getResponse();
             }
 
-            PersonModel personModel = personDAO.update(personDTO);
+            PersonModel personModel = personDAO.update(personDTO, new ORCIDClient());
 
             return new ObjectUriResponse(Response.Status.OK, personModel.getUri()).getResponse();
         } else {
@@ -320,6 +319,39 @@ public class PersonAPI {
                     "Unknown person URIs"
             ).getResponse();
         }
+    }
+
+    /**
+     * *
+     * Return a record corresponding to the data found on the Orcid API
+     *
+     * @param orcid you want data from, with or without https://orcid.org/ prefix
+     * @return Corresponding data from the orcid API
+     */
+    @GET
+    @Path("orcid_record")
+    @ApiOperation("Get infos from an ORCID")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return orcid record", response = OrcidRecordDTO.class),
+            @ApiResponse(code = 404, message = "orcid is not found by ORCID API ", response = ErrorDTO.class)
+    })
+    public Response getOrcidRecord(
+            @ApiParam(value = "orcid", required = true) @QueryParam("orcid") @NotNull URI orcid
+    ) {
+        PersonDAO personDAO = new PersonDAO(sparql);
+
+        String orcidId = personDAO.getIdPartOfAnOrcidUri(orcid);
+
+        personDAO.requireOrcidIDIsWellFormed(orcidId);
+
+        ORCIDClient orcidClient = new ORCIDClient();
+        orcidClient.assertOrcidConnexionIsOk();
+
+        return new SingleObjectResponse<>(
+                orcidClient.getRecord(orcidId)
+        ).getResponse();
     }
 
 }

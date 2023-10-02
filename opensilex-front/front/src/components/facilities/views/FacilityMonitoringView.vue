@@ -318,6 +318,6 @@ fr:
     no-variable: Aucune variable environnementale trouvée
     start-date-help: Date de début des données affichées
     end-date-help: Date de fin des données affichées
-    variable-group-help: Les groupes de variables associées à l'infrastructure. Vous pouvez associer des groupes dans le formulaire de modification de l'infrastructure.
+    variable-group-help: Les groupes de variables associées à l'installation. Vous pouvez associer des groupes dans le formulaire de modification de l'installation.
 
 </i18n>

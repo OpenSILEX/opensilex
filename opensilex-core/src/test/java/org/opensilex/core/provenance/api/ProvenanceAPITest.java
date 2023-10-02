@@ -15,6 +15,7 @@ import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.core.device.api.DeviceCreationDTO;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.provenance.dal.AgentModel;
+import org.opensilex.security.person.api.ORCIDClient;
 import org.opensilex.security.person.dal.PersonDAO;
 import org.opensilex.security.person.dal.PersonModel;
 import org.opensilex.server.response.PaginatedListResponse;
@@ -147,7 +148,7 @@ public class ProvenanceAPITest extends AbstractMongoIntegrationTest {
         PersonModel personModel = new PersonModel();
         personModel.setFirstName("personne");
         personModel.setLastName("personne");
-        personDAO.create(personModel);
+        personDAO.create(personModel, new ORCIDClient());
 
         ProvenanceCreationDTO provenanceDTO = getCreationProvDTO();
         AgentModel operatorAgentModel = new AgentModel();
@@ -189,7 +190,7 @@ public class ProvenanceAPITest extends AbstractMongoIntegrationTest {
         PersonModel personModel = new PersonModel();
         personModel.setFirstName("operator");
         personModel.setLastName("operator");
-        PersonModel operator = personDAO.create(personModel);
+        PersonModel operator = personDAO.create(personModel, new ORCIDClient());
 
         ProvenanceCreationDTO provenanceDTO = getCreationProvDTO();
         AgentModel operatorAgentModel = new AgentModel();
@@ -209,7 +210,7 @@ public class ProvenanceAPITest extends AbstractMongoIntegrationTest {
         PersonModel personModel = new PersonModel();
         personModel.setFirstName("operator");
         personModel.setLastName("operator");
-        PersonModel operator = personDAO.create(personModel);
+        PersonModel operator = personDAO.create(personModel, new ORCIDClient());
 
         ProvenanceCreationDTO provenanceDTO = getCreationProvDTO();
         AgentModel operatorAgentModel = new AgentModel();

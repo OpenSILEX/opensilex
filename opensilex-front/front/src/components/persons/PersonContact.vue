@@ -143,6 +143,7 @@ export default class PersonContact extends Vue {
 <style scoped lang="scss">
 #name {
   padding: 0;
+  color: #2E7FFD;
 }
 
 .mail-button {

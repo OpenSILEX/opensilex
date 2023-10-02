@@ -79,12 +79,20 @@
     ></opensilex-InputForm>
 
     <!-- phone number -->
-    <opensilex-InputForm
-        :value.sync="form.phone_number"
+    <opensilex-FormField
+        :rules="phoneIsValid ? '' : 'falsy' "
         label="component.person.phone_number"
-        placeholder="component.person.form-phone-placeholder"
-        type="text"
-    ></opensilex-InputForm>
+    >
+      <template v-slot:field="field">
+        <vue-tel-input
+            v-model="phone_number"
+            defaultCountry="FR"
+            validCharactersOnly
+            @validate="validatePhone"
+            @input="updatePhoneNumber"
+        ></vue-tel-input>
+      </template>
+    </opensilex-FormField>
 
   </b-form>
 </template>
@@ -126,6 +134,8 @@ export default class PersonForm extends Vue {
   form: PersonDTO;
 
   disable_orcid_field: boolean = false
+  phoneIsValid: boolean = true
+  formattedPhoneNumber: string = ""
 
   created() {
     this.$securityService = this.$opensilex.getService<SecurityService>("opensilex.SecurityService")
@@ -135,7 +145,16 @@ export default class PersonForm extends Vue {
     this.uriGenerated = true;
     this.$nextTick(() => {
       this.disable_orcid_field = this.editMode && this.form.orcid !== null
+      this.formattedPhoneNumber = this.form.phone_number
     })
+  }
+
+  // necessary because vue-tel-input crash if its v-model value is null
+  get phone_number(): string{
+    return this.formattedPhoneNumber ? this.formattedPhoneNumber : ""
+  }
+  set phone_number(number: string){
+    this.formattedPhoneNumber = number != '' ? number : null
   }
 
   getEmptyForm() {
@@ -151,8 +170,7 @@ export default class PersonForm extends Vue {
   }
 
   async create(form: PersonDTO) {
-    this.replaceEmptyStringByNull(form)
-    form.orcid = this.getCompleteUrlOrcid(form.orcid)
+    this.prepareFormBeforeSending(form)
 
     try {
       let response = await this.$securityService.createPerson(form)
@@ -164,8 +182,7 @@ export default class PersonForm extends Vue {
   }
 
   update(form: PersonDTO) {
-    this.replaceEmptyStringByNull(form)
-    form.orcid = this.getCompleteUrlOrcid(form.orcid)
+    this.prepareFormBeforeSending(form)
 
     return this.$opensilex
         .getService<SecurityService>("opensilex.SecurityService")
@@ -195,10 +212,6 @@ export default class PersonForm extends Vue {
     if (form.email === "") {
       form.email = null;
     }
-
-    if (form.phone_number === "") {
-      form.phone_number = null;
-    }
   }
 
   fillFormWithNoNull(person: PersonDTO) {
@@ -218,6 +231,19 @@ export default class PersonForm extends Vue {
     //exemples validés : 0009-0006-6636-4714 ou 0009-0006-6636-471X ou https://orcid.org/0009-0006-6636-4714 ou https://orcid.org/0009-0006-6636-471X
     let regexOrcid = /^(https:\/\/orcid.org\/)?([0-9]{4}-){3}[0-9]{3}[0-9X]$/
     return regexOrcid.test(this.form.orcid)
+  }
+
+  private prepareFormBeforeSending(form: PersonDTO){
+    this.replaceEmptyStringByNull(form)
+    form.orcid = this.getCompleteUrlOrcid(form.orcid)
+  }
+
+  private validatePhone(phoneNumber): void{
+    this.phoneIsValid = phoneNumber?.valid
+  }
+
+  private updatePhoneNumber(number: string, phoneObject: any): void{
+    this.form.phone_number = phoneObject.number != "" ? phoneObject.number : null
   }
 
 }

@@ -69,10 +69,14 @@ class BrAPIv1ContactDTO {
     }
 
     public BrAPIv1ContactDTO extractFromModel(PersonModel model, String role) {
-        this.setEmail(model.getEmail().toString());
+        if (model.getEmail() != null && !model.getEmail().toString().isEmpty()) {
+            this.setEmail(model.getEmail().toString());
+        }
         this.setContactDbId(model.getUri().toString());
         this.setName(model.getLastName().toUpperCase() + model.getFirstName().substring(0,1).toUpperCase() + model.getFirstName().substring(1));
-        this.setOrcid(model.getOrcid().toString());
+        if (model.getOrcid() != null && !model.getOrcid().toString().isEmpty()){
+            this.setOrcid(model.getOrcid().toString());
+        }
         this.setType(role);
 
         return this;

@@ -163,9 +163,7 @@ public class BrAPIv1SuperStudyDTO {
 
     public BrAPIv1SuperStudyDTO extractFromModel(ExperimentModel model) {
 
-        if (model.getUri() != null) {
-            this.setStudyDbId(model.getUri().toString());
-        }
+        this.setStudyDbId(model.getUri().toString());
         this.setStudyName(model.getName());
 
         if (model.getStartDate() != null) {

@@ -340,7 +340,6 @@ public class BrAPIv1ObservationUnitDTO {
             observationUnit.setGermplasmName(facilityDAO.get(URI.create(germplasms.toString()), currentUser).getName());
         }
 
-        // TODO : add data to observations
         ListWithPagination<DataModel> objectData = dataDAO.search(
                 currentUser,
                 Collections.singletonList(experimentModel.getUri()),
@@ -373,7 +372,7 @@ public class BrAPIv1ObservationUnitDTO {
         observationUnit.setPositionCoordinateYType(PositionType.LATITUDE);
 
         GeospatialModel objectGeometryModel = geospatialDAO.getGeometryByURI(model.getUri(), experimentModel.getUri());
-        if (!objectGeometryModel.getGeometry().toString().isEmpty()) {
+        if (objectGeometryModel.getGeometry() != null && !objectGeometryModel.getGeometry().toString().isEmpty()) {
             org.locationtech.jts.geom.Geometry objectJtsGeometry = new GeometryJSON().read(objectGeometryModel.getGeometry().toJson());
 
             if (!objectJtsGeometry.isEmpty()){

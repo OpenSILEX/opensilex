@@ -17,6 +17,7 @@ import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.scientificObject.dal.ScientificObjectDAO;
 import org.opensilex.core.scientificObject.dal.ScientificObjectModel;
 import org.opensilex.security.account.dal.AccountModel;
+import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.model.SPARQLModelRelation;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.service.SPARQLService;
@@ -206,7 +207,7 @@ public class BrAPIv1ObservationDTO {
             this.setValue(dataModel.getValue().toString());
         }
 
-        if (ontologyDAO.isSubclassOf(dataModel.getTarget(), new URI(Oeso.ScientificObject.getURI()))){
+        if (SPARQLModule.getOntologyStoreInstance().classExist(dataModel.getTarget(), new URI(Oeso.ScientificObject.getURI()))){
             ScientificObjectModel objectModel = scientificObjectDAO.getObjectByURI(dataModel.getTarget(), expeModel.getUri(), currentUser.getLanguage());
             List<SPARQLModelRelation> germplasms = objectModel.getRelations(Oeso.hasGermplasm).distinct().collect(Collectors.toList());
             if (germplasms.size() >= 1){

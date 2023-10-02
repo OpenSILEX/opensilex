@@ -142,7 +142,10 @@ public class BrAPIv1StudyDetailsDTO extends BrAPIv1SuperStudyDTO {
 
     public BrAPIv1StudyDetailsDTO extractFromModel(ExperimentModel model, FacilityDAO facilityDAO, OrganizationDAO organizationDAO, AccountModel currentAccount) throws Exception {
         super.extractFromModel(model);
-        this.setStudyDescription(model.getDescription());
+
+        if (!model.getDescription().isEmpty()){
+            this.setStudyDescription(model.getDescription());
+        }
 
         if (model.getEndDate() != null){
             List<String> seasons = new ArrayList<>();

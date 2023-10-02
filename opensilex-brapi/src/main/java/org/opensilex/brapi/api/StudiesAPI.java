@@ -8,6 +8,7 @@ package org.opensilex.brapi.api;
 
 import io.swagger.annotations.*;
 import org.apache.commons.lang3.StringUtils;
+import org.eclipse.rdf4j.query.MalformedQueryException;
 import org.opensilex.brapi.brapiresponses.*;
 import org.opensilex.brapi.model.*;
 import org.opensilex.core.data.dal.DataDAO;
@@ -29,8 +30,10 @@ import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiProtected;
+import org.opensilex.security.authentication.ForbiddenURIAccessException;
 import org.opensilex.security.authentication.NotFoundURIException;
 import org.opensilex.security.authentication.injection.CurrentUser;
+import org.opensilex.server.exceptions.BadRequestException;
 import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
@@ -155,6 +158,18 @@ public class StudiesAPI extends BrapiCall {
         return this.standardGetStudies(studyDbId, active, sortBy, sortOrder, page, pageSize);
     }
 
+    private void validateExperimentRightsAndURI(URI expeURI, ExperimentDAO xpDao) throws ForbiddenURIAccessException {
+        try {
+            xpDao.validateExperimentAccess(expeURI, currentUser);
+        } catch (MalformedQueryException e) {
+            throw new BadRequestException(expeURI.toString() + " is not a valid experiment URI");
+        } catch (ForbiddenURIAccessException e) {
+            throw new ForbiddenURIAccessException(expeURI, "You don't have the rights to access this experiment : " + expeURI.toString());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @GET
     @Path("v1/studies/{studyDbId}")
     @BrapiVersion("1.3")
@@ -167,7 +182,7 @@ public class StudiesAPI extends BrapiCall {
             @ApiParam(value = "Search by studyDbId", required = true) @PathParam("studyDbId") @NotNull URI studyDbId
     ) throws Exception {
         ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql);
-        xpDao.validateExperimentAccess(studyDbId, currentUser);
+        validateExperimentRightsAndURI(studyDbId, xpDao);
 
         OrganizationDAO organisationDAO = new OrganizationDAO(sparql, nosql);
         FacilityDAO facilityDAO = new FacilityDAO(sparql, nosql, organisationDAO);
@@ -196,7 +211,8 @@ public class StudiesAPI extends BrapiCall {
             @ApiParam(value = "page") @QueryParam("page") @DefaultValue("0") @Min(0) int page
     ) throws Exception {
         ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql);
-        xpDao.validateExperimentAccess(studyDbId, currentUser);
+        validateExperimentRightsAndURI(studyDbId, xpDao);
+
         ExperimentModel experimentModel = xpDao.get(studyDbId, currentUser);
         List<URI> experiments = new ArrayList<>();
         experiments.add(studyDbId);
@@ -231,7 +247,7 @@ public class StudiesAPI extends BrapiCall {
             @ApiParam(value = "page") @QueryParam("page") @DefaultValue("0") @Min(0) int page
     ) throws Exception {
         ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql);
-        xpDao.validateExperimentAccess(studyDbId, currentUser);
+        validateExperimentRightsAndURI(studyDbId, xpDao);
 
         DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
         List<VariableModel> variables = dataDAO.getUsedVariables(currentUser, Collections.singletonList(studyDbId), null, null, null);
@@ -256,7 +272,7 @@ public class StudiesAPI extends BrapiCall {
             @ApiParam(value = "page") @QueryParam("page") @DefaultValue("0") @Min(0) int page
     ) throws Exception {
         ExperimentDAO xpDao = new ExperimentDAO(sparql, nosql);
-        xpDao.validateExperimentAccess(studyDbId, currentUser);
+        validateExperimentRightsAndURI(studyDbId, xpDao);
 
         List<URI> rdfTypes = new ArrayList<>();
         if (observationLevel != null) {

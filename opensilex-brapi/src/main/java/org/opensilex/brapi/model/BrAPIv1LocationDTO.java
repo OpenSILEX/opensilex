@@ -200,7 +200,7 @@ class BrAPIv1LocationDTO {
             }
         }
 
-        if (!model.getAddress().toString().isEmpty()){
+        if (model.getAddress() != null && !model.getAddress().toString().isEmpty()){
             String countryName = model.getAddress().getCountryName();
             this.setCountryName(countryName);
             this.setCountryCode(new Locale(countryName).getISO3Country());

@@ -27,7 +27,13 @@ public class ProvenanceModel extends MongoModel {
 
     List<ActivityModel> activity;
 
+    public static final String ACTIVITY_FIELD = "activity";
+
+
     List<AgentModel> agents;
+
+    public static final String AGENTS_FIELD = "agents";
+
 
     public String getName() {
         return name;

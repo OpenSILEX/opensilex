@@ -8,7 +8,6 @@ package org.opensilex.core.data.dal;
 
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.*;
-import com.mongodb.client.result.DeleteResult;
 import com.opencsv.CSVWriter;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.vocabulary.XSD;
@@ -29,7 +28,6 @@ import org.opensilex.core.variable.dal.UnitModel;
 import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
-import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBService;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.response.ErrorResponse;
@@ -40,18 +38,14 @@ import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.service.SPARQLQueryHelper;
 import org.opensilex.sparql.service.SPARQLService;
 import org.opensilex.utils.ListWithPagination;
-import org.opensilex.utils.OrderBy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.File;
 import java.io.StringWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -107,201 +101,89 @@ public class DataDAO {
         fileCollection.createIndex(Indexes.ascending("date"));
     }
 
-    public DataModel create(DataModel instance) throws Exception {
-        createIndexes();
-        nosql.create(instance, DataModel.class, DATA_COLLECTION_NAME, DATA_PREFIX);
-        return instance;
-    }
+//
+//    public ListWithPagination<DataModel> search(
+//            AccountModel user,
+//            List<URI> experiments,
+//            List<URI> targets,
+//            List<URI> variables,
+//            List<URI> provenances,
+//            List<URI> devices,
+//            Instant startDate,
+//            Instant endDate,
+//            Float confidenceMin,
+//            Float confidenceMax,
+//            Document metadata,
+//            List<URI> operators,
+//            List<OrderBy> orderByList,
+//            Integer page,
+//            Integer pageSize) throws Exception {
+//
+//        Document filter = searchFilter(user, experiments, targets, variables, provenances, devices, startDate, endDate, confidenceMin, confidenceMax, metadata, operators);
+//
+//        return nosql.searchWithPagination(DataModel.class, DATA_COLLECTION_NAME, filter, orderByList, page, pageSize);
+//    }
+//
+//     public int count(
+//            AccountModel user,
+//            List<URI> experiments,
+//            List<URI> objects,
+//            List<URI> variables,
+//            List<URI> provenances,
+//            List<URI> devices,
+//            Instant startDate,
+//            Instant endDate,
+//            Float confidenceMin,
+//            Float confidenceMax,
+//            Document metadata,
+//            List<URI> operators) throws Exception {
+//
+//        Document filter = searchFilter(user, experiments, objects, variables, provenances,devices, startDate, endDate, confidenceMin, confidenceMax, metadata, operators);
+//        return nosql.count(DataModel.class, DATA_COLLECTION_NAME, filter );
+//    }
+//
+//    public int countFiles(
+//            AccountModel user,
+//            List<URI> rdfTypes,
+//            List<URI> experiments,
+//            List<URI> objects,
+//            List<URI> provenances,
+//            List<URI> devices,
+//            Instant startDate,
+//            Instant endDate,
+//            Document metadata,
+//            List<URI> operators) throws Exception {
+//
+//        Document filter = searchFilter(user, experiments, objects, null, provenances, devices, startDate, endDate, null, null, metadata, operators);
+//
+//        if (rdfTypes != null && !rdfTypes.isEmpty()) {
+//            Document inFilter = new Document();
+//            inFilter.put("$in", rdfTypes);
+//            filter.put(DataFileModel.RDF_TYPE_FIELD, inFilter);
+//        }
+//        return nosql.count(DataFileModel.class, FILE_COLLECTION_NAME, filter);
+//    }
 
-    public DataFileModel createFile(DataFileModel instance) throws Exception {
-        createIndexes();
-        nosql.create(instance, DataFileModel.class, FILE_COLLECTION_NAME, FILE_PREFIX);
-        return instance;
-    }
 
-    public List<DataModel> createAll(List<DataModel> instances) throws Exception {
-        createIndexes(); 
-        nosql.createAll(instances, DataModel.class, DATA_COLLECTION_NAME, DATA_PREFIX,false);
-        return instances;
-    } 
-
-    public List<DataFileModel> createAllFiles(List<DataFileModel> instances) throws Exception {
-        createIndexes();
-        nosql.createAll(instances, DataFileModel.class, FILE_COLLECTION_NAME, FILE_PREFIX,false);
-        return instances;
-    }
-
-    public DataModel update(DataModel instance) throws NoSQLInvalidURIException {
-        nosql.update(instance, DataModel.class, DATA_COLLECTION_NAME);
-        return instance;
-    }
-
-    public DataFileModel updateFile(DataFileModel instance) throws NoSQLInvalidURIException {
-        nosql.update(instance, DataFileModel.class, FILE_COLLECTION_NAME);
-        return instance;
-    }
-
-    public ListWithPagination<DataModel> search(
-            AccountModel user,
-            List<URI> experiments,
-            List<URI> targets,
-            List<URI> variables,
-            List<URI> provenances,
-            List<URI> devices,
-            Instant startDate,
-            Instant endDate,
-            Float confidenceMin,
-            Float confidenceMax,
-            Document metadata,
-            List<URI> operators,
-            List<OrderBy> orderByList,
-            Integer page,
-            Integer pageSize) throws Exception {
-
-        Document filter = searchFilter(user, experiments, targets, variables, provenances, devices, startDate, endDate, confidenceMin, confidenceMax, metadata, operators);
-
-        return nosql.searchWithPagination(DataModel.class, DATA_COLLECTION_NAME, filter, orderByList, page, pageSize);
-    }
-    
-     public int count(
-            AccountModel user,
-            List<URI> experiments,
-            List<URI> objects,
-            List<URI> variables,
-            List<URI> provenances,
-            List<URI> devices,
-            Instant startDate,
-            Instant endDate,
-            Float confidenceMin,
-            Float confidenceMax,
-            Document metadata,
-            List<URI> operators) throws Exception {
-
-        Document filter = searchFilter(user, experiments, objects, variables, provenances,devices, startDate, endDate, confidenceMin, confidenceMax, metadata, operators);
-        return nosql.count(DataModel.class, DATA_COLLECTION_NAME, filter );
-    }
-
-    public int countFiles(
-            AccountModel user,
-            List<URI> rdfTypes,
-            List<URI> experiments,
-            List<URI> objects,
-            List<URI> provenances,
-            List<URI> devices,
-            Instant startDate,
-            Instant endDate,
-            Document metadata,
-            List<URI> operators) throws Exception {
-
-        Document filter = searchFilter(user, experiments, objects, null, provenances, devices, startDate, endDate, null, null, metadata, operators);
-
-        if (rdfTypes != null && !rdfTypes.isEmpty()) {
-            Document inFilter = new Document();
-            inFilter.put("$in", rdfTypes);
-            filter.put(DataFileModel.RDF_TYPE_FIELD, inFilter);
-        }
-        return nosql.count(DataFileModel.class, FILE_COLLECTION_NAME, filter);
-    }
-    
-    /**
-     *
-     * @param deviceURI
-     * @param user
-     * @param experiments
-     * @param objects
-     * @param variables
-     * @param provenances
-     * @param startDate
-     * @param endDate
-     * @param confidenceMin
-     * @param confidenceMax
-     * @param metadata
-     * @param orderByList
-     * @param page
-     * @param pageSize
-     * @return
-     * @throws Exception
-     * @deprecated better use the method search
-     */
-    @Deprecated
-    public ListWithPagination<DataModel> searchByDevice(
-            URI deviceURI,
-            AccountModel user,
-            List<URI> experiments,
-            List<URI> objects,
-            List<URI> variables,
-            List<URI> provenances,
-            Instant startDate,
-            Instant endDate,
-            Float confidenceMin,
-            Float confidenceMax,
-            Document metadata,
-            List<URI> operators,
-            List<OrderBy> orderByList,
-            Integer page,
-            Integer pageSize) throws Exception {
-
-        Document filter = searchFilter(user, experiments, objects, variables, provenances, Arrays.asList(deviceURI), startDate, endDate, confidenceMin, confidenceMax, metadata, operators);
-
-        return nosql.searchWithPagination(DataModel.class, DATA_COLLECTION_NAME, filter, orderByList, page, pageSize);
-    }
-
-    /**
-     *
-     * @param deviceURI
-     * @param user
-     * @param experiments
-     * @param objects
-     * @param variables
-     * @param provenances
-     * @param startDate
-     * @param endDate
-     * @param confidenceMin
-     * @param confidenceMax
-     * @param metadata
-     * @return
-     * @throws Exception
-     * @deprecated better use the method count
-     */
-    @Deprecated
-    public int countByDevice(
-            URI deviceURI,
-            AccountModel user,
-            List<URI> experiments,
-            List<URI> objects,
-            List<URI> variables,
-            List<URI> provenances,
-            Instant startDate,
-            Instant endDate,
-            Float confidenceMin,
-            Float confidenceMax,
-            Document metadata,
-            List<URI> operators) throws Exception {
-        
-        Document filter = searchFilter(user, experiments, objects, variables, provenances, Arrays.asList(deviceURI), startDate, endDate, confidenceMin, confidenceMax, metadata, operators);
-
-        return nosql.count(DataModel.class, DATA_COLLECTION_NAME, filter );
-    }
-
-    public List<DataModel> search(
-            AccountModel user,
-            List<URI> experiments,
-            List<URI> objects,
-            List<URI> variables,
-            List<URI> provenances,
-            List<URI> devices,
-            Instant startDate,
-            Instant endDate,
-            Float confidenceMin,
-            Float confidenceMax,
-            Document metadata,
-            List<URI> operators,
-            List<OrderBy> orderByList) throws Exception {
-
-        Document filter = searchFilter(user, experiments, objects, variables, provenances, devices, startDate, endDate, confidenceMin, confidenceMax, metadata, operators);
-
-        return nosql.search(DataModel.class, DATA_COLLECTION_NAME, filter, orderByList);
-    }
+//    public List<DataModel> search(
+//            AccountModel user,
+//            List<URI> experiments,
+//            List<URI> objects,
+//            List<URI> variables,
+//            List<URI> provenances,
+//            List<URI> devices,
+//            Instant startDate,
+//            Instant endDate,
+//            Float confidenceMin,
+//            Float confidenceMax,
+//            Document metadata,
+//            List<URI> operators,
+//            List<OrderBy> orderByList) throws Exception {
+//
+//        Document filter = searchFilter(user, experiments, objects, variables, provenances, devices, startDate, endDate, confidenceMin, confidenceMax, metadata, operators);
+//
+//        return nosql.search(DataModel.class, DATA_COLLECTION_NAME, filter, orderByList);
+//    }
 
     public Document getSelectedAgents(List<URI> agents){
 
@@ -309,8 +191,8 @@ public class DataDAO {
         //    provenance.provUsed.uri IN devices or operators URIs
         // OR ( provenance.uri IN devices/operators Provenances list && provenance.provUsed.uri isEmpty or not exists)
         ProvenanceDAO provDAO = new ProvenanceDAO(nosql);
-        provDAO.search(new ProvenanceSearchFilter().setAgents())
-        Set<URI> agentProvenances = provDAO.getProvenancesURIsByAgents(agents);
+
+        Set<URI> agentProvenances = provDAO.distinctUris(null, new ProvenanceSearchFilter().setAgents(agents));
 
         Document directProvFilter = new Document("provenance.provWasAssociatedWith.uri", new Document("$in", agents));
 
@@ -444,77 +326,95 @@ public class DataDAO {
         }
     }
 
-    public DataModel get(URI uri) throws NoSQLInvalidURIException {
-        return nosql.findByURI(DataModel.class, DATA_COLLECTION_NAME, uri);
-    }
-
-    public DataFileModel getFile(URI uri) throws NoSQLInvalidURIException {
-        return nosql.findByURI(DataFileModel.class, FILE_COLLECTION_NAME, uri);
-    }
-    
-    public void delete(URI uri) throws NoSQLInvalidURIException, Exception {
-        nosql.delete(DataModel.class, DATA_COLLECTION_NAME, uri);
-    }
-
-    public void delete(List<URI> uris) throws NoSQLInvalidURIException, Exception {
-        nosql.delete(DataModel.class, DATA_COLLECTION_NAME, uris);
-    }
-
-    public void deleteFile(URI uri) throws NoSQLInvalidURIException {
-        nosql.delete(DataFileModel.class, FILE_COLLECTION_NAME, uri);
-    }
+//    public DataModel get(URI uri) throws NoSQLInvalidURIException {
+//        return nosql.findByURI(DataModel.class, DATA_COLLECTION_NAME, uri);
+//    }
+//
+//    public DataFileModel getFile(URI uri) throws NoSQLInvalidURIException {
+//        return nosql.findByURI(DataFileModel.class, FILE_COLLECTION_NAME, uri);
+//    }
+//
+//    public void delete(URI uri) throws NoSQLInvalidURIException, Exception {
+//        nosql.delete(DataModel.class, DATA_COLLECTION_NAME, uri);
+//    }
+//
+//    public void delete(List<URI> uris) throws NoSQLInvalidURIException, Exception {
+//        nosql.delete(DataModel.class, DATA_COLLECTION_NAME, uris);
+//    }
+//
+//    public void deleteFile(URI uri) throws NoSQLInvalidURIException {
+//        nosql.delete(DataFileModel.class, FILE_COLLECTION_NAME, uri);
+//    }
 
     @Deprecated
-    public ListWithPagination<VariableModel> getVariablesByExperiment(AccountModel user, URI xpUri, Integer page, Integer pageSize) throws Exception {
-        List<URI> experiments = new ArrayList();
-        experiments.add(xpUri);                
-        Document filter = searchFilter(user, experiments, null, null, null, null, null, null, null, null, null, null);
-        Set<URI> variableURIs = nosql.distinct("variable", URI.class, DATA_COLLECTION_NAME, filter);
-        
-        if (variableURIs.isEmpty()) {
-            return new ListWithPagination(new ArrayList(), page, pageSize, 0);
+//    public ListWithPagination<VariableModel> getVariablesByExperiment(AccountModel user, URI xpUri, Integer page, Integer pageSize) throws Exception {
+//        List<URI> experiments = new ArrayList();
+//        experiments.add(xpUri);
+//        Document filter = searchFilter(user, experiments, null, null, null, null, null, null, null, null, null, null);
+//        Set<URI> variableURIs = nosql.distinct("variable", URI.class, DATA_COLLECTION_NAME, filter);
+//
+//        if (variableURIs.isEmpty()) {
+//            return new ListWithPagination(new ArrayList(), page, pageSize, 0);
+//
+//        } else {
+//
+//            int total = variableURIs.size();
+//
+//            List<URI> list = new ArrayList<>(variableURIs);
+//            List<URI> listToSend = new ArrayList<>();
+//            if (total > 0 && (page * pageSize) < total) {
+//                if (page == null || page < 0) {
+//                    page = 0;
+//                }
+//                int fromIndex = page*pageSize;
+//                int toIndex;
+//                if (total > fromIndex + pageSize) {
+//                    toIndex = fromIndex + pageSize;
+//                } else {
+//                    toIndex = total;
+//                }
+//                listToSend = list.subList(fromIndex, toIndex);
+//            }
+//
+//            List<VariableModel> variables = sparql.getListByURIs(VariableModel.class, listToSend, user.getLanguage());
+//            return new ListWithPagination(variables, page, pageSize, total);
+//        }
+//    }
 
-        } else {
-            
-            int total = variableURIs.size();
-
-            List<URI> list = new ArrayList<>(variableURIs);
-            List<URI> listToSend = new ArrayList<>();
-            if (total > 0 && (page * pageSize) < total) {
-                if (page == null || page < 0) {
-                    page = 0;
-                }                
-                int fromIndex = page*pageSize;
-                int toIndex;
-                if (total > fromIndex + pageSize) {
-                    toIndex = fromIndex + pageSize;
-                } else {
-                    toIndex = total;
-                }
-                listToSend = list.subList(fromIndex, toIndex);
-            }
-
-            List<VariableModel> variables = sparql.getListByURIs(VariableModel.class, listToSend, user.getLanguage());
-            return new ListWithPagination(variables, page, pageSize, total);
-        }
-    }    
-
+//    /**
+//     *
+//     * @param user
+//     * @param xpUri
+//     * @return
+//     * @throws Exception
+//     * @deprecated better use directly the method getUsedProvenances
+//     */
+//    @Deprecated
+//    public Set<URI> getProvenancesByExperiment(AccountModel user, URI xpUri) throws Exception {
+//        List<URI> experiments = new ArrayList();
+//        experiments.add(xpUri);
+//        Document filter = searchFilter(user, experiments, null, null, null, null, null, null, null, null, null, null);
+//        return nosql.distinct("provenance.uri", URI.class, DATA_COLLECTION_NAME, filter);
+//    }
+//
     /**
      *
      * @param user
-     * @param xpUri
+     * @param uri
+     * @param collectionName
      * @return
      * @throws Exception
      * @deprecated better use directly the method getUsedProvenances
-     */
-    @Deprecated
-    public Set<URI> getProvenancesByExperiment(AccountModel user, URI xpUri) throws Exception {
-        List<URI> experiments = new ArrayList();
-        experiments.add(xpUri);
-        Document filter = searchFilter(user, experiments, null, null, null, null, null, null, null, null, null, null);
-        return nosql.distinct("provenance.uri", URI.class, DATA_COLLECTION_NAME, filter);
-    }
-    
+//     */
+//    @Deprecated
+//    public List<ProvenanceModel> getProvenancesByScientificObject(AccountModel user, URI uri, String collectionName) throws Exception {
+//        List<URI> scientificObjects = new ArrayList();
+//        scientificObjects.add(uri);
+//        Document filter = searchFilter(user, null, scientificObjects, null, null, null, null, null, null, null, null, null);
+//        Set<URI> provenancesURIs = nosql.distinct("provenance.uri", URI.class, collectionName, filter);
+//        return nosql.findByURIs(ProvenanceModel.class, ProvenanceDAO.PROVENANCE_COLLECTION_NAME, new ArrayList(provenancesURIs));
+//    }
+
     /**
      *
      * @param user
@@ -524,100 +424,82 @@ public class DataDAO {
      * @throws Exception
      * @deprecated better use directly the method getUsedProvenances
      */
-    @Deprecated
-    public List<ProvenanceModel> getProvenancesByScientificObject(AccountModel user, URI uri, String collectionName) throws Exception {
-        List<URI> scientificObjects = new ArrayList();
-        scientificObjects.add(uri);
-        Document filter = searchFilter(user, null, scientificObjects, null, null, null, null, null, null, null, null, null);
-        Set<URI> provenancesURIs = nosql.distinct("provenance.uri", URI.class, collectionName, filter);
-        return nosql.findByURIs(ProvenanceModel.class, ProvenanceDAO.PROVENANCE_COLLECTION_NAME, new ArrayList(provenancesURIs));
-    }
+//    @Deprecated
+//    public List<ProvenanceModel> getProvenancesByDevice(AccountModel user, URI uri, String collectionName) throws Exception {
+//        Document filter = searchFilter(user, null, null, null, null, Arrays.asList(uri), null, null, null, null, null, null);
+//        Set<URI> provenancesURIs = nosql.distinct("provenance.uri", URI.class, collectionName, filter);
+//        return nosql.findByURIs(ProvenanceModel.class, ProvenanceDAO.PROVENANCE_COLLECTION_NAME, new ArrayList<>(provenancesURIs));
+//    }
 
-    /**
-     *
-     * @param user
-     * @param uri
-     * @param collectionName
-     * @return
-     * @throws Exception
-     * @deprecated better use directly the method getUsedProvenances
-     */
-    @Deprecated
-    public List<ProvenanceModel> getProvenancesByDevice(AccountModel user, URI uri, String collectionName) throws Exception {
-        Document filter = searchFilter(user, null, null, null, null, Arrays.asList(uri), null, null, null, null, null, null);
-        Set<URI> provenancesURIs = nosql.distinct("provenance.uri", URI.class, collectionName, filter);
-        return nosql.findByURIs(ProvenanceModel.class, ProvenanceDAO.PROVENANCE_COLLECTION_NAME, new ArrayList<>(provenancesURIs));
-    }
+//    public <T extends DataFileModel> void insertFile(DataFileModel model, File file) throws Exception {
+//        //generate URI
+//        nosql.generateUniqueUriIfNullOrValidateCurrent(model, true, FILE_PREFIX, FILE_COLLECTION_NAME);
+//
+//        final String filename = Base64.getEncoder().encodeToString(model.getUri().toString().getBytes());
+//        Path filePath = Paths.get(FS_FILE_PREFIX, filename);
+//        model.setPath(filePath.toString());
+//
+//        nosql.startTransaction();
+//        try {
+//            createFile(model);
+//            fs.writeFile(FS_FILE_PREFIX, filePath, file);
+//            nosql.commitTransaction();
+//        } catch (Exception e) {
+//            nosql.rollbackTransaction();
+//            fs.deleteIfExists(FS_FILE_PREFIX, filePath);
+//            throw e;
+//        }
+//    }
 
-    public <T extends DataFileModel> void insertFile(DataFileModel model, File file) throws Exception {
-        //generate URI
-        nosql.generateUniqueUriIfNullOrValidateCurrent(model, true, FILE_PREFIX, FILE_COLLECTION_NAME);
+//    public ListWithPagination<DataFileModel> searchFiles(
+//            AccountModel user,
+//            List<URI> rdfTypes,
+//            List<URI> experiments,
+//            List<URI> targets,
+//            List<URI> provenances,
+//            List<URI> devices,
+//            Instant startDate,
+//            Instant endDate,
+//            Document metadata,
+//            List<OrderBy> orderBy,
+//            int page,
+//            int pageSize) throws Exception {
+//
+//        Document filter = searchFilter(user, experiments, targets, null, provenances, devices, startDate, endDate, null, null, metadata, null);
+//
+//        if (rdfTypes != null && !rdfTypes.isEmpty()) {
+//            Document inFilter = new Document();
+//            inFilter.put("$in", rdfTypes);
+//            filter.put(DataFileModel.RDF_TYPE_FIELD, inFilter);
+//        }
+//
+//        return nosql.searchWithPagination(DataFileModel.class, FILE_COLLECTION_NAME, filter, orderBy, page, pageSize);
+//    }
 
-        final String filename = Base64.getEncoder().encodeToString(model.getUri().toString().getBytes());
-        Path filePath = Paths.get(FS_FILE_PREFIX, filename);
-        model.setPath(filePath.toString());
-
-        nosql.startTransaction();         
-        try {   
-            createFile(model);
-            fs.writeFile(FS_FILE_PREFIX, filePath, file);
-            nosql.commitTransaction();
-        } catch (Exception e) {
-            nosql.rollbackTransaction();
-            fs.deleteIfExists(FS_FILE_PREFIX, filePath);
-            throw e;
-        }
-    }
-
-    public ListWithPagination<DataFileModel> searchFiles(
-            AccountModel user,
-            List<URI> rdfTypes,
-            List<URI> experiments,
-            List<URI> targets,
-            List<URI> provenances,
-            List<URI> devices,
-            Instant startDate,
-            Instant endDate,
-            Document metadata,
-            List<OrderBy> orderBy,
-            int page,
-            int pageSize) throws Exception {
-
-        Document filter = searchFilter(user, experiments, targets, null, provenances, devices, startDate, endDate, null, null, metadata, null);
-                
-        if (rdfTypes != null && !rdfTypes.isEmpty()) {
-            Document inFilter = new Document(); 
-            inFilter.put("$in", rdfTypes);
-            filter.put(DataFileModel.RDF_TYPE_FIELD, inFilter);
-        }
-
-        return nosql.searchWithPagination(DataFileModel.class, FILE_COLLECTION_NAME, filter, orderBy, page, pageSize);
-    }
-
-    public DeleteResult deleteWithFilter(AccountModel user, URI experimentUri, URI targetUri, URI variableUri, URI provenanceUri) throws Exception {
-        List<URI> provenances = new ArrayList<>();
-        if (provenanceUri != null) {
-            provenances.add(provenanceUri);
-        }
-        
-        List<URI> targets = new ArrayList<>();
-        if (targetUri != null) {
-            targets.add(targetUri);
-        }
-        
-        List<URI> variables = new ArrayList<>();
-        if (variableUri != null) {
-            variables.add(variableUri);
-        }
-
-        List<URI> experiments = new ArrayList<>();
-        if (experimentUri != null) {
-            experiments.add(experimentUri);
-        }
-        
-        Document filter = searchFilter(user, experiments, targets, variables, provenances, null, null, null, null, null, null, null);
-        return nosql.deleteOnCriteria(DataModel.class, DATA_COLLECTION_NAME, filter);
-    }
+//    public DeleteResult deleteWithFilter(AccountModel user, URI experimentUri, URI targetUri, URI variableUri, URI provenanceUri) throws Exception {
+//        List<URI> provenances = new ArrayList<>();
+//        if (provenanceUri != null) {
+//            provenances.add(provenanceUri);
+//        }
+//
+//        List<URI> targets = new ArrayList<>();
+//        if (targetUri != null) {
+//            targets.add(targetUri);
+//        }
+//
+//        List<URI> variables = new ArrayList<>();
+//        if (variableUri != null) {
+//            variables.add(variableUri);
+//        }
+//
+//        List<URI> experiments = new ArrayList<>();
+//        if (experimentUri != null) {
+//            experiments.add(experimentUri);
+//        }
+//
+//        Document filter = searchFilter(user, experiments, targets, variables, provenances, null, null, null, null, null, null, null);
+//        return nosql.deleteOnCriteria(DataModel.class, DATA_COLLECTION_NAME, filter);
+//    }
 
     public List<VariableModel> getUsedVariables(AccountModel user, List<URI> experiments, List<URI> objects, List<URI> provenances, List<URI> devices) throws Exception {
         Document filter = searchFilter(user, experiments, objects, null, provenances, devices, null, null, null, null, null, null);
@@ -777,8 +659,8 @@ public class DataDAO {
         Instant targetTime = Instant.now();
         LOGGER.debug("Get " + objectsList.size() + " target(s) " + Long.toString(Duration.between(variableTime, targetTime).toMillis()) + " milliseconds elapsed");
 
-        ProvenanceDAO provenanceDao = new ProvenanceDAO(nosql, sparql);
-            List<ProvenanceModel> listByURIs = provenanceDao.getListByURIs(new ArrayList<>(provenances.keySet()));
+        ProvenanceDAO provenanceDao = new ProvenanceDAO(nosql);
+        List<ProvenanceModel> listByURIs = provenanceDao.search(new ProvenanceSearchFilter().setUris(provenances.keySet())).getList();
         for (ProvenanceModel prov : listByURIs) {
             provenances.put(prov.getUri(), prov);
         }
@@ -1000,8 +882,9 @@ public class DataDAO {
         Instant targetTime = Instant.now();
         LOGGER.debug("Get " + objectsList.size() + " target(s) " + Long.toString(Duration.between(variableTime, targetTime).toMillis()) + " milliseconds elapsed");
 
-        ProvenanceDAO provenanceDao = new ProvenanceDAO(nosql, sparql);
-        List<ProvenanceModel> listByURIs = provenanceDao.getListByURIs(new ArrayList<>(provenances.keySet()));
+        ProvenanceDAO provenanceDao = new ProvenanceDAO(nosql);
+
+        List<ProvenanceModel> listByURIs = provenanceDao.search(new ProvenanceSearchFilter().setUris(provenances.keySet())).getList();
         for (ProvenanceModel prov : listByURIs) {
             provenances.put(prov.getUri(), prov);
         }

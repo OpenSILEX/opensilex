@@ -13,13 +13,14 @@ import java.net.URI;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.bson.Document;
+import org.opensilex.nosql.mongodb.MongoModel;
 
 /**
  * Agent model
  * @author Alice Boizet
  */
 @JsonPropertyOrder({"uri", "rdf_type", "settings"})
-public class AgentModel {    
+public class AgentModel extends MongoModel {
     @JsonProperty("rdf_type")
     @ApiModelProperty(value = "activity type defined in the ontology", example = "oeso:Sensor")
     URI rdfType;
@@ -30,14 +31,6 @@ public class AgentModel {
     @ApiModelProperty(value = "agent uri", example = "http://sensor/s01")
     URI uri;
 
-    public URI getRdfType() {
-        return rdfType;
-    }
-
-    public void setRdfType(URI rdfType) {
-        this.rdfType = rdfType;
-    }
-
     public Document getSettings() {
         return settings;
     }
@@ -46,14 +39,6 @@ public class AgentModel {
         this.settings = settings;
     }
 
-    public URI getUri() {
-        return uri;
-    }
-
-    public void setUri(URI uri) {
-        this.uri = uri;
-    }
-    
     @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof AgentModel))

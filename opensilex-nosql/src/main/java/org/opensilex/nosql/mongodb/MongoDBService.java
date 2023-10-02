@@ -53,6 +53,7 @@ import org.opensilex.utils.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.print.Doc;
 import javax.ws.rs.core.UriBuilder;
 
 import static com.mongodb.client.model.Filters.*;
@@ -450,7 +451,8 @@ public class MongoDBService extends BaseService {
             Bson filter,
             List<OrderBy> orderByList,
             int page,
-            int pageSize
+            int pageSize,
+            ClientSession session
     ) {
 
         LOGGER.debug("[MONGO_DISTINCT_WITH_PAGINATION] : { collection: {}, order: {}, filter: {}}", collection.getNamespace().getCollectionName(),LogOrderList(orderByList), filter);
@@ -465,21 +467,29 @@ public class MongoDBService extends BaseService {
         // distinct field with match
         aggregatePipeline.add(Aggregates.group("$" + field));
 
-        // sort.
+        // sort
         Document order = buildSort(orderByList);
         aggregatePipeline.add(Aggregates.sort(order.toBsonDocument()));
 
         // pagination : skip and limit
-        aggregatePipeline.add(Aggregates.skip(page * pageSize));
-        aggregatePipeline.add(Aggregates.limit(pageSize));
+        if(pageSize > 0){
+            aggregatePipeline.add(Aggregates.limit(pageSize));
+            if(page > 0){
+                aggregatePipeline.add(Aggregates.skip(page * pageSize));
+            }
+        }
 
-        // build a set which maintains natural order between each key
-        Set<T> distinct = new HashSet<>();
+        // Use a set implementation which maintains the same order as the insertion order
+        // The order is computed by MongoDB and the results are returned in this order
+        // The LinkedHashSet allow to keep the same order from database, when iterating the set
+        Set<T> distinct = new LinkedHashSet<>();
 
         // map aggregation results a Document, since the aggregation will produce a different document schema
-        collection.aggregate(aggregatePipeline, Document.class)
-                .map(documentExtractor::apply)
-                .forEach(distinct::add);
+        AggregateIterable<Document> aggregateIt = session == null ?
+                collection.aggregate(aggregatePipeline, Document.class) :
+                collection.aggregate(session,aggregatePipeline,Document.class);
+
+        aggregateIt.map(documentExtractor::apply).forEach(distinct::add);
 
         return distinct;
     }

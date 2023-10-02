@@ -142,7 +142,8 @@ public class MetaDataDao {
                 filter,
                 Collections.singletonList(new OrderBy(MONGO_ID_FIELD, Order.ASCENDING)),
                 page,
-                pageSize
+                pageSize,
+                null
         );
     }
 

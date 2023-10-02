@@ -6,6 +6,7 @@
 //******************************************************************************
 package org.opensilex.nosql.mongodb;
 
+import org.opensilex.sparql.annotations.SPARQLTypeRDF;
 import org.opensilex.uri.generation.ClassURIGenerator;
 
 import java.net.URI;
@@ -19,6 +20,12 @@ public class MongoModel implements ClassURIGenerator<MongoModel> {
 
     protected URI baseURI;
     protected URI uri;
+    protected URI rdfType;
+
+    public static final String URI_FIELD = "uri";
+    public static final String TYPE_FIELD = "rdfType";
+
+
     protected URI publisher;
     protected Instant publicationDate;
     protected Instant lastUpdateDate;
@@ -33,6 +40,22 @@ public class MongoModel implements ClassURIGenerator<MongoModel> {
 
     public void setUri(URI uri) {
         this.uri = uri;
+    }
+
+    public URI getBaseURI() {
+        return baseURI;
+    }
+
+    public void setBaseURI(URI baseURI) {
+        this.baseURI = baseURI;
+    }
+
+    public URI getRdfType() {
+        return rdfType;
+    }
+
+    public void setRdfType(URI rdfType) {
+        this.rdfType = rdfType;
     }
 
     public URI getPublisher() {

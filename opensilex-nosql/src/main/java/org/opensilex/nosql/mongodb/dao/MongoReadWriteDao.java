@@ -164,6 +164,20 @@ public abstract class MongoReadWriteDao<T extends MongoModel, F extends MongoSea
         return search(null, filter, null, convertFunction);
     }
 
+    @Override
+    public  Set<URI> distinctUris(ClientSession session, F filter) throws MongoException {
+        return mongodb.distinctWithPagination(
+                collection,
+                MongoModel.URI_FIELD,
+                document -> document.get(MongoModel.URI_FIELD, URI.class),
+                filterToBson(filter),
+                filter.getOrderByList(),
+                filter.getPage(),
+                filter.getPageSize(),
+                session
+        );
+    }
+
     protected Bson getIdFilter(URI id) {
         return Filters.eq(idField(), id);
     }

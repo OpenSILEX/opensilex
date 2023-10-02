@@ -54,49 +54,24 @@ public class ProvenanceDAO extends MongoReadWriteDao<ProvenanceModel,ProvenanceS
         if(!StringUtils.isEmpty(filter.getDescription())){
             filters.add(Filters.regex(ProvenanceModel.NAME_FIELD, ".*" + filter.getDescription() + ".*", "i"));
         }
-
+        if(filter.getActivityUri() != null){
+            filters.add(Filters.eq(ProvenanceModel.ACTIVITY_FIELD+"."+ActivityModel.URI_FIELD, filter.getActivityUri()));
+        }
+        if(filter.getActivityType() != null){
+            filters.add(Filters.eq(ProvenanceModel.ACTIVITY_FIELD+"."+ActivityModel.TYPE_FIELD, filter.getActivityType()));
+        }
+        if(! CollectionUtils.isEmpty(filter.getAgents())){
+            filters.add(Filters.in(ProvenanceModel.AGENTS_FIELD+"."+ActivityModel.URI_FIELD, filter.getAgents()));
+        }
+        if(filter.getAgentType() != null){
+            filters.add(Filters.eq(ProvenanceModel.AGENTS_FIELD+"."+AgentModel.TYPE_FIELD, filter.getAgentType()));
+        }
         return filters;
     }
 
-    public Document searchFilter(
-            Set<URI> uris,
-            String name, 
-            String description,
-            URI activityType,
-            URI activityUri,
-            URI agentType, 
-            URI agentURI
-    ) throws Exception {
-
-        Document filter = new Document();
-
-        if (activityType != null) {
-            filter.put("activity.rdfType", activityType);
-        }
-        
-        if (activityUri != null) {
-            filter.put("activity.uri", activityUri);
-        }
-        
-        if (agentType != null) {
-            filter.put("agents.rdfType", agentType);
-        }
-        
-        if (agentURI != null) {
-            filter.put("agents.uri", agentURI);
-        }  
-        return filter;
-    
-    }
-
-
     public Set<URI> getProvenancesURIsByAgents(List<URI> agents) {
         Document filter = new Document("agents.uri", new Document("$in",agents));
-        return nosql.distinct(MongoModel.URI_FIELD, URI.class, PROVENANCE_COLLECTION_NAME, filter);
+        return mongodb.distinct(MongoModel.URI_FIELD, URI.class, PROVENANCE_COLLECTION_NAME, filter);
     }
 
-    @Override
-    public ListWithPagination<ProvenanceModel> search(ProvenanceSearchFilter filter) throws MongoException {
-        return super.search(filter);
-    }
 }

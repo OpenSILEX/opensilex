@@ -4,7 +4,7 @@
       <opensilex-GermplasmAddColumnModal
           class="searchFilter"
           ref="colModal"
-          :existingRdfAttrinutes="existingRdfAttributesObjects"
+          :existingRdfAttributesObjects="existingRdfAttributesObjects"
           :existingRdfAttributesStringRule="existingRdfAttributesStringRule"
           @addingExistingColumn="addExistingColumnFromColModal"
           @addingUncontrolledColumn="addNonExistingColumnFromColModal"
@@ -22,6 +22,9 @@
       </downloadCsv>
       <opensilex-CSVInputFile
         v-on:updated="uploaded"
+        :returnDataAsArrayOfArrays="true"
+        :nonDuplicatableHeaders="['uri', 'name']"
+        :headersPresent="['uri', 'name']"
       >
       </opensilex-CSVInputFile>
       <b-button
@@ -127,15 +130,14 @@
         v-slot="{ ariaDescribedby }"
       >
         <b-form-checkbox
-          v-for="column in newColumns"
+          v-for="columnCheckboxData in newColumnModalCheckboxData"
           v-model="newColumnsselected"
-          :key="column"
-          :value="column"
+          :key="columnCheckboxData.value"
+          :value="columnCheckboxData.value"
           :aria-describedby="ariaDescribedby"
-          :name="column"
-          se
+          :name="columnCheckboxData.name"
         >
-          {{ column }}
+          {{ columnCheckboxData.name }}
         </b-form-checkbox>
       </b-form-group>
 
@@ -172,6 +174,12 @@ import OpenSilexVuePlugin from "../../models/OpenSilexVuePlugin";
 import {OntologyService} from "opensilex-core/api/ontology.service";
 import {ResourceTreeDTO} from "opensilex-core/model/resourceTreeDTO";
 import { SelectableItem } from '../common/forms/SelectForm.vue';
+import {RDFObjectRelationDTO} from "opensilex-core/model/rDFObjectRelationDTO";
+
+export interface NewColumnCheckboxData {
+  value: string,
+  name: string
+}
 
 @Component
 /**
@@ -203,12 +211,13 @@ export default class GermplasmTable extends Vue {
 
   newColumns: string[] = [];
   newColumnsselected: string[] = []; // Must be an array reference!
+  newColumnModalCheckboxData: NewColumnCheckboxData[] = [];
 
   /**
    * Map where keys are non obligatary duplicatable columns that already exist.
    * A key is added the first time this column is added (duplicates aloud). The keys are equal to the JsonParams in GermplasmCreationDTO, example : hasParentGermplasmA
    * The values represent the current id for the tabulator, a digit is added each time.
-   * Example hasParentGermplasmA0, hasParentGermplasmB1, etc...
+   * Example hasParentGermplasmM0, hasParentGermplasmF1, etc...
    */
   addedDuplicatableRdfColumnsToMaxUsedIdMap : Map<string, number> = new Map<string, number>();
 
@@ -263,7 +272,6 @@ export default class GermplasmTable extends Vue {
       }
     );
     this.updateColumns();
-    //})
   }
 
   beforeDestroy() {
@@ -275,7 +283,7 @@ export default class GermplasmTable extends Vue {
     this.tabulator.replaceData(value);
   }
 
-  addNewColumnsConfirmMessage() {
+  showSelectNewColumnsPopUp() {
     this.newcolsModal.show();
   }
 
@@ -285,17 +293,23 @@ export default class GermplasmTable extends Vue {
 
 
   /**
-   * Adds a set of new metadata columns from this.newColumnsselected.
+   * Adds a set of new metadata columns from this.newColumnsselected and this.newColumns.
+   * Only adds duplicates if the header is recognized as duplicable
    */
   addNewColumns() {
     this.colModal.hide();
-    console.debug("adding new columns from newColumnsSelected: ", this.newColumnsselected)
-    for (let col in this.newColumnsselected) {
-      let existingProperty = this.tryToGetExistingPropertyFromColumnName(col);
-      if(existingProperty){
-        this.addExistingColumn(existingProperty.label, existingProperty.id, existingProperty.id)
-      }else{
-        this.addNonExistingColumn(col, col);
+    let addedNonDuplicatableCols : string[] = [];
+    for (let col of this.newColumns) {
+      if(this.newColumnsselected.includes(col)){
+        let existingProperty = this.tryToGetExistingPropertyFromColumnName(col);
+        if(existingProperty){
+          this.addExistingColumn(existingProperty.label, existingProperty.id, existingProperty.id)
+        }else{
+          if(!addedNonDuplicatableCols.includes(col)){
+            this.addNonExistingColumn(col, col);
+            addedNonDuplicatableCols.push(col);
+          }
+        }
       }
     }
     this.newColumns = [];
@@ -336,30 +350,6 @@ export default class GermplasmTable extends Vue {
       visible: true,
       editor: true,
       minWidth: 150,
-      //validator: "unique"
-      // [{
-      //   type:function(cell, value, parameters){
-      //     if(value === "" || value === null || typeof value === "undefined"){
-      //       return true;
-      //     }
-      //     var unique = true;
-      //     var cellData = cell.getData();
-      //     var column = cell.getColumn()._getSelf();
-
-      //     this.table.rowManager.rows.forEach(function(row){
-      //       var data = row.getData();
-      //       if(data !== cellData){
-      //         if  (column.getFieldValue(data) !== undefined) {
-      //           if(value.toLowerCase() == column.getFieldValue(data).toLowerCase()){
-      //             unique = false;
-      //           }
-      //         }
-      //       }
-      //     });
-      //     return unique;
-      //   }
-
-      // }]
     };
     let synonymCol = {
       title: this.$t("GermplasmTable.synonyms"),
@@ -605,25 +595,6 @@ export default class GermplasmTable extends Vue {
   }
 
 
-  /*
-  this.tabulator.addColumn(
-        {
-          title: this.newColumnsselected[col],
-          field: this.newColumnsselected[col],
-          editor: true,
-        },
-        false,
-        this.newColumnsselected[col]
-      );
-      this.suppColumnsNames.push(this.newColumnsselected[col]);
-      this.jsonForTemplate[0][this.newColumnsselected[col]] = null;
-      this.$attrs.downloadCsv;
-    }
-    this.newColumns = [];
-    this.newColumnsselected = [];
-    this.newcolsModal.hide();
-   */
-
   addRow() {
     let size = this.tabulator.getData().length;
     this.tabulator.addRow({ rowNumber: size + 1 });
@@ -689,9 +660,7 @@ export default class GermplasmTable extends Vue {
         synonyms: [],
         metadata: null,
         website: null,
-        hasParentGermplasm: [],
-        hasParentGermplasmA: [],
-        hasParentGermplasmB: []
+        relations: []
       };
 
       form.rdf_type = this.$attrs.germplasmType;
@@ -759,12 +728,15 @@ export default class GermplasmTable extends Vue {
 
       this.addedDuplicatableRdfColumnsToMaxUsedIdMap.forEach(
           (currentMaxIndexExcluded, extraRdfAttribute)=>{
-            let dtoParamLabel: string = this.$opensilex.getUriSuffix(extraRdfAttribute);
             for(let duplicationIndex: number = 0 ; duplicationIndex<currentMaxIndexExcluded ; duplicationIndex++){
               let currentTabulatorIdentifier = extraRdfAttribute + duplicationIndex;
               let currentValue = dataToInsert[idx][currentTabulatorIdentifier];
               if (currentValue != null && currentValue != "") {
-                (form[dtoParamLabel] as Array<string>).push(currentValue);
+                let nextRelationDTO : RDFObjectRelationDTO = {};
+                nextRelationDTO.inverse = false;
+                nextRelationDTO.value = currentValue;
+                nextRelationDTO.property = extraRdfAttribute;
+                form.relations.push(nextRelationDTO);
               }
             }
           });
@@ -803,9 +775,7 @@ export default class GermplasmTable extends Vue {
         form.code == null &&
         form.synonyms.length == 0 &&
         form.metadata == null &&
-        form.hasParentGermplasm == null &&
-        form.hasParentGermplasmA == null &&
-        form.hasParentGermplasmB == null &&
+        form.relations == null &&
         form.website == null
       ) {
         this.emptyLines = this.emptyLines + 1;
@@ -1003,65 +973,65 @@ export default class GermplasmTable extends Vue {
       var uniqueURIs = [];
       let insertionOK = true;
 
-      for (let idx = 0; idx < data.length; idx++) {
-        data[idx]["rowNumber"] = idx + 1;
-        if (data[idx].name === "") {
+      let uriColIndex = (data[0] as Array<string>).indexOf("uri");
+      let nameColIndex = (data[0] as Array<string>).indexOf("name");
+
+      for (let rowIndex = 1; rowIndex < data.length; rowIndex++) {
+        let currentUri = data[rowIndex][uriColIndex];
+        let currentName = data[rowIndex][nameColIndex];
+        if (currentName === "") {
           alert(
-            this.$t("GermplasmTable.missingName") + " " + data[idx]["rowNumber"]
+              this.$t("GermplasmTable.missingName") + " " + rowIndex
           );
           insertionOK = false;
           break;
         } else {
           if(!Oeso.checkURIs(this.$attrs.germplasmType, Oeso.ACCESSION_TYPE_URI)){
             if (
-                data[idx].name !== "" &&
-                uniqueNames.indexOf(data[idx].name) === -1
+                currentName !== "" &&
+                uniqueNames.indexOf(currentName) === -1
             ) {
-              uniqueNames.push(data[idx].name);
+              uniqueNames.push(currentName);
             } else {
               insertionOK = false;
               alert(
                   this.$t("GermplasmTable.alertDuplicateName") +
                   " " +
-                  data[idx]["rowNumber"] +
+                  rowIndex +
                   ", name= " +
-                  data[idx].name
+                  currentName
               );
               break;
             }
           }
         }
-        if (data[idx].uri !== "") {
-          if (uniqueURIs.indexOf(data[idx].uri) === -1) {
-            uniqueURIs.push(data[idx].uri);
+        if (currentUri !== "") {
+          if (uniqueURIs.indexOf(currentUri) === -1) {
+            uniqueURIs.push(currentUri);
           } else {
             insertionOK = false;
             alert(
-              this.$t("GermplasmTable.alertDuplicateURI") +
+                this.$t("GermplasmTable.alertDuplicateURI") +
                 " " +
-                data[idx]["rowNumber"] +
+                rowIndex +
                 ", uri= " +
-                data[idx].uri
+                currentUri
             );
             break;
           }
         }
       }
 
-      console.debug("data", data);
+
       if (insertionOK) {
-        let csvColumns = Object.keys(data[0]);
+        let csvColumns : string[] = data[0];
         let tableColNames = [];
-        console.debug("tableColulmns", this.tableColumns);
-        for (let colName of this.tableColumns) {
-          console.debug("what the fuck!", colName);
-          tableColNames.push(colName["title"]);
+
+        for (let colNumber in this.tableColumns) {
+          tableColNames.push(this.tableColumns[colNumber].field);
         }
-        console.debug("tableColNames :,", tableColNames);
         let duplicatableProperyOccurencesInCsv: Map<string, number> = new Map<string, number>();
-        console.debug("csvCols", csvColumns);
         for(let csvCol of csvColumns){
-          console.debug("tititttititititi", csvCol);
           if(duplicatableProperyOccurencesInCsv.has(csvCol)){
             duplicatableProperyOccurencesInCsv.set(csvCol, duplicatableProperyOccurencesInCsv.get(csvCol) + 1);
           }else{
@@ -1071,32 +1041,58 @@ export default class GermplasmTable extends Vue {
             }else{
               if(!tableColNames.includes(csvCol)){
                 this.newColumns.push(csvCol);
+                if(this.newColumnModalCheckboxData.filter((e) => e.value===csvCol).length === 0){
+                  this.newColumnModalCheckboxData.push({"value": csvCol, "name": csvCol});
+                }
               }
             }
           }
         }
-        for(let duplicatablePropertyInCsv of duplicatableProperyOccurencesInCsv.keys()){
-          let duplicatableColumnNameInCsv = this.tryToGetExistingPropertyFromColumnName(duplicatablePropertyInCsv).id;
-          let tableColumnQuantity: number = this.addedDuplicatableRdfColumnsToMaxUsedIdMap.get(duplicatableColumnNameInCsv);
+        for(let duplicatablePropertyNameInCsv of duplicatableProperyOccurencesInCsv.keys()){
+          let duplicatableColumnIdInCsv = this.tryToGetExistingPropertyFromColumnName(duplicatablePropertyNameInCsv).id;
+          let tableColumnQuantity: number = this.addedDuplicatableRdfColumnsToMaxUsedIdMap.get(duplicatableColumnIdInCsv);
           if(!tableColumnQuantity){
             tableColumnQuantity = 0;
           }
-          let missingColumnQuantity: number = duplicatableProperyOccurencesInCsv.get(duplicatablePropertyInCsv) - tableColumnQuantity;
+          let missingColumnQuantity: number = duplicatableProperyOccurencesInCsv.get(duplicatablePropertyNameInCsv) - tableColumnQuantity;
           if(missingColumnQuantity > 0){
+            this.newColumnModalCheckboxData.push(
+                {"value": duplicatablePropertyNameInCsv,
+                  "name": duplicatablePropertyNameInCsv + " (x" + missingColumnQuantity + ")"
+                });
             for(let index = 0; index < missingColumnQuantity; index++){
-              this.newColumns.push(duplicatablePropertyInCsv);
+              this.newColumns.push(duplicatablePropertyNameInCsv);
             }
           }
         }
-        /*this.newColumns = csvColumns.filter(function (csvCol) {
-          let existingDuplicatableProperty: SelectableItem = tryT;
-          return !tableCols.includes(csvCol);
-        });*/
 
         if (this.newColumns.length > 0) {
-          this.addNewColumnsConfirmMessage();
+          this.showSelectNewColumnsPopUp();
         }
-        this.tabulator.setData(data);
+        //Reconstruct data as a json before sending it to tabulator
+        let dataInJsonFormat = [];
+        for(let rowIndex = 1 ; rowIndex<data.length; rowIndex++){
+          let nextJsonRow = {};
+          nextJsonRow["rowNumber"] = rowIndex;
+          //Save indexes of duplicatable columns
+          let currentDuplicatableColumnsIndexes = {};
+          duplicatableProperyOccurencesInCsv.forEach((value, key)=>{
+            currentDuplicatableColumnsIndexes[this.tryToGetExistingPropertyFromColumnName(key).id] = 0;
+          });
+          for(let colIndex in csvColumns){
+            let colName = csvColumns[colIndex];
+            let existingDuplcatableProperty = this.tryToGetExistingPropertyFromColumnName(colName);
+            if(existingDuplcatableProperty){
+              nextJsonRow[existingDuplcatableProperty.id + currentDuplicatableColumnsIndexes[existingDuplcatableProperty.id]] = data[rowIndex][colIndex]
+              currentDuplicatableColumnsIndexes[existingDuplcatableProperty.id]++;
+            }else{
+              //Note : for now this means that any column that isn't listed as duplicatable will simply be overwritten if there are multiple columns
+              nextJsonRow[colName] = data[rowIndex][colIndex]
+            }
+          }
+          dataInJsonFormat.push(nextJsonRow);
+        }
+        this.tabulator.setData(dataInJsonFormat);
       }
     }
   }
@@ -1208,6 +1204,7 @@ en:
     missingName: The name is missing at line
     newColumns: Supplementary columns
     newColumnsHelp: Select the columns to add
+    missingHeader: Uri or name columns missing
 
 fr:
   GermplasmTable:
@@ -1259,4 +1256,5 @@ fr:
     missingName: Le nom n'est pas renseigné à la ligne
     newColumns: Colonnes additionnelles
     newColumnsHelp: Cochez les colonnes à ajouter
+    missingHeader: Colonne uri ou nom manquant
 </i18n>

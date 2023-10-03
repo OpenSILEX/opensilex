@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -20,9 +21,15 @@ import javax.validation.constraints.NotNull;
 import org.apache.commons.collections4.CollectionUtils;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
 import org.opensilex.core.ontology.Oeso;
+import org.opensilex.core.ontology.api.RDFObjectDTO;
 import org.opensilex.nosql.mongodb.metadata.MetaDataModel;
 import org.opensilex.server.rest.validation.ValidURI;
+import org.opensilex.sparql.SPARQLModule;
+import org.opensilex.sparql.exceptions.SPARQLException;
 import org.opensilex.sparql.model.SPARQLLabel;
+import org.opensilex.sparql.ontology.dal.ClassModel;
+import org.opensilex.sparql.ontology.dal.OntologyDAO;
+import org.opensilex.sparql.service.SPARQLService;
 
 /**
  * DTO representing JSON for posting germplasm
@@ -30,23 +37,25 @@ import org.opensilex.sparql.model.SPARQLLabel;
  */
 @ApiModel
 @JsonPropertyOrder({"uri", "rdf_type", "name", "synonyms", "code", "production_year",
-    "description", "species", "variety", "accession", "institute", "website","parent_germplasms", "parent_a_germplasms", "parent_b_germplasms", "metadata"})
-public class GermplasmCreationDTO {
-    
+    "description", "species", "variety", "accession", "institute", "website", "relations", "metadata"})
+public class GermplasmCreationDTO extends RDFObjectDTO {
+
+    //TODO delete this once i'm sure extzending rdfObject didnt f*** anything up
+
     /**
      * Germplasm URI
      */
-    @ValidURI
-    @ApiModelProperty(value = "Germplasm URI", example = "http://opensilex.dev/opensilex/id/plantMaterialLot#SL_001")
-    protected URI uri;
+    //@ValidURI
+    //@ApiModelProperty(value = "Germplasm URI", example = "http://opensilex.dev/opensilex/id/plantMaterialLot#SL_001")
+    //protected URI uri;
     
     /**
      * Germplasm Type : Species, Variety, Accession or subclass of PlantMaterialLot
      */
-    @NotNull
+    /*@NotNull
     @ApiModelProperty(value = "rdfType URI", example = "http://www.opensilex.org/vocabulary/oeso#SeedLot")
     @JsonProperty("rdf_type")
-    protected URI rdfType;
+    protected URI rdfType;*/
     
     /**
      * Germplasm label
@@ -89,30 +98,6 @@ public class GermplasmCreationDTO {
     protected String institute;
 
     /**
-     * parent varieties, male, female, A or B we don't care here
-     */
-    @ApiModelProperty(value = "parent germplasm uris", example = "[http://opensilex.dev/opensilex/id/variety#B73, http://opensilex.dev/opensilex/id/variety#A73]")
-    @JsonProperty(Oeso.PARENT_PROPERTY_NAME)
-    protected List<URI> parentGermplasms;
-
-
-    /**
-     * parent varieties, male, female, A or B we don't care here
-     */
-    @ApiModelProperty(value = "parent A germplasm uris", example = "[http://opensilex.dev/opensilex/id/variety#B73, http://opensilex.dev/opensilex/id/variety#A73]")
-    @JsonProperty(Oeso.PARENTA_PROPERTY_NAME)
-    protected List<URI> parentAGermplasms;
-
-
-
-    /**
-     * parent varieties, male, female, A or B we don't care here
-     */
-    @ApiModelProperty(value = "parent B germplasm uris", example = "[http://opensilex.dev/opensilex/id/variety#B73, http://opensilex.dev/opensilex/id/variety#A73]")
-    @JsonProperty(Oeso.PARENTB_PROPERTY_NAME)
-    protected List<URI> parentBGermplasms;
-
-    /**
      * productionYear
      */
     @ApiModelProperty(value = "production year", example = "2015")
@@ -132,6 +117,9 @@ public class GermplasmCreationDTO {
     @ApiModelProperty(value = "website")
     protected URI website;
 
+    @Override
+    @ValidURI
+    @ApiModelProperty(value = "Germplasm URI", example = "http://opensilex.dev/opensilex/id/plantMaterialLot#SL_001")
     public URI getUri() {
         return uri;
     }
@@ -140,12 +128,16 @@ public class GermplasmCreationDTO {
         this.uri = uri;
     }
 
-    public URI getRdfType() {
-        return rdfType;
+    @Override
+    @ValidURI
+    @NotNull
+    @ApiModelProperty(value = "Germplasm type", example = "http://www.opensilex.org/vocabulary/oeso#SeedLot", required = true)
+    public URI getType() {
+        return type;
     }
 
     public void setRdfType(URI rdfType) {
-        this.rdfType = rdfType;
+        super.setType(rdfType);
     }
 
     public String getName() {
@@ -240,41 +232,23 @@ public class GermplasmCreationDTO {
         this.website = website;
     }
 
-    public List<URI> getParentGermplasms() {
-        return parentGermplasms;
-    }
-
-    public void setParentGermplasms(List<URI> parentGermplasms) {
-        this.parentGermplasms = parentGermplasms;
-    }
-
-    public List<URI> getParentAGermplasms() {
-        return parentAGermplasms;
-    }
-
-    public void setParentAGermplasms(List<URI> parentAGermplasms) {
-        this.parentAGermplasms = parentAGermplasms;
-    }
-
-    public List<URI> getParentBGermplasms() {
-        return parentBGermplasms;
-    }
-
-    public void setParentBGermplasms(List<URI> parentBGermplasms) {
-        this.parentBGermplasms = parentBGermplasms;
-    }
-    
-    public GermplasmModel newModel() {
+    public GermplasmModel newModel(SPARQLService sparql, String lang) throws SPARQLException, URISyntaxException {
         GermplasmModel model = new GermplasmModel();
         
         if (uri != null) {
             model.setUri(uri);
         }
+        if(relations != null){
+            OntologyDAO ontologyDAO = new OntologyDAO(sparql);
+            ClassModel classModel = ontologyDAO.getClassModel(type, new URI(Oeso.Germplasm.getURI()), lang);
+            ClassModel classModel1 = SPARQLModule.getOntologyStoreInstance().getClassModel(type, new URI(Oeso.Germplasm.getURI()), lang);
+            RDFObjectDTO.validatePropertiesAndAddToObject(sparql.getDefaultGraphURI(GermplasmModel.class), classModel, model, relations, ontologyDAO);
+        }
         if (name != null) {
             model.setLabel(new SPARQLLabel(name, ""));
         }
-        if (rdfType != null) {
-            model.setType(rdfType);
+        if (type != null) {
+            model.setType(type);
         }
         
         if (species != null) {
@@ -320,18 +294,6 @@ public class GermplasmCreationDTO {
         
         if (code != null) {
             model.setCode(code);
-        }
-
-        if(!CollectionUtils.isEmpty(parentGermplasms)){
-            model.setParentGermplasms(createGermplasmListFromUriList(parentGermplasms));
-        }
-
-        if(!CollectionUtils.isEmpty(parentAGermplasms)){
-            model.setParentAGermplasms(createGermplasmListFromUriList(parentAGermplasms));
-        }
-
-        if(!CollectionUtils.isEmpty(parentBGermplasms)){
-            model.setParentBGermplasms(createGermplasmListFromUriList(parentBGermplasms));
         }
         
         if (website != null) {

@@ -4,7 +4,7 @@
       label="GermplasmControlledAttributesSelector.label"
       :selected.sync="propertyURI"
       :multiple="false"
-      :options="existingRdfAttrinutes"
+      :options="existingRdfAttributes"
       :clearable="true"
       placeholder="GermplasmControlledAttributesSelector.placeholder"
       @clear="selected"
@@ -44,7 +44,7 @@ export default class GermplasmControlledAttributesSelector extends Vue {
   havePickedOne: boolean;
 
   @Prop()
-  existingRdfAttrinutes: Array<SelectableItem>;
+  existingRdfAttributes: Array<SelectableItem>;
 
   @PropSync("property")
   propertyURI: string;

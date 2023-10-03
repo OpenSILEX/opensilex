@@ -24,7 +24,6 @@ import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.apache.jena.vocabulary.SKOS;
 import org.bson.Document;
-import org.opensilex.core.event.dal.EventModel;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.germplasm.api.GermplasmSearchFilter;
 import org.opensilex.core.ontology.Oeso;
@@ -48,7 +47,6 @@ import org.opensilex.utils.OrderBy;
 import java.net.URI;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.regex.Pattern;
 
 import static com.mongodb.client.model.Filters.eq;
 import static org.opensilex.core.experiment.dal.ExperimentDAO.appendUserExperimentsFilter;
@@ -212,8 +210,8 @@ public class GermplasmDAO {
                     appendURIsFilter(select, filteredUris);
                     appendGroupFilter(select, searchFilter.getGroup());
                     appendParentFilter(select, searchFilter.getParentGermplasms());
-                    appendParentAFilter(select, searchFilter.getParentAGermplasms());
-                    appendParentBFilter(select, searchFilter.getParentBGermplasms());
+                    appendParentMFilter(select, searchFilter.getParentAGermplasms());
+                    appendParentFFilter(select, searchFilter.getParentBGermplasms());
                     appendExperimentFilter(select, finalExperiment);
 
                     initialSelect.set(select);
@@ -288,17 +286,17 @@ public class GermplasmDAO {
         }
     }
 
-    private void appendParentAFilter(SelectBuilder select, List<URI> parentAUris){
-        if (!CollectionUtils.isEmpty(parentAUris)) {
-            select.addWhere(makeVar(GermplasmModel.URI_FIELD), Oeso.hasParentGermplasmA, makeVar(GermplasmModel.PARENT_A_VAR));
-            select.addFilter(SPARQLQueryHelper.inURIFilter(GermplasmModel.PARENT_A_VAR, parentAUris));
+    private void appendParentMFilter(SelectBuilder select, List<URI> parentMUris){
+        if (!CollectionUtils.isEmpty(parentMUris)) {
+            select.addWhere(makeVar(GermplasmModel.URI_FIELD), Oeso.hasParentGermplasmM, makeVar(GermplasmModel.PARENT_M_VAR));
+            select.addFilter(SPARQLQueryHelper.inURIFilter(GermplasmModel.PARENT_M_VAR, parentMUris));
         }
     }
 
-    private void appendParentBFilter(SelectBuilder select, List<URI> parentBUris){
-        if (!CollectionUtils.isEmpty(parentBUris)) {
-            select.addWhere(makeVar(GermplasmModel.URI_FIELD), Oeso.hasParentGermplasmB, makeVar(GermplasmModel.PARENT_B_VAR));
-            select.addFilter(SPARQLQueryHelper.inURIFilter(GermplasmModel.PARENT_B_VAR, parentBUris));
+    private void appendParentFFilter(SelectBuilder select, List<URI> parentFUris){
+        if (!CollectionUtils.isEmpty(parentFUris)) {
+            select.addWhere(makeVar(GermplasmModel.URI_FIELD), Oeso.hasParentGermplasmF, makeVar(GermplasmModel.PARENT_F_VAR));
+            select.addFilter(SPARQLQueryHelper.inURIFilter(GermplasmModel.PARENT_F_VAR, parentFUris));
         }
     }
 

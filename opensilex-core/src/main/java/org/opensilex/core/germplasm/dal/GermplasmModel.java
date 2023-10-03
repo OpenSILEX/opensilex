@@ -119,19 +119,19 @@ public class GermplasmModel extends SPARQLNamedResourceModel<GermplasmModel> imp
 
     @SPARQLProperty(
             ontology = Oeso.class,
-            property = "hasParentGermplasmA"
+            property = "hasParentGermplasmM"
     )
-    protected List<GermplasmModel> parentAGermplasms;
+    protected List<GermplasmModel> parentMGermplasms;
 
     @SPARQLProperty(
             ontology = Oeso.class,
-            property = "hasParentGermplasmB"
+            property = "hasParentGermplasmF"
     )
-    protected List<GermplasmModel> parentBGermplasms;
+    protected List<GermplasmModel> parentFGermplasms;
 
     public static final String PARENT_VAR = "parentGermplasm";
-    public static final String PARENT_A_VAR = "parentAGermplasm";
-    public static final String PARENT_B_VAR = "parentBGermplasm";
+    public static final String PARENT_M_VAR = "parentMGermplasm";
+    public static final String PARENT_F_VAR = "parentFGermplasm";
     
     @SPARQLProperty(
             ontology = FOAF.class,
@@ -246,20 +246,20 @@ public class GermplasmModel extends SPARQLNamedResourceModel<GermplasmModel> imp
         this.parentGermplasms = parentGermplasms;
     }
 
-    public List<GermplasmModel> getParentAGermplasms() {
-        return parentAGermplasms;
+    public List<GermplasmModel> getParentMGermplasms() {
+        return parentMGermplasms;
     }
 
-    public void setParentAGermplasms(List<GermplasmModel> parentAGermplasms) {
-        this.parentAGermplasms = parentAGermplasms;
+    public void setParentMGermplasms(List<GermplasmModel> parentMGermplasms) {
+        this.parentMGermplasms = parentMGermplasms;
     }
 
-    public List<GermplasmModel> getParentBGermplasms() {
-        return parentBGermplasms;
+    public List<GermplasmModel> getParentFGermplasms() {
+        return parentFGermplasms;
     }
 
-    public void setParentBGermplasms(List<GermplasmModel> parentBGermplasms) {
-        this.parentBGermplasms = parentBGermplasms;
+    public void setParentFGermplasms(List<GermplasmModel> parentFGermplasms) {
+        this.parentFGermplasms = parentFGermplasms;
     }
     
     @Override

@@ -152,7 +152,7 @@ public class GermplasmAPI {
             try {
                 germplasmDTO = completeDTO(germplasmDTO);
                 // create new germplasm
-                GermplasmModel model = germplasmDTO.newModel();
+                GermplasmModel model = germplasmDTO.newModel(sparql, currentUser.getLanguage());
                 model.setPublisher(currentUser.getUri());
                 GermplasmModel germplasm = germplasmDAO.create(model);
                 return new CreatedUriResponse(germplasm.getUri()).getResponse();
@@ -374,8 +374,8 @@ public class GermplasmAPI {
             @ApiParam(value = "Search by institute", example = GERMPLASM_EXAMPLE_INSTITUTE) @QueryParam("institute") String institute,
             @ApiParam(value = "Search by experiment") @QueryParam("experiment") URI experiment,
             @ApiParam(value = "Search by parent varieties A or B") @QueryParam("parent_germplasms") List<URI> parentGermplasms,
-            @ApiParam(value = "Search by parent varieties A") @QueryParam("parent_germplasms_a") List<URI> parentGermplasmsA,
-            @ApiParam(value = "Search by parent varieties B") @QueryParam("parent_germplasms_b") List<URI> parentGermplasmsB,
+            @ApiParam(value = "Search by parent varieties A") @QueryParam("parent_germplasms_m") List<URI> parentGermplasmsM,
+            @ApiParam(value = "Search by parent varieties B") @QueryParam("parent_germplasms_f") List<URI> parentGermplasmsF,
             @ApiParam(value = "Search by metadata", example = GERMPLASM_EXAMPLE_METADATA) @QueryParam("metadata") String metadata,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("label=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
@@ -395,8 +395,8 @@ public class GermplasmAPI {
                  .setMetadata(metadata)
                  .setGroup(group)
                  .setParentGermplasms(parentGermplasms)
-                 .setParentAGermplasms(parentGermplasmsA)
-                 .setParentBGermplasms(parentGermplasmsB);
+                 .setParentAGermplasms(parentGermplasmsM)
+                 .setParentBGermplasms(parentGermplasmsF);
 
          searchFilter.setOrderByList(orderByList)
                  .setPage(page)
@@ -538,7 +538,7 @@ public class GermplasmAPI {
 
             germplasmDTO = completeDTO(germplasmDTO);
 
-            GermplasmModel model = germplasmDTO.newModel();
+            GermplasmModel model = germplasmDTO.newModel(sparql, currentUser.getLanguage());
             germplasmDAO.update(model);
             return new ObjectUriResponse(Response.Status.OK, model.getUri()).getResponse();
 
@@ -601,16 +601,16 @@ public class GermplasmAPI {
         }
 
         // check rdfType
-        boolean isType = cacheType.get(new KeyType(germplasmDTO.getRdfType()), this::checkType);
+        boolean isType = cacheType.get(new KeyType(germplasmDTO.getType()), this::checkType);
         if (!isType) {
             // Return error response 409 - CONFLICT if rdfType doesn't exist in the ontology
             return new ErrorResponse(
                     Response.Status.BAD_REQUEST,
                     "rdfType doesn't exist in the ontology",
-                    "wrong rdfType: " + germplasmDTO.getRdfType().toString(),
+                    "wrong rdfType: " + germplasmDTO.getType().toString(),
                     "component.germplasms.errors.wrongRdfType",
                     new HashMap<String, String>() {{
-                        put("rdfType", germplasmDTO.getRdfType().toString());
+                        put("rdfType", germplasmDTO.getType().toString());
                     }}
             );
         }
@@ -661,14 +661,14 @@ public class GermplasmAPI {
         // check that fromAccession, fromVariety or fromSpecies are given
         boolean missingLink = true;
         String message = new String();
-        if (SPARQLDeserializers.compareURIs(germplasmDTO.getRdfType().toString(), Oeso.Species.getURI())) {
+        if (SPARQLDeserializers.compareURIs(germplasmDTO.getType().toString(), Oeso.Species.getURI())) {
             missingLink = false;
-        } else if (SPARQLDeserializers.compareURIs(germplasmDTO.getRdfType().toString(), Oeso.Variety.getURI())) {
+        } else if (SPARQLDeserializers.compareURIs(germplasmDTO.getType().toString(), Oeso.Variety.getURI())) {
             message = "species";
             if (germplasmDTO.getSpecies() != null) {
                 missingLink = false;
             }
-        } else if (SPARQLDeserializers.compareURIs(germplasmDTO.getRdfType().toString(), Oeso.Accession.getURI())) {
+        } else if (SPARQLDeserializers.compareURIs(germplasmDTO.getType().toString(), Oeso.Accession.getURI())) {
             message = "variety or species";
             if (germplasmDTO.getSpecies() != null || germplasmDTO.getVariety() != null) {
                 missingLink = false;

@@ -12,7 +12,7 @@
         <opensilex-GermplasmControlledAttributesSelector
             ref="controlledAttributeSelector"
             :property.sync="chosenPropertyUri"
-            :existingRdfAttrinutes="existingRdfAttributesObjects"
+            :existingRdfAttributes="existingRdfAttributesObjects"
             @select="selectedExistingProperty()"
             @clear="clearedExistingPropertyField()"
         ></opensilex-GermplasmControlledAttributesSelector>

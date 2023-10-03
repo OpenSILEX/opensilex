@@ -33,10 +33,23 @@ export default class CSVInputFile extends Vue {
   data: any[];
 
   @Prop()
-  headersToCheck: string[];
+  headersExactMatch: string[];
 
-  @Prop({ default: true })
-  header: boolean;
+  @Prop()
+  headersPresent: string[];
+
+  /**
+   * To check some headers don't show up more that once.
+   * Only gets checked if we are returning an array of arrays in data, that permits duplicated headers.
+   */
+  @Prop()
+  nonDuplicatableHeaders: string[];
+
+  /**
+   * Data's first array will be headers, allows for duplicated headers but this changes the output format.
+   */
+  @Prop({ default: false })
+  returnDataAsArrayOfArrays: boolean;
 
   @Prop()
   config: any;
@@ -59,47 +72,70 @@ export default class CSVInputFile extends Vue {
       this.readUploadedFileAsText(file).then((text) => {
         console.debug("Input file text", text);
         let delimiter =  CSV.detect(text.toString());
+
+        //Parsing with header set to false with make result.data be an Array of Arrays instead of an Array of jsons
+        //The first array contains the headers, this allows us to keep track of duplicated columns.
         let result = this.$papa.parse(text, {
-          header: true,
+          header: !this.returnDataAsArrayOfArrays,
           delimiter: delimiter,
         });
-
         console.debug("result.data", result.data);
         console.debug("result.errors", result.errors);
         console.debug("result.meta", result.meta);
+
         this.errors = [];
         if (result.data == null || result.data.length == 0) {
           this.errors.push(
             "Unable to parse csv, delimiter used : '" + delimiter + "'"
           );
         } else {
-          if (this.headersToCheck != null && this.headersToCheck.length > 0) {
-            let objectToCheck = result.data[0];
+          let objectToCheck : Array<string> = (this.returnDataAsArrayOfArrays ? result.data[0] : Object.keys(result.data[0]));
 
-            console.debug(
-              CSVInputFile.equalArrays(
-                Object.keys(objectToCheck),
-                this.headersToCheck
-              ),
-              Object.keys(objectToCheck),
-              this.headersToCheck
+          //Check non duplicatable headers if we are returning array of arrays
+          if(this.returnDataAsArrayOfArrays && this.nonDuplicatableHeaders){
+            let headerQuantaties = {};
+            this.nonDuplicatableHeaders.forEach(e=>headerQuantaties[e] = 0);
+            for(let header of objectToCheck){
+              if(this.nonDuplicatableHeaders.includes(header)){
+                headerQuantaties[header]++;
+              }
+            }
+            for(let nonDuplicatableHeader  of Object.keys(headerQuantaties)){
+              if(headerQuantaties[nonDuplicatableHeader] > 1){
+                this.errors.push(
+                    "This header can't be duplicated: " +
+                    nonDuplicatableHeader
+                );
+              }
+            }
+          }
+          //Check that some headers are present
+          if(this.headersPresent && !CSVInputFile.containsAll(objectToCheck, this.headersPresent)){
+            this.errors.push(
+                "Some of these headers are missing: [" +
+                this.headersPresent + "]"
             );
+          }
+          //Check the headers have exactly the same quantity and content as headersToCheck
+          if (this.headersExactMatch != null && this.headersExactMatch.length > 0) {
             if (
               !CSVInputFile.equalArrays(
-                Object.keys(objectToCheck),
-                this.headersToCheck
+                objectToCheck,
+                this.headersExactMatch
               )
             ) {
               this.errors.push(
                 "Bad data : [" +
-                  this.headersToCheck.toString() +
-                  "] is excepted. [" +
-                  Object.keys(objectToCheck) +
+                  this.headersExactMatch.toString() +
+                  "] is expected. [" +
+                  objectToCheck +
                   "] has been found."
               );
             }
           }
         }
+
+        //Emit if no errors
         if (this.errors.length == 0) {
           this.data = result.data;
           this.$emit("updated", result.data);
@@ -109,11 +145,12 @@ export default class CSVInputFile extends Vue {
     });
   }
 
-  static equalArrays(arr1, arr2): boolean {
-    const containsAll = (arr1, arr2) =>
-      arr2.every((arr2Item) => arr1.includes(arr2Item));
+  static containsAll(container, headersToContain){
+    return headersToContain.every((header) => container.includes(header));
+  }
 
-    return containsAll(arr1, arr2) && containsAll(arr2, arr1);
+  static equalArrays(arr1, arr2): boolean {
+    return CSVInputFile.containsAll(arr1, arr2) && CSVInputFile.containsAll(arr2, arr1);
   }
 
   async readUploadedFileAsText(inputFile) {
@@ -137,4 +174,3 @@ export default class CSVInputFile extends Vue {
 
 <style scoped lang="scss">
 </style>
-

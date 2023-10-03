@@ -19,6 +19,14 @@ import org.slf4j.LoggerFactory;
  */
 public class RDFObjectRelationDTO {
 
+    public RDFObjectRelationDTO(){}
+
+    public RDFObjectRelationDTO(URI property, String value, boolean isInverse){
+        this.property = property;
+        this.value = value;
+        this.isInverse = isInverse;
+    }
+
     private final static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(RDFObjectRelationDTO.class);
     private URI property;
 

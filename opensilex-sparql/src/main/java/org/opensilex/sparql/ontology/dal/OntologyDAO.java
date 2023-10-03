@@ -420,7 +420,11 @@ public final class OntologyDAO {
         buildDataAndObjectProperties(model, lang, datatypePropertiesURI, objectPropertiesURI);
     }
 
-
+    /**
+     *
+     * Validates the relation, then adds it to the object.
+     * TODO Rename this function ??
+     */
     public boolean validateObjectValue(
             URI graph,
             ClassModel model,

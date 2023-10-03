@@ -701,29 +701,16 @@ test:bernhard:deploy:
 gabriel:build:
   <<: *build_template_with_opensilex
   rules:
-    - if: $CI_COMMIT_BRANCH == "gabriel"
+    - if: $CI_COMMIT_BRANCH == "gabriel-playwright-ci"
 
 # See : https://playwright.dev/docs/ci#gitlab-ci
 # TODO : make it into a template
 test:gabriel:front-test:
-  image: mcr.microsoft.com/playwright:v1.37.0-jammy
+  image: registry.forgemia.inra.fr/opensilex/opensilex-dev/opensilex-front-tests:latest
 #  parallel: 7    for parallelization
   before_script:
-    # Check for creating a docker image
-    - apt-get update --allow-insecure-repositories && apt-get install -y git
-    - apt-get -y install openjdk-11-jre-headless
-    - apt-get -y install gettext-base
-    - apt-get -y install cgroupfs-mount
-    - cgroupfs-mount
     - echo "git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@forgemia.inra.fr/OpenSILEX/opensilex-front-tests.git --branch main $CI_PROJECT_DIR/opensilex-front-tests"
     - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@forgemia.inra.fr/OpenSILEX/opensilex-front-tests.git --branch main $CI_PROJECT_DIR/opensilex-front-tests
-    - wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq && chmod +x /usr/bin/yq
-    - install -m 0755 -d /etc/apt/keyrings
-    - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-    - chmod a+r /etc/apt/keyrings/docker.gpg
-    - echo "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
-    - apt-get update
-    - apt-get install -y --no-install-recommends docker.io docker-compose-plugin
   script:
     - echo "SETTING UP CONFIG"
     - curl -X GET -H "PRIVATE-TOKEN:$JOB_API_TOKEN" "https://forgemia.inra.fr/api/v4/projects/1675/repository/files/opensilex-dev-tools%2Fsrc%2Fmain%2Fresources%2Fconfig%2Fopensilex%2Eyml/raw?ref=gabriel" >> /opensilex.yml

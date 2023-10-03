@@ -254,10 +254,11 @@ export default class DataList extends Vue {
                 undefined, // metadata
                 this.filter.germplasm_group, //Group of germs
                 this.$opensilex.prepareGetParameter(this.filter.operators),
+                this.filter.germplasm,
                 options.orderBy, // order_by
                 options.currentPage,
                 options.pageSize,
-                [].concat(this.filter.scientificObjects, this.filter.facilities, this.filter.targets), // targets & os & facilities
+                [].concat(this.filter.scientificObjects, this.filter.facilities, this.filter.targets) // targets & os & facilities
             )
                 .then((http) => {
                     let promiseArray = [];

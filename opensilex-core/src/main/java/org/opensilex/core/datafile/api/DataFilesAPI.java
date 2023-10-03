@@ -4,7 +4,7 @@
 // Copyright © INRAE 2020
 // Contact: anne.tireau@inrae.fr, pascal.neveu@inrae.fr
 //******************************************************************************
-package org.opensilex.core.data.api;
+package org.opensilex.core.datafile.api;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoBulkWriteException;
@@ -18,8 +18,10 @@ import org.apache.jena.graph.Node;
 import org.bson.Document;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.opensilex.core.data.api.DataAPI;
+import org.opensilex.core.data.api.ImageResizer;
 import org.opensilex.core.data.dal.DataDAO;
-import org.opensilex.core.data.dal.DataFileModel;
+import org.opensilex.core.datafile.dal.DataFileModel;
 import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.core.data.utils.DataValidateUtils;
 import org.opensilex.core.device.api.DeviceAPI;
@@ -29,7 +31,6 @@ import org.opensilex.core.experiment.api.ExperimentAPI;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.security.account.dal.AccountModel;
-import org.opensilex.server.response.ObjectUriResponse;
 import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.model.SPARQLTreeListModel;
 import org.opensilex.sparql.ontology.dal.ClassModel;
@@ -42,7 +43,6 @@ import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.exceptions.NoSQLInvalidUriListException;
 import org.opensilex.nosql.exceptions.NoSQLTooLargeSetException;
 import org.opensilex.nosql.mongodb.MongoDBService;
-import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.security.authentication.ApiCredentialGroup;
 import org.opensilex.security.authentication.ApiProtected;
 import org.opensilex.security.authentication.NotFoundURIException;
@@ -52,11 +52,7 @@ import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.server.response.PaginatedListResponse;
 import org.opensilex.server.response.SingleObjectResponse;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
-import org.opensilex.sparql.SPARQLModule;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
-import org.opensilex.sparql.model.SPARQLTreeListModel;
-import org.opensilex.sparql.ontology.dal.ClassModel;
-import org.opensilex.sparql.ontology.dal.OntologyDAO;
 import org.opensilex.sparql.ontology.store.OntologyStore;
 import org.opensilex.sparql.response.CreatedUriResponse;
 import org.opensilex.sparql.service.SPARQLService;

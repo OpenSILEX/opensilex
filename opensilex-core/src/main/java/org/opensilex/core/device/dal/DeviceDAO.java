@@ -20,6 +20,7 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.vocabulary.RDFS;
 import org.bson.Document;
+import org.opensilex.core.data.api.DataSearchDTO;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.datafile.dal.DataFileModel;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
@@ -518,14 +519,22 @@ public class DeviceDAO {
     public void delete(URI uri, AccountModel currentUser) throws Exception {
 
         // test if device in provenances
-        ProvenanceDAO provenanceDAO = new ProvenanceDAO(nosql);
-        long provCount = provenanceDAO.count(new ProvenanceSearchFilter().setAgents(uri));
+        List<URI> devices = Collections.singletonList(uri);
+        ProvenanceSearchFilter provFilter = new ProvenanceSearchFilter().setAgents(devices);
+        provFilter.setAccountURI(currentUser.getUri());
+
+        long provCount = new ProvenanceDAO(nosql).count(provFilter);
         if (provCount > 0) {
             throw new ForbiddenURIAccessException(uri, provCount + " provenance(s)");
         }
 
+        // test if device in data
+        DataSearchDTO dataFilter = new DataSearchDTO().set
+        dataFilter.setUri(uri).setAccountURI(currentUser.getUri());
+
         DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
-        int dataCount = dataDAO.count(currentUser, null, null, null, null, Collections.singletonList(uri), null, null, null, null, null, null);
+
+        int dataCount = new DataDAO(nosql, sparql, fs).count(currentUser, null, null, null, null, Collections.singletonList(uri), null, null, null, null, null, null);
         if (dataCount > 0) {
             throw new ForbiddenURIAccessException(uri, dataCount + " data");
         }

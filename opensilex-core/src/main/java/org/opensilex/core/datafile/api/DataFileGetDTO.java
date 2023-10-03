@@ -4,20 +4,18 @@
 // Copyright © INRAE 2020
 // Contact: alice.boizet@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
 //******************************************************************************
-package org.opensilex.core.data.api;
+package org.opensilex.core.datafile.api;
 
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import javax.validation.constraints.NotNull;
-import org.opensilex.core.data.dal.DataFileModel;
+import org.opensilex.core.datafile.dal.DataFileModel;
 import org.opensilex.server.rest.validation.DateFormat;
 import org.opensilex.server.rest.validation.ValidURI;
 

@@ -21,14 +21,21 @@ import java.util.UUID;
 public class DataModel extends MongoModel {
 
     private URI target;
-    
+
+    public static final String TARGET_FIELD = "target";
+
+
     private URI variable;
     public static final String VARIABLE_FIELD = "variable";
     
     private DataProvenanceModel provenance;
+    public static final String PROVENANCE_FIELD = "provenance";
+
 
     private Instant date;
-    
+    public static final String DATE_FIELD = "date";
+
+
     private Boolean isDateTime;
     
     private String offset;

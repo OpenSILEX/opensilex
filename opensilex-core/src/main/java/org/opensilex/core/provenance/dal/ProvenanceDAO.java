@@ -69,9 +69,4 @@ public class ProvenanceDAO extends MongoReadWriteDao<ProvenanceModel,ProvenanceS
         return filters;
     }
 
-    public Set<URI> getProvenancesURIsByAgents(List<URI> agents) {
-        Document filter = new Document("agents.uri", new Document("$in",agents));
-        return mongodb.distinct(MongoModel.URI_FIELD, URI.class, PROVENANCE_COLLECTION_NAME, filter);
-    }
-
 }

@@ -4,12 +4,13 @@
 // Copyright © INRAE 2020
 // Contact: alice.boizet@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
 //******************************************************************************
-package org.opensilex.core.data.dal;
+package org.opensilex.core.datafile.dal;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.opensilex.core.data.dal.DataModel;
 import org.opensilex.nosql.mongodb.MongoModel;
 import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 
@@ -20,20 +21,14 @@ import org.opensilex.server.rest.serialization.ObjectMapperContextResolver;
 
 public class DataFileModel extends DataModel {
     
-    private URI rdfType;
     private String filename;
+    public static final String FILENAME_FIELD = "filename";
+
     private String path;
+    public static final String PATH_FIELD = "path";
+
     private URI archive;
-
-    public static final String RDF_TYPE_FIELD = "rdfType";
-
-    public URI getRdfType() {
-        return rdfType;
-    }
-
-    public void setRdfType(URI rdfType) {
-        this.rdfType = rdfType;
-    }
+    public static final String ARCHIVE_FIELD = "archive";
 
     public String getFilename() {
         return filename;

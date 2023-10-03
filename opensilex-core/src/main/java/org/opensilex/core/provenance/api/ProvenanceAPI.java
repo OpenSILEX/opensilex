@@ -10,6 +10,8 @@ import io.swagger.annotations.*;
 import org.apache.jena.arq.querybuilder.AskBuilder;
 import org.opensilex.core.data.api.DataAPI;
 import org.opensilex.core.data.dal.DataDAO;
+import org.opensilex.core.datafile.dal.DataFileDAO;
+import org.opensilex.core.datafile.dal.DataFileSearchFilter;
 import org.opensilex.core.device.dal.DeviceModel;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.provenance.dal.AgentModel;
@@ -210,55 +212,33 @@ public class ProvenanceAPI {
     })
     public Response deleteProvenance(
             @ApiParam(value = "Provenance URI", example = PROVENANCE_EXAMPLE_URI, required = true) @PathParam("uri") @NotNull URI uri) throws Exception {
-        ProvenanceDAO dao = new ProvenanceDAO(nosql);
 
-        //check if the provenance can be deleted (not linked to data)
-        List<URI> provenances = new ArrayList<>();
-        provenances.add(uri);
-        DataDAO dataDAO = new DataDAO(nosql, sparql, null);
-        int datacount = dataDAO.count(
-                currentUser,
-                null,
-                null,
-                null,
-                provenances,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null,
-                null
+        //check if the provenance can be deleted (not linked to data or datafiles)
+        DataFileSearchFilter filter = new DataFileSearchFilter();
+        filter.setProvenances(Collections.singletonList(uri));
+        filter.setAccountURI(currentUser.getUri());
 
-        );
-
-        int datafilesCount = dataDAO.countFiles(
-                currentUser,
-                null,
-                null,
-                null,
-                provenances,
-                null,
-                null,
-                null,
-                null,
-                null
-        );
-
-        if (datacount > 0 || datafilesCount > 0) {
+        long dataCount = new DataDAO(nosql, sparql, null).count(filter);
+        if(dataCount > 0 ){
             return new ErrorResponse(
-                    Response.Status.BAD_REQUEST,
-                    "The provenance is linked to some data",
-                    "You can't delete a provenance linked to data"
+                    Response.Status.UNAUTHORIZED, "The provenance is linked to " + dataCount + "data", "You can't delete a provenance linked to data"
             ).getResponse();
-        } else {
-            try {
-                dao.delete(uri);
-                return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
+        }
 
-            } catch (NoSQLInvalidURIException e) {
-                throw new NotFoundURIException("Invalid or unknown provenance URI ", uri);
-            }
+        long datafilesCount = new DataFileDAO(nosql, sparql, null).count(filter);
+        if(datafilesCount > 0 ){
+            return new ErrorResponse(
+                    Response.Status.UNAUTHORIZED, "The provenance is linked to " + dataCount + "data files", "You can't delete a provenance linked to data files"
+            ).getResponse();
+        }
+
+        try {
+            ProvenanceDAO dao = new ProvenanceDAO(nosql);
+            dao.delete(uri);
+            return new ObjectUriResponse(Response.Status.OK, uri).getResponse();
+
+        } catch (NoSQLInvalidURIException e) {
+            throw new NotFoundURIException("Invalid or unknown provenance URI ", uri);
         }
     }
 

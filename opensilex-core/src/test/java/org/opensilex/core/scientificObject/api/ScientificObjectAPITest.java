@@ -24,7 +24,7 @@ import org.opensilex.core.AbstractMongoIntegrationTest;
 import org.opensilex.core.data.DataAPITest;
 import org.opensilex.core.data.DataFileAPITest;
 import org.opensilex.core.data.api.DataCreationDTO;
-import org.opensilex.core.data.api.DataFileCreationDTO;
+import org.opensilex.core.datafile.api.DataFileCreationDTO;
 import org.opensilex.core.data.dal.DataDAO;
 import org.opensilex.core.data.dal.DataProvenanceModel;
 import org.opensilex.core.experiment.api.ExperimentAPITest;

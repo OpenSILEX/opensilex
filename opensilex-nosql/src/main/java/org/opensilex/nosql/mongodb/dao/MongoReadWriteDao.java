@@ -8,6 +8,8 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.result.DeleteResult;
 import com.mongodb.client.result.InsertManyResult;
 import com.mongodb.client.result.InsertOneResult;
+import com.mongodb.client.result.UpdateResult;
+import org.apache.commons.collections4.CollectionUtils;
 import org.bson.conversions.Bson;
 import org.opensilex.nosql.exceptions.NoSQLInvalidURIException;
 import org.opensilex.nosql.mongodb.MongoDBService;
@@ -37,17 +39,22 @@ public abstract class MongoReadWriteDao<T extends MongoModel, F extends MongoSea
     }
 
     @Override
+    public String idField() {
+        return MongoModel.URI_FIELD;
+    }
+
+    @Override
     public T get(URI uri) throws NoSQLInvalidURIException {
-        return mongodb.findByURI(collection, uri, MongoModel.URI_FIELD);
+        return mongodb.findByURI(collection, uri, idField());
     }
 
     @Override
     public T get(ClientSession session, URI uri) throws NoSQLInvalidURIException {
-        return mongodb.findByURI(session, collection, uri, MongoModel.URI_FIELD);
+        return mongodb.findByURI(session, collection, uri, idField());
     }
 
     @Override
-    public boolean exists(URI uri) throws MongoException{
+    public boolean exists(URI uri) throws MongoException {
         return exists(null, uri);
     }
 
@@ -59,6 +66,11 @@ public abstract class MongoReadWriteDao<T extends MongoModel, F extends MongoSea
     @Override
     public InsertOneResult create(T instance, ClientSession session) throws MongoException, URISyntaxException {
         return mongodb.create(instance, collection, createPrefix, session);
+    }
+
+    @Override
+    public InsertOneResult create(T instance) throws MongoException, URISyntaxException {
+        return create(instance, null);
     }
 
     @Override
@@ -77,8 +89,13 @@ public abstract class MongoReadWriteDao<T extends MongoModel, F extends MongoSea
     }
 
     @Override
-    public void update(T instance, ClientSession session) throws MongoException, NoSQLInvalidURIException {
+    public void update(T instance, ClientSession session) throws MongoException {
         mongodb.update(instance, collection, getUpdateFilter(instance), session);
+    }
+
+    @Override
+    public void update(T instance) throws MongoException {
+        update(instance, null);
     }
 
     @Override
@@ -102,6 +119,17 @@ public abstract class MongoReadWriteDao<T extends MongoModel, F extends MongoSea
     @Override
     public DeleteResult delete(F deleteFilter, ClientSession session) throws MongoException {
         return mongodb.deleteOnCriteria(collection, session, deleteFilterToDocument(deleteFilter));
+    }
+
+    @Override
+    public DeleteResult delete(URI uri) throws MongoException {
+        return delete(uri,null);
+    }
+
+
+    @Override
+    public DeleteResult delete(F deleteFilter) throws MongoException {
+        return null;
     }
 
     @Override
@@ -152,8 +180,8 @@ public abstract class MongoReadWriteDao<T extends MongoModel, F extends MongoSea
             // iterate over MongoDB result and convert result on the fly before collect them inside a List
             List<T_CONVERTED> convertedResults = new ArrayList<>(resultCount);
             resultAndCount.getKey().forEach(mongoResult ->
-                convertedResults.add(convertFunction.apply(mongoResult)
-            ));
+                    convertedResults.add(convertFunction.apply(mongoResult)
+                    ));
 
             return new ListWithPagination<>(convertedResults, filter.getPage(), filter.getPageSize(), resultCount);
         }
@@ -165,11 +193,11 @@ public abstract class MongoReadWriteDao<T extends MongoModel, F extends MongoSea
     }
 
     @Override
-    public  Set<URI> distinctUris(ClientSession session, F filter) throws MongoException {
+    public Set<URI> distinctUris(ClientSession session, F filter) throws MongoException {
         return mongodb.distinctWithPagination(
                 collection,
                 MongoModel.URI_FIELD,
-                document -> document.get(MongoModel.URI_FIELD, URI.class),
+                document -> document.get(idField(), URI.class),
                 filterToBson(filter),
                 filter.getOrderByList(),
                 filter.getPage(),
@@ -189,9 +217,17 @@ public abstract class MongoReadWriteDao<T extends MongoModel, F extends MongoSea
 
     public List<Bson> getBsonFilters(F searchFilter) {
         List<Bson> filters = new ArrayList<>();
+
         if (searchFilter.getUri() != null) {
             filters.add(getIdFilter(searchFilter.getUri()));
         }
+        if(!CollectionUtils.isEmpty(searchFilter.getIncludedUris())){
+            filters.add(Filters.in(idField(), searchFilter.getIncludedUris()));
+        }
+        if(!CollectionUtils.isEmpty(searchFilter.getRdfTypes())){
+            filters.add(Filters.in(MongoModel.TYPE_FIELD, searchFilter.getRdfTypes()));
+        }
+
         return filters;
     }
 
@@ -200,9 +236,9 @@ public abstract class MongoReadWriteDao<T extends MongoModel, F extends MongoSea
         Objects.requireNonNull(searchFilter);
         List<Bson> bsonFilters = getBsonFilters(searchFilter);
 
-        if(bsonFilters.isEmpty()){
+        if (bsonFilters.isEmpty()) {
             return null;
-        }else if(bsonFilters.size() == 1){
+        } else if (bsonFilters.size() == 1) {
             return bsonFilters.get(0);
         }
 

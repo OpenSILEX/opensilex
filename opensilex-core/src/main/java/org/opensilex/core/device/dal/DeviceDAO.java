@@ -21,6 +21,7 @@ import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.vocabulary.RDFS;
 import org.bson.Document;
 import org.opensilex.core.data.dal.DataDAO;
+import org.opensilex.core.datafile.dal.DataFileModel;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.event.dal.move.PositionModel;
@@ -512,7 +513,7 @@ public class DeviceDAO {
      * @throws Exception                   if some error is encountered during delete
      * @see org.opensilex.core.provenance.dal.ProvenanceModel
      * @see org.opensilex.core.data.dal.DataModel
-     * @see org.opensilex.core.data.dal.DataFileModel
+     * @see DataFileModel
      */
     public void delete(URI uri, AccountModel currentUser) throws Exception {
 

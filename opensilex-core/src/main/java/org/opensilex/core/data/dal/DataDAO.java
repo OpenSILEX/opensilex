@@ -16,6 +16,7 @@ import org.bson.conversions.Bson;
 import org.opensilex.core.data.api.DataComputedGetDTO;
 import org.opensilex.core.data.api.DataExportDTO;
 import org.opensilex.core.data.api.DataGetDTO;
+import org.opensilex.core.data.api.DataSearchDTO;
 import org.opensilex.core.experiment.dal.ExperimentDAO;
 import org.opensilex.core.experiment.dal.ExperimentModel;
 import org.opensilex.core.experiment.utils.ExportDataIndex;
@@ -29,6 +30,8 @@ import org.opensilex.core.variable.dal.VariableDAO;
 import org.opensilex.core.variable.dal.VariableModel;
 import org.opensilex.fs.service.FileStorageService;
 import org.opensilex.nosql.mongodb.MongoDBService;
+import org.opensilex.nosql.mongodb.MongoModel;
+import org.opensilex.nosql.mongodb.dao.MongoReadWriteDao;
 import org.opensilex.security.account.dal.AccountModel;
 import org.opensilex.server.response.ErrorResponse;
 import org.opensilex.sparql.deserializer.SPARQLDeserializers;
@@ -57,48 +60,34 @@ import java.util.stream.Collectors;
  *
  * @author sammy
  */
-public class DataDAO {
+public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchDTO> {
 
     public static final String DATA_COLLECTION_NAME = "data";
     public static final String DATA_PREFIX = "data";
 
-    public static final String FILE_COLLECTION_NAME = "file";
-    public static final String FILE_PREFIX = "file";
-
-    public static final String FS_FILE_PREFIX = "datafile";
-
-    protected final MongoDBService nosql;
     protected final SPARQLService sparql;
     protected final FileStorageService fs;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DataDAO.class);
-        
-    public DataDAO(MongoDBService nosql, SPARQLService sparql, FileStorageService fs) throws URISyntaxException {
-        this.nosql = nosql;
+
+
+
+    public DataDAO(MongoDBService mongodb, SPARQLService sparql, FileStorageService fs) throws URISyntaxException {
+        super(mongodb,DataModel.class, DATA_COLLECTION_NAME, DATA_PREFIX);
         this.sparql = sparql;
         this.fs = fs;
     }
 
+
     public void createIndexes() {
         IndexOptions unicityOptions = new IndexOptions().unique(true);
 
-        MongoCollection dataCollection = nosql.getDatabase()
-                .getCollection(DATA_COLLECTION_NAME, DataModel.class);
-        dataCollection.createIndex(Indexes.ascending("uri"), unicityOptions);
-        dataCollection.createIndex(Indexes.ascending("variable", "provenance", "target", "date"), unicityOptions);
-        dataCollection.createIndex(Indexes.ascending("variable", "target", "date"));
-        dataCollection.createIndex(Indexes.compoundIndex(Arrays.asList(Indexes.ascending("variable"),Indexes.descending("date"))));
-        dataCollection.createIndex(Indexes.ascending("date"));
-        dataCollection.createIndex(Indexes.descending("date"));
+        collection.createIndex(Indexes.ascending(MongoModel.URI_FIELD), unicityOptions);
+        collection.createIndex(Indexes.ascending(DataModel.VARIABLE_FIELD, DataModel.PROVENANCE_FIELD, DataModel.TARGET_FIELD, DataModel.DATE_FIELD), unicityOptions);
+        collection.createIndex(Indexes.ascending(DataModel.VARIABLE_FIELD, DataModel.TARGET_FIELD, DataModel.DATE_FIELD)));
+        collection.createIndex(Indexes.compoundIndex(Arrays.asList(Indexes.ascending(DataModel.VARIABLE_FIELD),Indexes.descending(DataModel.DATE_FIELD))));
+        collection.createIndex(Indexes.descending(DataModel.DATE_FIELD));
 
-        MongoCollection fileCollection = nosql.getDatabase()
-                .getCollection(FILE_COLLECTION_NAME, DataModel.class);
-        fileCollection.createIndex(Indexes.ascending("uri"), unicityOptions);
-        fileCollection.createIndex(Indexes.ascending("path"), unicityOptions);
-        fileCollection.createIndex(Indexes.ascending("provenance", "target", "date"), unicityOptions);
-        fileCollection.createIndex(Indexes.ascending("target", "date"));
-        fileCollection.createIndex(Indexes.descending("date"));
-        fileCollection.createIndex(Indexes.ascending("date"));
     }
 
 //

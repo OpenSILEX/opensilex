@@ -747,7 +747,7 @@ test:gabriel:front-test:
   after_script:
     - echo "https://opensilex.pages.mia.inra.fr/-/opensilex-dev/-/jobs/$CI_JOB_ID/artifacts/artifacts/front-tests/playwright-report/index.html"
   rules:
-    - if: $CI_COMMIT_BRANCH == "gabriel"
+    - if: $CI_COMMIT_BRANCH == "gabriel-playwright-ci"
       when: on_success
     - if: '$FRONT_TESTS == "true"'
   needs:

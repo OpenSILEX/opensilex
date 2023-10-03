@@ -13,6 +13,7 @@ import org.opensilex.cli.OpenSilexCommand;
 import org.opensilex.cli.HelpOption;
 import org.opensilex.cli.AbstractOpenSilexCommand;
 import org.opensilex.security.SecurityModule;
+import org.opensilex.security.person.api.ORCIDClient;
 import org.opensilex.security.person.dal.PersonDAO;
 import org.opensilex.security.person.dal.PersonModel;
 import org.slf4j.Logger;
@@ -85,7 +86,7 @@ public class UserCommands extends AbstractOpenSilexCommand implements OpenSilexC
                 personModel.setFirstName(firstName);
                 personModel.setLastName(lastName);
                 personModel.setEmail(new InternetAddress(email));
-                PersonModel holderOfTheAccount = personDAO.create(personModel);
+                PersonModel holderOfTheAccount = personDAO.create(personModel, new ORCIDClient());
 
                 String passwordHash = authentication.getPasswordHash(password);
                 AccountModel accountModel = accountDAO.create(null, new InternetAddress(email), isAdmin, passwordHash, lang, null, holderOfTheAccount);

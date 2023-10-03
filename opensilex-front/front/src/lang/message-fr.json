@@ -311,7 +311,6 @@
             "orcid-placeholder": "https://orcid.org/0000-0003-4189-7793",
             "form-email-placeholder": "Saisir l'adresse email",
             "form-affiliation-placeholder" : "Saisir un organisme d'affiliation",
-            "form-phone-placeholder" : "Saisir un numéro de téléphone (+33-6-58-44-...)",
             "filter-search-no-result": "Désolé, aucune personne ne correspond à votre recherche.",
             "filter-placeholder": "Rechercher des personnes...",
             "orcid-help-message": "Si rempli, l'ORCID sera utilisé comme uri lors de la création. Champ non modifiable",
@@ -330,6 +329,16 @@
             "successDelete" : "Personne supprimée",
             "errors": {
                 "person-already-exists": "Une personne existe déjà avec cette URI."
+            },
+            "load-orcid-infos" : "charger",
+            "orcid-suggestion": {
+                "title": "valider les informations à garder",
+                "selector-help-message": "choisissez une option ou laissez vide",
+                "checkbox-help-message": "cocher la case pour pour valider la proposition",
+                "last-name-pickup": "garder le nom",
+                "first-name-pickup": "garder le prénom",
+                "last-name-placeholder": "aucun nom trouvé dans vos données ORCID",
+                "first-name-placeholder": "aucun prénom trouvé dans vos données ORCID"
             }
         },
         "variable" : {

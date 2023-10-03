@@ -19,7 +19,11 @@
             "node", "opensilex-core"
         ],
         "paths": {
-            "opensilex-core": ["../../opensilex-core/front/src"],
+//            "opensilex-core": ["../../opensilex-core/front/src"],
+            "@/*": [
+                "src/*"
+            ]
+
         },
         "lib": [
             "esnext",

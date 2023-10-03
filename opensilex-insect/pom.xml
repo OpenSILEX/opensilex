@@ -5,8 +5,8 @@
  Copyright © INRA 2023
  Contact: bernhard.gschloessl@inrae.fr, catherine.roussey@inrae.fr, anne.tireau@inrae.fr, pascal.neveu@inrae.fr
  
- PHIS pom.xml
- This module is the legacy PHIS web services API integrate as a module of the new
+OpenSILEX insect pom.xml
+ This module is the legacy OpenSILEX insect web services API integrate as a module of the new
  modular system.
 ******************************************************************************
 -->

@@ -12,19 +12,18 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+//import java.util.Set;
 import org.apache.jena.riot.Lang;
 
-import org.opensilex.OpenSilex;
+//import org.opensilex.OpenSilex;
 import org.opensilex.insect.ontology.OesoInsect;
-import org.opensilex.sparql.deserializer.URIDeserializer;
-import org.opensilex.sparql.rdf4j.RDF4JConfig;
+//import org.opensilex.sparql.deserializer.URIDeserializer;
+//import org.opensilex.sparql.rdf4j.RDF4JConfig;
 import org.opensilex.OpenSilexModule;
 import org.opensilex.OpenSilexModuleNotFoundException;
-import org.opensilex.core.CoreModule;
+//import org.opensilex.core.CoreModule;
 import org.opensilex.core.germplasm.dal.GermplasmModel;
-import org.opensilex.nosql.mongodb.MongoDBConfig;
+//import org.opensilex.nosql.mongodb.MongoDBConfig;
 import org.opensilex.server.extensions.APIExtension;
 import org.opensilex.sparql.SPARQLConfig;
 import org.opensilex.sparql.SPARQLModule;
@@ -43,12 +42,12 @@ import org.slf4j.LoggerFactory;
 public class InsectModule extends OpenSilexModule implements APIExtension, SPARQLExtension {
     
     private final static Logger LOGGER = LoggerFactory.getLogger(InsectModule.class);
-
+/*
     @Override
     public void setup() {
         SPARQLService.addPrefix(OesoInsect.PREFIX, OesoInsect.NS);
         URIDeserializer.setPrefixes(SPARQLService.getPrefixMapping(), true);
-    }
+    }*/
 
     @Override
     public List<OntologyFileDefinition> getOntologiesFiles() throws Exception {
@@ -66,10 +65,10 @@ public class InsectModule extends OpenSilexModule implements APIExtension, SPARQ
     @Override
     public void install(boolean reset) throws Exception {
         LOGGER.info("Insert agrovoc species");
-        insertDefaultSpecies();
+        insertInsectDefaultSpecies();
     }
 
-    private void insertDefaultSpecies() throws URISyntaxException, OpenSilexModuleNotFoundException, IOException, SPARQLException {
+    private void insertInsectDefaultSpecies()  {
         try {
 
             SPARQLServiceFactory factory = getOpenSilex().getServiceInstance(SPARQLService.DEFAULT_SPARQL_SERVICE, SPARQLServiceFactory.class);
@@ -79,7 +78,7 @@ public class InsectModule extends OpenSilexModule implements APIExtension, SPARQ
             String graph = sparql.getDefaultGraphURI(GermplasmModel.class).toString();
             OntologyFileDefinition ontologyDef = new OntologyFileDefinition(
                     graph,
-                    "ontologies/species.ttl",
+                    "ontologies/insect_species.ttl",
                     Lang.TTL,
                     null
             );

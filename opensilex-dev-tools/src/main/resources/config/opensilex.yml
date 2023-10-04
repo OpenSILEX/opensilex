@@ -75,6 +75,20 @@ system:
     ignoredModules:
         org.opensilex.opensilex-mobile.MobileModule: opensilex-mobile.jar
 
+core:
+    agroportal:
+        basePath: "https://agroportal.lirmm.fr"
+        baseAPIPath: "https://data.agroportal.lirmm.fr"
+        externalAPIKey: "bcfa713e-007c-418b-b7b3-57ce40fd7721"
+
+front:
+    agroportal:
+        entity:
+            - AGROVOC
+            - PO
+        trait:
+            - PATO
+
 # dataverse:
 #     externalAPIKey: "****-****-****-****-****"
 #     rechercheDataGouvBasePath: https://demo.recherche.data.gouv.fr/"

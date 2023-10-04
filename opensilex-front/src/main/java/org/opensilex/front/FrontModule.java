@@ -128,6 +128,11 @@ public class FrontModule extends OpenSilexModule implements ServerExtension, API
             }
             config.setDashboard(dashboard);
 
+            AgroportalOntologiesConfigDTO agroportal = new AgroportalOntologiesConfigDTO();
+            agroportal.setEntityOntologies(frontConfig.agroportal().entity());
+            agroportal.setTraitOntologies(frontConfig.agroportal().trait());
+            config.setAgroportal(agroportal);
+
             try {
                 config.setVersionLabel(VersionLabel.valueOf(frontConfig.versionLabel().toUpperCase()));
             } catch (IllegalArgumentException ignored) {

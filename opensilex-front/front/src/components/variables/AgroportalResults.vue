@@ -72,6 +72,11 @@ export default class AgroportalResults extends Vue {
   })
   text: string;
 
+  @Prop({
+    default: () => []
+  })
+  ontologies: string[];
+
   @Prop()
   mappingOptions;
 
@@ -85,13 +90,6 @@ export default class AgroportalResults extends Vue {
 
   isAgroportalDown: boolean = false;
   isDataLoading: boolean = false;
-
-  skosReferences = {
-    EXACT_MATCH_JSON_PROPERTY: "exact-match",
-    CLOSE_MATCH_JSON_PROPERTY: "close-match",
-    BROAD_MATCH_JSON_PROPERTY: "broad-match",
-    NARROW_MATCH_JSON_PROPERTY: "narrow-match"
-  }
 
   @Ref("AgroportalResultItem") readonly resultItems!: any;
 
@@ -116,6 +114,7 @@ export default class AgroportalResults extends Vue {
     this.$opensilex.disableLoader();
     this.entityService.searchThroughAgroportal(
         this.text,
+        this.ontologies.join(","),
         undefined,
         0,
         0

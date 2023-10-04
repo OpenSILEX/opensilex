@@ -32,4 +32,9 @@ public interface CoreConfig {
     )
     List<SharedResourceInstanceItem> sharedResourceInstances();
 
+    @ConfigDescription(
+            value = "Agroportal options"
+    )
+    AgroportalAPIConfig agroportal();
+
 }

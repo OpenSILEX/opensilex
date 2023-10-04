@@ -95,4 +95,10 @@ public interface FrontConfig {
             value = "Dashboard component"
     )
     DashboardConfig dashboard();
+
+    @ConfigDescription(
+            value = "Agroportal component"
+    )
+    AgroportalOntologiesConfig agroportal();
+
 }

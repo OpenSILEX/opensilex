@@ -65,6 +65,8 @@ public class FrontConfigDTO {
 
     DashboardConfigDTO dashboard;
 
+    AgroportalOntologiesConfigDTO agroportal;
+
     @ApiModelProperty(value = "Application url path prefix", example = "app")
     public String getPathPrefix() {
         return pathPrefix;
@@ -229,6 +231,14 @@ public class FrontConfigDTO {
 
     public void setDashboard(DashboardConfigDTO dashboard) {
         this.dashboard = dashboard;
+    }
+
+    public AgroportalOntologiesConfigDTO getAgroportal() {
+        return agroportal;
+    }
+
+    public void setAgroportal(AgroportalOntologiesConfigDTO agroportal) {
+        this.agroportal = agroportal;
     }
 
     @ApiModelProperty(value = "Name of the application to display")

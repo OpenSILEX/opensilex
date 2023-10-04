@@ -147,15 +147,13 @@ import {EntityDetailsDTO} from "opensilex-core/model/entityDetailsDTO";
         }
 
         validateCustom(form: EntityCreationDTO) {
-          console.debug(form);
-            if (form.name != null) {
-              return true;
-            }
-            return false;
+          if (form.name != null) {
+            return true;
+          }
+          return false;
         }
 
         nextStep(stepIndex, form, nextStepComponent, currentStepComponent) {
-          console.debug(form);
           if(stepIndex == 0 && form.uri != null) {
             form.close_match.push(form.uri);
             form.uri = "";

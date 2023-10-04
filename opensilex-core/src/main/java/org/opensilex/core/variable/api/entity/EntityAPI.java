@@ -11,7 +11,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import io.swagger.annotations.*;
+import org.apache.commons.lang3.StringUtils;
 import org.opensilex.core.CoreModule;
+import org.opensilex.core.agroportal.api.OntologyAgroportalDTO;
+import org.opensilex.core.agroportal.config.AgroportalAPIConfigDTO;
+import org.opensilex.core.agroportal.dal.OntologyAgroportalModel;
 import org.opensilex.core.external.opensilex.SharedResourceInstanceService;
 import org.opensilex.core.ontology.Oeso;
 import org.opensilex.core.variable.api.VariableAPI;
@@ -273,9 +277,6 @@ public class EntityAPI {
      * TEST Agroportal link
      */
 
-    static final String REST_URL = "https://data.agroportal.lirmm.fr";
-    static final String SERVER_URL = "https://agroportal.lirmm.fr";
-    static final String API_KEY = "bcfa713e-007c-418b-b7b3-57ce40fd7721";
     static final ObjectMapper mapper = new ObjectMapper();
     static final ObjectWriter writer = mapper.writerWithDefaultPrettyPrinter();
 
@@ -293,7 +294,9 @@ public class EntityAPI {
             @ApiParam(value = "Timeout", example = "1000") @QueryParam("timeout") Integer timeout
     ) throws Exception {
 
-        boolean isReachable = getStatus(SERVER_URL, timeout);
+        AgroportalAPIConfigDTO agroportalConfig = coreModule.getAgroportalAPIConfiguration();
+
+        boolean isReachable = getStatus(agroportalConfig.getServerPath(), timeout);
         return new SingleObjectResponse<>(isReachable).getResponse();
     }
 
@@ -329,18 +332,53 @@ public class EntityAPI {
     @Produces(MediaType.APPLICATION_JSON)
     public Response searchThroughAgroportal(
             @ApiParam(value = "Name (regex)", example = "plant") @QueryParam("name") String namePattern ,
+            @ApiParam(value = "List of ontologies (acronym)", example = "AGROVOC") @QueryParam("ontologies") String ontologies ,
             @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
             @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
             @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @Min(0) int pageSize
     ) throws Exception {
 
-        String url = REST_URL + "/search?q=" + URLEncoder.encode(namePattern, StandardCharsets.UTF_8.toString());
+        AgroportalAPIConfigDTO agroportalConfig = coreModule.getAgroportalAPIConfiguration();
 
-        JsonNode searchResults = jsonToNode(get(url)).get("collection");
+        String url = agroportalConfig.getApiUrl() + "/search?q=" + URLEncoder.encode(namePattern, StandardCharsets.UTF_8.toString());
+
+        if(StringUtils.isNotEmpty(ontologies)) {
+            url += "&ontologies=" + ontologies;
+        }
+
+        JsonNode searchResults = jsonToNode(get(url, agroportalConfig.getApiKey())).get("collection");
 
         List<EntityAgroportalModel> entities = mapper.readValue(searchResults.traverse(), new TypeReference<List<EntityAgroportalModel>>(){});
 
         return new SingleObjectResponse<>(entities.stream().map(EntityAgroportalDTO::fromModel).collect(Collectors.toList()))
+                .getResponse();
+    }
+
+    @GET
+    @Path("/agroportal/ontologies")
+    @ApiOperation("Get ontologies from agroportal")
+    @ApiProtected
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Return ontologies", response = OntologyAgroportalDTO.class, responseContainer = "List"),
+            @ApiResponse(code = 500, message = "Internal Server Error", response = ErrorResponse.class)
+    })
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getAgroportalOntologies(
+            @ApiParam(value = "List of fields to sort as an array of fieldName=asc|desc", example = "uri=asc") @DefaultValue("name=asc") @QueryParam("order_by") List<OrderBy> orderByList,
+            @ApiParam(value = "Page number", example = "0") @QueryParam("page") @DefaultValue("0") @Min(0) int page,
+            @ApiParam(value = "Page size", example = "20") @QueryParam("page_size") @Min(0) int pageSize
+    ) throws Exception {
+
+        AgroportalAPIConfigDTO agroportalConfig = coreModule.getAgroportalAPIConfiguration();
+
+        String url = agroportalConfig.getApiUrl() + "/ontologies";
+
+        JsonNode searchResults = jsonToNode(get(url, agroportalConfig.getApiKey())).get("collection");
+
+        List<OntologyAgroportalModel> ontologies = mapper.readValue(searchResults.traverse(), new TypeReference<List<OntologyAgroportalModel>>(){});
+
+        return new SingleObjectResponse<>(ontologies.stream().map(OntologyAgroportalDTO::fromModel).collect(Collectors.toList()))
                 .getResponse();
     }
 
@@ -356,7 +394,7 @@ public class EntityAPI {
         return root;
     }
 
-    private static String get(String urlToGet) {
+    private static String get(String urlToGet, String apiKey) {
         URL url;
         HttpURLConnection conn;
         BufferedReader rd;
@@ -366,7 +404,7 @@ public class EntityAPI {
             url = new URL(urlToGet);
             conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
-            conn.setRequestProperty("Authorization", "apikey token=" + API_KEY);
+            conn.setRequestProperty("Authorization", "apikey token=" + apiKey);
             conn.setRequestProperty("Accept", "application/json");
             rd = new BufferedReader(
                     new InputStreamReader(conn.getInputStream()));

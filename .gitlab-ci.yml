@@ -706,6 +706,8 @@ gabriel:build:
 # See : https://playwright.dev/docs/ci#gitlab-ci
 # TODO : make it into a template
 test:gabriel:front-test:
+  # This image should be updated any time the mongodb or rdf4j docker images for opensilex change
+  # see : https://forgemia.inra.fr/OpenSILEX/opensilex-front-tests-docker
   image: registry.forgemia.inra.fr/opensilex/opensilex-dev/opensilex-front-tests:latest
 #  parallel: 7    for parallelization
   before_script:
@@ -729,10 +731,10 @@ test:gabriel:front-test:
     - envsubst < /opensilex.yml > /opensilex_mod.yml
     - echo "/opensilex_mod.yml config file content :"
     - echo "$(</opensilex_mod.yml)"
-    - echo "START DOCKERS :"
-    - cd opensilex-dev-tools/src/main/resources/docker
-    - dockerd &
-    - docker compose -p test up &
+#    - echo "START DOCKERS :"
+#    - cd opensilex-dev-tools/src/main/resources/docker
+#    - dockerd & # can go in base image
+#    - docker compose -p test up & # can go in base image
     - cd $CI_PROJECT_DIR/artifacts/$OPENSILEX_APP_REVISION
     - echo "${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar system install --CONFIG_FILE=/opensilex_mod.yml"
     - ${OPENSILEX_JAVA_EXEC_OPTS} opensilex.jar system install --CONFIG_FILE=/opensilex_mod.yml

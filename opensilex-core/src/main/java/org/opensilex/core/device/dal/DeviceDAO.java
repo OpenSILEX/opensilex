@@ -20,9 +20,10 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.vocabulary.RDFS;
 import org.bson.Document;
-import org.opensilex.core.data.api.DataSearchDTO;
 import org.opensilex.core.data.dal.DataDAO;
+import org.opensilex.core.datafile.dal.DataFileDAO;
 import org.opensilex.core.datafile.dal.DataFileModel;
+import org.opensilex.core.datafile.dal.DataFileSearchFilter;
 import org.opensilex.core.event.dal.move.MoveEventDAO;
 import org.opensilex.core.event.dal.move.MoveModel;
 import org.opensilex.core.event.dal.move.PositionModel;
@@ -529,17 +530,15 @@ public class DeviceDAO {
         }
 
         // test if device in data
-        DataSearchDTO dataFilter = new DataSearchDTO().set
-        dataFilter.setUri(uri).setAccountURI(currentUser.getUri());
+        DataFileSearchFilter filter = new DataFileSearchFilter();
+        filter.setDevices(Collections.singletonList(uri));
 
-        DataDAO dataDAO = new DataDAO(nosql, sparql, fs);
-
-        int dataCount = new DataDAO(nosql, sparql, fs).count(currentUser, null, null, null, null, Collections.singletonList(uri), null, null, null, null, null, null);
+        long dataCount = new DataDAO(nosql, sparql, fs).count(filter);
         if (dataCount > 0) {
             throw new ForbiddenURIAccessException(uri, dataCount + " data");
         }
 
-        int dataFileCount = dataDAO.countFiles(currentUser, null, null, null, null, Collections.singletonList(uri), null, null, null, null);
+        long dataFileCount = new DataFileDAO(nosql, sparql, fs).count(filter);
         if (dataFileCount > 0) {
             throw new ForbiddenURIAccessException(uri, dataFileCount + " datafile(s)");
         }

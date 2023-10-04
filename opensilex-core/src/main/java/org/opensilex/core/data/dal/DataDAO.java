@@ -109,6 +109,8 @@ public class DataDAO extends MongoReadWriteDao<DataModel, DataSearchFilter> {
         return new Document("$or", Arrays.asList(directProvFilter, globalProvUsed));
     }
 
+
+
     public Document searchFilter(AccountModel user, List<URI> experiments, List<URI> targets, List<URI> variables, List<URI> provenances, List<URI> devices, Instant startDate, Instant endDate, Float confidenceMin, Float confidenceMax, Document metadata, List<URI> operators) throws Exception {
 
         Document filter = new Document();
